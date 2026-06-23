@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { restRecovery, dailyDiseaseUpkeep } from '../engine/rest';
-import { traumaFromKind } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
+import type { HitLocation } from '../engine/types';
+const tk = (k: 'dechirure' | 'fracture', s: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, s, loc), opts, loc);
 import { contractDisease } from '../engine/disease';
 import { hasCondition, stacks } from '../engine/conditions';
 import { seedBattleRng } from './battleRng';
@@ -144,7 +146,7 @@ describe('restParty (store) — « Dormir jusqu’à l’aube »', () => {
   });
 
   it('le repos fait avancer la convalescence des traumas (cascade #T3 — via l’entretien quotidien)', () => {
-    const c = hero({ id: 'a', traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 28 })] }); // 30−28 = 2 jours
+    const c = hero({ id: 'a', traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 28 })] }); // 30−28 = 2 jours
     useGame.setState({ party: [c], gameTime: 12 * 60, lastUpkeepDay: 0 });
     useGame.getState().restParty(3); // 3 jours franchis ≥ 2 → guéri
     expect(useGame.getState().party[0].traumas!.length).toBe(0);

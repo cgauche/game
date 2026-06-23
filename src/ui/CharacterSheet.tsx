@@ -488,7 +488,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
               </div>
             ))}
             {(hero.traumas ?? []).map((t, i) => (
-              <div key={`t${i}`} className="inv-row" title={t.note} style={{ alignItems: 'center' }}>
+              <div key={`t${i}`} className="inv-row" title={t.desc} style={{ alignItems: 'center' }}>
                 <span className="ir-name">🩼 {t.label}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {t.recoveryDays != null

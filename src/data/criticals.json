@@ -1,167 +1,252 @@
 {
   "tete": [
     {
+      "id": "blessure-spectaculaire",
       "min": 1,
       "max": 10,
       "name": "Blessure spectaculaire",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Entaille front→joue. Cicatrice : DR +1 à certains Tests sociaux une fois guérie."
+      "desc": "Entaille front→joue. Cicatrice : DR +1 à certains Tests sociaux une fois guérie."
     },
     {
+      "id": "coupure-mineure",
       "min": 11,
       "max": 20,
       "name": "Coupure mineure",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Le coup entaille la joue, le sang dégouline."
+      "desc": "Le coup entaille la joue, le sang dégouline."
     },
     {
+      "id": "coup-a-l-il",
       "min": 21,
       "max": 25,
       "name": "Coup à l'œil",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "aveugle",
           "value": 1
         }
       ],
-      "note": "Coup à l'orbite de l'œil."
+      "desc": "Coup à l'orbite de l'œil."
     },
     {
+      "id": "frappe-a-l-oreille",
       "min": 26,
       "max": 30,
       "name": "Frappe à l'oreille",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "assourdi",
           "value": 1
         }
       ],
-      "note": "Bourdonnement ignoble."
+      "desc": "Bourdonnement ignoble."
     },
     {
+      "id": "coup-percutant",
       "min": 31,
       "max": 35,
       "name": "Coup percutant",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
       ],
-      "note": "Points blancs et flashs de lumière."
+      "desc": "Points blancs et flashs de lumière."
     },
     {
+      "id": "il-au-beurre-noir",
       "min": 36,
       "max": 40,
       "name": "Œil au beurre noir",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "aveugle",
           "value": 2
         }
       ],
-      "note": "Coup massif aux yeux, très douloureux."
+      "desc": "Coup massif aux yeux, très douloureux."
     },
     {
+      "id": "oreille-tranchee",
       "min": 41,
       "max": 45,
       "name": "Oreille tranchée",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "assourdi",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Coup violent qui entaille l'oreille."
+      "desc": "Coup violent qui entaille l'oreille."
     },
     {
+      "id": "en-plein-front",
       "min": 46,
       "max": 50,
       "name": "En plein front",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "aveugle",
           "value": 1
         }
       ],
-      "note": "L'Aveuglé persiste tant que tous les Hémorragique ne sont pas éliminés."
+      "desc": "L'Aveuglé persiste tant que tous les Hémorragique ne sont pas éliminés."
     },
     {
+      "id": "machoire-fracturee",
       "min": 51,
       "max": 55,
       "name": "Mâchoire fracturée",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 2
         }
       ],
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "mineur"
-        }
+        "fracture-tete-mineure"
       ],
-      "note": "Traumatisme Fracture (Mineure)."
+      "desc": "Traumatisme Fracture (Mineure)."
     },
     {
+      "id": "blessure-majeure-a-l-il",
       "min": 56,
       "max": 60,
       "name": "Blessure majeure à l'œil",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         },
         {
+          "op": "condition",
           "name": "aveugle",
           "value": 1
         }
       ],
-      "note": "Aveuglé soigné uniquement par Aide Médicale."
+      "desc": "Aveuglé soigné uniquement par Aide Médicale."
     },
     {
+      "id": "blessure-majeure-a-l-oreille",
       "min": 61,
       "max": 65,
       "name": "Blessure majeure à l'oreille",
-      "wounds": 3,
-      "note": "Perte auditive permanente (-20 audition). Seconde fois = surdité totale (magie seule)."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Perte auditive permanente (-20 audition). Seconde fois = surdité totale (magie seule)."
     },
     {
+      "id": "nez-casse",
       "min": 66,
       "max": 70,
       "name": "Nez cassé",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
@@ -170,20 +255,28 @@
         "difficulty": "intermediaire",
         "onFail": [
           {
+            "op": "condition",
             "name": "sonne",
             "value": 1
           }
         ]
       },
-      "note": "Une fois guéri, DR +1/-1 social selon contexte jusqu’à Chirurgie."
+      "desc": "Une fois guéri, DR +1/-1 social selon contexte jusqu’à Chirurgie."
     },
     {
+      "id": "machoire-cassee",
       "min": 71,
       "max": 75,
       "name": "Mâchoire cassée",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 3
         }
@@ -192,127 +285,201 @@
         "difficulty": "intermediaire",
         "onFail": [
           {
+            "op": "condition",
             "name": "inconscient",
             "value": 1
           }
         ]
       },
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "majeur"
-        }
+        "fracture-tete-majeure"
       ],
-      "note": "Traumatisme Fracture (Majeure)."
+      "desc": "Traumatisme Fracture (Majeure)."
     },
     {
+      "id": "commotion-cerebrale",
       "min": 76,
       "max": 80,
       "name": "Commotion cérébrale",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "assourdi",
           "value": 1
         },
         {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 5
         },
         {
+          "op": "condition",
           "name": "extenue",
           "value": 1
         }
       ],
-      "note": "Canon : 1d10 Sonné (encodé 5) ; Exténué dure 1d10 jours. Autre critique tête en Exténué : Résistance Accessible ou Inconscient."
+      "desc": "Canon : 1d10 Sonné (encodé 5) ; Exténué dure 1d10 jours. Autre critique tête en Exténué : Résistance Accessible ou Inconscient."
     },
     {
+      "id": "bouche-explosee",
       "min": 81,
       "max": 85,
       "name": "Bouche explosée",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
       ],
-      "note": "Perdez 1d10 dents — Amputation (Facile)."
+      "amputation": {
+        "difficulty": "facile",
+        "sequels": [
+          "dents-perdues"
+        ]
+      },
+      "desc": "Perdez 1d10 dents — Amputation (Facile)."
     },
     {
+      "id": "oreille-mutilee",
       "min": 86,
       "max": 90,
       "name": "Oreille mutilée",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "assourdi",
           "value": 3
         },
         {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
       ],
-      "note": "Perte de l'oreille — Amputation (Accessible)."
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "oreille-perdue"
+        ]
+      },
+      "desc": "Perte de l'oreille — Amputation (Accessible)."
     },
     {
+      "id": "il-creve",
       "min": 91,
       "max": 93,
       "name": "Œil crevé",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "aveugle",
           "value": 3
         },
         {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
       ],
-      "note": "Perte de l'œil — Amputation (Complexe)."
+      "amputation": {
+        "difficulty": "complexe",
+        "sequels": [
+          "oeil-perdu"
+        ]
+      },
+      "desc": "Perte de l'œil — Amputation (Complexe)."
     },
     {
+      "id": "coup-defigurant",
       "min": 94,
       "max": 96,
       "name": "Coup défigurant",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 3
         },
         {
+          "op": "condition",
           "name": "aveugle",
           "value": 3
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 2
         }
       ],
-      "note": "Perte d'un œil et du nez — Amputation (Difficile)."
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "nez-ampute",
+          "oeil-perdu"
+        ]
+      },
+      "desc": "Perte d'un œil et du nez — Amputation (Difficile)."
     },
     {
+      "id": "machoire-mutilee",
       "min": 97,
       "max": 99,
       "name": "Mâchoire mutilée",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 4
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 3
         }
@@ -321,167 +488,245 @@
         "difficulty": "tresDifficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "inconscient",
             "value": 1
           }
         ]
       },
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "langue-amputee",
+          "dents-perdues"
+        ]
+      },
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "majeur"
-        }
+        "fracture-tete-majeure"
       ],
-      "note": "Fracture (Majeure), perte de la langue et 1d10 dents — Amputation (Difficile)."
+      "desc": "Fracture (Majeure), perte de la langue et 1d10 dents — Amputation (Difficile)."
     },
     {
+      "id": "decapitation",
       "min": 100,
       "max": 100,
       "name": "Décapitation",
-      "wounds": 0,
       "lethal": true,
-      "note": "Votre tête est tranchée. Mort sur le coup."
+      "desc": "Votre tête est tranchée. Mort sur le coup."
     }
   ],
   "bras": [
     {
+      "id": "choc-au-bras",
       "min": 1,
       "max": 10,
       "name": "Choc au bras",
-      "wounds": 1,
-      "note": "Lâchez ce que vous teniez."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Lâchez ce que vous teniez."
     },
     {
+      "id": "coupure-mineure-2",
       "min": 11,
       "max": 20,
       "name": "Coupure mineure",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Saignement abondant à l'avant-bras."
+      "desc": "Saignement abondant à l'avant-bras."
     },
     {
+      "id": "torsion",
       "min": 21,
       "max": 25,
       "name": "Torsion",
-      "wounds": 1,
-      "traumas": [
+      "ops": [
         {
-          "kind": "dechirure",
-          "severity": "mineur"
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ],
-      "note": "Traumatisme Déchirure musculaire (Mineur)."
+      "traumas": [
+        "dechirure-autre-mineure"
+      ],
+      "desc": "Traumatisme Déchirure musculaire (Mineur)."
     },
     {
+      "id": "choc-violent-au-bras",
       "min": 26,
       "max": 30,
       "name": "Choc violent au bras",
-      "wounds": 2,
-      "note": "Lâchez ; main inutilisable 1d10-(BE) Rounds (min 1)."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Lâchez ; main inutilisable 1d10-(BE) Rounds (min 1)."
     },
     {
+      "id": "dechirure-musculaire",
       "min": 31,
       "max": 35,
       "name": "Déchirure musculaire",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
       "traumas": [
-        {
-          "kind": "dechirure",
-          "severity": "mineur"
-        }
+        "dechirure-autre-mineure"
       ],
-      "note": "Traumatisme Déchirure musculaire (Mineur)."
+      "desc": "Traumatisme Déchirure musculaire (Mineur)."
     },
     {
+      "id": "main-ensanglantee",
       "min": 36,
       "max": 40,
       "name": "Main ensanglantée",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Tant que Hémorragique : Test de Dextérité Accessible avant toute action tenant un objet de cette main."
+      "desc": "Tant que Hémorragique : Test de Dextérité Accessible avant toute action tenant un objet de cette main."
     },
     {
+      "id": "clef-de-bras",
       "min": 41,
       "max": 45,
       "name": "Clef de bras",
-      "wounds": 2,
-      "note": "Lâchez ; bras inutilisable 1d10 Rounds."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Lâchez ; bras inutilisable 1d10 Rounds."
     },
     {
+      "id": "blessure-beante",
       "min": 46,
       "max": 50,
       "name": "Blessure béante",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
       ],
-      "note": "Jusqu’à Chirurgie, tout nouveau Dégât au bras → +1 Hémorragique."
+      "desc": "Jusqu’à Chirurgie, tout nouveau Dégât au bras → +1 Hémorragique."
     },
     {
+      "id": "cassure-nette",
       "min": 51,
       "max": 55,
       "name": "Cassure nette",
-      "wounds": 3,
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
       "resist": {
         "difficulty": "complexe",
         "onFail": [
           {
+            "op": "condition",
             "name": "sonne",
             "value": 1
           }
         ]
       },
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "mineur"
-        }
+        "fracture-bras-mineure"
       ],
-      "note": "Lâchez ; Traumatisme Fracture (Mineure)."
+      "desc": "Lâchez ; Traumatisme Fracture (Mineure)."
     },
     {
+      "id": "ligament-rompu",
       "min": 56,
       "max": 60,
       "name": "Ligament rompu",
-      "wounds": 3,
-      "traumas": [
+      "ops": [
         {
-          "kind": "dechirure",
-          "severity": "majeur"
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ],
-      "note": "Lâchez ; Traumatisme Déchirure musculaire (Majeur)."
+      "traumas": [
+        "dechirure-autre-majeure"
+      ],
+      "desc": "Lâchez ; Traumatisme Déchirure musculaire (Majeur)."
     },
     {
+      "id": "coupure-profonde",
       "min": 61,
       "max": 65,
       "name": "Coupure profonde",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -490,52 +735,69 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "inconscient",
             "value": 1
           }
         ]
       },
       "traumas": [
-        {
-          "kind": "dechirure",
-          "severity": "mineur"
-        }
+        "dechirure-autre-mineure"
       ],
-      "note": "Déchirure musculaire (Mineur)."
+      "desc": "Déchirure musculaire (Mineur)."
     },
     {
+      "id": "artere-endommagee",
       "min": 66,
       "max": 70,
       "name": "Artère endommagée",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 4
         }
       ],
-      "note": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +2 Hémorragique."
+      "desc": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +2 Hémorragique."
     },
     {
+      "id": "coude-fracasse",
       "min": 71,
       "max": 75,
       "name": "Coude fracassé",
-      "wounds": 4,
-      "traumas": [
+      "ops": [
         {
-          "kind": "fracture",
-          "severity": "majeur"
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ],
-      "note": "Lâchez ; Traumatisme Fracture (Majeure)."
+      "traumas": [
+        "fracture-bras-majeure"
+      ],
+      "desc": "Lâchez ; Traumatisme Fracture (Majeure)."
     },
     {
+      "id": "epaule-luxee",
       "min": 76,
       "max": 80,
       "name": "Épaule luxée",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -544,77 +806,118 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "sonne",
             "value": 1
           },
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Lâchez ; bras perdu (inutilisable) ; Sonné jusqu’à Aide Médicale ; Guérison étendue DR 6 pour récupérer le bras ; -10 aux Tests du bras 1d10 jours."
+      "desc": "Lâchez ; bras perdu (inutilisable) ; Sonné jusqu’à Aide Médicale ; Guérison étendue DR 6 pour récupérer le bras ; -10 aux Tests du bras 1d10 jours."
     },
     {
+      "id": "doigt-sectionne",
       "min": 81,
       "max": 85,
       "name": "Doigt sectionné",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Amputation (Accessible)."
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "doigt-ampute"
+        ]
+      },
+      "desc": "Amputation (Accessible)."
     },
     {
+      "id": "main-ouverte",
       "min": 86,
       "max": 90,
       "name": "Main ouverte",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
       ],
-      "note": "Perdez 1 doigt — Amputation (Complexe) ; 1 doigt de plus par Round sans Aide Médicale."
+      "amputation": {
+        "difficulty": "complexe",
+        "sequels": [
+          "doigt-ampute"
+        ]
+      },
+      "desc": "Perdez 1 doigt — Amputation (Complexe) ; 1 doigt de plus par Round sans Aide Médicale."
     },
     {
+      "id": "biceps-dechiquete",
       "min": 91,
       "max": 93,
       "name": "Biceps déchiqueté",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
       ],
       "traumas": [
-        {
-          "kind": "dechirure",
-          "severity": "majeur"
-        }
+        "dechirure-autre-majeure"
       ],
-      "note": "Lâchez ; Traumatisme Déchirure musculaire (Majeur)."
+      "desc": "Lâchez ; Traumatisme Déchirure musculaire (Majeur)."
     },
     {
+      "id": "main-mutilee",
       "min": 94,
       "max": 96,
       "name": "Main mutilée",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
@@ -623,32 +926,49 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "sonne",
             "value": 1
           },
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Perte de la main — Amputation (Difficile)."
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "main-bras-ampute"
+        ]
+      },
+      "desc": "Perte de la main — Amputation (Difficile)."
     },
     {
+      "id": "tendons-coupes",
       "min": 97,
       "max": 99,
       "name": "Tendons coupés",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 3
         },
         {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -657,43 +977,64 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "inconscient",
             "value": 1
           }
         ]
       },
-      "note": "Bras inutilisable — Amputation (Très Difficile)."
+      "amputation": {
+        "difficulty": "tresDifficile",
+        "sequels": [
+          "main-bras-ampute"
+        ]
+      },
+      "desc": "Bras inutilisable — Amputation (Très Difficile)."
     },
     {
+      "id": "demembrement-brutal",
       "min": 100,
       "max": 100,
       "name": "Démembrement brutal",
-      "wounds": 0,
       "lethal": true,
-      "note": "Votre bras est coupé, le coup termine dans la poitrine. Mort."
+      "desc": "Votre bras est coupé, le coup termine dans la poitrine. Mort."
     }
   ],
   "corps": [
     {
+      "id": "rien-qu-une-egratignure",
       "min": 1,
       "max": 10,
       "name": "Rien qu'une égratignure !",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Égratignure."
+      "desc": "Égratignure."
     },
     {
+      "id": "coup-au-ventre",
       "min": 11,
       "max": 20,
       "name": "Coup au ventre",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -702,49 +1043,71 @@
         "difficulty": "facile",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Vomissez et tombez À Terre sur un échec."
+      "desc": "Vomissez et tombez À Terre sur un échec."
     },
     {
+      "id": "coup-bas",
       "min": 21,
       "max": 25,
       "name": "Coup bas",
-      "wounds": 1,
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
       "resist": {
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "sonne",
             "value": 3
           }
         ]
       },
-      "note": "Coup bas douloureux."
+      "desc": "Coup bas douloureux."
     },
     {
+      "id": "torsion-du-dos",
       "min": 26,
       "max": 30,
       "name": "Torsion du dos",
-      "wounds": 1,
-      "traumas": [
+      "ops": [
         {
-          "kind": "dechirure",
-          "severity": "mineur"
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ],
-      "note": "Traumatisme Déchirure musculaire (Mineur)."
+      "traumas": [
+        "dechirure-autre-mineure"
+      ],
+      "desc": "Traumatisme Déchirure musculaire (Mineur)."
     },
     {
+      "id": "souffle-coupe",
       "min": 31,
       "max": 35,
       "name": "Souffle coupé",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -753,83 +1116,126 @@
         "difficulty": "accessible",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Mouvement réduit de moitié 1d10 Rounds."
+      "desc": "Mouvement réduit de moitié 1d10 Rounds."
     },
     {
+      "id": "bleus-aux-cotes",
       "min": 36,
       "max": 40,
       "name": "Bleus aux côtes",
-      "wounds": 2,
-      "note": "Tests d’Agilité -10 pendant 1d10 jours."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Tests d’Agilité -10 pendant 1d10 jours."
     },
     {
+      "id": "clavicule-tordue",
       "min": 41,
       "max": 45,
       "name": "Clavicule tordue",
-      "wounds": 2,
-      "note": "Lâchez (bras au hasard) ; bras inutilisable 1d10 Rounds."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Lâchez (bras au hasard) ; bras inutilisable 1d10 Rounds."
     },
     {
+      "id": "chairs-dechirees",
       "min": 46,
       "max": 50,
       "name": "Chairs déchirées",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
       ],
-      "note": "Chairs déchirées."
+      "desc": "Chairs déchirées."
     },
     {
+      "id": "cotes-fracturees",
       "min": 51,
       "max": 55,
       "name": "Côtes fracturées",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
       ],
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "mineur"
-        }
+        "fracture-torse-mineure"
       ],
-      "note": "Traumatisme Fracture (Mineure)."
+      "desc": "Traumatisme Fracture (Mineure)."
     },
     {
+      "id": "blessure-beante-2",
       "min": 56,
       "max": 60,
       "name": "Blessure béante",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 3
         }
       ],
-      "note": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +1 Hémorragique."
+      "desc": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +1 Hémorragique."
     },
     {
+      "id": "entaille-douloureuse",
       "min": 61,
       "max": 65,
       "name": "Entaille douloureuse",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -838,46 +1244,66 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "inconscient",
             "value": 1
           }
         ]
       },
-      "note": "Hurle de douleur si DR < 4."
+      "desc": "Hurle de douleur si DR < 4."
     },
     {
+      "id": "degats-arteriels",
       "min": 66,
       "max": 70,
       "name": "Dégâts artériels",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 4
         }
       ],
-      "note": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +2 Hémorragique."
+      "desc": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +2 Hémorragique."
     },
     {
+      "id": "dos-froisse",
       "min": 71,
       "max": 75,
       "name": "Dos froissé",
-      "wounds": 4,
-      "traumas": [
+      "ops": [
         {
-          "kind": "dechirure",
-          "severity": "majeur"
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ],
-      "note": "Traumatisme Déchirure musculaire (Majeur)."
+      "traumas": [
+        "dechirure-autre-majeure"
+      ],
+      "desc": "Traumatisme Déchirure musculaire (Majeur)."
     },
     {
+      "id": "hanche-fracturee",
       "min": 76,
       "max": 80,
       "name": "Hanche fracturée",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -886,156 +1312,222 @@
         "difficulty": "intermediaire",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "mineur"
-        }
+        "fracture-torse-mineure"
       ],
-      "note": "Traumatisme Fracture (Mineure)."
+      "desc": "Traumatisme Fracture (Mineure)."
     },
     {
+      "id": "blessure-majeure-au-torse",
       "min": 81,
       "max": 85,
       "name": "Blessure majeure au torse",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 4
         }
       ],
-      "note": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +2 Hémorragique."
+      "desc": "Jusqu’à Chirurgie, tout Dégât à cette Localisation → +2 Hémorragique."
     },
     {
+      "id": "blessure-au-ventre",
       "min": 86,
       "max": 90,
       "name": "Blessure au ventre",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
       ],
-      "note": "Contractez une Blessure Purulente (Maladie et Infection)."
+      "desc": "Contractez une Blessure Purulente (Maladie et Infection)."
     },
     {
+      "id": "cage-thoracique-perforee",
       "min": 91,
       "max": 93,
       "name": "Cage thoracique perforée",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
       ],
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "majeur"
-        }
+        "fracture-torse-majeure"
       ],
-      "note": "Sonné retiré uniquement par Aide Médicale ; Traumatisme Fracture (Majeure)."
+      "desc": "Sonné retiré uniquement par Aide Médicale ; Traumatisme Fracture (Majeure)."
     },
     {
+      "id": "clavicule-cassee",
       "min": 94,
       "max": 96,
       "name": "Clavicule cassée",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "inconscient",
           "value": 1
         }
       ],
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "majeur"
-        }
+        "fracture-torse-majeure"
       ],
-      "note": "Inconscient jusqu’à Aide Médicale ; Traumatisme Fracture (Majeure)."
+      "desc": "Inconscient jusqu’à Aide Médicale ; Traumatisme Fracture (Majeure)."
     },
     {
+      "id": "hemorragie-interne",
       "min": 97,
       "max": 99,
       "name": "Hémorragie interne",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Hémorragique retiré uniquement par Chirurgie ; Infection Sanguine (Maladie)."
+      "desc": "Hémorragique retiré uniquement par Chirurgie ; Infection Sanguine (Maladie)."
     },
     {
+      "id": "eventre",
       "min": 100,
       "max": 100,
       "name": "Éventré",
-      "wounds": 0,
       "lethal": true,
-      "note": "Vous êtes coupé en deux. Mort."
+      "desc": "Vous êtes coupé en deux. Mort."
     }
   ],
   "jambe": [
     {
+      "id": "orteil-contusionne",
       "min": 1,
       "max": 10,
       "name": "Orteil contusionné",
-      "wounds": 1,
-      "note": "Résistance Accessible ou -10 aux Tests d’Agilité jusqu’à la fin du prochain tour."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Résistance Accessible ou -10 aux Tests d’Agilité jusqu’à la fin du prochain tour."
     },
     {
+      "id": "cheville-tordue",
       "min": 11,
       "max": 20,
       "name": "Cheville tordue",
-      "wounds": 1,
-      "note": "Tests d’Agilité -10 pendant 1d10 Rounds."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Tests d’Agilité -10 pendant 1d10 Rounds."
     },
     {
+      "id": "coupure-mineure-3",
       "min": 21,
       "max": 25,
       "name": "Coupure mineure",
-      "wounds": 1,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Coupure mineure."
+      "desc": "Coupure mineure."
     },
     {
+      "id": "perte-d-equilibre",
       "min": 26,
       "max": 30,
       "name": "Perte d'équilibre",
-      "wounds": 1,
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
       "resist": {
         "difficulty": "intermediaire",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Perte d'équilibre."
+      "desc": "Perte d'équilibre."
     },
     {
+      "id": "coup-a-la-cuisse",
       "min": 31,
       "max": 35,
       "name": "Coup à la cuisse",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
@@ -1044,53 +1536,87 @@
         "difficulty": "accessible",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Coup violent au haut de la cuisse."
+      "desc": "Coup violent au haut de la cuisse."
     },
     {
+      "id": "cheville-foulee",
       "min": 36,
       "max": 40,
       "name": "Cheville foulée",
-      "wounds": 2,
-      "traumas": [
+      "ops": [
         {
-          "kind": "dechirure",
-          "severity": "mineur"
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ],
-      "note": "Traumatisme Déchirure musculaire (Mineur)."
+      "traumas": [
+        "dechirure-jambe-mineure"
+      ],
+      "desc": "Traumatisme Déchirure musculaire (Mineur)."
     },
     {
+      "id": "genou-tordu",
       "min": 41,
       "max": 45,
       "name": "Genou tordu",
-      "wounds": 2,
-      "note": "Tests d’Agilité -20 pendant 1d10 Rounds."
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "desc": "Tests d’Agilité -20 pendant 1d10 Rounds."
     },
     {
+      "id": "coupure-a-l-orteil",
       "min": 46,
       "max": 50,
       "name": "Coupure à l'orteil",
-      "wounds": 2,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 2,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 1
         }
       ],
-      "note": "Après la rencontre, Résistance ou perte d’un orteil — Amputation (Accessible)."
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "orteil-ampute"
+        ]
+      },
+      "desc": "Après la rencontre, Résistance ou perte d’un orteil — Amputation (Accessible)."
     },
     {
+      "id": "mauvaise-coupure",
       "min": 51,
       "max": 55,
       "name": "Mauvaise coupure",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
@@ -1099,37 +1625,51 @@
         "difficulty": "intermediaire",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Profonde blessure au tibia."
+      "desc": "Profonde blessure au tibia."
     },
     {
+      "id": "genou-mechamment-tordu",
       "min": 56,
       "max": 60,
       "name": "Genou méchamment tordu",
-      "wounds": 3,
-      "traumas": [
+      "ops": [
         {
-          "kind": "dechirure",
-          "severity": "majeur"
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ],
-      "note": "Traumatisme Déchirure musculaire (Majeur)."
+      "traumas": [
+        "dechirure-jambe-majeure"
+      ],
+      "desc": "Traumatisme Déchirure musculaire (Majeur)."
     },
     {
+      "id": "jambe-charcutee",
       "min": 61,
       "max": 65,
       "name": "Jambe charcutée",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         }
@@ -1138,26 +1678,31 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "sonne",
             "value": 1
           }
         ]
       },
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "mineur"
-        }
+        "fracture-jambe-mineure"
       ],
-      "note": "Traumatisme Fracture (Mineure)."
+      "desc": "Traumatisme Fracture (Mineure)."
     },
     {
+      "id": "cuisse-laceree",
       "min": 66,
       "max": 70,
       "name": "Cuisse lacérée",
-      "wounds": 3,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 3,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 3
         }
@@ -1166,24 +1711,33 @@
         "difficulty": "intermediaire",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Jusqu’à Chirurgie, tout Dégât à cette jambe → +1 Hémorragique."
+      "desc": "Jusqu’à Chirurgie, tout Dégât à cette jambe → +1 Hémorragique."
     },
     {
+      "id": "tendon-rompu",
       "min": 71,
       "max": 75,
       "name": "Tendon rompu",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         }
@@ -1192,76 +1746,88 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "inconscient",
             "value": 1
           }
         ]
       },
       "traumas": [
-        {
-          "kind": "dechirure",
-          "severity": "majeur"
-        }
+        "dechirure-jambe-majeure"
       ],
-      "note": "Jambe inutilisable ; Traumatisme Déchirure musculaire (Majeur)."
+      "desc": "Jambe inutilisable ; Traumatisme Déchirure musculaire (Majeur)."
     },
     {
+      "id": "entaille-au-tibia",
       "min": 76,
       "max": 80,
       "name": "Entaille au tibia",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         },
         {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         }
       ],
       "traumas": [
-        {
-          "kind": "dechirure",
-          "severity": "majeur"
-        },
-        {
-          "kind": "fracture",
-          "severity": "majeur"
-        }
+        "dechirure-jambe-majeure",
+        "fracture-jambe-majeure"
       ],
-      "note": "Traumatismes Déchirure musculaire (Majeur) et Fracture (Majeure)."
+      "desc": "Traumatismes Déchirure musculaire (Majeur) et Fracture (Majeure)."
     },
     {
+      "id": "genou-casse",
       "min": 81,
       "max": 85,
       "name": "Genou cassé",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "sonne",
           "value": 1
         },
         {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         }
       ],
       "traumas": [
-        {
-          "kind": "fracture",
-          "severity": "majeur"
-        }
+        "fracture-jambe-majeure"
       ],
-      "note": "Traumatisme Fracture (Majeure)."
+      "desc": "Traumatisme Fracture (Majeure)."
     },
     {
+      "id": "genou-demis",
       "min": 86,
       "max": 90,
       "name": "Genou démis",
-      "wounds": 4,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 4,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         }
@@ -1270,20 +1836,28 @@
         "difficulty": "difficile",
         "onFail": [
           {
+            "op": "condition",
             "name": "sonne",
             "value": 1
           }
         ]
       },
-      "note": "Sonné retiré par Aide Médicale ; Guérison étendue DR 6 ; Mouvement moitié + -10 aux Tests de la jambe 1d10 jours."
+      "desc": "Sonné retiré par Aide Médicale ; Guérison étendue DR 6 ; Mouvement moitié + -10 aux Tests de la jambe 1d10 jours."
     },
     {
+      "id": "pied-ecrase",
       "min": 91,
       "max": 93,
       "name": "Pied écrasé",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         }
@@ -1292,62 +1866,99 @@
         "difficulty": "accessible",
         "onFail": [
           {
+            "op": "condition",
             "name": "a-terre",
             "value": 1
           }
         ]
       },
-      "note": "Perte d'un orteil (+1 par DR sous 0) — Amputation (Accessible) ; perte du pied si pas de Chirurgie sous 1d10 jours."
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "orteil-ampute"
+        ]
+      },
+      "desc": "Perte d'un orteil (+1 par DR sous 0) — Amputation (Accessible) ; perte du pied si pas de Chirurgie sous 1d10 jours."
     },
     {
+      "id": "pied-sectionne",
       "min": 94,
       "max": 96,
       "name": "Pied sectionné",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 3
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         }
       ],
-      "note": "Pied sectionné — Amputation (Difficile)."
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "membre-inferieur-ampute"
+        ]
+      },
+      "desc": "Pied sectionné — Amputation (Difficile)."
     },
     {
+      "id": "tendon-coupe",
       "min": 97,
       "max": 99,
       "name": "Tendon coupé",
-      "wounds": 5,
-      "conditions": [
+      "ops": [
         {
+          "op": "wounds",
+          "amount": 5,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
           "name": "hemorragique",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "sonne",
           "value": 2
         },
         {
+          "op": "condition",
           "name": "a-terre",
           "value": 1
         }
       ],
-      "note": "Jambe inutilisable — Amputation (Très Difficile)."
+      "amputation": {
+        "difficulty": "tresDifficile",
+        "sequels": [
+          "membre-inferieur-ampute"
+        ]
+      },
+      "desc": "Jambe inutilisable — Amputation (Très Difficile)."
     },
     {
+      "id": "bassin-fracasse",
       "min": 100,
       "max": 100,
       "name": "Bassin fracassé",
-      "wounds": 0,
       "lethal": true,
-      "note": "Le coup fracasse votre bassin. Mort instantanée (choc traumatique)."
+      "desc": "Le coup fracasse votre bassin. Mort instantanée (choc traumatique)."
     }
   ]
 }

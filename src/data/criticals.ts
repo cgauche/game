@@ -1,5 +1,5 @@
 import type { HitLocation, Difficulty } from '../engine/types';
-import type { TraumaKind, TraumaSeverity } from '../engine/trauma';
+import type { GameOp } from '../engine/ops';
 import criticalsJson from './criticals.json';
 
 /**
@@ -11,23 +11,31 @@ import criticalsJson from './criticals.json';
  * jambe gauche = jambe droite) projetées sur les 6 Localisations. Ajouter/régler un Critique = éditer
  * le JSON, jamais ce fichier.
  *
- * Champs COMBAT : `wounds` (PB perdus, ignore BE+PA, l.62), `conditions` (États immédiats),
- * `resist` (« réussir un Test de Résistance ou gagner l'État X », auto-résolu par le moteur),
- * `lethal` (résultat « Mort »). `note` = texte canon des effets LONG TERME (amputation/fracture/
- * déchirure/pénalités permanentes), journalisé mais NON simulé. Les valeurs « 1d10 États » du canon
- * sont encodées en valeur fixe représentative (indiqué en note).
+ * EFFET IMMÉDIAT du coup = `ops: GameOp[]` (PB en ignorant BE+PA via `{op:'wounds', ignoreTB, ignoreAP}`
+ * (l.62), États via `{op:'condition'}`), appliqué par `applyOps` — MÊME langue que sorts/traits/maladies.
+ * `resist` = Test de Résistance auto-résolu (RNG seedé) dont l'ÉCHEC ajoute ses `onFail` ops. `lethal` =
+ * résultat « Mort » (instantané + sauvetage par Destin — PAS un simple `reduceToZero`). `traumas` = SPEC de
+ * Trauma à engendrer (entité posée par `rollCritical`, comme la Corruption engendre une Mutation) — sa
+ * mécanique permanente est déjà GameOp via `passiveMods`. `desc` = texte canon (LONG TERME), verbatim.
  */
 export interface CritEntry {
+  /** id STABLE (slug) — toute référence passe par l'id, jamais le `name` (libellé). */
+  id: string;
   min: number;
   max: number;
   name: string;
-  wounds: number;
+  /** Effet IMMÉDIAT du coup (PB + États), appliqué par `applyOps`. Absent = aucun effet immédiat (létal). */
+  ops?: GameOp[];
+  /** Test de Résistance (LDB 18) : ÉCHEC → ses `onFail` ops s'ajoutent à l'effet. Auto-résolu (seedé). */
+  resist?: { difficulty: Difficulty; onFail: GameOp[] };
   lethal?: boolean;
-  conditions?: { name: string; value: number }[];
-  resist?: { difficulty: Difficulty; onFail: { name: string; value: number }[] };
-  note: string;
-  /** Traumatismes posés (LDB 18) — la localisation vient de la table. Transcrit des `note` verbatim. */
-  traumas?: { kind: TraumaKind; severity: TraumaSeverity }[];
+  /** Amputation (LDB 18 l.328-333) déclarée STRUCTURELLEMENT (plus de regex sur `desc`) : `difficulty` =
+   *  Test de Résistance, `sequels` = ids de fiches de séquelle PERMANENTE (`traumas.json`). */
+  amputation?: { difficulty: Difficulty; sequels: string[] };
+  /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
+  traumas?: string[];
+  /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
+  desc: string;
 }
 export type CritTable = CritEntry[];
 

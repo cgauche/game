@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { applyOps } from './ops';
 import { cureDiseases, blessDiseaseDuration } from './rest';
-import { cureCriticalWounds, traumaFromKind } from './trauma';
+import { cureCriticalWounds, traumaById, dechirureFractureFicheId } from './trauma';
+import type { HitLocation } from './types';
+const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
 import { contractDisease } from './disease';
 import { stacks } from './conditions';
 import type { Combatant } from './types';
@@ -63,9 +65,9 @@ describe('preventInfection — Cautériser (LDB 47) & cureCriticalWound — Larm
     const c = dummy({
       criticalWounds: 3,
       traumas: [
-        traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 25 }),
-        traumaFromKind('fracture', 'majeur', 'brasG', { be: 25, d10: 5 }),
-        { label: 'Main/bras amputé (brasD)', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: 'amputation' },
+        tk('dechirure', 'mineur', 'jambeD', { be: 25 }),
+        tk('fracture', 'majeur', 'brasG', { be: 25, d10: 5 }),
+        { label: 'Main/bras amputé (brasD)', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] },
       ],
     });
     applyOps(c, [{ op: 'cureCriticalWound', count: 1, countPerSL: { every: 2, amount: 1 } }], { sl: 4 }); // 1 + 2 = 3 tentées
@@ -75,7 +77,7 @@ describe('preventInfection — Cautériser (LDB 47) & cureCriticalWound — Larm
   });
 
   it('cureCriticalWounds direct : 0 trauma guérissable → journal explicite via l’op', () => {
-    const c = dummy({ traumas: [{ label: 'Main/bras amputé (brasD)', location: 'brasD', note: 'amputation' }] });
+    const c = dummy({ traumas: [{ label: 'Main/bras amputé (brasD)', location: 'brasD' }] });
     const log = applyOps(c, [{ op: 'cureCriticalWound' }], {});
     expect(log.join(' ')).toMatch(/amputations sont hors d'atteinte/);
     expect(c.traumas).toHaveLength(1);

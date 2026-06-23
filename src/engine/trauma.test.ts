@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties, escalateSensoryLoss, consolidateAmputations } from './trauma';
+import { traumaById, dechirureFractureFicheId, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties, escalateSensoryLoss, consolidateAmputations } from './trauma';
 import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
 import { defenseValue } from './combat';
-import type { Combatant, ItemInstance, Trauma } from './types';
+import type { Combatant, ItemInstance, Trauma, HitLocation } from './types';
+import type { GameOp } from './ops';
+
+/** Trauma de déchirure/fracture posé à `location` (raccourci data-driven : id de fiche → instance). */
+function tk(kind: 'dechirure' | 'fracture', severity: 'mineur' | 'majeur', location: HitLocation, opts?: { be?: number; d10?: number }): Trauma {
+  return traumaById(dechirureFractureFicheId(kind, severity, location), opts, location);
+}
 
 function c(traumas: Combatant['traumas']): Combatant {
   return { traumas } as Combatant;
@@ -22,30 +28,30 @@ function fullCombatant(over: Partial<Combatant> = {}): Combatant {
 
 describe('traumaFromKind (LDB 18-Traumatisme)', () => {
   it('Déchirure musculaire sur Jambe → Mouvement ÷2', () => {
-    const t = traumaFromKind('dechirure', 'mineur', 'jambeD');
+    const t = tk('dechirure', 'mineur', 'jambeD');
     expect(t.ops?.some((o) => o.op === 'moveScale')).toBe(true);
     expect(t.label).toBe('Déchirure musculaire (Mineure)');
     expect(t.location).toBe('jambeD');
   });
   it('Déchirure musculaire sur Bras → aucun effet modélisé (enregistré)', () => {
-    const t = traumaFromKind('dechirure', 'mineur', 'brasG');
+    const t = tk('dechirure', 'mineur', 'brasG');
     expect(t.ops?.some((o) => o.op === 'moveScale')).toBeFalsy();
     expect(t.ops?.some((o) => o.op === 'charMod')).toBeFalsy();
   });
   it('Fracture Torse → F/Ag −30 + Mouvement ÷2', () => {
-    const t = traumaFromKind('fracture', 'majeur', 'corps');
+    const t = tk('fracture', 'majeur', 'corps');
     expect(t.ops).toContainEqual({ op: 'charMod', char: 'F', mod: -30 });
     expect(t.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -30 });
     expect(t.ops?.some((o) => o.op === 'moveScale')).toBe(true);
     expect(t.label).toBe('Fracture (Majeure)');
   });
   it('Fracture Jambe → Mouvement ÷2, pas de charPenalty', () => {
-    const t = traumaFromKind('fracture', 'mineur', 'jambeG');
+    const t = tk('fracture', 'mineur', 'jambeG');
     expect(t.ops?.some((o) => o.op === 'moveScale')).toBe(true);
     expect(t.ops?.some((o) => o.op === 'charMod')).toBeFalsy();
   });
   it('Fracture Bras → aucun effet modélisé (latéralité non modélisée)', () => {
-    const t = traumaFromKind('fracture', 'mineur', 'brasD');
+    const t = tk('fracture', 'mineur', 'brasD');
     expect(t.ops?.some((o) => o.op === 'moveScale')).toBeFalsy();
     expect(t.ops?.some((o) => o.op === 'charMod')).toBeFalsy();
   });
@@ -56,7 +62,6 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
     label: 'Membre inférieur amputé (jambeD)', location: 'jambeD',
     ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }],
     prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }, { trappingId: 'fausse-jambe', cancels: 'movement' }],
-    note: '',
   };
   // Une prothèse doit être PORTÉE (équipée) pour lever le malus (LDB 73), pas seulement possédée. Matchée
   // par `trappingId` STABLE (≠ libellé) — `worn`/`prosthesisCancels` lisent l'id.
@@ -93,23 +98,23 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   });
 
   it('Nez doré annule le −20 Sociabilité de l’amputation du nez (charPenalty, LDB 73)', () => {
-    const nez: Trauma = { label: 'Nez amputé', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ trappingId: 'nez-dore', cancels: 'all' }], note: '' };
+    const nez: Trauma = { label: 'Nez amputé', traumaId: 'nez-ampute', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ trappingId: 'nez-dore', cancels: 'all' }] };
     expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [] }), 'Soc')).toEqual([-20]);
     expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [item('nez-dore')] }), 'Soc')).toEqual([]);
   });
 });
 
 describe('consolidateAmputations — cumul doigts (l.341/344) & dents (l.338)', () => {
-  const finger = (loc: 'brasG' | 'brasD', count = 1): Trauma => ({ label: `Doigts amputés (${loc})`, location: loc, count, ops: loc === 'brasD' ? [{ op: 'charMod', char: 'CC', mod: -5 * count }, { op: 'charMod', char: 'CT', mod: -5 * count }] : undefined, note: '' });
-  const teeth = (count: number): Trauma => ({ label: 'Dents perdues', traumaId: 'dents-perdues', location: 'tete', count, note: '' });
+  const finger = (loc: 'brasG' | 'brasD', count = 1): Trauma => ({ label: `Doigts amputés (${loc})`, traumaId: 'doigt-ampute', location: loc, count, ops: loc === 'brasD' ? [{ op: 'charMod', char: 'CC', mod: -5 * count }, { op: 'charMod', char: 'CT', mod: -5 * count }] : undefined });
+  const teeth = (count: number): Trauma => ({ label: 'Dents perdues', traumaId: 'dents-perdues', location: 'tete', count });
 
   it('cas réel : 1 doigt (main droite) + 3 dents → −5 CC/CT et −1 Soc (3 dents = 1 paire)', () => {
     const c = fullCombatant({ traumas: [finger('brasD', 1), teeth(3)] });
     consolidateAmputations(c);
-    const f = (c.traumas ?? []).find((t) => t.label?.startsWith('Doigts amputés'))!;
+    const f = (c.traumas ?? []).find((t) => t.traumaId === 'doigt-ampute')!;
     expect(f.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -5 });
     expect(f.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -5 });
-    const d = (c.traumas ?? []).find((t) => t.label === 'Dents perdues')!;
+    const d = (c.traumas ?? []).find((t) => t.traumaId === 'dents-perdues')!;
     expect(d.count).toBe(3);
     expect(d.ops).toContainEqual({ op: 'charMod', char: 'Soc', mod: -1 }); // floor(3/2) = 1 paire
   });
@@ -117,7 +122,7 @@ describe('consolidateAmputations — cumul doigts (l.341/344) & dents (l.338)', 
   it('deux pertes de doigts (même main) fusionnent : −10 CC/CT (count 2)', () => {
     const c = fullCombatant({ traumas: [finger('brasD', 1), finger('brasD', 1)] });
     consolidateAmputations(c);
-    const fingers = (c.traumas ?? []).filter((t) => t.label?.startsWith('Doigts amputés'));
+    const fingers = (c.traumas ?? []).filter((t) => t.traumaId === 'doigt-ampute');
     expect(fingers).toHaveLength(1); // fusionné en un seul
     expect(fingers[0].count).toBe(2);
     expect(fingers[0].ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -10 });
@@ -127,8 +132,8 @@ describe('consolidateAmputations — cumul doigts (l.341/344) & dents (l.338)', 
   it('4 doigts perdus → règle de la main tranchée (pas d’arme à 2 mains + −20)', () => {
     const c = fullCombatant({ traumas: [finger('brasD', 3), finger('brasD', 1)] });
     consolidateAmputations(c);
-    expect((c.traumas ?? []).some((t) => t.label?.startsWith('Doigts amputés'))).toBe(false); // plus de « doigts »
-    const hand = (c.traumas ?? []).find((t) => t.label?.startsWith('Main/bras amputé'))!;
+    expect((c.traumas ?? []).some((t) => t.traumaId === 'doigt-ampute')).toBe(false); // plus de « doigts »
+    const hand = (c.traumas ?? []).find((t) => t.traumaId === 'main-bras-ampute')!;
     expect(hand.ops?.some((o) => o.op === 'maxWeaponHands')).toBe(true);
     expect(hand.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -20 });
     expect(hand.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -20 });
@@ -144,8 +149,8 @@ describe('consolidateAmputations — cumul doigts (l.341/344) & dents (l.338)', 
 });
 
 describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', () => {
-  const eye = (): Trauma => ({ label: 'Œil perdu', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'vue' }], note: '' });
-  const ear = (): Trauma => ({ label: 'Oreille perdue', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }], note: '' });
+  const eye = (): Trauma => ({ label: 'Œil perdu', traumaId: 'oeil-perdu', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'vue' }] });
+  const ear = (): Trauma => ({ label: 'Oreille perdue', traumaId: 'oreille-perdue', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }] });
   it('un seul œil : pas de cécité', () => {
     const c = fullCombatant({ traumas: [eye()] });
     expect(escalateSensoryLoss(c)).toHaveLength(0);
@@ -170,35 +175,35 @@ describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', 
 
 describe('traumaMovementHalved', () => {
   it('vrai si un trauma réduit le Mouvement', () => {
-    expect(traumaMovementHalved(c([traumaFromKind('fracture', 'mineur', 'jambeG')]))).toBe(true);
-    expect(traumaMovementHalved(c([traumaFromKind('fracture', 'mineur', 'brasD')]))).toBe(false);
+    expect(traumaMovementHalved(c([tk('fracture', 'mineur', 'jambeG')]))).toBe(true);
+    expect(traumaMovementHalved(c([tk('fracture', 'mineur', 'brasD')]))).toBe(false);
     expect(traumaMovementHalved(c(undefined))).toBe(false);
   });
 });
 
 describe('traumas — câblage moteur', () => {
   it('Fracture Torse réduit Force et Agilité de 30 (effectiveChar)', () => {
-    const cc = fullCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'corps')] });
+    const cc = fullCombatant({ traumas: [tk('fracture', 'mineur', 'corps')] });
     expect(effectiveChar(cc, 'F')).toBe(10);  // 40 − 30
     expect(effectiveChar(cc, 'Ag')).toBe(10);
     expect(effectiveChar(cc, 'CC')).toBe(40); // non touché
   });
   it('Trauma de jambe réduit le Mouvement effectif de moitié', () => {
-    const cc = fullCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'jambeG')] });
+    const cc = fullCombatant({ traumas: [tk('fracture', 'mineur', 'jambeG')] });
     expect(effectiveMovement(cc)).toBe(2); // floor(4/2)
   });
   it('Sans trauma de mouvement, Mouvement inchangé', () => {
-    const cc = fullCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'brasD')] });
+    const cc = fullCombatant({ traumas: [tk('fracture', 'mineur', 'brasD')] });
     expect(effectiveMovement(cc)).toBe(4);
   });
   it('Fracture de jambe réduit l’Esquive de 20 (règle du Pied, LDB 18 l.369)', () => {
     const sain = fullCombatant();
     expect(defenseValue(sain, 'esquive')).toBe(40); // Ag 40, pas de pénalité
-    const blesse = fullCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'jambeG')] });
+    const blesse = fullCombatant({ traumas: [tk('fracture', 'mineur', 'jambeG')] });
     expect(defenseValue(blesse, 'esquive')).toBe(20); // 40 − 20 (mobilité)
   });
   it('Déchirure de jambe Mineure réduit l’Esquive de 10', () => {
-    const c = fullCombatant({ traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD')] });
+    const c = fullCombatant({ traumas: [tk('dechirure', 'mineur', 'jambeD')] });
     expect(defenseValue(c, 'esquive')).toBe(30); // 40 − 10
   });
 });

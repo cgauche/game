@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
 import { availableHealModes } from '../engine/healing';
-import { traumaFromKind } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
+import type { HitLocation } from '../engine/types';
+const tk = (k: 'dechirure' | 'fracture', s: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, s, loc), opts, loc);
 import { seedBattleRng } from './battleRng';
 
 function hero(p: Partial<Combatant>): Combatant {
@@ -125,7 +127,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
 
   it('mode trauma : la Guérison accélère la convalescence d’une déchirure (LDB 18 l.317)', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }] });
-    const patient = hero({ id: 'p', name: 'Patient', skills: [], traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
     useGame.getState().medicAct('trauma');
@@ -140,7 +142,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
 
   it('mode trauma : un ÉCHEC consomme aussi le jet — la même déchirure ne se re-traite pas (LDB 18 l.317)', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }] });
-    const patient = hero({ id: 'p', name: 'Patient', skills: [], traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
     useGame.getState().medicAct('trauma');
@@ -185,7 +187,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
 
   it('Chirurgie ARMÉE : Test ÉTENDU (LDB 10 l.154 / 12 l.200) — passes jusqu’à la cible, retire le trauma (1d10 + Hémorragie/passe)', () => {
     const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
-    const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
     useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
     useGame.getState().medicAct('surgery'); // ARME l'opération (pas de jet) — soigneur figé
@@ -208,7 +210,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
     const patient = hero({
       id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 },
-      traumas: [traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 }), traumaFromKind('fracture', 'majeur', 'brasD', { be: 4, d10: 5 })],
+      traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 }), tk('fracture', 'majeur', 'brasD', { be: 4, d10: 5 })],
     });
     useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });

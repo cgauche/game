@@ -109,9 +109,9 @@ import { rollContraction, contractDisease, contractionDue, applyContraction, has
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
-import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
+import { rollCritical, critLocationRoll, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
-import { traumaFromKind, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
@@ -970,7 +970,7 @@ export function applyCriticalToTarget(
       const text = t.label.includes(locLbl) ? t.label : `${t.label} (${locLbl})`;
       log.push(`  ↳ ${text}.`);
       revealLines.push(`  ↳ ${text}.`);
-      details.push({ text, note: t.note });
+      details.push({ text, note: t.desc });
     }
     // Cumuls par comptage (LDB 18) : doigts (−5/doigt, 4+ → main) et dents (−1 Soc/paire) fusionnés ;
     // 2e œil/oreille → Cécité / Surdité agrégée (l.360/363).
@@ -982,12 +982,11 @@ export function applyCriticalToTarget(
     }
   }
   if (!crit.lethal) {
-    target.wounds.current = Math.max(0, target.wounds.current - crit.woundsLoss); // ignore BE+PA, plancher 0
-    for (const c of crit.conditions) addCondition(target, c.name, c.value);
-    if (crit.note) {
-      log.push(`  ↳ ${crit.note}`); // effet long terme journalisé, non simulé
-      revealLines.push(`  ↳ ${crit.note}`);
-      details.push({ text: crit.note });
+    applyOps(target, crit.ops, { rng: battleRng() }); // effet immédiat (PB ignorant BE+PA + États) — langue GameOp
+    if (crit.desc) {
+      log.push(`  ↳ ${crit.desc}`); // effet long terme journalisé, non simulé
+      revealLines.push(`  ↳ ${crit.desc}`);
+      details.push({ text: crit.desc });
     }
   }
   // « Un jet = une modale » : modale de Coup Critique COMPLÈTE (qui inflige + arme + dé + localisation +
@@ -997,11 +996,12 @@ export function applyCriticalToTarget(
   // §4bis) ; un critique purement ennemi↔ennemi reste au journal/bandeau (les lignes sont déjà dans `log`).
   const heroConcerned = target.kind === 'hero' || ctx?.attackerKind === 'hero';
   if (!suppressReveal && heroConcerned) {
+    const sum = critImmediateSummary(crit.ops);
     pushReveal(set, {
       kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id,
       severity: 'grave',
       actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
-      crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: crit.woundsLoss, conditions: crit.conditions.length ? crit.conditions : undefined },
+      crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
     });
   }
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
@@ -1017,16 +1017,17 @@ export function previewCritEntry(target: Combatant, crit: CriticalResolved, ctx?
     const locLbl = HIT_LOCATION_LABELS[t.location];
     const text = t.label.includes(locLbl) ? t.label : `${t.label} (${locLbl})`;
     lines.push(`  ↳ ${text}.`);
-    details.push({ text, note: t.note });
+    details.push({ text, note: t.desc });
   }
-  if (!crit.lethal && crit.note) {
-    lines.push(`  ↳ ${crit.note}`);
-    details.push({ text: crit.note });
+  if (!crit.lethal && crit.desc) {
+    lines.push(`  ↳ ${crit.desc}`);
+    details.push({ text: crit.desc });
   }
+  const sum = critImmediateSummary(crit.ops);
   return {
     kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines, subjectId: target.id,
     actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
-    crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: crit.woundsLoss, conditions: crit.conditions.length ? crit.conditions : undefined },
+    crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
   };
 }
 
@@ -1559,7 +1560,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
     case 'trauma': {
       c.criticalWounds = (c.criticalWounds ?? 0) + 1; // « compte comme une Blessure critique » (l.41)
       const leg: HitLocation = battleRng().int(0, 1) === 0 ? 'jambeG' : 'jambeD'; // « se tord la cheville »
-      c.traumas = [...(c.traumas ?? []), traumaFromKind('dechirure', 'mineur', leg, { be: bonus(effectiveChar(c, 'E')) })];
+      c.traumas = [...(c.traumas ?? []), traumaById(dechirureFractureFicheId('dechirure', 'mineur', leg), { be: bonus(effectiveChar(c, 'E')) }, leg)];
       log.push(tr('cf.fumbleTear', { leg: leg === 'jambeG' ? tr('cf.legLeft') : tr('cf.legRight') }));
       break;
     }

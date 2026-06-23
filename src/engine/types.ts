@@ -438,7 +438,9 @@ export interface Trauma {
    *  dodgePenalty, Langue/Chevaucher/Perception…), `moveScale` (ancien movementHalved), `maxWeaponHands`
    *  (ancien noTwoHanded), `senseLoss` (ancien sense). Éditables dans le Codex (GameOpEditor). */
   ops?: import('./ops').GameOp[];
-  note: string;
+  /** Texte canon LDB 18 VERBATIM (DISPLAY-ONLY) — jamais parsé pour de la mécanique (≠ `ops`). Provient
+   *  de la fiche `traumas.json` ou d'une séquelle synthétique (fracture mal ressoudée). */
+  desc?: string;
   /** Jours de convalescence restants (LDB 18 : déchirure 30−BE, fracture 30+1d10…). Décompté au repos ;
    *  à 0 le trauma (et ses pénalités) disparaît. Absent = trauma legacy/permanent (pas de décompte). */
   recoveryDays?: number;

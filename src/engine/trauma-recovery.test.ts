@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma } from './trauma';
+import { traumaById, dechirureFractureFicheId, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma } from './trauma';
+import type { HitLocation } from './types';
+const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
 import { testValue } from './skills';
 import type { Combatant } from './types';
 import type { RNG } from './dice';
@@ -23,15 +25,15 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('traumaFromKind pose recoveryDays/recoveryTotal/kind/severity quand BE fourni', () => {
-    const t = traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 4 });
+    const t = tk('dechirure', 'mineur', 'jambeD', { be: 4 });
     expect(t.recoveryDays).toBe(26);
     expect(t.recoveryTotal).toBe(26);
     expect(t.kind).toBe('dechirure');
-    expect(traumaFromKind('dechirure', 'mineur', 'jambeD').recoveryDays).toBeUndefined();
+    expect(tk('dechirure', 'mineur', 'jambeD').recoveryDays).toBeUndefined();
   });
 
   it('tickTraumaRecovery : guérit une déchirure à 0 (retire trauma + pénalités, décrémente criticalWounds)', () => {
-    const c = C({ traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 28 })], criticalWounds: 1 }); // 2 jours
+    const c = C({ traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 28 })], criticalWounds: 1 }); // 2 jours
     tickTraumaRecovery(c, 1);
     expect(c.traumas![0].recoveryDays).toBe(1);
     const log = tickTraumaRecovery(c, 1);
@@ -41,7 +43,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('déchirure MAJEURE de jambe : rémission partielle (−20 → −10) à la mi-durée (l.326)', () => {
-    const t = traumaFromKind('dechirure', 'majeur', 'jambeD', { be: 20 }); // total 2×(30−20)=20, mi = 10
+    const t = tk('dechirure', 'majeur', 'jambeD', { be: 20 }); // total 2×(30−20)=20, mi = 10
     const c = C({ traumas: [t] });
     const esquiveMod = (tr: typeof t) => tr.ops?.flatMap((o) => (o.op === 'skillMod' && o.skill === 'esquive' ? [o.mod] : []))[0];
     expect(esquiveMod(c.traumas![0])).toBe(-20);
@@ -54,7 +56,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('tickTraumaRecovery(defer) : DIFFÈRE le Test de fin de fracture ; applyFractureEnd applique la séquelle', () => {
-    const t = traumaFromKind('fracture', 'mineur', 'jambeD', { be: 28 });
+    const t = tk('fracture', 'mineur', 'jambeD', { be: 28 });
     t.recoveryDays = 1; // résolution au prochain tick
     const c = C({ traumas: [t], criticalWounds: 1 });
     const collected: { kind: string; meta?: Record<string, unknown> }[] = [];
@@ -69,7 +71,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('fracture : Test de Résistance de fin RATÉ → séquelle permanente (−5 Ag) (l.300)', () => {
-    const t = traumaFromKind('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 }); // 35 jours
+    const t = tk('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 }); // 35 jours
     const c = C({ traumas: [t], criticalWounds: 1 });
     const fail: RNG = { int: () => 95 }; // resistVal 0 → cible 20 ; 95 > 20 → échec
     tickTraumaRecovery(c, 40, fail, 0);
@@ -80,7 +82,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('fracture : Test de fin RÉUSSI → guérison propre (aucune séquelle)', () => {
-    const t = traumaFromKind('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 });
+    const t = tk('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 });
     const c = C({ traumas: [t] });
     const ok: RNG = { int: () => 10 }; // resistVal 60 → cible 80 ; 10 ≤ 80 → réussite
     tickTraumaRecovery(c, 40, ok, 60);
@@ -88,7 +90,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('fracture « réduite » par la Guérison (treatTrauma dans la semaine) → pas de Test de fin (l.302)', () => {
-    const t = traumaFromKind('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 }); // 35 j ; fenêtre = >28
+    const t = tk('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 }); // 35 j ; fenêtre = >28
     const c = C({ traumas: [t] });
     expect(hasTreatableTrauma(c)).toBe(true); // dans la semaine
     treatTrauma(c, 2);
@@ -99,20 +101,20 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('treatTrauma : déchirure mineure raccourcie −1 j −1/DR, une fois ; majeure non accélérée (l.326)', () => {
-    const mineure = C({ traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
+    const mineure = C({ traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
     treatTrauma(mineure, 3);
     expect(mineure.traumas![0].recoveryDays).toBe(22); // −(1+3)
     treatTrauma(mineure, 5);
     expect(mineure.traumas![0].recoveryDays).toBe(22); // déjà traité
 
-    const majeure = C({ traumas: [traumaFromKind('dechirure', 'majeur', 'jambeD', { be: 4 })] }); // 52 j
+    const majeure = C({ traumas: [tk('dechirure', 'majeur', 'jambeD', { be: 4 })] }); // 52 j
     const before = majeure.traumas![0].recoveryDays;
     treatTrauma(majeure, 5);
     expect(majeure.traumas![0].recoveryDays).toBe(before); // pas d'accélération
   });
 
   it('fracture à la TÊTE mal ressoudée → séquelle de Langue permanente (l.300/309)', () => {
-    const t = traumaFromKind('fracture', 'majeur', 'tete', { be: 4, d10: 5 });
+    const t = tk('fracture', 'majeur', 'tete', { be: 4, d10: 5 });
     const c = C({ traumas: [t], skills: [{ skillId: 'langue', spec: 'Reikspiel', advances: 20, characteristic: 'Int' } as never] });
     const fail: RNG = { int: () => 95 };
     tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
@@ -125,9 +127,9 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('Chirurgie : une fracture MAJEURE exige la chirurgie ; removeSurgicalTrauma la retire (criticalWounds--)', () => {
-    const fm = traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 });
+    const fm = tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 });
     expect(fm.needsSurgery).toBe(true);
-    const fmin = traumaFromKind('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 });
+    const fmin = tk('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 });
     expect(fmin.needsSurgery).toBeUndefined(); // mineure : pas de chirurgie
     const c = C({ traumas: [fm], criticalWounds: 1 });
     expect(hasSurgeryTrauma(c)).toBe(true);
@@ -139,7 +141,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   });
 
   it('hasTreatableTrauma : faux pour une fracture hors fenêtre d’une semaine', () => {
-    const t = traumaFromKind('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 }); // 35 ; fenêtre >28
+    const t = tk('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 }); // 35 ; fenêtre >28
     const c = C({ traumas: [{ ...t, recoveryDays: 20 }] }); // 20 ≤ 28 → fenêtre fermée
     expect(hasTreatableTrauma(c)).toBe(false);
   });

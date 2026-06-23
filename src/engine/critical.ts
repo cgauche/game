@@ -8,115 +8,68 @@ import { findTableEntry } from './tables';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape } from './combat';
-import { BodyShape, Combatant, Difficulty, HitLocation, Trauma, HIT_LOCATION_LABELS } from './types';
-import { CRITICAL_TABLES, CritEntry } from '../data/criticals';
-import { traumaFromKind } from './trauma';
+import { BodyShape, Combatant, HitLocation, Trauma, HIT_LOCATION_LABELS } from './types';
+import { CRITICAL_TABLES } from '../data/criticals';
+import { traumaById, traumaFicheById } from './trauma';
 import type { GameOp } from './ops';
-
-/** Difficulté de l'« Amputation (X) » d'une note de critique → palier de Difficulté (LDB 18 l.331). */
-const AMPUTATION_DIFFICULTY: Record<string, Difficulty> = {
-  Facile: 'facile',
-  Accessible: 'accessible',
-  Complexe: 'complexe',
-  Difficile: 'difficile',
-  'Très Difficile': 'tresDifficile',
-};
-
-/** Extrait « Amputation (Difficulté) » du texte d'un critique (verbatim LDB 18), ou `null`. L'ordre des
- *  alternatives place « Très Difficile » avant « Difficile » (sinon le sous-mot capturerait à tort). */
-export function parseAmputation(note: string): Difficulty | null {
-  const m = note.match(/Amputation \((Très Difficile|Difficile|Complexe|Accessible|Facile)\)/);
-  return m ? AMPUTATION_DIFFICULTY[m[1]] : null;
-}
-
-// Prothèses qui ANNULENT TOTALEMENT une séquelle (LDB 73) — réf par `trappingId` (trappings.json).
-const MERVEILLE = { trappingId: 'merveille-d-ingenierie', cancels: 'all' as const }; // oreille/main/bras/jambe (l.28)
 
 /**
  * Séquelles PERMANENTES d'une amputation (LDB 18 l.335-370) — distinctes de la plaie chirurgicale : elles
- * survivent à la Chirurgie (le membre reste absent). La latéralité de membre (brasG/brasD, jambeG/jambeD) et
- * la partie de tête (lues dans `name`+`note` : œil/oreille/nez/langue/dents) SONT connues, donc on mécanise —
- * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Une tête peut perdre PLUSIEURS
- * parties d'un coup (Coup défigurant = œil+nez ; Mâchoire mutilée = langue+dents) → on renvoie un tableau.
- * La perte du SECOND œil/oreille (Cécité −30 vue / Surdité −20 ouïe) est agrégée à part par
- * `escalateSensoryLoss` (trauma.ts). Ici, chaque critique pose l'effet d'UNE perte ; les pertes
- * répétées de doigts/dents ne sont pas cumulées.
+ * survivent à la Chirurgie (le membre reste absent). Instanciées depuis les `sequels` (ids de fiche
+ * `traumas.json`) DÉCLARÉS STRUCTURELLEMENT sur le critique (`entry.amputation.sequels`) — plus aucune
+ * lecture du texte. La latéralité (brasG/brasD, jambeG/jambeD) provient de la `location` réelle du coup —
+ * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Les fiches « par comptage »
+ * (doigts l.341, dents l.338) reçoivent leur effet/comptage variable ICI (cumulé ensuite par
+ * `consolidateAmputations`) ; la perte du SECOND œil/oreille est agrégée par `escalateSensoryLoss`.
  */
-export function permanentAmputations(name: string, note: string, location: HitLocation, rng: RNG = defaultRNG): Trauma[] {
-  const t = `${name} ${note}`.toLowerCase();
-  const out: Trauma[] = [];
-  if (location === 'jambeG' || location === 'jambeD') {
-    if (/orteil/.test(t)) {
-      out.push({ label: `Orteil(s) amputé(s) (${HIT_LOCATION_LABELS[location]})`, location, ops: [{ op: 'charMod', char: 'Ag', mod: -1 }, { op: 'charMod', char: 'CC', mod: -1 }],
-        note: '−1 Agilité et −1 CC par orteil perdu (séquelle permanente ; cumul non suivi).' });
-    } else {
-      out.push({ label: `Membre inférieur amputé (${HIT_LOCATION_LABELS[location]})`, location, ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }],
-        prosthesis: [MERVEILLE, { trappingId: 'fausse-jambe', cancels: 'movement' }],
-        note: 'Mouvement ÷2 + −20 mobilité (Esquive) — à pied seulement, une monture rétablit le déplacement. Prothèse : Fausse jambe / Merveille.' });
-    }
-    return out;
-  }
-  if (location === 'brasG' || location === 'brasD') {
-    const dominant = location === 'brasD'; // droitier
-    if (/doigt/.test(t)) {
-      // 1 doigt par critique (« Doigt sectionné » / « Main ouverte : perdez 1 doigt »). Cumulé par consolidateAmputations.
-      const ops: GameOp[] = dominant ? [{ op: 'charMod', char: 'CC', mod: -5 }, { op: 'charMod', char: 'CT', mod: -5 }] : [];
-      out.push({ label: `Doigts amputés (${HIT_LOCATION_LABELS[location]})`, location, count: 1, ...(ops.length ? { ops } : {}),
-        prosthesis: [MERVEILLE],
-        note: `−5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire'}. Prothèse : Merveille.` });
-    } else if (/\bmain\b|bras inutilisable/.test(t)) {
+export function permanentAmputations(sequels: string[], location: HitLocation, rng: RNG = defaultRNG): Trauma[] {
+  const dominant = location === 'brasD'; // droitier
+  return sequels.map((id) => {
+    const t = traumaById(id, undefined, location);
+    if (id === 'doigt-ampute') {
+      // 1 doigt par critique. Effet (main principale −5/doigt) posé ICI ; cumulé par consolidateAmputations.
+      t.count = 1;
+      if (dominant) t.ops = [{ op: 'charMod', char: 'CC', mod: -5 }, { op: 'charMod', char: 'CT', mod: -5 }];
+    } else if (id === 'main-bras-ampute') {
       const ops: GameOp[] = [{ op: 'maxWeaponHands', hands: 1 }];
       if (dominant) ops.push({ op: 'charMod', char: 'CC', mod: -20 }, { op: 'charMod', char: 'CT', mod: -20 });
-      out.push({ label: `Main/bras amputé (${HIT_LOCATION_LABELS[location]})`, location, ops,
-        prosthesis: [MERVEILLE],
-        note: `pas d'arme à deux mains${dominant ? ' ; main PRINCIPALE perdue → −20 aux Tests d’Arme (main secondaire)' : ' (main secondaire)'}. Prothèse : Crochet (rachat PX) / Merveille.` });
-    }
-    return out;
-  }
-  if (location === 'tete') {
-    if (/langue/.test(t)) {
-      out.push({ label: 'Langue amputée', location, ops: [{ op: 'skillMod', skill: 'langue', mod: -100 }], // « auto-échec » de la parole
-        note: 'sans langue, tout Test de Langue impliquant la parole échoue automatiquement.' });
-    }
-    if (/\bnez\b/.test(t)) {
-      out.push({ label: 'Nez amputé', location, ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ trappingId: 'nez-dore', cancels: 'all' }],
-        note: '−20 Sociabilité permanent (perte du nez). Prothèse : Nez doré.' });
-    }
-    if (/œil|oeil/.test(t)) {
-      out.push({ label: 'Œil perdu', location, ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'vue' }],
-        prosthesis: [{ trappingId: 'cache-oeil', cancels: 'all' }, { trappingId: 'oeil-de-verre', cancels: 'all' }],
-        note: '−5 Sociabilité (orbite vide visible) ; perte des DEUX yeux (−30 vue) non modélisée. Prothèse : Cache-œil / Œil de verre.' });
-    }
-    if (/oreille/.test(t)) {
-      out.push({ label: 'Oreille perdue', location, ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }], prosthesis: [MERVEILLE],
-        note: '−5 Sociabilité par oreille perdue ; perte des DEUX oreilles (−20 ouïe) non modélisée. Prothèse : Merveille.' });
-    }
-    if (/dents?\b/.test(t)) {
-      const n = /1d10/.test(t) ? d10(rng) : 1; // « 1d10 dents » (Bouche explosée/Mâchoire) ou 1 dent. Cumulé.
+      t.ops = ops;
+    } else if (id === 'dents-perdues') {
+      const n = location === 'tete' ? d10(rng) : 1; // « 1d10 dents » (la perte structurelle est multiple ; sinon 1).
+      t.count = n;
       const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (l.338) : 1 dent = 0, 3 dents = −1, 4 = −2…
-      const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'Soc', mod: soc }] : [];
-      out.push({ label: 'Dents perdues', traumaId: 'dents-perdues', location, count: n, ...(ops.length ? { ops } : {}), prosthesis: [{ trappingId: 'dents-en-bois', cancels: 'all' }],
-        note: `${n} dents perdues → −1 Sociabilité par paire (${soc} Soc). Prothèse : Dents en bois.` });
+      if (soc < 0) t.ops = [{ op: 'charMod', char: 'Soc', mod: soc }];
     }
-    return out;
-  }
-  return out; // corps : pas d'amputation
+    return t;
+  });
 }
 
 export interface CriticalResolved {
   location: HitLocation;
   name: string;
-  /** PB perdus (ignore BE+PA) ; le plancher (0) est géré par l'appelant. */
-  woundsLoss: number;
+  /** Effet IMMÉDIAT RÉSOLU (PB ignorant BE+PA + États immédiats + onFail du Test de Résistance/Amputation),
+   *  appliqué par `applyOps` chez l'appelant — valeurs littérales (RNG déjà consommé ici). */
+  ops: GameOp[];
   lethal: boolean;
-  /** États à appliquer (immédiats + échec du Test de Résistance). */
-  conditions: { name: string; value: number }[];
   /** Traumatismes posés (LDB 18), à la localisation du critique. */
   traumas: Trauma[];
-  note: string;
+  /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
+  desc: string;
   /** Jet d100 effectif (après -20 éventuel). */
   roll: number;
   log: string;
+}
+
+/** Récapitulatif d'AFFICHAGE d'un effet immédiat (PB totaux + États) extrait des `ops` — pour la
+ *  révélation de Coup Critique (modale enrichie), SANS dupliquer la donnée. */
+export function critImmediateSummary(ops: GameOp[]): { woundsLost: number; conditions: { name: string; value: number }[] } {
+  let woundsLost = 0;
+  const conditions: { name: string; value: number }[] = [];
+  for (const o of ops) {
+    if (o.op === 'wounds' && typeof o.amount === 'number') woundsLost += o.amount;
+    else if (o.op === 'condition') conditions.push({ name: o.name, value: typeof o.value === 'number' ? o.value : 1 });
+  }
+  return { woundsLost, conditions };
 }
 
 /** Localisation d'un Coup Critique : 1d100 lu directement sur le Tableau de Localisation de la forme
@@ -145,46 +98,45 @@ export function rollCritical(
   const resistVal =
     effectiveChar(target, 'E') +
     (target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-  const conditions = [...(entry.conditions ?? [])];
+  const ops: GameOp[] = [...(entry.ops ?? [])];
   if (entry.resist) {
     const res = rollTest(resistVal, entry.resist.difficulty, rng);
-    if (!res.success) conditions.push(...entry.resist.onFail);
+    if (!res.success) ops.push(...entry.resist.onFail);
   }
   // Durée de convalescence (Jalon 5) : BE déjà calculé ; 1d10 tiré seulement pour les fractures (RAW 30+1d10)
-  // afin de ne pas décaler le flux RNG des critiques sans fracture.
-  const traumas = (entry.traumas ?? []).map((t) =>
-    traumaFromKind(t.kind, t.severity, location, { be, d10: t.kind === 'fracture' ? d10(rng) : undefined }));
-  // Amputation (LDB 18 l.328-333) : « à chaque fois qu'un critique indique Amputation (Difficulté) »,
+  // afin de ne pas décaler le flux RNG des critiques sans fracture. Les refs d'id de fiche (`traumas.json`)
+  // portent leur `kind` → on instancie à la localisation du coup.
+  const traumas = (entry.traumas ?? []).map((id) =>
+    traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
+  // Amputation (LDB 18 l.328-333) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, plus de regex sur le texte).
   // Test de Résistance ou À Terre ; échec −2 DR → +Sonné ; échec −4 DR → +Inconscient. Le membre perdu
   // exige la Chirurgie (l.333/401) : trauma `needsSurgery` (opérable via le Talent Chirurgie). Roll placé
   // en DERNIER (rien ne tire après) pour ne décaler le flux RNG que des critiques d'amputation.
-  const ampDiff = entry.lethal ? null : parseAmputation(entry.note);
-  if (ampDiff) {
-    const res = rollTest(resistVal, ampDiff, rng);
+  if (!entry.lethal && entry.amputation) {
+    const res = rollTest(resistVal, entry.amputation.difficulty, rng);
     if (!res.success) {
-      conditions.push({ name: 'a-terre', value: 1 });
-      if (res.sl <= -2) conditions.push({ name: 'sonne', value: 1 });
-      if (res.sl <= -4) conditions.push({ name: 'inconscient', value: 1 });
+      ops.push({ op: 'condition', name: 'a-terre', value: 1 });
+      if (res.sl <= -2) ops.push({ op: 'condition', name: 'sonne', value: 1 });
+      if (res.sl <= -4) ops.push({ op: 'condition', name: 'inconscient', value: 1 });
     }
     // Plaie chirurgicale (l.333/401) : retirée par la Chirurgie ; bloque la guérison jusqu'à l'opération.
     traumas.push({
       label: `Amputation (${HIT_LOCATION_LABELS[location]})`,
       location,
       needsSurgery: true,
-      note: `${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
+      desc: 'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.',
     });
     // Séquelle(s) PERMANENTE(S) (membre absent) : survivent à la Chirurgie (l.335-370). Une tête peut en cumuler
     // (la perte de dents tire 1d10 — placé après le Test de Résistance d'amputation pour ne pas décaler le reste).
-    traumas.push(...permanentAmputations(entry.name, entry.note, location, rng));
+    traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
   }
   return {
     location,
     name: entry.name,
-    woundsLoss: entry.wounds,
+    ops,
     lethal: !!entry.lethal,
-    conditions,
     traumas,
-    note: entry.note,
+    desc: entry.desc,
     roll,
     log: `Blessure critique (${HIT_LOCATION_LABELS[location]}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
   };

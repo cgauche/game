@@ -18,11 +18,39 @@ import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
 import { wornSocialMod, qualityWearMods } from './wearPenalty';
 import type { GameOp, PassiveKind, PassiveMod } from './ops';
+import traumasJson from '../data/traumas.json';
 
 export type TraumaKind = 'dechirure' | 'fracture';
 export type TraumaSeverity = 'mineur' | 'majeur';
 
 const LEG: HitLocation[] = ['jambeG', 'jambeD'];
+
+/**
+ * Fiche de Traumatisme (registre `traumas.json`, app-owned) : mécanique = `ops` (GameOp[]), `desc` =
+ * texte canon LDB 18 VERBATIM (DISPLAY-ONLY, jamais parsé). Couvre déchirures/fractures par localisation
+ * et toutes les séquelles permanentes d'amputation (+ Cécité/Surdité agrégées). `kind`/`severity` portés
+ * pour la convalescence à étapes ; `prosthesis` = annulateurs (LDB 73).
+ */
+export interface TraumaFiche {
+  id: string;
+  label: string;
+  desc: string;
+  ops?: GameOp[];
+  kind?: TraumaKind;
+  severity?: TraumaSeverity;
+  prosthesis?: { trappingId: string; cancels: 'all' | 'movement' }[];
+  needsSurgery?: boolean;
+}
+
+const FICHES = traumasJson as TraumaFiche[];
+const FICHE_BY_ID = new Map(FICHES.map((f) => [f.id, f]));
+
+/** Fiche de Traumatisme par id STABLE (`traumas.json`). Lève si l'id est inconnu (réf cassée = bug data). */
+export function traumaFicheById(id: string): TraumaFiche {
+  const f = FICHE_BY_ID.get(id);
+  if (!f) throw new Error(`Trauma fiche inconnue : ${id}`);
+  return f;
+}
 
 /** Ops PASSIVES d'une séquelle (lecteur UNIQUE de `t.ops` — vocab GameOp partagé). */
 function traumaOps(t: Trauma): GameOp[] {
@@ -46,61 +74,44 @@ export function traumaRecoveryDays(kind: TraumaKind, severity: TraumaSeverity, b
   return 30 + d10 + (severity === 'majeur' ? 10 : 0);
 }
 
-/** `opts.be` (Bonus d'Endurance) + `opts.d10` (1d10 des fractures) → durée de convalescence `recoveryDays`.
- *  Omis (tests/legacy) ⇒ pas de décompte (trauma permanent jusqu'à traitement explicite). */
-export function traumaFromKind(
-  kind: TraumaKind,
-  severity: TraumaSeverity,
-  location: HitLocation,
-  opts?: { be?: number; d10?: number },
-): Trauma {
-  const sev = severity === 'mineur' ? 'Mineure' : 'Majeure';
-  const recoveryDays = opts?.be == null ? undefined : traumaRecoveryDays(kind, severity, opts.be, opts.d10 ?? 5);
-  // Champs de convalescence à étapes (déchirure majeure mi-durée, fenêtre de pose d'une fracture, Test de fin).
-  // Une fracture MAJEURE « peu probable de guérir sans intervention médicale » (l.305) exige la Chirurgie.
-  const staged = { kind, severity, recoveryDays, recoveryTotal: recoveryDays, ...(kind === 'fracture' && severity === 'majeur' ? { needsSurgery: true } : {}) };
-  if (kind === 'dechirure') {
-    const onLeg = LEG.includes(location);
-    // Jambe : −10 (mineure) / −20 (majeure) aux Tests de mobilité/Esquive (LDB 18 l.315/324).
-    const dodge = severity === 'mineur' ? -10 : -20;
-    const ops: GameOp[] = onLeg ? [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: dodge }] : [];
-    return {
-      label: `Déchirure musculaire (${sev})`,
-      location,
-      ...(ops.length ? { ops } : {}),
-      ...staged,
-      note: onLeg
-        ? `Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours.`
-        : '−10/−20 aux Tests de la Localisation (non modélisé en combat). Guérison 30−BE jours.',
-    };
-  }
-  // fracture
-  if (location === 'corps') {
-    return {
-      label: `Fracture (${sev})`,
-      location,
-      ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'charMod', char: 'F', mod: -30 }, { op: 'charMod', char: 'Ag', mod: -30 }],
-      ...staged,
-      note: '−30 Force et Agilité, Mouvement ÷2. Guérison 30+1d10 jours.',
-    };
-  }
-  if (LEG.includes(location)) {
-    return {
-      label: `Fracture (${sev})`,
-      location,
-      ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }], // règle du Pied (l.369) : −20 mobilité/Esquive
-      ...staged,
-      note: 'Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours.',
-    };
-  }
-  return {
-    label: `Fracture (${sev})`,
-    location,
-    ...staged,
-    note: location === 'tete'
-      ? '−30 aux Tests de Langue, régime liquide (non modélisé en combat). Guérison 30+1d10 jours.'
-      : 'membre inutilisable (latéralité non modélisée en combat). Guérison 30+1d10 jours.',
+/** Résout la fiche de déchirure/fracture (`traumas.json`) pour un `{kind,severity,location}` — utilisé
+ *  par `rollCritical` (refs déjà résolues dans `criticals.json`) et l'éditeur (`inflictTrauma`). */
+export function dechirureFractureFicheId(kind: TraumaKind, severity: TraumaSeverity, location: HitLocation): string {
+  const onLeg = LEG.includes(location);
+  const sevW = severity === 'majeur' ? 'majeure' : 'mineure';
+  if (kind === 'dechirure') return onLeg ? `dechirure-jambe-${sevW}` : `dechirure-autre-${sevW}`;
+  const zone = location === 'corps' ? 'torse' : onLeg ? 'jambe' : location === 'tete' ? 'tete' : 'bras';
+  return `fracture-${zone}-${sevW}`;
+}
+
+/** Instancie un `Trauma` POSÉ depuis une fiche `traumas.json` (mécanique = `ops`, `desc` = canon
+ *  DISPLAY-ONLY) à la `location` du coup. `opts.be` (Bonus d'Endurance) + `opts.d10` (1d10 des fractures)
+ *  → durée de convalescence `recoveryDays` COMPUTÉE par la formule (jamais stockée). La sévérité est
+ *  portée par la fiche (déchirures ET fractures sont désormais des fiches par localisation+sévérité).
+ *  Omis (tests/legacy) ⇒ pas de décompte (séquelle permanente jusqu'à traitement explicite). */
+export function traumaById(id: string, opts?: { be?: number; d10?: number }, location?: HitLocation): Trauma {
+  const f = traumaFicheById(id);
+  const out: Trauma = {
+    label: f.label,
+    traumaId: f.id,
+    location: location ?? 'corps',
+    desc: f.desc,
+    ...(f.ops ? { ops: f.ops.map((o) => ({ ...o })) } : {}),
+    ...(f.prosthesis ? { prosthesis: f.prosthesis.map((p) => ({ ...p })) } : {}),
   };
+  // Convalescence à étapes (déchirure/fracture seules). Une fracture MAJEURE « peu probable de guérir
+  // sans intervention médicale » (l.305) exige la Chirurgie ; la formule garde le 1d10 seedé chez l'appelant.
+  if (f.kind) {
+    const sev: TraumaSeverity = f.severity ?? 'mineur';
+    const recoveryDays = opts?.be == null ? undefined : traumaRecoveryDays(f.kind, sev, opts.be, opts.d10 ?? 5);
+    out.kind = f.kind;
+    out.severity = sev;
+    out.label = `${f.label} (${sev === 'majeur' ? 'Majeure' : 'Mineure'})`; // libellé canon avec sévérité
+    if (recoveryDays != null) { out.recoveryDays = recoveryDays; out.recoveryTotal = recoveryDays; }
+    if (f.kind === 'fracture' && sev === 'majeur') out.needsSurgery = true;
+  }
+  if (f.needsSurgery) out.needsSurgery = true;
+  return out;
 }
 
 /** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.326) : après la 1ʳᵉ moitié
@@ -120,8 +131,8 @@ function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
  */
 function fractureSequela(t: Trauma): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
-  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], note: `${pen} permanent aux Tests de Langue (mâchoire mal ressoudée).` };
-  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'Ag', mod: pen }], note: `${pen} permanent en Agilité (os mal ressoudé).` };
+  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], desc: 'Sur un échec, vous subirez une pénalité permanente à tous vos Tests de Langue s’il s’agit d’une blessure à la tête mal guérie.' };
+  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'Ag', mod: pen }], desc: 'Sur un échec, vous subirez une pénalité permanente à tous vos Tests d’Agilité pour une blessure au Bras, à la Jambe ou au Torse.' };
 }
 
 /** Difficulté du Test de fin de fracture (LDB 18 l.300/309) selon la sévérité. */
@@ -214,8 +225,6 @@ export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);
 }
 
-const PROSTHESIS_MERVEILLE = { trappingId: 'merveille-d-ingenierie', cancels: 'all' as const };
-
 /**
  * Fusionne les séquelles CUMULATIVES par comptage (LDB 18) en UN trauma agrégé (≠ modèle non-cumul : ici le
  * RAW est explicitement cumulatif). Mute `c.traumas`, renvoie le journal. Idempotent. Appelé après l'ajout
@@ -228,10 +237,13 @@ const PROSTHESIS_MERVEILLE = { trappingId: 'merveille-d-ingenierie', cancels: 'a
 export function consolidateAmputations(c: Combatant): string[] {
   const log: string[] = [];
   const traumas = c.traumas ?? [];
-  const isFinger = (t: Trauma) => !!t.label?.startsWith('Doigts amputés');
+  const isFinger = (t: Trauma) => t.traumaId === 'doigt-ampute';
   const isTeeth = (t: Trauma) => t.traumaId === 'dents-perdues';
   if (!traumas.some((t) => isFinger(t) || isTeeth(t))) return log;
   const kept = traumas.filter((t) => !isFinger(t) && !isTeeth(t));
+  const fingerFiche = traumaFicheById('doigt-ampute');
+  const handFiche = traumaFicheById('main-bras-ampute');
+  const teethFiche = traumaFicheById('dents-perdues');
   for (const loc of ['brasG', 'brasD'] as const) {
     const grp = traumas.filter((t) => isFinger(t) && t.location === loc);
     if (!grp.length) continue;
@@ -239,14 +251,14 @@ export function consolidateAmputations(c: Combatant): string[] {
     const dominant = loc === 'brasD';
     if (total >= 4) {
       if (grp.length > 1) log.push(`${c.name} : 4+ doigts perdus (${loc}) → règle de la main tranchée.`);
-      if (!kept.some((t) => t.label?.startsWith('Main/bras amputé') && t.location === loc)) {
+      if (!kept.some((t) => t.traumaId === 'main-bras-ampute' && t.location === loc)) {
         const ops: GameOp[] = [{ op: 'maxWeaponHands', hands: 1 }];
         if (dominant) ops.push({ op: 'charMod', char: 'CC', mod: -20 }, { op: 'charMod', char: 'CT', mod: -20 });
-        kept.push({ label: `Main/bras amputé (${loc})`, location: loc, ops, prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigts perdus (${loc}) → règle de la main (pas d'arme à 2 mains${dominant ? ', −20 Tests d’Arme' : ''}).` });
+        kept.push({ label: `${handFiche.label} (${loc})`, traumaId: handFiche.id, location: loc, ops, prosthesis: handFiche.prosthesis!.map((p) => ({ ...p })), desc: handFiche.desc });
       }
     } else {
       const ops: GameOp[] = dominant ? [{ op: 'charMod', char: 'CC', mod: -5 * total }, { op: 'charMod', char: 'CT', mod: -5 * total }] : [];
-      kept.push({ label: `Doigts amputés (${loc})`, location: loc, count: total, ...(ops.length ? { ops } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigt(s) (${loc}) → −${5 * total} aux Tests d'Arme (main principale).` });
+      kept.push({ label: `${fingerFiche.label} (${loc})`, traumaId: fingerFiche.id, location: loc, count: total, ...(ops.length ? { ops } : {}), prosthesis: fingerFiche.prosthesis!.map((p) => ({ ...p })), desc: fingerFiche.desc });
     }
   }
   const teeth = traumas.filter(isTeeth);
@@ -254,7 +266,7 @@ export function consolidateAmputations(c: Combatant): string[] {
     const total = teeth.reduce((s, t) => s + (t.count ?? 1), 0);
     const soc = -Math.floor(total / 2);
     const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'Soc', mod: soc }] : [];
-    kept.push({ label: 'Dents perdues', traumaId: 'dents-perdues', location: 'tete', count: total, ...(ops.length ? { ops } : {}), prosthesis: [{ trappingId: 'dents-en-bois', cancels: 'all' }], note: `${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois.` });
+    kept.push({ label: teethFiche.label, traumaId: teethFiche.id, location: 'tete', count: total, ...(ops.length ? { ops } : {}), prosthesis: teethFiche.prosthesis!.map((p) => ({ ...p })), desc: teethFiche.desc });
   }
   c.traumas = kept;
   return log;
@@ -272,11 +284,11 @@ export function escalateSensoryLoss(c: Combatant): string[] {
   const eyes = (c.traumas ?? []).filter((t) => hasSense(t, 'vue')).length;
   const ears = (c.traumas ?? []).filter((t) => hasSense(t, 'ouie')).length;
   if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'cecite')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', traumaId: 'cecite', location: 'tete', ops: [{ op: 'charMod', char: 'CC', mod: -30 }, { op: 'charMod', char: 'CT', mod: -30 }, { op: 'skillMod', skill: 'esquive', mod: -30 }, { op: 'skillMod', skill: 'chevaucher', mod: -30 }], note: 'perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
+    c.traumas = [...(c.traumas ?? []), traumaById('cecite', undefined, 'tete')];
     log.push(`${c.name} perd la vue (cécité) — −30 aux Tests liés à la vue.`);
   }
   if (ears >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'surdite')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', traumaId: 'surdite', location: 'tete', ops: [{ op: 'skillMod', skill: 'perception', mod: -20 }], note: 'perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
+    c.traumas = [...(c.traumas ?? []), traumaById('surdite', undefined, 'tete')];
     log.push(`${c.name} perd l'ouïe (surdité) — −20 Perception auditive.`);
   }
   return log;

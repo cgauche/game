@@ -24,7 +24,7 @@ import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
 import { permanentAmputations } from '../engine/critical';
-import { traumaFromKind } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal } from '../engine/provisions';
@@ -732,20 +732,20 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: '☠️ Afflictions', label: 'Infliger une Blessure Critique (LDB 18)', icon: '🦴',
     make: () => ({ type: 'inflictTrauma', kind: 'fracture', severity: 'mineur', location: 'brasD', heroId: '' }),
     apply: (e, env) => {
-      // Blessure Critique posée rétroactivement par l'éditeur (LDB 18) : déchirure/fracture via la
-      // factory partagée (traumaFromKind, effets en-combat + convalescence), amputation via les
-      // séquelles permanentes (permanentAmputations). criticalWounds suit (compteur LDB 18).
+      // Blessure Critique posée rétroactivement par l'éditeur (LDB 18) : déchirure/fracture via `traumaById`
+      // (fiche `traumas.json` résolue par `dechirureFractureFicheId`, effets en-combat + convalescence),
+      // amputation via les séquelles permanentes (`permanentAmputations`). criticalWounds suit (compteur LDB 18).
       let labels: string[] = [];
       let whoId = '';
       const who = env.mutateHero(e.heroId, (h) => {
         whoId = h.id;
         const be = Math.floor(effectiveChar(h, 'E') / 10);
-        // Amputation : permanentAmputations lit la PARTIE dans le texte → on synthétise un libellé
-        // par localisation (bras → main/bras ; jambe → membre inférieur ; tête → œil, choix d'éditeur).
-        const ampNote = e.location === 'tete' ? 'Perte de l’œil — Amputation (Intermédiaire)' : 'Main/bras inutilisable — Amputation (Intermédiaire)';
+        // Amputation : séquelle PERMANENTE choisie par localisation (bras → main/bras ; jambe → membre
+        // inférieur ; tête → œil, choix d'éditeur) — ids de fiche `traumas.json`, plus de texte parsé.
+        const ampSequel = e.location === 'tete' ? 'oeil-perdu' : e.location === 'brasG' || e.location === 'brasD' ? 'main-bras-ampute' : 'membre-inferieur-ampute';
         const traumas = e.kind === 'amputation'
-          ? permanentAmputations('Amputation', ampNote, e.location, battleRng())
-          : [traumaFromKind(e.kind, e.severity ?? 'mineur', e.location, { be, d10: d10(battleRng()) })];
+          ? permanentAmputations([ampSequel], e.location, battleRng())
+          : [traumaById(dechirureFractureFicheId(e.kind, e.severity ?? 'mineur', e.location), { be, d10: d10(battleRng()) }, e.location)];
         labels = traumas.map((tr) => tr.label);
         return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
       });

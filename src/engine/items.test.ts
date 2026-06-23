@@ -289,7 +289,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('amputation de main : arme à deux mains exclue de la dotation ; Merveille PORTÉE la rétablit (LDB 18 l.352 / 73)', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }], note: '' }],
+      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }] }],
       items: [item({ name: 'Espadon', kind: 'melee', damage: { plusBF: true, flat: 5 }, subType: 'deux-mains', equipped: true })],
     } as unknown as Combatant;
     recomputeLoadout(c);
@@ -307,7 +307,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('amputation de main : loadout Arc (2 mains) exclu → Mains nues ; loadout Arbalète de poing (1 main) utilisable', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' }],
+      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] }],
       items: [
         item({ uid: 'arc', name: 'Arc long', kind: 'ranged', subType: 'Arc', hands: 2, equipped: true }),
         item({ uid: 'arb', name: 'Arbalète de poing', kind: 'ranged', subType: 'Arbalète', hands: 1, equipped: true }),
@@ -324,7 +324,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('amputation de la main SECONDAIRE (brasG) : le bouclier (slot off) tombe ; l’arme directrice reste (LDB 18)', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' }],
+      traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }] }],
       items: [
         item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
         item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: 1 }, { id: 'defensive' }], equipped: true }),
@@ -339,7 +339,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('amputation de la main DIRECTRICE (brasD) : arme directrice conservée (−20, adaptation) ; la 2e arme (slot off) tombe', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' }],
+      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] }],
       items: [
         item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
         item({ uid: 'da', name: 'Dague', kind: 'melee', damage: { plusBF: true, flat: 0, bare: true }, equipped: true }),
@@ -355,8 +355,8 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
       traumas: [
-        { label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' },
-        { label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' },
+        { label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] },
+        { label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }] },
       ],
       items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true })],
       loadouts: [{ id: 'l1', name: 'X', main: 'ep' }],
@@ -379,7 +379,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('Merveille d’ingénierie (cancels all) sur la main secondaire amputée : le bouclier reste utilisable (LDB 73)', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }], note: '' }],
+      traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }] }],
       items: [
         item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
         item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: 1 }], equipped: true }),

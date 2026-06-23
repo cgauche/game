@@ -1,0 +1,368 @@
+[
+  {
+    "id": "dechirure-jambe-mineure",
+    "label": "Déchirure musculaire",
+    "kind": "dechirure",
+    "severity": "mineur",
+    "ops": [
+      {
+        "op": "moveScale",
+        "num": 1,
+        "den": 2
+      },
+      {
+        "op": "skillMod",
+        "skill": "esquive",
+        "mod": -10
+      }
+    ],
+    "desc": "Un de vos muscles est déchiré, ce qui vous handicape grandement en plus d’être très douloureux. Vous subissez une pénalité de -10 à tous les Tests concernant cette Localisation. Si c’est une Jambe qui est touchée, votre Mouvement est réduit de moitié."
+  },
+  {
+    "id": "dechirure-jambe-majeure",
+    "label": "Déchirure musculaire",
+    "kind": "dechirure",
+    "severity": "majeur",
+    "ops": [
+      {
+        "op": "moveScale",
+        "num": 1,
+        "den": 2
+      },
+      {
+        "op": "skillMod",
+        "skill": "esquive",
+        "mod": -20
+      }
+    ],
+    "desc": "L’un de vos muscles, ou un tendon important, a été gravement endommagé, causant une douleur extrême et une sérieuse perte de potentiel du membre en question. Subissez les mêmes effets que pour Déchirure musculaire (Mineure), mais les pénalités passent à -20 pour tous les Tests."
+  },
+  {
+    "id": "dechirure-autre-mineure",
+    "label": "Déchirure musculaire",
+    "kind": "dechirure",
+    "severity": "mineur",
+    "desc": "Un de vos muscles est déchiré, ce qui vous handicape grandement en plus d’être très douloureux. Vous subissez une pénalité de -10 à tous les Tests concernant cette Localisation."
+  },
+  {
+    "id": "dechirure-autre-majeure",
+    "label": "Déchirure musculaire",
+    "kind": "dechirure",
+    "severity": "majeur",
+    "desc": "L’un de vos muscles, ou un tendon important, a été gravement endommagé, causant une douleur extrême et une sérieuse perte de potentiel du membre en question. Subissez les mêmes effets que pour Déchirure musculaire (Mineure), mais les pénalités passent à -20 pour tous les Tests."
+  },
+  {
+    "id": "fracture-torse-mineure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "mineur",
+    "ops": [
+      {
+        "op": "moveScale",
+        "num": 1,
+        "den": 2
+      },
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -30
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -30
+      }
+    ],
+    "desc": "Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d’Agilité et votre Mouvement est divisé par deux."
+  },
+  {
+    "id": "fracture-torse-majeure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "majeur",
+    "ops": [
+      {
+        "op": "moveScale",
+        "num": 1,
+        "den": 2
+      },
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -30
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -30
+      }
+    ],
+    "desc": "Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d’Agilité et votre Mouvement est divisé par deux."
+  },
+  {
+    "id": "fracture-jambe-mineure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "mineur",
+    "ops": [
+      {
+        "op": "moveScale",
+        "num": 1,
+        "den": 2
+      },
+      {
+        "op": "skillMod",
+        "skill": "esquive",
+        "mod": -20
+      }
+    ],
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+  },
+  {
+    "id": "fracture-jambe-majeure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "majeur",
+    "ops": [
+      {
+        "op": "moveScale",
+        "num": 1,
+        "den": 2
+      },
+      {
+        "op": "skillMod",
+        "skill": "esquive",
+        "mod": -20
+      }
+    ],
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+  },
+  {
+    "id": "fracture-tete-mineure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "mineur",
+    "desc": "Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue."
+  },
+  {
+    "id": "fracture-tete-majeure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "majeur",
+    "desc": "Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue."
+  },
+  {
+    "id": "fracture-bras-mineure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "mineur",
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+  },
+  {
+    "id": "fracture-bras-majeure",
+    "label": "Fracture",
+    "kind": "fracture",
+    "severity": "majeur",
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+  },
+  {
+    "id": "orteil-ampute",
+    "label": "Orteil(s) amputé(s)",
+    "ops": [
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -1
+      },
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": -1
+      }
+    ],
+    "desc": "La perte d’orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat."
+  },
+  {
+    "id": "membre-inferieur-ampute",
+    "label": "Membre inférieur amputé",
+    "ops": [
+      {
+        "op": "moveScale",
+        "num": 1,
+        "den": 2
+      },
+      {
+        "op": "skillMod",
+        "skill": "esquive",
+        "mod": -20
+      }
+    ],
+    "prosthesis": [
+      {
+        "trappingId": "merveille-d-ingenierie",
+        "cancels": "all"
+      },
+      {
+        "trappingId": "fausse-jambe",
+        "cancels": "movement"
+      }
+    ],
+    "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout."
+  },
+  {
+    "id": "doigt-ampute",
+    "label": "Doigts amputés",
+    "prosthesis": [
+      {
+        "trappingId": "merveille-d-ingenierie",
+        "cancels": "all"
+      }
+    ],
+    "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée."
+  },
+  {
+    "id": "main-bras-ampute",
+    "label": "Main/bras amputé",
+    "ops": [
+      {
+        "op": "maxWeaponHands",
+        "hands": 1
+      }
+    ],
+    "prosthesis": [
+      {
+        "trappingId": "merveille-d-ingenierie",
+        "cancels": "all"
+      }
+    ],
+    "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire."
+  },
+  {
+    "id": "langue-amputee",
+    "label": "Langue amputée",
+    "ops": [
+      {
+        "op": "skillMod",
+        "skill": "langue",
+        "mod": -100
+      }
+    ],
+    "desc": "Dépourvu de langue, vous ne pouvez plus que marmonner et grommeler, ou vous servir d’un système de signes maison pour communiquer. Tous les Tests de Langue qui impliquent la parole se soldent automatiquement par un échec."
+  },
+  {
+    "id": "nez-ampute",
+    "label": "Nez amputé",
+    "ops": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -20
+      }
+    ],
+    "prosthesis": [
+      {
+        "trappingId": "nez-dore",
+        "cancels": "all"
+      }
+    ],
+    "desc": "La perte d’un nez rend le visage plutôt effrayant. Votre Sociabilité est réduite de -20 de façon permanente et vous subissez une pénalité de -30 à tous les Tests qui impliquent l’odorat."
+  },
+  {
+    "id": "oeil-perdu",
+    "label": "Œil perdu",
+    "ops": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -5
+      },
+      {
+        "op": "senseLoss",
+        "sense": "vue"
+      }
+    ],
+    "prosthesis": [
+      {
+        "trappingId": "cache-oeil",
+        "cancels": "all"
+      },
+      {
+        "trappingId": "oeil-de-verre",
+        "cancels": "all"
+      }
+    ],
+    "desc": "Même s’il est horrible de perdre un œil, vous apprendrez très vite à compenser. Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d’Arme, les Tests d’Esquive, les Tests de Chevaucher, et autres. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par orbite vide que les autres peuvent voir."
+  },
+  {
+    "id": "oreille-perdue",
+    "label": "Oreille perdue",
+    "ops": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -5
+      },
+      {
+        "op": "senseLoss",
+        "sense": "ouie"
+      }
+    ],
+    "prosthesis": [
+      {
+        "trappingId": "merveille-d-ingenierie",
+        "cancels": "all"
+      }
+    ],
+    "desc": "Perdre une oreille est douloureux, mais on apprend à vivre sans assez vite. Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par oreille perdue lorsque les autres voient votre visage."
+  },
+  {
+    "id": "dents-perdues",
+    "label": "Dents perdues",
+    "prosthesis": [
+      {
+        "trappingId": "dents-en-bois",
+        "cancels": "all"
+      }
+    ],
+    "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité."
+  },
+  {
+    "id": "cecite",
+    "label": "Cécité",
+    "ops": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": -30
+      },
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": -30
+      },
+      {
+        "op": "skillMod",
+        "skill": "esquive",
+        "mod": -30
+      },
+      {
+        "op": "skillMod",
+        "skill": "chevaucher",
+        "mod": -30
+      }
+    ],
+    "desc": "Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d’Arme, les Tests d’Esquive, les Tests de Chevaucher, et autres."
+  },
+  {
+    "id": "surdite",
+    "label": "Surdité",
+    "ops": [
+      {
+        "op": "skillMod",
+        "skill": "perception",
+        "mod": -20
+      }
+    ],
+    "desc": "Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe."
+  }
+]

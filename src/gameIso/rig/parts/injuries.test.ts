@@ -5,7 +5,7 @@ import type { Appearance } from '../appearance';
 
 const mk = (traumas: Trauma[], items: ItemInstance[] = []): Combatant =>
   ({ id: 'h1', name: 'H', kind: 'hero', traumas, items }) as unknown as Combatant;
-const t = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', note: '', ...over });
+const t = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', ...over });
 // Prothèse PORTÉE par `trappingId` STABLE (≠ libellé) — c'est ce que `worn()` matche désormais.
 const item = (trappingId: string, equipped = true): ItemInstance =>
   ({ uid: trappingId, trappingId, name: trappingId, kind: 'misc', qualities: [], enc: 0, equipped }) as unknown as ItemInstance;

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { PERSISTENT_CONDITIONS, carryOverState } from './persistence';
-import { traumaFromKind } from './trauma';
+import { traumaById, dechirureFractureFicheId } from './trauma';
+import type { HitLocation } from './types';
+const tk = (k: 'dechirure' | 'fracture', s: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, s, loc), opts, loc);
 import type { Combatant } from './types';
 
 function baseCombatant(over: Partial<Combatant> = {}): Combatant {
@@ -59,7 +61,7 @@ describe('persistence — carryOverState', () => {
     expect(carryOverState(baseCombatant({})).soinRencontreUtilise).toBe(false);
   });
   it('persiste les traumatismes', () => {
-    const c = baseCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'jambeG')] });
+    const c = baseCombatant({ traumas: [tk('fracture', 'mineur', 'jambeG')] });
     const s = carryOverState(c);
     expect(s.traumas.length).toBe(1);
     expect(s.traumas[0].ops?.some((o) => o.op === 'moveScale')).toBe(true);
