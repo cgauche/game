@@ -188,7 +188,7 @@ export const fr = {
   'op.removeCond': '{name} retire {what} {cond}.',
   'op.noCondToRemove': "{name} n'a aucun État à retirer.",
   'op.endPsych': '{name} sort de {psych}.',
-  'op.apAll': '{name} : +{n} PA à toutes les Localisations ({src}{durTxt}).',
+  'op.ap': '{name} : +{n} PA ({src}{durTxt}).',
   'op.corruptionRemove': '{name} : {delta} Point(s) de Corruption (total {total}).',
   'op.corruptionAdd': '{name} : +{amount} Point{s} de Corruption (total {total}).',
   'op.gainResource': '{name} : +{n} Point{s} de {res}{temp} (total {total}).',

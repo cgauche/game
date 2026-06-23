@@ -2114,7 +2114,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "apAll",
+                "op": "ap",
                 "amount": 1
               }
             ]
@@ -3179,7 +3179,7 @@
                 "traitId": "belliqueux"
               },
               {
-                "op": "apAll",
+                "op": "ap",
                 "amount": 2
               },
               {
@@ -5819,7 +5819,7 @@
                 }
               },
               {
-                "op": "apAll",
+                "op": "ap",
                 "amount": 1
               },
               {
@@ -6038,7 +6038,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "apAll",
+                "op": "ap",
                 "amount": {
                   "bonusOf": "FM"
                 }
@@ -10250,7 +10250,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "apAll",
+                "op": "ap",
                 "amount": 1
               }
             ]

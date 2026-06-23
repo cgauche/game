@@ -80,7 +80,7 @@ describe('Effets curés — suffocation (lus de SpellData.effects)', () => {
   it('Transmutation de Chamon : États persistants + 1 PA + suffocation', () => {
     const ops = opsOf('Transmutation de Chamon');
     expect(ops.some((o) => o.op === 'suffocate')).toBe(true);
-    expect(ops.some((o) => o.op === 'apAll')).toBe(true);
+    expect(ops.some((o) => o.op === 'ap')).toBe(true);
     for (const name of ['aveugle', 'assourdi', 'sonne']) {
       expect(ops.some((o) => o.op === 'condition' && o.name === name)).toBe(true);
     }

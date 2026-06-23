@@ -38,7 +38,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   condition: '🌀 Poser un État',
   removeCondition: '🌬️ Retirer un État',
   charMod: '📊 Modif. de caractéristique',
-  apAll: '🛡️ +PA à toutes les Localisations',
+  ap: '🛡️ +PA (Localisation ou toutes)',
   testMod: '📉 Modif. à tous les Tests',
   skillDRBonus: '🥷 +DR à une Compétence (passif)',
   incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
@@ -108,7 +108,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
 const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
   ['🌀 États', ['condition', 'removeCondition']],
-  ['📊 Buffs & caractéristiques', ['charMod', 'apAll', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
+  ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantTalent', 'augmentWeapon']],
@@ -221,7 +221,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'endPsych': return { op: 'endPsych', type: 'frenesie' };
     case 'sbBonus': return { op: 'sbBonus', amount: 1 };
     case 'charMod': return { op: 'charMod', char: 'F', mod: -10 };
-    case 'apAll': return { op: 'apAll', amount: 1 };
+    case 'ap': return { op: 'ap', amount: 1 };
     case 'testMod': return { op: 'testMod', amount: -10 };
     case 'ignoreStatePenalties': return { op: 'ignoreStatePenalties' };
     case 'freeReroll': return { op: 'freeReroll' };
@@ -296,7 +296,7 @@ export function opSummary(o: GameOp): string {
     case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
     case 'attrMod': return `${L} +${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
-    case 'apAll': return `${L} +${formulaSummary(o.amount)} PA`;
+    case 'ap': return `${L} +${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;
     case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
     case 'ignoreStatePenalties': return `${L} ignore les pénalités d’État`;
     case 'freeReroll': return `${L} relance gratuite`;
@@ -347,7 +347,7 @@ export function opSummary(o: GameOp): string {
 
 /** Ops avec un éditeur DÉDIÉ ; toute autre op tombe sur le repli JSON (lisible/modifiable sans perte). */
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
-  'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'apAll', 'testMod',
+  'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
   'summon', 'polymorph', 'lifeSteal',
 ]);
@@ -365,7 +365,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         ))}
       </select>
       <div className="tf-row">
-        {(op.op === 'wounds' || op.op === 'heal' || op.op === 'healCaster' || op.op === 'apAll') && (
+        {(op.op === 'wounds' || op.op === 'heal' || op.op === 'healCaster' || op.op === 'ap') && (
           <FormulaField label="Quantité" value={o.amount} min={0} onChange={(amount) => upd({ amount })} />
         )}
         {op.op === 'corruption' && (

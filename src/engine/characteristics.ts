@@ -57,7 +57,7 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
  */
 export function effectiveArmourAt(c: Combatant, location: keyof Combatant['armour']): number {
   let ap = c.armour[location] ?? 0;
-  for (const e of c.activeEffects ?? []) ap += e.apAll ?? 0;
+  for (const e of c.activeEffects ?? []) ap += (e.apAll ?? 0) + (e.apAt?.[location] ?? 0);
   return ap;
 }
 

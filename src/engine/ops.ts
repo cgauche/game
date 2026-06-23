@@ -204,9 +204,10 @@ export type GameOp =
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
    *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`). */
   | { op: 'charMod'; char: CharKey; mod: number; durationRounds?: Formula }
-  /** PA TEMPORISÉS à toutes les localisations (Armure Aethyrique « +1 PA à toutes les
-   *  Localisations ») — ActiveEffect.apAll, lu par effectiveArmourAt à la mitigation. */
-  | { op: 'apAll'; amount: Formula }
+  /** PA à une Localisation (`loc`) ou à TOUTES (`loc` absent — Armure Aethyrique « +1 PA à toutes les
+   *  Localisations »). Flow de sort → `ActiveEffect` temporisé (apAll/apAt) lu par effectiveArmourAt ;
+   *  `passive` de mutation/trait → armure naturelle permanente lue par mutationArmourBonus. */
+  | { op: 'ap'; loc?: HitLocation; amount: Formula }
   // (Il n'existe PLUS d'op `test` : un Test est un nœud de la STRUCTURE Flow `{kind:'test'}`, jamais une
   //  feuille d'effet — résolu CADENCE-AWARE par `resolveFlowTest` (héros manuel = jet influençable ;
   //  ennemi/auto = inline), avec sa branche `onFail` et sa continuation honorées. Les derniers usages
@@ -741,14 +742,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         charRounds = dur.scale === 'rounds' ? dur.left : null;
         break;
       }
-      case 'apAll': {
+      case 'ap': {
         const n = Math.max(0, resolveFormula(o.amount, ref, rng));
         const dur = durationFromCtx(ctx);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
-          label: ctx.label ?? 'Effet', bonus: 0, duration: dur, apAll: n,
+          label: ctx.label ?? 'Effet', bonus: 0, duration: dur, ...(o.loc ? { apAt: { [o.loc]: n } } : { apAll: n }),
         });
-        lines.push(t('op.apAll', { name: target.name, n, src: ctx.label ?? 'sort', durTxt: dur.scale === 'rounds' ? `, ${t('op.frag.rounds', { n: dur.left })}` : '' }));
+        lines.push(t('op.ap', { name: target.name, n, src: ctx.label ?? 'sort', durTxt: dur.scale === 'rounds' ? `, ${t('op.frag.rounds', { n: dur.left })}` : '' }));
         break;
       }
       case 'corruption': {

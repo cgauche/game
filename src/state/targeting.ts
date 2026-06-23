@@ -56,7 +56,7 @@ const HARMFUL_TARGET_OPS = new Set<string>([
 /** Ops « cible » BÉNÉFIQUES → buff sur allié/soi. Liste partielle ASSUMÉE : un buff non listé retombe
  *  en 'any' (réticule des deux côtés, jamais caché) — pire cas anodin (buff montrable sur un ennemi). */
 const HELPFUL_TARGET_OPS = new Set<string>([
-  'apAll', 'heal', 'cureCriticalWound', 'cureDisease', 'removeCondition', 'grantTrait', 'grantTalent',
+  'ap', 'heal', 'cureCriticalWound', 'cureDisease', 'removeCondition', 'grantTrait', 'grantTalent',
   'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'augmentWeapon', 'giveTrapping', 'freeReroll',
   'gainResource', 'arrowWard', 'attackWardFM', 'castWard', 'domeWard', 'weatherWard', 'mitigateIncoming',
   'ignoreStatePenalties', 'noBreath', 'noHunger', 'preventInfection', 'reduceDiseaseDays', 'skillDRBonus',

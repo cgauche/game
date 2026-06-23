@@ -331,6 +331,8 @@ export interface ActiveEffect {
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
    *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
   apAll?: number;
+  /** PA temporisés à une Localisation précise (op `ap` avec `loc`) — lus par effectiveArmourAt. */
+  apAt?: Partial<Record<HitLocation, number>>;
   /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : le
    *  `TraitInstance` exact posé dans `c.traits`, retiré (une instance) à l'expiration (engine/grantedTraits). */
   grantedTrait?: import('./statEntry').TraitInstance;
