@@ -168,14 +168,14 @@ export function applyTriggeredTestBranch(
   return runSpellFlowLines(c, c, branch, { rng: battleRng(), caster: c, sl: t.sl });
 }
 
-/** Construit l'étape de cascade `triggeredTest` d'un Test de RÉCUPÉRATION d'État (top-level, non opposé) pour
- *  le collecteur de fin de Round (`collectHeroRoundEndUpkeep`). Convention RAW-CORRECTE : `base` = valeur de
- *  Test BRUTE (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` appliquée UNE seule fois dans
- *  `target` — la pénalité d'État de l'Empoisonné/Sonné qui se récupère est comptée une fois (LDB 16), pas deux
- *  (`testValue` l'inclurait déjà). MÊME calcul que la voie inline (ennemi/auto + hors-combat,
- *  `resolveInlineFlowTest`) → héros et ennemi récupèrent à l'identique. */
+/** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : convention RAW-correcte
+ *  `base` BRUT (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` UNE seule fois (LDB 16).
+ *  Partagée par la voie « push » (`resolveFlowTest`, héros manuel mid-cascade) ET le collecteur de fin de
+ *  Round (`collectHeroRoundEndUpkeep` : récupération d'États) → héros et ennemi récupèrent à l'identique.
+ *  `extraMeta` porte le contexte sérialisable d'une réaction (Frappe réactive `freeAttack`, Piège-lame
+ *  `bladeTrap`) ; absent pour une récupération. */
 export function simpleTriggeredTestStep(
-  c: Combatant, ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow,
+  c: Combatant, ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow, extraMeta: Record<string, unknown> = {},
 ): CascadeStep {
   const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
   const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
@@ -184,7 +184,7 @@ export function simpleTriggeredTestStep(
     id: `triggeredTest-${c.id}-${skillLabel}`,
     kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
     base, target: base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c), label: ft.label ?? skillLabel,
-    meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after },
+    meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after, ...extraMeta },
   };
 }
 
@@ -296,13 +296,15 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     || (ft.exceptGroups != null && ft.exceptGroups.some((g) => groupMatch(g, c.groups ?? [])));
   if (gated) { playAfter(ctx.get, ctx.set, c, after, ctx.label); return; }
   const opp = ft.opposed;
-  const base = testValue(c, ft.skill, ft.characteristic, ft.spec);
+  // Pénalité d'État comptée UNE seule fois (RAW : −10 d'Empoisonné/Sonné/… au Test, LDB 16, pas deux) :
+  //  · Test SIMPLE → `base` BRUT (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` (ci-dessous).
+  //  · Test OPPOSÉ → `base` = `testValue` (porte déjà la pénalité d'État) + aucune pénalité ajoutée (penalty 0).
+  const base = opp ? testValue(c, ft.skill, ft.characteristic, ft.spec) : rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
   const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const label = ft.label ?? skillLabel;
-  // Test OPPOSÉ : aucune pénalité d'État supplémentaire (l'op `opposedTest` jetait `testValue` brut des
-  // deux côtés — `testValue` porte DÉJÀ les pénalités d'États ; pas de `combatTestPenalty` en plus). Test
-  // SIMPLE : `combatTestPenalty` comme l'ancien op `test` (byte-fidèle aux chemins Venin/Mâchoires).
+  // Test SIMPLE : `combatTestPenalty` (sur le `base` BRUT → −10 d'État compté une fois). Test OPPOSÉ : 0
+  // (l'op `opposedTest` jetait `testValue` brut des deux côtés ; `testValue` porte déjà la pénalité d'État).
   const penalty = opp ? 0 : combatTestPenalty(c);
   // Test OPPOSÉ : PRÉ-JET de l'attaquant (porteur), FIGÉ, AVANT le jet du défenseur — même ordre RNG que
   // `opposedTest()` (attaquant puis défenseur). Référent = `ctx.caster` (Force du porteur).
@@ -316,24 +318,18 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // conséquence `breakBlade` recompose la marge nette sans re-jeter l'attaquant.
   const btFreeze = ctx.bladeTrap && aT ? { ...ctx.bladeTrap, attackerSL: aT.sl } : ctx.bladeTrap;
   if (roundTestInteractive(c)) {
-    // Héros en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade de combat. La branche +
-    // la continuation `after` voyagent dans le meta (sérialisable) → rejouées par l'applier. En Test
-    // OPPOSÉ, l'attaquant figé `aT` voyage aussi dans le meta → la cascade re-oppose à chaque influence.
-    pushCombatStep(ctx.set, {
-      id: `triggeredTest-${c.id}-${skillLabel}`,
-      kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
-      base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
-      meta: {
-        onSuccess: node.success, onFail: node.fail, after,
-        ...(aT && attacker ? { opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) } } : {}),
-        // Contexte de frappe gratuite (Frappe réactive : la branche success porte `grantFreeAttack`) →
-        // sérialisé pour que l'applier rejoue la VRAIE frappe contre le tiers après le Test influencé.
-        ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}),
-        // Contexte de Piège-lame (la branche success porte `breakBlade`) → sérialisé pour que l'applier
-        // désarme/brise la lame de l'attaquant ciblé après le Test influencé.
-        ...(btFreeze ? { bladeTrap: btFreeze } : {}),
-      },
-    });
+    // Héros en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade. Branche + `after` (et,
+    // pour une réaction, le contexte sérialisable `freeAttack`/`bladeTrap`) voyagent dans le meta → rejoués
+    // par l'applier. Test OPPOSÉ : squelette construit ICI (base=`testValue`, penalty 0, + `aT` figé dans
+    // le meta pour ré-opposer à chaque influence). Test SIMPLE : `simpleTriggeredTestStep` (source unique).
+    const extraMeta = { ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
+    pushCombatStep(ctx.set, aT && attacker
+      ? {
+          id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
+          base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
+          meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
+        }
+      : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, extraMeta));
     return;
   }
   // `exec` (get/set [+ freeAttack/bladeTrap]) TOUJOURS fourni : une branche IMPURE (à hook : interruptFocus /

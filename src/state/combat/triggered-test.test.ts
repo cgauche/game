@@ -4,7 +4,9 @@ import '../combatFlow'; // effet de bord : installe l'applier `triggeredTest`, l
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
-import { addCondition, stacks, hasCondition, COND } from '../../engine/conditions';
+import { addCondition, stacks, hasCondition, combatTestPenalty, COND } from '../../engine/conditions';
+import { rawCombatTestBase } from '../../engine/skills';
+import { DIFFICULTY_MODIFIERS } from '../../engine/types';
 import { resetRule, setRule } from '../../engine/policy';
 import { testScene } from '../../scenes/test-fixture';
 
@@ -63,6 +65,18 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
     expect(step.result).toBeFalsy(); // pas encore lancé → Chance/Résilience possibles
     expect(step.meta?.onSuccess).toBeTruthy(); // la conséquence voyage dans le meta (sérialisable, coop)
     expect(step.meta?.onFail).toBeTruthy();
+  });
+
+  it('RAW : la pénalité d’État (−10 Sonné) est comptée UNE seule fois dans le Test (≠ testValue + combatTestPenalty = −20)', () => {
+    seedBattleRng(7);
+    const { H } = setup();
+    H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
+    addCondition(H, COND.sonne, 2); // H porte Sonné AU MOMENT du Test → ancien double-compte du −10
+    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
+    // `base` = valeur BRUTE (sans pénalité d'État) ; `target` = base + Intermédiaire(0) + `combatTestPenalty` (−10 UNE fois).
+    expect(step.base).toBe(rawCombatTestBase(H, 'resistance'));
+    expect(step.target).toBe(rawCombatTestBase(H, 'resistance') + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(H));
+    expect(combatTestPenalty(H)).toBe(-10); // Sonné = −10 (non-cumul) → compté une fois
   });
 
   it('héros MANUEL : cascadeRoll + cascadeNext retire 1 + DR États Sonné (Résistance réussie)', () => {
