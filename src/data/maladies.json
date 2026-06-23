@@ -255,5 +255,60 @@
       }
     ],
     "immuneAfterCure": true
+  },
+  {
+    "id": "mal-de-mer",
+    "label": "Mal de mer",
+    "desc": "La plupart des gens ont le mal de mer la première fois qu'ils naviguent, mais tous ceux qui le font régulièrement en guérissent après un certain temps. Les elfes ont tendance à être immunisés contre ce mal, au grand agacement des marins nains. Contraction : les Personnages elfes sont immunisés au mal de mer. Pour les autres Personnages, éviter le mal de mer nécessite de réussir un Test de Résistance Complexe (-10) s'ils entreprennent pour la première fois un voyage en mer, ou un Test de Résistance Intermédiaire (+0) par mauvais temps (Vent violent ou plus). Durée : pour le mal de mer venant du manque d'expérience sur les vagues, effectuez un Test de Résistance Intermédiaire (+0) après chaque jour passé en mer. En cas de succès, le Personnage ne souffrira plus jamais de cette forme de mal de mer. Pour le mal de mer parce que l'océan est déchaîné ou à cause d'un autre effet temporaire, effectuez un Test de Résistance Intermédiaire (+0) par heure. Symptômes : malaise, nausée.",
+    "contractDifficulty": "complexe",
+    "incubation": {
+      "n": 0,
+      "sides": 1
+    },
+    "duration": {
+      "n": 1,
+      "sides": 1
+    },
+    "symptoms": [
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "nausee"
+      },
+      {
+        "kind": "persistant",
+        "difficulty": "intermediaire"
+      }
+    ],
+    "immuneAfterCure": true
+  },
+  {
+    "id": "scorbut",
+    "label": "Scorbut",
+    "desc": "Le scorbut peut toucher ceux qui restent en mer pendant de longues périodes. La cause exacte de la maladie n'est pas claire. Les Bretonniens croient que passer trop de temps loin de leur nation bien-aimée est naturellement mauvais pour eux. Certains pensent que c'est le signe d'une faiblesse de caractère. La maladie commence par de la fatigue, de la faiblesse physique et de l'ennui. Puis elle provoque des saignements spontanés et donne un sang trop fluide qui peut se transformer en plaies ouvertes. Enfin, les os du malade se fragilisent et ses dents tombent. Contraction : pour chaque mois passé sans nourriture correcte, le Personnage doit effectuer un Test de Résistance Intermédiaire (+0). En cas d'échec, il a contracté le scorbut. Si le Personnage mange régulièrement de la soupe de chou fermenté, il effectue un Test de Résistance Facile (+40) pour ne pas contracter la maladie. Durée : la maladie persiste jusqu'à 1d10 jours après avoir recommencé à manger régulièrement des fruits et des légumes frais. Symptômes : blessé, intoxication alimentaire, malaise, nausée. 1 % de chances de perdre une dent chaque jour.",
+    "contractDifficulty": "intermediaire",
+    "incubation": {
+      "n": 0,
+      "sides": 1
+    },
+    "duration": {
+      "n": 1,
+      "sides": 10
+    },
+    "symptoms": [
+      {
+        "kind": "blesse"
+      },
+      {
+        "kind": "intoxication"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "nausee"
+      }
+    ]
   }
 ]
