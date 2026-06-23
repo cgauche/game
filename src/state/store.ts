@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { Combatant, CharKey, HitLocation } from '../engine/types';
 import { extendedTestStep } from '../engine/tests';
+import { dissipateSpell } from '../engine/dispel';
 import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
@@ -612,7 +613,7 @@ export interface GameState extends RollFlowActionsMap {
   /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
   counterspellCancel: () => void;
   /** Test Étendu SÉQUENTIEL (LDB 12) : ouvre le flux (ex. crocheter DR 5) ; un Round à la fois. */
-  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; flag?: string }) => void;
+  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; flag?: string; support?: { count: number; bonus: number }; dispel?: { spellId: string; casterId: string; label: string } }) => void;
   // extendedTest{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap, MULTI).
   /** Cumule le DR du Round courant (LDB 12 l.200) ; total < 0 → recommence ; total ≥ cible → réussite. */
   extendedTestNext: () => void;
@@ -1293,6 +1294,13 @@ export const useGame = create<GameState>((set, get) => ({
     if (done) {
       set({ pendingExtendedTest: null, pendingCascade: null }); // ferme la cascade-hôte aussi
       get().log(`${p.label} : réussi (DR cumulé ${total} / ${p.targetDR}).`);
+      if (p.dispel) {
+        // DISSIPATION réussie (LDB 46 l.205) : retire tous les effets du Sort de tous ses porteurs.
+        const b = get().battle;
+        const n = b ? dissipateSpell(b.combatants, p.dispel.spellId, p.dispel.casterId) : 0;
+        if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
+        get().log(`✨ ${p.dispel.label} est dissipé${n > 1 ? ` (${n} cibles libérées)` : ''}.`);
+      }
       if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
       return;
     }

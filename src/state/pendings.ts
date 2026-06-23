@@ -592,6 +592,12 @@ export interface PendingExtendedTest extends PendingBase {
   rounds: ExtendedTestRound[];
   /** Flag de scène posé à la RÉUSSITE (DR cumulé ≥ cible) — gate la suite (porte/serrure d'éditeur). */
   flag?: string;
+  /** SOUTIEN (LDB 12 l.214-225) : le meneur (`actorId`) lance, +10 par soutien plafonné au Bonus de
+   *  Caractéristique (`assistedTest`). Déjà FONDU dans `target` ; conservé pour l'affichage (« +20, 2 soutiens »). */
+  support?: { count: number; bonus: number };
+  /** Issue DISSIPATION (LDB 46 l.204-207) : à la réussite (DR cumulé ≥ NI), retire les effets du Sort
+   *  (`dissipateSpell` sur les combattants) au lieu de poser un flag de scène. */
+  dispel?: { spellId: string; casterId: string; label: string };
 }
 
 /** Paramètres SÉRIALISABLES de la conséquence d'une étape (jamais de closure — coop : le pending est

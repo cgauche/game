@@ -50,6 +50,23 @@ describe('Test Étendu séquentiel (porte DR cumulé)', () => {
     expect(after.rounds).toHaveLength(2); // un nouveau Round s'ouvre (la tâche continue)
   });
 
+  it('Dissipation (LDB 46 l.205) : DR cumulé atteignant le NI retire les effets du sort de ses porteurs', () => {
+    const h = hero();
+    const cible = { id: 'cible', name: 'Cible', kind: 'hero', conditions: [],
+      activeEffects: [{ label: 'Écorce', char: 'Ag', bonus: -10, duration: { scale: 'rounds', left: 5 },
+        spell: { spellId: 'ecorce', ni: 2, casterId: h.id, label: 'Écorce' } }] } as any;
+    useGame.setState({ battle: { round: 1, combatants: [h, cible], log: [] } as any });
+    useGame.getState().startExtendedTest({ actorId: h.id, label: 'Dissiper Écorce', skillLabel: 'Langue (Magick)',
+      target: 60, targetDR: 2, dispel: { spellId: 'ecorce', casterId: h.id, label: 'Écorce' } });
+    const p = useGame.getState().pendingExtendedTest!;
+    // un Round réussi à DR +2 → atteint le NI 2 → dissipation.
+    useGame.setState({ pendingExtendedTest: { ...p, rounds: [{ id: 'round-1', interactive: true, result: { roll: 10, sl: 2, success: true } }] } });
+    useGame.getState().extendedTestNext();
+    expect(useGame.getState().pendingExtendedTest).toBeNull(); // réussi
+    const t = useGame.getState().battle!.combatants.find((c) => c.id === 'cible')!;
+    expect((t.activeEffects ?? []).some((e) => e.spell?.spellId === 'ecorce')).toBe(false); // effets du sort retirés
+  });
+
   it('mêmes verbes d’influence que tout flux : Chance relance, Résilience garantit le Round', () => {
     const h = hero();
     useGame.getState().startExtendedTest({ actorId: h.id, label: 'Forcer', skillLabel: 'Force', target: 30, targetDR: 50 });
