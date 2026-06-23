@@ -2002,5 +2002,60 @@
       "psychType": "phobie",
       "psychIndice": 1
     }
+  },
+  {
+    "id": "absorption",
+    "label": "Absorption",
+    "prefix": null,
+    "suffix": null,
+    "desc": "À la fin du Round, si la créature a un Avantage plus élevé que tous les adversaires engagés, elle absorbe un adversaire de taille égale ou inférieure. Une victime absorbée gagne un nombre d’États Empêtré égal au Bonus de Force de la créature et compte comme étant Empoigné. Une victime absorbée perd le Bonus de Force de la créature en Blessures à la fin de chaque tour ; les Points d’Armure, ou le Bonus d’Endurance, ne réduisent pas cette perte. Le même nombre de Blessures est « guéri » par la créature. Si une victime absorbée est tuée, la créature se retire pour digérer le cadavre durant les jours qui suivent. Toute attaque qui touche la créature inflige une quantité égale de Dégâts à la victime absorbée.",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "amorphe",
+    "label": "Amorphe",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature est un blob amorphe. Il divise par deux toutes les Blessures subies par des dégâts autres que le feu, le froid ou la magie. Il ignore toutes les Blessures critiques et ne peut être détruit qu’en étant réduit à 0 Blessure par le froid extrême, le feu ou la magie. S’il est réduit à 0 Blessure par d’autres moyens, il tombe en torpeur pendant 1d10 Rounds, puis régénère +1 Blessure. Les créatures amorphes évitent les sources intense de chaleur ou de froid.",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "contagieux",
+    "label": "Contagieux",
+    "prefix": "(Type)",
+    "suffix": null,
+    "desc": "La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s’il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "decerebre",
+    "label": "Décérébré",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature est stupide, ne vivant qu’en suivant ses bas instincts ou par compulsion magique. Elle n’a pas d’Initiative, d’Intelligence, de Force Mentale ou de Sociabilité et n’a jamais besoin de les Tester. Pour le calcul des Blessures, on utilise son Bonus de Force chaque fois que le Bonus de Force Mentale est requis. Comme elle n’a pas d’Initiative, elle joue toujours en dernier dans n’importe quel tour.",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "voleur-de-chair",
+    "label": "Voleur de chair",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature, qui doit avoir le Trait Démoniaque, peut se glisser dans le corps de n’importe quel humain qu’elle tue. De plus, elle peut parfaitement incarner ce Personnage, et elle est capable d’imiter les voix et les manies grâce à une capacité étrange. La préparation de la chair prend 1d10 Rounds, après quoi elle peut être portée ou retirée à volonté, ce qui prend 1 Round. Une fois préparée, la chair ne pourrit que si la créature meurt, mais elle peut être endommagée par des moyens normaux. Si la créature le souhaite, elle peut sortir d’un costume de chair porté d’une manière horrible, conférant le Trait Terreur 1 pour 1 Round, mais détruisant aussi la matière, ce qui signifie qu’il ne peut plus être utilisé. Ceux qui connaissent le Personnage imité peuvent tenter un Test d’Intuition Presque Impossible (-40) pour détecter qu’il y a quelque chose qui ne va pas, bien qu’ils ne sachent pas exactement quoi.",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
   }
 ]
