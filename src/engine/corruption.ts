@@ -54,6 +54,9 @@ export interface Mutation {
   note?: string;
   /** Provenance livre/page — LDB 19 IMPLICITE si absent ; EXPLICITE pour les suppléments (EDO Appendice 2…). */
   source?: { book: string; page: number };
+  /** Mutation PHYSIQUE sans manifestation CORPORELLE visible (Souffle du feu, Sang acide, Cri
+   *  assourdissant…) : pas de calque rig attendu — déclaré explicitement (≠ visuel à dessiner). */
+  nonVisual?: boolean;
   /** Apparence COSMÉTIQUE déclarée en DONNÉE (calques du catalogue via `features` + `colors` + `eyes`) —
    *  fusionnée sur le rig quand la mutation est présente (cf. `combatantVisuals`). Type erased : le
    *  moteur ne la lit jamais (comme `Combatant.appearance` côté types). */

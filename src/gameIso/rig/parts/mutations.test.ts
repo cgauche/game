@@ -18,6 +18,9 @@ describe('apparence data-driven des mutations (LDB 19)', () => {
     for (const id of IDS_PHYSIQUES) {
       const m = mutationById(id)!;
       if (id === 'choix-du-mj') { expect(m.appearance).toBeUndefined(); continue; }
+      // Mutation NON-VISUELLE déclarée en donnée (Souffle du feu, Sang acide… : aucune manifestation
+      // corporelle) → pas d'apparence attendue. C'est un état modélisé, pas un visuel différé.
+      if (m.nonVisual) { expect(m.appearance, id).toBeUndefined(); continue; }
       expect(m.appearance, id).toBeTruthy();
       for (const k of m.appearance!.features ?? []) expect(APPEARANCE_ELEMENTS[k], `${id} → ${k}`).toBeTruthy();
     }

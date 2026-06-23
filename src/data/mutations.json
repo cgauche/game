@@ -1078,5 +1078,1068 @@
       "book": "EDOC",
       "page": 67
     }
+  },
+  {
+    "id": "sang-acide",
+    "label": "Sang acide",
+    "desc": "Gagne le Trait de créature Sang corrosif",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "sang-corrosif"
+      }
+    ],
+    "nonVisual": true,
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "bec",
+    "label": "Bec",
+    "desc": "Gagne le Trait de créature Morsure +3",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 3
+      }
+    ],
+    "note": "Note 3 : cette mutation ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "bec"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale",
+    "label": "Tête bestiale",
+    "desc": "Voir page 69",
+    "kind": "physique",
+    "note": "Voir page 69 : sous-table Tête bestiale (jet 1d100 → Ours / Sanglier / Taureau / Chien / Aigle / Rat / Araignée géante / Chèvre / Loup / Serpent) déterminant les Traits et PA octroyés. Note 3 : ne peut pas être dissimulée. (La variante tete-bestiale-chien existe déjà en données.)",
+    "appearance": {
+      "features": [
+        "museau-chien"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "extremites-armees",
+    "label": "Extrémités armées",
+    "desc": "Réduit la Dextérité à 0 de façon permanente.\nVous ne pouvez pas être désarmé",
+    "kind": "physique",
+    "note": "Réduit la Dextérité à 0 de façon permanente (réglage absolu de carac, pas un modificateur — non exprimable par charMod) ; vous ne pouvez pas être désarmé. Note 3 : ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "extremites-armees"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "grandes-oreilles",
+    "label": "Grandes oreilles",
+    "desc": "Gagne le Talent Sens aiguisé (Ouïe)",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "sens-aiguise",
+        "spec": "Ouïe"
+      }
+    ],
+    "note": "Note 1 : peut être dissimulée seulement par des vêtements.",
+    "appearance": {
+      "features": [
+        "oreilles-pointues"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "pattes-d-oiseau",
+    "label": "Pattes d’oiseau",
+    "desc": "Gagne le Trait de créature Arboricole",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "arboricole"
+      }
+    ],
+    "note": "Note 3 : ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "pattes-d-oiseau"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "visage-sans-traits",
+    "label": "Visage sans traits",
+    "desc": "Gagne le Trait de créature Peur 2",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "peur",
+        "indice": 2
+      }
+    ],
+    "note": "Note 1 : peut être dissimulée seulement par des vêtements.",
+    "appearance": {
+      "features": [
+        "visage-sans-traits"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "souffle-du-feu",
+    "label": "Souffle du feu",
+    "desc": "Gagne le Trait de créature Souffle 5 (Feu)",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "souffle",
+        "indice": 5,
+        "arg": "Feu"
+      }
+    ],
+    "nonVisual": true,
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "exophtalmie",
+    "label": "Exophtalmie",
+    "desc": "+10 Initiative",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": 10
+      }
+    ],
+    "note": "Note 1 : peut être dissimulée seulement par des vêtements.",
+    "appearance": {
+      "features": [
+        "exophtalmie"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "peau-ardente",
+    "label": "Peau ardente",
+    "desc": "Les créatures ou les objets qui vous touchent\nphysiquement doivent réussir un Test\nd'Athlétisme ou gagner un État En flammes",
+    "kind": "physique",
+    "note": "Effet déclenché au contact : les créatures ou les objets qui vous touchent physiquement doivent réussir un Test d'Athlétisme ou gagner un État En flammes. Note 3 : ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "peau-ardente"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "carapace",
+    "label": "Carapace",
+    "desc": "+1 Point d'Armure sur deux Localisations\nau hasard",
+    "kind": "physique",
+    "note": "+1 Point d'Armure sur DEUX Localisations tirées au hasard (jet de Localisation à la création de la mutation, pas toutes les Localisations) — non exprimable par un op:ap fixe. Note 1 : peut être dissimulée seulement par des vêtements.",
+    "appearance": {
+      "features": [
+        "ecailles"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "griffes",
+    "label": "Griffes",
+    "desc": "Les mains comptent comme une Arme aux\nDégâts équivalents à votre Bonus de Force",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantNaturalWeapon",
+        "name": "Griffes",
+        "damage": 0,
+        "plusBF": true,
+        "bare": true,
+        "qualities": []
+      }
+    ],
+    "note": "Note 3 : ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "griffes"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "nuage-de-mouches",
+    "label": "Nuage de mouches",
+    "desc": "Gagne le Trait de créature Perturbant",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "perturbant"
+      }
+    ],
+    "note": "Note 3 : ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "nuage-de-mouches"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "crete-sur-la-tete",
+    "label": "Crête sur la tête",
+    "desc": "Gagne le Talent Attirant avec les mutants\net les hommes-bêtes",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "attirant",
+        "spec": "Mutants et hommes-bêtes"
+      }
+    ],
+    "note": "Note 3 : ne peut pas être dissimulée. Talent Attirant restreint aux mutants et hommes-bêtes (la spec porte la restriction).",
+    "appearance": {
+      "features": [
+        "crete-sur-la-tete"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "cri-assourdissant",
+    "label": "Cri assourdissant",
+    "desc": "Gagne le Trait de créature Perturbant",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "perturbant"
+      }
+    ],
+    "nonVisual": true,
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "bras-elastiques",
+    "label": "Bras élastiques",
+    "desc": "Vous pouvez considérer toute arme de\ncorps à corps comme ayant une Allonge de\ndeux pas supérieure",
+    "kind": "physique",
+    "note": "Allonge +2 pas sur toute arme de corps à corps tenue — règle d'Allonge contextuelle, non exprimable par un GameOp passif (dépend de l'arme équipée).",
+    "appearance": {
+      "features": [
+        "bras-elastiques"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "mauvais-oeil",
+    "label": "Mauvais œil",
+    "desc": "Vous pouvez lancer le Sort Mauvais œil\n(page 255 du Livre de Règles) en dépensant\nun Point de Chance, sans faire de test ;\nvous subissez immédiatement les effets\nd'une Incantation imparfaite mineure (page\n234 du Livre de Règles)",
+    "kind": "physique",
+    "note": "Effet déclenché/actif : permet de lancer le Sort Mauvais œil (LDB p.255) en dépensant un Point de Chance, sans Test, puis subir une Incantation imparfaite mineure (LDB p.234). Non modélisable en passif. Note 3 : ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "mauvais-oeil"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "oeil-pedoncule",
+    "label": "Œil pédonculé",
+    "desc": "Voit par dessus ou autour des obstacles",
+    "kind": "physique",
+    "note": "Avantage perceptif (voir par-dessus/autour des obstacles) — situationnel, non exprimable par un GameOp passif. Note 3 : ne peut pas être dissimulée.",
+    "appearance": {
+      "features": [
+        "oeil-pedoncule"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "odeur-pestilentielle",
+    "label": "Odeur pestilentielle",
+    "desc": "Gagne le Trait de créature Perturbant",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "perturbant"
+      }
+    ],
+    "nonVisual": true,
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "fourrure",
+    "label": "Fourrure",
+    "desc": "Vous ne souffrez plus des effets de\nl'Exposition aux climats froids, mais les\neffets de l'Exposition aux climats chauds\nsont doublés (WFJDR, page 181)",
+    "kind": "physique",
+    "note": "Immunité à l'Exposition aux climats froids ; effets de l'Exposition aux climats chauds doublés (LDB p.181). Règle d'environnement (Exposition) hors moteur de combat — laissée en note. Note 3 : ne peut pas être dissimulée. (featureKey alternatif : pelage-massif pour une fourrure plus dense.)",
+    "appearance": {
+      "features": [
+        "pelage"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "branchies",
+    "label": "Branchies",
+    "desc": "Vous pouvez respirer sous l'eau",
+    "kind": "physique",
+    "note": "Vous pouvez respirer sous l'eau",
+    "appearance": {
+      "features": [
+        "branchies"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "sans-tete",
+    "label": "Sans tête",
+    "desc": "Gagne le Trait de créature Peur 2, les coups portés à la tête sont considérés comme ratés",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "peur",
+        "indice": 2
+      }
+    ],
+    "note": "Les coups portés à la tête sont considérés comme ratés.",
+    "appearance": {
+      "features": [
+        "sans-tete"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "sauteur",
+    "label": "Sauteur",
+    "desc": "Votre Mouvement est réduit de 2, et ne peut être augmenté ; gagne le Trait de créature Bond",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": -2
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "bond"
+      }
+    ],
+    "note": "Le Mouvement ne peut être augmenté.",
+    "appearance": {
+      "features": [
+        "pattes-danimaux"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "longs-bras",
+    "label": "Longs bras",
+    "desc": "Si vous et votre opposant avez des armes de même Allonge, votre arme est considérée comme plus longue (Livre de Règles p 297)",
+    "kind": "physique",
+    "note": "Si vous et votre opposant avez des armes de même Allonge, votre arme est considérée comme plus longue (Livre de Règles p 297)",
+    "appearance": {
+      "features": [
+        "longs-bras"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "longues-jambes",
+    "label": "Longues jambes",
+    "desc": "+2 Mouvement",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": 2
+      }
+    ],
+    "appearance": {
+      "legs": 1.3
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "long-cou",
+    "label": "Long cou",
+    "desc": "La moitié des coups au corps sont des coups à la tête",
+    "kind": "physique",
+    "note": "La moitié des coups au corps sont des coups à la tête.",
+    "appearance": {
+      "features": [
+        "long-cou"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "bras-multiples",
+    "label": "Bras multiples",
+    "desc": "Gagne une Attaque gratuite",
+    "kind": "physique",
+    "note": "Gagne une Attaque gratuite (octroi conditionnel d'une attaque supplémentaire — à modéliser via grantFreeAttack).",
+    "appearance": {
+      "features": [
+        "bras-multiples"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "jambes-multiples",
+    "label": "Jambes multiples",
+    "desc": "+1 Mouvement",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": 1
+      }
+    ],
+    "appearance": {
+      "features": [
+        "jambes-multiples"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "oeil-unique",
+    "label": "Œil unique",
+    "desc": "-20 CT",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": -20
+      }
+    ],
+    "appearance": {
+      "features": [
+        "oeil-unique"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "visage-difforme",
+    "label": "Visage difforme",
+    "desc": "Gagne le Trait de créature Peur 1 ; les Personnages, qui tentent de déterminer si vous mentez, subissent une pénalité de -20 à leur Intuition.",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "peur",
+        "indice": 1
+      }
+    ],
+    "note": "Les Personnages, qui tentent de déterminer si vous mentez, subissent une pénalité de -20 à leur Intuition.",
+    "appearance": {
+      "features": [
+        "visage-difforme"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "couleurs-changeantes",
+    "label": "Couleurs changeantes",
+    "desc": "Gagne le Trait de créature Perturbant",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "perturbant"
+      }
+    ],
+    "appearance": {
+      "colors": {
+        "peau": "#a98ac0"
+      }
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-de-mort",
+    "label": "Tête de mort",
+    "desc": "Gagne le Trait de créature Peur 2",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "peur",
+        "indice": 2
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-de-mort"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "peau-herissee-de-pointes",
+    "label": "Peau hérissée de pointes",
+    "desc": "Ne peut pas porter d'armure, +1 Point d'Armure sur toutes les Localisations gagne une attaque gratuite (Trait de créature Arme +4) en faisant une Charge.",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "ap",
+        "amount": 1
+      }
+    ],
+    "note": "Ne peut pas porter d'armure. Gagne une attaque gratuite (Trait de créature Arme +4) en faisant une Charge (effet conditionnel à la Charge — à modéliser via grantFreeAttack / effects onCharge).",
+    "appearance": {
+      "features": [
+        "peau-herissee-de-pointes"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "mains-et-pieds-a-ventouses",
+    "label": "Mains et pieds à ventouses",
+    "desc": "Gagne le Trait de créature Grimpant",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "grimpant"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "mains-et-pieds-a-ventouses"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "queue",
+    "label": "Queue",
+    "desc": "Gagne le Trait de créature Attaque caudale +3\n-10 Dex ; -10 Soc ; +1 Point d'Armure à toutes les Localisations",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "attaque-caudale",
+        "indice": 3
+      },
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      },
+      {
+        "op": "ap",
+        "amount": 1
+      }
+    ],
+    "appearance": {
+      "features": [
+        "queue"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "peau-transparente",
+    "label": "Peau transparente",
+    "desc": "Gagne le Trait de créature Peur 2",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "peur",
+        "indice": 2
+      }
+    ],
+    "appearance": {
+      "colors": {
+        "peau": "#cdd6d0"
+      }
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "bicephale",
+    "label": "Bicéphale",
+    "desc": "Gagne le Talent Ambidextre",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "ambidextre"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "bicephale"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "peau-etrange",
+    "label": "Peau étrange",
+    "desc": "Couleur, ou texture, inhabituelle : orange, rayée, tachetée, à pustules, etc",
+    "kind": "physique",
+    "note": "Couleur, ou texture, inhabituelle : orange, rayée, tachetée, à pustules, etc (purement esthétique, aucun effet de jeu chiffré).",
+    "appearance": {
+      "colors": {
+        "peau": "#c87a3a"
+      }
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "malefrenesie",
+    "label": "Malefrénésie",
+    "desc": "Gagne le Trait de créature Frénésie, quand vous êtes en Frénésie, gagnez temporairement une autre mutation aléatoire",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "frenesie"
+      }
+    ],
+    "note": "Quand vous êtes en Frénésie, gagnez temporairement une autre mutation aléatoire (effet déclenché non modélisé).",
+    "nonVisual": true,
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "pieds-palmes",
+    "label": "Pieds palmés",
+    "desc": "Gagne le Trait de créature Amphibie",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "amphibie"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "pieds-palmes"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "ailes",
+    "label": "Ailes",
+    "desc": "Gagne le Trait de créature Vol 60",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "vol",
+        "indice": 60
+      }
+    ],
+    "appearance": {
+      "features": [
+        "ailes"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-ours",
+    "label": "Tête bestiale (Ours)",
+    "desc": "1 Point d'Armure à la tête ; gagne le Trait de créature Morsure +9",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "tete",
+        "amount": 1
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 9
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-bestiale-ours"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-sanglier",
+    "label": "Tête bestiale (Sanglier)",
+    "desc": "+1 Point d'Armure à la tête ; gagne le Trait de créature Cornes (Défenses)",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "tete",
+        "amount": 1
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "cornes",
+        "arg": "Défenses"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-bestiale-sanglier"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-taureau",
+    "label": "Tête bestiale (Taureau)",
+    "desc": "+1 Point d'Armure à la tête ; gagne le Trait de créature Cornes",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "tete",
+        "amount": 1
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "cornes"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "cornes-taureau"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-aigle",
+    "label": "Tête bestiale (Aigle)",
+    "desc": "Gagne le Trait de créature Morsure +4",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 4
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-bestiale-aigle"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-rat",
+    "label": "Tête bestiale (Rat)",
+    "desc": "Gagne le Trait de créature Morsure +3 et Infecté",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 3
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "infecte"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-bestiale-rat"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-araignee-geante",
+    "label": "Tête bestiale (Araignée géante)",
+    "desc": "Gagne le Trait de créature Morsure +3 et Venin (Intermédiaire)",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 3
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "venin",
+        "arg": "Intermédiaire"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-bestiale-araignee-geante"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-chevre",
+    "label": "Tête bestiale (Chèvre)",
+    "desc": "Gagne le Trait de créature Cornes",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "cornes"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-bestiale-chevre"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-loup",
+    "label": "Tête bestiale (Loup)",
+    "desc": "+1 Point d'Armure à la tête ; gagne le Trait de créature Morsure +6 ; gagne le Talent Sens aiguisé (Odorat)",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "tete",
+        "amount": 1
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 6
+      },
+      {
+        "op": "grantTalent",
+        "talentId": "sens-aiguise",
+        "spec": "Odorat"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "museau-chien"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "tete-bestiale-serpent",
+    "label": "Tête bestiale (Serpent)",
+    "desc": "+1 Point d'Armure à la tête ; gagne les Traits de créature Morsure +3 et Venin (Accessible)",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "tete",
+        "amount": 1
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 3
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "venin",
+        "arg": "Accessible"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "tete-bestiale-serpent"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
   }
 ]
