@@ -1,0 +1,181 @@
+{
+  "base": 75,
+  "factors": [
+    {
+      "id": "paie-genereuse",
+      "label": "La paie est généreuse",
+      "effect": "+2d10"
+    },
+    {
+      "id": "capitaine-competent",
+      "label": "Le capitaine est compétent et/ou prend de bonnes décisions",
+      "effect": "+2d10"
+    },
+    {
+      "id": "faveur-de-manann",
+      "label": "Les circonstances à bord vont très certainement attirer la faveur de Manann",
+      "effect": "+1d10"
+    },
+    {
+      "id": "un-officier-pour-10",
+      "label": "Un officier au moins pour 10 membres d'équipage",
+      "effect": "+1d10"
+    },
+    {
+      "id": "capitaine-vaillant",
+      "label": "Le capitaine se montre vaillant face au danger",
+      "effect": "+1d10"
+    },
+    {
+      "id": "nourriture-au-dessus-des-rations",
+      "label": "La nourriture ne se résume pas à de simples rations de base",
+      "effect": "+1d10"
+    },
+    {
+      "id": "bon-presage",
+      "label": "Un bon présage a été vu",
+      "effect": "+1d10"
+    },
+    {
+      "id": "paie-reguliere",
+      "label": "La paie est régulière",
+      "effect": "+1d10"
+    },
+    {
+      "id": "relache-a-terre-accordee",
+      "label": "Le navire a accosté dans un port et l'équipage a eu la permission de faire relâche à terre",
+      "effect": "+1d10"
+    },
+    {
+      "id": "manque-de-bras",
+      "label": "L'équipage manque de bras",
+      "effect": "-1d10"
+    },
+    {
+      "id": "pas-de-port-depuis-une-semaine",
+      "label": "Le navire n'a pas vu de port depuis une semaine",
+      "effect": "-1d10"
+    },
+    {
+      "id": "mauvais-presage",
+      "label": "Un mauvais présage a été vu",
+      "effect": "-1d10"
+    },
+    {
+      "id": "paie-irreguliere",
+      "label": "La paie est irrégulière",
+      "effect": "-1d10"
+    },
+    {
+      "id": "eaux-non-cartographiees",
+      "label": "Le bateau navigue dans des eaux non cartographiées",
+      "effect": "-1d10"
+    },
+    {
+      "id": "monstre-marin-vu",
+      "label": "Un monstre marin a été vu",
+      "effect": "-1d10"
+    },
+    {
+      "id": "nourriture-biscuits-de-mer",
+      "label": "La nourriture est uniquement composée de biscuits de mer",
+      "effect": "-1d10"
+    },
+    {
+      "id": "relache-a-terre-refusee",
+      "label": "Le navire a accosté dans un port, mais l'équipage n'a pas eu la permission de faire relâche à terre",
+      "effect": "-2d10"
+    },
+    {
+      "id": "eaux-hostiles",
+      "label": "Le bateau se trouve dans des eaux hostiles",
+      "effect": "-2d10"
+    },
+    {
+      "id": "moins-un-officier-pour-30",
+      "label": "Moins d'un officier pour 30 membres d'équipage",
+      "effect": "-2d10"
+    },
+    {
+      "id": "deplaisir-de-manann",
+      "label": "Les circonstances à bord vont très certainement susciter le déplaisir de Manann",
+      "effect": "-2d10"
+    },
+    {
+      "id": "nourriture-insuffisante",
+      "label": "La nourriture n'est même pas suffisante pour constituer une ration de base",
+      "effect": "-2d10"
+    },
+    {
+      "id": "maladie-fait-rage",
+      "label": "La maladie fait rage au sein de l'équipage",
+      "effect": "-2d10"
+    },
+    {
+      "id": "capitaine-lache",
+      "label": "Le capitaine se montre lâche face au danger",
+      "effect": "-2d10"
+    },
+    {
+      "id": "capitaine-manque-de-respect",
+      "label": "Le capitaine traite l'équipage avec un manque de respect manifeste",
+      "effect": "-2d10"
+    },
+    {
+      "id": "capitaine-incompetent",
+      "label": "Le capitaine est incompétent et/ou prend de mauvaises décisions",
+      "effect": "-2d10"
+    },
+    {
+      "id": "paie-chiche",
+      "label": "La paie est chiche",
+      "effect": "-2d10"
+    },
+    {
+      "id": "pas-de-paie",
+      "label": "Pas de paie",
+      "effect": "-3d10"
+    },
+    {
+      "id": "moins-un-officier-pour-50",
+      "label": "Moins d'un officier pour 50 membres d'équipage",
+      "effect": "-3d10"
+    }
+  ],
+  "bands": [
+    {
+      "min": 101,
+      "max": 9999,
+      "id": "mene-de-main-de-maitre",
+      "captainCmdDR": 2,
+      "crewTestDR": 1,
+      "desc": "Mené de main de maître ! Les Tests de Commandement effectués par le capitaine bénéficient de +2 DR. Tous les Tests d'équipage bénéficient de +1 DR."
+    },
+    {
+      "min": 76,
+      "max": 100,
+      "id": "excellent-equipage",
+      "captainCmdDR": 1,
+      "crewTestDR": 0,
+      "desc": "Un excellent équipage. Les Tests de Commandement effectués par le capitaine bénéficient de +1 DR."
+    },
+    {
+      "min": 51,
+      "max": 75,
+      "id": "equipage-satisfait",
+      "captainCmdDR": 0,
+      "crewTestDR": 0,
+      "desertionRoll": 4,
+      "desc": "Un équipage satisfait. Si l'équipage reçoit la permission de faire relâche à terre, lancez 1d100 pour chaque membre d'équipage. Sur un résultat de 04 ou moins, ce membre ne revient pas sur le bateau."
+    },
+    {
+      "min": -9999,
+      "max": 50,
+      "id": "canailles",
+      "captainCmdDR": -1,
+      "crewTestDR": -1,
+      "desertionRoll": 16,
+      "desc": "Des canailles que je ne parviens pas à mater. Les Tests de Commandement effectués par le capitaine subissent –1 DR. Tous les Tests d'équipage subissent –1 DR. Si l'équipage reçoit la permission de faire relâche à terre, lancez 1d100 pour chaque membre d'équipage. Sur un résultat de 16 ou moins, ce membre ne revient pas sur le bateau."
+    }
+  ]
+}
