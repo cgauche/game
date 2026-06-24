@@ -1,13 +1,18 @@
 # Modèle de combat naval tactique (MDG ch.12-14)
 
-> Spec d'architecture du combat naval **sur la grille iso**. Complète le découpage en dalles (plan « Swift
-> Sutton »). But : qu'on construise **la bonne chose une fois** — postes/équipage/tir/manœuvre cohérents,
-> zéro système parallèle, zéro contenu en dur. Toute règle est RAW citable (`MDG ch.N l.X`).
+> Spec d'architecture du combat naval. But : qu'on construise **la bonne chose une fois** — postes/équipage/
+> tir/manœuvre cohérents, zéro système parallèle, zéro contenu en dur. Toute règle est RAW citable
+> (`MDG ch.N l.X`). **Modèle à DEUX échelles** (§1bis) : couche **Mer** opérationnelle (jetons-navires,
+> bordées, manœuvre) ⇄ couche **Pont** tactique (abordage = combat terrestre normal). ⚠ MDG n'a **aucun
+> mini-jeu d'abordage** (grappins/traversée ABSENTS du RAW) → on ne l'invente pas ; **la collision** est le
+> pont entre les couches.
 
 ## 1. Objectif & invariants
 
-Le groupe manœuvre un navire sur la grille, **oriente le cap pour aligner une bordée**, lâche des batteries,
-éperonne, aborde — à la profondeur du combat terrestre. Invariants (non négociables) :
+Le groupe manœuvre un navire, **oriente le cap pour aligner une bordée**, lâche des batteries, éperonne,
+aborde. **Deux échelles** (§1bis) : sur la **Mer**, le navire est un jeton-coque qui agit en unité (Tests
+d'équipage) ; à l'**abordage**, on descend au **Pont** person-scale (combat terrestre normal). Invariants
+(non négociables) :
 
 - **Navire = Combattant-coque** (`bodyShape:'vehicule'`), jamais un type `Ship` parallèle → hérite
   dégâts/Critiques/États/footprint/cap(`Dir8`)/ciblage du moteur existant.
@@ -21,6 +26,41 @@ Le groupe manœuvre un navire sur la grille, **oriente le cap pour aligner une b
 - **Généralité avant naval** : une pièce SERVIE (*Arme d'équipe*) est un concept **sol + navire** ; le naval =
   la spécialisation « montée sur une coque ». La machinerie d'arme servie ne nomme rien de naval — c'est le
   SUPPORT (coque vs affût au sol) qui paramètre position+cap.
+
+## 1bis. Deux échelles (Mer opérationnelle ⇄ Pont tactique) — modèle RAW-fidèle
+
+Une bataille réaliste = ~5 navires de toutes tailles, certains pilonnant à ~150 m pendant qu'un abordage a
+lieu ailleurs, les PJ étant 4 **parmi ~50 marins**. Le RAW (MDG) gère ça à **deux échelles**, jamais une seule :
+
+- **Couche MER (opérationnelle)** — spatialisation des **valeurs métriques RAW** (M en m/Round `ch.13 l.41` ;
+  portées canon 50/75/150 m `ch.12 l.401` ; 1 pt de Distance = 10 m `ch.13 l.362`). Chaque navire = **un
+  jeton-coque** (cap `Dir8`, footprint) qui **agit en unité** via des **Tests d'équipage** (manœuvre/batterie/
+  éperonnage). L'équipage est **abstrait** : les PJ tiennent des **rôles** et « la performance des Personnages
+  représente celle de tout l'équipage » (`ch.14 l.39`) — jamais 50 tokens, juste un Moral + un % d'effectif.
+- **Couche PONT (tactique)** — **combat terrestre NORMAL** (`ch.13 l.612` : « gérée comme une attaque entre
+  personnages »), person-scale. C'est ce que le scénario 25 exerce déjà.
+- **Pont entre les couches = la COLLISION.** ⚠ MDG n'a **AUCUN** mini-jeu d'abordage (grappins, traversée,
+  capture = **absents du RAW**) → **ne rien inventer**. La poursuite réduit la Distance ; à **Distance 0 →
+  collision** (`resolveCollision`) → coques adjacentes → mêlée normale. Réutilise `engage` (verrou de coques)
+  et `pathTo` (traversée = déplacement normal). La canonnade **continue** pendant l'abordage (`ch.14 l.126`) →
+  une bordée pleut sur le pont actif (éclats = Indice × 9 Dégâts, `ch.13 l.668`).
+
+### Bateau-prefab : le PONT est une facette du TYPE de navire
+
+Chaque type a son **pont propre**, authoré **une fois**, instancié dans un scénario **sans recréer** de scène :
+nouvelle facette `deck` sur `VehicleData` (`vehicles.json`) — plan ASCII (`parseWalledAscii`) + emplacements de
+postes/équipage + arêtes de passerelle. Un scénario **pose des jetons-navires** (réf → type) ; le pont suit le
+type. À l'abordage, le Pont est **cousu à la volée** depuis les `deck` des navires engagés.
+
+### Améliorations (MDG ch.12) — modifient PHYSIQUEMENT le navire et son pont
+
+Distinction RAW (`ch.12 l.81,169`) : **Traits** (construction, fixes) vs **Améliorations** (ajout/retrait). Un
+navire-instance = **type + améliorations** (comme un `ItemInstance` + qualités). Le **pont effectif** = gabarit
+de base **+ résolveur d'améliorations** — même patron que le rig et `applyOps` : **Sabord** → poste `sabord`
+(couvert total `ch.12 l.356`) ; **Bélier** → proue (+ `resolveCollision`) ; **Nid-de-pie** → poste de Vigie ;
+**Clinfoc** → +10 % de longueur ; **Blindage** → PA de coque ; **Lissage** → M +1. **Mécanique = RAW** (couvert,
+PA, longueur, Perception) ; **placement sur le pont = authoré** (couche rig, comme l'apparence d'une mutation).
+Accroches existantes : `ship.traits`/`hull.traits`, `ShipPoste.sabord`.
 
 ## 2. Pièce SERVIE = concept GÉNÉRAL (sol + navire) ; le poste naval en est un cas
 
@@ -115,17 +155,22 @@ dans l'éditeur, jouables via le menu 🧪.
 
 ## 7. Découpage d'exécution révisé (ce modèle)
 
-1. **`CrewedWeapon` sur un SUPPORT** (général) : schéma + spawn posent les pièces sur leur support (coque
-   navale `hull.postes` OU affût au sol). *(remplace « octroyer l'arme au servant » ; le cas héros-équipé
-   `de595ce8` reste intact.)*
-2. **`crewedPenalty(present, indice)`** (engine, pur, TDD) + lecture de l'Indice depuis la qualité — réutilisable
-   sièges au sol.
-3. **Résolution support-depuis-servant** + **extension d'`availableAttacks`** : « servir la pièce X »
-   (arc+portée intrinsèques ; arc relatif au cap du support — coque ou affût). UN point pour réticule/clic/IA.
-4. **Recharge d'équipage** : brancher `assistBonus`/Soutien sur `FLOWS.reload`.
-5. **Batterie** (D3e) : action navire → `resolveCrewTestByRoles('batterie')` → DR sur tous les postes d'une bordée.
-6. **Manœuvre** (D3b) : `FLOWS.shipManeuver` → tourne le `Dir8`, avance ; re-mappe les arcs.
-7. **Abordage/distribution** (D3g) ; **Critiques canon** sur `hull.postes`.
+État au fil de l'eau (✅ fait · ⏳ à faire) :
 
-Recette navigateur à chaque étape jouable (`__wfrp`, combat manuel) : aligner une bordée → batterie → éperonner
-→ aborder ; 0 erreur console ; un scénario 🧪 dédié à côté de `25-bataille-navale`.
+1. ✅ **Poste sur un SUPPORT** : le spawn pose les pièces sur la coque (`hull.postes` → `applyShipPostes`) ;
+   le cas héros-équipé `de595ce8` reste intact.
+2. ✅ **`crewedPenalty(present, indice)`** (engine, pur, TDD).
+3. ✅ **Servir un poste** : `availableAttacks` expose « Servir <arme> » (`weaponUid` ÉPINGLÉ, le servant garde
+   son arme de mêlée), arc+portée intrinsèques ; `firedAttackBlock` honore le `weaponUid` (réticule/clic/IA,
+   symétrie avec `firedWeapon`). Scénario 25 sans triche (pierriers = postes de la barge amie).
+4. ⏳ **Recharge d'équipage** : brancher `assistBonus`/Soutien sur `FLOWS.reload`.
+5. ⏳ **Batterie** (D3e) : action navire → `resolveCrewTestByRoles('batterie')` → DR sur tous les postes d'une bordée.
+6. ⏳ **Manœuvre** (D3b) : `FLOWS.shipManeuver` → tourne le `Dir8`, avance ; re-mappe les arcs. Inclut l'**init
+   du cap au spawn** (`facing` depuis l'entité authorée — lacune POC à combler) pour que l'arc soit réel en jeu.
+7. ⏳ **Fondation bateau-prefab + Améliorations** (§1bis) : facette `deck` sur `VehicleData` + résolveur d'améliorations.
+8. ⏳ **Composition du Pont + abordage** (collision → `engage` → coudre les ponts) ; **Critiques canon**
+   (« Canon perdu/détaché », `ch.13 l.763-765`) via op `removeShipPoste` sur `hull.postes`.
+9. ⏳ **Scène Mer + dispatch de tour à vue commutée** (navire acteur d'initiative ; vue Mer⇄Pont selon l'acteur).
+
+Recette navigateur à chaque étape jouable (`__wfrp`, combat manuel) : servir un poste → aligner une bordée →
+batterie → éperonner → aborder ; 0 erreur console ; scénario 🧪 dédié à côté de `25-bataille-navale`.
