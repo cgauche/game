@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shipHasNavalTrait, navalTraitLevel, navalEffectSum, hullArmourBonus, belierRam, hasDeckCover, effectiveDeckPostes } from './navalTraits';
+import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalSkillTestDR, hullArmourBonus, belierRam, hasDeckCover, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { findVehicleById } from '../data';
 
@@ -30,18 +30,41 @@ describe('shipHasNavalTrait / navalTraitLevel — lecture des libellés verbatim
   });
 });
 
-describe('navalEffectSum — effet lu dans le catalogue (× Indice pour un Trait ranked)', () => {
-  it('Lissage → moveBonus 1 ; Peu maniable → maneuverDR −1/niveau ; Blindage fer → hullAP 2 ; sans champ → 0', () => {
-    expect(navalEffectSum(['Lissage'], 'moveBonus')).toBe(1);
-    expect(navalEffectSum(['Peu maniable'], 'maneuverDR')).toBe(-1);
-    expect(navalEffectSum(['Peu maniable 3'], 'maneuverDR')).toBe(-3); // × Indice
-    expect(navalEffectSum(['Blindage (fer)'], 'hullAP')).toBe(2);
-    expect(navalEffectSum(['Robuste'], 'maneuverDR')).toBe(0); // entrée sans ce champ → 0
+describe('navalPassiveOps — effets en GameOp (langue unique), répétés ×Indice (Trait ranked)', () => {
+  it('aplatit le `passive` du catalogue : Lissage → moveMod ; Peu maniable → 2× skillDRBonus (Ramer/Voile)', () => {
+    expect(navalPassiveOps(['Lissage'])).toEqual([{ op: 'moveMod', mod: 1 }]);
+    expect(navalPassiveOps(['Peu maniable'])).toEqual([
+      { op: 'skillDRBonus', skill: 'ramer', bonus: -1 },
+      { op: 'skillDRBonus', skill: 'voile', bonus: -1 },
+    ]);
+    // ranked → le bloc `passive` est répété par niveau (« Peu maniable 3 » = 3× les deux ops).
+    expect(navalPassiveOps(['Peu maniable 3'])).toHaveLength(6);
+    expect(navalPassiveOps(['Robuste'])).toEqual([]); // effet déféré : pas de `passive`
+    expect(navalPassiveOps(undefined)).toEqual([]);
   });
 });
 
-describe('hullArmourBonus — Blindage, valeurs en DONNÉE (MDG ch.12 l.234/236)', () => {
-  it('Fer → 2 PA, Bronze → 1 PA (lus dans naval-traits.json) ; hors catalogue → 0', () => {
+describe('navalMoveMod — Lissage → M, op moveMod (MDG ch.12 l.293)', () => {
+  it('Lissage → +1 ; sans Lissage → 0', () => {
+    expect(navalMoveMod(['Lissage'])).toBe(1);
+    expect(navalMoveMod(['Bélier', 'Sabord'])).toBe(0);
+    expect(navalMoveMod(undefined)).toBe(0);
+  });
+});
+
+describe('navalSkillTestDR — Peu maniable → DR de Voile/Ramer, op skillDRBonus (MDG ch.12 l.173)', () => {
+  it('−1 DR/niveau aux Tests de Voile ET de Ramer ; autre compétence ou Trait → 0', () => {
+    expect(navalSkillTestDR(['Peu maniable'], 'voile')).toBe(-1);
+    expect(navalSkillTestDR(['Peu maniable'], 'ramer')).toBe(-1);
+    expect(navalSkillTestDR(['Peu maniable 3'], 'voile')).toBe(-3); // × Indice
+    expect(navalSkillTestDR(['Peu maniable'], 'navigation')).toBe(0); // ne touche pas les autres compétences
+    expect(navalSkillTestDR(['Robuste'], 'voile')).toBe(0);
+    expect(navalSkillTestDR(undefined, 'voile')).toBe(0);
+  });
+});
+
+describe('hullArmourBonus — Blindage → PA de coque, op `ap` (MÊME op qu’une mutation ; MDG ch.12 l.234/236)', () => {
+  it('Fer → 2 PA, Bronze → 1 PA (sommés depuis le `passive`) ; hors catalogue → 0', () => {
     expect(hullArmourBonus(['Blindage (fer)'])).toBe(2);
     expect(hullArmourBonus(['Blindage (bronze)'])).toBe(1);
     expect(hullArmourBonus(['Blindage'])).toBe(0); // pas d'entrée générique : le matériau (bronze/fer) est requis

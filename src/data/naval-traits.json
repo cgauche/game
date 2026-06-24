@@ -4,10 +4,21 @@
     "label": "Peu maniable",
     "kind": "trait",
     "ranked": true,
-    "maneuverDR": -1,
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "ramer",
+        "bonus": -1
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "voile",
+        "bonus": -1
+      }
+    ],
     "source": {
       "book": "MDG",
-      "page": 96
+      "page": 97
     },
     "desc": "Les bateaux utilitaires conçus pour travailler près du rivage ou sur une mer calme sont assemblés à la va-vite par des constructeurs navals amateurs ou commandés par des propriétaires qui veulent rogner sur le coût. Ce vaisseau mal conçu peut prendre jusqu'à 3 niveaux du Trait Peu maniable pour représenter ses défauts de fabrication. Chaque niveau impose une pénalité de –1 DR sur tous les Tests de **Ramer** et de **Voile**."
   },
@@ -18,7 +29,7 @@
     "ranked": true,
     "source": {
       "book": "MDG",
-      "page": 96
+      "page": 97
     },
     "desc": "Ce bateau est bâti pour le combat, avec des renforts et des plaques de bois et de métal ajoutés à des endroits stratégiques. Chaque niveau dans ce Trait ajoute 10 à l'Endurance d'un vaisseau. Un même navire peut posséder jusqu'à 3 niveaux de Renforcé."
   },
@@ -28,7 +39,7 @@
     "kind": "trait",
     "source": {
       "book": "MDG",
-      "page": 96
+      "page": 97
     },
     "desc": "Généralement, les navires robustes ne payent pas de mine, mais sont bien fabriqués. Ce sont des modèles fiables, qui ont fait leurs preuves en haute mer lors des pires tempêtes qui soient. Tout ce qui aurait pu se détacher de ce bateau l'aurait déjà fait à ce stade. Un navire Robuste reçoit +2 DR sur ses Tests d'équipage d'Affaler les voiles (voir page 123)."
   },
@@ -39,7 +50,7 @@
     "ranked": true,
     "source": {
       "book": "MDG",
-      "page": 96
+      "page": 97
     },
     "desc": "Les bateaux Solides sont construits pour endurer les rigueurs de la guerre. Un même navire peut posséder jusqu'à trois niveaux de Solide et chaque niveau augmente les Blessures du vaisseau de 30 %."
   },
@@ -47,8 +58,10 @@
     "id": "belier",
     "label": "Bélier",
     "kind": "amelioration",
-    "ramIC": 5,
-    "ramAP": 5,
+    "ram": {
+      "ic": 5,
+      "ap": 5
+    },
     "source": {
       "book": "MDG",
       "page": 97
@@ -59,34 +72,51 @@
     "id": "blindage-bronze",
     "label": "Blindage (bronze)",
     "kind": "amelioration",
-    "hullAP": 1,
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "corps",
+        "amount": 1
+      }
+    ],
     "source": {
       "book": "MDG",
       "page": 97
     },
-    "desc": "Le blindage d'un vaisseau fonctionne à peu près comme l'armure d'un personnage. Les Dégâts des coups qui touchent la Coque sont réduits d'un nombre de points égal aux PA, puis d'un nombre de points égal au BE. Contrairement à une armure personnelle, le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques.\n\n**Bronze :** la Coque bénéficie d'1 PA."
+    "desc": "Le Blindage ne peut être installé que sur des chantiers navals spécialisés et nécessite les compétences de forgerons et de constructeurs de navires experts en la matière. Ajouter le blindage prend deux semaines pour les navires Petits à Moyens et un mois pour les navires plus grands que Moyens.\n\nLe blindage d'un vaisseau fonctionne à peu près comme l'armure d'un personnage. Les Dégâts des coups qui touchent la Coque sont réduits d'un nombre de points égal aux PA, puis d'un nombre de points égal au BE. Contrairement à une armure personnelle, le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques.\n\n**Bronze :** la Coque bénéficie d'1 PA."
   },
   {
     "id": "blindage-fer",
     "label": "Blindage (fer)",
     "kind": "amelioration",
-    "hullAP": 2,
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "corps",
+        "amount": 2
+      }
+    ],
     "source": {
       "book": "MDG",
       "page": 97
     },
-    "desc": "Le blindage d'un vaisseau fonctionne à peu près comme l'armure d'un personnage. Les Dégâts des coups qui touchent la Coque sont réduits d'un nombre de points égal aux PA, puis d'un nombre de points égal au BE. Contrairement à une armure personnelle, le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques.\n\n**Fer :** la Coque bénéficie de 2 PA ; si le vaisseau devient Sali (voir page 105), les plaques de fer rouillent au point de devenir inutiles et les PA sont retirés."
+    "desc": "Le Blindage ne peut être installé que sur des chantiers navals spécialisés et nécessite les compétences de forgerons et de constructeurs de navires experts en la matière. Ajouter le blindage prend deux semaines pour les navires Petits à Moyens et un mois pour les navires plus grands que Moyens.\n\nLe blindage d'un vaisseau fonctionne à peu près comme l'armure d'un personnage. Les Dégâts des coups qui touchent la Coque sont réduits d'un nombre de points égal aux PA, puis d'un nombre de points égal au BE. Contrairement à une armure personnelle, le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques.\n\n**Fer :** la Coque bénéficie de 2 PA ; si le vaisseau devient Sali (voir page 105), les plaques de fer rouillent au point de devenir inutiles et les PA sont retirés."
   },
   {
     "id": "lissage",
     "label": "Lissage",
     "kind": "amelioration",
-    "moveBonus": 1,
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": 1
+      }
+    ],
     "source": {
       "book": "MDG",
       "page": 97
     },
-    "desc": "La coque du bateau est polie pour lisser toute irrégularité risquant de causer une résistance inutile et donc de ralentir. Le Lissage initial d'une coque prend une semaine sur un chantier naval pour les bateaux Minuscules à Moyens et deux semaines pour les bateaux plus grands que Moyens. Une coque polie fournit M +1 au bateau."
+    "desc": "La coque du bateau est polie pour lisser toute irrégularité risquant de causer une résistance inutile et donc de ralentir. Le Lissage initial d'une coque prend une semaine sur un chantier naval pour les bateaux Minuscules à Moyens et deux semaines pour les bateaux plus grands que Moyens. Une coque polie fournit M +1 au bateau.\n\nLe coût pour réparer une coque polie est supérieur à la normale de 50 % (voir page 116). Des réparations moins onéreuses font perdre les bénéfices du Lissage."
   },
   {
     "id": "sabord",

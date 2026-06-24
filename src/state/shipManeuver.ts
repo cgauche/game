@@ -13,7 +13,7 @@ import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
-import { navalEffectSum } from '../engine/navalTraits';
+import { navalMoveMod, navalSkillTestDR } from '../engine/navalTraits';
 import { findVehicleById } from '../data';
 import type { Combatant } from '../engine/types';
 import type { Get } from './flowTypes';
@@ -50,12 +50,12 @@ export function maneuverShip(get: Get, shipId: string, turnSteps: number, helmsm
   // Test de Navigation du barreur (Intermédiaire +0) → DR brut ; le Man s'ajoute dans resolveShipManeuver.
   const navDR = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()).sl : 0;
   // Traits du TYPE (`ship.traits`) + Améliorations d'INSTANCE (`ship.upgrades`) → liste navale effective.
-  // Effets de manœuvre lus en DONNÉE (`naval-traits.json`) : « Peu maniable » → `maneuverDR` (−1/niveau, MDG
-  // ch.12 l.173) — DISTINCT du Man (colonnes séparées) → cumulé via l'`extraDR` ; « Lissage » → `moveBonus`
-  // (M +1, l.293) → ajouté au Mouvement de base.
+  // Effets de manœuvre lus en GameOp (`naval-traits.json`, langue unique) : « Peu maniable » → op
+  // `skillDRBonus` sur la compétence du Test (Voile/Ramer, −1/niveau, MDG ch.12 l.173) — DISTINCT du Man
+  // (colonnes séparées) → cumulé via l'`extraDR` ; « Lissage » → op `moveMod` (M +1, l.293) → ajouté au M de base.
   const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
   const out = resolveShipManeuver(
-    navDR, baseM + navalEffectSum(navalTraits, 'moveBonus'), manoeuvre, navalEffectSum(navalTraits, 'maneuverDR'),
+    navDR, baseM + navalMoveMod(navalTraits), manoeuvre, navalSkillTestDR(navalTraits, skillId),
   );
   if (out.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
   else get().log(`${helm?.name ?? "L'équipage"} rate la manœuvre de ${ship.name} (DR ${out.dr}) — le cap tient.`);

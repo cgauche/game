@@ -796,12 +796,14 @@ export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) =>
 export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
 
 /** Traits & Améliorations de navire (MDG ch.12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
- *  verbatim + champs d'EFFET) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur d'effet
- *  codée en dur). `kind` distingue Trait (construction) et Amélioration (ajout/retrait) ; `ranked` = prend un
- *  Indice (« Renforcé 2 », « Peu maniable 1 »). Champs d'effet RUNTIME (absent = pas d'effet mécanisé /
- *  construction déjà bakée dans les colonnes du véhicule) : `hullAP` (Blindage → PA de coque), `moveBonus`
- *  (Lissage → M), `maneuverDR` (Peu maniable → DR de manœuvre/niveau), `ramIC`/`ramAP` (Bélier → collision),
- *  `deckCover` (Sabord → couvert total au pont). */
+ *  verbatim + effet) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur codée en dur).
+ *  `kind` distingue Trait (construction) et Amélioration (ajout/retrait) ; `ranked` = prend un Indice
+ *  (« Renforcé 2 », « Peu maniable 1 »). L'EFFET mécanique passe par la langue UNIQUE `GameOp[]` (`passive`,
+ *  MÊME vocabulaire/éditeur que traits & mutations) — `ap` (Blindage → PA de coque), `moveMod` (Lissage → M),
+ *  `skillDRBonus` (Peu maniable → DR des Tests de Voile/Ramer). Restent en CHAMP DE DOMAINE les sous-systèmes
+ *  navire hors vocabulaire combattant : `ram` (Bélier → collision proue/frontale) et `deckCover` (Sabord →
+ *  couvert de pont). Absent = pas d'effet mécanisé (Robuste déféré) ou déjà baké dans les colonnes du véhicule
+ *  (Renforcé/Solide → E/B). */
 export interface NavalTraitData {
   id: string;
   /** Libellé VERBATIM de BASE (sans Indice) — la clé d'appariement avec `ship.traits`/`Combatant.upgrades`. */
@@ -809,13 +811,16 @@ export interface NavalTraitData {
   kind: 'trait' | 'amelioration';
   source?: { book: string; page: number };
   desc: string;
-  /** Prend un Indice (le libellé authoré peut être « Renforcé 2 ») — l'effet est multiplié par le niveau. */
+  /** Prend un Indice (le libellé authoré peut être « Renforcé 2 ») — l'effet `passive` est répété par niveau. */
   ranked?: boolean;
-  hullAP?: number;
-  moveBonus?: number;
-  maneuverDR?: number;
-  ramIC?: number;
-  ramAP?: number;
+  /** Effet mécanique en `GameOp[]` (langue unique) — lu par `navalPassiveOps` puis filtré par effet
+   *  (`ap`/`moveMod`/`skillDRBonus`), répété ×Indice si `ranked`. MÊME éditeur `GameOpEditor` que les traits. */
+  passive?: import('../engine/ops').GameOp[];
+  /** Bélier (MDG ch.12 l.221) : bonus de COLLISION (géométrie proue/frontale) — sous-système navire hors
+   *  vocabulaire combattant (≠ `ap` qui mitige TOUT) → injecté dans `resolveCollision` via `belierRam`. */
+  ram?: { ic: number; ap: number };
+  /** Sabord (MDG ch.12 l.364) : la Coque offre un COUVERT total à ses postes — géométrie de Pont, consommée
+   *  par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
   deckCover?: boolean;
 }
 export const NAVAL_TRAITS = navalTraitsJson as NavalTraitData[];
