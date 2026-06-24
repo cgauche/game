@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { testScenarios } from './index';
 import { spawnEnemy } from '../../state/spawn';
-import { applyCriticalToTarget } from '../../state/combatFlow';
+import { applyCriticalToTarget, firedAttackBlock } from '../../state/combatFlow';
 import { applyShipPostes } from '../../state/shipPostes';
 import { availableAttacks } from '../../state/combatManeuvers';
 import { seedBattleRng } from '../../state/battleRng';
@@ -79,5 +79,20 @@ describe('Artillerie jouable — 2 héros SERVENT un poste de pierrier (pas d’
     const party = scen.makeParty();
     applyShipPostes([...party, ...spawnRoster()]);
     expect(party.filter((h) => !h.mannedPoste).length).toBe(2);
+  });
+
+  it('la bordée tribord PEUT TIRER sur la cogue (cap Nord = octant tribord + munition de siège + chargé)', () => {
+    const party = scen.makeParty();
+    const all = [...party, ...spawnRoster()];
+    applyShipPostes(all);
+    const gunner = party.find((h) => h.mannedPoste)!;
+    gunner.pos = { x: 3, y: 6 }; // à bord de la barge
+    const cogue = all.find((c) => c.id === 'enemy-enc-naval-0')!; // plein est de la barge
+    const barge = all.find((c) => c.id === 'enemy-enc-naval-4')!;
+    // `faceAtCombatStart` applique le cap authoré (Nord) ; la cogue plein EST tombe dans l'arc TRIBORD.
+    const get = (() => ({ battle: { combatants: all }, facing: { [barge.id]: 'N' }, log: () => {} })) as never;
+    // null = le tir PART : dans l'arc (cap Nord) + munition compatible + chargé. (Un cap 'E' le mettrait en
+    // proue → reason 'arc' ; sans munition → 'noammo'.) → garde-fou contre les deux régressions.
+    expect(firedAttackBlock(get, gunner, cogue, gunner.mannedPoste!.item.uid)).toBeNull();
   });
 });

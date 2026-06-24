@@ -1,6 +1,6 @@
 import { makeShowcaseParty, PREGEN } from '../../data/pregens';
 import { itemFromTrappingById } from '../../engine/items';
-import type { ShipPoste } from '../../engine/types';
+import type { Combatant, ShipPoste } from '../../engine/types';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -15,6 +15,24 @@ const GUNNERS = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as cons
  */
 function pierrierPoste(chefId: string): ShipPoste {
   return { item: itemFromTrappingById('pierrier')!, side: 'tribord', crewIds: [chefId] };
+}
+
+/**
+ * Groupe d'arène, mais le Soldat + le Chasseur (les 2 chefs de pièce, cf. GUNNERS) embarquent des MUNITIONS
+ * de siège (balles & poudre) et démarrent CHARGÉS — le CANON, lui, reste un poste de la barge (servi au
+ * combat par `applyShipPostes`). Les 2 autres (Tueur + Sorcier) gardent leur arme de mêlée pour l'abordage.
+ */
+function makeNavalParty(): Combatant[] {
+  const party = makeShowcaseParty();
+  for (const id of GUNNERS) {
+    const g = party.find((h) => h.id === id);
+    if (!g) continue;
+    const ammo = itemFromTrappingById('balles-et-poudre-pierrier')!;
+    ammo.qty = 10; // de quoi bombarder plusieurs Rounds (Recharge entre chaque tir)
+    g.items = [ammo, ...(g.items ?? [])];
+    g.loaded = true; // chargé d'emblée → tir dès le 1er Round
+  }
+  return party;
 }
 
 // Bataille navale (MDG ch.13-14) — vitrine jouable de la chaîne navale :
@@ -39,9 +57,10 @@ setEncounters(scene, [
       { ref: 'pirate-fluvial', pos: { x: 11, y: 8 } },
       { ref: 'chef-pirate', pos: { x: 15, y: 6 } },
       // index 4 = la BARGE AMIE (côté allié) : 2 pierriers SERVIS par les 2 canonniers du groupe. Son
-      // équipage exposé (`crewIds`) = ces canonniers ; `applyShipPostes` leur pose le `mannedPoste` au début
-      // du combat. `facing` est authoré (bordée tribord vers l'est) pour quand la Manœuvre câblera le cap.
-      { ref: 'bateau-de-patrouille', pos: { x: 3, y: 6 }, side: 'ally', facing: 'E', label: 'Barge des aventuriers',
+      // équipage exposé (`crewIds`) = ces canonniers ; `applyShipPostes` leur pose le `mannedPoste`. Cap NORD
+      // (appliqué par `faceAtCombatStart`) → la cogue, plein EST, tombe pile dans l'arc de la bordée TRIBORD
+      // (octant 2) ; vire le cap (Phase 2 Manœuvre) et la cogue sort de l'arc.
+      { ref: 'bateau-de-patrouille', pos: { x: 3, y: 6 }, side: 'ally', facing: 'N', label: 'Barge des aventuriers',
         crewIds: [...GUNNERS], postes: [pierrierPoste(GUNNERS[0]), pierrierPoste(GUNNERS[1])] },
     ],
   },
@@ -54,7 +73,7 @@ export const scenario: TestScenario = {
   title: 'Bataille navale',
   tests: 'Postes d’artillerie SERVIS (MDG ch.12-13) : 2 héros servent les pierriers de leur barge (« Servir un poste », arc de bordée) au lieu de les porter en inventaire ; navire-Combattant à PV ; Coup Critique → tables de NAVIRE (États Voie d’eau / En flammes) ; équipage lié (crewIds) → Éclats / critique « Équipage » sur de vrais marins.',
   partyNote: 'Groupe d’arène ; le Soldat + le Chasseur servent les pierriers, le Tueur + le Sorcier abordent',
-  makeParty: makeShowcaseParty,
+  makeParty: makeNavalParty,
   scene,
   autoCombat: 'enc-naval',
 };
