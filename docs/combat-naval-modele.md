@@ -77,9 +77,16 @@ Accroches existantes : `ship.traits`/`hull.traits`, `ShipPoste.sabord`.
 > `effectiveDeckPostes` (`l.362-364` : une coque à Sabord couvre TOUS ses emplacements → couvert total au
 > servant) ; **Peu maniable (Indice)** dans `maneuverShip` (`l.173` : −1 DR/niveau sur le Test de Voile/Ramer,
 > via l'`extraDR` de `resolveShipManeuver`, cumulé au Man). Tests `engine/naval-traits.test.ts` +
-> `state/ship-maneuver.test.ts`. ⏳ Reste : Blindage (PA, variante bronze/fer), Lissage (M), Clinfoc (longueur),
-> Nid-de-pie (Perception), Figure de proue (Moral si 2 Atouts *Raffiné*), Robuste (+2 DR Affaler les voiles),
-> Propulsion à vapeur ; + catalogue DATA d'améliorations éditable au Codex (desc verbatim) et `upgrades[]` par instance.
+> `state/ship-maneuver.test.ts`.
+>
+> ✅ **Améliorations d'INSTANCE** (`Combatant.upgrades` / `SceneEntity.upgrades`, libellés verbatim) — un
+> navire-instance = type + `upgrades[]`, copiées au spawn (`spawn.ts`, point d'injection `combatSlice.ts`). La
+> liste navale effective = `ship.traits` (TYPE) + `upgrades` (INSTANCE), lue par `navalTraits.ts`. Branchées :
+> **Blindage** (`l.234/236` : bronze 1 PA / fer 2 PA → `armour.corps` au spawn, mitigé par les dégâts navals
+> existants) ; **Lissage** (`l.293` : M +1 → `+1` au Mouvement de manœuvre). Tests `state/ship-upgrades.test.ts`.
+> ⏳ Reste : Clinfoc (longueur), Nid-de-pie (Perception), Figure de proue (Moral si 2 Atouts *Raffiné*),
+> Robuste (+2 DR Affaler les voiles), Propulsion à vapeur ; catalogue DATA éditable au Codex (desc verbatim) ;
+> authoring `upgrades` dans l'éditeur de scène.
 
 ## 2. Pièce SERVIE = concept GÉNÉRAL (sol + navire) ; le poste naval en est un cas
 

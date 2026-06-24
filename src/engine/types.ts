@@ -629,6 +629,11 @@ export interface Combatant {
   /** Pièces d'artillerie MONTÉES sur ce Combattant-coque (source de vérité, MDG ch.12-13). Au spawn, chaque
    *  poste pose son arme sur le chef de pièce via `mannedPoste`. */
   postes?: ShipPoste[];
+  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12 — Sabord, Bélier, Blindage, Lissage…), libellés
+   *  VERBATIM (ex. « Blindage (fer) »). S'ajoutent aux Traits du TYPE (`ship.traits`) ; lues par
+   *  `engine/navalTraits.ts`. Blindage est appliqué au spawn (PA de coque) ; Lissage/Peu maniable au calcul
+   *  de manœuvre ; Sabord au rendu du Pont. Comme un `ItemInstance` porte qualités/enchants. */
+  upgrades?: string[];
   /** Poste que CE combattant SERT (chef de pièce) → `recomputeLoadout` en dérive l'arme active taguée
    *  `mountSide` (comme une morsure/un tentacule : dans `weapons`, HORS inventaire). Le canon reste la pièce
    *  du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE. */

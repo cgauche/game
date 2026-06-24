@@ -7,6 +7,7 @@ import { skillCharacteristicById } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
 import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
+import { hullArmourBonus } from '../engine/navalTraits';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour, buildWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
@@ -149,6 +150,9 @@ export interface SpawnExtras {
   crewIds?: string[];
   /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13) — posées sur le Combattant-coque. */
   postes?: ShipPoste[];
+  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, libellés verbatim) — posées sur le Combattant ;
+   *  Blindage est appliqué ici même (PA de coque). */
+  upgrades?: string[];
 }
 
 /** Profil + modificateurs de PROFIL des traits `live` (Élite/Coriace/Brutal…) — pour les valeurs DÉRIVÉES
@@ -298,6 +302,15 @@ export function spawnEnemy(
   } else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
   if (opts?.crewIds) c.crewIds = opts.crewIds;
   if (opts?.postes) c.postes = opts.postes;
+  if (opts?.upgrades) c.upgrades = opts.upgrades;
+  // Blindage (MDG ch.12 l.234/236) : PA de coque depuis les Traits du TYPE (`ship.traits`) + les Améliorations
+  // d'INSTANCE (`upgrades`). Self-contained → posé ici (pas de post-pass type `applyShipPostes`). Consommé par
+  // les dégâts navals (`applyOps` op `wounds` déduit `armour.corps`).
+  if (c.bodyShape === 'vehicule') {
+    const navalTraits = [...(ref ? findVehicleById(ref)?.ship?.traits ?? [] : []), ...(c.upgrades ?? [])];
+    const ap = hullArmourBonus(navalTraits);
+    if (ap) c.armour.corps = (c.armour.corps ?? 0) + ap;
+  }
 
   // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique : tout override d'auteur
   // (parts monstrueux, couleurs, coiffure, yeux, sexe/carrure, seed re-tiré) est porté par

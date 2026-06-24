@@ -49,10 +49,14 @@ export function maneuverShip(get: Get, shipId: string, turnSteps: number, helmsm
   const helm = helmsmanId ? battle.combatants.find((c) => c.id === helmsmanId) : bestHelmsman(crew, skillId);
   // Test de Navigation du barreur (Intermédiaire +0) → DR brut ; le Man s'ajoute dans resolveShipManeuver.
   const navDR = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()).sl : 0;
+  // Traits du TYPE (`ship.traits`) + Améliorations d'INSTANCE (`ship.upgrades`) → liste navale effective.
+  const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
   // « Peu maniable (Indice) » (MDG ch.12 l.173) : −1 DR/niveau sur les Tests de Ramer/Voile — DISTINCT du Man
   // (colonnes séparées dans la table des navires) → se cumule au Man via l'`extraDR` situationnel du résolveur.
-  const peuManiable = navalTraitLevel(vd?.traits, 'Peu maniable');
-  const out = resolveShipManeuver(navDR, baseM, manoeuvre, -peuManiable);
+  const peuManiable = navalTraitLevel(navalTraits, 'Peu maniable');
+  // « Lissage » (MDG ch.12 l.293) : « Une coque polie fournit M +1 au bateau » → +1 au Mouvement de base.
+  const lissage = navalTraitLevel(navalTraits, 'Lissage');
+  const out = resolveShipManeuver(navDR, baseM + lissage, manoeuvre, -peuManiable);
   if (out.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
   else get().log(`${helm?.name ?? "L'équipage"} rate la manœuvre de ${ship.name} (DR ${out.dr}) — le cap tient.`);
   return { ...out, navDR, helmsman: helm?.name };

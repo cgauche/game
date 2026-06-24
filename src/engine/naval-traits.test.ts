@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shipHasNavalTrait, navalTraitLevel, effectiveDeckPostes } from './navalTraits';
+import { shipHasNavalTrait, navalTraitLevel, hullArmourBonus, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { findVehicleById } from '../data';
 
@@ -26,6 +26,16 @@ describe('shipHasNavalTrait — lecture des libellés verbatim', () => {
     expect(navalTraitLevel(['Renforcé 2', 'Solide 2'], 'Renforcé')).toBe(2);
     expect(navalTraitLevel(['Renforcé 2'], 'Solide')).toBe(0); // absent
     expect(navalTraitLevel(undefined, 'Peu maniable')).toBe(0);
+  });
+});
+
+describe('hullArmourBonus — Amélioration Blindage (MDG ch.12 l.234/236)', () => {
+  it('Fer → 2 PA, Bronze → 1 PA, libellé nu → 1 (bronze par défaut), absent → 0', () => {
+    expect(hullArmourBonus(['Blindage (fer)'])).toBe(2);
+    expect(hullArmourBonus(['Blindage (bronze)'])).toBe(1);
+    expect(hullArmourBonus(['Blindage'])).toBe(1); // défaut = bronze
+    expect(hullArmourBonus(['Lissage', 'Sabord'])).toBe(0); // pas de Blindage
+    expect(hullArmourBonus(undefined)).toBe(0);
   });
 });
 

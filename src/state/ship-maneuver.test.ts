@@ -115,4 +115,19 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     const r = maneuverShip(() => useGame.getState(), 'ship', 2)!;
     expect(r.dr).toBe(r.navDR - 2); // Man (−1) + Peu maniable (−1)
   });
+
+  it('« Lissage » (Amélioration d’instance) → M +1 : +1 au déplacement, DR inchangé (MDG ch.12 l.293)', () => {
+    // Même barreur/seed → même DR ; seul le M de base change. testValue ≥ −2 DR (helmsman habile) → jamais la
+    // bande M−1/M÷2 → +1 M ⇒ exactement +1 case de déplacement.
+    const run = (upgrades?: string[]) => {
+      seedBattleRng(7);
+      const s = { ...ship(), upgrades } as Combatant; // bateau-de-patrouille (aucun Lissage de TYPE)
+      useGame.setState({ battle: { combatants: [s, helmsman()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' } });
+      return maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    };
+    const plain = run();
+    const lisse = run(['Lissage']);
+    expect(lisse.dr).toBe(plain.dr); // Lissage n'affecte PAS le DR (≠ Peu maniable)…
+    expect(lisse.movement).toBe(plain.movement + 1); // … mais +1 au Mouvement de base
+  });
 });

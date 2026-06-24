@@ -120,6 +120,9 @@ export interface SceneEntity {
   /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13) — posées sur le Combattant-coque au
    *  spawn, puis `applyShipPostes` sert chaque poste à son chef de pièce. */
   postes?: ShipPoste[];
+  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12, libellés verbatim ex. « Blindage (fer) ») —
+   *  s'ajoutent aux Traits du TYPE et modifient ce navire-ci (PA de coque, M, couvert…). Posées au spawn. */
+  upgrades?: string[];
   dialogueId?: string;
   /** Clé d'asset (token). */
   sprite?: string;
