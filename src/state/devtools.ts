@@ -34,6 +34,7 @@ import type { Cadence } from '../engine/cadence';
  *   __wfrp.battle()       → snapshot combat (round, actif, modales, combattants en une ligne chacun)
  *   __wfrp.log(n)         → queue lisible des journaux (exploration + feed de combat)
  *   __wfrp.turn('id')     → TRICHE : donne le tour à un combattant ; __wfrp.place('id',{x,y}) → téléporte
+ *   __wfrp.turnShip('id', 'tribord'|'babord'|crans) → vire le cap d'un NAVIRE (manœuvre) → re-mappe ses bordées
  *   __wfrp.modal()        → modale(s) ouvertes ; __wfrp.roll()/confirm()/cancel() → pilote LA modale
  *                           (convention <flux>Roll/Confirm/Cancel ; reveals/Round ont leur verbe propre)
  *   __wfrp.killEnemies()  → élimine tous les ennemis du combat et déclenche la victoire (flux normal)
@@ -311,6 +312,19 @@ export function buildApi() {
       useGame.setState({ battle: { ...b } });
       bus.emit(EVT.SCENE_DIRTY);
       return `✅ ${c.name} → (${pt.x},${pt.y})`;
+    },
+
+    /** TRICHE de recette : VIRE le cap d'un NAVIRE (manœuvre, MDG ch.13) → re-mappe ses arcs de bordée.
+     *  `side` = 'tribord'/'babord' (90°) ou un nombre de crans de 45° (>0 tribord, <0 bâbord). Vérifier
+     *  ensuite avec `__wfrp.aim('cible')` qu'elle (re)tombe — ou sort — de l'arc. */
+    turnShip: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord') => {
+      const b = g().battle;
+      const ship = b?.combatants.find((x) => x.id === shipId);
+      if (!b || !ship) return '❌ navire introuvable (combat uniquement)';
+      const before = g().facing[shipId];
+      if (!before) return `❌ ${ship.name} n'a pas de cap (facing) — pas un navire orienté ?`;
+      g().shipTurn(shipId, typeof side === 'number' ? side : side === 'tribord' ? 2 : -2);
+      return `✅ ${ship.name} : cap ${before} → ${g().facing[shipId]}`;
     },
 
     /** Queue LISIBLE des journaux : les `n` dernières lignes du journal d'exploration ET du

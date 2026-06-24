@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { rotateDir8 } from './dir8';
 import { inFireArc, targetArc } from './fireArc';
 import { resolveShipManeuver } from '../engine/shipNavigation';
+import { useGame } from './store';
+import type { Combatant } from '../engine/types';
 
 /**
  * Phase 2 « Manœuvre du navire » (MDG ch.13). Le cœur PUR : tourner le cap (`rotateDir8`) RE-MAPPE d'un coup
@@ -48,5 +50,28 @@ describe('resolveShipManeuver — réussite & DR final (MDG ch.13 l.117-119)', (
     expect(resolveShipManeuver(2, 5, -1).dr).toBe(1); // 2 + (-1) + 0
     expect(resolveShipManeuver(2, 5, -1).success).toBe(true);
     expect(resolveShipManeuver(0, 5, -1).success).toBe(false); // 0 - 1 = -1 < 0
+  });
+});
+
+describe('shipTurn (action store) — vire le cap, branché aux arcs', () => {
+  const ship = (): Combatant =>
+    ({ id: 'ship', name: 'Cogue', kind: 'enemy', pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+
+  it('vire tribord 90° (N → E)', () => {
+    useGame.setState({ battle: { combatants: [ship()], order: ['ship'], turn: 0 } as never, facing: { ship: 'N' } });
+    useGame.getState().shipTurn('ship', 2);
+    expect(useGame.getState().facing.ship).toBe('E'); // firedAttackBlock/targeting reliront ce cap → arcs re-mappés
+  });
+
+  it('vire bâbord 90° (N → O)', () => {
+    useGame.setState({ battle: { combatants: [ship()], order: ['ship'], turn: 0 } as never, facing: { ship: 'N' } });
+    useGame.getState().shipTurn('ship', -2);
+    expect(useGame.getState().facing.ship).toBe('O');
+  });
+
+  it('navire sans cap → no-op (aucun virage fantôme)', () => {
+    useGame.setState({ battle: { combatants: [], order: [], turn: 0 } as never, facing: {} });
+    useGame.getState().shipTurn('ghost', 2);
+    expect(useGame.getState().facing.ghost).toBeUndefined();
   });
 });

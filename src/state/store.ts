@@ -11,7 +11,7 @@ import { dissipateSpell } from '../engine/dispel';
 import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
-import type { Dir8 } from './dir8';
+import { rotateDir8, type Dir8 } from './dir8';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -197,6 +197,9 @@ export interface GameState extends RollFlowActionsMap {
   faceToward: (id: string, from?: Pt, to?: Pt) => void;
   faceFromPath: (id: string, path?: Pt[] | null) => void;
   faceAtCombatStart: () => void;
+  /** Manœuvre NAVALE (MDG ch.13) : vire le cap (`Dir8`) du navire `shipId` de `turnSteps` crans de 45°
+   *  (>0 = tribord/droite, <0 = bâbord/gauche) → re-mappe d'un coup TOUS ses arcs de bordée. */
+  shipTurn: (shipId: string, turnSteps: number) => void;
   zoom: number; // zoom caméra du JEU (échelle), borné [1, 2.6] — état de vue, non sérialisé
   setZoom: (z: number) => void;
   /** Projection de la carte (bascule) : 'iso' losange ou 'top' grille carrée — préférence de vue. */
@@ -895,6 +898,17 @@ export const useGame = create<GameState>((set, get) => ({
       if (best) next[c.id] = facingToward(c.pos, best);
     }
     set({ facing: next });
+  },
+  shipTurn: (shipId, turnSteps) => {
+    const { facing, battle } = get();
+    const cur = facing[shipId];
+    if (!cur) return; // navire sans cap initial → rien à virer
+    const next = rotateDir8(cur, turnSteps);
+    set({ facing: { ...facing, [shipId]: next } });
+    // Re-mappe TOUS les arcs de bordée d'un coup : firedAttackBlock / targeting relisent facing[shipId].
+    const ship = battle?.combatants.find((c) => c.id === shipId);
+    get().log(`${ship?.name ?? shipId} vire de bord — nouveau cap : ${next}.`);
+    bus.emit(EVT.SCENE_DIRTY);
   },
   zoom: 1,
   setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(0.4, z)) }), // floor 0.4 : dézoom tactique large
