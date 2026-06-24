@@ -44,14 +44,16 @@ function makeNavalParty(): Combatant[] {
 //    flammes) et son ÉQUIPAGE exposé (pirates, `crewIds`) encaisse les Éclats / un Critique « Équipage ».
 const scene = arena({ id: 'test-bataille-navale', nom: 'Bataille navale', w: 18, h: 12, terrain: 'planches', heroStart: { x: 2, y: 6 } });
 scene.startMessage =
-  'Bataille navale (MDG) : tes 2 canonniers SERVENT les pierriers de votre barge (bouton « Servir le pierrier ») — bombardez la cogue ! C’est une COQUE à PV ; un Coup Critique se résout sur les tables de NAVIRE (Voie d’eau / En flammes). Les pirates sur le pont sont l’ÉQUIPAGE exposé : un critique « Équipage » ou les Éclats leur reviennent. Les 2 autres héros abordent.';
+  'Bataille navale (MDG) : tes 2 canonniers SERVENT les pierriers de votre barge (bouton « Servir le pierrier ») — bombardez la cogue ! C’est une COQUE à PV, BLINDÉE de fer (+2 PA → elle encaisse plus longtemps). Un Coup Critique se résout sur les tables de NAVIRE (Voie d’eau / En flammes). Les pirates sur le pont sont l’ÉQUIPAGE exposé : un critique « Équipage » ou les Éclats leur reviennent. Les 2 autres héros abordent.';
 
 setEncounters(scene, [
   {
     id: 'enc-naval',
     enemies: [
       // index 0 = la cogue ennemie ; équipage exposé = les pirates (index 1-3), ids `enemy-enc-naval-<i>`.
-      { ref: 'cogue', pos: { x: 13, y: 6 }, label: 'Cogue pirate',
+      // Amélioration d'INSTANCE « Blindage (fer) » (MDG ch.12 l.236) → +2 PA de coque : les pierriers tapent
+      // moins fort, la cogue encaisse plus longtemps (démontre les améliorations qui modifient le navire).
+      { ref: 'cogue', pos: { x: 13, y: 6 }, label: 'Cogue pirate', upgrades: ['Blindage (fer)'],
         crewIds: ['enemy-enc-naval-1', 'enemy-enc-naval-2', 'enemy-enc-naval-3'] },
       { ref: 'pirate-fluvial', pos: { x: 11, y: 4 } },
       { ref: 'pirate-fluvial', pos: { x: 11, y: 8 } },
@@ -71,7 +73,7 @@ export const scenario: TestScenario = {
   order: 25,
   icon: '⛵',
   title: 'Bataille navale',
-  tests: 'Postes d’artillerie SERVIS (MDG ch.12-13) : 2 héros servent les pierriers de leur barge (« Servir un poste », arc de bordée) au lieu de les porter en inventaire ; navire-Combattant à PV ; Coup Critique → tables de NAVIRE (États Voie d’eau / En flammes) ; équipage lié (crewIds) → Éclats / critique « Équipage » sur de vrais marins.',
+  tests: 'Postes d’artillerie SERVIS (MDG ch.12-13) : 2 héros servent les pierriers de leur barge (« Servir un poste », arc de bordée) au lieu de les porter en inventaire ; navire-Combattant à PV avec Amélioration d’instance « Blindage (fer) » (+2 PA de coque, MDG ch.12) ; Coup Critique → tables de NAVIRE (États Voie d’eau / En flammes) ; équipage lié (crewIds) → Éclats / critique « Équipage » sur de vrais marins.',
   partyNote: 'Groupe d’arène ; le Soldat + le Chasseur servent les pierriers, le Tueur + le Sorcier abordent',
   makeParty: makeNavalParty,
   scene,

@@ -16,7 +16,7 @@ function spawnRoster(): Combatant[] {
   const ents = scen.scene.entities
     .filter((e) => e.id.startsWith('enemy-enc-naval-'))
     .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
-  return ents.map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos, { crewIds: e.crewIds, postes: e.postes }));
+  return ents.map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos, { crewIds: e.crewIds, postes: e.postes, upgrades: e.upgrades }));
 }
 
 /**
@@ -32,6 +32,12 @@ describe('Scénario Bataille navale — chaîne navale jouable', () => {
     expect(ship.creatureId).toBe('cogue');
     expect(ship.wounds.max).toBe(50);
     expect(ship.crewIds).toEqual(['enemy-enc-naval-1', 'enemy-enc-naval-2', 'enemy-enc-naval-3']);
+  });
+
+  it('l’Amélioration d’instance « Blindage (fer) » donne 2 PA de coque au spawn (MDG ch.12 l.236)', () => {
+    const ship = spawnRoster().find((c) => c.id === 'enemy-enc-naval-0')!;
+    expect(ship.upgrades).toEqual(['Blindage (fer)']); // authoré sur l'instance de la scène
+    expect(ship.armour.corps).toBe(2); // mitige les Dégâts navals (applyOps op wounds)
   });
 
   it('frapper la coque pose un État NAVAL ou touche l’équipage lié (balayage de seeds, déterministe)', () => {

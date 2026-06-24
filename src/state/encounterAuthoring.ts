@@ -40,6 +40,9 @@ export interface AuthoredEnemy {
   /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13). Chaque poste réfère son équipage par
    *  `crewIds` (ids déterministes `enemy-<idRencontre>-<index>`) ; `applyShipPostes` sert le poste au chef. */
   postes?: ShipPoste[];
+  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, libellés verbatim ex. « Blindage (fer) ») — posées
+   *  sur le Combattant au spawn (Blindage → PA de coque, Lissage → M…). */
+  upgrades?: string[];
   /** Surcharge la visibilité de la rencontre pour CET ennemi. */
   hidden?: boolean;
 }
@@ -70,6 +73,7 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
     if (e.statblock) ent.statblock = e.statblock;
     if (e.crewIds) ent.crewIds = e.crewIds;
     if (e.postes) ent.postes = e.postes;
+    if (e.upgrades) ent.upgrades = e.upgrades;
     if (e.appearance) ent.appearance = e.appearance;
     if (e.weapon) ent.weapon = e.weapon;
     if (e.facing) ent.facing = e.facing;
