@@ -13,7 +13,7 @@ import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
-import { navalTraitLevel } from '../engine/navalTraits';
+import { navalEffectSum } from '../engine/navalTraits';
 import { findVehicleById } from '../data';
 import type { Combatant } from '../engine/types';
 import type { Get } from './flowTypes';
@@ -50,13 +50,13 @@ export function maneuverShip(get: Get, shipId: string, turnSteps: number, helmsm
   // Test de Navigation du barreur (Intermédiaire +0) → DR brut ; le Man s'ajoute dans resolveShipManeuver.
   const navDR = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()).sl : 0;
   // Traits du TYPE (`ship.traits`) + Améliorations d'INSTANCE (`ship.upgrades`) → liste navale effective.
+  // Effets de manœuvre lus en DONNÉE (`naval-traits.json`) : « Peu maniable » → `maneuverDR` (−1/niveau, MDG
+  // ch.12 l.173) — DISTINCT du Man (colonnes séparées) → cumulé via l'`extraDR` ; « Lissage » → `moveBonus`
+  // (M +1, l.293) → ajouté au Mouvement de base.
   const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
-  // « Peu maniable (Indice) » (MDG ch.12 l.173) : −1 DR/niveau sur les Tests de Ramer/Voile — DISTINCT du Man
-  // (colonnes séparées dans la table des navires) → se cumule au Man via l'`extraDR` situationnel du résolveur.
-  const peuManiable = navalTraitLevel(navalTraits, 'Peu maniable');
-  // « Lissage » (MDG ch.12 l.293) : « Une coque polie fournit M +1 au bateau » → +1 au Mouvement de base.
-  const lissage = navalTraitLevel(navalTraits, 'Lissage');
-  const out = resolveShipManeuver(navDR, baseM + lissage, manoeuvre, -peuManiable);
+  const out = resolveShipManeuver(
+    navDR, baseM + navalEffectSum(navalTraits, 'moveBonus'), manoeuvre, navalEffectSum(navalTraits, 'maneuverDR'),
+  );
   if (out.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
   else get().log(`${helm?.name ?? "L'équipage"} rate la manœuvre de ${ship.name} (DR ${out.dr}) — le cap tient.`);
   return { ...out, navDR, helmsman: helm?.name };

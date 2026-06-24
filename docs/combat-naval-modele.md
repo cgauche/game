@@ -69,6 +69,13 @@ de base **+ résolveur d'améliorations** — même patron que le rig et `applyO
 PA, longueur, Perception) ; **placement sur le pont = authoré** (couche rig, comme l'apparence d'une mutation).
 Accroches existantes : `ship.traits`/`hull.traits`, `ShipPoste.sabord`.
 
+> ✅ **DATA-DRIVEN** : Traits & Améliorations sont un CATALOGUE éditable au Codex — `src/data/naval-traits.json`
+> (`id`, `label`, `kind` trait/amélioration, `source`, **`desc` verbatim** + champs d'effet `hullAP`/`moveBonus`/
+> `maneuverDR`/`ramIC`/`ramAP`/`deckCover`). `engine/navalTraits.ts` ne fait que LIRE ce catalogue (`findNavalTrait`
+> + `navalEffectSum`/`hullArmourBonus`/`belierRam`) — **aucune valeur d'effet codée en dur**. Modifier un effet
+> ou une description = éditer le JSON, sans toucher au code. Anti-double-compte : Renforcé/Solide n'ont PAS de
+> champ d'effet runtime (déjà bakés dans E/B des navires nommés) — `desc` seule.
+
 > ✅ **Premiers effets mécanisés** (`engine/navalTraits.ts`, lecture des libellés VERBATIM via `navalTraitLevel`/
 > `shipHasNavalTrait`) — on ne mécanise que les effets ABSENTS des colonnes du type (anti-double-compte : E/B
 > sont déjà finaux ; Man et « Peu maniable » sont des **colonnes DISTINCTES** de la table → se cumulent) :

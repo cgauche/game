@@ -1,0 +1,102 @@
+[
+  {
+    "id": "peu-maniable",
+    "label": "Peu maniable",
+    "kind": "trait",
+    "ranked": true,
+    "maneuverDR": -1,
+    "source": {
+      "book": "MDG",
+      "page": 96
+    },
+    "desc": "Les bateaux utilitaires conçus pour travailler près du rivage ou sur une mer calme sont assemblés à la va-vite par des constructeurs navals amateurs ou commandés par des propriétaires qui veulent rogner sur le coût. Ce vaisseau mal conçu peut prendre jusqu'à 3 niveaux du Trait Peu maniable pour représenter ses défauts de fabrication. Chaque niveau impose une pénalité de –1 DR sur tous les Tests de **Ramer** et de **Voile**."
+  },
+  {
+    "id": "renforce",
+    "label": "Renforcé",
+    "kind": "trait",
+    "ranked": true,
+    "source": {
+      "book": "MDG",
+      "page": 96
+    },
+    "desc": "Ce bateau est bâti pour le combat, avec des renforts et des plaques de bois et de métal ajoutés à des endroits stratégiques. Chaque niveau dans ce Trait ajoute 10 à l'Endurance d'un vaisseau. Un même navire peut posséder jusqu'à 3 niveaux de Renforcé."
+  },
+  {
+    "id": "robuste",
+    "label": "Robuste",
+    "kind": "trait",
+    "source": {
+      "book": "MDG",
+      "page": 96
+    },
+    "desc": "Généralement, les navires robustes ne payent pas de mine, mais sont bien fabriqués. Ce sont des modèles fiables, qui ont fait leurs preuves en haute mer lors des pires tempêtes qui soient. Tout ce qui aurait pu se détacher de ce bateau l'aurait déjà fait à ce stade. Un navire Robuste reçoit +2 DR sur ses Tests d'équipage d'Affaler les voiles (voir page 123)."
+  },
+  {
+    "id": "solide",
+    "label": "Solide",
+    "kind": "trait",
+    "ranked": true,
+    "source": {
+      "book": "MDG",
+      "page": 96
+    },
+    "desc": "Les bateaux Solides sont construits pour endurer les rigueurs de la guerre. Un même navire peut posséder jusqu'à trois niveaux de Solide et chaque niveau augmente les Blessures du vaisseau de 30 %."
+  },
+  {
+    "id": "belier",
+    "label": "Bélier",
+    "kind": "amelioration",
+    "ramIC": 5,
+    "ramAP": 5,
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Un Bélier en métal peut être fixé à l'avant d'un bateau. Le Bélier fournit 5 PA au navire qui peuvent le protéger contre tout Dégât résultant d'une collision ou d'une attaque venant de l'avant du vaisseau. Le bateau ajoute également 5 à son Bonus d'Endurance pour calculer son Indice de Collision (voir page 111) si le navire au Bélier cause la collision et frappe l'autre avec sa proue."
+  },
+  {
+    "id": "blindage-bronze",
+    "label": "Blindage (bronze)",
+    "kind": "amelioration",
+    "hullAP": 1,
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Le blindage d'un vaisseau fonctionne à peu près comme l'armure d'un personnage. Les Dégâts des coups qui touchent la Coque sont réduits d'un nombre de points égal aux PA, puis d'un nombre de points égal au BE. Contrairement à une armure personnelle, le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques.\n\n**Bronze :** la Coque bénéficie d'1 PA."
+  },
+  {
+    "id": "blindage-fer",
+    "label": "Blindage (fer)",
+    "kind": "amelioration",
+    "hullAP": 2,
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Le blindage d'un vaisseau fonctionne à peu près comme l'armure d'un personnage. Les Dégâts des coups qui touchent la Coque sont réduits d'un nombre de points égal aux PA, puis d'un nombre de points égal au BE. Contrairement à une armure personnelle, le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques.\n\n**Fer :** la Coque bénéficie de 2 PA ; si le vaisseau devient Sali (voir page 105), les plaques de fer rouillent au point de devenir inutiles et les PA sont retirés."
+  },
+  {
+    "id": "lissage",
+    "label": "Lissage",
+    "kind": "amelioration",
+    "moveBonus": 1,
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "La coque du bateau est polie pour lisser toute irrégularité risquant de causer une résistance inutile et donc de ralentir. Le Lissage initial d'une coque prend une semaine sur un chantier naval pour les bateaux Minuscules à Moyens et deux semaines pour les bateaux plus grands que Moyens. Une coque polie fournit M +1 au bateau."
+  },
+  {
+    "id": "sabord",
+    "label": "Sabord",
+    "kind": "amelioration",
+    "deckCover": true,
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Les Sabords sont des trappes refermables permettant à une arme à projectiles de tirer tout en restant derrière un couvert. Les grands Sabords peuvent laisser passer les canons ou les balistes tandis que les petits Sabords sont conçus pour les arquebuses, les arcs et les arbalètes.\n\nSi un navire ne dispose pas de Sabords, les tirs doivent nécessairement être effectués depuis le pont. Le pont ne fournit aucun couvert, alors qu'un Sabord donne une couverture totale. Ouvrir ou fermer un Sabord est considéré comme une seule action. Les Sabords ouverts peuvent représenter un danger si le navire commence à couler (voir page 117)."
+  }
+]

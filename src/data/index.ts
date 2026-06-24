@@ -20,6 +20,7 @@ import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
 import vehiclesJson from './vehicles.json';
+import navalTraitsJson from './naval-traits.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
 import weaponGroupsJson from './weaponGroups.json';
@@ -793,6 +794,38 @@ export const trappings = trappingsJson as TrappingData[];
 export const vehicles = vehiclesJson as VehicleData[];
 export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) => [v.id, v]));
 export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
+
+/** Traits & Améliorations de navire (MDG ch.12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
+ *  verbatim + champs d'EFFET) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur d'effet
+ *  codée en dur). `kind` distingue Trait (construction) et Amélioration (ajout/retrait) ; `ranked` = prend un
+ *  Indice (« Renforcé 2 », « Peu maniable 1 »). Champs d'effet RUNTIME (absent = pas d'effet mécanisé /
+ *  construction déjà bakée dans les colonnes du véhicule) : `hullAP` (Blindage → PA de coque), `moveBonus`
+ *  (Lissage → M), `maneuverDR` (Peu maniable → DR de manœuvre/niveau), `ramIC`/`ramAP` (Bélier → collision),
+ *  `deckCover` (Sabord → couvert total au pont). */
+export interface NavalTraitData {
+  id: string;
+  /** Libellé VERBATIM de BASE (sans Indice) — la clé d'appariement avec `ship.traits`/`Combatant.upgrades`. */
+  label: string;
+  kind: 'trait' | 'amelioration';
+  source?: { book: string; page: number };
+  desc: string;
+  /** Prend un Indice (le libellé authoré peut être « Renforcé 2 ») — l'effet est multiplié par le niveau. */
+  ranked?: boolean;
+  hullAP?: number;
+  moveBonus?: number;
+  maneuverDR?: number;
+  ramIC?: number;
+  ramAP?: number;
+  deckCover?: boolean;
+}
+export const NAVAL_TRAITS = navalTraitsJson as NavalTraitData[];
+const navalTraitByLabel = new Map(NAVAL_TRAITS.map((t) => [t.label.toLowerCase(), t]));
+/** Entrée du catalogue pour un libellé authoré : appariement exact, sinon (Trait à Indice) on retombe sur le
+ *  libellé de base en retirant l'Indice final (« Renforcé 2 » → « Renforcé »). PUR. */
+export function findNavalTrait(label: string): NavalTraitData | undefined {
+  const lc = label.toLowerCase().trim();
+  return navalTraitByLabel.get(lc) ?? navalTraitByLabel.get(lc.replace(/\s+\d+$/, ''));
+}
 /** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE
  *  (+ `spec` pour Artilleur/Cuisinier/Chansonnier). Le `desc` est le verbatim de la colonne « Tâches ». */

@@ -1,25 +1,27 @@
 /**
- * EFFETS mécanisés des **Traits & Améliorations** de navire (MDG ch.12) — couche PURE. Distinction RAW
- * (ch.12 l.81,169) : les **Traits** sont intégrés à la construction (fixes, `ship.traits` du type), les
- * **Améliorations** s'ajoutent/retirent plus tard (par INSTANCE). Les deux sont énoncés VERBATIM en donnée
- * (libellés de `vehicles.json` / liste d'améliorations d'instance) ; ce module ne fait que LIRE ces libellés
- * et exposer l'effet là où une brique EXISTANTE le consomme (collision, pont…), sans système parallèle.
+ * EFFETS des **Traits & Améliorations** de navire (MDG ch.12) — couche PURE. Distinction RAW (ch.12 l.81,169) :
+ * les **Traits** sont intégrés à la construction (fixes, `ship.traits` du type), les **Améliorations**
+ * s'ajoutent/retirent plus tard (par INSTANCE, `Combatant.upgrades`). L'appelant (state) concatène les deux ;
+ * ce module ne lit que des `string[]`.
  *
- * La liste lue est la COMBINAISON Traits du TYPE (`ship.traits` de `vehicles.json`) + Améliorations
- * d'INSTANCE (`Combatant.upgrades`, ex. « Blindage (fer) ») — l'appelant (state) concatène, ce module reste
- * pur et ne lit que des `string[]`.
+ * ✅ DATA-DRIVEN : les valeurs d'effet ne sont PAS codées ici — elles vivent dans le catalogue
+ * `src/data/naval-traits.json` (éditable au Codex : `desc` verbatim + champs `hullAP`/`moveBonus`/`maneuverDR`/
+ * `ramIC`/`ramAP`), lu via `findNavalTrait`. Ce module ne fait que SOMMER l'effet d'une liste de libellés et
+ * l'exposer là où une brique EXISTANTE le consomme (spawn → PA de coque ; manœuvre → M/DR ; collision → Bélier ;
+ * pont → Sabord), sans système parallèle.
  *
- * ⚠ Anti-double-compte (cf. profils de créature) : les colonnes E/B/Contenance des navires NOMMÉS de
- * `vehicles.json` sont DÉJÀ finales (elles intègrent Renforcé/Solide de leur construction) — on ne RÉ-applique
- * donc PAS ces Traits-là au runtime. On ne mécanise ici que les effets ABSENTS des colonnes (colonnes Man et
- * « Peu maniable » étant DISTINCTES, elles se cumulent) : **Bélier** (collision, `collision.ts`), **Sabord**
- * (couvert au pont), **Peu maniable** (−DR de manœuvre, `shipManeuver.ts`), **Blindage** (PA de coque, ci-dessous),
- * **Lissage** (M +1, `shipManeuver.ts`). Renforcé/Solide restent réservés à la construction sur mesure (hors périmètre).
+ * ⚠ Anti-double-compte : les colonnes E/B des navires NOMMÉS de `vehicles.json` sont DÉJÀ finales (elles
+ * intègrent Renforcé/Solide) → ces Traits-là n'ont PAS de champ d'effet runtime dans le catalogue (desc seule).
+ * Man et « Peu maniable » sont en revanche des colonnes DISTINCTES → Peu maniable porte bien un `maneuverDR`.
  */
+import { findNavalTrait } from '../data';
 import type { DeckPosteSlot } from './types';
 
+/** Champ d'effet NUMÉRIQUE du catalogue naval. */
+type NavalNumericEffect = 'hullAP' | 'moveBonus' | 'maneuverDR' | 'ramIC' | 'ramAP';
+
 /** Indice (niveau) d'un Trait naval dans les libellés VERBATIM (insensible à la casse) : « Renforcé 2 » → 2,
- *  libellé NU (« Bélier », « Peu maniable ») → 1, absent → 0. PUR. Source UNIQUE de lecture des libellés. */
+ *  libellé NU (« Bélier », « Peu maniable ») → 1, absent → 0. PUR. Source UNIQUE de lecture de l'Indice. */
 export function navalTraitLevel(traits: string[] | undefined, name: string): number {
   const n = name.toLowerCase();
   for (const t of traits ?? []) {
@@ -33,31 +35,50 @@ export function navalTraitLevel(traits: string[] | undefined, name: string): num
   return 0;
 }
 
-/** Une coque possède-t-elle ce Trait/Amélioration naval ? (présence, tout Indice ≥ 1). PUR. */
+/** Une coque possède-t-elle ce Trait/Amélioration naval ? (présence par libellé, tout Indice ≥ 1). PUR. */
 export function shipHasNavalTrait(traits: string[] | undefined, name: string): boolean {
   return navalTraitLevel(traits, name) > 0;
 }
 
-/**
- * PA de coque conférés par l'Amélioration **Blindage** (MDG ch.12 l.234/236) : « Bronze : la Coque bénéficie
- * d'1 PA. » / « Fer : la Coque bénéficie de 2 PA… » → fer ⇒ 2, bronze (ou libellé nu) ⇒ 1, absent ⇒ 0. PUR
- * (lit le 1ᵉʳ libellé « Blindage … » ; une coque n'en porte qu'un). Le « si Sali → plaques de fer rouillent,
- * PA retirés » (fer, l.236) reste ⏳ (pas d'état *Sali* modélisé). Appliqué au spawn sur `armour.corps`. */
-export function hullArmourBonus(traits: string[] | undefined): number {
-  for (const t of traits ?? []) {
-    const lt = t.toLowerCase();
-    if (lt.startsWith('blindage')) return lt.includes('fer') ? 2 : 1;
+/** Somme d'un champ d'effet NUMÉRIQUE du catalogue sur une liste de libellés (× Indice pour un Trait `ranked`).
+ *  PUR — toute la valeur vient de `naval-traits.json` (rien de codé en dur). Source UNIQUE de lecture d'effet. */
+export function navalEffectSum(traits: string[] | undefined, field: NavalNumericEffect): number {
+  let total = 0;
+  for (const label of traits ?? []) {
+    const e = findNavalTrait(label);
+    const v = e?.[field];
+    if (e === undefined || typeof v !== 'number') continue;
+    total += v * (e.ranked ? navalTraitLevel([label], e.label) : 1);
   }
-  return 0;
+  return total;
+}
+
+/** PA de coque conférés par l'Amélioration **Blindage** (MDG ch.12 l.234/236 ; valeurs en donnée : bronze 1 /
+ *  fer 2). Appliqué au spawn sur `armour.corps`, mitigé par les dégâts navals. PUR. */
+export function hullArmourBonus(traits: string[] | undefined): number {
+  return navalEffectSum(traits, 'hullAP');
+}
+
+/** Bonus de collision du **Bélier** (MDG ch.12 l.221 ; valeurs en donnée) : `ic` ajouté à l'Indice de Collision
+ *  quand le porteur éperonne de sa proue, `ap` = PA frontaux. Injecté dans `resolveCollision` par l'appelant. PUR. */
+export function belierRam(traits: string[] | undefined): { ic: number; ap: number } {
+  return { ic: navalEffectSum(traits, 'ramIC'), ap: navalEffectSum(traits, 'ramAP') };
+}
+
+/** La coque offre-t-elle un COUVERT à ses postes ? — vrai si l'un de ses Traits/Améliorations porte le drapeau
+ *  `deckCover` du catalogue (ex. **Sabord**, MDG ch.12 l.364). DATA-DRIVEN (pas de nom littéral codé). PUR.
+ *  Booléen à passer à `effectiveDeckPostes`. */
+export function hasDeckCover(traits: string[] | undefined): boolean {
+  return (traits ?? []).some((label) => findNavalTrait(label)?.deckCover === true);
 }
 
 /**
- * Couvert des postes selon l'Amélioration **Sabord** (MDG ch.12 l.362-364) : « Si un navire ne dispose pas de
- * Sabords, les tirs doivent nécessairement être effectués depuis le pont. Le pont ne fournit aucun couvert,
- * alors qu'un Sabord donne une couverture totale. » → une coque dotée de l'Amélioration Sabord couvre TOUS ses
- * emplacements de tir (`sabord:true`). PUR — renvoie une nouvelle liste (n'altère pas le gabarit de type), à
- * consommer par le rendu du Pont (couvert total au servant via `coverModifier`). Sans Sabord : inchangé.
- * `hasSabord` se dérive de `shipHasNavalTrait([...ship.traits, ...Combatant.upgrades], 'Sabord')`. */
+ * Couvert des postes selon l'Amélioration **Sabord** (MDG ch.12 l.362-364, `deckCover` en donnée) : « Si un
+ * navire ne dispose pas de Sabords, les tirs doivent nécessairement être effectués depuis le pont. Le pont ne
+ * fournit aucun couvert, alors qu'un Sabord donne une couverture totale. » → une coque à Sabord couvre TOUS ses
+ * emplacements (`sabord:true`). PUR — nouvelle liste (n'altère pas le gabarit de type), consommée par le rendu
+ * du Pont (couvert total via `coverModifier`). Sans Sabord : inchangé. `hasSabord` se dérive de
+ * `shipHasNavalTrait([...ship.traits, ...Combatant.upgrades], 'Sabord')`. */
 export function effectiveDeckPostes(postes: DeckPosteSlot[], hasSabord: boolean): DeckPosteSlot[] {
   if (!hasSabord) return postes;
   return postes.map((p) => (p.sabord ? p : { ...p, sabord: true }));
