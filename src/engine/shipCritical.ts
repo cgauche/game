@@ -95,12 +95,6 @@ export function exposedCrew(crew: Combatant[]): Combatant[] {
   return crew.filter((c) => !c.dead && (c.wounds?.current ?? 0) > 0);
 }
 
-/** Dégât AFFICHÉ des Éclats — DÉRIVÉ de l'effet data `SHRAPNEL_HIT` (op `wounds`), jamais un littéral en dur. */
-const SHRAPNEL_HIT_DAMAGE = ((): number => {
-  const w = SHRAPNEL_HIT.find((o) => o.op === 'wounds');
-  return w && typeof w.amount === 'number' ? w.amount : 0;
-})();
-
 /** Issue d'un Critique encaissé par une COQUE et RÉPERCUTÉ sur son équipage (MDG ch.13-14). */
 export interface HullCriticalOutcome {
   location: ShipLocation;
@@ -108,8 +102,9 @@ export interface HullCriticalOutcome {
   hullOps: GameOp[];
   /** Localisation « Équipage » : un marin exposé encaisse un Critique de PERSONNAGE (déjà appliqué). */
   crewCrit?: { crewId: string; crit: CriticalResolved };
-  /** Éclats : marins touchés (9 Dégâts chacun, déjà appliqués). */
-  shrapnel: { crewId: string; damage: number }[];
+  /** Éclats : marins touchés (effet data `SHRAPNEL_HIT` déjà appliqué — le Dégât réel, mitigé BE/PA, est
+   *  journalisé par l'op `wounds` dans `lines`, pas réintrospecté ici). */
+  shrapnel: { crewId: string }[];
   /** Critiques de Coque SUPPLÉMENTAIRES résolus (1d10…) — ops déjà appliqués à la coque. */
   extraHullCrits: ShipCriticalResolved[];
   /** « Canon détaché » : servants du poste qui ratent le Test (`crewTest.onFail` déjà appliqué à chacun). */
@@ -186,14 +181,19 @@ export function applyHullCritical(
   }
 
   // Éclats → effet data `SHRAPNEL_HIT` (op `wounds`, MDG ch.13) à autant de marins exposés que l'Indice
-  // (plafonné au nombre de marins). Plus aucun littéral de Dégât en dur — la valeur vient de la donnée.
-  const shrapnel: { crewId: string; damage: number }[] = [];
+  // (plafonné au nombre de marins). L'op JOURNALISE elle-même le Dégât réel (mitigé BE/PA) → on capte ses
+  // lignes (comme les ops de coque ci-dessus), aucun littéral ni réintrospection de la valeur.
+  const shrapnel: { crewId: string }[] = [];
+  const shrapnelLines: string[] = [];
   for (let i = 0; i < crit.shrapnel && i < exposed.length; i++) {
     const sailor = exposed[i];
-    applyOps(sailor, SHRAPNEL_HIT, { rng });
-    shrapnel.push({ crewId: sailor.id, damage: SHRAPNEL_HIT_DAMAGE });
+    shrapnelLines.push(...applyOps(sailor, SHRAPNEL_HIT, { rng }));
+    shrapnel.push({ crewId: sailor.id });
   }
-  if (shrapnel.length) lines.push(`Éclats ${crit.shrapnel} : ${shrapnel.length} marin(s) subissent ${SHRAPNEL_HIT_DAMAGE} Dégâts.`);
+  if (shrapnel.length) {
+    lines.push(`Éclats ${crit.shrapnel} : ${shrapnel.length} marin(s) touché(s).`);
+    lines.push(...shrapnelLines);
+  }
 
   // Critiques de Coque supplémentaires (1d10…) — résolus sur la Coque (ops seulement, pas de récursion d'Éclats).
   const extraHullCrits: ShipCriticalResolved[] = [];

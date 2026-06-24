@@ -33,16 +33,18 @@ describe('applyHullCritical — l’équipage encaisse réellement (pas qu’un 
     expect(touched).toBe(true);
   });
 
-  it('Coque (d100=50, d10=8) → Voie d’eau sur la coque + Éclats 6 : des marins subissent 9 Dégâts', () => {
+  it('Coque (d100=50, d10=8) → Voie d’eau sur la coque + Éclats 6 : 6 marins encaissent l’effet (9 Dégâts − BE)', () => {
     const ship = hull();
     const crew = Array.from({ length: 8 }, (_, i) => sailor(`marin-${i}`));
     const r = applyHullCritical(ship, crew, 'voile', makeRNG(1), 50, 8); // loc 50 → Coque ; d10 8 → Voie d'eau (Éclats 6)
     expect(r.location).toBe('coque');
     expect(r.hullOps).toEqual([{ op: 'condition', name: 'voie-d-eau', value: 1 }]);
-    expect(r.shrapnel).toHaveLength(6); // Éclats 6 → 6 marins
-    for (const s of r.shrapnel) expect(s.damage).toBe(9);
-    // Les marins touchés ont bien perdu des PB (9 Dégâts − BE − PA).
-    expect(crew[0].wounds.current).toBeLessThan(13);
+    expect(r.shrapnel.map((s) => s.crewId)).toEqual(['marin-0', 'marin-1', 'marin-2', 'marin-3', 'marin-4', 'marin-5']);
+    // COMPORTEMENT (pas la représentation) : chaque marin touché perd 9 − BE(3) − PA(0) = 6 PB (13 → 7) ;
+    // les 2 marins au-delà de l'Indice 6 restent intacts. La valeur 9 vit dans la donnée (`shrapnelHit`).
+    for (let i = 0; i < 6; i++) expect(crew[i].wounds.current).toBe(7);
+    expect(crew[6].wounds.current).toBe(13);
+    expect(crew[7].wounds.current).toBe(13);
   });
 
   it('Éclats plafonnés au nombre de marins exposés (moins de marins que d’Indice)', () => {
