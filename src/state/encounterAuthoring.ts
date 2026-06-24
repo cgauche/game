@@ -11,7 +11,7 @@
  */
 import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, Effect, SceneEntity } from './scene';
 import type { TraitInstance } from '../engine/statEntry';
-import type { ShipPoste } from '../engine/types';
+import type { ShipPoste, NavalTraitRef } from '../engine/types';
 import type { Dir8 } from './dir8';
 
 export interface AuthoredEnemy {
@@ -40,9 +40,9 @@ export interface AuthoredEnemy {
   /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13). Chaque poste réfère son équipage par
    *  `crewIds` (ids déterministes `enemy-<idRencontre>-<index>`) ; `applyShipPostes` sert le poste au chef. */
   postes?: ShipPoste[];
-  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, libellés verbatim ex. « Blindage (fer) ») — posées
+  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, réfs par id ex. `{ id: 'blindage-fer' }`) — posées
    *  sur le Combattant au spawn (Blindage → PA de coque, Lissage → M…). */
-  upgrades?: string[];
+  upgrades?: NavalTraitRef[];
   /** Surcharge la visibilité de la rencontre pour CET ennemi. */
   hidden?: boolean;
 }

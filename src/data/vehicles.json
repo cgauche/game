@@ -373,9 +373,17 @@
         "crew": 12
       },
       "traits": [
-        "Bélier",
-        "Renforcé 2",
-        "Solide 2"
+        {
+          "id": "belier"
+        },
+        {
+          "id": "renforce",
+          "value": 2
+        },
+        {
+          "id": "solide",
+          "value": 2
+        }
       ]
     }
   },
@@ -417,7 +425,9 @@
         "crew": 4
       },
       "traits": [
-        "Peu maniable"
+        {
+          "id": "peu-maniable"
+        }
       ]
     }
   },
@@ -495,8 +505,12 @@
         "crew": 8
       },
       "traits": [
-        "Peu maniable",
-        "Robuste"
+        {
+          "id": "peu-maniable"
+        },
+        {
+          "id": "robuste"
+        }
       ]
     },
     "deck": {
@@ -580,7 +594,9 @@
         "crew": 10
       },
       "traits": [
-        "Robuste"
+        {
+          "id": "robuste"
+        }
       ]
     }
   },
@@ -622,9 +638,15 @@
         "crew": 30
       },
       "traits": [
-        "Bélier",
-        "Renforcé",
-        "Solide"
+        {
+          "id": "belier"
+        },
+        {
+          "id": "renforce"
+        },
+        {
+          "id": "solide"
+        }
       ]
     }
   },
@@ -666,9 +688,15 @@
         "crew": 40
       },
       "traits": [
-        "Bélier",
-        "Renforcé",
-        "Solide"
+        {
+          "id": "belier"
+        },
+        {
+          "id": "renforce"
+        },
+        {
+          "id": "solide"
+        }
       ]
     }
   },
@@ -706,8 +734,12 @@
         "crew": 80
       },
       "traits": [
-        "Renforcé",
-        "Solide"
+        {
+          "id": "renforce"
+        },
+        {
+          "id": "solide"
+        }
       ]
     }
   },
@@ -745,8 +777,12 @@
         "crew": 60
       },
       "traits": [
-        "Renforcé",
-        "Solide"
+        {
+          "id": "renforce"
+        },
+        {
+          "id": "solide"
+        }
       ]
     }
   },
@@ -784,7 +820,9 @@
         "crew": 12
       },
       "traits": [
-        "Robuste"
+        {
+          "id": "robuste"
+        }
       ]
     }
   },
@@ -826,7 +864,9 @@
         "crew": 30
       },
       "traits": [
-        "Solide"
+        {
+          "id": "solide"
+        }
       ]
     }
   },

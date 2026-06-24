@@ -93,6 +93,16 @@ export interface VehicleTravelClass { key: string; label: string; brassPerKm: nu
  * Une monture, elle, reste une CRÉATURE (`creatures.json` → `Combatant`) ; ce type ne couvre que les
  * coques inertes (chariots, barges, navires).
  */
+
+/** Référence à un Trait/Amélioration naval du catalogue (`naval-traits.json`) par id STABLE (slug) — JAMAIS
+ *  le libellé (principe : référencer par id, pas par nom). `value` = Indice d'un Trait `ranked` (« Renforcé 2 »
+ *  → `{ id: 'renforce', value: 2 }`) ; absent = Indice 1. Le libellé verbatim reste dans le catalogue
+ *  (résolu pour l'affichage via `findNavalTrait(id)?.label`). Même esprit que `TraitInstance`, registre distinct. */
+export interface NavalTraitRef {
+  id: string;
+  value?: number;
+}
+
 export interface VehicleData {
   /** id STABLE (slug) — cible de `TravelMode`/réfs de scène. */
   id: string;
@@ -124,7 +134,7 @@ export interface VehicleData {
   };
   /** Facette NAVIRE (profil naval MDG ch.12) : caractéristiques de navigation/équipage du vaisseau.
    *  `manoeuvre` = modificateur de DR (Man) ; `sail`/`oars` = Mouvement (M) + équipage minimum (É) ;
-   *  `lengthM` = Taille (longueur, m) ; `capacity` = Contenance ; `traits` = Traits & Améliorations (verbatim). */
+   *  `lengthM` = Taille (longueur, m) ; `capacity` = Contenance ; `traits` = Traits de construction (réfs par id). */
   ship?: {
     crew: number;
     manoeuvre: number;
@@ -132,7 +142,7 @@ export interface VehicleData {
     capacity: number;
     sail?: { m: number; crew: number };
     oars?: { m: number; crew: number };
-    traits: string[];
+    traits: NavalTraitRef[];
   };
   /** Facette PONT (couche tactique, §1bis du modèle naval) : plan person-scale du pont, authoré une fois
    *  par TYPE et réutilisé dans tout scénario (jamais redessiné). Lu en tuiles/murs par `state/shipDeck.ts`. */
@@ -629,11 +639,11 @@ export interface Combatant {
   /** Pièces d'artillerie MONTÉES sur ce Combattant-coque (source de vérité, MDG ch.12-13). Au spawn, chaque
    *  poste pose son arme sur le chef de pièce via `mannedPoste`. */
   postes?: ShipPoste[];
-  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12 — Sabord, Bélier, Blindage, Lissage…), libellés
-   *  VERBATIM (ex. « Blindage (fer) »). S'ajoutent aux Traits du TYPE (`ship.traits`) ; lues par
-   *  `engine/navalTraits.ts`. Blindage est appliqué au spawn (PA de coque) ; Lissage/Peu maniable au calcul
-   *  de manœuvre ; Sabord au rendu du Pont. Comme un `ItemInstance` porte qualités/enchants. */
-  upgrades?: string[];
+  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12 — Sabord, Bélier, Blindage, Lissage…), réfs par id
+   *  STABLE (ex. `{ id: 'blindage-fer' }`), JAMAIS le libellé. S'ajoutent aux Traits du TYPE (`ship.traits`) ;
+   *  lues par `engine/navalTraits.ts`. Blindage est appliqué au spawn (PA de coque) ; Lissage/Peu maniable au
+   *  calcul de manœuvre ; Sabord au rendu du Pont. Comme un `ItemInstance` porte qualités/enchants. */
+  upgrades?: NavalTraitRef[];
   /** Poste que CE combattant SERT (chef de pièce) → `recomputeLoadout` en dérive l'arme active taguée
    *  `mountSide` (comme une morsure/un tentacule : dans `weapons`, HORS inventaire). Le canon reste la pièce
    *  du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE. */

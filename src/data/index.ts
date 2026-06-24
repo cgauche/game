@@ -805,8 +805,9 @@ export const findVehicleById = (id: string): VehicleData | undefined => vehicleB
  *  couvert de pont). Absent = pas d'effet mécanisé (Robuste déféré) ou déjà baké dans les colonnes du véhicule
  *  (Renforcé/Solide → E/B). */
 export interface NavalTraitData {
+  /** id STABLE (slug) — la clé d'appariement avec `ship.traits`/`Combatant.upgrades` (`NavalTraitRef.id`). */
   id: string;
-  /** Libellé VERBATIM de BASE (sans Indice) — la clé d'appariement avec `ship.traits`/`Combatant.upgrades`. */
+  /** Libellé VERBATIM de BASE (sans Indice) — affichage seul, résolu par `findNavalTrait(id)?.label`. */
   label: string;
   kind: 'trait' | 'amelioration';
   source?: { book: string; page: number };
@@ -824,12 +825,11 @@ export interface NavalTraitData {
   deckCover?: boolean;
 }
 export const NAVAL_TRAITS = navalTraitsJson as NavalTraitData[];
-const navalTraitByLabel = new Map(NAVAL_TRAITS.map((t) => [t.label.toLowerCase(), t]));
-/** Entrée du catalogue pour un libellé authoré : appariement exact, sinon (Trait à Indice) on retombe sur le
- *  libellé de base en retirant l'Indice final (« Renforcé 2 » → « Renforcé »). PUR. */
-export function findNavalTrait(label: string): NavalTraitData | undefined {
-  const lc = label.toLowerCase().trim();
-  return navalTraitByLabel.get(lc) ?? navalTraitByLabel.get(lc.replace(/\s+\d+$/, ''));
+const navalTraitById = new Map(NAVAL_TRAITS.map((t) => [t.id, t]));
+/** Entrée du catalogue pour une réf par id STABLE (`NavalTraitRef.id`) — l'Indice vit dans `NavalTraitRef.value`,
+ *  PAS dans la clé (plus de parsing de libellé « Renforcé 2 »). PUR. */
+export function findNavalTrait(id: string): NavalTraitData | undefined {
+  return navalTraitById.get(id);
 }
 /** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE

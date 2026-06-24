@@ -5,7 +5,7 @@ import { resolveShipManeuver } from '../engine/shipNavigation';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { maneuverShip } from './shipManeuver';
-import type { Combatant } from '../engine/types';
+import type { Combatant, NavalTraitRef } from '../engine/types';
 
 /**
  * Phase 2 « Manœuvre du navire » (MDG ch.13). Le cœur PUR : tourner le cap (`rotateDir8`) RE-MAPPE d'un coup
@@ -119,14 +119,14 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
   it('« Lissage » (Amélioration d’instance) → M +1 : +1 au déplacement, DR inchangé (MDG ch.12 l.293)', () => {
     // Même barreur/seed → même DR ; seul le M de base change. testValue ≥ −2 DR (helmsman habile) → jamais la
     // bande M−1/M÷2 → +1 M ⇒ exactement +1 case de déplacement.
-    const run = (upgrades?: string[]) => {
+    const run = (upgrades?: NavalTraitRef[]) => {
       seedBattleRng(7);
       const s = { ...ship(), upgrades } as Combatant; // bateau-de-patrouille (aucun Lissage de TYPE)
       useGame.setState({ battle: { combatants: [s, helmsman()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' } });
       return maneuverShip(() => useGame.getState(), 'ship', 2)!;
     };
     const plain = run();
-    const lisse = run(['Lissage']);
+    const lisse = run([{ id: 'lissage' }]);
     expect(lisse.dr).toBe(plain.dr); // Lissage n'affecte PAS le DR (≠ Peu maniable)…
     expect(lisse.movement).toBe(plain.movement + 1); // … mais +1 au Mouvement de base
   });

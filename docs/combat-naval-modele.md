@@ -86,9 +86,12 @@ Accroches existantes : `ship.traits`/`hull.traits`, `ShipPoste.sabord`.
 > via l'`extraDR` de `resolveShipManeuver`, cumulé au Man). Tests `engine/naval-traits.test.ts` +
 > `state/ship-maneuver.test.ts`.
 >
-> ✅ **Améliorations d'INSTANCE** (`Combatant.upgrades` / `SceneEntity.upgrades`, libellés verbatim) — un
-> navire-instance = type + `upgrades[]`, copiées au spawn (`spawn.ts`, point d'injection `combatSlice.ts`). La
-> liste navale effective = `ship.traits` (TYPE) + `upgrades` (INSTANCE), lue par `navalTraits.ts`. Branchées :
+> ✅ **Améliorations d'INSTANCE** (`Combatant.upgrades` / `SceneEntity.upgrades`, réfs par id `NavalTraitRef =
+> { id, value? }`, JAMAIS un libellé — l'Indice vit dans `value`) — un navire-instance = type + `upgrades[]`,
+> copiées au spawn (`spawn.ts`, point d'injection `combatSlice.ts`). La liste navale effective = `ship.traits`
+> (TYPE) + `upgrades` (INSTANCE), lue par `navalTraits.ts`. **Effet = `GameOp[]`** (`passive` du catalogue,
+> langue unique : Blindage→`ap`, Lissage→`moveMod`, Peu maniable→`skillDRBonus`) ; `ram`/`deckCover` restent en
+> champ de domaine (sous-systèmes navire). Branchées :
 > **Blindage** (`l.234/236` : bronze 1 PA / fer 2 PA → `armour.corps` au spawn, mitigé par les dégâts navals
 > existants) ; **Lissage** (`l.293` : M +1 → `+1` au Mouvement de manœuvre). Tests `state/ship-upgrades.test.ts`.
 > ⏳ Reste : Clinfoc (longueur), Nid-de-pie (Perception), Figure de proue (Moral si 2 Atouts *Raffiné*),

@@ -7,7 +7,7 @@
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
 import { CharKey, Difficulty } from '../engine/types';
-import type { ShipPoste } from '../engine/types';
+import type { ShipPoste, NavalTraitRef } from '../engine/types';
 import type { ZoneEffect } from '../engine/zones';
 import type { Flow, Condition } from './flow';
 import { type DayPhaseKey } from '../engine/clock';
@@ -120,9 +120,9 @@ export interface SceneEntity {
   /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13) — posées sur le Combattant-coque au
    *  spawn, puis `applyShipPostes` sert chaque poste à son chef de pièce. */
   postes?: ShipPoste[];
-  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12, libellés verbatim ex. « Blindage (fer) ») —
+  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12, réfs par id ex. `{ id: 'blindage-fer' }`) —
    *  s'ajoutent aux Traits du TYPE et modifient ce navire-ci (PA de coque, M, couvert…). Posées au spawn. */
-  upgrades?: string[];
+  upgrades?: NavalTraitRef[];
   dialogueId?: string;
   /** Clé d'asset (token). */
   sprite?: string;

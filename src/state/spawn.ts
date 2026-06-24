@@ -2,7 +2,7 @@
  * Construction de Combattants depuis le bestiaire (réf.) ou un statblock
  * personnalisé d'une scène. Sert au combat tactique.
  */
-import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type ShipPoste } from '../engine/types';
+import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type ShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
 import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, CreatureData, type SkillRef, type TalentRef } from '../data';
@@ -150,9 +150,9 @@ export interface SpawnExtras {
   crewIds?: string[];
   /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13) — posées sur le Combattant-coque. */
   postes?: ShipPoste[];
-  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, libellés verbatim) — posées sur le Combattant ;
+  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, réfs par id) — posées sur le Combattant ;
    *  Blindage est appliqué ici même (PA de coque). */
-  upgrades?: string[];
+  upgrades?: NavalTraitRef[];
 }
 
 /** Profil + modificateurs de PROFIL des traits `live` (Élite/Coriace/Brutal…) — pour les valeurs DÉRIVÉES

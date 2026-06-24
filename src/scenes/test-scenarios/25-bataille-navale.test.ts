@@ -36,7 +36,7 @@ describe('Scénario Bataille navale — chaîne navale jouable', () => {
 
   it('l’Amélioration d’instance « Blindage (fer) » donne 2 PA de coque au spawn (MDG ch.12 l.236)', () => {
     const ship = spawnRoster().find((c) => c.id === 'enemy-enc-naval-0')!;
-    expect(ship.upgrades).toEqual(['Blindage (fer)']); // authoré sur l'instance de la scène
+    expect(ship.upgrades).toEqual([{ id: 'blindage-fer' }]); // authoré sur l'instance de la scène (réf par id)
     expect(ship.armour.corps).toBe(2); // mitige les Dégâts navals (applyOps op wounds)
   });
 

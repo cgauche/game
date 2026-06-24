@@ -53,7 +53,7 @@ setEncounters(scene, [
       // index 0 = la cogue ennemie ; équipage exposé = les pirates (index 1-3), ids `enemy-enc-naval-<i>`.
       // Amélioration d'INSTANCE « Blindage (fer) » (MDG ch.12 l.236) → +2 PA de coque : les pierriers tapent
       // moins fort, la cogue encaisse plus longtemps (démontre les améliorations qui modifient le navire).
-      { ref: 'cogue', pos: { x: 13, y: 6 }, label: 'Cogue pirate', upgrades: ['Blindage (fer)'],
+      { ref: 'cogue', pos: { x: 13, y: 6 }, label: 'Cogue pirate', upgrades: [{ id: 'blindage-fer' }],
         crewIds: ['enemy-enc-naval-1', 'enemy-enc-naval-2', 'enemy-enc-naval-3'] },
       { ref: 'pirate-fluvial', pos: { x: 11, y: 4 } },
       { ref: 'pirate-fluvial', pos: { x: 11, y: 8 } },
