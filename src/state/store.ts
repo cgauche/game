@@ -12,6 +12,8 @@ import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward, DIR8_DELTA } from '../gameIso/rig/facing';
 import { rotateDir8, type Dir8 } from './dir8';
+import { footprintTiles } from './footprint';
+import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -919,27 +921,44 @@ export const useGame = create<GameState>((set, get) => ({
     const hull = battle?.combatants.find((c) => c.id === shipId);
     if (!battle || !hull?.pos || !dir) return 0;
     const d = DIR8_DELTA[dir];
-    // Clamp aux bornes de scène (coque 1×1 ; déplacement EN LIGNE DROITE → marge dispo par axe selon le signe du
-    // delta, ∞ si l'axe ne bouge pas ou hors scène). `cases` borné à ≥ 0 par le Math.max final.
     const w = scene?.dimensions.w ?? Infinity, h = scene?.dimensions.h ?? Infinity;
-    const marginX = d.gx > 0 ? w - 1 - hull.pos.x : d.gx < 0 ? hull.pos.x : Infinity;
-    const marginY = d.gy > 0 ? h - 1 - hull.pos.y : d.gy < 0 ? hull.pos.y : Infinity;
-    const moved = Math.max(0, Math.min(cases, marginX, marginY));
-    if (moved <= 0) return 0;
-    const delta = { x: d.gx * moved, y: d.gy * moved };
-    // Coque + équipage À BORD translatés du MÊME delta (formation rigide) ; les postes (sans `pos`) suivent la
-    // coque puisqu'ils y sont montés. MÊME patron de commit que le mouvement de combat (combatSlice : ANIM_MOVE).
-    const movers = [hull, ...(hull.crewIds ?? [])
-      .map((id) => battle.combatants.find((c) => c.id === id))
-      .filter((c): c is Combatant => !!c?.pos)];
-    for (const m of movers) {
-      const from = { ...m.pos! };
-      m.pos = { x: from.x + delta.x, y: from.y + delta.y };
-      bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
+    // Autres COQUES (jetons-navires) percutables (≠ self, pos connue) : une tuile occupée par une coque arrête
+    // l'avance ADJACENT (pas de chevauchement) et déclenche la collision (MDG ch.13).
+    const otherHulls = battle.combatants.filter((c) => c.id !== shipId && c.bodyShape === 'vehicule' && c.pos);
+    const hullAt = (x: number, y: number) => otherHulls.find((c) => footprintTiles(c.pos!, c.size).some((t) => t.x === x && t.y === y));
+    // Avance PAS-À-PAS le long du cap (coque 1×1) : on s'arrête au dernier pas libre — sortie de scène OU coque devant.
+    let moved = 0;
+    let victim: Combatant | undefined;
+    for (let step = 1; step <= Math.max(0, cases); step++) {
+      const nx = hull.pos.x + d.gx * step, ny = hull.pos.y + d.gy * step;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) break; // hors bornes de scène
+      const hit = hullAt(nx, ny);
+      if (hit) { victim = hit; break; } // coque devant → stop adjacent (moved = step − 1)
+      moved = step;
     }
-    get().log(`${hull.name} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
-    set({ battle: { ...battle } });
-    bus.emit(EVT.SCENE_DIRTY);
+    if (moved > 0) {
+      const delta = { x: d.gx * moved, y: d.gy * moved };
+      // Coque + équipage À BORD translatés du MÊME delta (formation rigide) ; les postes (sans `pos`) suivent la
+      // coque. MÊME patron de commit que le mouvement de combat (combatSlice : ANIM_MOVE).
+      const movers = [hull, ...(hull.crewIds ?? [])
+        .map((id) => battle.combatants.find((c) => c.id === id))
+        .filter((c): c is Combatant => !!c?.pos)];
+      for (const m of movers) {
+        const from = { ...m.pos! };
+        m.pos = { x: from.x + delta.x, y: from.y + delta.y };
+        bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
+      }
+      get().log(`${hull.name} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
+    }
+    // Éperonnage (MDG ch.13) : on percute de la PROUE (avance vers l'avant) ; FRONTAL si la victime tient un cap
+    // ~opposé (octant opposé ±1). Dégâts sur les DEUX coques par la langue unique (`applyShipCollision`→`applyOps`).
+    if (victim) {
+      const opp = rotateDir8(dir, 4);
+      const vf = facing[victim.id];
+      const frontal = vf === opp || vf === rotateDir8(opp, 1) || vf === rotateDir8(opp, -1);
+      for (const line of applyShipCollision(hull, victim, { ramProue: true, frontal }).lines) get().log(line);
+    }
+    if (moved > 0 || victim) { set({ battle: { ...battle } }); bus.emit(EVT.SCENE_DIRTY); }
     return moved;
   },
   zoom: 1,

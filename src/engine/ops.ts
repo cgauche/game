@@ -171,7 +171,11 @@ export type GameOp =
        *  la Localisation la MOINS protégée (En Flammes brûle là où l'armure protège le moins, LDB 16 l.77). */
       apFrom?: 'corps' | 'least';
       /** Plancher de Blessures infligées APRÈS mitigation (Sang corrosif : « min 1 » même BE/PA élevés). */
-      min?: number }
+      min?: number;
+      /** PA ADDITIONNELS de CE coup (situationnels), cumulés aux PA de la Localisation quand `ignoreAP:false` :
+       *  ex. les +2 PA de poupe / +5 PA frontaux du Bélier d'une collision (`CollisionDamage.armorBonus`). Garde
+       *  la mitigation DANS l'op (langue unique) plutôt que de la pré-calculer côté appelant. */
+      extraAP?: number }
   /** Blessures rendues (plafonnées au max). */
   | { op: 'heal'; amount: Formula; perSL?: PerSL }
   /** Blessures rendues AU LANCEUR (« Puis vous Guérissez 1 Point de Blessure » — Drain).
@@ -674,7 +678,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ? Math.max(0, Math.min(...Object.values(target.armour)))
           : Math.max(0, target.armour.corps ?? 0);
         const bypass = o.bypassArmour ? bypassedAP(target, 'corps', o.bypassArmour, totalAP) : 0; // attribut de Domaine : perce le métal/non-magique
-        const ap = o.ignoreAP === false ? Math.max(0, totalAP - bypass) : 0;
+        // PA de la Localisation (si non ignorés) + PA situationnels du coup (`extraAP` : poupe/Bélier de collision…).
+        const ap = (o.ignoreAP === false ? Math.max(0, totalAP - bypass) : 0) + (o.extraAP ?? 0);
         const n = Math.max(o.min ?? 0, raw - tb - ap);
         loseWounds(target, n); // perte centralisée (−Avantage + À Terre à 0)
         const mitig = o.ignoreTB === false || o.ignoreAP === false ? ` (${o.ignoreAP === false ? t('op.frag.apHit') : t('op.frag.apIgnored')}, ${o.ignoreTB === false ? t('op.frag.beDeduced') : t('op.frag.beIgnored')})` : t('op.frag.mitigNone');

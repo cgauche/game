@@ -194,4 +194,29 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
     expect(useGame.getState().shipAdvance('ship', 3)).toBe(0); // pas de cap
     expect(useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5, y: 5 }); // intacte
   });
+
+  // Coque COMPLÈTE pour l'éperonnage : characteristics/PB (IC), creatureId (M), bodyShape (détection de coque).
+  const navHull = (id: string, x: number, creatureId: string, E: number, pb: number): Combatant =>
+    ({ id, name: id, kind: 'npc', creatureId, bodyShape: 'vehicule', pos: { x, y: 5 }, crewIds: [],
+      characteristics: { CC: 0, CT: 0, F: 0, E, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 },
+      wounds: { current: pb, max: pb, base: pb }, advantage: 0, conditions: [], weapons: [], armour: { corps: 0 }, skills: [], talents: [] }) as unknown as Combatant;
+
+  it('avance vers une AUTRE coque → s’arrête ADJACENT (pas de chevauchement) et les deux coques encaissent', () => {
+    const ship = navHull('ship', 5, 'cogue', 45, 50);
+    const other = navHull('other', 8, 'knarr', 40, 30);
+    useGame.setState({ battle: { combatants: [ship, other], order: ['ship'], turn: 0 } as never, facing: { ship: 'E', other: 'O' }, scene: null as never });
+    expect(useGame.getState().shipAdvance('ship', 5)).toBe(2); // cap E : cases 6,7 libres ; 8 occupée → stop à 7
+    const b = useGame.getState().battle!;
+    expect(b.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 7, y: 5 }); // adjacent, PAS sur (8,5)
+    expect(b.combatants.find((c) => c.id === 'other')!.wounds.current).toBeLessThan(30); // la victime encaisse
+    expect(b.combatants.find((c) => c.id === 'ship')!.wounds.current).toBeLessThan(50); // le causeur aussi (l.446)
+  });
+
+  it('tuile cible libre (aucune coque sur le chemin) → avance pleine, AUCUNE collision', () => {
+    const ship = navHull('ship', 5, 'cogue', 45, 50);
+    const other = navHull('other', 20, 'knarr', 40, 30); // hors de portée
+    useGame.setState({ battle: { combatants: [ship, other], order: ['ship'], turn: 0 } as never, facing: { ship: 'E', other: 'O' }, scene: null as never });
+    expect(useGame.getState().shipAdvance('ship', 3)).toBe(3); // rien devant → avance pleine
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'other')!.wounds.current).toBe(30); // intacte
+  });
 });

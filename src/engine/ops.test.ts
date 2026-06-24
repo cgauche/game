@@ -50,6 +50,16 @@ describe('applyOps — opérations unitaires', () => {
     expect(lines[0]).toMatch(/subit 5 Blessure/);
   });
 
+  it('wounds extraAP : PA situationnels du coup déduits AVEC les PA de Localisation (poupe/Bélier de collision)', () => {
+    // E 45 → BE 4 ; armour.corps 0. Sans extraAP : 10 − 4 = 6 PB perdus ; avec extraAP 2 : 10 − 4 − 2 = 4.
+    const a = hero({ wounds: { current: 12, max: 12 } });
+    applyOps(a, [{ op: 'wounds', amount: 10, ignoreTB: false, ignoreAP: false }]);
+    expect(a.wounds.current).toBe(12 - 6);
+    const b = hero({ wounds: { current: 12, max: 12 } });
+    applyOps(b, [{ op: 'wounds', amount: 10, ignoreTB: false, ignoreAP: false, extraAP: 2 }]);
+    expect(b.wounds.current).toBe(12 - 4); // 2 PB de moins perdus — la mitigation reste DANS l'op
+  });
+
   it('heal : plafonné au max de Blessures', () => {
     const c = hero({ wounds: { current: 10, max: 12 } });
     applyOps(c, [{ op: 'heal', amount: 5 }]);
