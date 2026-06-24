@@ -35,6 +35,9 @@ export interface ShipCritEntry {
   /** « Canon perdu » (MDG ch.13 l.765) : un poste d'artillerie passe par-dessus bord → RETIRÉ de
    *  `hull.postes` (mécanisé par `loseRandomPoste`/`applyHullCritical`). Le `note` reste le texte verbatim. */
   losePoste?: boolean;
+  /** « Canon détaché » (MDG ch.13 l.763-764) : un canon rompt ses amarres → l'équipage du poste teste
+   *  l'Athlétisme (Intermédiaire +0) sous peine de 12 Dégâts (mécanisé par `detachPosteCrewHit`). */
+  detachPoste?: boolean;
   note: string;
 }
 export type ShipCritTable = ShipCritEntry[];
