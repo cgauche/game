@@ -11,15 +11,12 @@
  * « canon tourné vers sa poupe » de l'exemple de poursuite (l.410). [Alternative écartée : quadrant 90°.]
  */
 import { facingToward } from '../gameIso/rig/facing';
-import type { Dir8 } from './dir8';
+import { DIR8_ORDER, type Dir8 } from './dir8';
 import type { FireArc } from '../engine/types';
 
 export type { FireArc };
 
 type Pt = { x: number; y: number };
-
-/** Dir8 en ordre HORAIRE, 45° par cran (cf. DIR8_DELTA) : +2 crans = 90° à droite = tribord. */
-const DIR8_ORDER: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
 
 /** Octant RELATIF (0 = droit devant … 4 = droit derrière, sens horaire) de la cible vs le cap du navire. PUR. */
 function relativeOctant(heading: Dir8, shipPos: Pt, targetPos: Pt): number {
