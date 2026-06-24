@@ -168,8 +168,9 @@ dans l'éditeur, jouables via le menu 🧪.
 6. ⏳ **Manœuvre** (D3b) : `FLOWS.shipManeuver` → tourne le `Dir8`, avance ; re-mappe les arcs. Inclut l'**init
    du cap au spawn** (`facing` depuis l'entité authorée — lacune POC à combler) pour que l'arc soit réel en jeu.
 7. ⏳ **Fondation bateau-prefab + Améliorations** (§1bis) : facette `deck` sur `VehicleData` + résolveur d'améliorations.
-8. ⏳ **Composition du Pont + abordage** (collision → `engage` → coudre les ponts) ; **Critiques canon**
-   (« Canon perdu/détaché », `ch.13 l.763-765`) via op `removeShipPoste` sur `hull.postes`.
+8. ⏳ **Composition du Pont + abordage** (collision → `engage` → coudre les ponts). **Critiques canon** :
+   ✅ « Canon perdu » (`ch.13 l.765`) mécanisé — `loseRandomPoste` retire un poste de `hull.postes` +
+   démancipe son chef (`mannedPoste`/arme) ; ⏳ « Canon détaché » (`l.763-764` : Test d'Athlétisme + 12 Dégâts).
 9. ⏳ **Scène Mer + dispatch de tour à vue commutée** (navire acteur d'initiative ; vue Mer⇄Pont selon l'acteur).
 
 Recette navigateur à chaque étape jouable (`__wfrp`, combat manuel) : servir un poste → aligner une bordée →

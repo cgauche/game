@@ -305,6 +305,7 @@
         "max": 8,
         "id": "canon-perdu",
         "name": "Canon perdu",
+        "losePoste": true,
         "note": "L'un des gros canons, ou un pierrier si le bateau n'en comporte pas, passe par dessus bord et est perdu. Réparation : impossible, l'objet doit être récupéré ou remplacé."
       },
       {

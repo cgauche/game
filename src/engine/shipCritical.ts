@@ -17,7 +17,7 @@ import { findTableEntry } from './tables';
 import { applyOps, type GameOp } from './ops';
 import { shipHitLocation, hitLocation, type ShipRig, type ShipLocation } from './combat';
 import { rollCritical, type CriticalResolved } from './critical';
-import type { Combatant } from './types';
+import type { Combatant, ShipPoste } from './types';
 import { SHIP_CRITICAL_TABLES, type ShipCritKey } from '../data/shipCriticals';
 
 export interface ShipCriticalResolved {
@@ -33,6 +33,8 @@ export interface ShipCriticalResolved {
   shrapnel: number;
   /** Critiques de Coque SUPPLÉMENTAIRES (déjà tirés depuis `hullCrits`, ex. « 1d10 » → un nombre). */
   extraHullCrits: number;
+  /** « Canon perdu » (MDG ch.13 l.765) : un poste passe par-dessus bord (retrait via `loseRandomPoste`). */
+  losePoste: boolean;
   /** Effets LONG TERME / narratifs verbatim (réductions de Man/Mouvement, réparations, chutes du gréement). */
   note: string;
   log: string;
@@ -54,6 +56,7 @@ export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, f
     ops,
     shrapnel: entry.shrapnel ?? 0,
     extraHullCrits,
+    losePoste: entry.losePoste ?? false,
     note: entry.note,
     log: `Critique navire (${location}) : ${entry.name}${entry.shrapnel ? ` — Éclats ${entry.shrapnel}` : ''}${extraHullCrits ? ` — ${extraHullCrits} Critique(s) de Coque` : ''}.`,
   };
@@ -102,7 +105,26 @@ export interface HullCriticalOutcome {
   shrapnel: { crewId: string; damage: number }[];
   /** Critiques de Coque SUPPLÉMENTAIRES résolus (1d10…) — ops déjà appliqués à la coque. */
   extraHullCrits: ShipCriticalResolved[];
+  /** « Canon perdu » : un poste d'artillerie retiré de la coque (passé par-dessus bord). */
+  lostPoste?: { weaponName: string };
   lines: string[];
+}
+
+/**
+ * « Canon perdu » (MDG ch.13 l.765) : un poste d'artillerie de la coque passe par-dessus bord — RETIRÉ de
+ * `hull.postes`, et son chef de pièce (`crewIds[0]`) perd son `mannedPoste` + l'arme dérivée (il ne sert plus
+ * rien). PUR (mute la coque + le chef). Renvoie le poste perdu, ou `null` si la coque n'a aucun poste.
+ */
+export function loseRandomPoste(hull: Combatant, crew: Combatant[], rng: RNG = defaultRNG): ShipPoste | null {
+  const postes = hull.postes;
+  if (!postes?.length) return null;
+  const [lost] = postes.splice(rng.int(0, postes.length - 1), 1);
+  const chef = lost.crewIds?.[0] ? crew.find((c) => c.id === lost.crewIds![0]) : undefined;
+  if (chef?.mannedPoste === lost) {
+    chef.mannedPoste = undefined;
+    chef.weapons = (chef.weapons ?? []).filter((w) => w.uid !== lost.item.uid);
+  }
+  return lost;
 }
 
 /**
@@ -139,6 +161,13 @@ export function applyHullCritical(
   lines.push(crit.log);
   applyOps(hull, crit.ops, { rng });
 
+  // « Canon perdu » (MDG ch.13 l.765) : une pièce d'artillerie passe par-dessus bord — retirée de la coque.
+  let lostPoste: { weaponName: string } | undefined;
+  if (crit.losePoste) {
+    const lost = loseRandomPoste(hull, crew, rng);
+    if (lost) { lostPoste = { weaponName: lost.item.name }; lines.push(`${lost.item.name} passe par-dessus bord — perdu.`); }
+  }
+
   // Éclats → 9 Dégâts à autant de marins exposés que l'Indice (plafonné au nombre de marins).
   const shrapnel: { crewId: string; damage: number }[] = [];
   for (let i = 0; i < crit.shrapnel && i < exposed.length; i++) {
@@ -157,5 +186,5 @@ export function applyHullCritical(
   }
   if (extraHullCrits.length) lines.push(`${extraHullCrits.length} Critique(s) de Coque supplémentaire(s).`);
 
-  return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, lines };
+  return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, lostPoste, lines };
 }
