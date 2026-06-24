@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { rotateDir8 } from './dir8';
+import { DIR8_DELTA } from '../gameIso/rig/facing';
 import { inFireArc, targetArc } from './fireArc';
 import { resolveShipManeuver } from '../engine/shipNavigation';
 import { useGame } from './store';
@@ -129,5 +130,68 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     const lisse = run([{ id: 'lissage' }]);
     expect(lisse.dr).toBe(plain.dr); // Lissage n'affecte PAS le DR (≠ Peu maniable)…
     expect(lisse.movement).toBe(plain.movement + 1); // … mais +1 au Mouvement de base
+  });
+
+  it('succès → vire ET avance ; le barreur (à bord) suit la coque du MÊME delta (formation rigide)', () => {
+    seedBattleRng(7);
+    const s = ship();
+    const h = helmsman();
+    h.pos = { x: 5, y: 4 }; // équipier décalé d'une case → vérifie que l'offset est conservé
+    useGame.setState({ battle: { combatants: [s, h], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+    const r = maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    expect(r.success).toBe(true); // (seed 7 : manœuvre réussie — cf. test ci-dessus)
+    expect(r.advanced).toBeGreaterThan(0); // le navire AVANCE
+    const d = DIR8_DELTA[useGame.getState().facing.ship]; // cap d'APRÈS le virage
+    const b = useGame.getState().battle!;
+    expect(b.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5 + d.gx * r.advanced, y: 5 + d.gy * r.advanced });
+    expect(b.combatants.find((c) => c.id === 'helm')!.pos).toEqual({ x: 5 + d.gx * r.advanced, y: 4 + d.gy * r.advanced });
+  });
+
+  it('échec → PAS de virage mais le navire avance QUAND MÊME le long du cap (RAW : déplacement inconditionnel)', () => {
+    // Barreur faible (Voile ~18) sur la cogue (Man −1, Peu maniable −1) → DR final toujours < 0 (sl max 1 − 2 ≤ −1).
+    const weak = helmsman();
+    weak.skills = [{ skillId: 'voile', characteristic: 'Ag', advances: 0 } as never];
+    weak.characteristics = { ...weak.characteristics, Ag: 18 };
+    const cogue = { ...ship(), creatureId: 'cogue' } as Combatant;
+    seedBattleRng(3);
+    useGame.setState({ battle: { combatants: [cogue, weak], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+    const r = maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    expect(r.success).toBe(false); // manœuvre ratée
+    expect(useGame.getState().facing.ship).toBe('N'); // le cap TIENT (aucun virage)
+    expect(r.advanced).toBeGreaterThan(0); // … mais le navire avance quand même (M÷2 plancher)
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5, y: 5 - r.advanced }); // plein Nord
+  });
+});
+
+describe('shipAdvance (action store) — avance coque + équipage le long du cap (MDG ch.13)', () => {
+  const hull = (over: Partial<Combatant> = {}): Combatant =>
+    ({ id: 'ship', name: 'Cogue', kind: 'npc', pos: { x: 5, y: 5 }, crewIds: ['m1', 'm2'], conditions: [], weapons: [], ...over }) as unknown as Combatant;
+  const sailor = (id: string, pos: { x: number; y: number }): Combatant =>
+    ({ id, name: id, kind: 'npc', pos, conditions: [], weapons: [] }) as unknown as Combatant;
+
+  it('cap E, 3 cases → coque +3x ; équipage translaté du MÊME delta (offsets conservés) ; renvoie 3', () => {
+    const m1 = sailor('m1', { x: 4, y: 4 });
+    const m2 = sailor('m2', { x: 4, y: 6 });
+    useGame.setState({ battle: { combatants: [hull(), m1, m2], order: ['ship'], turn: 0 } as never, facing: { ship: 'E' }, scene: null as never });
+    expect(useGame.getState().shipAdvance('ship', 3)).toBe(3);
+    const b = useGame.getState().battle!;
+    expect(b.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 8, y: 5 });
+    expect(b.combatants.find((c) => c.id === 'm1')!.pos).toEqual({ x: 7, y: 4 }); // +3x, offset (−1,−1) gardé
+    expect(b.combatants.find((c) => c.id === 'm2')!.pos).toEqual({ x: 7, y: 6 });
+  });
+
+  it('clampe aux bornes de scène : coque près du bord → moved < cases, équipage translaté du même moved', () => {
+    const m1 = sailor('m1', { x: 4, y: 5 });
+    useGame.setState({ battle: { combatants: [hull({ crewIds: ['m1'] }), m1], order: ['ship'], turn: 0 } as never, facing: { ship: 'E' }, scene: { dimensions: { w: 7, h: 10 } } as never });
+    expect(useGame.getState().shipAdvance('ship', 5)).toBe(1); // bord est à x=6 → 1 seule case dispo depuis x=5
+    const b = useGame.getState().battle!;
+    expect(b.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 6, y: 5 });
+    expect(b.combatants.find((c) => c.id === 'm1')!.pos).toEqual({ x: 5, y: 5 }); // +1 (même moved)
+  });
+
+  it('cap absent OU 0 case dispo → no-op, renvoie 0 (aucune mutation)', () => {
+    useGame.setState({ battle: { combatants: [hull()], order: ['ship'], turn: 0 } as never, facing: {}, scene: null as never });
+    expect(useGame.getState().shipAdvance('ship', 3)).toBe(0); // pas de cap
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5, y: 5 }); // intacte
   });
 });

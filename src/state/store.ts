@@ -10,7 +10,7 @@ import type { ShipMoraleState } from '../engine/crewMorale';
 import { dissipateSpell } from '../engine/dispel';
 import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
-import { facingToward } from '../gameIso/rig/facing';
+import { facingToward, DIR8_DELTA } from '../gameIso/rig/facing';
 import { rotateDir8, type Dir8 } from './dir8';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
@@ -200,6 +200,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Manœuvre NAVALE (MDG ch.13) : vire le cap (`Dir8`) du navire `shipId` de `turnSteps` crans de 45°
    *  (>0 = tribord/droite, <0 = bâbord/gauche) → re-mappe d'un coup TOUS ses arcs de bordée. */
   shipTurn: (shipId: string, turnSteps: number) => void;
+  /** Avance la coque `shipId` ET son équipage (à bord, formation rigide) de `cases` tuiles le long du cap
+   *  courant `facing[shipId]` (MDG ch.13). Clampe aux bornes de scène. Renvoie les cases réellement parcourues. */
+  shipAdvance: (shipId: string, cases: number) => number;
   zoom: number; // zoom caméra du JEU (échelle), borné [1, 2.6] — état de vue, non sérialisé
   setZoom: (z: number) => void;
   /** Projection de la carte (bascule) : 'iso' losange ou 'top' grille carrée — préférence de vue. */
@@ -909,6 +912,35 @@ export const useGame = create<GameState>((set, get) => ({
     const ship = battle?.combatants.find((c) => c.id === shipId);
     get().log(`${ship?.name ?? shipId} vire de bord — nouveau cap : ${next}.`);
     bus.emit(EVT.SCENE_DIRTY);
+  },
+  shipAdvance: (shipId, cases) => {
+    const { facing, battle, scene } = get();
+    const dir = facing[shipId];
+    const hull = battle?.combatants.find((c) => c.id === shipId);
+    if (!battle || !hull?.pos || !dir) return 0;
+    const d = DIR8_DELTA[dir];
+    // Clamp aux bornes de scène (coque 1×1 ; déplacement EN LIGNE DROITE → marge dispo par axe selon le signe du
+    // delta, ∞ si l'axe ne bouge pas ou hors scène). `cases` borné à ≥ 0 par le Math.max final.
+    const w = scene?.dimensions.w ?? Infinity, h = scene?.dimensions.h ?? Infinity;
+    const marginX = d.gx > 0 ? w - 1 - hull.pos.x : d.gx < 0 ? hull.pos.x : Infinity;
+    const marginY = d.gy > 0 ? h - 1 - hull.pos.y : d.gy < 0 ? hull.pos.y : Infinity;
+    const moved = Math.max(0, Math.min(cases, marginX, marginY));
+    if (moved <= 0) return 0;
+    const delta = { x: d.gx * moved, y: d.gy * moved };
+    // Coque + équipage À BORD translatés du MÊME delta (formation rigide) ; les postes (sans `pos`) suivent la
+    // coque puisqu'ils y sont montés. MÊME patron de commit que le mouvement de combat (combatSlice : ANIM_MOVE).
+    const movers = [hull, ...(hull.crewIds ?? [])
+      .map((id) => battle.combatants.find((c) => c.id === id))
+      .filter((c): c is Combatant => !!c?.pos)];
+    for (const m of movers) {
+      const from = { ...m.pos! };
+      m.pos = { x: from.x + delta.x, y: from.y + delta.y };
+      bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
+    }
+    get().log(`${hull.name} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
+    set({ battle: { ...battle } });
+    bus.emit(EVT.SCENE_DIRTY);
+    return moved;
   },
   zoom: 1,
   setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(0.4, z)) }), // floor 0.4 : dézoom tactique large

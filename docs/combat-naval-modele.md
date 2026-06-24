@@ -201,8 +201,11 @@ dans l'éditeur, jouables via le menu 🧪.
    symétrie avec `firedWeapon`). Scénario 25 sans triche (pierriers = postes de la barge amie).
 4. ⏳ **Recharge d'équipage** : brancher `assistBonus`/Soutien sur `FLOWS.reload`.
 5. ⏳ **Batterie** (D3e) : action navire → `resolveCrewTestByRoles('batterie')` → DR sur tous les postes d'une bordée.
-6. ⏳ **Manœuvre** (D3b) : `FLOWS.shipManeuver` → tourne le `Dir8`, avance ; re-mappe les arcs. Inclut l'**init
-   du cap au spawn** (`facing` depuis l'entité authorée — lacune POC à combler) pour que l'arc soit réel en jeu.
+6. ⏳ **Manœuvre** (D3b) : `maneuverShip` → vire le `Dir8` (Phase 2b) **et avance la coque + l'équipage à bord**
+   le long du cap (`shipAdvance`, Phase 2c, MDG ch.13 l.66-75 — déplacement INCONDITIONNEL, M÷2 plancher ; seul
+   le virage dépend de la réussite) ; re-mappe les arcs. ⏳ Reste (UI = navigateur) : **modale `RollFlowShell`** du
+   Test + **commande HUD « Manœuvrer »** + **init du cap au spawn** (`facing` depuis l'entité authorée) pour que
+   l'arc soit réel en jeu.
 7. ⏳ **Fondation bateau-prefab + Améliorations** (§1bis) : ✅ facette `deck` sur `VehicleData` (TYPE pur +
    `parseDeck` + deck de la cogue authoré + tests) ; ✅ premiers effets de Traits/Améliorations (`navalTraits.ts` :
    **Bélier**→`resolveCollision`, **Sabord**→`effectiveDeckPostes`) ; ⏳ reste des améliorations (Blindage/Lissage/

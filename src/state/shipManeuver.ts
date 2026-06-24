@@ -7,7 +7,8 @@
  *
  * Le M (Mouvement) et le Man du navire vivent dans `vehicles.json` (facette `ship`), PAS sur le Combattant-coque
  * (`vehicleCombatant` met `movement:0`) → on les relit via `creatureId`. Le DÉPLACEMENT effectif (avancer de
- * `out.movement` cases dans le nouveau cap) et la MODALE joueur (RollFlowShell) restent à câbler (Phase 2c).
+ * `out.movement` cases le long du cap, coque + équipage à bord) est câblé via `shipAdvance` (store). La MODALE
+ * joueur (RollFlowShell) + la commande HUD « Manœuvrer » restent à câbler côté UI (session navigateur).
  */
 import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
@@ -28,6 +29,8 @@ export interface ManeuverResult extends ShipManeuverOutcome {
   navDR: number;
   /** Nom du barreur (pour le journal). */
   helmsman?: string;
+  /** Cases réellement parcourues par la coque (déplacement INCONDITIONNEL, clampé aux bornes de scène). */
+  advanced: number;
 }
 
 /**
@@ -59,5 +62,8 @@ export function maneuverShip(get: Get, shipId: string, turnSteps: number, helmsm
   );
   if (out.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
   else get().log(`${helm?.name ?? "L'équipage"} rate la manœuvre de ${ship.name} (DR ${out.dr}) — le cap tient.`);
-  return { ...out, navDR, helmsman: helm?.name };
+  // Déplacement INCONDITIONNEL (MDG ch.13, table de Progression l.66-75 : le navire avance TOUJOURS, M÷2 plancher)
+  // le long du cap d'APRÈS le virage conditionnel — seul le VIRAGE dépend de la réussite, pas l'avance.
+  const advanced = get().shipAdvance(shipId, out.movement);
+  return { ...out, navDR, helmsman: helm?.name, advanced };
 }
