@@ -106,4 +106,13 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     useGame.setState({ battle: null as never });
     expect(maneuverShip(() => useGame.getState(), 'ship', 2)).toBeNull();
   });
+
+  it('« Peu maniable » pénalise la manœuvre (−1 DR/niveau, MDG ch.12 l.173) — cumulé au Man de la colonne', () => {
+    // La cogue : Man −1 (colonne) ET Trait « Peu maniable » (−1 DR) → DR final = DR brut − 2 (colonnes distinctes).
+    const cogue = { ...ship(), creatureId: 'cogue' } as Combatant;
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [cogue, helmsman()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' } });
+    const r = maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    expect(r.dr).toBe(r.navDR - 2); // Man (−1) + Peu maniable (−1)
+  });
 });

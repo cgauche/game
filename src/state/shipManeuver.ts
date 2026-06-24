@@ -13,6 +13,7 @@ import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
+import { navalTraitLevel } from '../engine/navalTraits';
 import { findVehicleById } from '../data';
 import type { Combatant } from '../engine/types';
 import type { Get } from './flowTypes';
@@ -48,7 +49,10 @@ export function maneuverShip(get: Get, shipId: string, turnSteps: number, helmsm
   const helm = helmsmanId ? battle.combatants.find((c) => c.id === helmsmanId) : bestHelmsman(crew, skillId);
   // Test de Navigation du barreur (Intermédiaire +0) → DR brut ; le Man s'ajoute dans resolveShipManeuver.
   const navDR = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()).sl : 0;
-  const out = resolveShipManeuver(navDR, baseM, manoeuvre);
+  // « Peu maniable (Indice) » (MDG ch.12 l.173) : −1 DR/niveau sur les Tests de Ramer/Voile — DISTINCT du Man
+  // (colonnes séparées dans la table des navires) → se cumule au Man via l'`extraDR` situationnel du résolveur.
+  const peuManiable = navalTraitLevel(vd?.traits, 'Peu maniable');
+  const out = resolveShipManeuver(navDR, baseM, manoeuvre, -peuManiable);
   if (out.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
   else get().log(`${helm?.name ?? "L'équipage"} rate la manœuvre de ${ship.name} (DR ${out.dr}) — le cap tient.`);
   return { ...out, navDR, helmsman: helm?.name };

@@ -69,14 +69,17 @@ de base **+ résolveur d'améliorations** — même patron que le rig et `applyO
 PA, longueur, Perception) ; **placement sur le pont = authoré** (couche rig, comme l'apparence d'une mutation).
 Accroches existantes : `ship.traits`/`hull.traits`, `ShipPoste.sabord`.
 
-> ✅ **Premiers effets mécanisés** (`engine/navalTraits.ts`, lecture des libellés VERBATIM via `shipHasNavalTrait`) —
-> on ne mécanise que les effets ABSENTS des colonnes du type (anti-double-compte : E/B/Man sont déjà finaux) :
+> ✅ **Premiers effets mécanisés** (`engine/navalTraits.ts`, lecture des libellés VERBATIM via `navalTraitLevel`/
+> `shipHasNavalTrait`) — on ne mécanise que les effets ABSENTS des colonnes du type (anti-double-compte : E/B
+> sont déjà finaux ; Man et « Peu maniable » sont des **colonnes DISTINCTES** de la table → se cumulent) :
 > **Bélier** dans `resolveCollision` (`l.221` : éperonnage de proue → +5 IC à la victime + 5 PA frontaux au
 > Bélier ; collision frontale → la proue de la victime profite aussi de SON Bélier) ; **Sabord** dans
 > `effectiveDeckPostes` (`l.362-364` : une coque à Sabord couvre TOUS ses emplacements → couvert total au
-> servant). Tests `engine/naval-traits.test.ts`. ⏳ Reste : Blindage (PA, variante bronze/fer), Lissage (M),
-> Clinfoc (longueur), Nid-de-pie (Perception), Figure de proue (Moral si 2 Atouts *Raffiné*), Propulsion à vapeur ;
-> + catalogue DATA d'améliorations éditable au Codex (desc verbatim) et `upgrades[]` par instance dans l'éditeur.
+> servant) ; **Peu maniable (Indice)** dans `maneuverShip` (`l.173` : −1 DR/niveau sur le Test de Voile/Ramer,
+> via l'`extraDR` de `resolveShipManeuver`, cumulé au Man). Tests `engine/naval-traits.test.ts` +
+> `state/ship-maneuver.test.ts`. ⏳ Reste : Blindage (PA, variante bronze/fer), Lissage (M), Clinfoc (longueur),
+> Nid-de-pie (Perception), Figure de proue (Moral si 2 Atouts *Raffiné*), Robuste (+2 DR Affaler les voiles),
+> Propulsion à vapeur ; + catalogue DATA d'améliorations éditable au Codex (desc verbatim) et `upgrades[]` par instance.
 
 ## 2. Pièce SERVIE = concept GÉNÉRAL (sol + navire) ; le poste naval en est un cas
 

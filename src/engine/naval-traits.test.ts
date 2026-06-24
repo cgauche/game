@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shipHasNavalTrait, effectiveDeckPostes } from './navalTraits';
+import { shipHasNavalTrait, navalTraitLevel, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { findVehicleById } from '../data';
 
@@ -20,6 +20,12 @@ describe('shipHasNavalTrait — lecture des libellés verbatim', () => {
     expect(shipHasNavalTrait(findVehicleById('cogue')!.ship!.traits, 'Bélier')).toBe(false); // cogue : Peu maniable, Robuste
     expect(shipHasNavalTrait([], 'Bélier')).toBe(false);
     expect(shipHasNavalTrait(undefined, 'Bélier')).toBe(false);
+  });
+  it('navalTraitLevel : Indice nu = 1, « N » explicite, absent = 0', () => {
+    expect(navalTraitLevel(['Peu maniable', 'Robuste'], 'Peu maniable')).toBe(1); // libellé nu → 1
+    expect(navalTraitLevel(['Renforcé 2', 'Solide 2'], 'Renforcé')).toBe(2);
+    expect(navalTraitLevel(['Renforcé 2'], 'Solide')).toBe(0); // absent
+    expect(navalTraitLevel(undefined, 'Peu maniable')).toBe(0);
   });
 });
 

@@ -13,14 +13,24 @@
  */
 import type { DeckPosteSlot } from './types';
 
-/** Une coque possède-t-elle ce Trait/Amélioration naval ? Compare les libellés VERBATIM (insensible à la
- *  casse) et tolère l'Indice (« Renforcé 2 » ⊃ « Renforcé »). PUR. */
-export function shipHasNavalTrait(traits: string[] | undefined, name: string): boolean {
+/** Indice (niveau) d'un Trait naval dans les libellés VERBATIM (insensible à la casse) : « Renforcé 2 » → 2,
+ *  libellé NU (« Bélier », « Peu maniable ») → 1, absent → 0. PUR. Source UNIQUE de lecture des libellés. */
+export function navalTraitLevel(traits: string[] | undefined, name: string): number {
   const n = name.toLowerCase();
-  return (traits ?? []).some((t) => {
+  for (const t of traits ?? []) {
     const lt = t.toLowerCase();
-    return lt === n || lt.startsWith(n + ' ');
-  });
+    if (lt === n) return 1; // libellé nu = Indice 1
+    if (lt.startsWith(n + ' ')) {
+      const rank = parseInt(lt.slice(n.length).trim(), 10);
+      return Number.isFinite(rank) ? rank : 1;
+    }
+  }
+  return 0;
+}
+
+/** Une coque possède-t-elle ce Trait/Amélioration naval ? (présence, tout Indice ≥ 1). PUR. */
+export function shipHasNavalTrait(traits: string[] | undefined, name: string): boolean {
+  return navalTraitLevel(traits, name) > 0;
 }
 
 /**
