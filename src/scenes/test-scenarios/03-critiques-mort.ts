@@ -1,11 +1,11 @@
-import { makePregens } from '../../data/pregens';
+import { pregen, PREGEN } from '../../data/pregens';
 import { Combatant } from '../../engine/types';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 /** Halfling Voleur (peu de Blessures), Destin/Résilience mis à 0 → la mort survient vraiment. */
 function fragile(): Combatant {
-  const h = JSON.parse(JSON.stringify(makePregens().find((p) => p.name.startsWith('Klein'))!)) as Combatant;
+  const h = pregen(PREGEN.voleur); // Klein le Voleur (Halfling, peu de Blessures) — copie fraîche
   h.fate = 0;
   h.fortune = 0;
   h.resilience = 0;

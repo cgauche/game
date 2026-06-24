@@ -3,7 +3,7 @@ import { makeRNG } from '../../engine/dice';
 import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { CustomStatblock } from '../../state/scene';
-import { makePregens } from '../../data/pregens';
+import { pregen, PREGEN } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -61,8 +61,7 @@ export const scenario: TestScenario = {
     'Tooltip survol (arme/sort · compétence ±mod · Dégâts), réticule + ligne (pleine mêlée / pointillée tir-sort), refus au clic hors LdV / hors portée, ghost hors-LdV, gabarit ZdE.',
   partyNote: 'Tireur (Arbalète de poing 10 m + Épée) + Wilhelmina (sorts)',
   makeParty: () => {
-    const P = makePregens();
-    const w = P.find((p) => p.name.startsWith('Wilhelmina'))!;
+    const w = pregen(PREGEN.sorcier);
     w.spells = ['explosion', 'bouclier-magique', ...(w.spells ?? [])]; // ZdE + buff « Vous » pour la recette (ids)
     return [tireur(), w];
   },

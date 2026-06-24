@@ -1,4 +1,4 @@
-import { makeArenaParty } from '../../data/pregens';
+import { makeShowcaseParty } from '../../data/pregens';
 import { itemFromTrappingById } from '../../engine/items';
 import { parseProject } from '../../state/worldMap';
 import areneProjet from '../arene/arene-projet.json';
@@ -14,7 +14,7 @@ const { scenes, worldMap } = parseProject(areneProjet);
 const hub = scenes.find((s) => s.id === 'arene-hub')!;
 
 function groupe() {
-  const party = makeArenaParty();
+  const party = makeShowcaseParty();
   // De quoi tester voyage (rations) et marchands sans grinder la zone 1.
   for (const h of party) {
     const ration = itemFromTrappingById('ration');

@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { makeShowcaseParty } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -33,7 +33,7 @@ export const scenario: TestScenario = {
   title: 'Traits de créature',
   tests: 'Éthéré, Instable, Démoniaque (sauvegarde + bannissement), Champion, Perturbant, Régénération, Stupide, Infecté, Toile, Bestial, Venin, Corruption (exposition de fin de combat).',
   partyNote: '4 pré-tirés (dont un lanceur de sorts pour blesser l’Éthéré)',
-  makeParty: () => makePregens().slice(0, 4),
+  makeParty: makeShowcaseParty,
   scene,
   autoCombat: 'enc-traits',
 };

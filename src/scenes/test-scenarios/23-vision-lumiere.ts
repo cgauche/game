@@ -3,7 +3,7 @@ import { Combatant } from '../../engine/types';
 import { SceneEntity } from '../../state/scene';
 import { parseAsciiRows } from '../../state/asciiMap';
 import { darkSightTiles } from '../../state/vision';
-import { makeArenaParty } from '../../data/pregens';
+import { makeShowcaseParty } from '../../data/pregens';
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -12,7 +12,7 @@ import type { TestScenario } from './_shared';
  * distances que le brouillard prend son sens. Carte authorée en ASCII (`parseAsciiRows`) :
  *   `#` mur (opaque) · `.` sol · `@` départ · `B` brasero · `F` feu de camp · `L` lampadaire
  *   `C` chandelier · `r` créature tapie dans le noir.
- * Le groupe = `makeArenaParty()` (4 : Soldat humain · Tueur NAIN · Sorcier humain · Chasseur ELFE) :
+ * Le groupe = `makeShowcaseParty()` (4 : Soldat humain · Tueur NAIN · Sorcier humain · Chasseur ELFE) :
  * Nain + Elfe ont la Vision nocturne (voient ~10 cases dans le noir) ; l'humain ne voit que les zones
  * éclairées et porte une LANTERNE (halo qui le suit) ; le Sorcier reçoit le sort LUMIÈRE. Les sources
  * posées créent des îlots de lumière séparés par l'obscurité ; les créatures hors-vue ne sont pas
@@ -89,7 +89,7 @@ export const scenario: TestScenario = {
   makeParty: () => {
     // Le GROUPE DE 4 de l'arène (PAS le roster complet `makePregens`) : Soldat humain + Tueur Nain +
     // Sorcier humain + Chasseur Elfe → 2 à vision nocturne + 1 lanceur + 1 humain, pile la démo.
-    const P = makeArenaParty();
+    const P = makeShowcaseParty();
     const caster = P.find((p) => (p.spells?.length ?? 0) > 0 && darkSightTiles(p) === 0) ?? P.find((p) => (p.spells?.length ?? 0) > 0);
     const human = P.find((p) => darkSightTiles(p) === 0 && p !== caster) ?? P[0];
     const lant = itemFromTrappingById('lanterne');

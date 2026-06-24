@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregenParty, PREGEN } from '../../data/pregens';
 import { creatures, careers, trappings } from '../../data/index';
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
@@ -103,7 +103,7 @@ export const scenario: TestScenario = {
   title: 'Galerie de modèles',
   tests: `Tous les modèles de l’IsoStage : ${creatures.length} créatures (empreintes par Taille) + TOUTES les carrières (${careers.length}) + TOUTES les armes (${weapons.length}) + mutants + démo Monstrueuse. Exploration, SANS combat.`,
   partyNote: 'Exploration libre, aucun combat',
-  makeParty: () => makePregens().slice(0, 1),
+  makeParty: () => pregenParty(PREGEN.soldat),
   scene,
   // pas d'autoCombat : pure galerie d'exploration.
 };

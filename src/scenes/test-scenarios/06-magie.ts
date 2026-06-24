@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregenParty, PREGEN } from '../../data/pregens';
 import { spells, blessingsOf, miraclesOf, findSkill, findTalent } from '../../data';
 import { slugId } from '../../data/slug';
 import { splitLabel } from '../../engine/careerSlots';
@@ -69,10 +69,7 @@ function makePriest(base: Combatant, id: string, name: string, cult: string, cha
  * invoque le loup blanc). Caractéristiques/avances gonflées pour que les NI élevés passent.
  */
 function makeMagicParty(): Combatant[] {
-  const P = makePregens();
-  const wil = P.find((p) => p.id === 'pregen-707')!; // Sorcier (Langue (Magick))
-  const ans = P.find((p) => p.id === 'pregen-808')!; // Prêtre (Prière)
-  const tueur = P.find((p) => p.id === 'pregen-202')!; // Tueur (mêlée, allié martial / cible d'enchantement)
+  const [wil, ans, tueur] = pregenParty(PREGEN.sorcier, PREGEN.pretre, PREGEN.tueur); // Wilhelmina · Anselm · Grunni
 
   // — Haute Sorcière elfe : arcane multi-domaine COMPLET + Nécromancie (invocations) —
   const ARC_DOMAINS = ['Feu', 'Mort', 'Cieux', 'Bête', 'Vie'];

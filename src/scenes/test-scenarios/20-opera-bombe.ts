@@ -77,7 +77,8 @@ export const scenario: TestScenario = {
   partyNote: 'Pré-tirés (un héros sait « Projectiles (Poudre noire) »)',
   makeParty: () => {
     const P = makePregens();
-    P[0].skills.push({ skillId: 'projectiles', spec: 'Poudre noire', characteristic: 'CT', advances: 15 });
+    // Le Soldat sait « Projectiles (Poudre noire) » → repère la bombe plus facilement (test easierIf).
+    P.find((p) => p.career === 'soldat')!.skills.push({ skillId: 'projectiles', spec: 'Poudre noire', characteristic: 'CT', advances: 15 });
     return P;
   },
   scene,

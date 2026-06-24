@@ -74,8 +74,36 @@ export function makePregens(): Combatant[] {
  * sur la Caractéristique brute (Soc/Int) — le marchand reste pleinement jouable (le Sorcier, Int
  * élevée, évalue le butin magique).
  */
-const ARENA_SEEDS = [101, 202, 707, 303]; // Soldat · Tueur · Sorcier · Chasseur
-export function makeArenaParty(): Combatant[] {
+/**
+ * Sélection d'un groupe de scénario — API UNIQUE et intention-révélante. Remplace les patterns fragiles
+ * accrétés (`makePregens().slice(0, n)` qui dépend de l'ordre du JSON et donne le groupe SANS arme à
+ * distance dénoncé ci-dessus ; `find(p => p.name…)` par nom ; indexation ad hoc de `makePregens()`).
+ * Les pré-tirés portent un seed STABLE (`id = pregen-<seed>`) ; on les nomme par les clés lisibles de
+ * `PREGEN` (une par carrière du roster). `pregenParty(...)` construit le roster UNE fois.
+ */
+export const PREGEN = {
+  soldat: 101, tueur: 202, sorcier: 707, pretre: 808,
+  chasseur: 303, apothicaire: 404, voleur: 505, repurgateur: 606,
+} as const;
+
+/** Groupe EXPLICITE par seeds (ordre = ordre des arguments) — la façon CANONIQUE de composer une équipe
+ *  de scénario. Ex. `pregenParty(PREGEN.soldat, PREGEN.chasseur)`. Lève si un seed est inconnu (plutôt
+ *  qu'un `undefined` silencieux d'un `find`/`slice` raté). */
+export function pregenParty(...seeds: number[]): Combatant[] {
   const all = makePregens();
-  return ARENA_SEEDS.map((s) => all.find((h) => h.id === `pregen-${s}`)).filter((h): h is Combatant => !!h);
+  return seeds.map((s) => {
+    const h = all.find((p) => p.id === `pregen-${s}`);
+    if (!h) throw new Error(`Pré-tiré pregen-${s} introuvable (PREGEN/pregens.json)`);
+    return h;
+  });
+}
+
+/** UN pré-tiré par son seed (copie fraîche). Ex. `pregen(PREGEN.soldat)`. */
+export function pregen(seed: number): Combatant {
+  return pregenParty(seed)[0];
+}
+
+/** Équipe « showcase » de l'Arène — les 4 piliers (cf. ci-dessus) couvrant un max de règles distinctes. */
+export function makeShowcaseParty(): Combatant[] {
+  return pregenParty(PREGEN.soldat, PREGEN.tueur, PREGEN.sorcier, PREGEN.chasseur);
 }

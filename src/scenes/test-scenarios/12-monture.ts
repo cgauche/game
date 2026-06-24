@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregenParty, PREGEN } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -29,10 +29,7 @@ export const scenario: TestScenario = {
   title: 'Combat monté',
   tests: 'Cavalerie pré-montée (rendu en selle), monter une monture libre alliée, +20 vs cible plus petite que la monture, Mouvement de la monture, mort de la monture → cavalier démonté.',
   partyNote: 'Sigmund + Grunni (mêlée) vs un Mutant à cheval + un Gobelin',
-  makeParty: () => {
-    const P = makePregens();
-    return [P.find((p) => p.name.startsWith('Sigmund'))!, P.find((p) => p.name.startsWith('Grunni'))!];
-  },
+  makeParty: () => pregenParty(PREGEN.soldat, PREGEN.tueur),
   scene,
   autoCombat: 'enc-monture',
 };

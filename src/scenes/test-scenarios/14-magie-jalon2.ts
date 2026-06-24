@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregenParty, PREGEN } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import { flowFromEffects } from '../../state/flow';
 import { findSkill } from '../../data';
@@ -55,9 +55,7 @@ export const scenario: TestScenario = {
     'ZdE au clic-case (Explosion) ; Surincantation (+Durée/+Cible) ; Incantation Critique (choix) ; mémorisation aux PX.',
   partyNote: 'Wilhelmina (Sorcière : Explosion ZdE, 300 PX, corruption proche du seuil) + Frère Anselm (Prêtre, 3 Péchés)',
   makeParty: () => {
-    const P = makePregens();
-    const wiz = P.find((p) => p.name.startsWith('Wilhelmina'))!;
-    const priest = P.find((p) => p.name.startsWith('Frère Anselm'))!;
+    const [wiz, priest] = pregenParty(PREGEN.sorcier, PREGEN.pretre);
     // Sorcière : Explosion (Projectile ZdE) + un Domaine pour la mémorisation + PX à dépenser.
     wiz.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 });
     if (!wiz.spells?.includes('explosion')) wiz.spells = ['explosion', ...(wiz.spells ?? [])];

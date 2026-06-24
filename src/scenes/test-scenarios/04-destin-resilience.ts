@@ -1,10 +1,10 @@
-import { makePregens } from '../../data/pregens';
+import { pregen, PREGEN } from '../../data/pregens';
 import { Combatant } from '../../engine/types';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 function combattant(): Combatant {
-  return JSON.parse(JSON.stringify(makePregens().find((p) => p.name.startsWith('Sigmund'))!)) as Combatant;
+  return pregen(PREGEN.soldat); // Sigmund le Soldat (seed 101) — copie fraîche (makePregens reconstruit)
 }
 
 const scene = arena({ id: 'test-destin', nom: 'Destin & Résilience — arène', w: 14, h: 9, heroStart: { x: 2, y: 4 } });

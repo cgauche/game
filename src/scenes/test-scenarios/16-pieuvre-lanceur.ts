@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { makeShowcaseParty } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -40,7 +40,7 @@ export const scenario: TestScenario = {
   title: 'Créatures personnalisées',
   tests: '« 8 Tentacules +9 » (8 attaques gratuites à coût 0, Empêtré), ennemis lanceurs de sorts (statbloc + PNJ MSR Eusapia : compétences chiffrées de la donnée), trait facultatif (LDB 76 : Élite sur Squelette), Caractéristiques aléatoires (LDB 78), inspecteur enrichi (M/Taille, chips, Compétences, badge 🪄).',
   partyNote: '4 pré-tirés',
-  makeParty: () => makePregens().slice(0, 4),
+  makeParty: makeShowcaseParty,
   scene,
   autoCombat: 'enc-pieuvre',
 };

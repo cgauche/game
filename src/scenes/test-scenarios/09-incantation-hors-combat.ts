@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregenParty, PREGEN } from '../../data/pregens';
 import { arena } from './_shared';
 import { findSkill } from '../../data';
 import { slugId } from '../../data/slug';
@@ -28,9 +28,7 @@ export const scenario: TestScenario = {
   tests: 'Incantation HORS COMBAT depuis la fiche : soin/bénédiction (Prêtre), Focalisation + Sort d’Arcane (Sorcier), refus des Projectiles magiques.',
   partyNote: 'Wilhelmina (Sorcier, +Armure Aethyrique, blessée) + Frère Anselm (Prêtre)',
   makeParty: () => {
-    const P = makePregens();
-    const wiz = P.find((p) => p.name.startsWith('Wilhelmina'))!;
-    const priest = P.find((p) => p.name.startsWith('Frère Anselm'))!;
+    const [wiz, priest] = pregenParty(PREGEN.sorcier, PREGEN.pretre);
     // Sorcier : ajoute un Sort d'Arcane FOCALISABLE (les sorts pré-tirés Fléchette/Choc sont de la
     // Magie mineure, NON focalisable) pour exercer le bouton « ✨ Focaliser » hors combat.
     if (!wiz.spells?.includes('armure-aethyrique')) wiz.spells = ['armure-aethyrique', ...(wiz.spells ?? [])];

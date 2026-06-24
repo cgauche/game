@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregen, PREGEN } from '../../data/pregens';
 import { itemFromTrappingById, loadoutCreate, loadoutSetSlot, recomputeLoadout } from '../../engine/items';
 import type { ItemInstance } from '../../engine/types';
 import { arena, setEncounters } from './_shared';
@@ -30,8 +30,7 @@ export const scenario: TestScenario = {
     'défenses jusqu’au prochain Tour, Avantage seulement si les deux touchent.',
   partyNote: 'Sigmund (Arme simple + Dague, talent Maniement de deux armes) vs 2 Gobelins',
   makeParty: () => {
-    const P = makePregens();
-    const h = P.find((p) => p.name.startsWith('Sigmund'))!;
+    const h = pregen(PREGEN.soldat); // Sigmund
     if (!h.talents.some((t) => t.talentId === 'maniement-de-deux-armes')) {
       h.talents.push({ talentId: 'maniement-de-deux-armes', times: 1 });
     }

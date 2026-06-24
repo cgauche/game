@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { makeShowcaseParty } from '../../data/pregens';
 import { rollMutation } from '../../data/mutations';
 import { attachMutation } from '../../engine/corruption';
 import { recomputeLoadout } from '../../engine/items';
@@ -43,7 +43,7 @@ export const scenario: TestScenario = {
   title: 'Visuels de mutation',
   tests: 'Chaque mutation physique LDB 19 a son calque/morpho/peau sur le rig (héros mutés) ; tentacule = bras remplacé + Attaque gratuite 1/tour (Spécial → 🐙, Empêtré sur Dégâts) ; Cornes = arme naturelle (+BF) ; détails de visage en vue de face seulement ; portraits HUD mutés ; Mutants ennemis tirés du même registre.',
   partyNote: '4 pré-tirés portant à eux quatre les 19 mutations physiques',
-  makeParty: () => makePregens().slice(0, 4).map((c, i) => mutate(c, LOTS[i] ?? [])),
+  makeParty: () => makeShowcaseParty().map((c, i) => mutate(c, LOTS[i] ?? [])),
   scene,
   autoCombat: 'enc-mutants',
 };

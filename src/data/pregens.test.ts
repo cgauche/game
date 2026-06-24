@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { makePregens, makeArenaParty } from './pregens';
+import { makePregens, makeShowcaseParty, pregen, pregenParty, PREGEN } from './pregens';
 import { skillInstanceLabel, talentConcrete } from './index';
 
 describe('Personnages pré-tirés', () => {
@@ -43,8 +43,8 @@ describe('Personnages pré-tirés', () => {
  * PAS `slice(0, 4)` : ce test verrouille la couverture (arme à distance, magie, soin, Spé d'arme
  * non-Base, Psychologie) pour empêcher une régression silencieuse vers les 4 premiers pré-tirés.
  */
-describe('makeArenaParty — couverture des règles', () => {
-  const party = makeArenaParty();
+describe('makeShowcaseParty — couverture des règles', () => {
+  const party = makeShowcaseParty();
   const hasSkill = (name: string) =>
     party.some((h) => h.skills.some((s) => skillInstanceLabel(s).toLowerCase().includes(name.toLowerCase())));
 
@@ -81,5 +81,28 @@ describe('makeArenaParty — couverture des règles', () => {
 
   it('exerce la Psychologie (un héros au Talent Frénésie / Sans peur)', () => {
     expect(party.some((h) => (h.talents ?? []).some((t) => /frénésie|sans peur/i.test(talentConcrete(t))))).toBe(true);
+  });
+});
+
+/**
+ * Sélection de groupe — API UNIQUE et intention-révélante (`pregen`/`pregenParty`/`PREGEN`), qui remplace
+ * les `slice(0, n)`/`find(name)`/indexations ad hoc accrétés. On choisit par seed STABLE, jamais par position.
+ */
+describe('Sélection de groupe — pregen / pregenParty', () => {
+  it('pregen(seed) renvoie le bon pré-tiré (id stable pregen-<seed>)', () => {
+    expect(pregen(PREGEN.soldat).id).toBe('pregen-101');
+    expect(pregen(PREGEN.chasseur).career).toBe('chasseur');
+  });
+
+  it('pregenParty respecte l’ordre des seeds donnés', () => {
+    expect(pregenParty(PREGEN.sorcier, PREGEN.soldat).map((h) => h.career)).toEqual(['sorcier', 'soldat']);
+  });
+
+  it('lève sur un seed inconnu (pas d’undefined silencieux d’un find/slice raté)', () => {
+    expect(() => pregen(9999)).toThrow();
+  });
+
+  it('makeShowcaseParty = les 4 piliers (soldat, tueur, sorcier, chasseur)', () => {
+    expect(makeShowcaseParty().map((h) => h.career)).toEqual(['soldat', 'tueur', 'sorcier', 'chasseur']);
   });
 });

@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregenParty, PREGEN } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -23,13 +23,11 @@ export const scenario: TestScenario = {
     'soin BI+DR (1/rencontre) et arrêt d’Hémorragie (1+DR) ; soigner un allié à terre/inconscient le relève.',
   partyNote: 'Frère Anselm (soigneur) + Sigmund (blessé + Hémorragique)',
   makeParty: () => {
-    const P = makePregens();
-    const healer = P.find((p) => p.name.startsWith('Frère Anselm'))!;
+    const [healer, ally] = pregenParty(PREGEN.pretre, PREGEN.soldat);
     // Garantit la Compétence Guérison sur le soigneur (sinon le slot Soigner n'apparaît pas).
     if (!healer.skills.some((s) => s.skillId === 'guerison')) {
       healer.skills.push({ skillId: 'guerison', characteristic: 'Int', advances: 25 });
     }
-    const ally = P.find((p) => p.name.startsWith('Sigmund'))!;
     ally.wounds = { ...ally.wounds, current: 3 }; // blessé → mode « Soigner les Blessures »
     ally.conditions = [{ name: 'hemorragique', value: 2 }]; // saigne → mode « Arrêter l'Hémorragie »
     return [healer, ally];

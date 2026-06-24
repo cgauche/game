@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { pregenParty, PREGEN } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -21,10 +21,7 @@ export const scenario: TestScenario = {
   title: 'Engagé / Charge / Désengagement',
   tests: 'Charger (portée Course + Avantage), état Engagé symétrique, Se désengager (sacrifice d’Avantage / Esquive).',
   partyNote: 'Sigmund + Grunni (mêlée) vs 2 Gobelins',
-  makeParty: () => {
-    const P = makePregens();
-    return [P.find((p) => p.name.startsWith('Sigmund'))!, P.find((p) => p.name.startsWith('Grunni'))!];
-  },
+  makeParty: () => pregenParty(PREGEN.soldat, PREGEN.tueur),
   scene,
   autoCombat: 'enc-engage',
 };
