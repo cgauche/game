@@ -46,6 +46,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   sbBonus: '💪 +Bonus de Force aux Dégâts',
   endPsych: '🧠 Fin d’un état psychologique',
   exposeDisease: '🦠 Exposer à une Maladie (Test post-combat)',
+  removeShipPoste: '⚓ Retirer un poste de navire (Canon perdu)',
   attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
   mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',
   ignoreStatePenalties: '🚫 Ignore les pénalités d’État',
@@ -115,7 +116,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
-  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
+  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn', 'removeShipPoste']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
@@ -269,6 +270,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
+    case 'removeShipPoste': return { op: 'removeShipPoste' };
     case 'weaponRollMod': return { op: 'weaponRollMod', phase: 'attack', drMod: -1 };
     case 'weaponDamageMod': return { op: 'weaponDamageMod', dr: 1 };
     case 'armourPierce': return { op: 'armourPierce', amount: 1 };
@@ -338,6 +340,7 @@ export function opSummary(o: GameOp): string {
     case 'polymorph': return `${L} ${o.ref}`;
     case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;
     case 'loseTurn': return `${L} saute le tour`;
+    case 'removeShipPoste': return `${L} retire un poste de navire`;
     case 'rollThreshold': return `${L} 1d${o.sides} → ${o.thresholds.length} palier(s)`;
     case 'narrative': return `${L} ${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
     default: return `⚙️ ${(o as GameOp).op}`;

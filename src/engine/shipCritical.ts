@@ -19,8 +19,8 @@ import { shipHitLocation, hitLocation, type ShipRig, type ShipLocation } from '.
 import { rollCritical, type CriticalResolved } from './critical';
 import { rollTest } from './tests';
 import { testValue } from './skills';
-import type { Combatant, ShipPoste } from './types';
-import { SHIP_CRITICAL_TABLES, type ShipCritKey } from '../data/shipCriticals';
+import type { Combatant } from './types';
+import { SHIP_CRITICAL_TABLES, type ShipCritKey, type ShipCrewTest } from '../data/shipCriticals';
 
 export interface ShipCriticalResolved {
   location: ShipCritKey;
@@ -35,10 +35,8 @@ export interface ShipCriticalResolved {
   shrapnel: number;
   /** Critiques de Coque SUPPLÉMENTAIRES (déjà tirés depuis `hullCrits`, ex. « 1d10 » → un nombre). */
   extraHullCrits: number;
-  /** « Canon perdu » (MDG ch.13 l.765) : un poste passe par-dessus bord (retrait via `loseRandomPoste`). */
-  losePoste: boolean;
-  /** « Canon détaché » (MDG ch.13 l.763-764) : amarres rompues → Test d'Athlétisme de l'équipage du poste. */
-  detachPoste: boolean;
+  /** « Canon détaché » : Test encouru par l'équipage du poste (DATA — compétence/difficulté/`onFail`). */
+  crewTest?: ShipCrewTest;
   /** Effets LONG TERME / narratifs verbatim (réductions de Man/Mouvement, réparations, chutes du gréement). */
   note: string;
   log: string;
@@ -60,8 +58,7 @@ export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, f
     ops,
     shrapnel: entry.shrapnel ?? 0,
     extraHullCrits,
-    losePoste: entry.losePoste ?? false,
-    detachPoste: entry.detachPoste ?? false,
+    crewTest: entry.crewTest,
     note: entry.note,
     log: `Critique navire (${location}) : ${entry.name}${entry.shrapnel ? ` — Éclats ${entry.shrapnel}` : ''}${extraHullCrits ? ` — ${extraHullCrits} Critique(s) de Coque` : ''}.`,
   };
@@ -98,7 +95,6 @@ export function exposedCrew(crew: Combatant[]): Combatant[] {
 }
 
 const SHRAPNEL_DAMAGE = 9; // MDG ch.13 : « ces membres d'équipage subissent 9 Dégâts ».
-const DETACH_DAMAGE = 12; // MDG ch.13 l.763-764 : « un coup infligeant 12 Dégâts » (Canon détaché, Test d'Athlétisme raté).
 
 /** Issue d'un Critique encaissé par une COQUE et RÉPERCUTÉ sur son équipage (MDG ch.13-14). */
 export interface HullCriticalOutcome {
@@ -111,49 +107,29 @@ export interface HullCriticalOutcome {
   shrapnel: { crewId: string; damage: number }[];
   /** Critiques de Coque SUPPLÉMENTAIRES résolus (1d10…) — ops déjà appliqués à la coque. */
   extraHullCrits: ShipCriticalResolved[];
-  /** « Canon perdu » : un poste d'artillerie retiré de la coque (passé par-dessus bord). */
-  lostPoste?: { weaponName: string };
-  /** « Canon détaché » : l'équipage du poste rate l'Athlétisme → 12 Dégâts chacun (déjà appliqués). */
-  detachedPoste?: { hits: { crewId: string; damage: number }[] };
+  /** « Canon détaché » : servants du poste qui ratent le Test (`crewTest.onFail` déjà appliqué à chacun). */
+  detachedPoste?: { hits: { crewId: string }[] };
   lines: string[];
 }
 
 /**
- * « Canon perdu » (MDG ch.13 l.765) : un poste d'artillerie de la coque passe par-dessus bord — RETIRÉ de
- * `hull.postes`, et son chef de pièce (`crewIds[0]`) perd son `mannedPoste` + l'arme dérivée (il ne sert plus
- * rien). PUR (mute la coque + le chef). Renvoie le poste perdu, ou `null` si la coque n'a aucun poste.
+ * « Canon détaché » (MDG ch.13 l.763-764) : « Les cordages fixant l'un des canons se rompent… L'équipage du
+ * canon doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir un coup infligeant 12 Dégâts. »
+ * Chaque servant EXPOSÉ du poste tiré au sort encourt `crewTest` (compétence + difficulté en DONNÉE) ; un échec
+ * applique `crewTest.onFail` (GameOp — ex. 12 Dégâts). PUR (mute les marins touchés, RNG injecté). `[]` si la
+ * coque n'a aucun poste. Le canon RESTE à bord (≠ « Canon perdu », qui passe par l'op `removeShipPoste`).
  */
-export function loseRandomPoste(hull: Combatant, crew: Combatant[], rng: RNG = defaultRNG): ShipPoste | null {
-  const postes = hull.postes;
-  if (!postes?.length) return null;
-  const [lost] = postes.splice(rng.int(0, postes.length - 1), 1);
-  const chef = lost.crewIds?.[0] ? crew.find((c) => c.id === lost.crewIds![0]) : undefined;
-  if (chef?.mannedPoste === lost) {
-    chef.mannedPoste = undefined;
-    chef.weapons = (chef.weapons ?? []).filter((w) => w.uid !== lost.item.uid);
-  }
-  return lost;
-}
-
-/**
- * « Canon détaché » (MDG ch.13 l.763-764) : « Les cordages fixant l'un des canons se rompent et il roule
- * dans tous les sens sur le pont. L'équipage du canon doit réussir un Test d'Athlétisme Intermédiaire (+0)
- * sous peine de subir un coup infligeant 12 Dégâts. » — chaque servant EXPOSÉ du poste tiré au sort teste
- * l'Athlétisme ; un échec encaisse 12 Dégâts (via `applyOps`, TB/PA normaux). PUR (mute les marins touchés,
- * RNG injecté). Renvoie la liste des touchés ; `[]` si la coque n'a aucun poste. NB : le canon n'est PAS
- * retiré (≠ « Canon perdu ») — sa remise en place est un Test étendu narratif (`note`).
- */
-export function detachPosteCrewHit(hull: Combatant, crew: Combatant[], rng: RNG = defaultRNG): { crewId: string; damage: number }[] {
+export function detachPosteCrewHit(hull: Combatant, crew: Combatant[], crewTest: ShipCrewTest, rng: RNG = defaultRNG): { crewId: string }[] {
   const postes = hull.postes;
   if (!postes?.length) return [];
   const poste = postes[rng.int(0, postes.length - 1)];
-  const hits: { crewId: string; damage: number }[] = [];
+  const hits: { crewId: string }[] = [];
   for (const id of poste.crewIds ?? []) {
     const sailor = crew.find((c) => c.id === id);
     if (!sailor || sailor.dead || (sailor.wounds?.current ?? 0) <= 0) continue;
-    if (!rollTest(testValue(sailor, 'athletisme'), 'intermediaire', rng).success) {
-      applyOps(sailor, [{ op: 'wounds', amount: DETACH_DAMAGE, ignoreTB: false, ignoreAP: false }], { rng });
-      hits.push({ crewId: id, damage: DETACH_DAMAGE });
+    if (!rollTest(testValue(sailor, crewTest.skillId), crewTest.difficulty, rng).success) {
+      applyOps(sailor, crewTest.onFail, { rng });
+      hits.push({ crewId: id });
     }
   }
   return hits;
@@ -191,21 +167,17 @@ export function applyHullCritical(
 
   const crit = hit.crit!;
   lines.push(crit.log);
-  applyOps(hull, crit.ops, { rng });
+  // Effets de coque en `GameOp` : États navals (Voie d'eau / En flammes) ET « Canon perdu » (op
+  // `removeShipPoste`, qui démancipe le chef via `crew`). On capte leurs lignes de journal.
+  lines.push(...applyOps(hull, crit.ops, { rng, crew }));
 
-  // « Canon perdu » (MDG ch.13 l.765) : une pièce d'artillerie passe par-dessus bord — retirée de la coque.
-  let lostPoste: { weaponName: string } | undefined;
-  if (crit.losePoste) {
-    const lost = loseRandomPoste(hull, crew, rng);
-    if (lost) { lostPoste = { weaponName: lost.item.name }; lines.push(`${lost.item.name} passe par-dessus bord — perdu.`); }
-  }
-
-  // « Canon détaché » (MDG ch.13 l.763-764) : amarres rompues → l'équipage du poste teste l'Athlétisme ou subit 12 Dégâts.
-  let detachedPoste: { hits: { crewId: string; damage: number }[] } | undefined;
-  if (crit.detachPoste) {
-    const hits = detachPosteCrewHit(hull, crew, rng);
+  // « Canon détaché » (MDG ch.13 l.763-764) : l'équipage du poste encourt le Test data-driven `crewTest`
+  // (compétence/difficulté/`onFail` en donnée — plus aucune valeur en dur). Le canon reste à bord.
+  let detachedPoste: { hits: { crewId: string }[] } | undefined;
+  if (crit.crewTest) {
+    const hits = detachPosteCrewHit(hull, crew, crit.crewTest, rng);
     detachedPoste = { hits };
-    if (hits.length) lines.push(`Canon détaché : ${hits.length} servant(s) ratent l'Athlétisme et subissent ${DETACH_DAMAGE} Dégâts.`);
+    if (hits.length) lines.push(`Canon détaché : ${hits.length} servant(s) ratent le Test et encaissent le coup.`);
   }
 
   // Éclats → 9 Dégâts à autant de marins exposés que l'Indice (plafonné au nombre de marins).
@@ -226,5 +198,5 @@ export function applyHullCritical(
   }
   if (extraHullCrits.length) lines.push(`${extraHullCrits.length} Critique(s) de Coque supplémentaire(s).`);
 
-  return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, lostPoste, detachedPoste, lines };
+  return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, detachedPoste, lines };
 }

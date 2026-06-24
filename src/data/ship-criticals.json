@@ -291,8 +291,19 @@
         "max": 4,
         "id": "canon-detache",
         "name": "Canon détaché",
-        "detachPoste": true,
-        "note": "Les cordages fixant l'un des canons se rompent et il roule dans tous les sens sur le pont. L'équipage du canon doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir un coup infligeant 12 Dégâts. Réparation : Test étendu de Force Accessible (+20) pour un total de 5 DR afin de remettre le canon à sa place."
+        "note": "Les cordages fixant l'un des canons se rompent et il roule dans tous les sens sur le pont. L'équipage du canon doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir un coup infligeant 12 Dégâts. Réparation : Test étendu de Force Accessible (+20) pour un total de 5 DR afin de remettre le canon à sa place.",
+        "crewTest": {
+          "skillId": "athletisme",
+          "difficulty": "intermediaire",
+          "onFail": [
+            {
+              "op": "wounds",
+              "amount": 12,
+              "ignoreTB": false,
+              "ignoreAP": false
+            }
+          ]
+        }
       },
       {
         "min": 5,
@@ -306,8 +317,12 @@
         "max": 8,
         "id": "canon-perdu",
         "name": "Canon perdu",
-        "losePoste": true,
-        "note": "L'un des gros canons, ou un pierrier si le bateau n'en comporte pas, passe par dessus bord et est perdu. Réparation : impossible, l'objet doit être récupéré ou remplacé."
+        "note": "L'un des gros canons, ou un pierrier si le bateau n'en comporte pas, passe par dessus bord et est perdu. Réparation : impossible, l'objet doit être récupéré ou remplacé.",
+        "ops": [
+          {
+            "op": "removeShipPoste"
+          }
+        ]
       },
       {
         "min": 9,

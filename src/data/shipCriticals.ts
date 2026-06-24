@@ -1,6 +1,16 @@
 import shipCriticalsJson from './ship-criticals.json';
 import type { ShipLocation } from '../engine/combat';
 import type { GameOp } from '../engine/ops';
+import type { Difficulty } from '../engine/types';
+
+/** Test encouru par l'ÉQUIPAGE d'un poste sur un Critique (« Canon détaché ») — compétence + difficulté en
+ *  DONNÉE, conséquence d'échec en `GameOp` (langue unique). Pas de valeur/règle codée en dur. */
+export interface ShipCrewTest {
+  skillId: string;
+  difficulty: Difficulty;
+  /** Appliqué à CHAQUE servant qui RATE le Test (ex. `[{op:'wounds', amount:12}]`). */
+  onFail: GameOp[];
+}
 
 /**
  * Tables de Blessures critiques sur un NAVIRE — MDG ch.13 « Critiques sur un navire » (p.124),
@@ -32,12 +42,9 @@ export interface ShipCritEntry {
   shrapnel?: number;
   /** Critiques supplémentaires sur la Coque (notation de dés). */
   hullCrits?: string;
-  /** « Canon perdu » (MDG ch.13 l.765) : un poste d'artillerie passe par-dessus bord → RETIRÉ de
-   *  `hull.postes` (mécanisé par `loseRandomPoste`/`applyHullCritical`). Le `note` reste le texte verbatim. */
-  losePoste?: boolean;
-  /** « Canon détaché » (MDG ch.13 l.763-764) : un canon rompt ses amarres → l'équipage du poste teste
-   *  l'Athlétisme (Intermédiaire +0) sous peine de 12 Dégâts (mécanisé par `detachPosteCrewHit`). */
-  detachPoste?: boolean;
+  /** « Canon détaché » (MDG ch.13 l.763-764) : l'équipage du poste tiré au sort encourt ce Test ; un échec
+   *  applique `onFail` (le canon RESTE à bord — ≠ « Canon perdu » qui utilise l'op `removeShipPoste` dans `ops`). */
+  crewTest?: ShipCrewTest;
   note: string;
 }
 export type ShipCritTable = ShipCritEntry[];

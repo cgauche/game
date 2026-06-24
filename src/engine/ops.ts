@@ -472,6 +472,11 @@ export type GameOp =
   /** Perd sa prochaine Action ET son prochain Mouvement (Affamé : « festoie » ; généralisable à tout
    *  effet qui fait sauter le tour). Pose les drapeaux lus au début du Round du porteur. */
   | { op: 'loseTurn' }
+  /** Retire une pièce d'artillerie d'une COQUE (« Canon perdu », MDG ch.13 l.765 : la pièce passe par-dessus
+   *  bord) : `target.postes` perd UN poste au hasard (`ctx.rng`) ; si son chef de pièce (`crewIds[0]`, résolu
+   *  dans `ctx.crew`) la servait, il est démancipé (`mannedPoste` + arme dérivée retirés). GÉNÉRIQUE — remplace
+   *  le flag ad hoc `losePoste`. Inerte si la coque n'a aucun poste. */
+  | { op: 'removeShipPoste' }
   /** PASSIF d'ARME (Atout/Défaut, LDB 62-63) : modificateur de DR/plat à une PHASE de jet de combat —
    *  Précise (+10 `flatMod` en attaque), Imprécise (−1 DR en attaque), Défensive (+1 DR parade du défenseur),
    *  À Enroulement (−1 DR parade adverse), Lente (+1 DR à TOUTE défense adverse), Pratique/Peu Fiable (±1 DR à
@@ -517,6 +522,9 @@ export interface OpsCtx {
   rng?: RNG;
   /** Référent des formules « (Bonus de X) » (le lanceur d'un sort) ; défaut : la cible. */
   caster?: Combatant;
+  /** Équipage d'une COQUE (`crewIds` résolus en Combattants) — pour les ops de navire : `removeShipPoste`
+   *  démancipe le chef de pièce. Passé par `applyHullCritical`. */
+  crew?: Combatant[];
   /** SORT SOURCE en cours d'incantation : tout `ActiveEffect` POSÉ par cet `applyOps` en est marqué
    *  (`ActiveEffect.spell`), pour la DISSIPATION (LDB 46 l.204-207). Posé par `applyCast` (Sorts durables). */
   sourceSpell?: { spellId: string; ni: number; casterId: string; label: string };
@@ -926,6 +934,21 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // en amont (déclencheur `onSlain` pour le Démoniaque, `if woundsCurrent<=0` pour l'Instable).
         target.dead = true;
         lines.push(t(o.narration === 'unravel' ? 'op.banish.unravel' : 'op.banish', { name: target.name }));
+        break;
+      }
+      case 'removeShipPoste': {
+        // « Canon perdu » (MDG ch.13 l.765) : une pièce passe par-dessus bord — retirée de la coque + son
+        // chef démancipé. La coque (`target`) est la source de vérité ; l'équipage vient de `ctx.crew`.
+        const postes = target.postes;
+        if (postes?.length) {
+          const [lost] = postes.splice(rng.int(0, postes.length - 1), 1);
+          const chef = lost.crewIds?.[0] ? ctx.crew?.find((c) => c.id === lost.crewIds![0]) : undefined;
+          if (chef?.mannedPoste === lost) { // il ne sert plus rien
+            chef.mannedPoste = undefined;
+            chef.weapons = (chef.weapons ?? []).filter((w) => w.uid !== lost.item.uid);
+          }
+          lines.push(t('op.removeShipPoste', { name: lost.item.name }));
+        }
         break;
       }
       case 'ignoreStatePenalties': {
