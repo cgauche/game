@@ -9,6 +9,7 @@ import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
+import { maneuverShip } from './shipManeuver';
 import { getViewZ, setViewZ } from '../gameIso/viewLevel';
 import { rule, setRule } from '../engine/policy';
 import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
@@ -325,6 +326,21 @@ export function buildApi() {
       if (!before) return `❌ ${ship.name} n'a pas de cap (facing) — pas un navire orienté ?`;
       g().shipTurn(shipId, typeof side === 'number' ? side : side === 'tribord' ? 2 : -2);
       return `✅ ${ship.name} : cap ${before} → ${g().facing[shipId]}`;
+    },
+
+    /** Recette : MANŒUVRE un navire (MDG ch.13) — le barreur (meilleur en Voile/Ramer de l'équipage, ou
+     *  `helmsmanId`) jette un Test de Navigation → `resolveShipManeuver` → vire SUR RÉUSSITE. `side` =
+     *  'tribord'/'babord' (90°) ou crans. Contrairement à `turnShip` (triche), ce virage PEUT échouer. */
+    maneuver: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord', helmsmanId?: string) => {
+      const b = g().battle;
+      const ship = b?.combatants.find((x) => x.id === shipId);
+      if (!b || !ship) return '❌ navire introuvable (combat uniquement)';
+      const before = g().facing[shipId];
+      const r = maneuverShip(() => useGame.getState(), shipId, typeof side === 'number' ? side : side === 'tribord' ? 2 : -2, helmsmanId);
+      if (!r) return '❌ manœuvre impossible';
+      return r.success
+        ? `✅ ${ship.name} vire (DR ${r.dr}, barreur ${r.helmsman ?? '—'}) : ${before} → ${g().facing[shipId]}`
+        : `❌ ${ship.name} rate la manœuvre (DR ${r.dr}) — cap ${before} inchangé`;
     },
 
     /** Queue LISIBLE des journaux : les `n` dernières lignes du journal d'exploration ET du

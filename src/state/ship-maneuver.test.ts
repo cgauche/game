@@ -3,6 +3,8 @@ import { rotateDir8 } from './dir8';
 import { inFireArc, targetArc } from './fireArc';
 import { resolveShipManeuver } from '../engine/shipNavigation';
 import { useGame } from './store';
+import { seedBattleRng } from './battleRng';
+import { maneuverShip } from './shipManeuver';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -73,5 +75,35 @@ describe('shipTurn (action store) — vire le cap, branché aux arcs', () => {
     useGame.setState({ battle: { combatants: [], order: [], turn: 0 } as never, facing: {} });
     useGame.getState().shipTurn('ghost', 2);
     expect(useGame.getState().facing.ghost).toBeUndefined();
+  });
+});
+
+describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG ch.13)', () => {
+  const helmsman = (): Combatant =>
+    ({
+      id: 'helm', name: 'Timonier', kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
+      skills: [{ skillId: 'voile', characteristic: 'Ag', advances: 40 }], talents: [], weapons: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 },
+    }) as unknown as Combatant;
+  const ship = (): Combatant =>
+    ({ id: 'ship', name: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+
+  it('vire le navire SSI le Test réussit (virage ⇔ réussite ; barreur = meilleur en Voile)', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [ship(), helmsman()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' } });
+    const before = useGame.getState().facing.ship;
+    const r = maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    expect(r).toBeTruthy();
+    expect(r.helmsman).toBe('Timonier'); // le seul de l'équipage → barreur désigné
+    const after = useGame.getState().facing.ship;
+    expect(after !== before).toBe(r.success); // le navire ne vire QUE sur une manœuvre réussie
+    if (r.success) expect(after).toBe('E'); // tribord 90° depuis Nord
+  });
+
+  it('hors combat → null', () => {
+    useGame.setState({ battle: null as never });
+    expect(maneuverShip(() => useGame.getState(), 'ship', 2)).toBeNull();
   });
 });
