@@ -6,6 +6,14 @@
     "book": "MDG",
     "page": 124
   },
+  "shrapnelHit": [
+    {
+      "op": "wounds",
+      "amount": 9,
+      "ignoreTB": false,
+      "ignoreAP": false
+    }
+  ],
   "tables": {
     "cargaison": [
       {

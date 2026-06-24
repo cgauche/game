@@ -53,6 +53,11 @@ export type ShipCritTable = ShipCritEntry[];
  *  personnage ; les Équipements n'ont pas d'enum de coque touchable hors leur propre table). */
 export type ShipCritKey = Exclude<ShipLocation, 'equipage'>;
 
+/** Effet des **Éclats** (MDG ch.13) infligé à CHAQUE marin touché — authoré UNE fois en `GameOp` (langue
+ *  unique), plus aucun littéral « 9 Dégâts » en dur dans le moteur. Le NOMBRE de marins touchés = l'Indice
+ *  `shrapnel` de l'entrée de Critique (per-entry) ; l'effet, lui, est partagé (per-règle). */
+export const SHRAPNEL_HIT = shipCriticalsJson.shrapnelHit as GameOp[];
+
 const T = shipCriticalsJson.tables as Record<ShipCritKey, ShipCritTable>;
 
 export const SHIP_CRITICAL_TABLES: Record<ShipCritKey, ShipCritTable> = {

@@ -20,7 +20,7 @@ import { rollCritical, type CriticalResolved } from './critical';
 import { rollTest } from './tests';
 import { testValue } from './skills';
 import type { Combatant } from './types';
-import { SHIP_CRITICAL_TABLES, type ShipCritKey, type ShipCrewTest } from '../data/shipCriticals';
+import { SHIP_CRITICAL_TABLES, SHRAPNEL_HIT, type ShipCritKey, type ShipCrewTest } from '../data/shipCriticals';
 
 export interface ShipCriticalResolved {
   location: ShipCritKey;
@@ -31,7 +31,8 @@ export interface ShipCriticalResolved {
   roll: number;
   /** Effets « État » à appliquer AU NAVIRE (En flammes / Voie d'eau) — langue unique `GameOp`. */
   ops: GameOp[];
-  /** Éclats (Indice) : `shrapnel` membres d'équipage subissent 9 Dégâts (appliqué par la boucle de combat). */
+  /** Éclats (Indice) : `shrapnel` membres d'équipage subissent l'effet data `SHRAPNEL_HIT` (9 Dégâts, MDG
+   *  ch.13) — appliqué par la boucle de combat. Seul l'Indice (le NOMBRE de marins) est per-entry. */
   shrapnel: number;
   /** Critiques de Coque SUPPLÉMENTAIRES (déjà tirés depuis `hullCrits`, ex. « 1d10 » → un nombre). */
   extraHullCrits: number;
@@ -94,7 +95,11 @@ export function exposedCrew(crew: Combatant[]): Combatant[] {
   return crew.filter((c) => !c.dead && (c.wounds?.current ?? 0) > 0);
 }
 
-const SHRAPNEL_DAMAGE = 9; // MDG ch.13 : « ces membres d'équipage subissent 9 Dégâts ».
+/** Dégât AFFICHÉ des Éclats — DÉRIVÉ de l'effet data `SHRAPNEL_HIT` (op `wounds`), jamais un littéral en dur. */
+const SHRAPNEL_HIT_DAMAGE = ((): number => {
+  const w = SHRAPNEL_HIT.find((o) => o.op === 'wounds');
+  return w && typeof w.amount === 'number' ? w.amount : 0;
+})();
 
 /** Issue d'un Critique encaissé par une COQUE et RÉPERCUTÉ sur son équipage (MDG ch.13-14). */
 export interface HullCriticalOutcome {
@@ -180,14 +185,15 @@ export function applyHullCritical(
     if (hits.length) lines.push(`Canon détaché : ${hits.length} servant(s) ratent le Test et encaissent le coup.`);
   }
 
-  // Éclats → 9 Dégâts à autant de marins exposés que l'Indice (plafonné au nombre de marins).
+  // Éclats → effet data `SHRAPNEL_HIT` (op `wounds`, MDG ch.13) à autant de marins exposés que l'Indice
+  // (plafonné au nombre de marins). Plus aucun littéral de Dégât en dur — la valeur vient de la donnée.
   const shrapnel: { crewId: string; damage: number }[] = [];
   for (let i = 0; i < crit.shrapnel && i < exposed.length; i++) {
     const sailor = exposed[i];
-    applyOps(sailor, [{ op: 'wounds', amount: SHRAPNEL_DAMAGE, ignoreTB: false, ignoreAP: false }], { rng });
-    shrapnel.push({ crewId: sailor.id, damage: SHRAPNEL_DAMAGE });
+    applyOps(sailor, SHRAPNEL_HIT, { rng });
+    shrapnel.push({ crewId: sailor.id, damage: SHRAPNEL_HIT_DAMAGE });
   }
-  if (shrapnel.length) lines.push(`Éclats ${crit.shrapnel} : ${shrapnel.length} marin(s) subissent ${SHRAPNEL_DAMAGE} Dégâts.`);
+  if (shrapnel.length) lines.push(`Éclats ${crit.shrapnel} : ${shrapnel.length} marin(s) subissent ${SHRAPNEL_HIT_DAMAGE} Dégâts.`);
 
   // Critiques de Coque supplémentaires (1d10…) — résolus sur la Coque (ops seulement, pas de récursion d'Éclats).
   const extraHullCrits: ShipCriticalResolved[] = [];
