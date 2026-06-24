@@ -69,6 +69,15 @@ de base **+ résolveur d'améliorations** — même patron que le rig et `applyO
 PA, longueur, Perception) ; **placement sur le pont = authoré** (couche rig, comme l'apparence d'une mutation).
 Accroches existantes : `ship.traits`/`hull.traits`, `ShipPoste.sabord`.
 
+> ✅ **Premiers effets mécanisés** (`engine/navalTraits.ts`, lecture des libellés VERBATIM via `shipHasNavalTrait`) —
+> on ne mécanise que les effets ABSENTS des colonnes du type (anti-double-compte : E/B/Man sont déjà finaux) :
+> **Bélier** dans `resolveCollision` (`l.221` : éperonnage de proue → +5 IC à la victime + 5 PA frontaux au
+> Bélier ; collision frontale → la proue de la victime profite aussi de SON Bélier) ; **Sabord** dans
+> `effectiveDeckPostes` (`l.362-364` : une coque à Sabord couvre TOUS ses emplacements → couvert total au
+> servant). Tests `engine/naval-traits.test.ts`. ⏳ Reste : Blindage (PA, variante bronze/fer), Lissage (M),
+> Clinfoc (longueur), Nid-de-pie (Perception), Figure de proue (Moral si 2 Atouts *Raffiné*), Propulsion à vapeur ;
+> + catalogue DATA d'améliorations éditable au Codex (desc verbatim) et `upgrades[]` par instance dans l'éditeur.
+
 ## 2. Pièce SERVIE = concept GÉNÉRAL (sol + navire) ; le poste naval en est un cas
 
 Une arme de siège (Arme d'équipe) se sert **aussi au sol**, pas seulement sur un bateau (RAW : « Sur le champ
@@ -175,7 +184,9 @@ dans l'éditeur, jouables via le menu 🧪.
 6. ⏳ **Manœuvre** (D3b) : `FLOWS.shipManeuver` → tourne le `Dir8`, avance ; re-mappe les arcs. Inclut l'**init
    du cap au spawn** (`facing` depuis l'entité authorée — lacune POC à combler) pour que l'arc soit réel en jeu.
 7. ⏳ **Fondation bateau-prefab + Améliorations** (§1bis) : ✅ facette `deck` sur `VehicleData` (TYPE pur +
-   `parseDeck` + deck de la cogue authoré + tests) ; ⏳ résolveur d'améliorations (Sabord/Bélier/Nid-de-pie…).
+   `parseDeck` + deck de la cogue authoré + tests) ; ✅ premiers effets de Traits/Améliorations (`navalTraits.ts` :
+   **Bélier**→`resolveCollision`, **Sabord**→`effectiveDeckPostes`) ; ⏳ reste des améliorations (Blindage/Lissage/
+   Clinfoc/Nid-de-pie/Figure de proue/Vapeur) + catalogue DATA éditable au Codex + `upgrades[]` par instance.
 8. ⏳ **Composition du Pont + abordage** (collision → `engage` → coudre les ponts). **Critiques canon** :
    ✅ « Canon perdu » (`ch.13 l.765`) mécanisé — `loseRandomPoste` retire un poste de `hull.postes` +
    démancipe son chef (`mannedPoste`/arme) ; ✅ « Canon détaché » (`l.763-764`) mécanisé — `detachPosteCrewHit` :

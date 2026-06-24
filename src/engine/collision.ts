@@ -27,6 +27,10 @@ export interface CollisionShip {
   movingAway?: boolean;
   /** DR de Manœuvre de CE navire, SIGNÉ : + aggrave, − limite l'IC des DEUX navires (l.458-461). */
   maneuverDR?: number;
+  /** CE navire porte un **Bélier** (Trait/Amélioration, MDG ch.12 l.221) : éperonner de sa proue ajoute 5 à
+   *  son IC, et ses 5 PA frontaux le protègent du choc qu'il porte / d'un choc frontal. Dérivé des Traits via
+   *  `shipHasNavalTrait` (`navalTraits.ts`). */
+  belier?: boolean;
 }
 
 export interface CollisionDamage {
@@ -42,25 +46,38 @@ export interface CollisionResolved {
   frontal: boolean;
 }
 
-/** Dégâts bruts reçus par `taker`, l'IC EFFECTIF de l'autre navire et le terme de M déjà calculés. */
-function partyDamage(taker: CollisionShip, otherEffIC: number, mTerm: number): CollisionDamage {
+/** Dégâts bruts reçus par `taker`, l'IC EFFECTIF de l'autre navire et le terme de M déjà calculés.
+ *  `extraAP` = PA additionnels du coup (ex. les 5 PA frontaux d'un Bélier), cumulés à la poupe (+2). */
+function partyDamage(taker: CollisionShip, otherEffIC: number, mTerm: number, extraAP = 0): CollisionDamage {
   let damage = otherEffIC + mTerm;
   if (taker.struck === 'milieu') damage *= 2;        // milieu de coque (l.457)
   if (taker.movingAway) damage -= taker.m;           // s'éloigne directement (l.455)
-  return { damage: Math.max(0, damage), armorBonus: taker.struck === 'poupe' ? 2 : 0 };
+  return { damage: Math.max(0, damage), armorBonus: (taker.struck === 'poupe' ? 2 : 0) + extraAP };
 }
+
+const BELIER_IC_BONUS = 5; // MDG ch.12 l.221 : « ajoute 5 à son Bonus d'Endurance pour calculer son Indice de Collision ».
+const BELIER_AP = 5;       // MDG ch.12 l.221 : « le Bélier fournit 5 PA … contre tout Dégât résultant d'une collision … venant de l'avant ».
 
 /**
  * Résout une collision/éperonnage (MDG ch.13 l.446-464) entre le `causer` (qui percute) et la `victim`.
- * La manœuvre des DEUX (DR signé) ajuste l'IC des deux avant le calcul. PUR — les Dégâts bruts produits
- * sont à appliquer sur la Localisation Coque via `applyOps` (Bonus d'Endurance + PA, dont `armorBonus`).
+ * La manœuvre des DEUX (DR signé) ajuste l'IC des deux avant le calcul. **Bélier** (MDG ch.12 l.221) : si le
+ * causeur frappe de sa PROUE (`ramProue`, ou collision `frontal`), son Bélier ajoute 5 à son IC (la victime
+ * encaisse +5) et lui octroie 5 PA frontaux contre le choc qu'il porte ; une collision frontale frappe aussi
+ * la proue de la victime → son éventuel Bélier la protège également. PUR — les Dégâts bruts produits sont à
+ * appliquer sur la Localisation Coque via `applyOps` (Bonus d'Endurance + PA, dont `armorBonus`).
  */
-export function resolveCollision(causer: CollisionShip, victim: CollisionShip, opts: { frontal?: boolean } = {}): CollisionResolved {
+export function resolveCollision(
+  causer: CollisionShip, victim: CollisionShip, opts: { frontal?: boolean; ramProue?: boolean } = {},
+): CollisionResolved {
   const icAdjust = (causer.maneuverDR ?? 0) + (victim.maneuverDR ?? 0);
   const mTerm = opts.frontal ? causer.m + victim.m : causer.m;
+  const causerProue = !!(opts.ramProue || opts.frontal); // le causeur frappe de sa proue
+  const causerRamIC = causer.belier && causerProue ? BELIER_IC_BONUS : 0;   // Bélier offensif → victime encaisse +5
+  const causerAP = causer.belier && causerProue ? BELIER_AP : 0;            // Bélier défensif (sa proue encaisse)
+  const victimAP = victim.belier && opts.frontal ? BELIER_AP : 0;           // collision frontale → la proue de la victime encaisse aussi
   return {
-    causer: partyDamage(causer, victim.ic + icAdjust, mTerm),
-    victim: partyDamage(victim, causer.ic + icAdjust, mTerm),
+    causer: partyDamage(causer, victim.ic + icAdjust, mTerm, causerAP),
+    victim: partyDamage(victim, causer.ic + causerRamIC + icAdjust, mTerm, victimAP),
     frontal: !!opts.frontal,
   };
 }
