@@ -147,7 +147,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
   // prédicat que le clic (firedAttackBlock) → le réticule annonce « recharger »/« plus de munitions »
   // au lieu d'une attaque qui se solderait par un log silencieux.
   if (plan.kind === 'attack' && !option.freeKind) {
-    const block = firedAttackBlock(get, active, target);
+    const block = firedAttackBlock(get, active, target, option.weaponUid);
     if (block) return { kind: 'invalid', reason: block.reason };
   }
   const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };

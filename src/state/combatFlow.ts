@@ -229,10 +229,12 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
  *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
-export function firedAttackBlock(get: Get, active: Combatant, target: Combatant): { reason: 'unloaded' | 'noammo' | 'arc'; detail: string } | null {
+export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc'; detail: string } | null {
   if (active.kind !== 'hero') return null;
   const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon
-  const w = attackWeapon(active.weapons, adj);
+  // Arme effectivement testée : choix EXPLICITE (poste servi → `weaponUid`) sinon auto selon la distance —
+  // MÊME arbitrage que `firedWeapon` (le gate ne doit pas mentir sur une AUTRE arme que celle qui tirera).
+  const w = (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
   if (w.type !== 'ranged') return null;
   if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.name} doit recharger ${w.name}.` };
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie

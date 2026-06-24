@@ -1,37 +1,37 @@
 import { describe, it, expect } from 'vitest';
 import { testScenarios } from './index';
 import { spawnEnemy } from '../../state/spawn';
-import { applyCriticalToTarget, firedAttackBlock, firedWeapon } from '../../state/combatFlow';
+import { applyCriticalToTarget } from '../../state/combatFlow';
+import { applyShipPostes } from '../../state/shipPostes';
+import { availableAttacks } from '../../state/combatManeuvers';
 import { seedBattleRng } from '../../state/battleRng';
-import { compatibleAmmo } from '../../engine/items';
+import type { BattleState } from '../../state/store';
 import type { Combatant } from '../../engine/types';
 
 const scen = testScenarios.find((s) => s.id === 'bataille-navale')!;
 
-/** Reconstruit le roster ennemi du scénario depuis ses entités (ids déterministes `enemy-enc-naval-<i>`),
- *  exactement comme le fait `combatSlice` au démarrage du combat. */
+/** Reconstruit le roster d'entités du scénario (ids déterministes `enemy-enc-naval-<i>` — cogue, pirates
+ *  ET la barge AMIE), exactement comme `combatSlice` au démarrage : on transmet `crewIds` ET `postes`. */
 function spawnRoster(): Combatant[] {
   const ents = scen.scene.entities
     .filter((e) => e.id.startsWith('enemy-enc-naval-'))
     .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
-  return ents.map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos, { crewIds: e.crewIds }));
+  return ents.map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos, { crewIds: e.crewIds, postes: e.postes }));
 }
 
 /**
  * Vérification BOUT-EN-BOUT du scénario jouable (sans navigateur) : l'authoring (cogue + équipage) se
- * SPAWN en un navire-Combattant lié à de vrais marins, et un Coup Critique encaissé par la coque
- * produit un effet NAVAL (État sur la coque) ou touche l'équipage — toute la chaîne MDG ch.13-14.
+ * SPAWN en un navire-Combattant lié à de vrais marins, et un Coup Critique encaissé par la coque produit
+ * un effet NAVAL (État sur la coque) ou touche l'équipage — toute la chaîne MDG ch.13-14.
  */
 describe('Scénario Bataille navale — chaîne navale jouable', () => {
-  it('le navire spawn comme COQUE (vehicule, enemy, B50) liée à son ÉQUIPAGE (crewIds → vrais marins)', () => {
-    const roster = spawnRoster();
-    const ship = roster[0];
+  it('la cogue spawn comme COQUE (vehicule, enemy, B50) liée à son ÉQUIPAGE (crewIds → vrais marins)', () => {
+    const ship = spawnRoster().find((c) => c.id === 'enemy-enc-naval-0')!;
     expect(ship.bodyShape).toBe('vehicule');
     expect(ship.kind).toBe('enemy');
     expect(ship.creatureId).toBe('cogue');
     expect(ship.wounds.max).toBe(50);
     expect(ship.crewIds).toEqual(['enemy-enc-naval-1', 'enemy-enc-naval-2', 'enemy-enc-naval-3']);
-    for (const id of ship.crewIds!) expect(roster.find((c) => c.id === id)).toBeTruthy();
   });
 
   it('frapper la coque pose un État NAVAL ou touche l’équipage lié (balayage de seeds, déterministe)', () => {
@@ -39,35 +39,45 @@ describe('Scénario Bataille navale — chaîne navale jouable', () => {
     for (let seed = 1; seed <= 60 && !navalEffect; seed++) {
       seedBattleRng(seed);
       const roster = spawnRoster();
-      const ship = roster[0];
-      const before = roster.slice(1).map((c) => c.wounds.current);
+      const ship = roster.find((c) => c.id === 'enemy-enc-naval-0')!;
+      const crew = roster.filter((c) => ship.crewIds!.includes(c.id));
+      const before = crew.map((c) => c.wounds.current);
       const get = (() => ({ battle: { combatants: roster } })) as never;
       applyCriticalToTarget(ship, 'corps', true, 0, [], (() => {}) as never, undefined, undefined, undefined, undefined, get);
       const hullState = ship.conditions.length > 0;
-      const crewHurt = roster.slice(1).some((c, i) => c.wounds.current < before[i] || (c.traumas?.length ?? 0) > 0 || c.conditions.length > 0);
+      const crewHurt = crew.some((c, i) => c.wounds.current < before[i] || (c.traumas?.length ?? 0) > 0 || c.conditions.length > 0);
       navalEffect = hullState || crewHurt;
     }
     expect(navalEffect).toBe(true);
   });
 });
 
-describe('Artillerie jouable — un canonnier peut charger et tirer son pierrier sur la coque', () => {
-  it('le pierrier trouve ses munitions (famille « artillerie ») → tir AUTORISÉ (pas de blocage noammo)', () => {
-    const gunner = scen.makeParty()[0]; // armé d'un pierrier + balles, chargé
-    gunner.pos = { x: 2, y: 6 }; // à distance de la coque (sinon firedWeapon choisit la mêlée)
-    const roster = spawnRoster();
-    const ship = roster[0]; // pos { x: 13, y: 6 }
-    const gun = firedWeapon(gunner, ship);
-    expect(gun.type).toBe('ranged'); // le pierrier est bien l'arme active à distance
-    expect(gun.subType).toBe('armes-de-siege');
-    expect(compatibleAmmo(gunner, gun).length).toBeGreaterThan(0); // munition de siège compatible trouvée
-    // get-stub : le pierrier n'est pas un poste monté (pas de mountSide) → l'arc n'est pas évalué, get inutilisé.
-    expect(firedAttackBlock((() => ({ battle: undefined })) as never, gunner, ship)).toBeNull(); // chargé + munition → le tir peut partir
+/**
+ * Artillerie JOUABLE par poste servi (MDG ch.12-13) — remplace l'ancienne triche (pierrier en inventaire).
+ * Au démarrage, `applyShipPostes` sert les pierriers de la barge AMIE à leurs chefs de pièce (le Soldat +
+ * le Chasseur) → l'attaque dédiée « Servir le pierrier » apparaît, épinglant le canon du poste.
+ */
+describe('Artillerie jouable — 2 héros SERVENT un poste de pierrier (pas d’inventaire)', () => {
+  it('applyShipPostes pose le mannedPoste sur le Soldat + le Chasseur, et l’attaque « Servir » apparaît', () => {
+    const party = scen.makeParty();
+    const all = [...party, ...spawnRoster()];
+    applyShipPostes(all); // comme combatSlice au démarrage
+    const gunners = party.filter((h) => h.mannedPoste);
+    expect(gunners.length).toBe(2); // le Soldat (seed 101) + le Chasseur (seed 303)
+    const battle = { combatants: all, acted: false } as unknown as BattleState;
+    for (const g of gunners) {
+      const w = g.weapons.find((x) => x.uid === g.mannedPoste!.item.uid);
+      expect(w?.type).toBe('ranged'); // le pierrier servi est une arme à distance
+      expect(w?.subType).toBe('armes-de-siege');
+      const serve = availableAttacks(g, battle).find((o) => o.id === 'poste');
+      expect(serve).toBeDefined(); // bouton « Servir le pierrier »
+      expect(serve!.weaponUid).toBe(g.mannedPoste!.item.uid); // épingle le canon (≠ arme perso auto-choisie)
+    }
   });
 
-  it('2 héros sont des canonniers (pierrier équipé), 2 restent abordeurs', () => {
+  it('les 2 autres héros (Tueur + Sorcier) ne servent AUCUN poste — ils aborderont', () => {
     const party = scen.makeParty();
-    const gunners = party.filter((h) => (h.items ?? []).some((i) => i.trappingId === 'pierrier' && i.equipped));
-    expect(gunners.length).toBe(2);
+    applyShipPostes([...party, ...spawnRoster()]);
+    expect(party.filter((h) => !h.mannedPoste).length).toBe(2);
   });
 });

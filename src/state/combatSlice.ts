@@ -492,7 +492,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // (firedAttackBlock). Concerne UNIQUEMENT l'attaque directe (plan 'attack') avec l'arme tenue : une
       // Charge/rejoindre (mêlée) ou une attaque gratuite (freeKind) n'emploie jamais l'arme à distance.
       if (plan.kind === 'attack' && !option.freeKind) {
-        const block = firedAttackBlock(get, active, target);
+        const block = firedAttackBlock(get, active, target, option.weaponUid);
         if (block) {
           get().log(block.detail);
           if (battle.preview) set({ battle: { ...battle, preview: null } });
@@ -572,7 +572,7 @@ export function createCombatSlice(get: Get, set: Set) {
         if (plan.adv > 0) active.gainedAdvThisRound = true;
         active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
         set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', t('cs.charge', { name: active.name, target: target.name, adv: plan.adv ? t('cs.fragChargeAdv', { adv: plan.adv }) : '' }), active.id, target.id)] } });
-        pa = { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) } : {}) };
+        pa = { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind } : {}), ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
       } else {
         if (plan.kind === 'moveAttack') {
           // Rejoindre la cible dans la Marche restante (pas une Charge → pas de bonus), puis attaquer.
@@ -604,17 +604,17 @@ export function createCombatSlice(get: Get, set: Set) {
           // naturelle synthétique (freeAttackWeapon, via `pa.freeKind`) ; pas de gate Allonge/munitions.
           pa = { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
         } else {
-          // Arme effectivement employée selon la distance (mêlée à portée d'Allonge, distance sinon) — PAS
-          // weapons[0], sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB
-          // Armes l.297-298). Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213), footprint inclus.
+          // Arme effectivement employée : choix EXPLICITE (poste servi → `option.weaponUid` épingle le canon)
+          // sinon auto selon la distance — PAS weapons[0], sinon un héros mixte mêlée+distance ne pourrait
+          // jamais tirer une cible éloignée (LDB Armes l.297-298). Portée de mêlée = Allonge (RAW-3, LDB 62).
           const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons);
-          const w = attackWeapon(active.weapons, adj);
+          const w = (option.weaponUid ? active.weapons.find((x) => x.uid === option.weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
           if (!adj && w.type === 'melee') {
             get().log(t('cs.meleeOutOfRange')); // aucune arme à distance dispo → mêlée hors de portée
             return;
           }
           // Le gate de RESSOURCE (Recharge/munition) a déjà été appliqué plus haut (firedAttackBlock).
-          pa = { attackerId: active.id, targetId: target.id, location: null, result: null };
+          pa = { attackerId: active.id, targetId: target.id, location: null, result: null, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
         }
       }
       // (2) FRAPPE — après le glissé d'approche : ouvre la SÉQUENCE de combat (jet d'attaque = ÉTAPE 0,

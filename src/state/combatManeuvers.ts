@@ -170,6 +170,15 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
     battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos)
   )
     out.push({ id: 'tentacule', kind: 'tentacules', label: 'Tentacule', icon: '🐙', targeting: 'melee', reach: 1, forceMelee: true, weaponUid: 'nat-tentacule', freeKind: 'tentacules', cost: { action: false, advantage: 0 } });
+  // (4) Poste d'artillerie SERVI (`mannedPoste`, MDG ch.12-13) : « servir la pièce » = attaque DÉDIÉE portant
+  //     l'arme du poste (`weaponUid` → canon ÉPINGLÉ, même si le servant porte une arme perso de mêlée pour
+  //     l'abordage). Arc + portée INTRINSÈQUES (firedAttackBlock garde déjà l'arc de `w.mountSide`). Coûte
+  //     l'Action ; `targeting:'melee'` = chemin approche-puis-frappe commun (une arme à distance y tire en
+  //     place, comme l'option 'arme'). KIND-AGNOSTIQUE côté donnée (l'IA ennemie a son propre chemin).
+  if (active.mannedPoste && !battle.acted && canTakeAction(active)) {
+    const w = active.weapons.find((x) => x.uid === active.mannedPoste!.item.uid);
+    if (w) out.push({ id: 'poste', label: `Servir ${w.name}`, icon: '💥', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 } });
+  }
   // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
   return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
 }
