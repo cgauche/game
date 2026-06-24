@@ -134,6 +134,9 @@ export interface VehicleData {
     oars?: { m: number; crew: number };
     traits: string[];
   };
+  /** Facette PONT (couche tactique, §1bis du modèle naval) : plan person-scale du pont, authoré une fois
+   *  par TYPE et réutilisé dans tout scénario (jamais redessiné). Lu en tuiles/murs par `state/shipDeck.ts`. */
+  deck?: ShipDeck;
 }
 
 export interface SkillInstance {
@@ -578,6 +581,31 @@ export interface ShipPoste {
   sabord?: boolean;
   /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
   crewIds?: string[];
+}
+
+/** Emplacement de POSTE sur un gabarit de pont (`ShipDeck`) — un MOUNT POINT authoré (pos + arc), PAS une
+ *  contrainte de règle : le placement des pièces reste LIBRE (par bord + poids vs Contenance, cf.
+ *  `state/shipPostes.ts`). Sert au RENDU / à l'aide d'authoring (où dessiner une pièce montée sur ce bord,
+ *  où poster son servant), réutilisé tel quel à la composition du Pont à l'abordage. */
+export interface DeckPosteSlot {
+  /** Case du pont (coord de la grille `ascii`) où la pièce se rend et où se tient son servant. */
+  pos: { x: number; y: number };
+  /** Côté de montage relatif au cap → arc de bordée (`inFireArc`). */
+  side: FireArc;
+  /** L'emplacement perce un Sabord (couvert TOTAL au servant) — sinon tir depuis le pont, à découvert. */
+  sabord?: boolean;
+}
+
+/** Facette PONT (couche tactique, §1bis du modèle naval) : le plan PERSON-SCALE du pont d'un TYPE de navire,
+ *  AUTHORÉ une seule fois et réutilisé tel quel dans tout scénario (jamais redessiné). À l'abordage, le pont
+ *  est instancié + cousu depuis ce gabarit. Le plan suit `parseWalledAscii` (authoring canon du projet :
+ *  tuiles + murs d'arête, `:` = écoutille) ; les `postes` sont des emplacements de RENDU (cf. `DeckPosteSlot`).
+ *  TYPE PUR (engine) — la lecture en tuiles/murs (`Terrain`/`WallSeg`) vit en `state/shipDeck.ts`. */
+export interface ShipDeck {
+  /** Plan du pont en box-drawing → tuiles + murs via `parseWalledAscii` (tuile de base = planches). */
+  ascii: string[];
+  /** Emplacements de postes d'artillerie (mount points authorés PAR TYPE — généralisent `AuthoredEnemy.postes`). */
+  postes?: DeckPosteSlot[];
 }
 
 /** Set d'armes nommé (les 2 mains). `off` ignoré si l'arme `main` est à 2 mains. uids → ItemInstance. */

@@ -48,9 +48,16 @@ lieu ailleurs, les PJ étant 4 **parmi ~50 marins**. Le RAW (MDG) gère ça à *
 ### Bateau-prefab : le PONT est une facette du TYPE de navire
 
 Chaque type a son **pont propre**, authoré **une fois**, instancié dans un scénario **sans recréer** de scène :
-nouvelle facette `deck` sur `VehicleData` (`vehicles.json`) — plan ASCII (`parseWalledAscii`) + emplacements de
+facette `deck` sur `VehicleData` (`vehicles.json`) — plan ASCII (`parseWalledAscii`) + emplacements de
 postes/équipage + arêtes de passerelle. Un scénario **pose des jetons-navires** (réf → type) ; le pont suit le
 type. À l'abordage, le Pont est **cousu à la volée** depuis les `deck` des navires engagés.
+
+> ✅ **Fondation posée** : le TYPE `ShipDeck`/`DeckPosteSlot` (PUR, `engine/types.ts`) + la facette `deck?`
+> sur `VehicleData` ; lecture en tuiles/murs par `parseDeck` (`state/shipDeck.ts`, réutilise `parseWalledAscii`,
+> aucun parseur parallèle) ; **deck de la cogue authoré** (pont 5×9 en planches, bastingage périmétrique, 3
+> emplacements de postes proue/tribord/bâbord) ; tests `state/ship-deck.test.ts`. ⚠ RAW : les `deck.postes` sont
+> des hints de RENDU (où dessiner pièce + servant), **pas** des slots fixes — le placement reste LIBRE (par bord +
+> poids vs Contenance, cf. `shipPostes.ts`). ⏳ Reste : arêtes de passerelle + couture du Pont à l'abordage (Phase 8).
 
 ### Améliorations (MDG ch.12) — modifient PHYSIQUEMENT le navire et son pont
 
@@ -167,10 +174,12 @@ dans l'éditeur, jouables via le menu 🧪.
 5. ⏳ **Batterie** (D3e) : action navire → `resolveCrewTestByRoles('batterie')` → DR sur tous les postes d'une bordée.
 6. ⏳ **Manœuvre** (D3b) : `FLOWS.shipManeuver` → tourne le `Dir8`, avance ; re-mappe les arcs. Inclut l'**init
    du cap au spawn** (`facing` depuis l'entité authorée — lacune POC à combler) pour que l'arc soit réel en jeu.
-7. ⏳ **Fondation bateau-prefab + Améliorations** (§1bis) : facette `deck` sur `VehicleData` + résolveur d'améliorations.
+7. ⏳ **Fondation bateau-prefab + Améliorations** (§1bis) : ✅ facette `deck` sur `VehicleData` (TYPE pur +
+   `parseDeck` + deck de la cogue authoré + tests) ; ⏳ résolveur d'améliorations (Sabord/Bélier/Nid-de-pie…).
 8. ⏳ **Composition du Pont + abordage** (collision → `engage` → coudre les ponts). **Critiques canon** :
    ✅ « Canon perdu » (`ch.13 l.765`) mécanisé — `loseRandomPoste` retire un poste de `hull.postes` +
-   démancipe son chef (`mannedPoste`/arme) ; ⏳ « Canon détaché » (`l.763-764` : Test d'Athlétisme + 12 Dégâts).
+   démancipe son chef (`mannedPoste`/arme) ; ✅ « Canon détaché » (`l.763-764`) mécanisé — `detachPosteCrewHit` :
+   l'équipage du poste teste l'Athlétisme Intermédiaire (+0) sous peine de 12 Dégâts (le canon reste à bord).
 9. ⏳ **Scène Mer + dispatch de tour à vue commutée** (navire acteur d'initiative ; vue Mer⇄Pont selon l'acteur).
 
 Recette navigateur à chaque étape jouable (`__wfrp`, combat manuel) : servir un poste → aligner une bordée →
