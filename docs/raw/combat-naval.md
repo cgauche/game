@@ -61,8 +61,9 @@ comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tes
 `src/state/shipCrew.ts` (`shipCrewAssignments`, `shipDefaultRoles`, `crewTestContributors`).
 
 **État du code.** ✅ somme des DR, essentiel ×2, Moral, « un jet par poste » (PJ + 1 marin représentant).
-⬜ **Manque de bras** (cumul 2 rôles = +2 crans ; sous-effectif −2 DR plafond Succès Minime ; tranche 10 %) **non
-implémenté**. ⬜ saboteur (−1 à −5 DR). ⬜ Chansonnier (bonus de chant non chiffré par le RAW → non modélisé, OK).
+⚠️ **Manque de bras** : ✅ (R3) cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ; ⬜ sous-effectif
+d'équipage global −2 DR plafond Succès Minime + tranche 10 % (hors périmètre). ⬜ saboteur (−1 à −5 DR).
+⬜ Chansonnier (bonus de chant non chiffré par le RAW → non modélisé, OK).
 
 ---
 
@@ -114,12 +115,11 @@ choisit**.
 **Implémente.** `src/state/combatFlow.ts` (ordre d'Initiative, `battle.acted`) ; `src/state/shipCrew.ts`
 (`crewTestContributors`).
 
-**État du code.** ❌ **FAUX — le trou central.** `crewTestContributors` ne suit PAS qui a déjà agi ce Round : les
-rôles Capitaine/Chansonnier/Mousse/Timonier étant dans les types `manoeuvre` ET `batterie`, **les MÊMES PJ
-contribuent à la manœuvre PUIS à la bordée** sans pénalité ni épuisement. ⬜ À faire : `crewActed` (Set de
-crewId) réinitialisé au tour du navire ; manœuvre et bordée **retirent** (ou pénalisent en cumul +2 crans) les
-marins déjà engagés. ❌ La bordée ne consomme rien (tir à volonté) — au lieu de quoi le RAW limite par la
-**Recharge** (voir topic suivant) ET l'équipage-ressource.
+**État du code.** ✅ (R3) `battle.crewActed` (par navire, reset au round-start `enterRoundStartPause`) recense les
+marins ayant contribué à un Test ce Round. Les rôles Capitaine/Chansonnier/Mousse/Timonier étant dans `manoeuvre`
+ET `batterie`, un marin qui contribue aux DEUX le même Round le fait en **cumul à +2 crans** (`rollCrewRole(cumul)`
+→ `easeDifficulty(-2)`) — décision GM : cumul AUTORISÉ (l.53), pas d'exclusion. La bordée est en plus bornée par la
+**Recharge** (topic suivant). ⬜ Manque de bras GLOBAL (−2 DR plafond, tranche 10 %) noté hors périmètre.
 
 ---
 
@@ -185,9 +185,10 @@ proches ; Extrême → −Indice Dégâts.
 
 **Implémente.** `src/data/` (defs des pièces) ; `src/engine/items.ts` (`mannedPosteWeapon`) ; `src/engine/volley.ts`.
 
-**État du code.** ⚠️ `mannedPosteWeapon` lit `poste.item` (Dégâts/Recharge/qualités). ⬜ **Munitions** (boulet vs
-mitraille → Dégâts + Explosion/Tir de zone/Percutante) **ignorées** : `resolveVolley` prend l'arme nue. ⬜ Tir de
-zone / Explosion. ⬜ Dangereuse (Incident).
+**État du code.** ✅ (R1) `resolveVolley` prépare l'arme de chaque pièce comme le tir individuel : `weaponWithAmmo`
+(munition du chef → Dégâts + **Perforante**/bypass via `woundsFromHit`) puis `crewedFireWeapon` (sous-effectif).
+⬜ RESTE : **Explosion / Tir de zone** (multi-cibles) ; qualités à chiffre des unités (Percutante/Dévastatrice/
+Empaleuse) en bordée ; **Dangereuse → Incident** ; picker de munition par poste + approvisionnement des navires.
 
 ---
 
@@ -216,10 +217,9 @@ Dangereuse = Incident).
 **Implémente.** `src/engine/crewedWeapon.ts` (`crewedPenalty`, `crewedFireWeapon`) — **existe, branché au tir
 INDIVIDUEL**.
 
-**État du code.** ❌ **La bordée n'appelle PAS `crewedFireWeapon`** : `resolveVolley` tire chaque pièce à plein
-effet **quel que soit l'effectif** → un Canon moyen (Arme d'équipe 3) à 1 servant tire comme s'il avait 3 servants.
-⬜ À faire : par poste, dériver l'arme effective via `crewedFireWeapon(item, servantsPrésents)` (Recharge ×2 /
-Imprécise / Dangereuse) avant le calcul de Dégâts.
+**État du code.** ✅ (R1) `resolveVolley` dérive l'arme effective de chaque pièce via `crewedFireWeapon(item,
+servantsPrésents)` (exposés non-incapacités) AVANT le calcul de Dégâts → un Canon moyen (Arme d'équipe 3) à 1 servant
+tire en Recharge ×2 + Imprécise (−1 DR via `attackDRAdjust`). ⬜ Incident de tir (Dangereuse) noté hors périmètre.
 
 ---
 
@@ -246,10 +246,10 @@ les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.** »
 **Implémente.** `src/engine/volley.ts` (`resolveVolley`) ; `src/state/shipBattery.ts` (`resolveBattery`) ;
 `src/state/combatSlice.ts` (`battleShipBattery`/`shipBatteryConfirm`) ; `src/ui/ShipBatteryModal.tsx`.
 
-**État du code.** ✅ **(2)(3)(4-base)** : Test d'équipage multi (Artilleur ★) → DR partagé → Dégâts/pièce (arme +
-DR − BE − blindage) + localisation 1d100 + double = Critique. ❌/⬜ le RESTE : **(1)** effectif (Arme d'équipe) +
-chargé non vérifiés ; **(4)** munitions ignorées ; **(5)** **Recharge non appliquée** (tir à volonté !) +
-Dangereuse/Incident absents ; équipage-ressource non géré (mêmes PJ que la manœuvre).
+**État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
+chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
+(`woundsFromHit` plancher 0) + localisation 1d100 + Critique (double OU B=0) ; **Recharge** par poste (`reloadUntilRound`)
++ équipage-ressource (`crewActed`, cumul +2 crans). ⬜ RESTE : Explosion/Tir de zone + Dangereuse/Incident.
 
 ---
 
@@ -303,7 +303,8 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 **Implémente.** `src/engine/shipCritical.ts` (`applyHullCritical`, `rollShipCritical`, états navals via GameOp).
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques
-de Coque récursifs). ⚠️ bordée : double sur 1d100 → Critique (interprétation ci-dessus). ⬜ « tout coup à B=0 ».
+de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveVolley` critique sur `wounds.current ≤ 0`.
+⚠️ bordée : double sur 1d100 → Critique (interprétation défendable, à valider GM).
 
 ---
 
@@ -333,24 +334,28 @@ Moral en combat (Rude épreuve, mutinerie).
 
 ---
 
-## Bilan de fidélité (à corriger)
+## Bilan de fidélité — après la REFONTE 2026-06-25 (R1 `3e4d9304` · R2 `09b4b77b` · R3 `84597005`)
 
-**Trous prioritaires** (ce que le code naval NE respecte PAS), **confirmés + précisés par l'audit adversarial
-2026-06-25** (agent indépendant, code ↔ Source) :
-1. ❌ **Équipage-ressource** — les mêmes PJ font manœuvre ET bordée le même Round (aucun `crewActed`). LE trou central.
-2. ❌ **Arme d'équipe / sous-effectif** — `resolveVolley` n'appelle PAS `crewedFireWeapon`. **INCOHÉRENCE INTERNE** :
-   la fonction EST branchée au tir INDIVIDUEL (`combatFlow.ts:226`, `combatSlice.ts:1129`) mais pas à la volée → une
-   pièce sous-effectif est pénalisée en solo, pas en bordée.
-3. ⬜ **Recharge** — la bordée tire à volonté ; `ShipPoste` n'a aucun état de recharge ; le RAW impose Recharge N Rounds.
-4. ⬜ **Munitions** (boulet/mitraille → Dégâts + Explosion/Tir de zone) + **Dangereuse** (Incident). NB : la **donnée**
-   des 8 munitions existe et est correcte (`naval-artillery.test.ts`) — c'est la **résolution** (`resolveVolley`) qui l'ignore.
-5. ⬜ **« Tout coup quand B=0 = Critique »** (`MDG 13 l.656`, citation littérale) — `volley.ts` ne critique QUE sur double.
-   *(Omis de mon bilan initial — rattrapé par l'audit.)*
-6. ⬜ **Manque de bras** général (cumul +2 crans, −2 DR plafond Succès Minime, tranche 10 %). ⚠️ **Plomberie MORTE** :
-   `understaffed`/`doubleRole` existent dans `resolveCrewTestByRoles` (`crewMorale.ts:225-232`) mais ne sont **jamais
-   appelés** par aucun chemin → fausse impression de couverture. *(Sous-évalué dans mon bilan initial — rattrapé par l'audit.)*
+L'audit adversarial 2026-06-25 (agent indépendant, code ↔ Source) avait confirmé 5 trous + 1 plomberie morte, **tous
+issus d'UN choix structurel** : `resolveVolley` ré-implémentait son propre calcul de Dégâts EN PARALLÈLE du tir
+individuel, larguant munitions/sous-effectif/qualités. **Refonte** (plan `velvety-puzzling-kettle`) : la volée orchestre
+désormais les MÊMES fonctions AGNOSTIQUES que le tir individuel (`weaponWithAmmo` + `crewedFireWeapon` + `woundsFromHit`
+à plancher 0), en gardant la localisation/Critique navire. État après refonte :
+1. ✅ **Équipage-ressource** (R3) — `battle.crewActed` recense les marins engagés CE ROUND (reset au round-start) ; un
+   marin qui fait manœuvre PUIS bordée le même Round cumule à **+2 crans** (`rollCrewRole(cumul)` → `easeDifficulty(-2)`).
+   Décision GM : cumul AUTORISÉ (l.53), pas d'exclusion.
+2. ✅ **Arme d'équipe / sous-effectif** (R1) — `resolveVolley` appelle `crewedFireWeapon(item, servantsPrésents)` par
+   pièce → Recharge ×2 / Imprécise / Dangereuse en bordée comme en solo (fin de l'incohérence interne).
+3. ✅ **Recharge** (R2) — `ShipPoste.reloadUntilRound` ; une pièce tirée est muette N Rounds (×2 si sous-effectif) ;
+   `bearingPostes` exclut les pièces en recharge (bouton/réticule). NB : modèle « N Rounds » = approximation du Test
+   étendu à DR cumulés (refinement noté).
+4. ⚠️ **Munitions** (R1 partiel) — `weaponWithAmmo` fusionne la munition du chef (Dégâts + **Perforante**/bypass via
+   `woundsFromHit`). ⬜ RESTE : **Explosion / Tir de zone** (multi-cibles) + **Dangereuse → Incident**.
+5. ✅ **« Tout coup à B=0 = Critique »** (R1, `MDG 13 l.656`) — `resolveVolley` critique sur double OU `wounds.current ≤ 0`.
+6. ⚠️ **Manque de bras** (R3 partiel) — cumul +2 crans FAIT (réveille `doubleRole`/`easeDifficulty`). ⬜ RESTE : −2 DR
+   plafond Succès Minime + tranche 10 % (sous-effectif d'ÉQUIPAGE global, distinct du sous-effectif d'une pièce).
 7. ✅ **BB dynamique** confirmé conforme par l'audit (`collision.ts:15` relit `wounds.current`). ⚠️ Critique de bordée
-   (double sur 1d100) = interprétation jugée **défendable** par l'audit, à valider GM.
+   (double sur 1d100) = interprétation **défendable**, à valider GM. Arc 3 octants = **décision GM** (le RAW ne donne pas d'angle).
 
 > Cette fiche est le **brouillon de référence** ; à confronter à la Source par une passe de vérification (les n° de
 > ligne sont post-Marker, le chapitre est sûr, la ligne approximative). Inscrire `MDG` dans `sources.md` + ajouter
