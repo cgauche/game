@@ -663,8 +663,8 @@ describe('Magie — compétences Avancées (gating)', () => {
     const sans = caster({ Int: 80 }, skills);
     const avec = caster({ Int: 80 }, skills);
     avec.talents = [{ talentId: 'diction-instinctive', times: 2 }];
-    expect(castTestTalentDR(avec, 'Langue (Magick)')).toBe(2);
-    expect(castTestTalentDR(sans, 'Langue (Magick)')).toBe(0);
+    expect(castTestTalentDR(avec, 'langue', 'Magick')).toBe(2);
+    expect(castTestTalentDR(sans, 'langue', 'Magick')).toBe(0);
     // même graine = même d100 : sur un jet RÉUSSI, le DR final diffère exactement du niveau du Talent
     for (let seed = 1; seed <= 6; seed++) {
       const a = resolveCasting(sans, FLECHETTE, makeRNG(seed));
@@ -676,7 +676,7 @@ describe('Magie — compétences Avancées (gating)', () => {
   it('un Talent lié à une AUTRE Langue ne booste pas l’incantation (Langue (Magick) exigé)', () => {
     const c = caster({ Int: 80 });
     c.talents = [{ talentId: 'linguistique', times: 3 }]; // test data : « Langue (Toutes) » ? — ne doit pas matcher Magick
-    expect(castTestTalentDR(c, 'Langue (Magick)')).toBe(0);
+    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(0);
   });
 
   it('Harmonisation aethyrique ×N : +N DR aux Tests de Focalisation réussis (LDB 10 l.20)', () => {

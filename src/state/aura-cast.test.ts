@@ -1,0 +1,41 @@
+import { describe, it, expect } from 'vitest';
+import { castTestTalentDR } from '../engine/magic';
+import type { Combatant } from '../engine/types';
+
+/**
+ * Aura de Dhar (frenchy.bzh) — « +1 DR aux Tests de Focalisation et Langue (Magick) des casters alliés à
+ * 10 m, le porteur compris ». Câblé en DONNÉE : `TraitData.aura` (affects allies) + `passive` (porteur)
+ * portent des op `skillDRBonus` ; le hook `recompute-auras` les projette dans `auraMods` des cibles, et le
+ * LANCEMENT les lit via `castTestTalentDR` (qui somme `skillDRBonus` comme un Talent). Ici on vérifie le
+ * versant cast↔aura : un caster dont `auraMods` porte le bonus voit son DR d'incantation augmenté.
+ */
+const mk = (over: Partial<Combatant> = {}): Combatant => ({
+  id: 'm', name: 'Mage', kind: 'enemy',
+  characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 40, Soc: 30 },
+  skills: [], talents: [], traits: [], conditions: [], activeEffects: [],
+  ...over,
+}) as unknown as Combatant;
+
+describe('Aura de Dhar — +1 DR au lancement lu depuis auraMods (cast↔aura)', () => {
+  it('castTestTalentDR somme le skillDRBonus d’aura (Langue (Magick) ET Focalisation)', () => {
+    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }, { op: 'skillDRBonus', skill: 'focalisation', bonus: 1 }] as never });
+    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(1);
+    expect(castTestTalentDR(c, 'focalisation')).toBe(1);
+    expect(castTestTalentDR(c, 'priere')).toBe(0); // l’aura ne porte pas de DR de Prière
+  });
+
+  it('la spec est respectée : Langue (Magick) boostée, mais PAS Langue (Bretonnien)', () => {
+    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }] as never });
+    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(1);
+    expect(castTestTalentDR(c, 'langue', 'Bretonnien')).toBe(0); // spec ≠ → aucun bonus (le sort seul est boosté)
+  });
+
+  it('sans aura → aucun bonus de DR', () => {
+    expect(castTestTalentDR(mk(), 'langue', 'Magick')).toBe(0);
+  });
+
+  it('cumule avec un second exemplaire d’aura (sources distinctes — DR additif)', () => {
+    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }, { op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }] as never });
+    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(2);
+  });
+});

@@ -2583,7 +2583,7 @@ export function aiBestMissile(enemy: Combatant): string | undefined {
     const info = castInfo(sp);
     // SL max d'un jet = valeur/10, + les DR de Talent lié au Test réussi (LDB 10 l.20 —
     // Diction instinctive ×N) : c'est ce qui détermine les NI passables SANS Focalisation.
-    const tal = castTestTalentDR(enemy, info.skill === 'priere' ? 'Prière' : 'Langue (Magick)');
+    const tal = castTestTalentDR(enemy, info.skill, info.spec);
     return Math.floor(castingValue(enemy, info.skill, info.spec) / 10) + tal;
   };
   const feasible = known.filter((sp) => (sp.cn ?? 0) <= maxSL(sp));

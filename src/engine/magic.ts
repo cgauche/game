@@ -22,7 +22,7 @@ import { hasTraitKey } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
-import { Formula, resolveFormula } from './ops';
+import { Formula, resolveFormula, skillDRBonus } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
 import { arcaneDomainIdOf } from './combatFeatures/dispatch';
@@ -30,7 +30,7 @@ import { domainMissileMods } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty } from './types';
-import { findTalent, findTalentById, findDomainById } from '../data';
+import { findTalent, findTalentById, findDomainById, findSkillById } from '../data';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -218,19 +218,24 @@ export function isMagicMissile(spell: SpellLike): boolean {
 /**
  * LDB 10 l.20 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous
  * gagnez +1 DR pour toute utilisation RÉUSSIE de la Compétence liée au Talent. » Somme des
- * acquisitions des Talents du porteur dont le champ « Tests » (talents.json, verbatim)
- * référence la Compétence d'incantation visée — piloté par la DONNÉE, pas de liste en dur :
- * Diction instinctive → « Langue (Magick) quand vous faites une Incantation » ;
- * Harmonisation aethyrique → « Focalisation (Au choix) ».
- * `needle` : « Langue (Magick) » (pas « Langue » nu — un Talent lié à Langue (Bretonnien)
- * ne booste pas l'incantation), « Focalisation », « Prière ».
+ * acquisitions des Talents du porteur dont le champ « Tests » référence la Compétence d'incantation
+ * (`skill` id + `spec` éventuelle). DETTE : `talent.test` est un TEXTE LIBRE (« Langue (Magick) quand
+ * vous… ») → on le matche par LIBELLÉ (seul substring résiduel, à retirer quand `talent.test` sera
+ * recodé en réf structurée / Flow). Le libellé est DÉRIVÉ de la donnée (`findSkillById(skill).label` +
+ * la spec) — plus aucun label en dur : `langue`+spec `Magick` → « Langue (Magick) » (pas « Langue » nu :
+ * un Talent Langue (Bretonnien) ne booste pas l'incantation, LDB 44).
  */
-export function castTestTalentDR(c: Combatant, needle: 'Langue (Magick)' | 'Focalisation' | 'Prière'): number {
+export function castTestTalentDR(c: Combatant, skill: 'langue' | 'focalisation' | 'priere', spec?: string): number {
+  const base = findSkillById(skill)?.label ?? skill;
+  const needle = (spec ? `${base} (${spec})` : base).toLowerCase();
   let n = 0;
   for (const t of c.talents ?? []) {
     const data = findTalentById(t.talentId);
-    if (data?.test?.toLowerCase().includes(needle.toLowerCase())) n += t.times;
+    if (data?.test?.toLowerCase().includes(needle)) n += t.times;
   }
+  // Auras de +DR au LANCEMENT (Aura de Dhar : Langue (Magick)/Focalisation des casters alliés) — op
+  // `skillDRBonus` projetée dans `auraMods` (hook recompute-auras), sommée par id + spec de Compétence.
+  n += skillDRBonus(c, skill, spec);
   return n;
 }
 
@@ -347,7 +352,7 @@ export function resolveCasting(
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test, sur utilisation RÉUSSIE
   // (Diction instinctive ×N → +N DR au Test d'Incantation). Appliqué au JET (pas à
   // l'évaluation : rederiveCastSL — Chance « +1 DR » — repart du DR déjà boosté).
-  const tal = t.success ? castTestTalentDR(caster, info.skill === 'priere' ? 'Prière' : 'Langue (Magick)') : 0;
+  const tal = t.success ? castTestTalentDR(caster, info.skill, info.spec) : 0;
   return evaluateCasting(caster, spell, pen || tal ? { ...t, sl: t.sl - pen + tal } : t, focusedNI0);
 }
 
@@ -436,7 +441,7 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
 export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
   const value = castingValue(counter, 'langue', 'Magick');
   const t = rollTest(value, 'intermediaire', rng);
-  const adj = t.success ? castTestTalentDR(counter, 'Langue (Magick)') - armourCastDRPenalty(counter) : 0;
+  const adj = t.success ? castTestTalentDR(counter, 'langue', 'Magick') - armourCastDRPenalty(counter) : 0;
   const counterT = adj ? { ...t, sl: t.sl + adj } : t;
   return counterspellOutcomeFrom(counter, counterT, castT);
 }
@@ -560,7 +565,7 @@ export function resolveFocus(
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).
-  const dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'Focalisation') - armourCastDRPenalty(caster)) : 0;
+  const dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster)) : 0;
   const isCritical = t.isDouble && t.success;
   // Maladresse ÉLARGIE en Focalisation (l.190-191) : tout double OU tout résultat
   // terminant par un 0 au-delà de la Compétence (00, 99, 90, 88…) → Imparfaite MAJEURE.

@@ -306,7 +306,7 @@ export const FLOWS = {
           // Dé CHOISI (setForcedRoll) : 11 → Incantation Critique ; 01 → DR max → Surincantation.
           if (forced.roll > maxForcedRoll(cur.target)) return null; // doit RESTER une réussite
           const sl = evaluateTest(forced.roll, cur.target).sl
-            + castTestTalentDR(actor, castInfoIsPrayer(spell) ? 'Prière' : 'Langue (Magick)');
+            + castTestTalentDR(actor, castInfoIsPrayer(spell) ? 'priere' : 'langue', castInfoIsPrayer(spell) ? undefined : 'Magick');
           return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: forced.roll, sl }, p.missile, p.focused, Math.max(0, ni - sl)) };
         }
         // Dé PAR DÉFAUT (forceSuccess) — plancher : le sort PART (DR ≥ NI), d100 propre réussi.

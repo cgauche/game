@@ -2023,7 +2023,37 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 296
-    }
+    },
+    "aura": {
+      "rangeMeters": 10,
+      "affects": "allies",
+      "passive": [
+        {
+          "op": "skillDRBonus",
+          "skill": "focalisation",
+          "bonus": 1
+        },
+        {
+          "op": "skillDRBonus",
+          "skill": "langue",
+          "spec": "Magick",
+          "bonus": 1
+        }
+      ]
+    },
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "focalisation",
+        "bonus": 1
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "langue",
+        "spec": "Magick",
+        "bonus": 1
+      }
+    ]
   },
   {
     "id": "aura-de-mort",

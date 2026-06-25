@@ -94,11 +94,10 @@ const JOURNAL_MJ = new Map<string, string>([
   // Trait ZI sans système support (desc verbatim, MJ).
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
-  // Auras de LANCEMENT : le système d'aura (TraitData.aura) existe mais ne projette dans auraMods que le
-  // `testMod` général ; le chemin d'incantation lit `castPenaltyMod`, pas un +DR d'aura → ces deux auras
-  // nécessitent une intégration cast↔aura (et un gating par Domaine pour Aura de Mort) non encore bâtie.
-  ['Aura de Dhar', '+1 DR Focalisation/Langue(Magick) aux casters alliés à 10 m — intégration cast↔aura à bâtir'],
-  ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — cast↔aura + gating par Domaine à bâtir'],
+  // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).
+  // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est
+  // pas exprimable (skillDRBonus n'est pas conditionnel au Domaine) → reste à bâtir.
+  ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
@@ -116,6 +115,9 @@ const DISPATCH = new Set<string>([
   // Redoutable (ZI) : Avantage min = Indice au début du tour — effet `onTurnStart` en donnée (op
   // gainAdvantage, indice baké via withArg, gardé Empêtré/Surpris). Dispatché comme tout `effects`.
   'Redoutable',
+  // Aura de Dhar : aura `affects:'allies'` (10 m) + passive (porteur compris) = `skillDRBonus`
+  // Focalisation/Langue, lue au lancement par `castTestTalentDR`. Dispatché (aura/passive en donnée).
+  'Aura de Dhar',
   'Régénération', 'Résistance à la Magie', 'Rusé', 'Sang corrosif', 'Stupide', 'Taille', 'Territorial',
   'Toile', 'Vision nocturne', 'Vol',
 ]);

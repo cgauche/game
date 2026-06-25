@@ -110,13 +110,19 @@ export function slBonus(sl: number | undefined, p?: PerSL): number {
  *  `skillDRBonus` portée par `TraitData.passive`, lue PAR ID (jamais par libellé). Furtif : +Bonus
  *  d'Agilité au DR de Discrétion (LDB 85). Distincte de `skillMod` (valeur du Test) — consommée au
  *  calcul du DR (ex. Test de Discrétion de la Surprise). */
-export function skillDRBonus(c: Combatant, skillId: string): number {
+export function skillDRBonus(c: Combatant, skillId: string, spec?: string): number {
+  // Une op SANS `spec` s'applique à toute spécialisation (Furtif → Discrétion) ; une op AVEC `spec` ne
+  // s'applique qu'à cette spécialisation (Aura de Dhar → Langue (Magick) seulement, pas Langue (Bretonnien)).
+  const matches = (op: Extract<GameOp, { op: 'skillDRBonus' }>) => op.skill === skillId && (op.spec == null || op.spec === spec);
   let n = 0;
   for (const t of c.traits ?? []) {
     for (const op of traitById.get(t.id)?.passive ?? []) {
-      if (op.op === 'skillDRBonus' && op.skill === skillId) n += resolveFormula(op.bonus, c);
+      if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
     }
   }
+  // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux casters alliés) — `aura.passive` projeté
+  // dans `auraMods` par le hook `recompute-auras`. Sommé (le DR cumule), comme les passifs de trait.
+  for (const op of c.auraMods ?? []) if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
   return n;
 }
 
@@ -442,8 +448,9 @@ export type GameOp =
   | { op: 'skillMod'; skill: string; mod: number }
   /** +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339).
    *  PASSIF — lu par `skillDRBonus` depuis les `TraitData.passive` du porteur (par id) ; DISTINCT de
-   *  `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). Inerte dans `applyOps`. */
-  | { op: 'skillDRBonus'; skill: string; bonus: Formula }
+   *  `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). Inerte dans `applyOps`. `spec` OPTIONNEL :
+   *  restreint à une spécialisation (Aura de Dhar → Langue (Magick) seulement) ; absent = toute spéc. */
+  | { op: 'skillDRBonus'; skill: string; bonus: Formula; spec?: string }
   /** Modificateur au Test de l'ATTAQUANT qui vise le porteur (Parasité : −10 au toucher en mêlée, LDB 85
    *  p.340). PASSIF, lu par `incomingAttackMod` à la collecte des mods d'attaque — DISTINCT de `testMod`
    *  (qui modifie les Tests du porteur LUI-MÊME). `mode` : portée concernée (`all` = mêlée ET distance).
