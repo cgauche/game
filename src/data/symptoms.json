@@ -181,6 +181,62 @@
     }
   },
   {
+    "id": "crampes-abdominales",
+    "label": "Crampes abdominales",
+    "desc": "De violentes crampes abdominales saisissent le patient par intermittence, l'obligeant à se tordre de douleur. Ce dernier subit une pénalité de –20 à tous les Tests en raison de la perturbation provoquée par ces crampes douloureuses. Lorsqu'un Test se solde par un échec normal ou pire, il se plie en deux de douleur, incapable de bouger ou d'agir pendant le prochain Round, et gagne l'État *Sonné*. Sur un Échec Impressionnant ou pire, il doit effectuer un Test de **Force Mentale** ou tomber au sol, gagnant l'État *À Terre*. Sur un Échec Stupéfiant, il s'évanouit de douleur, gagnant l'État *Inconscient*.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "E",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -20
+      }
+    ],
+    "source": {
+      "book": "T2C",
+      "page": 92
+    }
+  },
+  {
     "id": "gangrene",
     "label": "Gangrène",
     "desc": "Votre chair noircit et pourrit, infectée par quelque chose d'horrible. Et cela ne semble pas s'arranger. Effectuez un lancer de pourcentage pour déterminer une Localisation (voir **Combat**). Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques). Tant que vous souffrez de la *Gangrène*, subissez une pénalité de -10 à tous vos Tests de Sociabilité, et vous subissez le symptôme Blessé. De plus, comme si ce n'était pas suffisant, vous souffrez également de *Toxine* tant que le tissu affecté ne sera pas amputé.",
