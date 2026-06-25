@@ -135,6 +135,26 @@ export interface SkillData {
    *  lue par `engine/conditions.testStatePenalty` — plus de liste d'ids en dur. */
   movement?: boolean;
 }
+/** UN « matcher » de Test (recodage de la ligne « Tests : » du livre, cf. `TalentTest`) : à quel(s)
+ *  Test(s) le talent se rapporte. `skill` (id de Compétence, XOR `char`) OU `char` (Caractéristique nue).
+ *  `spec` = spécialisation FIXE ; `specFromInstance` = « (Au choix) » → matche la spec CHOISIE de
+ *  l'instance (`t.spec`). `when` = contexte MÉCANISABLE (Condition combat — auto si vraie) ; `manual` =
+ *  contexte NARRATIF inmécanisable (« quand vous soulevez ») → advisory, JAMAIS auto-appliqué. */
+export interface TestMatch {
+  skill?: string;
+  char?: import('../engine/types').CharKey;
+  spec?: string;
+  specFromInstance?: boolean;
+  when?: import('../state/flow').Condition;
+  manual?: boolean;
+}
+/** Champ « Tests » d'un Talent (LDB 10 : +1 DR/niveau sur un Test lié RÉUSSI). `raw` = la ligne du livre
+ *  VERBATIM (affichage Codex, rule 5) ; `matches` = la forme STRUCTURÉE id-based lue par la logique
+ *  (`talentTestSLBonus`/`castTestTalentDR`) — la logique ne lit JAMAIS `raw`. */
+export interface TalentTest {
+  raw: string;
+  matches: TestMatch[];
+}
 export interface TalentData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findTalentById`. */
@@ -144,7 +164,9 @@ export interface TalentData {
    *  caractéristique (`{bonusOf}`, structuré — remplace la chaîne « Bonus de X » re-parsée par regex),
    *  ou `null` = sans limite (ex-« Aucun »). */
   max: number | { bonusOf: import('../engine/types').CharKey } | null;
-  test: string | null;
+  /** Ligne « Tests » recodée : `{ raw verbatim (Codex), matches[] structuré (logique) }`. `null` = le
+   *  talent ne se rapporte à aucun Test. */
+  test: TalentTest | null;
   desc: string;
   specs?: string[];
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */

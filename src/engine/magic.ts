@@ -29,8 +29,8 @@ import { arcaneDomainIdOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty } from './types';
-import { findTalent, findTalentById, findDomainById, findSkillById } from '../data';
+import { Combatant, HitLocation, Difficulty, CharKey } from './types';
+import { findTalent, findTalentById, findDomainById, type TestMatch } from '../data';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -215,28 +215,53 @@ export function isMagicMissile(spell: SpellLike): boolean {
   return spell.missile === true;
 }
 
+/** Un `TestMatch` (donnée `talent.test.matches`) s'applique-t-il au Test interrogé ? PUR : le matching
+ *  id/spec/char vit dans le moteur ; l'évaluation du contexte `when` (Condition, couche state) est
+ *  INJECTÉE par `whenHolds` (le moteur reste pur — règle 3). `manual` (contexte narratif) = jamais auto.
+ *  Spec : `specFromInstance` → la spec CHOISIE du talent (Métier (Au choix)) ; sinon `spec` fixe ; aucune
+ *  → toute spec. */
+function matchApplies(
+  m: TestMatch, inst: { spec?: string },
+  q: { skill?: string; char?: CharKey; spec?: string },
+  whenHolds: (cond: import('../state/flow').Condition) => boolean,
+): boolean {
+  if (m.manual) return false;
+  if (m.skill != null) {
+    if (m.skill !== q.skill) return false;
+    const wantSpec = m.specFromInstance ? inst.spec : m.spec;
+    if (wantSpec != null && wantSpec !== q.spec) return false;
+  } else if (m.char != null) {
+    if (m.char !== q.char) return false;
+  } else return false;
+  return m.when ? whenHolds(m.when) : true;
+}
+
 /**
- * LDB 10 l.20 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous
- * gagnez +1 DR pour toute utilisation RÉUSSIE de la Compétence liée au Talent. » Somme des
- * acquisitions des Talents du porteur dont le champ « Tests » référence la Compétence d'incantation
- * (`skill` id + `spec` éventuelle). DETTE : `talent.test` est un TEXTE LIBRE (« Langue (Magick) quand
- * vous… ») → on le matche par LIBELLÉ (seul substring résiduel, à retirer quand `talent.test` sera
- * recodé en réf structurée / Flow). Le libellé est DÉRIVÉ de la donnée (`findSkillById(skill).label` +
- * la spec) — plus aucun label en dur : `langue`+spec `Magick` → « Langue (Magick) » (pas « Langue » nu :
- * un Talent Langue (Bretonnien) ne booste pas l'incantation, LDB 44).
+ * LDB 10 l.20 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous gagnez +1 DR
+ * pour toute utilisation RÉUSSIE de la Compétence liée au Talent. » SOURCE UNIQUE du bonus de DR de Talent
+ * (incantation ET Tests de compétence) : Σ des acquisitions des Talents dont un `TestMatch` structuré
+ * (`talent.test.matches`) correspond au Test `{ skill|char, spec }`. Plus AUCUN match par libellé.
+ * `whenHolds` évalue les contextes `when` (injecté par la couche state ; défaut conservateur = un `when`
+ * non vérifiable ne s'applique pas — p.ex. au casting, sans vue de combat).
  */
-export function castTestTalentDR(c: Combatant, skill: 'langue' | 'focalisation' | 'priere', spec?: string): number {
-  const base = findSkillById(skill)?.label ?? skill;
-  const needle = (spec ? `${base} (${spec})` : base).toLowerCase();
+export function talentTestSLBonus(
+  c: Combatant,
+  q: { skill?: string; char?: CharKey; spec?: string },
+  whenHolds: (cond: import('../state/flow').Condition) => boolean = () => false,
+): number {
   let n = 0;
-  for (const t of c.talents ?? []) {
-    const data = findTalentById(t.talentId);
-    if (data?.test?.toLowerCase().includes(needle)) n += t.times;
+  for (const inst of c.talents ?? []) {
+    const matches = findTalentById(inst.talentId)?.test?.matches;
+    if (matches?.some((m) => matchApplies(m, inst, q, whenHolds))) n += inst.times;
   }
-  // Auras de +DR au LANCEMENT (Aura de Dhar : Langue (Magick)/Focalisation des casters alliés) — op
-  // `skillDRBonus` projetée dans `auraMods` (hook recompute-auras), sommée par id + spec de Compétence.
-  n += skillDRBonus(c, skill, spec);
   return n;
+}
+
+/** +DR de Talent au LANCEMENT (LDB 10) : `talentTestSLBonus` sur la Compétence d'incantation (id + spec),
+ *  PLUS les auras de +DR (Aura de Dhar via `skillDRBonus`, [[game-traits-trigger-aura-mechanisms]]). Le
+ *  casting n'a pas de vue de combat → les `when` ne s'appliquent pas (aucun talent d'incantation n'en a). */
+export function castTestTalentDR(c: Combatant, skill: 'langue' | 'focalisation' | 'priere', spec?: string): number {
+  return talentTestSLBonus(c, { skill, spec }) + skillDRBonus(c, skill, spec);
 }
 
 /**
