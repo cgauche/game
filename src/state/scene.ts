@@ -436,6 +436,11 @@ export interface Scene {
   nom: string;
   description: string;
   dimensions: { w: number; h: number };
+  /** Échelle métrique d'une CASE (m/case) — défaut 2 (person-scale). Une Scène MER (combat naval, MDG ch.13)
+   *  vaut ~10 (1 pt de Distance = 10 m, `ch.13 l.362`) → le M des navires et les portées canon (50/75/150 m)
+   *  tombent en nombres de cases jouables. Lue via `sceneMetresPerTile` ; consommée par les bandes de portée
+   *  (`rangeBandAt`) et l'avance des navires. N'altère AUCUNE géométrie de rendu — seul le SENS d'une case change. */
+  metresPerTile?: number;
   /** Décor : 'interieur' (éclairé en permanence, l'horloge ne l'assombrit pas) vs 'exterieur'
    *  (jour/nuit = horloge). Absent = extérieur. */
   ambiance?: 'interieur' | 'exterieur';
@@ -484,6 +489,11 @@ export interface Scene {
   entryPoints?: Record<string, { x: number; y: number }>;
   /** Scène de départ pour la campagne enchaînée. */
   startMessage?: string;
+}
+
+/** Échelle métrique d'une case (m/case) — défaut 2 (person-scale, LDB). Source UNIQUE pour la couche Mer. PUR. */
+export function sceneMetresPerTile(scene: { metresPerTile?: number } | null | undefined): number {
+  return scene?.metresPerTile ?? 2;
 }
 
 export const SCHEMA_VERSION = 2;

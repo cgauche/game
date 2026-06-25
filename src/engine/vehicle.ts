@@ -37,6 +37,7 @@ export function vehicleCombatant(v: VehicleData, id = `vehicle-${v.id}`): Combat
     skills: [],
     talents: [],
     bodyShape: v.hull.bodyShape, // 'vehicule' — Tableau de Localisation de coque (data-driven, dalle 2-3)
+    size: v.ship?.size, // Taille = empreinte du navire sur la grille (footprint), autorée sur la facette `ship`
     psychImmune: true, // une coque inerte ignore la Psychologie
     movement: 0,
   };

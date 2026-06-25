@@ -139,6 +139,10 @@ export interface VehicleData {
     crew: number;
     manoeuvre: number;
     lengthM: number;
+    /** Catégorie de Taille (LDB 85) du navire = son EMPREINTE sur la grille (footprint N×N), AUTORÉE par navire
+     *  (≈ sa longueur à l'échelle Mer : ~10 m moyenne 1×1, ~20 m grande 2×2, ~30 m énorme 3×3). Posée sur `c.size`
+     *  par `vehicleCombatant` → un seul champ pilote le RENDU (gros jeton) ET la mécanique (collision/mouvement). */
+    size?: import('./size').SizeCategory;
     capacity: number;
     sail?: { m: number; crew: number };
     oars?: { m: number; crew: number };

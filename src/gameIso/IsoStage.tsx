@@ -786,6 +786,7 @@ export function IsoStage() {
       // l'échelle d'espèce (bipède ou créature) vient du backend.
       const r = pickBackend({ kind: 'combatant', combatant: c }, viewMode);
       // Empreinte multi-cases (LDB 15 l.55) : token CENTRÉ sur le bloc N×N et mis à l'échelle pour le remplir.
+      // (Un navire-coque à l'échelle MER a déjà un `c.size` métrique posé au spawn → rendu + mécanique cohérents.)
       const off = (sizeFootprint(c.size) - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
       const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, combatantFlags(c));
