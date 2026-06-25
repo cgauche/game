@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Nachhexen",
+    "days": 32
+  },
+  {
+    "name": "Jahrdrung",
+    "days": 33
+  },
+  {
+    "name": "Pflugzeit",
+    "days": 33
+  },
+  {
+    "name": "Sigmarzeit",
+    "days": 33
+  },
+  {
+    "name": "Sommerzeit",
+    "days": 33
+  },
+  {
+    "name": "Vorgeheim",
+    "days": 33
+  },
+  {
+    "name": "Nachgeheim",
+    "days": 32
+  },
+  {
+    "name": "Erntezeit",
+    "days": 33
+  },
+  {
+    "name": "Brauzeit",
+    "days": 33
+  },
+  {
+    "name": "Kaldezeit",
+    "days": 33
+  },
+  {
+    "name": "Ulriczeit",
+    "days": 33
+  },
+  {
+    "name": "Vorhexen",
+    "days": 33
+  }
+]

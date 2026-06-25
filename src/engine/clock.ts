@@ -1,63 +1,69 @@
 /**
- * Calendrier impérial WFRP4 (CI) — pur, sans état. Données vérifiées depuis la source FR
- * (EiS « L'ennemi dans l'Ombre » Annexe 3, croisées ADE2/Middenheim/VO ; cf. plan #T1).
+ * Calendrier impérial WFRP4 (CI) — pur, sans état. Le CONTENU (mois, jours intercalaires, jours de
+ * semaine, phases du jour) vit en DONNÉE ÉDITABLE (datasets `calendarMonths`/`calendarIntercalary`/
+ * `calendarWeekdays`/`calendarPhases`, éditables au Codex). Ce module ne porte que la MÉCANIQUE
+ * temporelle + les scalaires de config (époque, fenêtre de nuit). Source FR vérifiée (EiS Annexe 3
+ * l.20/34/68 croisée ADE2/Middenheim/VO ; cf. plan #T1) :
  *
- * Année = 400 jours (orbite de Mallus autour de Söll) : EiS Annexe 3 l.20 « le monde met 400 jours
- * pour évoluer autour de Söll » + l.68 « notre monde, 400 » + l.34 ; confirmé Fandom/Lexicanum
- * (« 400 days, twelve months of 32 or 33 days, six intercalary holidays »). Les 6 intercalaires sont
- * INCLUS dans les 400 → les 12 mois somment à 394 = 2 mois à 32 j + 10 à 33 j. Le canon ne publie
- * pas de table mois→jours propre (grilles OCR illisibles) ; on retient le découpage de consensus
- * communautaire (Nachhexen & Nachgeheim = 32, les deux mois qui suivent les fêtes des 2 lunes
- * pleines), seul à satisfaire les 400 j. Les jours intercalaires sont HORS du cycle hebdomadaire
- * (Annexe 3 « intercalés entre les mois » ; Fandom « outside the normal sequence of weekdays… the
- * eight-day weeks bridge the months uninterrupted, even if a week is broken by a festival »).
+ * Année = 400 jours (orbite de Mallus autour de Söll) ; 6 intercalaires INCLUS dans les 400 → les 12
+ * mois somment à 394 = 2 mois à 32 j (Nachhexen & Nachgeheim, après les 2 lunes pleines) + 10 à 33 j.
+ * Les jours intercalaires sont HORS du cycle hebdomadaire (« the eight-day weeks bridge the months
+ * uninterrupted, even if a week is broken by a festival »).
+ *
+ * Les tables étant éditables, la DÉRIVATION (slots de l'année) est recalculée à la volée, mémoïsée sur
+ * une signature du contenu (mois + intercalaires) → une édition au Codex prend effet immédiatement.
+ * Les datasets-tableaux sont mutés EN PLACE (splice) → les réfs exportées (`IMPERIAL_MONTHS`,
+ * `DAY_PHASES`, `WEEKDAYS`) restent valides et live.
  */
-import calendar from '../data/calendar.json';
+import { calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases } from '../data';
 
 export interface ImperialMonth { name: string; days: number; }
 
-// Le CONTENU du calendrier (mois, intercalaires, semaine, phases du jour, époque, fenêtre de nuit) vit
-// en DONNÉE ÉDITABLE : `src/data/calendar.json`. Ce module ne porte plus que la MÉCANIQUE temporelle
-// (conversion minutes↔date, semaine de 8 jours enjambant les fêtes, phases) — la source FR reste
-// documentée ci-dessus. La dérivation (slots de l'année) est recalculée depuis la donnée.
-
-/** 12 mois, dans l'ordre (DONNÉE : calendar.json). */
-export const IMPERIAL_MONTHS: ImperialMonth[] = calendar.months;
-
-/** 6 jours intercalaires. `afterMonth` = index (0-based) du mois APRÈS lequel il tombe ; -1 = avant le
- *  1er mois (Hexenstag, Nouvel An). DONNÉE : calendar.json. */
-export const INTERCALARY: { name: string; afterMonth: number }[] = calendar.intercalary;
-
-export const WEEKDAYS: readonly string[] = calendar.weekdays;
+/** Mois, jours intercalaires, jours de semaine — DONNÉE éditable (réfs live via mutation en place). */
+export const IMPERIAL_MONTHS: ImperialMonth[] = calendarMonths;
+export const INTERCALARY: { name: string; afterMonth: number }[] = calendarIntercalary;
+export const WEEKDAYS: { name: string }[] = calendarWeekdays;
 
 export const MINUTES_PER_DAY = 24 * 60;
-export const EPOCH_YEAR = calendar.epochYear; // minute 0 = Hexenstag (epochYear) 00:00
+export const EPOCH_YEAR = 2512; // minute 0 = Hexenstag 2512 00:00 (scalaire de config)
 
-/** Séquence ordonnée des « slots de jour » d'une année (intercalaires intercalés entre les mois). */
-const YEAR_SLOTS: ({ intercalary: string } | { monthIndex: number; day: number })[] = (() => {
-  const slots: ({ intercalary: string } | { monthIndex: number; day: number })[] = [];
-  const inter = (after: number) => INTERCALARY.filter((i) => i.afterMonth === after);
-  for (const i of inter(-1)) slots.push({ intercalary: i.name }); // Hexenstag avant le mois 0
-  for (let m = 0; m < IMPERIAL_MONTHS.length; m++) {
-    for (let d = 1; d <= IMPERIAL_MONTHS[m].days; d++) slots.push({ monthIndex: m, day: d });
+/** Un « slot de jour » de l'année : soit un jour intercalaire, soit un (mois, jour). */
+type YearSlot = { intercalary: string } | { monthIndex: number; day: number };
+
+/** Recalcule la structure de l'année depuis les tables de DONNÉE (mois + intercalaires). */
+function buildYearData() {
+  const slots: YearSlot[] = [];
+  const inter = (after: number) => calendarIntercalary.filter((i) => i.afterMonth === after);
+  for (const i of inter(-1)) slots.push({ intercalary: i.name }); // intercalaires avant le 1er mois (Hexenstag)
+  for (let m = 0; m < calendarMonths.length; m++) {
+    for (let d = 1; d <= calendarMonths[m].days; d++) slots.push({ monthIndex: m, day: d });
     for (const i of inter(m)) slots.push({ intercalary: i.name });
   }
-  return slots;
-})();
-
-export const DAYS_PER_YEAR = YEAR_SLOTS.length; // 394 (mois) + 6 (intercalaires) = 400
-
-/** Jours de MOIS par an (les intercalaires sont HORS de la semaine de 8 jours, cf. canon). */
-export const MONTH_DAYS_PER_YEAR = IMPERIAL_MONTHS.reduce((s, m) => s + m.days, 0); // 394
-
-/** Pour chaque slot de l'année : nombre de jours de MOIS qui le précèdent (un intercalaire n'avance
- *  pas la semaine — elle « enjambe » les fêtes). Sert à dériver le jour de la semaine. */
-const MONTH_DAYS_BEFORE_SLOT: number[] = (() => {
-  const arr: number[] = [];
+  // Jours de MOIS qui précèdent chaque slot (un intercalaire n'avance pas la semaine — elle enjambe les fêtes).
+  const monthDaysBeforeSlot: number[] = [];
   let c = 0;
-  for (const slot of YEAR_SLOTS) { arr.push(c); if (!('intercalary' in slot)) c++; }
-  return arr;
-})();
+  for (const slot of slots) { monthDaysBeforeSlot.push(c); if (!('intercalary' in slot)) c++; }
+  return {
+    slots,
+    monthDaysBeforeSlot,
+    daysPerYear: slots.length, // 394 (mois) + intercalaires
+    monthDaysPerYear: calendarMonths.reduce((s, m) => s + m.days, 0), // jours de mois (hors semaine = HS intercalaires)
+  };
+}
+
+/** Dérivation MÉMOÏSÉE sur la signature de contenu des tables → recalcul auto à l'édition au Codex. */
+let _yearCache: ReturnType<typeof buildYearData> | null = null;
+let _yearSig = '';
+function yearData() {
+  const sig = JSON.stringify([calendarMonths, calendarIntercalary]);
+  if (sig !== _yearSig) { _yearSig = sig; _yearCache = buildYearData(); }
+  return _yearCache!;
+}
+
+/** Nombre de jours dans l'année impériale (live — dérivé des tables). */
+export const daysPerYear = (): number => yearData().daysPerYear;
+/** Compat : valeur au CHARGEMENT (400) — l'affichage/tests ; le calcul de date utilise `yearData()` live. */
+export const DAYS_PER_YEAR = yearData().daysPerYear;
 
 export interface ImperialDate {
   year: number;
@@ -76,29 +82,31 @@ export interface ImperialDate {
 
 /** Minutes depuis l'époque → date impériale. */
 export function toDate(minutes: number): ImperialDate {
+  const yd = yearData();
   const totalDays = Math.floor(minutes / MINUTES_PER_DAY);
   const minOfDay = minutes - totalDays * MINUTES_PER_DAY;
-  const year = EPOCH_YEAR + Math.floor(totalDays / DAYS_PER_YEAR);
-  const dayOfYear = ((totalDays % DAYS_PER_YEAR) + DAYS_PER_YEAR) % DAYS_PER_YEAR;
-  const slot = YEAR_SLOTS[dayOfYear];
-  // Semaine de 8 jours CONTINUE qui enjambe les intercalaires : seuls les jours de MOIS comptent ;
-  // un intercalaire est hors du cycle (weekday = null). Ancre : 1 Nachhexen 2512 = Wellentag (index 0,
-  // aucune ancre canon connue — convention documentée).
-  const monthDaysElapsed = (year - EPOCH_YEAR) * MONTH_DAYS_PER_YEAR + MONTH_DAYS_BEFORE_SLOT[dayOfYear];
-  const weekday = 'intercalary' in slot ? null : WEEKDAYS[((monthDaysElapsed % 8) + 8) % 8];
+  const year = EPOCH_YEAR + Math.floor(totalDays / yd.daysPerYear);
+  const dayOfYear = ((totalDays % yd.daysPerYear) + yd.daysPerYear) % yd.daysPerYear;
+  const slot = yd.slots[dayOfYear];
+  // Semaine CONTINUE qui enjambe les intercalaires : seuls les jours de MOIS comptent ; un intercalaire
+  // est hors du cycle (weekday = null). Ancre : 1 Nachhexen 2512 = 1er jour de semaine (convention).
+  const week = WEEKDAYS.length;
+  const monthDaysElapsed = (year - EPOCH_YEAR) * yd.monthDaysPerYear + yd.monthDaysBeforeSlot[dayOfYear];
+  const weekday = 'intercalary' in slot ? null : WEEKDAYS[((monthDaysElapsed % week) + week) % week].name;
   const base = { year, weekday, hour: Math.floor(minOfDay / 60), minute: minOfDay % 60 };
   return 'intercalary' in slot
     ? { ...base, month: null, monthName: null, day: null, intercalary: slot.intercalary }
-    : { ...base, month: slot.monthIndex, monthName: IMPERIAL_MONTHS[slot.monthIndex].name, day: slot.day, intercalary: null };
+    : { ...base, month: slot.monthIndex, monthName: calendarMonths[slot.monthIndex].name, day: slot.day, intercalary: null };
 }
 
 /** Date impériale → minutes depuis l'époque (inverse de toDate). */
 export function fromDate(d: ImperialDate): number {
-  const dayOfYear = YEAR_SLOTS.findIndex((s) =>
+  const yd = yearData();
+  const dayOfYear = yd.slots.findIndex((s) =>
     d.intercalary != null ? 'intercalary' in s && s.intercalary === d.intercalary
       : 'monthIndex' in s && s.monthIndex === d.month && s.day === d.day,
   );
-  const totalDays = (d.year - EPOCH_YEAR) * DAYS_PER_YEAR + dayOfYear;
+  const totalDays = (d.year - EPOCH_YEAR) * yd.daysPerYear + dayOfYear;
   return totalDays * MINUTES_PER_DAY + d.hour * 60 + d.minute;
 }
 
@@ -113,21 +121,21 @@ export function formatImperial(minutes: number): string {
 /** Début de la campagne (EiS) : dernier jour de Jahrdrung 2512, 08:00 (« fin Jahrdrung », année défaut WFRP4). */
 export const CAMPAIGN_START = fromDate({
   year: 2512, month: 1, monthName: 'Jahrdrung', day: IMPERIAL_MONTHS[1].days,
-  intercalary: null, weekday: WEEKDAYS[0], hour: 8, minute: 0,
+  intercalary: null, weekday: WEEKDAYS[0].name, hour: 8, minute: 0,
 });
 
 // ─── Phases du jour (#T1c) ─── affichage riche, découplé de l'obscurité mécanique ───
 export type DayPhaseKey = 'aube' | 'matin' | 'midi' | 'apresmidi' | 'crepuscule' | 'soir' | 'nuit';
 export interface DayPhase { key: DayPhaseKey; label: string; icon: string; isNight: boolean; }
 
-/** Table ordonnée des phases d'AFFICHAGE : heure de début (minutes-de-jour) + libellé FR + icône.
- *  Paramétrable (canon muet sur l'heure exacte du lever/coucher). 'nuit' enjambe minuit (00:00–05:00). */
+/** Phases d'AFFICHAGE (heure de début minutes-de-jour + libellé + icône) — DONNÉE éditable, réf live.
+ *  'nuit' enjambe minuit (00:00–05:00). Le canon est muet sur l'heure exacte du lever/coucher. */
 export const DAY_PHASES: { key: DayPhaseKey; start: number; label: string; icon: string }[] =
-  calendar.dayPhases as { key: DayPhaseKey; start: number; label: string; icon: string }[];
+  calendarPhases as { key: DayPhaseKey; start: number; label: string; icon: string }[];
 
-/** Fenêtre d'OBSCURITÉ mécanique (combat −20 tir / rendu sombre), paramétrable et DÉCOUPLÉE des
- *  phases d'affichage. [start,end) en minutes-de-jour ; enjambe minuit (22:00 → 05:00). DONNÉE. */
-export const NIGHT_WINDOW: { start: number; end: number } = calendar.nightWindow;
+/** Fenêtre d'OBSCURITÉ mécanique (combat −20 tir / rendu sombre), DÉCOUPLÉE des phases d'affichage.
+ *  [start,end) en minutes-de-jour ; enjambe minuit (22:00 → 05:00). Scalaire de config. */
+export const NIGHT_WINDOW = { start: 22 * 60, end: 5 * 60 } as const;
 
 const minuteOfDay = (minutes: number) => ((minutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
 
@@ -137,10 +145,10 @@ export function isNight(minutes: number): boolean {
   return m >= NIGHT_WINDOW.start || m < NIGHT_WINDOW.end;
 }
 
-/** Phase d'affichage (7) pour une heure donnée. */
+/** Phase d'affichage pour une heure donnée (dernière dont `start` ≤ l'heure ; défaut = la dernière, qui enjambe minuit). */
 export function dayPhase(minutes: number): DayPhase {
   const m = minuteOfDay(minutes);
-  let chosen = DAY_PHASES[DAY_PHASES.length - 1]; // 'nuit' par défaut (00:00–05:00, avant 'aube')
+  let chosen = DAY_PHASES[DAY_PHASES.length - 1]; // défaut avant la 1ʳᵉ phase (00:00 → 'aube')
   for (const p of DAY_PHASES) if (m >= p.start) chosen = p;
   return { key: chosen.key, label: chosen.label, icon: chosen.icon, isNight: isNight(minutes) };
 }

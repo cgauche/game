@@ -13,6 +13,7 @@ import {
   stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
+  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { talentMaxLabel } from '../../engine/careerSlots';
@@ -586,6 +587,28 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'hairs', label: 'Couleur des cheveux', group: 'Tables',
     items: hairs.map((h) => ({ label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })),
+  },
+  {
+    key: 'calendarMonths', label: 'Calendrier — Mois', group: 'Tables',
+    items: calendarMonths.map((m) => ({ label: m.name, sub: `${m.days} jours` })),
+  },
+  {
+    key: 'calendarIntercalary', label: 'Calendrier — Jours intercalaires', group: 'Tables',
+    items: calendarIntercalary.map((i) => ({
+      label: i.name,
+      sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.name ?? `mois ${i.afterMonth}`}`,
+    })),
+  },
+  {
+    key: 'calendarWeekdays', label: 'Calendrier — Jours de la semaine', group: 'Tables',
+    items: calendarWeekdays.map((w) => ({ label: w.name })),
+  },
+  {
+    key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables',
+    items: calendarPhases.map((p) => ({
+      label: `${p.icon} ${p.label}`,
+      sub: `dès ${String(Math.floor(p.start / 60)).padStart(2, '0')}:${String(p.start % 60).padStart(2, '0')}`,
+    })),
   },
   {
     key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables',

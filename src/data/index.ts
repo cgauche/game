@@ -34,6 +34,10 @@ import lightLevelsJson from './lightLevels.json';
 import propsJson from './props.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
+import calendarMonthsJson from './calendarMonths.json';
+import calendarIntercalaryJson from './calendarIntercalary.json';
+import calendarWeekdaysJson from './calendarWeekdays.json';
+import calendarPhasesJson from './calendarPhases.json';
 import detailsJson from './details.json';
 import starsJson from './stars.json';
 import locationsJson from './locations.json';
@@ -894,6 +898,11 @@ export const domainById: Map<string, DomainData> = new Map(domains.map((d) => [d
 export const findDomainById = (id: string | null | undefined): DomainData | undefined => (id ? domainById.get(id) : undefined);
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
+/** Calendrier impérial — tables de CONTENU éditables au Codex (cf. `engine/clock.ts` pour la mécanique). */
+export const calendarMonths = calendarMonthsJson as { name: string; days: number }[];
+export const calendarIntercalary = calendarIntercalaryJson as { name: string; afterMonth: number }[];
+export const calendarWeekdays = calendarWeekdaysJson as { name: string }[];
+export const calendarPhases = calendarPhasesJson as { key: string; start: number; label: string; icon: string }[];
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */

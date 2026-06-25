@@ -45,6 +45,9 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   // E3a : tables & gabarits éditables (catégorie Codex = clé identique au dataset).
   careerLevels: 'careerLevels', eyes: 'eyes', hairs: 'hairs', raceAppearance: 'raceAppearance',
   pregens: 'pregens', oups: 'oups', interludeEvents: 'interludeEvents', peripeties: 'peripeties',
+  // Calendrier impérial — tables de contenu éditables (cf. engine/clock.ts pour la mécanique).
+  calendarMonths: 'calendarMonths', calendarIntercalary: 'calendarIntercalary',
+  calendarWeekdays: 'calendarWeekdays', calendarPhases: 'calendarPhases',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment

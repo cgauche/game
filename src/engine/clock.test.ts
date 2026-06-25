@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, MINUTES_PER_DAY, toDate, fromDate, formatImperial, CAMPAIGN_START, dayPhase, isNight, minutesUntilNext } from './clock';
+import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, daysPerYear, MINUTES_PER_DAY, toDate, fromDate, formatImperial, CAMPAIGN_START, dayPhase, isNight, minutesUntilNext } from './clock';
+import { setDataset } from '../data/overrides';
+import { calendarMonths } from '../data';
 
 describe('clock — calendrier impérial', () => {
   it('a 12 mois, 6 intercalaires, 8 jours de semaine ; année auto-cohérente', () => {
@@ -14,6 +16,15 @@ describe('clock — calendrier impérial', () => {
     expect(DAYS_PER_YEAR).toBe(400);
     expect(IMPERIAL_MONTHS.reduce((s, m) => s + m.days, 0)).toBe(394);
     expect(IMPERIAL_MONTHS.filter((m) => m.days === 32).map((m) => m.name)).toEqual(['Nachhexen', 'Nachgeheim']);
+  });
+
+  it('édition LIVE au Codex : éditer une table (setDataset) recalcule l’année à la volée', () => {
+    const orig = calendarMonths.map((m) => ({ ...m }));
+    const before = daysPerYear();
+    setDataset('calendarMonths', [{ ...calendarMonths[0], days: calendarMonths[0].days + 5 }, ...calendarMonths.slice(1)]);
+    expect(daysPerYear()).toBe(before + 5); // la dérivation (mémoïsée sur signature) se recalcule depuis la donnée éditée
+    setDataset('calendarMonths', orig); // restaurer pour l’isolation des autres tests
+    expect(daysPerYear()).toBe(before);
   });
 
   it('toDate/fromDate font un aller-retour (époque = Hexenstag 2512 00:00)', () => {
@@ -35,8 +46,8 @@ describe('clock — calendrier impérial', () => {
     const firstPflugzeit = toDate(67 * MINUTES_PER_DAY); // 1 Pflugzeit
     expect(festival.weekday).toBeNull();
     // Les deux jours de mois de part et d'autre de la fête ont des jours de semaine CONSÉCUTIFS.
-    const i = WEEKDAYS.indexOf(lastJahrdrung.weekday as (typeof WEEKDAYS)[number]);
-    expect(WEEKDAYS[(i + 1) % 8]).toBe(firstPflugzeit.weekday);
+    const i = WEEKDAYS.findIndex((w) => w.name === lastJahrdrung.weekday);
+    expect(WEEKDAYS[(i + 1) % WEEKDAYS.length].name).toBe(firstPflugzeit.weekday);
   });
 
   it('minute 0 = Hexenstag 2512 (jour intercalaire de Nouvel An)', () => {

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Hexenstag",
+    "afterMonth": -1
+  },
+  {
+    "name": "Mitterfrühl",
+    "afterMonth": 1
+  },
+  {
+    "name": "Sonnstill",
+    "afterMonth": 4
+  },
+  {
+    "name": "Geheimnistag",
+    "afterMonth": 5
+  },
+  {
+    "name": "Mittherbst",
+    "afterMonth": 7
+  },
+  {
+    "name": "Mondstille",
+    "afterMonth": 8
+  }
+]
