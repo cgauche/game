@@ -11,7 +11,7 @@
  */
 import { type Combatant, type Weapon, type HitLocation, type Difficulty, CHAR_LABELS } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
-import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest } from './flow';
+import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest, spellEffectOps } from './flow';
 import type { OpsCtx, GameOp } from '../engine/ops';
 import { describeTestRoll } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
@@ -76,6 +76,15 @@ function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   // mêmes `TriggeredEffect` que les traits. Appendus en fin (ordre RNG existant enchant→traits→atouts préservé).
   for (const t of actor.talents ?? []) out.push(...(findTalentById(t.talentId)?.effects ?? []));
   return out;
+}
+
+/** Ops d'un déclencheur `trigger` portées par le combattant (Traits/Talents/Atouts), à plat. Sert à
+ *  RÉSOUDRE les ops IMPURES (summon, zone : grille/initiative) au SITE du trigger — elles sont inertes
+ *  dans `applyOps` (moteur pur) et n'étaient résolues qu'au lancement de sort. GÉNÉRIQUE (pas limité à
+ *  summon) : l'appelant (state) filtre par `op.op` et dispatche vers le résolveur idoine (applySummon,
+ *  placeZoneFromOp…). `on:'self'/'caster'/'target'` désignent tous le porteur dans un effet de trait. */
+export function triggerEffectOps(actor: Combatant, trigger: EffectTrigger): GameOp[] {
+  return effectsOf(actor).filter((e) => e.trigger === trigger).flatMap((e) => spellEffectOps(e.flow));
 }
 
 /** Une SOURCE d'effets déclenchés du combattant, AVEC son identité (`key`) et son plafond (`cap`) —

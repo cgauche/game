@@ -51,6 +51,8 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Maladie', 'contraction post-combat (disease.ts — Lot D) ; arg = la maladie (rats/skavens : fievre-du-rongeur)'],
   ['Infecté', 'Blessure Purulente post-combat (disease.ts — Lot D)'],
   ['Corruption', 'exposition du groupe (corruptionFlow — Lot E)'],
+  // Invocation à la mort — op `summon` du Flow `onSlain`, moissonnée par notifySlain → summonFlow.applySummon
+  ['Charnier', 'death-spawn : 3d10 Zombies à la mort (op summon onSlain → resolveTriggerImpureOps/applySummon)'],
   // Dressé (Magie) : trait MARQUEUR sans effet propre — lu par le gate `startleCause` de Nerveux
   // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.89, données).
   ['Dressé (Magie)', 'marqueur lu par le gate `startleCause` de Nerveux (exemption magie, données)'],
@@ -94,7 +96,6 @@ const JOURNAL_MJ = new Map<string, string>([
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
   ['Aura de Dhar', 'effluves de Dhar (gêne sorciers/démons proches) — pas de système d’aura magique inter-créatures (MJ)'],
   ['Aura de Mort', 'rayon bonifiant Nécromancie/Shyish — pas de système d’aura de domaine (MJ)'],
-  ['Charnier', 'spawn de Zombies à la mort — pas de spawn-on-death dans le moteur (MJ/auteur)'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/

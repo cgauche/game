@@ -51,7 +51,7 @@ import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
-import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf } from './triggeredEffects';
+import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
@@ -958,7 +958,11 @@ export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source:
 export function notifySlain(get: Get, set: SetFn, c: Combatant): string[] {
   if (!isOutOfAction(c) || c.slainNotified) return [];
   c.slainNotified = true;
-  return fireTriggers(get, c, 'onSlain', { rng: battleRng(), set });
+  const lines = fireTriggers(get, c, 'onSlain', { rng: battleRng(), set });
+  // Ops IMPURES « à la mort » (Charnier : 3d10 Zombies ; toute zone laissée en mourant) — inertes dans
+  // applyOps, résolues ici (grille/initiative) comme au lancement d'un sort d'invocation/zone.
+  lines.push(...resolveTriggerImpureOps(get, set, c, 'onSlain'));
+  return lines;
 }
 
 /** Applique une Blessure critique (Coup Critique ou overkill) à `target` : PB (ignore BE+PA,
@@ -3122,21 +3126,25 @@ function placeSpellZone(
 ): void {
   const pz = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'zone' }> => o.op === 'zone');
   if (!pz) return;
-  const battle = get().battle;
-  if (!battle || !target.pos || !caster.pos) {
-    logLines.push(tr('cf.zonePersists', { spell: spell.label }));
-    return;
-  }
   const baseRounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : 1;
   const rounds = Math.max(1, baseRounds * Math.max(1, durationMult));
-  // Rayon : op `radiusMeters` explicite, sinon dérivé de la `target` du sort (« Zone Diamètre BFM m » →
-  // rayon BFM/2, via `zoneRadiusMeters`). Protection de Phâ : Zone centrée sur le lanceur (range self).
-  const discRadiusM = pz.radiusMeters != null ? Math.max(0, resolveFormula(pz.radiusMeters, caster, battleRng())) : ((zdeDiameterMeters(spell.target, caster) ?? 4) / 2);
+  // Rayon par défaut (si l'op n'a pas de `radiusMeters`) : dérivé de la `target` du sort (« Zone Diamètre
+  // BFM m » → rayon BFM/2). Protection de Phâ : Zone centrée sur le lanceur (range self).
+  placeZoneFromOp(get, caster, target, pz, spell.label, rounds, sl, (zdeDiameterMeters(spell.target, caster) ?? 4) / 2, logLines);
+}
+
+/** Pose une ZONE persistante depuis un op `zone` (op-based, réutilisable HORS sort : effets déclenchés —
+ *  zone laissée à la mort/touche…). `label`/`rounds`/`fallbackRadiusM` sont fournis par l'appelant (un
+ *  sort les tire de sa durée/ZdE ; un trigger fournit des défauts). `target.pos` = centre du disque. */
+function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Extract<GameOp, { op: 'zone' }>, label: string, rounds: number, sl: number, fallbackRadiusM: number, logLines: string[]): void {
+  const battle = get().battle;
+  if (!battle || !target.pos || !caster.pos) { logLines.push(tr('cf.zonePersists', { spell: label })); return; }
+  const discRadiusM = pz.radiusMeters != null ? Math.max(0, resolveFormula(pz.radiusMeters, caster, battleRng())) : fallbackRadiusM;
   const tiles = pz.shape === 'wall'
     ? wallTiles(caster.pos, target.pos, metersToTiles(resolveZoneMeters(pz.lengthMeters ?? 2, pz.lengthPerSL, caster, sl, battleRng())))
     : discTiles(target.pos, metersToTiles(discRadiusM));
   const zone: BattleZone = {
-    label: spell.label, tiles, rounds, casterId: caster.id,
+    label, tiles, rounds, casterId: caster.id,
     ...(pz.blocksLoS ? { blocksLoS: true } : {}),
     ...(pz.onCross ? { onCross: pz.onCross } : {}),
     ...(pz.perRound ? { perRound: pz.perRound } : {}),
@@ -3145,8 +3153,23 @@ function placeSpellZone(
     ...(pz.noCorruption ? { noCorruption: true } : {}),
   };
   battle.zones = [...(battle.zones ?? []), zone];
-  logLines.push(tr('cf.zonePersistsRounds', { spell: spell.label, rounds }));
+  logLines.push(tr('cf.zonePersistsRounds', { spell: label, rounds }));
   bus.emit(EVT.ANIM_AOE, { tiles, kind: 'spell' });
+}
+
+/** Résout les ops IMPURES (grille/initiative) d'un déclencheur — GÉNÉRIQUE, pas limité à summon : un
+ *  effet de DONNÉE déclenché (Trait/Talent/Atout) qui invoque (Charnier : 3d10 Zombies à la mort) ou
+ *  pose une zone est résolu ICI, comme au lancement d'un sort. `summon`/`zone` sont inertes dans
+ *  `applyOps` (moteur pur) ; on les moissonne (`triggerEffectOps`) et on les dispatche vers leur
+ *  résolveur state (applySummon / placeZoneFromOp). Les autres impures (grantFreeAttack, interruptFocus,
+ *  breakBlade) fonctionnent déjà dans leur propre contexte (frappe gratuite / réactions de combat). */
+export function resolveTriggerImpureOps(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger): string[] {
+  const lines: string[] = [];
+  for (const op of triggerEffectOps(actor, trigger)) {
+    if (op.op === 'summon') lines.push(...applySummon(get, set, actor, op, { rng: battleRng() }));
+    else if (op.op === 'zone') placeZoneFromOp(get, actor, actor, op, actor.name, op.perRound ? 3 : 1, 0, 2, lines);
+  }
+  return lines;
 }
 
 /** Type de Souffle « correspondant le mieux » au Domaine du lanceur (sort Souffle, LDB 47 p.244 :

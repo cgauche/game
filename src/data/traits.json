@@ -2045,7 +2045,32 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 560
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onSlain",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Zombie",
+                "count": {
+                  "dice": {
+                    "n": 3,
+                    "sides": 10
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "redoutable",
