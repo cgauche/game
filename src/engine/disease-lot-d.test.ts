@@ -1,10 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import {
-  DISEASE_DEFS, contractDisease, rollContraction, tickDisease, diseaseCharPenalties,
-  diseaseBlesseCount, hasActiveSymptom, contagiousDiseases, Disease,
+  DISEASE_DEFS, contractDisease, rollContraction, tickDisease, diseasePassiveOps,
+  diseaseBlesseCount, hasActiveCapability, contagiousDiseases, Disease,
 } from './disease';
 import { makeRNG } from './dice';
 import type { Combatant } from './types';
+import type { GameOp } from './ops';
+
+/** Pénalité de Caractéristique due aux maladies actives (lit les GameOp passifs des symptômes). */
+const pen = (c: Combatant, char: string): number[] =>
+  diseasePassiveOps(c).filter((o): o is Extract<GameOp, { op: 'charMod' }> => o.op === 'charMod' && o.char === char).map((o) => o.mod);
 
 /** Lot D — complément Maladies (LDB 20) : la Litanie de la Pestilence au complet + nouveaux symptômes. */
 
@@ -31,7 +36,7 @@ describe('Litanie de la Pestilence — les 9 maladies du LDB 20 sont câblées',
     }
   });
   it('Fièvre du Rongeur : symptômes du verbatim (l.55)', () => {
-    expect(DISEASE_DEFS['fievre-du-rongeur'].symptoms.map((s) => s.kind).sort()).toEqual(
+    expect(DISEASE_DEFS['fievre-du-rongeur'].symptoms.map((s) => s.symptomId).sort()).toEqual(
       ['blesse', 'convulsions', 'demangeaisons', 'fievre', 'malaise', 'persistant'].sort(),
     );
   });
@@ -40,17 +45,17 @@ describe('Litanie de la Pestilence — les 9 maladies du LDB 20 sont câblées',
 describe('nouveaux symptômes — pénalités (LDB 20 l.99-200)', () => {
   it('bubons : −10 Tests Physiques ET Sociabilité', () => {
     const c = mk({ diseases: [active('peste-noire')] });
-    expect(diseaseCharPenalties(c, 'F')).toContain(-10);
-    expect(diseaseCharPenalties(c, 'Soc')).toContain(-10);
+    expect(pen(c, 'F')).toContain(-10);
+    expect(pen(c, 'Soc')).toContain(-10);
   });
   it('convulsions : −10 Physiques (pas la Sociabilité)', () => {
     const c = mk({ diseases: [active('fievre-du-rongeur')] });
-    expect(diseaseCharPenalties(c, 'Ag')).toContain(-10);
+    expect(pen(c, 'Ag')).toContain(-10);
   });
   it('démangeaisons : −10 Sociabilité seulement', () => {
     const c = mk({ diseases: [active('verole-du-tanneur')] });
-    expect(diseaseCharPenalties(c, 'Soc')).toContain(-10);
-    expect(diseaseCharPenalties(c, 'F')).toEqual([]);
+    expect(pen(c, 'Soc')).toContain(-10);
+    expect(pen(c, 'F')).toEqual([]);
   });
   it('gangrène : compte comme Blessé (bloque 1 PB de guérison) + −10 Soc', () => {
     const c = mk({ diseases: [active('peste-noire')] });
@@ -58,7 +63,7 @@ describe('nouveaux symptômes — pénalités (LDB 20 l.99-200)', () => {
   });
   it('nausée / toux : prédicats pour les câblages (Sonné sur Esquive ratée, contagion)', () => {
     const c = mk({ diseases: [active('courante-galopante')] });
-    expect(hasActiveSymptom(c, 'nausee')).toBe(true);
+    expect(hasActiveCapability(c, 'nausea')).toBe(true);
     const v = mk({ diseases: [active('verole-urticante')] });
     expect(contagiousDiseases(v).length).toBe(1);
   });

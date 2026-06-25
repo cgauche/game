@@ -87,7 +87,7 @@ export interface DeferredUpkeepTest {
   label: string;
   base: number;
   target: number;
-  meta?: Record<string, number | string | boolean>;
+  meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel jusqu'à l'applier
 }
 
 export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean; onDeferTest?: (t: DeferredUpkeepTest) => void } = {}): string[] {

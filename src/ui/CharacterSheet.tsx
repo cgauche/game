@@ -18,7 +18,7 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel } from '../data';
 import { formatTrait } from '../engine/traits/dispatch';
 import { CodexRef } from './compendium/CodexRef';
 import { TalentChip } from './EntityChip';
@@ -500,7 +500,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
               </div>
             ))}
             {(hero.diseases ?? []).map((d, i) => (
-              <div key={`d${i}`} className="inv-row" title={d.symptoms.map((s) => s.kind).join(' · ')} style={{ alignItems: 'center' }}>
+              <div key={`d${i}`} className="inv-row" title={d.symptoms.map((s) => symptomLabel(s.symptomId)).join(' · ')} style={{ alignItems: 'center' }}>
                 <span className="ir-name">🦠 {d.name}</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {d.phase === 'incubation' ? `incubation : ${d.daysLeft} j` : `${d.daysLeft} j restants`}

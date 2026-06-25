@@ -29,7 +29,8 @@ import { partyAssisted } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
 import { isOutOfAction, addCondition, removeCondition, loseWounds } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
-import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseBlesse, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
+import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
+import { applyOps } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
@@ -38,7 +39,7 @@ import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffect
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
-import type { CascadeStep } from './pendings';
+import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest } from '../engine/provisions';
 import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, type Money } from '../engine/money';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
@@ -293,10 +294,14 @@ registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {
   return { journal: applyFractureEnd(hero, step.result.success, String(step.meta?.severity ?? 'mineur'), String(step.meta?.location ?? ''), String(step.meta?.traumaLabel ?? 'Fracture')) };
 }, (ok) => (ok ? `La fracture ressoude proprement.` : `La fracture laisse une séquelle permanente.`));
 
-registerCascadeApplier('diseaseBlesse', (_get, _set, step, hero) => {
+registerCascadeApplier('diseaseTick', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  return { journal: applyDiseaseBlesse(hero, step.result.success, battleRng()) }; // échec → Blessure Purulente (l.110)
-}, (ok, n) => (ok ? `${n} évite l'aggravation.` : `${n} développe une Blessure Purulente.`));
+  // Échec du Test de cycle quotidien (symptôme Blessé/Toxine) → applique la conséquence GameOp `onFail`
+  // du symptôme (ex. Blessé → contractDisease 'blessure-purulente'). Donnée-driven, via applyOps.
+  if (step.result.success) return { journal: [] };
+  const onFail = (step.meta?.onFail ?? []) as import('../engine/ops').GameOp[];
+  return { journal: applyOps(hero, onFail, { rng: battleRng() }) };
+}, (ok, n) => (ok ? `${n} évite l'aggravation.` : `${n} : le symptôme s'aggrave.`));
 
 registerCascadeApplier('diseaseGangrene', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
@@ -326,7 +331,7 @@ function calmeVal(c: Combatant): number {
 
 /** Icône d'étape de cascade par `kind` de Test d'entretien différé. */
 const UPKEEP_STEP_ICON: Record<string, string> = {
-  faim: '🍽️', diseaseBlesse: '🦠', diseaseGangrene: '🦠', diseasePersist: '🦠', traumaFracture: '🦴', contagion: '🤒',
+  faim: '🍽️', diseaseTick: '🦠', diseaseGangrene: '🦠', diseasePersist: '🦠', traumaFracture: '🦴', contagion: '🤒',
 };
 
 /**
@@ -364,7 +369,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     const h = party.find((x) => x.id === t.heroId);
     if (!h || h.dead) continue;
     steps.push({ id: `${t.kind}-${t.heroId}-${steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label, icon: UPKEEP_STEP_ICON[t.kind] ?? '🎲',
-      rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta });
+      rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined });
   }
   // CONTAGION (promiscuité l.185 + tambouille piètre) → un jet de Résistance influençable par héros exposé.
   for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {

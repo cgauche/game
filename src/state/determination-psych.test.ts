@@ -60,7 +60,7 @@ describe('Détermination « ignorer modifs de critique » (LDB 17 l.64) annule l
 
 describe('Détermination annule aussi les pénalités de MALADIE (kind `maladie`, gating dans le collecteur)', () => {
   // Fièvre (LDB 20 l.135) = −10 aux Tests Physiques/Sociaux ; `characteristics` requis (le collecteur itère ses clés).
-  const sick = () => C({ characteristics: { F: 30, Soc: 30 } as never, diseases: [{ phase: 'active', symptoms: [{ kind: 'fievre' }] } as never] });
+  const sick = () => C({ characteristics: { F: 30, Soc: 30 } as never, diseases: [{ phase: 'active', symptoms: [{ symptomId: 'fievre' }] } as never] });
   it('actif : fièvre = −10 (via le pool passif non-cumul)', () => {
     expect(traumaCharPenalties(sick(), 'F')).toEqual([-10]);
   });

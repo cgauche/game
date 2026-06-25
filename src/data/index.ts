@@ -39,6 +39,7 @@ import calendarIntercalaryJson from './calendarIntercalary.json';
 import calendarWeekdaysJson from './calendarWeekdays.json';
 import calendarPhasesJson from './calendarPhases.json';
 import weatherJson from './weather.json';
+import symptomsJson from './symptoms.json';
 import detailsJson from './details.json';
 import starsJson from './stars.json';
 import locationsJson from './locations.json';
@@ -573,6 +574,31 @@ export interface QualityData {
    *  lus PAR ID par `engine/qualities/dispatch`. Édité au Codex. */
   capabilities?: QualityCapabilities;
 }
+/** Capacités IRRÉDUCTIBLES d'un symptôme de maladie — drapeaux lus par la machinerie de cycle
+ *  (`engine/disease`), pour les comportements non exprimables en GameOp continu. */
+export interface SymptomCapabilities {
+  blocksHealing?: boolean;   // « Blessé »/Gangrène : bloque la guérison d'1 PB par symptôme (LDB 20 l.145)
+  amputation?: boolean;      // Gangrène : Test quotidien, échecs > BE → Localisation perdue (l.176)
+  stickyExtenue?: boolean;   // Malaise : État Exténué collant tant que la maladie dure (l.188)
+  contagious?: boolean;      // Toux & éternuements : expose l'entourage (l.206)
+  nausea?: boolean;          // Nausée : Sonné sur Test de déplacement raté en combat (l.194)
+  endTest?: boolean;         // Persistant : Test de fin de Durée (difficulté portée par l'instance, l.200)
+}
+/** Symptôme de maladie (LDB 20) — entité de DONNÉE éditable au Codex, mécaniques en GameOp / 3 canaux
+ *  (comme un trait/qualité). `passive` = pénalités continues (charMod) ; `severePassive` = variante
+ *  appliquée quand l'instance porte `severity` (Convulsions −20) ; `onTick` = Test de cycle quotidien +
+ *  conséquence GameOp appliquée par la cascade (différée/influençable) ; `capabilities` = règles
+ *  irréductibles lues par la machinerie de maladie. */
+export interface SymptomData {
+  id: string;
+  label: string;
+  desc: string;
+  source?: { book: string; page: number };
+  passive?: import('../engine/ops').GameOp[];
+  severePassive?: import('../engine/ops').GameOp[];
+  onTick?: { difficulty: import('../engine/types').Difficulty; onFail: import('../engine/ops').GameOp[] };
+  capabilities?: SymptomCapabilities;
+}
 /** Domaine de magie (Couleur, LDB 48) : ses ATTRIBUTS éditables au Codex — riders « à la touche »
  *  (`onHitEffects`, gatés par les Conditions Flow `relation`/`has`), mitigation de Projectile
  *  (`missile`), effet post-incantation (`afterCast`). Le `label` correspond au `subType` d'un Sort
@@ -792,6 +818,12 @@ export const qualities = qualitiesJson as QualityData[];
 export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
 /** Index des Atouts/Défauts par `id` STABLE (slug) — lookup runtime indépendant de la langue (dispatch). */
 export const qualityById: Map<string, QualityData> = new Map(qualities.map((q) => [q.id, q]));
+/** Symptômes de maladie (LDB 20) — entités de DONNÉE éditables au Codex (passive/onTick/capabilities). */
+export const symptoms = symptomsJson as SymptomData[];
+export const symptomById: Map<string, SymptomData> = new Map(symptoms.map((s) => [s.id, s]));
+export const findSymptomById = (id: string): SymptomData | undefined => symptomById.get(id);
+/** Libellé FR d'un symptôme par son id (repli sur l'id si inconnu). */
+export const symptomLabel = (id: string): string => symptomById.get(id)?.label ?? id;
 /** Mutations (entités) + Tables de Corruption (plages d100 → réf), DÉCOUPLÉES (cf. data/mutations.ts) —
  *  app-owned éditables au Codex. Le runtime du tirage (`rollMutation`) vit dans `mutations.ts`. */
 export const mutations = mutationsJson as MutationData[];

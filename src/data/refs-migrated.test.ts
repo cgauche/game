@@ -8,7 +8,7 @@ import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
   traits, stars, talents, maneuvers, skills, domains,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
-  findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById,
+  findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
@@ -104,6 +104,10 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     const ids = new Set(maladies.map((m) => m.id));
     for (const id of Object.values(DISEASES)) { expect(ids.has(id), id).toBe(true); expect(findDiseaseById(id), id).toBeTruthy(); }
     expect(Object.values(DISEASES).length).toBe(9); // les 9 maladies LDB 20 câblées
+  });
+
+  it('chaque maladie.symptoms.symptomId résout dans symptoms.json (catalogue éditable)', () => {
+    for (const m of maladies) for (const s of m.symptoms) expect(findSymptomById(s.symptomId), `${m.id}:${s.symptomId}`).toBeTruthy();
   });
 
   it('careerLevels.career = careerId qui résout', () => {

@@ -28,10 +28,10 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, HarvestField } from './StructFields';
+import { SymptomsField, SymptomTickField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, HarvestField } from './StructFields';
 import type { TraitInstance } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
-import type { CharKey } from '../../engine/types';
+import type { CharKey, Difficulty } from '../../engine/types';
 import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
@@ -49,6 +49,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   // Calendrier impérial — tables de contenu éditables (cf. engine/clock.ts pour la mécanique).
   calendarMonths: 'calendarMonths', calendarIntercalary: 'calendarIntercalary',
   calendarWeekdays: 'calendarWeekdays', calendarPhases: 'calendarPhases', weather: 'weather',
+  symptoms: 'symptoms',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -86,6 +87,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats'].includes(categoryKey)) add('effects');
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
   if (['traits', 'qualities', 'mutations', 'talents', 'etats'].includes(categoryKey)) add('passive');
+  if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick'); // GameOp[] + test de cycle → éditeurs dédiés (capabilities = sous-form générique)
   if (categoryKey === 'stars') add('effect', 'sub');
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
@@ -181,7 +183,10 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isManeuver = categoryKey === 'maneuvers';
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
   // Talents inclus (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack, tous en `passive`).
-  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents' || categoryKey === 'etats';
+  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'symptoms';
+  // Symptôme de maladie : pénalité aggravée `severePassive` (Modérée/Grave) + Test de cycle `onTick`
+  // (difficulté + conséquence GameOp `onFail`) — éditeurs dédiés au-dessus du formulaire générique.
+  const isSymptom = categoryKey === 'symptoms';
   // Signe astral : son EFFET de création (charMod / grantTalent) en `GameOp[]` — même éditeur que les
   // passifs, mais champ `effect` (appliqué une fois aux attributs de départ, cf. applyStarEffect).
   const isStarEffect = categoryKey === 'stars';
@@ -267,6 +272,13 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
             <GameOpEditor ops={(entry.effect as GameOp[] | undefined) ?? []} onChange={(ops) => edit('effect', ops)} />
           </div>
         )}
+        {isSymptom && (
+          <div className="ed-field">
+            <span>modificateurs PASSIFS aggravés — appliqués quand l'instance porte une sévérité (Convulsions Modérée/Grave → −20)</span>
+            <GameOpEditor ops={(entry.severePassive as GameOp[] | undefined) ?? []} onChange={(ops) => edit('severePassive', ops.length ? ops : undefined)} />
+          </div>
+        )}
+        {isSymptom && <SymptomTickField value={entry.onTick as { difficulty: Difficulty; onFail: GameOp[] } | undefined} onChange={(v) => edit('onTick', v)} />}
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}

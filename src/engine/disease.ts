@@ -1,46 +1,36 @@
 /**
  * Maladies et infections — Livre de base, « Maladies et infections » (20-Maladies et infections.md).
- * Moteur PUR, sur le modèle de `trauma.ts` : on NE modélise QUE ce que la source quantifie, sans rien
- * inventer. Cycle d'import évité comme pour les traumas — `characteristics.ts` importe `diseaseCharPenalties`
- * d'ici, donc ce module n'importe NI `characteristics` NI `conditions` (les valeurs — Résistance — sont
- * passées par l'appelant). Il ne dépend que de `tests`/`dice`.
+ * Moteur PUR : on NE modélise QUE ce que la source quantifie. Reste sans cycle d'import (les valeurs —
+ * Résistance — sont passées par l'appelant ; `trauma.ts` lit `diseasePassiveOps` d'ici). N'importe `ops`
+ * qu'en TYPE (`GameOp`), jamais `applyOps` — les conséquences `onFail` sont appliquées CÔTÉ STATE
+ * (`restFlow`, via `applyOps`) → pas de cycle ops↔disease.
  *
  * Cycle de vie (l.10-24) : Contraction (Test raté) → Incubation (jours) → symptômes ACTIFS → Durée (jours)
- * → résolution (symptôme « persistant » : Test de fin, sinon guérison naturelle). Décompté JOUR PAR JOUR
- * pendant le repos (`rest.ts`).
+ * → résolution (capacité `endTest` : Test de fin, sinon guérison naturelle). Décompté JOUR PAR JOUR (`rest.ts`).
  *
- * Symptômes modélisés (ceux des maladies câblées) :
- *  - malaise (l.152)   : État Exténué tant que la maladie n'est pas guérie → géré par l'appelant (rest).
- *  - blessé (l.110)    : bloque la guérison d'1 PB par symptôme + Test de Résistance Accessible (+20)
- *                        journalier ou Blessure Purulente.
- *  - fièvre (l.135)    : −10 aux Tests Physiques et de Sociabilité (via `diseaseCharPenalties`) ;
- *                        (Grave) → Inconscient (journalisé, alitement).
- *  - persistant (X) (l.162) : à la fin de la Durée, Test de Résistance (difficulté X). Échec minime → +1d10
- *                        jours ; échec (−2) → Blessure Purulente ; échec stupéfiant (−6) → Infection du Sang.
- *  - toxine (l.172)    : Test de Résistance Très Facile (+60) journalier (conséquence létale laissée au-delà
- *                        du MVP — texte source tronqué, on n'invente pas).
+ * SYMPTÔMES = DONNÉE (`symptoms.json`, éditable au Codex), pas un enum. La mécanique vit sur le symptôme
+ * en 3 canaux (comme un trait/qualité) — ce module ne fait que les LIRE :
+ *  - `passive`/`severePassive` (GameOp `charMod`) : pénalités continues (fièvre −10, convulsions −10/−20…)
+ *    → collectées par `diseasePassiveOps` → `passiveMods` (kind 'maladie', annulable par Détermination).
+ *  - `onTick { difficulty, onFail: GameOp[] }` : Test de cycle quotidien (Blessé → contractDisease
+ *    'blessure-purulente' ; Toxine → test journalisé) — DIFFÉRÉ en cascade influençable (`diseaseTick`).
+ *  - `capabilities` (drapeaux irréductibles lus par la machinerie de CYCLE ci-dessous) : `blocksHealing`
+ *    (Blessé/Gangrène), `amputation` (Gangrène), `stickyExtenue` (Malaise), `contagious` (Toux),
+ *    `nausea` (combat), `endTest` (Persistant).
  */
-import { Combatant, CharKey, Difficulty, UpkeepDeferTest } from './types';
+import { Combatant, Difficulty, UpkeepDeferTest } from './types';
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { rollTest } from './tests';
-import { maladies, diseaseLabel } from '../data';
+import { maladies, diseaseLabel, findSymptomById, symptomLabel, type SymptomCapabilities } from '../data';
+import type { GameOp } from './ops';
 
-export type DiseaseSymptomKind =
-  | 'malaise' | 'blesse' | 'fievre' | 'persistant' | 'toxine'
-  // Compléments LDB 20 (« Symptômes », l.99-200) :
-  | 'bubons' // −10 Tests Physiques et de Sociabilité ; percement par Chirurgie (l.114-119)
-  | 'convulsions' // −10 Tests Physiques ; (Modérée) −20 ; (Grave) incapacité totale (l.121-124)
-  | 'demangeaisons' // −10 Tests de Sociabilité (l.126-129)
-  | 'gangrene' // Test de Résistance +20/jour ; échecs > BE → Localisation perdue (Amputation) ; −10 Soc + blessé + toxine (l.135+)
-  | 'intoxication' // épisodes MJ ; (Grave) −1 PB par épisode — journalisé (l.150+)
-  | 'nausee' // Test de déplacement raté → vomit → Sonné (l.170+)
-  | 'touxEternuements'; // contagion : exposition de l'entourage, Test par heure (l.185+)
-
+/** Instance de symptôme sur une maladie : RÉFÉRENCE un symptôme de `symptoms.json` par `symptomId`,
+ *  + `severity`/`difficulty` PAR-INSTANCE (Convulsions Modérée → `severePassive` ; Persistant
+ *  (Accessible) → difficulté du Test de fin). La mécanique (passive/onTick/capabilities) vit sur la
+ *  DONNÉE du symptôme, lue par les helpers ci-dessous — plus d'enum de kinds en dur. */
 export interface DiseaseSymptom {
-  kind: DiseaseSymptomKind;
-  /** Fièvre (Grave) → alitement/Inconscient (l.136) ; Convulsions/Intoxication (Modérée/Grave). */
+  symptomId: string;
   severity?: 'moderee' | 'grave';
-  /** Difficulté du Test de fin d'un symptôme « persistant » (l.162). */
   difficulty?: Difficulty;
 }
 
@@ -109,7 +99,7 @@ export function contractDisease(
   if (!def) return null;
   const incub = Math.max(0, opts?.incubation ?? rollDice(def.incubation, rng));
   const dur = Math.max(1, opts?.duration ?? rollDice(def.duration, rng));
-  const persist = def.symptoms.find((s) => s.kind === 'persistant')?.difficulty;
+  const persist = def.symptoms.find((s) => symptomHasCapability(s.symptomId, 'endTest'))?.difficulty;
   return {
     name,
     symptoms: def.symptoms,
@@ -120,8 +110,32 @@ export function contractDisease(
   };
 }
 
-function hasSymptom(dz: Disease, kind: DiseaseSymptomKind): boolean {
-  return dz.symptoms.some((s) => s.kind === kind);
+/** GameOp PASSIFS d'une instance de symptôme (sa pénalité continue), scalés par `severity`
+ *  (Convulsions Modérée/Grave → `severePassive` −20 au lieu de `passive` −10). Lus par `passiveMods`. */
+export function symptomPassive(inst: DiseaseSymptom): GameOp[] {
+  const s = findSymptomById(inst.symptomId);
+  if (!s) return [];
+  return inst.severity && s.severePassive ? s.severePassive : (s.passive ?? []);
+}
+/** GameOp passifs de TOUTES les maladies ACTIVES (collecte unifiée, lue par `passiveMods` kind 'maladie'). */
+export function diseasePassiveOps(c: Combatant): GameOp[] {
+  return (c.diseases ?? []).filter((d) => d.phase === 'active').flatMap((d) => d.symptoms.flatMap(symptomPassive));
+}
+/** Test/conséquence de cycle quotidien d'une instance de symptôme (Blessé/Toxine) — donnée. */
+export function symptomOnTick(inst: DiseaseSymptom): { difficulty: Difficulty; onFail: GameOp[] } | undefined {
+  return findSymptomById(inst.symptomId)?.onTick;
+}
+/** Un symptôme (par id) porte-t-il la capacité `cap` (lue sur sa donnée) ? */
+function symptomHasCapability(symptomId: string, cap: keyof SymptomCapabilities): boolean {
+  return !!findSymptomById(symptomId)?.capabilities?.[cap];
+}
+/** Une maladie porte-t-elle un symptôme à la capacité `cap` ? */
+export function diseaseHasCapability(dz: Disease, cap: keyof SymptomCapabilities): boolean {
+  return dz.symptoms.some((s) => symptomHasCapability(s.symptomId, cap));
+}
+/** Le combattant a-t-il une maladie ACTIVE portant la capacité `cap` ? (Nausée, Contagion…) */
+export function hasActiveCapability(c: Combatant, cap: keyof SymptomCapabilities): boolean {
+  return (c.diseases ?? []).some((d) => d.phase === 'active' && diseaseHasCapability(d, cap));
 }
 
 /**
@@ -163,47 +177,20 @@ export function rollContraction(
   return applyContraction(c, diseaseName, rollTest(resistVal, difficulty, rng).success, rng);
 }
 
-/** Maladies ACTIVES portant le symptôme « malaise » (l.152) — chacune impose un Exténué « collant »
- *  (non dissipé par le repos tant que la maladie dure). Lu par `rest.ts` pour gérer l'État Exténué. */
+/** Maladies ACTIVES dont un symptôme a la capacité `stickyExtenue` (Malaise, l.188) — chacune impose un
+ *  Exténué « collant » (non dissipé par le repos tant que la maladie dure). Lu par `rest.ts`. */
 export function activeMalaiseCount(c: Combatant): number {
-  return (c.diseases ?? []).filter((d) => d.phase === 'active' && hasSymptom(d, 'malaise')).length;
+  return (c.diseases ?? []).filter((d) => d.phase === 'active' && diseaseHasCapability(d, 'stickyExtenue')).length;
 }
 
-/** Nombre de symptômes « blessé » actifs (l.110) — chacun bloque la guérison d'1 Point de Blessure. */
+/** Nombre de maladies actives bloquant la guérison d'1 PB (capacité `blocksHealing` — Blessé + Gangrène). */
 export function diseaseBlesseCount(c: Combatant): number {
-  // Gangrène : « vous subissez le symptôme Blessé » (l.140) → compte aussi.
-  return (c.diseases ?? []).filter((d) => d.phase === 'active' && (hasSymptom(d, 'blesse') || hasSymptom(d, 'gangrene'))).length;
+  return (c.diseases ?? []).filter((d) => d.phase === 'active' && diseaseHasCapability(d, 'blocksHealing')).length;
 }
 
-/** Pénalités de Caractéristique dues aux maladies (fièvre −10 aux Tests Physiques et de Sociabilité,
- *  l.135) — injectées dans le pool « pire pénalité » de `effectiveChar` (non-cumul, LDB l.168). */
-const PHYSICAL_SOCIAL: CharKey[] = ['CC', 'CT', 'F', 'E', 'Ag', 'Dex', 'Soc'];
-const PHYSICAL: CharKey[] = ['CC', 'CT', 'F', 'E', 'Ag', 'Dex'];
-export function diseaseCharPenalties(c: Combatant, key: CharKey): number[] {
-  // Producteur PUR : le gating par Détermination (`ignoreCritMods`) est appliqué par le collecteur passif
-  // unifié (kind `maladie`, table `PASSIVE_CANCELLERS`) — plus ici, pour éviter le double-gating.
-  const out: number[] = [];
-  const active = (c.diseases ?? []).filter((d) => d.phase === 'active');
-  const has = (k: DiseaseSymptomKind) => active.some((d) => d.symptoms.some((sy) => sy.kind === k));
-  const sev = (k: DiseaseSymptomKind) => active.flatMap((d) => d.symptoms.filter((sy) => sy.kind === k)).some((sy) => sy.severity === 'moderee' || sy.severity === 'grave');
-  // Fièvre (l.135) et Bubons (l.114) : −10 aux Tests Physiques ET de Sociabilité.
-  if ((has('fievre') || has('bubons')) && PHYSICAL_SOCIAL.includes(key)) out.push(-10);
-  // Convulsions (l.121) : −10 Tests Physiques ; (Modérée/Grave) −20.
-  if (has('convulsions') && PHYSICAL.includes(key)) out.push(sev('convulsions') ? -20 : -10);
-  // Démangeaisons (l.126) et Gangrène (l.135+) : −10 aux Tests de Sociabilité.
-  if ((has('demangeaisons') || has('gangrene')) && key === 'Soc') out.push(-10);
-  return out;
-}
-
-/** Le combattant souffre-t-il du symptôme `kind` (maladie ACTIVE) ? — pour les câblages d'État
- *  (Nausée → Sonné sur Test de déplacement raté, Toux → contagion, l.170/185). */
-export function hasActiveSymptom(c: Combatant, kind: DiseaseSymptomKind): boolean {
-  return (c.diseases ?? []).some((d) => d.phase === 'active' && d.symptoms.some((sy) => sy.kind === kind));
-}
-
-/** Maladies ACTIVES contagieuses (symptôme « toux et éternuements », l.185) — pour la contagion au repos. */
+/** Maladies ACTIVES contagieuses (capacité `contagious` — Toux & éternuements, l.206) — contagion au repos. */
 export function contagiousDiseases(c: Combatant): Disease[] {
-  return (c.diseases ?? []).filter((d) => d.phase === 'active' && d.symptoms.some((sy) => sy.kind === 'touxEternuements'));
+  return (c.diseases ?? []).filter((d) => d.phase === 'active' && diseaseHasCapability(d, 'contagious'));
 }
 
 /** Contracte une maladie « instantanée » (depuis un autre symptôme, l.32) si pas déjà présente.
@@ -214,11 +201,6 @@ export function contractDiseaseOnce(c: Combatant, name: string, rng: RNG = defau
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
   return [`${c.name} développe : ${diseaseLabel(name)}.`];
-}
-
-/** Conséquence d'un Test de symptôme « blessé » DIFFÉRÉ (l.110) : échec → Blessure Purulente. */
-export function applyDiseaseBlesse(c: Combatant, success: boolean, rng: RNG = defaultRNG): string[] {
-  return success ? [] : contractDiseaseOnce(c, 'blessure-purulente', rng);
 }
 
 /** Conséquence d'un Test de Gangrène DIFFÉRÉ (l.135+) : échec → +1 échec ; au-delà du BE → Localisation perdue. */
@@ -256,14 +238,15 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
  * renvoie le journal. `resistVal` = Résistance effective (E + augmentations de Résistance) ; `beForGangrene`
  * = Bonus d'Endurance SEUL (seuil de Gangrène, ≠ resistVal). Tous deux passés par l'appelant (cycle évité). Par jour :
  *  - incubation : −1 jour ; à 0 → symptômes ACTIFS (durée mémorisée) ;
- *  - active : symptôme « blessé » → Test de Résistance Accessible (+20) ou Blessure Purulente (l.110) ;
- *             symptôme « toxine » → Test de Résistance Très Facile (+60) journalier JOURNALISÉ (l.172, RAW tronqué : conséquence laissée au MJ) ;
- *             −1 jour ; à 0 → résolution du symptôme « persistant » (l.162), sinon guérison naturelle.
+ *  - active : symptômes à `onTick` (Blessé, Toxine) → Test de cycle quotidien (difficulté de l'onTick) ;
+ *             capacité `amputation` (Gangrène) → Test journalier + comptage > BE → Localisation perdue ;
+ *             −1 jour ; à 0 → résolution (capacité `endTest`/`persistDifficulty`, l.162), sinon guérison.
  *
- * `defer` (CASCADE de nuit, journée unique) : les Tests de Résistance (blessé/gangrène/persistant)
+ * `defer` (CASCADE de nuit, journée unique) : les Tests de Résistance (cycle `onTick`/gangrène/persistant)
  * sont COLLECTÉS en étapes influençables au lieu d'être roulés ici ; l'état avance (incubation/durée),
- * la maladie en fin de durée reste `endTestPending` jusqu'à la validation de son étape. Les
- * conséquences vivent dans `applyDiseaseBlesse/Gangrene/Persist` (réutilisées par la cascade).
+ * la maladie en fin de durée reste `endTestPending` jusqu'à la validation de son étape. La conséquence
+ * d'un `onTick` (GameOp `onFail`) est appliquée par l'applier `diseaseTick` côté state (restFlow) ;
+ * gangrène/persistant par `applyDiseaseGangrene/Persist`.
  */
 export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10)): string[] {
   if (!c.diseases?.length || days <= 0) return [];
@@ -294,21 +277,19 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
         survivors.push(dz);
         continue;
       }
-      // active
-      if (hasSymptom(dz, 'blesse')) {
-        if (defer) defer({ kind: 'diseaseBlesse', label: `Symptôme « blessé » (${diseaseLabel(dz.name)})`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name } });
-        else { const res = rollTest(resistVal, 'accessible', rng); if (!res.success) contractOnce('blessure-purulente'); } // l.110
+      // active — symptômes à Test de cycle quotidien (`onTick` : Blessé, Toxine). DONNÉE-DRIVEN : on lit
+      // l'onTick du symptôme (difficulté + conséquence GameOp `onFail`). DIFFÉRÉ en cascade influençable
+      // (l'`onFail` est appliqué par l'applier d'étape côté state via applyOps) ; sinon roulé ici (chemin
+      // non-différé/tests : on interprète la conséquence `contractDisease`).
+      for (const inst of dz.symptoms) {
+        const tick = symptomOnTick(inst);
+        if (!tick) continue;
+        if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: resistVal, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
+        else if (!rollTest(resistVal, tick.difficulty, rng).success) for (const op of tick.onFail) if (op.op === 'contractDisease') contractOnce(op.disease);
       }
-      if (hasSymptom(dz, 'toxine') && !defer) {
-        // LDB 20 l.172-173 : Test de Résistance Très Facile (+60) journalier. Le texte source est TRONQUÉ
-        // (la conséquence d'échec n'y figure pas — coupure de page) → on roule le Test prescrit et on le
-        // JOURNALISE ; la conséquence est laissée au MJ (rien d'inventé).
-        const t = rollTest(resistVal, 'tresFacile', rng);
-        log.push(`${c.name} : symptôme « toxine » (${diseaseLabel(dz.name)}) — Résistance ${t.roll}/${t.target} → ${t.success ? 'résisté' : 'échec (conséquence arbitrée par le MJ — RAW tronqué)'}.`);
-      }
-      // Gangrène (l.135+) : Test de Résistance Accessible (+20) journalier ; plus d'échecs que le
-      // Bonus d'Endurance → la Localisation est PERDUE (règles d'Amputation — journalisé, MJ/Chirurgie).
-      if (hasSymptom(dz, 'gangrene') && !dz.gangreneLost) {
+      // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
+      // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
+      if (diseaseHasCapability(dz, 'amputation') && !dz.gangreneLost) {
         if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, be: beForGangrene } });
         else if (!rollTest(resistVal, 'accessible', rng).success) {
           dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;

@@ -14,7 +14,7 @@ import { RNG, defaultRNG } from './dice';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
 import { findConditionById, findPsychologyById } from '../data';
 import { talentPassiveMods } from './talentEffects';
-import { diseaseCharPenalties } from './disease';
+import { diseasePassiveOps } from './disease';
 import { hungerCharPenalties } from './provisions';
 import { wornSocialMod, qualityWearMods } from './wearPenalty';
 import type { GameOp, PassiveKind, PassiveMod } from './ops';
@@ -453,12 +453,12 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   for (const t of c.traumas ?? []) {
     for (const o of traumaOps(t)) { const kind = traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind }); }
   }
-  // Maladies (kind `maladie`, annulée par Détermination — comme l'ex-gating de `diseaseCharPenalties`) +
+  // Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) +
   // Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). Pénalités de
   // Caractéristique → pool non-cumul. Producteurs SANS cycle (disease/provisions n'importent ni trauma ni
   // characteristics). Gating UNIFORME sans `t` ; sauté en bloc si annulé (perf : pas de boucle par clé).
   if (c.diseases?.length && modSurvives(c, 'maladie')) {
-    for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of diseaseCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'maladie' });
+    for (const op of diseasePassiveOps(c)) out.push({ op, kind: 'maladie' });
   }
   if (c.hunger && modSurvives(c, 'faim')) {
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });

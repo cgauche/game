@@ -10,36 +10,33 @@
 import { RefField } from './RefField';
 import { datasetArray } from '../../data/overrides';
 import { DIFFICULTY_LABELS, CHAR_KEYS, CHAR_LABELS, type Difficulty, type CharKey } from '../../engine/types';
-import type { DiseaseSymptom, DiseaseSymptomKind } from '../../engine/disease';
+import type { DiseaseSymptom } from '../../engine/disease';
 import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger } from '../../data';
 import type { TraitInstance } from '../../engine/statEntry';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
+import { GameOpEditor } from '../editor/GameOpEditor';
+import type { GameOp } from '../../engine/ops';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * 1) maladies.symptoms — DiseaseSymptom[] = { kind, severity?, difficulty? }
+ * 1) maladies.symptoms — DiseaseSymptom[] = { symptomId, severity?, difficulty? }
+ *    Le symptomId RÉFÉRENCE un symptôme de `symptoms.json` (catalogue éditable au Codex).
  * ──────────────────────────────────────────────────────────────────────────── */
-
-/** Valeurs de `DiseaseSymptomKind` (DÉRIVÉES de la donnée — un nouveau symptôme dans `maladies.json`
- *  apparaît tout seul ; la liste figée du type sert juste de repli pour une entrée vierge). */
-const SYMPTOM_KINDS: DiseaseSymptomKind[] = [
-  'malaise', 'blesse', 'fievre', 'persistant', 'toxine',
-  'bubons', 'convulsions', 'demangeaisons', 'gangrene', 'intoxication', 'nausee', 'touxEternuements',
-];
 
 export function SymptomsField({ value, onChange }: { value: DiseaseSymptom[] | undefined; onChange: (v: DiseaseSymptom[]) => void }) {
   const list = value ?? [];
+  const syms = datasetArray('symptoms'); // catalogue live (id + label) — un nouveau symptôme apparaît tout seul
   const set = (i: number, patch: Partial<DiseaseSymptom>) => onChange(list.map((s, j) => (j === i ? { ...s, ...patch } : s)));
   return (
     <div className="ed-field">
-      <span>symptômes (LDB 20 — chacun = un type + sévérité/difficulté éventuelles)</span>
+      <span>symptômes (LDB 20 — chacun = un symptôme du catalogue + sévérité/difficulté éventuelles)</span>
       {list.map((s, i) => (
         <div className="de-reflrow" key={i}>
-          <select value={s.kind} onChange={(e) => set(i, { kind: e.target.value as DiseaseSymptomKind })}>
-            {SYMPTOM_KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
+          <select value={s.symptomId} onChange={(e) => set(i, { symptomId: e.target.value })}>
+            {syms.map((sym) => <option key={sym.id} value={sym.id}>{sym.label}</option>)}
           </select>
           <select value={s.severity ?? ''} onChange={(e) => set(i, { severity: (e.target.value || undefined) as DiseaseSymptom['severity'] })}>
             <option value="">— sévérité —</option>
@@ -53,7 +50,22 @@ export function SymptomsField({ value, onChange }: { value: DiseaseSymptom[] | u
           <button className="btn small danger" title="Retirer le symptôme" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => onChange([...list, { kind: 'malaise' }])}>+ Symptôme</button>
+      <button className="btn small" onClick={() => onChange([...list, { symptomId: syms[0]?.id ?? 'malaise' }])}>+ Symptôme</button>
+    </div>
+  );
+}
+
+/** symptoms[].onTick — Test de cycle quotidien d'un symptôme : difficulté + conséquence GameOp `onFail`
+ *  (ex. Blessé → contractDisease 'blessure-purulente'). Difficulté vide = pas de Test de cycle. */
+export function SymptomTickField({ value, onChange }: { value: { difficulty: Difficulty; onFail: GameOp[] } | undefined; onChange: (v: { difficulty: Difficulty; onFail: GameOp[] } | undefined) => void }) {
+  return (
+    <div className="ed-field">
+      <span>Test de cycle quotidien (Blessé / Toxine) — difficulté + conséquence GameOp en cas d'échec</span>
+      <select value={value?.difficulty ?? ''} onChange={(e) => onChange(e.target.value ? { difficulty: e.target.value as Difficulty, onFail: value?.onFail ?? [] } : undefined)}>
+        <option value="">— aucun Test de cycle —</option>
+        {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+      </select>
+      {value && <GameOpEditor ops={value.onFail ?? []} onChange={(ops) => onChange({ difficulty: value.difficulty, onFail: ops })} />}
     </div>
   );
 }

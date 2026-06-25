@@ -17,6 +17,7 @@ import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
 import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
+import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
@@ -274,6 +275,10 @@ export type GameOp =
    *  l'`arg` (ex. 'fievre-du-rongeur' pour les rats/skavens). Cumule sans doublon dans `diseaseExposure`.
    *  Inerte sur un non-héros (bilan héros-only). */
   | { op: 'exposeDisease'; disease: string }
+  /** CONTRACTE instantanément une Maladie (`disease` = id) — incubation 0, durée tirée. Complète
+   *  `exposeDisease` (exposition→test). Utilisé p.ex. par la conséquence `onFail` d'un symptôme « Blessé »
+   *  (→ Blessure Purulente) ; applicable par tout effet (artefact maudit…). Inerte si déjà porteur. */
+  | { op: 'contractDisease'; disease: string }
   /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation
    *  (Larmes de Shallya, LDB 42). */
   | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
@@ -908,6 +913,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'exposeDisease': {
         // SILENCIEUX (comme l'ancien flag) : l'exposition ne s'exprime qu'au bilan de fin de combat.
         if (!(target.diseaseExposure ?? []).includes(o.disease)) target.diseaseExposure = [...(target.diseaseExposure ?? []), o.disease];
+        break;
+      }
+      case 'contractDisease': {
+        // Contraction instantanée (incubation 0) — délègue à la machinerie de maladie (cycle-safe :
+        // disease.ts n'importe `ops` qu'en type). Inerte si déjà porteur.
+        lines.push(...contractDiseaseOnce(target, o.disease, rng));
         break;
       }
       case 'cureCriticalWound': {

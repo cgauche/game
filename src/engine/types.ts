@@ -799,8 +799,8 @@ export interface Combatant {
   /** Trauma psychologique « Cauchemars » (LDB 21 l.92) : chaque nuit, Test de Calme Facile (+40) ou
    *  Exténué. Posé par l'Effet d'éditeur `inflictNightmares` (assigné par l'auteur, jamais inventé). */
   nightmares?: boolean;
-  /** Maladies et infections en cours (LDB 20) — incubation/durée décomptées au repos ; symptômes lus par
-   *  `diseaseCharPenalties` (fièvre) / `rest.ts` (malaise→Exténué, blessé bloque la guérison). */
+  /** Maladies et infections en cours (LDB 20) — incubation/durée décomptées au repos ; symptômes =
+   *  donnée (`symptoms.json`) lus par `diseasePassiveOps` (fièvre…) / `rest.ts` (Malaise→Exténué, Blessé). */
   diseases?: import('./disease').Disease[];
   /** Faim (LDB 18 l.417-422) : jours sans manger, Tests tentés (−10 cumulatif), échecs (malus de
    *  caracs lus par `hungerCharPenalties`). Absent = nourri. Entretien quotidien : `dailyFoodUpkeep`. */
@@ -936,7 +936,7 @@ export type UpkeepDeferTest = (spec: {
   base: number;
   difficulty: Difficulty;
   penalty?: number;
-  meta?: Record<string, number | string | boolean>;
+  meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel par l'étape de cascade
 }) => void;
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {

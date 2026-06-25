@@ -15,7 +15,7 @@ describe('Mal de mer (MDG ch.14) — cycle de maladie réutilisé', () => {
   it("onset immédiat (incubation 0) ; symptômes malaise/nausée + Test de fin Intermédiaire ; immunité après guérison", () => {
     const dz = contractDisease('mal-de-mer', seq([]))!;
     expect(dz.phase).toBe('active'); // incubation {n:0} → symptômes immédiats
-    expect(dz.symptoms.map((s) => s.kind).sort()).toEqual(['malaise', 'nausee', 'persistant']);
+    expect(dz.symptoms.map((s) => s.symptomId).sort()).toEqual(['malaise', 'nausee', 'persistant']);
     expect(dz.persistDifficulty).toBe('intermediaire'); // Résistance Intermédiaire (+0) RAW
   });
 
@@ -31,7 +31,7 @@ describe('Scorbut (MDG ch.14) — cycle de maladie réutilisé', () => {
   it('symptômes blessé/intoxication/malaise/nausée ; durée 1d10 (après reprise de nourriture fraîche)', () => {
     const dz = contractDisease('scorbut', makeRNG(1), { incubation: 0 })!;
     expect(dz.phase).toBe('active');
-    expect(dz.symptoms.map((s) => s.kind).sort()).toEqual(['blesse', 'intoxication', 'malaise', 'nausee']);
+    expect(dz.symptoms.map((s) => s.symptomId).sort()).toEqual(['blesse', 'intoxication', 'malaise', 'nausee']);
     expect(dz.durationDays).toBeGreaterThanOrEqual(1);
     expect(dz.durationDays).toBeLessThanOrEqual(10);
   });

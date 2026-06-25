@@ -46,6 +46,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   sbBonus: '💪 +Bonus de Force aux Dégâts',
   endPsych: '🧠 Fin d’un état psychologique',
   exposeDisease: '🦠 Exposer à une Maladie (Test post-combat)',
+  contractDisease: '🦠 Contracter une Maladie (immédiat)',
   removeShipPoste: '⚓ Retirer un poste de navire (Canon perdu)',
   attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
   mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',

@@ -8,6 +8,7 @@ import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Effect } from './scene';
 import type { Flow } from './flow';
+import type { GameOp } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
@@ -671,7 +672,7 @@ export interface BladeTrapFreeze {
   attackerSL: number;
 }
 export interface CascadeStepMeta {
-  [key: string]: number | string | boolean | Flow | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | undefined;
+  [key: string]: number | string | boolean | Flow | GameOp[] | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | undefined;
   /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
   onSuccess?: Flow;
   /** Branche d'échec d'une étape `triggeredTest`. */

@@ -6,11 +6,11 @@ import {
   tickDisease,
   activeMalaiseCount,
   diseaseBlesseCount,
-  diseaseCharPenalties,
+  diseasePassiveOps,
   rollContraction,
-  applyDiseaseBlesse,
   applyDiseasePersist,
 } from './disease';
+import type { GameOp } from './ops';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre (déjà dans les bornes attendues). */
 function seq(values: number[]): RNG {
@@ -28,7 +28,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(dz.daysLeft).toBe(3);
     expect(dz.durationDays).toBe(5);
     expect(dz.persistDifficulty).toBe('facile');
-    expect(dz.symptoms.map((s) => s.kind).sort()).toEqual(['blesse', 'malaise', 'persistant']);
+    expect(dz.symptoms.map((s) => s.symptomId).sort()).toEqual(['blesse', 'malaise', 'persistant']);
   });
 
   it('contractDisease(nom inconnu) → null', () => {
@@ -63,16 +63,16 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(c.diseases![0].phase).toBe('active'); // contractée « instantanément » (l.32)
   });
 
-  it('tickDisease(defer) : DIFFÈRE les Tests (blessé + persistant), n’en roule AUCUN, résolus par les applicateurs', () => {
+  it('tickDisease(defer) : DIFFÈRE les Tests (cycle Blessé + persistant), n’en roule AUCUN, résolus par les applicateurs', () => {
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 0, duration: 1 })!] });
     const kinds: string[] = [];
     // seq([]) : si un seul jet était tiré, il renverrait undefined — la cascade ne DOIT rien rouler.
     const log = tickDisease(c, 1, seq([]), 80, (spec) => kinds.push(spec.kind));
-    expect(kinds.sort()).toEqual(['diseaseBlesse', 'diseasePersist']);
+    expect(kinds.sort()).toEqual(['diseasePersist', 'diseaseTick']); // Blessé → étape générique 'diseaseTick'
     expect(c.diseases![0].endTestPending).toBe(true); // la maladie attend la validation de son étape
     expect(log.some((l) => /guérit|persiste|Purulente|Gangrène/.test(l))).toBe(false); // RIEN pré-résolu
-    // Résolution à la validation des étapes : blessé réussi (no-op), persistant réussi → guérison.
-    applyDiseaseBlesse(c, true, seq([]));
+    // Résolution à la validation des étapes : le Test de cycle réussi serait un no-op (onFail non appliqué
+    // par l'applier `diseaseTick` côté state) ; persistant réussi → guérison.
     applyDiseasePersist(c, 'infection-mineure', true, 2, seq([]));
     expect(c.diseases!.length).toBe(0);
   });
@@ -87,12 +87,14 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(log.some((l) => /stupéfiant/.test(l))).toBe(true);
   });
 
-  it('diseaseCharPenalties : fièvre = −10 aux Tests Physiques/Sociaux, 0 au Mental', () => {
+  it('diseasePassiveOps : fièvre = charMod −10 aux Physiques/Sociaux, rien au Mental', () => {
     const c = sick({ diseases: [contractDisease('blessure-purulente', seq([]), { incubation: 0, duration: 5 })!] });
-    expect(diseaseCharPenalties(c, 'F')).toEqual([-10]);
-    expect(diseaseCharPenalties(c, 'Soc')).toEqual([-10]);
-    expect(diseaseCharPenalties(c, 'Int')).toEqual([]); // Mental non touché
-    expect(diseaseCharPenalties(c, 'FM')).toEqual([]);
+    const ops = diseasePassiveOps(c).filter((o): o is Extract<GameOp, { op: 'charMod' }> => o.op === 'charMod');
+    const modOf = (char: string) => ops.filter((o) => o.char === char).map((o) => o.mod);
+    expect(modOf('F')).toEqual([-10]);
+    expect(modOf('Soc')).toEqual([-10]);
+    expect(modOf('Int')).toEqual([]); // Mental non touché
+    expect(modOf('FM')).toEqual([]);
   });
 
   describe('rollContraction (post-critique +60, Chirurgie +20)', () => {

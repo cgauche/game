@@ -1,0 +1,294 @@
+[
+  {
+    "id": "fievre",
+    "label": "Fièvre",
+    "desc": "Votre température est haute, vous transpirez abondamment et vous n'avez vraiment pas l'air en forme. Subissez une pénalité de -10 à tous vos Tests Physiques et de Sociabilité. Si la fièvre dont vous souffrez est indiquée comme (Grave), vous vous retrouvez dans un état de faiblesse totale vous obligeant à rester alité. Gagnez l'État *Inconscient*, même si la dépense de Points de Détermination peut vous ramener à la conscience pendant quelques minutes.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "E",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      }
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 189
+    }
+  },
+  {
+    "id": "bubons",
+    "label": "Bubons",
+    "desc": "Vous êtes victime d'une inflammation des ganglions lymphatiques de l'aine, du cou ou des aisselles. Outre le fait que c'est extrêmement douloureux, cela peut causer des saignements ou des épanchements de pus. Leur aspect est dégoûtant, l'odeur répugnante et certains vont penser qu'il s'agit là de signes de faveurs de la part du Seigneur des Épidémies et vont supposer qu'ils renferment de minuscules démons en pleine croissance. Pour se défaire de ces horreurs et de ce qui peut s'y nicher, la pratique la plus courante consiste à les percer, même si cela aboutit souvent à une *Blessure Purulente*. Subissez une pénalité de -10 à tous vos Tests Physiques ainsi qu'à tous vos Tests de Sociabilité si ces bubons sont apparents (ou peuvent être sentis) !",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "E",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      }
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 189
+    }
+  },
+  {
+    "id": "convulsions",
+    "label": "Convulsions",
+    "desc": "Votre corps est la proie de spasmes ou de tremblements alors que l'infection vous transforme petit à petit en pantin. Subissez une pénalité de -10 à tous vos Tests Physiques alors que votre corps convulse sans que vous ne puissiez le contrôler. Si le symptôme est indiqué (Modéré), cette pénalité passe à -20. Si le symptôme est indiqué comme (Grave), vous devez être attaché sous peine de risquer de vous blesser tout seul, ce qui vous laisse dans un état d'incapacité totale.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "E",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -10
+      }
+    ],
+    "severePassive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "E",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -20
+      }
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 189
+    }
+  },
+  {
+    "id": "demangeaisons",
+    "label": "Démangeaisons",
+    "desc": "Vous êtes recouvert de pustules, de gonflements, d'éruptions cutanées ou de boutons qui vous démangent, et c'est loin de vous rendre attirant. Les démangeaisons constituent surtout un problème esthétique, et impliquent une pénalité de -10 à tous les Tests de Sociabilité. De plus, n'oubliez pas d'interpréter ces démangeaisons en cours de jeu. Si vous voulez vous retenir un tant soi peu, réussissez un Test de **Calme Accessible (+20)**.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      }
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 189
+    }
+  },
+  {
+    "id": "gangrene",
+    "label": "Gangrène",
+    "desc": "Votre chair noircit et pourrit, infectée par quelque chose d'horrible. Et cela ne semble pas s'arranger. Effectuez un lancer de pourcentage pour déterminer une Localisation (voir **Combat**). Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques). Tant que vous souffrez de la *Gangrène*, subissez une pénalité de -10 à tous vos Tests de Sociabilité, et vous subissez le symptôme Blessé. De plus, comme si ce n'était pas suffisant, vous souffrez également de *Toxine* tant que le tissu affecté ne sera pas amputé.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      }
+    ],
+    "capabilities": {
+      "blocksHealing": true,
+      "amputation": true
+    },
+    "source": {
+      "book": "LDB",
+      "page": 189
+    }
+  },
+  {
+    "id": "blesse",
+    "label": "Blessé",
+    "desc": "Vous avez une blessure ou une plaie ouverte qui ne guérit pas correctement à cause d'une infection. Pour chaque symptôme Blessé dont vous souffrez, vous ne pouvez pas guérir l'une de vos Blessures, qui reste donc ouverte et vous fait souffrir. Certains écoulements de pus sont même possibles. Chaque jour, réussissez un Test de **Résistance Accessible (+20)** ou subissez une Blessure Purulente si vous n'en avez pas déjà une.",
+    "onTick": {
+      "difficulty": "accessible",
+      "onFail": [
+        {
+          "op": "contractDisease",
+          "disease": "blessure-purulente"
+        }
+      ]
+    },
+    "capabilities": {
+      "blocksHealing": true
+    },
+    "source": {
+      "book": "LDB",
+      "page": 189
+    }
+  },
+  {
+    "id": "toxine",
+    "label": "Toxine",
+    "desc": "Vous êtes gravement malade et sans doute plus très loin des Portes de Morr car un poison mortel se répand dans votre corps. Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie. Si *Toxine* est indiqué (*Modéré*), le Test est **Facile (+40)**. Si elle est indiquée (*Grave*), le Test est **Accessible (+20)**.",
+    "onTick": {
+      "difficulty": "tresFacile",
+      "onFail": []
+    },
+    "source": {
+      "book": "LDB",
+      "page": 190
+    }
+  },
+  {
+    "id": "persistant",
+    "label": "Persistant",
+    "desc": "Vous avez une infection qui perdure. De ce fait, vous craignez que cela empire… Après que votre maladie est arrivée à la fin de sa Durée, effectuez un Test de Résistance avec la Difficulté indiquée entre parenthèses après le symptôme comme ceci : Persistant (Accessible) ou Persistant (Facile). Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.",
+    "capabilities": {
+      "endTest": true
+    },
+    "source": {
+      "book": "LDB",
+      "page": 190
+    }
+  },
+  {
+    "id": "malaise",
+    "label": "Malaise",
+    "desc": "Vous ne vous sentez pas bien du tout. Vous êtes fatigué, ressentez des difficultés à vous concentrer. En fait, vous vous sentez malade. Gagnez un État *Exténué* dont vous ne pourrez vous défaire qu'une fois votre maladie guérie.",
+    "capabilities": {
+      "stickyExtenue": true
+    },
+    "source": {
+      "book": "LDB",
+      "page": 190
+    }
+  },
+  {
+    "id": "nausee",
+    "label": "Nausée",
+    "desc": "Vous vous sentez bien malade et vous risquez de vomir si vous vous déplacez trop vite. Chaque fois que vous échouez à un Test qui implique un déplacement physique, votre nausée prend le dessus et vous vomissez. Vous gagnez l'État *Sonné* qui représente les conséquences de ces vomissements répétitifs ou de la déshydratation, en fonction des circonstances.",
+    "capabilities": {
+      "nausea": true
+    },
+    "source": {
+      "book": "LDB",
+      "page": 190
+    }
+  },
+  {
+    "id": "touxEternuements",
+    "label": "Toux et éternuements",
+    "desc": "Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout autour de vous. Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.",
+    "capabilities": {
+      "contagious": true
+    },
+    "source": {
+      "book": "LDB",
+      "page": 190
+    }
+  },
+  {
+    "id": "intoxication",
+    "label": "Intoxication alimentaire",
+    "desc": "Dans un premier temps, apparaissent borborygmes et gargouillis, puis c'est la course vers les commodités. Pâle et épuisé, vous avez connu des jours meilleurs. Le MJ peut décider, n'importe quand au cours de la partie, que vous devez vous y rendre. Si l'*Intoxication alimentaire* est indiquée comme (Modérée), le MJ peut vous demander de vous isoler deux fois par séance de jeu. Si elle est indiquée comme (Grave), c'est trois fois, et vous perdrez une Blessure à chaque fois, car le sang que vous avez perdu vous laisse sur les rotules.",
+    "source": {
+      "book": "LDB",
+      "page": 189
+    }
+  }
+]

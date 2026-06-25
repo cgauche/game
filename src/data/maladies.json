@@ -14,13 +14,13 @@
     },
     "symptoms": [
       {
-        "kind": "blesse"
+        "symptomId": "blesse"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "persistant",
+        "symptomId": "persistant",
         "difficulty": "facile"
       }
     ]
@@ -40,17 +40,17 @@
     },
     "symptoms": [
       {
-        "kind": "fievre"
+        "symptomId": "fievre"
       },
       {
-        "kind": "persistant",
+        "symptomId": "persistant",
         "difficulty": "intermediaire"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "blesse"
+        "symptomId": "blesse"
       }
     ]
   },
@@ -70,14 +70,14 @@
     },
     "symptoms": [
       {
-        "kind": "fievre",
+        "symptomId": "fievre",
         "severity": "grave"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "toxine"
+        "symptomId": "toxine"
       }
     ]
   },
@@ -96,14 +96,14 @@
     },
     "symptoms": [
       {
-        "kind": "intoxication",
+        "symptomId": "intoxication",
         "severity": "moderee"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "nausee"
+        "symptomId": "nausee"
       }
     ]
   },
@@ -124,22 +124,22 @@
     },
     "symptoms": [
       {
-        "kind": "blesse"
+        "symptomId": "blesse"
       },
       {
-        "kind": "convulsions"
+        "symptomId": "convulsions"
       },
       {
-        "kind": "demangeaisons"
+        "symptomId": "demangeaisons"
       },
       {
-        "kind": "fievre"
+        "symptomId": "fievre"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "persistant",
+        "symptomId": "persistant",
         "difficulty": "accessible"
       }
     ]
@@ -159,20 +159,20 @@
     },
     "symptoms": [
       {
-        "kind": "fievre"
+        "symptomId": "fievre"
       },
       {
-        "kind": "intoxication",
+        "symptomId": "intoxication",
         "severity": "grave"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "nausee"
+        "symptomId": "nausee"
       },
       {
-        "kind": "persistant",
+        "symptomId": "persistant",
         "difficulty": "intermediaire"
       }
     ]
@@ -192,19 +192,19 @@
     },
     "symptoms": [
       {
-        "kind": "bubons"
+        "symptomId": "bubons"
       },
       {
-        "kind": "fievre"
+        "symptomId": "fievre"
       },
       {
-        "kind": "gangrene"
+        "symptomId": "gangrene"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "toxine",
+        "symptomId": "toxine",
         "severity": "moderee"
       }
     ]
@@ -224,10 +224,10 @@
     },
     "symptoms": [
       {
-        "kind": "demangeaisons"
+        "symptomId": "demangeaisons"
       },
       {
-        "kind": "persistant",
+        "symptomId": "persistant",
         "difficulty": "intermediaire"
       }
     ]
@@ -248,10 +248,10 @@
     },
     "symptoms": [
       {
-        "kind": "demangeaisons"
+        "symptomId": "demangeaisons"
       },
       {
-        "kind": "touxEternuements"
+        "symptomId": "touxEternuements"
       }
     ],
     "immuneAfterCure": true
@@ -271,13 +271,13 @@
     },
     "symptoms": [
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "nausee"
+        "symptomId": "nausee"
       },
       {
-        "kind": "persistant",
+        "symptomId": "persistant",
         "difficulty": "intermediaire"
       }
     ],
@@ -298,16 +298,16 @@
     },
     "symptoms": [
       {
-        "kind": "blesse"
+        "symptomId": "blesse"
       },
       {
-        "kind": "intoxication"
+        "symptomId": "intoxication"
       },
       {
-        "kind": "malaise"
+        "symptomId": "malaise"
       },
       {
-        "kind": "nausee"
+        "symptomId": "nausee"
       }
     ]
   },
@@ -326,13 +326,13 @@
     },
     "symptoms": [
       {
-        "kind": "fievre"
+        "symptomId": "fievre"
       },
       {
-        "kind": "nausee"
+        "symptomId": "nausee"
       },
       {
-        "kind": "intoxication",
+        "symptomId": "intoxication",
         "severity": "moderee"
       }
     ],

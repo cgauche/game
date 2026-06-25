@@ -13,7 +13,7 @@ import {
   stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
-  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather,
+  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { talentMaxLabel } from '../../engine/careerSlots';
@@ -158,11 +158,11 @@ const reverseSections = (category: string, id: string | undefined): CodexSection
 const MANEUVER_ACTIVATION_LABEL: Record<string, string> = { action: 'Action', free: 'Gratuite', charge: 'À la Charge' };
 const MANEUVER_TARGETING_LABEL: Record<string, string> = { melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis' };
 const WEAPON_GROUP_KIND_LABEL: Record<string, string> = { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' };
-/** Libellés FR des Symptômes de maladie (LDB 20) — affichage (la donnée porte le `kind` STABLE). */
-const SYMPTOM_LABEL: Record<string, string> = {
-  malaise: 'Malaise', blesse: 'Blessé', fievre: 'Fièvre', persistant: 'Persistant', toxine: 'Toxine',
-  bubons: 'Bubons', convulsions: 'Convulsions', demangeaisons: 'Démangeaisons', gangrene: 'Gangrène',
-  intoxication: 'Intoxication', nausee: 'Nausée', touxEternuements: 'Toux & éternuements',
+/** Libellés FR des CAPACITÉS irréductibles d'un Symptôme (drapeaux lus par la machinerie de maladie). */
+const SYMPTOM_CAP_LABEL: Record<string, string> = {
+  blocksHealing: 'Bloque la guérison (1 PB)', amputation: 'Gangrène (amputation)',
+  stickyExtenue: 'Exténué collant', contagious: 'Contagieux', nausea: 'Nausée (Sonné)',
+  endTest: 'Test de fin de Durée',
 };
 /** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
 const diceLabel = formatDice;
@@ -413,7 +413,7 @@ export const CODEX: CodexCategory[] = [
     key: 'maladies', label: 'Maladies', group: 'Effets',
     items: maladies.map((m) => ({
       label: m.label,
-      sub: m.symptoms.map((s) => SYMPTOM_LABEL[s.kind] ?? s.kind).join(', '),
+      sub: m.symptoms.map((s) => symptomLabel(s.symptomId)).join(', '),
       meta: facts(
         fact('Contraction', DIFFICULTY_LABELS[m.contractDifficulty]),
         fact('Incubation', `${diceLabel(m.incubation)} jours`),
@@ -422,10 +422,22 @@ export const CODEX: CodexCategory[] = [
       sections: sections({
         title: 'Symptômes', layout: 'list',
         rows: m.symptoms.map((s) => ({
-          t: 'kv', k: SYMPTOM_LABEL[s.kind] ?? s.kind,
+          t: 'kv', k: symptomLabel(s.symptomId),
           v: [s.severity === 'grave' ? 'Grave' : s.severity === 'moderee' ? 'Modérée' : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
         } as CodexRow)),
       }),
+    })),
+  },
+  {
+    key: 'symptoms', label: 'Symptômes', group: 'Effets',
+    items: symptoms.map((s) => ({
+      label: s.label, desc: s.desc, source: src(s.source),
+      sections: sections(
+        passiveSection(s.passive),
+        passiveSection(s.severePassive, 'Modificateurs (Modérée / Grave)'),
+        s.onTick ? { title: 'Test de cycle quotidien', layout: 'list', rows: [{ t: 'kv', k: 'Difficulté', v: DIFFICULTY_LABELS[s.onTick.difficulty] } as CodexRow] } : null,
+        capabilitySection(s.capabilities as Record<string, unknown> | undefined, SYMPTOM_CAP_LABEL),
+      ),
     })),
   },
   {
