@@ -5,7 +5,7 @@
  * batterie, perception…) — un seul endroit assigne les marins aux postes.
  */
 import type { Combatant } from '../engine/types';
-import { crewRoleValue, defaultCrewRole, MORALE_BASE, type CrewAssignment } from '../engine/crewMorale';
+import { crewRoleValue, MORALE_BASE, type CrewAssignment } from '../engine/crewMorale';
 import { findCrewRoleById, findCrewTestTypeById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
 import type { Get } from './flowTypes';
@@ -15,18 +15,60 @@ import type { Get } from './flowTypes';
  * son rôle ÉPINGLÉ (`shipRole`) ou INFÉRÉ (`defaultCrewRole`), filtré aux rôles du type de Test (`crew-test-types.json`).
  * Au plus UN marin par rôle : en cas de collision, le MEILLEUR pour ce rôle (`crewRoleValue`). PUR.
  */
+/** Marqueur « au repos » : un marin RETIRÉ d'un poste (✕ dans la fiche) revient à l'équipage disponible et n'est PAS
+ *  ré-assigné par le défaut (sinon « retirer » serait sans effet pour un rôle déduit). */
+export const BENCHED = 'repos';
+
+/** Un marin est-il FORMÉ pour un rôle (possède une de ses compétences) ? PUR. */
+function trainedForRole(c: Combatant, roleId: string): boolean {
+  const role = findCrewRoleById(roleId);
+  return !!role && role.skills.some((s) => (c.skills ?? []).some((k) => k.skillId === s.skillId && (s.spec == null || k.spec === s.spec)));
+}
+
+/**
+ * Assignation par DÉFAUT de l'équipage aux rôles d'un Test (MDG ch.14) — GLOBALE (pas marin par marin), pour que le
+ * défaut soit BON : on remplit d'abord le rôle ESSENTIEL puis les autres rôles SPÉCIFIQUES avec le MEILLEUR marin
+ * FORMÉ encore libre (un titulaire par poste → on ÉTALE l'équipage au lieu d'entasser 2 PJ sur le même) ; le reste
+ * tombe **Mousse** (rôle par défaut, l.15) s'il sait Voile/Ramer. Les rôles ÉPINGLÉS (`shipRole`) sont respectés —
+ * et un poste épinglé PEUT avoir plusieurs titulaires (l.9). Renvoie `crewId → roleId`. PUR. */
+export function shipDefaultRoles(crew: Combatant[], testTypeId: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const testType = findCrewTestTypeById(testTypeId);
+  if (!testType) return out;
+  const apte = exposedCrew(crew);
+  const free = new Set<string>();
+  for (const c of apte) { if (c.shipRole) out.set(c.id, c.shipRole); else free.add(c.id); } // épinglés respectés (dont 'repos')
+  // Rôles SPÉCIFIQUES (hors Mousse), ESSENTIEL d'abord : UN titulaire chacun = le meilleur marin FORMÉ encore libre.
+  const specific = testType.roles.filter((r) => r !== 'mousse')
+    .sort((a, b) => (a === testType.essential ? -1 : b === testType.essential ? 1 : 0));
+  for (const roleId of specific) {
+    if ([...out.values()].includes(roleId)) continue; // déjà tenu (épinglé)
+    const role = findCrewRoleById(roleId)!;
+    let best: { id: string; val: number } | null = null;
+    for (const c of apte) {
+      if (!free.has(c.id) || !trainedForRole(c, roleId)) continue;
+      const v = crewRoleValue(c, role).value;
+      if (!best || v > best.val) best = { id: c.id, val: v };
+    }
+    if (best) { out.set(best.id, roleId); free.delete(best.id); }
+  }
+  // Le reste → Mousse (rôle par défaut, l.15) s'il sait Voile/Ramer.
+  if (testType.roles.includes('mousse')) for (const id of free) if (trainedForRole(apte.find((x) => x.id === id)!, 'mousse')) out.set(id, 'mousse');
+  return out;
+}
+
 export function shipCrewAssignments(ship: Combatant, combatants: Combatant[], testTypeId: string): CrewAssignment[] {
   const roleSet = new Set(findCrewTestTypeById(testTypeId)?.roles ?? []);
   const crew = (ship.crewIds ?? [])
     .map((id) => combatants.find((c) => c.id === id))
     .filter((c): c is Combatant => !!c);
-  // MULTI par rôle (MDG ch.14 l.13 : « tout le monde effectue son Test, tous les DR sont additionnés ») — plusieurs
-  // membres PEUVENT tenir le même poste (2 PJ à la barre, un équipage de pièce). Chaque marin APTE contribue à son
-  // rôle ÉPINGLÉ (`shipRole`) ou INFÉRÉ (`defaultCrewRole`), filtré aux rôles de ce Test. Une entrée PAR membre.
+  // Une entrée PAR titulaire de rôle (le rôle vient du défaut GLOBAL `shipDefaultRoles` : essentiel rempli + PJ étalés).
+  // Filtré aux rôles de CE Test (exclut 'repos' et les rôles d'un autre Test). MULTI possible si épinglé (MDG ch.14 l.9).
+  const roles = shipDefaultRoles(crew, testTypeId);
   const out: CrewAssignment[] = [];
   for (const c of exposedCrew(crew)) {
-    const roleId = c.shipRole ?? defaultCrewRole(c) ?? undefined;
-    if (roleId && roleSet.has(roleId) && findCrewRoleById(roleId)) out.push({ crew: c, roleId });
+    const roleId = roles.get(c.id);
+    if (roleId && roleSet.has(roleId)) out.push({ crew: c, roleId });
   }
   return out;
 }

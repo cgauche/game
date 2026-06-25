@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById } from '../data';
-import { defaultCrewRole, moraleBand, crewRoleValue } from '../engine/crewMorale';
+import { moraleBand, crewRoleValue } from '../engine/crewMorale';
 import { exposedCrew } from '../engine/shipCritical';
-import { shipMoraleScore } from '../state/shipCrew';
+import { shipMoraleScore, shipDefaultRoles, BENCHED } from '../state/shipCrew';
 import { useModalA11y } from './Modal';
 import { PortraitTile } from './PortraitTile';
 import { CharFrame } from './CharFrame';
@@ -17,9 +17,6 @@ const MANOEUVRE = 'manoeuvre';
 
 /** Marqueur « au repos » : un marin RETIRÉ d'un poste (clic sur le ✕) — il revient à l'équipage disponible et ne
  *  ré-infère PAS de rôle (sinon « retirer » serait sans effet pour un rôle déduit). */
-const BENCHED = 'repos';
-/** Rôle COURANT d'un marin : `repos` (retiré) → aucun ; sinon épinglé (`shipRole`) ou inféré (`defaultCrewRole`). */
-const crewRoleOf = (c: Combatant): string | undefined => (c.shipRole === BENCHED ? undefined : c.shipRole ?? defaultCrewRole(c) ?? undefined);
 
 /** État du navire (lecture seule, dérivé) — mêmes `stat-chip` que les vitaux d'une fiche héros. PUR. */
 export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; cap?: Dir8; morale: number; crew: Combatant[] }) {
@@ -65,10 +62,13 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
   const testType = findCrewTestTypeById(MANOEUVRE);
   const apte = exposedCrew(crew);
   if (!testType) return null;
+  // Défaut GLOBAL (essentiel rempli + PJ étalés) PARTAGÉ avec le Test d'équipage — la fiche et la manœuvre s'accordent.
+  const roles = shipDefaultRoles(crew, MANOEUVRE);
+  const roleOf = (c: Combatant): string | undefined => { const r = roles.get(c.id); return r === BENCHED ? undefined : r; };
   const byRole = new Map<string, Combatant[]>();
   const pool: Combatant[] = [];
   for (const c of apte) {
-    const roleId = crewRoleOf(c);
+    const roleId = roleOf(c);
     if (roleId && testType.roles.includes(roleId)) (byRole.get(roleId) ?? byRole.set(roleId, []).get(roleId)!).push(c);
     else pool.push(c); // pas de rôle de manœuvre (héros non-marin, ou rôle d'un autre Test) → équipage disponible
   }
@@ -98,7 +98,7 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
             </div>
             {open && (
               <PortraitPicker
-                choices={apte.filter((c) => crewRoleOf(c) !== roleId).map((c) => ({ c, caption: crewRoleValue(c, role).value, title: `Mettre ${c.name} à ${role.label}` }))}
+                choices={apte.filter((c) => roleOf(c) !== roleId).map((c) => ({ c, caption: crewRoleValue(c, role).value, title: `Mettre ${c.name} à ${role.label}` }))}
                 onPick={(id) => onSet(id, roleId)}
               />
             )}

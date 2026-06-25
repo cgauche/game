@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shipCrewAssignments, shipMoraleScore } from './shipCrew';
+import { shipCrewAssignments, shipMoraleScore, shipDefaultRoles } from './shipCrew';
 import { defaultCrewRole } from '../engine/crewMorale';
 import type { Combatant, SkillInstance } from '../engine/types';
 import type { Get } from './flowTypes';
@@ -49,6 +49,28 @@ describe('shipCrewAssignments — équipage → rôles pour un Test (MDG ch.14)'
     const cap = mk('cap', 30, [{ skillId: 'commandement', advances: 40 }]); // inféré → capitaine (dans 'manoeuvre')
     const ship = hull(['cap']);
     expect(shipCrewAssignments(ship, [ship, cap], 'manoeuvre')).toEqual([{ crew: cap, roleId: 'capitaine' }]);
+  });
+});
+
+describe('shipDefaultRoles — défaut GLOBAL : essentiel rempli en 1er + PJ étalés (MDG ch.14)', () => {
+  it('remplit l’ESSENTIEL d’abord puis étale (pas 2 sur le même poste spécifique)', () => {
+    const cap = mk('cap', 50, [{ skillId: 'commandement', advances: 30 }]); // → Capitaine
+    const nav = mk('nav', 50, [{ skillId: 'orientation', advances: 30 }]);   // → Navigateur
+    const helm = mk('helm', 40, [{ skillId: 'voile', advances: 0 }]);        // seul à la Voile → Timonier (essentiel)
+    const m2 = mk('m2', 40, [{ skillId: 'ramer', advances: 0 }]);            // Ramer → Mousse (catch-all)
+    const roles = shipDefaultRoles([cap, nav, helm, m2], 'manoeuvre');
+    expect(roles.get('helm')).toBe('timonier');  // essentiel rempli EN PREMIER
+    expect(roles.get('cap')).toBe('capitaine');
+    expect(roles.get('nav')).toBe('navigateur'); // étalé — PAS un 2e Capitaine
+    expect(roles.get('m2')).toBe('mousse');
+  });
+
+  it('un rôle ÉPINGLÉ est respecté et peut être MULTI (l.9)', () => {
+    const a = mk('a', 50, [{ skillId: 'voile', advances: 20 }], 'timonier');
+    const b = mk('b', 60, [{ skillId: 'voile', advances: 20 }], 'timonier');
+    const roles = shipDefaultRoles([a, b], 'manoeuvre');
+    expect(roles.get('a')).toBe('timonier');
+    expect(roles.get('b')).toBe('timonier'); // 2 épinglés au même poste = OK
   });
 });
 
