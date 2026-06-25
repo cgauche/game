@@ -15,6 +15,7 @@
 import type { RNG } from './dice';
 import { d100 } from './dice';
 import type { Difficulty } from './types';
+import weatherJson from '../data/weather.json';
 
 /** Les quatre saisons du tableau de Météo (EDOC ch.5 l.44). */
 export type Season = 'printemps' | 'ete' | 'automne' | 'hiver';
@@ -68,35 +69,7 @@ interface WeatherRange { max: number; weather: Weather; }
  *  | Neige            | 96-00     | -      | 99-00   | 66-90  |
  *  | Blizzard         | -         | -      | -       | 91-00  |
  */
-export const WEATHER_TABLE: Record<Season, WeatherRange[]> = {
-  printemps: [
-    { max: 10, weather: 'sec' },
-    { max: 30, weather: 'beau' },
-    { max: 90, weather: 'pluie' },
-    { max: 95, weather: 'pluie-diluvienne' },
-    { max: 100, weather: 'neige' },
-  ],
-  ete: [
-    { max: 40, weather: 'sec' },
-    { max: 70, weather: 'beau' },
-    { max: 95, weather: 'pluie' },
-    { max: 100, weather: 'pluie-diluvienne' },
-  ],
-  automne: [
-    { max: 30, weather: 'sec' },
-    { max: 60, weather: 'beau' },
-    { max: 90, weather: 'pluie' },
-    { max: 98, weather: 'pluie-diluvienne' },
-    { max: 100, weather: 'neige' },
-  ],
-  hiver: [
-    { max: 10, weather: 'beau' },
-    { max: 60, weather: 'pluie' },
-    { max: 65, weather: 'pluie-diluvienne' },
-    { max: 90, weather: 'neige' },
-    { max: 100, weather: 'blizzard' },
-  ],
-};
+export const WEATHER_TABLE: Record<Season, WeatherRange[]> = weatherJson as Record<Season, WeatherRange[]>;
 
 /** Météo depuis un jet d100 explicite (1-100) et une saison — lecture pure de la table RAW. */
 export function weatherFromRoll(roll: number, season: Season): Weather {
