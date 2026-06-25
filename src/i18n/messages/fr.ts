@@ -361,6 +361,8 @@ export const fr = {
   // ── Phase C : narration des actions de combat (state/combatSlice). ──
   'cs.mount': '{name} enfourche {mount}.',
   'cs.dismount': '{name} descend de {mount}.',
+  'cs.bordeeNoArc': 'Aucune pièce de {ship} ne porte sur ce bord ({side}).',
+  'cs.bordee': '🎯 Bordée {side} de {ship} sur {target} (DR d’équipage {dr}) : {n} pièce(s), {wounds} Blessure(s). Coque {cur}/{max}.',
   'cs.disengageSacrifice': '{name} se désengage en sacrifiant son Avantage.',
   'cs.disengageDodge': '{name} se désengage (Esquive réussie, +1 Avantage).',
   'cs.disengageNeutral': "{name} : échange neutre, le désengagement échoue (personne ne prend l'avantage).",

@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
+  PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -159,6 +159,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'reload', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'run', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
   & MultiRollActions<'shipManeuver', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MultiRollActions<'shipBattery', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'test', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MultiRollActions<'counterspell', RollVerb>
@@ -692,6 +693,24 @@ export const FLOWS = {
       // Chance « +1 DR » sur CE contributeur (LDB 17 l.26).
       derive: (s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null),
     },
+  }),
+
+  /** TIR DE BATTERIE = Test d'équipage des Artilleurs (MDG ch.14 l.128) — JUMEAU de `shipManeuver` (mêmes
+   *  `rollCrewRole`/`forceCrewRole`) ; le total (`maneuverCrewTotal`) = DR PARTAGÉ de la volée, appliqué par
+   *  `shipBatteryConfirm`. Forced (Résilience) = DR max du contributeur. */
+  battery: makeRollFlow<PendingShipBattery, ShipBatteryParticipant>({
+    key: 'pendingShipBattery',
+    multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
+    rolled: (r) => !!r.result,
+    actor: (s, r) => actorIn(s, r.id),
+    caps: { forced: true },
+    resolve: (s, r, actor, _get, forced) => {
+      if (!actor) return null;
+      const rr = forced ? forceCrewRole(actor, r.roleId) : rollCrewRole(actor, r.roleId, battleRng());
+      return rr ? { result: rr } : null;
+    },
+    failed: (r) => !!r.result && r.result.roll > r.result.target,
+    bonus: { derive: (s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null) },
   }),
 
   /** Focalisation (Test étendu de magie) — vaut en combat ET hors combat (`actorIn`). */

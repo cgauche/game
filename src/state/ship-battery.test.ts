@@ -3,6 +3,8 @@ import { resolveBattery } from './shipBattery';
 import type { Combatant, ShipPoste, SkillInstance } from '../engine/types';
 import type { FireArc } from '../engine/types';
 import type { RNG } from '../engine/dice';
+import { useGame } from './store';
+import { seedBattleRng } from './battleRng';
 
 /** Combattant d'équipage minimal (carac d'instance = Dex → valeur prévisible). Calqué sur crew-roles.test.ts. */
 const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number; spec?: string }[] = []): Combatant =>
@@ -51,5 +53,45 @@ describe('resolveBattery — lâcher une bordée (DR partagé, MDG ch.14)', () =
     const h = hull([poste('tribord', 't1')]);
     h.pos = undefined as never;
     expect(resolveBattery(h, target(9, 5), 'N', [], 80, seq([30]))).toBeNull();
+  });
+});
+
+// ── Flux JOUABLE (store) : Test d'équipage MULTI des Artilleurs → volée sur la coque (jumeau de la manœuvre). ──
+const gunnerPJ = (): Combatant =>
+  ({ id: 'gunner', name: 'Artilleur', kind: 'hero',
+    characteristics: { CC: 30, CT: 40, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 2, resilience: 1,
+    skills: [{ skillId: 'projectiles', spec: 'Poudre noire', characteristic: 'CT', advances: 30 }], talents: [], weapons: [],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
+const battPoste = (): ShipPoste =>
+  ({ side: 'tribord', item: { uid: 'canon', name: 'Canon moyen', kind: 'ranged', damage: { flat: 14, plusBF: false }, range: 75, qualities: [] }, crewIds: ['gunner'] }) as unknown as ShipPoste;
+const firingShip = (): Combatant =>
+  ({ id: 'ship', name: 'Frégate', kind: 'npc', bodyShape: 'vehicule', creatureId: 'bateau-de-patrouille', crewIds: ['gunner'], postes: [battPoste()], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+const enemyHull = (pos = { x: 9, y: 5 }): Combatant =>
+  ({ id: 'target', name: 'Caraque', kind: 'enemy', bodyShape: 'vehicule', creatureId: 'knarr', pos,
+    characteristics: { CC: 0, CT: 0, F: 0, E: 40, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 },
+    wounds: { current: 90, max: 90, base: 90 }, advantage: 0, conditions: [], weapons: [], armour: { corps: 0 }, skills: [], talents: [], crewIds: [] }) as unknown as Combatant;
+
+describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l.128)', () => {
+  it('battleShipBattery ouvre le Test des Artilleurs (bord auto) ; roll ; Feu ! → la coque encaisse', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
+    useGame.getState().battleShipBattery('ship', 'target');
+    const p = useGame.getState().pendingShipBattery!;
+    expect(p.side).toBe('tribord'); // cible plein est, cap N → bordée tribord
+    expect(p.participants.some((x) => x.id === 'gunner' && x.essential)).toBe(true); // l'Artilleur est ESSENTIEL (★)
+    const before = useGame.getState().battle!.combatants.find((c) => c.id === 'target')!.wounds.current;
+    useGame.getState().shipBatteryRoll('gunner'); // le PJ Artilleur lance SON jet
+    expect(useGame.getState().pendingShipBattery!.participants.every((x) => x.result)).toBe(true);
+    useGame.getState().shipBatteryConfirm();
+    expect(useGame.getState().pendingShipBattery).toBeNull();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'target')!.wounds.current).toBeLessThan(before); // la coque encaisse
+  });
+
+  it('aucune pièce ne porte sur le bord visé (cible en proue, pièces à tribord) → n’ouvre rien', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull({ x: 5, y: 1 })], order: ['ship'], turn: 0, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
+    useGame.getState().battleShipBattery('ship', 'target');
+    expect(useGame.getState().pendingShipBattery).toBeNull();
   });
 });

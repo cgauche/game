@@ -68,7 +68,7 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingApproach, PendingWard, PendingFocus, PendingDispel,
+  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
@@ -324,6 +324,8 @@ export interface GameState extends RollFlowActionsMap {
   pendingRun: PendingRun | null;
   /** Manœuvre navale en cours (MDG ch.13 : Test de Navigation du barreur → vire le cap + avance). */
   pendingShipManeuver: PendingShipManeuver | null;
+  /** Tir de batterie en cours (MDG ch.14 : Test d'équipage des Artilleurs → volée sur la cible). */
+  pendingShipBattery: PendingShipBattery | null;
   /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.29). */
   pendingApproach: PendingApproach | null;
   /** Bénédiction de Protection en cours (Test de FM +20 différant la déclaration d'attaque — LDB 41 l.105). */
@@ -742,6 +744,11 @@ export interface GameState extends RollFlowActionsMap {
   shipManeuverSetTurn: (steps: number) => void;
   shipManeuverConfirm: () => void;
   shipManeuverCancel: () => void;
+  /** Bordée (« Tir de batterie », MDG ch.14 l.128) : ouvre la modale du Test d'équipage des Artilleurs sur `targetId`. */
+  battleShipBattery: (shipId: string, targetId: string) => void;
+  shipBatteryConfirm: () => void;
+  shipBatteryCancel: () => void;
+  // shipBattery{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap, MULTI).
   // run{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   runConfirm: () => void;
   runCancel: () => void;

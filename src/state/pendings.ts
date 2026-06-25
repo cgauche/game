@@ -3,7 +3,7 @@
  * monnaie — types PURS, sans logique, extraits de store.ts pour le garder navigable.
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */
-import type { CharKey, Difficulty, HitLocation, Weapon } from '../engine/types';
+import type { CharKey, Difficulty, HitLocation, Weapon, FireArc } from '../engine/types';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Effect } from './scene';
@@ -299,6 +299,23 @@ export interface ShipManeuverParticipant extends RollParticipant {
   /** Rôle ESSENTIEL du Test (son DR compte double, MDG ch.14 l.19). */
   essential: boolean;
   result: CrewRoleRoll | null;
+}
+/** Contributeur ARTILLEUR d'un Tir de batterie (MDG ch.14) — même forme qu'un rôle de manœuvre (un rôle, son DR). */
+export interface ShipBatteryParticipant extends RollParticipant {
+  roleId: string;
+  /** Rôle ESSENTIEL (Artilleur, DR ×2, l.19). */
+  essential: boolean;
+  result: CrewRoleRoll | null;
+}
+/** TIR DE BATTERIE en Test d'équipage (MDG ch.14 l.128) : les Artilleurs lancent, DR sommés (essentiel ×2) + Moral →
+ *  un **DR PARTAGÉ** qui remplace le jet de touche de chaque pièce du bord `side` qui porte sur `targetId`. */
+export interface PendingShipBattery extends MultiPending<ShipBatteryParticipant> {
+  shipId: string;
+  targetId: string;
+  /** Bord qui porte (dérivé de la cible via `targetArc`) — détermine les pièces qui tirent. */
+  side: FireArc;
+  essentialRoleId?: string;
+  moraleScore: number;
 }
 /** Manœuvre navale en TEST D'ÉQUIPAGE (MDG ch.13-14) : chaque rôle tenu lance son Test, les DR sont sommés (rôle
  *  essentiel ×2) + la bande de Moral ; le total tient lieu de DR de Navigation. La direction (`turnSteps`, choisie

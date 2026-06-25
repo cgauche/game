@@ -74,6 +74,24 @@ export function shipCrewAssignments(ship: Combatant, combatants: Combatant[], te
 }
 
 /**
+ * Contributeurs d'un Test d'équipage (MDG ch.14) — UN jet par POSTE, pas par marin. Par rôle tenu : TOUS les PJ du
+ * poste lancent (l.9 « plusieurs Personnages peuvent contribuer ») ; sinon UN seul marin REPRÉSENTANT (le meilleur),
+ * car « la performance des Personnages représente celle de tout l'équipage » (l.39) — les PNJ ne testent que pour un
+ * rôle qu'AUCUN PJ n'occupe (l.41). PARTAGÉ par la manœuvre ET la bordée (`testTypeId`). `partyIds` = les PJ. PUR. */
+export function crewTestContributors(ship: Combatant, combatants: Combatant[], testTypeId: string, partyIds: Set<string>): CrewAssignment[] {
+  const roleVal = (a: CrewAssignment) => { const r = findCrewRoleById(a.roleId); return r ? crewRoleValue(a.crew, r).value : 0; };
+  const byRole = new Map<string, CrewAssignment[]>();
+  for (const a of shipCrewAssignments(ship, combatants, testTypeId)) (byRole.get(a.roleId) ?? byRole.set(a.roleId, []).get(a.roleId)!).push(a);
+  const out: CrewAssignment[] = [];
+  for (const group of byRole.values()) {
+    const pjs = group.filter((a) => partyIds.has(a.crew.id));
+    if (pjs.length) out.push(...pjs); // chaque PJ du poste lance (l.9)
+    else out.push(group.reduce((b, a) => (roleVal(a) > roleVal(b) ? a : b))); // sinon UN marin représentant (l.39/41)
+  }
+  return out;
+}
+
+/**
  * Moral effectif d'un navire pour un Test d'équipage (la bande de Moral pèse en ±DR, MDG ch.14). Pont CAMPAGNE → COMBAT :
  * la coque `Combatant` ne porte AUCUN Moral (il vit sur `CampaignVessel`, recalc hebdomadaire) → on lit `vessel.morale.score`
  * si la coque EST le navire de campagne, sinon `MORALE_BASE` (75, équipage neuf). Dérivé à l'usage, jamais stocké sur la coque.
