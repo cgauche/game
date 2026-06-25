@@ -7,6 +7,7 @@ import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
 import { ActionBar } from './ActionBar';
+import { ShipRolesPanel } from './ShipRolesPanel';
 import { CombatBanner } from './CombatBanner';
 import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { VictoryScreen } from './VictoryScreen';
@@ -190,6 +191,9 @@ export function CampaignView() {
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}
+        {/* Gestion du navire (couche Mer) : volet « ⚓ Équipage » au tour d'un navire — assigner les rôles + état.
+            Le panneau se masque lui-même hors navire actif. */}
+        {mode === 'battle' && battle && <ShipRolesPanel />}
         {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
         {mode === 'battle' && battle && <ActionBar />}
         {/* Défaite : overlay centré (la victoire a son écran plein, VictoryScreen). */}
