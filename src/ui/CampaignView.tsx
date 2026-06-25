@@ -7,7 +7,8 @@ import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
 import { ActionBar } from './ActionBar';
-import { ShipRolesPanel } from './ShipRolesPanel';
+import { ShipSheet } from './ShipSheet';
+import { isVehicle } from '../engine/vehicle';
 import { CombatBanner } from './CombatBanner';
 import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { VictoryScreen } from './VictoryScreen';
@@ -82,7 +83,12 @@ export function CampaignView() {
   const dateLine = `${phase.icon} ${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
   const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
   // Dock : version « vivante » des héros en combat (PB/effets à jour), sinon la party.
-  const dockHeroes = party.map((h) => battle?.combatants.find((x) => x.id === h.id) ?? h);
+  // Le dock (portraits du haut) liste les héros PUIS les navires alliés (couche Mer) : cliquer un navire ouvre SA
+  // fiche (état + équipage), comme une fiche héros. Le navire n'apparaît qu'en combat naval (sinon le filtre est vide).
+  const dockHeroes = [
+    ...party.map((h) => battle?.combatants.find((x) => x.id === h.id) ?? h),
+    ...(battle?.combatants.filter((c) => isVehicle(c) && c.kind === 'hero') ?? []),
+  ];
   const activeId = battle && !battle.over ? battle.order[battle.turn] : null;
   // Pré-emption d'initiative (pause de début de Round) : héros éligibles (LDB ch.17 l.27).
   const canFirstIds = battle && pendingRoundStart
@@ -191,9 +197,6 @@ export function CampaignView() {
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}
-        {/* Gestion du navire (couche Mer) : volet « ⚓ Équipage » au tour d'un navire — assigner les rôles + état.
-            Le panneau se masque lui-même hors navire actif. */}
-        {mode === 'battle' && battle && <ShipRolesPanel />}
         {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
         {mode === 'battle' && battle && <ActionBar />}
         {/* Défaite : overlay centré (la victoire a son écran plein, VictoryScreen). */}
@@ -228,7 +231,9 @@ export function CampaignView() {
       <BargainModal />
       <AppraiseModal />
       <DocumentModal />
-      {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
+      {sheetId && (battle?.combatants.find((c) => c.id === sheetId && isVehicle(c))
+        ? <ShipSheet shipId={sheetId} onClose={() => setSheetId(null)} />
+        : <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />)}
       {inspected && <InspectPanel combatant={inspected} onClose={() => setInspectId(null)} />}
     </div>
   );
