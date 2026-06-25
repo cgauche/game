@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { testValue } from '../engine/skills';
 import { canReroll } from '../engine/fortune';
-import { Modal } from './Modal';
+import { MultiRollShell } from './MultiRollShell';
 import { ParticipantRow } from './ParticipantRow';
 
 /**
@@ -32,13 +32,18 @@ export function ForceDoorModal() {
   const cede = roundDmg >= p.doorB;
 
   return (
-    <Modal title="🚪 Enfoncer la porte" variant="roll" onClose={cancel}>
-      <p className="rm-vs">
-        <strong>{p.label}</strong> — Endurance {p.doorBE} · Blessures {p.doorB}/{p.doorBmax}
-      </p>
-      <div className="mini-title">Chacun frappe — Corps à corps (Bagarre), dégâts = DR + Bonus de Force − BE</div>
-      <div className="cs-rows">
-        {p.participants.map((part) => {
+    <MultiRollShell
+      title="🚪 Enfoncer la porte"
+      variant="roll"
+      subtitle={<><strong>{p.label}</strong> — Endurance {p.doorBE} · Blessures {p.doorB}/{p.doorBmax}</>}
+      instruction="Chacun frappe — Corps à corps (Bagarre), dégâts = DR + Bonus de Force − BE"
+      summary={allRolled ? <>Ce Round : <b>{roundDmg}</b> dégât{roundDmg > 1 ? 's' : ''}{cede ? ' → la porte cède !' : ` (reste ${p.doorB - roundDmg})`}</> : undefined}
+      onCancel={cancel}
+      cancelLabel="Renoncer"
+      onConfirm={confirm}
+      confirmLabel={cede ? 'Enfoncer !' : 'Appliquer le Round'}
+    >
+      {p.participants.map((part) => {
           const actor = pool.find((c) => c.id === part.id);
           if (!actor) return null;
           const res = part.result;
@@ -66,16 +71,6 @@ export function ForceDoorModal() {
             />
           );
         })}
-      </div>
-      {allRolled && (
-        <p className="rm-vs">
-          Ce Round : <b>{roundDmg}</b> dégât{roundDmg > 1 ? 's' : ''}{cede ? ' → la porte cède !' : ` (reste ${p.doorB - roundDmg})`}
-        </p>
-      )}
-      <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={cancel}>Renoncer</button>
-        <button className="btn btn-primary" onClick={() => confirm()}>{cede ? 'Enfoncer !' : 'Appliquer le Round'}</button>
-      </div>
-    </Modal>
+    </MultiRollShell>
   );
 }

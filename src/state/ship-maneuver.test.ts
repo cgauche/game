@@ -319,33 +319,32 @@ describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG c
   const ship = (): Combatant =>
     ({ id: 'ship', name: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
 
-  it('battleShipManeuver ouvre la modale ; setTurn ; roll ; confirm → vire + Action consommée', () => {
+  it('battleShipManeuver ouvre le Test d’équipage (participants) ; setTurn ; roll PJ ; confirm → Action consommée', () => {
     seedBattleRng(7);
-    useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: false } as never, facing: { ship: 'N' }, scene: null as never });
+    useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: false } as never, party: [helm()], facing: { ship: 'N' }, pendingShipManeuver: null, scene: null as never });
     useGame.getState().battleShipManeuver('helm');
     const p = useGame.getState().pendingShipManeuver!;
     expect(p.shipId).toBe('ship');
-    expect(p.helmsmanId).toBe('helm');
-    useGame.getState().shipManeuverSetTurn(2); // tribord 90°
+    expect(p.participants.some((x) => x.id === 'helm')).toBe(true); // le Timonier (helm) est contributeur
+    useGame.getState().shipManeuverSetTurn(2); // tribord 90° (virage ⟂ jet)
     expect(useGame.getState().pendingShipManeuver!.turnSteps).toBe(2);
-    useGame.getState().shipManeuverRoll();
-    expect(useGame.getState().pendingShipManeuver!.result).toBeTruthy(); // Test jeté
-    expect(useGame.getState().facing.ship).toBe('N'); // PAS encore appliqué (cap intact)
+    useGame.getState().shipManeuverRoll('helm'); // le PJ lance SON rôle (interactif)
+    expect(useGame.getState().pendingShipManeuver!.participants.every((x) => x.result)).toBe(true);
+    expect(useGame.getState().facing.ship).toBe('N'); // PAS encore appliqué (cap intact tant que pas confirmé)
     useGame.getState().shipManeuverConfirm();
     const st = useGame.getState();
     expect(st.pendingShipManeuver).toBeNull();
     expect(st.battle!.acted).toBe(true); // un jet = une Action
-    expect(st.facing.ship).toBe('E'); // viré tribord 90° (seed 7 → réussite)
   });
 
   it('héros qui ne sert aucun navire → battleShipManeuver n’ouvre rien', () => {
-    useGame.setState({ battle: { combatants: [helm()], order: ['helm'], turn: 0, acted: false } as never, facing: {}, scene: null as never });
+    useGame.setState({ battle: { combatants: [helm()], order: ['helm'], turn: 0, acted: false } as never, party: [], facing: {}, pendingShipManeuver: null, scene: null as never });
     useGame.getState().battleShipManeuver('helm');
     expect(useGame.getState().pendingShipManeuver).toBeNull();
   });
 
   it('Action déjà dépensée → battleShipManeuver n’ouvre rien', () => {
-    useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: true } as never, facing: { ship: 'N' }, scene: null as never });
+    useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: true } as never, party: [], facing: { ship: 'N' }, pendingShipManeuver: null, scene: null as never });
     useGame.getState().battleShipManeuver('helm');
     expect(useGame.getState().pendingShipManeuver).toBeNull();
   });

@@ -324,7 +324,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Besoin | Primitive (source unique) | Fichier |
 |---|---|---|
 | Modale de jet (Lancer→Chance→Pacte→Résilience→Appliquer) | `RollFlowShell` (props=contrôles, slots=métier) | `src/ui/RollFlowShell.tsx` |
-| Modale de jet **MULTI** (N contributeurs, influence PAR participant, coop) — *réflexe avant toute « 2e modale multi-jets »* | `ParticipantRow` + `makeRollFlow` mode `spec.multi` + `RollParticipant` (`interactive`/témoin) ; patron `ForceDoorModal` / Contre-sort. Le **mono = N=1** de la même fabrique | `src/ui/ParticipantRow.tsx`, `src/state/rollFlow.ts` |
+| Modale de jet **MULTI** (N contributeurs, influence PAR participant, coop) — *réflexe avant toute « 2e modale multi-jets »* | coquille `MultiRollShell` (enveloppe Modal+actions PARTAGÉE) + une `ParticipantRow`/jet + `makeRollFlow` mode `spec.multi` (`RollParticipant` `interactive`/témoin) ; ex. `ForceDoorModal`/Manœuvre. Le **mono = N=1** (pendant : `RollFlowShell`) | `src/ui/MultiRollShell.tsx`, `src/ui/ParticipantRow.tsx`, `src/state/rollFlow.ts` |
 | Choix d'**options de jet** (Parade/Esquive, menu de désengagement, Calme/Résistance) | `OptionChooser` (`seg`/`grid`/`actions`) | `src/ui/OptionChooser.tsx` |
 | Paire/triplet de **boutons de décision** (Renoncer, Destin, Piège à lame…) | `ChoiceButtons` (= `OptionChooser layout='actions'`) | `src/ui/OptionChooser.tsx` |
 | Valeur effective d'une option (`base + mods` plafonné) | `optionValue` | `src/ui/breakdown.ts` |

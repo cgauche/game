@@ -48,7 +48,10 @@ import { testValue, actorHasSkill } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
-import { applyShipManeuver, shipHelmsman } from './shipManeuver';
+import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
+import { shipCrewAssignments, shipMoraleScore } from './shipCrew';
+import { findCrewTestTypeById, findCrewRoleById } from '../data';
+import type { ShipManeuverParticipant } from './pendings';
 import { isVehicle } from '../engine/vehicle';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { sceneZonesToBattle } from './zones';
@@ -798,20 +801,42 @@ export function createCombatSlice(get: Get, set: Set) {
       // un héros-équipage prend la barre (`id` = le héros, navire dérivé via `shipOfCrew`).
       const ship = isVehicle(active) ? active : shipOfCrew(battle.combatants, id);
       if (!ship) return;
-      const helmsman = ship.id === active.id ? shipHelmsman(battle.combatants, ship) : active;
-      if (!helmsman) return; // aucun marin apte à la barre → le navire ne peut pas manœuvrer
-      set({ pendingShipManeuver: { shipId: ship.id, helmsmanId: helmsman.id, turnSteps: 0, result: null }, battle: { ...battle, action: null, preview: null } });
+      // Contributeurs = l'équipage aux rôles de manœuvre (MDG ch.14, MULTI-jets). PJ du groupe → interactif
+      // (Chance/Résilience sur SON jet) ; marin PNJ → témoin (auto-roulé). Patron `forceDoor`.
+      const assignments = shipCrewAssignments(ship, battle.combatants, 'manoeuvre');
+      if (!assignments.length) return; // aucun rôle tenu → le navire ne peut pas manœuvrer
+      const essentialRoleId = findCrewTestTypeById('manoeuvre')?.essential;
+      const partyIds = new Set(get().party.map((h) => h.id));
+      const participants: ShipManeuverParticipant[] = assignments.map((a) => ({
+        id: a.crew.id,
+        label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}`,
+        interactive: partyIds.has(a.crew.id),
+        roleId: a.roleId,
+        essential: a.roleId === essentialRoleId,
+        result: null,
+      }));
+      set({
+        pendingShipManeuver: { shipId: ship.id, turnSteps: 0, participants, essentialRoleId, moraleScore: shipMoraleScore(get, ship) },
+        battle: { ...battle, action: null, preview: null },
+      });
+      // Auto-roule les TÉMOINS (marins PNJ) — leur jet initial est résolu sans influence (cf. makeRollFlow).
+      for (const part of participants) if (!part.interactive) get().shipManeuverRoll(part.id);
     },
     shipManeuverSetTurn: (steps: number) => {
       const p = get().pendingShipManeuver;
       if (p) set({ pendingShipManeuver: { ...p, turnSteps: steps } }); // virage ⟂ jet (le Test ne dépend pas du sens)
     },
-    ...rollFlowActions('shipManeuver', FLOWS.shipManeuver, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
+    ...rollFlowActionsMulti('shipManeuver', FLOWS.shipManeuver, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     shipManeuverConfirm: () => {
       const { battle, pendingShipManeuver: p } = get();
-      if (!battle || !p || !p.result) return;
+      if (!battle || !p) return;
+      if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
+      const ship = battle.combatants.find((c) => c.id === p.shipId);
+      if (!ship) return;
+      const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore); // Σ DR (essentiel ×2) + Moral
+      const result = deriveManeuverFromCrew(ship, total); // virage si DR final ≥ 1 (ch.14)
       set({ pendingShipManeuver: null });
-      applyShipManeuver(get, p.shipId, p.result, p.turnSteps); // vire (si succès) + avance ; logue
+      applyShipManeuver(get, p.shipId, result, p.turnSteps); // vire (si succès) + avance ; logue
       set({ battle: { ...get().battle!, action: null, acted: true, preview: null } }); // un jet = une Action
       bus.emit(EVT.SCENE_DIRTY);
     },

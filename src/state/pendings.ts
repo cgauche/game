@@ -19,7 +19,7 @@ import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlow';
 import type { Money } from '../engine/money';
-import type { ManeuverResult } from './shipManeuver';
+import type { CrewRoleRoll } from './shipManeuver';
 
 export type { Money };
 /** Une ligne de butin d'équipement (giveTrapping) ATTRIBUABLE par portrait — partagée entre
@@ -291,14 +291,26 @@ export interface PendingRun {
   result: { success: boolean; roll: number; target?: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;
 }
-/** Manœuvre navale en cours (MDG ch.13) : le barreur (`helmsmanId`) jette un Test de Navigation ; la direction
- *  (`turnSteps`, choisie au pré-jet OptionChooser) s'applique à la confirmation (`shipManeuverConfirm`). */
-export interface PendingShipManeuver extends PendingBase {
+/** Un contributeur au Test d'équipage de MANŒUVRE (MDG ch.14) : un marin à un rôle, son jet propre. PJ →
+ *  interactif (Chance/Résilience sur SON jet) ; marin PNJ → témoin (`interactive:false`, auto-roulé à l'ouverture). */
+export interface ShipManeuverParticipant extends RollParticipant {
+  /** Rôle tenu (crew-roles.json) — sa meilleure compétence décide la valeur du jet. */
+  roleId: string;
+  /** Rôle ESSENTIEL du Test (son DR compte double, MDG ch.14 l.19). */
+  essential: boolean;
+  result: CrewRoleRoll | null;
+}
+/** Manœuvre navale en TEST D'ÉQUIPAGE (MDG ch.13-14) : chaque rôle tenu lance son Test, les DR sont sommés (rôle
+ *  essentiel ×2) + la bande de Moral ; le total tient lieu de DR de Navigation. La direction (`turnSteps`, choisie
+ *  au pré-jet OptionChooser) s'applique à la confirmation (`shipManeuverConfirm`). */
+export interface PendingShipManeuver extends MultiPending<ShipManeuverParticipant> {
   shipId: string;
-  helmsmanId: string;
   /** Virage choisi : >0 tribord, <0 bâbord, 0 tout droit (crans d'octant — ±1 = 45°, ±2 = 90°). */
   turnSteps: number;
-  result: ManeuverResult | null;
+  /** id du rôle essentiel (DR ×2) — lu du type de Test 'manoeuvre'. */
+  essentialRoleId?: string;
+  /** Moral du navire → bande ±DR au total (MDG ch.14). */
+  moraleScore: number;
 }
 /** Approche d'une source de PEUR (LDB 21 l.29 : « incapable de vous rapprocher … à moins de réussir un
  *  Test de Calme Intermédiaire (+0) ») : le clic d'approche est DIFFÉRÉ derrière ce Test sec. Succès →

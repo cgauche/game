@@ -1,11 +1,12 @@
 import { useGame } from '../state/store';
+import { ownsLocally } from '../state/netFlow';
 import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
-import { testValue } from '../engine/skills';
-import { refLabel, findVehicleById } from '../data';
-import { RollFlowShell } from './RollFlowShell';
+import { findCrewRoleById } from '../data';
+import { crewRoleValue } from '../engine/crewMorale';
+import { maneuverCrewTotal, deriveManeuverFromCrew } from '../state/shipManeuver';
+import { MultiRollShell } from './MultiRollShell';
+import { ParticipantRow } from './ParticipantRow';
 import { OptionChooser, type RollOption } from './OptionChooser';
-import { testBreakdown, testPending } from './breakdown';
 
 /** Virages proposés (MDG ch.13 — angle abstrait, choix d'UX) : crans d'octant signés (±1 = 45°, ±2 = 90°). */
 const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
@@ -17,15 +18,15 @@ const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
 ];
 
 /**
- * Modale de MANŒUVRE navale (MDG ch.13). Pré-jet : choix du virage (`OptionChooser` à 5 options →
- * `shipManeuverSetTurn`) — orthogonal au jet (le Test de Navigation ne dépend pas du sens). « Lancer »
- * jette le Test du barreur ; rangée d'influence COMPLÈTE (Chance relance / +1 DR / Pacte / Résilience —
- * le DR nourrit la Progression + l'Indice de Collision) ; « Appliquer » vire le cap + avance (`…Confirm`).
- * Paramètre la coquille partagée `RollFlowShell` — aucune mécanique de jet réécrite.
+ * Modale de MANŒUVRE navale = TEST D'ÉQUIPAGE (MDG ch.13-14) — flux MULTI, patron `ForceDoorModal`. Pré-jet : choix
+ * du virage (`OptionChooser` → `shipManeuverSetTurn`, ⟂ jet). Chaque rôle tenu = une `ParticipantRow` : un PJ lance
+ * SON Test (Chance/+1 DR/Pacte/Résilience sur SON jet, gated `ownsLocally`) ; un marin PNJ est un TÉMOIN auto-roulé.
+ * Le bandeau somme les DR (essentiel ×2) + Moral → DR final ; « Manœuvrer » vire le cap + avance (`…Confirm`).
  */
 export function ShipManeuverModal() {
   const p = useGame((s) => s.pendingShipManeuver);
   const battle = useGame((s) => s.battle);
+  const net = useGame((s) => s.net);
   const setTurn = useGame((s) => s.shipManeuverSetTurn);
   const roll = useGame((s) => s.shipManeuverRoll);
   const reroll = useGame((s) => s.shipManeuverReroll);
@@ -36,14 +37,12 @@ export function ShipManeuverModal() {
   const cancel = useGame((s) => s.shipManeuverCancel);
   if (!p || !battle) return null;
   const ship = battle.combatants.find((c) => c.id === p.shipId);
-  const helm = battle.combatants.find((c) => c.id === p.helmsmanId);
-  if (!ship || !helm) return null;
-  const r = p.result;
-  const sail = !!(ship.creatureId ? findVehicleById(ship.creatureId)?.ship?.sail : undefined);
-  const skillId = sail ? 'voile' : 'ramer'; // à voile → Voile ; aux avirons → Ramer (MDG ch.13)
-  const skillLabel = refLabel('skills', { id: skillId });
-  const value = testValue(helm, skillId);
+  if (!ship) return null;
+  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
+  const allRolled = p.participants.every((x) => x.result);
+  const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore);
+  const result = allRolled ? deriveManeuverFromCrew(ship, total) : null;
   const turnOptions: RollOption[] = TURN_OPTIONS.map((o) => ({
     key: o.key, label: o.label, selected: p.turnSteps === o.steps, primary: p.turnSteps === o.steps,
     onSelect: () => setTurn(o.steps),
@@ -51,36 +50,50 @@ export function ShipManeuverModal() {
   const plural = (n: number) => (n > 1 ? 's' : '');
 
   return (
-    <RollFlowShell
+    <MultiRollShell
+      title="🧭 Manœuvre — Test d’équipage"
       variant="test"
-      title="🧭 Manœuvre"
-      subtitle={<><strong>{ship.name}</strong> — {helm.name} à la barre (Test de {sail ? 'Voile' : 'Ramer'} +0)</>}
-      actor={helm}
-      rolled={!!r}
-      onRoll={roll}
+      subtitle={<><strong>{ship.name}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés, MDG ch.14)</>}
+      extra={<OptionChooser layout="grid" groupLabel="Virage" options={turnOptions} />}
+      summary={allRolled && result
+        ? <>DR d’équipage <b>{total}</b> → DR final <b>{result.dr}</b> : {result.success
+            ? `cap viré, ${ship.name} avance de ${result.movement} case${plural(result.movement)}.`
+            : `manœuvre ratée — le cap tient ; avance de ${result.movement} case${plural(result.movement)}.`}</>
+        : undefined}
       onCancel={cancel}
-      cancelAfterRoll
-      setup={<OptionChooser layout="grid" groupLabel="Virage" options={turnOptions} />}
-      breakdown={r ? testBreakdown(skillLabel, value, { roll: r.roll ?? 0, target: r.target, sl: r.navDR }, 'intermediaire') : undefined}
-      pending={testPending(skillLabel, value, undefined, 'intermediaire')}
-      outcome={r && (
-        <p className="rm-journal">
-          {r.success
-            ? `Cap viré (DR ${r.dr}) — ${ship.name} avance de ${r.movement} case${plural(r.movement)}.`
-            : `Manœuvre ratée (DR ${r.dr}) — le cap tient ; ${ship.name} avance de ${r.movement} case${plural(r.movement)}.`}
-        </p>
-      )}
-      fortune={helm.fortune ?? 0}
-      freeReroll={freeRerollOf(helm)}
-      rerollable={!!r && !r.success && canReroll(true, !!p.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonus}
-      darkPactable={!!r && !r.success && helm.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={helm.resilience ?? 0}
-      onForce={force}
-      forceShow={!r?.success}
       onConfirm={confirm}
-    />
+      confirmLabel="Manœuvrer"
+      confirmDisabled={!allRolled}
+    >
+      {p.participants.map((part) => {
+        const actor = battle.combatants.find((c) => c.id === part.id);
+        if (!actor) return null;
+        const res = part.result;
+        const role = findCrewRoleById(part.roleId);
+        const val = role ? crewRoleValue(actor, role).value : 0;
+        const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
+        const row = res
+          ? { combatant: actor, d: { label, base: val, modifier: 0, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
+          : { combatant: actor, pending: { label, base: val, mods: [] } };
+        return (
+          <ParticipantRow
+            key={part.id}
+            actor={actor}
+            row={row}
+            rolled={!!res}
+            interactive={part.interactive && owns(part.id)}
+            onRoll={() => roll(part.id)}
+            rerollable={!!res && canReroll(res.roll > res.target, !!part.rerolled)}
+            onReroll={() => reroll(part.id)}
+            onBonusSL={() => bonus(part.id)}
+            darkPactable={actor.kind === 'hero' && !!res && res.roll > res.target}
+            onDarkPact={() => darkPact(part.id)}
+            onForce={() => force(part.id)}
+            forceShow={!!res}
+            extra={res && <div className="cs-outcome ok-text">{part.essential ? `${res.sl >= 0 ? '+' : ''}${res.sl} DR ×2` : `${res.sl >= 0 ? '+' : ''}${res.sl} DR`}</div>}
+          />
+        );
+      })}
+    </MultiRollShell>
   );
 }

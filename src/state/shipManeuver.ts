@@ -14,15 +14,62 @@
  * (`vehicleCombatant` met `movement:0`) → on les relit via `creatureId` (`shipManeuverParams`).
  */
 import { battleRng } from './battleRng';
-import { rollTest } from '../engine/tests';
+import { rollTest, evaluateTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
 import { navalMoveMod, navalSkillTestDR } from '../engine/navalTraits';
 import { exposedCrew } from '../engine/shipCritical';
+import { crewRoleValue, moraleBand } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
-import { findVehicleById } from '../data';
+import { findVehicleById, findCrewRoleById } from '../data';
+import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { Get } from './flowTypes';
+
+/** Résultat du jet d'UN contributeur à un Test d'équipage de manœuvre (MDG ch.14). */
+export interface CrewRoleRoll { roll: number; target: number; sl: number }
+
+/** Jet d'UN contributeur à son rôle : Test de la compétence du rôle (MDG ch.14). PUR (RNG injecté). `null` si le
+ *  rôle est inconnu. La valeur suit `crewRoleValue` (meilleure compétence du rôle pour ce marin). */
+export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG): CrewRoleRoll | null {
+  const role = findCrewRoleById(roleId);
+  if (!role) return null;
+  const t = rollTest(crewRoleValue(crew, role).value, 'intermediaire', rng);
+  return { roll: t.roll, target: t.target, sl: t.sl };
+}
+
+/** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL (dé 01) à son rôle (LDB 17 l.73). PUR. */
+export function forceCrewRole(crew: Combatant, roleId: string): CrewRoleRoll | null {
+  const role = findCrewRoleById(roleId);
+  if (!role) return null;
+  const val = crewRoleValue(crew, role).value;
+  return { roll: 1, target: val, sl: evaluateTest(1, val).sl };
+}
+
+/** Total du Test d'équipage de MANŒUVRE (MDG ch.14 l.13) : Σ des DR des contributeurs, le rôle ESSENTIEL compté
+ *  DOUBLE (l.19), + la bande de Moral (l.13 « bonus/pénalités… en masse »). Ce total tient lieu de DR de Navigation
+ *  que la manœuvre (ch.13) module ensuite par le Man du navire. PUR. */
+export function maneuverCrewTotal(
+  participants: { roleId: string; result: CrewRoleRoll | null }[],
+  essentialRoleId: string | undefined,
+  moraleScore: number,
+): number {
+  let base = 0;
+  for (const p of participants) {
+    if (!p.result) continue;
+    base += essentialRoleId && p.roleId === essentialRoleId ? p.result.sl * 2 : p.result.sl;
+  }
+  return base + moraleBand(moraleScore).crewTestDR;
+}
+
+/** `ManeuverResult` d'un Test d'ÉQUIPAGE : le total d'équipage tient lieu de DR de Navigation ; le virage RÉUSSIT
+ *  si le DR FINAL (équipage + Man + extra) ≥ 1 (MDG ch.14 l.13 « si le total est de 1 DR ou plus, succès » — règle
+ *  d'équipage, distincte du `dr ≥ 0` du barreur unique ch.13). Le déplacement suit la Progression. PUR. */
+export function deriveManeuverFromCrew(ship: Combatant, crewTotal: number): ManeuverResult {
+  const { baseM, manoeuvre, extraDR } = shipManeuverParams(ship);
+  const out = resolveShipManeuver(crewTotal, baseM, manoeuvre, extraDR);
+  return { ...out, success: out.dr >= 1, navDR: crewTotal, advanced: 0 };
+}
 
 /** Le barreur : parmi l'équipage APTE (vivant + conscient — même prédicat que `exposedCrew`), celui qui a la
  *  MEILLEURE valeur de Test de `skillId` (Voile/Ramer). Un marin à terre / inconscient ne tient pas la barre. */
