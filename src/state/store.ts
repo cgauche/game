@@ -1474,9 +1474,9 @@ export const useGame = create<GameState>((set, get) => ({
         get().log(`${hero.name} contient sa Corruption — pour cette fois (Résistance ${pc.roll}/${pc.target}).`);
       } else if ((hero.resilience ?? 0) > 0) {
         get().log(`${hero.name} échoue à contenir sa Corruption — la mutation menace…`);
-        set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0 } });
+        set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0, align: pc.align } });
       } else {
-        for (const l of applyMutation(set, hero, { roll: pc.roll, target: pc.target ?? 0 })) get().log(l);
+        for (const l of applyMutation(set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);
       }
       set({ ...touchActors(get()) });
       return;
@@ -1486,7 +1486,7 @@ export const useGame = create<GameState>((set, get) => ({
       get().log(`${hero.name} repousse l'Influence corruptrice (${pc.skill} ${pc.roll}/${pc.target}).`);
       return;
     }
-    const lines = gainCorruption(get, set, hero, gain);
+    const lines = gainCorruption(get, set, hero, gain, pc.align);
     for (const l of lines) get().log(l);
     set({ ...touchActors(get()) });
   },

@@ -28,6 +28,7 @@ import {
   mutationKindFor,
   mutationLimitExceeded,
   attachMutation,
+  type ChaosAlign,
 } from '../engine/corruption';
 import { rollMutation } from '../data/mutations';
 import { rule } from '../engine/policy';
@@ -42,7 +43,7 @@ import { evLines } from './combatLog';
  * lignes de journal. La révélation (dés du Test/de la table) est poussée dans la
  * file `pendingReveals` (jet SUBI → révélation témoin).
  */
-export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number): string[] {
+export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, align?: ChaosAlign): string[] {
   const rng = battleRng();
   const lines: string[] = [];
   // Protection de Phâ (LDB 48 p.249) : un occupant d'une Zone `noCorruption` ne gagne aucune Corruption.
@@ -61,7 +62,7 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number): 
   // témoin : PNJ (l'IA ne tient pas de modale) et gains en RAFALE (une modale déjà ouverte).
   if (hero.kind === 'hero' && !get().pendingCorruption) {
     lines.push(`${hero.name} : la Corruption déborde son seuil — Test de Résistance.`);
-    set({ pendingCorruption: { heroId: hero.id, kind: 'seuil', skill: 'resistance', skillLocked: true } });
+    set({ pendingCorruption: { heroId: hero.id, kind: 'seuil', skill: 'resistance', skillLocked: true, align } });
     return lines;
   }
   const t = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
@@ -76,26 +77,28 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number): 
   // choix par modale ; la mutation (applyMutation) n'est appliquée qu'à la résolution.
   if (hero.kind === 'hero' && (hero.resilience ?? 0) > 0) {
     lines.push(`${hero.name} échoue à contenir sa Corruption (Résistance ${t.roll}/${t.target}) — la mutation menace…`);
-    set({ pendingRenounce: { heroId: hero.id, testRoll: t.roll, testTarget: t.target } });
+    set({ pendingRenounce: { heroId: hero.id, testRoll: t.roll, testTarget: t.target, align } });
     return lines;
   }
-  lines.push(...applyMutation(set, hero, { roll: t.roll, target: t.target }));
+  lines.push(...applyMutation(set, hero, { roll: t.roll, target: t.target }, align));
   return lines;
 }
 
 /** Applique la MUTATION (l.82-91) : −BFM Points, d100 corps/esprit par espèce, tirage sur le
  *  Tableau de Corruption physique/mentale, effets dérivés, puis LIMITES (l.95) → damné. */
-export function applyMutation(set: Set, hero: Combatant, test?: { roll: number; target: number }): string[] {
+export function applyMutation(set: Set, hero: Combatant, test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
   const rng = battleRng();
   const lines: string[] = [];
   const lost = bonus(effectiveChar(hero, 'FM'));
   hero.corruption = Math.max(0, (hero.corruption ?? 0) - lost);
   const kindRoll = d100(rng);
   const kind = mutationKindFor(hero.species, kindRoll);
-  // Table de Corruption : Livre de base (RAW), ou variante EDOC alignée par Puissance (règle
-  // optionnelle UNIQUE). 'ldb' → 'physique'/'mentale' ; sinon table EDOC élargie 'edoc-phys|mental-<align>'.
+  // Table de Corruption : l'alignement de la SOURCE (posé par l'éditeur de niveau) PRIME ; sinon la
+  // règle globale `corruption-tables-edoc` ('ldb' → Tableaux du Livre de base ; sinon table EDOC
+  // alignée par Puissance). La sous-table « Tête bestiale » est ré-tirée par rollMutation.
   const mode = String(rule('corruption-tables-edoc'));
-  const table = mode === 'ldb' ? kind : `edoc-${kind === 'physique' ? 'phys' : 'mental'}-${mode}`;
+  const a = align ?? (mode === 'ldb' ? null : mode);
+  const table = a ? `edoc-${kind === 'physique' ? 'phys' : 'mental'}-${a}` : kind;
   const m = rollMutation(table, rng);
   attachMutation(hero, m);
   // Effets dérivés immédiats : PA naturels (loadout) + Blessures max si F/E/FM permanents.
@@ -132,7 +135,7 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
     lines.push(`${hero.name} — « Je te renie ! » : la mutation est REFUSÉE (1 Point de Résilience ; les Points de Corruption restent).`);
     pushReveal(set, { kind: 'mutation', title: 'Je te renie !', lines: [...lines], subjectId: hero.id, severity: 'minor' });
   } else {
-    lines.push(...applyMutation(set, hero, { roll: pr.testRoll, target: pr.testTarget }));
+    lines.push(...applyMutation(set, hero, { roll: pr.testRoll, target: pr.testTarget }, pr.align));
   }
   const b = get().battle;
   if (b) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', hero.id)] } });

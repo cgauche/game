@@ -6,8 +6,13 @@
 import { describe, it, expect } from 'vitest';
 import mutationTables from './mutationTables.json';
 import mutations from './mutations.json';
+import { rollMutation } from './mutations';
+import type { RNG } from '../engine/dice';
 
 const IDS = new Set((mutations as { id: string }[]).map((m) => m.id));
+
+/** RNG scriptée : `int()` renvoie les valeurs fournies dans l'ordre (ignore min/max → d100 direct). */
+const scripted = (vals: number[]): RNG => { let i = 0; return { int: () => vals[i++ % vals.length] }; };
 
 describe('mutationTables — tables de Corruption d100', () => {
   for (const t of mutationTables as { id: string; ranges: { min: number; max: number; mutation: string }[] }[]) {
@@ -26,4 +31,16 @@ describe('mutationTables — tables de Corruption d100', () => {
       expect(bad, `${t.id}: réfs de mutation inconnues`).toEqual([]);
     });
   }
+});
+
+describe('rollMutation — tables EDOC + sous-table Tête Bestiale (résolution data-driven)', () => {
+  it('tire sur la table EDOC alignée demandée', () => {
+    expect(rollMutation('edoc-phys-toute', scripted([4])).id).toBe('sang-acide'); // toute 04 → Sang acide
+  });
+  it('« Tête bestiale » re-tire sur la sous-table de MÊME alignement (suffixe hérité)', () => {
+    // edoc-phys-toute 07-10 → tete-bestiale (subTable) ; sous-table toute 51-55 → Araignée géante
+    expect(rollMutation('edoc-phys-toute', scripted([8, 51])).id).toBe('tete-bestiale-araignee-geante');
+    // edoc-phys-khorne 10-15 → tete-bestiale ; sous-table khorne 01-10 → Ours
+    expect(rollMutation('edoc-phys-khorne', scripted([12, 5])).id).toBe('tete-bestiale-ours');
+  });
 });

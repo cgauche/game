@@ -385,6 +385,9 @@ export interface PendingCorruption {
   /** Compétence déterminée en amont (source ou seuil) → pas de choix joueur. Absent/false = nature
    *  indéterminée (LDB 19 l.26) → la modale propose Résistance/Calme (cf. `corruptionSetSkill`). */
   skillLocked?: boolean;
+  /** Alignement de la SOURCE (Puissance du Chaos) posé par l'éditeur de niveau → table EDOC à tirer
+   *  si une mutation survient (sinon la règle globale décide). Voyage exposition → seuil → mutation. */
+  align?: import('../engine/corruption').ChaosAlign;
   roll?: number;
   target?: number;
   sl?: number;
@@ -417,6 +420,8 @@ export interface PendingRenounce {
   /** Jet du Test de Résistance raté (affichage). */
   testRoll: number;
   testTarget: number;
+  /** Alignement de la source (cf. PendingCorruption.align) — table EDOC si la mutation est subie. */
+  align?: import('../engine/corruption').ChaosAlign;
 }
 /** Piège-lame (LDB 62 l.292-294) : le HÉROS défenseur a obtenu un Critique en parant avec une arme
  *  Piège-lame face à une arme à lame — il choisit entre le Coup Critique normal (LDB 14 l.7) et

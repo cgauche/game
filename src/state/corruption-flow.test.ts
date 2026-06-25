@@ -7,6 +7,7 @@ import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { gainCorruption } from './corruptionFlow';
 import { makePregens } from '../data/pregens';
+import mutationTables from '../data/mutationTables.json';
 import type { Combatant } from '../engine/types';
 
 function party2() {
@@ -120,6 +121,30 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'mutation');
     expect(reveal).toBeTruthy();
     expect(reveal!.subjectId).toBe(a.id);
+  });
+
+  it('align de la SOURCE → la mutation est tirée sur la table EDOC alignée (l\'éditeur de niveau le pose)', () => {
+    const { a, party } = party2();
+    a.characteristics.E = 1; // BE 0
+    a.characteristics.FM = 30; // BFM 3
+    a.corruption = 4; // seuil dépassé au prochain gain
+    a.resilience = 0; // mutation directe
+    useGame.setState({ party });
+    gainCorruption(useGame.getState, useGame.setState, a, 1, 'nurgle'); // source alignée Nurgle
+    const pc = useGame.getState().pendingCorruption!;
+    expect(pc.kind).toBe('seuil');
+    expect(pc.align).toBe('nurgle'); // l'alignement voyage source → modale
+    useGame.getState().corruptionRoll();
+    useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 30, sl: -7, success: false } });
+    useGame.getState().resolveCorruption();
+    const after = useGame.getState().party.find((h) => h.id === a.id)!;
+    expect(after.mutations?.length).toBe(1);
+    // La mutation obtenue est atteignable depuis une table EDOC « nurgle » (phys/mental/sous-table).
+    const nurgleRefs = new Set(
+      (mutationTables as { id: string; ranges: { mutation: string }[] }[])
+        .filter((t) => t.id.includes('nurgle')).flatMap((t) => t.ranges.map((r) => r.mutation)),
+    );
+    expect(nurgleRefs.has(after.mutations![0].id)).toBe(true);
   });
 
   it('seuil RÉUSSI (acquitté) : Corruption contenue, aucune mutation', () => {

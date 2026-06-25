@@ -773,7 +773,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // Gain direct (artefact maudit, Pacte scénarisé…) — applique aussi seuil → mutation.
       const hero = corruptionTarget(env.get(), e.heroId);
       if (hero) {
-        const lines = gainCorruption(env.get, env.set, hero, Math.max(1, e.amount ?? 1));
+        const lines = gainCorruption(env.get, env.set, hero, Math.max(1, e.amount ?? 1), e.align);
         for (const l of lines) env.log(l);
         env.set({ party: [...env.get().party] });
       }
@@ -788,7 +788,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const hero = corruptionTarget(env.get(), e.heroId);
       // `e.skill` présent = déterminé en amont (verrouillé) ; absent = nature indéterminée → le
       // joueur choisira Résistance/Calme dans la modale (défaut affiché : Résistance).
-      if (hero) env.set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null } });
+      if (hero) env.set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null, align: e.align } });
     },
   },
   giveSin: {

@@ -32,6 +32,19 @@ export const EXPOSURE_LABELS: Record<ExposureLevel, string> = {
   majeure: 'majeure',
 };
 
+/** Alignement d'une SOURCE de Corruption (Puissance du Chaos) : si fourni, choisit la table EDOC
+ *  à tirer pour la mutation, quelle que soit la règle globale ; sinon la règle `corruption-tables-edoc`
+ *  décide. `toute` = Chaos non aligné (table EDOC élargie). */
+export type ChaosAlign = 'toute' | 'khorne' | 'nurgle' | 'slaanesh' | 'tzeentch';
+
+export const CHAOS_ALIGN_LABELS: Record<ChaosAlign, string> = {
+  toute: 'Toute Puissance',
+  khorne: 'Khorne',
+  nurgle: 'Nurgle',
+  slaanesh: 'Slaanesh',
+  tzeentch: 'Tzeentch',
+};
+
 /** Mutation subie (donnée persistée ; cf. Tableaux LDB 19 p.184-185). */
 export interface Mutation {
   /** `id` STABLE (slug) — clé de résolution runtime/données (registre, table de Corruption, rendu).

@@ -17,6 +17,7 @@ import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
 import { RefField } from '../compendium/RefField';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
+import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -100,8 +101,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'setLight': return `${icon} Lumière ${Math.round((e.level ?? 1) * 100)} %`;
     case 'setDoor': return `${icon} Porte (${e.x ?? 0},${e.y ?? 0},${e.side ?? 'N'}) ${e.open ? 'ouverte' : 'fermée'}`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
-    case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
-    case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
+    case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
+    case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
     case 'learnSpell': return `${icon} Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
     case 'rest': return `${icon} Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
     case 'mealParty': return `${icon} Repas du groupe`;
@@ -271,12 +272,26 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <option value="resistance">Résistance (Influence physique)</option>
               <option value="calme">Calme (Corruption spirituelle)</option>
             </select>
+            {/* Alignement de la SOURCE (Puissance du Chaos) : si une mutation survient, force la table
+                EDOC alignée. « règle globale » = laisse décider le réglage Règles maison. */}
+            <select value={e.align ?? ''} onChange={(ev) => upd({ align: (ev.target.value || undefined) as ChaosAlign | undefined })}>
+              <option value="">Mutation : règle globale (par défaut)</option>
+              {(Object.keys(CHAOS_ALIGN_LABELS) as ChaosAlign[]).map((k) => (
+                <option key={k} value={k}>Table EDOC : {CHAOS_ALIGN_LABELS[k]}</option>
+              ))}
+            </select>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>
         )}
         {effect.type === 'giveCorruption' && (
           <>
             <label>Points de Corruption <input type="number" min={1} value={e.amount ?? 1} onChange={(ev) => upd({ amount: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <select value={e.align ?? ''} onChange={(ev) => upd({ align: (ev.target.value || undefined) as ChaosAlign | undefined })}>
+              <option value="">Mutation : règle globale (par défaut)</option>
+              {(Object.keys(CHAOS_ALIGN_LABELS) as ChaosAlign[]).map((k) => (
+                <option key={k} value={k}>Table EDOC : {CHAOS_ALIGN_LABELS[k]}</option>
+              ))}
+            </select>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>
         )}
