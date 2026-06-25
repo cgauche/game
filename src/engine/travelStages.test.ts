@@ -12,6 +12,8 @@ import {
   pleinAirModifier, forageWeatherModifier, forageYield,
   type Season,
 } from './travelStages';
+import { setDataset } from '../data/overrides';
+import { weather } from '../data';
 
 describe('seasonOfMonth (calendrier impérial → table de Météo)', () => {
   it('Jahrdrung/Pflugzeit/Sigmarzeit = printemps ; Sommerzeit = été ; Erntezeit = automne ; Vorhexen/Nachhexen = hiver', () => {
@@ -75,6 +77,13 @@ describe('table de Météo VERBATIM (EDOC ch.5 l.44-51)', () => {
     expect(weatherFromRoll(91, 'hiver')).toBe('blizzard');
     expect(weatherFromRoll(100, 'hiver')).toBe('blizzard');
     expect(WEATHER_TABLE.hiver.map((r) => r.weather)).not.toContain('sec');
+  });
+  it('édition LIVE au Codex : éditer la météo (setDataset) change le tirage', () => {
+    const orig = weather.map((s) => ({ ...s, ranges: s.ranges.map((r) => ({ ...r })) }));
+    setDataset('weather', weather.map((s) => (s.id === 'printemps' ? { ...s, ranges: [{ max: 100, weather: 'blizzard' }] } : s)));
+    expect(weatherFromRoll(50, 'printemps')).toBe('blizzard'); // lecture LIVE de la donnée éditée
+    setDataset('weather', orig); // restaurer pour l'isolation des autres tests
+    expect(weatherFromRoll(50, 'printemps')).not.toBe('blizzard');
   });
   it('chaque saison couvre 100 (toute valeur d100 retombe sur une plage)', () => {
     const seasons: Season[] = ['printemps', 'ete', 'automne', 'hiver'];

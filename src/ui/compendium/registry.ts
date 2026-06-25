@@ -13,7 +13,7 @@ import {
   stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
-  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases,
+  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { talentMaxLabel } from '../../engine/careerSlots';
@@ -609,6 +609,10 @@ export const CODEX: CodexCategory[] = [
       label: `${p.icon} ${p.label}`,
       sub: `dès ${String(Math.floor(p.start / 60)).padStart(2, '0')}:${String(p.start % 60).padStart(2, '0')}`,
     })),
+  },
+  {
+    key: 'weather', label: 'Météo de voyage', group: 'Tables',
+    items: weather.map((s) => ({ label: s.label, sub: `${s.ranges.length} plages d100 (EDOC ch.5)` })),
   },
   {
     key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables',

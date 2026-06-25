@@ -1,86 +1,102 @@
-{
-  "printemps": [
-    {
-      "max": 10,
-      "weather": "sec"
-    },
-    {
-      "max": 30,
-      "weather": "beau"
-    },
-    {
-      "max": 90,
-      "weather": "pluie"
-    },
-    {
-      "max": 95,
-      "weather": "pluie-diluvienne"
-    },
-    {
-      "max": 100,
-      "weather": "neige"
-    }
-  ],
-  "ete": [
-    {
-      "max": 40,
-      "weather": "sec"
-    },
-    {
-      "max": 70,
-      "weather": "beau"
-    },
-    {
-      "max": 95,
-      "weather": "pluie"
-    },
-    {
-      "max": 100,
-      "weather": "pluie-diluvienne"
-    }
-  ],
-  "automne": [
-    {
-      "max": 30,
-      "weather": "sec"
-    },
-    {
-      "max": 60,
-      "weather": "beau"
-    },
-    {
-      "max": 90,
-      "weather": "pluie"
-    },
-    {
-      "max": 98,
-      "weather": "pluie-diluvienne"
-    },
-    {
-      "max": 100,
-      "weather": "neige"
-    }
-  ],
-  "hiver": [
-    {
-      "max": 10,
-      "weather": "beau"
-    },
-    {
-      "max": 60,
-      "weather": "pluie"
-    },
-    {
-      "max": 65,
-      "weather": "pluie-diluvienne"
-    },
-    {
-      "max": 90,
-      "weather": "neige"
-    },
-    {
-      "max": 100,
-      "weather": "blizzard"
-    }
-  ]
-}
+[
+  {
+    "id": "printemps",
+    "label": "Printemps",
+    "ranges": [
+      {
+        "max": 10,
+        "weather": "sec"
+      },
+      {
+        "max": 30,
+        "weather": "beau"
+      },
+      {
+        "max": 90,
+        "weather": "pluie"
+      },
+      {
+        "max": 95,
+        "weather": "pluie-diluvienne"
+      },
+      {
+        "max": 100,
+        "weather": "neige"
+      }
+    ]
+  },
+  {
+    "id": "ete",
+    "label": "Été",
+    "ranges": [
+      {
+        "max": 40,
+        "weather": "sec"
+      },
+      {
+        "max": 70,
+        "weather": "beau"
+      },
+      {
+        "max": 95,
+        "weather": "pluie"
+      },
+      {
+        "max": 100,
+        "weather": "pluie-diluvienne"
+      }
+    ]
+  },
+  {
+    "id": "automne",
+    "label": "Automne",
+    "ranges": [
+      {
+        "max": 30,
+        "weather": "sec"
+      },
+      {
+        "max": 60,
+        "weather": "beau"
+      },
+      {
+        "max": 90,
+        "weather": "pluie"
+      },
+      {
+        "max": 98,
+        "weather": "pluie-diluvienne"
+      },
+      {
+        "max": 100,
+        "weather": "neige"
+      }
+    ]
+  },
+  {
+    "id": "hiver",
+    "label": "Hiver",
+    "ranges": [
+      {
+        "max": 10,
+        "weather": "beau"
+      },
+      {
+        "max": 60,
+        "weather": "pluie"
+      },
+      {
+        "max": 65,
+        "weather": "pluie-diluvienne"
+      },
+      {
+        "max": 90,
+        "weather": "neige"
+      },
+      {
+        "max": 100,
+        "weather": "blizzard"
+      }
+    ]
+  }
+]

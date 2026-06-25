@@ -11,6 +11,7 @@ import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { entryKey } from './registry';
+import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
@@ -47,7 +48,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   pregens: 'pregens', oups: 'oups', interludeEvents: 'interludeEvents', peripeties: 'peripeties',
   // Calendrier impérial — tables de contenu éditables (cf. engine/clock.ts pour la mécanique).
   calendarMonths: 'calendarMonths', calendarIntercalary: 'calendarIntercalary',
-  calendarWeekdays: 'calendarWeekdays', calendarPhases: 'calendarPhases',
+  calendarWeekdays: 'calendarWeekdays', calendarPhases: 'calendarPhases', weather: 'weather',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -86,7 +87,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
   if (['traits', 'qualities', 'mutations', 'talents', 'etats'].includes(categoryKey)) add('passive');
   if (categoryKey === 'stars') add('effect', 'sub');
-  if (categoryKey === 'mutationTables') add('ranges');
+  if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
   if (categoryKey === 'trappings') add('consumable');
@@ -186,6 +187,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isStarEffect = categoryKey === 'stars';
   // Table de Corruption : ses `ranges` (plages d100 → réf mutation) ont leur éditeur dédié.
   const isMutationTable = categoryKey === 'mutationTables';
+  // Météo : ses `ranges` (plages d100 → type de météo) ont leur éditeur dédié.
+  const isWeather = categoryKey === 'weather';
   // Mutation : traits psy conférés (PsychTraitsField) — sorti du repli JSON.
   const isMutation = categoryKey === 'mutations';
   // Arme DÉRIVÉE (WeaponField) : portée par une Mutation (Tentacule…) OU une Possession (prothèse-arme).
@@ -267,6 +270,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
+        {isWeather && <WeatherRangesField value={entry.ranges as { max: number; weather: string }[] | undefined} onChange={(v) => edit('ranges', v)} />}
         {hasDerivedWeapon && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
         {hasConsumable && (
           <div className="ed-field">
@@ -526,6 +530,31 @@ interface MutationRange { min: number; max: number; mutation: string; }
  *  dont l'intervalle contient le jet (`findTableEntry`). DÉCOUPLÉ de la mutation : plusieurs tables (une par
  *  dieu du Chaos, Compagnon T1) peuvent pointer la même mutation à des plages différentes. Réutilise
  *  `RefDatalist` (autocomplétion des labels de mutation). */
+/** Éditeur des PLAGES de Météo d'une saison (`weather.json`) : chaque rangée = un intervalle d100
+ *  (jusqu'à `max` inclus, ordonné, la dernière finit à 100) → une Météo (parmi les types connus). */
+function WeatherRangesField({ value, onChange }: { value: { max: number; weather: string }[] | undefined; onChange: (v: { max: number; weather: string }[]) => void }) {
+  const list = value ?? [];
+  const set = (i: number, patch: Partial<{ max: number; weather: string }>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
+  return (
+    <div className="ed-field">
+      <span>plages d100 → météo (jusqu'à `max` inclus, ordonnées ; la dernière doit finir à 100)</span>
+      {list.map((r, i) => (
+        <div className="ed-subfield" key={i}>
+          <div className="tf-row">
+            <label className="dr">d100 ≤&nbsp;<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
+            <select value={r.weather} onChange={(e) => set(i, { weather: e.target.value })}>
+              {(Object.keys(WEATHER_LABEL) as (keyof typeof WEATHER_LABEL)[]).map((w) => <option key={w} value={w}>{WEATHER_LABEL[w]}</option>)}
+            </select>
+            <button className="btn small danger" title="Supprimer la plage" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+          </div>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...list, { max: 100, weather: 'beau' }])}>+ Plage d100</button>
+    </div>
+  );
+}
+
 function MutationTableField({ value, onChange }: { value: MutationRange[] | undefined; onChange: (v: MutationRange[]) => void }) {
   const list = value ?? [];
   const set = (i: number, patch: Partial<MutationRange>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));

@@ -15,7 +15,7 @@
 import type { RNG } from './dice';
 import { d100 } from './dice';
 import type { Difficulty } from './types';
-import weatherJson from '../data/weather.json';
+import { weather } from '../data';
 
 /** Les quatre saisons du tableau de Météo (EDOC ch.5 l.44). */
 export type Season = 'printemps' | 'ete' | 'automne' | 'hiver';
@@ -69,13 +69,17 @@ interface WeatherRange { max: number; weather: Weather; }
  *  | Neige            | 96-00     | -      | 99-00   | 66-90  |
  *  | Blizzard         | -         | -      | -       | 91-00  |
  */
-export const WEATHER_TABLE: Record<Season, WeatherRange[]> = weatherJson as Record<Season, WeatherRange[]>;
+/** Vue Record DÉRIVÉE (compat/tests) du dataset `weather` (1 entrée/saison, éditable au Codex).
+ *  Snapshot au chargement ; le TIRAGE lit la donnée live ci-dessous (réf stable via splice) → une
+ *  édition au Codex change la météo tirée. */
+export const WEATHER_TABLE: Record<Season, WeatherRange[]> =
+  Object.fromEntries(weather.map((s) => [s.id, s.ranges])) as Record<Season, WeatherRange[]>;
 
-/** Météo depuis un jet d100 explicite (1-100) et une saison — lecture pure de la table RAW. */
+/** Météo depuis un jet d100 explicite (1-100) et une saison — lecture LIVE de la donnée éditable. */
 export function weatherFromRoll(roll: number, season: Season): Weather {
-  const table = WEATHER_TABLE[season];
-  for (const r of table) if (roll <= r.max) return r.weather;
-  return table[table.length - 1].weather; // garde-fou : 100 retombe sur la dernière plage
+  const ranges = (weather.find((s) => s.id === season)?.ranges ?? []) as WeatherRange[];
+  for (const r of ranges) if (roll <= r.max) return r.weather;
+  return ranges[ranges.length - 1].weather; // garde-fou : 100 retombe sur la dernière plage
 }
 
 /** Jet de Météo d'une Étape (EDOC ch.5 l.42) : d100 sur la table de la saison. */

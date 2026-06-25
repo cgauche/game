@@ -38,6 +38,7 @@ import calendarMonthsJson from './calendarMonths.json';
 import calendarIntercalaryJson from './calendarIntercalary.json';
 import calendarWeekdaysJson from './calendarWeekdays.json';
 import calendarPhasesJson from './calendarPhases.json';
+import weatherJson from './weather.json';
 import detailsJson from './details.json';
 import starsJson from './stars.json';
 import locationsJson from './locations.json';
@@ -903,6 +904,8 @@ export const calendarMonths = calendarMonthsJson as { name: string; days: number
 export const calendarIntercalary = calendarIntercalaryJson as { name: string; afterMonth: number }[];
 export const calendarWeekdays = calendarWeekdaysJson as { name: string }[];
 export const calendarPhases = calendarPhasesJson as { key: string; start: number; label: string; icon: string }[];
+/** Table de Météo de voyage (EDOC ch.5) — 1 entrée par saison, `ranges` = plages d100 → météo. Éditable au Codex. */
+export const weather = weatherJson as { id: string; label: string; ranges: { max: number; weather: string }[] }[];
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */
