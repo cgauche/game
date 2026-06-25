@@ -59,7 +59,7 @@ import { useCombatFx } from './fx/useCombatFx';
 import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale, footprintTokenScale } from './sizeScale';
-import { sizeFootprint, footprintN, occupiesTile, decorFootGeometry } from '../state/footprint';
+import { sizeFootprint, footprintN, footprintTiles, occupiesTile, decorFootGeometry } from '../state/footprint';
 import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack } from '../state/combatFlow';
 import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
@@ -485,7 +485,7 @@ export function IsoStage() {
       const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
       const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'run' ? 'Courir' : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
       hl.push(...movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv'));
-      if (pvTgt?.pos) hl.push(<path key="pv-tgt" d={diamondPath(pvTgt.pos.x, pvTgt.pos.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />);
+      if (pvTgt?.pos) for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt))) hl.push(<path key={`pv-tgt-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />); // tout le bloc N×N d'un grand
     }
     // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
     for (const c of battle.combatants) {

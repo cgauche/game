@@ -49,7 +49,7 @@ import {
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
-import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
+import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
@@ -108,7 +108,7 @@ import { suffocationTick } from '../engine/suffocation';
 import { domainOnHitEffects, domainMissileMods, domainAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
-import { rollContraction, contractDisease, contractionDue, applyContraction, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
+import { rollContraction, contractDisease, contractionDue, applyContraction, hasActiveCapability, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
@@ -740,12 +740,14 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
 }
 
 /** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */
-export function bestAdjacentReachable(reach: Map<string, number>, target: Pt): Pt | null {
+export function bestAdjacentReachable(reach: Map<string, number>, target: Pt, targetN = 1, moverN = 1): Pt | null {
   let best: Pt | null = null;
   let bestD = Infinity;
   for (const k of reach.keys()) {
     const [x, y] = k.split(',').map(Number);
-    if (chebyshev({ x, y }, target) !== 1) continue;
+    // Adjacent à l'EMPREINTE de la cible (toute case du bloc N×N, pas seulement l'ancre) → un grand (créature,
+    // navire) s'attaque depuis N'IMPORTE quel côté. `footprintChebyshev` coïncide avec `chebyshev` pour deux 1×1.
+    if (footprintChebyshev({ x, y }, moverN, target, targetN) !== 1) continue;
     const d = reach.get(k)!;
     if (d < bestD) {
       bestD = d;
@@ -920,13 +922,13 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
     // adjacente la moins chère.
     const M = mountMovement(battle, active);
     const reach = moveReachFor(geom, scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size));
-    const dest = bestAdjacentReachable(reach, target.pos!);
+    const dest = bestAdjacentReachable(reach, target.pos!, footprintN(target), footprintN(geom));
     if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de Charge.' };
-    return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], adv: chargeAdvantage(M, chebyshev(active.pos!, target.pos!)) };
+    return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], adv: chargeAdvantage(M, footprintChebyshev(active.pos!, footprintN(geom), target.pos!, footprintN(target))) };
   }
   // Mouvement entamé (ou À Terre) : rejoindre dans la Marche restante.
   const reach = displayedReach(get);
-  const dest = bestAdjacentReachable(reach, target.pos!);
+  const dest = bestAdjacentReachable(reach, target.pos!, footprintN(target), footprintN(geom));
   if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de mêlée.' };
   return { kind: 'moveAttack', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], cost: reach.get(`${dest.x},${dest.y}`)! };
 }
@@ -1346,7 +1348,7 @@ export function applyAttackResult(
   // Le bilan reste héros-only : exposer un non-héros est inerte. (LDB 20 l.32/49 ; LDB 85 p.340.)
   // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
   if (res.defenderDetail?.mode === 'esquive' && !res.defenderDetail.success
-      && hasActiveSymptom(target, 'nausee') && !hasCondition(target, COND.sonne)) {
+      && hasActiveCapability(target, 'nausea') && !hasCondition(target, COND.sonne)) {
     addCondition(target, COND.sonne);
     critLog.push(tr('cf.vomitStun', { name: target.name }));
   }
