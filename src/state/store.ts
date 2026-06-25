@@ -68,7 +68,7 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingApproach, PendingWard, PendingFocus, PendingDispel,
+  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
@@ -322,6 +322,8 @@ export interface GameState extends RollFlowActionsMap {
   pendingManeuver: PendingManeuver | null;
   /** Course en cours (modale Test d'Athlétisme → déplacement étendu). */
   pendingRun: PendingRun | null;
+  /** Manœuvre navale en cours (MDG ch.13 : Test de Navigation du barreur → vire le cap + avance). */
+  pendingShipManeuver: PendingShipManeuver | null;
   /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.29). */
   pendingApproach: PendingApproach | null;
   /** Bénédiction de Protection en cours (Test de FM +20 différant la déclaration d'attaque — LDB 41 l.105). */
@@ -734,6 +736,12 @@ export interface GameState extends RollFlowActionsMap {
   maneuverSetAvantage: (n: number) => void;
   /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
   battleRun: (dest?: Pt) => void;
+  /** Manœuvre navale (MDG ch.13) : ouvre la modale du Test de Navigation pour le navire que sert `crewId`. */
+  battleShipManeuver: (crewId: string) => void;
+  /** Choix du virage (pré-jet OptionChooser) : crans d'octant (±1 = 45°, ±2 = 90°, 0 = tout droit). */
+  shipManeuverSetTurn: (steps: number) => void;
+  shipManeuverConfirm: () => void;
+  shipManeuverCancel: () => void;
   // run{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   runConfirm: () => void;
   runCancel: () => void;

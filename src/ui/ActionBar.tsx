@@ -16,6 +16,7 @@ import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
+import { shipOfCrew } from '../state/shipPostes';
 import { controlsActive } from '../state/netOwnership';
 import { aiDriven } from '../state/combatGate';
 import type { Combatant } from '../engine/types';
@@ -60,6 +61,7 @@ export function ActionBar() {
   const standUp = useGame((s) => s.battleStandUp);
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
+  const battleShipManeuver = useGame((s) => s.battleShipManeuver);
   const recoverState = useGame((s) => s.battleRecoverState);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const aim = useGame((s) => s.battleAim);
@@ -310,6 +312,8 @@ export function ActionBar() {
 
   // ── Capacités de la barre, DATA-DRIVEN : UNE liste de descripteurs, source du rendu ET des
   // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
+  // Manœuvre navale (MDG ch.13) : un héros membre de l'équipage d'un navire peut prendre la barre (Test de Navigation).
+  const shipSupport = isHero ? shipOfCrew(battle.combatants, active.id) : undefined;
   const slots: HotbarSlot[] = [];
   if (isHero) {
     if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: '↩️', label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
@@ -323,6 +327,7 @@ export function ActionBar() {
     if (engaged && !frenzied) slots.push({ id: 'disengage', disabled: battle.acted && !canFreeDisengage, icon: '🚪', label: 'Se désengager', title: "Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)", run: disengage });
     if (mountCandidate) slots.push({ id: 'mount', disabled: moveStarted || broken, icon: '🐎', label: 'Monter', title: `Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`, run: mountUp });
     if (mounted) slots.push({ id: 'dismount', disabled: moveStarted || broken, icon: '🥾', label: 'Descendre', title: 'Descendre de sa monture — coûte le Mouvement', run: dismount });
+    if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
     if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: '🎯', label: active.aiming ? 'En joue ✓' : 'Viser', title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });
     if (canPush) slots.push({ id: 'pushback', icon: '↩️', label: active.pushbackMode ? 'Repousser ✓' : 'Repousser', title: "Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts", run: togglePushback });
     if (needsReload && !frenzied) slots.push({ id: 'reload', cls: `ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`, disabled: battle.acted || stunned || broken, icon: '🔄', label: `Recharger${active.reloadProgress ? ` (${active.reloadProgress}/${rangedW.reload})` : ''}`, title: "Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)", run: reload });

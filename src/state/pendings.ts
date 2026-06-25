@@ -18,6 +18,7 @@ import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlow';
 import type { Money } from '../engine/money';
+import type { ManeuverResult } from './shipManeuver';
 
 export type { Money };
 /** Une ligne de butin d'équipement (giveTrapping) ATTRIBUABLE par portrait — partagée entre
@@ -288,6 +289,15 @@ export interface PendingRun {
   /** `target` absent sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */
   result: { success: boolean; roll: number; target?: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;
+}
+/** Manœuvre navale en cours (MDG ch.13) : le barreur (`helmsmanId`) jette un Test de Navigation ; la direction
+ *  (`turnSteps`, choisie au pré-jet OptionChooser) s'applique à la confirmation (`shipManeuverConfirm`). */
+export interface PendingShipManeuver extends PendingBase {
+  shipId: string;
+  helmsmanId: string;
+  /** Virage choisi : >0 tribord, <0 bâbord, 0 tout droit (crans d'octant — ±1 = 45°, ±2 = 90°). */
+  turnSteps: number;
+  result: ManeuverResult | null;
 }
 /** Approche d'une source de PEUR (LDB 21 l.29 : « incapable de vous rapprocher … à moins de réussir un
  *  Test de Calme Intermédiaire (+0) ») : le clic d'approche est DIFFÉRÉ derrière ce Test sec. Succès →

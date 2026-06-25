@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingManeuver, PendingRun, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
+  PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -38,6 +38,7 @@ import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
+import { rollShipManeuver, forceShipManeuver, bonusShipManeuver } from './shipManeuver';
 import { testValue } from '../engine/skills';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -157,6 +158,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'recover', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'reload', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'run', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'shipManeuver', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'test', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MultiRollActions<'counterspell', RollVerb>
@@ -668,6 +670,35 @@ export const FLOWS = {
       return { result: resolveRun(testValue(actor, actor.mountId ? 'chevaucher' : 'athletisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
     },
     failed: (p) => !p.result?.success,
+  }),
+
+  /** Manœuvre navale (MDG ch.13) : Test de Navigation du barreur. Le DR FINAL nourrit la table de
+   *  Progression (avance) ET l'Indice de Collision (`maneuverDR` d'éperonnage) → la Chance « +1 DR »
+   *  est utile (≠ Course binaire). `resolve` PUR (jet) ; l'application (virage + avance) vit dans
+   *  `shipManeuverConfirm`. Forced (Résilience) = réussite minimale. */
+  shipManeuver: makeRollFlow<PendingShipManeuver>({
+    key: 'pendingShipManeuver',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.helmsmanId),
+    caps: { forced: true },
+    resolve: (s, p, _actor, get, forced) => {
+      const ship = s.battle?.combatants.find((c) => c.id === p.shipId);
+      if (!ship) return null;
+      if (forced) {
+        const r = forceShipManeuver(ship, p.result); // Résilience → succès minimal ; null si déjà réussie
+        return r ? { result: r } : null;
+      }
+      const r = rollShipManeuver(get, p.shipId, p.helmsmanId);
+      return r ? { result: r } : null;
+    },
+    failed: (p) => !!p.result && !p.result.success,
+    bonus: {
+      guard: (p) => !!p.result,
+      derive: (s, p) => {
+        const ship = s.battle?.combatants.find((c) => c.id === p.shipId);
+        return ship && p.result ? { result: bonusShipManeuver(ship, p.result) } : null;
+      },
+    },
   }),
 
   /** Focalisation (Test étendu de magie) — vaut en combat ET hors combat (`actorIn`). */

@@ -30,7 +30,7 @@ type FieldKey =
   | 'pendingCounterspell' | 'pendingExtendedTest' | 'pendingForceDoor' | 'pendingCascade'
   | 'pendingCastOpposition' | 'pendingHeal' | 'medic' | 'pendingRest' | 'pendingCleave'
   | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingManeuver'
-  | 'pendingRun' | 'pendingApproach' | 'pendingWard' | 'pendingFocus' | 'pendingDispel' | 'pendingFrenzy' | 'pendingRoundStart'
+  | 'pendingRun' | 'pendingShipManeuver' | 'pendingApproach' | 'pendingWard' | 'pendingFocus' | 'pendingDispel' | 'pendingFrenzy' | 'pendingRoundStart'
   | 'pendingFateSave' | 'pendingVictory' | 'pendingLoot' | 'document' | 'previousScene';
 
 type FieldSpec<K extends FieldKey> = { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] };
@@ -70,6 +70,7 @@ const STATE_FIELDS: Manifest = {
   pendingTrample: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingManeuver: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingRun: { init: null, resetOn: ['scene', 'combatStart'] },
+  pendingShipManeuver: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingApproach: { init: null, resetOn: ['scene'] },
   pendingWard: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingFocus: { init: null, resetOn: ['scene', 'combatStart'] },

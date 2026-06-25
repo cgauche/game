@@ -47,7 +47,8 @@ import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
-import { applyShipPostes, servingCrewPresent } from './shipPostes';
+import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
+import { applyShipManeuver } from './shipManeuver';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
@@ -780,6 +781,34 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
     runCancel: () => set({ pendingRun: null }),
+
+    // ── Manœuvre navale (MDG ch.13) : le barreur (héros ACTIF, à la barre) dépense son Action pour un Test
+    //    de Navigation → vire le cap (re-mappe les bordées) + avance la coque. « Un jet = une Action » : le
+    //    jet passe par pendingShipManeuver, `acted` consommé au confirm. La direction se choisit au pré-jet. ──
+    battleShipManeuver: (crewId: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return;
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || active.id !== crewId || !canTakeAction(active)) return;
+      const ship = shipOfCrew(battle.combatants, crewId); // le navire dont l'équipage inclut le héros
+      if (!ship) return;
+      set({ pendingShipManeuver: { shipId: ship.id, helmsmanId: crewId, turnSteps: 0, result: null }, battle: { ...battle, action: null, preview: null } });
+    },
+    shipManeuverSetTurn: (steps: number) => {
+      const p = get().pendingShipManeuver;
+      if (p) set({ pendingShipManeuver: { ...p, turnSteps: steps } }); // virage ⟂ jet (le Test ne dépend pas du sens)
+    },
+    ...rollFlowActions('shipManeuver', FLOWS.shipManeuver, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
+    shipManeuverConfirm: () => {
+      const { battle, pendingShipManeuver: p } = get();
+      if (!battle || !p || !p.result) return;
+      set({ pendingShipManeuver: null });
+      applyShipManeuver(get, p.shipId, p.result, p.turnSteps); // vire (si succès) + avance ; logue
+      set({ battle: { ...get().battle!, action: null, acted: true, preview: null } }); // un jet = une Action
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    shipManeuverCancel: () => set({ pendingShipManeuver: null }),
 
     // ── Approche d'une source de Peur (LDB 21 l.29) : Test de Calme Intermédiaire (+0) qui DIFFÈRE le
     //    clic d'approche. Succès → fearGate 'passed' (approches libres ce Tour) + l'intention est relancée ;

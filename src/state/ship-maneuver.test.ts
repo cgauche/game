@@ -5,7 +5,7 @@ import { inFireArc, targetArc } from './fireArc';
 import { resolveShipManeuver } from '../engine/shipNavigation';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
-import { maneuverShip } from './shipManeuver';
+import { maneuverShip, rollShipManeuver, applyShipManeuver, forceShipManeuver, bonusShipManeuver, type ManeuverResult } from './shipManeuver';
 import type { Combatant, NavalTraitRef, ShipPoste } from '../engine/types';
 
 /**
@@ -222,6 +222,48 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
     expect(useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5, y: 5 }); // intacte
   });
 
+  // ── Séparation jet ⟂ application (patron des flux différés) : le jet ne mute RIEN ; l'application vire+avance. ──
+  const helm2 = (): Combatant =>
+    ({ id: 'helm', name: 'Timonier', kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
+      skills: [{ skillId: 'voile', characteristic: 'Ag', advances: 40 }], talents: [], weapons: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
+  const ship2 = (): Combatant =>
+    ({ id: 'ship', name: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+
+  it('rollShipManeuver NE MUTE RIEN (ni cap, ni position) — il ne fait que résoudre le Test', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [ship2(), helm2()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+    const res = rollShipManeuver(() => useGame.getState(), 'ship', 'helm')!;
+    expect(res.advanced).toBe(0); // pas encore appliqué
+    expect(useGame.getState().facing.ship).toBe('N'); // cap INCHANGÉ par le jet
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5, y: 5 }); // position INCHANGÉE
+  });
+
+  it('applyShipManeuver vire (si succès) + avance le long du cap', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [ship2(), helm2()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+    const res = rollShipManeuver(() => useGame.getState(), 'ship', 'helm')!;
+    expect(res.success).toBe(true); // seed 7 → réussite (cf. tests maneuverShip)
+    const advanced = applyShipManeuver(() => useGame.getState(), 'ship', res, 2); // tribord 90°
+    expect(advanced).toBeGreaterThan(0);
+    expect(useGame.getState().facing.ship).toBe('E');
+  });
+
+  it('forceShipManeuver (Résilience) → réussite garantie (DR ≥ 0) ; null si déjà réussie', () => {
+    const fail: ManeuverResult = { dr: -3, success: false, movement: 1, label: '', navDR: -2, advanced: 0 };
+    const forced = forceShipManeuver(ship2(), fail)!;
+    expect(forced.success).toBe(true);
+    expect(forced.dr).toBeGreaterThanOrEqual(0);
+    expect(forceShipManeuver(ship2(), { ...fail, success: true })).toBeNull();
+  });
+
+  it('bonusShipManeuver (+1 DR) → navDR augmenté de 1', () => {
+    const base: ManeuverResult = { dr: 0, success: true, movement: 5, label: '', navDR: 1, advanced: 0 };
+    expect(bonusShipManeuver(ship2(), base).navDR).toBe(2);
+  });
+
   // Coque COMPLÈTE pour l'éperonnage : characteristics/PB (IC), creatureId (M), bodyShape (détection de coque).
   const navHull = (id: string, x: number, creatureId: string, E: number, pb: number): Combatant =>
     ({ id, name: id, kind: 'npc', creatureId, bodyShape: 'vehicule', pos: { x, y: 5 }, crewIds: [],
@@ -245,5 +287,47 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
     useGame.setState({ battle: { combatants: [ship, other], order: ['ship'], turn: 0 } as never, facing: { ship: 'E', other: 'O' }, scene: null as never });
     expect(useGame.getState().shipAdvance('ship', 3)).toBe(3); // rien devant → avance pleine
     expect(useGame.getState().battle!.combatants.find((c) => c.id === 'other')!.wounds.current).toBe(30); // intacte
+  });
+});
+
+describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG ch.13)', () => {
+  const helm = (): Combatant =>
+    ({ id: 'helm', name: 'Timonier', kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 2, resilience: 1,
+      skills: [{ skillId: 'voile', characteristic: 'Ag', advances: 40 }], talents: [], weapons: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
+  const ship = (): Combatant =>
+    ({ id: 'ship', name: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+
+  it('battleShipManeuver ouvre la modale ; setTurn ; roll ; confirm → vire + Action consommée', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: false } as never, facing: { ship: 'N' }, scene: null as never });
+    useGame.getState().battleShipManeuver('helm');
+    const p = useGame.getState().pendingShipManeuver!;
+    expect(p.shipId).toBe('ship');
+    expect(p.helmsmanId).toBe('helm');
+    useGame.getState().shipManeuverSetTurn(2); // tribord 90°
+    expect(useGame.getState().pendingShipManeuver!.turnSteps).toBe(2);
+    useGame.getState().shipManeuverRoll();
+    expect(useGame.getState().pendingShipManeuver!.result).toBeTruthy(); // Test jeté
+    expect(useGame.getState().facing.ship).toBe('N'); // PAS encore appliqué (cap intact)
+    useGame.getState().shipManeuverConfirm();
+    const st = useGame.getState();
+    expect(st.pendingShipManeuver).toBeNull();
+    expect(st.battle!.acted).toBe(true); // un jet = une Action
+    expect(st.facing.ship).toBe('E'); // viré tribord 90° (seed 7 → réussite)
+  });
+
+  it('héros qui ne sert aucun navire → battleShipManeuver n’ouvre rien', () => {
+    useGame.setState({ battle: { combatants: [helm()], order: ['helm'], turn: 0, acted: false } as never, facing: {}, scene: null as never });
+    useGame.getState().battleShipManeuver('helm');
+    expect(useGame.getState().pendingShipManeuver).toBeNull();
+  });
+
+  it('Action déjà dépensée → battleShipManeuver n’ouvre rien', () => {
+    useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: true } as never, facing: { ship: 'N' }, scene: null as never });
+    useGame.getState().battleShipManeuver('helm');
+    expect(useGame.getState().pendingShipManeuver).toBeNull();
   });
 });
