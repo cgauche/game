@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { placementPenalty } from './shipPostes';
+import { placementPenalty, servingCrewPresent } from './shipPostes';
+import type { Combatant } from '../engine/types';
 
 /**
  * PLACEMENT DES PIÈCES D'ARTILLERIE (MDG ch.12 l.428-435 / VO « Boats and Boatbuilding » l.312-319).
@@ -39,5 +40,28 @@ describe('placementPenalty — déséquilibre du poids des pièces par bord vs C
 
   it('la proue est aussi un « facing » (désambiguïsation VO) → concentration à la proue pénalisée', () => {
     expect(placementPenalty([{ side: 'proue', weight: 160 }], CAP)).toEqual({ m: -2, man: -2, navDR: -2 });
+  });
+});
+
+describe('servingCrewPresent — servants APTES tenant le poste du chef (sous-effectif d’une Arme d’équipe)', () => {
+  const sailor = (id: string, alive = true): Combatant =>
+    ({ id, name: id, kind: 'npc', conditions: [], weapons: [], dead: !alive, wounds: { current: alive ? 5 : 0, max: 5 } }) as unknown as Combatant;
+  const chef = (crewIds: string[]): Combatant =>
+    ({ id: 'chef', name: 'Chef', kind: 'hero', conditions: [], weapons: [], wounds: { current: 5, max: 5 },
+      mannedPoste: { item: {}, side: 'tribord', crewIds } }) as unknown as Combatant;
+
+  it('compte le chef + les servants vivants/conscients', () => {
+    const c = chef(['chef', 's1', 's2']);
+    expect(servingCrewPresent(c, [c, sailor('s1'), sailor('s2')])).toBe(3);
+  });
+
+  it('exclut les morts / à terre (mêmes critères qu’`exposedCrew`)', () => {
+    const c = chef(['chef', 's1', 's2']);
+    expect(servingCrewPresent(c, [c, sailor('s1', false), sailor('s2')])).toBe(2); // s1 à terre
+  });
+
+  it('chef sans poste → undefined (tir normal, pas une pièce servie)', () => {
+    const lone = sailor('lone');
+    expect(servingCrewPresent(lone, [lone])).toBeUndefined();
   });
 });

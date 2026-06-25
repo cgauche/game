@@ -7,6 +7,7 @@
  */
 import { inFireArc } from './fireArc';
 import { mannedPosteWeapon } from '../engine/items';
+import { exposedCrew } from '../engine/shipCritical';
 import type { FireArc } from './fireArc';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -48,6 +49,18 @@ export function placementPenalty(mounts: MountWeight[], capacity: number): Place
  *  servant. KIND-AGNOSTIQUE (ne regarde pas le `kind` : héros/allié/ennemi indifférent). PUR. */
 export function shipOfCrew(combatants: Combatant[], crewId: string): Combatant | undefined {
   return combatants.find((c) => c.crewIds?.includes(crewId));
+}
+
+/** Nombre de servants APTES (vivants + conscients, via `exposedCrew`) qui tiennent le poste que `chef` sert,
+ *  parmi `combatants` — entrée de `crewedFireWeapon` (sous-effectif d'une Arme d'équipe, MDG ch.12). Le chef
+ *  est lui-même un `crewIds` du poste, donc compté. `undefined` si `chef` ne sert aucun poste (tir normal). PUR. */
+export function servingCrewPresent(chef: Combatant, combatants: Combatant[]): number | undefined {
+  const poste = chef.mannedPoste;
+  if (!poste) return undefined;
+  const crew = (poste.crewIds ?? [])
+    .map((id) => combatants.find((c) => c.id === id))
+    .filter((c): c is Combatant => !!c);
+  return exposedCrew(crew).length;
 }
 
 /**

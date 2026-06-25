@@ -46,8 +46,8 @@ import { findSpellById } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
  *  choisi) : Test opposé si un défenseur a joué, attaque passive sinon — partagé attaque/force. */
-function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack, atk2: TestResult): AttackResult {
-  const weapon = firedWeapon(attacker, target, p.weaponUid); // arme choisie (ou auto) + munition combinée
+function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack, atk2: TestResult, combatants?: Combatant[]): AttackResult {
+  const weapon = firedWeapon(attacker, target, p.weaponUid, combatants); // arme + munition + sous-effectif du poste (le re-jet voit la MÊME arme que la résolution)
   const r = p.result!;
   if (r.defenderDetail) {
     const dd = r.defenderDetail;
@@ -196,11 +196,11 @@ export const FLOWS = {
           if (forced.roll > maxForcedRoll(ad.target)) return null;
           const sl = Math.max(evaluateTest(forced.roll, ad.target).sl, defSL + 1, 1);
           const atk2: TestResult = { roll: forced.roll, target: ad.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
-          return { result: rederiveAttack(actor, target, p, atk2) };
+          return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
         }
         // Dé PAR DÉFAUT : on garde le jet courant, forcé à l'emporter.
         const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
-        return { result: rederiveAttack(actor, target, p, atk2) };
+        return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       }
       const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid);
       return r ? { result: r.res, victimId: r.victim?.id } : null;
@@ -214,7 +214,7 @@ export const FLOWS = {
         if (!target) return null;
         const ad = p.result!.attackerDetail!;
         const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
-        return { result: rederiveAttack(actor, target, p, atk2) };
+        return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       },
     },
   }),

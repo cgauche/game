@@ -95,7 +95,7 @@ export function parryDRAdjust(defenderWeapon: QualityCarrier | undefined, attack
 /** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 63 l.19) — réussi ou raté. Inclut le sous-
  *  effectif d'une Arme d'équipe d'Indice ≥ 3 (Imprécise, Aux Armes p.124). */
 export function attackDRAdjust(w: QualityCarrier | undefined): number {
-  return rollModSum(w, 'attack') + (crewedSoloIndice(w) >= 3 ? -1 : 0);
+  return rollModSum(w, 'attack') + (crewedTeamIndice(w) >= 3 ? -1 : 0);
 }
 
 /** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 63 l.26). */
@@ -134,15 +134,18 @@ export function qualitySocMod(w: QualityCarrier | undefined): number {
   return d;
 }
 
-/** Indice d'une Arme d'équipe maniée en sous-effectif (toujours, faute d'équipe modélisée), ou 0. */
-function crewedSoloIndice(w: QualityCarrier | undefined): number {
+/** Indice d'équipage requis d'une Arme d'équipe (la valeur de la qualité `crewedTeam`), 0 si l'arme n'en a
+ *  pas. PUR. Quand l'équipage RÉEL est modélisé (poste servi), `crewedFireWeapon` bake les Défauts effectifs
+ *  et RETIRE la qualité → ces helpers ne voient plus d'Indice ici (déficit déjà appliqué). À défaut d'équipage
+ *  modélisé (héros qui sert seul une pièce), l'Indice subsiste et l'arme est traitée comme maniée en solo. */
+export function crewedTeamIndice(w: QualityCarrier | undefined): number {
   return resolveQualities(w).find((r) => r.caps?.crewedTeam)?.indice ?? 0;
 }
 
 /** DR cible du rechargement (Recharge Indice), DOUBLÉ pour une Arme d'équipe maniée seul
  *  (sous-effectif, Aux Armes p.124). 0 si l'arme n'a pas le Défaut Recharge. */
 export function reloadDRTarget(w: (QualityCarrier & { reload?: number }) | undefined): number {
-  return (w?.reload ?? 0) * (crewedSoloIndice(w) >= 2 ? 2 : 1);
+  return (w?.reload ?? 0) * (crewedTeamIndice(w) >= 2 ? 2 : 1);
 }
 
 /** Rapide (LDB 62 l.320-321) : −10 à la PARADE contre une arme Rapide si l'arme de parade n'est
@@ -165,7 +168,7 @@ export function canStrikeFirst(weapons: QualityCarrier[] | undefined): boolean {
 /** Dangereuse (LDB 63 l.13-14) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ?
  *  Une Arme d'équipe d'Indice ≥ 4 maniée en sous-effectif devient Dangereuse (Aux Armes p.124). */
 export function dangerousNine(w: QualityCarrier | undefined, roll: number, success: boolean): boolean {
-  const dangerous = resolveQualities(w).some((r) => r.caps?.fumbleOn9) || crewedSoloIndice(w) >= 4;
+  const dangerous = resolveQualities(w).some((r) => r.caps?.fumbleOn9) || crewedTeamIndice(w) >= 4;
   if (success || !dangerous) return false;
   return roll % 10 === 9 || Math.floor(roll / 10) % 10 === 9;
 }

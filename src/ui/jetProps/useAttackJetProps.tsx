@@ -47,7 +47,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
   if (!attacker || !target) return null;
-  const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto, mêlée au contact / distance) + munition
+  const weapon = firedWeapon(attacker, target, pa.weaponUid, battle.combatants); // arme + munition + sous-effectif du poste servi
   // Armes choisissables du loadout actif (hors Mains nues) : ≥2 → sélecteur d'arme d'attaque (main secondaire -20).
   const pickable = attacker.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const res = pa.result;

@@ -47,7 +47,8 @@ import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
-import { applyShipPostes } from './shipPostes';
+import { applyShipPostes, servingCrewPresent } from './shipPostes';
+import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
@@ -1001,15 +1002,19 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
-      const w = active.weapons.find((x) => x.type === 'ranged');
-      if (!w || (w.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger (Arc = pas de défaut, ou déjà chargé)
+      const w0 = active.weapons.find((x) => x.type === 'ranged');
+      if (!w0 || (w0.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger (Arc = pas de défaut, ou déjà chargé)
+      // Pièce SERVIE en sous-effectif : recharge ×2 (MDG ch.12 l.462). Le bake reflète les servants APTES présents
+      // (effectif complet → recharge normale) ; pour un chef sans poste → arme inchangée (cas héros qui sert seul).
+      const present = servingCrewPresent(active, battle.combatants);
+      const w = present != null ? crewedFireWeapon(w0, present) : w0;
       const skillValue = combatValue(active, 'ranged', w); // CT + avances Projectiles (Spé du groupe d'arme)
       set({
         pendingReload: {
           actorId: active.id,
           actorName: active.name,
           weaponUid: w.uid!,
-          reload: reloadDRTarget(w), // Recharge ×2 si Arme d'équipe maniée seul (Aux Armes p.124)
+          reload: reloadDRTarget(w), // sous-effectif baké (recharge ×2) ; arme NON-équipe ou effectif complet → ×1
           progressBefore: active.reloadProgress ?? 0,
           skillValue,
           difficulty: 'intermediaire',
@@ -1279,7 +1284,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const freeNatural = pa.freeKind && !attacker.weapons.some((w) => w.uid === pa.weaponUid)
           ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
           : null;
-        const weapon = freeNatural ?? firedWeapon(attacker, target, pa.weaponUid);
+        const weapon = freeNatural ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
         const prevActed = battle.acted; // pour la Frénésie : la 1re attaque du Round est GRATUITE
         const isDualMain = !!pa.dualMode && !pa.dualSecond && attacker.kind === 'hero'; // main directrice d'un dual
         const isDualSecond = !!pa.dualSecond; // 2ᵉ frappe (off-hand)

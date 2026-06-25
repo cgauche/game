@@ -4,6 +4,8 @@
  * sur un navire (poste). L'Indice (équipage requis) est lu sur la qualité `arme-d-equipe` de l'arme ; les
  * servants au-delà de l'Indice n'améliorent pas le tir mais compensent les pertes (l.444).
  */
+import type { Weapon } from './types';
+import { crewedTeamIndice } from './qualities/dispatch';
 
 /** Dégradation d'une Arme d'équipe en sous-effectif (cumulatif). */
 export interface CrewedPenalty {
@@ -26,4 +28,25 @@ export function crewedPenalty(present: number, indice: number): CrewedPenalty {
   if (deficit >= 2) addFlaws.push('imprecise');
   if (deficit >= 3) addFlaws.push('dangereuse');
   return { reloadFactor: deficit >= 1 ? 2 : 1, addFlaws };
+}
+
+/**
+ * Arme effectivement TIRÉE par une pièce servie, Défauts de sous-effectif BAKÉS selon le nombre de servants
+ * `present` (MDG ch.12 l.448-460) : recharge ×`reloadFactor`, + Défaut *Imprécise*, + Défaut *Dangereuse*.
+ * RETIRE la qualité `arme-d-equipe` — l'équipage RÉEL étant désormais résolu, l'hypothèse « maniée en solo »
+ * de `dispatch.ts` (`crewedTeamIndice`) ne doit plus se cumuler ; un poste à effectif COMPLET tire donc net.
+ * Un Défaut déjà porté par l'arme n'est pas redoublé. PUR. Arme sans `arme-d-equipe` → inchangée.
+ * NB RAW : le −10 supplémentaire si l'arme possédait DÉJÀ le Défaut ajouté (l.460) reste à appliquer.
+ */
+export function crewedFireWeapon(weapon: Weapon, present: number): Weapon {
+  const indice = crewedTeamIndice(weapon);
+  if (indice <= 0) return weapon;
+  const pen = crewedPenalty(present, indice);
+  const has = (id: string) => weapon.qualities.some((q) => q.id === id);
+  const added = pen.addFlaws.filter((f) => !has(f)).map((id) => ({ id }));
+  return {
+    ...weapon,
+    qualities: [...weapon.qualities.filter((q) => q.id !== 'arme-d-equipe'), ...added],
+    reload: (weapon.reload ?? 0) * pen.reloadFactor,
+  };
 }

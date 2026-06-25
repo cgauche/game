@@ -131,7 +131,8 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
-import { shipOfCrew, mountedWeaponBears } from './shipPostes';
+import { shipOfCrew, mountedWeaponBears, servingCrewPresent } from './shipPostes';
+import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -211,14 +212,19 @@ export function selectedAmmo(attacker: Combatant, weapon: Weapon): ItemInstance 
 /** Arme effectivement tirée : mêlée au contact, distance sinon (Atout Pistolet pour tirer en Combat
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
-export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string): Weapon {
+export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string, combatants?: Combatant[]): Weapon {
   const adj = combatDistance(attacker, target) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
   // Choix explicite du joueur : l'arme du loadout actif portant cet uid (si présente) ; sinon auto-choix.
   const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
-  const w = chosen ?? attackWeapon(attacker.weapons, adj);
-  if (w.type === 'ranged' && attacker.kind === 'hero') {
-    const ammo = selectedAmmo(attacker, w);
-    if (ammo) return weaponWithAmmo(w, ammo);
+  const base = chosen ?? attackWeapon(attacker.weapons, adj);
+  const ammo = base.type === 'ranged' && attacker.kind === 'hero' ? selectedAmmo(attacker, base) : undefined;
+  let w = ammo ? weaponWithAmmo(base, ammo) : base;
+  // Pièce SERVIE en sous-effectif (poste) : bake les Défauts d'Arme d'équipe selon les servants APTES présents
+  // (MDG ch.12 l.448-460) — recharge ×2 / Imprécise / Dangereuse, effectif COMPLET → tir net. `combatants` n'est
+  // fourni QUE par les chemins de tir réels (résolution / aperçu / modale / re-jet) ; un chef sans poste → inchangé.
+  if (combatants && attacker.mannedPoste) {
+    const present = servingCrewPresent(attacker, combatants);
+    if (present != null) w = crewedFireWeapon(w, present);
   }
   return w;
 }
@@ -427,7 +433,7 @@ export function resolveAttack(
   weaponUid?: string,
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = combatDistance(attacker, target);
-  const weapon = firedWeapon(attacker, target, weaponUid); // arme choisie (ou auto) + munition combinées (héros distance)
+  const weapon = firedWeapon(attacker, target, weaponUid, get().battle?.combatants); // arme choisie + munition + sous-effectif du poste servi
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
   const battle = get().battle!;
@@ -521,7 +527,7 @@ export function previewAttack(
   opts?: { intoCrowd?: boolean; heldGround?: boolean; weaponUid?: string },
 ): AttackPreview {
   const dist = combatDistance(attacker, target);
-  const weapon = firedWeapon(attacker, target, opts?.weaponUid);
+  const weapon = firedWeapon(attacker, target, opts?.weaponUid, get().battle?.combatants);
   const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
   // Estimation de dégâts (R4) : dégâts d'arme (Force incluse) et encaissé de la cible. Le `soak` est dérivé
   // de `woundsFromHit` (oracle) avec un dégât large → capture exactement PA + réduction d'armure (Perforante…).
