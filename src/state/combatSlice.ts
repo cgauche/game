@@ -887,7 +887,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore); // DR PARTAGÉ (Σ, essentiel ×2, + Moral)
       const postes = (ship.postes ?? []).filter((pp) => pp.side === p.side);
       const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
-      const volley = resolveVolley(ship, postes, target, rig, dr, battleRng()); // Dégâts + localisation + doubles (PUR)
+      const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+      const volley = resolveVolley(ship, postes, target, rig, dr, crew, battleRng()); // munition + sous-effectif + Dégâts + Critiques (PUR, MÊMES fns que le tir individuel)
       set({ pendingShipBattery: null });
       target.wounds.current = Math.max(0, target.wounds.current - volley.totalWounds); // mute la coque (pattern combat)
       const critLines: string[] = [];

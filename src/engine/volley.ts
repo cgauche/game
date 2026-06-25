@@ -1,69 +1,83 @@
 /**
- * VOLÉE DE BORDÉE — « Tir de batterie » (MDG ch.14 l.128), résolution PURE des Dégâts. Module FRÈRE de
- * `shipCritical.ts` : il ne mute RIEN (l'appelant applique les Blessures à la coque + un `applyHullCritical`
- * par pièce critique). RAW : un seul Test d'équipage (Artilleur essentiel) produit un DR PARTAGÉ qui REMPLACE
- * le jet de touche de chaque pièce et « s'applique à toutes les armes à feu tournées vers l'ennemi, pour le
- * meilleur et pour le pire » (ch.14 l.128). Donc, par pièce du bord qui porte :
- *  - **Dégâts** = Dégâts de l'arme + DR partagé (l.128) − BE de la coque − PA (blindage) ; **plancher 0**
- *    (un navire peut ne subir AUCUN Dégât — ch.13 l.605 ; « pour le pire » = DR négatif → Dégâts réduits/nuls),
- *    ≠ le plancher 1 des personnages.
- *  - **Localisation** = 1d100 (ch.13 l.571 : « inversez le jet d'attaque OU lancez 1d100 » — il n'y a plus de
- *    jet de touche par pièce en bordée), table par gréement (`shipHitLocation`).
- *  - **Critique** : ce 1d100 SUBSTITUE le jet de touche (l.571) → un **double** dessus = Critique de navire
- *    (ch.13 l.656) — cohérent : en combat normal un double au jet d'attaque reste un double une fois inversé.
+ * VOLÉE DE BORDÉE — « Tir de batterie » (MDG ch.14 l.128), résolution PURE. Module FRÈRE de `shipCritical.ts` : ne mute
+ * RIEN (l'appelant applique les Blessures + un `applyHullCritical` par pièce critique). RAW : un seul Test d'équipage
+ * (Artilleur ★) produit un DR PARTAGÉ qui REMPLACE le jet de touche de chaque pièce, « pour le meilleur et pour le pire »
+ * (l.128) → le DR (POSITIF OU NÉGATIF) s'ajoute aux Dégâts de chaque pièce.
+ *
+ * PRINCIPE (corrige une DÉRIVE : la volée ré-implémentait son propre calcul de Dégâts, larguant munitions/sous-effectif/
+ * qualités) — chaque pièce est résolue par les MÊMES fonctions AGNOSTIQUES que le tir individuel : préparation d'arme
+ * (`weaponWithAmmo` munition + `crewedFireWeapon` sous-effectif), DR d'Atouts (`attackDRAdjust` : Imprécise), Dégâts
+ * (`effectiveWeaponDamage` + `qualitySum 'damageDR'`), Blessures (`woundsFromHit` : BE + blindage + Perforante + bypass,
+ * plancher 0 navire). Seules la LOCALISATION (1d100 par gréement, ch.13 l.571 — pas de jet de touche par pièce en bordée)
+ * et la détection de CRITIQUE (double sur ce 1d100, OU coque à 0 — ch.13 l.656) restent spécifiques au navire.
  */
 import { d100, type RNG, defaultRNG } from './dice';
 import { isDoubleRoll } from './tests';
-import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveWeaponDamage } from './weaponDamage';
-import { shipHitLocation, type ShipRig, type ShipLocation } from './combat';
-import { qualitySum } from './qualities/dispatch';
-import { mannedPosteWeapon } from './items';
-import type { Combatant, ShipPoste } from './types';
+import { woundsFromHit, shipHitLocation, type ShipRig, type ShipLocation } from './combat';
+import { qualitySum, attackDRAdjust } from './qualities/dispatch';
+import { mannedPosteWeapon, compatibleAmmo, weaponWithAmmo } from './items';
+import { crewedFireWeapon } from './crewedWeapon';
+import { exposedCrew } from './shipCritical';
+import type { Combatant, ShipPoste, Weapon, ItemInstance } from './types';
 
 export interface VolleyShot {
-  /** Nom de la pièce (journal). */
   weaponName: string;
-  /** Dégâts bruts de la pièce (arme + DR partagé) avant mitigation. */
+  /** Munition tirée (journal), si une était chargée. */
+  ammoName?: string;
+  /** Dégâts bruts (arme + DR partagé + qualités) avant mitigation. */
   damage: number;
-  /** Blessures infligées à la coque (après BE + blindage, plancher 0). */
+  /** Blessures infligées à la coque (après BE + blindage + Perforante, plancher 0). */
   wounds: number;
-  /** Localisation touchée (1d100, ch.13 l.571). */
   location: ShipLocation;
-  /** Le 1d100 de localisation — sert AUSSI de jet de touche substitué (l.571) : `forcedLocRoll` du Critique. */
+  /** Le 1d100 de localisation — jet de touche substitué (ch.13 l.571). */
   locRoll: number;
-  /** Double sur le 1d100 → Critique de navire (ch.13 l.656). */
+  /** Double sur le 1d100, OU coque déjà à 0 → Critique de navire (ch.13 l.656). */
   critical: boolean;
 }
 
 export interface VolleyResult {
   shots: VolleyShot[];
-  /** Σ des Blessures de toutes les pièces (appliquée à la coque cible par l'appelant). */
   totalWounds: number;
 }
 
+/** Munition sélectionnée par le chef d'une pièce (son `ammoUid`, sinon la 1re compatible). PUR — sans le gate
+ *  `kind:'hero'` du tir individuel : un équipage de pièce (PNJ) charge aussi sa munition. */
+function posteAmmo(chef: Combatant | undefined, weapon: Weapon): ItemInstance | undefined {
+  if (!chef) return undefined;
+  const compat = compatibleAmmo(chef, weapon);
+  return compat.find((a) => a.uid === chef.ammoUid) ?? compat[0];
+}
+
 /**
- * Résout la volée d'une bordée. `firingShip` = navire tireur (source des pièces) ; `postes` = pièces du bord
- * qui porte (filtrées par `resolveBattery`) ; `target` = coque cible (BE/blindage) ; `rig` = gréement de la
- * CIBLE (colonne de Localisation) ; `dr` = DR partagé du Test d'équipage Artilleur. PUR (RNG injecté).
+ * Résout la volée d'une bordée. `firingShip` = navire tireur ; `postes` = pièces du bord qui porte ; `target` = coque
+ * cible ; `rig` = gréement de la CIBLE (colonne de localisation) ; `dr` = DR partagé du Test d'équipage Artilleur ;
+ * `crew` = combattants de l'équipage tireur (pour résoudre chef + effectif de chaque pièce). PUR (RNG injecté).
  */
 export function resolveVolley(
-  firingShip: Combatant, postes: ShipPoste[], target: Combatant, rig: ShipRig, dr: number, rng: RNG = defaultRNG,
+  firingShip: Combatant, postes: ShipPoste[], target: Combatant, rig: ShipRig, dr: number, crew: Combatant[], rng: RNG = defaultRNG,
 ): VolleyResult {
-  const tb = bonus(effectiveChar(target, 'E'));
-  const ap = Math.max(0, effectiveArmourAt(target, 'corps')); // blindage de coque (0 si nue)
+  const byId = new Map(crew.map((c) => [c.id, c] as const));
   const shots: VolleyShot[] = [];
   for (const poste of postes) {
-    const weapon = mannedPosteWeapon(firingShip, poste);
+    const servants = exposedCrew((poste.crewIds ?? []).map((id) => byId.get(id)).filter((c): c is Combatant => !!c));
+    if (!servants.length) continue; // pièce non servie → ne tire pas (RAW : il faut un équipage)
+    let weapon = mannedPosteWeapon(firingShip, poste);
     if (!weapon) continue; // pièce détruite
-    const damage = effectiveWeaponDamage(weapon, 0) + dr; // pas de BF pour une pièce d'artillerie ; DR partagé (l.128)
-    const effAP = Math.max(0, ap - qualitySum(weapon, 'armourReduction')); // Perforante de la pièce, le cas échéant
-    const wounds = Math.max(0, damage - tb - effAP); // plancher 0 (un navire peut ne rien subir, ch.13 l.605)
-    const locRoll = d100(rng); // 1d100 de localisation = jet de touche substitué (ch.13 l.571)
+    const chef = byId.get((poste.crewIds ?? [])[0]);
+    const ammo = posteAmmo(chef, weapon);
+    if (ammo) weapon = weaponWithAmmo(weapon, ammo);
+    weapon = crewedFireWeapon(weapon, servants.length); // Recharge×2 / Imprécise / Dangereuse selon l'effectif
+    // DR de la pièce = DR partagé + Atouts d'attaque (Imprécise du sous-effectif). « Pour le pire » : un DR négatif
+    // RÉDUIT les Dégâts (≠ tir normal où le SL est plancher 0) → on N'écrase PAS le DR à 0.
+    const gunDR = dr + attackDRAdjust(weapon);
+    const damage = effectiveWeaponDamage(weapon, 0) + gunDR + qualitySum(weapon, 'damageDR'); // +Pointue
+    const wounds = woundsFromHit(weapon, target, 'corps', damage, 0, 0); // BE/blindage/Perforante/bypass, plancher 0
+    const locRoll = d100(rng);
     shots.push({
-      weaponName: weapon.name, damage, wounds,
+      weaponName: weapon.name, ammoName: ammo?.name, damage, wounds,
       location: shipHitLocation(rig, locRoll), locRoll,
-      critical: isDoubleRoll(locRoll), // double → Critique de navire (ch.13 l.656)
+      critical: isDoubleRoll(locRoll) || target.wounds.current <= 0, // double, OU coque à 0 (l.656)
     });
   }
   return { shots, totalWounds: shots.reduce((s, x) => s + x.wounds, 0) };

@@ -432,9 +432,10 @@ export interface AttackOptions {
  * 13-Combat l.165 : une touche réussie coûte au moins 1 PB). Source unique partagée par
  * `applyHit` et les touches de Maladresse (touche d'allié / Incident de Tir, LDB 14).
  */
-export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number, extraAP = 0): number {
-  // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un
-  // minimum de 1 Blessure » (le plancher 1 ci-dessous le garantit).
+export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number, extraAP = 0, minWounds = 1): number {
+  // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure »
+  // (`minWounds` par défaut = 1, le garantit pour un PERSONNAGE). Un NAVIRE passe `minWounds=0` : un coup trop faible
+  // peut ne lui infliger AUCUN Dégât (MDG ch.13 l.605 ; les petites armes ricochent sur la coque).
   totalDamage -= talentDamageReduction(target);
   const tb = bonus(effectiveChar(target, 'E'));
   // PA effectifs = armure portée/naturelle + PA temporisés de sort (Armure Aethyrique, LDB 47)
@@ -443,7 +444,7 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   // Ignorance de PA de l'arme (Épée de justice → 'all', etc.) via le moteur GÉNÉRAL (engine/armourBypass)
   // — même mécanisme que l'attribut de Domaine pour les Projectiles.
   const ap = Math.max(0, baseAP - bypassedAP(target, location, weapon.bypass, baseAP));
-  return Math.max(1, totalDamage - (tb + ap));
+  return Math.max(minWounds, totalDamage - (tb + ap));
 }
 
 /** Atout Pistolet (LDB « Les armes » l.297-298 : « Vous pouvez utiliser cette arme pour attaquer
