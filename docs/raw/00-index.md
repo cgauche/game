@@ -25,6 +25,7 @@ plusieurs chapitres **et** plusieurs livres.
 | Domaine | Fichier | État | Chapitres LDB (+ suppléments) |
 |---|---|---|---|
 | Combat | [`combat.md`](combat.md) | ✅ pilote (14 topics) | 13, 14, 15, 62, 63, 76, 85 + AA / ZI / ADE / tomes |
+| Combat naval (Mer des Griffes) | [`combat-naval.md`](combat-naval.md) | 🟡 brouillon (12 topics) | MDG 12, 13, 14 |
 | Tests & Degrés de Réussite | [`tests.md`](tests.md) | ✅ | 12 |
 | États | [`etats.md`](etats.md) | ✅ | 16 |
 | Déplacement & voyage | [`deplacement.md`](deplacement.md) | ✅ | 15 + EDOC |
