@@ -94,8 +94,11 @@ const JOURNAL_MJ = new Map<string, string>([
   // Trait ZI sans système support (desc verbatim, MJ).
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
-  ['Aura de Dhar', 'effluves de Dhar (gêne sorciers/démons proches) — pas de système d’aura magique inter-créatures (MJ)'],
-  ['Aura de Mort', 'rayon bonifiant Nécromancie/Shyish — pas de système d’aura de domaine (MJ)'],
+  // Auras de LANCEMENT : le système d'aura (TraitData.aura) existe mais ne projette dans auraMods que le
+  // `testMod` général ; le chemin d'incantation lit `castPenaltyMod`, pas un +DR d'aura → ces deux auras
+  // nécessitent une intégration cast↔aura (et un gating par Domaine pour Aura de Mort) non encore bâtie.
+  ['Aura de Dhar', '+1 DR Focalisation/Langue(Magick) aux casters alliés à 10 m — intégration cast↔aura à bâtir'],
+  ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — cast↔aura + gating par Domaine à bâtir'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
