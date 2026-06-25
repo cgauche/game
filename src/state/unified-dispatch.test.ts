@@ -97,15 +97,10 @@ describe('Exposition aux Maladies — op générique exposeDisease (onHit, plus 
     expect(vic.diseaseExposure).toEqual(['blessure-purulente']);
   });
 
-  it('Rongeur SANS Infecté → aucune exposition (la Condition `caster a le trait infecte` filtre)', () => {
-    const atk = mk({ traits: [{ id: 'rongeur' }] as never });
-    const vic = mk();
-    onHit(atk, vic, 3);
-    expect(vic.diseaseExposure ?? []).toEqual([]);
-  });
-
-  it('Rongeur + Infecté → blessure-purulente ET fievre-du-rongeur (deux sources, un dispatch)', () => {
-    const atk = mk({ traits: [{ id: 'infecte' }, { id: 'rongeur' }] as never });
+  it('Infecté + Maladie (Fièvre du rongeur) → blessure-purulente ET fievre-du-rongeur (deux sources, un dispatch)', () => {
+    // Modélisation canon d'un rat/skaven (LDB 78) : trait Infecté + trait Maladie(arg) — deux sources
+    // de maladie résolues par le MÊME dispatcher (fireTriggers), cumulées sans doublon.
+    const atk = mk({ traits: [{ id: 'infecte' }, { id: 'maladie', arg: 'fievre-du-rongeur' }] as never });
     const vic = mk();
     onHit(atk, vic, 3);
     expect(vic.diseaseExposure?.sort()).toEqual(['blessure-purulente', 'fievre-du-rongeur']);

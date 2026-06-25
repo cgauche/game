@@ -1765,55 +1765,6 @@
     ]
   },
   {
-    "id": "rongeur",
-    "label": "Rongeur",
-    "prefix": null,
-    "suffix": null,
-    "desc": "La créature est un rongeur (rat, homme-rat). Quand elle est aussi Infectée, une blessure qu'elle inflige expose la victime à la Fièvre du Rongeur.",
-    "source": {
-      "book": "LDB",
-      "page": 343
-    },
-    "effects": [
-      {
-        "trigger": "onHit",
-        "on": "victim",
-        "flow": {
-          "kind": "if",
-          "cond": {
-            "kind": "all",
-            "of": [
-              {
-                "kind": "woundsDealt",
-                "op": ">",
-                "value": 0
-              },
-              {
-                "kind": "has",
-                "who": "caster",
-                "what": "trait",
-                "value": "infecte"
-              }
-            ]
-          },
-          "then": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "victim",
-              "ops": [
-                {
-                  "op": "exposeDisease",
-                  "disease": "fievre-du-rongeur"
-                }
-              ]
-            }
-          }
-        }
-      }
-    ]
-  },
-  {
     "id": "venin",
     "label": "Venin",
     "prefix": "(Difficulté)",

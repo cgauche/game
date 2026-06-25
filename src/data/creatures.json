@@ -1114,7 +1114,8 @@
         "arg": "Petite"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [
@@ -4655,7 +4656,8 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [
@@ -4732,7 +4734,8 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [
@@ -4814,7 +4817,8 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [
@@ -25191,7 +25195,8 @@
         "id": "nuee"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [],
@@ -25252,7 +25257,8 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [],
@@ -25375,7 +25381,8 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [],
@@ -25497,7 +25504,8 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [],
@@ -25655,7 +25663,8 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [],
@@ -33722,9 +33731,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -33867,9 +33873,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34022,9 +34025,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34191,9 +34191,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34374,9 +34371,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34522,9 +34516,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -38822,9 +38813,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -38970,9 +38958,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -39136,9 +39121,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -39314,9 +39296,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -51093,7 +51072,8 @@
         "arg": "Griffes renforcées de métal"
       },
       {
-        "id": "rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       }
     ],
     "optionals": [
@@ -51197,9 +51177,6 @@
         "id": "arme",
         "value": 8,
         "arg": "Crocs acérés"
-      },
-      {
-        "id": "rongeur"
       }
     ],
     "optionals": [

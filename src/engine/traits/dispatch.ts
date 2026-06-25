@@ -11,35 +11,18 @@ import { traitByLabel, traitById, type TraitCapabilities, type TraitData } from 
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
 
-/**
- * Libellés canoniques des traits HORS registre (donnée `traits.json`) : attaques naturelles (lues par
- * `creatureAttacks` / `spawn.weaponsFromTraits`) et marqueurs spéciaux (Venin, Lanceur de Sorts,
- * Mort-vivant, Frénésie…). On les canonicalise ICI pour que `t.key === 'X'` soit FIABLE en aval
- * malgré la casse hétérogène des livres (« Lanceur de sorts » → « Lanceur de Sorts »), au lieu de
- * regex dispersées chez chaque consommateur. Ajouter une attaque naturelle = ajouter son libellé ici
- * (et sa règle dans `creatureAttacks.RULES`). Doit rester aligné avec la liste de parité (parity.test).
- */
-export const EXTRA_TRAIT_LABELS = [
-  // Attaques naturelles (creatureAttacks.RULES + spawn.weaponsFromTraits)
-  'Arme', 'À distance', 'Morsure', 'Attaque caudale', 'Cornes', 'Souffle', 'Vomissement',
-  'Langue préhensile', 'Hurlement fantomatique', 'Regard pétrifiant', 'Tentacules', 'Étreinte glaciale',
-  // Marqueurs spéciaux consommés ailleurs (psychologie / magie / domaines / groupes / maladies)
-  'Venin', 'Lanceur de Sorts', 'Mort-vivant', 'Frénésie', 'Constricteur', 'Vampirique',
-  'Infecté', 'Maladie', 'Corruption', 'Rongeur',
-];
-
-/** Résolution UNIQUE libellé (casse ignorée) → `id` STABLE (slug) : dataset `traits.json` (qui est
- *  AUSSI la source de `TRAITS`) + libellés hors registre. Source unique de l'import label→id. */
-const CANON_BY_LOWER = new Map<string, string>([
-  ...[...traitByLabel.keys()].map((label) => [label.toLowerCase(), slugId(label)] as const),
-  ...EXTRA_TRAIT_LABELS.map((label) => [label.toLowerCase(), slugId(label)] as const),
-]);
+/** Résolution UNIQUE libellé (casse ignorée) → `id` STABLE (slug), DÉRIVÉE de `traits.json` (la
+ *  donnée, AUSSI source de `TRAITS`) — source unique de l'import label→id (statblocs / migration).
+ *  Les attaques naturelles (Morsure, Cornes…) et marqueurs spéciaux (Venin, Maladie, Mort-vivant…)
+ *  sont désormais des traits EN DONNÉE : plus aucune liste de libellés en dur à tenir alignée. */
+const CANON_BY_LOWER = new Map<string, string>(
+  [...traitByLabel.keys()].map((label) => [label.toLowerCase(), slugId(label)] as const),
+);
 
 /** Inverse : `id` → libellé FR canonique (affichage : inspecteur/Codex/éditeur). Même couverture. */
-const LABEL_BY_ID = new Map<string, string>([
-  ...[...traitByLabel.keys()].map((label) => [slugId(label), label] as const),
-  ...EXTRA_TRAIT_LABELS.map((label) => [slugId(label), label] as const),
-]);
+const LABEL_BY_ID = new Map<string, string>(
+  [...traitByLabel.keys()].map((label) => [slugId(label), label] as const),
+);
 
 /** Libellé FR d'un trait par son `id` (repli sur l'id si inconnu). */
 export const traitLabelById = (id: string): string => LABEL_BY_ID.get(id) ?? id;

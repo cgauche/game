@@ -800,9 +800,9 @@ export interface Combatant {
   /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
   diseaseImmunities?: string[];
   /** Maladies auxquelles ce combattant a été EXPOSÉ pendant le combat (blessé par une source porteuse :
-   *  Infecté → 'blessure-purulente', Rongeur Infecté → 'fievre-du-rongeur', Maladie (Type) → l'`arg`,
+   *  Infecté → 'blessure-purulente', Maladie (Type) → l'`arg` (ex. 'fievre-du-rongeur' des rats),
    *  munition Infecté) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20 l.32/49). SOURCE UNIQUE
-   *  (op `exposeDisease`) — remplace les anciens flags `woundedByInfected`/`woundedByRodent`. */
+   *  (op `exposeDisease`). */
   diseaseExposure?: string[];
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */

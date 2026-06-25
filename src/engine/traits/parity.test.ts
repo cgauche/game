@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TRAITS } from './registry';
-import { parseTrait, EXTRA_TRAIT_LABELS } from './dispatch';
+import { parseTrait } from './dispatch';
 import { slugId } from '../../data/slug';
 
 /**
@@ -13,8 +13,6 @@ import { slugId } from '../../data/slug';
  *     (capabilities/passive lus par les helpers), soit un AUTRE sous-système (creatureAttacks /
  *     psychology / disease / corruption), soit journal/MJ en conscience. Les maps ci-dessous
  *     DOCUMENTENT cette propriété (qui porte quoi) ; une nouvelle donnée non listée fait échouer (2).
- *  3. les `EXTRA_TRAIT_LABELS` (libellés canonicalisés HORS donnée pour fiabiliser l'aval) résolvent
- *     bien via le parseur.
  */
 
 // Traits dont la mécanique vit AILLEURS que dans les helpers de `dispatch` (la raison est documentée).
@@ -49,9 +47,8 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Phobie', 'trait psy ciblé ≈ Peur 1 (parsePsychTraits)'],
   ['Immunité Psychologique', 'psychImmune (parsePsychTraits)'],
   // Afflictions transmises — engine/disease.ts + state/corruptionFlow.ts
-  ['Maladie', 'contraction post-combat (disease.ts — Lot D)'],
+  ['Maladie', 'contraction post-combat (disease.ts — Lot D) ; arg = la maladie (rats/skavens : fievre-du-rongeur)'],
   ['Infecté', 'Blessure Purulente post-combat (disease.ts — Lot D)'],
-  ['Rongeur', 'marqueur rongeur → Fièvre du Rongeur si aussi Infecté (woundedByRodent, contraction post-combat)'],
   ['Corruption', 'exposition du groupe (corruptionFlow — Lot E)'],
   // Dressé (Magie) : trait MARQUEUR sans effet propre — lu par le gate `startleCause` de Nerveux
   // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.89, données).
@@ -134,11 +131,6 @@ describe('parité — registre des Traits dérivé de traits.json', () => {
     }
     const dupes = [...seen.entries()].filter(([, n]) => n > 1).map(([l]) => l);
     expect(dupes).toEqual([]);
-  });
-
-  it('chaque EXTRA_TRAIT_LABEL (libellé canonicalisé hors donnée) résout via le parseur', () => {
-    const unresolved = EXTRA_TRAIT_LABELS.filter((l) => !parseTrait(l));
-    expect(unresolved).toEqual([]);
   });
 
   it('parseTrait normalise Indice/argument/casse', () => {
