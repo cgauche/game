@@ -1,57 +1,55 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
-import { crewRoles } from '../data';
-import { defaultCrewRole, moraleBand } from '../engine/crewMorale';
+import { crewRoles, findCrewRoleById, findCrewTestTypeById } from '../data';
+import { defaultCrewRole, moraleBand, crewRoleValue } from '../engine/crewMorale';
 import { exposedCrew } from '../engine/shipCritical';
 import { shipMoraleScore } from '../state/shipCrew';
 import { useModalA11y } from './Modal';
 import { PortraitTile } from './PortraitTile';
-import { OptionChooser, type RollOption } from './OptionChooser';
+import { CharFrame } from './CharFrame';
+import { PortraitPicker } from './PortraitPicker';
 import type { Combatant } from '../engine/types';
 import type { Dir8 } from '../state/dir8';
 
 const DIR_LABEL: Record<Dir8, string> = { N: 'Nord', NE: 'Nord-Est', E: 'Est', SE: 'Sud-Est', S: 'Sud', SO: 'Sud-Ouest', O: 'Ouest', NO: 'Nord-Ouest' };
 const SIDE_LABEL: Record<string, string> = { proue: 'Proue', tribord: 'Tribord', poupe: 'Poupe', babord: 'Bâbord' };
+const MANOEUVRE = 'manoeuvre';
+
+/** Marqueur « au repos » : un marin RETIRÉ d'un poste (clic sur le ✕) — il revient à l'équipage disponible et ne
+ *  ré-infère PAS de rôle (sinon « retirer » serait sans effet pour un rôle déduit). */
+const BENCHED = 'repos';
+/** Rôle COURANT d'un marin : `repos` (retiré) → aucun ; sinon épinglé (`shipRole`) ou inféré (`defaultCrewRole`). */
+const crewRoleOf = (c: Combatant): string | undefined => (c.shipRole === BENCHED ? undefined : c.shipRole ?? defaultCrewRole(c) ?? undefined);
 
 /** État du navire (lecture seule, dérivé) — mêmes `stat-chip` que les vitaux d'une fiche héros. PUR. */
 export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; cap?: Dir8; morale: number; crew: Combatant[] }) {
   const band = moraleBand(morale);
   const apte = exposedCrew(crew);
-  const byside = new Map<string, number>();
-  for (const p of ship.postes ?? []) byside.set(p.side, (byside.get(p.side) ?? 0) + 1);
   return (
     <div className="sheet-vitals">
       <div className="stat-chip pv"><span className="sc-label">Coque</span><span className="sc-value">{ship.wounds.current}/{ship.wounds.max}</span></div>
       {cap && <div className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{DIR_LABEL[cap]}</span></div>}
       <div className="stat-chip"><span className="sc-label">Moral</span><span className="sc-value">{morale}{band.crewTestDR ? ` (${band.crewTestDR > 0 ? '+' : ''}${band.crewTestDR})` : ''}</span></div>
       <div className="stat-chip"><span className="sc-label">Effectif</span><span className="sc-value">{apte.length}/{crew.length}</span></div>
-      {[...byside].map(([side, n]) => (
-        <div className="stat-chip" key={side}><span className="sc-label">{SIDE_LABEL[side] ?? side}</span><span className="sc-value">🎯 ×{n}</span></div>
-      ))}
     </div>
   );
 }
 
-/** Assignation équipage→rôle (MDG ch.14) : par marin APTE, une grille `OptionChooser` des 9 rôles ; rôle ÉPINGLÉ
- *  (`shipRole`) vs INFÉRÉ (`defaultCrewRole`, marqué « auto »), re-clic détache. Calquée sur `TravelRolesPanel`. PUR. */
-export function ShipCrewRoles({ crew, onSet }: { crew: Combatant[]; onSet: (crewId: string, role: string | null) => void }) {
-  const apte = exposedCrew(crew);
+/** Bloc « Armes / Postes » : par pièce d'artillerie (MDG ch.12), son bord + son équipage de pièce (PLUSIEURS servants
+ *  possibles, MDG ch.14 l.9) en portraits. Lecture seule ici (l'assignation des servants viendra avec la Bordée). */
+export function ShipPostes({ ship, combatants }: { ship: Combatant; combatants: Combatant[] }) {
+  if (!ship.postes?.length) return null;
   return (
-    <div className="wm-roles">
-      {apte.map((c) => {
-        const pinned = c.shipRole;
-        const current = pinned ?? defaultCrewRole(c) ?? undefined;
-        const options: RollOption[] = crewRoles.map((r) => ({
-          key: r.id,
-          label: r.label,
-          primary: r.id === current,
-          title: r.id === current && !pinned ? 'Rôle déduit des compétences (« auto ») — cliquez pour l’épingler' : r.desc,
-          onSelect: () => onSet(c.id, pinned === r.id ? null : r.id),
-        }));
+    <div className="ship-section">
+      <div className="mini-title">Armes · postes</div>
+      {ship.postes.map((p, i) => {
+        const gun = (p.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
         return (
-          <div key={c.id} className="wm-role-row">
-            <span className="wm-role-name">{c.name}{!pinned && current && <span className="wm-opt-hint"> (auto)</span>}</span>
-            <OptionChooser options={options} layout="grid" />
+          <div className="ship-poste" key={i}>
+            <span className="ship-poste-name">🎯 {SIDE_LABEL[p.side] ?? p.side} · {p.item.name}</span>
+            <div className="ship-crew-row">
+              {gun.length ? gun.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={c.name} />) : <span className="muted">— sans servant —</span>}
+            </div>
           </div>
         );
       })}
@@ -59,11 +57,71 @@ export function ShipCrewRoles({ crew, onSet }: { crew: Combatant[]; onSet: (crew
   );
 }
 
+/** Bloc « Rôles · manœuvre » (MDG ch.14) : par RÔLE, l'équipage qui le tient (PLUSIEURS possible, l.9 « plusieurs
+ *  Personnages peuvent contribuer ») en portraits ; bouton « Assigner » → `PortraitPicker` (réutilisé) pour mettre
+ *  un marin à ce poste (épingle son `shipRole`). Le rôle ESSENTIEL (DR ×2, l.19) est marqué d'une étoile. */
+export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (crewId: string, role: string | null) => void }) {
+  const [editing, setEditing] = useState<string | null>(null);
+  const testType = findCrewTestTypeById(MANOEUVRE);
+  const apte = exposedCrew(crew);
+  if (!testType) return null;
+  const byRole = new Map<string, Combatant[]>();
+  const pool: Combatant[] = [];
+  for (const c of apte) {
+    const roleId = crewRoleOf(c);
+    if (roleId && testType.roles.includes(roleId)) (byRole.get(roleId) ?? byRole.set(roleId, []).get(roleId)!).push(c);
+    else pool.push(c); // pas de rôle de manœuvre (héros non-marin, ou rôle d'un autre Test) → équipage disponible
+  }
+  return (
+    <div className="ship-section">
+      <div className="mini-title">Rôles · manœuvre</div>
+      {testType.roles.map((roleId) => {
+        const role = findCrewRoleById(roleId);
+        if (!role) return null;
+        const holders = byRole.get(roleId) ?? [];
+        const essential = testType.essential === roleId;
+        const open = editing === roleId;
+        return (
+          <div className="ship-role" key={roleId}>
+            <div className="ship-role-head">
+              <span className="ship-role-name">{role.label}{essential && <span className="ess" title="Rôle essentiel — son DR compte double (MDG ch.14)"> ★</span>}</span>
+              <button className="btn small" onClick={() => setEditing(open ? null : roleId)}>{open ? 'Fermer' : '+ assigner'}</button>
+            </div>
+            <div className="ship-crew-row">
+              {holders.length
+                ? holders.map((c) => (
+                    <span key={c.id} className="crew-remove" title={`${c.name} — retirer du poste`}>
+                      <CharFrame c={c} variant="identity" size="xs" onClick={() => onSet(c.id, BENCHED)} />
+                    </span>
+                  ))
+                : <span className="muted">— vacant —</span>}
+            </div>
+            {open && (
+              <PortraitPicker
+                choices={apte.filter((c) => crewRoleOf(c) !== roleId).map((c) => ({ c, caption: crewRoleValue(c, role).value, title: `Mettre ${c.name} à ${role.label}` }))}
+                onPick={(id) => onSet(id, roleId)}
+              />
+            )}
+          </div>
+        );
+      })}
+      {pool.length > 0 && (
+        <div className="ship-role ship-pool">
+          <div className="ship-role-head"><span className="ship-role-name">Équipage disponible</span></div>
+          <div className="ship-crew-row">
+            {pool.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={`${c.name} — l'assigner à un poste ci-dessus`} />)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /**
- * FICHE DU NAVIRE (couche Mer) — ouverte en cliquant le portrait du navire (comme une fiche héros). Réutilise la
- * coquille modale de fiche (`sheet-*` + `useModalA11y`) : aside = portrait + identité + ÉTAT du navire (coque, cap,
- * Moral, effectif, pièces par bord) ; main = assignation des rôles d'ÉQUIPAGE (MDG ch.14). Remplace l'ancien volet
- * de droite (un panneau séparé qui ne ressemblait à rien) — la gestion du navire vit dans SA fiche.
+ * FICHE DU NAVIRE (couche Mer) — ouverte en cliquant le portrait du navire (dock), comme une fiche héros. Réutilise la
+ * coquille modale `sheet-*` + `useModalA11y` : aside = portrait + ÉTAT ; main = HUB du navire → Armes/postes puis
+ * Rôles de manœuvre, chacun avec son équipage en PORTRAITS (plusieurs par poste, MDG ch.14 l.9), assignables via le
+ * `PortraitPicker` partagé. Remplace l'ancien volet de droite (gestion éparpillée).
  */
 export function ShipSheet({ shipId, onClose }: { shipId: string; onClose: () => void }) {
   const battle = useGame((s) => s.battle);
@@ -75,6 +133,9 @@ export function ShipSheet({ shipId, onClose }: { shipId: string; onClose: () => 
   if (!battle || !ship) return null;
   const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
   const cap = facing[ship.id];
+  // Les servants de pièce sont montrés sous « Armes · postes » → hors de la manœuvre (un marin tient UN poste).
+  const posteCrewIds = new Set((ship.postes ?? []).flatMap((p) => p.crewIds ?? []));
+  const maneuverCrew = crew.filter((c) => !posteCrewIds.has(c.id));
   return (
     <div className="modal-overlay sheet-overlay" onClick={onClose}>
       <div ref={boxRef} role="dialog" aria-modal="true" className="modal sheet-modal" onClick={(e) => e.stopPropagation()}>
@@ -89,8 +150,8 @@ export function ShipSheet({ shipId, onClose }: { shipId: string; onClose: () => 
             <ShipStateBlock ship={ship} cap={cap} morale={shipMoraleScore(useGame.getState, ship)} crew={crew} />
           </aside>
           <div className="sheet-main">
-            <div className="mini-title">⚓ Équipage &amp; postes</div>
-            <ShipCrewRoles crew={crew} onSet={setShipRole} />
+            <ShipPostes ship={ship} combatants={battle.combatants} />
+            <ShipCrewByRole crew={maneuverCrew} onSet={setShipRole} />
           </div>
         </div>
       </div>

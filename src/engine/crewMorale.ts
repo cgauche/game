@@ -177,16 +177,24 @@ export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: num
   return { value: Number.isFinite(best) ? best : 0, used };
 }
 
-/** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) : parmi les 9 rôles navals, celui où SA meilleure compétence
- *  pertinente est la plus haute. Défaut quand le joueur n'a pas épinglé de `shipRole` (miroir `defaultTravelRole`).
- *  `null` si aucun rôle ne donne de valeur. PUR. */
+/** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) :
+ *  - SPÉCIALISTE → le rôle où il a le plus d'AVANCES (formation acquise au-delà de la Caractéristique).
+ *  - GÉNÉRALISTE (aucune avance pertinente) → **Mousse**, « rôle par défaut » (ch.14 l.15), s'il sait Voile/Ramer.
+ *  - sinon `null` : un héros sans compétence de marin n'a pas de rôle par défaut (le joueur l'assigne, ch.14 l.39).
+ *  On se fonde sur les AVANCES, pas sur `crewRoleValue` (carac nue) : sinon un rôle à carac haute mais non formé —
+ *  Capitaine/Soc — raflerait tout l'équipage (`testValue` rend la carac même sans formation, skills.ts). PUR. */
 export function defaultCrewRole(crew: Combatant): string | null {
-  let best: { id: string; value: number } | null = null;
+  let best: { id: string; adv: number } | null = null;
   for (const role of crewRoles) {
-    const v = crewRoleValue(crew, role).value;
-    if (!best || v > best.value) best = { id: role.id, value: v };
+    for (const s of role.skills) {
+      const adv = (crew.skills ?? []).find((k) => k.skillId === s.skillId && (s.spec == null || k.spec === s.spec))?.advances ?? 0;
+      if (adv > 0 && (!best || adv > best.adv)) best = { id: role.id, adv };
+    }
   }
-  return best?.id ?? null;
+  if (best) return best.id;
+  const mousse = findCrewRoleById('mousse');
+  if (mousse && mousse.skills.some((s) => (crew.skills ?? []).some((k) => k.skillId === s.skillId))) return 'mousse';
+  return null;
 }
 
 /**

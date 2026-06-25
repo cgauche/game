@@ -487,6 +487,24 @@
 .sheet-stats {
   margin-bottom: 4px;
 }
+/* Fiche du NAVIRE (couche Mer) : sections « Armes/postes » + « Rôles · manœuvre », chacune listant l'équipage
+   du poste en PORTRAITS (plusieurs par poste, MDG ch.14 l.9). */
+.ship-section { margin-bottom: 14px; }
+.ship-poste, .ship-role { padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+.ship-role-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ship-role-name, .ship-poste-name { font-weight: 600; }
+.ship-role-name .ess { color: var(--gold); }
+.ship-crew-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; align-items: center; min-height: 22px; }
+/* Portrait d'un marin à un poste : survol → croix rouge ; clic → le retire du poste (équipage disponible). */
+.crew-remove { position: relative; padding: 0; border: none; background: none; cursor: pointer; line-height: 0; }
+.crew-remove::after {
+  content: '✕';
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(160, 30, 30, 0.62); color: #fff; font-weight: 700; border-radius: 50%;
+  pointer-events: none;
+}
+.crew-remove:hover::after { display: flex; }
 @media (max-width: 760px) {
   .sheet-layout {
     grid-template-columns: 1fr;

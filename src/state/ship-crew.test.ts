@@ -36,13 +36,13 @@ describe('shipCrewAssignments — équipage → rôles pour un Test (MDG ch.14)'
     expect(a[0].crew.id).toBe('t');
   });
 
-  it('collision sur un rôle → garde le MEILLEUR pour ce rôle', () => {
+  it('plusieurs membres au MÊME rôle (MDG ch.14 l.9 « plusieurs Personnages peuvent contribuer ») → tous contribuent', () => {
     const c1 = mk('a', 30, [{ skillId: 'voile', advances: 20 }], 'timonier'); // Voile 50
     const c2 = mk('b', 60, [{ skillId: 'voile', advances: 20 }], 'timonier'); // Voile 80
     const ship = hull(['a', 'b']);
     const a = shipCrewAssignments(ship, [ship, c1, c2], 'manoeuvre');
-    expect(a).toHaveLength(1);
-    expect(a[0].crew.id).toBe('b');
+    expect(a).toHaveLength(2); // les DEUX au poste de Timonier (DR sommés), pas « le meilleur seul »
+    expect(a.every((x) => x.roleId === 'timonier')).toBe(true);
   });
 
   it('inférence quand le rôle n’est pas épinglé', () => {

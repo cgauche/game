@@ -43,6 +43,14 @@ scene.ambientLight = 'jour'; // mer claire : pas de fog of war sur l'open sea
 scene.startMessage =
   'Mer ouverte (couche Mer) : à 10 m/case, chaque navire occupe sa vraie Taille — il DOMINE la grille. Ton navire (cap EST) fait face à la cogue pirate à ~140 m (14 cases). « Manœuvrer » vire le cap ; « Servir le pierrier » lâche une volée dans l’arc de bordée.';
 
+// Marins du navire allié : Patrouilleurs Fluviaux (frenchy.bzh) — l'équipage NATUREL d'un bateau de patrouille
+// (Voile/Ramer/Perception/Athlétisme). À l'échelle Mer ils sont PASSAGERS (ni tour d'initiative, ni jeton) ; ils
+// étoffent l'EFFECTIF et tiennent, en TÉMOINS, les rôles qu'aucun PJ n'occupe (MDG ch.14 : « les Personnages
+// représentent l'équipage ; les PNJ ne comblent QUE les rôles vacants »). ids déterministes : cogue(0) · 2
+// pirates(1,2) · navire allié(3) · marins(4..N+3).
+const MARINS = 8;
+const marinCrewIds = Array.from({ length: MARINS }, (_, i) => `enemy-enc-mer-${4 + i}`);
+
 setEncounters(scene, [
   {
     id: 'enc-mer',
@@ -52,10 +60,14 @@ setEncounters(scene, [
         crewIds: ['enemy-enc-mer-1', 'enemy-enc-mer-2'] },
       { ref: 'pirate-fluvial', pos: { x: 17, y: 6 } },
       { ref: 'pirate-fluvial', pos: { x: 17, y: 9 } },
-      // Le NAVIRE des aventuriers (cap EST → la cogue plein est tombe dans l'arc de bordée TRIBORD), crewé par
-      // le groupe ; les 2 canonniers servent les pierriers.
+      // Le NAVIRE des aventuriers (cap EST → la cogue plein est tombe dans l'arc de bordée TRIBORD), crewé par le
+      // groupe (4 PJ) + 8 Patrouilleurs Fluviaux ; les 2 canonniers PJ servent les pierriers.
       { ref: 'bateau-de-patrouille', pos: { x: 4, y: 7 }, side: 'ally', facing: 'E', label: 'Navire des aventuriers',
-        crewIds: [...ALL_CREW], postes: [pierrierPoste(GUNNERS[0]), pierrierPoste(GUNNERS[1])] },
+        crewIds: [...ALL_CREW, ...marinCrewIds], postes: [pierrierPoste(GUNNERS[0]), pierrierPoste(GUNNERS[1])] },
+      // Les marins (passagers) — indices 4..(3+MARINS), référencés ci-dessus dans `crewIds`.
+      ...Array.from({ length: MARINS }, (_, i) => ({
+        ref: 'patrouilleur-fluvial', pos: { x: 1, y: 1 + i }, side: 'ally' as const, label: 'Patrouilleur Fluvial',
+      })),
     ],
   },
 ]);

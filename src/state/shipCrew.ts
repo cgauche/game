@@ -20,15 +20,15 @@ export function shipCrewAssignments(ship: Combatant, combatants: Combatant[], te
   const crew = (ship.crewIds ?? [])
     .map((id) => combatants.find((c) => c.id === id))
     .filter((c): c is Combatant => !!c);
-  const byRole = new Map<string, Combatant>();
+  // MULTI par rôle (MDG ch.14 l.13 : « tout le monde effectue son Test, tous les DR sont additionnés ») — plusieurs
+  // membres PEUVENT tenir le même poste (2 PJ à la barre, un équipage de pièce). Chaque marin APTE contribue à son
+  // rôle ÉPINGLÉ (`shipRole`) ou INFÉRÉ (`defaultCrewRole`), filtré aux rôles de ce Test. Une entrée PAR membre.
+  const out: CrewAssignment[] = [];
   for (const c of exposedCrew(crew)) {
     const roleId = c.shipRole ?? defaultCrewRole(c) ?? undefined;
-    const role = roleId && roleSet.has(roleId) ? findCrewRoleById(roleId) : undefined;
-    if (!role) continue;
-    const cur = byRole.get(role.id);
-    if (!cur || crewRoleValue(c, role).value > crewRoleValue(cur, role).value) byRole.set(role.id, c);
+    if (roleId && roleSet.has(roleId) && findCrewRoleById(roleId)) out.push({ crew: c, roleId });
   }
-  return [...byRole].map(([roleId, c]) => ({ crew: c, roleId }));
+  return out;
 }
 
 /**

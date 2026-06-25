@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ShipStateBlock, ShipCrewRoles } from './ShipSheet';
+import { ShipStateBlock, ShipCrewByRole, ShipPostes } from './ShipSheet';
 import type { Combatant, SkillInstance } from '../engine/types';
 
 const mk = (id: string, dex: number, skills: { skillId: string; advances: number; spec?: string }[] = [], shipRole?: string): Combatant =>
@@ -11,33 +11,35 @@ const mk = (id: string, dex: number, skills: { skillId: string; advances: number
     conditions: [], talents: [], wounds: { current: 10, max: 10, base: 10 }, shipRole,
   }) as unknown as Combatant;
 
-describe('ShipSheet — état + assignation des rôles (fiche du navire)', () => {
-  it('ShipStateBlock : coque, cap, Moral, effectif, pièces par bord', () => {
+describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
+  it('ShipStateBlock : coque, cap, Moral, effectif', () => {
     const crew = [mk('Anna', 60, [{ skillId: 'voile', advances: 30 }], 'timonier')];
-    const ship = { id: 'ship', name: 'La Cogue', wounds: { current: 40, max: 50 }, conditions: [],
-      postes: [{ side: 'tribord' }, { side: 'tribord' }] } as unknown as Combatant;
+    const ship = { id: 'ship', name: 'La Cogue', wounds: { current: 40, max: 50 }, conditions: [] } as unknown as Combatant;
     const html = renderToStaticMarkup(<ShipStateBlock ship={ship} cap="N" morale={75} crew={crew} />);
-    expect(html).toContain('40/50');   // coque
-    expect(html).toContain('Nord');    // cap
-    expect(html).toContain('Tribord'); // pièces par bord
-    expect(html).toContain('1/1');     // effectif apte/total
+    expect(html).toContain('40/50'); // coque
+    expect(html).toContain('Nord');  // cap
+    expect(html).toContain('1/1');   // effectif apte/total
   });
 
-  it('ShipCrewRoles : équipage apte + rôles (épinglé vs auto)', () => {
-    const crew = [
-      mk('Anna', 60, [{ skillId: 'voile', advances: 30 }], 'timonier'),
-      mk('Bjorn', 40, [{ skillId: 'projectiles', advances: 20, spec: 'Poudre noire' }]), // inféré → artilleur (auto)
-    ];
-    const html = renderToStaticMarkup(<ShipCrewRoles crew={crew} onSet={() => {}} />);
-    expect(html).toContain('Anna');
-    expect(html).toContain('Bjorn');
+  it('ShipCrewByRole : rôles de manœuvre + essentiel marqué + assignation', () => {
+    const crew = [mk('Anna', 60, [{ skillId: 'voile', advances: 30 }], 'timonier')];
+    const html = renderToStaticMarkup(<ShipCrewByRole crew={crew} onSet={() => {}} />);
+    // Les 5 rôles de 'manoeuvre' (crew-test-types.json).
     expect(html).toContain('Timonier');
-    expect(html).toContain('Artilleur');
-    expect(html).toContain('(auto)'); // Bjorn : rôle inféré non épinglé
+    expect(html).toContain('Capitaine');
+    expect(html).toContain('Navigateur');
+    expect(html).toContain('Mousse');
+    expect(html).toContain('Chansonnier');
+    expect(html).toContain('★');           // Timonier essentiel (DR ×2)
+    expect(html).toContain('+ assigner');  // entrée de l'assignation par portrait
   });
 
-  it('équipage vide → aucune rangée de rôle', () => {
-    const html = renderToStaticMarkup(<ShipCrewRoles crew={[]} onSet={() => {}} />);
-    expect(html).not.toContain('wm-role-row');
+  it('ShipPostes : une pièce par bord + son servant', () => {
+    const soldat = mk('Soldat', 50, [{ skillId: 'projectiles', advances: 20, spec: 'Poudre noire' }]);
+    const ship = { id: 'ship', name: 'La Cogue', conditions: [],
+      postes: [{ item: { name: 'Pierrier' }, side: 'tribord', crewIds: ['Soldat'] }] } as unknown as Combatant;
+    const html = renderToStaticMarkup(<ShipPostes ship={ship} combatants={[ship, soldat]} />);
+    expect(html).toContain('Tribord');
+    expect(html).toContain('Pierrier');
   });
 });
