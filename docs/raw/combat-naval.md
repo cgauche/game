@@ -335,13 +335,22 @@ Moral en combat (Rude épreuve, mutinerie).
 
 ## Bilan de fidélité (à corriger)
 
-**Trous prioritaires révélés par cette fiche** (ce que le code naval NE respecte PAS) :
+**Trous prioritaires** (ce que le code naval NE respecte PAS), **confirmés + précisés par l'audit adversarial
+2026-06-25** (agent indépendant, code ↔ Source) :
 1. ❌ **Équipage-ressource** — les mêmes PJ font manœuvre ET bordée le même Round (aucun `crewActed`). LE trou central.
-2. ❌ **Recharge** — la bordée tire à volonté ; le RAW impose Recharge N Rounds par pièce.
-3. ❌ **Arme d'équipe / sous-effectif** — `resolveVolley` ignore `crewedFireWeapon` (effectif des pièces).
-4. ⬜ **Munitions** (boulet/mitraille → Dégâts + Explosion/Tir de zone) + **Dangereuse** (Incident).
-5. ⬜ **Manque de bras** général (cumul +2 crans, −2 DR plafond Succès Minime, tranche 10 %).
-6. ⚠️ **BB dynamique** (dizaines des Blessures courantes) à vérifier ; ⚠️ Critique de bordée = interprétation à valider GM.
+2. ❌ **Arme d'équipe / sous-effectif** — `resolveVolley` n'appelle PAS `crewedFireWeapon`. **INCOHÉRENCE INTERNE** :
+   la fonction EST branchée au tir INDIVIDUEL (`combatFlow.ts:226`, `combatSlice.ts:1129`) mais pas à la volée → une
+   pièce sous-effectif est pénalisée en solo, pas en bordée.
+3. ⬜ **Recharge** — la bordée tire à volonté ; `ShipPoste` n'a aucun état de recharge ; le RAW impose Recharge N Rounds.
+4. ⬜ **Munitions** (boulet/mitraille → Dégâts + Explosion/Tir de zone) + **Dangereuse** (Incident). NB : la **donnée**
+   des 8 munitions existe et est correcte (`naval-artillery.test.ts`) — c'est la **résolution** (`resolveVolley`) qui l'ignore.
+5. ⬜ **« Tout coup quand B=0 = Critique »** (`MDG 13 l.656`, citation littérale) — `volley.ts` ne critique QUE sur double.
+   *(Omis de mon bilan initial — rattrapé par l'audit.)*
+6. ⬜ **Manque de bras** général (cumul +2 crans, −2 DR plafond Succès Minime, tranche 10 %). ⚠️ **Plomberie MORTE** :
+   `understaffed`/`doubleRole` existent dans `resolveCrewTestByRoles` (`crewMorale.ts:225-232`) mais ne sont **jamais
+   appelés** par aucun chemin → fausse impression de couverture. *(Sous-évalué dans mon bilan initial — rattrapé par l'audit.)*
+7. ✅ **BB dynamique** confirmé conforme par l'audit (`collision.ts:15` relit `wounds.current`). ⚠️ Critique de bordée
+   (double sur 1d100) = interprétation jugée **défendable** par l'audit, à valider GM.
 
 > Cette fiche est le **brouillon de référence** ; à confronter à la Source par une passe de vérification (les n° de
 > ligne sont post-Marker, le chapitre est sûr, la ligne approximative). Inscrire `MDG` dans `sources.md` + ajouter
