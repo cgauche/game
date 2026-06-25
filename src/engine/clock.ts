@@ -12,31 +12,26 @@
  * (Annexe 3 « intercalés entre les mois » ; Fandom « outside the normal sequence of weekdays… the
  * eight-day weeks bridge the months uninterrupted, even if a week is broken by a festival »).
  */
+import calendar from '../data/calendar.json';
+
 export interface ImperialMonth { name: string; days: number; }
 
-/** 12 mois, dans l'ordre (confiance très haute : 3 sources concordantes). */
-export const IMPERIAL_MONTHS: ImperialMonth[] = [
-  { name: 'Nachhexen', days: 32 }, { name: 'Jahrdrung', days: 33 }, { name: 'Pflugzeit', days: 33 },
-  { name: 'Sigmarzeit', days: 33 }, { name: 'Sommerzeit', days: 33 }, { name: 'Vorgeheim', days: 33 },
-  { name: 'Nachgeheim', days: 32 }, { name: 'Erntezeit', days: 33 }, { name: 'Brauzeit', days: 33 },
-  { name: 'Kaldezeit', days: 33 }, { name: 'Ulriczeit', days: 33 }, { name: 'Vorhexen', days: 33 },
-];
+// Le CONTENU du calendrier (mois, intercalaires, semaine, phases du jour, époque, fenêtre de nuit) vit
+// en DONNÉE ÉDITABLE : `src/data/calendar.json`. Ce module ne porte plus que la MÉCANIQUE temporelle
+// (conversion minutes↔date, semaine de 8 jours enjambant les fêtes, phases) — la source FR reste
+// documentée ci-dessus. La dérivation (slots de l'année) est recalculée depuis la donnée.
 
-/** 6 jours intercalaires (1 jour chacun). `afterMonth` = index (0-based) du mois APRÈS lequel il tombe ;
- *  -1 = avant le 1er mois (Hexenstag, Nouvel An). */
-export const INTERCALARY: { name: string; afterMonth: number }[] = [
-  { name: 'Hexenstag', afterMonth: -1 },   // avant Nachhexen (Nouvel An, 2 lunes pleines)
-  { name: 'Mitterfrühl', afterMonth: 1 },  // après Jahrdrung (équinoxe printemps)
-  { name: 'Sonnstill', afterMonth: 4 },    // après Sommerzeit (solstice été)
-  { name: 'Geheimnistag', afterMonth: 5 }, // après Vorgeheim (2 lunes pleines)
-  { name: 'Mittherbst', afterMonth: 7 },   // après Erntezeit (équinoxe automne)
-  { name: 'Mondstille', afterMonth: 8 },   // après Brauzeit (solstice hiver)
-];
+/** 12 mois, dans l'ordre (DONNÉE : calendar.json). */
+export const IMPERIAL_MONTHS: ImperialMonth[] = calendar.months;
 
-export const WEEKDAYS = ['Wellentag', 'Aubentag', 'Marktag', 'Backertag', 'Bezahltag', 'Konistag', 'Angestag', 'Festag'] as const;
+/** 6 jours intercalaires. `afterMonth` = index (0-based) du mois APRÈS lequel il tombe ; -1 = avant le
+ *  1er mois (Hexenstag, Nouvel An). DONNÉE : calendar.json. */
+export const INTERCALARY: { name: string; afterMonth: number }[] = calendar.intercalary;
+
+export const WEEKDAYS: readonly string[] = calendar.weekdays;
 
 export const MINUTES_PER_DAY = 24 * 60;
-export const EPOCH_YEAR = 2512; // minute 0 = Hexenstag 2512 00:00
+export const EPOCH_YEAR = calendar.epochYear; // minute 0 = Hexenstag (epochYear) 00:00
 
 /** Séquence ordonnée des « slots de jour » d'une année (intercalaires intercalés entre les mois). */
 const YEAR_SLOTS: ({ intercalary: string } | { monthIndex: number; day: number })[] = (() => {
@@ -127,19 +122,12 @@ export interface DayPhase { key: DayPhaseKey; label: string; icon: string; isNig
 
 /** Table ordonnée des phases d'AFFICHAGE : heure de début (minutes-de-jour) + libellé FR + icône.
  *  Paramétrable (canon muet sur l'heure exacte du lever/coucher). 'nuit' enjambe minuit (00:00–05:00). */
-export const DAY_PHASES: { key: DayPhaseKey; start: number; label: string; icon: string }[] = [
-  { key: 'aube',       start:  5 * 60, label: 'Aube',       icon: '🌅' },
-  { key: 'matin',      start:  8 * 60, label: 'Matin',      icon: '🌄' },
-  { key: 'midi',       start: 11 * 60, label: 'Midi',       icon: '☀️' },
-  { key: 'apresmidi',  start: 14 * 60, label: 'Après-midi', icon: '🌤️' },
-  { key: 'crepuscule', start: 18 * 60, label: 'Crépuscule', icon: '🌇' },
-  { key: 'soir',       start: 20 * 60, label: 'Soir',       icon: '🌆' },
-  { key: 'nuit',       start: 22 * 60, label: 'Nuit',       icon: '🌙' },
-];
+export const DAY_PHASES: { key: DayPhaseKey; start: number; label: string; icon: string }[] =
+  calendar.dayPhases as { key: DayPhaseKey; start: number; label: string; icon: string }[];
 
 /** Fenêtre d'OBSCURITÉ mécanique (combat −20 tir / rendu sombre), paramétrable et DÉCOUPLÉE des
- *  phases d'affichage. [start,end) en minutes-de-jour ; enjambe minuit (22:00 → 05:00). */
-export const NIGHT_WINDOW = { start: 22 * 60, end: 5 * 60 } as const;
+ *  phases d'affichage. [start,end) en minutes-de-jour ; enjambe minuit (22:00 → 05:00). DONNÉE. */
+export const NIGHT_WINDOW: { start: number; end: number } = calendar.nightWindow;
 
 const minuteOfDay = (minutes: number) => ((minutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
 
