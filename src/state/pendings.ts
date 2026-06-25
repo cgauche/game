@@ -298,6 +298,8 @@ export interface ShipManeuverParticipant extends RollParticipant {
   roleId: string;
   /** Rôle ESSENTIEL du Test (son DR compte double, MDG ch.14 l.19). */
   essential: boolean;
+  /** Marin déjà engagé dans un AUTRE Test d'équipage ce Round → cumul à +2 crans de Difficulté (Manque de bras, l.53). */
+  cumul?: boolean;
   result: CrewRoleRoll | null;
 }
 /** Contributeur ARTILLEUR d'un Tir de batterie (MDG ch.14) — même forme qu'un rôle de manœuvre (un rôle, son DR). */
@@ -305,6 +307,8 @@ export interface ShipBatteryParticipant extends RollParticipant {
   roleId: string;
   /** Rôle ESSENTIEL (Artilleur, DR ×2, l.19). */
   essential: boolean;
+  /** Marin déjà engagé dans un AUTRE Test d'équipage ce Round → cumul à +2 crans de Difficulté (Manque de bras, l.53). */
+  cumul?: boolean;
   result: CrewRoleRoll | null;
 }
 /** TIR DE BATTERIE en Test d'équipage (MDG ch.14 l.128) : les Artilleurs lancent, DR sommés (essentiel ×2) + Moral →

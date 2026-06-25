@@ -49,7 +49,7 @@ import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
-import { crewTestContributors, shipMoraleScore } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, withCrewActed } from './shipCrew';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById } from '../data';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
@@ -814,10 +814,11 @@ export function createCombatSlice(get: Get, set: Set) {
       const essentialRoleId = findCrewTestTypeById('manoeuvre')?.essential;
       const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
         id: a.crew.id,
-        label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}`,
+        label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}${(battle.crewActed?.[ship.id] ?? []).includes(a.crew.id) ? ' ⚠ −2 (cumul)' : ''}`,
         interactive: partyIds.has(a.crew.id),
         roleId: a.roleId,
         essential: a.roleId === essentialRoleId,
+        cumul: (battle.crewActed?.[ship.id] ?? []).includes(a.crew.id), // déjà engagé dans un Test ce Round → cumul +2 crans (l.53)
         result: null,
       }));
       set({
@@ -842,7 +843,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const result = deriveManeuverFromCrew(ship, total); // virage si DR final ≥ 1 (ch.14)
       set({ pendingShipManeuver: null });
       applyShipManeuver(get, p.shipId, result, p.turnSteps); // vire (si succès) + avance ; logue
-      set({ battle: { ...get().battle!, action: null, acted: true, preview: null } }); // un jet = une Action
+      const bM = get().battle!;
+      set({ battle: { ...bM, action: null, acted: true, preview: null, crewActed: withCrewActed(bM.crewActed, p.shipId, p.participants.map((x) => x.id)) } }); // un jet = une Action ; marins engagés ce Round
       bus.emit(EVT.SCENE_DIRTY);
     },
     shipManeuverCancel: () => set({ pendingShipManeuver: null }),
@@ -865,10 +867,11 @@ export function createCombatSlice(get: Get, set: Set) {
       const essentialRoleId = findCrewTestTypeById('batterie')?.essential;
       const participants: ShipBatteryParticipant[] = contributors.map((a) => ({
         id: a.crew.id,
-        label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}`,
+        label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}${(battle.crewActed?.[ship.id] ?? []).includes(a.crew.id) ? ' ⚠ −2 (cumul)' : ''}`,
         interactive: partyIds.has(a.crew.id),
         roleId: a.roleId,
         essential: a.roleId === essentialRoleId,
+        cumul: (battle.crewActed?.[ship.id] ?? []).includes(a.crew.id), // déjà engagé dans un Test ce Round → cumul +2 crans (l.53)
         result: null,
       }));
       set({
@@ -899,7 +902,8 @@ export function createCombatSlice(get: Get, set: Set) {
       for (const s of volley.shots) { const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid); if (poste) poste.reloadUntilRound = battle.round + s.reload; }
       get().log(t('cs.bordee', { side: p.side, ship: ship.name, target: target.name, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max }));
       for (const l of critLines) get().log(l);
-      set({ battle: { ...get().battle!, action: null, preview: null } });
+      const bB = get().battle!;
+      set({ battle: { ...bB, action: null, preview: null, crewActed: withCrewActed(bB.crewActed, p.shipId, p.participants.map((x) => x.id)) } }); // Artilleurs engagés ce Round
       checkBattleOver(get, set);
       bus.emit(EVT.SCENE_DIRTY);
     },

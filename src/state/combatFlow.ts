@@ -3746,7 +3746,7 @@ export function enterRoundStartPause(get: Get, set: SetFn): void {
   const b = get().battle;
   if (!b || b.over) return;
   for (const c of b.combatants) if (c.shotsThisTurn) c.shotsThisTurn = 0; // Salve : compteur de tirs réinitialisé à chaque Round
-  const reset = { ...b, action: null, selectedAttack: undefined, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
+  const reset = { ...b, action: null, selectedAttack: undefined, movementUsed: 0, movedPreAction: false, acted: false, crewActed: {}, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
   if (get().net.mode !== 'local' && b.round > 1 && !b.handRaised) {
     set({ battle: reset, pendingRoundStart: null });
     get().confirmRoundStart();

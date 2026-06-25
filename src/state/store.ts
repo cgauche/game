@@ -114,6 +114,10 @@ export interface BattleState {
   baseOrder?: string[];
   turn: number;
   round: number;
+  /** Marins ayant déjà contribué à un Test d'équipage CE ROUND, par navire (`shipId → crewId[]`). Réinitialisé au début de
+   *  chaque Round (`enterRoundStartPause`) ; un marin déjà listé qui contribue à un 2e Test (manœuvre + bordée) → cumul à
+   *  +2 crans de Difficulté (Manque de bras, MDG ch.14 l.53). */
+  crewActed?: Record<string, string[]>;
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
    *  'cast' = ciblage d'un sort · 'teleport' = case d'arrivée d'une Téléportation · 'resolve'/'ammo'/'heal'

@@ -5,6 +5,8 @@ import type { FireArc } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
+import { rollCrewRole } from './shipManeuver';
+import { makeRNG } from '../engine/dice';
 
 /** Combattant d'équipage minimal (carac d'instance = Dex → valeur prévisible). Calqué sur crew-roles.test.ts. */
 const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number; spec?: string }[] = []): Combatant =>
@@ -105,5 +107,26 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
     expect(poste.reloadUntilRound).toBe(7); // Round 1 + Recharge 6 → re-disponible au Round 7
     useGame.getState().battleShipBattery('ship', 'target'); // 2e bordée même Round → pièce en recharge → aucune ne porte
     expect(useGame.getState().pendingShipBattery).toBeNull();
+  });
+
+  it('équipage-ressource : après une bordée, les contributeurs sont marqués « engagés ce Round » (crewActed)', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
+    useGame.getState().battleShipBattery('ship', 'target');
+    useGame.getState().shipBatteryRoll('gunner');
+    useGame.getState().shipBatteryConfirm();
+    expect(useGame.getState().battle!.crewActed?.['ship']).toContain('gunner'); // l'Artilleur a agi ce Round
+  });
+});
+
+describe('rollCrewRole — cumul de rôles (Manque de bras, MDG ch.14 l.53)', () => {
+  const cap = (): Combatant =>
+    ({ id: 'cap', name: 'Cap', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      skills: [{ skillId: 'commandement', characteristic: 'Soc', advances: 30 }], conditions: [], talents: [] }) as unknown as Combatant;
+
+  it('cumul → +2 crans de Difficulté : cible PLUS DURE (−20) qu\'un jet normal, même dé', () => {
+    const normal = rollCrewRole(cap(), 'capitaine', makeRNG(5))!;
+    const cumul = rollCrewRole(cap(), 'capitaine', makeRNG(5), true)!;
+    expect(cumul.target).toBe(normal.target - 20); // Intermédiaire (+0) → +2 crans = Difficile (−20)
   });
 });

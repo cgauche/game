@@ -91,6 +91,12 @@ export function crewTestContributors(ship: Combatant, combatants: Combatant[], t
   return out;
 }
 
+/** Ajoute des marins à la liste « ayant agi ce Round » d'un navire (Manque de bras / cumul, MDG ch.14 l.53). PUR
+ *  (renvoie un nouveau `crewActed`). Dédupliqué : un marin déjà listé n'y figure qu'une fois. */
+export function withCrewActed(crewActed: Record<string, string[]> | undefined, shipId: string, ids: string[]): Record<string, string[]> {
+  return { ...(crewActed ?? {}), [shipId]: [...new Set([...(crewActed?.[shipId] ?? []), ...ids])] };
+}
+
 /**
  * Moral effectif d'un navire pour un Test d'équipage (la bande de Moral pèse en ±DR, MDG ch.14). Pont CAMPAGNE → COMBAT :
  * la coque `Combatant` ne porte AUCUN Moral (il vit sur `CampaignVessel`, recalc hebdomadaire) → on lit `vessel.morale.score`

@@ -685,7 +685,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (s, r, actor, _get, forced) => {
       if (!actor) return null;
-      const rr = forced ? forceCrewRole(actor, r.roleId) : rollCrewRole(actor, r.roleId, battleRng());
+      const rr = forced ? forceCrewRole(actor, r.roleId, r.cumul) : rollCrewRole(actor, r.roleId, battleRng(), r.cumul);
       return rr ? { result: rr } : null;
     },
     failed: (r) => !!r.result && r.result.roll > r.result.target, // d100 propre raté → Chance
@@ -706,7 +706,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (s, r, actor, _get, forced) => {
       if (!actor) return null;
-      const rr = forced ? forceCrewRole(actor, r.roleId) : rollCrewRole(actor, r.roleId, battleRng());
+      const rr = forced ? forceCrewRole(actor, r.roleId, r.cumul) : rollCrewRole(actor, r.roleId, battleRng(), r.cumul);
       return rr ? { result: rr } : null;
     },
     failed: (r) => !!r.result && r.result.roll > r.result.target,

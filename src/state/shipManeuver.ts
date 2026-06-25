@@ -14,7 +14,8 @@
  * (`vehicleCombatant` met `movement:0`) → on les relit via `creatureId` (`shipManeuverParams`).
  */
 import { battleRng } from './battleRng';
-import { rollTest, evaluateTest } from '../engine/tests';
+import { rollTest, evaluateTest, easeDifficulty } from '../engine/tests';
+import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { testValue } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
 import { navalMoveMod, navalSkillTestDR } from '../engine/navalTraits';
@@ -31,19 +32,22 @@ export interface CrewRoleRoll { roll: number; target: number; sl: number }
 
 /** Jet d'UN contributeur à son rôle : Test de la compétence du rôle (MDG ch.14). PUR (RNG injecté). `null` si le
  *  rôle est inconnu. La valeur suit `crewRoleValue` (meilleure compétence du rôle pour ce marin). */
-export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG): CrewRoleRoll | null {
+export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG, cumul = false): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
-  const t = rollTest(crewRoleValue(crew, role).value, 'intermediaire', rng);
+  // Cumul de 2 rôles (un marin déjà engagé dans un autre Test d'équipage ce Round) → +2 crans de Difficulté
+  // (Manque de bras, MDG ch.14 l.53).
+  const t = rollTest(crewRoleValue(crew, role).value, cumul ? easeDifficulty('intermediaire', -2) : 'intermediaire', rng);
   return { roll: t.roll, target: t.target, sl: t.sl };
 }
 
 /** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL (dé 01) à son rôle (LDB 17 l.73). PUR. */
-export function forceCrewRole(crew: Combatant, roleId: string): CrewRoleRoll | null {
+export function forceCrewRole(crew: Combatant, roleId: string, cumul = false): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
-  const val = crewRoleValue(crew, role).value;
-  return { roll: 1, target: val, sl: evaluateTest(1, val).sl };
+  // Résilience à DR max ; cible abaissée de +2 crans si cumul (Manque de bras, l.53).
+  const target = crewRoleValue(crew, role).value + (cumul ? DIFFICULTY_MODIFIERS[easeDifficulty('intermediaire', -2)] : 0);
+  return { roll: 1, target, sl: evaluateTest(1, target).sl };
 }
 
 /** Total du Test d'équipage de MANŒUVRE (MDG ch.14 l.13) : Σ des DR des contributeurs, le rôle ESSENTIEL compté
