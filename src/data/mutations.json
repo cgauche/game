@@ -14,6 +14,10 @@
       "features": [
         "pattes-danimaux"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -41,6 +45,10 @@
       "features": [
         "corpulent"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -59,6 +67,10 @@
       "features": [
         "doigts-distendus"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -82,6 +94,10 @@
       "features": [
         "emacie"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -94,6 +110,10 @@
       "eyes": {
         "G": "enorme"
       }
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -112,6 +132,10 @@
       "features": [
         "articulation-supplementaire-aux-jambes"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -124,6 +148,10 @@
       "features": [
         "bouche-supplementaire"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -142,7 +170,11 @@
         "op": "grantTrait",
         "traitId": "tentacules"
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 184
+    }
   },
   {
     "id": "peau-brillante",
@@ -157,6 +189,10 @@
       "features": [
         "peau-brillante"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -176,6 +212,10 @@
       "features": [
         "beaute-surnaturelle"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -194,6 +234,10 @@
       "features": [
         "visage-inverse"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -216,6 +260,10 @@
       "colors": {
         "peau": "#8a93a0"
       }
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -234,6 +282,10 @@
       "features": [
         "langue-pendante"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -246,6 +298,10 @@
       "features": [
         "plumes-eparses"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -263,6 +319,10 @@
       "features": [
         "court-sur-pattes"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -283,7 +343,11 @@
         "op": "ap",
         "amount": 1
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 184
+    }
   },
   {
     "id": "cornes-asymetriques",
@@ -310,7 +374,11 @@
         "bare": true,
         "qualities": []
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 184
+    }
   },
   {
     "id": "suintement-de-pus",
@@ -322,6 +390,10 @@
       "features": [
         "suintement-de-pus"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -340,6 +412,10 @@
       "features": [
         "groin-poilu"
       ]
+    },
+    "source": {
+      "book": "LDB",
+      "page": 184
     }
   },
   {
@@ -347,7 +423,11 @@
     "label": "Choix du MJ",
     "desc": "Le MJ choisit une mutation ou un Trait de Créature. Voir page 340.",
     "kind": "physique",
-    "note": "Le MJ choisit une mutation ou un Trait de Créature."
+    "note": "Le MJ choisit une mutation ou un Trait de Créature.",
+    "source": {
+      "book": "LDB",
+      "page": 184
+    }
   },
   {
     "id": "atroces-desirs",
@@ -365,7 +445,11 @@
         "char": "FM",
         "mod": -5
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "bete-interieure",
@@ -388,14 +472,22 @@
         "char": "Int",
         "mod": -5
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "reves-chaotiques",
     "label": "Rêves chaotiques",
     "desc": "Gagnez l’État Exténué pendant les deux premières heures de chaque journée.",
     "kind": "mentale",
-    "note": "État Exténué pendant les deux premières heures de chaque journée."
+    "note": "État Exténué pendant les deux premières heures de chaque journée.",
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "formication",
@@ -413,7 +505,11 @@
         "char": "Dex",
         "mod": -5
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "imprevisible-fantaisiste",
@@ -431,7 +527,11 @@
         "char": "FM",
         "mod": -5
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "terrible-inquietude",
@@ -444,14 +544,22 @@
         "char": "FM",
         "mod": -10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "pulsions-de-haine",
     "label": "Pulsions de haine",
     "desc": "Sujet à l’Hostilité (voir Psychologie ) envers tous ceux qui ne sont pas de votre race.",
     "kind": "mentale",
-    "note": "Sujet à l’Hostilité envers tous ceux qui ne sont pas de votre race."
+    "note": "Sujet à l’Hostilité envers tous ceux qui ne sont pas de votre race.",
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "coeur-desseche",
@@ -469,7 +577,11 @@
         "char": "Soc",
         "mod": -10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "pensees-envieuses",
@@ -482,14 +594,22 @@
         "char": "Soc",
         "mod": -10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "esprit-solitaire",
     "label": "Esprit solitaire",
     "desc": "-10 aux Tests lorsque vous êtes seul",
     "kind": "mentale",
-    "note": "-10 aux Tests lorsque vous êtes seul."
+    "note": "-10 aux Tests lorsque vous êtes seul.",
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "blocage-mental",
@@ -502,7 +622,11 @@
         "char": "Int",
         "mod": -10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "urgence-profanatoire",
@@ -520,14 +644,22 @@
         "char": "Ag",
         "mod": 10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "morale-douteuse",
     "label": "Morale douteuse",
     "desc": "Gagnez 1 État Brisé si vous échouez à un Test dérivé de la Force Mentale.",
     "kind": "mentale",
-    "note": "1 État Brisé sur tout échec à un Test dérivé de la Force Mentale."
+    "note": "1 État Brisé sur tout échec à un Test dérivé de la Force Mentale.",
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "esprit-suspicieux",
@@ -545,7 +677,11 @@
         "char": "Int",
         "mod": -5
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "accro-a-l-adrenaline",
@@ -563,7 +699,11 @@
         "char": "I",
         "mod": -10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "visions-torturees",
@@ -576,7 +716,11 @@
         "char": "I",
         "mod": -10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "totalement-desequilibre",
@@ -594,14 +738,22 @@
         "char": "FM",
         "mod": 10
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "infinie-malveillance",
     "label": "Infinie malveillance",
     "desc": "blesser autrui.",
     "kind": "mentale",
-    "note": "-10 aux Tests non destinés à blesser autrui ; +10 aux Tests destinés à blesser autrui."
+    "note": "-10 aux Tests non destinés à blesser autrui ; +10 aux Tests destinés à blesser autrui.",
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "colere-impie",
@@ -619,7 +771,11 @@
         "op": "grantPsychTrait",
         "psychType": "frenesie"
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "affreusement-nerveux",
@@ -637,7 +793,11 @@
         "char": "Soc",
         "mod": -5
       }
-    ]
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 185
+    }
   },
   {
     "id": "chair-necrosee",
