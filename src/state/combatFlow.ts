@@ -604,12 +604,20 @@ export function previewResourceDelta(battle: BattleState | null): { action: numb
 /** Cibles VALIDES de l'attaque du héros actif (R4) : ennemis en vie atteignables (mêlée à l'Allonge / tir
  *  dans une bande de portée AVEC Ligne de Vue) — MÊMES prédicats que la résolution (via `previewAttack`),
  *  pour surligner les cibles cliquables et griser les inéligibles. Pur. Vide hors tour de héros. */
+/** L'actif s'il est un héros-ATTAQUANT (arme à brandir + position) — précondition PARTAGÉE des calculs
+ *  d'éligibilité de cible. Un navire-coque (sans arme) renvoie null : il agit en UNITÉ (Tests d'équipage), il
+ *  n'attaque pas au fusil/à l'épée → `previewAttack` n'est pas appelé sur lui (et planterait faute d'arme). */
+function activeHeroAttacker(battle: BattleState): Combatant | null {
+  const active = activeCombatant(battle);
+  return active && active.kind === 'hero' && !!active.pos && active.weapons.length > 0 ? active : null;
+}
+
 export function eligibleAttackTargetIds(get: Get): Set<string> {
   const battle = get().battle;
   const ids = new Set<string>();
   if (!battle) return ids;
-  const active = activeCombatant(battle);
-  if (!active || active.kind !== 'hero' || !active.pos) return ids;
+  const active = activeHeroAttacker(battle);
+  if (!active) return ids;
   for (const c of battle.combatants) {
     if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
     const p = previewAttack(get, active, c);
@@ -626,8 +634,8 @@ export function outOfSightTargetIds(get: Get): Set<string> {
   const battle = get().battle;
   const ids = new Set<string>();
   if (!battle) return ids;
-  const active = activeCombatant(battle);
-  if (!active || active.kind !== 'hero' || !active.pos) return ids;
+  const active = activeHeroAttacker(battle); // navire-coque (sans arme) → aucune cible « hors de vue » à griser
+  if (!active) return ids;
   for (const c of battle.combatants) {
     if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
     if (previewAttack(get, active, c).blocked) ids.add(c.id);

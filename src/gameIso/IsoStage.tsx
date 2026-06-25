@@ -60,6 +60,8 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale, footprintTokenScale } from './sizeScale';
 import { sizeFootprint, footprintN, footprintTiles, occupiesTile, decorFootGeometry } from '../state/footprint';
+import { isPassengerInBattle } from '../state/shipPostes';
+import { isMerScene } from '../state/scene';
 import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack } from '../state/combatFlow';
 import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
@@ -771,6 +773,9 @@ export function IsoStage() {
     let hi = 0;
     for (const c of battle.combatants) {
       if (!c.pos) continue;
+      // À l'échelle MER, l'ÉQUIPAGE d'un navire est ABSTRAIT — pas de jeton individuel sur la mer (la coque agit
+      // en unité et le représente, MDG ch.14). MÊME prédicat « passager » que l'exclusion de l'ordre d'initiative.
+      if (isPassengerInBattle(c, battle.combatants, isMerScene(scene))) continue;
       const isHero = c.kind === 'hero';
       // Brouillard : un ennemi/PNJ que PERSONNE du groupe ne voit n'est pas dessiné (les alliés, qui
       // SONT les viewers, restent toujours rendus). Les combattants n'ont pas de `z` → clé z=0.

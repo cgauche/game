@@ -18,6 +18,13 @@ import { rollVehicleProblem, type TravelTableEntry } from './travelTables';
 
 const ZERO_CHARS: Characteristics = { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 };
 
+/** Ce combattant est-il un VÉHICULE-coque (navire, chariot, barge) — `bodyShape:'vehicule'` ? Prédicat NOMMÉ
+ *  (source UNIQUE — plus de littéral `'vehicule'` dispersé) : un véhicule agit en UNITÉ (Tests d'équipage) ; il
+ *  n'a ni arme tenue, ni sort, ni marche de fantassin → les barres/chemins « héros-attaquant » doivent l'ignorer. */
+export function isVehicle(c: Pick<Combatant, 'bodyShape'>): boolean {
+  return c.bodyShape === 'vehicule';
+}
+
 /** Construit la coque transitoire (`Combatant`) d'un véhicule depuis sa facette `hull` (Endurance +
  *  Blessures). `undefined` si le véhicule n'a pas de profil de coque (transports sans entité à PV). */
 export function vehicleCombatant(v: VehicleData, id = `vehicle-${v.id}`): Combatant | undefined {

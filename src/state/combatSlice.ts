@@ -48,7 +48,8 @@ import { testValue, actorHasSkill } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
-import { applyShipManeuver } from './shipManeuver';
+import { applyShipManeuver, shipHelmsman } from './shipManeuver';
+import { isVehicle } from '../engine/vehicle';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
@@ -787,15 +788,19 @@ export function createCombatSlice(get: Get, set: Set) {
     // ── Manœuvre navale (MDG ch.13) : le barreur (héros ACTIF, à la barre) dépense son Action pour un Test
     //    de Navigation → vire le cap (re-mappe les bordées) + avance la coque. « Un jet = une Action » : le
     //    jet passe par pendingShipManeuver, `acted` consommé au confirm. La direction se choisit au pré-jet. ──
-    battleShipManeuver: (crewId: string) => {
+    battleShipManeuver: (id: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || active.id !== crewId || !canTakeAction(active)) return;
-      const ship = shipOfCrew(battle.combatants, crewId); // le navire dont l'équipage inclut le héros
+      if (!active || active.id !== id || aiDriven(get(), active) || !canTakeAction(active)) return;
+      // À l'échelle MER, le NAVIRE est l'acteur (`id` = la coque, barreur = meilleur de l'équipage) ; au person-scale,
+      // un héros-équipage prend la barre (`id` = le héros, navire dérivé via `shipOfCrew`).
+      const ship = isVehicle(active) ? active : shipOfCrew(battle.combatants, id);
       if (!ship) return;
-      set({ pendingShipManeuver: { shipId: ship.id, helmsmanId: crewId, turnSteps: 0, result: null }, battle: { ...battle, action: null, preview: null } });
+      const helmsman = ship.id === active.id ? shipHelmsman(battle.combatants, ship) : active;
+      if (!helmsman) return; // aucun marin apte à la barre → le navire ne peut pas manœuvrer
+      set({ pendingShipManeuver: { shipId: ship.id, helmsmanId: helmsman.id, turnSteps: 0, result: null }, battle: { ...battle, action: null, preview: null } });
     },
     shipManeuverSetTurn: (steps: number) => {
       const p = get().pendingShipManeuver;

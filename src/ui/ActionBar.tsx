@@ -17,6 +17,7 @@ import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import { shipOfCrew } from '../state/shipPostes';
+import { isVehicle } from '../engine/vehicle';
 import { controlsActive } from '../state/netOwnership';
 import { aiDriven } from '../state/combatGate';
 import type { Combatant } from '../engine/types';
@@ -206,7 +207,11 @@ export function ActionBar() {
   // Un héros PILOTÉ PAR L'IA (Auto-combat) n'est pas contrôlable par le joueur → on rend la MÊME barre
   // que pour un ennemi (aucun contrôle : le joueur regarde). En Rapide, le héros reste contrôlable (seuls
   // les jets s'auto-résolvent) ; en Auto, l'IA joue → barre « ennemie ». `isHero` gate TOUS les contrôles.
-  const isHero = active.kind === 'hero' && !aiDriven(useGame.getState(), active);
+  const playerControlled = active.kind === 'hero' && !aiDriven(useGame.getState(), active);
+  // Un NAVIRE-coque contrôlé par le joueur (échelle Mer) n'est PAS un fantassin : il a ses propres Actions
+  // (Tests d'équipage : Manœuvrer / Bordée / Éperonner), pas marche/sort/mêlée. On sépare les deux barres.
+  const isShip = playerControlled && isVehicle(active);
+  const isHero = playerControlled && !isVehicle(active);
   const loadouts = active.loadouts ?? []; // sets d'armes basculables en combat (≥2 → commutateur)
   // Mouvement DÉCOMPOSABLE (mais non entrelacé avec l'Action) : cases encore disponibles ce Tour (0 = épuisé).
   // `canMoveNow` applique aussi la règle M-A-M (pas de Mouvement après une Action déjà précédée de Mouvement).
@@ -342,6 +347,13 @@ export function ActionBar() {
     if (removableConditions.length > 0) slots.push({ id: 'resolve', cls: `ab-alert ${battle.action === 'resolve' ? 'on' : ''}`, icon: '✊', label: `Détermination (${resolve})`, title: "Détermination : retirer un État (ne coûte pas l'Action)", run: () => selectAction(battle.action === 'resolve' ? null : 'resolve') });
     if (net.mode !== 'local') slots.push({ id: 'raise-hand', cls: battle.handRaised ? 'on' : '', disabled: !!battle.handRaised, icon: '✋', label: battle.handRaised ? 'Pause demandée' : 'Pause Round', title: 'Demander la pause au prochain début de Round (fenêtre Chance « agir en premier »)', run: () => useGame.getState().raiseHand() });
     slots.push({ id: 'end-turn', cls: `ab-end ${!meaningfulLeft ? 'pulse' : ''} ${confirmEnd ? 'warn' : ''}`, icon: confirmEnd ? '⚠️' : '⏭️', label: confirmEnd ? 'Finir quand même ?' : 'Fin du tour', title: confirmEnd ? 'Tu n’as pas encore agi ce tour — clique encore pour finir quand même' : !meaningfulLeft ? 'Plus rien à faire ce tour' : 'Finir le tour', run: onEndTurn });
+  }
+  if (isShip) {
+    // Tour du NAVIRE (couche Mer) : Action = Test d'ÉQUIPAGE. Manœuvrer = le barreur vire le cap (Test de
+    // Navigation) puis le navire avance le long du cap (l'éperonnage se résout si une coque est devant).
+    // (La Bordée arrive en Phase C′ ; l'IA des navires ennemis en `shipAI`.)
+    slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
+    slots.push({ id: 'end-turn', cls: 'ab-end', icon: '⏭️', label: 'Fin du tour', title: `Finir le tour de ${active.name}`, run: onEndTurn });
   }
   hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge
 
@@ -512,7 +524,7 @@ export function ActionBar() {
           </div>
         </div>
 
-        {isHero ? (
+        {isHero || isShip ? (
           <div className="ab-slots">
             {slots.map((s, i) => (
               <button key={s.id} className={'ab-slot ' + (s.cls ?? '')} disabled={s.disabled} onClick={s.run} title={s.title}>

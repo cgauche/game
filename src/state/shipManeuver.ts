@@ -30,6 +30,16 @@ function bestHelmsman(crew: Combatant[], skillId: string): Combatant | undefined
   return [...exposedCrew(crew)].sort((a, b) => testValue(b, skillId) - testValue(a, skillId))[0];
 }
 
+/** Le BARREUR effectif d'un navire à son tour (échelle Mer, navire-unité) : le meilleur de SON équipage présent en
+ *  Voile/Ramer. `undefined` si aucun marin apte (le navire ne peut pas manœuvrer). PUR. */
+export function shipHelmsman(combatants: Combatant[], ship: Combatant): Combatant | undefined {
+  const { skillId } = shipManeuverParams(ship);
+  const crew = (ship.crewIds ?? [])
+    .map((id) => combatants.find((c) => c.id === id))
+    .filter((c): c is Combatant => !!c);
+  return bestHelmsman(crew, skillId);
+}
+
 export interface ManeuverResult extends ShipManeuverOutcome {
   /** DR du Test de Navigation du barreur (avant ajout du Man — `dr` final = `navDR` + Man + extra). */
   navDR: number;
