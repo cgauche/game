@@ -1,0 +1,61 @@
+import { describe, it, expect } from 'vitest';
+import { fireTriggers } from './triggeredEffects';
+import { addCondition, COND } from '../engine/conditions';
+import type { Combatant } from '../engine/types';
+
+/**
+ * Trait Redoutable (Zoo Impérial) — au début de son tour, la créature complète ses Avantages jusqu'à
+ * son *Indice* (`value` de l'instance), sauf si Empêtré/Inconscient/Surpris (ZI p.11). Câblé 100% en
+ * DONNÉE : trigger `onTurnStart` → Flow gardé (`compare` sur les États) → op `gainAdvantage` dont
+ * l'`amount: '$indice'` est baké à la valeur d'instance par `withArg`. Aucun code spécifique à Redoutable.
+ */
+const mk = (over: Partial<Combatant> = {}): Combatant => ({
+  id: 'x', name: 'X', kind: 'enemy',
+  characteristics: { CC: 30, CT: 30, F: 30, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+  skills: [], talents: [], traits: [],
+  conditions: [], activeEffects: [], liveTraits: [], weapons: [], armour: { corps: 0 },
+  wounds: { current: 10, max: 10, base: 10 }, advantage: 0,
+  ...over,
+}) as unknown as Combatant;
+const get = ((c: Combatant) => () => ({ battle: { combatants: [c] } })) as never;
+const fire = (c: Combatant) => fireTriggers((get as (c: Combatant) => unknown)(c) as never, c, 'onTurnStart', {});
+
+describe('Trait Redoutable (ZI) — Avantage minimum = Indice au début du tour', () => {
+  it('porte l’Avantage jusqu’à l’Indice (value:2)', () => {
+    const c = mk({ traits: [{ id: 'redoutable', value: 2 }] as never, advantage: 0 });
+    fire(c);
+    expect(c.advantage).toBe(2);
+  });
+
+  it('ne réduit JAMAIS l’Avantage (déjà 3 > Indice 2 → reste 3)', () => {
+    const c = mk({ traits: [{ id: 'redoutable', value: 2 }] as never, advantage: 3 });
+    fire(c);
+    expect(c.advantage).toBe(3);
+  });
+
+  it('Indice 1 → Avantage 1', () => {
+    const c = mk({ traits: [{ id: 'redoutable', value: 1 }] as never, advantage: 0 });
+    fire(c);
+    expect(c.advantage).toBe(1);
+  });
+
+  it('Empêtré → ne gagne PAS d’Avantage (garde, ZI p.11)', () => {
+    const c = mk({ traits: [{ id: 'redoutable', value: 2 }] as never, advantage: 0 });
+    addCondition(c, COND.empetre);
+    fire(c);
+    expect(c.advantage).toBe(0);
+  });
+
+  it('Surpris → ne gagne PAS d’Avantage', () => {
+    const c = mk({ traits: [{ id: 'redoutable', value: 2 }] as never, advantage: 0 });
+    addCondition(c, COND.surpris);
+    fire(c);
+    expect(c.advantage).toBe(0);
+  });
+
+  it('sans le trait → aucun changement d’Avantage', () => {
+    const c = mk({ advantage: 0 });
+    fire(c);
+    expect(c.advantage).toBe(0);
+  });
+});

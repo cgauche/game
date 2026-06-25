@@ -182,6 +182,7 @@ export const fr = {
   'op.charModLine': '{name} : {label} ({parts}, {dur}).',
   'op.wounds': '{name} subit {n} Blessure(s){mitig}.',
   'op.heal': '{name} regagne {n} Blessure(s).',
+  'op.gainAdvantage': '{name} porte son Avantage à {n}.',
   'op.condPerRound': '{name} subira {v} État {cond} par Round ({src}).',
   'op.condTimed': '{name} reçoit {v} État {cond} ({roundsTxt}).',
   'op.cond': '{name} reçoit {v} État {cond}.',

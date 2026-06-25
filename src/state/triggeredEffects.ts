@@ -35,16 +35,17 @@ import { RNG, defaultRNG } from '../engine/dice';
 /** PARAMÈTRE un effet de trait par l'ARGUMENT d'instance du porteur : substitue la difficulté d'un Test
  *  `argDifficulty` par celle dérivée de l'arg (« Venin (Difficile) » → difficile). Rend les effets
  *  authorés réutilisables et éditables tout en restant tunés par leur instance. Immuable (clone partiel). */
-function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
-  if (!arg) return effects;
-  const diff = difficultyFromLabel(arg);
-  // Injection GÉNÉRIQUE de l'arg d'instance dans une op : tout champ valant le littéral `'$arg'` reçoit
-  // l'arg (trait Maladie « (peste) » → `exposeDisease{disease:'$arg'}`). Une seule convention, pas de variante.
+function withArg(effects: TriggeredEffect[], arg?: string, value?: number): TriggeredEffect[] {
+  if (arg === undefined && value === undefined) return effects;
+  const diff = arg ? difficultyFromLabel(arg) : undefined;
+  // Injection GÉNÉRIQUE de l'instance dans une op : un champ valant `'$arg'` reçoit l'arg (trait Maladie
+  // « (peste) » → `exposeDisease{disease:'$arg'}`) ; `'$indice'` reçoit l'Indice numérique de l'instance
+  // (Redoutable `value:2` → `gainAdvantage{amount:'$indice'}`). Une seule convention, pas de variante.
   const substOp = (op: GameOp): GameOp => {
     const o = op as Record<string, unknown>;
-    if (!Object.values(o).includes('$arg')) return op;
+    if (!Object.values(o).includes('$arg') && !Object.values(o).includes('$indice')) return op;
     const out = { ...o };
-    for (const k in out) if (out[k] === '$arg') out[k] = arg;
+    for (const k in out) { if (out[k] === '$arg' && arg !== undefined) out[k] = arg; else if (out[k] === '$indice' && value !== undefined) out[k] = value; }
     return out as unknown as GameOp;
   };
   const visit = (f: Flow): Flow => {
@@ -53,7 +54,7 @@ function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
     if (f.kind === 'test') {
       // Nœud Flow `test` dont la difficulté vient de l'arg d'instance (« Venin (Difficile) ») : on
       // substitue `test.difficulty` (mêmes sémantique/gate que l'ancienne op `test.argDifficulty`).
-      const test = f.test.argDifficulty ? { ...f.test, difficulty: diff } : f.test;
+      const test = f.test.argDifficulty && diff ? { ...f.test, difficulty: diff } : f.test;
       return { ...f, test, success: visit(f.success), fail: visit(f.fail) };
     }
     if (f.kind === 'do' && f.effect.type === 'ops') return { ...f, effect: { ...f.effect, ops: f.effect.ops.map(substOp) } };
@@ -69,7 +70,7 @@ function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
 function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   const out: TriggeredEffect[] = [];
   if (weapon?.onHitEffects) out.push(...weapon.onHitEffects);
-  for (const raw of actor.traits ?? []) { const inst = raw; out.push(...withArg(traitById.get(inst.id)?.effects ?? [], inst.arg)); }
+  for (const raw of actor.traits ?? []) { const inst = raw; out.push(...withArg(traitById.get(inst.id)?.effects ?? [], inst.arg, inst.value)); }
   if (weapon) for (const { id } of resolveQualities(weapon)) out.push(...(qualityById.get(id)?.effects ?? []));
   // Talents POSSÉDÉS portant des effets déclenchés (Assaut féroce onHit, Frappe réactive onCharged…) —
   // mêmes `TriggeredEffect` que les traits. Appendus en fin (ordre RNG existant enchant→traits→atouts préservé).
@@ -88,7 +89,7 @@ export interface TriggerSource { effects: TriggeredEffect[]; cap: number; key: s
 export function freeAttackSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
   const out: TriggerSource[] = [];
   if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
-  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
+  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg, tr.value), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
   if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
   for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
   for (const cond of actor.conditions ?? []) { const d = findConditionById(cond.name); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name }); }

@@ -41,7 +41,52 @@
     "source": {
       "book": "ZI",
       "page": 11
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onTurnStart",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "all",
+            "of": [
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "empetre"
+                },
+                "op": "<",
+                "value": 1
+              },
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "surpris"
+                },
+                "op": "<",
+                "value": 1
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "self",
+              "ops": [
+                {
+                  "op": "gainAdvantage",
+                  "amount": "$indice"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "fouissement",

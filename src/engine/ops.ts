@@ -228,6 +228,9 @@ export type GameOp =
    *  points NON dépensés à l'expiration (rounds OU horloge, engine/grantedResources). `perSL` : « +1
    *  par +2 DR ». */
   | { op: 'gainResource'; resource: 'fortune' | 'fate'; amount: number; perSL?: PerSL; temporary?: boolean }
+  /** Porte l'Avantage de la cible à AU MOINS `amount` (jamais réduit). Trait Redoutable (ZI) : au début
+   *  de son tour, la créature complète ses Avantages jusqu'à son *Indice* (`amount: '$indice'` baké). */
+  | { op: 'gainAdvantage'; amount: Formula }
   /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
@@ -702,6 +705,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, resolveFormula(o.amount, ref, rng));
         who.wounds.current = Math.min(who.wounds.max, who.wounds.current + n);
         lines.push(t('op.heal', { name: who.name, n }));
+        break;
+      }
+      case 'gainAdvantage': {
+        // Porte l'Avantage à AU MOINS `amount` (jamais réduit) — Redoutable complète jusqu'à l'Indice.
+        const want = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks));
+        if ((target.advantage ?? 0) < want) { target.advantage = want; lines.push(t('op.gainAdvantage', { name: target.name, n: want })); }
         break;
       }
       case 'condition': {

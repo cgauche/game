@@ -54,6 +54,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   freeReroll: '🔁 Relance gratuite (prochain échec)',
   critTwice: '🎯 Deux lancers de Critique (meilleur)',
   gainResource: '🍀 Points de Chance / Destin',
+  gainAdvantage: '⚔️ Porter l’Avantage à (min)',
   attrMod: '🎲 Modif. d’attribut secondaire',
   corruption: '🧬 Points de Corruption',
   castPenalty: '🔮 Contrecoup d’incantation',
