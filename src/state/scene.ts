@@ -496,6 +496,12 @@ export function sceneMetresPerTile(scene: { metresPerTile?: number } | null | un
   return scene?.metresPerTile ?? 2;
 }
 
+/** La scène est-elle à l'échelle MER (combat naval OPÉRATIONNEL : navire-unité, équipage abstrait/passager) ?
+ *  Proxy = case ≥ 4 m (vs 2 m person-scale du Pont/sol). Pilote le modèle navire-unité (cf. couche Mer ⇄ Pont). PUR. */
+export function isMerScene(scene: { metresPerTile?: number } | null | undefined): boolean {
+  return sceneMetresPerTile(scene) >= 4;
+}
+
 export const SCHEMA_VERSION = 2;
 
 /** Grille de tuiles d'un niveau (défaut z=0 = sol). Repli sur le 1ᵉʳ niveau si `z` absent. */

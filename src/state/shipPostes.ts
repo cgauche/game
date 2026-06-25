@@ -51,6 +51,19 @@ export function shipOfCrew(combatants: Combatant[], crewId: string): Combatant |
   return combatants.find((c) => c.crewIds?.includes(crewId));
 }
 
+/** `c` est-il un PASSAGER au combat — un membre d'ÉQUIPAGE d'une coque présente, à l'échelle MER ? Le NAVIRE agit
+ *  alors en UNITÉ : « la performance des Personnages représente celle de tout l'équipage » (MDG ch.14 l.39) →
+ *  l'équipage n'a pas de slot d'initiative. Le passager RESTE dans `battle.combatants` (cible d'Éclats / Critiques
+ *  d'équipage, futur combattant de Pont à l'abordage) ; seul son SLOT d'`order` est retiré. PUR.
+ *
+ *  ⚠ NE COUVRE PAS les MONTURES : RAW « Combat monté » (LDB 14 l.182) — « une monture sans le Trait Nerveux est un
+ *  autre combattant à part entière, et peut effectuer sa propre Action » → une monture GARDE son tour. (La désynchro
+ *  monture/cavalier est un bug de SYNCHRO DE POSITION — le cavalier utilise le Mouvement de sa monture, l.179 —, pas
+ *  un bug de tour : à corriger côté mouvement, pas ici.) */
+export function isPassengerInBattle(c: Combatant, combatants: Combatant[], merScale: boolean): boolean {
+  return merScale && !!shipOfCrew(combatants, c.id);
+}
+
 /** Nombre de servants APTES (vivants + conscients, via `exposedCrew`) qui tiennent le poste que `chef` sert,
  *  parmi `combatants` — entrée de `crewedFireWeapon` (sous-effectif d'une Arme d'équipe, MDG ch.12). Le chef
  *  est lui-même un `crewIds` du poste, donc compté. `undefined` si `chef` ne sert aucun poste (tir normal). PUR. */

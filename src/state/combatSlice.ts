@@ -63,6 +63,8 @@ import type {
 import { findSpellById } from '../data/index';
 import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, Pt } from './path';
 import { sizeFootprint, combatDistance } from './footprint';
+import { combatOrder } from './combatSetup';
+import { isMerScene } from './scene';
 import { bus, EVT } from './bus';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -1618,9 +1620,9 @@ export function createCombatSlice(get: Get, set: Set) {
         const fear = talentFearIndice(c);
         if (fear > 0) c.causesPeur = Math.max(c.causesPeur ?? 0, fear);
       }
-      // Lente (LDB 63 l.25) : le porteur d'une arme Lente frappe toujours en dernier dans le Round.
-      const ordered = initiativeOrder(all);
-      const order = [...ordered.filter((c) => !strikesLast(c.weapons)), ...ordered.filter((c) => strikesLast(c.weapons))].map((c) => c.id);
+      // Ordre d'initiative (arme « Lente » en dernier, LDB 63 l.25). À l'échelle MER, l'équipage est PASSAGER
+      // (hors `order`) : seules les coques ont un tour (navire-unité, MDG ch.14). Au person-scale, ordre complet.
+      const order = combatOrder(all, isMerScene(scene));
       const battle: BattleState = {
         combatants: all,
         order,
