@@ -259,6 +259,10 @@ export interface Weapon {
   /** Pièce d'artillerie MONTÉE sur un navire : côté de montage (proue/poupe/bâbord/tribord) relatif au
    *  cap → restreint l'arc de tir (lu par la validation de visée via `inFireArc`). Absent = arme non montée. */
   mountSide?: FireArc;
+  /** Pénalité PLATE au Test de tir bakée par le sous-effectif d'une Arme d'équipe quand le Défaut ajouté
+   *  était DÉJÀ porté (MDG ch.12 l.460 : −10/Défaut redoublé). Posée par `crewedFireWeapon`, ajoutée aux
+   *  modificateurs de touche par `attackModifiers` (comme Précise, mais négative). Absent = aucune. */
+  crewedTohitPenalty?: number;
 }
 
 /** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { crewedPenalty, crewedFireWeapon } from './crewedWeapon';
-import type { Weapon } from './types';
+import { attackModifiers } from './combat';
+import type { Weapon, Combatant } from './types';
 
 /**
  * ARME D'ÉQUIPE — sous-effectif (MDG ch.12 l.448-460), GÉNÉRAL (sièges au sol comme naval). Pénalités
@@ -62,13 +63,40 @@ describe('crewedFireWeapon — Défauts de sous-effectif BAKÉS sur l’arme tir
     expect(hasQ(w, 'dangereuse')).toBe(true);
   });
 
-  it('un Défaut DÉJÀ porté n’est pas redoublé (pas de doublon dans qualities)', () => {
-    const w = crewedFireWeapon(cannon({ qualities: [{ id: 'arme-d-equipe', value: 3 }, { id: 'imprecise' }] }), 1); // déficit 2 → ajoute Imprécise
-    expect(w.qualities.filter((q) => q.id === 'imprecise').length).toBe(1);
+  it('un Défaut DÉJÀ porté n’est pas redoublé → −10 plat au tir au lieu de doubler (MDG ch.12 l.460)', () => {
+    const w = crewedFireWeapon(cannon({ qualities: [{ id: 'arme-d-equipe', value: 3 }, { id: 'imprecise' }] }), 1); // déficit 2 → « ajoute » Imprécise, déjà là
+    expect(w.qualities.filter((q) => q.id === 'imprecise').length).toBe(1); // pas de doublon (−1 DR ne double pas)
+    expect(w.crewedTohitPenalty).toBe(-10); // … mais −10 au Test de tir
+  });
+
+  it('deux Défauts déjà portés et redoublés → −20 cumulatif', () => {
+    const w = crewedFireWeapon(cannon({ qualities: [{ id: 'arme-d-equipe', value: 4 }, { id: 'imprecise' }, { id: 'dangereuse' }] }), 1); // déficit 3
+    expect(w.crewedTohitPenalty).toBe(-20);
+  });
+
+  it('Défaut ajouté NON déjà porté → aucune pénalité −10', () => {
+    expect(crewedFireWeapon(cannon(), 1).crewedTohitPenalty).toBeUndefined(); // Imprécise ajoutée pour de bon
   });
 
   it('arme NON Arme d’équipe → inchangée', () => {
     const arc = cannon({ qualities: [], reload: 0 });
     expect(crewedFireWeapon(arc, 1)).toEqual(arc);
+  });
+});
+
+describe('attackModifiers — le −10 du Défaut redoublé apparaît sur le Test de tir (MDG ch.12 l.460)', () => {
+  const shooter = (): Combatant =>
+    ({ id: 's', name: 'S', kind: 'hero', advantage: 0, conditions: [], size: 3, weapons: [] }) as unknown as Combatant;
+  const mark = (): Combatant => ({ id: 't', name: 'T', kind: 'enemy', advantage: 0, conditions: [], size: 3 }) as unknown as Combatant;
+
+  it('un canon Imprécise manié seul → ligne « Sous-effectif » à −10 dans les modificateurs de touche', () => {
+    const w = crewedFireWeapon(cannon({ qualities: [{ id: 'arme-d-equipe', value: 3 }, { id: 'imprecise' }] }), 1);
+    const line = attackModifiers(shooter(), mark(), w, { kind: 'ranged' }).find((m) => m.label.includes('Sous-effectif'));
+    expect(line?.value).toBe(-10);
+  });
+
+  it('équipage complet → aucune ligne « Sous-effectif »', () => {
+    const w = crewedFireWeapon(cannon({ qualities: [{ id: 'arme-d-equipe', value: 3 }, { id: 'imprecise' }] }), 3);
+    expect(attackModifiers(shooter(), mark(), w, { kind: 'ranged' }).some((m) => m.label.includes('Sous-effectif'))).toBe(false);
   });
 });

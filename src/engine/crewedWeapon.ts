@@ -35,8 +35,8 @@ export function crewedPenalty(present: number, indice: number): CrewedPenalty {
  * `present` (MDG ch.12 l.448-460) : recharge ×`reloadFactor`, + Défaut *Imprécise*, + Défaut *Dangereuse*.
  * RETIRE la qualité `arme-d-equipe` — l'équipage RÉEL étant désormais résolu, l'hypothèse « maniée en solo »
  * de `dispatch.ts` (`crewedTeamIndice`) ne doit plus se cumuler ; un poste à effectif COMPLET tire donc net.
- * Un Défaut déjà porté par l'arme n'est pas redoublé. PUR. Arme sans `arme-d-equipe` → inchangée.
- * NB RAW : le −10 supplémentaire si l'arme possédait DÉJÀ le Défaut ajouté (l.460) reste à appliquer.
+ * Un Défaut déjà porté par l'arme n'est PAS redoublé : il vaut alors **−10 au Test de tir** (l.460), baké en
+ * `crewedTohitPenalty` (cumulatif par Défaut redoublé). PUR. Arme sans `arme-d-equipe` → inchangée.
  */
 export function crewedFireWeapon(weapon: Weapon, present: number): Weapon {
   const indice = crewedTeamIndice(weapon);
@@ -44,9 +44,11 @@ export function crewedFireWeapon(weapon: Weapon, present: number): Weapon {
   const pen = crewedPenalty(present, indice);
   const has = (id: string) => weapon.qualities.some((q) => q.id === id);
   const added = pen.addFlaws.filter((f) => !has(f)).map((id) => ({ id }));
+  const redoubled = pen.addFlaws.filter(has).length; // Défauts déjà portés et « re-reçus » → −10 chacun (l.460)
   return {
     ...weapon,
     qualities: [...weapon.qualities.filter((q) => q.id !== 'arme-d-equipe'), ...added],
     reload: (weapon.reload ?? 0) * pen.reloadFactor,
+    ...(redoubled ? { crewedTohitPenalty: (weapon.crewedTohitPenalty ?? 0) - 10 * redoubled } : null),
   };
 }

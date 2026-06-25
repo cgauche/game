@@ -333,6 +333,9 @@ export function attackModifiers(
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
   const precise = qualitySum(weapon, 'attackMod');
   if (precise) out.push({ label: 'Précise', value: precise });
+  // Arme d'équipe en sous-effectif re-recevant un Défaut déjà porté → −10 plat (MDG ch.12 l.460), baké sur
+  // l'arme tirée par `crewedFireWeapon` (≠ le −1 DR d'Imprécise, qui reste sur la qualité).
+  if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty });
   // Localisation visée = Complexe −10 (l.104) — SAUF contre une créature de Taille ≥ 2 catégories
   // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
   // d'Impact des Créatures » p.312 / `76` l.39).
