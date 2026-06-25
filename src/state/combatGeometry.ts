@@ -11,7 +11,7 @@ import type { Combatant } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { Scene, isWalkable } from './scene';
 import { Pt } from './path';
-import { footprintTiles, sizeFootprint, occupiesTile } from './footprint';
+import { footprintTiles, footprintN, occupiesTile } from './footprint';
 import { sizeGap } from '../engine/size';
 import { isOutOfAction } from '../engine/conditions';
 import { traitSeesInDark } from '../engine/traits/dispatch';
@@ -33,7 +33,7 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
   for (const c of battle.combatants) {
     if (c.id === exceptId || isOutOfAction(c) || !c.pos) continue;
     if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.308-309)
-    for (const t of footprintTiles(c.pos, c.size)) s.add(`${t.x},${t.y}`);
+    for (const t of footprintTiles(c.pos, footprintN(c))) s.add(`${t.x},${t.y}`);
   }
   // BARRIÈRES (zones authorées/sorts) : leurs cases sont infranchissables pour le mover gaté — point
   // d'injection UNIQUE → tout déplacement (reachable joueur, IA, poussée, téléport) les respecte.
@@ -55,7 +55,7 @@ export function pushBackTiles(get: Get, attacker: Combatant, target: Combatant, 
   let moved = 0;
   for (let i = 0; i < tiles; i++) {
     const next = { x: pos.x + dx, y: pos.y + dy };
-    const foot = footprintTiles(next, target.size);
+    const foot = footprintTiles(next, footprintN(target));
     if (!foot.every((t) => isWalkable(scene, t.x, t.y) && !blocked.has(`${t.x},${t.y}`))) break;
     pos = next;
     moved++;
@@ -80,12 +80,12 @@ export function findFreeTile(scene: Scene): Pt {
 export function displaceSmaller(get: Get, mover: Combatant): boolean {
   const battle = get().battle;
   const scene = get().scene;
-  if (!battle || !scene || !mover.pos || sizeFootprint(mover.size) <= 1) return false;
+  if (!battle || !scene || !mover.pos || footprintN(mover) <= 1) return false;
   let moved = false;
   for (const c of battle.combatants) {
     if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos) continue; // jamais éjecter SON propre cavalier (il chevauche)
     if (sizeGap(c.size, mover.size) >= 0) continue; // pas strictement plus petit → non dégagé
-    if (!occupiesTile(mover.pos, mover.size, c.pos.x, c.pos.y)) continue; // pas sous l'empreinte du mover
+    if (!occupiesTile(mover.pos, footprintN(mover), c.pos.x, c.pos.y)) continue; // pas sous l'empreinte du mover
     const free = nearestFreeOutside(scene, battle, c, mover);
     if (free) { c.pos = free; moved = true; }
   }
@@ -101,7 +101,7 @@ function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mov
       for (let dx = -r; dx <= r; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
         const x = c.pos!.x + dx, y = c.pos!.y + dy;
-        if (occupiesTile(mover.pos!, mover.size, x, y)) continue; // garder hors empreinte du mover
+        if (occupiesTile(mover.pos!, footprintN(mover), x, y)) continue; // garder hors empreinte du mover
         if (isWalkable(scene, x, y) && !blocked.has(`${x},${y}`)) return { x, y };
       }
   return undefined;

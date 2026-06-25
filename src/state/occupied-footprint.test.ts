@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { occupied, displaceSmaller } from './combatFlow';
-import { occupiesTile } from './footprint';
+import { occupiesTile, footprintN } from './footprint';
 import type { BattleState } from './store';
 import type { Scene } from './scene';
 import type { Combatant } from '../engine/types';
@@ -52,7 +52,7 @@ describe('displaceSmaller — un grand dégage les plus petits de son empreinte 
     const b = battle([big, small]);
     const get = (() => ({ battle: b, scene: flatScene(12, 12) })) as unknown as () => GameStateLike;
     expect(displaceSmaller(get as never, big)).toBe(true);
-    expect(occupiesTile(big.pos!, big.size, small.pos!.x, small.pos!.y)).toBe(false); // plus sous le grand
+    expect(occupiesTile(big.pos!, footprintN(big), small.pos!.x, small.pos!.y)).toBe(false); // plus sous le grand
   });
   it('ne touche pas une créature de Taille égale/supérieure', () => {
     const big = mk('big', 5, 5, 'grande');

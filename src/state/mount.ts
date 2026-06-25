@@ -10,7 +10,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { sizeGap } from '../engine/size';
 import type { ModLine } from '../engine/combat';
 import { Scene, isWalkable } from './scene';
-import { occupiesTile, sizeFootprint } from './footprint';
+import { occupiesTile, footprintN } from './footprint';
 import type { Pt } from './path';
 import type { BattleState } from './store';
 
@@ -29,7 +29,7 @@ export const riderOf = (battle: BattleState, mount: Combatant): Combatant | unde
 /** Distance de Chebyshev entre une case et l'empreinte d'un combattant (0 = sur l'empreinte). */
 function tileToFootprint(c: Combatant, x: number, y: number): number {
   if (!c.pos) return Infinity;
-  const n = sizeFootprint(c.size);
+  const n = footprintN(c);
   const dx = x < c.pos.x ? c.pos.x - x : x > c.pos.x + n - 1 ? x - (c.pos.x + n - 1) : 0;
   const dy = y < c.pos.y ? c.pos.y - y : y > c.pos.y + n - 1 ? y - (c.pos.y + n - 1) : 0;
   return Math.max(dx, dy);
@@ -54,14 +54,14 @@ export function mountUp(rider: Combatant, mount: Combatant): void {
 function nearestFreeFoot(battle: BattleState, scene: Scene, mount: Combatant, rider: Combatant): Pt | undefined {
   const p = mount.pos;
   if (!p) return undefined;
-  const n = sizeFootprint(mount.size);
+  const n = footprintN(mount);
   const occupied = (x: number, y: number): boolean =>
-    battle.combatants.some((c) => c.id !== rider.id && c.id !== mount.id && !isOutOfAction(c) && c.pos && occupiesTile(c.pos, c.size, x, y));
+    battle.combatants.some((c) => c.id !== rider.id && c.id !== mount.id && !isOutOfAction(c) && c.pos && occupiesTile(c.pos, footprintN(c), x, y));
   let best: Pt | undefined;
   let bestD = Infinity;
   for (let y = p.y - 3; y <= p.y + n + 2; y++)
     for (let x = p.x - 3; x <= p.x + n + 2; x++) {
-      if (occupiesTile(p, mount.size, x, y) || !isWalkable(scene, x, y) || occupied(x, y)) continue;
+      if (occupiesTile(p, footprintN(mount), x, y) || !isWalkable(scene, x, y) || occupied(x, y)) continue;
       const d = Math.max(tileToFootprint(mount, x, y), 0);
       if (d > 0 && d < bestD) { bestD = d; best = { x, y }; }
     }

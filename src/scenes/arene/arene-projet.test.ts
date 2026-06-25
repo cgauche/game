@@ -9,7 +9,7 @@ import { findCreatureById, trappings } from '../../data';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { MERCHANTS } from '../../state/merchants/index';
 import { entitySize } from '../../state/spawn';
-import { footprintTiles } from '../../state/footprint';
+import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { terrainWalkable } from '../../state/terrain';
 
 /** Terrain de base d'une zone = tuile la PLUS fréquente (le sol remplit la grille ; murs/eau = minorité). */
@@ -220,7 +220,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       for (const enc of sc.encounters)
         for (const e of enemiesOf(sc, enc)) {
           const size = entitySize(e);
-          for (const { x, y } of footprintTiles(e.pos, size)) {
+          for (const { x, y } of footprintTiles(e.pos, sizeFootprint(size))) {
             const inBounds = x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h;
             if (!inBounds || !isWalkable(sc, x, y)) bad.push(`${sc.id}:${e.ref ?? e.statblock?.name ?? '?'}@(${x},${y})`);
           }

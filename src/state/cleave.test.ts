@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { cleaveTargets, doAttack, autoCleave } from './combatFlow';
-import { occupiesTile } from './footprint';
+import { occupiesTile, footprintN } from './footprint';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { setRule, resetRule } from '../engine/policy';
@@ -219,7 +219,7 @@ describe('Balayage en combat (store)', () => {
     small.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     useGame.setState({ battle: { ...b } });
 
-    expect(occupiesTile({ x: 10, y: 10 }, 'enorme', 11, 11)).toBe(true); // sanity : small était bien sous l’empreinte
+    expect(occupiesTile({ x: 10, y: 10 }, 3, 11, 11)).toBe(true); // sanity (3 = énorme) : small était bien sous l’empreinte
 
     autoCleave(useGame.getState, useGame.setState, E, deadPrimary, { cleave: true } as AttackResult);
 
@@ -227,6 +227,6 @@ describe('Balayage en combat (store)', () => {
     const e = st.combatants.find((c) => c.id === E.id)!;
     const s = st.combatants.find((c) => c.id === small.id)!;
     expect(e.pos).toEqual({ x: 10, y: 10 }); // recalé sur la case du mort (l.10)
-    expect(occupiesTile(e.pos!, e.size, s.pos!.x, s.pos!.y)).toBe(false); // small dégagé HORS de l’empreinte
+    expect(occupiesTile(e.pos!, footprintN(e), s.pos!.x, s.pos!.y)).toBe(false); // small dégagé HORS de l’empreinte
   });
 });

@@ -29,3 +29,12 @@ const SIZE_TOKEN_SCALE: Record<SizeCategory, number> = {
 export function sizeTokenScale(size?: SizeCategory): number {
   return SIZE_TOKEN_SCALE[effectiveSize(size)];
 }
+
+/** Échelle visuelle d'un token à EMPREINTE propre (objet sans Taille créature — un NAVIRE) de côté `n` :
+ *  miroir de `SIZE_TOKEN_SCALE` pour la Taille créature de même empreinte (1→1, 2→1.45, 3→2, 4→2.7),
+ *  prolongée linéairement au-delà de 4×4. Découple le RENDU de la Taille créature, comme l'empreinte de grille. */
+export function footprintTokenScale(n: number): number {
+  const TABLE: Record<number, number> = { 1: 1, 2: 1.45, 3: 2.0, 4: 2.7 };
+  const k = Math.max(1, Math.round(n));
+  return TABLE[k] ?? 2.7 + (k - 4) * 0.6;
+}

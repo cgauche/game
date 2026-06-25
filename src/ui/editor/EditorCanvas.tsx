@@ -10,7 +10,7 @@ import { Scene, tileAt } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
-import { footprintTiles } from '../../state/footprint';
+import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { groundTile } from '../../gameIso/ground';
 import { wallSegs } from '../../gameIso/walls';
@@ -325,7 +325,7 @@ export function EditorCanvas({
                     d: depth(en.pos.x, en.pos.y, dims) + 0.45,
                     el: (
                       <g key={en.id} opacity={hidden ? 0.6 : 1}>
-                        {footprintTiles(en.pos, entitySize(en)).map((t) => (
+                        {footprintTiles(en.pos, sizeFootprint(entitySize(en))).map((t) => (
                           <path
                             key={`fp-${t.x}-${t.y}`}
                             d={diamondPath(t.x, t.y, dims)}
@@ -460,7 +460,7 @@ export function EditorCanvas({
             </g>
           )}
           {selEnt &&
-            footprintTiles(selEnt.pos, entitySize(selEnt)).map((t) => (
+            footprintTiles(selEnt.pos, sizeFootprint(entitySize(selEnt))).map((t) => (
               <path key={`fp-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} pointerEvents="none" />
             ))}
           {selBuilding && (

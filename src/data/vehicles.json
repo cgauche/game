@@ -77,7 +77,7 @@
       "crew": 4,
       "manoeuvre": 0,
       "lengthM": 20,
-      "size": "grande",
+      "footprint": 2,
       "capacity": 300,
       "sail": {
         "m": 3,
@@ -212,7 +212,7 @@
       "crew": 1,
       "manoeuvre": 0,
       "lengthM": 3,
-      "size": "moyenne",
+      "footprint": 1,
       "capacity": 10,
       "oars": {
         "m": 3,
@@ -249,7 +249,7 @@
       "crew": 2,
       "manoeuvre": 2,
       "lengthM": 10,
-      "size": "moyenne",
+      "footprint": 1,
       "capacity": 60,
       "oars": {
         "m": 3,
@@ -286,7 +286,7 @@
       "crew": 3,
       "manoeuvre": 1,
       "lengthM": 15,
-      "size": "grande",
+      "footprint": 2,
       "capacity": 120,
       "sail": {
         "m": 3,
@@ -327,7 +327,7 @@
       "crew": 4,
       "manoeuvre": 0,
       "lengthM": 30,
-      "size": "enorme",
+      "footprint": 3,
       "capacity": 500,
       "sail": {
         "m": 3,
@@ -368,7 +368,7 @@
       "crew": 15,
       "manoeuvre": 0,
       "lengthM": 25,
-      "size": "enorme",
+      "footprint": 3,
       "capacity": 80,
       "sail": {
         "m": 4,
@@ -421,7 +421,7 @@
       "crew": 4,
       "manoeuvre": -1,
       "lengthM": 15,
-      "size": "grande",
+      "footprint": 2,
       "capacity": 150,
       "sail": {
         "m": 4,
@@ -466,7 +466,7 @@
       "crew": 32,
       "manoeuvre": 0,
       "lengthM": 25,
-      "size": "enorme",
+      "footprint": 3,
       "capacity": 100,
       "sail": {
         "m": 4,
@@ -507,7 +507,7 @@
       "crew": 15,
       "manoeuvre": -1,
       "lengthM": 25,
-      "size": "enorme",
+      "footprint": 3,
       "capacity": 300,
       "sail": {
         "m": 5,
@@ -597,7 +597,7 @@
       "crew": 20,
       "manoeuvre": 0,
       "lengthM": 35,
-      "size": "monstrueuse",
+      "footprint": 4,
       "capacity": 600,
       "sail": {
         "m": 5,
@@ -638,7 +638,7 @@
       "crew": 35,
       "manoeuvre": 0,
       "lengthM": 35,
-      "size": "monstrueuse",
+      "footprint": 4,
       "capacity": 150,
       "sail": {
         "m": 6,
@@ -689,7 +689,7 @@
       "crew": 50,
       "manoeuvre": 0,
       "lengthM": 55,
-      "size": "monstrueuse",
+      "footprint": 4,
       "capacity": 500,
       "sail": {
         "m": 7,
@@ -740,7 +740,7 @@
       "crew": 90,
       "manoeuvre": 0,
       "lengthM": 60,
-      "size": "monstrueuse",
+      "footprint": 4,
       "capacity": 1400,
       "sail": {
         "m": 8,
@@ -784,7 +784,7 @@
       "crew": 90,
       "manoeuvre": 0,
       "lengthM": 60,
-      "size": "monstrueuse",
+      "footprint": 4,
       "capacity": 600,
       "sail": {
         "m": 8,
@@ -828,7 +828,7 @@
       "crew": 20,
       "manoeuvre": 0,
       "lengthM": 40,
-      "size": "monstrueuse",
+      "footprint": 4,
       "capacity": 650,
       "sail": {
         "m": 7,
@@ -869,7 +869,7 @@
       "crew": 35,
       "manoeuvre": 0,
       "lengthM": 40,
-      "size": "monstrueuse",
+      "footprint": 4,
       "capacity": 400,
       "sail": {
         "m": 7,
@@ -914,7 +914,7 @@
       "crew": 15,
       "manoeuvre": 0,
       "lengthM": 25,
-      "size": "enorme",
+      "footprint": 3,
       "capacity": 300,
       "sail": {
         "m": 5,

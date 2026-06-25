@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sizeFootprint, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance, decorFootGeometry } from './footprint';
+import { sizeFootprint, footprintN, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance, decorFootGeometry } from './footprint';
 import { chebyshev } from './path';
 import type { Combatant } from '../engine/types';
 import type { SizeCategory } from '../engine/size';
@@ -17,41 +17,45 @@ describe('footprint — empreinte N×N par Taille (LDB 15 l.55)', () => {
     expect(sizeFootprint('monstrueuse')).toBe(4);
   });
 
-  it('footprintTiles : 1×1 = la tuile ; Grande = bloc 2×2 ancré au coin NO', () => {
-    expect(footprintTiles({ x: 3, y: 7 }, 'moyenne')).toEqual([{ x: 3, y: 7 }]);
-    expect(footprintTiles({ x: 5, y: 5 }, 'grande')).toEqual([
+  it('footprintN : empreinte autorée (NAVIRE) ⊥ Taille créature — `footprint` prime sur `size`', () => {
+    expect(footprintN({ size: 'grande' })).toBe(2); // dérivée de la Taille créature
+    expect(footprintN({})).toBe(1); // défaut Moyenne
+    expect(footprintN({ footprint: 3 })).toBe(3); // empreinte AUTORÉE (un navire) — SANS Taille créature
+    expect(footprintN({ size: 'monstrueuse', footprint: 2 })).toBe(2); // `footprint` explicite prime sur `size`
+  });
+
+  it('footprintTiles : côté 1 = la tuile ; côté 2 = bloc 2×2 ancré au coin NO', () => {
+    expect(footprintTiles({ x: 3, y: 7 }, 1)).toEqual([{ x: 3, y: 7 }]);
+    expect(footprintTiles({ x: 5, y: 5 }, 2)).toEqual([
       { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 5, y: 6 }, { x: 6, y: 6 },
     ]);
-    expect(footprintTiles({ x: 0, y: 0 }, 'enorme')).toHaveLength(9);
-    expect(footprintTiles({ x: 0, y: 0 }, 'monstrueuse')).toHaveLength(16);
+    expect(footprintTiles({ x: 0, y: 0 }, 3)).toHaveLength(9);
+    expect(footprintTiles({ x: 0, y: 0 }, 4)).toHaveLength(16);
   });
 
   it('occupiesTile : couvre les N×N tuiles à partir du coin NO', () => {
     const p = { x: 5, y: 5 };
-    expect(occupiesTile(p, 'grande', 6, 6)).toBe(true);
-    expect(occupiesTile(p, 'grande', 5, 5)).toBe(true);
-    expect(occupiesTile(p, 'grande', 7, 5)).toBe(false); // hors du 2×2
-    expect(occupiesTile(p, 'moyenne', 6, 5)).toBe(false);
+    expect(occupiesTile(p, 2, 6, 6)).toBe(true);
+    expect(occupiesTile(p, 2, 5, 5)).toBe(true);
+    expect(occupiesTile(p, 2, 7, 5)).toBe(false); // hors du 2×2
+    expect(occupiesTile(p, 1, 6, 5)).toBe(false);
   });
 
-  it('footprintChebyshev coïncide avec chebyshev pour deux créatures 1×1', () => {
+  it('footprintChebyshev coïncide avec chebyshev pour deux empreintes 1×1', () => {
     const a = { x: 2, y: 3 }, b = { x: 6, y: 5 };
-    expect(footprintChebyshev(a, 'moyenne', b, 'moyenne')).toBe(chebyshev(a, b));
+    expect(footprintChebyshev(a, 1, b, 1)).toBe(chebyshev(a, b));
   });
 
-  it('adjacence par empreinte : une Grande (2×2) est « au contact » si UNE tuile touche la cible', () => {
+  it('adjacence par empreinte : un bloc 2×2 est « au contact » si UNE tuile touche la cible', () => {
     const big = { x: 5, y: 5 }; // occupe 5..6 × 5..6
-    // cible 1×1 en (7,6) : colle au bord est du 2×2 → distance 1 (adjacent)
-    expect(footprintChebyshev(big, 'grande', { x: 7, y: 6 }, 'moyenne')).toBe(1);
-    // cible 1×1 en (8,6) : une tuile de marge → distance 2
-    expect(footprintChebyshev(big, 'grande', { x: 8, y: 6 }, 'moyenne')).toBe(2);
-    // cible dans l'empreinte → 0 (chevauchement)
-    expect(footprintChebyshev(big, 'grande', { x: 6, y: 6 }, 'moyenne')).toBe(0);
+    expect(footprintChebyshev(big, 2, { x: 7, y: 6 }, 1)).toBe(1); // colle au bord est → distance 1 (adjacent)
+    expect(footprintChebyshev(big, 2, { x: 8, y: 6 }, 1)).toBe(2); // une tuile de marge → distance 2
+    expect(footprintChebyshev(big, 2, { x: 6, y: 6 }, 1)).toBe(0); // dans l'empreinte → 0 (chevauchement)
   });
 
   it('footprintsOverlap : détecte la collision de placement', () => {
-    expect(footprintsOverlap({ x: 5, y: 5 }, 'grande', { x: 6, y: 6 }, 'moyenne')).toBe(true);
-    expect(footprintsOverlap({ x: 5, y: 5 }, 'grande', { x: 7, y: 7 }, 'moyenne')).toBe(false);
+    expect(footprintsOverlap({ x: 5, y: 5 }, 2, { x: 6, y: 6 }, 1)).toBe(true);
+    expect(footprintsOverlap({ x: 5, y: 5 }, 2, { x: 7, y: 7 }, 1)).toBe(false);
   });
 
   it('combatDistance : coïncide avec chebyshev pour le 1×1, mais un grand est au contact par son bord', () => {

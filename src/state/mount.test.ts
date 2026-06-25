@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { canMount, mountUp, dismount, handleMountDeath, isRider, isMount, mountOf, riderOf } from './mount';
-import { occupiesTile } from './footprint';
+import { occupiesTile, footprintN } from './footprint';
 import type { BattleState } from './store';
 import type { Scene } from './scene';
 import type { Combatant } from '../engine/types';
@@ -41,7 +41,7 @@ describe('mount — combat monté (LDB 14 l.212-225)', () => {
     dismount(battle([horse, knight]), flatScene(12, 12), knight);
     expect(knight.mountId).toBeUndefined();
     expect(horse.riderId).toBeUndefined();
-    expect(occupiesTile(horse.pos!, horse.size, knight.pos!.x, knight.pos!.y)).toBe(false);
+    expect(occupiesTile(horse.pos!, footprintN(horse), knight.pos!.x, knight.pos!.y)).toBe(false);
   });
 
   it('handleMountDeath : à la mort de la monture, le cavalier est DÉMONTÉ (à pied, strict RAW)', () => {
@@ -52,6 +52,6 @@ describe('mount — combat monté (LDB 14 l.212-225)', () => {
     expect(r).toBe(knight);
     expect(knight.mountId).toBeUndefined();
     expect(horse.riderId).toBeUndefined();
-    expect(occupiesTile(horse.pos!, horse.size, knight.pos!.x, knight.pos!.y)).toBe(false); // dégagé de la monture
+    expect(occupiesTile(horse.pos!, footprintN(horse), knight.pos!.x, knight.pos!.y)).toBe(false); // dégagé de la monture
   });
 });

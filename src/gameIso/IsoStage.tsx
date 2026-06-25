@@ -58,8 +58,8 @@ import { walkXY, STEP_MS } from './walkPath';
 import { useCombatFx } from './fx/useCombatFx';
 import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
-import { sizeTokenScale } from './sizeScale';
-import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
+import { sizeTokenScale, footprintTokenScale } from './sizeScale';
+import { sizeFootprint, footprintN, occupiesTile, decorFootGeometry } from '../state/footprint';
 import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack } from '../state/combatFlow';
 import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
@@ -363,7 +363,7 @@ export function IsoStage() {
     // (hover) → le réticule + l'infobulle se rendent à l'identique, qu'on survole le token ou son portrait.
     const occ = hoverCombatantId
       ? battle.combatants.find((c) => c.id === hoverCombatantId && c.pos && !isOutOfAction(c))
-      : hover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y)) : null;
+      : hover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y)) : null;
     if (!occ) return null;
     const st = useGame.getState;
     // Flux différés (bandeau TargetPrompt) : validité = appartenance aux ensembles candidats existants.
@@ -418,7 +418,7 @@ export function IsoStage() {
   const hoverMove = useMemo<{ kind: 'move' | 'run'; path: { x: number; y: number }[]; cost: number } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !hover || battle.preview || !myTurn) return null;
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
-    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
+    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y));
     if (occ) return null; // une cible a sa propre visée (hoverAim)
     return movePreviewAt(useGame.getState, hover);
   }, [hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
@@ -492,7 +492,7 @@ export function IsoStage() {
       if (!c.pos || isOutOfAction(c)) continue;
       const isActiveC = c.id === activeC?.id;
       const fill = tileTint(c.kind === 'hero', isActiveC);
-      const fp = sizeFootprint(c.size);
+      const fp = footprintN(c);
       for (let dx = 0; dx < fp; dx++)
         for (let dy = 0; dy < fp; dy++)
           hl.push(<path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, d)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />);
@@ -567,7 +567,7 @@ export function IsoStage() {
     // plus — ils restent visibles, estompés et NON interactifs ; on ne les dessine pas si un
     // combattant occupe leur case (pas d'empilement de corps).
     const covered = (x: number, y: number) =>
-      inBattle && battle!.combatants.some((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, x, y));
+      inBattle && battle!.combatants.some((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), x, y));
     // Figurant en combat : estompé + non interactif (inchangé). L'étage est géré par le filtre ci-dessous.
     const wrap = (key: string, el: JSX.Element) =>
       inBattle ? (
@@ -625,7 +625,7 @@ export function IsoStage() {
   const size = stageSize(dims);
   // Vue du dessus : les acteurs deviennent des pions-portraits (disques). Rayon = empreinte × ½ case.
   const top = viewMode === 'top';
-  const discR = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
+  const discR = (n: number) => (n * CELL) / 2 * 0.85;
 
   // Position VISUELLE d'un token : interpolée le long du chemin si une marche est en cours
   // (anti-téléportation), sinon la position logique. Défini TÔT pour que les surbrillances (halo
@@ -786,11 +786,14 @@ export function IsoStage() {
       // l'échelle d'espèce (bipède ou créature) vient du backend.
       const r = pickBackend({ kind: 'combatant', combatant: c }, viewMode);
       // Empreinte multi-cases (LDB 15 l.55) : token CENTRÉ sur le bloc N×N et mis à l'échelle pour le remplir.
-      // (Un navire-coque à l'échelle MER a déjà un `c.size` métrique posé au spawn → rendu + mécanique cohérents.)
-      const off = (sizeFootprint(c.size) - 1) / 2; // ancre (coin NO) → centre du bloc
+      // `footprintN(c)` lit l'EMPREINTE (Taille créature OU `footprint` autoré d'un NAVIRE) ; l'échelle visuelle
+      // suit (`footprintTokenScale` pour un objet à empreinte, sinon `sizeTokenScale`) — un navire remplit ses
+      // cases SANS être une créature (aucune Taille → aucune Peur de Taille).
+      const fp = footprintN(c);
+      const off = (fp - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
       const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, combatantFlags(c));
-      const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking, {
+      const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * (c.footprint ? footprintTokenScale(c.footprint) : sizeTokenScale(c.size)), ring, isOutOfAction(c), wp.walking, {
         hp: c.wounds,
         icons: fxSum.visible.map((v) => v.icon),
         iconsMore: fxSum.moreCount,
@@ -799,7 +802,7 @@ export function IsoStage() {
         ringDash: teamShape(isHero), // R9 : ennemi = anneau pointillé (indice d'équipe non-coloré)
         flat: top,
         portraitBox: r.portraitBox,
-        discR: discR(c.size),
+        discR: discR(fp),
         ghost: ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
         highlight: hoverAim?.toId === c.id ? relationColor(c.kind) : undefined, // cible courante → halo couleur de relation (rouge/vert/or)
@@ -814,7 +817,7 @@ export function IsoStage() {
       if (!isMount(mount) || !mount.pos) continue;
       const rider = riderOf(battle, mount);
       if (!rider) continue;
-      const off = (sizeFootprint(mount.size) - 1) / 2;
+      const off = (footprintN(mount) - 1) / 2;
       const wp = walkPosOf(mount.id, mount.pos.x, mount.pos.y); // suit l'animation de marche de la monture
       const cx = wp.x + off, cy = wp.y + off;
       const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
@@ -847,7 +850,7 @@ export function IsoStage() {
     const el =
       r.backend === 'sprite'
         ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0], false, undefined, false, false, pZ)
-        : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(undefined) }, pZ);
+        : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(1) }, pZ);
     objs.push({ d: depth(wp.x, wp.y, dims, pZ) + 0.5, el });
   }
   objs.sort((a, b) => a.d - b.d);
@@ -987,7 +990,7 @@ export function IsoStage() {
     const tz = t.z ?? 0;
     if (st.mode === 'battle') {
       if (!controlsActive(st)) return; // coop : tour du héros d'un AUTRE joueur — clics inertes
-      const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
+      const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, footprintN(c), x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
       // Décision PARTAGÉE avec le clic d'un portrait de frise (`combatantClickActs`) : un ennemi
       // s'attaque en mode neutre, tout combattant se cible en mode sort / choix de cibles ; sinon
       // (allié/soi non actionnable) on inspecte. Desktop (survol) : la visée a déjà tout montré → un
@@ -1152,7 +1155,7 @@ export function IsoStage() {
         if (st.mode !== 'battle' || !b || b.over || !controlsActive(st) || !hover) return;
         const active = b.combatants.find((c) => c.id === b.order[b.turn]);
         if (!active || active.kind !== 'hero') return;
-        const occ = b.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
+        const occ = b.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y));
         if (!occ || occ.kind !== 'enemy') return;
         const best = bestAttack(useGame.getState, active, b, occ);
         if (best) st.battleClickEntity(occ.id, { forceAttackId: best.id, confirm: true });

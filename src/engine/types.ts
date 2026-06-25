@@ -139,10 +139,10 @@ export interface VehicleData {
     crew: number;
     manoeuvre: number;
     lengthM: number;
-    /** Catégorie de Taille (LDB 85) du navire = son EMPREINTE sur la grille (footprint N×N), AUTORÉE par navire
-     *  (≈ sa longueur à l'échelle Mer : ~10 m moyenne 1×1, ~20 m grande 2×2, ~30 m énorme 3×3). Posée sur `c.size`
-     *  par `vehicleCombatant` → un seul champ pilote le RENDU (gros jeton) ET la mécanique (collision/mouvement). */
-    size?: import('./size').SizeCategory;
+    /** EMPREINTE du navire sur la grille (côté N×N), AUTORÉE par navire (≈ sa longueur à l'échelle Mer : ~10 m → 1,
+     *  ~20 m → 2, ~30 m → 3, ~40 m+ → 4). Posée sur `c.footprint` par `vehicleCombatant`. DÉCOUPLÉE de la Taille
+     *  créature : un navire occupe ses cases (grille + rendu) sans être une créature (aucune Peur de Taille). */
+    footprint?: number;
     capacity: number;
     sail?: { m: number; crew: number };
     oars?: { m: number; crew: number };
@@ -660,6 +660,10 @@ export interface Combatant {
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
   size?: import('./size').SizeCategory;
+  /** EMPREINTE de grille (côté N×N), DÉCOUPLÉE de la Taille créature `size` (lue par `footprintN`). Pour les
+   *  objets qui occupent des cases SANS être une créature menaçante — un NAVIRE (MDG ch.12) : il a une empreinte
+   *  mais aucune `size`, donc aucune Peur de Taille / Piétinement / ×Dégâts. Absent → empreinte dérivée de `size`. */
+  footprint?: number;
   /** Forme du corps (LDB p.312) : choisit le Tableau de Localisation. Défaut `humanoide` au point de lecture. */
   bodyShape?: BodyShape;
   /** Psychologie (LDB 21) : Indice de Peur/Terreur INSPIRÉ (statbloc) ; Immunité Psychologie (85 l.143-144). */

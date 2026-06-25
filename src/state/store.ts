@@ -12,7 +12,7 @@ import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward, DIR8_DELTA } from '../gameIso/rig/facing';
 import { rotateDir8, type Dir8 } from './dir8';
-import { footprintTiles } from './footprint';
+import { footprintTiles, footprintN } from './footprint';
 import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
@@ -933,7 +933,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Autres COQUES (jetons-navires) percutables (≠ self, pos connue) : une tuile occupée par une coque arrête
     // l'avance ADJACENT (pas de chevauchement) et déclenche la collision (MDG ch.13).
     const otherHulls = battle.combatants.filter((c) => c.id !== shipId && c.bodyShape === 'vehicule' && c.pos);
-    const hullAt = (x: number, y: number) => otherHulls.find((c) => footprintTiles(c.pos!, c.size).some((t) => t.x === x && t.y === y));
+    const hullAt = (x: number, y: number) => otherHulls.find((c) => footprintTiles(c.pos!, footprintN(c)).some((t) => t.x === x && t.y === y));
     // Avance PAS-À-PAS le long du cap (coque 1×1) : on s'arrête au dernier pas libre — sortie de scène OU coque devant.
     let moved = 0;
     let victim: Combatant | undefined;

@@ -25,24 +25,31 @@ const FOOTPRINT_SIDE: Record<SizeCategory, number> = {
   monstrueuse: 4,
 };
 
-/** Côté N de l'empreinte carrée pour une Taille (défaut Moyenne = 1). */
+/** Côté N de l'empreinte carrée pour une Taille créature (défaut Moyenne = 1). */
 export function sizeFootprint(size?: SizeCategory): number {
   return FOOTPRINT_SIDE[effectiveSize(size)];
 }
 
-/** Tuiles occupées par une créature de Taille `size` ancrée en `pos` (coin NO). Renvoie N×N tuiles. */
-export function footprintTiles(pos: Pt, size?: SizeCategory): Pt[] {
-  const n = sizeFootprint(size);
-  if (n === 1) return [{ x: pos.x, y: pos.y }];
+/** Côté N de l'empreinte d'une ENTITÉ — accesseur UNIQUE qui DÉCOUPLE l'empreinte de grille de la Taille
+ *  créature : `footprint` explicite (objet à empreinte propre — un NAVIRE, MDG ch.12, qui occupe N cases sans
+ *  être une créature) prime ; sinon dérivée de la Taille créature (`size`). Un navire n'a donc PAS de `size`
+ *  (→ aucune Peur de Taille / Piétinement / ×Dégâts) tout en occupant ses cases. */
+export function footprintN(c: { size?: SizeCategory; footprint?: number }): number {
+  return c.footprint ?? sizeFootprint(c.size);
+}
+
+/** Tuiles occupées par une empreinte carrée de côté `n` ancrée en `pos` (coin NO). Renvoie n×n tuiles. */
+export function footprintTiles(pos: Pt, n = 1): Pt[] {
+  if (n <= 1) return [{ x: pos.x, y: pos.y }];
   const out: Pt[] = [];
   for (let dy = 0; dy < n; dy++) for (let dx = 0; dx < n; dx++) out.push({ x: pos.x + dx, y: pos.y + dy });
   return out;
 }
 
-/** La créature (pos, size) couvre-t-elle la tuile (x, y) ? */
-export function occupiesTile(pos: Pt, size: SizeCategory | undefined, x: number, y: number): boolean {
-  const n = sizeFootprint(size);
-  return x >= pos.x && x < pos.x + n && y >= pos.y && y < pos.y + n;
+/** L'empreinte (pos, côté `n`) couvre-t-elle la tuile (x, y) ? */
+export function occupiesTile(pos: Pt, n: number, x: number, y: number): boolean {
+  const side = Math.max(1, n);
+  return x >= pos.x && x < pos.x + side && y >= pos.y && y < pos.y + side;
 }
 
 /** Géométrie d'un DÉCOR à empreinte rectangulaire (`SceneEntity.foot {w,h}`, ancre = coin NO) :
@@ -67,15 +74,13 @@ function gapAxis(a: number, an: number, b: number, bn: number): number {
  * diagonale incluse) : 0 = chevauchement, 1 = au contact/adjacentes. Coïncide avec `chebyshev`
  * pour deux créatures 1×1. Base de l'adjacence / portée / Engagement « par empreinte ».
  */
-export function footprintChebyshev(aPos: Pt, aSize: SizeCategory | undefined, bPos: Pt, bSize: SizeCategory | undefined): number {
-  const an = sizeFootprint(aSize);
-  const bn = sizeFootprint(bSize);
+export function footprintChebyshev(aPos: Pt, an: number, bPos: Pt, bn: number): number {
   return Math.max(gapAxis(aPos.x, an, bPos.x, bn), gapAxis(aPos.y, an, bPos.y, bn));
 }
 
-/** Deux empreintes se chevauchent-elles (collision de placement) ? */
-export function footprintsOverlap(aPos: Pt, aSize: SizeCategory | undefined, bPos: Pt, bSize: SizeCategory | undefined): boolean {
-  return footprintChebyshev(aPos, aSize, bPos, bSize) === 0;
+/** Deux empreintes (de côtés `an`/`bn`) se chevauchent-elles (collision de placement) ? */
+export function footprintsOverlap(aPos: Pt, an: number, bPos: Pt, bn: number): boolean {
+  return footprintChebyshev(aPos, an, bPos, bn) === 0;
 }
 
 /**
@@ -86,5 +91,5 @@ export function footprintsOverlap(aPos: Pt, aSize: SizeCategory | undefined, bPo
  */
 export function combatDistance(a: Combatant, b: Combatant): number {
   if (!a.pos || !b.pos) return Infinity;
-  return footprintChebyshev(a.pos, a.size, b.pos, b.size);
+  return footprintChebyshev(a.pos, footprintN(a), b.pos, footprintN(b));
 }

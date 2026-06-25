@@ -13,7 +13,7 @@
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
-import { footprintChebyshev, sizeFootprint } from './footprint';
+import { footprintChebyshev, footprintN } from './footprint';
 import { losClear, tileSeenByFoe } from './lineOfSight';
 import { rangeBandModifier } from '../engine/combat';
 import { hasCondition, canTakeAction } from '../engine/conditions';
@@ -97,7 +97,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const mr = meleeReachTiles(enemy.weapons);
   const withinMelee = (a: Pt, b: Pt) => chebyshev(a, b) <= mr;
   // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
-  const inMelee = (h: Combatant) => footprintChebyshev(pos, enemy.size, h.pos!, h.size) <= mr;
+  const inMelee = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h)) <= mr;
 
   const hasRanged = offensiveSpell == null && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
@@ -121,7 +121,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // PORTÉE (parité avec le gate pré-clic du héros) : un tireur ne vise pas au-delà de la bande
   // Extrême (Portée ×3 — rangeBandModifier null), un lanceur pas au-delà de la portée du sort.
   // Sans portée chiffrée (arme sans `range`, sort spécial) : pas de gate (stubs/exotiques).
-  const fpDist = (h: Combatant) => footprintChebyshev(pos, enemy.size, h.pos!, h.size);
+  const fpDist = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h));
   const maxWeaponRange = enemy.weapons.reduce((m, w) => (w.type === 'ranged' && w.range ? Math.max(m, w.range) : m), 0);
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
   const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
@@ -132,7 +132,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
-  const reach = (flying ? flyReachable : reachable)(scene, pos, movement, blocked, sizeFootprint(enemy.size));
+  const reach = (flying ? flyReachable : reachable)(scene, pos, movement, blocked, footprintN(enemy));
 
   // Fuite (Brisé / Bestial blessé). `preferHidden` (Brisé, LDB 16 l.55 « hors de vue de l'ennemi ») :
   // gagner une CACHETTE (case hors de vue de tout héros) prime sur la distance ; sinon, la plus éloignée.
