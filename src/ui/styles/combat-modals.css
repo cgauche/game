@@ -3,6 +3,11 @@
 .roll-modal {
   min-width: 340px;
 }
+/* Modale de jet MULTI (N rangées riches : portrait + jet + influence) — plus large que le mono (340px) pour ne pas
+   tasser les ParticipantRow ; reste responsive (92vw ≤ ~520px). */
+.multi-roll {
+  min-width: min(480px, 92vw);
+}
 .rm-vs {
   display: flex;
   align-items: center;

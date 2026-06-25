@@ -44,7 +44,7 @@ export function MultiRollShell({
   disableEscClose?: boolean;
 }) {
   return (
-    <Modal title={title} variant={variant} onClose={disableEscClose ? undefined : onCancel}>
+    <Modal title={title} variant={variant} className="multi-roll" onClose={disableEscClose ? undefined : onCancel}>
       {subtitle != null && <p className={variant === 'test' ? 'test-actor' : 'rm-vs'}>{subtitle}</p>}
       {instruction != null && <div className="mini-title">{instruction}</div>}
       {extra}

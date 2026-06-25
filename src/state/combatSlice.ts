@@ -50,6 +50,7 @@ import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { shipCrewAssignments, shipMoraleScore } from './shipCrew';
+import { crewRoleValue, type CrewAssignment } from '../engine/crewMorale';
 import { findCrewTestTypeById, findCrewRoleById } from '../data';
 import type { ShipManeuverParticipant } from './pendings';
 import { isVehicle } from '../engine/vehicle';
@@ -801,13 +802,23 @@ export function createCombatSlice(get: Get, set: Set) {
       // un héros-équipage prend la barre (`id` = le héros, navire dérivé via `shipOfCrew`).
       const ship = isVehicle(active) ? active : shipOfCrew(battle.combatants, id);
       if (!ship) return;
-      // Contributeurs = l'équipage aux rôles de manœuvre (MDG ch.14, MULTI-jets). PJ du groupe → interactif
-      // (Chance/Résilience sur SON jet) ; marin PNJ → témoin (auto-roulé). Patron `forceDoor`.
+      // Contributeurs du Test d'équipage de manœuvre (MDG ch.14). UN jet par POSTE, pas par marin : l.39 « les
+      // Personnages représentent tout l'équipage » → les PNJ ne lancent QUE pour un poste qu'AUCUN PJ n'occupe (l.41),
+      // et un SEUL (le meilleur). Donc par rôle : tous les PJ du poste (chacun lance, l.9) ; sinon un marin représentant.
       const assignments = shipCrewAssignments(ship, battle.combatants, 'manoeuvre');
       if (!assignments.length) return; // aucun rôle tenu → le navire ne peut pas manœuvrer
       const essentialRoleId = findCrewTestTypeById('manoeuvre')?.essential;
       const partyIds = new Set(get().party.map((h) => h.id));
-      const participants: ShipManeuverParticipant[] = assignments.map((a) => ({
+      const roleVal = (a: CrewAssignment) => { const r = findCrewRoleById(a.roleId); return r ? crewRoleValue(a.crew, r).value : 0; };
+      const byRole = new Map<string, CrewAssignment[]>();
+      for (const a of assignments) (byRole.get(a.roleId) ?? byRole.set(a.roleId, []).get(a.roleId)!).push(a);
+      const contributors: CrewAssignment[] = [];
+      for (const group of byRole.values()) {
+        const pjs = group.filter((a) => partyIds.has(a.crew.id));
+        if (pjs.length) contributors.push(...pjs); // chaque PJ du poste lance (l.9)
+        else contributors.push(group.reduce((b, a) => (roleVal(a) > roleVal(b) ? a : b))); // sinon UN marin représentant
+      }
+      const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
         id: a.crew.id,
         label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}`,
         interactive: partyIds.has(a.crew.id),
