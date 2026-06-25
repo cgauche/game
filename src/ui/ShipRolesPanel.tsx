@@ -30,7 +30,7 @@ export function ShipRolesPanelView({ ship, crew, cap, morale, onSet }: {
   const byside = new Map<string, number>();
   for (const p of ship.postes ?? []) byside.set(p.side, (byside.get(p.side) ?? 0) + 1);
   return (
-    <details className="wm-roles ship-roles" open>
+    <details className="ship-roles" open>
       <summary className="mini-title">⚓ {ship.name} — Coque {ship.wounds.current}/{ship.wounds.max} · Moral {morale} · Effectif {apte.length}/{crew.length}</summary>
       {/* État du navire (lecture seule, dérivé) — `.bar` s'enroule ≤700px. */}
       <div className="bar ship-state">
@@ -40,23 +40,25 @@ export function ShipRolesPanelView({ ship, crew, cap, morale, onSet }: {
         <span>👥 Effectif {apte.length}/{crew.length}</span>
         {[...byside].map(([side, n]) => <span key={side}>🎯 {SIDE_LABEL[side] ?? side} ×{n}</span>)}
       </div>
-      {apte.map((c) => {
-        const pinned = c.shipRole;
-        const current = pinned ?? defaultCrewRole(c) ?? undefined;
-        const options: RollOption[] = crewRoles.map((r) => ({
-          key: r.id,
-          label: r.label,
-          primary: r.id === current,
-          title: r.id === current && !pinned ? 'Rôle déduit des compétences (« auto ») — cliquez pour l’épingler' : r.desc,
-          onSelect: () => onSet(c.id, pinned === r.id ? null : r.id),
-        }));
-        return (
-          <div key={c.id} className="wm-role-row">
-            <span className="wm-role-name">{c.name}{!pinned && current && <span className="wm-opt-hint"> (auto)</span>}</span>
-            <OptionChooser options={options} layout="grid" />
-          </div>
-        );
-      })}
+      <div className="wm-roles">
+        {apte.map((c) => {
+          const pinned = c.shipRole;
+          const current = pinned ?? defaultCrewRole(c) ?? undefined;
+          const options: RollOption[] = crewRoles.map((r) => ({
+            key: r.id,
+            label: r.label,
+            primary: r.id === current,
+            title: r.id === current && !pinned ? 'Rôle déduit des compétences (« auto ») — cliquez pour l’épingler' : r.desc,
+            onSelect: () => onSet(c.id, pinned === r.id ? null : r.id),
+          }));
+          return (
+            <div key={c.id} className="wm-role-row">
+              <span className="wm-role-name">{c.name}{!pinned && current && <span className="wm-opt-hint"> (auto)</span>}</span>
+              <OptionChooser options={options} layout="grid" />
+            </div>
+          );
+        })}
+      </div>
     </details>
   );
 }

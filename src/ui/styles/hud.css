@@ -265,6 +265,25 @@
   max-height: 84vh;
   scrollbar-width: thin;
 }
+/* Volet de GESTION DU NAVIRE (couche Mer) : panneau HUD CONTENU en haut à droite, repliable (<details>) —
+   n'occulte pas la mer (≠ overlay plein-champ de TravelRolesPanel). */
+.ship-roles {
+  position: absolute;
+  right: 8px;
+  top: 96px;
+  width: min(360px, 92vw);
+  max-height: 64vh;
+  overflow-y: auto;
+  z-index: 6;
+  padding: 8px 10px;
+  background: rgba(10, 14, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  backdrop-filter: blur(3px);
+  scrollbar-width: thin;
+}
+.ship-roles > summary { cursor: pointer; font-weight: 600; }
+.ship-roles .wm-roles { margin: 8px 0 0; }
 .is-cell {
   display: flex;
   flex-direction: row;

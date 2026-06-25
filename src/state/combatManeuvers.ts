@@ -21,6 +21,7 @@ import { battleRng } from './battleRng';
 import { evLines } from './combatLog';
 import type { RNG } from '../engine/dice';
 import { combatValue, defenseValue } from '../engine/combat';
+import { isVehicle } from '../engine/vehicle';
 import { rollTest, resolveOpposed, type TestResult } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
@@ -131,7 +132,10 @@ export const hasFreeWeaponAttack = (c: Combatant): boolean => {
  *  zone abordables, Piétinement, mutation Tentacule). Subsume l'attaque d'arme implicite ET la garde de
  *  Frénésie. Source : `active.weapons` (Arme) + `creatureAttacks` (gratuites) + les prédicats existants. */
 export function availableAttacks(active: Combatant, battle: BattleState): AttackOption[] {
-  if (active.kind !== 'hero') return [];
+  // Un NAVIRE allié (`kind:'hero'`, MDG ch.13) n'a PAS d'attaque-arme PERSONNELLE (`active.weapons` vide → l'option
+  // 'arme' ferait planter `attackPlan` sur `weapon.type`). Ses « attaques » sont la Manœuvre (HUD navire) et la Bordée
+  // via les postes servis par l'équipage (combattants distincts) — jamais une attaque de mêlée de la coque.
+  if (active.kind !== 'hero' || isVehicle(active)) return [];
   const out: AttackOption[] = [];
   // (0) ARME du Set actif — attaque-Action de base ET attaque CC GRATUITE de Frénésie (l.34), tant que
   //     l'Action OU la libre de Frénésie est dispo. `reach` absent → attackPlan lit l'arme tenue (Allonge,
