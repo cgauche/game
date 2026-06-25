@@ -46,6 +46,13 @@ export function rollMutation(table: string, rng: RNG): Mutation {
   const range = findTableEntry(t.ranges, roll);
   const m = range ? BY_ID.get(range.mutation) : undefined;
   if (!m) throw new Error(`rollMutation : plage d100=${roll} sans mutation valide dans « ${table} »`);
+  // Sous-table (ex. « Tête bestiale » EDOC → re-tirer sur la sous-table alignée) : une mutation à
+  // `subTable` re-tire sur `${subTable}-${alignement}`, où l'alignement est le suffixe de la table
+  // courante (« edoc-phys-khorne » → « -khorne »). Si la sous-table alignée existe, elle remplace.
+  if (m.subTable) {
+    const suffix = table.includes('-') ? table.slice(table.lastIndexOf('-')) : '';
+    if (TABLE_BY_ID.has(m.subTable + suffix)) return rollMutation(m.subTable + suffix, rng);
+  }
   return { ...m, roll };
 }
 

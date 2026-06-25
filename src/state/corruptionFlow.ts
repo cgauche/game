@@ -30,6 +30,7 @@ import {
   attachMutation,
 } from '../engine/corruption';
 import { rollMutation } from '../data/mutations';
+import { rule } from '../engine/policy';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
@@ -91,7 +92,11 @@ export function applyMutation(set: Set, hero: Combatant, test?: { roll: number; 
   hero.corruption = Math.max(0, (hero.corruption ?? 0) - lost);
   const kindRoll = d100(rng);
   const kind = mutationKindFor(hero.species, kindRoll);
-  const m = rollMutation(kind, rng);
+  // Table de Corruption : Livre de base (RAW), ou variante EDOC alignée par Puissance (règle
+  // optionnelle UNIQUE). 'ldb' → 'physique'/'mentale' ; sinon table EDOC élargie 'edoc-phys|mental-<align>'.
+  const mode = String(rule('corruption-tables-edoc'));
+  const table = mode === 'ldb' ? kind : `edoc-${kind === 'physique' ? 'phys' : 'mental'}-${mode}`;
+  const m = rollMutation(table, rng);
   attachMutation(hero, m);
   // Effets dérivés immédiats : PA naturels (loadout) + Blessures max si F/E/FM permanents.
   if (hero.items?.length) recomputeLoadout(hero);

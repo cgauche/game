@@ -975,5 +975,1560 @@
         "mutation": "affreusement-nerveux"
       }
     ]
+  },
+  {
+    "id": "edoc-phys-toute",
+    "label": "Physique — Toute Puissance (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 3,
+        "mutation": "pattes-d-animaux"
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "mutation": "sang-acide"
+      },
+      {
+        "min": 5,
+        "max": 6,
+        "mutation": "bec"
+      },
+      {
+        "min": 7,
+        "max": 10,
+        "mutation": "tete-bestiale"
+      },
+      {
+        "min": 11,
+        "max": 11,
+        "mutation": "extremites-armees"
+      },
+      {
+        "min": 12,
+        "max": 13,
+        "mutation": "grandes-oreilles"
+      },
+      {
+        "min": 14,
+        "max": 15,
+        "mutation": "pattes-d-oiseau"
+      },
+      {
+        "min": 16,
+        "max": 16,
+        "mutation": "visage-sans-traits"
+      },
+      {
+        "min": 17,
+        "max": 17,
+        "mutation": "souffle-du-feu"
+      },
+      {
+        "min": 18,
+        "max": 19,
+        "mutation": "exophtalmie"
+      },
+      {
+        "min": 20,
+        "max": 20,
+        "mutation": "peau-ardente"
+      },
+      {
+        "min": 21,
+        "max": 22,
+        "mutation": "carapace"
+      },
+      {
+        "min": 23,
+        "max": 24,
+        "mutation": "griffes"
+      },
+      {
+        "min": 25,
+        "max": 25,
+        "mutation": "nuage-de-mouches"
+      },
+      {
+        "min": 26,
+        "max": 26,
+        "mutation": "corpulent"
+      },
+      {
+        "min": 27,
+        "max": 28,
+        "mutation": "crete-sur-la-tete"
+      },
+      {
+        "min": 29,
+        "max": 30,
+        "mutation": "cri-assourdissant"
+      },
+      {
+        "min": 31,
+        "max": 31,
+        "mutation": "doigts-distendus"
+      },
+      {
+        "min": 32,
+        "max": 33,
+        "mutation": "bras-elastiques"
+      },
+      {
+        "min": 34,
+        "max": 34,
+        "mutation": "emacie"
+      },
+      {
+        "min": 35,
+        "max": 35,
+        "mutation": "mauvais-oeil"
+      },
+      {
+        "min": 36,
+        "max": 36,
+        "mutation": "articulation-supplementaire-aux-jambes"
+      },
+      {
+        "min": 37,
+        "max": 37,
+        "mutation": "bouche-supplementaire"
+      },
+      {
+        "min": 38,
+        "max": 39,
+        "mutation": "oeil-pedoncule"
+      },
+      {
+        "min": 40,
+        "max": 40,
+        "mutation": "tentacule-epais"
+      },
+      {
+        "min": 41,
+        "max": 43,
+        "mutation": "odeur-pestilentielle"
+      },
+      {
+        "min": 44,
+        "max": 44,
+        "mutation": "fourrure"
+      },
+      {
+        "min": 45,
+        "max": 47,
+        "mutation": "branchies"
+      },
+      {
+        "min": 48,
+        "max": 48,
+        "mutation": "peau-brillante"
+      },
+      {
+        "min": 49,
+        "max": 49,
+        "mutation": "sans-tete"
+      },
+      {
+        "min": 50,
+        "max": 51,
+        "mutation": "sauteur"
+      },
+      {
+        "min": 52,
+        "max": 52,
+        "mutation": "beaute-surnaturelle"
+      },
+      {
+        "min": 53,
+        "max": 54,
+        "mutation": "peau-d-acier"
+      },
+      {
+        "min": 55,
+        "max": 55,
+        "mutation": "langue-pendante"
+      },
+      {
+        "min": 56,
+        "max": 57,
+        "mutation": "longs-bras"
+      },
+      {
+        "min": 58,
+        "max": 59,
+        "mutation": "longues-jambes"
+      },
+      {
+        "min": 60,
+        "max": 61,
+        "mutation": "long-cou"
+      },
+      {
+        "min": 62,
+        "max": 62,
+        "mutation": "bras-multiples"
+      },
+      {
+        "min": 63,
+        "max": 64,
+        "mutation": "jambes-multiples"
+      },
+      {
+        "min": 65,
+        "max": 66,
+        "mutation": "oeil-unique"
+      },
+      {
+        "min": 67,
+        "max": 67,
+        "mutation": "plumes-eparses"
+      },
+      {
+        "min": 68,
+        "max": 69,
+        "mutation": "cretin"
+      },
+      {
+        "min": 70,
+        "max": 71,
+        "mutation": "tete-pointue"
+      },
+      {
+        "min": 72,
+        "max": 72,
+        "mutation": "visage-difforme"
+      },
+      {
+        "min": 73,
+        "max": 73,
+        "mutation": "chair-necrosee"
+      },
+      {
+        "min": 74,
+        "max": 75,
+        "mutation": "couleurs-changeantes"
+      },
+      {
+        "min": 76,
+        "max": 77,
+        "mutation": "court-sur-pattes"
+      },
+      {
+        "min": 78,
+        "max": 79,
+        "mutation": "tete-de-mort"
+      },
+      {
+        "min": 80,
+        "max": 80,
+        "mutation": "peau-herissee-de-pointes"
+      },
+      {
+        "min": 81,
+        "max": 82,
+        "mutation": "mains-et-pieds-a-ventouses"
+      },
+      {
+        "min": 83,
+        "max": 84,
+        "mutation": "queue"
+      },
+      {
+        "min": 85,
+        "max": 85,
+        "mutation": "ecailles-epineuses-edoc"
+      },
+      {
+        "min": 86,
+        "max": 87,
+        "mutation": "trois-yeux"
+      },
+      {
+        "min": 88,
+        "max": 88,
+        "mutation": "peau-transparente"
+      },
+      {
+        "min": 89,
+        "max": 90,
+        "mutation": "bicephale"
+      },
+      {
+        "min": 91,
+        "max": 91,
+        "mutation": "cornes-asymetriques"
+      },
+      {
+        "min": 92,
+        "max": 94,
+        "mutation": "peau-etrange"
+      },
+      {
+        "min": 95,
+        "max": 95,
+        "mutation": "malefrenesie"
+      },
+      {
+        "min": 96,
+        "max": 97,
+        "mutation": "pieds-palmes"
+      },
+      {
+        "min": 98,
+        "max": 98,
+        "mutation": "suintement-de-pus"
+      },
+      {
+        "min": 99,
+        "max": 99,
+        "mutation": "groin-poilu"
+      },
+      {
+        "min": 100,
+        "max": 100,
+        "mutation": "ailes"
+      }
+    ]
+  },
+  {
+    "id": "edoc-phys-khorne",
+    "label": "Physique — Khorne (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 4,
+        "mutation": "pattes-d-animaux"
+      },
+      {
+        "min": 5,
+        "max": 8,
+        "mutation": "sang-acide"
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "mutation": "bec"
+      },
+      {
+        "min": 10,
+        "max": 15,
+        "mutation": "tete-bestiale"
+      },
+      {
+        "min": 16,
+        "max": 19,
+        "mutation": "extremites-armees"
+      },
+      {
+        "min": 20,
+        "max": 20,
+        "mutation": "grandes-oreilles"
+      },
+      {
+        "min": 21,
+        "max": 22,
+        "mutation": "souffle-du-feu"
+      },
+      {
+        "min": 23,
+        "max": 23,
+        "mutation": "exophtalmie"
+      },
+      {
+        "min": 24,
+        "max": 25,
+        "mutation": "peau-ardente"
+      },
+      {
+        "min": 26,
+        "max": 27,
+        "mutation": "carapace"
+      },
+      {
+        "min": 28,
+        "max": 31,
+        "mutation": "griffes"
+      },
+      {
+        "min": 32,
+        "max": 32,
+        "mutation": "crete-sur-la-tete"
+      },
+      {
+        "min": 33,
+        "max": 35,
+        "mutation": "cri-assourdissant"
+      },
+      {
+        "min": 36,
+        "max": 36,
+        "mutation": "doigts-distendus"
+      },
+      {
+        "min": 37,
+        "max": 39,
+        "mutation": "emacie"
+      },
+      {
+        "min": 40,
+        "max": 41,
+        "mutation": "articulation-supplementaire-aux-jambes"
+      },
+      {
+        "min": 42,
+        "max": 43,
+        "mutation": "bouche-supplementaire"
+      },
+      {
+        "min": 44,
+        "max": 44,
+        "mutation": "fourrure"
+      },
+      {
+        "min": 45,
+        "max": 47,
+        "mutation": "peau-brillante"
+      },
+      {
+        "min": 48,
+        "max": 50,
+        "mutation": "sans-tete"
+      },
+      {
+        "min": 51,
+        "max": 51,
+        "mutation": "sauteur"
+      },
+      {
+        "min": 52,
+        "max": 55,
+        "mutation": "peau-d-acier"
+      },
+      {
+        "min": 56,
+        "max": 58,
+        "mutation": "langue-pendante"
+      },
+      {
+        "min": 59,
+        "max": 59,
+        "mutation": "longs-bras"
+      },
+      {
+        "min": 60,
+        "max": 60,
+        "mutation": "longues-jambes"
+      },
+      {
+        "min": 61,
+        "max": 63,
+        "mutation": "bras-multiples"
+      },
+      {
+        "min": 64,
+        "max": 65,
+        "mutation": "jambes-multiples"
+      },
+      {
+        "min": 66,
+        "max": 66,
+        "mutation": "oeil-unique"
+      },
+      {
+        "min": 67,
+        "max": 67,
+        "mutation": "cretin"
+      },
+      {
+        "min": 68,
+        "max": 68,
+        "mutation": "tete-pointue"
+      },
+      {
+        "min": 69,
+        "max": 69,
+        "mutation": "visage-difforme"
+      },
+      {
+        "min": 70,
+        "max": 70,
+        "mutation": "couleurs-changeantes"
+      },
+      {
+        "min": 71,
+        "max": 71,
+        "mutation": "court-sur-pattes"
+      },
+      {
+        "min": 72,
+        "max": 75,
+        "mutation": "tete-de-mort"
+      },
+      {
+        "min": 76,
+        "max": 78,
+        "mutation": "peau-herissee-de-pointes"
+      },
+      {
+        "min": 79,
+        "max": 79,
+        "mutation": "mains-et-pieds-a-ventouses"
+      },
+      {
+        "min": 80,
+        "max": 81,
+        "mutation": "queue"
+      },
+      {
+        "min": 82,
+        "max": 84,
+        "mutation": "ecailles-epineuses-edoc"
+      },
+      {
+        "min": 85,
+        "max": 85,
+        "mutation": "trois-yeux"
+      },
+      {
+        "min": 86,
+        "max": 86,
+        "mutation": "peau-transparente"
+      },
+      {
+        "min": 87,
+        "max": 88,
+        "mutation": "bicephale"
+      },
+      {
+        "min": 89,
+        "max": 92,
+        "mutation": "cornes-asymetriques"
+      },
+      {
+        "min": 93,
+        "max": 94,
+        "mutation": "peau-etrange"
+      },
+      {
+        "min": 95,
+        "max": 96,
+        "mutation": "malefrenesie"
+      },
+      {
+        "min": 97,
+        "max": 97,
+        "mutation": "pieds-palmes"
+      },
+      {
+        "min": 98,
+        "max": 98,
+        "mutation": "suintement-de-pus"
+      },
+      {
+        "min": 99,
+        "max": 99,
+        "mutation": "groin-poilu"
+      },
+      {
+        "min": 100,
+        "max": 100,
+        "mutation": "ailes"
+      }
+    ]
+  },
+  {
+    "id": "edoc-phys-nurgle",
+    "label": "Physique — Nurgle (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 3,
+        "mutation": "pattes-d-animaux"
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "mutation": "sang-acide"
+      },
+      {
+        "min": 5,
+        "max": 7,
+        "mutation": "tete-bestiale"
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "mutation": "extremites-armees"
+      },
+      {
+        "min": 9,
+        "max": 10,
+        "mutation": "grandes-oreilles"
+      },
+      {
+        "min": 11,
+        "max": 11,
+        "mutation": "pattes-d-oiseau"
+      },
+      {
+        "min": 12,
+        "max": 12,
+        "mutation": "visage-sans-traits"
+      },
+      {
+        "min": 13,
+        "max": 13,
+        "mutation": "souffle-du-feu"
+      },
+      {
+        "min": 14,
+        "max": 16,
+        "mutation": "exophtalmie"
+      },
+      {
+        "min": 17,
+        "max": 19,
+        "mutation": "carapace"
+      },
+      {
+        "min": 20,
+        "max": 21,
+        "mutation": "griffes"
+      },
+      {
+        "min": 22,
+        "max": 25,
+        "mutation": "nuage-de-mouches"
+      },
+      {
+        "min": 26,
+        "max": 29,
+        "mutation": "corpulent"
+      },
+      {
+        "min": 30,
+        "max": 31,
+        "mutation": "crete-sur-la-tete"
+      },
+      {
+        "min": 32,
+        "max": 32,
+        "mutation": "cri-assourdissant"
+      },
+      {
+        "min": 33,
+        "max": 34,
+        "mutation": "bras-elastiques"
+      },
+      {
+        "min": 35,
+        "max": 37,
+        "mutation": "emacie"
+      },
+      {
+        "min": 38,
+        "max": 39,
+        "mutation": "mauvais-oeil"
+      },
+      {
+        "min": 40,
+        "max": 40,
+        "mutation": "bouche-supplementaire"
+      },
+      {
+        "min": 41,
+        "max": 43,
+        "mutation": "oeil-pedoncule"
+      },
+      {
+        "min": 44,
+        "max": 46,
+        "mutation": "tentacule-epais"
+      },
+      {
+        "min": 47,
+        "max": 51,
+        "mutation": "odeur-pestilentielle"
+      },
+      {
+        "min": 52,
+        "max": 52,
+        "mutation": "fourrure"
+      },
+      {
+        "min": 53,
+        "max": 54,
+        "mutation": "branchies"
+      },
+      {
+        "min": 55,
+        "max": 56,
+        "mutation": "sans-tete"
+      },
+      {
+        "min": 57,
+        "max": 58,
+        "mutation": "sauteur"
+      },
+      {
+        "min": 59,
+        "max": 59,
+        "mutation": "langue-pendante"
+      },
+      {
+        "min": 60,
+        "max": 61,
+        "mutation": "bras-multiples"
+      },
+      {
+        "min": 62,
+        "max": 63,
+        "mutation": "jambes-multiples"
+      },
+      {
+        "min": 64,
+        "max": 66,
+        "mutation": "oeil-unique"
+      },
+      {
+        "min": 67,
+        "max": 68,
+        "mutation": "cretin"
+      },
+      {
+        "min": 69,
+        "max": 69,
+        "mutation": "tete-pointue"
+      },
+      {
+        "min": 70,
+        "max": 72,
+        "mutation": "visage-difforme"
+      },
+      {
+        "min": 73,
+        "max": 78,
+        "mutation": "chair-necrosee"
+      },
+      {
+        "min": 79,
+        "max": 79,
+        "mutation": "court-sur-pattes"
+      },
+      {
+        "min": 80,
+        "max": 81,
+        "mutation": "mains-et-pieds-a-ventouses"
+      },
+      {
+        "min": 82,
+        "max": 84,
+        "mutation": "queue"
+      },
+      {
+        "min": 85,
+        "max": 87,
+        "mutation": "trois-yeux"
+      },
+      {
+        "min": 88,
+        "max": 89,
+        "mutation": "peau-transparente"
+      },
+      {
+        "min": 90,
+        "max": 90,
+        "mutation": "bicephale"
+      },
+      {
+        "min": 91,
+        "max": 92,
+        "mutation": "cornes-asymetriques"
+      },
+      {
+        "min": 93,
+        "max": 94,
+        "mutation": "peau-etrange"
+      },
+      {
+        "min": 95,
+        "max": 96,
+        "mutation": "pieds-palmes"
+      },
+      {
+        "min": 97,
+        "max": 100,
+        "mutation": "suintement-de-pus"
+      }
+    ]
+  },
+  {
+    "id": "edoc-phys-slaanesh",
+    "label": "Physique — Slaanesh (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "pattes-d-animaux"
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "mutation": "sang-acide"
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "mutation": "bec"
+      },
+      {
+        "min": 8,
+        "max": 10,
+        "mutation": "tete-bestiale"
+      },
+      {
+        "min": 11,
+        "max": 12,
+        "mutation": "extremites-armees"
+      },
+      {
+        "min": 13,
+        "max": 13,
+        "mutation": "grandes-oreilles"
+      },
+      {
+        "min": 14,
+        "max": 15,
+        "mutation": "souffle-du-feu"
+      },
+      {
+        "min": 16,
+        "max": 17,
+        "mutation": "carapace"
+      },
+      {
+        "min": 18,
+        "max": 20,
+        "mutation": "griffes"
+      },
+      {
+        "min": 21,
+        "max": 22,
+        "mutation": "corpulent"
+      },
+      {
+        "min": 23,
+        "max": 24,
+        "mutation": "crete-sur-la-tete"
+      },
+      {
+        "min": 25,
+        "max": 27,
+        "mutation": "cri-assourdissant"
+      },
+      {
+        "min": 28,
+        "max": 29,
+        "mutation": "doigts-distendus"
+      },
+      {
+        "min": 30,
+        "max": 32,
+        "mutation": "bras-elastiques"
+      },
+      {
+        "min": 33,
+        "max": 33,
+        "mutation": "emacie"
+      },
+      {
+        "min": 34,
+        "max": 36,
+        "mutation": "mauvais-oeil"
+      },
+      {
+        "min": 37,
+        "max": 37,
+        "mutation": "articulation-supplementaire-aux-jambes"
+      },
+      {
+        "min": 38,
+        "max": 40,
+        "mutation": "bouche-supplementaire"
+      },
+      {
+        "min": 41,
+        "max": 41,
+        "mutation": "oeil-pedoncule"
+      },
+      {
+        "min": 42,
+        "max": 44,
+        "mutation": "tentacule-epais"
+      },
+      {
+        "min": 45,
+        "max": 46,
+        "mutation": "fourrure"
+      },
+      {
+        "min": 47,
+        "max": 48,
+        "mutation": "branchies"
+      },
+      {
+        "min": 49,
+        "max": 50,
+        "mutation": "peau-brillante"
+      },
+      {
+        "min": 51,
+        "max": 51,
+        "mutation": "sauteur"
+      },
+      {
+        "min": 52,
+        "max": 57,
+        "mutation": "beaute-surnaturelle"
+      },
+      {
+        "min": 58,
+        "max": 59,
+        "mutation": "peau-d-acier"
+      },
+      {
+        "min": 60,
+        "max": 61,
+        "mutation": "langue-pendante"
+      },
+      {
+        "min": 62,
+        "max": 63,
+        "mutation": "longs-bras"
+      },
+      {
+        "min": 64,
+        "max": 64,
+        "mutation": "longues-jambes"
+      },
+      {
+        "min": 65,
+        "max": 65,
+        "mutation": "long-cou"
+      },
+      {
+        "min": 66,
+        "max": 67,
+        "mutation": "bras-multiples"
+      },
+      {
+        "min": 68,
+        "max": 69,
+        "mutation": "jambes-multiples"
+      },
+      {
+        "min": 70,
+        "max": 70,
+        "mutation": "oeil-unique"
+      },
+      {
+        "min": 71,
+        "max": 72,
+        "mutation": "plumes-eparses"
+      },
+      {
+        "min": 73,
+        "max": 73,
+        "mutation": "cretin"
+      },
+      {
+        "min": 74,
+        "max": 74,
+        "mutation": "tete-pointue"
+      },
+      {
+        "min": 75,
+        "max": 77,
+        "mutation": "couleurs-changeantes"
+      },
+      {
+        "min": 78,
+        "max": 78,
+        "mutation": "court-sur-pattes"
+      },
+      {
+        "min": 79,
+        "max": 81,
+        "mutation": "peau-herissee-de-pointes"
+      },
+      {
+        "min": 82,
+        "max": 83,
+        "mutation": "mains-et-pieds-a-ventouses"
+      },
+      {
+        "min": 84,
+        "max": 85,
+        "mutation": "queue"
+      },
+      {
+        "min": 86,
+        "max": 87,
+        "mutation": "ecailles-epineuses-edoc"
+      },
+      {
+        "min": 88,
+        "max": 90,
+        "mutation": "trois-yeux"
+      },
+      {
+        "min": 91,
+        "max": 92,
+        "mutation": "bicephale"
+      },
+      {
+        "min": 93,
+        "max": 95,
+        "mutation": "peau-etrange"
+      },
+      {
+        "min": 96,
+        "max": 97,
+        "mutation": "malefrenesie"
+      },
+      {
+        "min": 98,
+        "max": 98,
+        "mutation": "pieds-palmes"
+      },
+      {
+        "min": 99,
+        "max": 100,
+        "mutation": "ailes"
+      }
+    ]
+  },
+  {
+    "id": "edoc-phys-tzeentch",
+    "label": "Physique — Tzeentch (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 7,
+        "mutation": "pattes-d-animaux"
+      },
+      {
+        "min": 8,
+        "max": 9,
+        "mutation": "sang-acide"
+      },
+      {
+        "min": 10,
+        "max": 12,
+        "mutation": "bec"
+      },
+      {
+        "min": 13,
+        "max": 13,
+        "mutation": "tete-bestiale"
+      },
+      {
+        "min": 14,
+        "max": 15,
+        "mutation": "extremites-armees"
+      },
+      {
+        "min": 16,
+        "max": 16,
+        "mutation": "grandes-oreilles"
+      },
+      {
+        "min": 17,
+        "max": 19,
+        "mutation": "pattes-d-oiseau"
+      },
+      {
+        "min": 20,
+        "max": 21,
+        "mutation": "visage-sans-traits"
+      },
+      {
+        "min": 22,
+        "max": 22,
+        "mutation": "souffle-du-feu"
+      },
+      {
+        "min": 23,
+        "max": 23,
+        "mutation": "exophtalmie"
+      },
+      {
+        "min": 24,
+        "max": 24,
+        "mutation": "peau-ardente"
+      },
+      {
+        "min": 25,
+        "max": 26,
+        "mutation": "carapace"
+      },
+      {
+        "min": 27,
+        "max": 28,
+        "mutation": "griffes"
+      },
+      {
+        "min": 29,
+        "max": 30,
+        "mutation": "crete-sur-la-tete"
+      },
+      {
+        "min": 31,
+        "max": 32,
+        "mutation": "cri-assourdissant"
+      },
+      {
+        "min": 33,
+        "max": 34,
+        "mutation": "doigts-distendus"
+      },
+      {
+        "min": 35,
+        "max": 36,
+        "mutation": "bras-elastiques"
+      },
+      {
+        "min": 37,
+        "max": 37,
+        "mutation": "emacie"
+      },
+      {
+        "min": 38,
+        "max": 39,
+        "mutation": "mauvais-oeil"
+      },
+      {
+        "min": 40,
+        "max": 41,
+        "mutation": "articulation-supplementaire-aux-jambes"
+      },
+      {
+        "min": 42,
+        "max": 44,
+        "mutation": "bouche-supplementaire"
+      },
+      {
+        "min": 45,
+        "max": 45,
+        "mutation": "oeil-pedoncule"
+      },
+      {
+        "min": 46,
+        "max": 47,
+        "mutation": "tentacule-epais"
+      },
+      {
+        "min": 48,
+        "max": 48,
+        "mutation": "odeur-pestilentielle"
+      },
+      {
+        "min": 49,
+        "max": 49,
+        "mutation": "fourrure"
+      },
+      {
+        "min": 50,
+        "max": 50,
+        "mutation": "branchies"
+      },
+      {
+        "min": 51,
+        "max": 52,
+        "mutation": "peau-brillante"
+      },
+      {
+        "min": 53,
+        "max": 53,
+        "mutation": "sans-tete"
+      },
+      {
+        "min": 54,
+        "max": 54,
+        "mutation": "sauteur"
+      },
+      {
+        "min": 55,
+        "max": 55,
+        "mutation": "beaute-surnaturelle"
+      },
+      {
+        "min": 56,
+        "max": 56,
+        "mutation": "peau-d-acier"
+      },
+      {
+        "min": 57,
+        "max": 58,
+        "mutation": "longs-bras"
+      },
+      {
+        "min": 59,
+        "max": 60,
+        "mutation": "longues-jambes"
+      },
+      {
+        "min": 61,
+        "max": 62,
+        "mutation": "long-cou"
+      },
+      {
+        "min": 63,
+        "max": 64,
+        "mutation": "bras-multiples"
+      },
+      {
+        "min": 65,
+        "max": 66,
+        "mutation": "jambes-multiples"
+      },
+      {
+        "min": 67,
+        "max": 67,
+        "mutation": "oeil-unique"
+      },
+      {
+        "min": 68,
+        "max": 70,
+        "mutation": "plumes-eparses"
+      },
+      {
+        "min": 71,
+        "max": 73,
+        "mutation": "visage-difforme"
+      },
+      {
+        "min": 74,
+        "max": 76,
+        "mutation": "couleurs-changeantes"
+      },
+      {
+        "min": 77,
+        "max": 77,
+        "mutation": "court-sur-pattes"
+      },
+      {
+        "min": 78,
+        "max": 79,
+        "mutation": "mains-et-pieds-a-ventouses"
+      },
+      {
+        "min": 80,
+        "max": 82,
+        "mutation": "queue"
+      },
+      {
+        "min": 83,
+        "max": 83,
+        "mutation": "ecailles-epineuses-edoc"
+      },
+      {
+        "min": 84,
+        "max": 84,
+        "mutation": "trois-yeux"
+      },
+      {
+        "min": 85,
+        "max": 85,
+        "mutation": "peau-transparente"
+      },
+      {
+        "min": 86,
+        "max": 87,
+        "mutation": "bicephale"
+      },
+      {
+        "min": 88,
+        "max": 88,
+        "mutation": "cornes-asymetriques"
+      },
+      {
+        "min": 89,
+        "max": 91,
+        "mutation": "peau-etrange"
+      },
+      {
+        "min": 92,
+        "max": 95,
+        "mutation": "malefrenesie"
+      },
+      {
+        "min": 96,
+        "max": 96,
+        "mutation": "pieds-palmes"
+      },
+      {
+        "min": 97,
+        "max": 97,
+        "mutation": "groin-poilu"
+      },
+      {
+        "min": 98,
+        "max": 100,
+        "mutation": "ailes"
+      }
+    ]
+  },
+  {
+    "id": "edoc-tete-bestiale-toute",
+    "label": "Tête Bestiale — Toute Puissance (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "tete-bestiale-ours"
+      },
+      {
+        "min": 6,
+        "max": 15,
+        "mutation": "tete-bestiale-sanglier"
+      },
+      {
+        "min": 16,
+        "max": 25,
+        "mutation": "tete-bestiale-taureau"
+      },
+      {
+        "min": 26,
+        "max": 30,
+        "mutation": "tete-bestiale-chien"
+      },
+      {
+        "min": 31,
+        "max": 35,
+        "mutation": "tete-bestiale-aigle"
+      },
+      {
+        "min": 36,
+        "max": 50,
+        "mutation": "tete-bestiale-rat"
+      },
+      {
+        "min": 51,
+        "max": 55,
+        "mutation": "tete-bestiale-araignee-geante"
+      },
+      {
+        "min": 56,
+        "max": 80,
+        "mutation": "tete-bestiale-chevre"
+      },
+      {
+        "min": 81,
+        "max": 95,
+        "mutation": "tete-bestiale-loup"
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "mutation": "tete-bestiale-serpent"
+      }
+    ]
+  },
+  {
+    "id": "edoc-tete-bestiale-khorne",
+    "label": "Tête Bestiale — Khorne (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 10,
+        "mutation": "tete-bestiale-ours"
+      },
+      {
+        "min": 11,
+        "max": 25,
+        "mutation": "tete-bestiale-sanglier"
+      },
+      {
+        "min": 26,
+        "max": 45,
+        "mutation": "tete-bestiale-taureau"
+      },
+      {
+        "min": 46,
+        "max": 60,
+        "mutation": "tete-bestiale-chien"
+      },
+      {
+        "min": 61,
+        "max": 65,
+        "mutation": "tete-bestiale-aigle"
+      },
+      {
+        "min": 66,
+        "max": 80,
+        "mutation": "tete-bestiale-chevre"
+      },
+      {
+        "min": 81,
+        "max": 99,
+        "mutation": "tete-bestiale-loup"
+      },
+      {
+        "min": 100,
+        "max": 100,
+        "mutation": "tete-bestiale-serpent"
+      }
+    ]
+  },
+  {
+    "id": "edoc-tete-bestiale-nurgle",
+    "label": "Tête Bestiale — Nurgle (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "tete-bestiale-ours"
+      },
+      {
+        "min": 6,
+        "max": 20,
+        "mutation": "tete-bestiale-sanglier"
+      },
+      {
+        "min": 21,
+        "max": 35,
+        "mutation": "tete-bestiale-chien"
+      },
+      {
+        "min": 36,
+        "max": 40,
+        "mutation": "tete-bestiale-aigle"
+      },
+      {
+        "min": 41,
+        "max": 60,
+        "mutation": "tete-bestiale-rat"
+      },
+      {
+        "min": 61,
+        "max": 80,
+        "mutation": "tete-bestiale-araignee-geante"
+      },
+      {
+        "min": 81,
+        "max": 95,
+        "mutation": "tete-bestiale-chevre"
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "mutation": "tete-bestiale-serpent"
+      }
+    ]
+  },
+  {
+    "id": "edoc-tete-bestiale-slaanesh",
+    "label": "Tête Bestiale — Slaanesh (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "tete-bestiale-ours"
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "mutation": "tete-bestiale-sanglier"
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "mutation": "tete-bestiale-taureau"
+      },
+      {
+        "min": 16,
+        "max": 25,
+        "mutation": "tete-bestiale-chien"
+      },
+      {
+        "min": 26,
+        "max": 35,
+        "mutation": "tete-bestiale-aigle"
+      },
+      {
+        "min": 36,
+        "max": 75,
+        "mutation": "tete-bestiale-chevre"
+      },
+      {
+        "min": 76,
+        "max": 80,
+        "mutation": "tete-bestiale-loup"
+      },
+      {
+        "min": 81,
+        "max": 100,
+        "mutation": "tete-bestiale-serpent"
+      }
+    ]
+  },
+  {
+    "id": "edoc-tete-bestiale-tzeentch",
+    "label": "Tête Bestiale — Tzeentch (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 10,
+        "mutation": "tete-bestiale-ours"
+      },
+      {
+        "min": 11,
+        "max": 20,
+        "mutation": "tete-bestiale-sanglier"
+      },
+      {
+        "min": 21,
+        "max": 30,
+        "mutation": "tete-bestiale-taureau"
+      },
+      {
+        "min": 31,
+        "max": 40,
+        "mutation": "tete-bestiale-chien"
+      },
+      {
+        "min": 41,
+        "max": 50,
+        "mutation": "tete-bestiale-aigle"
+      },
+      {
+        "min": 51,
+        "max": 60,
+        "mutation": "tete-bestiale-rat"
+      },
+      {
+        "min": 61,
+        "max": 70,
+        "mutation": "tete-bestiale-araignee-geante"
+      },
+      {
+        "min": 71,
+        "max": 80,
+        "mutation": "tete-bestiale-chevre"
+      },
+      {
+        "min": 81,
+        "max": 90,
+        "mutation": "tete-bestiale-loup"
+      },
+      {
+        "min": 91,
+        "max": 100,
+        "mutation": "tete-bestiale-serpent"
+      }
+    ]
   }
 ]

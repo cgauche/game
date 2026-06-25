@@ -357,6 +357,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: "Un lanceur peut focaliser sa magie via un composant adapté à un Sort d'Arcane/Domaine (acheté pour ce Sort, coût = NI pistoles d'argent). Sur une Incantation Imparfaite, le composant l'absorbe : Majeure → Mineure, Mineure → annulée. Consumé à l'incantation, même sans Imparfaite. Composants gérés sur la fiche du personnage. Désactivé par défaut.",
   },
   {
+    id: 'corruption-tables-edoc',
+    label: 'Tables de Corruption étendues (EDOC)',
+    ref: 'EDOC ch.8',
+    group: 'Corruption',
+    kind: 'mode',
+    default: 'ldb',
+    options: ['ldb', 'toute', 'khorne', 'nurgle', 'slaanesh', 'tzeentch'],
+    hint: 'Tables de mutations du Compagnon T1 (physiques + mentales), alignées par Puissance du Chaos. ldb = Tableaux du Livre de base (RAW, défaut). toute = tables EDOC « Toute Puissance » (élargies). khorne/nurgle/slaanesh/tzeentch = tables alignées sur un dieu (pour une campagne dédiée). Une mutation peut différer du Livre de base (ex. Écailles épineuses).',
+  },
+  {
     id: 'disease-mode',
     label: 'Utilisation des maladies',
     ref: 'LDB 20 l.36',

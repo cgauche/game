@@ -57,6 +57,9 @@ export interface Mutation {
   /** Mutation PHYSIQUE sans manifestation CORPORELLE visible (Souffle du feu, Sang acide, Cri
    *  assourdissant…) : pas de calque rig attendu — déclaré explicitement (≠ visuel à dessiner). */
   nonVisual?: boolean;
+  /** Pointeur de SOUS-TABLE (ex. « Tête bestiale » EDOC → re-tirer sur la sous-table Tête Bestiale) :
+   *  `rollMutation` re-tire sur `${subTable}-${alignement}` (suffixe hérité de la table courante). */
+  subTable?: string;
   /** Apparence COSMÉTIQUE déclarée en DONNÉE (calques du catalogue via `features` + `colors` + `eyes`) —
    *  fusionnée sur le rig quand la mutation est présente (cf. `combatantVisuals`). Type erased : le
    *  moteur ne la lit jamais (comme `Combatant.appearance` côté types). */

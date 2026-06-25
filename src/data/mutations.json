@@ -1133,7 +1133,8 @@
     "source": {
       "book": "EDOC",
       "page": 67
-    }
+    },
+    "subTable": "edoc-tete-bestiale"
   },
   {
     "id": "extremites-armees",
@@ -1756,20 +1757,6 @@
         "op": "grantTrait",
         "traitId": "attaque-caudale",
         "indice": 3
-      },
-      {
-        "op": "charMod",
-        "char": "Dex",
-        "mod": -10
-      },
-      {
-        "op": "charMod",
-        "char": "Soc",
-        "mod": -10
-      },
-      {
-        "op": "ap",
-        "amount": 1
       }
     ],
     "appearance": {
@@ -2140,6 +2127,62 @@
     "source": {
       "book": "EDOC",
       "page": 67
+    }
+  },
+  {
+    "id": "ecailles-epineuses-edoc",
+    "label": "Écailles épineuses",
+    "desc": "-10 Dex ; -10 Soc ; +1 Point d'Armure à toutes les Localisations",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      },
+      {
+        "op": "ap",
+        "amount": 1
+      }
+    ],
+    "appearance": {
+      "colors": {
+        "peau": "#8a8a58"
+      },
+      "features": [
+        "ecailles-epineuses"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 68
+    }
+  },
+  {
+    "id": "trois-yeux",
+    "label": "Trois yeux",
+    "desc": "Gagne le Talent Sens aiguisé (Vue)",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "sens-aiguise",
+        "spec": "Vue"
+      }
+    ],
+    "appearance": {
+      "features": [
+        "trois-yeux"
+      ]
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 68
     }
   }
 ]
