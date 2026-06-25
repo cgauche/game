@@ -15,13 +15,16 @@ import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
 import { navalMoveMod, navalSkillTestDR } from '../engine/navalTraits';
+import { exposedCrew } from '../engine/shipCritical';
+import { placementPenalty } from './shipPostes';
 import { findVehicleById } from '../data';
 import type { Combatant } from '../engine/types';
 import type { Get } from './flowTypes';
 
-/** Le barreur : parmi l'équipage présent, celui qui a la MEILLEURE valeur de Test de `skillId` (Voile/Ramer). */
+/** Le barreur : parmi l'équipage APTE (vivant + conscient — même prédicat que `exposedCrew`), celui qui a la
+ *  MEILLEURE valeur de Test de `skillId` (Voile/Ramer). Un marin à terre / inconscient ne tient pas la barre. */
 function bestHelmsman(crew: Combatant[], skillId: string): Combatant | undefined {
-  return [...crew].sort((a, b) => testValue(b, skillId) - testValue(a, skillId))[0];
+  return [...exposedCrew(crew)].sort((a, b) => testValue(b, skillId) - testValue(a, skillId))[0];
 }
 
 export interface ManeuverResult extends ShipManeuverOutcome {
@@ -52,13 +55,22 @@ export function maneuverShip(get: Get, shipId: string, turnSteps: number, helmsm
   const helm = helmsmanId ? battle.combatants.find((c) => c.id === helmsmanId) : bestHelmsman(crew, skillId);
   // Test de Navigation du barreur (Intermédiaire +0) → DR brut ; le Man s'ajoute dans resolveShipManeuver.
   const navDR = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()).sl : 0;
+  // Répartition des pièces (MDG ch.12 l.432-433) : un bord dont le poids (Enc des pièces) dépasse 25 %/50 % de
+  // la Contenance (`ship.capacity`) pénalise −1/−2 M, Man ET DR aux Tests de Navigation (trois colonnes RAW
+  // DISTINCTES → elles se cumulent). Sans Contenance connue (pas de facette navire) → aucune pénalité.
+  const place = vd?.capacity
+    ? placementPenalty((ship.postes ?? []).map((p) => ({ side: p.side, weight: p.item.enc })), vd.capacity)
+    : { m: 0, man: 0, navDR: 0 };
   // Traits du TYPE (`ship.traits`) + Améliorations d'INSTANCE (`ship.upgrades`) → liste navale effective.
   // Effets de manœuvre lus en GameOp (`naval-traits.json`, langue unique) : « Peu maniable » → op
   // `skillDRBonus` sur la compétence du Test (Voile/Ramer, −1/niveau, MDG ch.12 l.173) — DISTINCT du Man
   // (colonnes séparées) → cumulé via l'`extraDR` ; « Lissage » → op `moveMod` (M +1, l.293) → ajouté au M de base.
   const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
   const out = resolveShipManeuver(
-    navDR, baseM + navalMoveMod(navalTraits), manoeuvre, navalSkillTestDR(navalTraits, skillId),
+    navDR,
+    baseM + navalMoveMod(navalTraits) + place.m,
+    manoeuvre + place.man,
+    navalSkillTestDR(navalTraits, skillId) + place.navDR,
   );
   if (out.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
   else get().log(`${helm?.name ?? "L'équipage"} rate la manœuvre de ${ship.name} (DR ${out.dr}) — le cap tient.`);

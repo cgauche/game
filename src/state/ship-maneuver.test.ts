@@ -6,7 +6,7 @@ import { resolveShipManeuver } from '../engine/shipNavigation';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { maneuverShip } from './shipManeuver';
-import type { Combatant, NavalTraitRef } from '../engine/types';
+import type { Combatant, NavalTraitRef, ShipPoste } from '../engine/types';
 
 /**
  * Phase 2 « Manœuvre du navire » (MDG ch.13). Le cœur PUR : tourner le cap (`rotateDir8`) RE-MAPPE d'un coup
@@ -145,6 +145,33 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     const b = useGame.getState().battle!;
     expect(b.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5 + d.gx * r.advanced, y: 5 + d.gy * r.advanced });
     expect(b.combatants.find((c) => c.id === 'helm')!.pos).toEqual({ x: 5 + d.gx * r.advanced, y: 4 + d.gy * r.advanced });
+  });
+
+  it('barreur : un marin à terre / inconscient n’est jamais désigné (RAW : il ne peut pas tenir la barre)', () => {
+    seedBattleRng(7);
+    const down = { ...helmsman(), id: 'ace', name: 'As' } as Combatant; // meilleur en Voile (Ag 40, +40)…
+    down.wounds = { current: 0, max: 10 };                              // … mais à terre (0 PB) → inapte
+    const ok = { ...helmsman(), id: 'helm', name: 'Timonier' } as Combatant;
+    ok.characteristics = { ...ok.characteristics, Ag: 30 };
+    ok.skills = [{ skillId: 'voile', characteristic: 'Ag', advances: 10 } as never]; // conscient mais moins bon
+    const s = { ...ship(), crewIds: ['ace', 'helm'] } as Combatant;
+    useGame.setState({ battle: { combatants: [s, down, ok], order: ['ship'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+    const r = maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    expect(r.helmsman).toBe('Timonier'); // pas « As » malgré sa meilleure Voile : il est hors-combat
+  });
+
+  it('pièces massées sur un bord (poids > 50 % de la Contenance) → −2 M / −2 Man / −2 DR de Navigation (MDG ch.12 l.432-433)', () => {
+    const heavyTribord = { side: 'tribord', item: { enc: 100000 }, crewIds: [] } as unknown as ShipPoste;
+    const run = (postes?: ShipPoste[]) => {
+      seedBattleRng(7);
+      const s = { ...ship(), postes } as Combatant; // bateau-de-patrouille : Contenance 80, Man 0, aucun Trait à passif
+      useGame.setState({ battle: { combatants: [s, helmsman()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+      return maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    };
+    const plain = run();
+    const heavy = run([heavyTribord]);
+    expect(heavy.dr).toBe(plain.dr - 4); // Man −2 + DR de Navigation −2 (même navDR : seed + barreur identiques)
+    expect(heavy.movement).toBeLessThan(plain.movement); // … et le M −2 réduit aussi le déplacement
   });
 
   it('échec → PAS de virage mais le navire avance QUAND MÊME le long du cap (RAW : déplacement inconditionnel)', () => {
