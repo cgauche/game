@@ -41,6 +41,7 @@ export function ShipManeuverModal() {
   const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   const allRolled = p.participants.every((x) => x.result);
+  const unrolled = p.participants.filter((x) => x.interactive && !x.result && owns(x.id));
   const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore);
   const result = allRolled ? deriveManeuverFromCrew(ship, total) : null;
   const turnOptions: RollOption[] = TURN_OPTIONS.map((o) => ({
@@ -60,6 +61,7 @@ export function ShipManeuverModal() {
             ? `cap viré, ${ship.name} avance de ${result.movement} case${plural(result.movement)}.`
             : `manœuvre ratée — le cap tient ; avance de ${result.movement} case${plural(result.movement)}.`}</>
         : undefined}
+      onRollAll={unrolled.length >= 2 ? () => unrolled.forEach((x) => roll(x.id)) : undefined}
       onCancel={cancel}
       onConfirm={confirm}
       confirmLabel="Manœuvrer"

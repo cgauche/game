@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { RollPanel, type RollRowData } from './RollPanel';
 import { InfluenceRow } from './InfluenceRow';
+import { ResilienceButton } from './ResilienceButton';
 
 /**
  * Une RANGÉE de participant d'un flux MULTI (parallèle ou séquentiel), pendant UI de la fabrique
@@ -46,9 +47,12 @@ export function ParticipantRow({
     <div className="prow">
       <RollPanel rows={[row]} />
       {extra}
-      {interactive && !rolled && onRoll && (
+      {interactive && !rolled && (
         <div className="prow-act">
-          <button className="btn small btn-primary" onClick={onRoll}>{rollLabel}</button>
+          {/* Résilience PRÉ-jet (LDB 17 l.73 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
+              seulement après un échec, comme dans `RollFlowShell`. */}
+          {onForce && <ResilienceButton resilience={actor.resilience ?? 0} show onForce={onForce} />}
+          {onRoll && <button className="btn small btn-primary" onClick={onRoll}>{rollLabel}</button>}
         </div>
       )}
       {interactive && rolled && (

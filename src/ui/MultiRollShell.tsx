@@ -17,6 +17,7 @@ export function MultiRollShell({
   extra,
   children,
   summary,
+  onRollAll,
   onCancel,
   cancelLabel = 'Annuler',
   onConfirm,
@@ -36,6 +37,8 @@ export function MultiRollShell({
   children: ReactNode;
   /** Bandeau d'ISSUE sous les rangées (total, succès…) — encapsulé en `rm-vs`. */
   summary?: ReactNode;
+  /** « 🎲 Tout lancer » : résout d'un coup les jets restants (sans influence). Absent → bouton masqué. */
+  onRollAll?: () => void;
   onCancel: () => void;
   cancelLabel?: string;
   onConfirm: () => void;
@@ -52,6 +55,7 @@ export function MultiRollShell({
       {summary != null && <p className="rm-vs">{summary}</p>}
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onCancel}>{cancelLabel}</button>
+        {onRollAll && <button className="btn" onClick={onRollAll}>🎲 Tout lancer</button>}
         {/* () => onConfirm() : ne PAS passer l'événement React (coop : l'invité sérialise les intents en JSON). */}
         <button className="btn btn-primary" disabled={confirmDisabled} onClick={() => onConfirm()}>{confirmLabel}</button>
       </div>
