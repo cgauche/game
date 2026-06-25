@@ -4269,7 +4269,7 @@
     "spells": [],
     "desc": "À bien des égards, les furies du Chaos sont considérées comme des démons sans importance. Elles ne servent aucun dieu en particulier, et ne sont que des manifestations ataviques du Chaos dans sa forme indivisible, primitive et sans personnalité distincte. Leur faiblesse relative, ainsi que le fait qu’aucune puissance du Chaos ne chercherait à se venger si elles étaient maltraitées, font qu’elles sont souvent invoquées par des démonologues novices à la recherche d’un serviteur malléable et utile.\n\nMalgré leur manque de puissance, les furies restent toujours plus fortes que la plupart des humains mortels, et capables de voler rapidement grâce à leurs ailes en cuir. Leur apparence est changeante, comme celle de tous les serviteurs du Chaos, mais elles ont généralement une silhouette grossière qui n’est pas sans évoquer celle d’un homme-bête ailé. Les furies sont souvent caractérisées par un long museau canin, des cornes courtes et pointues, des yeux jaunes brûlants et une peau parsemée de fourrure sombre et d’écailles reptiliennes rouges.\n\nLes furies sont faibles et lâches par nature. Un démonologue peut facilement en lier une afin de délivrer de simples messages ou de s’attaquer à des cibles isolées. Cependant, si on leur confie des tâches trop pénibles, complexes ou dangereuses, elles peuvent devenir rancunières et refuser de coopérer.",
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 84
     },
     "appearance": {
@@ -4361,7 +4361,7 @@
     "spells": [],
     "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies.\n\nLes horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher.\n\nSi une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions.\n\nSi un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 85
     },
     "appearance": {
@@ -4446,7 +4446,7 @@
     "spells": [],
     "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies.\n\nLes horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher.\n\nSi une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions.\n\nSi un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 85
     },
     "appearance": {
