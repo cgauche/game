@@ -45,3 +45,9 @@ export function resolveBattery(
   const crewTest = resolveCrewTestByRoles(assignments, 'batterie', 'intermediaire', moraleScore, rng);
   return { side, postes, crewTest, dr: crewTest.total };
 }
+
+/** Pièces d'un navire sur le bord `side` qui peuvent FAIRE FEU au Round `round` : montées sur ce bord ET **chargées**
+ *  (pas en cours de Recharge, MDG ch.12). PUR — source unique du filtre « le bord qui peut lâcher une bordée ». */
+export function bearingPostes(ship: Combatant, side: FireArc, round: number): ShipPoste[] {
+  return (ship.postes ?? []).filter((p) => p.side === side && (p.reloadUntilRound ?? 0) <= round);
+}

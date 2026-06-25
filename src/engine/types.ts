@@ -599,6 +599,9 @@ export interface ShipPoste {
   sabord?: boolean;
   /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
   crewIds?: string[];
+  /** Recharge (MDG ch.12) : Round à partir duquel la pièce est rechargée et peut RE-tirer (`battle.round`).
+   *  Posé après un tir = `round + Recharge N` (×2 si sous-effectif) ; absent / ≤ round courant = prête. */
+  reloadUntilRound?: number;
 }
 
 /** Emplacement de POSTE sur un gabarit de pont (`ShipDeck`) — un MOUNT POINT authoré (pos + arc), PAS une

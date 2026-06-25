@@ -64,7 +64,7 @@ const gunnerPJ = (): Combatant =>
     skills: [{ skillId: 'projectiles', spec: 'Poudre noire', characteristic: 'CT', advances: 30 }], talents: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
 const battPoste = (): ShipPoste =>
-  ({ side: 'tribord', item: { uid: 'canon', name: 'Canon moyen', kind: 'ranged', damage: { flat: 14, plusBF: false }, range: 75, qualities: [] }, crewIds: ['gunner'] }) as unknown as ShipPoste;
+  ({ side: 'tribord', item: { uid: 'canon', name: 'Canon moyen', kind: 'ranged', damage: { flat: 14, plusBF: false }, range: 75, qualities: [{ id: 'recharge', value: 6 }] }, crewIds: ['gunner'] }) as unknown as ShipPoste;
 const firingShip = (): Combatant =>
   ({ id: 'ship', name: 'Frégate', kind: 'npc', bodyShape: 'vehicule', creatureId: 'bateau-de-patrouille', crewIds: ['gunner'], postes: [battPoste()], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
 const enemyHull = (pos = { x: 9, y: 5 }): Combatant =>
@@ -75,7 +75,7 @@ const enemyHull = (pos = { x: 9, y: 5 }): Combatant =>
 describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l.128)', () => {
   it('battleShipBattery ouvre le Test des Artilleurs (bord auto) ; roll ; Feu ! → la coque encaisse', () => {
     seedBattleRng(7);
-    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
+    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
     useGame.getState().battleShipBattery('ship', 'target');
     const p = useGame.getState().pendingShipBattery!;
     expect(p.side).toBe('tribord'); // cible plein est, cap N → bordée tribord
@@ -90,8 +90,20 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
 
   it('aucune pièce ne porte sur le bord visé (cible en proue, pièces à tribord) → n’ouvre rien', () => {
     seedBattleRng(7);
-    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull({ x: 5, y: 1 })], order: ['ship'], turn: 0, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
+    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull({ x: 5, y: 1 })], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
     useGame.getState().battleShipBattery('ship', 'target');
+    expect(useGame.getState().pendingShipBattery).toBeNull();
+  });
+
+  it('Recharge : une pièce qui a tiré est muette N Rounds (pas de 2e bordée avant rechargement, MDG ch.12)', () => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
+    useGame.getState().battleShipBattery('ship', 'target');
+    useGame.getState().shipBatteryRoll('gunner');
+    useGame.getState().shipBatteryConfirm();
+    const poste = useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.postes![0];
+    expect(poste.reloadUntilRound).toBe(7); // Round 1 + Recharge 6 → re-disponible au Round 7
+    useGame.getState().battleShipBattery('ship', 'target'); // 2e bordée même Round → pièce en recharge → aucune ne porte
     expect(useGame.getState().pendingShipBattery).toBeNull();
   });
 });

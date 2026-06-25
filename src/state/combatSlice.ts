@@ -52,6 +52,7 @@ import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './
 import { crewTestContributors, shipMoraleScore } from './shipCrew';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById } from '../data';
 import { targetArc } from './fireArc';
+import { bearingPostes } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
 import type { ShipManeuverParticipant, ShipBatteryParticipant } from './pendings';
 import { isVehicle } from '../engine/vehicle';
@@ -856,7 +857,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = battle.combatants.find((c) => c.id === targetId);
       if (!ship || !target || !ship.pos || !target.pos) return;
       const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos, target.pos); // bord qui porte (auto-dérivé de la cible)
-      const postes = (ship.postes ?? []).filter((p) => p.side === side);
+      const postes = bearingPostes(ship, side, battle.round); // sur ce bord ET chargées (pas en Recharge, ch.12)
       if (!postes.length) { get().log(t('cs.bordeeNoArc', { ship: ship.name, side })); return; }
       const partyIds = new Set(get().party.map((h) => h.id));
       const contributors = crewTestContributors(ship, battle.combatants, 'batterie', partyIds); // Artilleurs (UN jet/poste)
@@ -885,7 +886,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = battle.combatants.find((c) => c.id === p.targetId);
       if (!ship || !target) { set({ pendingShipBattery: null }); return; }
       const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore); // DR PARTAGÉ (Σ, essentiel ×2, + Moral)
-      const postes = (ship.postes ?? []).filter((pp) => pp.side === p.side);
+      const postes = bearingPostes(ship, p.side, battle.round);
       const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
       const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
       const volley = resolveVolley(ship, postes, target, rig, dr, crew, battleRng()); // munition + sous-effectif + Dégâts + Critiques (PUR, MÊMES fns que le tir individuel)
@@ -894,6 +895,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const critLines: string[] = [];
       for (const s of volley.shots) if (s.critical) // double sur le 1d100 → Critique de navire (ch.13 l.656)
         applyCriticalToTarget(target, 'corps', true, 0, critLines, set, undefined, { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, undefined, false, get);
+      // Recharge (ch.12) : chaque pièce qui a tiré passe muette N Rounds (×2 si sous-effectif — déjà baké dans s.reload).
+      for (const s of volley.shots) { const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid); if (poste) poste.reloadUntilRound = battle.round + s.reload; }
       get().log(t('cs.bordee', { side: p.side, ship: ship.name, target: target.name, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max }));
       for (const l of critLines) get().log(l);
       set({ battle: { ...get().battle!, action: null, preview: null } });

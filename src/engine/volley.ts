@@ -34,6 +34,10 @@ export interface VolleyShot {
   locRoll: number;
   /** Double sur le 1d100, OU coque déjà à 0 → Critique de navire (ch.13 l.656). */
   critical: boolean;
+  /** uid de la pièce (`item.uid`) — pour poser la Recharge sur le bon poste après le tir. */
+  posteUid: string;
+  /** Recharge effective de la pièce (Recharge N, ×2 si sous-effectif via `crewedFireWeapon`) — Rounds avant de re-tirer. */
+  reload: number;
 }
 
 export interface VolleyResult {
@@ -78,6 +82,7 @@ export function resolveVolley(
       weaponName: weapon.name, ammoName: ammo?.name, damage, wounds,
       location: shipHitLocation(rig, locRoll), locRoll,
       critical: isDoubleRoll(locRoll) || target.wounds.current <= 0, // double, OU coque à 0 (l.656)
+      posteUid: poste.item.uid, reload: weapon.reload ?? 0, // Recharge effective (crewedFireWeapon a doublé si sous-effectif)
     });
   }
   return { shots, totalWounds: shots.reduce((s, x) => s + x.wounds, 0) };
