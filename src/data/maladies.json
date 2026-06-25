@@ -310,5 +310,77 @@
         "kind": "nausee"
       }
     ]
+  },
+  {
+    "id": "colique",
+    "label": "Colique",
+    "desc": "Le patient est saisi par les douleurs abdominales aiguës qui donnent son nom à cette maladie. Elles surviennent de manière irrégulière, sans prévenir et peuvent être accompagnées de Fièvre, d'Intoxication alimentaire et de Vomissement.\n\nPresque tous les herboristes et les vieilles mégères des campagnes de l'Empire prétendent avoir un remède infaillible ; ils prennent tous la forme d'un bouillon ou d'un thé, et bien que les ingrédients varient, aucun ne semble être plus efficace que l'autre. Le seul véritable traitement de cette maladie consiste à s'hydrater, pour compenser la perte de liquides, et à s'armer de patience.\n\n**Crampes abdominales** — De violentes crampes abdominales saisissent le patient par intermittence, l'obligeant à se tordre de douleur. Ce dernier subit une pénalité de –20 à tous les Tests en raison de la perturbation provoquée par ces crampes douloureuses. Lorsqu'un Test se solde par un échec normal ou pire, il se plie en deux de douleur, incapable de bouger ou d'agir pendant le prochain Round, et gagne l'État *Sonné*. Sur un Échec Impressionnant ou pire, il doit effectuer un Test de **Force Mentale** ou tomber au sol, gagnant l'État *À Terre*. Sur un Échec Stupéfiant, il s'évanouit de douleur, gagnant l'État *Inconscient*. **Traitement :** une infusion d'écorce de saule peut aider un peu (bonus de +10 à tous les Tests résultant de coliques pendant d10 heures), mais il n'y a pas grand-chose d'autre à faire, mis à part attendre que la maladie suive son cours.",
+    "contractDifficulty": "intermediaire",
+    "incubation": {
+      "n": 0,
+      "sides": 1
+    },
+    "duration": {
+      "n": 2,
+      "sides": 10
+    },
+    "symptoms": [
+      {
+        "kind": "fievre"
+      },
+      {
+        "kind": "nausee"
+      },
+      {
+        "kind": "intoxication",
+        "severity": "moderee"
+      }
+    ],
+    "source": {
+      "book": "T2C",
+      "page": 92
+    }
+  },
+  {
+    "id": "vers-de-carie",
+    "label": "Vers de carie",
+    "desc": "Le ver de carie est un parasite inquiétant qui infeste les eaux sales et les denrées alimentaires avariées. D'une longueur d'environ 2,5 cm et d'une largeur de 6 mm, ce ver a une peau marbrée vert-brun qui forme un étrange motif de crâne au niveau de sa tête. Les mères racontent des histoires sur les vers de carie pour effrayer leurs enfants et les inciter à garder la bouche propre. La plupart des habitants du Vieux Monde considèrent donc ces créatures comme de simples mises en garde. Malheureusement, ils se trompent lourdement.\n\n**Effets des vers de carie** — Une fois ingéré, le ver de carie s'enfonce dans les tissus mous de la bouche ou de la gorge. Il sécrète un liquide anesthésiant qui engourdit instantanément la zone affectée. Chaque jour, la victime peut effectuer un Test de **Perception Intermédiaire (+0)** pour remarquer la croissance du ver. En cas de succès, sa présence est remarquée. Un Médecin ou un autre Personnage qualifié peut réaliser un Test de **Guérison Accessible (+20)** pour retirer le ver. Les Personnages non qualifiés doivent effectuer un Test de **Dextérité Intermédiaire (+0)**. Les Personnages qui tentent de se soigner eux-mêmes ont besoin d'un miroir et subissent une pénalité de –10. Si le Test échoue, la personne atteinte gagne l'État *Hémorragique*.\n\nUne fois installé dans la bouche de sa victime, le ver de carie se nourrit de son souffle : l'essence de l'esprit. Tant que ce parasite demeure, son hôte subit une pénalité de –10 à tous les Tests.\n\nAu bout d'une semaine, le parasite se dirige vers le cerveau de sa victime. Chaque jour, cette dernière peut effectuer un Test de **Perception Accessible (+20)**, qui lui permet de remarquer qu'une petite quantité de sang s'écoule de sa bouche. À ce stade, l'élimination du ver de carie nécessite un Test de **Guérison Complexe (–10)** effectué par un Personnage possédant le Talent Chirurgie.\n\nSi le ver de carie n'est pas éliminé dans les trois jours qui suivent, il n'est plus possible de le retirer sans tuer l'hôte. À mesure que le ver s'enfonce dans le cerveau et se prépare à pondre ses œufs, la victime doit effectuer un Test d'**Endurance Accessible (+20)** chaque jour. Chaque jour où le Test est raté, lancez 1d10, ajoutez le nombre de DR négatifs et consultez le tableau suivant :\n\n| Lancer modifié 1d10 | Résultat |\n|---|---|\n| 1–2 | –1d10 Initiative |\n| 3–4 | –1d10 Intelligence |\n| 5–6 | –1d10 Force Mentale |\n| 7–8 | –1d10 Sociabilité |\n| 9 | Gain du Trait Nerveux |\n| 10 | Gain du Trait Stupide |\n| 11–12 | Gain du Trait Bestial |\n| 13 | Mort |\n\nLes œufs du ver de carie éclosent 1d10 jours après avoir été pondus, suintant des narines de la victime à la recherche d'un nouvel hôte. Pour ceux qui survivent à ce processus, toutes les pénalités sont permanentes et ne peuvent être annulées que par des moyens magiques ou miraculeux.",
+    "contractDifficulty": "intermediaire",
+    "incubation": {
+      "n": 1,
+      "sides": 10,
+      "plus": 5
+    },
+    "duration": {
+      "n": 0,
+      "sides": 1,
+      "plus": 7
+    },
+    "symptoms": [],
+    "source": {
+      "book": "T2C",
+      "page": 91
+    }
+  },
+  {
+    "id": "vers-du-reik",
+    "label": "Vers du Reik",
+    "desc": "N'importe quelle masse d'eau peut être porteuse du ver du Reik, et différents guérisseurs ont toutes sortes de méthodes farfelues qui sont censées les tenir à distance, comme faire tourner l'eau dans sa bouche six fois avant de l'avaler (une superstition courante dans l'Ostermark) ou ne jamais boire de l'eau non vérifiée lorsque Morrslieb est visible (Nordland).\n\nLorsque la minuscule larve du ver du Reik pénètre dans le corps, elle s'enfonce profondément dans les intestins de son hôte, où elle se nourrit et se développe. Rapidement, le système immunitaire de l'hôte est affaibli, ce qui réduit sa résistance à d'autres maladies.\n\nAu bout de trois mois, le ver atteint une longueur d'un mètre et est prêt à entamer la phase suivante de son cycle de vie. Le premier signe visible du parasite est une cloque énorme qui se forme à la surface de la peau. Après une semaine, cette cloque éclate, provoquant une douleur intense semblable à une brûlure. En général, les personnes malades plongent leurs plaies enflammées dans de l'eau froide pour les soulager. Dans ce cas, le ver du Reik, qui a atteint sa maturité, émerge et crache une nouvelle portée de vers sous la forme d'un liquide jaunâtre et écœurant qui se disperse rapidement dans l'eau, prêt à infecter de nouveaux hôtes. Ensuite, le ver meurt.\n\n**Effets des vers du Reik** — Pour chaque période complète de 30 jours d'infection, le Personnage subit une pénalité de –5 à tous les Tests de **Résistance** permettant de résister aux maladies. Cette pénalité est réduite de 1 point par jour après la mort du ver.\n\nPour déterminer où le ver fait surface, effectuez un lancer de Localisation comme lors d'un combat normal. Lorsque l'ampoule se forme, le patient subit une pénalité de –5 % à tous les Tests d'Agilité en raison de l'irritation constante. De plus, si l'ampoule se trouve à un endroit visible, le Personnage subit également une pénalité de –10 aux Tests de Sociabilité.\n\nLe septième jour suivant l'apparition de la cloque, la personne atteinte doit effectuer un Test de Résistance toutes les heures. Au premier échec, ou à la dernière heure du jour si tous les Tests sont réussis, la cloque éclate, infligeant 1 Blessure et provoquant un État *Sonné* en raison de la sensation de brûlure presque insupportable qui en résulte. Ce phénomène persiste jusqu'à ce que la plaie reçoive des soins médicaux, mais il peut être temporairement atténué si l'ampoule est immergée dans l'eau.\n\nIl n'existe pas de traitement connu contre les vers du Reik, si ce n'est de laisser le cycle suivre son cours. Certains médecins ont essayé de le retirer du patient une fois que la cloque s'est formée et que l'emplacement où se cachait ce parasite est devenu visible, mais cette approche fait généralement plus de mal que de bien, et le patient met plus de temps à s'en remettre.",
+    "contractDifficulty": "intermediaire",
+    "incubation": {
+      "n": 1,
+      "sides": 10,
+      "plus": 85
+    },
+    "duration": {
+      "n": 0,
+      "sides": 1,
+      "plus": 7
+    },
+    "symptoms": [],
+    "source": {
+      "book": "T2C",
+      "page": 92
+    }
   }
 ]
