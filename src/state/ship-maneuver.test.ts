@@ -264,6 +264,25 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
     expect(bonusShipManeuver(ship2(), base).navDR).toBe(2);
   });
 
+  it('bonusShipManeuver (+1 DR) PRÉSERVE la réussite du d100 — le +1 DR augmente le degré, pas le succès', () => {
+    const failed: ManeuverResult = { dr: -3, success: false, movement: 1, label: '', navDR: -2, roll: 88, target: 41, advanced: 0 };
+    expect(bonusShipManeuver(ship2(), failed).success).toBe(false); // un échec ne devient pas un succès via +1 DR
+  });
+
+  it('réussite du VIRAGE = réussite du d100 (RAW MDG l.304), JAMAIS dr≥0 — le Man (−1 DR cogue) n’inverse pas le Test', () => {
+    // Sur la cogue (Man −1 + Peu maniable −1 = −2 au DR), un d100 réussi de justesse (DR bas) donne dr<0 :
+    // l’ancien `success = dr≥0` aurait raté le virage. Le RAW gate sur la RÉUSSITE du Test (roll ≤ cible).
+    let diverged = false;
+    for (const seed of Array.from({ length: 30 }, (_, i) => i + 1)) {
+      seedBattleRng(seed);
+      useGame.setState({ battle: { combatants: [{ ...ship2(), creatureId: 'cogue' }, helm2()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+      const r = rollShipManeuver(() => useGame.getState(), 'ship', 'helm')!;
+      expect(r.success).toBe(r.roll! <= r.target!); // succès ⇔ d100 ≤ cible, indépendant du Man / du dr
+      if ((r.roll! <= r.target!) !== (r.dr >= 0)) diverged = true; // l'ancien `dr≥0` aurait donné un AUTRE verdict
+    }
+    expect(diverged).toBe(true); // garde-fou : ce set de seeds EXERCE bien la divergence (test non vacant)
+  });
+
   // Coque COMPLÈTE pour l'éperonnage : characteristics/PB (IC), creatureId (M), bodyShape (détection de coque).
   const navHull = (id: string, x: number, creatureId: string, E: number, pb: number): Combatant =>
     ({ id, name: id, kind: 'npc', creatureId, bodyShape: 'vehicule', pos: { x, y: 5 }, crewIds: [],

@@ -71,11 +71,16 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   };
 }
 
-/** Construit le `ManeuverResult` pour un `navDR` donné (PUR, aucune mutation, aucun RNG). */
-function deriveManeuver(ship: Combatant, nav: { sl: number; roll?: number; target?: number }, helmsman?: string): ManeuverResult {
+/** Construit le `ManeuverResult` pour un Test de Navigation donné (PUR, aucune mutation, aucun RNG).
+ *  RAW (MDG ch.13) : le VIRAGE réussit si le **Test réussit** (d100 ≤ cible — l.304 « virement de bord =
+ *  Test réussi… en cas d'échec, le bateau se déplace normalement, sans bonus »). Le Man est un modificateur
+ *  de **DR** (ch.12 l.48-50, stat-bloc « −1 DR »), PAS de difficulté → il échelonne le DR (mouvement via la
+ *  Progression + l'IC de collision), il ne BASCULE PAS la réussite. On prend donc `nav.success` (le d100),
+ *  jamais `dr ≥ 0` (qui conflaterait un d100 raté à DR 0 en faux succès, ou un d100 réussi à DR<0 en faux échec). */
+function deriveManeuver(ship: Combatant, nav: { sl: number; roll?: number; target?: number; success?: boolean }, helmsman?: string): ManeuverResult {
   const { baseM, manoeuvre, extraDR } = shipManeuverParams(ship);
   const out = resolveShipManeuver(nav.sl, baseM, manoeuvre, extraDR);
-  return { ...out, navDR: nav.sl, roll: nav.roll, target: nav.target, helmsman, advanced: 0 };
+  return { ...out, success: nav.success ?? out.success, navDR: nav.sl, roll: nav.roll, target: nav.target, helmsman, advanced: 0 };
 }
 
 /**
@@ -93,21 +98,22 @@ export function rollShipManeuver(get: Get, shipId: string, helmsmanId?: string):
     .filter((c): c is Combatant => !!c);
   const helm = helmsmanId ? battle.combatants.find((c) => c.id === helmsmanId) : bestHelmsman(crew, skillId);
   const nav = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()) : undefined;
-  return deriveManeuver(ship, { sl: nav?.sl ?? 0, roll: nav?.roll, target: nav?.target }, helm?.name);
+  return deriveManeuver(ship, { sl: nav?.sl ?? 0, roll: nav?.roll, target: nav?.target, success: nav?.success }, helm?.name);
 }
 
-/** Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : force la manœuvre à RÉUSSIR au DR minimal (succès
- *  minime, sans bonus). `null` si déjà réussie. PUR. */
+/** Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : force le Test à RÉUSSIR (le virage a lieu) au DR
+ *  minimal (succès minime, sans bonus). `null` si le Test a déjà réussi. PUR. */
 export function forceShipManeuver(ship: Combatant, prev: ManeuverResult | null): ManeuverResult | null {
   if (prev?.success) return null;
   const { manoeuvre, extraDR } = shipManeuverParams(ship);
-  // navDR tel que `dr = navDR + Man + extraDR = 0` → réussite minimale.
-  return deriveManeuver(ship, { sl: -(manoeuvre + extraDR), roll: prev?.roll ?? 1, target: prev?.target }, prev?.helmsman);
+  // navDR tel que `dr = navDR + Man + extraDR = 0` ; réussite FORCÉE (le virage a lieu).
+  return deriveManeuver(ship, { sl: -(manoeuvre + extraDR), roll: prev?.roll ?? 1, target: prev?.target, success: true }, prev?.helmsman);
 }
 
-/** Chance « +1 DR » (LDB 17 l.26) : re-dérive la manœuvre avec `navDR + 1` (meilleure Progression / collision). PUR. */
+/** Chance « +1 DR » (LDB 17 l.26) : re-dérive la manœuvre avec `navDR + 1` (meilleure Progression / collision) ;
+ *  la réussite du Test (d100) est INCHANGÉE (le +1 DR augmente le degré, pas le succès). PUR. */
 export function bonusShipManeuver(ship: Combatant, prev: ManeuverResult): ManeuverResult {
-  return deriveManeuver(ship, { sl: prev.navDR + 1, roll: prev.roll, target: prev.target }, prev.helmsman);
+  return deriveManeuver(ship, { sl: prev.navDR + 1, roll: prev.roll, target: prev.target, success: prev.success }, prev.helmsman);
 }
 
 /**
