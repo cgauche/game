@@ -25,8 +25,6 @@ import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
 import weaponGroupsJson from './weaponGroups.json';
 import creaturesJson from './creatures.json';
-import frenchyTraitsJson from './frenchy-traits.json';
-import frenchySpellsJson from './frenchy-spells.json';
 import spellsJson from './spells.json';
 import maneuversJson from './maneuvers.json';
 import domainsJson from './domains.json';
@@ -804,10 +802,10 @@ export function findDiseaseById(id: string): DiseaseDef | undefined {
 export function diseaseLabel(id: string): string {
   return DISEASE_BY_ID.get(id)?.label ?? id;
 }
-// Traits app-owned + traits curés hors-extraction mergés ici : homebrew frenchy.bzh (Aura de Dhar/
-// Mort, Charnier) + traits de suppléments autorisés référencés par le bestiaire mais absents
-// d'all-data.json (Redoutable, ZI).
-export const traits = [...(traitsJson as TraitData[]), ...(frenchyTraitsJson as TraitData[])];
+// Traits app-owned (officiels + homebrew frenchy.bzh Aura de Dhar/Mort, Charnier + suppléments
+// Redoutable/Fouissement ZI) — TOUT dans `traits.json` (l'ex-`frenchy-traits.json`, fichier de
+// migration one-shot, a été FONDU ici ; chaque entrée garde sa vraie `source` : ZI, frenchy.bzh…).
+export const traits = traitsJson as TraitData[];
 /** Index des Traits par libellé canonique — lecture des `effects` au runtime (state/triggeredEffects). */
 export const traitByLabel: Map<string, TraitData> = new Map(traits.map((t) => [t.label, t]));
 /** Index des Traits par `id` STABLE (slug) — lookup runtime indépendant de la langue. */
@@ -899,9 +897,10 @@ export const weaponGroups = weaponGroupsJson as WeaponGroupData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json
 // (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.
 export const creatures = creaturesJson as CreatureData[];
-// Sorts app-owned + sorts homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes, Bénédictions,
-// Miracles…) mergés ici ; le nom listé par une créature résout.
-export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as SpellData[])];
+// Sorts app-owned — officiels + homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes,
+// Bénédictions, Miracles…) TOUT dans `spells.json` (l'ex-`frenchy-spells.json`, migration one-shot,
+// a été FONDU ici ; chaque sort garde sa `source`, dont `frenchy.bzh` pour le homebrew).
+export const spells = spellsJson as SpellData[];
 /** Manœuvres app-owned (attaques naturelles activées — LDB 85) : ENTITÉ de 1ʳᵉ classe éditable au Codex,
  *  effets en GameOp. Octroyées aux créatures via `TraitData.grantsManeuvers` ; résolues par id. */
 export const maneuvers = maneuversJson as ManeuverDef[];

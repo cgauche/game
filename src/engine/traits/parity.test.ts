@@ -89,6 +89,12 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Contagieux', 'transmet la maladie hébergée au toucher — pas câblé (MJ ; cf. Infecté/Maladie)'],
   ['Décérébré', 'sans I/Int/FM/Soc, joue toujours en dernier — pas de système « sans Initiative » (MJ)'],
   ['Voleur de chair', 'revêt la peau d’un humain tué (trait de Gideon) — pas de système de déguisement (MJ)'],
+  // Trait ZI sans système support (desc verbatim, MJ).
+  ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
+  // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
+  ['Aura de Dhar', 'effluves de Dhar (gêne sorciers/démons proches) — pas de système d’aura magique inter-créatures (MJ)'],
+  ['Aura de Mort', 'rayon bonifiant Nécromancie/Shyish — pas de système d’aura de domaine (MJ)'],
+  ['Charnier', 'spawn de Zombies à la mort — pas de spawn-on-death dans le moteur (MJ/auteur)'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
@@ -103,6 +109,9 @@ const DISPATCH = new Set<string>([
   'Corruption mentale', 'Démoniaque', 'Élite', 'Endurant', 'Éthéré', 'Fabriqué', 'Foulée', 'Furtif',
   'Grand', 'Immunité', 'Infravision', 'Insensible à la douleur', 'Instable', 'Intelligent', 'Magique',
   'Meneur', 'Mutation', 'Nerveux', 'Nuée', 'Parasité', 'Perturbant', 'Protection', 'Rage', 'Rapide',
+  // Redoutable (ZI) : Avantage min = Indice au début du tour — effet `onTurnStart` en donnée (op
+  // gainAdvantage, indice baké via withArg, gardé Empêtré/Surpris). Dispatché comme tout `effects`.
+  'Redoutable',
   'Régénération', 'Résistance à la Magie', 'Rusé', 'Sang corrosif', 'Stupide', 'Taille', 'Territorial',
   'Toile', 'Vision nocturne', 'Vol',
 ]);

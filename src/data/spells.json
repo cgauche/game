@@ -13427,5 +13427,3824 @@
     },
     "family": "invocation",
     "curated": true
+  },
+  {
+    "id": "abondance-de-rhya",
+    "label": "Abondance de Rhya",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La nourriture touchée s’assainit et se multiplie. Il ne peut s’agir que de produits peu ou pas transformés : fruits, légumes, vin, bière… Moisissures et insectes disparaissent ; les produits retrouvent couleur, texture et forme ; leur quantité est doublée. La prêtresse peut toucher un tonnelet, une canette ou un panier par Tour.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 155
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "agression-aethyrique",
+    "label": "Agression AEthyrique",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Au lieu de simplement tenter d’annuler un sort d’un adversaire avec un Test Opposé de Langue (Magick), le vampire peut tenter une forme plus agressive. Si ce sort est lancéAVANTla fin de l’incantation de l’adversaire, le sort de l’adversaire rate automatiquement et il déclenche un accident mineur de magie.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 584
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "alarme",
+    "label": "Alarme",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 1,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sort permet de savoir si un objet est empoisonné ou piégé. Le sort ne peutPASneutralisé le poison ou désamorcer le piège.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 454
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "algues-cruelles",
+    "label": "Algues Cruelles",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 90,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 9
+    },
+    "duration": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "desc": "Les algues répondent à la volonté du mage. Elles agrippent toute personne dans la zone d’effet et inflige 1 État « Enchevêtré » par DR du Test de Langue (Magick) avec une Force égale à la FM du mage. Au Tour suivant, les algues attirent les cibles sous l’eau (appliquer les règles de noyade).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 502
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "ame-devoilee",
+    "label": "Âme Dévoilée",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "2",
+    "range": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "1 Tour"
+    },
+    "desc": "Le mage parvient à connaître la Motivation, l’Objectif de Court-Terme et l’Objectif de Long- Terme de sa cible.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 329
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "apaisement",
+    "label": "Apaisement",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La cible ne ressent aucun effets d’États Psychologiques. À la fin du miracle, la cible ressent un impérieux besoin de dormir jusqu’au lever de soleil suivant. La cible peut ne pas s’endormir si elle réussit un Test de Calme (+0).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 78
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "appel-de-vanhel",
+    "label": "Appel de Vanhel",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 55,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le nécromancien infuse duDhardans le corps de 5 morts-vivants qu’il contrôle. Ils gagnent tous la MÊME ActionOUle MÊME Mouvement supplémentaire. Pour chaque +2 DR au-dessus de +0, le nombre de morts-vivants concerné augmente de +5.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 519
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "arme-souillee",
+    "label": "Arme Souillée",
+    "type": "Sort",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 8,
+      "unit": "minutes"
+    },
+    "desc": "Le démon frotte 1 arme sur une blessure purulente. Une cible touchée per cette arme ou ces munitions souffre de 1 État « Empoisonné » en plus des dégâts. Les Tests de Résistance se font à (+0).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 305
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "armure-d-aethyr",
+    "label": "Armure d’AEthyr",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Sorcier"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Sorcier"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 7
+    },
+    "desc": "Le PJ bénéficie de 2 Points d’Armure sur tout le corps. Le sort peut dévier un Coup Critique. En ce cas, le sort est annulé.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 522
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "armure-d-obscurite",
+    "label": "Armure d’Obscurité",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 40,
+      "unit": "minutes"
+    },
+    "desc": "le sorcier bénéficie de 2 Points d’Armure (corps entier) et d’un Bonus +20 en Discrétion.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 376
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "arriere-sorciere",
+    "label": "Arrière, Sorcière !",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Un sorcier qui lance un sort sur une personne ou un objet dans la zone du miracle a un Malus de -20 en Langue (Magick). Pour chaque +2 DR au-dessus de +0, le Diamètre peut être augmenté de 5 mètres. Attention ! ce miracle affecte les sorciers et mages alliés…",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 89
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "aux-innocents-les-mains-pleines",
+    "label": "Aux Innocents les Mains Pleines !",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Si le prêtre est fouillé, on ne trouve sur lui que des objets du quotidien sans valeur. Pour chaque heure où des objets volés sont ainsi cachés, il y a 1% de chance cumulatif que les objets ne réapparaissent pas et que Ranald les garde pour lui !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 118
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "avatar-du-rat-cornu",
+    "label": "Avatar du Rat Cornu",
+    "type": "Magie des Arcanes Skaven",
+    "subType": null,
+    "cn": "4",
+    "range": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "5 Tours"
+    },
+    "desc": "Le visage du sorcier se tord et prend l’aspect du Rat Cornu en personne. Le sorcier gagne les Traits suivants : Belligérant, Peur 1, Haine. Pour chaque +2 DR au-dessus de +0 le Trait Peur augmente de +1. À la fin du sort, le sorcier effectue un Test de Résistance (+0) VS 1 État « Fatigue ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 417
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "baratin",
+    "label": "Baratin",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le prêtre peut utiliser un Bonus de +8 DR pour UN SEUL Test de Charme pendant la durée du Miracle afin de se sortir d’un mauvais pas après avoir été pris en flagrant délit.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 119
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "belier",
+    "label": "Bélier",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "3",
+    "range": {
+      "kind": "special",
+      "text": "Shaman"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Shaman"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Toutes les personnes et créatures dans un diamètre de 6 mètres autour du Shaman sont repoussées de 6 mètres et subissent l’État « À Terre ». S’il y a un obstacle, ils encaissent autant de Points de Dégâts que le nombre de mètres parcourus. En cas d’Incantation Critique, l’adversaire recule d’une distance de 6 mètres additionnelle pour chaque +2 DR au- dessus du NI.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 246
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "benedicite-de-taal",
+    "label": "Bénédicité de Taal",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le prêtre bénit de la nourriture qui a été chassée ou cueillie en zone sauvage. La nourriture s’en retrouve plus nourrissante. Quiconque mange cette nourriture bénie peut attendre 4 jours avant le prochain Test de Faim (Starvation). Le miracle permet de bénir jusqu’à six portions, donc de quoi nourrir six personnes.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 161
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "berceuse-soporifique-ua-ii",
+    "label": "Berceuse Soporifique UA II",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 85,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "8 Tours"
+    },
+    "desc": "La cible n’a qu’une envie : dormir. Elle souffre de (1D10 - Bonus FM) États « Fatigue » (minimum 1). Si le nombre d’États est supérieur au Bonus de FM de la cible, cette dernière s’endort sur place, risquant de chuter.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 289
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "bienveillance",
+    "label": "Bienveillance",
+    "type": "Magie des Arcanes & des Taillis",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Rebouteux"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 5
+    },
+    "duration": {
+      "kind": "special",
+      "text": "3 Tours"
+    },
+    "desc": "Le rebouteux crée une atmosphère amicale. Bonus +10 pour tous les Tests de Sociablité dans la zone. Les effets des États « Animosité » et « Haine » ne fonctionnent pas.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 142
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "blizzard",
+    "label": "Blizzard",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "L’air autour du prêtre devient glacial. Le prêtre cause l’État « Peur 1 » à ses adversaires. Au début de chaque Tour, la Réserve d’Avantage des adversaires diminue du nombre d’adversaire dans la zone tellement ils se pétrifient de froid.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 92
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "bon-debarras",
+    "label": "Bon Débarras !",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "En touchant un objet récupéré de manière illicite ou de contrebande, le prêtre sait où trouver le meilleur acheteur ou receleur.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 118
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "bond-furtif",
+    "label": "Bond Furtif",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "La cible est téléportée dans la limite de 40 Mètres du du champ de vision du skaven. La zone visée doit être libre et disponible. La cible ne peut être que de Taille Moyenne ou moins.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 373
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "bouclier",
+    "label": "Bouclier",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "2",
+    "range": {
+      "kind": "special",
+      "text": "Shaman"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 6
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 6
+    },
+    "desc": "Tout projectile contenant de la matière organique (flèches ou carreaux en bois) est automatiquement détruit au contact du bouclier. Les balles de plombs ou les billes d’aciers ne sont pas affectées.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 246
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "bouillon-revigorant",
+    "label": "Bouillon Revigorant",
+    "type": "Magie des Arcanes & des Taillis",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 3,
+      "unit": "hours"
+    },
+    "desc": "Le rebouteux prépare un bouillon qui réduit ou annule la fatigue. Le sort permet d’enchanter un bol pour une personne. le bouillon doit être immédiatement ingurgité brûlant. Pendant la durée du sort, les États « Fatigue » d’origine naturelle sont ignorés. Ils reviennent dès que le sort prend fin.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 142
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "bruit",
+    "label": "Bruit",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 75,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 7
+    },
+    "desc": "Le démon crée un bruit naturel (bruit de pas, ronflement, sifflement, grattement, murmure inaudible, etc). Le démon n’a pas besoin de voir l’endroit où le son est émis. Avec un Test réussi de Focalisation, le démon peut faire bouger le son dans l’espace, ainsi que diminuer ou augmenter son volume.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 323
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "brume-acide",
+    "label": "Brume Acide",
+    "type": "du Domaine de la Peste",
+    "subType": null,
+    "cn": "10",
+    "range": {
+      "kind": "distance",
+      "value": 70,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 7
+    },
+    "duration": {
+      "kind": "special",
+      "text": "7 Tours +"
+    },
+    "desc": "Le nuage de la zone contaminée s’élève jusqu’à 12 mètres. Toutes les créatures dans la zone effectue À CHAQUE TOURun Test de Résistance (-10) VS 3 PB (pas d’armure). Si une créature perd plus de 6 PB dans la zone, elle devient « Inconsciente ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 393
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "brume-mystique",
+    "label": "Brume Mystique",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 9,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 18
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 9,
+      "unit": "minutes"
+    },
+    "desc": "Une épaisse brume monte de la surface. On ne peut pas voir à travers.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 501
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "cacophonie-scabreuse",
+    "label": "Cacophonie Scabreuse",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 8
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le démon hurle des obscénités. Tous les ennemis dans la zone subissent 3 Points de Dégâts par DR + 8 Points de Dégâts (pas d’armure).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 289
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "catharsis",
+    "label": "Catharsis",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le miracle guérit un Poison ou une Maladie. Pour chaque +2 DR au-dessus de +0, le miracle peut annuler un autre poison ou une autre maladie sur la même cible. Pour chaque poison ou maladie guéri ainsi, le prêtre de Shallya encaisse (D10 - 5) Points de Blessure (minimum 1).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 78
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "chaleur-de-la-fourrure",
+    "label": "Chaleur de la Fourrure",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La cible ne souffre pas des effets de l’exposition aux éléments (Malus et États divers).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 92
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "chuchotis",
+    "label": "Chuchotis",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 3
+    },
+    "desc": "Le PJ projette sa voix à un point éloigné. Toute personne à portée de la voix entend les paroles du PJ.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 144
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "cogne-fort",
+    "label": "Cogne-Fort",
+    "type": "Sort",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 5,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "La Réserve d’Avantages des Peaux-Vertes augmente de (1+DR) Points. Ils sont utilisables immédiatement.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 472
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "conserve",
+    "label": "Conserve",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 1,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 3,
+      "unit": "days"
+    },
+    "desc": "Le PJ peut préserver l’équivalent d’une ration pour une journée pour une personne. Cette ration ne pourrit pas et ne moisit pas. Elle peut cependant être mouillée, brûlée ou empoisonnée.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 139
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "contamination",
+    "label": "Contamination",
+    "type": "du Domaine de la Peste",
+    "subType": null,
+    "cn": "4",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 6,
+      "unit": "days"
+    },
+    "desc": "Le sorcier infecte un vêtement, une couverture, de la nourriture ou autre avec la Peste Noire. Toute créature qui utilise l’objet contaminé est exposée à la maladie.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 389
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "coup-d-boule",
+    "label": "Coup d’Boule !",
+    "type": "Sort",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 5,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Projectile magique qui toucheTOUJOURSla tête de la cible en infligeant +1 PB. Si la cible est un mage, les Dégâts montent à +6 !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 472
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "courage-du-loup",
+    "label": "Courage du Loup",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Tous les alliés dans la zone perdent leur État « En Déroute ». Pendant la durée du miracle, ils sont immunisés VS Peur / Terreur / Intimidation.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 92
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "courant-d-air",
+    "label": "Courant d’Air",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 80,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "La bourrasque est assez forte pour éteindre une bougie, claquer une porte, tourner les pages d’un livres, disperser des feuilles de papiers…",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 569
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "crepitement-funeste",
+    "label": "Crépitement Funeste",
+    "type": "du Domaine de la Ruine",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 2,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sorcier provoque un arc d’énergie verdâtre qui frappe sa cible et inflige 6 Points de Dégâts (armure OK). La cible effectue un Test de Résistance (+0) VS 1 État « Étourdi ».",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 6,
+                "ignoreTB": false,
+                "ignoreAP": false
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "name": "sonne",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 361
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "crepitements-vengeurs",
+    "label": "Crépitements Vengeurs",
+    "type": "Sort",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 3
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Des éclairs verts jaillissent des doigts du shaman. Projectile magique qui inflige 7 Points de Dégâts (armure OK). Les cibles blessées effectuent un Test de Calme (+0) VS État « Étourdi ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 448
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "crevasse",
+    "label": "Crevasse",
+    "type": "du Domaine de la Ruine",
+    "subType": null,
+    "cn": "11",
+    "range": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 50
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sorcier frappe le sol du pied. Un crevasse apparaît. Elle mesure 1 Mètre de large et part en ligne droite jusqu’à 50 mètres du sorcier. Toute créature de taille moyenne ou inférieure sur la trajectoire de la crevasse effectue un Test d’Esquive (+20) VS Chute de 5 Mètres. Pour sortir de la crevasse, il faut effectuer un Test Étendu d’Escalade (+20). Si +4 DR au-dessus de +0, la crevasse s’élargit à 2 mètres et impacte les créatures de taille grande. Remarque : si la crevasse rencontre un obstacle, elle l’endommage. Les murs s’écroulent, les édifices sont grandement fragilisés. Dans une caverne ou une grotte, cela peut conduire à un éboulement effroyable. Les dégâts sont encore plus important avec une crevasse large de 2 mètres !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 367
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "crue-mortelle",
+    "label": "Crue Mortelle",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "13",
+    "range": {
+      "kind": "distance",
+      "value": 9,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spéci al"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 1,
+      "unit": "hours"
+    },
+    "desc": "Pour lancer ce sort, le mage doit noyer une personne volontairement. Une fois le sort lancé, le niveau des eaux monte ou descend, au choix du mage, dans un rayon de 1 kilomètre. Le niveau d’eau change de 30 centimètres par DR du Test de Langue (Magick). En fonction de la topographie, la vague peut emporter des personnes, détruire des ponts de bois, endommager des moulins, détruire des récoltes…",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 502
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "culpabilite",
+    "label": "Culpabilité",
+    "type": "Bénédiction",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La cible doit effectuer un Test de FM (+20) pour aller à l’encontre de l’un des Commandements (Stricture) de la Foi Antique. En cas d’échec au Test de FM, la cible ne fait rien pendant un Round entier (ni Mouvement ni Action), rongée par le remord et la honte.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 78
+    },
+    "family": "beni"
+  },
+  {
+    "id": "decharge-cerebrale",
+    "label": "Décharge Cérébrale",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "8",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le démon provoque chez sa cible une décharge de plaisir insoutenable. La cible se met à saigner des yeux, des oreilles et du nez : on détermine un Coup Critique à la tête en ignorant tout effet de fracture.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 289
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "demangeaison-agacante",
+    "label": "Démangeaison Agaçante",
+    "type": "Sort",
+    "subType": null,
+    "cn": "3",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "3 Tours"
+    },
+    "desc": "Le shaman peau-verte envoie des spores sur sa cible en battant des mains. Les spores atteignent nez, gorge, oreilles, yeux… de la cible. Elle démangent affreusement : Malus -1 DR àTOUSles Tests. Le Malus pass à -2 DR si la cible porte une armure métallique.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 448
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "depecage",
+    "label": "Dépeçage",
+    "type": "du Domaine de la Ruine",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 2,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Projectile magique qui inflige 6 Points de Dégâts (pas d’armure).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 361
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "desarroi",
+    "label": "Désarroi",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "12",
+    "range": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 10
+    },
+    "duration": {
+      "kind": "special",
+      "text": "10 Tours"
+    },
+    "desc": "Version étendu du sort « Introspection » (Acquiescence). Les cibles dans la zone d’effet du sort contemplent avec désarroi leurs échecs successifs et répétés. Leur Initiative est réduite à 10. Au moment de leur Tour de jeu, les cibles se déplacent en pleurnichant dans une direction aléatoire déterminée par le MJ. Chaque cible ne peut effectuer une Action qu’en réussissant un Test de Calme (+0). Sinon elle est trop occupé à se plaindre.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 297
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "disparition",
+    "label": "Disparition",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "11",
+    "range": {
+      "kind": "distance",
+      "value": 7,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "7 Max"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 7,
+      "unit": "days"
+    },
+    "desc": "Une créature qui meurt alors que ce sort était actif voit son corps se dissoudre rapidement en une masse noire informe et gluante. Les Assassins du Clan Eshin ont souvent ce sort actif en mission.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 380
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "douces-paroles",
+    "label": "Douces Paroles",
+    "type": "Sort",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "3 Tours"
+    },
+    "desc": "Le peau-verte s’exprime en langage humain châtié.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 448
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "dressage-de-rhya",
+    "label": "Dressage de Rhya",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Si la prêtresse croise une bête sauvage non-corrompue de Taille Grande ou plus petite, elle peut effectuer un Test d’Emprise sur Animaux (+20). En cas de réussite, la bête sauvage se montrera docile envers les humains et les elfes ainsi que les amis et alliés de la prêtresse. La bête sauvage pourra obéir à des ordres simples mais elle refusera de quitter son territoire.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 155
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "duplicite-de-tzeentch",
+    "label": "Duplicité de Tzeentch",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 85,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "8 Tours"
+    },
+    "desc": "Pendant la durée du sort, la cible est perturbée et ne peut plu se servir d’AUCUN Talents ni d’AUCUNE Compétences. Il n’a accès qu’à ses valeurs de Caractéristiques brutes (celles à la Création de PJ).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 326
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "eau-pure",
+    "label": "Eau Pure",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 1,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sort purifie l’eau dans un petit contenant (carafe, gourde, outre…). Il élimine poisons, impuretés, parasites…",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 139
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "eclat",
+    "label": "Éclat",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 6
+    },
+    "desc": "Si le Test de Mêlée (Bagarre) qui suit le sort est réussi, la cible subit 1 État « Aveuglé ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 246
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "effigie-maudite",
+    "label": "Effigie Maudite",
+    "type": "Magie des Arcanes & de Sorcellerie",
+    "subType": null,
+    "cn": "9",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "3 Tours"
+    },
+    "desc": "La sorcière utilise une poupée ou une marionnette sensée représenter sa cible. Elle y enfonce des aiguilles. Suivant les membres touchés, elle inflige les effets suivants : Jambe : la cible est comme amputée. Si elle est debout, elle chute : État « À Terre ». Bras : comme amputé. La cible lâche immédiatement ce qu’elle tient en main. Tronc : la cible se tord de douleur. 1 État « Fatigue » + 1 État « À Terre ». Tête : 1 État « Étourdi ». Test Résistance (+20) VS État « Inconscient ». Tant que le sort est effectif, à chaque Tour la sorcière peut tenter un Test de Focalisation (+0) pour toucher une autre partie du corps ou la même partie si l’issue n’est pas satisfaisante.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 147
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "entrave",
+    "label": "Entrave",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": "3",
+    "range": {
+      "kind": "distance",
+      "value": 80,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "desc": "La cible du vampire subit un État « Entravé » avec une Force de 60. En cas d’Incantation Critique, l’adversaire subit un État « Entravé » additionnel pour chaque +2 DR au- dessus du NI.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 570
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "espionnage",
+    "label": "Espionnage",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 40,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 4,
+      "unit": "minutes"
+    },
+    "desc": "Le sorcier entend la conversation comme s’il était à côté de la personne qui parle.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 267
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "esprit-enfievre",
+    "label": "Esprit Enfiévré",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 90,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "La cible du sort effectue un Test de Calme (+0) VS 1 Point de Corruption. Pour chaque +2 DR au- dessus de +0, on ajoute +1 Point de Corruption en cas d’échec au Test de Calme. Si la cible développe une mutation suite à ce sort, il s’agit forcément d’une mutation psychologique. Lorsque la mutation a lieu, la cible subit 1 État « En Feu » au niveau de la tête !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 329
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "explosion-de-dhar",
+    "label": "Explosion de Dhar",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 80,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 8
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Projectile magique infligeant 13 Points de Dégâts + Test Résistance (+0) VS 1 Point de Corruption à toutes les créatures dans la zone.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 253
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "fatigue",
+    "label": "Fatigue",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Après un Test de Mêlée réussi, le sort inflige 3 Points de Dégâts et la sorcière récupère 1 Point de Blessure",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 144
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "faux-semblant",
+    "label": "Faux- Semblant",
+    "type": "Magie des Arcanes & de Sorcellerie",
+    "subType": null,
+    "cn": "3",
+    "range": {
+      "kind": "special",
+      "text": "Sorcière"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Sorcière"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 30,
+      "unit": "minutes"
+    },
+    "desc": "Pendant la durée du sort, personne ne peut détecter que la sorcière en est une, par aucun moyen. Cependant, si la sorcière lance un sort pendant cette durée, son camouflage disparaît.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 147
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "faveur-du-rat-cornu",
+    "label": "Faveur du Rat Cornu",
+    "type": "Magie Mineure Skaven",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 13,
+      "unit": "hours"
+    },
+    "desc": "Le Mage gagne +1 Point de Détermination. Remarque: impossible de relancer le sort pendant les 13 heures suivantes.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 416
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "felure-aethyrique",
+    "label": "Fêlure AEthyrique",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "3",
+    "range": {
+      "kind": "distance",
+      "value": 70,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 7
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 7
+    },
+    "desc": "Le sorcier crée une fêlure dans la zone visée entre le monde réel et les dimensions chaotiques. On divise par 2 le NI des sorts qui sont lancés depuis cette zone ! De plus les Tests de Langue (Magick) et de Focalisation ont un Bonus de +20. Toute créature dans la zone effectue un Test de Résistance (+20) VS 1 Point de Corruption à la fin de chaque Tour.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 249
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "fers-de",
+    "label": "Fers de",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Pendant la durée du miracle, si une personne prétend ne pas avoir commis de crime alors que c’est faux, il souffre d’un État « Enchevêtré » avec ses vêtements, ses lacets, etc. Si le prêtre a en revanche injustement accusé un innocent, le prêtre gagne 1 Point de Péché et lance immédiatement les dés sur la Table du Courroux Divin.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 94
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "fertilisation",
+    "label": "Fertilisation",
+    "type": "Magie des Arcanes & des Taillis",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sort garantit une bonne récolte à un champ, quelles que soient les conditions météos.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 142
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "feu-follet",
+    "label": "Feu Follet",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 30,
+      "unit": "minutes"
+    },
+    "desc": "Le PJ crée DR feux follets (Max = Bonus Int). Avec un Test de Focalisation (+20), le PJ peut faire bouger ces lumières en ligne droite. Le PJ doit voir les lumières pour les contrôler. M = 4. Un nouveau Test est nécessaire pour changer de direction.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 139
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "flamme",
+    "label": "Flamme",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Shaman"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Shaman"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 6
+    },
+    "desc": "Une flamme apparaît dans la paume du Shaman. Elle éclaire, réchauffe et peut enflammer autre chose.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 246
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "flamme-verdatre",
+    "label": "Flamme Verdâtre",
+    "type": "du Domaine de la Ruine",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 20,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 1,
+      "unit": "hours"
+    },
+    "desc": "Le mage fait apparaître une bulle gazeuse qui s’enflamme dans les airs. S’il s'en sert de source lumineuse, elle éclaire comme une torche pendant 1 heure. S’il s’en sert de projectile, le mage utilise la Compétence Tir (Jet / Lancer). Le projectile inflige 5 Points de Dégâts (armures OK).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 361
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "flammes-bleues-de-tzeentch",
+    "label": "Flammes Bleues de Tzeentch",
+    "type": "Sort",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 3
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Projectile magique infligeant 6 Points de Dégâts (Armure OK) + 1 État « En Feu » à toutes les créatures dans la zone. Si l’une des créature tombe à 0 PB à cause du sort ou de l’État « En Feu », on lance un D10. Si le résultat est « 9 », la créature meurt déchiquetée par 2 Horreurs Bleues qui surgissent de son corps !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 321
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "flammes-roses-de-tzeentch",
+    "label": "Flammes Roses de Tzeentch",
+    "type": "Sort",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 50,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Projectile magique infligeant 13 Points de Dégâts (Armure OK) + 1 État « En Feu ». Si la cible tombe à 0 PB à cause du sort ou de l’État « En Feu », on lance un D10. Si le résultat est « 9 », la cible meurt déchiquetée par 1 Horreur Rose qui surgit de son corps !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 320
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "forme-spectrale",
+    "label": "Forme Spectrale",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": "4",
+    "range": {
+      "kind": "special",
+      "text": "Sorcier"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Sorcier"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 7
+    },
+    "desc": "Le nécromancien devient « Éthéré » : il peut passer à travers les objets solides (portes, murs) et ne peut être blessé qu’avec des armes magiques ou des sorts.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 522
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "frenesie-artificielle",
+    "label": "Frénésie Artificielle",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": "1",
+    "range": {
+      "kind": "distance",
+      "value": 4,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 Créature Artificielle"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le nécromancien déclenche l’État « Frénésie » chez une créature artificielle (zombie, squelette…).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 516
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "furoncle-infecte",
+    "label": "Furoncle Infecté",
+    "type": "Sort",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 8,
+      "unit": "hours"
+    },
+    "desc": "Le sort fait surgir un furoncle gorgé de pus. Le furoncle peut rester en l’état pour une durée indéterminée. Un démon peut avoir jusqu’à 7 furoncles sur son corps. En perçant le furoncle, le démon encaisse 1 PB puis récupère le pus qui en sort. Il peut enduire une arme avec. Si une telle arme inflige au moins 1 PB, la cible effectue un Test de Résistance (-20) VS 8 PB additionnels.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 305
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "haine-du-faible",
+    "label": "Haine du Faible",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "À chaque Tour, le prêtre peut relancer les dés en cas d’attaque ratée.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 92
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "haleine-fetide",
+    "label": "Haleine Fétide",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "8",
+    "range": {
+      "kind": "distance",
+      "value": 8,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "cone",
+      "lengthMeters": 8,
+      "widthMeters": 2
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le démon exhale une haleine fétide. Quiconque est dans la zone d’effet effectue un Test de Résistance (-10) VS 8 PB (pas d’armures). Pour chaque +2 DR au-dessus de +0, la largeur peut augmenter de +1 Mètre.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 310
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "hebetement",
+    "label": "Hébètement",
+    "type": "du Domaine de la Ruine",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 2,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sorcier envoie une étincelle depuis son doigt vers sa cible. La cible effectue un test de Résistance (+0) VS 1 État « Étourdi ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 361
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "immuno-deficience",
+    "label": "Immuno - Déficience",
+    "type": "du Domaine de la Peste",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 4,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 24,
+      "unit": "hours"
+    },
+    "desc": "La cible effectue un Test de Résistance (+0). En cas d’échec, elle a un Malus de -20 pour résister aux maladies pendant 24 heures.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 386
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "instinct-animal",
+    "label": "Instinct Animal",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La cible bénéficie d’un niveau du Talent « Acuité Sensorielle ». Elle doit choisir l'un des cinq sens. Par ailleurs, si la cible dort, elle se réveille si une menace potentielle est à moins de (Initiative) mètres.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 161
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "introspection",
+    "label": "Introspection",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 85,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "8 Tours"
+    },
+    "desc": "La cible contemple avec désarroi ses échecs successifs et répétés. Son Initiative est réduite à 10. Au moment de son Tour de jeu, la cible se déplace en pleurnichant dans une direction aléatoire déterminée par le MJ. La cible ne peut effectuer une Action qu’en réussissant un Test de Calme (+0). Sinon il est trop occupé à se plaindre.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 289
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "justice",
+    "label": "Justice",
+    "type": "Bénédiction",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "l’arme de la cible devient « Magique ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 89
+    },
+    "family": "beni"
+  },
+  {
+    "id": "la-verite-finit-toujours-par-sortir",
+    "label": "La Vérité finit toujours par sortir",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le prêtre pose UNE question à son interlocuteur. L’interlocuteur effectue un Test Opposé de Calme (+20) VS Prière Prêtre. En cas d’échec, l’interlocuteur DOIT dire TOUTE la vérité en répondant à la question du prêtre. En cas de succès, la situation varie : +2 ou +3 DR = l’interlocuteur ne divulgue pas quelques détails mineurs. +4 ou +5 DR = l’interlocuteur ne divulgue pas certains détails majeurs. +6 DR ou plus = l’interlocuteur peut mentir et envoyé le prêtre sur une fausse piste.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 96
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "langue-aceree",
+    "label": "Langue Acérée",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": 8,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "8 Tours"
+    },
+    "desc": "Le démon projette sa langue devenue un instant protractile. La cible subit 11 Points de Dégâts (pas d’armure).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 11,
+                "ignoreTB": false,
+                "ignoreAP": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 289
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "langue-des-gors",
+    "label": "Langue des Gors",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Sorcier"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Sorcier"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 40,
+      "unit": "minutes"
+    },
+    "desc": "Le sorcier peut échanger normalement avec des gors adeptes du même Dieu.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 267
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "langue-des-pestigors",
+    "label": "Langue des Pestigors",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 75,
+      "unit": "minutes"
+    },
+    "desc": "Le sorcier peut échanger normalement avec des gors adeptes de Nurgle.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 302
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "langue-des-slaangors",
+    "label": "Langue des Slaangors",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 75,
+      "unit": "minutes"
+    },
+    "desc": "Le démon peut échanger normalement avec des gors adeptes de Slaanesh et en particulier leur donner des ordres.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 286
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "langue-des-tzaangors",
+    "label": "Langue des Tzaangors",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "démon"
+    },
+    "target": {
+      "kind": "special",
+      "text": "démon"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 75,
+      "unit": "minutes"
+    },
+    "desc": "Le démon peut échanger normalement avec des gors adeptes de Tzeentch.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 323
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "les-voies-de-la-nature",
+    "label": "Les Voies de la Nature",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "On utilise en général ce miracle avant un long voyage. On note le DR du Test de Prière. Chaque DR permet de relancer les dés pour les activités de voyage (Planification, Voyage, Campement).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 161
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "lune-de-malheur",
+    "label": "Lune de Malheur",
+    "type": "Sort",
+    "subType": null,
+    "cn": "8",
+    "range": {
+      "kind": "distance",
+      "value": 6,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 6
+    },
+    "duration": {
+      "kind": "special",
+      "text": "6 Tours"
+    },
+    "desc": "Le shaman invoque une lune grimaçante qui flotte dans les airs. Les personnes ou créatures dans la zone sont maudites : elles subissent 1 État « Fatigue » et elles ne peuvent pas utiliser de Points de détermination pendant la durée du sort.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 455
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "main-de-rhya",
+    "label": "Main de Rhya",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le prêtre impose les mains à une personne mal en point. Il peut au choix : guérir 5 Points de Blessure ; Annuler 1 Maladie d’origine naturelle. Le miracle met du temps à agir. Il faut une heure pour que les effets apparaissent. Si le prêtre est interrompu dans cet intervalle de temps, le miracle ne fonctionne pas. Il faut recommencer Pour chaque +2 DR au-dessus de +0, le prêtre peut cumuler plusieurs fois l’un des deux effets.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 155
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "maitrise-du-destin",
+    "label": "Maîtrise du Destin",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "8",
+    "range": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 8,
+      "unit": "days"
+    },
+    "desc": "Le démon effectue un Test de Langue (Magick) (+0) après avoir lancer ce sort. Si ce Test est réussi, le démon bénéficie de 1 Point de Détermination par DR au-dessus de +0 pendant toute la durée du sort. Si le Test est raté, le démon encaisse 1 Point de Corruption par DR en-dessous de -0.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 326
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "malveillance-absolue",
+    "label": "Malveillance Absolue",
+    "type": "Sort",
+    "subType": null,
+    "cn": "19",
+    "range": {
+      "kind": "distance",
+      "value": 6,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 6
+    },
+    "duration": {
+      "kind": "special",
+      "text": "6 Tours"
+    },
+    "desc": "Pendant toute la durée du sort, toute attaque réussie par les alliés du shamans déclenche automatiquement un Coup Critique.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 455
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "marque-du-rat-cornu",
+    "label": "Marque du Rat Cornu",
+    "type": "Magie Mineure Skaven",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 5,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 10,
+      "unit": "hours"
+    },
+    "desc": "La cible effectue un Test de Calme (+0). En cas d’échec, elle est marquée du triangle skaven sur le front ou le revers de la main. La marque occasionne un Malus de -10 en Sociabilité avec les autres skavensMAISc'est souvent la marque d’un messager qu’on laisse donc passer partout.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 416
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "marteau-de-justice",
+    "label": "Marteau de Justice",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le prêtre enchante son marteau de guerre. Le marteau devient magique. Il inflige +5 Points de Dégâts en plus des dégâts habituels. En cas d’attaque réussie, la cible souffre d’un État « En Feu » et d’un État « À Terre ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 89
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "modele-de-vertu",
+    "label": "Modèle de Vertu",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Annule les États « En Déroute » (Broken). Les alliés du prêtre bénéficie du Talent « Intrépide » (Fearless). Les peaux-vertes qui peuvent voir le prêtre souffre d’un État « Peur 1 ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 89
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "morsure-d-hiver",
+    "label": "Morsure d’Hiver",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La hache du prêtre devient magique. Elle inflige DR + 12 Points de Dégâts. Toute créature vivante touchée par la hache effectue un Test de Résistance (+0) VS État « Étourdi ». La hache, en revanche, annule tout État « Hémorragie » préalable de la cible. Elle-même ne peut pas causer d’État « Hémorragie ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 92
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "mouchard",
+    "label": "Mouchard",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": "2",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 8,
+      "unit": "hours"
+    },
+    "desc": "Le vampire enchante un objet qui va lui servir d’alarme. Quiconque passe à 8 mètres de l’objet est détecté et déclenche l’alarme qui alerte le vampire si celui-ci est à moins de 2 kilomètres. C’est bien l’objet qui est enchanté, pas la zone surveillée, ce qui signifie que l’objet peut être emporté. Une personne dotée du Talent « Sens de la Magie » peut détecter le mouchard avec un Test d’Intuition (-20).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 570
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "nostrum",
+    "label": "Nostrum",
+    "type": "Magie des Arcanes & des Taillis",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "3 Tours"
+    },
+    "desc": "Le rebouteux « bénit » une décoction d’herbes. Si la mixture est bue dans l’intervalle d’effet du sort, la cible récupère 3 Points de Blessure et est guérie définitivement d’un symptôme de maladie. Pour chaque +2 DR au-dessus de +0, on peut annuler un autre symptôme.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 142
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "nuee",
+    "label": "Nuée",
+    "type": "Magie des Arcanes & de Sorcellerie",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "3 Tours"
+    },
+    "desc": "La sorcière invoque une nuée. Au choix : rats géants, araignées géantes, serpents. Une fois la nuée invoquée, la sorcière peut effectuer un Test Emprise sur Animaux (+0) pour changer de cible.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 147
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "nuee-de-mouches",
+    "label": "Nuée de Mouches",
+    "type": "Sort",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "special",
+      "text": "Démon"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 8
+    },
+    "duration": {
+      "kind": "special",
+      "text": "8 Tours +"
+    },
+    "desc": "Le démon développe le Trait « Distraction ». Les alliés et ennemis à moins de 3 mètres du démon subissent un Malus de -20 àTOUSleurs Tests.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 305
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "oeil-de-lynx",
+    "label": "Oeil de Lynx",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le prêtre invoque un chat. À partir de ce moment, le prêtre perçoit tout à travers le corps du chat (vue, ouïe, odorat…). Bien pratique pour espionner discrètement ! Le chat ne bénéficie pas des compétences et talents du prêtre. Le chat est une créature surnaturelle. Il ne peut être blessé. Attention : pendant la durée du miracle, l’esprit du prêtre est dans le corps du chat. Son propre corps peut donc être en danger…",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 118
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "ouverture",
+    "label": "Ouverture",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sort ouvre les serrures qui nécessiteraient normalement un Test de Crochetage (+0) avec une réussite de +0 DR. Les serrures complexes résistent au sort. Il permet en général d’ouvrir des serrures simples : porte de chambre, porte d’armoire, tiroir de secrétaire… Remarque: ce sort a été bridé car dans sa version initiale il est considéré comme beaucoup trop puissant, surtout pour un sort de magie mineure !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 267
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "pattes-gluantes",
+    "label": "Pattes Gluantes",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "8",
+    "range": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 7,
+      "unit": "minutes"
+    },
+    "desc": "Le skaven gagne le Trait (Wallcrawler) : il peut progresser sur n’importe quelle surface avec sa pleine valeur de Mouvement et sans Tests d’Escalade. Y compris au plafond, la tête à l’envers.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 379
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "pied-leger",
+    "label": "Pied Léger",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Rebouteux"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Rebouteux"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 30,
+      "unit": "minutes"
+    },
+    "desc": "Les matières organiques (herbes, branches, taillis) ne gardent pas trace du passage du PJ. Un poursuivant doit réussir un Test de Pistage (-30) pour le retrouver.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 139
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "pierre-de-souffrance",
+    "label": "Pierre de Souffrance",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "distance",
+      "value": 5,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "5 Tours"
+    },
+    "desc": "La sorcière verse une goutte de sang sur une pierre. Cette pierre peut être utilisée comme arme improvisée ou comme arme de jet. Seule la sorcière peut s’en servir. Si la pierre inflige au moins 1 PB, la cible effectue un Test de Résistance (-10). Si le Test est raté, la cible subit une fracture mineure ! Une fois la fracture infligée, la pierre n’a plus aucun pouvoir.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 497
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "piste-froide",
+    "label": "Piste Froide",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Après avoir commis un crime (cambriolage…), les personnes que croise le PJ l’ignorent, y compris les autorités ou le Guet. Le miracle prend fin si le prêtre commet un nouveau crime. Tant que le miracle est actif, le prêtre a un Malus de -3 DR pour les Tests de Sociabilité car ses interlocuteurs ne parviennent pas à se concentrer sur ce que le prêtre dit.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 119
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "poids-plume",
+    "label": "Poids Plume",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 40,
+      "unit": "minutes"
+    },
+    "desc": "le sorcier semble aussi léger que du liège. Il peut traverser n’importe quelle surface liquide comme si elle était solide. Sur une surface meuble (boue, sable, neige…), le sorcier ne laisse aucune trace. La Compétence « Pistage » se révèle inutile.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 376
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "position",
+    "label": "Position",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "special",
+      "text": "Rebouteux"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Rebouteux"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le PJ sait où est le nord, même en milieu clos.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 139
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "poudre-d-escampette",
+    "label": "Poudre d’Escampette",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "4",
+    "range": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "DR Test + 4 Tours"
+    },
+    "desc": "Le skaven obtient un Bonus de +2 en Mouvement. Pour chaque +2 DR au-dessus de +0, le Mouvement peut encore être augmenté de +1.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 373
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "pourriture",
+    "label": "Pourriture",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 1,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sort fait pourrir ou moisir un volume de matière organique (fruits, légumes, pain, viande, vêtements, cuir, bois…) qui tiendrait dans la main de la sorcière.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 144
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "prise-de-tete",
+    "label": "Prise de Tête",
+    "type": "Sort",
+    "subType": null,
+    "cn": "4",
+    "range": {
+      "kind": "distance",
+      "value": 5,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sort fait bouillir la cervelle de la cible qui subit immédiatement 1 État « À Terre » + 1 État « Étourdi ». Pour chaque +1 DR au-dessus de +0, on ajoute +1 État « Étourdi ». Si le nombre d’État « Étourdi » subis dépasse le Bonus d’Endurance de la cible, elle effectue un Test de Calme (+20). En cas d’échec, la cible encaisse un Coup Critique à la Tête.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 472
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "projectile",
+    "label": "Projectile",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "3",
+    "range": {
+      "kind": "distance",
+      "value": 60,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Projectile magique infligeant 10 Points de Dégâts à sa cible.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 246
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "projectile-de-dhar",
+    "label": "Projectile de Dhar",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "7",
+    "range": {
+      "kind": "distance",
+      "value": 40,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Projectile magique infligeant 10 Points de Dégâts. La cible touchée effectue un Test de Résistance (+0) VS 1 Point de Corruption.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 267
+    },
+    "family": "arcane",
+    "missile": true
+  },
+  {
+    "id": "projectile-mineur",
+    "label": "Projectile Mineur",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 30,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le projectile inflige 3 Points de Dégâts.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 3,
+                "ignoreTB": false,
+                "ignoreAP": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 144
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "rafale-hurlante",
+    "label": "Rafale Hurlante",
+    "type": "du Domaine de la Ruine",
+    "subType": null,
+    "cn": "7",
+    "range": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 4
+    },
+    "duration": {
+      "kind": "special",
+      "text": "4 Tours +"
+    },
+    "desc": "Les ennemis dans la zone ne peuvent pas voler. Les Tirs des ennemis ont un Malus de -10. Les alliés du sorcier ne sont pas affectés.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 364
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "rage-meurtriere",
+    "label": "Rage Meurtrière",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "5",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "4 Tours +"
+    },
+    "desc": "La cible du sort gagne l’État « Frénésie ». Une cible récalcitrante peut tenter de résister en réussissant un test de Calme (+0). En ce cas, la cible perd 1 PB.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 373
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "ramanchage",
+    "label": "Ramanchage",
+    "type": "Magie des Arcanes & des Taillis",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le temps de guérison d’une fracture est réduit de D10 jours + D10 jours par DR au-dessus de +0. Le sort ne peut être lancé qu’une seule fois sur une fracture. Si un personnage a plusieurs membres fracturés, il peut bénéficier d’un sort par membre.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 142
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "rapidite",
+    "label": "Rapidité",
+    "type": "Bénédiction",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Bonus +10 en Initiative (I).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 94
+    },
+    "family": "beni"
+  },
+  {
+    "id": "rat-esclave",
+    "label": "Rat Esclave",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 40,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 10,
+      "unit": "hours"
+    },
+    "desc": "Le skaven invoque un rat ordinaire. Ils se comprennent parfaitement. Le rat obéit à tous les ordres, mêmes les plus suicidaires : ronger un lien, attraper un petit objet… Néanmoins les ordres sont limités par la faible intelligence du rat.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 373
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "regard-lubrique",
+    "label": "Regard Lubrique",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 8,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "desc": "Le démon regarde intensément sa cible. S’il attaque la cible, il peut viser une zone spécifique de son anatomie et ignorer le Malus de -20 pour une telle action.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 288
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "rejeton-de-slaanesh",
+    "label": "Rejeton de Slaanesh",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "10",
+    "range": {
+      "kind": "distance",
+      "value": 10,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Une vague d’énergie frappe la cible. Elle subit 1 Mutation physique ou mentale + 1 autre Mutation par DR au-dessus de +0 !",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 293
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "resistance-du-penitent",
+    "label": "Résistance du Pénitent",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La cible ne ressent aucune douleur. Elle ne souffre d’aucun Malus infligé par des États.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 78
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "robustesse",
+    "label": "Robustesse",
+    "type": "Bénédiction",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Bonus +10 en Endurance (E).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 89
+    },
+    "family": "beni"
+  },
+  {
+    "id": "ruine",
+    "label": "Ruine",
+    "type": "Magie des Arcanes & de Sorcellerie",
+    "subType": null,
+    "cn": "13",
+    "range": {
+      "kind": "distance",
+      "value": 3,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "desc": "La sorcière peut viser un champ, un puit ou un animal domestique. En cas de succès, les effets suivants se manifestent : Puits : eaux stagnantes et non-potable ; Champ : les cultures pourrissent sur pied ; Animal : plus de lait / oeuf, peau / laine inutilisable, viande avariée, animal meurent en 10 - DR jours.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 147
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "saccade",
+    "label": "Saccade",
+    "type": "Magie Mineure",
+    "subType": null,
+    "cn": "0",
+    "range": {
+      "kind": "distance",
+      "value": 10,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le démon fait légèrement bouger un objet moyen (un vase tombe d’une étagère, un livre se referme tout seul…). Si l’objet est tenu par quelqu’un, la cible doit réussir un Test de Dextérité (+20) pour ne pas lâcher l’objet.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 292
+    },
+    "family": "mineure"
+  },
+  {
+    "id": "sagesse-du-hibou",
+    "label": "Sagesse du Hibou",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Les yeux du prêtre remettent à briller. Il bénéficie d’un Bonus de +20 en Intelligence et d’un niveau des Talent « Acuité Sensorielle (Vue) » et « Menaçant ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 96
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "sanctuaire",
+    "label": "Sanctuaire",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Les PJ dans la zone de sanctuaire ont un Bonus de +20 pour les tests VS Peur et Terreur. Morts-vivants et démons ne peuventPASpénétrer dans la zone de sanctuaire. Pour que le sanctuaire reste actif, le prêtre ne doit ni bouger ni entreprendre d’autre action.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 89
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "saut-de-cabri",
+    "label": "Saut de Cabri",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le prêtre bénéficie des Bonus suivants : +1 en Mouvement, +1 niveau du Talent « Jambes Puissantes ». Tous les Tests de sauts sont réussi avec au moins +0 DR (on effectue le Test mais si le Test est raté il est devient +0 DR quand même).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 161
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "secousse-tellurique",
+    "label": "Secousse Tellurique",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 8
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le sorcier frappe le sol du pied, provoquant une secousse. Toute les créatures dans la zoneSAUFle sorcier effectue un Test d’Agilité (+0) VS État « À Terre ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 253
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "shurikens-enchantes",
+    "label": "Shurikens Enchantés",
+    "type": "du Domaine des Ombres",
+    "subType": null,
+    "cn": "8",
+    "range": {
+      "kind": "special",
+      "text": "Skaven"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "7"
+    },
+    "desc": "Le skaven enchante (Bonus FM) shurikens. Une cible de ces shurikens encaissent +(Bonus FM Sorcier) Points de Dégâts en plus des Dégâts normaux. Ces shurikens enchantés ignorent TOUS les Points d’Armure.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 379
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "soins",
+    "label": "Soins",
+    "type": "Bénédiction",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "la cible récupère 1 Point de Blessure",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 78
+    },
+    "family": "beni"
+  },
+  {
+    "id": "soleil-noir",
+    "label": "Soleil Noir",
+    "type": "Sort",
+    "subType": null,
+    "cn": "11",
+    "range": {
+      "kind": "distance",
+      "value": 8,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 8
+    },
+    "duration": {
+      "kind": "special",
+      "text": "8 Tours"
+    },
+    "desc": "Un soleil grimaçant apparaît. Les cibles dans la zone encaisse 8 Points de Dégâts à chaque Tour (armure OK). Les cibles effectue également, à chaque Tour, un Test Résistance (+0) VS 1 État « En Feu ».",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 480
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "sus-a-l-ennemi",
+    "label": "Sus à l’Ennemi !",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Les alliés bénéficient de l’ État Psychologique « Haine » contre les peaux-vertes, les morts-vivants et les serviteurs du chaos.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 89
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "telekinesie",
+    "label": "Télékinésie",
+    "type": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": "4",
+    "range": {
+      "kind": "distance",
+      "value": 80,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 1
+    },
+    "desc": "Le vampire peut faire bouger un objet inerte jusqu’à une taille et un poids équivalents à la sienne. Le déplacement maximum de l’objet est de 9 mètres. Cette distance est augmentée d’autant pour chaque +2 DR au-dessus du NI.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 570
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "terreur-nocturne",
+    "label": "Terreur Nocturne",
+    "type": "Magie des Arcanes & de Sorcellerie",
+    "subType": null,
+    "cn": "7",
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 30,
+      "unit": "days"
+    },
+    "desc": "La sorcière peut maudire un endroit spécifique (une maison, une clairière…). Toute personne qui y pénètre se sent oppressée : 1 État « Fatigue ». Toute personne qui y reste est assaillie d’affreuxses sensations : Test Calme (+0) VS +1 État « Fatigue » + État « En Déroute ». Les État disparaissent en quittant les lieux.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 147
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "treve-de-taal-dsfl",
+    "label": "Trêve de Taal DSFL",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Toutes les bêtes dans la zone d’effet (dont l’Intelligence est inférieure ou égale à 25) deviennent calmes. Elles n’attaquent aucune créature pendant la durée du miracle. Le miracle ne fonctionne pas sur des bipèdes ou des créatures souillées par le chaos. Si on attaque les bêtes sauvages, le miracle prend fin.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 161
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "trouble",
+    "label": "Trouble",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "3",
+    "range": {
+      "kind": "special",
+      "text": "Shaman"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Shaman"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 6
+    },
+    "desc": "La silhouette du Shaman est brouillée. Ses opposants effectuent tous leurs Tests le visant spécifiquement avec un Malus de -20.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 246
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "vague-scelerate",
+    "label": "Vague Scélérate",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": "11",
+    "range": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 9
+    },
+    "duration": {
+      "kind": "special",
+      "text": "1 Tour"
+    },
+    "desc": "Il faut que le mage soit à proximité immédiate d’un fleuve ou d’un lac. Le mage invoque une vague géante qui peut atteindre des cibles à (2 x Bonus FM mage) mètres du bord. C’est une attaque magique qui inflige 10 Points de Dégâts (armure OK) à toute personne ou créature dans la zone d’effet. Celles qui sont entre la source d’eau et la zone d’effet encaissent 5 Points de Dégâts. Toutes ces cibles effectuent un Test d’Athlétisme (+0). En cas d’échec, elles sont entraînées par le reflux et se retrouvent à l’eau à (DR Test Langue (Magick) + DR Test Athlétisme).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 502
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "verena-m-est-temoin",
+    "label": "Verena m’est témoin !",
+    "type": "Miracle",
+    "subType": null,
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Si le prêtre ne dit que des choses vraies alors sont auditoire est bien persuadé qu'il dit la vérité. Ce qui ne veut pas dire que tout l’auditoire est d’accord avec ce que dit le prêtre…",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 94
+    },
+    "family": "invocation"
+  },
+  {
+    "id": "vol",
+    "label": "Vol",
+    "type": "Sort",
+    "subType": null,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "Sorcière"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Sorcière"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 30,
+      "unit": "minutes"
+    },
+    "desc": "La sorcière peut s’envoler à une altitude maximum de 50 mètres. Les adversaires de la sorcière ont un Malus de -20 pour lui tirer dessus et portée est augmentée d’un rang (Portée Moyenne devient Portée Longue, etc).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 146
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "waaagh",
+    "label": "WAAAGH !",
+    "type": "Sort",
+    "subType": null,
+    "cn": "11",
+    "range": {
+      "kind": "special",
+      "text": "Mage"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 85
+    },
+    "duration": {
+      "kind": "special",
+      "text": "8 Tours"
+    },
+    "desc": "Chaque cible dans la zone ajoute +1 Avantage dans la Réserve des Peaux-Vertes. Les alliés du shaman dans la zone perdent leurs États « En Déroute » et gagnent un Bonus de +2 DR pour les Tests de Calme et de Résistance.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 480
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "z-oeils-de-mork",
+    "label": "Z’Oeils de Mork",
+    "type": "Sort",
+    "subType": null,
+    "cn": "4",
+    "range": {
+      "kind": "distance",
+      "value": 55,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Un rayon vert surgit des yeux du shaman. Toute personne ou créature sur la trajectoire du rayon encaisse 4 PB. Les structures dont l’Endurance est inférieure à 65 peuvent également être endommagées.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 472
+    },
+    "family": "arcane"
   }
 ]
