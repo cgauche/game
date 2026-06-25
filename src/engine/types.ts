@@ -704,6 +704,10 @@ export interface Combatant {
    *  même poste ». Attaché au personnage (toutes parties de voyage) ; l'assignation d'un trajet en est
    *  initialisée. Absent ⇒ inféré des compétences (`defaultTravelRole`). Le joueur l'épingle/le change. */
   travelRole?: string;
+  /** Rôle d'ÉQUIPAGE naval ÉPINGLÉ (`id` de `crew-roles.json` : timonier/artilleur/mousse…) — le poste que ce membre
+   *  tient lors des Tests d'équipage du navire (MDG ch.14). Absent ⇒ inféré des compétences (`defaultCrewRole`). Le
+   *  joueur l'épingle/le change via l'interface de gestion du navire (`ShipRolesPanel`). Distinct de `travelRole` (voyage). */
+  shipRole?: string;
   /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
    *  morsure/caudale/pietinement) — pilotée par aiCreatureFreeAttacks à travers la modale de défense. */
   pendingFreeAttacks?: string[];

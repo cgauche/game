@@ -833,6 +833,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.5),
    *  ou le détache (`null` ⇒ rôle inféré). Réutilisé au départ de chaque trajet (0 ré-assignation/jour). */
   setTravelRole: (heroId: string, role: string | null) => void;
+  /** Épingle (`role`) ou détache (`null`) le rôle d'ÉQUIPAGE naval d'un marin (`shipRole`) — interface de gestion
+   *  du navire. Patche `party` ET `battle.combatants` (l'équipage vit dans la bataille en mer). */
+  setShipRole: (crewId: string, role: string | null) => void;
   /** Dernier jour (index d'horloge) traité par l'entretien quotidien (rations/faim) — anti-double-comptage. */
   lastUpkeepDay: number;
   /** Navire de campagne PERSISTANT (MDG ch.13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
@@ -1562,6 +1565,14 @@ export const useGame = create<GameState>((set, get) => ({
   setTravelRole: (heroId, role) => set({
     party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),
   }),
+  setShipRole: (crewId, role) => {
+    const b = get().battle;
+    const patch = (c: Combatant) => c.id === crewId ? { ...c, ...(role ? { shipRole: role } : { shipRole: undefined }) } : c;
+    set({
+      party: get().party.map(patch),
+      ...(b ? { battle: { ...b, combatants: b.combatants.map(patch) } } : {}),
+    });
+  },
   /** Acquitte le récit de voyage. Une EMBUSCADE différée (`recap.then`) se déclenche ICI :
    *  le joueur a lu ce qui lui arrive, le combat démarre — fermer la modale (bouton/Échap)
    *  ne l'évite pas, et `resumeTravel` refuse tant qu'elle n'est pas acquittée. */

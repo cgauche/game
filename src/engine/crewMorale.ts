@@ -19,7 +19,7 @@ import { findTableEntry } from './tables';
 import { rollExpr, type RNG, defaultRNG } from './dice';
 import { rollTest, easeDifficulty } from './tests';
 import { testValue } from './skills';
-import { findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
+import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
 import type { Combatant, Difficulty } from './types';
 
 /** Facteur de Moral (MODIFICATEURS DE MORAL, MDG ch.14) — `effect` = dés signés (« +2d10 », « -3d10 »). */
@@ -175,6 +175,18 @@ export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: num
     if (v > best) { best = v; used = s; }
   }
   return { value: Number.isFinite(best) ? best : 0, used };
+}
+
+/** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) : parmi les 9 rôles navals, celui où SA meilleure compétence
+ *  pertinente est la plus haute. Défaut quand le joueur n'a pas épinglé de `shipRole` (miroir `defaultTravelRole`).
+ *  `null` si aucun rôle ne donne de valeur. PUR. */
+export function defaultCrewRole(crew: Combatant): string | null {
+  let best: { id: string; value: number } | null = null;
+  for (const role of crewRoles) {
+    const v = crewRoleValue(crew, role).value;
+    if (!best || v > best.value) best = { id: role.id, value: v };
+  }
+  return best?.id ?? null;
 }
 
 /**
