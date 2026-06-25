@@ -4,7 +4,7 @@
  */
 import { Combatant, ActiveEffect } from './types';
 import { tickRound } from './duration';
-import { conditionLabel, findConditionById, findPsychologyById } from '../data';
+import { conditionLabel, findConditionById, findPsychologyById, skills } from '../data';
 import { t } from '../i18n';
 import { rule } from './policy';
 import { bonus, effectiveChar } from './characteristics';
@@ -143,9 +143,10 @@ export function combatTestPenalty(c: Combatant): number {
  * passive `testMod` : `combatOnly`/`movementOnly`/`exceptSkills`), lues via passiveMods (kind `etat`).
  * Les États non classables hors combat (Aveuglé=vue, `combatOnly`) sont exclus ici.
  */
-// Tests « impliquant un déplacement » (LDB 16 l.37/l.85), par skillId — classification de COMPÉTENCE (fait
-// de système, ≠ contenu d'État). Acrobaties (spé de Représentation) non classables à l'id de base → non couvertes.
-const MOVEMENT_SKILL = new Set(['athletisme', 'esquive', 'escalade', 'chevaucher', 'natation']);
+// Tests « impliquant un déplacement » (LDB 16 l.37/l.85) — classification DÉRIVÉE de la donnée
+// (`SkillData.movement`, éditable au Codex), plus de liste d'ids en dur. Acrobaties (spé de
+// Représentation) non classables à l'id de base → non couvertes.
+const MOVEMENT_SKILL = new Set(skills.filter((s) => s.movement).map((s) => s.id));
 export function testStatePenalty(c: Combatant, skill?: string): number {
   const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
   if (!c.conditions?.length) return effMod;

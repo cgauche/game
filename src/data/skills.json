@@ -32,7 +32,8 @@
     "source": {
       "book": "LDB",
       "page": 118
-    }
+    },
+    "movement": true
   },
   {
     "id": "calme",
@@ -75,7 +76,8 @@
     "source": {
       "book": "LDB",
       "page": 120
-    }
+    },
+    "movement": true
   },
   {
     "id": "commandement",
@@ -214,7 +216,8 @@
     "source": {
       "book": "LDB",
       "page": 12
-    }
+    },
+    "movement": true
   },
   {
     "id": "escamotage",
@@ -238,7 +241,8 @@
     "source": {
       "book": "LDB",
       "page": 122
-    }
+    },
+    "movement": true
   },
   {
     "id": "evaluation",
@@ -442,7 +446,8 @@
     "source": {
       "book": "LDB",
       "page": 126
-    }
+    },
+    "movement": true
   },
   {
     "id": "orientation",

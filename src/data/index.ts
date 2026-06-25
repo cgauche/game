@@ -126,6 +126,10 @@ export interface SkillData {
   specs: string[];
   desc: string;
   source: { book: string; page: number };
+  /** Test « impliquant un déplacement » (LDB 16 l.37/85) : ciblé par les pénalités d'État À Terre /
+   *  Empêtré (`movementOnly`). Classification de COMPÉTENCE portée par la DONNÉE (éditable au Codex),
+   *  lue par `engine/conditions.testStatePenalty` — plus de liste d'ids en dur. */
+  movement?: boolean;
 }
 export interface TalentData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
