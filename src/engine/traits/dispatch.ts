@@ -44,19 +44,17 @@ export function parseTraitInstance(raw: string): TraitInstance {
 /** Traits dont la valeur est un BONUS de Dégâts signé (« Morsure +9 », « À distance +8 ») — affichés
  *  « +N » et, pour les attaques typées, « Nom +N (Type) » (l'ordre du livre). Les autres traits à
  *  Indice gardent « Nom (Spec) N » (« Immunité (Poison) »), les sauvegardes « Nom N+ » (« Démoniaque 8+ »). */
-const PLUS_DISPLAY = new Set([
-  'Arme', 'À distance', 'Morsure', 'Attaque caudale', 'Cornes', 'Souffle', 'Vomissement',
-  'Langue préhensile', 'Hurlement fantomatique', 'Regard pétrifiant', 'Tentacules', 'Étreinte glaciale',
-].map(slugId));
-
 /** Rendu lisible et FIDÈLE d'un trait structuré (inverse exact de `parseTraitInstance` pour l'affichage)
- *  — inspecteur / Codex / éditeur / libellé d'attaque. Restitue le signe « + » des Dégâts et le « + »
- *  de seuil des sauvegardes, sinon l'Indice nu. */
+ *  — inspecteur / Codex / éditeur / libellé d'attaque. Restitue le signe « + » des Dégâts (attaques),
+ *  le « + » de seuil des sauvegardes, sinon l'Indice nu. La NATURE est lue en DONNÉE (plus de liste en
+ *  dur) : une attaque = trait qui octroie des Manœuvres (`grantsManeuvers`, mêlée) OU est une arme
+ *  naturelle (`capabilities.naturalWeapon`, dont le tir) → sa valeur s'affiche « +Dégâts ». */
 export function formatTrait(t: TraitInstance): string {
+  const td = traitById.get(t.id);
   const label = traitLabelById(t.id);
   const head = t.count != null ? `${t.count} ${label}` : label;
-  const isAttack = PLUS_DISPLAY.has(t.id);
-  const ward = !isAttack && !!traitById.get(t.id)?.capabilities?.wardSave;
+  const isAttack = !!td?.grantsManeuvers || !!td?.capabilities?.naturalWeapon;
+  const ward = !isAttack && !!td?.capabilities?.wardSave;
   const val = t.value == null ? '' : isAttack ? ` +${t.value}` : ward ? ` ${t.value}+` : ` ${t.value}`;
   const arg = t.arg ? ` (${t.arg})` : '';
   const range = t.range != null ? ` (${t.range})` : '';

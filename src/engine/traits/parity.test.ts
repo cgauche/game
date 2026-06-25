@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TRAITS } from './registry';
-import { parseTrait } from './dispatch';
+import { parseTrait, formatTrait } from './dispatch';
+import type { TraitInstance } from '../statEntry';
 import { slugId } from '../../data/slug';
 
 /**
@@ -143,5 +144,16 @@ describe('parité — registre des Traits dérivé de traits.json', () => {
     expect(parseTrait('Taille (Énorme)')).toEqual({ id: 'taille', indice: undefined, arg: 'Énorme' });
     expect(parseTrait('Armure 4')).toEqual({ id: 'armure', indice: 4, arg: undefined });
     expect(parseTrait('Trait inconnu')).toBeNull();
+  });
+
+  // La nature d'affichage est DÉRIVÉE de la donnée (plus de liste en dur PLUS_DISPLAY) :
+  //  attaque (grantsManeuvers mêlée OU capabilities.naturalWeapon, dont le tir) → « +Dégâts » ;
+  //  wardSave → « N+ » ; sinon Indice nu « N ».
+  it('formatTrait : nature « +N » dérivée de la donnée', () => {
+    const fmt = (id: string, value?: number) => formatTrait({ id, ...(value != null ? { value } : {}) } as TraitInstance);
+    expect(fmt('morsure', 9)).toBe('Morsure +9'); // attaque mêlée (grantsManeuvers)
+    expect(fmt('a-distance', 8)).toBe('À distance +8'); // attaque à distance (naturalWeapon ranged)
+    expect(fmt('vol', 100)).toBe('Vol 100'); // indice simple
+    expect(fmt('demoniaque', 8)).toBe('Démoniaque 8+'); // sauvegarde (wardSave)
   });
 });

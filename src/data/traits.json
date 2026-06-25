@@ -8,6 +8,11 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "capabilities": {
+      "naturalWeapon": {
+        "ranged": true
+      }
     }
   },
   {
