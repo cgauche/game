@@ -8301,7 +8301,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 79
     },
     "family": "chaos",
@@ -8346,7 +8346,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 79
     },
     "family": "chaos",
@@ -8403,7 +8403,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 80
     },
     "family": "chaos",
@@ -8469,7 +8469,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 80
     },
     "family": "chaos",
@@ -8512,7 +8512,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 80
     },
     "family": "chaos",
@@ -8572,7 +8572,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 80
     },
     "family": "chaos",
@@ -8621,7 +8621,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 80
     },
     "family": "chaos",
@@ -8667,7 +8667,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 81
     },
     "family": "chaos",
@@ -8719,7 +8719,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 81
     },
     "family": "chaos",
@@ -8907,7 +8907,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 81
     },
     "family": "chaos",
@@ -8952,7 +8952,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 81
     },
     "family": "chaos",
@@ -9022,7 +9022,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 81
     },
     "family": "chaos",
@@ -9077,7 +9077,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 82
     },
     "family": "chaos",
@@ -9128,7 +9128,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 82
     },
     "family": "chaos",
@@ -9200,7 +9200,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 82
     },
     "family": "chaos",
@@ -9249,7 +9249,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 82
     },
     "family": "chaos",
@@ -9296,7 +9296,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 82
     },
     "family": "chaos",
@@ -9343,7 +9343,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 82
     },
     "family": "chaos",
@@ -9398,7 +9398,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 82
     },
     "family": "chaos",
@@ -9456,7 +9456,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 83
     },
     "family": "chaos",
@@ -9502,7 +9502,7 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
       "page": 83
     },
     "family": "chaos",
@@ -9558,7 +9558,60 @@
       ]
     },
     "source": {
-      "book": "EDO",
+      "book": "EDOC",
+      "page": 83
+    },
+    "family": "chaos",
+    "curated": true
+  },
+  {
+    "id": "transformation-de-tzeentch",
+    "label": "Transformation de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 10,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "I"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "FM"
+      }
+    },
+    "desc": "Sur votre ordre, des liens de feu aethyrique s'élèvent de la terre, puis s'enroulent autour de votre Cible, l'enveloppant dans un cocon d'énergie magique. Les Cibles affectées gagnent l'État *À Terre* et sont considérées comme impuissantes pour toute la durée du Sort. Lorsque la Transformation de Tzeentch prend fin, la Cible doit faire un Test de **Résistance Intermédiaire (+0),** auquel vous opposez votre Compétence Langue (Magick). Si elle perd, elle gagne +1 Point de Corruption, +1 Point supplémentaire pour chaque DR d'écart.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "a-terre"
+              },
+              {
+                "op": "narrative",
+                "text": "Transformation de Tzeentch : la Cible est impuissante toute la durée du Sort. À la fin, elle fait un Test de Résistance Intermédiaire (+0) opposé à votre Langue (Magick) ; si elle échoue, +1 Point de Corruption, +1 par DR d’écart — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "EDOC",
       "page": 83
     },
     "family": "chaos",
