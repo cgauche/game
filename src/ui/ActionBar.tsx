@@ -189,6 +189,14 @@ export function ActionBar() {
         exit: { label: '↩ Modale', onClick: () => placeZone(false), primary: false },
       };
     }
+    // Ciblage de BORDÉE (navire) : la barre se transforme — on désigne le navire à canonner (le bord est auto).
+    if (battle.action === 'battery') {
+      return {
+        icon: '🎯', title: 'Bordée',
+        badge: 'Désignez le navire à canonner — bord auto',
+        exit: { label: '↩ Annuler', onClick: () => selectAction(null), primary: false },
+      };
+    }
     return null;
   })();
   if (interlude) {
@@ -351,8 +359,11 @@ export function ActionBar() {
   if (isShip) {
     // Tour du NAVIRE (couche Mer) : Action = Test d'ÉQUIPAGE. Manœuvrer = le barreur vire le cap (Test de
     // Navigation) puis le navire avance le long du cap (l'éperonnage se résout si une coque est devant).
-    // (La Bordée arrive en Phase C′ ; l'IA des navires ennemis en `shipAI`.)
+    // Bordée = Test d'équipage des Artilleurs : on désigne un navire ennemi, le bord qui porte est dérivé de la
+    // cible (`targetArc`) et toutes ses pièces font feu au DR partagé (MDG ch.14 l.128). (IA navire → `shipAI`.)
     slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
+    if ((active.postes ?? []).length > 0)
+      slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: '🎯', label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte (MDG ch.14)`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
     slots.push({ id: 'end-turn', cls: 'ab-end', icon: '⏭️', label: 'Fin du tour', title: `Finir le tour de ${active.name}`, run: onEndTurn });
   }
   hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge

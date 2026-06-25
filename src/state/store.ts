@@ -119,7 +119,7 @@ export interface BattleState {
    *  'cast' = ciblage d'un sort · 'teleport' = case d'arrivée d'une Téléportation · 'resolve'/'ammo'/'heal'
    *  = panneaux (Détermination / munition / soin). La Focalisation / l'usage d'objet / le ramassage NE sont
    *  PAS des modes : ils passent par `battleFocusSpell`→`pendingFocus`, `battleUseItem`, `battlePickup`. */
-  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | 'dispel' | null;
+  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | 'dispel' | 'battery' | null;
   /** Sort sélectionné pour l'action d'incantation en cours (id STABLE — le libellé se résout à l'affichage). */
   selectedSpellId: string | null;
   /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
@@ -538,7 +538,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | null) => void;
+  battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** INFIRMERIE (hors combat, state/medicFlow) : modale de soins persistante — patients, actes

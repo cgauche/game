@@ -452,6 +452,9 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       const target = battle.combatants.find((c) => c.id === id);
       if (!target) return;
+      // Mode BORDÉE (navire) : le clic-ennemi lâche une bordée — le bord qui porte est dérivé de la cible
+      // (`targetArc`, dans battleShipBattery). « Un clic = une bordée » ; ne consomme pas le tour (multi-cibles).
+      if (battle.action === 'battery') { get().battleShipBattery(active.id, target.id); return; }
       if (battle.action === 'cast' && battle.selectedSpellId) {
         // Sort de ZONE : un token n'est pas une cible (la zone se pose après le jet) → modale.
         if (castZoneSpell(get, set, active, battle.selectedSpellId)) return;
@@ -1751,7 +1754,7 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
 
-    battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | null) => {
+    battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | null) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle, scene } = get();
       if (!battle || !scene) return;

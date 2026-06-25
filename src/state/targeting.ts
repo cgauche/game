@@ -11,6 +11,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { findSpellById } from '../data';
 import { combatDistance } from './footprint';
+import { targetArc } from './fireArc';
 import { spellOps } from './flow';
 import type { GameState } from './store';
 import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget, firedAttackBlock } from './combatFlow';
@@ -87,6 +88,19 @@ export function spellAffinity(spell: NonNullable<ReturnType<typeof findSpellById
 export function hoverTargeting(get: () => GameState, active: Combatant, target: Combatant): HoverTargeting {
   const battle = get().battle;
   if (!battle || battle.over || !active.pos || !target.pos) return { kind: 'none' };
+
+  // ── Mode BORDÉE (navire) : le bord qui porte est dérivé de la cible (`targetArc`) ; réticule si une pièce
+  //    du bord porte ET la cible est à portée. ⛔ 'arc' = aucune pièce sur ce bord ; 'range' = hors de portée. ──
+  if (battle.action === 'battery') {
+    if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
+    const side = targetArc(get().facing[active.id] ?? 'N', active.pos, target.pos);
+    const postes = (active.postes ?? []).filter((p) => p.side === side);
+    if (!postes.length) return { kind: 'invalid', reason: 'arc' };
+    const mpt = get().scene?.metresPerTile ?? 2;
+    const maxRange = Math.max(...postes.map((p) => p.item.range ?? 0)); // mètres — la plus longue pièce du bord
+    if (maxRange && combatDistance(active, target) * mpt > maxRange) return { kind: 'invalid', reason: 'range' };
+    return { kind: 'ok', line: 'dashed', title: `Bordée ${side}`, skill: 'Tir de batterie', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  }
 
   // ── Mode incantation : mêmes gates que castSpell (équipe → portée → LdV) ──
   if (battle.action === 'cast' && battle.selectedSpellId) {
