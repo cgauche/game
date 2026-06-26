@@ -4244,10 +4244,15 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // `castConfirm` UNIQUE. PARITÉ RAW (LDB 46 l.201-202) : la fenêtre de Contre-sort s'intercale AVANT la
       // pose (`routeEnemyCast`) ; dissipée → `castConfirm` ne pose RIEN (zone non posée, pending fermé).
       const center = action.center;
-      set({ actorAim: { fromId: enemy.id, toId: enemy.id, kind: 'cast' } });
+      // Télégraphe de ZONE (parité missile) : peint le DISQUE cible (centre + rayon) ~0,7 s avant la
+      // résolution, au lieu de l'ancien `actorAim` dégénéré (ligne enemy→enemy, n'indiquait PAS l'aire).
+      // Rayon = celui du plan de ZdE (`areaSpell`, même sort), repli sur `zdeRadiusTiles` du sort résolu.
+      const aoeSp = resolveSpell(action.spell);
+      const aoeRadius = areaSpell?.radius ?? (aoeSp ? zdeRadiusTiles(aoeSp.target, enemy) ?? 1 : 1);
+      set({ actorAoe: { casterId: enemy.id, center, radius: aoeRadius } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => {
-        set({ actorAim: null });
+        set({ actorAoe: null });
         const b = get().battle;
         if (!b || b.over || !b.combatants.includes(enemy)) return;
         if (!castZoneSpell(get, set, enemy, action.spell)) { advanceTurn(get, set); return; } // pas une zone chiffrable → passe

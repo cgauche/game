@@ -296,6 +296,10 @@ export interface GameState extends RollFlowActionsMap {
   /** Télégraphe de DÉPLACEMENT ENNEMI : chemin (+ destination = dernière case) montré ~0,4 s AVANT que
    *  l'ennemi glisse dessus, pour lire « où il va ». Tracé via movePreviewEls (rouge), comme un aim. */
   actorMove: { id: string; path: { x: number; y: number }[] } | null;
+  /** Télégraphe de ZONE (ZdE) ENNEMI : disque Chebyshev (centre ± rayon) peint ~0,7 s AVANT que le
+   *  sort de zone d'un lanceur IA ne se résolve, pour lire « où l'aire va tomber » (parité avec
+   *  `actorAim` du missile, qui ne sait montrer qu'une ligne from→to inadaptée à une case). */
+  actorAoe: { casterId: string; center: { x: number; y: number }; radius: number } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
    *  clignotant des jauges (ActiveFrame), même source que le tap-1 (`previewResourceDelta`).
    *  Posé par IsoStage au changement de tuile survolée ; null hors survol pertinent. */
