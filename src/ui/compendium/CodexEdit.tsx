@@ -22,6 +22,7 @@ import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
+import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
 import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
@@ -375,30 +376,6 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
   );
 }
 
-const TRIGGER_LABEL: Record<EffectTrigger, string> = {
-  onHit: 'à la touche',
-  onCrit: 'sur un Critique',
-  onWoundLoss: 'quand le porteur perd des PB',
-  onSlain: 'à sa mise hors de combat (mort)',
-  onRoundStart: 'au début de son Round',
-  onStartled: 'magie / bruit fort',
-  onKill: 'quand il neutralise un adversaire',
-  onCharged: 'quand le porteur est Chargé',
-  onGainCondition: 'quand le porteur gagne un État',
-  onCombatStart: 'au début du combat',
-  onCombatEnd: 'à la fin du combat',
-  onRoundEnd: 'à la fin du Round',
-  onTurnStart: 'au début de son tour',
-  onTurnEnd: 'à la fin de son tour',
-  onAttackResolved: 'après une attaque résolue',
-  onCastResolved: 'après une incantation résolue',
-  onMiscast: 'sur une Imparfaite',
-};
-const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
-  self: 'le porteur lui-même',
-  victim: 'la victime touchée',
-  engaged: 'tous ceux Engagés avec lui',
-};
 
 /** Éditeur des EFFETS DÉCLENCHÉS (`TriggeredEffect[]`) — porté indifféremment par un Trait OU un Atout
  *  d'arme. MÊME logique authorée que les sorts : une LISTE d'effets, chacun = un DÉCLENCHEUR (sur

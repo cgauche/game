@@ -9,37 +9,10 @@ import type { CodexRow, CodexSection } from './registry';
 import { opSummary } from '../editor/GameOpEditor';
 import { condSummary } from '../editor/ConditionEditor';
 import type { GameOp } from '../../engine/ops';
-import type { Flow, TriggeredEffect, EffectTrigger } from '../../state/flow';
+import type { Flow, TriggeredEffect } from '../../state/flow';
 import { refLabel } from '../../data';
 import { statName } from '../../engine/statEntry';
-
-const TRIGGER_LABEL: Record<EffectTrigger, string> = {
-  onHit: 'À la touche',
-  onCrit: 'Sur un Critique',
-  onWoundLoss: 'En perdant des PB',
-  onSlain: 'À sa mise hors de combat',
-  onRoundStart: 'Au début du Round',
-  onStartled: 'Surpris (magie / bruit)',
-  onKill: 'En tuant un adversaire',
-  onCharged: 'Quand Chargé',
-  onGainCondition: 'En gagnant un État',
-  onCombatStart: 'Au début du combat',
-  onCombatEnd: 'À la fin du combat',
-  onRoundEnd: 'À la fin du Round',
-  onTurnStart: 'Au début de son tour',
-  onTurnEnd: 'À la fin de son tour',
-  onAttackResolved: 'Après une attaque résolue',
-  onCastResolved: 'Après une incantation résolue',
-  onMiscast: 'Sur une Imparfaite',
-};
-const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
-  self: 'soi-même',
-  victim: 'la victime',
-  engaged: 'les adversaires engagés',
-};
-/** Libellé de la CIBLE d'un effet déclenché — chaîne simple OU géométrie (`{near, radiusMeters}`). */
-const onLabel = (on: TriggeredEffect['on']): string =>
-  typeof on === 'object' ? `les cibles à ≤ ${on.radiusMeters} m de ${on.near === 'self' ? 'soi' : 'la victime'}` : ON_LABEL[on];
+import { TRIGGER_LABEL, onLabel } from './triggerLabels';
 
 /** Octrois de carrière (`grantCareerSkill`/`grantCareerTalent`) — affichés à part (cross-réf cliquable),
  *  jamais comme « modificateur continu ». Filtrés ici pour ne pas doublonner avec `careerGrantSection`. */
