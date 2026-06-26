@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { talentTestSLBonus } from './magic';
+import { talents, skills } from '../data';
 import type { Combatant } from './types';
 
 /**
@@ -30,6 +31,12 @@ describe('talentTestSLBonus — règle LDB 10 universelle (matcher structuré te
     expect(talentTestSLBonus(m, { skill: 'metier' })).toBe(0); // une spec d’instance est EXIGÉE
   });
 
+  it('exceptSpec : Linguistique booste les langues de communication, PAS Langue (Magick)', () => {
+    const l = c([{ talentId: 'linguistique', times: 3 }]);
+    expect(talentTestSLBonus(l, { skill: 'langue', spec: 'Bretonnien' })).toBe(3);
+    expect(talentTestSLBonus(l, { skill: 'langue', spec: 'Magick' })).toBe(0); // desc : « ne fonctionne pas avec Langue (Magick) »
+  });
+
   it('manual (contexte narratif) : Haine ne s’applique JAMAIS automatiquement', () => {
     expect(talentTestSLBonus(c([{ talentId: 'haine', times: 3 }]), { char: 'FM' })).toBe(0);
   });
@@ -39,5 +46,21 @@ describe('talentTestSLBonus — règle LDB 10 universelle (matcher structuré te
     expect(talentTestSLBonus(v, { skill: 'perception' }, () => true)).toBe(1);
     expect(talentTestSLBonus(v, { skill: 'perception' }, () => false)).toBe(0);
     expect(talentTestSLBonus(v, { skill: 'perception' })).toBe(0); // défaut conservateur : when non vérifié → pas appliqué
+  });
+});
+
+describe('Intégrité des talent.test.matches (garde de curation)', () => {
+  const skillIds = new Set(skills.map((s) => s.id));
+  const CHARS = new Set(['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc']);
+  it('chaque match a skill XOR char, et l’id/la Caractéristique résout', () => {
+    const bad: string[] = [];
+    for (const t of talents) {
+      for (const m of t.test?.matches ?? []) {
+        if ((m.skill != null) === (m.char != null)) bad.push(`${t.id}: match doit avoir skill XOR char`);
+        if (m.skill != null && !skillIds.has(m.skill)) bad.push(`${t.id}: skill '${m.skill}' inconnu`);
+        if (m.char != null && !CHARS.has(m.char)) bad.push(`${t.id}: char '${m.char}' inconnu`);
+      }
+    }
+    expect(bad).toEqual([]);
   });
 });

@@ -20,7 +20,16 @@
     },
     "test": {
       "raw": "Tests d'Esquive à cheval, Chevaucher (Cheval)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "esquive",
+          "manual": true
+        },
+        {
+          "skill": "chevaucher",
+          "spec": "Cheval"
+        }
+      ]
     },
     "desc": "Vous êtes capable de prouesses incroyables à cheval. Vous pouvez utiliser n'importe laquelle de vos Compétences Représentation, et Esquive non modifiée, quand vous êtes à cheval. De plus, quand vous êtes en selle, vous pouvez effectuer votre Mouvement au début du Round au lieu de votre Tour.",
     "specs": [],
@@ -58,7 +67,11 @@
     },
     "test": {
       "raw": "Emprise sur les animaux",
-      "matches": []
+      "matches": [
+        {
+          "skill": "emprise-sur-les-animaux"
+        }
+      ]
     },
     "desc": "Les animaux sauvages se sentent en confiance en votre présence, et ont tendance à vous suivre. Toutes les créatures avec le Trait Bestial non dressées à être agressives seront automatiquement calmes en votre présence, à moins qu'elles n'aient une raison de ne pas l'être, comme la douleur, une attaque, une hyper agressivité naturelle ou un jeune à proximité.",
     "specs": [],
@@ -131,7 +144,12 @@
     },
     "test": {
       "raw": "Art (Au choix)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "art",
+          "specFromInstance": true
+        }
+      ]
     },
     "desc": "Vous possédez un talent naturel pour l'art, et vous pouvez produire des dessins précis avec un peu de temps et le support approprié. Cette capacité offre plusieurs usages dans le jeu, allant de la création d'avis de recherche à l'illustration de journaux spécialisés, et présente des Avantages spécifiques déterminés par le MJ. Ajoutez également Art (Au choix) à n'importe quelle Carrière que vous entamez ; si c'est déjà inclus dans la Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
     "specs": [
@@ -167,7 +185,12 @@
     },
     "test": {
       "raw": "Corps à corps quand vous effectuez des attaques supplémentaires",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vos coups se succèdent rapidement et pleuvent sur vos adversaires avec la fureur d'Ulric. Une fois par Round, si vous touchez un adversaire en combat rapproché, vous pouvez immédiatement dépenser un Avantage ou votre Mouvement pour effectuer une attaque supplémentaire (en supposant qu'il vous reste votre Mouvement).",
     "specs": [],
@@ -208,7 +231,12 @@
     },
     "test": {
       "raw": "Test de Charme pour influencer ceux qui vous trouvent attirant.",
-      "matches": []
+      "matches": [
+        {
+          "skill": "charme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Que ce soit votre regard perçant, votre corps musclé, ou peut- être l'éclat de vos dents parfaites, vous savez comment utiliser au mieux ce que les dieux vous ont offert. Quand vous réussissez à utiliser Charme pour influencer ceux qui vous trouvent Attirant, vous pouvez choisir d'utiliser soit le DR de votre lancer, soit le nombre des unités obtenu sur votre dé. Donc, une réussite de 63 peut être utilisée comme un DR de +3. ",
     "specs": [],
@@ -226,7 +254,12 @@
     },
     "test": {
       "raw": "Charme pour Baratiner",
-      "matches": []
+      "matches": [
+        {
+          "skill": "charme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Appelé « parler à tort et à travers » dans le Nordland, ou simplement « raconter des âneries » au Ostland, Baratiner consiste à parler rapidement de façon incessante, ou parler longuement de façon volubile, en parlant de choses sans importance ou n'ayant aucun sens, pour embrouiller et déconcerter verbalement une cible. Vous utilisez votre Compétence Charme pour Baratiner. Tentez un Test opposé Charme/Intelligence. Un succès donne à votre adversaire un État Sonné. De plus, pour chaque niveau que vous possédez dans ce Talent, votre adversaire gagne un État Sonné supplémentaire. Les cibles Sonnées grâce à Baratiner ne peuvent rien faire d'autre que vous regarder, médusées et essayant de suivre ou de comprendre ce que vous racontez. Une fois que le dernier État Sonné touche à sa fin, la cible peut enfin placer un mot, et peut ne pas être très contente de vous. Après tout, vous avez parlé de choses sans importance ou n'ayant aucun sens pendant assez longtemps. Si vous arrêtez de parler, votre adversaire perd imm��diatement tout État Sonné causés par votre Talent Baratiner. En général, vous ne pouvez tenter de Baratiner un Personnage qu'une seule fois par scène, ou plus longtemps (le MJ détermine ce point), car la cible ne tarde pas à prendre conscience de vos simagrées.",
     "specs": [],
@@ -244,7 +277,12 @@
     },
     "test": {
       "raw": "Corps à corps pour effectuer une manœuvre de Battement",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes entraîné à effectuer des frappes précises contrôlées sur l'arme de votre adversaire, créant une ouverture pour une attaque ou empêchant simplement une attaque de vous atteindre. Pour votre Action, vous pouvez choisir Battement avant de lancer les dés. Effectuez un Test de Corps à corps ; sur un succès, votre adversaire perd -1 Avantage et -1 de plus par DR que vous avez obtenu. Ce Test n'est pas opposé. Ce Talent est inutile si votre adversaire ne porte pas d'arme, ou est d'une Taille supérieure à la vôtre (voir page 342).",
     "specs": [],
@@ -303,7 +341,12 @@
     },
     "test": {
       "raw": "Tests d'Athlétisme pour traverser le Terrain",
-      "matches": []
+      "matches": [
+        {
+          "skill": "athletisme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes expérimenté dans la traversée de terrains difficiles. Vous ignorez toutes les pénalités de Mouvement lorsque vous traversez un terrain spécifique. Les spécialisations courantes incluent : Littoral, Déserts, Marécages, Rocailleux, Toundra, Régions boisées.",
     "specs": [
@@ -348,7 +391,12 @@
     },
     "test": {
       "raw": "Tests de Métier pour réparer des objets cassés",
-      "matches": []
+      "matches": [
+        {
+          "skill": "metier",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes une sorte de touche-à-tout, capable de réparer presque n'importe quoi. Vous considérez toutes les Compétences Métier non magiques comme étant de Base lorsque vous réparez des objets cassés.",
     "specs": [],
@@ -366,7 +414,12 @@
     },
     "test": {
       "raw": "Tests de Résistance pour résister à la faim",
-      "matches": []
+      "matches": [
+        {
+          "skill": "resistance",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous avez l'habitude de vous débrouiller avec peu, et savez comment survivre aux périodes de vache maigre. Vous pouvez subsister avec la moitié de la nourriture nécessaire sans pénalités négatives (vous empêchant d'avoir réellement faim), et vous avez seulement besoin d'effectuer un Test concernant la faim tous les 3 jours et pas 2 (voir page 181).",
     "specs": [],
@@ -397,7 +450,15 @@
     },
     "test": {
       "raw": "Chevaucher (Cheval) pendant les combats",
-      "matches": []
+      "matches": [
+        {
+          "skill": "chevaucher",
+          "spec": "Cheval",
+          "when": {
+            "kind": "engaged"
+          }
+        }
+      ]
     },
     "desc": "Vous êtes à l'aise en selle même dans les situations les plus difficiles, et savez comment tirer le meilleur de votre monture pendant les conflits. En supposant que vous possédez la Compétence Chevaucher, vous pouvez directement demander à votre monture d'effectuer une Action, pas seulement un Mouvement, sans Test de Chevaucher.",
     "specs": [],
@@ -437,7 +498,12 @@
     },
     "test": {
       "raw": "Corps à corps sur un Round lorsque vous effectuez une Charge berserk",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous vous précipitez sur vos ennemis avec une témérité sans bornes, utilisant la force de votre charge pour ajouter du poids à vos frappes. Lorsque vous effectuez une Charge berserk, vous infligez +1 point de Dégât par niveau dans ce Talent à toutes les attaques de Corps à corps.",
     "specs": [],
@@ -481,7 +547,12 @@
     },
     "test": {
       "raw": "Tests de Guérison en dehors des Rounds de combat ; quand vous avez le temps de le faire correctement.",
-      "matches": []
+      "matches": [
+        {
+          "skill": "guerison",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes un chirurgien, capable d'ouvrir et de refermer les chairs pour soigner. Vous pouvez traiter n'importe quelle Blessure Critique nécessitant de la Chirurgie. Vous pouvez aussi pratiquer une Chirurgie pour résoudre des problèmes internes avec un Test étendu de Guérison Intermédiaire (+0) dont le DR cible est déterminé par le MJ (en général 5-10) en fonction de la difficulté de la procédure en cours. Cela cause 1d10 Blessures et 1 État Hémorragique par Test, ce qui signifie que la Chirurgie a de fortes chances de tuer le patient si le praticien n'est pas rigoureux. Après la Chirurgie, le patient doit réussir un Test de Résistance Accessible (+20) ou gagner une Infection Mineure (voir page 187).",
     "specs": [],
@@ -502,7 +573,12 @@
     },
     "test": {
       "raw": "Tests de Conduite d'attelage ou de Chevaucher quand vous Fuyez ou lors d'une Course.",
-      "matches": []
+      "matches": [
+        {
+          "skill": "conduite-d-attelage",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous savez comment tirer le meilleur parti de vos animaux. Lorsque l'un des animaux que vous contrôlez Fuit ou Court , il gagne +1 en Mouvement si vous utilisez un fouet.",
     "specs": [],
@@ -520,7 +596,12 @@
     },
     "test": {
       "raw": "Tests de Calme pour retirer les États Brisé",
-      "matches": []
+      "matches": [
+        {
+          "skill": "calme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Peu importe à quel point les choses vont mal, vous persévérez malgré tout. Vous pouvez tenter un Test de Calme pour retirer un État Brisé à la fin de chacun de vos Tours ainsi qu'à la fin du Round (voir page 168 pour plus de détails).",
     "specs": [],
@@ -541,7 +622,12 @@
     },
     "test": {
       "raw": "Corps à corps (Bagarre)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "spec": "Bagarre"
+        }
+      ]
     },
     "desc": "Vous avez appris tous les coups bas du combat à mains nues. Vous pouvez choisir d'infliger +1 Dégât supplémentaire pour chaque niveau de Combat déloyal, pour tous les coups réussis avec Corps à corps (Bagarre).\n\n**Remarque:** utiliser ce Talent sera considéré comme une tricherie dans tout combat officiel.",
     "specs": [],
@@ -580,7 +666,12 @@
     },
     "test": {
       "raw": "Corps à corps quand vous combattez au contact ou que vous allez au contact",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes entraîné à vous placer très près d'un adversaire. Vous ne subissez aucune pénalité pour vous battre contre un adversaire avec une arme plus longue que la vôtre. De plus, si vous utilisez les règles optionnelles de Combat au contact (voir page 297), gagnez un bonus de +10 pour toucher votre adversaire. ",
     "specs": [],
@@ -598,7 +689,12 @@
     },
     "test": {
       "raw": "Esquive dans des environnements clos",
-      "matches": []
+      "matches": [
+        {
+          "skill": "esquive",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous avez appris à tirer le meilleur parti des combats en espace clos. Vous ignorez les pénalités de Corps à corps causées par les espaces confinés, comme les tunnels, les lignes de front, les petites fosses de combat et endroits similaires, et vous pouvez utiliser la Compétence Esquive, même si c'est normalement impossible à cause du manque d'espace.",
     "specs": [],
@@ -616,7 +712,12 @@
     },
     "test": {
       "raw": "Savoir (Apothicaire)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "savoir",
+          "spec": "Apothicaire"
+        }
+      ]
     },
     "desc": "Vous êtes doué pour la fabrication de potions, de philtres et de décoctions. Vous pouvez effectuer gratuitement une Activité Artisanat pour utiliser Savoir (Apothicaire) sans avoir besoin d'Atelier. Les autres Activités Artisanat suivent les règles normales.",
     "specs": [],
@@ -634,7 +735,16 @@
     },
     "test": {
       "raw": "Représentation et Agilité quand vous vous aidez de Contorsionniste",
-      "matches": []
+      "matches": [
+        {
+          "skill": "representation",
+          "manual": true
+        },
+        {
+          "char": "Ag",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous pouvez plier votre corps en une myriade de positions apparemment anormales. Cela vous permet de vous glisser dans des espaces improbables et de manipuler votre corps de façon incroyable, vous offrant des Avantages accordés par le MJ, avec éventuellement un Test d'Agilité réussi.",
     "specs": [],
@@ -652,7 +762,12 @@
     },
     "test": {
       "raw": "Tests de Corps à corps quand vous êtes en Frénésie",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes davantage en mesure de contrôler votre Frénésie en combat. Vous pouvez y mettre fin avec un Test de Calme réussi à la fin du Round.",
     "specs": [],
@@ -688,7 +803,12 @@
     },
     "test": {
       "raw": "Projectiles pour les tirs avec une arme dotée du Défaut Arme d'équipe",
-      "matches": []
+      "matches": [
+        {
+          "skill": "projectiles",
+          "manual": true
+        }
+      ]
     },
     "desc": "Un Personnage doté de ce Talent a l'habitude de gérer des équipes maniant des armes de siège et des pièces d'artillerie. Le Personnage peut effectuer un Test de Commandement Intermédiaire (+0) pour aider une équipe qui utilise une arme possédant le Défaut Arme d'équipe à portée de voix. Si le Personnage réussit le Test, les membres de l'équipe peuvent ensuite utiliser le score de Compétence Projectiles du Personnage quand ils tirent avec l'arme.",
     "specs": [],
@@ -706,7 +826,12 @@
     },
     "test": {
       "raw": "Tests de Force quand vous soulevez",
-      "matches": []
+      "matches": [
+        {
+          "char": "F",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes musclé et habitué à porter des charges lourdes. Augmentez les Points d'Encombrement d'un nombre égal à votre niveau de Costaud x 2.",
     "specs": [],
@@ -727,7 +852,12 @@
     },
     "test": {
       "raw": "Corps à corps quand vous vous trouvez à côté d'un allié avec Coude-à-coude",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous avez été formé à combattre côte à côte avec d'autres soldats. Si un ennemi vous fait perdre des Avantages alors qu'il se tient à côté d'un allié actif possédant le Talent Coude-à- coude, vous pouvez conserver 1 Avantage perdu pour chaque fois que vous avez pris le Talent Coude-à-coude. ",
     "specs": [],
@@ -776,7 +906,12 @@
     },
     "test": {
       "raw": "Tests de Corps à corps concernant ce Talent",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes capable de désarmer un adversaire d'un coup de poignet judicieux ou grâce à une frappe bien ciblée à la main. Pour une Action, vous pouvez tenter un Test opposé Corps à corps/Corps à corps. Sur un succès, votre adversaire perd une arme tenue, qui atterrit à 1d10 x 30 cm dans une direction aléatoire (avec des effets supplémentaires déterminés par le MJ). Si vous réussissez de 2 DR, vous pouvez déterminer à quelle distance l'arme est projetée au lieu d'effectuer un lancer ; si vous gagnez de 4 DR, vous pouvez également choisir la direction dans laquelle est projetée l'arme ; si vous gagnez de 6 DR ou plus, vous pouvez prendre l'arme de votre adversaire si vous avez une main libre, l'attrapant en l'air avec panache. Ce Talent est inutile si votre adversaire n'a pas d'arme, ou s'il est d'une Taille supérieure à la vôtre (voir page 342).",
     "specs": [],
@@ -807,7 +942,12 @@
     },
     "test": {
       "raw": "Tests d'Intuition pour détecter des artefacts magiques",
-      "matches": []
+      "matches": [
+        {
+          "skill": "intuition",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes capable de déceler quand la magie réside dans un artefact. Vous pouvez tenter un Test d'Intuition pour n'importe quel artefact magique touché. Sur un succès, vous sentez que l'objet est magique ; de plus, chaque DR apprend également une règle spéciale spécifique concernant l'objet, s'il en possède. En principe, vous ne pouvez tenter ce Test qu'une seule fois par artefact touché.",
     "specs": [],
@@ -884,7 +1024,12 @@
     },
     "test": {
       "raw": "Athlétisme pour Distraire",
-      "matches": []
+      "matches": [
+        {
+          "skill": "athletisme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes formé à effectuer des mouvements simples pour distraire ou surprendre votre adversaire, détournant les regards de votre véritable intention. Vous pouvez utiliser votre Mouvement pour Distraire. Ceci se résout par un Test opposé d'Athlétisme/Calme. Sur un succès, votre adversaire ne gagne pas d'Avantage jusqu'à la fin du prochain Round.",
     "specs": [],
@@ -948,7 +1093,14 @@
     },
     "test": {
       "raw": "Évaluation, Pari",
-      "matches": []
+      "matches": [
+        {
+          "skill": "evaluation"
+        },
+        {
+          "skill": "pari"
+        }
+      ]
     },
     "desc": "Vous avez un don pour calculer et trouvez facilement la solution de la plupart des problèmes mathématiques. Vous pouvez utiliser une simple calculatrice pour simuler ce que votre PJ est capable de compter mentalement.",
     "specs": [],
@@ -990,7 +1142,12 @@
     },
     "test": {
       "raw": "Corps à corps quand vous forcez ou brisez des objets inanimés",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes expert pour défoncer rapidement les portes et effectuer des effractions. Vous pouvez ajouter +1 Dégât pour chaque niveau dans ce Talent quand vous déterminez les Dégâts infligés à des objets inanimés, tels que des fenêtres, des coffres, des portes et objets similaires.",
     "specs": [],
@@ -1042,7 +1199,11 @@
     "max": 1,
     "test": {
       "raw": "Tout Test faisant appel à Discrétion",
-      "matches": []
+      "matches": [
+        {
+          "skill": "discretion"
+        }
+      ]
     },
     "desc": "Vous portez l'empreinte du Vent de Magie gris, que les personnes dotées de Seconde vue perçoivent comme une brume ténébreuse et changeante qui enveloppe votre corps. Vous pouvez utiliser votre Compétence Focalisation (Ulgu) à la place de Discrétion pour tous les Tests qui y font appel. De plus, toute tentative réussie pour jeter des sorts du Domaine des Ombres à moins de 8 mètres gagne +1 DR. Ce bonus ne peut être obtenu qu'une seule fois, quel que soit le nombre de Personnages avec Empreint d'Ulgu dans le voisinage du lanceur de sorts.",
     "specs": [],
@@ -1073,7 +1234,12 @@
     },
     "test": {
       "raw": "Tests de Charme quand vous argumentez ou débattez",
-      "matches": []
+      "matches": [
+        {
+          "skill": "charme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes habitué à faire valoir vos opinions et à les imposer. Si vous réussissez un Test de Charme pour débattre avec un adversaire, vous pouvez choisir soit d'utiliser le DR de votre lancer, soit le chiffre des unités obtenu sur votre dé. Donc, un lancer réussi de 24 peut être utilisé comme un DR de +4.",
     "specs": [],
@@ -1091,7 +1257,12 @@
     },
     "test": {
       "raw": "Intelligence (Escroquerie)",
-      "matches": []
+      "matches": [
+        {
+          "char": "Int",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes doué pour détourner l'argent de vos employeurs sans vous faire prendre. Chaque fois que vous Gagnez de l'argent (pendant le jeu ou en effectuant une Activité Revenus), vous pouvez tenter un Test opposé d'Intelligence avec votre employeur (en partant du principe que vous en avez un). Si vous gagnez, vous détournez 2d10 + DR sous de cuivre, 1d10 + DR pistoles d'argent, ou 1 + DR couronnes d'or (en fonction de la taille de la transaction en question, déterminée par le MJ) sans vous faire prendre. Si votre employeur gagne de +6 DR, vous gagnez votre argent, mais votre Escroquerie est repérée ; ce qui arrive ensuite est laissé à l'appréciation du MJ. Tout autre résultat signifie que vous avez échoué à escroquer de l'argent.",
     "specs": [],
@@ -1109,7 +1280,12 @@
     },
     "test": {
       "raw": "Commandement pendant la guerre",
-      "matches": []
+      "matches": [
+        {
+          "skill": "commandement",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vos appels exaltants peuvent renverser le cours d'une bataille. Référez-vous au tableau suivant pour voir combien de personnes vous pouvez à présent influencer avec votre Compétence Commandement (voir page 120) lors d'une guerre.\n\n| Talent pris | Nombre de soldats influencés |\n| --- | --- |\n| 1 | Normal x 5 |\n| 2 | Normal x 10 |\n| 3 | Normal x 20 |\n| 4 | Normal x 50 |\n| 5 | Normal x 100 |\n| 6 | Normal x 200 |\n| 7 | Normal x 500 |\n| 8 | Normal x 1000 |\n| 9 | Tous ceux qui peuvent entendre votre voix inspirante |\n\n**Exemple:** le monastère de l'abbesse Brigitte van der Hoogenband est pris d'assaut par les peaux-vertes, et les choses vont mal. De fait, elle décide de renforcer l'esprit de ses soldats avec un Test de Commandement, leur octroyant +10 à tous les Tests de Psychologie. Elle obtient 3 DR à son Test de Commandement. Étant donné qu'elle possède un Bonus de Sociabilité de 6, et qu'elle peut influencer un nombre de soldats, égal à son Bonus de Sociabilité + DR en utilisant Commandement, elle renforce 9 soldats. Cependant, comme elle possède Exaltant 3, ce nombre est multiplié par 20, ce qui signifie que 180 de ses soldats sont inspirés par ses cris d'encouragement « MAINTENEZ LES RANGS ! »",
     "specs": [],
@@ -1127,7 +1303,12 @@
     },
     "test": {
       "raw": "Charme (Mendicité)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "charme",
+          "spec": "Mendicité"
+        }
+      ]
     },
     "desc": "Vous êtes un mendiant expérimenté, capable de faire mettre la main à la poche même aux individus les plus cyniques. Vous pouvez effectuer un Test de Charme toutes les demi-heures quand vous Mendiez, et non toutes les heures (voir page 119).",
     "specs": [],
@@ -1145,7 +1326,13 @@
     },
     "test": {
       "raw": "Corps à corps (Escrime) pour les Feintes",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "spec": "Escrime",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous avez appris comment faire de fausses attaques en combat rapproché pour duper votre adversaire. Vous pouvez à présent faire une Feinte pour votre Action contre tout adversaire utilisant une arme. Cela est résolu avec un Test opposé de Corps à corps (Escrime)/Corps à corps. Si vous gagnez et que vous attaquez le même adversaire avant la fin du prochain Round, vous pourrez ajouter le DR de votre Feinte au résultat de votre jet.",
     "specs": [],
@@ -1163,7 +1350,12 @@
     },
     "test": {
       "raw": "Charme quand vous parlez pour défendre votre cause",
-      "matches": []
+      "matches": [
+        {
+          "skill": "charme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Quand vous parlez pour défendre votre cause, votre situation ou votre religion, vos mots vibrent de passion et d'ardente ferveur. Vous pouvez doubler votre Sociabilité pour calculer le nombre de personnes que vous influencez avec votre Talent Orateur (voir page 142) quand vous défendez votre cause.",
     "specs": [],
@@ -1223,7 +1415,12 @@
     },
     "test": {
       "raw": "Tests de Corps à corps lorsque vous effectuez une Frappe assommante",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous savez où frapper un adversaire pour le faire tomber rapidement. Vous ignorez la pénalité due à la désignation d'une Localisation pour frapper à la Tête quand vous utilisez une arme de Corps à corps avec l'Atout Assommante (voir page 297). De plus, vous considérez toutes les armes improvisées comme ayant l'Atout Assommante.",
     "specs": [],
@@ -1277,7 +1474,12 @@
     },
     "test": {
       "raw": "Tests d'Initiative pour tout ce qui concerne ce Talent",
-      "matches": []
+      "matches": [
+        {
+          "char": "I",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vos réactions rapides vous ont permis de faire tomber de nombreux ennemis avant même qu'ils aient eu le temps de dégainer. Quand vous êtes Chargé, vous pouvez tenter un Test d'Initiative Intermédiaire (+0) pour gagner immédiatement une Attaque gratuite en dehors de la séquence de tours normale. Cette attaque est résolue avec n'importe quelle arme que vous tenez dans votre main principale. Vous pouvez effectuer autant de Frappes réactives pendant un Round que vous possédez de Niveaux dans ce Talent, mais pouvez seulement attaquer chaque individu Chargeant une seule fois.",
     "specs": [],
@@ -1350,7 +1552,12 @@
     },
     "test": {
       "raw": "Athlétisme quand vous Fuyez",
-      "matches": []
+      "matches": [
+        {
+          "skill": "athletisme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Quand votre vie est en jeu, vous êtes capable de courir à une vitesse impressionnante. Votre Attribut de Mouvement compte comme s'il était augmenté de 1 quand vous fuyez (voir page 165).",
     "specs": [],
@@ -1433,7 +1640,12 @@
     },
     "test": {
       "raw": "N'importe quel Test de Savoir concernant les questions fluviales",
-      "matches": []
+      "matches": [
+        {
+          "skill": "savoir",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous connaissez toutes les astuces pour naviguer sur les rivières dangereuses. Vous n'avez pas besoin de Test pour traverser les étendues d'eau perfide jusqu'à ce que la Difficulté soit de -10 ou moins – vous réussissez automatiquement tous les Tests plus faciles. De plus, si vous possédez la Compétence Savoir (Région) appropriée, vous n'avez jamais besoin d'effectuer de Test pour naviguer sur les eaux dangereuses – car on considère que vous connaissez les itinéraires à emprunter.",
     "specs": [],
@@ -1523,7 +1735,13 @@
     },
     "test": {
       "raw": "Tests de Divertissement (Interprétation) pour appuyer vos identités secrètes",
-      "matches": []
+      "matches": [
+        {
+          "skill": "divertissement",
+          "spec": "Interprétation",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous entretenez une identité secrète qui vous permet de paraître plus riche, ou peut-être plus pauvre, que vous ne l'êtes actuellement. Avec l'accord du MJ, choisissez une Carrière. Tant que vous êtes habillé de façon appropriée, vous pouvez utiliser le Statut Social de la Carrière d'emprunt choisie plutôt que celui de la vôtre, pour modifier les Tests de Sociabilité. Vous pouvez même ignorer le Talent Criminel. Cependant, conserver cette identité nécessitera des Tests de Divertissement (Interprétation) quand vous rencontrez ceux qui pourraient déceler votre supercherie. Vous pouvez créer une nouvelle Identité secrète pour chaque Niveau que vous possédez dans ce Talent.",
     "specs": [],
@@ -1541,7 +1759,13 @@
     },
     "test": {
       "raw": "Tests de Divertissement (Interprétation) où les accents sont importants",
-      "matches": []
+      "matches": [
+        {
+          "skill": "divertissement",
+          "spec": "Interprétation",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous avez une bonne oreille pour les accents et dialectes et pour les reproduire avec exactitude. Vous pouvez copier n'importe quel accent auquel vous êtes exposé pendant au moins une journée grâce à un Test d'Initiative ; ce Test peut être tenté une fois par jour. Une fois réussi, vous pouvez toujours imiter l'accent, et les autochtones croiront que vous êtes l'un des leurs.",
     "specs": [],
@@ -1594,7 +1818,12 @@
     },
     "test": {
       "raw": "Tests de Calme pour résister à la panique de la Poudre noire",
-      "matches": []
+      "matches": [
+        {
+          "skill": "calme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes un vétéran blasé qui a survécu à plus d'une rafale de tirs d'armes à Poudre noire. Vous avez besoin d'effectuer un Test de Calme pour résister à un État Brisé, uniquement si vous êtes blessé avec succès par une arme à Poudre noire, et pas juste ciblé (voir page 297).",
     "specs": [],
@@ -1612,7 +1841,14 @@
     },
     "test": {
       "raw": "Ramer et Natation",
-      "matches": []
+      "matches": [
+        {
+          "skill": "ramer"
+        },
+        {
+          "skill": "natation"
+        }
+      ]
     },
     "desc": "Vous avez l'échine solide, rompue au dur labeur. Vous pouvez ajouter vos Niveaux d'Infatigable à votre DR dans tous les Tests opposés de Force et vous pouvez porter un nombre de Points supplémentaires d'Encombrement (voir p293) équivalent à votre Niveau d'Infatigable.",
     "specs": [],
@@ -1630,7 +1866,12 @@
     },
     "test": {
       "raw": "Discrétion quand vous êtes à la vue de tous",
-      "matches": []
+      "matches": [
+        {
+          "skill": "discretion",
+          "manual": true
+        }
+      ]
     },
     "desc": "Les grands et puissants ne prêtent pas attention à votre présence, sachant que vous n'êtes pas digne d'être remarqué. En supposant que vous êtes correctement vêtu et pas dans une position incongrue, les personnes d'un Échelon de Statut plus haut vous ignorent, à moins que votre présence ne soit déplacée, ce qui peut rendre très facile l'écoute de conversations que vous n'êtes peut-être pas censé entendre. De plus, les Personnages d'un Échelon de Statut plus élevé que vous ne gagnent pas d'Avantage lorsqu'ils vous battent en combat, car il n'y a aucun mérite à battre un si pauvre hère.",
     "specs": [],
@@ -1648,7 +1889,12 @@
     },
     "test": {
       "raw": "Tests d'Intelligence pour tout ce qui concerne ce Talent",
-      "matches": []
+      "matches": [
+        {
+          "char": "Int",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes un maître en politique et vous dénichez les conspirations partout où elles se cachent. Une fois par session, vous pouvez poser une question au MJ concernant une situation politique ou une organisation sociale complexe ; le MJ effectuera un Test d'Intelligence secret et vous fournira certaines observations sur la situation en se basant sur votre DR.",
     "specs": [],
@@ -1716,7 +1962,12 @@
     },
     "test": {
       "raw": "Langue (toutes)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "langue",
+          "exceptSpec": "Magick"
+        }
+      ]
     },
     "desc": "Vous avez une affinité naturelle pour les langues. Après un mois passé à écouter n'importe quelle Langue, vous considérez la Compétence Langue associée comme une Compétence de Base grâce à un Test d'Intelligence réussi (qui peut être tenté une fois par mois).\n\n**Remarque:** le Talent Linguistique fonctionne uniquement pour les langues utilisées pour communiquer avec les autres, il ne fonctionne donc pas avec Langue (Magick).",
     "specs": [],
@@ -1747,7 +1998,12 @@
     },
     "test": {
       "raw": "Tests de Perception pour tout ce qui concerne ce Talent",
-      "matches": []
+      "matches": [
+        {
+          "skill": "perception",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous pouvez comprendre ce que les gens disent en fixant simplement leurs lèvres ; vous n'avez pas besoin d'entendre ce qu'ils disent. Si vous disposez d'un point de vue dégagé sur le bas du visage du locuteur, vous pouvez tenter un Test de Perception pour comprendre ce qu'il dit.",
     "specs": [],
@@ -1765,7 +2021,12 @@
     },
     "test": {
       "raw": "Voile (tout vaisseau capable de naviguer en mer)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "voile",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes un marin expérimenté, et vous êtes parfaitement habitué à la vie en mer. Vous pouvez ignorer tous les modificateurs négatifs aux Tests en mer résultant de conditions météorologiques défavorables, du roulis des bateaux, et situations similaires. De plus, vous comptez comme deux marins pour le nombre minimum de membres d'équipage nécessaire pour piloter un navire de haute mer.",
     "specs": [],
@@ -1783,7 +2044,12 @@
     },
     "test": {
       "raw": "Tests de Résistance pour résister à l'État Sonné",
-      "matches": []
+      "matches": [
+        {
+          "skill": "resistance",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes de constitution robuste et pouvez résister aux frappes les plus fortes. Chaque fois que vous gagnez un État Sonné ou plus, vous pouvez immédiatement effectuer un Test de Résistance Intermédiaire (+0) pour en ignorer un, chaque DR supprimant un État Sonné supplémentaire.",
     "specs": [],
@@ -1928,7 +2194,16 @@
     },
     "test": {
       "raw": "Escamotage, Corps à corps (Bagarre) pour toucher un adversaire",
-      "matches": []
+      "matches": [
+        {
+          "skill": "escamotage"
+        },
+        {
+          "skill": "corps-a-corps",
+          "spec": "Bagarre",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous pouvez mouvoir vos mains avec une dextérité incroyable. Les passants ne bénéficient d'aucun Test de Perception passif pour remarquer que vous utilisez la Compétence Escamotage. Au lieu de cela, ils ne peuvent s'opposer à vos Tests d'Escamotage que s'ils vous suspectent activement ou sont à l'affût de vos mouvements. De plus, les tentatives pour utiliser Corps à corps (Bagarre) pour simplement toucher un adversaire gagnent un bonus de +10 x votre Niveau de Mains agiles.",
     "specs": [],
@@ -2021,7 +2296,13 @@
     },
     "test": {
       "raw": "Divertissement (Interprétation) lorsque vous êtes quelqu'un d'autre",
-      "matches": []
+      "matches": [
+        {
+          "skill": "divertissement",
+          "spec": "Interprétation",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous excellez à prendre l'apparence et les manières des autres. Avec rien d'autre que des changements de posture, une torsion du visage et l'utilisation judicieuse de vêtements appropriés, vous ne vous ressemblez plus sans avoir besoin d'utiliser de nécessaire de déguisement, même en vous faisant passer pour quelqu'un de sexe différent.",
     "specs": [],
@@ -2039,7 +2320,16 @@
     },
     "test": {
       "raw": "Pari et Escamotage quand vous jouez à un jeu de dés",
-      "matches": []
+      "matches": [
+        {
+          "skill": "pari",
+          "manual": true
+        },
+        {
+          "skill": "escamotage",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes un maître des jeux de dés, et tous ceux qui affirment que vous trichez ont clairement tort. Quand vous utilisez Pari ou Escamotage de façon réussie avec des dés, vous pouvez choisir soit d'utiliser le DR obtenu, soit le chiffre des unités du dé. Donc, un lancer réussi de 06 peut être utilisé comme un DR de +6. Si vous jouez à des jeux de dés réels pour représenter celui en jeu, lancez toujours un nombre de dés supplémentaires égal à votre niveau de Maîtrise des dés et choisissez les meilleurs résultats.",
     "specs": [],
@@ -2075,7 +2365,16 @@
     },
     "test": {
       "raw": "Corps à corps ou Projectiles si vous attaquez avec deux armes",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        },
+        {
+          "skill": "projectiles",
+          "manual": true
+        }
+      ]
     },
     "desc": "Quand vous êtes équipé de deux armes, vous pouvez attaquer avec les deux pour votre Action. Effectuez un lancer pour toucher avec l'arme tenue par votre main principale. Si vous touchez, déterminez les Dégâts normalement, mais rappelez- vous de conserver votre lancer de dés, car vous l'utiliserez de nouveau. Si la première frappe est réussie, une fois résolue, l'arme dans votre main secondaire peut ensuite viser un adversaire disponible de votre choix en utilisant le même lancer de dés que celui de la première frappe, mais inversé. Donc, si vous avez obtenu 34 pour toucher avec la première arme, vous obtenez 43 pour toucher avec la seconde. Rappelez- vous de modifier ce second lancer avec la pénalité de votre mauvaise main (-20 à moins que vous ne possédiez le Talent Ambidextre). Cette seconde attaque est opposée à un nouveau lancer de défense et les Dégâts pour cette seconde frappe sont calculés normalement. Une exception à cela : si vous obtenez un Critique pour votre première frappe. Si cela se produit, utilisez le lancer du tableau des Critiques pour servir de lancer à la seconde attaque. Donc, si vous infligez un Critique à la tête et lancez un 56 sur le tableau des Critiques et obtenez une Blessure majeure à l'œil, votre seconde attaque aurait donc une valeur de 56. Si vous choisissez d'attaquer avec les deux armes, tous vos lancers défensifs subissent une pénalité de -10 jusqu'au début de votre prochain Tour. Vous ne gagnez pas d'Avantage quand vous réussissez à frapper ou à infliger une Blessure à un adversaire avec le Maniement de deux armes sauf si les deux attaques touchent.",
     "specs": [],
@@ -2098,7 +2397,12 @@
     },
     "test": {
       "raw": "Tests de Voile pour les navires fluviaux.",
-      "matches": []
+      "matches": [
+        {
+          "skill": "voile",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes un navigateur expérimenté en eaux douces, habitué aux navires fluviaux. Vous pouvez ignorer toutes les pénalités à vos Tests quand vous vous trouvez à bord d'une barque qui dérive à cause de tourbillons, de navires qui tanguent, lorsque vous êtes déséquilibré, et autres situations similaires. De plus, vous comptez comme deux bateliers pour le nombre minimum de membres d'équipage nécessaires pour diriger un navire fluvial.",
     "specs": [],
@@ -2139,7 +2443,12 @@
     },
     "test": {
       "raw": "Charme quand vous mentez",
-      "matches": []
+      "matches": [
+        {
+          "skill": "charme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Tel Ranald le dieu de la Duperie, vous mélangez vérité et mensonges comme s'il n'y avait aucune différence. Quand vous utilisez Charme pour mentir, les auditeurs ne peuvent pas s'y opposer avec leur Intuition pour détecter s'il y a quelque chose de douteux dans vos propos.",
     "specs": [],
@@ -2157,7 +2466,11 @@
     },
     "test": {
       "raw": "Natation",
-      "matches": []
+      "matches": [
+        {
+          "skill": "natation"
+        }
+      ]
     },
     "desc": "Vous êtes un nageur particulièrement endurant et habitué à retenir votre souffle pendant une longue période sous l'eau. Gagnez un bonus à votre Bonus d'Endurance égal à votre Niveau de Nageur endurant pour calculer le temps pendant lequel vous retenez votre souffle.",
     "specs": [],
@@ -2188,7 +2501,11 @@
     },
     "test": {
       "raw": "Marchandage",
-      "matches": []
+      "matches": [
+        {
+          "skill": "marchandage"
+        }
+      ]
     },
     "desc": "Vous êtes un homme d'affaires expérimenté qui sait comment conclure un marché. Quand vous utilisez la Compétence Marchandage, vous réduisez ou augmentez le prix des produits de 10 % supplémentaires.\n\n**Remarque:** le MJ peut imposer une réduction inférieure des prix pour montrer qu'un vendeur refuse de vendre à perte.",
     "specs": [],
@@ -2248,7 +2565,12 @@
     },
     "test": {
       "raw": "Tests de Discrétion en environnement Rural",
-      "matches": []
+      "matches": [
+        {
+          "skill": "discretion",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes à l'aise quand vous arpentez les espaces sauvages. Quand vous utilisez Discrétion en environnement rural, ceux qui croisent votre route n'obtiennent pas de Test de Perception passif pour vous détecter ; ils peuvent vous détecter uniquement s'ils sont spécifiquement à l'affût ou à la recherche de personnes cachées.",
     "specs": [],
@@ -2266,7 +2588,12 @@
     },
     "test": {
       "raw": "Évaluation pour établir la valeur de pièces",
-      "matches": []
+      "matches": [
+        {
+          "skill": "evaluation",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous connaissez bien les monnaies du Vieux Monde, et vous êtes un expert pour déterminer leur valeur. Vous pouvez juger de la valeur réelle d'une pièce par votre seule expérience, sans que cela ne nécessite jamais de Test. De plus, vous pouvez identifier des pièces contrefaites avec un simple Test d'Évaluation ; il n'est jamais opposé par le DR du faussaire.",
     "specs": [],
@@ -2339,7 +2666,16 @@
     },
     "test": {
       "raw": "Divertissement (Chant), Langue (Langues tonales, telles que l'elthárin, le cathayan, le Magick)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "divertissement",
+          "spec": "Chant"
+        },
+        {
+          "skill": "langue",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous avez l'oreille absolue, capable de reproduire parfaitement les notes et de les identifier sans jamais avoir besoin d'effectuer de Test. De plus, ajoutez Divertissement (Chant) à n'importe quelle Carrière que vous entamez ; si la Compétence est déjà dans votre Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
     "specs": [],
@@ -2388,7 +2724,12 @@
     },
     "test": {
       "raw": "Tests d'Esquive pour activer ce Talent",
-      "matches": []
+      "matches": [
+        {
+          "skill": "esquive",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes doué pour être là où les armes ennemies ne se trouvent pas. Si vous utilisez Esquive pour vous défendre contre une attaque et gagnez le Test opposé, vous pouvez vous déplacer jusqu'à 2 mètres alors que vous plongez hors de portée, ce qui signifie que vous n'êtes plus Engagé. Aucun de vos adversaires ne gagnera d'Attaque gratuite quand vous faites ce Pas de côté.",
     "specs": [],
@@ -2424,7 +2765,12 @@
     },
     "test": {
       "raw": "Tests d'Intuition pour détecter les Sorciers",
-      "matches": []
+      "matches": [
+        {
+          "skill": "intuition",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes capable de sentir les Vents de la Magie chez les autres. Vous pouvez tenter un Test d'Intuition Accessible (+20) chaque fois que vous rencontrez un lanceur de Sorts. Sur un succès, vous sentez que la cible est un sorcier. De plus, si vous obtenez un Succès Stupéfiant (+6), vous pouvez aussi déterminer la Spécialisation de Focalisation la plus élevée de la cible.",
     "specs": [],
@@ -2442,7 +2788,12 @@
     },
     "test": {
       "raw": "Tests de Résistance pour supporter les difficultés",
-      "matches": []
+      "matches": [
+        {
+          "skill": "resistance",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous n'abandonnez jamais, même si les tâches paraissent impossibles. Vous pouvez doubler le temps que les Tests de Résistance réussis vous accordent pour supporter une difficulté. Cela inclut endurer une chevauchée prolongée, une exposition, des rituels et autres problèmes similaires.",
     "specs": [],
@@ -2534,7 +2885,16 @@
     },
     "test": {
       "raw": "Tests de Ramer ou de Voile pendant que vous naviguez sur des eaux peu sûres",
-      "matches": []
+      "matches": [
+        {
+          "skill": "ramer",
+          "manual": true
+        },
+        {
+          "skill": "voile",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes doué pour diriger des vaisseaux à travers les eaux dangereuses. Si vous ratez un Test pour les traverser, vous pouvez inverser le résultat si cela entraîne un succès ; cependant, si vous le faites, vous ne pouvez pas obtenir plus de +1 DR, car vous repérez le danger imminent au dernier moment.",
     "specs": [],
@@ -2573,7 +2933,11 @@
     },
     "test": {
       "raw": "Commandement",
-      "matches": []
+      "matches": [
+        {
+          "skill": "commandement"
+        }
+      ]
     },
     "desc": "Votre présence emplit les autres de crainte et d'admiration. Votre aura d'autorité est telle que ceux possédant un Statut inférieur ne peuvent pas résister à vos Tests de Commandement avec leur Force Mentale. Évidemment, les ennemis ne sont toujours pas plus enclins à vous respecter ou à vous obéir, mais le commun des mortels se dresse rarement contre vous.",
     "specs": [],
@@ -2606,7 +2970,12 @@
     },
     "test": {
       "raw": "Tests de Discrétion dans les souterrains",
-      "matches": []
+      "matches": [
+        {
+          "skill": "discretion",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes à l'aise dans les tunnels, les égouts et tout autre environnement souterrain. Quand vous y utilisez Discrétion, ceux qui croisent votre chemin n'obtiennent pas de Tests de Perception passifs pour vous détecter ; ils ne peuvent vous remarquer que s'ils sont spécifiquement à l'affût ou à la recherche de personnes cachées.",
     "specs": [],
@@ -2662,7 +3031,12 @@
     },
     "test": {
       "raw": "Corps à corps quand vous vous défendez",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes habitué aux combats désespérés, capable de retourner même les situations les plus désastreuses à votre Avantage. Si vous gagnez le Test opposé de Corps à corps, au lieu de gagner +1 Avantage, vous prenez tous les Avantages actuels de votre adversaire. Dans ce cas, vous ne pouvez infliger aucun Dégât, même si c'était votre Tour dans le Round.",
     "specs": [],
@@ -2725,7 +3099,12 @@
     },
     "test": {
       "raw": "Corps à corps quand vous vous défendez",
-      "matches": []
+      "matches": [
+        {
+          "skill": "corps-a-corps",
+          "manual": true
+        }
+      ]
     },
     "desc": "La meilleure défense c'est l'attaque, donc vous répondez à une attaque par une contre-attaque rapide comme l'éclair. Si votre arme possède l'Atout Rapide, vous pouvez infliger des Dégâts quand vous êtes attaqué, comme si c'était votre Action. Vous pouvez Riposter à un nombre d'attaques par Round égal à votre Niveau de Riposte. ",
     "specs": [],
@@ -2765,7 +3144,12 @@
     },
     "test": {
       "raw": "Calme pour vous opposer à l'Intimidation, la Peur et la Terreur de votre Ennemi",
-      "matches": []
+      "matches": [
+        {
+          "skill": "calme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes suffisamment courageux ou fou pour que la peur de certains ennemis ne soit qu'un lointain souvenir. Avec un seul Test de Calme Accessible (+20), vous pouvez ignorer les effets d'Intimidation, de Peur ou de Terreur de l'ennemi spécifié quand vous le rencontrez. Les ennemis courants comprennent les hommes-bêtes, les peaux-vertes, les hors-la-loi, les vampires, les gardes et les Sorciers dissidents.",
     "specs": [
@@ -2820,7 +3204,12 @@
     },
     "test": {
       "raw": "Savoir (Savoir choisi)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "savoir",
+          "specFromInstance": true
+        }
+      ]
     },
     "desc": "Vous êtes exceptionnellement instruit, et vous possédez un niveau important de connaissances avancées dans un domaine d'études. Vous connaissez automatiquement un nombre d'informations correctes égal à votre Niveau de Savant (Savoir), au sujet d'une question pertinente sans avoir besoin de Test de Compétence Savoir. Les Tests, comme toujours, vous fourniront plus d'informations, déterminées par le MJ. ",
     "specs": [
@@ -2890,7 +3279,16 @@
     },
     "test": {
       "raw": "Charme et Ragot (Groupe Social)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "charme",
+          "manual": true
+        },
+        {
+          "skill": "ragot",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous pouvez vous intégrer socialement au groupe choisi, tant que vous vous habillez et vous comportez de façon appropriée. Voici des exemples de groupes sociaux pour ce Talent : Criminels, Cultistes, Guildes, Nobles, Érudits, Serviteurs et Soldats. Si vous ne possédez pas le Talent, ceux qui le possèdent remarquent votre gêne dans un environnement non familier. Cela concerne principalement l'interprétation du Personnage, mais peut conférer un bonus aux Tests de Sociabilité à la discrétion du MJ.",
     "specs": [
@@ -2935,7 +3333,12 @@
     },
     "test": {
       "raw": "Tests de Commandement pendant la guerre",
-      "matches": []
+      "matches": [
+        {
+          "skill": "commandement",
+          "manual": true
+        }
+      ]
     },
     "desc": "Votre regard sévère et vos mots exaltants incitent vos soldats à se battre jusqu'au bout. Tous les subalternes capables de vous voir peuvent ajouter votre Niveau de Seigneur de guerre au DR d'un Test de Force Mentale par Round. Ce bonus n'est pas cumulatif.",
     "specs": [],
@@ -2953,7 +3356,12 @@
     },
     "test": {
       "raw": "Perception (Sens)",
-      "matches": []
+      "matches": [
+        {
+          "skill": "perception",
+          "manual": true
+        }
+      ]
     },
     "desc": "L'un de vos cinq sens principaux est particulièrement développé, vous permettant de repérer ce qui échappe à d'autres. Vous pouvez effectuer des Tests de Perception pour détecter des détails normalement imperceptibles grâce au sens associé, déterminés par le MJ. Cela peut être : voir un aigle au-delà du champ visuel de tout le monde, sentir un poison presque inodore, entendre la respiration d'une souris immobile dans un mur, percevoir une lettre effacée dans une gravure, ou déceler que deux bières d'un même brasseur ont été tirées de deux tonneaux différents.",
     "specs": [
@@ -2977,7 +3385,11 @@
     },
     "test": {
       "raw": "Orientation",
-      "matches": []
+      "matches": [
+        {
+          "skill": "orientation"
+        }
+      ]
     },
     "desc": "Vous avez un sens instinctif de l'orientation. Vous savez automatiquement où se trouve le nord en regardant les étoiles, les arbres ou n'importe quels autres signes familiers.",
     "specs": [],
@@ -2995,7 +3407,12 @@
     },
     "test": {
       "raw": "Test d'Intuition impliquant votre Sixième sens",
-      "matches": []
+      "matches": [
+        {
+          "skill": "intuition",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous avez une impression étrange quand vous êtes en danger, et pouvez réagir en conséquence. Le MJ peut vous prévenir que vous êtes observé, ou que vous êtes en danger ; cela arrivera normalement après un Test d'Intuition secret en votre nom. De plus, vous pouvez ignorer la Surprise si vous réussissez un Test d'Intuition.",
     "specs": [],
@@ -3058,7 +3475,12 @@
     },
     "test": {
       "raw": "Athlétisme quand vous tombez",
-      "matches": []
+      "matches": [
+        {
+          "skill": "athletisme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes agile comme un chat, et capable de tomber de plus grandes hauteurs que les autres sans vous blesser. Chaque fois que vous tombez, effectuez un Test d'Athlétisme. Sur un succès, réduisez la distance de chute de 1 mètre, +1 mètre supplémentaire par +1 DR obtenu, pour calculer les Dégâts.",
     "specs": [],
@@ -3076,7 +3498,12 @@
     },
     "test": {
       "raw": "Tests d'Athlétisme pour Courir",
-      "matches": []
+      "matches": [
+        {
+          "skill": "athletisme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes un coureur très rapide. Votre Attribut de Mouvement compte comme plus élevé de 1 lorsque vous Courez.",
     "specs": [],
@@ -3120,7 +3547,11 @@
     },
     "test": {
       "raw": "Subornation",
-      "matches": []
+      "matches": [
+        {
+          "skill": "subornation"
+        }
+      ]
     },
     "desc": "Vous êtes un corrupteur hautement qualifié. Le MJ peut réduire le coût de base de n'importe quel pot-de-vin requis de 10 % par niveau que vous possédez en Suborneur, jusqu'à un minimum de 10 % du montant d'origine. ",
     "specs": [],
@@ -3227,7 +3658,12 @@
     },
     "test": {
       "raw": "Projectiles quand vous effectuez un Tir rapide",
-      "matches": []
+      "matches": [
+        {
+          "skill": "projectiles",
+          "manual": true
+        }
+      ]
     },
     "desc": "Si vous avez une arme à distance chargée, vous pouvez faire feu en dehors de l'ordre d'Initiative normal avant que tout autre combattant ne réagisse dans le Round suivant. Vous effectuez un lancer pour toucher en utilisant les modificateurs normaux. Utiliser Tir rapide nécessite à la fois votre Action et votre Mouvement pour votre tour à venir, qui compteront comme ayant été dépensés pendant le prochain tour. Si deux Personnages ou plus utilisent Tir rapide, celui qui a pris ce Talent le plus de fois tire en premier. En cas d'égalité, ils font feu simultanément et devraient être gérés en même temps.",
     "specs": [],
@@ -3281,7 +3717,15 @@
     },
     "test": {
       "raw": "Tests de Perception pour repérer des pièges, Piégeage",
-      "matches": []
+      "matches": [
+        {
+          "skill": "perception",
+          "manual": true
+        },
+        {
+          "skill": "piegeage"
+        }
+      ]
     },
     "desc": "Vous êtes doué pour repérer et utiliser des pièges. Vous pouvez effectuer un Test de Perception pour en repérer automatiquement, sans avoir à prévenir le MJ de votre intention ; le MJ peut préférer effectuer ces Tests secrètement, à votre place.",
     "specs": [],
@@ -3299,7 +3743,12 @@
     },
     "test": {
       "raw": "Tous les Tests étendus appropriés de Métier.",
-      "matches": []
+      "matches": [
+        {
+          "skill": "metier",
+          "manual": true
+        }
+      ]
     },
     "desc": "Votre maîtrise d'un Métier spécifique est exceptionnelle. Vous ôtez le niveau de votre Talent Travailleur qualifié du DR exigé pour tout Test étendu utilisant votre Compétence de Métier.",
     "specs": [
@@ -3402,7 +3851,12 @@
     },
     "test": {
       "raw": "Pari et Escamotage quand vous jouez à un jeu de cartes",
-      "matches": []
+      "matches": [
+        {
+          "skill": "pari",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes doué pour jouer et gagner aux cartes, bien que vos méthodes puissent impliquer un peu de triche. Quand vous utilisez Pari ou Escamotage avec succès en jouant aux cartes, vous pouvez choisir, soit d'utiliser le DR obtenu, soit le chiffre des unités de votre dé. Donc, un succès de 28 peut être utilisé comme un DR de +8. Si vous jouez avec un jeu de cartes réel pour représenter ce qui se passe en jeu, vous pouvez recevoir un nombre suppl��mentaire de cartes par distribution égal à votre niveau de Tricheur, puis en défausser pour revenir à la taille de main appropriée avant chaque tour de jeu.",
     "specs": [],
@@ -3483,7 +3937,12 @@
     },
     "test": {
       "raw": "Tests de Perception dans des conditions de faible luminosité",
-      "matches": []
+      "matches": [
+        {
+          "skill": "perception",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous pouvez voir parfaitement dans les ténèbres naturelles. En présumant que vous possédez au moins une faible source de lumière (telle que la lumière des étoiles, le clair de lune, la bioluminescence), vous pouvez voir clairement jusqu'à 20 mètres par Niveau de Vision nocturne. De plus, vous pouvez étendre la distance d'illumination effective de toutes les sources de lumière de 20 mètres par niveau de Vision nocturne.",
     "specs": [],
@@ -3501,7 +3960,12 @@
     },
     "test": {
       "raw": "Test d'Intuition quand vous vous trouvez sur un sol sacré",
-      "matches": []
+      "matches": [
+        {
+          "skill": "intuition",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous discernez clairement les grandes œuvres des dieux tout autour de vous. Vous savez automatiquement quand vous entrez sur un sol sacré, et pouvez effectuer un Test d'Intuition pour recevoir des visions (souvent obscures et interprétées via le paradigme de votre culte ou de votre système individuel de croyance) concernant la localité si des événements importants ont eu lieu ici par le passé.",
     "specs": [],
@@ -3539,7 +4003,12 @@
     },
     "test": {
       "raw": "Tests de Calme pour s'opposer à Intimidation",
-      "matches": []
+      "matches": [
+        {
+          "skill": "calme",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes indomptable, et vous ne vous inclinerez jamais volontairement devant autrui. L'utilisation de la Compétence Intimidation ne provoque pas la Peur chez vous et ne vous empêchera pas de vous opposer à un interlocuteur intimidant.",
     "specs": [],
@@ -3595,7 +4064,12 @@
     },
     "test": {
       "raw": "Force Mentale (Résister à la cible)",
-      "matches": []
+      "matches": [
+        {
+          "char": "FM",
+          "manual": true
+        }
+      ]
     },
     "desc": "Vous êtes consumé par le besoin de vous adonner à un vice particulier et souffrez du Trait Psychologique Vice. Chaque fois que vous choisissez ce Talent, vous développez un nouveau vice. Voici quelques exemples : alcool, nourriture, stupéfiants, plaisir.",
     "specs": [

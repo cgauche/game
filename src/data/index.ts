@@ -146,6 +146,9 @@ export interface TestMatch {
   char?: import('../engine/types').CharKey;
   spec?: string;
   specFromInstance?: boolean;
+  /** EXCLUT une spécialisation (matche toute spec SAUF celle-ci) — Linguistique « Langue (toutes) » qui
+   *  « ne fonctionne pas avec Langue (Magick) » : `{ skill:'langue', exceptSpec:'Magick' }`. */
+  exceptSpec?: string;
   when?: import('../state/flow').Condition;
   manual?: boolean;
 }
