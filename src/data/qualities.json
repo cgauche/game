@@ -160,7 +160,8 @@
       "page": 298
     },
     "capabilities": {
-      "firearm": true
+      "firearm": true,
+      "explosion": true
     }
   },
   {
@@ -424,9 +425,25 @@
       "book": "AA",
       "page": 89
     },
-    "capabilities": {
-      "onCritCondition": "hemorragique"
-    }
+    "effects": [
+      {
+        "trigger": "onCrit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "hemorragique"
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "tir-de-zone",

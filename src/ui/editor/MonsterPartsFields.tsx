@@ -7,7 +7,7 @@ import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS, MONSTER_LEG_OPTIONS } from '
 import { EYE_OPTIONS } from '../../gameIso/rig/parts/eyes';
 import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers';
 import { HAIRSTYLES } from '../../gameIso/rig/parts/generated/hairstyles';
-import { tenueNames } from '../../gameIso/rig/parts/career';
+import { tenueOptions } from '../../gameIso/rig/parts/career';
 import { elementsOf } from '../../gameIso/rig/parts/elements';
 import type { MonsterPartsSel, ColorsSel } from '../../state/scene';
 
@@ -152,9 +152,9 @@ export function MonsterPartsFields({
       <label className="ed-field">
         Tenue
         <select value={tenue ?? ''} onChange={(e) => onTenue?.(e.target.value || undefined)}>
-          <option value="">— par défaut (selon le nom) —</option>
-          {tenueNames().map((c) => (
-            <option key={c} value={c}>{c}</option>
+          <option value="">— par défaut (selon l’espèce) —</option>
+          {tenueOptions().map((o) => (
+            <option key={o.id} value={o.id}>{o.label}</option>
           ))}
         </select>
       </label>

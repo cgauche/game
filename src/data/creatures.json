@@ -51,7 +51,8 @@
       "page": 311
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "villageois"
     }
   },
   {
@@ -117,7 +118,7 @@
       "page": 311
     },
     "appearance": {
-      "species": "Nain"
+      "species": "nain"
     }
   },
   {
@@ -172,7 +173,7 @@
       "page": 311
     },
     "appearance": {
-      "species": "Halfling"
+      "species": "halfling"
     }
   },
   {
@@ -247,7 +248,7 @@
       "page": 311
     },
     "appearance": {
-      "species": "Haut-Elfe"
+      "species": "haut-elfe"
     }
   },
   {
@@ -314,8 +315,8 @@
       "page": 312
     },
     "appearance": {
-      "species": "Ogre",
-      "tenue": "Ogre"
+      "species": "ogre",
+      "tenue": "ogre"
     }
   },
   {
@@ -380,7 +381,8 @@
       "page": 313
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -436,7 +438,8 @@
       "page": 313
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -623,7 +626,8 @@
       "page": 48
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -705,7 +709,7 @@
       "page": 314
     },
     "appearance": {
-      "species": "Araignée"
+      "species": "araignee"
     }
   },
   {
@@ -765,7 +769,7 @@
       "page": 314
     },
     "appearance": {
-      "species": "Cheval"
+      "species": "cheval"
     }
   },
   {
@@ -845,7 +849,7 @@
       "page": 315
     },
     "appearance": {
-      "species": "Chien"
+      "species": "chien"
     }
   },
   {
@@ -921,7 +925,7 @@
       "page": 315
     },
     "appearance": {
-      "species": "Loup"
+      "species": "loup"
     }
   },
   {
@@ -1005,7 +1009,7 @@
       "page": 315
     },
     "appearance": {
-      "species": "Ours"
+      "species": "ours"
     }
   },
   {
@@ -1067,7 +1071,7 @@
       "page": 316
     },
     "appearance": {
-      "species": "Pigeon"
+      "species": "pigeon"
     }
   },
   {
@@ -1149,7 +1153,7 @@
       "page": 316
     },
     "appearance": {
-      "species": "Rat géant"
+      "species": "rat-geant"
     }
   },
   {
@@ -1232,7 +1236,7 @@
       "page": 316
     },
     "appearance": {
-      "species": "Sanglier"
+      "species": "sanglier"
     }
   },
   {
@@ -1306,7 +1310,7 @@
       "page": 317
     },
     "appearance": {
-      "species": "Serpent"
+      "species": "serpent"
     }
   },
   {
@@ -1393,7 +1397,7 @@
       "page": 317
     },
     "appearance": {
-      "species": "Basilic"
+      "species": "basilic"
     }
   },
   {
@@ -1473,7 +1477,7 @@
       "page": 318
     },
     "appearance": {
-      "species": "Bête des marais"
+      "species": "bete-des-marais"
     }
   },
   {
@@ -1538,7 +1542,7 @@
       "page": 318
     },
     "appearance": {
-      "species": "Griffon"
+      "species": "griffon"
     }
   },
   {
@@ -1646,7 +1650,7 @@
       "page": 319
     },
     "appearance": {
-      "species": "Dragon"
+      "species": "dragon"
     }
   },
   {
@@ -1711,8 +1715,8 @@
       "page": 319
     },
     "appearance": {
-      "species": "Fimir",
-      "tenue": "Nu"
+      "species": "fimir",
+      "tenue": "nu"
     }
   },
   {
@@ -1792,7 +1796,7 @@
       "page": 320
     },
     "appearance": {
-      "species": "Géant"
+      "species": "geant"
     },
     "harvest": {
       "rarity": "Rare",
@@ -1863,7 +1867,7 @@
       "page": 320
     },
     "appearance": {
-      "species": "Griffon"
+      "species": "griffon"
     },
     "harvest": {
       "rarity": "Rare",
@@ -1953,7 +1957,7 @@
       "page": 321
     },
     "appearance": {
-      "species": "Hippogriffe"
+      "species": "hippogriffe"
     }
   },
   {
@@ -2036,7 +2040,7 @@
       "page": 321
     },
     "appearance": {
-      "species": "Hydre"
+      "species": "hydre"
     }
   },
   {
@@ -2124,7 +2128,7 @@
       "page": 322
     },
     "appearance": {
-      "species": "Jabberslythe"
+      "species": "jabberslythe"
     }
   },
   {
@@ -2204,7 +2208,7 @@
       "page": 322
     },
     "appearance": {
-      "species": "Manticore"
+      "species": "manticore"
     }
   },
   {
@@ -2259,7 +2263,7 @@
       "page": 323
     },
     "appearance": {
-      "species": "Pégase"
+      "species": "pegase"
     }
   },
   {
@@ -2326,7 +2330,7 @@
       "page": 323
     },
     "appearance": {
-      "species": "Pieuvre"
+      "species": "pieuvre"
     }
   },
   {
@@ -2401,7 +2405,7 @@
       "page": 323
     },
     "appearance": {
-      "species": "Squig"
+      "species": "squig"
     }
   },
   {
@@ -2504,8 +2508,8 @@
       "page": 324
     },
     "appearance": {
-      "species": "Troll",
-      "tenue": "Nu"
+      "species": "troll",
+      "tenue": "nu"
     }
   },
   {
@@ -2578,7 +2582,7 @@
       "page": 325
     },
     "appearance": {
-      "species": "Dragon"
+      "species": "dragon"
     },
     "harvest": {
       "rarity": "Rare",
@@ -2655,8 +2659,8 @@
       "page": 325
     },
     "appearance": {
-      "species": "Orc",
-      "tenue": "Mendiant"
+      "species": "orc",
+      "tenue": "mendiant"
     }
   },
   {
@@ -2732,8 +2736,8 @@
       "page": 326
     },
     "appearance": {
-      "species": "Gobelin",
-      "tenue": "Mendiant"
+      "species": "gobelin",
+      "tenue": "mendiant"
     }
   },
   {
@@ -2796,8 +2800,8 @@
       "page": 326
     },
     "appearance": {
-      "species": "Snotling",
-      "tenue": "Nu"
+      "species": "snotling",
+      "tenue": "nu"
     }
   },
   {
@@ -2871,7 +2875,7 @@
       "page": 327
     },
     "appearance": {
-      "species": "Banshee"
+      "species": "banshee"
     }
   },
   {
@@ -2972,7 +2976,7 @@
       "page": 327
     },
     "appearance": {
-      "species": "Varghulf"
+      "species": "varghulf"
     }
   },
   {
@@ -3043,7 +3047,7 @@
       "page": 328
     },
     "appearance": {
-      "species": "Fantôme"
+      "species": "fantome"
     }
   },
   {
@@ -3102,8 +3106,8 @@
       "page": 328
     },
     "appearance": {
-      "species": "Goule",
-      "tenue": "Nu"
+      "species": "goule",
+      "tenue": "nu"
     }
   },
   {
@@ -3189,7 +3193,7 @@
       "page": 328
     },
     "appearance": {
-      "species": "Loup"
+      "species": "loup"
     }
   },
   {
@@ -3260,7 +3264,7 @@
       "page": 329
     },
     "appearance": {
-      "species": "Spectre"
+      "species": "spectre"
     }
   },
   {
@@ -3333,8 +3337,8 @@
       "page": 329
     },
     "appearance": {
-      "species": "Squelette",
-      "tenue": "Squelette"
+      "species": "squelette",
+      "tenue": "squelette"
     }
   },
   {
@@ -3444,8 +3448,8 @@
       "page": 330
     },
     "appearance": {
-      "species": "Vampire",
-      "tenue": "Vampire"
+      "species": "vampire",
+      "tenue": "vampire"
     }
   },
   {
@@ -3526,8 +3530,8 @@
       "page": 330
     },
     "appearance": {
-      "species": "Zombie",
-      "tenue": "Mendiant"
+      "species": "zombie",
+      "tenue": "mendiant"
     }
   },
   {
@@ -3605,8 +3609,8 @@
       "page": 331
     },
     "appearance": {
-      "species": "Chamane-Brey",
-      "tenue": "Chamane-Bray"
+      "species": "chamane-brey",
+      "tenue": "chamane-bray"
     }
   },
   {
@@ -3692,8 +3696,8 @@
       "page": 332
     },
     "appearance": {
-      "species": "Gor",
-      "tenue": "Nu"
+      "species": "gor",
+      "tenue": "nu"
     }
   },
   {
@@ -3773,8 +3777,8 @@
       "page": 332
     },
     "appearance": {
-      "species": "Minotaure",
-      "tenue": "Nu"
+      "species": "minotaure",
+      "tenue": "nu"
     }
   },
   {
@@ -3850,8 +3854,8 @@
       "page": 332
     },
     "appearance": {
-      "species": "Ungor",
-      "tenue": "Nu"
+      "species": "ungor",
+      "tenue": "nu"
     }
   },
   {
@@ -3906,8 +3910,8 @@
       "page": 333
     },
     "appearance": {
-      "species": "Humain",
-      "tenue": "Cultiste"
+      "species": "humain",
+      "tenue": "cultiste"
     }
   },
   {
@@ -3961,8 +3965,8 @@
       "page": 333
     },
     "appearance": {
-      "species": "Humain",
-      "tenue": "Mendiant"
+      "species": "humain",
+      "tenue": "mendiant"
     }
   },
   {
@@ -4035,8 +4039,8 @@
       "page": 334
     },
     "appearance": {
-      "species": "Guerrier du Chaos",
-      "tenue": "Guerrier du Chaos"
+      "species": "guerrier-du-chaos",
+      "tenue": "guerrier-du-chaos"
     }
   },
   {
@@ -4111,8 +4115,8 @@
       "page": 335
     },
     "appearance": {
-      "species": "Démon",
-      "tenue": "Sanguinaire"
+      "species": "demon",
+      "tenue": "sanguinaire"
     }
   },
   {
@@ -4175,8 +4179,8 @@
       "page": 335
     },
     "appearance": {
-      "species": "Démonette",
-      "tenue": "Démonette"
+      "species": "demonette",
+      "tenue": "demonette"
     }
   },
   {
@@ -4273,8 +4277,8 @@
       "page": 84
     },
     "appearance": {
-      "species": "Furie du Chaos",
-      "tenue": "Nu"
+      "species": "furie-du-chaos",
+      "tenue": "nu"
     }
   },
   {
@@ -4365,8 +4369,8 @@
       "page": 85
     },
     "appearance": {
-      "species": "Horreur rose",
-      "tenue": "Nu"
+      "species": "horreur-rose",
+      "tenue": "nu"
     }
   },
   {
@@ -4450,8 +4454,8 @@
       "page": 85
     },
     "appearance": {
-      "species": "Horreur bleue",
-      "tenue": "Nu"
+      "species": "horreur-bleue",
+      "tenue": "nu"
     }
   },
   {
@@ -4530,7 +4534,7 @@
       "page": 336
     },
     "appearance": {
-      "species": "Slenderthigh Whiptongue"
+      "species": "slenderthigh-whiptongue"
     }
   },
   {
@@ -4618,7 +4622,7 @@
       "page": 336
     },
     "appearance": {
-      "species": "Fr'hough Mournbreath"
+      "species": "fr-hough-mournbreath"
     }
   },
   {
@@ -4688,8 +4692,8 @@
       "page": 337
     },
     "appearance": {
-      "species": "Skaven",
-      "tenue": "Skaven"
+      "species": "skaven",
+      "tenue": "skaven"
     }
   },
   {
@@ -4778,8 +4782,8 @@
       "page": 337
     },
     "appearance": {
-      "species": "Rat ogre",
-      "tenue": "Rat ogre"
+      "species": "rat-ogre",
+      "tenue": "rat-ogre"
     }
   },
   {
@@ -4843,8 +4847,8 @@
       "page": 337
     },
     "appearance": {
-      "species": "Vermine de choc",
-      "tenue": "Vermine de choc"
+      "species": "vermine-de-choc",
+      "tenue": "vermine-de-choc"
     }
   },
   {
@@ -4924,7 +4928,7 @@
       "page": 29
     },
     "appearance": {
-      "species": "Cheval"
+      "species": "cheval"
     }
   },
   {
@@ -5004,7 +5008,7 @@
       "page": 109
     },
     "appearance": {
-      "species": "Griffon"
+      "species": "griffon"
     }
   },
   {
@@ -5130,7 +5134,8 @@
       "page": 27
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "garde"
     }
   },
   {
@@ -5267,7 +5272,8 @@
       "page": 28
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "garde"
     }
   },
   {
@@ -5425,7 +5431,8 @@
       "page": 29
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "garde"
     }
   },
   {
@@ -5606,7 +5613,8 @@
       "page": 30
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "garde"
     }
   },
   {
@@ -5736,7 +5744,8 @@
       "page": 33
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "milicien"
     }
   },
   {
@@ -5882,7 +5891,8 @@
       "page": 34
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "milicien"
     }
   },
   {
@@ -6058,7 +6068,8 @@
       "page": 34
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "milicien"
     }
   },
   {
@@ -6251,7 +6262,8 @@
       "page": 36
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "milicien"
     }
   },
   {
@@ -6389,7 +6401,8 @@
       "page": 39
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-routier"
     }
   },
   {
@@ -6538,7 +6551,8 @@
       "page": 40
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-routier"
     }
   },
   {
@@ -6702,7 +6716,8 @@
       "page": 41
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-routier"
     }
   },
   {
@@ -6884,7 +6899,8 @@
       "page": 42
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-routier"
     }
   },
   {
@@ -7014,7 +7030,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-fluvial"
     }
   },
   {
@@ -7157,7 +7174,8 @@
       "page": 46
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-fluvial"
     }
   },
   {
@@ -7326,7 +7344,8 @@
       "page": 47
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-fluvial"
     }
   },
   {
@@ -7513,7 +7532,8 @@
       "page": 49
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "patrouilleur-fluvial"
     }
   },
   {
@@ -7635,7 +7655,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "repurgateur"
     }
   },
   {
@@ -7787,7 +7808,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "repurgateur"
     }
   },
   {
@@ -7958,7 +7980,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "repurgateur"
     }
   },
   {
@@ -8148,7 +8171,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "repurgateur"
     }
   },
   {
@@ -8267,7 +8291,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "juriste"
     }
   },
   {
@@ -8407,7 +8432,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "juriste"
     }
   },
   {
@@ -8525,7 +8551,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "juriste"
     }
   },
   {
@@ -8664,7 +8691,8 @@
       "page": 60
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "juriste"
     }
   },
   {
@@ -8813,7 +8841,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "soldat"
     }
   },
   {
@@ -8978,7 +9007,8 @@
       "page": 62
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "soldat"
     }
   },
   {
@@ -9152,7 +9182,8 @@
       "page": 63
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "soldat"
     }
   },
   {
@@ -9343,7 +9374,8 @@
       "page": 64
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "soldat"
     }
   },
   {
@@ -9469,7 +9501,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "bourgeois"
     }
   },
   {
@@ -9595,7 +9628,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "bourgeois"
     }
   },
   {
@@ -9746,7 +9780,8 @@
       "page": 67
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "bourgeois"
     }
   },
   {
@@ -9919,7 +9954,8 @@
       "page": 68
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "bourgeois"
     }
   },
   {
@@ -10109,7 +10145,8 @@
       "page": 69
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "noble"
     }
   },
   {
@@ -10244,7 +10281,8 @@
       "page": 72
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "apothicaire"
     }
   },
   {
@@ -10403,7 +10441,8 @@
       "page": 73
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "apothicaire"
     }
   },
   {
@@ -10543,7 +10582,8 @@
       "page": 74
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "medecin"
     }
   },
   {
@@ -10700,7 +10740,8 @@
       "page": 74
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "medecin"
     }
   },
   {
@@ -10807,7 +10848,8 @@
       "page": 76
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "nonne"
     }
   },
   {
@@ -10975,7 +11017,8 @@
       "page": 77
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -11122,7 +11165,8 @@
       "page": 79
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "artisan"
     }
   },
   {
@@ -11287,7 +11331,8 @@
       "page": 80
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "artisan"
     }
   },
   {
@@ -11436,7 +11481,8 @@
       "page": 81
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "marchand"
     }
   },
   {
@@ -11599,7 +11645,8 @@
       "page": 82
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "marchand"
     }
   },
   {
@@ -11718,7 +11765,8 @@
       "page": 83
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "erudit"
     }
   },
   {
@@ -11853,7 +11901,8 @@
       "page": 84
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "erudit"
     }
   },
   {
@@ -11982,7 +12031,8 @@
       "page": 84
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "enqueteur"
     }
   },
   {
@@ -12133,7 +12183,8 @@
       "page": 86
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "enqueteur"
     }
   },
   {
@@ -12263,7 +12314,8 @@
       "page": 87
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -12450,7 +12502,8 @@
       "page": 88
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -12580,7 +12633,8 @@
       "page": 90
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -12770,7 +12824,8 @@
       "page": 91
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -12900,7 +12955,8 @@
       "page": 93
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "nonne"
     }
   },
   {
@@ -13091,7 +13147,8 @@
       "page": 94
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -13196,7 +13253,8 @@
       "page": 98
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -13321,7 +13379,8 @@
       "page": 99
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "receleur"
     }
   },
   {
@@ -13471,7 +13530,8 @@
       "page": 100
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "receleur"
     }
   },
   {
@@ -13600,7 +13660,8 @@
       "page": 101
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "entremetteur"
     }
   },
   {
@@ -13753,7 +13814,8 @@
       "page": 102
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "entremetteur"
     }
   },
   {
@@ -13887,7 +13949,8 @@
       "page": 103
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "spadassin"
     }
   },
   {
@@ -14039,7 +14102,8 @@
       "page": 104
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "chasseur-de-primes"
     }
   },
   {
@@ -14175,7 +14239,8 @@
       "page": 105
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -14329,7 +14394,8 @@
       "page": 106
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -14454,7 +14520,8 @@
       "page": 107
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "charlatan"
     }
   },
   {
@@ -14607,7 +14674,8 @@
       "page": 108
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "charlatan"
     }
   },
   {
@@ -14746,7 +14814,8 @@
       "page": 109
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "charlatan"
     }
   },
   {
@@ -14908,7 +14977,8 @@
       "page": 110
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "charlatan"
     }
   },
   {
@@ -15045,7 +15115,8 @@
       "page": 111
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "voleur"
     }
   },
   {
@@ -15197,7 +15268,8 @@
       "page": 112
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "voleur"
     }
   },
   {
@@ -15325,7 +15397,8 @@
       "page": 113
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pilleur-de-tombes"
     }
   },
   {
@@ -15479,7 +15552,8 @@
       "page": 114
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pilleur-de-tombes"
     }
   },
   {
@@ -15642,7 +15716,8 @@
       "page": 115
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "voleur"
     }
   },
   {
@@ -15782,7 +15857,8 @@
       "page": 121
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "villageois"
     }
   },
   {
@@ -15938,7 +16014,8 @@
       "page": 122
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "villageois"
     }
   },
   {
@@ -16112,7 +16189,8 @@
       "page": 123
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "villageois"
     }
   },
   {
@@ -16304,7 +16382,8 @@
       "page": 124
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "villageois"
     }
   },
   {
@@ -16451,7 +16530,8 @@
       "page": 127
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "artisan"
     }
   },
   {
@@ -16616,7 +16696,8 @@
       "page": 128
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "artisan"
     }
   },
   {
@@ -16769,7 +16850,8 @@
       "page": 129
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "marchand"
     }
   },
   {
@@ -16936,7 +17018,8 @@
       "page": 130
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "marchand"
     }
   },
   {
@@ -17078,7 +17161,8 @@
       "page": 131
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "batelier"
     }
   },
   {
@@ -17248,7 +17332,8 @@
       "page": 132
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "nautonier"
     }
   },
   {
@@ -17413,7 +17498,8 @@
       "page": 133
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "batelier"
     }
   },
   {
@@ -17591,7 +17677,8 @@
       "page": 134
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "batelier"
     }
   },
   {
@@ -17749,7 +17836,8 @@
       "page": 136
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "herboriste"
     }
   },
   {
@@ -17924,7 +18012,8 @@
       "page": 137
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "herboriste"
     }
   },
   {
@@ -18114,7 +18203,8 @@
       "page": 138
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "herboriste"
     }
   },
   {
@@ -18346,7 +18436,8 @@
       "page": 140
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "chasseur"
     }
   },
   {
@@ -18507,7 +18598,8 @@
       "page": 143
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier-de-village"
     }
   },
   {
@@ -18712,7 +18804,8 @@
       "page": 145
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier-de-village"
     }
   },
   {
@@ -18874,7 +18967,8 @@
       "page": 148
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "mystique"
     }
   },
   {
@@ -19066,7 +19160,8 @@
       "page": 149
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "mystique"
     }
   },
   {
@@ -19194,7 +19289,8 @@
       "page": 151
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "nonne"
     }
   },
   {
@@ -19349,7 +19445,8 @@
       "page": 152
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "nonne"
     }
   },
   {
@@ -19515,7 +19612,8 @@
       "page": 153
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -19723,7 +19821,8 @@
       "page": 154
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -19856,7 +19955,8 @@
       "page": 156
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -20005,7 +20105,8 @@
       "page": 157
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -20176,7 +20277,8 @@
       "page": 158
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -20388,7 +20490,8 @@
       "page": 160
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "pretre"
     }
   },
   {
@@ -20505,7 +20608,8 @@
       "page": 163
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -20647,7 +20751,8 @@
       "page": 164
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -20807,7 +20912,8 @@
       "page": 165
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -20985,7 +21091,8 @@
       "page": 166
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "hors-la-loi"
     }
   },
   {
@@ -21107,7 +21214,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "contrebandier"
     }
   },
   {
@@ -21254,7 +21362,8 @@
       "page": 169
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "contrebandier"
     }
   },
   {
@@ -21419,7 +21528,8 @@
       "page": 170
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "contrebandier"
     }
   },
   {
@@ -21607,7 +21717,8 @@
       "page": 171
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "contrebandier"
     }
   },
   {
@@ -21728,7 +21839,8 @@
       "page": 173
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "naufrageur"
     }
   },
   {
@@ -21867,7 +21979,8 @@
       "page": 174
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "naufrageur"
     }
   },
   {
@@ -22025,7 +22138,8 @@
       "page": 175
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "naufrageur"
     }
   },
   {
@@ -22200,7 +22314,8 @@
       "page": 176
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "naufrageur"
     }
   },
   {
@@ -22308,7 +22423,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Chien"
+      "species": "chien"
     }
   },
   {
@@ -22416,7 +22531,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Chien"
+      "species": "chien"
     }
   },
   {
@@ -22547,7 +22662,7 @@
       "page": 179
     },
     "appearance": {
-      "species": "Chien"
+      "species": "chien"
     }
   },
   {
@@ -22698,7 +22813,7 @@
       "page": 180
     },
     "appearance": {
-      "species": "Chien"
+      "species": "chien"
     }
   },
   {
@@ -22829,7 +22944,7 @@
       "page": 180
     },
     "appearance": {
-      "species": "Chien"
+      "species": "chien"
     }
   },
   {
@@ -22926,7 +23041,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "cheval"
     }
   },
   {
@@ -23055,7 +23170,7 @@
       "page": 183
     },
     "appearance": {
-      "species": "Cheval"
+      "species": "cheval"
     }
   },
   {
@@ -23185,7 +23300,7 @@
       "page": 185
     },
     "appearance": {
-      "species": "Humain"
+      "species": "cheval"
     }
   },
   {
@@ -23310,7 +23425,7 @@
       "page": 187
     },
     "appearance": {
-      "species": "Humain"
+      "species": "cheval"
     }
   },
   {
@@ -23447,7 +23562,7 @@
       "page": 189
     },
     "appearance": {
-      "species": "Cheval"
+      "species": "cheval"
     }
   },
   {
@@ -23564,7 +23679,7 @@
       "page": 192
     },
     "appearance": {
-      "species": "Loup"
+      "species": "loup"
     }
   },
   {
@@ -23698,7 +23813,7 @@
       "page": 193
     },
     "appearance": {
-      "species": "Loup"
+      "species": "loup"
     }
   },
   {
@@ -23849,7 +23964,7 @@
       "page": 194
     },
     "appearance": {
-      "species": "Humain"
+      "species": "loup"
     }
   },
   {
@@ -24016,7 +24131,7 @@
       "page": 195
     },
     "appearance": {
-      "species": "Humain"
+      "species": "loup"
     }
   },
   {
@@ -24146,7 +24261,7 @@
       "page": 198
     },
     "appearance": {
-      "species": "Ours"
+      "species": "ours"
     }
   },
   {
@@ -24290,7 +24405,7 @@
       "page": 200
     },
     "appearance": {
-      "species": "Ours"
+      "species": "ours"
     }
   },
   {
@@ -24443,7 +24558,7 @@
       "page": 202
     },
     "appearance": {
-      "species": "Ours"
+      "species": "ours"
     }
   },
   {
@@ -24611,7 +24726,7 @@
       "page": 204
     },
     "appearance": {
-      "species": "Ours"
+      "species": "ours"
     }
   },
   {
@@ -24771,7 +24886,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Sanglier"
+      "species": "sanglier"
     }
   },
   {
@@ -24892,7 +25007,7 @@
       "page": 208
     },
     "appearance": {
-      "species": "Sanglier"
+      "species": "sanglier"
     }
   },
   {
@@ -24977,7 +25092,7 @@
       "page": 209
     },
     "appearance": {
-      "species": "Sanglier"
+      "species": "sanglier"
     }
   },
   {
@@ -25146,7 +25261,7 @@
       "page": 210
     },
     "appearance": {
-      "species": "Sanglier"
+      "species": "sanglier"
     }
   },
   {
@@ -25327,7 +25442,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Rat géant"
+      "species": "rat-geant"
     }
   },
   {
@@ -25458,7 +25573,7 @@
       "page": 214
     },
     "appearance": {
-      "species": "Rat géant"
+      "species": "rat-geant"
     }
   },
   {
@@ -25595,7 +25710,7 @@
       "page": 215
     },
     "appearance": {
-      "species": "Humain"
+      "species": "rat-geant"
     }
   },
   {
@@ -25775,7 +25890,7 @@
       "page": 216
     },
     "appearance": {
-      "species": "Horreur rose"
+      "species": "horreur-rose"
     }
   },
   {
@@ -25971,7 +26086,7 @@
       "page": 219
     },
     "appearance": {
-      "species": "Araignée"
+      "species": "araignee"
     }
   },
   {
@@ -26112,7 +26227,7 @@
       "page": 221
     },
     "appearance": {
-      "species": "Araignée"
+      "species": "araignee"
     }
   },
   {
@@ -26277,7 +26392,7 @@
       "page": 223
     },
     "appearance": {
-      "species": "Araignée"
+      "species": "araignee"
     }
   },
   {
@@ -26455,7 +26570,7 @@
       "page": 225
     },
     "appearance": {
-      "species": "Humain"
+      "species": "araignee"
     }
   },
   {
@@ -26563,7 +26678,7 @@
       "page": 229
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -26704,7 +26819,7 @@
       "page": 230
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -26832,7 +26947,7 @@
       "page": 231
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -26981,7 +27096,7 @@
       "page": 231
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -27124,7 +27239,7 @@
       "page": 233
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -27268,7 +27383,7 @@
       "page": 234
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -27427,7 +27542,7 @@
       "page": 235
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -27580,7 +27695,7 @@
       "page": 237
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -27744,7 +27859,7 @@
       "page": 239
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -27938,7 +28053,7 @@
       "page": 241
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -28135,7 +28250,7 @@
       "page": 243
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -28324,7 +28439,7 @@
       "page": 245
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -28530,7 +28645,7 @@
       "page": 247
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -28777,7 +28892,7 @@
       "page": 250
     },
     "appearance": {
-      "species": "Homme-bête"
+      "species": "homme-bete"
     }
   },
   {
@@ -28920,7 +29035,8 @@
       "page": 255
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "guerrier-du-chaos"
     }
   },
   {
@@ -29077,7 +29193,8 @@
       "page": 256
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "guerrier-du-chaos"
     }
   },
   {
@@ -29259,7 +29376,8 @@
       "page": 258
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "guerrier-du-chaos"
     }
   },
   {
@@ -29432,7 +29550,7 @@
       "page": 261
     },
     "appearance": {
-      "species": "Guerrier du Chaos"
+      "species": "guerrier-du-chaos"
     }
   },
   {
@@ -29622,7 +29740,7 @@
       "page": 264
     },
     "appearance": {
-      "species": "Guerrier du Chaos"
+      "species": "guerrier-du-chaos"
     }
   },
   {
@@ -29799,7 +29917,8 @@
       "page": 267
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -29991,7 +30110,8 @@
       "page": 269
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -30210,7 +30330,8 @@
       "page": 272
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -30321,7 +30442,7 @@
       "page": 276
     },
     "appearance": {
-      "species": "Furie du Chaos"
+      "species": "furie-du-chaos"
     }
   },
   {
@@ -30436,7 +30557,7 @@
       "page": 278
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -30554,7 +30675,7 @@
       "page": 279
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -30671,7 +30792,7 @@
       "page": 280
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -30791,7 +30912,7 @@
       "page": 282
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -30915,7 +31036,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Démonette"
+      "species": "demonette"
     }
   },
   {
@@ -31065,7 +31186,7 @@
       "page": 285
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -31236,7 +31357,7 @@
       "page": 287
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -31425,7 +31546,7 @@
       "page": 290
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -31620,7 +31741,7 @@
       "page": 294
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -31713,7 +31834,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -31911,7 +32032,7 @@
       "page": 300
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -32051,7 +32172,7 @@
       "page": 301
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -32197,7 +32318,7 @@
       "page": 303
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -32370,7 +32491,7 @@
       "page": 305
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -32528,7 +32649,7 @@
       "page": 310
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -32637,7 +32758,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Bête des marais"
+      "species": "bete-des-marais"
     }
   },
   {
@@ -32746,7 +32867,7 @@
       "page": 318
     },
     "appearance": {
-      "species": "Bête des marais"
+      "species": "bete-des-marais"
     }
   },
   {
@@ -32875,7 +32996,7 @@
       "page": 320
     },
     "appearance": {
-      "species": "Horreur rose"
+      "species": "horreur-rose"
     }
   },
   {
@@ -33001,7 +33122,7 @@
       "page": 321
     },
     "appearance": {
-      "species": "Horreur rose"
+      "species": "horreur-rose"
     }
   },
   {
@@ -33156,7 +33277,7 @@
       "page": 322
     },
     "appearance": {
-      "species": "Horreur rose"
+      "species": "horreur-rose"
     }
   },
   {
@@ -33338,7 +33459,7 @@
       "page": 324
     },
     "appearance": {
-      "species": "Horreur rose"
+      "species": "horreur-rose"
     }
   },
   {
@@ -33513,7 +33634,7 @@
       "page": 326
     },
     "appearance": {
-      "species": "Furie du Chaos"
+      "species": "furie-du-chaos"
     }
   },
   {
@@ -33688,7 +33809,7 @@
       "page": 331
     },
     "appearance": {
-      "species": "Furie du Chaos"
+      "species": "furie-du-chaos"
     }
   },
   {
@@ -33830,7 +33951,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -33982,7 +34103,7 @@
       "page": 337
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -34148,7 +34269,7 @@
       "page": 338
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -34328,7 +34449,7 @@
       "page": 340
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -34476,7 +34597,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -34637,7 +34758,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -34822,7 +34943,7 @@
       "page": 344
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -35015,7 +35136,7 @@
       "page": 346
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -35166,7 +35287,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -35319,7 +35440,7 @@
       "page": 350
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -35482,7 +35603,7 @@
       "page": 352
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -35663,7 +35784,7 @@
       "page": 354
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -35830,7 +35951,7 @@
       "page": 357
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -36027,7 +36148,7 @@
       "page": 359
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -36237,7 +36358,7 @@
       "page": 362
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -36474,7 +36595,7 @@
       "page": 365
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -36625,7 +36746,7 @@
       "page": 369
     },
     "appearance": {
-      "species": "Coureur d'égout"
+      "species": "coureur-d-egout"
     }
   },
   {
@@ -36817,7 +36938,7 @@
       "page": 371
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -37044,7 +37165,7 @@
       "page": 374
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -37305,7 +37426,7 @@
       "page": 377
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -37441,7 +37562,7 @@
       "page": 382
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -37617,7 +37738,7 @@
       "page": 384
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -37819,7 +37940,7 @@
       "page": 387
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -38039,7 +38160,7 @@
       "page": 390
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -38174,7 +38295,7 @@
       "page": 395
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -38342,7 +38463,7 @@
       "page": 397
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -38541,7 +38662,7 @@
       "page": 399
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -38753,7 +38874,7 @@
       "page": 401
     },
     "appearance": {
-      "species": "Humain"
+      "species": "skaven"
     }
   },
   {
@@ -38876,7 +38997,7 @@
       "page": 404
     },
     "appearance": {
-      "species": "Humain"
+      "species": "rat-ogre"
     }
   },
   {
@@ -39036,7 +39157,7 @@
       "page": 406
     },
     "appearance": {
-      "species": "Rat ogre"
+      "species": "rat-ogre"
     }
   },
   {
@@ -39208,7 +39329,7 @@
       "page": 408
     },
     "appearance": {
-      "species": "Rat ogre"
+      "species": "rat-ogre"
     }
   },
   {
@@ -39397,7 +39518,7 @@
       "page": 410
     },
     "appearance": {
-      "species": "Horreur rose"
+      "species": "horreur-rose"
     }
   },
   {
@@ -39642,7 +39763,7 @@
       "page": 414
     },
     "appearance": {
-      "species": "Prophète gris"
+      "species": "prophete-gris"
     }
   },
   {
@@ -39904,7 +40025,7 @@
       "page": 419
     },
     "appearance": {
-      "species": "Prophète gris"
+      "species": "prophete-gris"
     }
   },
   {
@@ -40042,7 +40163,7 @@
       "page": 426
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -40187,7 +40308,7 @@
       "page": 430
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -40337,7 +40458,7 @@
       "page": 432
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -40487,7 +40608,7 @@
       "page": 434
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -40646,7 +40767,7 @@
       "page": 436
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -40769,7 +40890,7 @@
       "page": 438
     },
     "appearance": {
-      "species": "Humain"
+      "species": "gobelin"
     }
   },
   {
@@ -40888,7 +41009,7 @@
       "page": 440
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -41065,7 +41186,7 @@
       "page": 442
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -41271,7 +41392,7 @@
       "page": 444
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -41445,7 +41566,7 @@
       "page": 446
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -41659,7 +41780,7 @@
       "page": 449
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -41897,7 +42018,7 @@
       "page": 452
     },
     "appearance": {
-      "species": "Humain"
+      "species": "gobelin"
     }
   },
   {
@@ -42070,7 +42191,7 @@
       "page": 459
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -42222,7 +42343,7 @@
       "page": 459
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -42379,7 +42500,7 @@
       "page": 462
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -42527,7 +42648,7 @@
       "page": 463
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -42711,7 +42832,7 @@
       "page": 465
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -42931,7 +43052,7 @@
       "page": 467
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -43126,7 +43247,7 @@
       "page": 469
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -43334,7 +43455,7 @@
       "page": 473
     },
     "appearance": {
-      "species": "Orc"
+      "species": "orc"
     }
   },
   {
@@ -43570,7 +43691,7 @@
       "page": 477
     },
     "appearance": {
-      "species": "Humain"
+      "species": "orc"
     }
   },
   {
@@ -43714,7 +43835,7 @@
       "page": 482
     },
     "appearance": {
-      "species": "Troll"
+      "species": "troll"
     }
   },
   {
@@ -43895,7 +44016,7 @@
       "page": 486
     },
     "appearance": {
-      "species": "Troll"
+      "species": "troll"
     }
   },
   {
@@ -44088,7 +44209,7 @@
       "page": 488
     },
     "appearance": {
-      "species": "Démon"
+      "species": "demon"
     }
   },
   {
@@ -44311,7 +44432,7 @@
       "page": 491
     },
     "appearance": {
-      "species": "Troll"
+      "species": "troll"
     }
   },
   {
@@ -44568,7 +44689,7 @@
       "page": 494
     },
     "appearance": {
-      "species": "Troll"
+      "species": "troll"
     }
   },
   {
@@ -44858,7 +44979,7 @@
       "page": 498
     },
     "appearance": {
-      "species": "Troll"
+      "species": "troll"
     }
   },
   {
@@ -44964,7 +45085,7 @@
       "page": 504
     },
     "appearance": {
-      "species": "Squig"
+      "species": "squig"
     }
   },
   {
@@ -45139,7 +45260,7 @@
       "page": 506
     },
     "appearance": {
-      "species": "Squig"
+      "species": "squig"
     }
   },
   {
@@ -45283,7 +45404,7 @@
       "page": 507
     },
     "appearance": {
-      "species": "Squig"
+      "species": "squig"
     }
   },
   {
@@ -45441,7 +45562,7 @@
       "page": 509
     },
     "appearance": {
-      "species": "Squig"
+      "species": "squig"
     }
   },
   {
@@ -45626,7 +45747,8 @@
       "page": 515
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -45837,7 +45959,8 @@
       "page": 517
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -46099,7 +46222,8 @@
       "page": 520
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "sorcier"
     }
   },
   {
@@ -46210,7 +46334,7 @@
       "page": 525
     },
     "appearance": {
-      "species": "Goule"
+      "species": "goule"
     }
   },
   {
@@ -46335,7 +46459,7 @@
       "page": 526
     },
     "appearance": {
-      "species": "Goule"
+      "species": "goule"
     }
   },
   {
@@ -46486,7 +46610,7 @@
       "page": 527
     },
     "appearance": {
-      "species": "Humain"
+      "species": "goule"
     }
   },
   {
@@ -46671,7 +46795,7 @@
       "page": 528
     },
     "appearance": {
-      "species": "Humain"
+      "species": "goule"
     }
   },
   {
@@ -46784,7 +46908,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Zombie"
+      "species": "zombie"
     }
   },
   {
@@ -47037,7 +47161,7 @@
       "page": 534
     },
     "appearance": {
-      "species": "Zombie"
+      "species": "zombie"
     }
   },
   {
@@ -47193,7 +47317,7 @@
       "page": 537
     },
     "appearance": {
-      "species": "Squelette"
+      "species": "squelette"
     }
   },
   {
@@ -47349,7 +47473,7 @@
       "page": 539
     },
     "appearance": {
-      "species": "Humain"
+      "species": "squelette"
     }
   },
   {
@@ -47480,7 +47604,7 @@
       "page": 542
     },
     "appearance": {
-      "species": "Humain"
+      "species": "spectre"
     }
   },
   {
@@ -47653,7 +47777,7 @@
       "page": 547
     },
     "appearance": {
-      "species": "Spectre"
+      "species": "spectre"
     }
   },
   {
@@ -47844,7 +47968,7 @@
       "page": 552
     },
     "appearance": {
-      "species": "Spectre"
+      "species": "spectre"
     }
   },
   {
@@ -47964,7 +48088,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Cheval"
+      "species": "cheval"
     }
   },
   {
@@ -48106,7 +48230,7 @@
       "page": 556
     },
     "appearance": {
-      "species": "Cheval"
+      "species": "cheval"
     }
   },
   {
@@ -48229,7 +48353,7 @@
       "page": 558
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain"
     }
   },
   {
@@ -48347,7 +48471,7 @@
       "page": 560
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain"
     }
   },
   {
@@ -48514,7 +48638,7 @@
       "page": 565
     },
     "appearance": {
-      "species": "Humain"
+      "species": "varghulf"
     }
   },
   {
@@ -48808,7 +48932,7 @@
       "page": 571
     },
     "appearance": {
-      "species": "Vampire"
+      "species": "vampire"
     }
   },
   {
@@ -49133,7 +49257,7 @@
       "page": 577
     },
     "appearance": {
-      "species": "Vampire"
+      "species": "vampire"
     }
   },
   {
@@ -49216,6 +49340,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Cataplasme pour plus de longévité et de vitalité"
+    },
+    "appearance": {
+      "species": "grand-cerf"
     }
   },
   {
@@ -49304,7 +49431,7 @@
       "page": 11
     },
     "appearance": {
-      "species": "Cheval"
+      "species": "cheval"
     },
     "harvest": {
       "rarity": "Unique",
@@ -49387,7 +49514,7 @@
       "page": 12
     },
     "appearance": {
-      "species": "Araignée"
+      "species": "araignee"
     },
     "harvest": {
       "rarity": "Limitée",
@@ -49478,7 +49605,7 @@
       "page": 12
     },
     "appearance": {
-      "species": "Araignée"
+      "species": "araignee"
     },
     "harvest": {
       "rarity": "Limitée",
@@ -49554,7 +49681,7 @@
       "page": 14
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -49631,7 +49758,7 @@
       "page": 14
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -49691,7 +49818,7 @@
       "page": 16
     },
     "appearance": {
-      "species": "Loup"
+      "species": "loup"
     },
     "harvest": {
       "rarity": "Limitée",
@@ -49763,7 +49890,7 @@
       "page": 16
     },
     "appearance": {
-      "species": "Loup"
+      "species": "loup"
     },
     "harvest": {
       "rarity": "Unique",
@@ -49861,7 +49988,7 @@
       "page": 18
     },
     "appearance": {
-      "species": "Sanglier"
+      "species": "sanglier"
     },
     "harvest": {
       "rarity": "Limitée",
@@ -49944,7 +50071,7 @@
       "page": 18
     },
     "appearance": {
-      "species": "Sanglier"
+      "species": "sanglier"
     },
     "harvest": {
       "rarity": "Unique",
@@ -50046,7 +50173,7 @@
       "page": 22
     },
     "appearance": {
-      "species": "Serpent"
+      "species": "serpent"
     },
     "harvest": {
       "rarity": "Exotique",
@@ -50140,7 +50267,7 @@
       "page": 28
     },
     "appearance": {
-      "species": "Ours"
+      "species": "ours"
     },
     "harvest": {
       "rarity": "Limitée",
@@ -50212,7 +50339,7 @@
       "page": 28
     },
     "appearance": {
-      "species": "Ours"
+      "species": "ours"
     },
     "harvest": {
       "rarity": "Unique",
@@ -50272,7 +50399,7 @@
       "page": 30
     },
     "appearance": {
-      "species": "Squig"
+      "species": "squig"
     },
     "harvest": {
       "rarity": "Limitée",
@@ -50356,7 +50483,7 @@
       "page": 31
     },
     "appearance": {
-      "species": "Gobelin"
+      "species": "gobelin"
     }
   },
   {
@@ -50463,7 +50590,7 @@
       "page": 33
     },
     "appearance": {
-      "species": "Dragon"
+      "species": "dragon"
     },
     "harvest": {
       "rarity": "Exotique",
@@ -50585,7 +50712,7 @@
       "page": 33
     },
     "appearance": {
-      "species": "Dragon"
+      "species": "dragon"
     },
     "harvest": {
       "rarity": "Unique",
@@ -50599,7 +50726,7 @@
     "title": null,
     "folder": "Zoo Impérial",
     "appearance": {
-      "species": "Géant",
+      "species": "geant",
       "parts": {
         "cheveux": 7
       },
@@ -50840,6 +50967,9 @@
       "rarity": "Unique",
       "danger": "Inoffensive",
       "uses": "On peut prédire l'avenir en jetant ses écailles dans l'eau"
+    },
+    "appearance": {
+      "species": "brochet-du-stir"
     }
   },
   {
@@ -51020,7 +51150,7 @@
       "page": 43
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -51111,7 +51241,7 @@
       "page": 43
     },
     "appearance": {
-      "species": "Rat ogre"
+      "species": "rat-ogre"
     },
     "harvest": {
       "rarity": "Exotique",
@@ -51208,6 +51338,9 @@
     "source": {
       "book": "ZI",
       "page": 43
+    },
+    "appearance": {
+      "species": "rat-loup"
     }
   },
   {
@@ -51349,7 +51482,7 @@
       "page": 26
     },
     "appearance": {
-      "species": "Rat ogre"
+      "species": "rat-ogre"
     }
   },
   {
@@ -51417,6 +51550,9 @@
       "rarity": "Limitée",
       "danger": "Inquiétante",
       "uses": "La gelée d'amibe est hautement inflammable"
+    },
+    "appearance": {
+      "species": "amibe"
     }
   },
   {
@@ -51425,7 +51561,7 @@
     "title": null,
     "folder": "Zoo Impérial",
     "appearance": {
-      "species": "Amibe"
+      "species": "amibe"
     },
     "char": {
       "M": 3,
@@ -51626,7 +51762,7 @@
       "page": 46
     },
     "appearance": {
-      "species": "Serpent"
+      "species": "serpent"
     },
     "harvest": {
       "rarity": "Exotique",
@@ -51730,7 +51866,7 @@
       "page": 48
     },
     "appearance": {
-      "species": "Troll"
+      "species": "troll"
     },
     "harvest": {
       "rarity": "Rare",
@@ -51845,7 +51981,7 @@
       "page": 48
     },
     "appearance": {
-      "species": "Troll"
+      "species": "troll"
     },
     "harvest": {
       "rarity": "Rare",
@@ -51859,7 +51995,7 @@
     "title": null,
     "folder": "Zoo Impérial",
     "appearance": {
-      "species": "Sangsue"
+      "species": "sangsue"
     },
     "char": {
       "M": 3,
@@ -52008,6 +52144,9 @@
       "rarity": "Unique",
       "danger": "Mortelle",
       "uses": "Les écailles d'une telle créature permettent de fabriquer une cape qui rend son porteur presque invisible"
+    },
+    "appearance": {
+      "species": "le-dechiqueteur-de-cadavres"
     }
   },
   {
@@ -52076,7 +52215,7 @@
       "page": 56
     },
     "appearance": {
-      "species": "Pégase"
+      "species": "pegase"
     },
     "harvest": {
       "rarity": "Exotique",
@@ -52249,6 +52388,9 @@
       "rarity": "Exotique",
       "danger": "Inquiétante",
       "uses": "La lame d'une épée dont la poignée a été taillée dans son bois sera toujours tranchante"
+    },
+    "appearance": {
+      "species": "preyton"
     }
   },
   {
@@ -52328,6 +52470,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Un cataplasme préparé à partir de ses yeux macérés permet de guérir la cécité"
+    },
+    "appearance": {
+      "species": "grand-aigle"
     }
   },
   {
@@ -52400,6 +52545,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Les flèches dont l'empennage est fait de ses plumes atteignent toujours leur cible"
+    },
+    "appearance": {
+      "species": "faucon-des-montagnes-grises"
     }
   },
   {
@@ -52495,6 +52643,9 @@
       "rarity": "Exotique",
       "danger": "Mortelle",
       "uses": "Il est impossible de mentir quand on tient sa serre dans la main"
+    },
+    "appearance": {
+      "species": "heomreth-hibou-geant"
     }
   },
   {
@@ -52589,6 +52740,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Ses yeux étourdissent quiconque croise son regard"
+    },
+    "appearance": {
+      "species": "cockatrice"
     }
   },
   {
@@ -52711,6 +52865,9 @@
       "rarity": "Exotique",
       "danger": "Mortelle",
       "uses": "Sa fourrure inspire la crainte chez les animaux qui lui ressemblent"
+    },
+    "appearance": {
+      "species": "chimere"
     }
   },
   {
@@ -52719,7 +52876,7 @@
     "title": null,
     "folder": "Zoo Impérial",
     "appearance": {
-      "species": "Chimère"
+      "species": "chimere"
     },
     "char": {
       "M": 6,
@@ -52969,7 +53126,8 @@
       "page": 70
     },
     "appearance": {
-      "species": "Humain"
+      "species": "humain",
+      "tenue": "cultiste"
     }
   },
   {
@@ -53061,6 +53219,9 @@
       "rarity": "Exotique",
       "danger": "Inquiétante",
       "uses": "La malédiction d'un peau-de-loup peut être levée en écorchant vif une autre de ces créatures"
+    },
+    "appearance": {
+      "species": "peau-de-loup"
     }
   },
   {
@@ -53148,7 +53309,7 @@
       "page": 74
     },
     "appearance": {
-      "species": "Minotaure"
+      "species": "minotaure"
     },
     "harvest": {
       "rarity": "Rare",
@@ -53231,6 +53392,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Son urine serait un répulsif pour les rats"
+    },
+    "appearance": {
+      "species": "tregara"
     }
   },
   {
@@ -53304,6 +53468,9 @@
       "rarity": "Limitée",
       "danger": "Inoffensive",
       "uses": "On dit qu'un couteau fabriqué à partir de son bec peut couper n'importe quoi et ignore les PA des armures non-magiques"
+    },
+    "appearance": {
+      "species": "macareux-a-bec-tranchant"
     }
   },
   {
@@ -53392,7 +53559,7 @@
       "page": 52
     },
     "appearance": {
-      "species": "Serpent"
+      "species": "serpent"
     },
     "harvest": {
       "rarity": "Rare",
@@ -53497,6 +53664,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Ses plaques seraient impénétrables"
+    },
+    "appearance": {
+      "species": "stegadon"
     }
   },
   {
@@ -53582,6 +53752,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Les pointes de flèche faites avec ses dents percent n'importe quelle armure"
+    },
+    "appearance": {
+      "species": "cornu"
     }
   },
   {
@@ -53678,6 +53851,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Son rugissement serait un remède contre la couardise"
+    },
+    "appearance": {
+      "species": "carnosaure"
     }
   },
   {
@@ -53772,6 +53948,9 @@
       "rarity": "Commune",
       "danger": "Inquiétante",
       "uses": "Sa fourrure est très prisée"
+    },
+    "appearance": {
+      "species": "chat-sauvage"
     }
   },
   {
@@ -53869,6 +54048,9 @@
       "rarity": "Unique",
       "danger": "Menaçante",
       "uses": "Sa fourrure est un signe de la faveur d'Ulric"
+    },
+    "appearance": {
+      "species": "lion-de-guerre-de-chrace"
     }
   },
   {
@@ -53949,7 +54131,7 @@
       "page": 20
     },
     "appearance": {
-      "species": "Griffon"
+      "species": "griffon"
     },
     "harvest": {
       "rarity": "Rare",
@@ -54030,7 +54212,7 @@
       "page": 34
     },
     "appearance": {
-      "species": "Dragon"
+      "species": "dragon"
     },
     "harvest": {
       "rarity": "Rare",
@@ -54109,6 +54291,9 @@
       "rarity": "Exotique",
       "danger": "Mortelle",
       "uses": "Les os sculptés de léviathan confèrent des pouvoirs surnaturels"
+    },
+    "appearance": {
+      "species": "leviathan"
     }
   },
   {
@@ -54188,6 +54373,9 @@
       "rarity": "Unique",
       "danger": "Mortelle",
       "uses": "Sa carapace serait faite de pierres précieuses"
+    },
+    "appearance": {
+      "species": "il-potente-granchio"
     }
   },
   {
@@ -54345,7 +54533,7 @@
       "page": 95
     },
     "appearance": {
-      "species": "Serpent"
+      "species": "serpent"
     },
     "harvest": {
       "rarity": "Exotique",
@@ -54430,7 +54618,7 @@
       "page": 96
     },
     "appearance": {
-      "species": "Dragon"
+      "species": "dragon"
     },
     "harvest": {
       "rarity": "Exotique",
@@ -54531,7 +54719,7 @@
       "page": 96
     },
     "appearance": {
-      "species": "Dragon"
+      "species": "dragon"
     },
     "harvest": {
       "rarity": "Unique",
@@ -54545,7 +54733,7 @@
     "title": null,
     "folder": "Zoo Impérial",
     "appearance": {
-      "species": "Squelette"
+      "species": "squelette"
     },
     "char": {
       "M": 4,
@@ -54695,7 +54883,7 @@
       "page": 98
     },
     "appearance": {
-      "species": "Skaven"
+      "species": "skaven"
     }
   },
   {
@@ -54764,7 +54952,7 @@
       "page": 98
     },
     "appearance": {
-      "species": "Rat ogre"
+      "species": "rat-ogre"
     }
   }
 ]

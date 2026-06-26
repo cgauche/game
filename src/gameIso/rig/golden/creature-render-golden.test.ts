@@ -6,23 +6,23 @@
  * l'identique, sinon une créature change d'apparence.
  *
  * Rend chaque entrée de `creatures.json` via le chemin de PROD (bipède = entityRigProfile+resolveRig ;
- * non-bipède = planById(bodyPlanOf).resolve), en `front` et `profile`, seed fixe.
+ * non-bipède = planById(bodyPlanById).resolve), en `front` et `profile`, seed fixe.
  */
 import { describe, it, expect } from 'vitest';
 import { creatures } from '../../../data';
 import { entityRigProfile } from '../enemyProfile';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
-import { planById, resolveByName } from '../bodyPlan';
+import { planById, resolveById } from '../bodyPlan';
 import type { View } from '../facing';
 
 const VIEWS: View[] = ['front', 'profile'];
 const SEED = 7;
 
-function renderSvg(name: string, view: View): string {
-  const r = resolveByName(name); // résolution data-driven (record/espèce exacte, plus de name-match)
+function renderSvg(id: string, view: View): string {
+  const r = resolveById(id); // résolution data-driven par ID de record (espèce explicite, plus de name-match)
   if (r.kind === 'rig') {
-    const p = entityRigProfile(name, SEED);
+    const p = entityRigProfile(id, SEED);
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '∅rig';
   }
   const plan = planById(r.plan);

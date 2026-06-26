@@ -128,7 +128,7 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable } from './scene';
+import { Scene, Effect, isWalkable, sceneMetresPerTile } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent } from './shipPostes';
@@ -149,6 +149,9 @@ import {
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
+// --- Résolveur d'aire des munitions/armes à effet de zone (Tir de zone / Explosion) extrait → combatArea.ts (baril) ---
+export * from './combatArea';
+import { resolveWeaponArea, areaTargets } from './combatArea';
 // --- Garde de reprise unique (« une modale / une pause bloque l'IA ? ») extraite → combatGate.ts (baril) ---
 export * from './combatGate';
 import { combatAdvanceBlocked, aiDriven } from './combatGate';
@@ -1273,15 +1276,11 @@ export function applyAttackResult(
         target.wounds.current = Math.max(0, target.wounds.current - fb);
         critLog.push(tr('cf.woundingStrike', { name: target.name, n: fb }));
       }
-      // Taillade (Aux Armes p.89) : une Blessure Critique infligée par une arme de Taillade ajoute
-      // un État Hémorragique, en plus de tous les effets du Coup Critique.
-      if (res.critical && !lethal) {
-        for (const { def, caps } of resolveQualities(weapon)) {
-          if (!caps?.onCritCondition) continue;
-          addCondition(target, caps.onCritCondition);
-          critLog.push(tr('cf.onCritCondition', { name: target.name, cond: caps.onCritCondition, key: def.key }));
-        }
-      }
+      // Effets « sur Critique » (Taillade → Hémorragique, Aux Armes p.89, et tout futur Trait/Talent/Atout/État)
+      // — DISPATCHER UNIQUE générique (data-driven `effects:[{trigger:'onCrit'}]`), comme `onHit`. Plus de
+      // boucle bespoke par capacité.
+      if (res.critical && !lethal)
+        critLog.push(...fireTriggers(get, attacker, 'onCrit', { victim: target, weapon, location: loc, woundsDealt: res.woundsLost, attackType: weapon.type, rng: battleRng(), set }));
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
@@ -1456,31 +1455,14 @@ export function applyAttackResult(
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
   if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng(), set })) log.push(ev('condition', line, target.id));
-  // Tir de zone (Aux Armes p.89) : nuage de projectiles. À bout portant (≤ 1 case ≈ 2 m) → +Indice
-  // Dégâts sur la cible ; à portée → la touche frappe AUSSI les Indice créatures les plus proches
-  // (≤ Indice mètres, 1 case = 2 m). Réutilise la géométrie de zone (comme le Souffle de créature).
+  // Munitions/armes à AIRE (Tir de zone / Explosion) — résolveur UNIQUE partagé avec la bordée navale
+  // (`combatArea.resolveWeaponArea`). Bande de portée + rayon en mètres convertis à l'échelle de la scène ;
+  // les États « infligés par l'arme » sont propagés par le chemin GÉNÉRIQUE onHit (cf. `hitSecondary`).
   if (res.hit && weapon.type === 'ranged' && res.damage != null && attacker.pos && target.pos && !isOutOfAction(target)) {
-    const tz = resolveQualities(weapon).find((r) => r.caps?.areaFire);
-    if (tz) {
-      const indice = tz.indice ?? 1;
-      if (chebyshev(attacker.pos, target.pos) <= 1) {
-        loseWounds(target, indice);
-        log.push(ev('shoot', tr('cf.blastPointBlank', { name: target.name, indice }), target.id));
-      } else {
-        const radTiles = Math.max(1, Math.ceil(indice / 2));
-        const near = battle.combatants
-          .filter((c) => c.kind !== attacker.kind && c.id !== target.id && !isOutOfAction(c) && c.pos && chebyshev(target.pos!, c.pos) <= radTiles)
-          .sort((a, b) => chebyshev(target.pos!, a.pos!) - chebyshev(target.pos!, b.pos!))
-          .slice(0, indice);
-        for (const sec of near) {
-          const wl = woundsFromHit(weapon, sec, res.location ?? 'corps', res.damage);
-          if (wl > 0) {
-            loseWounds(sec, wl);
-            log.push(ev('shoot', tr('cf.blastSecondary', { name: sec.name, wl }), sec.id));
-          }
-        }
-      }
-    }
+    const area = resolveWeaponArea(get, set, {
+      attacker, primaryTarget: target, weapon, damage: res.damage, location: res.location ?? 'corps', distanceTiles: combatDistance(attacker, target),
+    }, areaTargets(battle.combatants, sceneMetresPerTile(get().scene), (ship) => (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)), battleRng());
+    log.push(...evLines(area.lines, 'shoot', attacker.id, target.id));
   }
   // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.

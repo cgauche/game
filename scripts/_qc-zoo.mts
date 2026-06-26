@@ -1,8 +1,8 @@
-/** QC planche : rend des créatures par ID via le chemin de PROD (resolveByName → entityRigProfile/
+/** QC planche : rend des créatures par ID via le chemin de PROD (resolveById → entityRigProfile/
  * plan.resolve → bonesToSvg), front + profil. Sort public/qc/zoo.png. Args = ids séparés par virgules. */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { resolveByName, planById } from '../src/gameIso/rig/bodyPlan';
+import { resolveById, planById } from '../src/gameIso/rig/bodyPlan';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
@@ -12,7 +12,7 @@ import type { View } from '../src/gameIso/rig/facing';
 
 const SEED = 7;
 function renderSvg(id: string, view: View): string {
-  const r = resolveByName(id);
+  const r = resolveById(id);
   if (r.kind === 'rig') {
     const p = entityRigProfile(id, SEED);
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '';
@@ -30,7 +30,7 @@ const rows = ids.map((id, ri) => {
     `<g transform="translate(${(CW - 4) / 2 - 60},${CH - 16 - 150})">${renderSvg(id, view)}</g>` +
     `<text x="${(CW - 4) / 2}" y="${CH - 4}" text-anchor="middle" font-size="9" fill="#cdd" font-family="sans-serif">${view}</text></g>`,
   );
-  const res = resolveByName(id);
+  const res = resolveById(id);
   return `<g transform="translate(0,${ri * CH})">${cells.join('')}` +
     `<text x="${2 * CW + 8}" y="40" font-size="12" fill="#fff" font-family="sans-serif">${labelOf(id)}</text>` +
     `<text x="${2 * CW + 8}" y="58" font-size="10" fill="#8ab" font-family="sans-serif">${res.kind}/${res.plan}/${res.species}</text></g>`;

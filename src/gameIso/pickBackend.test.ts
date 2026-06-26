@@ -23,8 +23,8 @@ describe('pickBackend — classifieur de backend (rig / plan / sprite)', () => {
     expect(r.id).toBe('e-b');
   });
 
-  it('personnage créature non-bipède (Rat géant) → plan (fin de l’asymétrie sprite figé)', () => {
-    const r = pickBackend({ kind: 'sceneEntity', ent: ent({ id: 'c', kind: 'personnage', ref: 'Rat géant' }) });
+  it('personnage créature non-bipède (id rat-geant → espèce du record) → plan (fin de l’asymétrie sprite figé)', () => {
+    const r = pickBackend({ kind: 'sceneEntity', ent: ent({ id: 'c', kind: 'personnage', ref: 'rat-geant' }) });
     expect(r.backend).toBe('plan');
     expect(r.id).toBe('e-c');
   });

@@ -7,7 +7,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import { DEFS } from '../src/gameIso/sprites';
-import { planById, bodyPlanOf, resolveByName, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
+import { planById, bodyPlanById, resolveById, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import type { ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../src/engine/creatureAttacks';
@@ -27,12 +27,13 @@ function scaleBones(bones: ResolvedBone[], z: number, cx = 60, cy = 78): Resolve
 }
 
 /** Échantillons d'os d'une attaque (profil, face à la cible) ou null si bipède/monolithique. */
-function attackFrames(name: string, kind: AttackKind): { samples: ResolvedBone[][] } | null {
-  const planId = bodyPlanOf(name);
+function attackFrames(id: string, kind: AttackKind): { samples: ResolvedBone[][] } | null {
+  const planId = bodyPlanById(id);
   if (planId === 'biped') return null;
   const plan = planById(planId as BodyPlanId);
-  const species = resolveByName(name).species;
-  const sc = resolveByName(name).scale;
+  const r = resolveById(id);
+  const species = r.species;
+  const sc = r.scale;
   const z = sc > 1 ? +(1 / sc).toFixed(3) : 1;
   const quadFamily = planId === 'quadruped' || planId === 'winged';
   const poseAt = quadFamily ? (p: number) => quadAttackPose(kind, p) : (p: number) => plan.attackPose(p);
@@ -40,8 +41,8 @@ function attackFrames(name: string, kind: AttackKind): { samples: ResolvedBone[]
   return { samples };
 }
 
-function cell(name: string, kind: AttackKind, label: string): string {
-  const f = attackFrames(name, kind);
+function cell(id: string, kind: AttackKind, label: string): string {
+  const f = attackFrames(id, kind);
   if (!f) return '';
   const uid = `a${uidN++}`;
   const { css, svg } = animatedRig(f.samples, ATTACK_MS, uid);
@@ -54,13 +55,13 @@ function cell(name: string, kind: AttackKind, label: string): string {
 const rows: string[] = [];
 let nCreatures = 0, nAttacks = 0;
 for (const c of creatures) {
-  const planId = bodyPlanOf(c.label);
+  const planId = bodyPlanById(c.id);
   if (planId === 'biped') continue; // bipèdes → armes (anim-gallery)
   const attacks = creatureAttacks(c.traits ?? []);
   if (!attacks.length) continue;
   nCreatures++;
   nAttacks += attacks.length;
-  const cells = attacks.map((a) => cell(c.label, a.kind, a.label)).join('');
+  const cells = attacks.map((a) => cell(c.id, a.kind, a.label)).join('');
   rows.push(`<div style="display:flex;align-items:center;gap:10px;margin:8px 0;border-bottom:1px solid #222;padding-bottom:6px">
     <div style="width:150px;color:#eee;font:12px sans-serif">${c.label}<br><span style="color:#888;font-size:10px">${attacks.length} attaque(s)</span></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">${cells}</div></div>`);

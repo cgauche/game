@@ -11,7 +11,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells, etats, trappings as trappingsData, refLabel } from '../../data';
+import { spells, trappings as trappingsData, refLabel } from '../../data';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
@@ -96,7 +96,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
       const who = e.on === 'hero' ? '1ᵉʳ héros' : e.on === 'caster' ? 'lanceur' : e.on === 'target' ? 'cible' : 'groupe';
       return `${icon} ${who} : ${(e.ops ?? []).map(opSummary).join(', ') || '(aucune op)'}`;
     }
-    case 'zoneBlast': return `${icon} Souffle ${e.damage || '?'} rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})${e.conditions?.length ? ` +${e.conditions.map((c: any) => c.name).join('/')}` : ''}`;
+    case 'zoneBlast': return `${icon} Souffle ${(e.ops ?? []).length} op(s) rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})`;
     case 'fall': return `${icon} Chute ${e.metres ?? 0} m → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}${e.to ? ` ⤓(${e.to.x},${e.to.y}${e.to.z ? `,z${e.to.z}` : ''})` : ''}`;
     case 'setLight': return `${icon} Lumière ${Math.round((e.level ?? 1) * 100)} %`;
     case 'setDoor': return `${icon} Porte (${e.x ?? 0},${e.y ?? 0},${e.side ?? 'N'}) ${e.open ? 'ouverte' : 'fermée'}`;
@@ -418,16 +418,12 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
           </div>
         )}
         {effect.type === 'zoneBlast' && (
-          <div className="tf-row">
-            <label className="dr">Centre <input type="number" style={{ width: '3.2em' }} value={e.center?.x ?? 0} onChange={(ev) => upd({ center: { x: Number(ev.target.value), y: e.center?.y ?? 0 } })} />,<input type="number" style={{ width: '3.2em' }} value={e.center?.y ?? 0} onChange={(ev) => upd({ center: { x: e.center?.x ?? 0, y: Number(ev.target.value) } })} /></label>
-            <label className="dr">Rayon <input type="number" min={0} style={{ width: '3.2em' }} value={e.radius ?? 0} onChange={(ev) => upd({ radius: Number(ev.target.value) })} /></label>
-            <input placeholder="dégâts (ex. 1d10+15)" value={e.damage ?? ''} onChange={(ev) => upd({ damage: ev.target.value })} />
-            <select value={e.conditions?.[0]?.name ?? ''} onChange={(ev) => upd({ conditions: ev.target.value ? [{ name: ev.target.value }] : undefined })}>
-              <option value="">— État (option) —</option>
-              {etats.map((s) => (
-                <option key={s.label} value={s.label}>{s.label}</option>
-              ))}
-            </select>
+          <div className="test-fields">
+            <div className="tf-row">
+              <label className="dr">Centre <input type="number" style={{ width: '3.2em' }} value={e.center?.x ?? 0} onChange={(ev) => upd({ center: { x: Number(ev.target.value), y: e.center?.y ?? 0 } })} />,<input type="number" style={{ width: '3.2em' }} value={e.center?.y ?? 0} onChange={(ev) => upd({ center: { x: e.center?.x ?? 0, y: Number(ev.target.value) } })} /></label>
+              <label className="dr">Rayon <input type="number" min={0} style={{ width: '3.2em' }} value={e.radius ?? 0} onChange={(ev) => upd({ radius: Number(ev.target.value) })} /></label>
+            </div>
+            <GameOpEditor ops={e.ops ?? []} onChange={(ops) => upd({ ops })} />
           </div>
         )}
         {effect.type === 'startCombat' && (

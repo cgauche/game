@@ -8,7 +8,6 @@
  */
 import { CharKey, Difficulty } from '../engine/types';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
-import type { ZoneEffect } from '../engine/zones';
 import type { Flow, Condition } from './flow';
 import { type DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
@@ -276,10 +275,10 @@ export type Effect =
    *  flux de sort). Remplace `inflictDamage` (→ op `wounds`) et `applyCondition` (→ op `condition`). */
   | { type: 'ops'; ops: import('../engine/ops').GameOp[]; on?: 'party' | 'hero' | 'caster' | 'target'; heroId?: string }
   /** Souffle de ZONE (Lot 3) centré sur une case : tous les combattants à `radius` cases (Chebyshev)
-   *  — en combat par position, hors combat le groupe (à partyPos) — subissent `damage` (formule de
-   *  dés tirée PAR cible, ex. « 1d10+15 ») + les `conditions`. Bombe, grenade, piège de zone… Les
-   *  Blessures critiques sous 0 PB se composent en ajoutant un `inflictTrauma` (non auto ici). */
-  | { type: 'zoneBlast'; center: { x: number; y: number }; radius: number; damage: string; conditions?: { name: string; value?: number }[] }
+   *  — en combat par position, hors combat le groupe (à partyPos) — subissent les `ops` (vocabulaire
+   *  unique `GameOp`, appliquées par `applyOps` cible par cible). Bombe, grenade, piège de zone…
+   *  Dégâts BRUTS par défaut (`op:'wounds'` ignore BE+PA) ; mitiger = `{ignoreTB:false, ignoreAP:false}`. */
+  | { type: 'zoneBlast'; center: { x: number; y: number }; radius: number; ops: import('../engine/ops').GameOp[] }
   /** Chute (LDB 15 l.117-122) : la cible tombe de `metres` mètres → 3 Dégâts/mètre + 1d10, réduits par
    *  le Bonus d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre.
    *  `to` (optionnel) repositionne le GROUPE à l'arrivée (balcon→parterre, plancher de loge effondré). */
@@ -414,16 +413,17 @@ export type ZoneArea =
   | { kind: 'rect'; x: number; y: number; w: number; h: number }
   | { kind: 'disc'; cx: number; cy: number; radius: number };
 
-/** ZONE D'EFFET authorée (piège/hasard/aura environnementale). Payload = `ZoneEffect` partagé avec
- *  les zones de Sort. `onCross` se déclenche à la TRAVERSÉE (une case du chemin est dans l'aire),
- *  `perRound` au franchissement de Round pour qui STATIONNE dedans. Au moins l'un des deux. */
+/** ZONE D'EFFET authorée (piège/hasard/aura environnementale). Payload = `GameOp[]` partagé avec les
+ *  zones de Sort (vocabulaire unique, appliqué par `applyOps`). `onCross` se déclenche à la TRAVERSÉE
+ *  (une case du chemin est dans l'aire), `perRound` au franchissement de Round pour qui STATIONNE dedans.
+ *  Au moins l'un des deux. */
 export interface SceneEffectZone {
   id: string;
   label: string;
   area: ZoneArea;
   blocksLoS?: boolean;
-  onCross?: ZoneEffect;
-  perRound?: ZoneEffect;
+  onCross?: import('../engine/ops').GameOp[];
+  perRound?: import('../engine/ops').GameOp[];
   /** BARRIÈRE infranchissable : aucune créature ne peut PÉNÉTRER dans l'aire (mur magique, cercle de
    *  ward). `blockGroups` vide/absent = bloque TOUT le monde ; sinon ne bloque que les créatures dont
    *  un Groupe correspond (ex. `['Démon', 'Mort-vivant']` = barrière sacrée, profanes tenus à l'écart —
@@ -460,7 +460,7 @@ export interface Scene {
   restZones?: { rect: { x: number; y: number; w: number; h: number }; places: { auberge?: boolean; maison?: boolean; camp?: boolean }; quality?: 'normale' | 'pietre' }[];
   /** ZONES D'EFFET posées sur la carte (éditeur) — PIÈGES / hasards / brasiers : tout combattant qui
    *  TRAVERSE (`onCross` : pic, flaque acide, glyphe) ou STATIONNE (`perRound` : nuage de poison,
-   *  brasier) y subit l'effet (Dégâts/soin/États du `ZoneEffect`). Converties en `BattleZone`
+   *  brasier) y subit l'effet (Dégâts/soin/États en `GameOp[]`). Converties en `BattleZone`
    *  PERMANENTES au début du combat — même runtime que les zones de Sort (Mur de feu, Grands feux).
    *  `blocksLoS` masque la Ligne de Vue (fumée, ténèbres). Contenu 100 % donnée : aucune zone codée en dur. */
   effectZones?: SceneEffectZone[];

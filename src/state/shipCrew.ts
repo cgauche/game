@@ -5,8 +5,8 @@
  * batterie, perception…) — un seul endroit assigne les marins aux postes.
  */
 import type { Combatant } from '../engine/types';
-import { crewRoleValue, MORALE_BASE, type CrewAssignment } from '../engine/crewMorale';
-import { findCrewRoleById, findCrewTestTypeById } from '../data';
+import { crewRoleValue, MORALE_BASE, undercrewPenalty, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
+import { findCrewRoleById, findCrewTestTypeById, findVehicleById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
 import type { Get } from './flowTypes';
 
@@ -105,4 +105,15 @@ export function withCrewActed(crewActed: Record<string, string[]> | undefined, s
 export function shipMoraleScore(get: Get, ship: Combatant): number {
   const vessel = get().vessel;
   return vessel && ship.creatureId === vessel.vehicleId ? vessel.morale.score : MORALE_BASE;
+}
+
+/**
+ * Manque de bras GLOBAL d'un navire (MDG ch.14 l.55) : compare l'équipage NOMINAL du type (`ship.crew` de
+ * `vehicles.json`) aux membres encore EN ÉTAT (`exposedCrew` des `crewIds`) → −2 DR par tranche de 10 % manquant
+ * + plafond Succès Minime. Les morts/inconscients (Éclats, critiques « Équipage ») alimentent le déficit. Dérivé
+ * à l'usage. PUR (lit la donnée du type, pas le store). */
+export function shipUndercrew(ship: Combatant, combatants: Combatant[]): UndercrewPenalty {
+  const nominal = findVehicleById(ship.creatureId ?? '')?.ship?.crew ?? 0;
+  const present = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)).length;
+  return undercrewPenalty(nominal, present);
 }

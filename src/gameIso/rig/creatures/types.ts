@@ -48,12 +48,15 @@ export interface CreaturePerso {
 }
 
 export interface CreatureDef {
-  /** Nom canonique (clé d'espèce, p.ex. « Cheval », « Griffon », « Skaven »). */
+  /** Libellé canonique d'AFFICHAGE (p.ex. « Cheval », « Griffon », « Skaven »). N'est PLUS la clé. */
   name: string;
+  /** id d'espèce STABLE (slug, clé de rig). Défaut dérivé = `slugId(name)`. À préciser SEULEMENT
+   *  pour désambiguïser une collision future de slug (garde-fou : test d'unicité au build). */
+  id?: string;
   /** Gabarit corporel. `winged` = quadrupède + ailes (mêmes props `quad`). */
   plan: CreatureBodyPlan;
   // (de-POC P5/5d) `aliases`/`aliasOnly`/`matchPriority` RETIRÉS : la résolution de rendu se fait
-  // par l'espèce explicite / le record / le lookup EXACT `defByName(nom)` — plus aucun match flou.
+  // par l'id d'espèce explicite / le record / le lookup EXACT `defById(id)` — plus aucun match flou.
   /** Props de rendu du gabarit quad/ailé (requis si plan = quadruped | winged). */
   quad?: QuadProps;
   /** Race d'apparence (défauts tenue/monster/sex/parts/colors/scale). Défaut = baseSpeciesOf(name).

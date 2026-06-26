@@ -50,7 +50,7 @@ describe('decayZones — TTL en Rounds', () => {
 describe('crossZones — « Quiconque traverse le mur de feu » (LDB 47)', () => {
   const wall: BattleZone = {
     label: 'Mur de feu', tiles: [{ x: 4, y: 4 }, { x: 4, y: 5 }, { x: 4, y: 6 }], rounds: 3,
-    onCross: { damage: { amount: { bonusOf: 'FM' } }, conditions: [{ name: 'en-flammes' }] },
+    onCross: [{ op: 'wounds', amount: { bonusOf: 'FM' }, ignoreTB: false, ignoreAP: false }, { op: 'condition', name: 'en-flammes' }],
     casterId: 'w',
   };
   const caster = mk({ id: 'w', name: 'Pyromancien', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 } as Combatant['characteristics'] });
@@ -72,7 +72,7 @@ describe('crossZones — « Quiconque traverse le mur de feu » (LDB 47)', () =>
 describe('zonesRoundTick — « Quiconque se trouve dans la ZdE au début d’un Round » (Grands feux)', () => {
   const fire: BattleZone = {
     label: "Grands feux d'U'Zhul", tiles: discTiles({ x: 5, y: 5 }, 2), rounds: 4,
-    perRound: { damage: { amount: { dice: { n: 1, sides: 10, plus: 6 } }, ignoreAP: true }, conditions: [{ name: 'en-flammes' }] },
+    perRound: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 6 } }, ignoreTB: false, ignoreAP: true }, { op: 'condition', name: 'en-flammes' }],
   };
   it('occupant : 1d10+6 Dégâts ignorant les PA (mitigés BE) + 1 En flammes', () => {
     const inZone = mk({ id: 'a', pos: { x: 6, y: 5 }, armour: { tete: 9, brasG: 9, brasD: 9, corps: 9, jambeG: 9, jambeD: 9 } as Combatant['armour'] });
@@ -82,8 +82,33 @@ describe('zonesRoundTick — « Quiconque se trouve dans la ZdE au début d’un
     expect(inZone.wounds.current).toBe(4);
     expect(inZone.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
     expect(outZone.wounds.current).toBe(12);
-    expect(ticks.map((t) => t.line).join(' ')).toMatch(/ignore PA/);
+    expect(ticks.map((t) => t.line).join(' ')).toMatch(/PA ignorés/);
     expect(ticks.every((t) => t.combatant.id === 'a')).toBe(true); // chaque ligne porte son combattant
+  });
+});
+
+describe('GameOp[] dans une zone — wounds mitigé + condition unlessCondition (traversée & perRound)', () => {
+  // Zone authorée en vocabulaire UNIQUE : op:'wounds' mitigé (BE+PA déduits) + op:'condition' entretenu.
+  const ward: BattleZone = {
+    label: 'Brasier corrosif', tiles: discTiles({ x: 5, y: 5 }, 1), rounds: 3,
+    onCross: [{ op: 'wounds', amount: 8, ignoreTB: false, ignoreAP: false }, { op: 'condition', name: 'brise', unlessCondition: 'brise' }],
+    perRound: [{ op: 'wounds', amount: 8, ignoreTB: false, ignoreAP: false }, { op: 'condition', name: 'brise', unlessCondition: 'brise' }],
+  };
+  it('crossZones : 8 − BE 3 − PA 2 = 3 Blessures + Brisé entretenu sans empiler', () => {
+    const m = mk({ id: 'm', pos: { x: 4, y: 5 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 } as Combatant['armour'] });
+    crossZones([ward], m, [{ x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }], () => undefined, rng);
+    expect(m.wounds.current).toBe(9); // 12 − 3
+    expect(m.conditions.filter((c) => c.name === 'brise').reduce((a, c) => a + (c.value ?? 1), 0)).toBe(1);
+    crossZones([ward], m, [{ x: 4, y: 5 }, { x: 5, y: 5 }], () => undefined, rng);
+    expect(m.conditions.filter((c) => c.name === 'brise').reduce((a, c) => a + (c.value ?? 1), 0)).toBe(1); // unlessCondition : pas empilé
+  });
+  it('zonesRoundTick : même mitigation + Brisé entretenu pour l’occupant', () => {
+    const c = mk({ id: 'a', pos: { x: 5, y: 5 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 } as Combatant['armour'] });
+    zonesRoundTick([ward], [c], rng);
+    expect(c.wounds.current).toBe(9);
+    zonesRoundTick([ward], [c], rng);
+    expect(c.wounds.current).toBe(6); // 2e tick : encore 3 Blessures
+    expect(c.conditions.filter((x) => x.name === 'brise').reduce((a, x) => a + (x.value ?? 1), 0)).toBe(1); // entretenu
   });
 });
 

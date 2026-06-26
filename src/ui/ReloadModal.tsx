@@ -44,7 +44,8 @@ export function ReloadModalView({
       title={`Recharger — ${weaponName}`}
       /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */
       actor={actor}
-      subtitle={null}
+      /* Soutien d'équipage d'une Arme d'équipe servie (MDG ch.12 l.462) — déjà fondu dans Projectiles. */
+      subtitle={pr.soutien?.count ? `Soutien : +${pr.soutien.bonus} (${pr.soutien.count} servant${pr.soutien.count > 1 ? 's' : ''})` : null}
       /* Test ÉTENDU (#23) : barre de DR cumulé vers l'Indice de Recharge. */
       extra={<DrBar cum={rolled ? after : pr.progressBefore} target={pr.reload} />}
       rolled={rolled}

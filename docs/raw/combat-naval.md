@@ -61,8 +61,9 @@ comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tes
 `src/state/shipCrew.ts` (`shipCrewAssignments`, `shipDefaultRoles`, `crewTestContributors`).
 
 **État du code.** ✅ somme des DR, essentiel ×2, Moral, « un jet par poste » (PJ + 1 marin représentant).
-⚠️ **Manque de bras** : ✅ (R3) cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ; ⬜ sous-effectif
-d'équipage global −2 DR plafond Succès Minime + tranche 10 % (hors périmètre). ⬜ saboteur (−1 à −5 DR).
+✅ **Manque de bras** : cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ET sous-effectif d'équipage
+GLOBAL −2 DR par tranche de 10 % manquant + plafond Succès Minime (`undercrewPenalty` vs `ship.crew`, branché aux
+Tests de manœuvre/batterie via `maneuverCrewTotal`). ⬜ saboteur (−1 à −5 DR).
 ⬜ Chansonnier (bonus de chant non chiffré par le RAW → non modélisé, OK).
 
 ---
@@ -119,7 +120,10 @@ choisit**.
 marins ayant contribué à un Test ce Round. Les rôles Capitaine/Chansonnier/Mousse/Timonier étant dans `manoeuvre`
 ET `batterie`, un marin qui contribue aux DEUX le même Round le fait en **cumul à +2 crans** (`rollCrewRole(cumul)`
 → `easeDifficulty(-2)`) — décision GM : cumul AUTORISÉ (l.53), pas d'exclusion. La bordée est en plus bornée par la
-**Recharge** (topic suivant). ⬜ Manque de bras GLOBAL (−2 DR plafond, tranche 10 %) noté hors périmètre.
+**Recharge** (topic suivant). ✅ Manque de bras GLOBAL (−2 DR + plafond Succès Minime par tranche de 10 % manquant
+vs `ship.crew`) : `undercrewPenalty` → `maneuverCrewTotal`. ✅ **Tâches d'équipage PARALLÈLES le même Round** :
+manœuvre + bordée(s) + **recharge** coexistent (la bordée/recharge ne consomment PAS `acted`, seule la manœuvre =
+1 déplacement/Round), bornées par l'occupation `crewActed` (l.37).
 
 ---
 
@@ -187,8 +191,9 @@ proches ; Extrême → −Indice Dégâts.
 
 **État du code.** ✅ (R1) `resolveVolley` prépare l'arme de chaque pièce comme le tir individuel : `weaponWithAmmo`
 (munition du chef → Dégâts + **Perforante**/bypass via `woundsFromHit`) puis `crewedFireWeapon` (sous-effectif).
-⬜ RESTE : **Explosion / Tir de zone** (multi-cibles) ; qualités à chiffre des unités (Percutante/Dévastatrice/
-Empaleuse) en bordée ; **Dangereuse → Incident** ; picker de munition par poste + approvisionnement des navires.
+✅ **Explosion / Tir de zone** (multi-cibles, cf. [Munitions à aire](#munitions-a-aire-explosion--tir-de-zone--multi-cibles)).
+⬜ RESTE : qualités à chiffre des unités (Percutante/Dévastatrice/Empaleuse) en bordée ; **Dangereuse → Incident** ;
+picker de munition par poste + approvisionnement des navires.
 
 ---
 
@@ -219,7 +224,10 @@ INDIVIDUEL**.
 
 **État du code.** ✅ (R1) `resolveVolley` dérive l'arme effective de chaque pièce via `crewedFireWeapon(item,
 servantsPrésents)` (exposés non-incapacités) AVANT le calcul de Dégâts → un Canon moyen (Arme d'équipe 3) à 1 servant
-tire en Recharge ×2 + Imprécise (−1 DR via `attackDRAdjust`). ⬜ Incident de tir (Dangereuse) noté hors périmètre.
+tire en Recharge ×2 + Imprécise (−1 DR via `attackDRAdjust`). ✅ **Recharge = Test étendu de Projectiles + Soutien**
+(LDB 62 l.333 / MDG l.462) : `crewedReloadStep` (cumul de DR vers Recharge N) + `soutienBonus` GÉNÉRIQUE (un servant
+prête +10) → action « Recharger » du navire (`battleShipReload`), état `loaded`/`reloadProgress` sur le POSTE, reset
+si interrompu. ⬜ Incident de tir (Dangereuse) noté hors périmètre.
 
 ---
 
@@ -248,8 +256,52 @@ les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.** »
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
-(`woundsFromHit` plancher 0) + localisation 1d100 + Critique (double OU B=0) ; **Recharge** par poste (`reloadUntilRound`)
-+ équipage-ressource (`crewActed`, cumul +2 crans). ⬜ RESTE : Explosion/Tir de zone + Dangereuse/Incident.
+(`woundsFromHit` plancher 0) + localisation 1d100 + Critique (double OU B=0) ; après tir la pièce est **DÉCHARGÉE**
+(`loaded=false`), rechargée par le **Test étendu** `battleShipReload` (≠ auto-rechargement) + équipage-ressource
+(`crewActed`, cumul +2 crans, tâches PARALLÈLES). ✅ **Explosion / Tir de zone** (cf. topic suivant) ; ⬜ RESTE : Dangereuse/Incident.
+
+---
+
+## Munitions à AIRE (Explosion / Tir de zone) — multi-cibles
+
+**Synthèse.** Deux Atouts d'arme/munition à effet de zone, pilotés par la DONNÉE (`qualities.json`, lus par
+`resolveQualities`/`caps`) — **aucun id d'arme en dur**, un SEUL résolveur (`resolveWeaponArea`) partagé par le tir
+individuel ET la bordée :
+
+- **Explosion (Indice)** (`LDB p.298`) : « **Tous les Personnages situés à *Indice* mètres du point cible frappé
+  subissent DR + Dégâts d'arme et gagnent tous les États infligés par l'arme.** » → DR+Dégâts (déjà calculés) +
+  propagation des États par le chemin GÉNÉRIQUE `onHit` (`fireTriggers`).
+- **Tir de zone (Indice)** (`MDG 12 l.466-472`) : **Bout portant** → 1 cible, **+Indice aux Dégâts** ; **Courte à
+  Longue** → la cible + les **Indice cibles visibles les plus proches** ; **Extrême** → idem mais **−Indice aux
+  Dégâts**. La bande dérive de la portée (`rangeBandName`), le rayon des mètres→cases via `sceneMetresPerTile`.
+
+**Cibles secondaires EN MER — composition LITTÉRALE de deux règles RAW (INTERPRÉTATION, choix conservateur).** À
+l'échelle Mer (`metresPerTile = 10`), un rayon de quelques mètres fait < 1 case : un rayon métrique strict
+n'attraperait personne (dégénéré). On compose donc, sans inventer de règle :
+
+- `MDG 13` (Dégâts aux navires) : un coup à la Localisation « **Équipage** » touche un **marin EXPOSÉ** « comme un
+  combat normal » (précédent des **Éclats** : Indice marins encaissent un coup, `exposedCrew`) ;
+- `MDG 12 l.466-472` / `LDB p.298` : Tir de zone ajoute les *Indice* plus proches ; Explosion touche tous dans le rayon.
+
+→ Quand la cible primaire d'une munition à aire est un **NAVIRE** (`bodyShape:'vehicule'`), les cibles secondaires
+sont l'**ÉQUIPAGE EXPOSÉ de ce navire** (`exposedCrew(crewIds)`) — **jusqu'à Indice** marins pour Tir de zone, **tous**
+pour Explosion. PAS de cas spécial « navires au contact » : un autre navire n'est touché QUE si la règle métrique
+générique (cible = personnage, distance via `sceneMetresPerTile`) l'attrape. Les Dégâts (+Indice/−Indice par bande),
+`woundsFromHit` et la propagation des États (`onHit`) sont COMMUNS aux deux branches.
+
+**Voir aussi.** [Critiques de navire (Éclats)](#critiques-de-navire-eclats-voie-deau-en-flammes) ·
+[Tir de batterie](#tir-de-batterie-la-bordee) · [Pièces et munitions](#artillerie--pieces-et-munitions).
+
+**Implémente.** `src/state/combatArea.ts` (`resolveWeaponArea` + stratégie `areaTargets` terre/mer ; module FEUILLE
+ré-exporté par `combatFlow`) ; primitive de géométrie partagée `combatantsWithinRadius` (`src/state/combatGeometry.ts`) ;
+appelé en tir individuel (`combatFlow.applyAttackResult`) et en bordée (`combatSlice.shipBatteryConfirm`, qui fait
+AUSSI passer chaque touche de coque par `fireTriggers('onHit')` → tout Atout `onHit` se déclenche en bordée sans code
+spécifique). Données : `qualities.json` (`a-explosion` `capabilities.explosion`, `tir-de-zone` `capabilities.areaFire`).
+
+**État du code.** ✅ Tir de zone (3 bandes RAW, corrige l'ancien +Indice Blessures brut → +Indice Dégâts ; ajoute la
+bande Extrême) ; ✅ Explosion (rayon Indice + États propagés) ; ✅ branche navale (équipage exposé) ; ✅ extensibilité
+bordée (onHit générique). ⬜ RESTE : l'AoE « point cible » libre (on vise la cible, pas une case arbitraire) — RAW vise
+le « point cible frappé », ce qui coïncide avec la cible de la touche ; suffisant pour les munitions navales.
 
 ---
 
@@ -350,7 +402,7 @@ désormais les MÊMES fonctions AGNOSTIQUES que le tir individuel (`weaponWithAm
    `bearingPostes` exclut les pièces en recharge (bouton/réticule). NB : modèle « N Rounds » = approximation du Test
    étendu à DR cumulés (refinement noté).
 4. ⚠️ **Munitions** (R1 partiel) — `weaponWithAmmo` fusionne la munition du chef (Dégâts + **Perforante**/bypass via
-   `woundsFromHit`). ⬜ RESTE : **Explosion / Tir de zone** (multi-cibles) + **Dangereuse → Incident**.
+   `woundsFromHit`). ✅ **Explosion / Tir de zone** (multi-cibles, `resolveWeaponArea`). ⬜ RESTE : **Dangereuse → Incident**.
 5. ✅ **« Tout coup à B=0 = Critique »** (R1, `MDG 13 l.656`) — `resolveVolley` critique sur double OU `wounds.current ≤ 0`.
 6. ⚠️ **Manque de bras** (R3 partiel) — cumul +2 crans FAIT (réveille `doubleRole`/`easeDifficulty`). ⬜ RESTE : −2 DR
    plafond Succès Minime + tranche 10 % (sous-effectif d'ÉQUIPAGE global, distinct du sous-effectif d'une pièce).

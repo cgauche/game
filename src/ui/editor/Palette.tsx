@@ -10,7 +10,7 @@ import { TERRAINS } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
-import { creatureSpeciesNames } from '../../gameIso/rig/creatures';
+import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import type { Tool } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
@@ -224,13 +224,13 @@ export function Palette({
             <div className="mini-title">Personnage à poser</div>
             {searchBox('espèce…')}
             <div className="pal-list">
-              {['Villageois', ...creatureSpeciesNames()].filter(match).map((name) => (
+              {[{ id: '', label: 'Villageois' }, ...creatureSpeciesOptions()].filter((o) => match(o.label)).map((o) => (
                 <button
-                  key={name}
-                  className={`pal-item${(tool.ref ?? 'Villageois') === name ? ' active' : ''}`}
-                  onClick={() => setTool({ mode: 'entity', kind: 'personnage', ref: name === 'Villageois' ? undefined : name })}
+                  key={o.id || '__villageois'}
+                  className={`pal-item${(tool.ref ?? '') === o.id ? ' active' : ''}`}
+                  onClick={() => setTool({ mode: 'entity', kind: 'personnage', ref: o.id || undefined })}
                 >
-                  {name}
+                  {o.label}
                 </button>
               ))}
             </div>

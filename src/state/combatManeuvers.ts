@@ -32,6 +32,7 @@ import { findTalentById, findPsychologyById, type ManeuverDef, type ManeuverMeas
 import { sizeGap } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev, type Pt } from './path';
+import { combatantsWithinRadius } from './combatGeometry';
 import { smokeZone } from './lineOfSight';
 import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
@@ -297,15 +298,15 @@ export function resolveManeuver(
 
   if (def.targeting === 'zone') {
     const rangeTiles = tilesOf(measureMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'E')) / 2));
-    const foes = battle.combatants.filter((c) => alive(c) && chebyshev(attacker.pos!, c.pos!) <= rangeTiles);
+    const foes = combatantsWithinRadius(attacker.pos!, rangeTiles, battle.combatants, alive);
     const center = chosenTarget && alive(chosenTarget) && chebyshev(attacker.pos!, chosenTarget.pos!) <= rangeTiles
-      ? chosenTarget : foes.length ? nearest(foes) : null;
+      ? chosenTarget : foes[0] ?? null; // `foes` est trié par distance (combatantsWithinRadius) → le plus proche d'abord
     if (!center) { set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } }); return; }
     // Rayon de Souffle : `blast` résolu contre la CIBLE au centre (« Bonus de Force » → BF de la cible, RAW l.251 ;
     // Vomi « 2 mètres » → littéral, 1 case). Plus de regex `/force/i` — la mesure structurée porte le référent.
     const blast = tilesOf(measureMeters(def.blast, center)) ?? 1;
     emitAoe(get, center.pos!, blast, def.kind, def.label);
-    const affected = battle.combatants.filter((c) => alive(c) && chebyshev(center.pos!, c.pos!) <= blast);
+    const affected = combatantsWithinRadius(center.pos!, blast, battle.combatants, alive);
     for (const tgt of affected) hitOne(tgt);
     // Fumée (souffle-fumee) : la zone bloque les Lignes de vue pendant BE Rounds — GÉOMÉTRIE moteur (pas un GameOp).
     if (def.id === 'souffle-fumee') {
@@ -318,7 +319,7 @@ export function resolveManeuver(
   } else if (def.targeting === 'allFoes') {
     // Hurlement (l.135) : tous les ennemis VIVANTS (≠ Mort-vivant) à Initiative mètres — filtre de Groupe moteur.
     const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2));
-    const living = battle.combatants.filter((c) => alive(c) && chebyshev(attacker.pos!, c.pos!) <= radius && !hasTraitKey(c.traits, 'mort-vivant'));
+    const living = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !hasTraitKey(c.traits, 'mort-vivant'));
     emitAoe(get, attacker.pos, radius, def.kind, def.label);
     for (const tgt of living) hitOne(tgt);
   } else {

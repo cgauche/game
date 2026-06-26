@@ -234,7 +234,7 @@ const scene: Scene = {
             steps: [
               { kind: 'do', effect: { type: 'journal', text: 'Près de l’allée centrale, la lueur d’une mèche embrase la pénombre…' } },
               { kind: 'do', effect: { type: 'setLight', level: 0.8 } },
-              { kind: 'do', effect: { type: 'zoneBlast', center: { x: 9, y: 8 }, radius: 1, damage: '2' } },
+              { kind: 'do', effect: { type: 'zoneBlast', center: { x: 9, y: 8 }, radius: 1, ops: [{ op: 'wounds', amount: 2 }] } },
               { kind: 'do', effect: { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' } },
               testFlow(
                 { skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha' },
@@ -256,7 +256,7 @@ const scene: Scene = {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
           flow: flowFromEffects([
             { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
-            { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'en-flammes' }] },
+            { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, ops: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 15 } } }, { op: 'condition', name: 'en-flammes' }] },
           ]),
         },
       ]),

@@ -748,6 +748,8 @@ export interface GameState extends RollFlowActionsMap {
   shipManeuverSetTurn: (steps: number) => void;
   shipManeuverConfirm: () => void;
   shipManeuverCancel: () => void;
+  /** Recharge d'un poste (MDG ch.12 l.462) : ouvre la modale du Test étendu de Projectiles du chef de pièce + Soutien. */
+  battleShipReload: (shipId: string, posteUid: string) => void;
   /** Bordée (« Tir de batterie », MDG ch.14 l.128) : ouvre la modale du Test d'équipage des Artilleurs sur `targetId`. */
   battleShipBattery: (shipId: string, targetId: string) => void;
   shipBatteryConfirm: () => void;

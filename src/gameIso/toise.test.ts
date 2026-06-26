@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveByName } from './rig/bodyPlan';
+import { resolveById, resolveSpecies } from './rig/bodyPlan';
 import { sizeTokenScale } from './sizeScale';
 import { parseSizeLabel, type SizeCategory } from '../engine/size';
 import { creatures } from '../data/index';
@@ -12,7 +12,7 @@ function sizeOf(traits: TraitList | undefined): SizeCategory {
   }
   return 'moyenne';
 }
-const artScale = (label: string): number => resolveByName(label).scale;
+const artScale = (id: string): number => resolveById(id).scale;
 
 // GARDE-FOU de la toise (décision utilisateur 2026-06-11) : l'art d'un modèle est dessiné à la
 // baseline MOYENNE — son échelle (sl / race.scale / perso.scale) n'exprime que la NUANCE
@@ -21,7 +21,7 @@ const artScale = (label: string): number => resolveByName(label).scale;
 describe('toise — échelles de rendu (art = nuance intra-catégorie, la Taille agrandit)', () => {
   it("aucune créature du bestiaire n'exprime sa catégorie via l'échelle d'art (bande 0.5-1.35)", () => {
     for (const c of creatures) {
-      const art = artScale(c.label);
+      const art = artScale(c.id);
       expect(art, `${c.label} (art ${art})`).toBeGreaterThanOrEqual(0.5);
       expect(art, `${c.label} (art ${art})`).toBeLessThanOrEqual(1.35);
     }
@@ -30,18 +30,18 @@ describe('toise — échelles de rendu (art = nuance intra-catégorie, la Taille
   it('échelle finale plafonnée par catégorie (art × Taille ≤ Taille × 1.35)', () => {
     for (const c of creatures) {
       const size = sizeOf(c.traits);
-      const fin = artScale(c.label) * sizeTokenScale(size);
+      const fin = artScale(c.id) * sizeTokenScale(size);
       expect(fin, `${c.label} (${size}, final ×${fin.toFixed(2)})`).toBeLessThanOrEqual(sizeTokenScale(size) * 1.35);
     }
   });
 
   it('ancrages : un cheval (Grande) ~×1.3 humain, un Géant (Énorme) ~×2.4 — plus de ×3/×6', () => {
-    expect(resolveByName('Cheval').scale * sizeTokenScale('grande')).toBeLessThanOrEqual(1.5);
-    expect(resolveByName('Géant').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
-    expect(resolveByName('Dragon').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
+    expect(resolveSpecies('cheval').scale * sizeTokenScale('grande')).toBeLessThanOrEqual(1.5);
+    expect(resolveSpecies('geant').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
+    expect(resolveSpecies('dragon').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
   });
 
   it('la nuance intra-catégorie reste respectée (loup < cheval ; catégorie inchangée)', () => {
-    expect(resolveByName('Loup').scale).toBeLessThan(resolveByName('Cheval').scale);
+    expect(resolveSpecies('loup').scale).toBeLessThan(resolveSpecies('cheval').scale);
   });
 });

@@ -32,7 +32,7 @@ export function ShipBatteryModal() {
 
   const allRolled = p.participants.every((x) => x.result);
   const unrolled = p.participants.filter((x) => x.interactive && !x.result && owns(x.id));
-  const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore); // DR PARTAGÉ (essentiel ×2 + Moral)
+  const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew); // DR PARTAGÉ (essentiel ×2 + Moral + Manque de bras)
   const postes = (ship.postes ?? []).filter((pp) => pp.side === p.side);
   const plural = (n: number) => (n > 1 ? 's' : '');
   const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);

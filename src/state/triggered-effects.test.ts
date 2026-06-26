@@ -4,7 +4,7 @@
  * réutilisant l'exécuteur des sorts (`runSpellFlowLines`). Plus de handler en dur par trait/atout.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { fireTriggers } from './triggeredEffects';
+import { fireTriggers, applyTriggeredEffects } from './triggeredEffects';
 import './combatFlow'; // effet de bord : installe le routeur de Test + l'applier triggeredTest
 import { runSpellFlowLines } from './combatEffects';
 import { useGame } from './store';
@@ -45,6 +45,17 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     const weapon: Weapon = { name: 'Fléau à chaîne', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'immobilisante' }] } as Weapon;
     fireTriggers(noBattle(), knight, 'onHit', { victim: foe, weapon });
     expect(empetre(foe)?.value).toBe(1);
+  });
+
+  it('ATOUT Taillade : effet sur CRITIQUE (déclencheur onCrit générique) → Hémorragique ; PAS à la touche simple', () => {
+    const knight = mk({ id: 'kn' });
+    const foe = mk({ id: 'fo' });
+    const weapon: Weapon = { name: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon;
+    const hemo = (c: Combatant) => c.conditions.find((x) => x.name === 'hemorragique');
+    fireTriggers(noBattle(), knight, 'onHit', { victim: foe, weapon }); // touche simple → RIEN (Taillade ne déclenche que sur Critique)
+    expect(hemo(foe)).toBeUndefined();
+    fireTriggers(noBattle(), knight, 'onCrit', { victim: foe, weapon }); // Critique → Hémorragique, via le MÊME dispatcher data-driven
+    expect(hemo(foe)?.value).toBe(1);
   });
 
   it('déjà Empêtré → pas de re-application (unlessCondition)', () => {
@@ -149,6 +160,50 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     runSpellFlowLines(victim, attacker, flow, { rng: makeRNG(3), caster: attacker });
     expect(victim.wounds.current).toBeLessThan(15); // 1d10 Dégâts appliqués (ignore BE/PA par défaut)
     expect(empetre(victim)?.value).toBe(1);
+  });
+});
+
+/**
+ * COMPOSABILITÉ « rendre un effet de zone depuis N'IMPORTE QUELLE source » (S3) : l'aire n'est PAS réservée
+ * aux armes (`areaFire`/`explosion`). Le canal GÉNÉRIQUE `TriggeredEffect.on = {near, radiusMeters}` — déjà
+ * data-driven (Trait/Talent/Atout/État, GameOps) — pose une zone SOURCE-AGNOSTIQUE qui passe par
+ * l'ORCHESTRATEUR d'aire PARTAGÉ (`combatantsWithinRadius`) puis applique ses `GameOp[]` à CHAQUE cible.
+ */
+describe('Aire source-agnostique — un TRAIT pose `on:{near}` → GameOps à TOUTES les cibles du rayon', () => {
+  // Un effet déclenché AUTHORÉ porté par un trait : à la touche, 12 PB de zone (rayon 4 m = 2 cases) autour
+  // de la VICTIME. Aucune arme : c'est la donnée du trait (comme l'« arc d'Azyr » du domaine) qui pose l'aire.
+  const burstEffect = {
+    trigger: 'onHit' as const,
+    on: { near: 'victim' as const, radiusMeters: 4 }, // 4 m → 2 cases (Chebyshev d'empreinte)
+    flow: { kind: 'do' as const, effect: { type: 'ops' as const, on: 'target' as const, ops: [{ op: 'wounds' as const, amount: 12 }] } },
+  };
+
+  it('applique les GameOps à TOUS les combattants du rayon (exclut le centre/porteur), pas au combattant hors rayon', () => {
+    const attacker = mk({ id: 'atk', pos: { x: 0, y: 0 } });
+    const victim = mk({ id: 'vic', pos: { x: 6, y: 6 }, wounds: { current: 20, max: 20 } });    // le CENTRE (exclu)
+    const nearA = mk({ id: 'nA', pos: { x: 7, y: 6 }, wounds: { current: 20, max: 20 } });        // 1 case du centre → dans le rayon
+    const nearB = mk({ id: 'nB', pos: { x: 6, y: 8 }, wounds: { current: 20, max: 20 } });        // 2 cases → dans le rayon
+    const far = mk({ id: 'far', pos: { x: 6, y: 12 }, wounds: { current: 20, max: 20 } });        // 6 cases → hors rayon
+    const get = () => ({ battle: { combatants: [attacker, victim, nearA, nearB, far] } }) as never;
+
+    const lines = applyTriggeredEffects(get, attacker, [burstEffect], 'onHit', { victim, rng: makeRNG(1) });
+
+    expect(nearA.wounds.current).toBe(8);  // 20 − 12
+    expect(nearB.wounds.current).toBe(8);  // 20 − 12
+    expect(victim.wounds.current).toBe(20); // le centre est EXCLU (`c.id !== center.id`)
+    expect(far.wounds.current).toBe(20);    // hors rayon → intact
+    expect(lines.length).toBeGreaterThan(0);
+  });
+
+  it('un combattant HORS DE COMBAT dans le rayon n’est pas touché (pas d’éclaboussure sur un cadavre)', () => {
+    const attacker = mk({ id: 'atk', pos: { x: 0, y: 0 } });
+    const victim = mk({ id: 'vic', pos: { x: 6, y: 6 } });
+    const dead = mk({ id: 'dd', pos: { x: 7, y: 6 }, wounds: { current: 0, max: 20 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    const get = () => ({ battle: { combatants: [attacker, victim, dead] } }) as never;
+
+    applyTriggeredEffects(get, attacker, [burstEffect], 'onHit', { victim, rng: makeRNG(1) });
+
+    expect(dead.wounds.current).toBe(0); // intact : `isOutOfAction` l'exclut de la collecte d'aire
   });
 });
 

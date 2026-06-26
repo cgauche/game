@@ -63,6 +63,7 @@ export function ActionBar() {
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
   const battleShipManeuver = useGame((s) => s.battleShipManeuver);
+  const battleShipReload = useGame((s) => s.battleShipReload);
   const recoverState = useGame((s) => s.battleRecoverState);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const aim = useGame((s) => s.battleAim);
@@ -364,6 +365,11 @@ export function ActionBar() {
     slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
     if ((active.postes ?? []).length > 0)
       slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: '🎯', label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte (MDG ch.14)`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
+    // Recharge (MDG ch.12 l.462 / LDB 62) : pièces DÉCHARGÉES dont le chef n'a pas encore agi ce Round → Test
+    // étendu de Projectiles du chef + Soutien. Tâche d'équipage PARALLÈLE (occupe l'équipage, pas le tour du navire).
+    const reloadable = (active.postes ?? []).filter((p) => p.loaded === false && p.crewIds?.[0] && !(battle.crewActed?.[active.id] ?? []).includes(p.crewIds[0]));
+    if (reloadable.length)
+      slots.push({ id: 'ship-reload', cls: 'ab-alert', icon: '🔄', label: `Recharger${reloadable.length > 1 ? ` (${reloadable.length})` : ''}`, title: `Recharger une pièce déchargée : Test étendu de Projectiles du chef de pièce + Soutien des servants (MDG ch.12 l.462)`, run: () => battleShipReload(active.id, reloadable[0].item.uid) });
     slots.push({ id: 'end-turn', cls: 'ab-end', icon: '⏭️', label: 'Fin du tour', title: `Finir le tour de ${active.name}`, run: onEndTurn });
   }
   hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge

@@ -7,13 +7,12 @@
  */
 import { useState, type ReactNode } from 'react';
 import { Scene, SceneEntity, BuildingFeature, Trigger, SceneEffectZone } from '../../state/scene';
-import type { ZoneEffect } from '../../engine/zones';
 import type { Settlement } from '../../engine/disponibilite';
 import { DEFS } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { pickBackend } from '../../gameIso/pickBackend';
-import { creatureSpeciesNames } from '../../gameIso/rig/creatures';
+import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { BUILDINGS, BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { perimeterTiles, defaultDoor } from '../../state/buildings';
@@ -23,6 +22,7 @@ import { findCreatureById, creatureLabel } from '../../data';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { ParamFields } from './ParamFields';
 import { effectCtxOf } from './EffectList';
+import { GameOpEditor } from './GameOpEditor';
 import { FlowEditor } from './FlowEditor';
 import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
@@ -387,23 +387,10 @@ export function Inspector({
 
           {efz && sel?.type === 'effectZone' && (() => {
             const r = effectZoneRect(efz.area);
-            const eff = efz.onCross ?? efz.perRound;
-            const dmg = typeof eff?.damage?.amount === 'number' ? eff.damage.amount : 0;
-            const ignoreAP = !!eff?.damage?.ignoreAP;
-            const condStr = (eff?.conditions ?? []).map((c) => c.name).join(', ');
-            const buildEff = (d: number, iap: boolean, cs: string): ZoneEffect => {
-              const conditions = cs.split(',').map((s) => s.trim()).filter(Boolean).map((name) => ({ name }));
-              const e: ZoneEffect = {};
-              if (d > 0) e.damage = { amount: d, ignoreAP: iap };
-              if (conditions.length) e.conditions = conditions;
-              return e;
-            };
-            const apply = (onCross: boolean, perRound: boolean, e: ZoneEffect) =>
-              setEfz({ ...efz, onCross: onCross ? e : undefined, perRound: perRound ? e : undefined });
             return (
               <>
                 <Fold title="Piège / zone d'effet" open>
-                  <p className="hint">Tout combattant qui TRAVERSE ou STATIONNE dans la zone y subit l'effet (en combat). Poignée au coin SE pour redimensionner.</p>
+                  <p className="hint">Tout combattant qui TRAVERSE ou STATIONNE dans la zone y subit ses effets mécaniques (en combat). Poignée au coin SE pour redimensionner.</p>
                   <label className="ed-field">
                     Nom
                     <input value={efz.label} onChange={(e) => setEfz({ ...efz, label: e.target.value })} />
@@ -421,27 +408,11 @@ export function Inspector({
                       </label>
                     ))}
                   </div>
-                  <div className="mini-title">Déclenchement</div>
-                  <label className="ed-check">
-                    <input type="checkbox" checked={!!efz.onCross} onChange={(e) => apply(e.target.checked, !!efz.perRound, buildEff(dmg, ignoreAP, condStr))} />
-                    🚶 À la traversée
-                  </label>
-                  <label className="ed-check">
-                    <input type="checkbox" checked={!!efz.perRound} onChange={(e) => apply(!!efz.onCross, e.target.checked, buildEff(dmg, ignoreAP, condStr))} />
-                    ⏱ Au stationnement (chaque round)
-                  </label>
-                  <label className="ed-field">
-                    Dégâts
-                    <input type="number" min={0} value={dmg} onChange={(e) => apply(!!efz.onCross || !efz.perRound, !!efz.perRound, buildEff(Math.max(0, Number(e.target.value)), ignoreAP, condStr))} />
-                  </label>
-                  <label className="ed-check">
-                    <input type="checkbox" checked={ignoreAP} onChange={(e) => apply(!!efz.onCross, !!efz.perRound, buildEff(dmg, e.target.checked, condStr))} />
-                    Ignore l'armure
-                  </label>
-                  <label className="ed-field">
-                    États infligés (séparés par des virgules)
-                    <input value={condStr} placeholder="Empoisonné, En flammes" onChange={(e) => apply(!!efz.onCross || !efz.perRound, !!efz.perRound, buildEff(dmg, ignoreAP, e.target.value))} />
-                  </label>
+                  <div className="mini-title">🚶 À la traversée (effets mécaniques)</div>
+                  <p className="hint">Dégâts mitigés BE+PA : op « Blessures », forme Dés, puis cocher « déduit BE / PA ». État entretenu : op « Poser un État » + paramètre <code>unlessCondition</code> (= le même État).</p>
+                  <GameOpEditor ops={efz.onCross ?? []} onChange={(onCross) => setEfz({ ...efz, onCross: onCross.length ? onCross : undefined })} />
+                  <div className="mini-title">⏱ Au stationnement (chaque round)</div>
+                  <GameOpEditor ops={efz.perRound ?? []} onChange={(perRound) => setEfz({ ...efz, perRound: perRound.length ? perRound : undefined })} />
                   <label className="ed-check">
                     <input type="checkbox" checked={!!efz.blocksLoS} onChange={(e) => setEfz({ ...efz, blocksLoS: e.target.checked || undefined })} />
                     🌫 Masque la ligne de vue (fumée, ténèbres)
@@ -605,12 +576,15 @@ function EntityPanel({
         <>
           <Fold title="Apparence" open>
             <label className="ed-field">
-              Espèce / apparence
-              <select value={ent.ref ?? 'Villageois'} onChange={(e) => updateSel({ ref: e.target.value })}>
-                <option value="Villageois">Villageois</option>
-                {creatureSpeciesNames().map((name) => (
-                  <option key={name} value={name}>
-                    {name}
+              Espèce (rig)
+              {/* Espèce EXPLICITE de rendu (`appearance.species`) — découple l'apparence du nom/ref
+                  (cf. scene.ts). Vide = bipède Humain par défaut. Le profil de stats se choisit via la
+                  réf de créature (fold Rôle/Combat), distincte de l'apparence. */}
+              <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: { ...ent.appearance, species: e.target.value || undefined } })}>
+                <option value="">(par défaut : Humain)</option>
+                {creatureSpeciesOptions().map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.label}
                   </option>
                 ))}
               </select>

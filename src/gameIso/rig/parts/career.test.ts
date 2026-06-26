@@ -2,19 +2,20 @@ import { describe, it, expect } from 'vitest';
 import { careerClass, tenueForClass, tenueFor } from './career';
 import { pickView } from './types';
 
-describe('careerClass', () => {
+describe('careerClass — renvoie un id de CLASSE (slug), absorbe un libellé de carrière', () => {
   it('lit la classe depuis careers.json', () => {
-    expect(careerClass('Soldat')).toBe('Guerriers');
-    expect(careerClass('Sorcier')).toBe('Lettrés');
+    expect(careerClass('Soldat')).toBe('guerriers');
+    expect(careerClass('Sorcier')).toBe('lettres');
+    expect(careerClass('agitateur')).toBe('citadins'); // id de carrière accepté directement
   });
-  it('carrière inconnue → Citadins (défaut neutre)', () => {
-    expect(careerClass('Carrière imaginaire')).toBe('Citadins');
+  it('carrière inconnue → citadins (défaut neutre)', () => {
+    expect(careerClass('Carrière imaginaire')).toBe('citadins');
   });
 });
 
-describe('tenueForClass', () => {
+describe('tenueForClass (par id de classe)', () => {
   it('fournit au moins torse + jambes pour chaque classe connue', () => {
-    for (const c of ['Guerriers', 'Lettrés', 'Roublards', 'Ruraux', 'Citadins', 'Courtisans', 'Itinérants', 'Riverains']) {
+    for (const c of ['guerriers', 'lettres', 'roublards', 'ruraux', 'citadins', 'courtisans', 'itinerants', 'riverains']) {
       const t = tenueForClass(c);
       expect(pickView(t.torse, 'front')).toContain('<');
       expect(pickView(t.jambes, 'front')).toContain('<');

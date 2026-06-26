@@ -96,17 +96,17 @@ describe('validateScene', () => {
     expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
   });
 
-  it('zoneBlast : formule de dégâts manquante → erreur ; centre hors carte → avertissement', () => {
+  it('zoneBlast : aucun effet mécanique → erreur ; centre hors carte → avertissement', () => {
     const s = base(); // 5×5
-    s.triggers.push({ id: 't-zb', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'zoneBlast', center: { x: 9, y: 9 }, radius: 2, damage: '' }]) });
+    s.triggers.push({ id: 't-zb', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'zoneBlast', center: { x: 9, y: 9 }, radius: 2, ops: [] }]) });
     const m = msgs(validateScene([s]));
-    expect(m.some((x) => /formule de dégâts manquante/.test(x))).toBe(true);
+    expect(m.some((x) => /aucun effet mécanique/.test(x))).toBe(true);
     expect(m.some((x) => /centre.*hors de la carte/.test(x))).toBe(true);
   });
 
   it('zoneBlast bien formé = 0 avertissement', () => {
     const s = base();
-    s.triggers.push({ id: 't-zb2', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'zoneBlast', center: { x: 2, y: 2 }, radius: 2, damage: '1d10+15' }]) });
+    s.triggers.push({ id: 't-zb2', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'zoneBlast', center: { x: 2, y: 2 }, radius: 2, ops: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 15 } } }] }]) });
     expect(validateScene([s]).filter((w) => /zone/i.test(w.message))).toEqual([]);
   });
 

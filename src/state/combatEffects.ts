@@ -3,7 +3,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
-import { d10, rollExpr, defaultRNG } from '../engine/dice';
+import { d10, defaultRNG } from '../engine/dice';
 import { applyOps, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -32,7 +32,7 @@ import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, setDoorOpen } from './scene';
 import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, EMPTY_FLOW } from './flow';
-import { inRect } from './combatGeometry';
+import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { startCascade } from './cascade';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
@@ -652,34 +652,32 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   zoneBlast: {
-    group: '☠️ Afflictions', label: 'Souffle de zone (dégâts tirés + États, rayon)', icon: '🧨',
-    make: () => ({ type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, damage: '1d10+15', conditions: [] }),
+    group: '☠️ Afflictions', label: 'Souffle de zone (effets mécaniques, rayon)', icon: '🧨',
+    make: () => ({ type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, ops: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 15 } } }] }),
     apply: (e, env) => {
-      // Cibles dans le rayon (Chebyshev) : en combat par position de chaque combattant ; hors
-      // combat, le groupe entier est à partyPos. Dégâts TIRÉS par cible (révélés au journal).
+      // Cibles dans le disque (Chebyshev, `combatantsWithinRadius`) : en combat par position de chaque
+      // combattant ; hors combat, le groupe entier est à partyPos. Chaque cible encaisse les `ops`
+      // (vocabulaire unique, jet PAR cible pour les Dégâts à dés) via `applyOps`.
       const inBattle = !!env.get().battle;
-      const pool: Combatant[] = inBattle ? env.get().battle!.combatants : env.get().party;
       const pp = env.get().partyPos;
-      const cheb = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - e.center.x), Math.abs(p.y - e.center.y));
-      const targets = pool.filter((c) => {
-        if (c.dead || (!inBattle && c.kind !== 'hero')) return false;
-        const pos = inBattle ? (c as Combatant & { pos?: { x: number; y: number } }).pos : pp;
-        return !!pos && cheb(pos) <= e.radius;
-      });
+      // Hors combat : on positionne virtuellement les héros à partyPos pour la géométrie d'aire partagée.
+      const pool: Combatant[] = inBattle
+        ? env.get().battle!.combatants
+        : env.get().party.filter((c) => c.kind === 'hero').map((c) => ({ ...c, pos: pp }));
+      const targets = combatantsWithinRadius(e.center, e.radius, pool, (c) => !c.dead);
       if (!targets.length) return;
-      const lines = targets.map((c) => {
-        const dmg = Math.max(0, rollExpr(e.damage, battleRng()));
-        loseWounds(c, dmg);
-        for (const cond of e.conditions ?? []) addCondition(c, cond.name, cond.value ?? 1);
-        return t('eff.blastTarget', { name: c.name, dmg, conds: e.conditions?.length ? t('eff.fragPlusConds', { conds: e.conditions.map((x) => x.name).join('/') }) : '' });
+      // Hors combat, `applyOps` a muté les CLONES → on ré-applique aux héros réels par id.
+      const lines = targets.flatMap((c) => {
+        const real = inBattle ? c : env.get().party.find((h) => h.id === c.id) ?? c;
+        return applyOps(real, e.ops, { rng: battleRng() });
       });
       env.set(touchActors(env.get()));
-      env.log(t('eff.blast', { damage: e.damage, lines: lines.join(' · ') }));
+      env.log(t('eff.blast', { lines: lines.join(' · ') }));
     },
     refs: (e, ctx) => {
       const out: EffectRefIssue[] = [];
       if (!ctx.within(e.center.x, e.center.y)) out.push({ level: 'warn', message: `Souffle de zone : centre (${e.center.x},${e.center.y}) hors de la carte` });
-      if (!e.damage?.trim()) out.push({ level: 'error', message: `Souffle de zone : formule de dégâts manquante` });
+      if (!e.ops?.length) out.push({ level: 'error', message: `Souffle de zone : aucun effet mécanique` });
       if (e.radius < 0) out.push({ level: 'error', message: `Souffle de zone : rayon négatif` });
       return out;
     },

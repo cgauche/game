@@ -599,9 +599,13 @@ export interface ShipPoste {
   sabord?: boolean;
   /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
   crewIds?: string[];
-  /** Recharge (MDG ch.12) : Round à partir duquel la pièce est rechargée et peut RE-tirer (`battle.round`).
-   *  Posé après un tir = `round + Recharge N` (×2 si sous-effectif) ; absent / ≤ round courant = prête. */
-  reloadUntilRound?: number;
+  /** Recharge (MDG ch.12 / LDB 62 l.333) — Test ÉTENDU de Projectiles, PAS d'auto-rechargement passif.
+   *  `loaded === false` = la pièce a tiré et reste muette tant que l'équipage n'a pas complété le Test
+   *  (absent / `true` = prête à tirer). */
+  loaded?: boolean;
+  /** DR cumulés du Test étendu de recharge (vers `reloadDRTarget` = Recharge N, ×2 si sous-effectif).
+   *  Remis à 0 si la recharge est INTERROMPUE (servants réassignés avant la fin, LDB 62 l.335). */
+  reloadProgress?: number;
 }
 
 /** Emplacement de POSTE sur un gabarit de pont (`ShipDeck`) — un MOUNT POINT authoré (pos + arc), PAS une

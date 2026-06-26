@@ -46,8 +46,10 @@ export function resolveBattery(
   return { side, postes, crewTest, dr: crewTest.total };
 }
 
-/** Pièces d'un navire sur le bord `side` qui peuvent FAIRE FEU au Round `round` : montées sur ce bord ET **chargées**
- *  (pas en cours de Recharge, MDG ch.12). PUR — source unique du filtre « le bord qui peut lâcher une bordée ». */
-export function bearingPostes(ship: Combatant, side: FireArc, round: number): ShipPoste[] {
-  return (ship.postes ?? []).filter((p) => p.side === side && (p.reloadUntilRound ?? 0) <= round);
+/** Pièces d'un navire sur le bord `side` qui peuvent FAIRE FEU : montées sur ce bord ET **chargées**
+ *  (`loaded !== false` ; une pièce qui a tiré reste muette jusqu'à la FIN de son Test étendu de recharge,
+ *  MDG ch.12 / LDB 62 l.333 — pas d'auto-rechargement). PUR — source unique du filtre « le bord qui peut
+ *  lâcher une bordée ». */
+export function bearingPostes(ship: Combatant, side: FireArc): ShipPoste[] {
+  return (ship.postes ?? []).filter((p) => p.side === side && p.loaded !== false);
 }

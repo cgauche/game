@@ -12,7 +12,7 @@ import { CLIPS, sampleClip, clipDuration, type Clip } from '../src/gameIso/rig/a
 import { spellCastClip } from '../src/gameIso/rig/anim/spellClips';
 import { weaponRest, mountedAttackClip, mountedParryClip, seatedClip } from '../src/gameIso/rig/anim/weaponClips';
 import { seatRiderOnMount, mountedRest, mountTackBones } from '../src/gameIso/rig/mountedRig';
-import { planById, resolveByName } from '../src/gameIso/rig/bodyPlan';
+import { planById, resolveSpecies } from '../src/gameIso/rig/bodyPlan';
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
 import { animatedRig, sampleTimes } from './_lib-anim-rig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -59,7 +59,7 @@ const rowArc = tile('ranged (arc)', CLIPS.ranged, soldat, eqArc, 'Soldat', weapo
 // cavalier composé sur cheval (composite trié par os). Les ids d'os cavalier/monture
 // COLLISIONNENT (tete des deux côtés) → suffixe par index APRÈS fusion (ordre stable).
 const quad = planById('quadruped');
-const horse = resolveByName('Cheval').species; // espèce quad canonique (data), ex-fuzzy 'Cheval de selle'
+const horse = resolveSpecies('cheval').species; // id d'espèce quad canonique (data)
 function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
   const dur = Math.max(clipDuration(clip), 1);
   const equip: EquipCtx = { weapons: weapon ? [weapon] : [], armour: [] };
@@ -68,7 +68,7 @@ function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
     const riderPose = addPose(mountedRest('profile', weapon), sampleClip(clip, t).pose);
     const riderBones = resolveRig(soldat, equip, riderPose, 'Soldat', 'profile', [], false);
     // Ratio cavalier DÉRIVÉ comme en jeu (MountedToken) : cavalier ÷ (art monture × Taille).
-    const rideK = 1 / (resolveByName(horse).scale * sizeTokenScale('grande'));
+    const rideK = 1 / (resolveSpecies(horse).scale * sizeTokenScale('grande'));
     return seatRiderOnMount([...mountBones, ...mountTackBones(mountBones, 'profile')], riderBones, { view: 'profile', mountScale: 1, riderScale: rideK }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));
   });
   const uid = `k${uidN++}`;

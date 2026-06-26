@@ -20,7 +20,7 @@ import { groupsFor } from '../engine/groups';
 import { weaponsFromTraits, armourFromTraits } from '../engine/creatureEquip';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
 import { hashSeed } from '../gameIso/appearance';
-import { bodyPlanOf } from '../gameIso/rig/bodyPlan';
+import { bodyPlanById } from '../gameIso/rig/bodyPlan';
 
 /**
  * Forme du corps (→ Tableau de Localisation, LDB p.312) dérivée du gabarit rigué de la créature.
@@ -28,8 +28,8 @@ import { bodyPlanOf } from '../gameIso/rig/bodyPlan';
  * tableau humanoïde (même mécanique). Les gabarits sans table canon (céphalopode/amorphe/squig/
  * spectral/jabberslythe) retombent sur `humanoide` (table par défaut, p.312 — pas d'invention).
  */
-export function bodyShapeOf(name: string): BodyShape {
-  switch (bodyPlanOf(name)) {
+export function bodyShapeOf(id: string): BodyShape {
+  switch (bodyPlanById(id)) {
     case 'quadruped': return 'quadrupede';
     case 'avian':
     case 'winged': return 'oiseau'; // ailes = bras (p.312) ; mécaniquement identique au quadrupède

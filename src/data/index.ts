@@ -4,6 +4,7 @@
  * `build:data` (re-seed depuis Source/all-data.json) a été RETIRÉE — elle écrasait nos données curées.
  */
 import type { EntityAppearance } from '../state/scene';
+import { slugId } from './slug';
 import characteristicsJson from './characteristics.json';
 import speciesJson from './species.json';
 import classesJson from './classes.json';
@@ -553,14 +554,14 @@ export interface QualityCapabilities {
   pushback?: boolean;     // Perturbante : repousse au lieu de blesser
   bladeTrap?: boolean;    // Piège-lame : piéger/briser une lame sur un Critique défensif
   damagesArmour?: boolean;// Taille : endommage l'armure/le bouclier frappé
-  /** Empaleuse n'est PAS ici (op passive `critOnRoll`) ; Taillade ajoute un État sur Critique. */
-  onCritCondition?: string;
+  // (Taillade « État sur Critique » n'est PLUS une capability : `effects:[{trigger:'onCrit'}]` data-driven.)
   // Armes à feu / chargeurs
   firearm?: boolean;            // Poudre noire / Explosion : Incident de Tir + terreur (Nerveux)
   canFireWhileEngaged?: boolean;// Pistolet : tir au contact
   magazine?: boolean;           // À Répétition : chargeur (Indice)
   salvo?: boolean;              // Salve : chargeur (Indice)
   areaFire?: boolean;           // Tir de zone : nuage de projectiles (Indice)
+  explosion?: boolean;          // À Explosion : tous à Indice m du point cible subissent DR+Dégâts + États de l'arme (LDB p.298)
   crewedTeam?: boolean;         // Arme d'équipe : sous-effectif (Indice)
   parryAP?: boolean;            // Protectrice : Indice PA en opposant (Indice)
   // Objet / artisanat (LDB 60)
@@ -1025,6 +1026,11 @@ const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
   return id ? SPECIES_BY_ID.get(id) : undefined;
+}
+/** id d'espèce RIG (slug, clé `appearance.species`) dérivé d'un id d'espèce RULES (ou chaîne libre) :
+ *  slug du LIBELLÉ d'espèce. Pont UNIQUE rules→rig (pregens/draft/creator/defaultAppearance). Défaut Humain. */
+export function rigSpeciesId(rulesId: string | undefined): string {
+  return slugId(findSpeciesById(rulesId)?.label ?? rulesId ?? 'Humain');
 }
 /** Seuil d100 de mutation PHYSIQUE d'une espèce par `id` (LDB 19 l.87-91). Défaut **50** = colonne
  *  Humain (LDB) — couvre aussi le Gnome (NADJ « Gnomes et Corruption » : « mutent comme les humains »)

@@ -7,6 +7,7 @@
 import type { Condition, ActorRef, ActorField, CompareOp, CompareSubject } from '../../state/flow';
 import type { TemporalCondition } from '../../state/scene';
 import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
+import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import type { Camp, Relation } from '../../engine/relations';
 import { trappings, findTrappingById } from '../../data';
 
@@ -25,10 +26,10 @@ const WHAT_LABEL: Record<'group' | 'talent' | 'trait', string> = { group: 'le Gr
 
 const ALWAYS: Condition = { kind: 'always' };
 
-/** Kinds d'attaque (cf. `creatureAttackKind`) — libellés du sélecteur de la Condition `attackKind`. */
-const ATTACK_KIND_LABELS: Record<string, string> = {
-  arme: 'Arme / griffe', morsure: 'Morsure', caudale: 'Attaque caudale', cornes: 'Cornes', tentacules: 'Tentacules', pietinement: 'Piétinement',
-};
+/** Kinds d'attaque (cf. `creatureAttackKind`) — libellés du sélecteur de la Condition `attackKind` :
+ *  les `AttackKind` catalogués (source unique `ATTACK_LABEL`, engine) + `pietinement` (Piétinement =
+ *  manœuvre de Taille, hors type `AttackKind` mais valeur runtime de `creatureAttackKind`). */
+const ATTACK_KIND_LABELS: Record<string, string> = { ...ATTACK_LABEL, pietinement: 'Piétinement' };
 
 /** Causes d'effarouchement (cf. Nerveux, LDB 85 l.197) — libellés du sélecteur de la Condition `startleCause`. */
 const STARTLE_CAUSE_LABELS: Record<'noise' | 'magic', string> = { noise: 'Bruits forts', magic: 'Magie' };

@@ -51,19 +51,23 @@ export function forceCrewRole(crew: Combatant, roleId: string, cumul = false): C
 }
 
 /** Total du Test d'équipage de MANŒUVRE (MDG ch.14 l.13) : Σ des DR des contributeurs, le rôle ESSENTIEL compté
- *  DOUBLE (l.19), + la bande de Moral (l.13 « bonus/pénalités… en masse »). Ce total tient lieu de DR de Navigation
- *  que la manœuvre (ch.13) module ensuite par le Man du navire. PUR. */
+ *  DOUBLE (l.19), + la bande de Moral (l.13 « bonus/pénalités… en masse »), + le **Manque de bras** global
+ *  (`undercrew` : −2 DR/tranche de 10 % manquant + plafond Succès Minime, l.55). Ce total tient lieu de DR de
+ *  Navigation que la manœuvre (ch.13) module ensuite par le Man du navire. PUR. */
 export function maneuverCrewTotal(
   participants: { roleId: string; result: CrewRoleRoll | null }[],
   essentialRoleId: string | undefined,
   moraleScore: number,
+  undercrew?: { dr: number; capSuccesMinime: boolean },
 ): number {
   let base = 0;
   for (const p of participants) {
     if (!p.result) continue;
     base += essentialRoleId && p.roleId === essentialRoleId ? p.result.sl * 2 : p.result.sl;
   }
-  return base + moraleBand(moraleScore).crewTestDR;
+  let total = base + moraleBand(moraleScore).crewTestDR + (undercrew?.dr ?? 0);
+  if (undercrew?.capSuccesMinime && total > 0) total = 0; // jamais mieux qu'un Succès Minime (l.55)
+  return total;
 }
 
 /** `ManeuverResult` d'un Test d'ÉQUIPAGE : le total d'équipage tient lieu de DR de Navigation ; le virage RÉUSSIT

@@ -18,10 +18,12 @@ import { FlowEditor } from '../editor/FlowEditor';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import { JsonField } from '../editor/JsonField';
-import { RACES } from '../../gameIso/rig/races';
+import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
+import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
+import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
 import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
@@ -158,7 +160,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
       file: `${dsKey}.json`, recordMode: false, initialKey: '',
       persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
     };
-  }, [obj, categoryKey, label, isNew]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [obj, categoryKey, label, isNew]);
 
   const [entry, setEntry] = useState<Entry>(() => structuredClone(src.initial));
   const [recordKey, setRecordKey] = useState(src.initialKey);
@@ -168,7 +170,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const [msg, setMsg] = useState('');
 
   useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
-  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); }, [src]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); }, [src]);
 
   // L'apparence (MonsterPartsFields) ET les EFFETS d'un sort (FlowEditor) ont leur éditeur dédié — on les
   // sort du formulaire générique (sinon rendus en JSON brut). Les autres champs gardent le formulaire
@@ -342,9 +344,10 @@ function AppearanceField({ name, value, onChange }: { name: string; value: Entit
       <CreaturePreview name={name} appearance={a} />{/* aperçu LIVE : se met à jour à chaque modification */}
       <label className="ed-subfield">
         Espèce
-        <input value={a.species ?? ''} list="dl-rig-species" placeholder="(déduite du nom)"
-          onChange={(e) => patch({ species: e.target.value || undefined })} />
-        <datalist id="dl-rig-species">{Object.keys(RACES).map((s) => <option key={s} value={s} />)}</datalist>
+        <select value={a.species ?? ''} onChange={(e) => patch({ species: e.target.value || undefined })}>
+          <option value="">(par défaut : Humain)</option>
+          {creatureSpeciesOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+        </select>
       </label>
       <MonsterPartsFields
         monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} parts={a.parts} tenue={a.tenue} eyes={a.eyes} features={a.features}
@@ -375,29 +378,6 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
   );
 }
 
-const TRIGGER_LABEL: Record<EffectTrigger, string> = {
-  onHit: 'à la touche',
-  onWoundLoss: 'quand le porteur perd des PB',
-  onSlain: 'à sa mise hors de combat (mort)',
-  onRoundStart: 'au début de son Round',
-  onStartled: 'magie / bruit fort',
-  onKill: 'quand il neutralise un adversaire',
-  onCharged: 'quand le porteur est Chargé',
-  onGainCondition: 'quand le porteur gagne un État',
-  onCombatStart: 'au début du combat',
-  onCombatEnd: 'à la fin du combat',
-  onRoundEnd: 'à la fin du Round',
-  onTurnStart: 'au début de son tour',
-  onTurnEnd: 'à la fin de son tour',
-  onAttackResolved: 'après une attaque résolue',
-  onCastResolved: 'après une incantation résolue',
-  onMiscast: 'sur une Imparfaite',
-};
-const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
-  self: 'le porteur lui-même',
-  victim: 'la victime touchée',
-  engaged: 'tous ceux Engagés avec lui',
-};
 
 /** Éditeur des EFFETS DÉCLENCHÉS (`TriggeredEffect[]`) — porté indifféremment par un Trait OU un Atout
  *  d'arme. MÊME logique authorée que les sorts : une LISTE d'effets, chacun = un DÉCLENCHEUR (sur
@@ -441,18 +421,12 @@ function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] |
   );
 }
 
-const ACTIVATION_LABEL: Record<ManeuverDef['activation'], string> = {
-  action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge',
-};
 const STAT_LABEL: Record<NonNullable<ManeuverDef['stat']>, string> = { CC: 'CC (mêlée)', CT: 'CT (distance)' };
 const ADV_MODE_LABEL: Record<NonNullable<ManeuverDef['advantageMode']>, string> = {
   fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage',
 };
 const DEFENSE_LABEL: Record<NonNullable<ManeuverDef['defense']>, string> = {
   esquive: 'Esquive', parade: 'Parade', init: 'Initiative', resist: 'Résistance (cible)', auto: 'Meilleure (auto)',
-};
-const TARGETING_LABEL: Record<ManeuverDef['targeting'], string> = {
-  melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis',
 };
 
 /** Éditeur d'une MANŒUVRE (entité de 1ʳᵉ classe, `maneuvers.json`) : son PROFIL (type/activation/coût/
@@ -494,7 +468,7 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         </label>
         <label className="dr">Activation
           <select value={m.activation ?? 'free'} onChange={(e) => edit('activation', e.target.value as ManeuverDef['activation'])}>
-            {(Object.keys(ACTIVATION_LABEL) as ManeuverDef['activation'][]).map((a) => <option key={a} value={a}>{ACTIVATION_LABEL[a]}</option>)}
+            {(Object.keys(MANEUVER_ACTIVATION_LABEL) as ManeuverDef['activation'][]).map((a) => <option key={a} value={a}>{MANEUVER_ACTIVATION_LABEL[a]}</option>)}
           </select>
         </label>
         <label className="dr">Coût d’Avantage<input type="number" min={0} value={m.advantageCost ?? 0} onChange={(e) => edit('advantageCost', Math.max(0, Number(e.target.value) || 0))} /></label>
@@ -519,7 +493,7 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         </label>
         <label className="dr">Ciblage
           <select value={m.targeting ?? 'melee'} onChange={(e) => edit('targeting', e.target.value as ManeuverDef['targeting'])}>
-            {(Object.keys(TARGETING_LABEL) as ManeuverDef['targeting'][]).map((t) => <option key={t} value={t}>{TARGETING_LABEL[t]}</option>)}
+            {(Object.keys(MANEUVER_TARGETING_LABEL) as ManeuverDef['targeting'][]).map((t) => <option key={t} value={t}>{MANEUVER_TARGETING_LABEL[t]}</option>)}
           </select>
         </label>
         <label className="dr"><input type="checkbox" checked={!!m.magic} onChange={(e) => edit('magic', e.target.checked || undefined)} /> Magique</label>

@@ -142,9 +142,11 @@ describe('editorState — pose', () => {
     expect(ent.ref).toBe('tonneau');
     expect(ent.kind).toBe('prop');
   });
-  it('placeEntity : pose un personnage d’espèce précise', () => {
-    const { scene, id } = placeEntity(emptyScene(10, 10), 'personnage', 'Loup', { x: 1, y: 1 });
-    expect(scene.entities.find((e) => e.id === id)!.ref).toBe('Loup');
+  it('placeEntity : pose un personnage d’espèce précise (appearance.species + libellé)', () => {
+    const { scene, id } = placeEntity(emptyScene(10, 10), 'personnage', 'loup', { x: 1, y: 1 });
+    const ent = scene.entities.find((e) => e.id === id)!;
+    expect(ent.appearance?.species).toBe('loup'); // id d'espèce rig (pas `ref`, réservé au profil de stats)
+    expect(ent.label).toBe('Loup');
   });
   it('placeEntity : pose sur l’étage courant (z), absent au sol', () => {
     const ground = placeEntity(emptyScene(10, 10), 'prop', 'tonneau', { x: 1, y: 1 }, 0);
@@ -239,7 +241,7 @@ describe('Zones d\'effet (pièges) — authoring éditeur', () => {
     const { scene, idx } = addEffectZone(s0, { x: 3, y: 3, w: 2, h: 1 });
     const z = scene.effectZones![idx];
     expect(z.area).toEqual({ kind: 'rect', x: 3, y: 3, w: 2, h: 1 });
-    expect(z.onCross?.damage?.amount).toBeGreaterThan(0);
+    expect(z.onCross?.some((o) => o.op === 'wounds')).toBe(true);
     expect(z.id).toBeTruthy();
     // hitAt trouve la zone sous une de ses cases
     expect(hitAt(scene, { x: 4, y: 3 }, DEFAULT_LAYERS)).toEqual({ type: 'effectZone', idx });
