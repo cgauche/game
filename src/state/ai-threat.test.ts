@@ -1,0 +1,138 @@
+/**
+ * LOT 3 — Heuristiques de MENACE & POSITIONNEMENT (déterministes, sans dé). Chaque test isole une
+ * heuristique et vérifie le CHANGEMENT de comportement VOULU par rapport au « PV le plus bas » du Lot 2 :
+ *  - ciblage par MENACE (`targetThreat`) plutôt que par PV bas (un caster fragile et dangereux préféré
+ *    à un PV-bas inoffensif hors d'atteinte) ;
+ *  - `killSecure` (achève une cible à portée) ;
+ *  - `overkillPenalty` (ignore la cible au sol — déjà couvert ailleurs, renforcé ici) ;
+ *  - `controlValue` (préfère un débuff utile quand pertinent) ;
+ *  - `positionValue` (un tireur ne vient pas au contact s'il peut tirer ; recherche du flanc/dos gratuit).
+ * Pur : `chooseEnemyAction` est déterministe — on donne des Caractéristiques RÉELLES pour que les
+ * espérances de dégâts (`expectedDamage`) soient chiffrables (≠ tests à `{} as never` qui restent neutres).
+ */
+import { describe, it, expect } from 'vitest';
+import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
+import { emptyScene, type Scene } from './scene';
+import type { Combatant, Weapon } from '../engine/types';
+import type { SpellLike } from '../engine/magic';
+import type { Dir8 } from './dir8';
+
+const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+const FISTS: Weapon = { name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+
+const CHARS = { CC: 45, CT: 45, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 };
+const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+
+function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
+  return {
+    id, name: id, kind, pos,
+    wounds: { current: 12, max: 12 }, weapons: [MELEE],
+    characteristics: { ...CHARS }, advantage: 0, conditions: [], armour: { ...ARMOUR },
+    skills: [], talents: [], movement: 4,
+    ...opts,
+  } as Combatant;
+}
+
+const scene = emptyScene(20, 20);
+
+function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
+  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, ...extra };
+}
+
+const tidOf = (a: EnemyAction): string | undefined =>
+  (a as { targetId?: string }).targetId ?? (a as { thenTargetId?: string }).thenTargetId;
+
+describe('Lot 3 — ciblage par MENACE (targetThreat) ≠ PV le plus bas', () => {
+  it('un tireur préfère le héros le plus MENAÇANT (gros dégâts, à portée) au PV-bas inoffensif et lointain', () => {
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [RANGED], movement: 4 });
+    // dangerous : PB pleins MAIS lourdement armé (épée +BF+10) et proche → menace forte.
+    const dangerous = mk('dangerous', 'hero', { x: 10, y: 13 }, {
+      wounds: { current: 12, max: 12 },
+      weapons: [{ name: 'Hache lourde', type: 'melee', damage: { plusBF: true, flat: 10 }, qualities: [] }],
+    });
+    // soft : PB plus bas MAIS désarmé (mains nues) et plus loin, et PAS finissable en un tir (8 PB > 7
+    // dégâts attendus → pas de killSecure) → menace faible malgré la fragilité légèrement supérieure.
+    const soft = mk('soft', 'hero', { x: 10, y: 16 }, { wounds: { current: 8, max: 12 }, weapons: [FISTS] });
+    const a = chooseEnemyAction(input(e, [dangerous, soft]));
+    expect(a.kind).toBe('shoot');
+    expect(tidOf(a)).toBe('dangerous'); // la MENACE l'emporte sur le simple « PV le plus bas »
+  });
+
+  it('à menace comparable, la cible plus fragile (PB bas) est préférée (fragilité dans targetThreat)', () => {
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [RANGED] });
+    // Deux héros identiques (même arme/menace) mais l'un entamé : on sécurise l'élimination du plus fragile.
+    const hurt = mk('hurt', 'hero', { x: 10, y: 13 }, { wounds: { current: 3, max: 12 }, weapons: [MELEE] });
+    const fresh = mk('fresh', 'hero', { x: 10, y: 14 }, { wounds: { current: 12, max: 12 }, weapons: [MELEE] });
+    const a = chooseEnemyAction(input(e, [fresh, hurt]));
+    expect(tidOf(a)).toBe('hurt');
+  });
+});
+
+describe('Lot 3 — killSecure : achève une cible à portée', () => {
+  it('à dégâts attendus ≥ PB restants, l’IA frappe la cible ACHEVABLE plutôt qu’une cible plus menaçante mais non finissable', () => {
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [MELEE], characteristics: { ...CHARS, F: 45 } });
+    // finissable : 2 PB, au contact → un coup d'épée (+BF+4) le tue (killSecure).
+    const finishable = mk('finishable', 'hero', { x: 10, y: 11 }, { wounds: { current: 2, max: 12 }, weapons: [FISTS] });
+    // tank : pleine vie + grosse menace, au contact aussi — mais pas finissable ce tour.
+    const tank = mk('tank', 'hero', { x: 11, y: 10 }, {
+      wounds: { current: 12, max: 12 }, armour: { ...ARMOUR, corps: 4 },
+      weapons: [{ name: 'Hache', type: 'melee', damage: { plusBF: true, flat: 8 }, qualities: [] }],
+    });
+    const a = chooseEnemyAction(input(e, [finishable, tank]));
+    expect(a.kind).toBe('melee');
+    expect(tidOf(a)).toBe('finishable'); // le bonus killSecure prime
+  });
+});
+
+describe('Lot 3 — overkill : ignore la cible neutralisée', () => {
+  it('cible au sol (À Terre, finissable) délaissée pour une cible debout, même moins fragile', () => {
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [MELEE] });
+    const downed = mk('downed', 'hero', { x: 10, y: 11 }, { wounds: { current: 1, max: 12 }, conditions: [{ name: 'a-terre', value: 1 }] });
+    const standing = mk('standing', 'hero', { x: 11, y: 10 }, { wounds: { current: 10, max: 12 } });
+    expect(tidOf(chooseEnemyAction(input(e, [downed, standing])))).toBe('standing');
+  });
+});
+
+describe('Lot 3 — controlValue : préfère un débuff utile quand pertinent', () => {
+  // Deux sorts de même portée : l'un sans contrôle (Dégâts modestes), l'autre infligeant un État fort
+  // (Étourdi). À cibles identiques, le caster choisit le sort de CONTRÔLE (valeur des États lue dans
+  // les `op:'condition'`). On vérifie via le `spell` choisi (l'appelant fournit `offensiveSpellData`).
+  const controlSpell: SpellLike & { effects?: unknown } = {
+    label: 'Choc mental', type: 'sort', cn: 0, desc: '', missile: true, damage: 2,
+    effects: [{ op: 'condition', name: 'etourdi', value: { const: 1 } }],
+  };
+  it('un sort qui ÉTOURDIT (op:condition) score plus haut grâce à controlValue (préféré quand on l’offre)', () => {
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [] });
+    const h = mk('h', 'hero', { x: 10, y: 13 });
+    // Le sort de contrôle est jouable et à portée → cast avec CE sort (controlValue > 0 le rend attrayant).
+    const a = chooseEnemyAction(input(e, [h], { offensiveSpell: 'Choc mental', spellRange: 20, offensiveSpellData: controlSpell }));
+    expect(a).toEqual({ kind: 'cast', targetId: 'h', spell: 'Choc mental' });
+  });
+});
+
+describe('Lot 3 — positionValue : portée préférée & flanc/dos', () => {
+  it('un tireur en portée NE vient PAS au contact : il tire de loin (préférence de distance)', () => {
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [RANGED], movement: 4 });
+    const h = mk('h', 'hero', { x: 10, y: 14 }); // à 4 cases, en portée, LdV dégagée
+    const a = chooseEnemyAction(input(e, [h]));
+    expect(a.kind).toBe('shoot'); // tire, ne charge pas en mêlée
+  });
+
+  it('à utilité d’attaque égale, l’approche choisit une case de FLANC/DOS quand c’est gratuit', () => {
+    // Héros orienté au NORD (regarde vers y décroissant) ; l'ennemi vient du sud → l'attaque par le sud
+    // (dos) doit être préférée à une approche frontale (par le nord), à distance d'arrivée égale.
+    const e = mk('e', 'enemy', { x: 10, y: 14 }, { weapons: [MELEE], movement: 6 });
+    const h = mk('h', 'hero', { x: 10, y: 10 });
+    const facing: Record<string, Dir8> = { h: 'N' }; // le héros regarde au nord (vers l'ennemi venant du nord)
+    const a = chooseEnemyAction(input(e, [h], { facing }));
+    expect(a.kind).toBe('move');
+    if (a.kind === 'move') {
+      // arrive au contact du héros…
+      expect(Math.max(Math.abs(a.to.x - 10), Math.abs(a.to.y - 10))).toBe(1);
+      // …par une case HORS du champ de vision avant (flanc/dos) : pas la case nord (10,9) qui est plein
+      // front du héros orienté N. (Le sud (10,11) est le dos.)
+      expect(`${a.to.x},${a.to.y}`).not.toBe('10,9');
+    }
+  });
+});

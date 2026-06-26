@@ -351,6 +351,11 @@ export interface ActiveEffect {
    *  la DISSIPATION (LDB 46 l.204-207 : Test étendu de Langue (Magick) jusqu'au NI → retrait de TOUS les
    *  effets de ce sort). Absent = effet non-magique ou sort instantané (rien à dissiper). */
   spell?: { spellId: string; ni: number; casterId: string; label: string };
+  /** id STABLE du sort/prière SOURCE de cet effet actif (posé à l'incantation via `OpsCtx.sourceSpellId`),
+   *  posé pour TOUT effet durable issu d'un lancement — Prières COMPRISES (contrairement à `spell`, réservé
+   *  aux Sorts dissipables). Ne porte AUCUNE sémantique de dissipation : sert l'IDENTITÉ du sort (anti-spam
+   *  de buff côté IA : « cet allié porte déjà CE buff »). */
+  sourceSpellId?: string;
   /** Ops RÉCURRENTES re-jouées à CHAQUE fin de Round tant que l'effet dure (op `perRound` — sorts
    *  multi-Rounds : 1 État X par Round, 1 Ration par Round de « Récolte de Rhya », etc.). Les valeurs
    *  sont déjà résolues à l'incantation (littérales) — `endOfRound` les ré-applique via `applyOps`
@@ -686,6 +691,13 @@ export interface Combatant {
    *  le système de Durée unifié, plus de compteur/flag round-scopé ad hoc.) */
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
+  /** DOCTRINE TACTIQUE forcée en DONNÉE (id de `DOCTRINES` dans `state/ai.ts` : `meute`/`soldats`/
+   *  `tirailleurs`/`artillerie`/`horde`/`racaille`/`embuscade`/`standard`). Si présent et valide, l'IA
+   *  l'utilise TELLE QUELLE (la sélection automatique par signaux est court-circuitée) — c'est le levier
+   *  « forcer une doctrine » du Codex/éditeur (ex. tendre une EMBUSCADE, qui n'a pas de signal auto). Absent
+   *  ⇒ doctrine déduite des traits/Intelligence/groups/sorts (cf. `pickDoctrine`). Ne touche QUE les poids
+   *  du cœur discrétionnaire de l'IA : aucune garde RAW (fuite Bestial, Frénésie, Brisé…) n'en dépend. */
+  aiDoctrine?: string;
   psychTraits?: import('./psychology').PsychTrait[];
   /** Traits de créature (STRUCTURÉS — `TraitInstance` : id/value/arg/count/range) → attaques
    *  naturelles gratuites & règles dérivées (Morsure, Attaque caudale, Souffle… cf.

@@ -46,6 +46,42 @@ describe('Focalisation en modale (store)', () => {
     expect(st.battle!.acted).toBe(true); // la Focalisation consomme l'Action
   });
 
+  it('IA : un ennemi ACTIF peut focaliser pour lui-même ; focusConfirm pose le DR et reprend son tour', () => {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'PJ', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(7);
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    let st = useGame.getState();
+    const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    // Dote l'ennemi d'un sort arcanique focalisable + la Compétence de Focalisation (DONNÉE, pas un nom).
+    enemy.spells = ['carreau'];
+    enemy.characteristics.FM = 80;
+    enemy.skills = [...(enemy.skills ?? []),
+      { skillId: 'focalisation', advances: 30, characteristic: 'FM' } as never,
+      { skillId: 'langue', spec: 'Magick', advances: 30, characteristic: 'Int' } as never];
+    // Donne le TOUR à l'ennemi (acted:false → il peut agir).
+    const turn = st.battle!.order.indexOf(enemy.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, acted: false, combatants: [...st.battle!.combatants] } });
+
+    useGame.getState().battleFocusSpell('carreau'); // garde héros-only relâchée → autorisé pour l'IA active
+    expect(useGame.getState().pendingFocus).toBeTruthy();
+
+    useGame.getState().focusRoll();
+    expect(useGame.getState().pendingFocus!.result).toBeTruthy();
+
+    useGame.getState().focusConfirm();
+    st = useGame.getState();
+    expect(st.pendingFocus).toBeNull();
+    const e2 = st.battle!.combatants.find((c) => c.id === enemy.id)!;
+    expect(e2.focus?.spell).toBe('carreau'); // DR de Focalisation cumulé
+    expect(st.battle!.acted).toBe(true); // l'Action est consommée
+    // La reprise du tour de l'IA (resumeEnemyTurn) est armée : faire courir les timers ne doit pas crasher.
+    expect(() => vi.runOnlyPendingTimers()).not.toThrow();
+  });
+
   it('un sort non focalisable (Magie mineure) n’ouvre pas la modale', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.spells = ['flechette'];
