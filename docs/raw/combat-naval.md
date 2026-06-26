@@ -61,8 +61,9 @@ comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tes
 `src/state/shipCrew.ts` (`shipCrewAssignments`, `shipDefaultRoles`, `crewTestContributors`).
 
 **État du code.** ✅ somme des DR, essentiel ×2, Moral, « un jet par poste » (PJ + 1 marin représentant).
-⚠️ **Manque de bras** : ✅ (R3) cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ; ⬜ sous-effectif
-d'équipage global −2 DR plafond Succès Minime + tranche 10 % (hors périmètre). ⬜ saboteur (−1 à −5 DR).
+✅ **Manque de bras** : cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ET sous-effectif d'équipage
+GLOBAL −2 DR par tranche de 10 % manquant + plafond Succès Minime (`undercrewPenalty` vs `ship.crew`, branché aux
+Tests de manœuvre/batterie via `maneuverCrewTotal`). ⬜ saboteur (−1 à −5 DR).
 ⬜ Chansonnier (bonus de chant non chiffré par le RAW → non modélisé, OK).
 
 ---
@@ -119,7 +120,10 @@ choisit**.
 marins ayant contribué à un Test ce Round. Les rôles Capitaine/Chansonnier/Mousse/Timonier étant dans `manoeuvre`
 ET `batterie`, un marin qui contribue aux DEUX le même Round le fait en **cumul à +2 crans** (`rollCrewRole(cumul)`
 → `easeDifficulty(-2)`) — décision GM : cumul AUTORISÉ (l.53), pas d'exclusion. La bordée est en plus bornée par la
-**Recharge** (topic suivant). ⬜ Manque de bras GLOBAL (−2 DR plafond, tranche 10 %) noté hors périmètre.
+**Recharge** (topic suivant). ✅ Manque de bras GLOBAL (−2 DR + plafond Succès Minime par tranche de 10 % manquant
+vs `ship.crew`) : `undercrewPenalty` → `maneuverCrewTotal`. ✅ **Tâches d'équipage PARALLÈLES le même Round** :
+manœuvre + bordée(s) + **recharge** coexistent (la bordée/recharge ne consomment PAS `acted`, seule la manœuvre =
+1 déplacement/Round), bornées par l'occupation `crewActed` (l.37).
 
 ---
 
@@ -219,7 +223,10 @@ INDIVIDUEL**.
 
 **État du code.** ✅ (R1) `resolveVolley` dérive l'arme effective de chaque pièce via `crewedFireWeapon(item,
 servantsPrésents)` (exposés non-incapacités) AVANT le calcul de Dégâts → un Canon moyen (Arme d'équipe 3) à 1 servant
-tire en Recharge ×2 + Imprécise (−1 DR via `attackDRAdjust`). ⬜ Incident de tir (Dangereuse) noté hors périmètre.
+tire en Recharge ×2 + Imprécise (−1 DR via `attackDRAdjust`). ✅ **Recharge = Test étendu de Projectiles + Soutien**
+(LDB 62 l.333 / MDG l.462) : `crewedReloadStep` (cumul de DR vers Recharge N) + `soutienBonus` GÉNÉRIQUE (un servant
+prête +10) → action « Recharger » du navire (`battleShipReload`), état `loaded`/`reloadProgress` sur le POSTE, reset
+si interrompu. ⬜ Incident de tir (Dangereuse) noté hors périmètre.
 
 ---
 
@@ -248,8 +255,9 @@ les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.** »
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
-(`woundsFromHit` plancher 0) + localisation 1d100 + Critique (double OU B=0) ; **Recharge** par poste (`reloadUntilRound`)
-+ équipage-ressource (`crewActed`, cumul +2 crans). ⬜ RESTE : Explosion/Tir de zone + Dangereuse/Incident.
+(`woundsFromHit` plancher 0) + localisation 1d100 + Critique (double OU B=0) ; après tir la pièce est **DÉCHARGÉE**
+(`loaded=false`), rechargée par le **Test étendu** `battleShipReload` (≠ auto-rechargement) + équipage-ressource
+(`crewActed`, cumul +2 crans, tâches PARALLÈLES). ⬜ RESTE : Explosion/Tir de zone + Dangereuse/Incident.
 
 ---
 

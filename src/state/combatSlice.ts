@@ -35,7 +35,7 @@ import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
-import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive } from '../engine/items';
+import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus } from '../engine/combatFeatures/dispatch';
 import { isConsumable, useConsumable } from '../engine/consumables';
@@ -44,19 +44,20 @@ import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeActi
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
 import { treatTrauma } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
-import { testValue, actorHasSkill } from '../engine/skills';
+import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
-import { crewTestContributors, shipMoraleScore, withCrewActed } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, shipUndercrew, withCrewActed } from './shipCrew';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById } from '../data';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
 import type { ShipManeuverParticipant, ShipBatteryParticipant } from './pendings';
 import { isVehicle } from '../engine/vehicle';
-import { crewedFireWeapon } from '../engine/crewedWeapon';
+import { crewedFireWeapon, crewedReloadStep } from '../engine/crewedWeapon';
+import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
@@ -822,7 +823,7 @@ export function createCombatSlice(get: Get, set: Set) {
         result: null,
       }));
       set({
-        pendingShipManeuver: { shipId: ship.id, turnSteps: 0, participants, essentialRoleId, moraleScore: shipMoraleScore(get, ship) },
+        pendingShipManeuver: { shipId: ship.id, turnSteps: 0, participants, essentialRoleId, moraleScore: shipMoraleScore(get, ship), undercrew: shipUndercrew(ship, battle.combatants) },
         battle: { ...battle, action: null, preview: null },
       });
       // Auto-roule les TÉMOINS (marins PNJ) — leur jet initial est résolu sans influence (cf. makeRollFlow).
@@ -839,7 +840,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
       const ship = battle.combatants.find((c) => c.id === p.shipId);
       if (!ship) return;
-      const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore); // Σ DR (essentiel ×2) + Moral
+      const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew); // Σ DR (essentiel ×2) + Moral + Manque de bras
       const result = deriveManeuverFromCrew(ship, total); // virage si DR final ≥ 1 (ch.14)
       set({ pendingShipManeuver: null });
       applyShipManeuver(get, p.shipId, result, p.turnSteps); // vire (si succès) + avance ; logue
@@ -859,7 +860,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = battle.combatants.find((c) => c.id === targetId);
       if (!ship || !target || !ship.pos || !target.pos) return;
       const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos, target.pos); // bord qui porte (auto-dérivé de la cible)
-      const postes = bearingPostes(ship, side, battle.round); // sur ce bord ET chargées (pas en Recharge, ch.12)
+      const postes = bearingPostes(ship, side); // sur ce bord ET chargées (pas en cours de recharge, ch.12)
       if (!postes.length) { get().log(t('cs.bordeeNoArc', { ship: ship.name, side })); return; }
       const partyIds = new Set(get().party.map((h) => h.id));
       const contributors = crewTestContributors(ship, battle.combatants, 'batterie', partyIds); // Artilleurs (UN jet/poste)
@@ -875,7 +876,7 @@ export function createCombatSlice(get: Get, set: Set) {
         result: null,
       }));
       set({
-        pendingShipBattery: { shipId: ship.id, targetId: target.id, side, participants, essentialRoleId, moraleScore: shipMoraleScore(get, ship) },
+        pendingShipBattery: { shipId: ship.id, targetId: target.id, side, participants, essentialRoleId, moraleScore: shipMoraleScore(get, ship), undercrew: shipUndercrew(ship, battle.combatants) },
         battle: { ...battle, action: null, preview: null },
       });
       for (const part of participants) if (!part.interactive) get().shipBatteryRoll(part.id); // témoins (marins PNJ) auto-roulés
@@ -888,8 +889,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const ship = battle.combatants.find((c) => c.id === p.shipId);
       const target = battle.combatants.find((c) => c.id === p.targetId);
       if (!ship || !target) { set({ pendingShipBattery: null }); return; }
-      const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore); // DR PARTAGÉ (Σ, essentiel ×2, + Moral)
-      const postes = bearingPostes(ship, p.side, battle.round);
+      const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew); // DR PARTAGÉ (Σ, essentiel ×2, + Moral, + Manque de bras)
+      const postes = bearingPostes(ship, p.side);
       const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
       const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
       const volley = resolveVolley(ship, postes, target, rig, dr, crew, battleRng()); // munition + sous-effectif + Dégâts + Critiques (PUR, MÊMES fns que le tir individuel)
@@ -898,8 +899,9 @@ export function createCombatSlice(get: Get, set: Set) {
       const critLines: string[] = [];
       for (const s of volley.shots) if (s.critical) // double sur le 1d100 → Critique de navire (ch.13 l.656)
         applyCriticalToTarget(target, 'corps', true, 0, critLines, set, undefined, { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, undefined, false, get);
-      // Recharge (ch.12) : chaque pièce qui a tiré passe muette N Rounds (×2 si sous-effectif — déjà baké dans s.reload).
-      for (const s of volley.shots) { const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid); if (poste) poste.reloadUntilRound = battle.round + s.reload; }
+      // Recharge (ch.12 / LDB 62) : chaque pièce qui a tiré est DÉCHARGÉE et le RESTE jusqu'à la fin d'un Test
+      // étendu de recharge (action « Recharger » du navire) — pas d'auto-rechargement passif.
+      for (const s of volley.shots) { const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid); if (poste) { poste.loaded = false; poste.reloadProgress = 0; } }
       get().log(t('cs.bordee', { side: p.side, ship: ship.name, target: target.name, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max }));
       for (const l of critLines) get().log(l);
       const bB = get().battle!;
@@ -1153,10 +1155,59 @@ export function createCombatSlice(get: Get, set: Set) {
         },
       });
     },
+    // RECHARGE D'UN POSTE DE NAVIRE (MDG ch.12 l.462 / LDB 62 l.333) — Test étendu de Projectiles du CHEF de
+    // pièce, avec le SOUTIEN générique des autres servants (`soutienBonus`, LDB 12). Tâche d'équipage PARALLÈLE :
+    // elle occupe les servants (`crewActed`) mais NE consomme PAS le tour du navire (≠ `acted`). Réutilise le flux
+    // `FLOWS.reload` (mono-jet) ; la branche d'application vit dans `reloadConfirm` (cf. `pr.posteUid`).
+    battleShipReload: (shipId: string, posteUid: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over) return;
+      const ship = battle.combatants.find((c) => c.id === shipId);
+      const poste = ship?.postes?.find((p) => p.item.uid === posteUid);
+      if (!ship || !poste || poste.loaded !== false) return; // pièce déjà chargée → rien à recharger
+      const chef = poste.crewIds?.[0] ? battle.combatants.find((c) => c.id === poste.crewIds![0]) : undefined;
+      if (!chef) return;
+      if ((battle.crewActed?.[ship.id] ?? []).includes(chef.id)) return; // chef déjà engagé ce Round → 1 Test de recharge/pièce/Round
+      const servants = (poste.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+      const w0 = mannedPosteWeapon(chef, poste);
+      if (!w0) return;
+      const w = crewedFireWeapon(w0, exposedCrew(servants).length); // ×2 recharge si sous-effectif ; arme-d-equipe retirée
+      // Soutien (LDB 12, primitive GÉNÉRIQUE) : +10 par AUTRE servant capable (Projectiles Poudre noire), plafonné.
+      const soutien = soutienBonus(servants, chef, 'projectiles', undefined, 'Poudre noire');
+      const skillValue = combatValue(chef, 'ranged', w) + soutien;
+      set({
+        pendingReload: {
+          actorId: chef.id, actorName: chef.name, weaponUid: w.uid!,
+          reload: reloadDRTarget(w), progressBefore: poste.reloadProgress ?? 0,
+          skillValue, difficulty: 'intermediaire', roll: null,
+          target: skillValue + DIFFICULTY_MODIFIERS.intermediaire, sl: 0, success: false,
+          posteUid, shipId, soutien: soutien ? { count: soutien / 10, bonus: soutien } : undefined,
+        },
+      });
+    },
     ...rollFlowActions('reload', FLOWS.reload, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
     reloadConfirm: () => {
       const { battle, pendingReload: pr } = get();
       if (!battle || !pr || pr.roll == null) return;
+      // — Recharge d'un POSTE de navire : applique le DR cumulé à la PIÈCE (pas au champ `loaded` du marin) et
+      //   occupe l'équipage du poste (équipage-ressource), sans consommer le tour du navire.
+      if (pr.posteUid && pr.shipId) {
+        const ship = battle.combatants.find((c) => c.id === pr.shipId);
+        const chef = battle.combatants.find((c) => c.id === pr.actorId);
+        const poste = ship?.postes?.find((p) => p.item.uid === pr.posteUid);
+        set({ pendingReload: null });
+        if (!ship || !chef || !poste) return;
+        const w = chef.weapons.find((x) => x.uid === pr.weaponUid);
+        const reloadTalent = pr.success ? reloadDRBonus(chef, w) : 0; // Rechargement rapide / Artilleur (LDB 10)
+        const step = crewedReloadStep(w ?? ({ reload: pr.reload, qualities: [] } as never), pr.progressBefore, pr.sl + reloadTalent);
+        if (step.done) { poste.loaded = true; poste.reloadProgress = 0; } else poste.reloadProgress = step.progress;
+        set({ battle: { ...battle, action: null,
+          crewActed: withCrewActed(battle.crewActed, ship.id, poste.crewIds ?? []), // chef + servants OCCUPÉS ce Round
+          log: [...battle.log, ev('reload', describeReload(pr, step.progress, w?.name ?? 'pièce'), chef.id)] } });
+        bus.emit(EVT.SCENE_DIRTY);
+        return;
+      }
       const a = battle.combatants.find((c) => c.id === pr.actorId);
       set({ pendingReload: null });
       if (!a) return;

@@ -97,15 +97,16 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
     expect(useGame.getState().pendingShipBattery).toBeNull();
   });
 
-  it('Recharge : une pièce qui a tiré est muette N Rounds (pas de 2e bordée avant rechargement, MDG ch.12)', () => {
+  it('Recharge : une pièce qui a tiré est DÉCHARGÉE (pas de 2e bordée avant rechargement, MDG ch.12 / LDB 62)', () => {
     seedBattleRng(7);
     useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
     useGame.getState().battleShipBattery('ship', 'target');
     useGame.getState().shipBatteryRoll('gunner');
     useGame.getState().shipBatteryConfirm();
     const poste = useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.postes![0];
-    expect(poste.reloadUntilRound).toBe(7); // Round 1 + Recharge 6 → re-disponible au Round 7
-    useGame.getState().battleShipBattery('ship', 'target'); // 2e bordée même Round → pièce en recharge → aucune ne porte
+    expect(poste.loaded).toBe(false); // a tiré → déchargée, reste muette jusqu'à la fin du Test étendu de recharge
+    expect(poste.reloadProgress).toBe(0); // recharge à zéro (RAW : pas d'auto-rechargement passif)
+    useGame.getState().battleShipBattery('ship', 'target'); // 2e bordée même Round → pièce déchargée → aucune ne porte
     expect(useGame.getState().pendingShipBattery).toBeNull();
   });
 
@@ -116,6 +117,9 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
     useGame.getState().shipBatteryRoll('gunner');
     useGame.getState().shipBatteryConfirm();
     expect(useGame.getState().battle!.crewActed?.['ship']).toContain('gunner'); // l'Artilleur a agi ce Round
+    // Parallélisme (MDG ch.14 l.37) : la bordée est une tâche d'équipage, elle NE consomme PAS le tour du navire
+    // (≠ `acted`) → manœuvre + bordée(s) + recharge coexistent le même Round, bornées par l'équipage (crewActed).
+    expect(useGame.getState().battle!.acted).toBe(false);
   });
 });
 

@@ -95,7 +95,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
   if (battle.action === 'battery') {
     if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
     const side = targetArc(get().facing[active.id] ?? 'N', active.pos, target.pos);
-    const postes = bearingPostes(active, side, battle.round); // sur ce bord ET chargées (pas en Recharge)
+    const postes = bearingPostes(active, side); // sur ce bord ET chargées (pas en cours de recharge)
     if (!postes.length) return { kind: 'invalid', reason: 'arc' };
     const mpt = get().scene?.metresPerTile ?? 2;
     const maxRange = Math.max(...postes.map((p) => p.item.range ?? 0)); // mètres — la plus longue pièce du bord

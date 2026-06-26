@@ -135,6 +135,28 @@ export function resolveCrewTest(
   return { contributions, baseTotal, moraleDR, total, lines };
 }
 
+/** Pénalité de MANQUE DE BRAS d'un grand vaisseau (MDG ch.14 l.55). */
+export interface UndercrewPenalty {
+  /** Nombre de tranches de 10 % d'équipage manquantes. */
+  tranches: number;
+  /** −2 DR par tranche, appliqué au total du Test d'équipage. */
+  dr: number;
+  /** Vrai dès la 1re tranche : « ne peuvent jamais être meilleurs qu'un Succès Minime » (DR total plafonné à 0). */
+  capSuccesMinime: boolean;
+}
+
+/**
+ * Manque de bras GLOBAL d'un grand vaisseau (MDG ch.14 l.55) : « le modificateur ne s'applique que pour chaque
+ * tranche de 10 % de l'équipage manquante » → −2 DR par tranche de 10 % manquant (`nominal` = équipage nominal du
+ * type ; `present` = membres encore en état). Dès qu'au moins une tranche manque, le Test « ne peut jamais être
+ * meilleur qu'un Succès Minime » (plafond du DR total à 0). Aucune pénalité si l'effectif est complet ou si moins
+ * de 10 % manque. PUR. */
+export function undercrewPenalty(nominal: number, present: number): UndercrewPenalty {
+  if (nominal <= 0 || present >= nominal) return { tranches: 0, dr: 0, capSuccesMinime: false };
+  const tranches = Math.floor(((nominal - present) * 10) / nominal); // tranches de 10 % manquantes (arith. entière, <10 % → 0)
+  return tranches >= 1 ? { tranches, dr: -2 * tranches, capSuccesMinime: true } : { tranches: 0, dr: 0, capSuccesMinime: false };
+}
+
 /** État de Moral PERSISTANT d'un navire (porté par l'instance de navire en campagne ; recalc hebdomadaire). */
 export interface ShipMoraleState {
   score: number;

@@ -42,7 +42,7 @@ export function ShipManeuverModal() {
 
   const allRolled = p.participants.every((x) => x.result);
   const unrolled = p.participants.filter((x) => x.interactive && !x.result && owns(x.id));
-  const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore);
+  const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew);
   const result = allRolled ? deriveManeuverFromCrew(ship, total) : null;
   const turnOptions: RollOption[] = TURN_OPTIONS.map((o) => ({
     key: o.key, label: o.label, selected: p.turnSteps === o.steps, primary: p.turnSteps === o.steps,

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveCrewTestByRoles, crewRoleValue } from './crewMorale';
+import { resolveCrewTestByRoles, crewRoleValue, undercrewPenalty } from './crewMorale';
 import { crewRoles, crewTestTypes, findCrewRoleById } from '../data';
 import type { Combatant, SkillInstance } from './types';
 import type { RNG } from './dice';
@@ -79,5 +79,29 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
     const short = resolveCrewTestByRoles(crew, 'manoeuvre', 'intermediaire', 80, seq([10, 10]), { understaffed: true });
     expect(short.total).toBe(0); // plafonné au Succès Minime
     expect(short.lines.some((l) => /Manque de bras|Succès Minime/.test(l))).toBe(true);
+  });
+});
+
+describe('undercrewPenalty — Manque de bras GLOBAL d’un grand vaisseau (MDG ch.14 l.55)', () => {
+  it('équipage complet → aucune pénalité', () => {
+    expect(undercrewPenalty(50, 50)).toEqual({ tranches: 0, dr: 0, capSuccesMinime: false });
+    expect(undercrewPenalty(50, 52)).toEqual({ tranches: 0, dr: 0, capSuccesMinime: false }); // surnuméraire
+  });
+
+  it('moins de 10 % manquant → 0 tranche, pas de malus (le modificateur s’applique PAR tranche de 10 %)', () => {
+    expect(undercrewPenalty(50, 46)).toEqual({ tranches: 0, dr: 0, capSuccesMinime: false }); // 8 % manquant
+  });
+
+  it('10 % manquant → 1 tranche : −2 DR + plafond Succès Minime', () => {
+    expect(undercrewPenalty(50, 45)).toEqual({ tranches: 1, dr: -2, capSuccesMinime: true }); // 5/50 = 10 %
+  });
+
+  it('pertes lourdes → malus cumulatif par tranche de 10 %', () => {
+    expect(undercrewPenalty(50, 35)).toEqual({ tranches: 3, dr: -6, capSuccesMinime: true }); // 30 % manquant
+    expect(undercrewPenalty(50, 20)).toEqual({ tranches: 6, dr: -12, capSuccesMinime: true }); // 60 % manquant
+  });
+
+  it('nominal inconnu (0) → pas de pénalité (défensif)', () => {
+    expect(undercrewPenalty(0, 0)).toEqual({ tranches: 0, dr: 0, capSuccesMinime: false });
   });
 });

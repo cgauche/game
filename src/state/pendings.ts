@@ -122,6 +122,12 @@ export interface PendingReload {
   success: boolean;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
+  /** Recharge d'un POSTE de navire (MDG ch.12) : la pièce visée (`ShipPoste.item.uid`) + sa coque (`shipId`).
+   *  Présents → l'application écrit le DR cumulé sur le POSTE (pas le champ `loaded` du marin) et occupe son équipage. */
+  posteUid?: string;
+  shipId?: string;
+  /** Soutien générique (LDB 12) déjà FONDU dans `skillValue` : nb de servants assistants + bonus total (affichage). */
+  soutien?: { count: number; bonus: number };
 }
 /** « Se libérer » / « se rouler au sol » en attente (LDB 16 l.61 Empêtré / l.77 En flammes) :
  *  une Action pour retirer l'État via un Test ; succès ⇒ 1 + DR pions retirés. Empêtré = Test OPPOSÉ
@@ -320,6 +326,8 @@ export interface PendingShipBattery extends MultiPending<ShipBatteryParticipant>
   side: FireArc;
   essentialRoleId?: string;
   moraleScore: number;
+  /** Manque de bras global (MDG ch.14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
+  undercrew?: { dr: number; capSuccesMinime: boolean };
 }
 /** Manœuvre navale en TEST D'ÉQUIPAGE (MDG ch.13-14) : chaque rôle tenu lance son Test, les DR sont sommés (rôle
  *  essentiel ×2) + la bande de Moral ; le total tient lieu de DR de Navigation. La direction (`turnSteps`, choisie
@@ -332,6 +340,8 @@ export interface PendingShipManeuver extends MultiPending<ShipManeuverParticipan
   essentialRoleId?: string;
   /** Moral du navire → bande ±DR au total (MDG ch.14). */
   moraleScore: number;
+  /** Manque de bras global (MDG ch.14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
+  undercrew?: { dr: number; capSuccesMinime: boolean };
 }
 /** Approche d'une source de PEUR (LDB 21 l.29 : « incapable de vous rapprocher … à moins de réussir un
  *  Test de Calme Intermédiaire (+0) ») : le clic d'approche est DIFFÉRÉ derrière ce Test sec. Succès →
