@@ -518,11 +518,12 @@ function bestAreaCenter(
   return best && best.covered >= 2 ? best : null;
 }
 
-/** ANTI-SPAM des BUFFS : la cible porte-t-elle DÉJÀ un effet actif issu de CE sort ? (lu sur
- *  `activeEffects[].spell.spellId` — posé à l'incantation, cf. `ActiveEffect.spell`). On ne réapplique
- *  jamais un buff déjà en cours → l'IA passe à autre chose (attaque). PUR, data-driven (par id de sort). */
+/** ANTI-SPAM des BUFFS : la cible porte-t-elle DÉJÀ un effet actif issu de CE sort ? On lit l'IDENTITÉ du
+ *  sort source sur l'effet actif — `sourceSpellId` (posé pour TOUT lancement, **Prières COMPRISES**) ET
+ *  `spell.spellId` (Sorts dissipables). C'est ce qui empêche un prêtre de RE-LANCER en boucle une bénédiction
+ *  durable (charMod CC+10 sur 6 Rounds) sur le même allié. PUR, data-driven (par id de sort, jamais par nom). */
 function hasActiveSpell(target: Combatant, spellId: string): boolean {
-  return (target.activeEffects ?? []).some((e) => e.spell?.spellId === spellId);
+  return (target.activeEffects ?? []).some((e) => e.sourceSpellId === spellId || e.spell?.spellId === spellId);
 }
 
 /** ANTI-SPAM des DÉBUFFS : la cible porte-t-elle DÉJÀ un État infligé par ce sort ? On lit les `condition`
@@ -958,8 +959,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       } else if (sp.cat === 'debuff') {
         // DÉBUFF d'un héros : le plus MENAÇANT à portée + LdV qui ne porte PAS déjà tous les États du sort
         // (anti-spam). Utilité = valeur de contrôle de l'État × menace de la cible (priorise le dangereux).
+        // VIVIER = héros VISIBLES filtrés par la portée PROPRE du sort de débuff (`inSpellRange(sp,…)`) — PAS
+        // `castPool` (filtré par la portée du missile offensif, qui clipperait un débuff de plus longue portée).
         const ctrl = controlValueOf(sp.condNames) || sp.magnitude;
-        const pool = restrict(fpick ? [fpick] : castPool).filter((h) => inSpellRange(sp, h) && sees(h) && !alreadyDebuffed(h, sp.condNames ?? []));
+        const pool = restrict(fpick ? [fpick] : shootableHeroes).filter((h) => inSpellRange(sp, h) && sees(h) && !alreadyDebuffed(h, sp.condNames ?? []));
         for (const h of pool) {
           const u = Weff.debuffValue * ctrl * (1 + 0.1 * finite(targetThreat(enemy, h), 0));
           candidates.push({ action: { kind: 'cast', targetId: h.id, spell: sp.id }, kind: 'cast', utility: u, targetId: h.id, coord: h.pos ?? null });

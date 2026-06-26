@@ -87,7 +87,7 @@ import {
   type SpellLike,
 } from '../engine/magic';
 import type { SpellRange } from '../engine/spellRange';
-import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
+import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx, type Formula } from '../engine/ops';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -2679,18 +2679,35 @@ function opIsHostileControl(op: GameOp): boolean {
   }
 }
 
+/** Estimation DÉTERMINISTE d'une `Formula` pour le SCORING (jamais de tirage — le planning ne doit PAS
+ *  consommer le RNG seedable, sous peine de désync du flux déterministe / coop / tests reproductibles, et
+ *  d'une magnitude aléatoire). Calque la convention statique de `missileDamage` (valeur écrite). Les dés
+ *  rendent leur MOYENNE (`n×(faces+1)/2 + plus`) ; `(X)`/`(Bonus de X)` la valeur réelle (déterministe) ;
+ *  `{rolled}` une valeur de référence neutre (le dé moyen d'un d10 ≈ 5,5) ; les axes relationnels (Indice/
+ *  stacks/écart d'Avantage) absents au planning → 0. PUR, sans RNG. */
+function formulaExpectation(f: Formula, ref: Combatant): number {
+  if (typeof f === 'number') return f;
+  if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
+  if ('charOf' in f) return effectiveChar(ref, f.charOf);
+  if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);
+  if ('rolled' in f) return 5.5; // référence neutre (dé moyen d'un d10) — jamais tiré
+  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
+  return 0; // indiceOf / stacks / engagedAdvantageGap : hors contexte au planning
+}
+
 /** « Magnitude » d'une op pour le scoring (échelle ≈ « Blessures espérées équivalentes ») : un `charMod`
  *  vaut |mod|/10 (un +10 ≈ 1 cran de DR), un État ≈ 2, un PA ≈ 1, une ressource (Chance/Destin) ≈ 3, un
- *  soin = sa formule résolue (PB), un octroi ≈ 2. Heuristique de RESSENTI (latitude IA), data-driven. */
+ *  soin = ESPÉRANCE de sa formule (PB), un octroi ≈ 2. DÉTERMINISTE (aucun `battleRng()` — cf.
+ *  `formulaExpectation`). Heuristique de RESSENTI (latitude IA), data-driven. */
 function opMagnitude(op: GameOp, ref: Combatant): number {
   switch (op.op) {
-    case 'heal': case 'healCaster': return Math.max(1, resolveFormula(op.amount, ref, battleRng()));
+    case 'heal': case 'healCaster': return Math.max(1, formulaExpectation(op.amount, ref));
     case 'cureCriticalWound': return 4 * (op.count ?? 1);
     case 'cureDisease': return 3 * (op.count ?? 1);
     case 'charMod': return Math.abs(op.mod) / 10;
     case 'skillMod': case 'testMod': return Math.abs((op as { mod?: number; amount?: number }).mod ?? (op as { amount?: number }).amount ?? 0) / 10;
     case 'condition': return 2;
-    case 'ap': return Math.max(1, resolveFormula(op.amount, ref, battleRng()));
+    case 'ap': return Math.max(1, formulaExpectation(op.amount, ref));
     case 'gainResource': return 3 * (op.amount ?? 1);
     case 'gainAdvantage': return 2;
     case 'grantTalent': case 'grantTrait': case 'augmentWeapon': case 'grantWeapon':
@@ -2728,7 +2745,7 @@ export function aiSpellPlan(enemy: Combatant): SupportSpellOption[] {
     // INVOCATION (op summon ALLIÉE du lanceur — un démon « hors de contrôle » n'est pas un soutien).
     const allySummons = summonOps.filter((o) => o.allyOfCaster !== false);
     if (allySummons.length) {
-      const count = allySummons.reduce((n, o) => n + Math.max(1, resolveFormula(o.count, enemy, battleRng())), 0);
+      const count = allySummons.reduce((n, o) => n + Math.max(1, Math.round(formulaExpectation(o.count, enemy))), 0);
       out.push({ id: sp.id, cat: 'summon', cn, range, magnitude: 2 * count, summonCount: count });
       continue;
     }
@@ -2933,6 +2950,10 @@ export function applyCast(
   // `OpsCtx.sourceSpell` → `applyOps`) pour autoriser un Test étendu de Langue (Magick) jusqu'au NI. Sorts
   // seulement (les Prières ne se dissipent pas par Contre-sort). Sort instantané → aucun effet → rien à marquer.
   const sourceSpell = isSort ? { spellId: spell.id, ni: spell.cn ?? 0, casterId: caster.id, label: spell.label } : undefined;
+  // IDENTITÉ du sort (anti-spam IA) : posée sur TOUT effet durable de ce lancement — Prières COMPRISES
+  // (≠ `sourceSpell`, réservé à la dissipation arcanique). Une bénédiction durable est ainsi reconnue par
+  // `aiSpellPlan`/l'IA pour ne pas la re-lancer en boucle (FIX buff-spam des prières).
+  const sourceSpellId = spell.id;
   // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.201-202) n'est pas lancé : pas d'effet Critique
   // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
   const crit = !!res.isCritical && isSort && !res.dispelled;
@@ -3032,7 +3053,7 @@ export function applyCast(
           rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
           ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
-          ...(sourceSpell ? { sourceSpell } : {}),
+          ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
         }));
       }
@@ -3132,7 +3153,7 @@ export function applyCast(
             sl: opp ? opp.margin : res.sl,
             ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
-            ...(sourceSpell ? { sourceSpell } : {}),
+            ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
             ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
@@ -3250,7 +3271,7 @@ export function applyCast(
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
-        ...(sourceSpell ? { sourceSpell } : {}),
+        ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
         onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
       }));
     }

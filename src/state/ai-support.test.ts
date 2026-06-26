@@ -16,6 +16,7 @@ import { aiSpellPlan } from './combatFlow';
 import { chooseEnemyAction, type EnemyTurnInput, type SupportSpellOpt } from './ai';
 import { emptyScene } from './scene';
 import { findSpellById } from '../data';
+import { applyOps } from '../engine/ops';
 import type { Combatant, Weapon } from '../engine/types';
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -152,16 +153,41 @@ describe('chooseEnemyAction — soutien : décisions pures', () => {
     if (a.kind === 'cast') expect(a.spell).toBe('buff');
   });
 
-  it('ANTI-SPAM : buff DÉJÀ actif sur la cible (activeEffects) → ne réapplique pas → ATTAQUE', () => {
-    const e = caster('e', { x: 5, y: 5 }, [], { weapons: [MELEE] });
-    const ally = caster('a', { x: 6, y: 5 }, [], {
-      activeEffects: [{ label: 'buff', bonus: 0, duration: { scale: 'rounds', rounds: 3 }, spell: { spellId: 'buff', ni: 0, casterId: 'e', label: 'buff' } }] as never,
+  // Pose un buff durable via le VRAI chemin moteur (`applyOps` avec `sourceSpellId`) — l'effet actif
+  // produit reflète EXACTEMENT la pose réelle d'un sort/prière (pas un objet monté à la main). `arcane`
+  // ajoute en plus le marqueur `sourceSpell` (dissipation) ; une prière n'a QUE `sourceSpellId`.
+  function poseBuff(c: Combatant, spellId: string, arcane: boolean): Combatant {
+    const cc = { ...c, activeEffects: [...(c.activeEffects ?? [])] };
+    applyOps(cc, [{ op: 'charMod', char: 'CC', mod: 10 }], {
+      caster: cc, label: spellId, defaultDurationRounds: 6, sourceSpellId: spellId,
+      ...(arcane ? { sourceSpell: { spellId, ni: 2, casterId: c.id, label: spellId } } : {}),
     });
-    // soi aussi déjà buffé → aucune cible de buff valide ; un héros au contact → l'attaque doit l'emporter.
-    e.activeEffects = [{ label: 'buff', bonus: 0, duration: { scale: 'rounds', rounds: 3 }, spell: { spellId: 'buff', ni: 0, casterId: 'e', label: 'buff' } }] as never;
+    return cc;
+  }
+
+  it('ANTI-SPAM (Sort ARCANE) : buff DÉJÀ posé (vraie pose moteur) → ne réapplique pas → ATTAQUE', () => {
+    const base = caster('e', { x: 5, y: 5 }, [], { weapons: [MELEE] });
+    const e = poseBuff(base, 'buff', true); // buff arcanique déjà actif sur soi (pose RÉELLE)
+    const ally = poseBuff(caster('a', { x: 6, y: 5 }, []), 'buff', true);
     const h = foeAt('h', 5, 6);
     const a = chooseEnemyAction(input(e, [h], { squad: [ally], supportSpells: [BUFF_ALLY] }));
     expect(a).toEqual({ kind: 'melee', targetId: 'h' });
+  });
+
+  // RÉGRESSION (FIX buff-spam des PRIÈRES) : avant le correctif, une bénédiction durable créait un
+  // activeEffect SANS `.spell` (réservé aux Sorts arcaniques) NI `.sourceSpellId` → l'anti-spam ne la
+  // voyait pas → l'IA la RELANÇAIT chaque tour (spam infini). Ce test ÉCHOUAIT avant, passe après.
+  it('ANTI-SPAM (PRIÈRE) : bénédiction DÉJÀ active (vraie pose moteur, sans `.spell`) → ne relance PAS', () => {
+    const base = caster('e', { x: 5, y: 5 }, [], { weapons: [MELEE] });
+    const e = poseBuff(base, 'benediction', false); // PRIÈRE déjà active sur soi : que `sourceSpellId`
+    const ally = poseBuff(caster('a', { x: 6, y: 5 }, []), 'benediction', false);
+    // Garde-fou : l'effet de prière ne porte PAS le marqueur de dissipation `spell` (prière non dissipable)…
+    expect(ally.activeEffects!.every((x) => !x.spell)).toBe(true);
+    // …mais porte bien l'IDENTITÉ du sort source (anti-spam).
+    expect(ally.activeEffects!.some((x) => x.sourceSpellId === 'benediction')).toBe(true);
+    const h = foeAt('h', 5, 6);
+    const a = chooseEnemyAction(input(e, [h], { squad: [ally], supportSpells: [{ id: 'benediction', cat: 'buffAlly', cn: 0, range: 20, magnitude: 4 }] }));
+    expect(a).toEqual({ kind: 'melee', targetId: 'h' }); // bénédiction déjà partout → on frappe, pas de spam
   });
 
   it('DÉBUFFE le héros le plus MENAÇANT à portée', () => {
