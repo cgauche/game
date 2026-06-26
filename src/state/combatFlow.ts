@@ -4236,14 +4236,13 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     }
     case 'castArea': {
       if (!canAct) return advanceTurn(get, set);
-      // Sort de ZONE (ZdE, LDB 47 l.44) d'un lanceur IA : le centre est AUTO-POSÉ (l'IA pure l'a
-      // choisi sur un paquet de héros) — sinon `pendingCast.zone` resterait sans centre et attendrait
-      // une pose JOUEUR (soft-lock). On reproduit le flux d'incantation (télégraphe → jet → Contre-sort
-      // → pose) sans modale de Lancer interactive. PARITÉ RAW avec le missile ennemi (LDB 46 l.201-202) :
-      // une fenêtre de Contre-sort/Dissipation est offerte aux héros AVANT la pose (`routeEnemyCast`), via
-      // le MÊME mécanisme `pendingCounterspell`. Le centre auto-choisi est MÉMORISÉ dans `zone.aiCenter`
-      // (le `counterspell*` résolveur posera la zone dessus) ; si aucun héros ne peut Dissiper, on pose et
-      // on reprend le tour IMMÉDIATEMENT (comportement historique, anti double-advance).
+      // Sort de ZONE (ZdE, LDB 47 l.44) d'un lanceur IA : MÊME drive que le missile (`case 'cast'`) — la
+      // seule spécificité est de PORTER le centre décidé par l'IA pure (`action.center`, sur un paquet de
+      // héros) dans `pendingCast.zone.autoCenter`. Ce centre est l'ÉQUIVALENT du curseur souris d'un héros :
+      // le `castConfirm` PARTAGÉ le lira pour poser la zone tout seul (gardé par `aiDriven`), exactement
+      // comme l'auto-combat fournit ses jets. PLUS de `castCommitZone` bespoke ici : la pose vit dans le
+      // `castConfirm` UNIQUE. PARITÉ RAW (LDB 46 l.201-202) : la fenêtre de Contre-sort s'intercale AVANT la
+      // pose (`routeEnemyCast`) ; dissipée → `castConfirm` ne pose RIEN (zone non posée, pending fermé).
       const center = action.center;
       set({ actorAim: { fromId: enemy.id, toId: enemy.id, kind: 'cast' } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -4254,19 +4253,17 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         if (!castZoneSpell(get, set, enemy, action.spell)) { advanceTurn(get, set); return; } // pas une zone chiffrable → passe
         const pc = get().pendingCast;
         if (!pc) { resumeEnemyTurn(get, set); return; } // refus (contrecoup bloquant) — castZoneSpell a journalisé
-        // Mémorise le centre auto-choisi DANS le pending (zone non encore posée, `center` reste null pour
-        // que le Contre-sort s'intercale) — le résolveur de Contre-sort posera la zone dessus.
-        if (pc.zone) set({ pendingCast: { ...pc, zone: { ...pc.zone, aiCenter: center } } });
+        // Porte le centre auto-choisi sur le pending (zone non encore posée, `center` reste null pour que le
+        // Contre-sort s'intercale) — `castConfirm` PARTAGÉ posera la zone dessus une fois la fenêtre close.
+        if (pc.zone) set({ pendingCast: { ...pc, zone: { ...pc.zone, autoCenter: center } } });
         get().castRoll(); // jet figé de l'IA (Surincantation no-op pour une ZdE — toutes cibles arrosées)
         // Fenêtre de Contre-sort (parité missile) : ouvre `pendingCounterspell` si au moins un héros peut
-        // Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel (qui posent
-        // la zone sur `aiCenter` via castCommitZone). Sinon (aucun dissipeur) : pose + reprise immédiates.
+        // Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel → castConfirm.
         routeEnemyCast(get, set);
-        if (get().pendingCounterspell) return; // Contre-sort ouvert → la résolution posera la zone & reprendra
-        // Aucun Contre-sort : pose AUTOMATIQUE sur le centre choisi (castCommitZone applique le MÊME jet à
-        // tous les combattants du rayon final + ferme pendingCast/cascade), puis reprise armée explicitement.
-        castCommitZone(get, set, center);
-        resumeEnemyTurn(get, set);
+        if (get().pendingCounterspell) return; // Contre-sort ouvert → counterspell* → castConfirm (pose & reprise)
+        // Aucun Contre-sort : MÊME résolveur PARTAGÉ que le missile — castConfirm pose la zone sur autoCenter
+        // (caster aiDriven) puis reprend le tour de l'IA. Zéro chemin spécial.
+        get().castConfirm();
       }, TEMPO.aimTelegraph);
       return;
     }

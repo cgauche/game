@@ -581,11 +581,13 @@ export interface PendingCast {
    *  carte (la modale s'efface). À la pose : tous les combattants dans `radius` (cases,
    *  Chebyshev) sont visés par le MÊME jet. */
   zone?: { center: { x: number; y: number } | null; radius: number; r0m?: number; placing?: boolean;
-    /** ZdE d'un lanceur IA : CENTRE auto-choisi par l'IA pure (sur un paquet de héros), MÉMORISÉ tant que
-     *  `center` reste null pour qu'une fenêtre de Contre-sort puisse s'intercaler AVANT la pose (parité
-     *  RAW avec le missile ennemi, LDB 46 l.201-202). Le résolveur de Contre-sort (`counterspell*`) pose
-     *  ENSUITE la zone sur ce centre (`castCommitZone`) au DR net. Absent = pose joueur classique. */
-    aiCenter?: { x: number; y: number } };
+    /** ZdE d'un lanceur IA : CENTRE auto-choisi par l'IA pure (sur un paquet de héros, `ai.ts`
+     *  `castArea.center`), MÉMORISÉ tant que `center` reste null. C'est l'ÉQUIVALENT du curseur souris
+     *  d'un héros : `castConfirm` (chemin PARTAGÉ) le lit pour poser la zone tout seul quand le lanceur
+     *  est `aiDriven` — exactement comme l'auto-combat fournit `castRoll`/`castConfirm`. La pose vit ainsi
+     *  dans le `castConfirm` UNIQUE (gardée par `aiDriven`), pas dans un chemin spécial de Contre-sort.
+     *  Absent = pose joueur classique (attend le clic réel). */
+    autoCenter?: { x: number; y: number } };
   /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.34) :
    *  le NI est DOUBLÉ à la résolution (et le livre s'expose aux dégâts/au vol — narratif). */
   grimoire?: boolean;

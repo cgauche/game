@@ -95,31 +95,6 @@ function advanceCombatJet(get: () => GameState): void {
     && !get().pendingAttack && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
 }
 
-/** Résout l'incantation FIGÉE une fois la fenêtre de Contre-sort close (`counterspellConfirm/Cancel`).
- *  Une ZdE d'un lanceur IA (zone NON posée + centre auto-choisi `aiCenter`) se POSE sur ce centre via
- *  `castCommitZone` (parité avec la pose auto du `case 'castArea'`) puis reprend le tour de l'IA ; tout
- *  autre Sort (mono-cible héros/ennemi, zone posée par un joueur) passe par `castConfirm` (chemin
- *  historique inchangé). Garantit qu'une ZdE ennemie passée par un Contre-sort NE soft-locke PAS (centre
- *  jamais posé) et NE se résout PAS en mono-cible sur l'ancre lanceur. */
-function resolveAfterCounterspell(get: Get, set: Set): void {
-  const pc = get().pendingCast;
-  const aiCenter = pc?.zone && !pc.zone.center ? pc.zone.aiCenter : undefined;
-  if (aiCenter && pc) {
-    const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
-    // Sort DISSIPÉ par le Contre-sort (LDB 46 l.207) : il n'aboutit pas → aucune zone à poser.
-    // `castCommitZone` refuserait (castable=false) MAIS sans fermer le pending (réservé à la pose
-    // joueur) → on ferme proprement ici (data + cascade-hôte) pour ne PAS soft-locker le tour IA.
-    if (!pc.result?.cast) {
-      set({ pendingCast: null, pendingCascade: null });
-    } else {
-      castCommitZone(get, set, aiCenter); // pose la zone au DR net (ferme pendingCast/cascade)
-    }
-    if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set); // reprise armée (castCommitZone ne reprend pas l'IA)
-    return;
-  }
-  get().castConfirm(); // mono-cible / zone posée par un joueur : chemin historique (applique + reprend l'IA si ennemi)
-}
-
 /** Actions de combat inline du store — déplacées VERBATIM. Spreadées EN TÊTE du `create`. */
 export function createCombatSlice(get: Get, set: Set) {
   // Câble le déclencheur `onGainCondition` (Mâchoires d'acier…) : le moteur `addCondition` est PUR
@@ -2010,10 +1985,32 @@ export function createCombatSlice(get: Get, set: Set) {
     castConfirm: () => {
       const { pendingCast: pc } = get();
       if (!pc || !pc.result) return;
-      // ZONE non posée et lançable → la confirmation EST le passage en pose (garde anti-application
-      // sur l'ancre lanceur — la vraie application se fait à la pose, castCommitZone).
-      if (pc.zone && !pc.zone.center && (pc.result.cast || (pc.result.isCritical && (pc.critChoice ?? 'puissance') === 'puissance'))) {
+      // ZONE non posée → la confirmation NE résout JAMAIS en mono-cible sur l'ancre lanceur : ce bloc est
+      // l'UNIQUE sortie d'une ZdE non posée (héros comme IA), exactement la même pour tous. Seul l'éventuel
+      // « clic » de pose change de SOURCE (souris du héros / décision de l'IA), comme l'auto-combat fournit
+      // déjà ses jets.
+      if (pc.zone && !pc.zone.center) {
+        const castable = pc.result.cast || (pc.result.isCritical && (pc.critChoice ?? 'puissance') === 'puissance');
+        // Sort qui n'aboutit PAS (raté / DISSIPÉ par Contre-sort, LDB 46 l.207) : aucune zone à poser →
+        // on ferme proprement la situation (data + cascade-hôte) — pas de soft-lock, cibles intactes.
+        if (!castable) {
+          const caster = actorIn(get(), pc.casterId);
+          set({ pendingCast: null, pendingCascade: null });
+          if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
+          return;
+        }
+        // Lançable → la confirmation EST le passage en pose (la vraie application se fait à la pose,
+        // castCommitZone).
         get().castPlaceZone(true);
+        // IA = HÉROS (même flux) : le héros manuel attend le clic réel sur la carte (return ci-dessous) ;
+        // un lanceur aiDriven FOURNIT son clic — le centre décidé par l'IA pure (`pc.zone.autoCenter`,
+        // équivalent du curseur souris). On pose ici via le MÊME `castCommitZone`, puis on reprend le tour
+        // de l'IA UNE seule fois.
+        const caster = actorIn(get(), pc.casterId);
+        if (caster && aiDriven(get(), caster) && pc.zone.autoCenter && get().battle) {
+          castCommitZone(get, set, pc.zone.autoCenter);
+          if (get().battle) resumeEnemyTurn(get, set);
+        }
         return;
       }
       const caster = actorIn(get(), pc.casterId);
@@ -2146,12 +2143,12 @@ export function createCombatSlice(get: Get, set: Set) {
         const counter = actorIn(get(), best.id);
         if (counter) applyCounterspellOutcome(get, set, counter, best.result); // mute `pendingCast.result`
       }
-      resolveAfterCounterspell(get, set); // applique le Sort (dissipé ou au DR net) — pose la ZdE IA / résout le mono-cible + reprend le tour de l'IA
+      get().castConfirm(); // applique le Sort (dissipé ou au DR net) — chemin PARTAGÉ : mono-cible, OU ZdE (héros = attend le clic ; IA = auto-pose via autoCenter) + reprise IA
     },
     counterspellCancel: () => {
       if (!get().pendingCounterspell) return;
       set({ pendingCounterspell: null });
-      resolveAfterCounterspell(get, set); // « Laisser passer » : le Sort se résout tel quel
+      get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel (chemin PARTAGÉ, agnostique IA/zone)
     },
     // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).
     // « Une situation = une modale » : le Test étendu EST une cascade à une étape `jet:'extended'`,
