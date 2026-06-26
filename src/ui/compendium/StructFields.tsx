@@ -142,7 +142,7 @@ export function TalentTestField({ value, onChange }: { value: TalentTest | undef
 
 /** Clés NON-booléennes de `CombatFeature` (rendues par des contrôles dédiés) — le RESTE est traité
  *  génériquement comme un drapeau booléen. Source unique pour ne PAS les compter comme des cases. */
-const COMBAT_NON_BOOL = new Set<keyof CombatFeature>(['offHandPenalty', 'attackModes', 'castingKind']);
+const COMBAT_NON_BOOL = new Set<keyof CombatFeature>(['offHandPenalty', 'attackModes', 'castingKind', 'reverseFailed']);
 
 /** Drapeaux booléens de `CombatFeature` (LDB 10) — DÉRIVÉS de la donnée existante (union des clés
  *  présentes dans `talents.json`, moins les clés spéciales) → un nouveau drapeau câblé dans la donnée
@@ -204,6 +204,18 @@ export function CombatField(
           <>
             <label className="dr">par niveau<input type="number" value={offHand.perLevel} onChange={(e) => emit({ ...c, offHandPenalty: { ...offHand, perLevel: Number(e.target.value) || 0 } })} /></label>
             <label className="dr">nulle à<input type="number" value={offHand.zeroAt} onChange={(e) => emit({ ...c, offHandPenalty: { ...offHand, zeroAt: Number(e.target.value) || 0 } })} /></label>
+          </>
+        )}
+      </div>
+      <div className="tf-row">
+        <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skill: datasetArray('skills')[0]?.id ?? '' } : undefined })} /> Inverse un Test raté (Sociable…)</label>
+        {c.reverseFailed && (
+          <>
+            <select value={c.reverseFailed.skill} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: e.target.value } })}>
+              {datasetArray('skills').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
+            <input className="dr" placeholder="spec" value={c.reverseFailed.spec ?? ''} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, spec: e.target.value || undefined } })} />
+            <label className="dr">cap DR<input type="number" value={c.reverseFailed.capDR ?? 0} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, capDR: Number(e.target.value) || undefined } })} /></label>
           </>
         )}
       </div>

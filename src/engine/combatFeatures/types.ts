@@ -98,11 +98,11 @@ export interface CombatFeature {
   /** Effrayant : le porteur a un Indice de Peur égal à son niveau. */
   causesFear?: boolean;
   // ── Tests hors combat ──────────────────────────────────────────────────────
-  /** +niveau DR aux Tests de la Compétence qui matche (Menaçant → Intimidation…). */
-  testDR?: { match: string };
-  /** Inverse un Test RATÉ de la Compétence qui matche s'il devient réussi (Sociable → Ragot, Studieux →
-   *  Recherche…). `capDR` plafonne le DR obtenu (Pansement de fortune +1). */
-  reverseFailed?: { match: string; capDR?: number };
+  // (Le +DR de Talent — Menaçant → Intimidation — est désormais la règle UNIVERSELLE `talentTestSLBonus`
+  //  pilotée par `TalentData.test.matches` ; plus de descripteur `testDR` par-libellé.)
+  /** Inverse un Test RATÉ de la Compétence référencée s'il devient réussi (Sociable → Ragot, Studieux →
+   *  Recherche…). Réf STRUCTURÉE par id (plus de match par libellé) ; `capDR` plafonne le DR (Pansement +1). */
+  reverseFailed?: { skill: string; spec?: string; capDR?: number };
   // ── Économie / social ──────────────────────────────────────────────────────
   /** Négociateur (LDB 60 l.12) : un Marchandage GAGNÉ réduit le prix de 20 % (au lieu de 10 %) même
    *  sans Succès Stupéfiant (DR net ≥ 6). Lu par merchantFlow lors de la conclusion du Marchandage. */

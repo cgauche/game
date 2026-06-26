@@ -4,9 +4,10 @@ import {
   ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus,
   canPreemptRanged, hasSurpriseSave, reloadDRBonus, runMovementBonus, fleeMovementBonus,
   shieldAdvantageLevel, canCounterOnDefenseWin, hasStealAdvantage, outnumberCountBonus,
-  hasBraveheart, bleedIgnoreLevel, talentMagicResistance, talentFearIndice, talentTestDR,
+  hasBraveheart, bleedIgnoreLevel, talentMagicResistance, talentFearIndice,
   talentReverseFailed, offHandPenalty,
 } from './dispatch';
+import { talentTestSLBonus } from '../magic';
 import { attackModifiers, woundsFromHit } from '../combat';
 import { endOfRound } from '../conditions';
 import { makeRNG } from '../dice';
@@ -121,16 +122,16 @@ describe('défense / récupération (LDB 10)', () => {
 });
 
 describe('tests hors combat (LDB 10)', () => {
-  it('Menaçant : +niveau DR aux Tests d’Intimidation', () => {
+  it('Menaçant : +niveau DR aux Tests d’Intimidation (règle universelle, matcher structuré)', () => {
     const c = mk([{ name: 'Menaçant', times: 2 }]);
-    expect(talentTestDR(c, 'Intimidation')).toBe(2);
-    expect(talentTestDR(c, 'Charme')).toBe(0);
+    expect(talentTestSLBonus(c, { skill: 'intimidation' })).toBe(2);
+    expect(talentTestSLBonus(c, { skill: 'charme' })).toBe(0);
   });
   it('talents d’inversion : Sociable (Ragot), Pansement de fortune (Guérison, plafond +1 DR)', () => {
     const c = mk([{ name: 'Sociable', times: 1 }, { name: 'Pansement de fortune', times: 1 }]);
-    expect(talentReverseFailed(c, 'Ragot')).toEqual({ capDR: undefined });
-    expect(talentReverseFailed(c, 'Guérison')).toEqual({ capDR: 1 });
-    expect(talentReverseFailed(c, 'Charme')).toBeNull();
+    expect(talentReverseFailed(c, { skill: 'ragot' })).toEqual({ capDR: undefined });
+    expect(talentReverseFailed(c, { skill: 'guerison' })).toEqual({ capDR: 1 });
+    expect(talentReverseFailed(c, { skill: 'charme' })).toBeNull();
   });
   it('Ambidextre toujours fonctionnel après la refonte (régression)', () => {
     expect(offHandPenalty(mk([{ name: 'Ambidextre', times: 1 }]))).toBe(-10);

@@ -240,26 +240,20 @@ export function talentFearIndice(c: Combatant): number {
   return levelSum(c, (d) => !!d.causesFear);
 }
 
-/** +DR de talent à un Test de la Compétence `skillLabel` (Menaçant → Intimidation…). LDB 10. */
-export function talentTestDR(c: Combatant, skillLabel: string | undefined): number {
-  if (!skillLabel) return 0;
-  const low = skillLabel.toLowerCase();
-  return featuresOf(c).reduce((s, { def, ctx }) => s + (def.testDR && low.includes(def.testDR.match) ? ctx.level : 0), 0);
-}
-
 /** Négociateur (LDB 60 l.12) : un Marchandage gagné réduit le prix de 20 % même sans Succès
  *  Stupéfiant. Lu par merchantFlow à la conclusion (remplace le name-match `=== 'Négociateur'`). */
 export function hasBargainBonus(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.bargainBonus);
 }
 
-/** Inversion d'un Test RATÉ de `skillLabel` (Sociable → Ragot…) : renvoie le plafond de DR
- *  éventuel (`capDR`), `null` si aucun talent ne s'applique. LDB 10. */
-export function talentReverseFailed(c: Combatant, skillLabel: string | undefined): { capDR?: number } | null {
-  if (!skillLabel) return null;
-  const low = skillLabel.toLowerCase();
+/** Inversion d'un Test RATÉ de la Compétence `{ skill, spec }` (Sociable → Ragot, Pharmacologie →
+ *  Métier (Apothicaire)…) : renvoie le plafond de DR éventuel (`capDR`), `null` si aucun talent ne
+ *  s'applique. Réf STRUCTURÉE par id (plus de match par libellé). LDB 10. */
+export function talentReverseFailed(c: Combatant, q: { skill?: string; spec?: string }): { capDR?: number } | null {
+  if (!q.skill) return null;
   for (const { def } of featuresOf(c)) {
-    if (def.reverseFailed && low.includes(def.reverseFailed.match)) return { capDR: def.reverseFailed.capDR };
+    const rf = def.reverseFailed;
+    if (rf && rf.skill === q.skill && (rf.spec == null || rf.spec === q.spec)) return { capDR: rf.capDR };
   }
   return null;
 }

@@ -35,7 +35,7 @@ import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, type AttackResult } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
-import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/combatFeatures/dispatch';
+import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
@@ -879,10 +879,10 @@ export const FLOWS = {
     touch: touchActors,
     caps: { forced: true },
     resolve: (s, p, actor, _get, forced) => {
-      // +DR de Talent (LDB 10) sur un Test RÉUSSI : `talentTestSLBonus` (matcher structuré `test.matches`,
-      // par id — règle UNIVERSELLE) + `talentTestDR` (combat features `testDR`, ensemble DISJOINT → pas de
-      // double-compte). Le contexte `when` n'est pas évalué ici (défaut conservateur ; cf. plan).
-      const tDR = actor ? talentTestDR(actor, p.label) + talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec }) : 0;
+      // +DR de Talent (LDB 10) sur un Test RÉUSSI — règle UNIVERSELLE `talentTestSLBonus` (matcher
+      // STRUCTURÉ `test.matches`, par id ; subsume l'ex-`talentTestDR`). Le contexte `when` n'est pas
+      // évalué ici (défaut conservateur ; cf. plan).
+      const tDR = actor ? talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec }) : 0;
       if (forced) {
         if (p.success) return null; // (ancien `force.guard : !p.success`) — rien à forcer si déjà réussi
         // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double sur un Test de
@@ -899,7 +899,7 @@ export const FLOWS = {
       // gouttière/Noctambule/Pansement de fortune) : un Test raté est relu chiffres inversés s'il
       // devient réussi (Pansement plafonne à +1 DR).
       if (actor && !res.success) {
-        const rev = talentReverseFailed(actor, p.label);
+        const rev = talentReverseFailed(actor, { skill: p.skillId, spec: p.spec });
         if (rev) {
           const e = evaluateTest(reverseRoll(res.roll), res.target);
           if (e.success) res = { ...e, isDouble: res.isDouble, sl: rev.capDR != null ? Math.min(e.sl, rev.capDR) : e.sl };

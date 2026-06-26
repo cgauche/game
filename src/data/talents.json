@@ -369,18 +369,21 @@
     "max": {
       "bonusOf": "F"
     },
-    "test": null,
+    "test": {
+      "raw": "Athlétisme (Saut)",
+      "matches": [
+        {
+          "skill": "athletisme",
+          "manual": true
+        }
+      ]
+    },
     "desc": "Vous avez des jambes solides capables de vous porter sur de grandes distances quand vous sautez. Ajoutez votre niveau de Bonnes jambes à votre DR à tous les Tests d'Athlétisme impliquant Saut (voir page 166).",
     "specs": [],
     "rand": 22,
     "source": {
       "book": "LDB",
       "page": 133
-    },
-    "combat": {
-      "testDR": {
-        "match": "athlétisme (saut)"
-      }
     }
   },
   {
@@ -535,7 +538,8 @@
     },
     "combat": {
       "reverseFailed": {
-        "match": "discrétion (urbaine)"
+        "skill": "discretion",
+        "spec": "Urbaine"
       }
     }
   },
@@ -1576,18 +1580,21 @@
     "max": {
       "bonusOf": "Soc"
     },
-    "test": null,
+    "test": {
+      "raw": "Charme (Foule)",
+      "matches": [
+        {
+          "skill": "charme",
+          "manual": true
+        }
+      ]
+    },
     "desc": "Vous êtes doué pour enflammer les foules. Vous gagnez un bonus de DR égal à vos niveaux de Grand orateur à n'importe quel Test de Charme quand vous parlez en public devant une foule.",
     "specs": [],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
-    },
-    "combat": {
-      "testDR": {
-        "match": "charme (foule)"
-      }
     }
   },
   {
@@ -1950,7 +1957,7 @@
     },
     "combat": {
       "reverseFailed": {
-        "match": "recherche"
+        "skill": "recherche"
       }
     }
   },
@@ -2420,7 +2427,11 @@
     },
     "test": {
       "raw": "Intimidation",
-      "matches": []
+      "matches": [
+        {
+          "skill": "intimidation"
+        }
+      ]
     },
     "desc": "Vous bénéficiez d'une stature imposante. Quand vous utilisez la Compétence Intimidation, gagnez un bonus de DR égal à vos Niveaux de Menaçant.",
     "specs": [],
@@ -2428,11 +2439,6 @@
     "source": {
       "book": "LDB",
       "page": 141
-    },
-    "combat": {
-      "testDR": {
-        "match": "intimidation"
-      }
     }
   },
   {
@@ -2553,7 +2559,7 @@
     },
     "combat": {
       "reverseFailed": {
-        "match": "résistance (alcool)"
+        "skill": "resistance-a-l-alcool"
       }
     }
   },
@@ -2711,7 +2717,7 @@
     },
     "combat": {
       "reverseFailed": {
-        "match": "guérison",
+        "skill": "guerison",
         "capDR": 1
       }
     }
@@ -2855,7 +2861,8 @@
     },
     "combat": {
       "reverseFailed": {
-        "match": "métier (apothicaire)"
+        "skill": "metier",
+        "spec": "Apothicaire"
       }
     }
   },
@@ -3441,7 +3448,7 @@
     },
     "combat": {
       "reverseFailed": {
-        "match": "ragot"
+        "skill": "ragot"
       }
     }
   },
@@ -3535,7 +3542,7 @@
     },
     "combat": {
       "reverseFailed": {
-        "match": "recherche"
+        "skill": "recherche"
       }
     }
   },
