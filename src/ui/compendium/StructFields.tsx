@@ -13,7 +13,8 @@ import { DIFFICULTY_LABELS, CHAR_KEYS, CHAR_LABELS, type Difficulty, type CharKe
 import type { DiseaseSymptom } from '../../engine/disease';
 import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
-import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger } from '../../data';
+import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch } from '../../data';
+import { ConditionEditor } from '../editor/ConditionEditor';
 import type { TraitInstance } from '../../engine/statEntry';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { GameOpEditor } from '../editor/GameOpEditor';
@@ -66,6 +67,71 @@ export function SymptomTickField({ value, onChange }: { value: { difficulty: Dif
         {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
       </select>
       {value && <GameOpEditor ops={value.onFail ?? []} onChange={(ops) => onChange({ difficulty: value.difficulty, onFail: ops })} />}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 1bis) talents.test — { raw verbatim, matches: TestMatch[] } (LDB 10 : +DR sur un Test lié)
+ *    `raw` = la ligne « Tests : » du livre (affichage) ; `matches` = la règle STRUCTURÉE id-based
+ *    (skill XOR char, spec / « au choix » / sauf-spec, contexte `when` mécanisable, `manual` narratif).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+export function TalentTestField({ value, onChange }: { value: TalentTest | undefined; onChange: (v: TalentTest | undefined) => void }) {
+  const raw = value?.raw ?? '';
+  const matches = value?.matches ?? [];
+  const skillsList = datasetArray('skills');
+  const emit = (r: string, m: TestMatch[]) => onChange(r || m.length ? { raw: r, matches: m } : undefined);
+  const setM = (i: number, patch: Partial<TestMatch>) => emit(raw, matches.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  return (
+    <div className="ed-field">
+      <span>Tests liés (LDB 10 : +1 DR/niveau sur un Test lié RÉUSSI) — « raw » = ligne du livre (affichage, verbatim) ; « matches » = règle structurée</span>
+      <input value={raw} placeholder="ligne « Tests : » du livre (verbatim)" onChange={(e) => emit(e.target.value, matches)} />
+      {matches.map((m, i) => (
+        <div key={i}>
+          <div className="de-reflrow">
+            <select value={m.char != null ? '@char' : (m.skill ?? '')} onChange={(e) => {
+              const v = e.target.value;
+              if (v === '@char') setM(i, { skill: undefined, spec: undefined, specFromInstance: undefined, exceptSpec: undefined, char: CHAR_KEYS[0] });
+              else setM(i, { char: undefined, skill: v });
+            }}>
+              <option value="">— compétence —</option>
+              {skillsList.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              <option value="@char">▸ Caractéristique…</option>
+            </select>
+            {m.char != null && (
+              <select value={m.char} onChange={(e) => setM(i, { char: e.target.value as CharKey })}>
+                {CHAR_KEYS.map((ck) => <option key={ck} value={ck}>{CHAR_LABELS[ck]}</option>)}
+              </select>
+            )}
+            {m.skill != null && !m.specFromInstance && (
+              <input value={m.spec ?? ''} placeholder="spec" title="spécialisation FIXE (Langue (Magick)…)" onChange={(e) => setM(i, { spec: e.target.value || undefined })} />
+            )}
+            {m.skill != null && (
+              <input value={m.exceptSpec ?? ''} placeholder="sauf spec" title="EXCLUT une spécialisation (Linguistique : toute Langue sauf Magick)" onChange={(e) => setM(i, { exceptSpec: e.target.value || undefined })} />
+            )}
+            {m.skill != null && (
+              <label title="« (Au choix) » : matche la spécialisation CHOISIE du talent (Métier (Au choix)…)">
+                <input type="checkbox" checked={!!m.specFromInstance} onChange={(e) => setM(i, { specFromInstance: e.target.checked || undefined, spec: undefined })} /> au choix
+              </label>
+            )}
+            <label title="contexte NARRATIF inmécanisable → advisory, JAMAIS appliqué automatiquement">
+              <input type="checkbox" checked={!!m.manual} onChange={(e) => setM(i, { manual: e.target.checked || undefined })} /> manuel
+            </label>
+            <button className="btn small danger" title="Retirer ce Test lié" onClick={() => emit(raw, matches.filter((_, j) => j !== i))}>✕</button>
+          </div>
+          {m.when ? (
+            <div className="de-reflrow" style={{ marginLeft: 16 }}>
+              <span>quand :</span>
+              <ConditionEditor cond={m.when} onChange={(c) => setM(i, { when: c })} />
+              <button className="btn small danger" title="Retirer le contexte" onClick={() => setM(i, { when: undefined })}>✕</button>
+            </div>
+          ) : (
+            <button className="btn small" style={{ marginLeft: 16 }} title="Contexte de combat mécanisable (Condition)" onClick={() => setM(i, { when: { kind: 'engaged' } })}>+ contexte (when)</button>
+          )}
+        </div>
+      ))}
+      <button className="btn small" onClick={() => emit(raw, [...matches, { skill: skillsList[0]?.id ?? '' }])}>+ Test lié</button>
     </div>
   );
 }
