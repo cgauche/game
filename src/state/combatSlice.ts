@@ -2210,7 +2210,9 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || battle.acted) return;
+      // Le héros actif focalise (hotbar) OU l'IA focalise pour ELLE-MÊME (runEnemyAI → case 'focus').
+      // On ne laisse PAS le joueur focaliser pendant le tour d'un acteur auto-piloté.
+      if (!active || battle.acted || (active.kind !== 'hero' && !aiDriven(get(), active))) return;
       const spell = findSpellById(spellId);
       if (!spell || !isArcaneSpell(spell)) {
         get().log(t('cs.cannotFocus'));
@@ -2255,7 +2257,11 @@ export function createCombatSlice(get: Get, set: Set) {
       // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :
       // tout double OU tout résultat en 0 au-delà de la Compétence).
       if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure', { componentDowngrade: compUsed }));
-      finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat
+      finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat (pose `acted:true`)
+      // Lanceur ENNEMI (modale auto-pilotée) : le tour de l'IA était suspendu → reprise (calqué sur
+      // castConfirm). No-op si une interaction bloquante s'est ouverte (Imparfaite/révélation) — elle
+      // reprendra elle-même (resumeSuspendedAI à la clôture).
+      if (aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
     },
     focusCancel: () => set({ pendingFocus: null }),
 

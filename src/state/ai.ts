@@ -25,6 +25,8 @@ import { isFrenzied } from '../engine/psychology';
 
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
+  | { kind: 'castArea'; spell: string; center: Pt } // sort de ZONE (ZdE) auto-posé sur un point couvrant ≥2 héros
+  | { kind: 'focus'; spell: string } // Focalisation (LDB 46) d'un sort offensif infaisable en un seul jet
   | { kind: 'shoot'; targetId: string } // tir depuis la position courante (arme à distance)
   | { kind: 'reload' } // recharge une arme à Recharge déchargée (Test étendu de Projectiles, LDB 63 l.28-29)
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
@@ -55,17 +57,71 @@ export interface EnemyTurnInput {
    *  vision nocturne incluse) — calculé par l'appelant via le moteur de vision. L'ennemi ne cible/poursuit
    *  que les héros sur ces cases (furtivité). ABSENT = pas de gate (comportement historique / tests purs). */
   perceived?: Set<string>;
+  /** Focalisation (LDB 46) — résolu par l'appelant (couche impure, qui a les données de sort) :
+   *  un sort offensif DÉJÀ focalisé et PRÊT (`caster.focus.dr >= cn`) → lançable à NI 0 ce tour. */
+  readyFocusedSpell?: string;
+  /** Meilleur sort offensif FOCALISABLE mais infaisable en un seul jet (`cn > maxSL`, isArcaneSpell,
+   *  Compétence de Focalisation possédée) — résolu par l'appelant. L'IA y consacre son tour à FOCALISER
+   *  (au lieu de rater un NI hors d'atteinte en boucle), sauf menacée au contact avec un repli. */
+  focusableSpell?: string;
+  /** Sort de ZONE de dégâts castable (id + géométrie résolue par l'appelant). L'IA le joue (auto-pose
+   *  du centre) quand le centre couvre ≥2 héros. `range` null = portée non chiffrable → pas de gate. */
+  areaSpell?: { spell: string; radius: number; range: number | null; cn: number };
 }
 
 /**
- * Cible préférée : on sécurise les éliminations en visant les Blessures les plus
- * basses ; à Blessures égales, la plus proche. (Tri stable, déterministe.)
+ * Une cible est NEUTRALISÉE (au sol/inconsciente/0 PB encore là) : on n'a aucun intérêt tactique à
+ * s'acharner dessus tant qu'une menace DEBOUT existe. Lue en DONNÉE (États + Blessures), sans nom en
+ * dur — un combattant À Terre/Inconscient ou à ≤0 PB (encore dans le vivier) est « par terre ».
  */
-function weakestNearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
+function isNeutralized(h: Combatant): boolean {
+  return hasCondition(h, 'a-terre') || hasCondition(h, 'inconscient') || h.wounds.current <= 0;
+}
+
+/**
+ * Cible préférée — tri LEXICOGRAPHIQUE déterministe (anti-acharnement, P1 du diagnostic) :
+ *  (a) cible NON neutralisée d'abord (tier 0) ; une neutralisée (tier 1) n'est choisie qu'en dernier
+ *      recours (elle reste dans le vivier — on peut l'achever si c'est la seule option) ;
+ *  (b) à tier égal, Blessures (PB) croissantes (on sécurise l'élimination du plus entamé DEBOUT) ;
+ *  (c) puis distance Manhattan croissante. Stable et déterministe (aucun dé).
+ */
+function bestTarget(enemyPos: Pt, heroes: Combatant[]): Combatant {
   return [...heroes].sort((a, b) => {
+    const ta = isNeutralized(a) ? 1 : 0, tb = isNeutralized(b) ? 1 : 0;
+    if (ta !== tb) return ta - tb;
     if (a.wounds.current !== b.wounds.current) return a.wounds.current - b.wounds.current;
     return manhattan(enemyPos, a.pos!) - manhattan(enemyPos, b.pos!);
   })[0];
+}
+
+/**
+ * Meilleur CENTRE d'un sort de ZONE (ZdE, LDB 47 l.44) couvrant le plus de héros : on essaie chaque
+ * case occupée par un héros comme centre candidat (déterministe, suffisant pour « un paquet ») et on
+ * compte les héros dans le rayon (Chebyshev, comme `castCommitZone`). Un centre VALIDE doit respecter
+ * la portée du sort (Chebyshev depuis le lanceur) et la Ligne de Vue (LDB 46 l.170). Renvoie le centre
+ * couvrant le plus de héros (≥2) ou null. Tie-break déterministe : couverture ↓, puis coordonnées ↑.
+ */
+function bestAreaCenter(
+  enemyPos: Pt,
+  heroes: Combatant[],
+  radius: number,
+  range: number | null,
+  losAt: (pt: Pt) => boolean,
+): { center: Pt; covered: number } | null {
+  let best: { center: Pt; covered: number } | null = null;
+  for (const h of heroes) {
+    const center = h.pos!;
+    if (range != null && chebyshev(enemyPos, center) > range) continue;
+    if (!losAt(center)) continue;
+    const covered = heroes.filter((o) => chebyshev(center, o.pos!) <= radius).length;
+    if (
+      !best || covered > best.covered ||
+      (covered === best.covered && (center.x < best.center.x || (center.x === best.center.x && center.y < best.center.y)))
+    ) {
+      best = { center, covered };
+    }
+  }
+  return best && best.covered >= 2 ? best : null;
 }
 
 /** Frénésie (LDB 21 l.34) : le frénétique vise IMPÉRATIVEMENT l'ennemi le plus PROCHE de sa Ligne de
@@ -81,12 +137,13 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
+  const { readyFocusedSpell, focusableSpell, areaSpell } = input;
   // Vision réciproque : l'ennemi ne cible/poursuit que les héros qu'il PERÇOIT (LoS + lumière, comme le
   // groupe). `perceived` absent = aucun gate (comportement historique / tests purs).
   const heroes = input.perceived
     ? input.heroes.filter((h) => h.pos && input.perceived!.has(`${h.pos.x},${h.pos.y},0`))
     : input.heroes;
-  if (heroes.length === 0) return { kind: 'end' };
+  if (input.heroes.length === 0) return { kind: 'end' }; // plus AUCUN adversaire (combat fini) → passe la main
   if (!canTakeAction(enemy) && effectiveMovement(enemy) === 0) return { kind: 'end' }; // ni Action ni Mouvement (Surpris LDB 16 l.132…) → passe la main (gating data-driven, plus de nom en dur)
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
@@ -107,8 +164,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const rangedW = enemy.weapons.find((w) => w.type === 'ranged');
   const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !enemy.loaded;
 
-  // Un ennemi sans sort et sans arme ne peut rien faire d'utile.
-  if (offensiveSpell == null && enemy.weapons.length === 0) return { kind: 'end' };
+  // Un ennemi sans AUCUN moyen d'agir (sort offensif/focalisé/focalisable/ZdE NI sort, ni arme) ne
+  // peut rien faire d'utile → il passe la main (les sorts comptent comme une capacité d'action).
+  const hasAnyMagic = offensiveSpell != null || readyFocusedSpell != null || focusableSpell != null || areaSpell != null;
+  if (!hasAnyMagic && enemy.weapons.length === 0) return { kind: 'end' };
 
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
   // de tirer : une arme à distance sans Atout Pistolet ne tire pas en mêlée (LDB Armes l.297-298).
@@ -127,12 +186,33 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = isFrenzied(enemy);
+  // Sort offensif à lancer ce tour : un sort DÉJÀ focalisé et prêt (lançable à NI 0) prime sur le
+  // meilleur missile faisable en un jet (l'appelant a résolu `spellRange` pour CE sort).
+  const castSpellId = readyFocusedSpell ?? offensiveSpell;
   const canShoot = !frenzied && hasRanged && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
-  const canCast = !frenzied && offensiveSpell != null && castPool.length > 0;
+  const canCast = !frenzied && castSpellId != null && castPool.length > 0;
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
   const reach = (flying ? flyReachable : reachable)(scene, pos, movement, blocked, footprintN(enemy));
+
+  // ANTI-IMMOBILISME (combat ENGAGÉ, fidélité LDB 13 l.123) : si la perception ne montre AUCUNE cible
+  // (lumière/Ligne de Vue) mais que des adversaires EXISTENT, l'ennemi avance d'un cran vers le plus
+  // proche NON perçu — il ne tire/lance PAS dessus (pas de vue), il se RAPPROCHE seulement (mouvement
+  // seul), au lieu de passer son tour planté. Pur : aucune cible non perçue n'est jamais visée.
+  if (heroes.length === 0) {
+    const closest = [...input.heroes].filter((h) => h.pos).sort((a, b) => manhattan(pos, a.pos!) - manhattan(pos, b.pos!))[0];
+    if (!closest) return { kind: 'end' };
+    let to: Pt | null = null;
+    let bestD: number | null = null;
+    for (const k of reach.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      if (x === pos.x && y === pos.y) continue;
+      const d = manhattan({ x, y }, closest.pos!);
+      if (bestD == null || d < bestD) { bestD = d; to = { x, y }; }
+    }
+    return to ? { kind: 'move', to, thenTargetId: closest.id } : { kind: 'end' };
+  }
 
   // Fuite (Brisé / Bestial blessé). `preferHidden` (Brisé, LDB 16 l.55 « hors de vue de l'ennemi ») :
   // gagner une CACHETTE (case hors de vue de tout héros) prime sur la distance ; sinon, la plus éloignée.
@@ -170,6 +250,24 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     return false;
   };
 
+  // --- Décision MAGIQUE (ZdE / Focalisation) -------------------------------
+  // ZdE (LDB 47 l.44) : un sort de ZONE de dégâts castable prime sur le missile mono-cible dès que son
+  // centre auto-posé couvre ≥2 héros groupés (parité avec le choix joueur d'arroser un paquet). Le centre
+  // respecte portée + Ligne de Vue (LDB 46 l.170). Le frénétique ne lance aucun sort (LDB 21 l.34).
+  if (!frenzied && areaSpell) {
+    const ac = bestAreaCenter(pos, shootableHeroes, areaSpell.radius, areaSpell.range, (pt) => losClear(scene, pos, pt, smoke ?? []));
+    if (ac) return { kind: 'castArea', spell: areaSpell.spell, center: ac.center };
+  }
+  // Focalisation (LDB 46) : quand AUCUN sort offensif n'est faisable en un seul jet (castSpellId absent
+  // ou hors portée — `canCast` faux) mais qu'un sort offensif est FOCALISABLE (résolu par l'appelant :
+  // arcanique, Compétence de Focalisation, NI > SL max), l'IA consacre son tour à focaliser plutôt que
+  // de rater un NI hors d'atteinte en boucle. EXCEPTION (l.193, risque d'interruption) : un adversaire
+  // au contact ET un repli existe (arme de mêlée, ou tir possible) → on se replie au combat de contact.
+  if (!frenzied && focusableSpell && !canCast) {
+    const contactFallback = adjacentFoes.length > 0 && (hasMeleeWeapon || canShoot);
+    if (!contactFallback) return { kind: 'focus', spell: focusableSpell };
+  }
+
   // --- Choix de la cible ---------------------------------------------------
   // À distance (sort/arme) : on vise le plus faible PARMI les cibles visibles (LdV). En mêlée :
   // on préfère une cible frappable ce tour ; sinon on approche le plus faible.
@@ -190,7 +288,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     // Vivier filtré par PORTÉE (le sort prime sur le tir, même priorité que la décision plus bas).
     const vivier = canCast ? castPool : shootPool;
     const pool = hatedOf(vivier);
-    target = weakestNearest(pos, pool.length ? pool : vivier);
+    target = bestTarget(pos, pool.length ? pool : vivier);
   } else {
     // Un tireur RETENU au Combat rapproché (arme à distance + adversaire au contact) frappe
     // l'adversaire à son contact. Sinon, comportement de mêlée habituel (sécuriser le plus faible).
@@ -198,11 +296,11 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const here = heldInMelee ? adjacentFoes : heroes.filter(meleeReachableNow);
     const base = here.length ? here : heroes;
     const pool = hatedOf(base);
-    target = weakestNearest(pos, pool.length ? pool : base);
+    target = bestTarget(pos, pool.length ? pool : base);
   }
 
   // --- Sort offensif : on lance sur la cible visible (résolu comme un projectile) ---
-  if (canCast) return { kind: 'cast', targetId: target.id, spell: offensiveSpell! };
+  if (canCast) return { kind: 'cast', targetId: target.id, spell: castSpellId! };
 
   // --- Recharger : arme à Recharge déchargée + cible en vue/portée → recharger plutôt que rester inerte
   //     (consomme l'Action) ; sauf si un adversaire au contact justifie une attaque de mêlée. ---

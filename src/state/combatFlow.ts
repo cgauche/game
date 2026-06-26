@@ -78,6 +78,9 @@ import {
   rederiveCastSL,
   missileDamage,
   zdeDiameterMeters,
+  zdeRadiusTiles,
+  isArcaneSpell,
+  focusSkillFor,
   type CastResult,
   type MissileResult,
   type CounterspellOutcome,
@@ -2555,23 +2558,61 @@ export const spellSightOf = (get: Get): SpellSight =>
  *  on écarte les NI hors d'atteinte, puis on prend les Dégâts écrits les plus hauts (« Dégâts +N »,
  *  les DR du Test s'y ajoutent), à égalité le NI le plus bas (plus fiable). Repli : aucun NI
  *  atteignable → le moins exigeant (les Sorts mineurs NI 0 y pourvoient en pratique). */
+/** SL MAXIMAL d'un Test d'Incantation d'un lanceur pour CE sort SANS Focalisation (LDB 46 l.176) :
+ *  valeur/10 (Avantage compris) + les DR de Talent lié au Test réussi (LDB 10 l.20 — Diction
+ *  instinctive ×N). C'est le NI plafond passable en un seul jet. SOURCE UNIQUE (missile + focus). */
+function aiCastMaxSL(caster: Combatant, sp: SpellLike): number {
+  const info = castInfo(sp);
+  return Math.floor(castingValue(caster, info.skill, info.spec) / 10) + castTestTalentDR(caster, info.skill, info.spec);
+}
+
 export function aiBestMissile(enemy: Combatant): string | undefined {
   const known = (enemy.spells ?? [])
     .map((id) => resolveSpell(id))
     .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
   if (!known.length) return undefined;
   const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
-  const maxSL = (sp: NonNullable<ReturnType<typeof findSpell>>) => {
-    const info = castInfo(sp);
-    // SL max d'un jet = valeur/10, + les DR de Talent lié au Test réussi (LDB 10 l.20 —
-    // Diction instinctive ×N) : c'est ce qui détermine les NI passables SANS Focalisation.
-    const tal = castTestTalentDR(enemy, info.skill, info.spec);
-    return Math.floor(castingValue(enemy, info.skill, info.spec) / 10) + tal;
-  };
-  const feasible = known.filter((sp) => (sp.cn ?? 0) <= maxSL(sp));
+  const feasible = known.filter((sp) => (sp.cn ?? 0) <= aiCastMaxSL(enemy, sp));
   const pool = feasible.length ? feasible : known;
   pool.sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0));
   return pool[0].id; // id STABLE (consommé par resolveSpell/castSpell — plus de libellé)
+}
+
+/** Plan de FOCALISATION de l'IA (LDB 46). Lit les DONNÉES de sort (pas de nom en dur) :
+ *  - `readyFocusedSpell` : un Projectile magique DÉJÀ focalisé et PRÊT (`enemy.focus.dr >= cn`) → lançable
+ *    à NI 0 ce tour (prime sur le missile faisable d'un jet).
+ *  - `focusableSpell` : le meilleur Projectile magique FOCALISABLE mais infaisable d'un seul jet —
+ *    arcanique (`isArcaneSpell`, ce qui exclut Magie mineure type Fléchette), l'ennemi possède la
+ *    Compétence de Focalisation du Vent (`focusSkillFor`), et `cn > maxSL`. À Dégâts écrits égaux, le
+ *    NI le plus BAS (le plus vite focalisable). */
+export function aiFocusPlan(enemy: Combatant): { readyFocusedSpell?: string; focusableSpell?: string } {
+  const known = (enemy.spells ?? [])
+    .map((id) => resolveSpell(id))
+    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
+  const ready = known.find((sp) => enemy.focus?.spell === sp.id && (enemy.focus?.dr ?? 0) >= (sp.cn ?? 0));
+  const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
+  const focusable = known
+    .filter((sp) => isArcaneSpell(sp) && !!focusSkillFor(enemy, sp) && (sp.cn ?? 0) > aiCastMaxSL(enemy, sp))
+    .sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0))[0];
+  return { readyFocusedSpell: ready?.id, focusableSpell: focusable?.id };
+}
+
+/** Meilleur sort de ZONE de DÉGÂTS castable de l'IA (LDB 47 l.44) — DONNÉES : ZdE chiffrable
+ *  (`zdeRadiusTiles`) ET Projectile (`missile`, dégâts) ET faisable d'un seul jet (`cn <= maxSL`). À
+ *  Dégâts écrits égaux, NI le plus bas. Renvoie id/rayon/portée(cases)/cn, ou undefined. */
+export function aiAreaSpell(enemy: Combatant): { spell: string; radius: number; range: number | null; cn: number } | undefined {
+  const cand = (enemy.spells ?? [])
+    .map((id) => resolveSpell(id))
+    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => {
+      if (!sp || !isMagicMissile(sp)) return false;
+      const r = zdeRadiusTiles(sp.target, enemy);
+      return r != null && (sp.cn ?? 0) <= aiCastMaxSL(enemy, sp);
+    });
+  if (!cand.length) return undefined;
+  const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
+  cand.sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0));
+  const sp = cand[0];
+  return { spell: sp.id, radius: zdeRadiusTiles(sp.target, enemy)!, range: spellRangeTiles(sp.range, enemy), cn: sp.cn ?? 0 };
 }
 
 /** Surincantation AUTOMATIQUE d'un lanceur ENNEMI (LDB 47 l.28-31 : « Pour chaque +2 DR […]
@@ -4078,10 +4119,16 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const blocked = occupied(battle, geom);
   // Meilleur Projectile magique connu et JOUABLE (NI atteignable, Dégâts max — cf. aiBestMissile) :
   // la détection a besoin des données de sort, donc elle reste ici (couche impure), pas dans ai.ts.
-  const offensiveSpell = aiBestMissile(enemy);
+  // Focalisation (LDB 46) : un sort DÉJÀ focalisé et prêt prime sur le missile faisable d'un jet ; un
+  // sort focalisable (NI hors d'atteinte d'un seul jet) est signalé à l'IA pure pour qu'elle FOCALISE.
+  const { readyFocusedSpell, focusableSpell } = aiFocusPlan(enemy);
+  const offensiveSpell = readyFocusedSpell ?? aiBestMissile(enemy);
   // Portée du sort en CASES, résolue ici (ai.ts est pur, sans données de sort) — gate de ciblage IA.
+  // (Le sort réellement lancé est `readyFocusedSpell ?? aiBestMissile` → on en dérive SA portée.)
   const offensiveSpellData = offensiveSpell ? resolveSpell(offensiveSpell) : undefined;
   const spellRange = offensiveSpellData ? spellRangeTiles(offensiveSpellData.range, enemy) : undefined;
+  // Sort de ZONE de dégâts castable (auto-pose du centre par l'IA pure si ≥2 héros groupés).
+  const areaSpell = aiAreaSpell(enemy);
   // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
   // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).
   const cavalryCharge = !!enemy.mountId && !isEngaged(enemy);
@@ -4105,6 +4152,9 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     movement: moveBudget,
     offensiveSpell,
     spellRange,
+    readyFocusedSpell,
+    focusableSpell,
+    areaSpell,
     smoke: smokeOf(battle),
     flying: flyM != null, // Vol : ignore terrains/obstacles/personnages traversés (LDB 85 p.343)
     perceived,
@@ -4172,6 +4222,40 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // bloquant, hors de portée…) → pas de modale → l'ennemi passe.
         if (!get().pendingCast) setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
       }, TEMPO.aimTelegraph);
+      return;
+    }
+    case 'castArea': {
+      if (!canAct) return advanceTurn(get, set);
+      // Sort de ZONE (ZdE, LDB 47 l.44) d'un lanceur IA : le centre est AUTO-POSÉ (l'IA pure l'a
+      // choisi sur un paquet de héros) — sinon `pendingCast.zone` resterait sans centre et attendrait
+      // une pose JOUEUR (soft-lock). On reproduit le flux d'incantation (télégraphe → jet → pose) sans
+      // modale interactive. Simplification L1 ASSUMÉE : un Contre-sort de héros n'est PAS proposé sur
+      // une ZdE ennemie (le missile ennemi, lui, l'offre via routeEnemyCast) — fidélité mineure,
+      // l'auto-pose + auto-commit prime pour ne pas bloquer le tour.
+      const center = action.center;
+      set({ actorAim: { fromId: enemy.id, toId: enemy.id, kind: 'cast' } });
+      bus.emit(EVT.SCENE_DIRTY);
+      setTimeout(() => {
+        set({ actorAim: null });
+        const b = get().battle;
+        if (!b || b.over || !b.combatants.includes(enemy)) return;
+        if (!castZoneSpell(get, set, enemy, action.spell)) { advanceTurn(get, set); return; } // pas une zone chiffrable → passe
+        if (!get().pendingCast) { resumeEnemyTurn(get, set); return; } // refus (contrecoup bloquant) — castZoneSpell a journalisé
+        get().castRoll(); // jet figé de l'IA (Surincantation no-op pour une ZdE — toutes cibles arrosées)
+        // Pose AUTOMATIQUE sur le centre choisi : castCommitZone applique le MÊME jet à tous les
+        // combattants du rayon final (parité flux joueur) + ferme pendingCast/cascade. La reprise du
+        // tour est ensuite armée explicitement (castCommitZone ne reprend pas l'IA de lui-même).
+        castCommitZone(get, set, center);
+        resumeEnemyTurn(get, set);
+      }, TEMPO.aimTelegraph);
+      return;
+    }
+    case 'focus': {
+      // Focalisation (LDB 46) : on ouvre la modale comme le joueur ; en Auto le driver résout
+      // focusRoll→focusConfirm (qui reprend le tour via aiDriven, cf. focusConfirm). Calqué sur reload.
+      if (!canAct) return advanceTurn(get, set);
+      get().battleFocusSpell(action.spell);
+      if (!get().pendingFocus) advanceTurn(get, set);
       return;
     }
     case 'shoot': {
