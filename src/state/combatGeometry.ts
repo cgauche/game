@@ -130,16 +130,25 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
 /**
  * PRIMITIVE de géométrie d'aire PARTAGÉE (Chebyshev) : les combattants POSITIONNÉS à ≤ `radiusTiles` cases
  * de `center`, du plus proche au plus loin, après un `filter` optionnel (groupe/vivant/exclusion). SOURCE
- * UNIQUE du motif « créatures dans le rayon » — consommée par le résolveur d'aire des munitions
- * (`combatArea`) et le souffle de zone (`zoneBlast`, combatEffects). TODO : `emitAoe` (combatManeuvers)
- * peut l'adopter (son filtre inline diverge : tri/source de position → migration à part pour ne rien régresser).
+ * UNIQUE du motif « collecter les combattants dans un rayon PUIS appliquer un effet par cible » — l'ORCHESTRATEUR
+ * d'aire partagé par TOUS les systèmes à effet de zone, quel que soit leur applicateur (pluggable) :
+ *  - résolveur d'aire des munitions (`combatArea` : terre = rayon métrique, applique le pipeline d'arme) ;
+ *  - souffle de zone (`zoneBlast`, combatEffects : applique des `GameOp[]` via `applyOps`) ;
+ *  - manœuvres de créature (`resolveManeuver`, combatManeuvers : Souffle/Hurlement, applique `TriggeredEffect`) ;
+ *  - effets DÉCLENCHÉS d'aire (`TriggeredEffect.on = {near, radiusMeters}`, triggeredEffects : tout
+ *    Trait/Talent/Atout/État qui pose une zone SOURCE-AGNOSTIQUE → `GameOp[]` à chaque cible).
+ * Le tri par distance sert le plafond « N plus proches » (Tir de zone) ; les autres applicateurs sont
+ * insensibles à l'ordre (effet indépendant par cible). `dist` (défaut : Chebyshev centre-à-centre) est
+ * surchargeable pour une distance d'EMPREINTE (footprint-aware, `combatDistance`) quand la Taille des
+ * combattants compte (effets déclenchés d'aire centrés sur un combattant).
  */
 export function combatantsWithinRadius(
   center: Pt, radiusTiles: number, combatants: Combatant[], filter?: (c: Combatant) => boolean,
+  dist: (center: Pt, c: Combatant) => number = (ctr, c) => Math.max(Math.abs(ctr.x - c.pos!.x), Math.abs(ctr.y - c.pos!.y)),
 ): Combatant[] {
   return combatants
-    .filter((c) => c.pos && Math.max(Math.abs(center.x - c.pos.x), Math.abs(center.y - c.pos.y)) <= radiusTiles && (!filter || filter(c)))
-    .sort((a, b) => Math.max(Math.abs(center.x - a.pos!.x), Math.abs(center.y - a.pos!.y)) - Math.max(Math.abs(center.x - b.pos!.x), Math.abs(center.y - b.pos!.y)));
+    .filter((c) => c.pos && dist(center, c) <= radiusTiles && (!filter || filter(c)))
+    .sort((a, b) => dist(center, a) - dist(center, b));
 }
 
 /** Cases bloquant la Ligne de Vue (zones opaques : Fumée du Souffle…) — L11 : lues de `battle.zones`. */

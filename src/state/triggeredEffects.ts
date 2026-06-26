@@ -23,7 +23,7 @@ import { isEngagedWith, isEngaged } from '../engine/engagement';
 import { combatDistance } from './footprint';
 import { chebyshev } from './path';
 import { losClear, tileSeenByFoe } from './lineOfSight';
-import { smokeOf } from './combatGeometry';
+import { smokeOf, combatantsWithinRadius } from './combatGeometry';
 import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, refLabel } from '../data';
 import { difficultyFromLabel, rollTest } from '../engine/tests';
 import { rawCombatTestBase } from '../engine/skills';
@@ -112,11 +112,16 @@ function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victi
   if (on === 'victim') return victim ? [victim] : [];
   const battle = get().battle;
   if (!battle) return [];
-  if (typeof on === 'object') { // GÉOMÉTRIE : tous les combattants à portée d'un centre (arc d'Azyr)
+  if (typeof on === 'object') { // GÉOMÉTRIE : tous les combattants à portée d'un centre (arc d'Azyr, Trait/Talent d'aire)
     const center = on.near === 'self' ? actor : victim;
     if (!center?.pos) return [];
     const radius = Math.max(1, Math.ceil(on.radiusMeters / 2)); // 1 case = 2 m
-    return battle.combatants.filter((c) => c.id !== center.id && c.id !== actor.id && !isOutOfAction(c) && !!c.pos && combatDistance(center, c) <= radius);
+    // ORCHESTRATEUR d'aire PARTAGÉ (combatantsWithinRadius), distance d'EMPREINTE (la Taille compte) : un effet
+    // déclenché SOURCE-AGNOSTIQUE (Trait/Talent/Atout/État portant `on:{near,radiusMeters}`) applique son Flow
+    // de GameOps à TOUTES les cibles du rayon — MÊME collecte que munitions/zoneBlast/manœuvres.
+    return combatantsWithinRadius(center.pos, radius, battle.combatants,
+      (c) => c.id !== center.id && c.id !== actor.id && !isOutOfAction(c),
+      (_ctr, c) => combatDistance(center, c));
   }
   return battle.combatants.filter((c) => c.id !== actor.id && isEngagedWith(c, actor.id)); // 'engaged'
 }
