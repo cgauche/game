@@ -25,7 +25,7 @@ export type ResetScope = 'scene' | 'combatStart';
 /** Champs transitoires couverts par le manifeste (= le bloc contigu de l'état initial). */
 type FieldKey =
   | 'pendingTest' | 'pendingCorruption' | 'pendingBargain' | 'pendingAppraise' | 'pendingAttack'
-  | 'actorAim' | 'actorMove' | 'hoverDelta' | 'pendingReload' | 'pendingStateRecovery' | 'pendingDefense'
+  | 'actorAim' | 'actorMove' | 'actorAoe' | 'hoverDelta' | 'pendingReload' | 'pendingStateRecovery' | 'pendingDefense'
   | 'pendingRenounce' | 'pendingMountTarget' | 'pendingDisengage' | 'pendingInteract' | 'pendingCast'
   | 'pendingCounterspell' | 'pendingExtendedTest' | 'pendingForceDoor' | 'pendingCascade'
   | 'pendingCastOpposition' | 'pendingHeal' | 'medic' | 'pendingRest' | 'pendingCleave'
@@ -45,6 +45,7 @@ const STATE_FIELDS: Manifest = {
   pendingAttack: { init: null, resetOn: ['scene', 'combatStart'] },
   actorAim: { init: null, resetOn: ['combatStart'] },
   actorMove: { init: null, resetOn: ['combatStart'] },
+  actorAoe: { init: null, resetOn: ['combatStart'] },
   hoverDelta: { init: null, resetOn: [] },
   pendingReload: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingStateRecovery: { init: null, resetOn: ['scene', 'combatStart'] },

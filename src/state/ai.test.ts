@@ -130,6 +130,28 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
     expect(chooseEnemyAction(input(e, [strong, weak]))).toEqual({ kind: 'melee', targetId: 'strong' });
   });
 
+  it('anti-acharnement : une cible À TERRE est délaissée pour une cible valide debout (mêlée)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
+    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ name: 'a-terre', value: 1 }] }); // adjacent + très bas mais À TERRE
+    const standing = mk('standing', 'hero', { x: 6, y: 5 }, { wounds: { current: 9, max: 10 } }); // adjacent, debout
+    const a = chooseEnemyAction(input(e, [downed, standing]));
+    expect(a.kind).toBe('melee');
+    expect((a as { targetId: string }).targetId).toBe('standing'); // ignore le « par terre »
+  });
+
+  it('anti-acharnement : une cible à 0 PB encore présente n’est pas préférée à une cible debout (tir)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [RANGED] });
+    const dying = mk('dying', 'hero', { x: 5, y: 7 }, { wounds: { current: 0, max: 10 } }); // 0 PB encore là
+    const standing = mk('standing', 'hero', { x: 5, y: 8 }, { wounds: { current: 4, max: 10 } });
+    expect(chooseEnemyAction(input(e, [dying, standing]))).toEqual({ kind: 'shoot', targetId: 'standing' });
+  });
+
+  it('anti-acharnement : si la SEULE cible est neutralisée, on l’achève (dernier recours)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 });
+    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    expect(chooseEnemyAction(input(e, [downed]))).toEqual({ kind: 'melee', targetId: 'downed' });
+  });
+
   it('encerclé et cible non adjacente → passe la main (pas de mouvement possible)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
     const h = mk('h', 'hero', { x: 1, y: 1 });
@@ -147,10 +169,25 @@ describe('IA — vision réciproque (perceived)', () => {
     const tid = (action as { targetId?: string; thenTargetId?: string }).targetId ?? (action as { thenTargetId?: string }).thenTargetId;
     expect(tid).toBe('seen'); // l'invisible (pourtant adjacent/faible) est ignoré
   });
-  it('aucun héros perçu → passe la main (furtivité)', () => {
+  it('aucun héros perçu mais des adversaires EXISTENT → avance vers le plus proche non perçu (anti-immobilisme), sans tirer/lancer dessus', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 3 });
+    const h = mk('h', 'hero', { x: 5, y: 10 });
+    const a = chooseEnemyAction(input(e, [h], { perceived: new Set() }));
+    expect(a.kind).toBe('move'); // se rapproche au lieu de planter
+    if (a.kind === 'move') {
+      expect(a.thenTargetId).toBe('h');
+      expect(manhattan(a.to, h.pos!)).toBeLessThan(manhattan(e.pos!, h.pos!)); // a réduit la distance
+    }
+  });
+  it('plus AUCUN adversaire (combat fini) → passe la main', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 });
-    const h = mk('h', 'hero', { x: 6, y: 5 });
-    expect(chooseEnemyAction(input(e, [h], { perceived: new Set() })).kind).toBe('end');
+    expect(chooseEnemyAction(input(e, [])).kind).toBe('end');
+  });
+  it('aucun héros perçu ET encerclé (aucun mouvement) → passe la main', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
+    const h = mk('h', 'hero', { x: 1, y: 1 });
+    const blocked = new Set(['4,5', '6,5', '5,4', '5,6']); // 4 voisins bloqués
+    expect(chooseEnemyAction(input(e, [h], { perceived: new Set(), blocked })).kind).toBe('end');
   });
   it('perçoit une cible au tir → la vise', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [RANGED] });

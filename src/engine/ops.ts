@@ -556,6 +556,10 @@ export interface OpsCtx {
   /** SORT SOURCE en cours d'incantation : tout `ActiveEffect` POSÉ par cet `applyOps` en est marqué
    *  (`ActiveEffect.spell`), pour la DISSIPATION (LDB 46 l.204-207). Posé par `applyCast` (Sorts durables). */
   sourceSpell?: { spellId: string; ni: number; casterId: string; label: string };
+  /** id STABLE du sort/prière en cours d'incantation — posé sur TOUT `ActiveEffect` durable de ce lancement
+   *  (`ActiveEffect.sourceSpellId`), Prières COMPRISES (≠ `sourceSpell`, arcane-only dissipation). Sert
+   *  l'IDENTITÉ du sort pour l'anti-spam de buff de l'IA. Posé par `applyCast` à CHAQUE lancement. */
+  sourceSpellId?: string;
   /** Forme choisie par le lanceur pour une arme invoquée à forme libre (op `grantWeapon` +
    *  `chooseForm`) — fixe Groupe/allonge/mains. Défaut (absent) : la 1ʳᵉ forme proposée. */
   conjureForm?: ConjureForm;
@@ -677,7 +681,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   const lines: string[] = [];
   // DISSIPATION (LDB 46) : on retient les ActiveEffect PRÉ-EXISTANTS (par référence) pour ne marquer,
   // en fin d'op, QUE ceux posés par CE sort source (robuste au dédoublonnage en place de `applyActiveEffect`).
-  const preEffects = ctx.sourceSpell ? new Set(target.activeEffects ?? []) : null;
+  const preEffects = (ctx.sourceSpell || ctx.sourceSpellId) ? new Set(target.activeEffects ?? []) : null;
   // Agrégation des charMod (une ligne par source, façon « Écorce (-10 Ag, -10 Dex, 6 rounds) »).
   const charParts: string[] = [];
   let charRounds: number | null = null;
@@ -1335,9 +1339,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     }
   }
   flushCharMods();
-  // Marque les effets actifs POSÉS par ce sort source (durables) avec son identité + NI → Dissipation.
-  if (ctx.sourceSpell && target.activeEffects) {
-    for (const e of target.activeEffects) if (!preEffects!.has(e) && !e.spell) e.spell = ctx.sourceSpell;
+  // Marque les effets actifs POSÉS par ce sort source (durables) : identité + NI → Dissipation (Sorts
+  // seulement, `sourceSpell`) ET id du sort → anti-spam IA (TOUT lancement, Prières comprises, `sourceSpellId`).
+  if ((ctx.sourceSpell || ctx.sourceSpellId) && target.activeEffects) {
+    for (const e of target.activeEffects) {
+      if (preEffects!.has(e)) continue;
+      if (ctx.sourceSpell && !e.spell) e.spell = ctx.sourceSpell;
+      if (ctx.sourceSpellId && !e.sourceSpellId) e.sourceSpellId = ctx.sourceSpellId;
+    }
   }
   return lines;
 }

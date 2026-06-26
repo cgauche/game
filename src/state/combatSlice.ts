@@ -16,7 +16,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects } from './flow';
@@ -1985,10 +1985,32 @@ export function createCombatSlice(get: Get, set: Set) {
     castConfirm: () => {
       const { pendingCast: pc } = get();
       if (!pc || !pc.result) return;
-      // ZONE non posée et lançable → la confirmation EST le passage en pose (garde anti-application
-      // sur l'ancre lanceur — la vraie application se fait à la pose, castCommitZone).
-      if (pc.zone && !pc.zone.center && (pc.result.cast || (pc.result.isCritical && (pc.critChoice ?? 'puissance') === 'puissance'))) {
+      // ZONE non posée → la confirmation NE résout JAMAIS en mono-cible sur l'ancre lanceur : ce bloc est
+      // l'UNIQUE sortie d'une ZdE non posée (héros comme IA), exactement la même pour tous. Seul l'éventuel
+      // « clic » de pose change de SOURCE (souris du héros / décision de l'IA), comme l'auto-combat fournit
+      // déjà ses jets.
+      if (pc.zone && !pc.zone.center) {
+        const castable = pc.result.cast || (pc.result.isCritical && (pc.critChoice ?? 'puissance') === 'puissance');
+        // Sort qui n'aboutit PAS (raté / DISSIPÉ par Contre-sort, LDB 46 l.207) : aucune zone à poser →
+        // on ferme proprement la situation (data + cascade-hôte) — pas de soft-lock, cibles intactes.
+        if (!castable) {
+          const caster = actorIn(get(), pc.casterId);
+          set({ pendingCast: null, pendingCascade: null });
+          if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
+          return;
+        }
+        // Lançable → la confirmation EST le passage en pose (la vraie application se fait à la pose,
+        // castCommitZone).
         get().castPlaceZone(true);
+        // IA = HÉROS (même flux) : le héros manuel attend le clic réel sur la carte (return ci-dessous) ;
+        // un lanceur aiDriven FOURNIT son clic — le centre décidé par l'IA pure (`pc.zone.autoCenter`,
+        // équivalent du curseur souris). On pose ici via le MÊME `castCommitZone`, puis on reprend le tour
+        // de l'IA UNE seule fois.
+        const caster = actorIn(get(), pc.casterId);
+        if (caster && aiDriven(get(), caster) && pc.zone.autoCenter && get().battle) {
+          castCommitZone(get, set, pc.zone.autoCenter);
+          if (get().battle) resumeEnemyTurn(get, set);
+        }
         return;
       }
       const caster = actorIn(get(), pc.casterId);
@@ -2121,12 +2143,12 @@ export function createCombatSlice(get: Get, set: Set) {
         const counter = actorIn(get(), best.id);
         if (counter) applyCounterspellOutcome(get, set, counter, best.result); // mute `pendingCast.result`
       }
-      get().castConfirm(); // applique le Sort (dissipé ou au DR net) + reprend le tour de l'IA
+      get().castConfirm(); // applique le Sort (dissipé ou au DR net) — chemin PARTAGÉ : mono-cible, OU ZdE (héros = attend le clic ; IA = auto-pose via autoCenter) + reprise IA
     },
     counterspellCancel: () => {
       if (!get().pendingCounterspell) return;
       set({ pendingCounterspell: null });
-      get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel
+      get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel (chemin PARTAGÉ, agnostique IA/zone)
     },
     // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).
     // « Une situation = une modale » : le Test étendu EST une cascade à une étape `jet:'extended'`,
@@ -2210,7 +2232,9 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || battle.acted) return;
+      // Le héros actif focalise (hotbar) OU l'IA focalise pour ELLE-MÊME (runEnemyAI → case 'focus').
+      // On ne laisse PAS le joueur focaliser pendant le tour d'un acteur auto-piloté.
+      if (!active || battle.acted || (active.kind !== 'hero' && !aiDriven(get(), active))) return;
       const spell = findSpellById(spellId);
       if (!spell || !isArcaneSpell(spell)) {
         get().log(t('cs.cannotFocus'));
@@ -2255,7 +2279,11 @@ export function createCombatSlice(get: Get, set: Set) {
       // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :
       // tout double OU tout résultat en 0 au-delà de la Compétence).
       if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure', { componentDowngrade: compUsed }));
-      finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat
+      finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat (pose `acted:true`)
+      // Lanceur ENNEMI (modale auto-pilotée) : le tour de l'IA était suspendu → reprise (calqué sur
+      // castConfirm). No-op si une interaction bloquante s'est ouverte (Imparfaite/révélation) — elle
+      // reprendra elle-même (resumeSuspendedAI à la clôture).
+      if (aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
     },
     focusCancel: () => set({ pendingFocus: null }),
 

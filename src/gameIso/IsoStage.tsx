@@ -121,6 +121,7 @@ export function IsoStage() {
   // (survol hoverAim + jets à cible pendants), même rendu partagé (TargetReticle).
   const actorAim = useGame((s) => s.actorAim);
   const actorMove = useGame((s) => s.actorMove); // télégraphe de déplacement ENNEMI (chemin avant le glissé)
+  const actorAoe = useGame((s) => s.actorAoe); // télégraphe de ZONE ENNEMI (disque cible avant la résolution d'une ZdE)
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — AUCUNE affordance
   // (grille de déplacement, visée au survol, anneaux de cible, clics). Source unique : netFlow.
   const myTurn = useGame(controlsActive);
@@ -1302,6 +1303,20 @@ export function IsoStage() {
               />
             </g>
           );
+        })()}
+        {/* Télégraphe de ZONE ENNEMI : disque Chebyshev (centre ± rayon) peint ~0,7 s AVANT la
+            résolution d'une ZdE d'un lanceur IA — montre « où l'aire va tomber » (parité avec le
+            réticule du missile). Teinte de MENACE rouge (≠ orange/bleu de l'aperçu joueur). */}
+        {mode === 'battle' && actorAoe && (() => {
+          const { center, radius } = actorAoe;
+          const tiles: JSX.Element[] = [];
+          for (let dy = -radius; dy <= radius; dy++)
+            for (let dx = -radius; dx <= radius; dx++) {
+              const x = center.x + dx, y = center.y + dy;
+              if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
+              tiles.push(<path key={`aoe${x}-${y}`} d={diamondPath(x, y, dims)} fill="#d11a1a" opacity={0.25} pointerEvents="none" />);
+            }
+          return <g pointerEvents="none">{tiles}</g>;
         })()}
         {/* Aperçu de DÉPLACEMENT au survol (desktop) : chemin + badge — le clic unique commet. */}
         {mode === 'battle' && battle && hoverMove && hover && (
