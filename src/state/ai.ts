@@ -39,7 +39,7 @@ import { isFlankOrRear } from './combatGeometry';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import { groupMatch } from '../engine/groups';
-import { isBestial, isTerritorial } from '../engine/traits/dispatch';
+import { isBestial, isTerritorial, isMindless, isStupid } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 
 export type EnemyAction =
@@ -147,6 +147,145 @@ const W = {
   // NB : le FEU CONCENTRÉ n'a PAS de poids ad hoc — il passe par le bonus de toucher `outnumberMod` (RAW,
   // LDB 14), injecté dans l'espérance de dégâts (mêlée). C'est un EFFET ÉMERGENT, pas une constante inventée.
 } as const;
+
+/** Jeu de poids EFFECTIF utilisé par le scoring. `W` (ci-dessus) est le DÉFAUT neutre ; une doctrine en
+ *  est un override PARTIEL (cf. `DOCTRINES`). Toutes les clés sont muables ici (≠ `W` figé). */
+type Weights = { -readonly [K in keyof typeof W]: number };
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// LOT 5 — DOCTRINES TACTIQUES data-driven. « Un loup ≠ une bande de brigands ≠ une compagnie d'élite ».
+// Une DOCTRINE = (a) un OVERRIDE PARTIEL des poids `W` du cœur discrétionnaire + (b) 1-2 micro-réglages
+// de macro-comportement (`macro`). Elle est SÉLECTIONNÉE par des signaux DATA (traits/Intelligence/groups/
+// sorts — `pickDoctrine`), JAMAIS par un nom de créature en dur. CONTRAINTE RAW ABSOLUE : une doctrine ne
+// module QUE les poids du scoring discrétionnaire — elle ne touche JAMAIS une garde forcée (fuite Bestial
+// <50 %, Frénésie, Brisé, Territorial, En flammes/Empêtré, filtre Animosité/Haine), qui restent EN AMONT,
+// inchangées. Le surnombre reste `outnumberMod` (aucun nouveau modificateur de combat). Les valeurs sont
+// du RESSENTI (latitude IA permise), pas des règles canon.
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+export type DoctrineId = 'standard' | 'meute' | 'racaille' | 'soldats' | 'tirailleurs' | 'artillerie' | 'horde' | 'embuscade';
+
+/** Macro-réglages LÉGERS d'une doctrine (au-delà des poids), appliqués DANS le cœur discrétionnaire sans
+ *  jamais contredire une garde RAW. */
+interface DoctrineMacro {
+  /** REPLI « doctrine » (LATITUDE, hors RAW) : un NON-Bestial très entamé (PB/PBmax < seuil) qui n'est PAS
+   *  Engagé se replie comme un Bestial (réutilise `fleeMove`, aucun nouveau mécanisme). N'a d'effet QUE pour
+   *  un combattant SANS garde de fuite RAW (un Bestial est déjà géré en amont, intouché). Absent ⇒ pas de repli. */
+  retreatBelow?: number;
+}
+
+/** Une doctrine = override partiel des poids + macro optionnel. */
+type Doctrine = Partial<Weights> & { macro?: DoctrineMacro };
+
+/**
+ * Les 7 doctrines (presets confirmés). Chaque entrée n'écrit QUE les poids qu'elle DÉVIE de `W` ; tout le
+ * reste hérite du défaut neutre. `standard` est volontairement VIDE (= `W` à l'identique) → garantit que le
+ * golden et les fixtures génériques (classées `standard`) gardent EXACTEMENT le comportement des Lots 1-4.
+ */
+const DOCTRINES: Record<DoctrineId, Doctrine> = {
+  // DÉFAUT NEUTRE — aucun delta : les poids effectifs == `W`. Obligatoire pour la parité golden.
+  standard: {},
+  // MEUTE / prédateur (Bestial, Int basse, ni sorts ni tir) : se rue sur la proie ISOLÉE/blessée et la prend
+  // à revers. ↑threat (la fragilité/atteignabilité dans `targetThreat` pèse plus → cible l'entamé) ; ↑flankRear
+  // (encerclement). La FUITE <50 % PB est DÉJÀ la garde Bestial RAW (LDB 85) en amont — PAS réimplémentée ici.
+  meute: { threat: 1.8, flankRear: 8 },
+  // RACAILLE / opportuniste (humain, Int moyenne, aucun signal militaire) : tape le plus faible/sans défense
+  // et se préserve. ↑threat (priorise la cible fragile/achevable, comme la meute mais sans le flanc de prédateur)
+  // ↑killSecure (achève dès que possible) ↑dangerAvoid (esquive les cases dangereuses). MACRO : repli « doctrine »
+  // léger sous 1/3 PB (LATITUDE — un non-Bestial n'a pas de fuite RAW, donc ce repli ne contredit aucune garde).
+  racaille: { threat: 1.5, killSecure: 16, dangerAvoid: 0.9, macro: { retreatBelow: 1 / 3 } },
+  // SOLDATS / tenir la ligne (groups militaire OU CC élevée, ni Bestial ni Stupide) : FEU CONCENTRÉ (le
+  // surnombre `outnumberMod` est déjà dans l'espérance de dégâts en mêlée → on RENFORCE le poids de dégâts
+  // pour que la cible encadrée par les alliés l'emporte plus nettement), tient le COUVERT (↑coverGain),
+  // préfère le contact (↑preferredRange : tenir la ligne au corps-à-corps), cohésion plus marquée (formation).
+  soldats: { damageDealt: 1.4, coverGain: 6, preferredRange: 8, cohesion: 3 },
+  // TIRAILLEURS / kiting (arme à distance + Agilité haute, pas de préférence mêlée) : garde la DISTANCE,
+  // recule devant l'approche, vise les casters. ↑preferredRange (rester à portée de tir+LdV est très valorisé),
+  // ↑dangerAvoid (kiting : fuir les cases au contact), ↑threat (un caster dangereux monte en menace → ciblé).
+  tirailleurs: { preferredRange: 12, dangerAvoid: 1.2, threat: 1.6 },
+  // ARTILLERIE / lanceurs (possède des sorts, Int/FM hautes) : reste LOIN, à couvert, et arrose les paquets.
+  // ↑aoePerExtraHero (la ZdE sur un amas écrase nettement le missile mono-cible), ↑control (valorise les États),
+  // ↑dangerAvoid + ↑preferredRange (se tient hors de portée), ↑coverGain (se planque).
+  artillerie: { aoePerExtraHero: 14, control: 2, dangerAvoid: 1.2, preferredRange: 10, coverGain: 6 },
+  // HORDE / Insensible-Stupide (mort-vivant Fabriqué, Stupide) : AVANCE DROIT, sans auto-préservation ni
+  // cohésion (aucune pensée de groupe). dangerAvoid=0 et cohesion=0 → elle ne contourne pas le danger et ne
+  // se soucie pas de rester groupée ; le surnombre brut reste émergent via `outnumberMod`. Pas de repli (un
+  // Insensible/Sans Peur ne fuit pas — et n'étant pas Bestial, aucune garde de fuite ne s'applique).
+  horde: { dangerAvoid: 0, cohesion: 0 },
+  // EMBUSCADE : tient sa position puis fond sur la cible isolée. AUCUN signal auto fiable (furtivité/flag de
+  // scène) n'existe proprement → SÉLECTIONNABLE UNIQUEMENT par l'override `aiDoctrine` (donnée). Poids ≈ meute
+  // (charge la proie isolée, prise à revers) mais SANS repli — elle a l'initiative. Signalé dans le rapport.
+  embuscade: { threat: 1.8, flankRear: 8 },
+};
+
+/**
+ * Choisit la DOCTRINE d'un ennemi à partir de signaux ROBUSTES & data-driven (PURE, déterministe — aucun
+ * dé, aucun store). Priorité : (1) OVERRIDE `enemy.aiDoctrine` (donnée Codex/éditeur) s'il est VALIDE →
+ * renvoyé tel quel ; (2) sinon classification par traits/Intelligence/groups/équipement. DÉFAUT NEUTRE
+ * `standard` dès qu'aucun signal n'est franc (garantit l'inchangé des tests/golden). AUCUN nom de créature/
+ * carrière en dur : on lit des capacités (`isBestial`…), une Caractéristique (`Int`) et des `groups`.
+ *
+ * @param enemy l'ennemi qui agit (traits/characteristics/groups/spells/weapons).
+ * @param squad ses alliés (réservé à de futurs signaux d'escouade — non requis par les règles actuelles).
+ */
+export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = []): DoctrineId {
+  // (1) OVERRIDE EN DONNÉE prioritaire : si l'auteur a figé une doctrine valide, on la respecte TELLE QUELLE.
+  const forced = enemy.aiDoctrine;
+  if (forced && forced in DOCTRINES) return forced as DoctrineId;
+
+  const traits = enemy.traits;
+  const bestial = isBestial(traits);
+  const mindless = isMindless(traits);
+  const stupid = isStupid(traits);
+  // Intelligence effective (garde NaN : caractéristiques absentes sur un combattant de test → on traite
+  // comme « non chiffrable », donc aucun signal Int — la classification tombe sur les autres signaux/standard).
+  const int = finite(effectiveChar(enemy, 'Int'), NaN);
+  const hasInt = Number.isFinite(int);
+  const hasSpells = (enemy.spells?.length ?? 0) > 0;
+  const hasRangedWeapon = enemy.weapons.some((w) => w.type === 'ranged');
+  const ag = finite(effectiveChar(enemy, 'Ag'), NaN);
+  // SIGNAL « groupe » data-driven (≠ folder.includes fragile, ≠ nom en dur) : on matche les `groups`
+  // (auto-dérivés en donnée : racial, carrière, catégorie bestiaire) contre des CATÉGORIES, via `groupMatch`
+  // (tolérant pluriel/sous-type). Un combattant martial appartient à un groupe militaire ; un humanoïde
+  // « racaille » à un groupe racial/criminel. ABSENCE de groupe ⇒ pas de signal (fixtures génériques → standard).
+  const groups = enemy.groups ?? [];
+  const inGroup = (cats: string[]) => cats.some((cat) => groupMatch(cat, groups));
+  // Catégories militaires (entraînées/organisées) et racaille/humanoïde — listes de CATÉGORIES de Groupe
+  // (pas de créature/carrière nommée), alignées sur `engine/groups.ts`. Le levier fin reste l'override `aiDoctrine`.
+  const MILITARY = ['Soldat', 'Garde', 'Militaire', 'Chevalier', 'Mercenaire'];
+  const RABBLE = ['Criminel', 'Bandit', 'Cultiste', 'Peau-Verte', 'Skaven'];
+  const isMilitary = inGroup(MILITARY);
+  const isRabble = inGroup(RABBLE);
+
+  // (2) Classification par signaux, du plus DISCRIMINANT au plus général (ordre = priorité). Tous les
+  // prédicats reposent sur des SIGNAUX FRANCS (trait/sort/Agilité/groupe) qu'une fixture GÉNÉRIQUE (sans
+  // groups, sans trait spécial, Ag moyenne, sans sort) NE possède PAS → elle tombe en `standard` (parité).
+  // HORDE : un esprit absent/Stupide (mort-vivant Fabriqué, créature Stupide) avance droit sans se préserver.
+  if (mindless || stupid) return 'horde';
+  // ARTILLERIE : un LANCEUR (possède des sorts) à l'esprit vif (Int haute) reste loin et arrose les paquets.
+  if (hasSpells && hasInt && int >= 30) return 'artillerie';
+  // MEUTE : prédateur Bestial à l'esprit animal (Int basse/non chiffrable), SANS sorts ni arme à distance.
+  if (bestial && (!hasInt || int < 25) && !hasSpells && !hasRangedWeapon) return 'meute';
+  // TIRAILLEURS : tireur AGILE (Ag franche) qui n'est pas un pur mêlée → kiting (garde la distance, vise les casters).
+  if (hasRangedWeapon && Number.isFinite(ag) && ag >= 40) return 'tirailleurs';
+  // SOLDATS : appartient à un groupe MILITAIRE (entraîné/organisé), ni Bestial ni Stupide → tient la ligne, feu concentré.
+  if (isMilitary && !bestial) return 'soldats';
+  // RACAILLE : humanoïde d'un groupe racaille/criminel (sans signal militaire/magique) → opportuniste, tape le faible.
+  if (isRabble && !bestial) return 'racaille';
+  // DÉFAUT NEUTRE : aucun signal franc (fixtures génériques, caractéristiques absentes…) → comportement Lots 1-4.
+  return 'standard';
+}
+
+/** Poids EFFECTIFS d'une doctrine : `W` (défaut neutre) + override partiel. Le `macro` n'est PAS un poids
+ *  (lu séparément). Une clé absente de l'override garde sa valeur `W`. PUR. */
+function doctrineWeights(id: DoctrineId): Weights {
+  const d = DOCTRINES[id];
+  const w: Weights = { ...W };
+  for (const k of Object.keys(W) as (keyof typeof W)[]) {
+    const v = d[k];
+    if (typeof v === 'number') w[k] = v;
+  }
+  return w;
+}
 
 /**
  * Dangerosité d'un ÉTAT infligé (LDB 16), en « Blessures espérées équivalentes » — pour `controlValue`.
@@ -493,6 +632,20 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !isFrenzied(enemy)
       && enemy.wounds.current < enemy.wounds.max / 2 && !isEngaged(enemy)) return fleeMove();
 
+  // === DOCTRINE TACTIQUE (Lot 5) ===========================================================
+  // La doctrine (déduite des signaux DATA ou forcée par `enemy.aiDoctrine`) module les POIDS du cœur
+  // discrétionnaire ci-dessous (`Weff` = `W` + override partiel). Elle est choisie APRÈS toutes les gardes
+  // forcées (fin de combat, En flammes, Brisé, Bestial, anti-immobilisme) — qu'elle ne touche JAMAIS — et
+  // AVANT le scoring. Un éventuel REPLI « doctrine » (`macro.retreatBelow`, latitude hors RAW) ne s'applique
+  // qu'à un combattant SANS garde de fuite RAW (Bestial déjà géré en amont) et non Engagé.
+  const doctrine = pickDoctrine(enemy, squad);
+  const Weff = doctrineWeights(doctrine);
+  const macro = DOCTRINES[doctrine].macro;
+  if (macro?.retreatBelow != null && !isBestial(enemy.traits) && !isFrenzied(enemy) && !isEngaged(enemy)
+      && enemy.wounds.current < enemy.wounds.max * macro.retreatBelow) {
+    return fleeMove();
+  }
+
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une
   // case atteignable lui est adjacente.
   const meleeReachableNow = (h: Combatant): boolean => {
@@ -557,9 +710,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
         : finite(expectedDamage(enemy, target, src.weapon, 'melee', undefined, outnumberEnvMelee(target)), 0);
     const threat = finite(targetThreat(enemy, target), 0);
     const control = src.kind === 'spell' ? controlValue(src.spell) : 0;
-    const securesKill = dmg >= target.wounds.current && target.wounds.current > 0 ? W.killSecure : 0;
-    const overkill = isNeutralized(target) ? W.overkill : 0;
-    return W.damageDealt * dmg + W.threat * threat + W.control * control + securesKill - overkill;
+    const securesKill = dmg >= target.wounds.current && target.wounds.current > 0 ? Weff.killSecure : 0;
+    const overkill = isNeutralized(target) ? Weff.overkill : 0;
+    return Weff.damageDealt * dmg + Weff.threat * threat + Weff.control * control + securesKill - overkill;
   };
 
   /** DANGER-MAP (Lot 4) : Blessures que les HÉROS nous infligeraient si l'on se tenait sur `to` — Σ sur
@@ -594,7 +747,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const tFacing = facing?.[target.id];
     if (tFacing) {
       const dirToAttacker = facingToward(target.pos!, to);
-      if (isFlankOrRear(tFacing, dirToAttacker)) v += W.flankRear;
+      if (isFlankOrRear(tFacing, dirToAttacker)) v += Weff.flankRear;
     }
     // Gain de couvert POUR SOI face à la menace la plus proche : un couvert imparfait/moyen/total à
     // l'arrivée réduit les tirs adverses (lineOfSightCover, direction héros→case). Cran gagné vs case actuelle.
@@ -608,7 +761,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       return worst;
     };
     const coverDelta = coverRank(to) - coverRank(pos);
-    if (coverDelta > 0) v += W.coverGain * coverDelta;
+    if (coverDelta > 0) v += Weff.coverGain * coverDelta;
     // Portée préférée : un tireur/lanceur valorise une case d'où il TIRE (cible visible + à portée) sans
     // être au contact ; un combattant de mêlée valorise le contact. Réutilise les gates de portée/LdV.
     const d = chebyshev(to, target.pos!);
@@ -617,17 +770,17 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       const inShootRange = canCast
         ? (spellRange == null || d <= spellRange)
         : (maxWeaponRange === 0 || rangeBandModifier(d, maxWeaponRange) != null);
-      if (d > mr && seesFrom && inShootRange) v += W.preferredRange; // garde la distance ET la ligne de tir
+      if (d > mr && seesFrom && inShootRange) v += Weff.preferredRange; // garde la distance ET la ligne de tir
     } else if (withinMelee(to, target.pos!)) {
-      v += W.preferredRange; // mêlée : au contact
+      v += Weff.preferredRange; // mêlée : au contact
     }
     // ÉVITEMENT du DANGER (Lot 4) : pénalise une case exposée à la menace des héros (danger-map). Calibré
     // < 1 → départage de cases, jamais un veto (l'utilité d'attaque, ×1..12, peut l'emporter et faire avancer).
-    if (squad.length || heroes.length) v -= W.dangerAvoid * dangerAt(to);
+    if (squad.length || heroes.length) v -= Weff.dangerAvoid * dangerAt(to);
     // COHÉSION légère (Lot 4, SOBRE) : malus si la case isole l'ennemi de TOUTE son escouade (aucun allié
     // à portée de soutien ≤ 3 cases) — préfère rester en formation, à utilité d'attaque égale. Si l'escouade
     // est vide, pas de cohésion (un solitaire ne « s'isole » de personne).
-    if (squad.length && !squad.some((c) => c.pos && chebyshev(to, c.pos) <= 3)) v -= W.cohesion;
+    if (squad.length && !squad.some((c) => c.pos && chebyshev(to, c.pos) <= 3)) v -= Weff.cohesion;
     return v;
   };
 
@@ -654,7 +807,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (!frenzied && areaSpell) {
     const ac = bestAreaCenter(pos, shootableHeroes, areaSpell.radius, areaSpell.range, (pt) => losClear(scene, pos, pt, smoke ?? []));
     if (ac) {
-      const aoe = W.aoePerExtraHero * (ac.covered - 1); // « − alliés touchés » : pas d'alliés en entrée (Lot 4)
+      const aoe = Weff.aoePerExtraHero * (ac.covered - 1); // « − alliés touchés » : pas d'alliés en entrée (Lot 4)
       candidates.push({ action: { kind: 'castArea', spell: areaSpell.spell, center: ac.center }, kind: 'castArea', utility: aoe, targetId: '', coord: ac.center });
     }
   }
@@ -704,7 +857,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     // Estimation d'attaque pour scorer une cible (utilité d'arme de mêlée si on en a une, sinon menace
     // seule — un caster hors de portée qui s'approche n'a pas de dégât d'arme mais score la menace/fragilité).
     const targetUtility = (t: Combatant): number =>
-      meleeWeapon ? attackUtility(t, { kind: 'melee', weapon: meleeWeapon }) : (W.threat * finite(targetThreat(enemy, t), 0) - (isNeutralized(t) ? W.overkill : 0));
+      meleeWeapon ? attackUtility(t, { kind: 'melee', weapon: meleeWeapon }) : (Weff.threat * finite(targetThreat(enemy, t), 0) - (isNeutralized(t) ? Weff.overkill : 0));
     for (const t of vivier) {
       if (hasMeleeWeapon && meleeWeapon && inMelee(t)) {
         // Cible déjà au contact → frappe (position déjà acquise, pas de bonus de déplacement).
@@ -714,7 +867,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
         // d'APPROCHE : utilité = utilité d'attaque de la cible + positionnement de la case − distance résiduelle.
         const atk = targetUtility(t);
         for (const { to, posV } of approachCandidates(t)) {
-          const u = atk + posV - W.approachDist * manhattan(to, t.pos!);
+          const u = atk + posV - Weff.approachDist * manhattan(to, t.pos!);
           candidates.push({ action: { kind: 'move', to, thenTargetId: t.id }, kind: 'move', utility: u, targetId: t.id, coord: to });
         }
       }

@@ -686,6 +686,13 @@ export interface Combatant {
    *  le système de Durée unifié, plus de compteur/flag round-scopé ad hoc.) */
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
+  /** DOCTRINE TACTIQUE forcée en DONNÉE (id de `DOCTRINES` dans `state/ai.ts` : `meute`/`soldats`/
+   *  `tirailleurs`/`artillerie`/`horde`/`racaille`/`embuscade`/`standard`). Si présent et valide, l'IA
+   *  l'utilise TELLE QUELLE (la sélection automatique par signaux est court-circuitée) — c'est le levier
+   *  « forcer une doctrine » du Codex/éditeur (ex. tendre une EMBUSCADE, qui n'a pas de signal auto). Absent
+   *  ⇒ doctrine déduite des traits/Intelligence/groups/sorts (cf. `pickDoctrine`). Ne touche QUE les poids
+   *  du cœur discrétionnaire de l'IA : aucune garde RAW (fuite Bestial, Frénésie, Brisé…) n'en dépend. */
+  aiDoctrine?: string;
   psychTraits?: import('./psychology').PsychTrait[];
   /** Traits de créature (STRUCTURÉS — `TraitInstance` : id/value/arg/count/range) → attaques
    *  naturelles gratuites & règles dérivées (Morsure, Attaque caudale, Souffle… cf.
