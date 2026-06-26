@@ -159,6 +159,15 @@ describe('chooseEnemyAction — décisions MAGIQUES pures (focus / cast focalis�
     expect(a).toEqual({ kind: 'melee', targetId: 'adj' }); // pas de focus sous la menace
   });
 
+  it('FRÉNÉTIQUE avec arme à distance déchargée → NE recharge PAS (Frénésie LDB 21 l.34 : CC/Athlétisme) → approche', () => {
+    const CROSSBOW: Weapon = { name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 40, reload: 1, qualities: [] };
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [CROSSBOW], loaded: false, psychState: [{ type: 'frenesie' }] } as Partial<Combatant>);
+    const h = mk('h', 'hero', { x: 5, y: 9 }); // en vue/portée mais pas au contact
+    const a = chooseEnemyAction(input(e, [h]));
+    expect(a.kind).not.toBe('reload'); // la Frénésie interdit la Recharge
+    expect(a.kind).toBe('move'); // elle fonce vers l'ennemi le plus proche
+  });
+
   it('ZdE : ≥2 héros groupés et sort de zone castable → castArea auto-posé couvrant le paquet', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h1 = mk('h1', 'hero', { x: 5, y: 9 });

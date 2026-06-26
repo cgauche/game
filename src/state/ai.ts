@@ -608,8 +608,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     }
   }
   // Recharger (LDB 63 l.28-29) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée
-  // justifiée. Utilité neutre (préparation) — préféré seulement faute de tir/mêlée meilleurs.
-  if (reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) {
+  // justifiée. Utilité neutre (préparation) — préféré seulement faute de tir/mêlée meilleurs. Un
+  // frénétique NE recharge PAS (Frénésie LDB 21 l.34 : seule Action = Test de CC/Athlétisme → mêlée).
+  if (!frenzied && reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) {
     candidates.push({ action: { kind: 'reload' }, kind: 'reload', utility: 0, targetId: '', coord: null });
     committingPrep = true; // un tireur recharge sur place plutôt que de foncer en mêlée
   }
