@@ -133,7 +133,7 @@ function extractQuote(preceding) {
   const close = preceding.lastIndexOf('»')
   if (close === -1) return null
   const gap = preceding.slice(close + 1)                 // entre » et la réf : seulement un séparateur
-  if (!/^[\s—–(`'":\-]*$/.test(gap)) return null
+  if (!/^[\s—–(`'":-]*$/.test(gap)) return null
   const open = preceding.indexOf('«')                    // guillemets imbriqués : 1er « / dernier »
   if (open === -1 || open > close) return null
   return preceding.slice(open + 1, close)

@@ -246,7 +246,7 @@ function parseTier(block, page, group) {
 
   // Compétences : « Nom<br>valeur<br>… »
   const skills = [];
-  const isValue = (f) => /^\d/.test(f) || /\bDR\b/.test(f) || /^[+\-]?\d+\s*\(/.test(f);
+  const isValue = (f) => /^\d/.test(f) || /\bDR\b/.test(f) || /^[+-]?\d+\s*\(/.test(f);
   for (const ln of sections.Compétences) {
     if (isSep(ln)) continue;
     for (const cell of cells(ln)) for (const frag of cell.split(/<br\s*\/?>/i)) {

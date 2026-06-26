@@ -601,7 +601,7 @@ export interface CounterParticipant extends RollParticipant {
  *  opposant son Langue (Magick) avec son propre cycle Chance/+1 DR/Pacte/Résilience. L'application
  *  réutilise `castConfirm` (issue agrégée : dissipé si UN gagne ; sinon le sort se résout au meilleur
  *  DR net). « Laisser passer » = aucun Contre-sort → le sort se résout tel quel. */
-export interface PendingCounterspell extends MultiPending<CounterParticipant> {}
+export type PendingCounterspell = MultiPending<CounterParticipant>;
 
 /** Issue du Test d'OPPOSITION d'UNE cible contre l'incantation figée (résist FM/Int ou contact Bagarre). */
 export interface OppositionOutcome {

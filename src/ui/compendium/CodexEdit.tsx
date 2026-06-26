@@ -160,7 +160,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
       file: `${dsKey}.json`, recordMode: false, initialKey: '',
       persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
     };
-  }, [obj, categoryKey, label, isNew]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [obj, categoryKey, label, isNew]);
 
   const [entry, setEntry] = useState<Entry>(() => structuredClone(src.initial));
   const [recordKey, setRecordKey] = useState(src.initialKey);
@@ -170,7 +170,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const [msg, setMsg] = useState('');
 
   useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
-  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); }, [src]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); }, [src]);
 
   // L'apparence (MonsterPartsFields) ET les EFFETS d'un sort (FlowEditor) ont leur éditeur dédié — on les
   // sort du formulaire générique (sinon rendus en JSON brut). Les autres champs gardent le formulaire

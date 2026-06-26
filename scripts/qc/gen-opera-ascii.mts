@@ -20,7 +20,7 @@ function gridFor(z: number): string {
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) {
       const t = tiles[y * W + x];
-      let ch = ' ';
+      let ch: string;
       if (t === 'dalle') ch = ',';
       else if (t === 'plancher') ch = 'P';
       else if (t === 'marbre') ch = 'M';
