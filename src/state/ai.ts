@@ -134,6 +134,71 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
   })[0];
 }
 
+/**
+ * Un CANDIDAT d'action discrétionnaire (Lot 2 — Socle Utility).
+ * `tier` = palier de priorité LEXICOGRAPHIQUE (plus PETIT = meilleur) — il REPRODUIT EXACTEMENT la
+ * cascade historique : castArea(≥2) < focus < cast < reload < shoot < melee < move(approche).
+ * `targetId`/`coord` servent UNIQUEMENT de départage déterministe à palier égal (tie-break stable),
+ * ils ne renversent JAMAIS l'ordre des paliers. Les poids sont donc NEUTRES au Lot 2 : le moteur
+ * « énumérer → scorer → argmax » recrée trait pour trait la décision précédente. Les heuristiques
+ * fines (menace, positionnement) sont réservées au Lot 3 et n'apparaissent pas ici.
+ */
+interface Candidate {
+  action: EnemyAction;
+  tier: number;
+  /** id de la cible visée (départage secondaire, stable) — vide si l'action n'en a pas. */
+  targetId: string;
+  /** coordonnées de destination/centre (départage tertiaire) — null si l'action n'en a pas. */
+  coord: Pt | null;
+}
+
+// Paliers de priorité (cascade historique, du plus prioritaire au moins). Énumérés ici une fois
+// pour que `scoreCandidate` et la lecture restent une SOURCE UNIQUE de l'ordre.
+const TIER = {
+  castArea: 0, // ZdE couvrant ≥2 héros (LDB 47 l.44)
+  focus: 1, // Focalisation d'un sort infaisable d'un jet (LDB 46)
+  cast: 2, // sort offensif mono-cible
+  reload: 3, // recharge d'une arme à Recharge
+  shoot: 4, // tir à distance
+  melee: 5, // attaque de mêlée
+  move: 6, // approche / repositionnement
+} as const;
+
+/**
+ * Score LEXICOGRAPHIQUE d'un candidat (Lot 2 : neutre — recrée la cascade). Le palier prime ; à
+ * palier égal, on départage par id de cible (ordre stable, déterministe) puis par coordonnées (x,y).
+ * Renvoie un tuple comparé champ par champ par `argmax`. Plus PETIT = meilleur (comme un tri).
+ */
+function scoreCandidate(c: Candidate): [number, string, number, number] {
+  return [c.tier, c.targetId, c.coord?.x ?? 0, c.coord?.y ?? 0];
+}
+
+/** argmax déterministe : meilleur candidat (score lexicographique minimal). Tie-break stable. */
+function argmax(cands: Candidate[]): Candidate | null {
+  let best: Candidate | null = null;
+  let bestScore: [number, number, string, number, number] | null = null;
+  for (let i = 0; i < cands.length; i++) {
+    const s = scoreCandidate(cands[i]);
+    // On adjoint l'index d'énumération en dernier critère : ultime garde-fou de stabilité (deux
+    // candidats parfaitement égaux gardent l'ordre d'énumération — ne survient pas en pratique).
+    const full: [number, number, string, number, number] = [s[0], i, s[1], s[2], s[3]];
+    if (
+      bestScore == null ||
+      full[0] < bestScore[0] || (full[0] === bestScore[0] && (
+        full[2] < bestScore[2] || (full[2] === bestScore[2] && (
+          full[3] < bestScore[3] || (full[3] === bestScore[3] && (
+            full[4] < bestScore[4] || (full[4] === bestScore[4] && full[1] < bestScore[1])
+          ))
+        ))
+      ))
+    ) {
+      best = cands[i];
+      bestScore = full;
+    }
+  }
+  return best;
+}
+
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
@@ -250,85 +315,102 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     return false;
   };
 
-  // --- Décision MAGIQUE (ZdE / Focalisation) -------------------------------
-  // ZdE (LDB 47 l.44) : un sort de ZONE de dégâts castable prime sur le missile mono-cible dès que son
-  // centre auto-posé couvre ≥2 héros groupés (parité avec le choix joueur d'arroser un paquet). Le centre
-  // respecte portée + Ligne de Vue (LDB 46 l.170). Le frénétique ne lance aucun sort (LDB 21 l.34).
-  if (!frenzied && areaSpell) {
-    const ac = bestAreaCenter(pos, shootableHeroes, areaSpell.radius, areaSpell.range, (pt) => losClear(scene, pos, pt, smoke ?? []));
-    if (ac) return { kind: 'castArea', spell: areaSpell.spell, center: ac.center };
-  }
-  // Focalisation (LDB 46) : quand AUCUN sort offensif n'est faisable en un seul jet (castSpellId absent
-  // ou hors portée — `canCast` faux) mais qu'un sort offensif est FOCALISABLE (résolu par l'appelant :
-  // arcanique, Compétence de Focalisation, NI > SL max), l'IA consacre son tour à focaliser plutôt que
-  // de rater un NI hors d'atteinte en boucle. EXCEPTION (l.193, risque d'interruption) : un adversaire
-  // au contact ET un repli existe (arme de mêlée, ou tir possible) → on se replie au combat de contact.
-  if (!frenzied && focusableSpell && !canCast) {
-    const contactFallback = adjacentFoes.length > 0 && (hasMeleeWeapon || canShoot);
-    if (!contactFallback) return { kind: 'focus', spell: focusableSpell };
-  }
+  // === CŒUR DISCRÉTIONNAIRE — moteur Utility (Lot 2) =======================
+  // Tout ce qui précède (gardes RAW/psychologie : fin de combat, En flammes, Brisé, Bestial, fuite,
+  // anti-immobilisme…) reste FORCÉ et n'entre PAS dans le scoring. Ici on ÉNUMÈRE les actions JOUABLES,
+  // on les SCORE par paliers neutres (= cascade historique) et on prend l'argmax. Aucune règle inventée :
+  // les gardes de validité (portée, LdV, canCast/canShoot/inMelee, ZdE, focalisable) sont IDENTIQUES.
 
-  // --- Choix de la cible ---------------------------------------------------
-  // À distance (sort/arme) : on vise le plus faible PARMI les cibles visibles (LdV). En mêlée :
-  // on préfère une cible frappable ce tour ; sinon on approche le plus faible.
-  // Animosité/Haine ACTIVE (LDB 21 l.22/41) : on doit s'en prendre EN PRIORITÉ au groupe haï. Restreint
-  // la sélection aux membres du groupe présents dans le vivier considéré (sinon ciblage habituel).
+  // Animosité/Haine ACTIVE (LDB 21 l.22/41) : filtre de VIVIER appliqué AVANT le choix de cible — on
+  // s'en prend en priorité au groupe haï présent dans le vivier considéré (sinon ciblage habituel).
   const hatedCibles = (enemy.psychState ?? [])
     .filter((p) => (p.type === 'animosite' || p.type === 'haine') && p.active && p.cible)
     .map((p) => p.cible!);
   const hatedOf = (pool: Combatant[]) =>
     hatedCibles.length ? pool.filter((h) => hatedCibles.some((cb) => groupMatch(cb, h.groups ?? []))) : [];
-
-  let target: Combatant;
-  if (frenzied) {
-    // Frénésie : on se rue sur l'ennemi le plus PROCHE en Ligne de Vue (LDB 21 l.34).
-    const visibleFoes = shootableHeroes.length ? shootableHeroes : heroes;
-    target = nearest(pos, visibleFoes);
-  } else if (canCast || canShoot) {
-    // Vivier filtré par PORTÉE (le sort prime sur le tir, même priorité que la décision plus bas).
-    const vivier = canCast ? castPool : shootPool;
+  // Cible préférée d'un vivier filtré : on restreint au groupe haï s'il y en a un, sinon vivier brut ;
+  // Frénésie impose `nearest` (le plus proche en LdV, LDB 21 l.34) au lieu du tri lexicographique.
+  const chooseTarget = (vivier: Combatant[]): Combatant => {
+    if (frenzied) {
+      const visibleFoes = shootableHeroes.length ? shootableHeroes : heroes;
+      return nearest(pos, visibleFoes);
+    }
     const pool = hatedOf(vivier);
-    target = bestTarget(pos, pool.length ? pool : vivier);
-  } else {
-    // Un tireur RETENU au Combat rapproché (arme à distance + adversaire au contact) frappe
-    // l'adversaire à son contact. Sinon, comportement de mêlée habituel (sécuriser le plus faible).
+    return bestTarget(pos, pool.length ? pool : vivier);
+  };
+
+  // Meilleure case d'APPROCHE vers une cible (mêlée OU tireur dégageant la LdV) : adjacente à la
+  // cible si possible, sinon la plus proche. Tie-break inchangé : [adjacence, distance Manhattan].
+  const approachTowards = (target: Combatant): Pt | null => {
+    let best: Pt | null = null;
+    let bestScore: [number, number] | null = null;
+    for (const k of reach.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      if (x === pos.x && y === pos.y) continue; // ne pas « bouger » sur place
+      const tile = { x, y };
+      const score: [number, number] = [withinMelee(tile, target.pos!) ? 0 : 1, manhattan(tile, target.pos!)];
+      if (!bestScore || score[0] < bestScore[0] || (score[0] === bestScore[0] && score[1] < bestScore[1])) {
+        best = tile;
+        bestScore = score;
+      }
+    }
+    return best;
+  };
+
+  // --- ÉNUMÉRATION des candidats JOUABLES ----------------------------------
+  // On ne produit qu'UN candidat par type d'action (Lot 2 : parité stricte — la cible est choisie par
+  // le `chooseTarget`/`bestTarget` historique ; l'élargissement à toutes les cibles est pour le Lot 3).
+  const candidates: Candidate[] = [];
+
+  // ZdE (LDB 47 l.44) : un sort de ZONE castable dont le centre auto-posé couvre ≥2 héros (portée + LdV).
+  if (!frenzied && areaSpell) {
+    const ac = bestAreaCenter(pos, shootableHeroes, areaSpell.radius, areaSpell.range, (pt) => losClear(scene, pos, pt, smoke ?? []));
+    if (ac) candidates.push({ action: { kind: 'castArea', spell: areaSpell.spell, center: ac.center }, tier: TIER.castArea, targetId: '', coord: ac.center });
+  }
+  // Focalisation (LDB 46) : sort focalisable + AUCUN sort faisable d'un jet (`!canCast`), sauf menacé au
+  // contact avec un repli (arme de mêlée ou tir) — risque d'interruption (l.193).
+  if (!frenzied && focusableSpell && !canCast) {
+    const contactFallback = adjacentFoes.length > 0 && (hasMeleeWeapon || canShoot);
+    if (!contactFallback) candidates.push({ action: { kind: 'focus', spell: focusableSpell }, tier: TIER.focus, targetId: '', coord: null });
+  }
+  // Sort offensif mono-cible (sur la cible visible/à portée, résolu comme un projectile).
+  if (canCast) {
+    const t = chooseTarget(castPool);
+    candidates.push({ action: { kind: 'cast', targetId: t.id, spell: castSpellId! }, tier: TIER.cast, targetId: t.id, coord: t.pos ?? null });
+  }
+  // Recharger (LDB 63 l.28-29) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée justifiée.
+  if (reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) {
+    candidates.push({ action: { kind: 'reload' }, tier: TIER.reload, targetId: '', coord: null });
+  }
+  // Tir (hors Combat rapproché, cible visible) : tenir la position et tirer.
+  if (canShoot) {
+    const t = chooseTarget(shootPool);
+    candidates.push({ action: { kind: 'shoot', targetId: t.id }, tier: TIER.shoot, targetId: t.id, coord: t.pos ?? null });
+  }
+  // Mêlée / approche : la cible de contact suit le comportement historique (tireur retenu au contact
+  // frappe l'adversaire à son contact ; sinon, cible frappable ce tour, sinon vivier complet).
+  if (!canCast && !canShoot) {
     const heldInMelee = hasRanged && adjacentFoes.length > 0;
     const here = heldInMelee ? adjacentFoes : heroes.filter(meleeReachableNow);
     const base = here.length ? here : heroes;
-    const pool = hatedOf(base);
-    target = bestTarget(pos, pool.length ? pool : base);
-  }
-
-  // --- Sort offensif : on lance sur la cible visible (résolu comme un projectile) ---
-  if (canCast) return { kind: 'cast', targetId: target.id, spell: castSpellId! };
-
-  // --- Recharger : arme à Recharge déchargée + cible en vue/portée → recharger plutôt que rester inerte
-  //     (consomme l'Action) ; sauf si un adversaire au contact justifie une attaque de mêlée. ---
-  if (reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) return { kind: 'reload' };
-
-  // --- Arme à distance (hors Combat rapproché, cible visible) : tenir la position et tirer ----
-  if (canShoot) return { kind: 'shoot', targetId: target.id };
-
-  // --- Mêlée / repositionnement -------------------------------------------
-  if (hasMeleeWeapon && inMelee(target)) return { kind: 'melee', targetId: target.id };
-
-  // Se rapprocher : viser une case atteignable adjacente à la cible si possible, sinon la plus
-  // proche. Vaut pour la mêlée ET pour un tireur sans cible visible (se déplacer pour dégager la LdV).
-  let best: Pt | null = null;
-  let bestScore: [number, number] | null = null; // [0 = adjacente à la cible, distance]
-  for (const k of reach.keys()) {
-    const [x, y] = k.split(',').map(Number);
-    if (x === pos.x && y === pos.y) continue; // ne pas « bouger » sur place
-    const tile = { x, y };
-    const score: [number, number] = [withinMelee(tile, target.pos!) ? 0 : 1, manhattan(tile, target.pos!)];
-    if (!bestScore || score[0] < bestScore[0] || (score[0] === bestScore[0] && score[1] < bestScore[1])) {
-      best = tile;
-      bestScore = score;
+    const t = chooseTarget(base);
+    if (hasMeleeWeapon && inMelee(t)) {
+      candidates.push({ action: { kind: 'melee', targetId: t.id }, tier: TIER.melee, targetId: t.id, coord: t.pos ?? null });
+    } else {
+      const to = approachTowards(t);
+      if (to) candidates.push({ action: { kind: 'move', to, thenTargetId: t.id }, tier: TIER.move, targetId: t.id, coord: to });
     }
+  } else {
+    // Avec un sort/tir jouable : la cascade historique ne propose JAMAIS de mêlée/move (cast/shoot
+    // priment et retournent toujours). On ne produit donc pas de candidat de contact ici (parité).
   }
-  if (best) return { kind: 'move', to: best, thenTargetId: target.id };
-  // Aucune attaque possible et nulle part où aller : un Empêtré (Mouvement nul, LDB 16 l.85) se libère
-  // plutôt que de perdre son tour (Test opposé de Force contre la source, l.61).
+
+  // --- ARGMAX : meilleur candidat (palier + tie-break déterministe) ---------
+  const chosen = argmax(candidates);
+  if (chosen) return chosen.action;
+
+  // Aucun candidat jouable : un Empêtré (Mouvement nul, LDB 16 l.85) se libère plutôt que perdre son
+  // tour (Test opposé de Force contre la source, l.61). Sinon, passe la main.
   if (hasCondition(enemy, 'empetre')) return { kind: 'recover', state: 'empetre' };
   return { kind: 'end' };
 }
