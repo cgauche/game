@@ -11,6 +11,7 @@ import { nextEntityId } from '../../state/entityId';
 import { defaultDoor } from '../../state/buildings';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
+import { speciesLabel } from '../../gameIso/rig/creatures';
 import { propRefPatch } from './propDefaults';
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -319,7 +320,8 @@ export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefi
   const id = nextEntityId(kind, scene.entities.map((e) => e.id));
   let ent: SceneEntity = { id, kind, pos: { ...p }, label: KIND_LABEL[kind] };
   if (ref && kind === 'prop') ent = { ...ent, ...propRefPatch(ref, false), label: PROPS[ref]?.label };
-  else if (ref && kind === 'personnage' && ref !== 'Villageois') ent = { ...ent, ref, label: ref };
+  // Personnage d'ambiance : `ref` porte l'id d'ESPÈCE rig (sélecteur Palette) → apparence + libellé.
+  else if (ref && kind === 'personnage') ent = { ...ent, appearance: { species: ref }, label: speciesLabel(ref) };
   if (z) ent = { ...ent, z }; // pose sur l'étage courant ; sol (0) = champ absent
   return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
 }

@@ -13,7 +13,7 @@ import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
-import { defByName, speciesScale } from './creatures';
+import { defById, speciesScale } from './creatures';
 import { findCreatureById, vehicles } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
 
@@ -114,12 +114,12 @@ export function resolveRender(species: string | undefined, traits: import('../..
   // Résolution par la DONNÉE : espèce EXPLICITE (arg) → espèce du record. PLUS de repli par libellé.
   const resolved = species ?? rec?.appearance?.species;
   if (resolved) {
-    const d = defByName(resolved);
+    const d = defById(resolved);
     if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: resolved, scale: speciesScale(resolved) };
     return { kind: 'rig', plan: 'biped', species: resolved, scale: speciesScale(resolved) };
   }
   // Record sans espèce mais trait Nuée (les records Nuée, si le caller n'a pas passé les traits).
   if (isSwarm(rec?.traits)) return { kind: 'plan', plan: 'swarm', species: swarmSp, scale: speciesScale(swarmSp) };
   // Inconnu (rôle générique : Bandit/Cultiste/Villageois…) → bipède Humain par défaut.
-  return { kind: 'rig', plan: 'biped', species: 'Humain', scale: speciesScale('Humain') };
+  return { kind: 'rig', plan: 'biped', species: 'humain', scale: speciesScale('humain') };
 }

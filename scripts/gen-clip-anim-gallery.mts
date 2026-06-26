@@ -59,7 +59,7 @@ const rowArc = tile('ranged (arc)', CLIPS.ranged, soldat, eqArc, 'Soldat', weapo
 // cavalier composé sur cheval (composite trié par os). Les ids d'os cavalier/monture
 // COLLISIONNENT (tete des deux côtés) → suffixe par index APRÈS fusion (ordre stable).
 const quad = planById('quadruped');
-const horse = resolveSpecies('Cheval').species; // espèce quad canonique (data)
+const horse = resolveSpecies('cheval').species; // id d'espèce quad canonique (data)
 function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
   const dur = Math.max(clipDuration(clip), 1);
   const equip: EquipCtx = { weapons: weapon ? [weapon] : [], armour: [] };

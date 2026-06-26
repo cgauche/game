@@ -1,4 +1,5 @@
 import { TENUE_DEFS } from './_registry.generated';
+import { slugId } from '../../../../data/slug';
 import type { TenueSet } from './types';
 import type { StoredPalette } from '../../palette';
 
@@ -34,8 +35,8 @@ export const CAREER_TENUE_DEFS: Record<string, TenueSet> = Object.fromEntries(
 export const CAREER_TENUE_DEF_PALETTES: Record<string, StoredPalette> = Object.fromEntries(
   TENUE_DEFS.filter((d) => d.career && d.palette).map((d) => [d.name, d.palette!]),
 );
-/** Tenues de MONSTRE qui ne chaussent pas (flag bareFoot) : pied nu griffu + substitutions
- *  dos/profil en chair — consommé par resolve.ts. */
+/** Tenues de MONSTRE qui ne chaussent pas (flag bareFoot), par ID de tenue (slug) : pied nu griffu +
+ *  substitutions dos/profil en chair — consommé par resolve.ts (clé d'id, pas de libellé). */
 export const CAREER_TENUE_BAREFOOT: ReadonlySet<string> = new Set(
-  TENUE_DEFS.filter((d) => d.career && d.bareFoot).map((d) => d.name),
+  TENUE_DEFS.filter((d) => d.career && d.bareFoot).map((d) => slugId(d.name)),
 );

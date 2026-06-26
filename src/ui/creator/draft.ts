@@ -39,7 +39,7 @@ import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLeve
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpeciesById, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, findStarById, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, rigSpeciesId, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, findStarById, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -506,8 +506,8 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     rng: makeRNG(d.seed ^ 0xf17a1),
     id,
   });
-  // appearance.species = clé de rig (LIBELLÉ d'espèce, résolu depuis l'id) ≠ Combatant.species (id rules).
-  hero.appearance = { species: findSpeciesById(d.speciesId)?.label ?? d.speciesId, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  // appearance.species = id d'espèce RIG (slug, via rigSpeciesId) ≠ Combatant.species (id rules).
+  hero.appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   if (d.star) hero.star = d.star;
   // Sorts de Magie mineure inclus au Talent (LDB 10 l.587) — choisis à l'étape 4, mémorisés.
   // (Les Bénédictions de Béni sont déjà octroyées par applyTalentAcquisition dans createHero.)

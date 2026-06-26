@@ -36,12 +36,12 @@ describe('toise — échelles de rendu (art = nuance intra-catégorie, la Taille
   });
 
   it('ancrages : un cheval (Grande) ~×1.3 humain, un Géant (Énorme) ~×2.4 — plus de ×3/×6', () => {
-    expect(resolveSpecies('Cheval').scale * sizeTokenScale('grande')).toBeLessThanOrEqual(1.5);
-    expect(resolveSpecies('Géant').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
-    expect(resolveSpecies('Dragon').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
+    expect(resolveSpecies('cheval').scale * sizeTokenScale('grande')).toBeLessThanOrEqual(1.5);
+    expect(resolveSpecies('geant').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
+    expect(resolveSpecies('dragon').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
   });
 
   it('la nuance intra-catégorie reste respectée (loup < cheval ; catégorie inchangée)', () => {
-    expect(resolveSpecies('Loup').scale).toBeLessThan(resolveSpecies('Cheval').scale);
+    expect(resolveSpecies('loup').scale).toBeLessThan(resolveSpecies('cheval').scale);
   });
 });

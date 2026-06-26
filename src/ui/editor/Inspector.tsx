@@ -12,7 +12,7 @@ import { DEFS } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { pickBackend } from '../../gameIso/pickBackend';
-import { creatureSpeciesNames } from '../../gameIso/rig/creatures';
+import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { BUILDINGS, BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { perimeterTiles, defaultDoor } from '../../state/buildings';
@@ -582,9 +582,9 @@ function EntityPanel({
                   réf de créature (fold Rôle/Combat), distincte de l'apparence. */}
               <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: { ...ent.appearance, species: e.target.value || undefined } })}>
                 <option value="">(par défaut : Humain)</option>
-                {creatureSpeciesNames().map((name) => (
-                  <option key={name} value={name}>
-                    {name}
+                {creatureSpeciesOptions().map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.label}
                   </option>
                 ))}
               </select>

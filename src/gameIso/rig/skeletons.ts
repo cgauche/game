@@ -54,7 +54,10 @@ function scaleSkeleton(sk: Skeleton, sl: number, st: number): Skeleton {
   return out;
 }
 
-/** Variantes régionales → espèce de base. */
+/** Espèce (id slug rig OU slug rules non-canonique : `humains-reiklander`…) → RACE-ID (libellé, espace
+ *  de noms de la couche race, HORS migration slug). Règles `startsWith/includes` slug-stables (les
+ *  préfixes sont des mono-tokens dé-accentués → `homme` matche `homme-bete`, `haut` matche `haut-elfe`).
+ *  Garde-fou : `creatures.unique.test.ts` vérifie que chaque slug d'espèce mappe vers une race EXISTANTE. */
 export function baseSpeciesOf(species: string): string {
   const s = species.toLowerCase();
   if (s.startsWith('haut')) return 'Haut-Elfe';

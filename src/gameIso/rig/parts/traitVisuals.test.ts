@@ -3,7 +3,7 @@ import { traitOverlaysFor } from './traitVisuals';
 import type { TraitInstance } from '../../../engine/statEntry';
 import type { Combatant } from '../../../engine/types';
 
-const mk = (traits: TraitInstance[], species = 'Humain'): Combatant =>
+const mk = (traits: TraitInstance[], species = 'humain'): Combatant =>
   ({ id: 'c1', name: 'C', kind: 'enemy', species, traits }) as unknown as Combatant;
 
 describe('visuels dérivés des traits de créature (statbloc éditeur, sorts grantTrait)', () => {
@@ -21,10 +21,10 @@ describe('visuels dérivés des traits de créature (statbloc éditeur, sorts gr
   });
 
   it('anti-doublon : la race qui fournit déjà cornes/queue (feature behind) fait foi', () => {
-    expect(traitOverlaysFor(mk([{ id: 'cornes', value: 6 }], 'Homme-bête'))).toEqual([]); // cornes caprines de race
-    expect(traitOverlaysFor(mk([{ id: 'attaque-caudale', value: 8 }], 'Skaven'))).toEqual([]); // queue de rat de race
+    expect(traitOverlaysFor(mk([{ id: 'cornes', value: 6 }], 'homme-bete'))).toEqual([]); // cornes caprines de race
+    expect(traitOverlaysFor(mk([{ id: 'attaque-caudale', value: 8 }], 'skaven'))).toEqual([]); // queue de rat de race
     // un Nain (barbe en layer positif) garde ses cornes de trait
-    expect(traitOverlaysFor(mk([{ id: 'cornes', value: 6 }], 'Nain')).length).toBe(1);
+    expect(traitOverlaysFor(mk([{ id: 'cornes', value: 6 }], 'nain')).length).toBe(1);
   });
 
   it('Tentacules → bras gauche remplacé (poing effacé)', () => {

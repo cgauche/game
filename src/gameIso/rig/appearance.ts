@@ -1,7 +1,7 @@
 import type { Slot } from './bones';
 import type { Combatant } from '../../engine/types';
 import { hashSeed } from '../appearance';
-import { findSpeciesById } from '../../data';
+import { rigSpeciesId } from '../../data';
 import type { MonsterParts } from './parts/monstrous';
 import type { Palette } from './palette';
 
@@ -21,12 +21,12 @@ export interface Appearance {
   seed?: number;
 }
 
-/** Apparence par défaut dérivée d'un Combatant (espèce + seed stable sur l'id). `Combatant.species`
- *  est un `id` (rules) → résolu en LIBELLÉ d'espèce ici (clé d'espèce du rig, contrat « label ») ;
- *  un id de créature/non-espèce retombe tel quel (le rig le résout par mot-clé). */
+/** Apparence par défaut dérivée d'un Combatant (espèce + seed stable sur l'id). `appearance.species`
+ *  est un id d'espèce RIG (slug) : `rigSpeciesId` mappe un id rules (héros) vers son slug d'espèce, et
+ *  laisse passer un slug déjà rig (ennemi/créature) tel quel (idempotent). */
 export function defaultAppearance(c: Combatant): Appearance {
   return {
-    species: findSpeciesById(c.species)?.label ?? c.species ?? 'Humain',
+    species: rigSpeciesId(c.species),
     sex: 'M',
     build: 0.5,
     seed: hashSeed(c.id),

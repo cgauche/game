@@ -11,7 +11,7 @@ import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { SkillChip, TalentChip } from '../EntityChip';
-import { findCareerById } from '../../data';
+import { findCareerById, rigSpeciesId } from '../../data';
 import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
 
 export function previewHero(d: CreatorDraft): Combatant | null {
@@ -28,7 +28,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
   const level = draftLevel(d);
   const baseChars = draftChars(d);
   const careerLabel = findCareerById(d.careerId)?.label ?? d.careerId;
-  const appearance: Appearance = { species: sp.label, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   const wealth = draftWealth(d);
 
   return (

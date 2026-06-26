@@ -22,9 +22,9 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
   it('tables dérivées cohérentes avec les defs (zéro tableau central)', () => {
     expect(quadSpeciesNames().length).toBe(Object.keys(QUAD_SPECIES).length);
     expect(wingedSpeciesNames().length).toBe(Object.keys(WINGED_SPECIES).length);
-    expect(QUAD_SPECIES['Cheval']).toBeTruthy();
-    expect(QUAD_SPECIES['Rat géant']).toBeTruthy(); // l'accent du `name` est préservé
-    expect(WINGED_SPECIES['Dragon']?.wings).toBe('membrane');
+    expect(QUAD_SPECIES['cheval']).toBeTruthy();
+    expect(QUAD_SPECIES['rat-geant']).toBeTruthy(); // clé = id slug (l'accent du `name` est slugué)
+    expect(WINGED_SPECIES['dragon']?.wings).toBe('membrane');
   });
 
   it('défauts d\'apparence bipède portés par la Race', () => {

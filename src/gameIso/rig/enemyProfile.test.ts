@@ -58,7 +58,7 @@ describe('classifyEnemy (cosmétique : humanoïde peau-humaine → rig, sinon cr
 
 describe('enemyRigProfile', () => {
   it('null pour une créature non-humanoïde (espèce explicite, comme au spawn)', () => {
-    expect(enemyRigProfile(mkEnemy('Rat géant', { species: 'Rat géant' }))).toBeNull();
+    expect(enemyRigProfile(mkEnemy('Rat géant', { species: 'rat-geant' }))).toBeNull();
   });
 
   it('non-null pour un humanoïde, et reprend les armes du combattant', () => {
@@ -75,26 +75,26 @@ describe('enemyRigProfile', () => {
   });
 
   it('espèce : explicite > record > Humain par défaut (plus de name-match flou)', () => {
-    expect(enemyRigProfile(mkEnemy('Truc', { species: 'Nain' }))!.appearance.species).toBe('Nain'); // explicite gagne
-    expect(enemyRigProfile(mkEnemy('Cultiste'))!.appearance.species).toBe('Humain'); // ni espèce ni record → Humain
+    expect(enemyRigProfile(mkEnemy('Truc', { species: 'nain' }))!.appearance.species).toBe('nain'); // explicite gagne
+    expect(enemyRigProfile(mkEnemy('Cultiste'))!.appearance.species).toBe('humain'); // ni espèce ni record → Humain
   });
 
   it('espèce EXPLICITE (donnée) → tête monstrueuse portée par la Race (rendu data-driven)', () => {
     // De-POC P5/5d : l'espèce vient de la DONNÉE (record/combattant) → species pilote race.head
     // (tête monstrueuse via composeRig). Le nom est purement contextuel.
     const cases: [string, string, string | undefined][] = [
-      ['Orc noir', 'Orc', 'orc'],
-      ['Gobelin de la nuit', 'Gobelin', 'gobelin'],
-      ['Snotling', 'Snotling', 'gobelin'],
-      ['Gor sauvage', 'Gor', 'caprin'], // def dédié → race Homme-bête (tête caprine)
-      ['Ungor fourrageur', 'Ungor', 'caprin'],
-      ['Minotaure', 'Minotaure', 'taureau'],
-      ['Squelette guerrier', 'Squelette', 'crane'],
-      ['Zombie', 'Zombie', 'pourri'],
-      ['Goule de crypte', 'Goule', 'goule'],
-      ['Troll de pierre', 'Troll', 'troll'],
-      ['Sanguinaire de Khorne', 'Démon', 'demon'],
-      ['Vampire', 'Vampire', undefined], // humain pâle → pas de tête monstrueuse
+      ['Orc noir', 'orc', 'orc'],
+      ['Gobelin de la nuit', 'gobelin', 'gobelin'],
+      ['Snotling', 'snotling', 'gobelin'],
+      ['Gor sauvage', 'gor', 'caprin'], // def dédié → race Homme-bête (tête caprine)
+      ['Ungor fourrageur', 'ungor', 'caprin'],
+      ['Minotaure', 'minotaure', 'taureau'],
+      ['Squelette guerrier', 'squelette', 'crane'],
+      ['Zombie', 'zombie', 'pourri'],
+      ['Goule de crypte', 'goule', 'goule'],
+      ['Troll de pierre', 'troll', 'troll'],
+      ['Sanguinaire de Khorne', 'demon', 'demon'],
+      ['Vampire', 'vampire', undefined], // humain pâle → pas de tête monstrueuse
     ];
     for (const [name, species, tete] of cases) {
       const p = enemyRigProfile(mkEnemy(name, { species }))!;
@@ -158,7 +158,7 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
   });
   it('villageois → Humain ; tenue portée en DONNÉE (plus d’inférence du nom)', () => {
     const p = entityRigProfile('Villageois', 1)!;
-    expect(p.appearance.species).toBe('Humain');
+    expect(p.appearance.species).toBe('humain');
     expect(p.tenue).toBe('Bourgeois'); // défaut HABILLÉ de la race Humain ; la tenue ne se déduit plus du nom (POC retiré)
     // L'ambiance porte sa tenue via `appearance.tenue` (pickBackend → opts.tenue) — honorée telle quelle.
     expect(entityRigProfile('Villageois', 1, { tenue: 'Mendiant' })!.tenue).toBe('Mendiant');

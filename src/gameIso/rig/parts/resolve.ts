@@ -5,6 +5,7 @@ import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
 import { tenueFor } from './career';
 import { CAREER_TENUE_BAREFOOT } from './tenues';
+import { slugId } from '../../../data/slug';
 import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
@@ -118,9 +119,10 @@ export function resolveParts(
   view: View = 'front',
 ): Record<Slot, Part | null> {
   const tenue = tenueFor(tenueLabel);
-  // Corps non chaussé : 'Nu'/'Squelette' + tenues de MONSTRE (flag bareFoot du def) — pieds
-  // griffus et substitutions dos/profil en chair plutôt qu'en botte/tissu.
-  const bareFoot = tenueLabel === 'Nu' || tenueLabel === 'Squelette' || CAREER_TENUE_BAREFOOT.has(tenueLabel ?? '');
+  // Corps non chaussé : 'nu'/'squelette' + tenues de MONSTRE (flag bareFoot du def) — pieds griffus et
+  // substitutions dos/profil en chair plutôt qu'en botte/tissu. Clé par ID (slugId absorbe un libellé).
+  const tenueId = slugId(tenueLabel ?? '');
+  const bareFoot = tenueId === 'nu' || tenueId === 'squelette' || CAREER_TENUE_BAREFOOT.has(tenueId);
   const out = {} as Record<Slot, Part | null>;
   const P = (art: PartArt | null | undefined): Part => ({ svg: pickView(art, view) });
 

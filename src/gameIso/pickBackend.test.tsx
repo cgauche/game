@@ -43,14 +43,14 @@ const mk = (over: Partial<Combatant>): Combatant => ({
  */
 describe('pickBackend — threading resolveRender → token (P5/5c)', () => {
   it('non-bipède (Cheval) : backend plan + planId/species/scale résolus passés au token', () => {
-    const c = mk({ name: 'Cheval', species: 'Cheval', traits: ['Taille (Grande)', 'Bestial'] });
+    const c = mk({ name: 'Cheval', species: 'cheval', traits: ['Taille (Grande)', 'Bestial'] });
     const r = resolveRender(c.species, c.traits, c.name);
     const out = pickBackend({ kind: 'combatant', combatant: c });
     expect(out.backend).toBe('plan');
     expect(out.speciesScale).toBe(r.scale);
     const body = out.body as ReactElement;
     expect(body.props.planId).toBe(r.plan);
-    expect(body.props.species).toBe('Cheval');
+    expect(body.props.species).toBe('cheval');
   });
 
   it('Nuée (trait, donnée) : gabarit swarm passé au token même SANS espèce explicite', () => {

@@ -142,9 +142,11 @@ describe('editorState — pose', () => {
     expect(ent.ref).toBe('tonneau');
     expect(ent.kind).toBe('prop');
   });
-  it('placeEntity : pose un personnage d’espèce précise', () => {
-    const { scene, id } = placeEntity(emptyScene(10, 10), 'personnage', 'Loup', { x: 1, y: 1 });
-    expect(scene.entities.find((e) => e.id === id)!.ref).toBe('Loup');
+  it('placeEntity : pose un personnage d’espèce précise (appearance.species + libellé)', () => {
+    const { scene, id } = placeEntity(emptyScene(10, 10), 'personnage', 'loup', { x: 1, y: 1 });
+    const ent = scene.entities.find((e) => e.id === id)!;
+    expect(ent.appearance?.species).toBe('loup'); // id d'espèce rig (pas `ref`, réservé au profil de stats)
+    expect(ent.label).toBe('Loup');
   });
   it('placeEntity : pose sur l’étage courant (z), absent au sol', () => {
     const ground = placeEntity(emptyScene(10, 10), 'prop', 'tonneau', { x: 1, y: 1 }, 0);

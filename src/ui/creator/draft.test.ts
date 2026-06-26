@@ -26,7 +26,7 @@ import {
   careerCharKeys,
 } from './draft';
 import { CHAR_KEYS } from '../../engine/types';
-import { findSpeciesById } from '../../data';
+import { rigSpeciesId } from '../../data';
 import { isUnresolvedChoice, concreteLabel, splitLabel } from '../../engine/careerSlots';
 import { specOptionsFor, pettySpellQuota } from './draft';
 import { spells, advancementLabel, stars } from '../../data';
@@ -180,7 +180,7 @@ describe('buildHero — bout en bout', () => {
     expect(Object.values(hero.charAdvances ?? {}).reduce((a, b) => a + (b ?? 0), 0)).toBe(5);
     for (const s of hero.skills) expect(`${s.spec ?? ''}`).not.toMatch(/au choix/i);
     expect(hero.details?.age).toBe(20);
-    expect(hero.appearance?.species).toBe(findSpeciesById(d.speciesId)?.label);
+    expect(hero.appearance?.species).toBe(rigSpeciesId(d.speciesId));
     // Le total des dix Caractéristiques = somme du brouillon (transferts +5 de talents possibles).
     const sum = CHAR_KEYS.reduce((a, k) => a + hero.characteristics[k], 0);
     const draftSum = CHAR_KEYS.reduce((a, k) => a + draftChars(d)[k], 0);

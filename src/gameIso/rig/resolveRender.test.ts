@@ -1,21 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { resolveRender, resolveById, resolveSpecies } from './bodyPlan';
-import { defByName } from './creatures';
+import { defById } from './creatures';
 import { isSwarm } from '../../engine/traits/dispatch';
 import { creatures } from '../../data';
 
 /**
- * `resolveRender` est désormais 100% DATA-DRIVEN (de-POC P5/5d) : l'espèce vient de l'argument
- * explicite, sinon du RECORD (`findCreature`), sinon le NOM s'il EST une espèce canonique (lookup
- * EXACT `defByName`), sinon bipède Humain. PLUS AUCUN match flou (aliases/priorité supprimés).
+ * `resolveRender` est 100% DATA-DRIVEN : l'espèce (un id slug) vient de l'argument explicite, sinon du
+ * RECORD (`appearance.species`), sinon bipède Humain. Lookup EXACT `defById`, plus aucun match flou.
  */
-describe('resolveRender — résolution de rendu 100% data-driven (plus de name-match flou)', () => {
-  it('espèce EXPLICITE → plan de la def (defByName) ; Nuée → swarm ; sinon rig bipède', () => {
+describe('resolveRender — résolution de rendu 100% data-driven (par id d’espèce)', () => {
+  it('espèce EXPLICITE → plan de la def (defById) ; Nuée → swarm ; sinon rig bipède', () => {
     for (const c of creatures) {
       const sp = c.appearance?.species;
       if (!sp) continue;
       const r = resolveRender(sp, c.traits, c.id);
-      const d = defByName(sp);
+      const d = defById(sp);
       const expected = isSwarm(c.traits) ? 'plan' : d && d.plan !== 'biped' ? 'plan' : 'rig';
       expect(r.kind, c.label).toBe(expected);
       if (r.kind === 'rig') expect(r.plan, c.label).toBe('biped');
@@ -30,12 +29,12 @@ describe('resolveRender — résolution de rendu 100% data-driven (plus de name-
     }
   });
 
-  it('une ESPÈCE EXPLICITE (resolveSpecies) résout sans record (lookup EXACT defByName, pas de fuzzy)', () => {
-    // « Varghulf » : def ailé SANS record creatures.json → résolu par l’espèce explicite.
-    expect(resolveSpecies('Varghulf').plan).toBe(defByName('Varghulf')?.plan);
-    expect(resolveSpecies('Varghulf').plan).toBe('winged');
-    // « Liche » : def bipède sans record → espèce = l’arg explicite (exact).
-    expect(resolveSpecies('Liche')).toMatchObject({ kind: 'rig', plan: 'biped', species: 'Liche' });
+  it('un ID d’espèce EXPLICITE (resolveSpecies) résout sans record (lookup EXACT defById, pas de fuzzy)', () => {
+    // « varghulf » : def ailé SANS record creatures.json → résolu par l’id d’espèce explicite.
+    expect(resolveSpecies('varghulf').plan).toBe(defById('varghulf')?.plan);
+    expect(resolveSpecies('varghulf').plan).toBe('winged');
+    // « liche » : def bipède sans record → espèce = l’id explicite (exact).
+    expect(resolveSpecies('liche')).toMatchObject({ kind: 'rig', plan: 'biped', species: 'liche' });
   });
 
   it('une espèce INCONNUE (rôle générique sans def) → bipède (rig) ; l’espèce explicite est conservée', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { hashSeed } from './appearance';
 import { entitySprite, pnjSprite, propSprite } from './sprites';
-import { creatureSpeciesNames } from './rig/creatures';
+import { creatureSpeciesOptions } from './rig/creatures';
 
 describe('hashSeed', () => {
   it('est déterministe pour une même chaîne', () => {
@@ -38,11 +38,11 @@ describe('entitySprite — backend sprite = décor uniquement', () => {
   });
 });
 
-describe('creatureSpeciesNames — source du picker éditeur (defs rig)', () => {
+describe('creatureSpeciesOptions — source du picker éditeur (defs rig : id + libellé)', () => {
   it('contient des créatures canon variées et > 10 entrées', () => {
-    const names = creatureSpeciesNames();
-    expect(names).toContain('Skaven');
-    expect(names).toContain('Loup');
-    expect(names.length).toBeGreaterThan(10);
+    const opts = creatureSpeciesOptions();
+    expect(opts.some((o) => o.id === 'skaven' && o.label === 'Skaven')).toBe(true);
+    expect(opts.some((o) => o.id === 'loup' && o.label === 'Loup')).toBe(true);
+    expect(opts.length).toBeGreaterThan(10);
   });
 });

@@ -9,7 +9,7 @@
 import { Combatant } from '../engine/types';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { findSpell, findSpeciesById, pregens } from './index';
+import { findSpell, rigSpeciesId, pregens } from './index';
 
 export interface PregenDef {
   name: string;
@@ -47,8 +47,8 @@ export function makePregens(): Combatant[] {
       // Libellés (def AUTHORING, lisibles) → ids STABLES au runtime ; un libellé non résolu est ÉCARTÉ
       // (jamais réinjecté tel quel — pas de repli libellé : le runtime ne connaît QUE des ids).
       if (d.spells?.length) hero.spells = d.spells.map((l) => findSpell(l)?.id).filter((id): id is string => !!id);
-      // appearance.species = clé de rig (LIBELLÉ d'espèce, résolu depuis l'id) ≠ Combatant.species (id rules).
-      hero.appearance = { species: findSpeciesById(d.species)?.label ?? d.species, sex: d.sex ?? 'M', build: d.build ?? 0.5 };
+      // appearance.species = id d'espèce RIG (slug, via rigSpeciesId) ≠ Combatant.species (id rules).
+      hero.appearance = { species: rigSpeciesId(d.species), sex: d.sex ?? 'M', build: d.build ?? 0.5 };
       out.push(hero);
     } catch (e) {
       console.error(`Pré-tiré « ${d.name} » ignoré :`, e);

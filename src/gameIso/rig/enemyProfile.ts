@@ -76,7 +76,7 @@ export function riggedAppearance(name: string, seed: number, opts: RiggedOpts = 
   const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
     ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
     : undefined;
-  return { species: opts.species ?? 'Humain', sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
+  return { species: opts.species ?? 'humain', sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -99,7 +99,7 @@ function synthArmour(ap: ArmourPoints): ItemInstance[] {
  *  explicite (combat : `c.species` ; exploration : `opts.species`), repli espèce du record. PLUS de
  *  devinette par le nom — sans espèce explicite ni record → bipède Humain. */
 function bipedBase(override: string | undefined, cd: EntityAppearance | undefined) {
-  const species = override ?? cd?.species ?? 'Humain';
+  const species = override ?? cd?.species ?? 'humain';
   const d = bipedDef(species);
   return { species, d, race: raceById(d?.race ?? baseSpeciesOf(species)), perso: d?.perso };
 }

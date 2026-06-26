@@ -27,7 +27,7 @@ export function resolveQuad(
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },
 ): ResolvedBone[] {
-  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.Cheval, view, pose, colors, wings, eyes);
+  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.cheval, view, pose, colors, wings, eyes);
 }
 
 /** Même rendu, mais à partir d'un PROPS direct (réutilisé par le gabarit AILÉ qui a son propre

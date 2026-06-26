@@ -11,21 +11,21 @@
  *   bipède     → { plan:'biped', species=bipedSpeciesMatch ?? 'Humain', def=bipedDef(species), scale=bipedSpeciesScale }
  */
 import { describe, it, expect } from 'vitest';
-import { CREATURES, defByName } from '../creatures';
+import { CREATURES, defById, defId } from '../creatures';
 import { resolveById, resolveSpecies, type RenderResolution } from '../bodyPlan';
 import { creatures as bestiary } from '../../../data';
 
 type Resolved = { plan: string; species: string | null; def: string | null; scale: number };
 
-/** Fige plan/espèce/def/échelle d'une résolution. Deux entrées : par ESPÈCE explicite (registre des defs)
- *  et par ID de record (bestiaire) — plus aucun chemin par libellé/nom. */
+/** Fige plan/espèce/def/échelle d'une résolution. Deux entrées : par ID d'espèce explicite (registre des
+ *  defs) et par ID de record (bestiaire) — plus aucun chemin par libellé. */
 const shape = (r: RenderResolution): Resolved =>
-  ({ plan: r.plan, species: r.species || null, def: defByName(r.species)?.name ?? null, scale: r.scale });
+  ({ plan: r.plan, species: r.species || null, def: defById(r.species)?.name ?? null, scale: r.scale });
 
-describe('golden — résolution nom→apparence (anti-régression de-POC match-par-nom)', () => {
-  it('defs du registre : name → (plan, espèce, def, échelle)', () => {
-    const names = [...new Set(CREATURES.map((c) => c.name))].sort();
-    expect(Object.fromEntries(names.map((n) => [n, shape(resolveSpecies(n))]))).toMatchSnapshot();
+describe('golden — résolution espèce/id→apparence (anti-régression de-POC match-par-nom)', () => {
+  it('defs du registre : id d’espèce → (plan, espèce, def, échelle)', () => {
+    const ids = [...new Set(CREATURES.map((c) => defId(c)))].sort();
+    expect(Object.fromEntries(ids.map((id) => [id, shape(resolveSpecies(id))]))).toMatchSnapshot();
   });
   it('bestiaire (creatures.json) : label → (plan, espèce, def, échelle)', () => {
     // Clé d'affichage = label ; résolution PAR ID (record du bestiaire).

@@ -38,7 +38,7 @@ function restBones(r: RenderResolution, rigId: string, rigSpecies?: string): Res
   return resolveRig(prof.appearance, prof.equip, {}, prof.tenue, 'front', []);
 }
 
-const HUMAN_REF = bonesToSvg(restBones(resolveSpecies('Humain'), 'Humain', 'Humain'));
+const HUMAN_REF = bonesToSvg(restBones(resolveSpecies('humain'), 'humain', 'humain'));
 
 function cell(row: Row): string {
   const { label, k, r, rigId, rigSpecies } = row;
@@ -65,9 +65,9 @@ for (const c of creatures) {
   const r = resolveById(c.id); // résolution PAR ID (record → espèce explicite)
   rows.push({ label: c.label, size, k: r.scale * sizeTokenScale(size), r, rigId: c.id });
 }
-// Espèces jouables (référence intra-Moyenne : elfe > humain > nain…) — par espèce EXPLICITE.
-for (const sp of ['Humain', 'Elfe', 'Nain', 'Halfling', 'Gnome']) {
-  if (!seen.has(sp)) rows.push({ label: sp, size: 'moyenne', k: resolveSpecies(sp).scale, r: resolveSpecies(sp), rigId: sp, rigSpecies: sp });
+// Espèces jouables (référence intra-Moyenne : elfe > humain > nain…) — par id d'espèce EXPLICITE.
+for (const [id, label] of [['humain', 'Humain'], ['elfe', 'Elfe'], ['nain', 'Nain'], ['halfling', 'Halfling'], ['gnome', 'Gnome']] as const) {
+  if (!seen.has(label)) rows.push({ label, size: 'moyenne', k: resolveSpecies(id).scale, r: resolveSpecies(id), rigId: id, rigSpecies: id });
 }
 
 const CATS = Object.keys(SIZE_ORDER) as SizeCategory[];

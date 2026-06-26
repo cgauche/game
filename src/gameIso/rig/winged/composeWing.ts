@@ -29,7 +29,7 @@ export function resolveWing(
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },
 ): ResolvedBone[] {
-  return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.Griffon, view, pose, colors, wings, eyes);
+  return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.griffon, view, pose, colors, wings, eyes);
 }
 
 // Battement d'ailes (sinusoïde sur aileD/aileG, signes opposés). Vit DANS le plan : l'idle bat
