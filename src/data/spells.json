@@ -3543,16 +3543,18 @@
                 "radiusMeters": {
                   "bonusOf": "FM"
                 },
-                "perRound": {
-                  "damage": {
-                    "amount": 7
+                "perRound": [
+                  {
+                    "op": "wounds",
+                    "amount": 7,
+                    "ignoreTB": false,
+                    "ignoreAP": false
                   },
-                  "conditions": [
-                    {
-                      "name": "aveugle"
-                    }
-                  ]
-                }
+                  {
+                    "op": "condition",
+                    "name": "aveugle"
+                  }
+                ]
               }
             ]
           }
@@ -4273,8 +4275,9 @@
                 "radiusMeters": {
                   "bonusOf": "FM"
                 },
-                "perRound": {
-                  "damage": {
+                "perRound": [
+                  {
+                    "op": "wounds",
                     "amount": {
                       "dice": {
                         "n": 1,
@@ -4282,14 +4285,14 @@
                         "plus": 6
                       }
                     },
+                    "ignoreTB": false,
                     "ignoreAP": true
                   },
-                  "conditions": [
-                    {
-                      "name": "en-flammes"
-                    }
-                  ]
-                }
+                  {
+                    "op": "condition",
+                    "name": "en-flammes"
+                  }
+                ]
               }
             ]
           }
@@ -4490,18 +4493,20 @@
                     "bonusOf": "FM"
                   }
                 },
-                "onCross": {
-                  "damage": {
+                "onCross": [
+                  {
+                    "op": "wounds",
                     "amount": {
                       "bonusOf": "FM"
-                    }
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": false
                   },
-                  "conditions": [
-                    {
-                      "name": "en-flammes"
-                    }
-                  ]
-                }
+                  {
+                    "op": "condition",
+                    "name": "en-flammes"
+                  }
+                ]
               }
             ]
           }
@@ -5388,14 +5393,13 @@
                 "barrier": true,
                 "gate": "profane",
                 "noCorruption": true,
-                "perRound": {
-                  "conditions": [
-                    {
-                      "name": "brise",
-                      "unlessCondition": true
-                    }
-                  ]
-                }
+                "perRound": [
+                  {
+                    "op": "condition",
+                    "name": "brise",
+                    "unlessCondition": "brise"
+                  }
+                ]
               }
             ]
           }
@@ -7007,16 +7011,16 @@
                 "radiusMeters": {
                   "bonusOf": "FM"
                 },
-                "onCross": {
-                  "conditions": [
-                    {
-                      "name": "hemorragique"
-                    },
-                    {
-                      "name": "empetre"
-                    }
-                  ]
-                }
+                "onCross": [
+                  {
+                    "op": "condition",
+                    "name": "hemorragique"
+                  },
+                  {
+                    "op": "condition",
+                    "name": "empetre"
+                  }
+                ]
               }
             ]
           }
@@ -7178,13 +7182,14 @@
                 "radiusMeters": {
                   "bonusOf": "FM"
                 },
-                "perRound": {
-                  "heal": {
+                "perRound": [
+                  {
+                    "op": "heal",
                     "amount": {
                       "bonusOf": "FM"
                     }
                   }
-                }
+                ]
               }
             ]
           }

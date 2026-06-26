@@ -31,7 +31,6 @@ import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjured
 import { polymorphOps } from './polymorph';
 import type { SizeCategory } from './size';
 import type { Duration } from './duration';
-import type { ZoneEffect } from './zones';
 // Type-only (effacé à la compilation) : la FORME unifiée des effets « à la touche » d'une arme
 // enchantée/invoquée = un `TriggeredEffect`, dispatché par `state/triggeredEffects` (pas ici).
 import type { TriggeredEffect } from '../state/flow';
@@ -433,7 +432,11 @@ export type GameOp =
    *  « +N m par +2 DR ») ; `blocksLoS` ; `onCross`/`perRound` = effets de zone (traversée / fin de Round). */
   | { op: 'zone'; shape: 'disc' | 'wall'; radiusMeters?: Formula; lengthMeters?: Formula;
       lengthPerSL?: { every: number; metersFormula: Formula }; blocksLoS?: boolean;
-      onCross?: ZoneEffect; perRound?: ZoneEffect;
+      /** Effets de zone = `GameOp[]` (vocabulaire unique) appliqués par `applyOps` : `onCross` à la
+       *  TRAVERSÉE (« quiconque traverse le mur »), `perRound` au franchissement de Round pour qui
+       *  STATIONNE. Un dégât mitigé BE+PA = `op:'wounds' {ignoreTB:false, ignoreAP:false}` ; un État
+       *  entretenu = `op:'condition' {unlessCondition: <le même État>}` ; un soin = `op:'heal'`. */
+      onCross?: GameOp[]; perRound?: GameOp[];
       /** BARRIÈRE infranchissable (Protection de Phâ : « ne peuvent pas entrer ») ; `gate:'profane'`
        *  restreint barrière + `perRound` aux créatures profanes ; `noCorruption` : nul gain de Corruption
        *  pour les occupants tant que la zone dure (LDB 48 p.249). */

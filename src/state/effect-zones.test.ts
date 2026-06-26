@@ -47,12 +47,12 @@ describe('sceneZonesToBattle — zones authorées → BattleZone PERMANENTES', (
     const [z] = sceneZonesToBattle([
       {
         id: 'trap1', label: 'Pieux dissimulés', area: { kind: 'rect', x: 4, y: 4, w: 1, h: 1 },
-        onCross: { damage: { amount: 7, ignoreAP: true } },
+        onCross: [{ op: 'wounds', amount: 7, ignoreTB: false, ignoreAP: true }],
       },
     ]);
     expect(z.permanent).toBe(true);
     expect(z.tiles).toEqual([{ x: 4, y: 4 }]);
-    expect(z.onCross?.damage?.amount).toBe(7);
+    expect(z.onCross?.[0]).toMatchObject({ op: 'wounds', amount: 7 });
   });
   it('liste absente → []', () => {
     expect(sceneZonesToBattle(undefined)).toEqual([]);
@@ -63,7 +63,7 @@ describe('decayZones — les pièges authorés (permanent) ne se dissipent JAMAI
   it('la zone temporaire tombe, la permanente survit intacte', () => {
     const { zones } = decayZones([
       { label: 'Brasier', tiles: [{ x: 1, y: 1 }], rounds: 1 },
-      { label: 'Fosse à pieux', tiles: [{ x: 2, y: 2 }], rounds: 1, permanent: true, onCross: { damage: { amount: 5 } } },
+      { label: 'Fosse à pieux', tiles: [{ x: 2, y: 2 }], rounds: 1, permanent: true, onCross: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: false }] },
     ]);
     expect(zones).toHaveLength(1);
     expect(zones[0].label).toBe('Fosse à pieux');
@@ -75,8 +75,8 @@ describe('runtime : un piège authoré frappe via le runtime des zones de Sort',
   const [trap] = sceneZonesToBattle([
     {
       id: 'acid', label: 'Flaque acide', area: { kind: 'disc', cx: 5, cy: 5, radius: 1 },
-      perRound: { damage: { amount: 8, ignoreAP: true } },
-      onCross: { damage: { amount: 8, ignoreAP: true }, conditions: [{ name: 'empoisonne' }] },
+      perRound: [{ op: 'wounds', amount: 8, ignoreTB: false, ignoreAP: true }],
+      onCross: [{ op: 'wounds', amount: 8, ignoreTB: false, ignoreAP: true }, { op: 'condition', name: 'empoisonne' }],
     },
   ]);
   it('stationner dedans (perRound) : 8 − BE 3 = 5 Blessures', () => {
@@ -127,7 +127,7 @@ describe('intégration : startCombat sème les pièges de la scène dans battle.
     const scene: Scene = {
       ...testScene,
       effectZones: [
-        { id: 'pit', label: 'Fosse à pieux', area: { kind: 'rect', x: 16, y: 11, w: 1, h: 1 }, onCross: { damage: { amount: 9, ignoreAP: true } } },
+        { id: 'pit', label: 'Fosse à pieux', area: { kind: 'rect', x: 16, y: 11, w: 1, h: 1 }, onCross: [{ op: 'wounds', amount: 9, ignoreTB: false, ignoreAP: true }] },
       ],
     };
     useGame.setState({ party: [hero] });

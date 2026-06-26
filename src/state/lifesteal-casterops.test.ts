@@ -3,14 +3,14 @@ import { useGame } from './store';
 import { applyCast } from './combatFlow';
 import { makePregens } from '../data/pregens';
 import { findSpell } from '../data';
-import { applyZoneEffect } from '../engine/zones';
+import { applyOps } from '../engine/ops';
 import type { CastResult, MissileResult } from '../engine/magic';
 import type { Combatant } from '../engine/types';
 
 /**
  * Champs de SpellSpec B4 : `lifeSteal` (Projectile drainant — le lanceur récupère une fraction des
- * Blessures infligées), `casterOps` (effets sur le LANCEUR — Vol de vie retire son Exténué) et
- * `ZoneEffect.heal` (zone de soin récurrente — Sang de la Terre).
+ * Blessures infligées), `casterOps` (effets sur le LANCEUR — Vol de vie retire son Exténué) et la
+ * zone de soin récurrente (`op:'heal'` appliqué par `applyOps` — Sang de la Terre).
  */
 const ok = (sl: number): CastResult => ({ cast: true, roll: 21, target: 70, sl, isCritical: false, isFumble: false, log: '' });
 
@@ -48,12 +48,12 @@ describe('Caresse de Laniph — lifeSteal ⌊dégâts/2⌋', () => {
   });
 });
 
-describe('ZoneEffect.heal — Sang de la Terre', () => {
+describe('zone de soin (op:heal) — Sang de la Terre', () => {
   it('rend (BFM) Blessures à qui stationne dans la zone, sans dépasser le max', () => {
     const caster = makePregens().find((h) => h.name === 'Wilhelmina Faust')!; // BFM connu via ses caracs
     const victim = { ...caster, id: 'v', name: 'V', wounds: { current: 5, max: 30 } } as Combatant;
     const bfm = Math.floor(caster.characteristics.FM / 10);
-    const log = applyZoneEffect(victim, 'Sang de la Terre', { heal: { amount: { bonusOf: 'FM' } } }, caster);
+    const log = applyOps(victim, [{ op: 'heal', amount: { bonusOf: 'FM' } }], { caster, label: 'Sang de la Terre' });
     expect(victim.wounds.current).toBe(5 + bfm);
     expect(log.join(' ')).toContain('regagne');
   });

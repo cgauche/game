@@ -42,7 +42,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     const wall = (useGame.getState().battle!.zones ?? []).find((z) => z.label === 'Mur de feu')!;
     expect(wall).toBeTruthy();
     expect(wall.rounds).toBe(4); // (BFM 4) Rounds
-    expect(wall.onCross?.conditions?.[0]?.name).toBe('en-flammes');
+    expect(wall.onCross?.some((o) => o.op === 'condition' && o.name === 'en-flammes')).toBe(true);
     // axe O→E → mur VERTICAL passant par la cible ; longueur : BFM 4 m + 3 paliers (+2 DR) × 4 m = 16 m → 8 cases
     expect(wall.tiles.every((t) => t.x === 10)).toBe(true);
     expect(wall.tiles).toHaveLength(8);
@@ -87,7 +87,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     const fire = (useGame.getState().battle!.zones ?? []).find((z) => z.label === "Grands feux d'U'Zhul")!;
     expect(fire).toBeTruthy();
     expect(fire.rounds).toBe(4); // (BFM) Rounds
-    expect(fire.perRound?.damage?.ignoreAP).toBe(true);
+    expect(fire.perRound?.some((o) => o.op === 'wounds' && o.ignoreAP === true)).toBe(true);
     // disque BFM 4 m → rayon 2 cases autour de la cible (10,10) → 5×5
     expect(fire.tiles).toHaveLength(25);
     expect(fire.tiles.some((t) => t.x === 10 && t.y === 10)).toBe(true);

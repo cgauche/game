@@ -131,8 +131,8 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
  * PRIMITIVE de géométrie d'aire PARTAGÉE (Chebyshev) : les combattants POSITIONNÉS à ≤ `radiusTiles` cases
  * de `center`, du plus proche au plus loin, après un `filter` optionnel (groupe/vivant/exclusion). SOURCE
  * UNIQUE du motif « créatures dans le rayon » — consommée par le résolveur d'aire des munitions
- * (`combatArea`). TODO : `emitAoe` (combatManeuvers) et `zoneBlast` (combatEffects) peuvent l'adopter
- * (leurs filtres inline divergent : tri/source de position/kind → migration à part pour ne rien régresser).
+ * (`combatArea`) et le souffle de zone (`zoneBlast`, combatEffects). TODO : `emitAoe` (combatManeuvers)
+ * peut l'adopter (son filtre inline diverge : tri/source de position → migration à part pour ne rien régresser).
  */
 export function combatantsWithinRadius(
   center: Pt, radiusTiles: number, combatants: Combatant[], filter?: (c: Combatant) => boolean,

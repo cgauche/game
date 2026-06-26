@@ -369,7 +369,7 @@ export function addEffectZone(scene: Scene, rect: Rect): { scene: Scene; idx: nu
   const id = nextEntityId('zone', (scene.effectZones ?? []).map((z) => z.id));
   const zones = [
     ...(scene.effectZones ?? []),
-    { id, label: 'Piège', area: { kind: 'rect' as const, ...rect }, onCross: { damage: { amount: 5, ignoreAP: true } } },
+    { id, label: 'Piège', area: { kind: 'rect' as const, ...rect }, onCross: [{ op: 'wounds' as const, amount: 5, ignoreTB: false, ignoreAP: true }] },
   ];
   return { scene: { ...scene, effectZones: zones }, idx: zones.length - 1 };
 }

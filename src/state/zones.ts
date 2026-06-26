@@ -12,8 +12,7 @@
 import type { Pt } from './path';
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
-import { Formula, resolveFormula } from '../engine/ops';
-import { ZoneEffect, applyZoneEffect } from '../engine/zones';
+import { Formula, GameOp, resolveFormula, applyOps } from '../engine/ops';
 import type { ZoneArea, SceneEffectZone } from './scene';
 import { isOutOfAction } from '../engine/conditions';
 import { isProfane } from '../engine/corruption';
@@ -27,8 +26,10 @@ export interface BattleZone {
   /** Zone PERMANENTE (piège/hasard authoré dans la scène) : ignore le TTL — ne se dissipe jamais. */
   permanent?: boolean;
   blocksLoS?: boolean;
-  onCross?: ZoneEffect;
-  perRound?: ZoneEffect;
+  /** Effets appliqués par `applyOps` (vocabulaire unique) : `onCross` à la traversée, `perRound` au
+   *  franchissement de Round pour les occupants. Mitigation/État/soin = des `GameOp` (cf. `op:'zone'`). */
+  onCross?: GameOp[];
+  perRound?: GameOp[];
   /** BARRIÈRE : les cases sont infranchissables pour les créatures gatées (cf. `SceneEffectZone.barrier`) —
    *  injectées dans `occupied()`, donc respectées par TOUT déplacement (joueur, IA, poussée, téléport). */
   barrier?: { blockGroups?: string[] };
@@ -134,10 +135,10 @@ export function crossZones(
   const lines: string[] = [];
   if (mover.dead || isOutOfAction(mover)) return lines;
   for (const z of zones ?? []) {
-    if (!z.onCross) continue;
+    if (!z.onCross?.length) continue;
     if (!path.some((p) => zoneCovers(z, p))) continue;
     lines.push(`${mover.name} traverse ${z.label} !`);
-    lines.push(...applyZoneEffect(mover, z.label, z.onCross, resolveCaster(z.casterId), rng));
+    lines.push(...applyOps(mover, z.onCross, { caster: resolveCaster(z.casterId), rng, label: z.label }));
   }
   return lines;
 }
@@ -152,12 +153,12 @@ export function zonesRoundTick(
 ): { line: string; combatant: Combatant }[] {
   const out: { line: string; combatant: Combatant }[] = [];
   for (const z of zones ?? []) {
-    if (!z.perRound) continue;
+    if (!z.perRound?.length) continue;
     const caster = z.casterId ? combatants.find((c) => c.id === z.casterId) : undefined;
     for (const c of combatants) {
       if (!c.pos || c.dead || isOutOfAction(c)) continue;
       if (!zoneCovers(z, c.pos) || !zoneTargets(z, c)) continue; // `gate:'profane'` → seuls les profanes subissent
-      for (const line of applyZoneEffect(c, z.label, z.perRound, caster, rng)) out.push({ line, combatant: c });
+      for (const line of applyOps(c, z.perRound, { caster, rng, label: z.label })) out.push({ line, combatant: c });
     }
   }
   return out;

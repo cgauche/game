@@ -239,7 +239,7 @@ describe('Zones d\'effet (pièges) — authoring éditeur', () => {
     const { scene, idx } = addEffectZone(s0, { x: 3, y: 3, w: 2, h: 1 });
     const z = scene.effectZones![idx];
     expect(z.area).toEqual({ kind: 'rect', x: 3, y: 3, w: 2, h: 1 });
-    expect(z.onCross?.damage?.amount).toBeGreaterThan(0);
+    expect(z.onCross?.some((o) => o.op === 'wounds')).toBe(true);
     expect(z.id).toBeTruthy();
     // hitAt trouve la zone sous une de ses cases
     expect(hitAt(scene, { x: 4, y: 3 }, DEFAULT_LAYERS)).toEqual({ type: 'effectZone', idx });
