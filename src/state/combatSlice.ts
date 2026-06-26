@@ -16,8 +16,8 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd } from './combatFlow';
-import { setTriggeredTestRouter } from './triggeredEffects';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets } from './combatFlow';
+import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
@@ -72,7 +72,7 @@ import { findSpellById } from '../data/index';
 import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, Pt } from './path';
 import { sizeFootprint, combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
-import { isMerScene } from './scene';
+import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -897,8 +897,21 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingShipBattery: null });
       target.wounds.current = Math.max(0, target.wounds.current - volley.totalWounds); // mute la coque (pattern combat)
       const critLines: string[] = [];
-      for (const s of volley.shots) if (s.critical) // double sur le 1d100 → Critique de navire (ch.13 l.656)
-        applyCriticalToTarget(target, 'corps', true, 0, critLines, set, undefined, { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, undefined, false, get);
+      // Équipage du navire CIBLE (pour l'aire navale : Tir de zone / Explosion balaient le pont, ≠ rayon métrique).
+      const targetCrew = (target.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+      const distTiles = ship.pos && target.pos ? chebyshev(ship.pos, target.pos) : 0;
+      for (const s of volley.shots) {
+        if (s.critical) // double sur le 1d100 → Critique de navire (ch.13 l.656)
+          applyCriticalToTarget(target, 'corps', true, 0, critLines, set, undefined, { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, undefined, false, get);
+        // EXTENSIBILITÉ (point 4) : chaque touche de coque passe par le MÊME chemin onHit que le tir individuel
+        // → tout Atout à effet `onHit` (États, Venin, Assommante…) se déclenche en bordée SANS code spécifique.
+        if (s.wounds > 0) critLines.push(...fireTriggers(get, ship, 'onHit', { victim: target, weapon: s.weapon, woundsDealt: s.wounds, location: 'corps', attackType: 'ranged', rng: battleRng(), set }));
+        // AIRE : munition à Tir de zone / Explosion → balaie l'ÉQUIPAGE EXPOSÉ du navire cible (résolveur UNIQUE).
+        const area = resolveWeaponArea(get, set,
+          { attacker: ship, primaryTarget: target, weapon: s.weapon, damage: s.damage, location: 'corps', distanceTiles: distTiles },
+          areaTargets(battle.combatants, sceneMetresPerTile(get().scene), () => targetCrew), battleRng());
+        critLines.push(...area.lines);
+      }
       // Recharge (ch.12 / LDB 62) : chaque pièce qui a tiré est DÉCHARGÉE et le RESTE jusqu'à la fin d'un Test
       // étendu de recharge (action « Recharger » du navire) — pas d'auto-rechargement passif.
       for (const s of volley.shots) { const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid); if (poste) { poste.loaded = false; poste.reloadProgress = 0; } }

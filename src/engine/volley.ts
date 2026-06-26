@@ -38,6 +38,9 @@ export interface VolleyShot {
   posteUid: string;
   /** Recharge effective de la pièce (Recharge N, ×2 si sous-effectif via `crewedFireWeapon`) — Rounds avant de re-tirer. */
   reload: number;
+  /** Arme EFFECTIVE de la pièce (munition + sous-effectif déjà bakés) — pour rejouer les effets `onHit` et l'AIRE
+   *  côté appelant SANS re-dériver l'arme (anti-duplication : `resolveVolley` la construit déjà). */
+  weapon: Weapon;
 }
 
 export interface VolleyResult {
@@ -79,7 +82,7 @@ export function resolveVolley(
     const wounds = woundsFromHit(weapon, target, 'corps', damage, 0, 0); // BE/blindage/Perforante/bypass, plancher 0
     const locRoll = d100(rng);
     shots.push({
-      weaponName: weapon.name, ammoName: ammo?.name, damage, wounds,
+      weaponName: weapon.name, ammoName: ammo?.name, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
       location: shipHitLocation(rig, locRoll), locRoll,
       critical: isDoubleRoll(locRoll) || target.wounds.current <= 0, // double, OU coque à 0 (l.656)
       posteUid: poste.item.uid, reload: weapon.reload ?? 0, // Recharge effective (crewedFireWeapon a doublé si sous-effectif)

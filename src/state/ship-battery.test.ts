@@ -123,6 +123,71 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
   });
 });
 
+// ── Munitions à AIRE en bordée (Explosion / Tir de zone) + EXTENSIBILITÉ onHit (point 4) ──────────────────
+/** Scène minimale valide (LoS de `fireTriggers`). */
+const navScene = () =>
+  ({ id: 's', name: 's', dimensions: { w: 20, h: 20 }, ambiance: 'jour', metresPerTile: 10,
+    levels: [{ z: 0, tiles: new Array(400).fill('eau') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] });
+/** Marin exposé de la coque cible (pour être balayé par l'aire). */
+const sailor = (id: string): Combatant =>
+  ({ id, name: id, kind: 'enemy', pos: { x: 9, y: 5 }, wounds: { current: 6, max: 6 }, advantage: 0,
+    characteristics: { CC: 30, CT: 30, F: 30, E: 0, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, conditions: [], traits: [], talents: [], skills: [], weapons: [] }) as unknown as Combatant;
+/** Coque cible AVEC équipage exposé. */
+const crewedHull = (crewIds: string[]): Combatant => ({ ...enemyHull(), crewIds } as Combatant);
+/** Pièce avec qualités/enchant custom (Atout d'aire + effet onHit générique). */
+const aireePoste = (qualities: { id: string; value?: number }[], onHit?: unknown): ShipPoste =>
+  ({ side: 'tribord', crewIds: ['gunner'], item: { uid: 'canon', name: 'Canon', kind: 'ranged', damage: { flat: 14, plusBF: false }, range: 75,
+    qualities: [{ id: 'recharge', value: 6 }, ...qualities], ...(onHit ? { enchants: [{ onHitEffects: onHit }] } : {}) } } as unknown as ShipPoste);
+const shipWith = (poste: ShipPoste): Combatant => ({ ...firingShip(), postes: [poste], wounds: { current: 60, max: 60 } } as Combatant);
+
+const setupNaval = (poste: ShipPoste, hull: Combatant, extra: Combatant[] = []) => {
+  seedBattleRng(7);
+  const ship = shipWith(poste);
+  useGame.setState({ battle: { combatants: [ship, gunnerPJ(), hull, ...extra], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never,
+    party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: navScene() as never });
+  useGame.getState().battleShipBattery('ship', 'target');
+  useGame.getState().shipBatteryRoll('gunner');
+  useGame.getState().shipBatteryConfirm();
+};
+
+describe('bordée à munition à AIRE — balaie l’équipage exposé du navire cible (MDG ch.13 × ch.12)', () => {
+  it('Tir de zone → la coque encaisse ET jusqu’à Indice marins exposés sont touchés', () => {
+    const crew = [sailor('m1'), sailor('m2'), sailor('m3')];
+    setupNaval(aireePoste([{ id: 'tir-de-zone', value: 2 }]), crewedHull(['m1', 'm2', 'm3']), crew);
+    const after = useGame.getState().battle!.combatants;
+    expect(after.find((c) => c.id === 'target')!.wounds.current).toBeLessThan(90); // coque touchée
+    const touched = ['m1', 'm2', 'm3'].filter((id) => after.find((c) => c.id === id)!.wounds.current < 6).length;
+    expect(touched).toBe(2); // EXACTEMENT Indice (2) marins (≠ rayon métrique, dégénéré à 10 m/case)
+  });
+
+  it('Explosion → TOUT l’équipage exposé est pris dans le souffle', () => {
+    const crew = [sailor('m1'), sailor('m2'), sailor('m3')];
+    setupNaval(aireePoste([{ id: 'a-explosion', value: 4 }]), crewedHull(['m1', 'm2', 'm3']), crew);
+    const after = useGame.getState().battle!.combatants;
+    expect(['m1', 'm2', 'm3'].every((id) => after.find((c) => c.id === id)!.wounds.current < 6)).toBe(true);
+  });
+
+  it('munition SIMPLE (sans atout d’aire) → SEULE la coque encaisse, l’équipage est épargné (non-régression)', () => {
+    const crew = [sailor('m1'), sailor('m2')];
+    setupNaval(aireePoste([]), crewedHull(['m1', 'm2']), crew);
+    const after = useGame.getState().battle!.combatants;
+    expect(after.find((c) => c.id === 'target')!.wounds.current).toBeLessThan(90);
+    expect(['m1', 'm2'].every((id) => after.find((c) => c.id === id)!.wounds.current === 6)).toBe(true);
+  });
+
+  it('EXTENSIBILITÉ : un canon CUSTOM (atout onHit posant un État + Tir de zone) → touche multiple ET applique l’État, SANS code spécifique', () => {
+    const crew = [sailor('m1'), sailor('m2')];
+    // Atout onHit générique : pose « en-flammes » sur la victime (chemin fireTriggers, pas de pose bespoke).
+    const onHit = [{ trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'en-flammes-navire', value: 1 }] } } }];
+    setupNaval(aireePoste([{ id: 'tir-de-zone', value: 2 }], onHit), crewedHull(['m1', 'm2']), crew);
+    const after = useGame.getState().battle!.combatants;
+    const hull = after.find((c) => c.id === 'target')!;
+    expect((hull.conditions ?? []).some((c) => c.name === 'en-flammes-navire')).toBe(true); // État appliqué à la coque par l'onHit générique en bordée
+    expect(['m1', 'm2'].filter((id) => after.find((c) => c.id === id)!.wounds.current < 6).length).toBe(2); // ET aire : 2 marins
+  });
+});
+
 describe('rollCrewRole — cumul de rôles (Manque de bras, MDG ch.14 l.53)', () => {
   const cap = (): Combatant =>
     ({ id: 'cap', name: 'Cap', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },

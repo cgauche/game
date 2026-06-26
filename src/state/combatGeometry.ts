@@ -127,6 +127,21 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
   return p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
 }
 
+/**
+ * PRIMITIVE de géométrie d'aire PARTAGÉE (Chebyshev) : les combattants POSITIONNÉS à ≤ `radiusTiles` cases
+ * de `center`, du plus proche au plus loin, après un `filter` optionnel (groupe/vivant/exclusion). SOURCE
+ * UNIQUE du motif « créatures dans le rayon » — consommée par le résolveur d'aire des munitions
+ * (`combatArea`). TODO : `emitAoe` (combatManeuvers) et `zoneBlast` (combatEffects) peuvent l'adopter
+ * (leurs filtres inline divergent : tri/source de position/kind → migration à part pour ne rien régresser).
+ */
+export function combatantsWithinRadius(
+  center: Pt, radiusTiles: number, combatants: Combatant[], filter?: (c: Combatant) => boolean,
+): Combatant[] {
+  return combatants
+    .filter((c) => c.pos && Math.max(Math.abs(center.x - c.pos.x), Math.abs(center.y - c.pos.y)) <= radiusTiles && (!filter || filter(c)))
+    .sort((a, b) => Math.max(Math.abs(center.x - a.pos!.x), Math.abs(center.y - a.pos!.y)) - Math.max(Math.abs(center.x - b.pos!.x), Math.abs(center.y - b.pos!.y)));
+}
+
 /** Cases bloquant la Ligne de Vue (zones opaques : Fumée du Souffle…) — L11 : lues de `battle.zones`. */
 export const smokeOf = (battle: BattleState): Pt[] => losBlockingTiles(battle.zones);
 

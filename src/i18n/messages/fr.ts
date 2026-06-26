@@ -447,6 +447,7 @@ export const fr = {
   'cf.reversal': "{name} renverse l'échange et vole tous les Avantages (Renversement).",
   'cf.blastPointBlank': 'Tir de zone à bout portant : {name} subit {indice} Blessure(s) de plus.',
   'cf.blastSecondary': 'Tir de zone : {name} est aussi pris dans la gerbe — {wl} Blessure(s).',
+  'cf.blastExplosion': 'Explosion : {name} est pris dans le souffle — {wl} Blessure(s).',
   'cf.focusLost': '{name} perd les {dr} DR focalisés sur {spell}.',
   'cf.fumbleTear': '  ↳ Déchirure musculaire (Mineure) à la {leg}.',
   'cf.legLeft': 'jambe gauche',

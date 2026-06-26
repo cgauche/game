@@ -561,6 +561,7 @@ export interface QualityCapabilities {
   magazine?: boolean;           // À Répétition : chargeur (Indice)
   salvo?: boolean;              // Salve : chargeur (Indice)
   areaFire?: boolean;           // Tir de zone : nuage de projectiles (Indice)
+  explosion?: boolean;          // À Explosion : tous à Indice m du point cible subissent DR+Dégâts + États de l'arme (LDB p.298)
   crewedTeam?: boolean;         // Arme d'équipe : sous-effectif (Indice)
   parryAP?: boolean;            // Protectrice : Indice PA en opposant (Indice)
   // Objet / artisanat (LDB 60)
