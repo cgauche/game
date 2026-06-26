@@ -8319,87 +8319,87 @@
     "skills": [
       {
         "id": "art",
-        "value": 0,
+        "value": 55,
         "spec": "Rédaction"
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 50
       },
       {
         "id": "recherche",
-        "value": 0
+        "value": 80
       },
       {
         "id": "charme",
-        "value": 0
+        "value": 60
       },
       {
         "id": "divertissement",
-        "value": 0,
+        "value": 55,
         "spec": "Plaidoirie"
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 60
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 70,
         "spec": "Guilde"
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 80,
         "spec": "Classique"
       },
       {
         "id": "marchandage",
-        "value": 0
+        "value": 70
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 70
       },
       {
         "id": "subornation",
-        "value": 0
+        "value": 60
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 60
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 50
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 80,
         "spec": "Droit"
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 80,
         "spec": "Théologie"
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 65,
         "spec": "au choix"
       },
       {
         "id": "signes-secrets",
-        "value": 0,
+        "value": 70,
         "spec": "Guilde"
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 35
       }
     ],
     "talents": [
