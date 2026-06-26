@@ -42,6 +42,22 @@ import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial, isMindless, isStupid } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 
+/** Catégorie d'un sort de soutien/utilitaire (miroir PUR de `SupportSpellCat` de combatFlow — ai.ts
+ *  reste sans dépendance vers le store/les données ; la couche impure produit ces options). */
+export type SupportSpellCat = 'heal' | 'buffSelf' | 'buffAlly' | 'debuff' | 'summon' | 'other';
+/** Option de sort de soutien classée (depuis ses DONNÉES) — consommée par l'énumération pure. */
+export interface SupportSpellOpt {
+  id: string;
+  cat: SupportSpellCat;
+  cn: number;
+  range: number | null;
+  magnitude: number;
+  summonCount?: number;
+  /** Noms d'États infligés (catégorie `debuff`) — pour l'anti-spam (ne pas réappliquer un État déjà porté)
+   *  et la valeur de contrôle. Vide pour les autres catégories. */
+  condNames?: string[];
+}
+
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
   | { kind: 'castArea'; spell: string; center: Pt } // sort de ZONE (ZdE) auto-posé sur un point couvrant ≥2 héros
@@ -94,6 +110,13 @@ export interface EnemyTurnInput {
   /** Sort de ZONE de dégâts castable (id + géométrie résolue par l'appelant). L'IA le joue (auto-pose
    *  du centre) quand le centre couvre ≥2 héros. `range` null = portée non chiffrable → pas de gate. */
   areaSpell?: { spell: string; radius: number; range: number | null; cn: number };
+  /** SORTS de SOUTIEN/UTILITAIRE classés par l'appelant (couche impure qui a les DONNÉES de sort) :
+   *  chaque option = un sort NON-dégât (heal/buffSelf/buffAlly/debuff/summon/other) faisable d'un jet,
+   *  avec sa catégorie/cn/portée/magnitude DÉDUITES de ses ops (cf. `aiSpellPlan` dans combatFlow). L'IA
+   *  pure en dérive des candidats `cast` (sur un allié blessé, soi, un héros menaçant, ou une invocation),
+   *  résolus par le MÊME `castSpell` (IA = héros). ABSENT = aucun candidat de soutien → comportement
+   *  STRICTEMENT inchangé (golden et fixtures sans soutien restent identiques). */
+  supportSpells?: SupportSpellOpt[];
   /** ESCOUADE (Lot 4) : les ALLIÉS de l'ennemi encore en action et posés (l'ennemi lui-même EXCLU),
    *  résolus par l'appelant (couche impure qui a le `battle`). Sert au FEU CONCENTRÉ (surnombre RAW en
    *  mêlée, LDB 14 — même `outnumberMod` et même décompte que la résolution, cf. combatFlow.ts:425) et
@@ -144,6 +167,19 @@ const W = {
    *  portée de soutien). SOBRE et faible — un simple départage à utilité d'attaque égale, pour préférer
    *  rester en formation plutôt que de partir seul (n'inverse jamais un choix offensif/danger marqué). */
   cohesion: 1.5,
+  // — SOUTIEN (grimoire de soutien : buff/soin/débuff/invocation) ————————————————————————————————————
+  /** SOIN d'un allié : facteur appliqué aux PB réellement RÉCUPÉRABLES (min(soin, PB manquants)). À ~1, un
+   *  soin de N PB pèse comme N Blessures infligées — on soigne quand ça « rend » autant qu'attaquer rapporte. */
+  healValue: 1,
+  /** BUFF (soi/allié) : facteur sur la magnitude du buff (≈ |charMod|/10 + 2/État…). Calibré modeste : un
+   *  buff utile bat une attaque faible mais pas une bonne attaque/un achèvement (anti buff-spam). */
+  buffValue: 1.5,
+  /** DÉBUFF d'un ennemi : facteur sur la valeur de CONTRÔLE de l'État infligé (`controlValue`) × menace de
+   *  la cible (on débuffe le héros le plus menaçant). Aligné sur l'échelle de `control` (États). */
+  debuffValue: 1,
+  /** INVOCATION : facteur sur la magnitude (≈ 2 × nb de créatures), MAJORÉ par l'infériorité numérique
+   *  (× ratio héros/alliés). Sobre — l'IA renforce ses rangs quand elle est en sous-nombre, sans boucler. */
+  summonValue: 1,
   // NB : le FEU CONCENTRÉ n'a PAS de poids ad hoc — il passe par le bonus de toucher `outnumberMod` (RAW,
   // LDB 14), injecté dans l'espérance de dégâts (mêlée). C'est un EFFET ÉMERGENT, pas une constante inventée.
 } as const;
@@ -197,7 +233,7 @@ const DOCTRINES: Record<DoctrineId, Doctrine> = {
   // surnombre `outnumberMod` est déjà dans l'espérance de dégâts en mêlée → on RENFORCE le poids de dégâts
   // pour que la cible encadrée par les alliés l'emporte plus nettement), tient le COUVERT (↑coverGain),
   // préfère le contact (↑preferredRange : tenir la ligne au corps-à-corps), cohésion plus marquée (formation).
-  soldats: { damageDealt: 1.4, coverGain: 6, preferredRange: 8, cohesion: 3 },
+  soldats: { damageDealt: 1.4, coverGain: 6, preferredRange: 8, cohesion: 3, healValue: 1.3, buffValue: 1.8 },
   // TIRAILLEURS / kiting (arme à distance + Agilité haute, pas de préférence mêlée) : garde la DISTANCE,
   // recule devant l'approche, vise les casters. ↑preferredRange (rester à portée de tir+LdV est très valorisé),
   // ↑dangerAvoid (kiting : fuir les cases au contact), ↑threat (un caster dangereux monte en menace → ciblé).
@@ -205,7 +241,10 @@ const DOCTRINES: Record<DoctrineId, Doctrine> = {
   // ARTILLERIE / lanceurs (possède des sorts, Int/FM hautes) : reste LOIN, à couvert, et arrose les paquets.
   // ↑aoePerExtraHero (la ZdE sur un amas écrase nettement le missile mono-cible), ↑control (valorise les États),
   // ↑dangerAvoid + ↑preferredRange (se tient hors de portée), ↑coverGain (se planque).
-  artillerie: { aoePerExtraHero: 14, control: 2, dangerAvoid: 1.2, preferredRange: 10, coverGain: 6 },
+  artillerie: { aoePerExtraHero: 14, control: 2, dangerAvoid: 1.2, preferredRange: 10, coverGain: 6,
+    // Un lanceur valorise davantage son grimoire de soutien (débuff/buff/invocation) — il a le temps,
+    // loin de la mêlée. Sobre : les candidats existent déjà par défaut, la doctrine ne fait qu'accentuer.
+    debuffValue: 1.5, summonValue: 1.5, buffValue: 2 },
   // HORDE / Insensible-Stupide (mort-vivant Fabriqué, Stupide) : AVANCE DROIT, sans auto-préservation ni
   // cohésion (aucune pensée de groupe). dangerAvoid=0 et cohesion=0 → elle ne contourne pas le danger et ne
   // se soucie pas de rester groupée ; le surnombre brut reste émergent via `outnumberMod`. Pas de repli (un
@@ -443,6 +482,12 @@ function controlValue(spell: SpellLike | undefined): number {
   return total;
 }
 
+/** Valeur de CONTRÔLE d'une liste d'États nommés (mêmes poids `CONDITION_THREAT` que `controlValue`) —
+ *  pour scorer un débuff classé en DONNÉE (les noms d'États viennent du classifieur, pas d'un nom de sort). */
+function controlValueOf(condNames: string[] | undefined): number {
+  return (condNames ?? []).reduce((s, n) => s + (CONDITION_THREAT[n] ?? 1), 0);
+}
+
 /**
  * Meilleur CENTRE d'un sort de ZONE (ZdE, LDB 47 l.44) couvrant le plus de héros : on essaie chaque
  * case occupée par un héros comme centre candidat (déterministe, suffisant pour « un paquet ») et on
@@ -471,6 +516,22 @@ function bestAreaCenter(
     }
   }
   return best && best.covered >= 2 ? best : null;
+}
+
+/** ANTI-SPAM des BUFFS : la cible porte-t-elle DÉJÀ un effet actif issu de CE sort ? (lu sur
+ *  `activeEffects[].spell.spellId` — posé à l'incantation, cf. `ActiveEffect.spell`). On ne réapplique
+ *  jamais un buff déjà en cours → l'IA passe à autre chose (attaque). PUR, data-driven (par id de sort). */
+function hasActiveSpell(target: Combatant, spellId: string): boolean {
+  return (target.activeEffects ?? []).some((e) => e.spell?.spellId === spellId);
+}
+
+/** ANTI-SPAM des DÉBUFFS : la cible porte-t-elle DÉJÀ un État infligé par ce sort ? On lit les `condition`
+ *  du sort (data-driven) et on vérifie si la cible porte chacun. Si TOUS les États du sort sont déjà
+ *  présents → inutile de le relancer. (Source unique `controlConditionNames` ci-dessous.) */
+function alreadyDebuffed(target: Combatant, condNames: string[]): boolean {
+  if (!condNames.length) return false;
+  const cond = target.conditions ?? [];
+  return condNames.every((n) => cond.some((c) => c.name === n));
 }
 
 /** Frénésie (LDB 21 l.34) : le frénétique vise IMPÉRATIVEMENT l'ennemi le plus PROCHE de sa Ligne de
@@ -572,9 +633,11 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const rangedW = enemy.weapons.find((w) => w.type === 'ranged');
   const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !enemy.loaded;
 
-  // Un ennemi sans AUCUN moyen d'agir (sort offensif/focalisé/focalisable/ZdE NI sort, ni arme) ne
-  // peut rien faire d'utile → il passe la main (les sorts comptent comme une capacité d'action).
-  const hasAnyMagic = offensiveSpell != null || readyFocusedSpell != null || focusableSpell != null || areaSpell != null;
+  // Un ennemi sans AUCUN moyen d'agir (sort offensif/focalisé/focalisable/ZdE/SOUTIEN NI sort, ni arme)
+  // ne peut rien faire d'utile → il passe la main (les sorts comptent comme une capacité d'action, soutien
+  // inclus : un lanceur de pur soutien — soin/buff/débuff/invocation — DOIT pouvoir agir, pas passer son tour).
+  const hasAnyMagic = offensiveSpell != null || readyFocusedSpell != null || focusableSpell != null || areaSpell != null
+    || (input.supportSpells?.length ?? 0) > 0;
   if (!hasAnyMagic && enemy.weapons.length === 0) return { kind: 'end' };
 
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
@@ -849,6 +912,79 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       candidates.push({ action: { kind: 'cast', targetId: t.id, spell: castSpellId! }, kind: 'cast', utility: attackUtility(t, { kind: 'spell', spell: offensiveSpellData }), targetId: t.id, coord: t.pos ?? null });
     }
   }
+  // SORTS de SOUTIEN / UTILITAIRE (grimoire NON-dégât : heal/buff/débuff/invocation) — énumérés EN PLUS
+  // des candidats offensifs ; le scoring arbitre (un buff redondant/inutile PERD face à une bonne attaque →
+  // anti buff-spam + repli attaque). Tout passe par un candidat `cast` résolu par le MÊME `castSpell` (IA =
+  // héros). Un FRÉNÉTIQUE ne lance AUCUN sort (Frénésie LDB 21 l.34) → on saute tout le bloc. Le SELF (soi)
+  // ne demande pas de portée ; un allié/ennemi est gaté par la portée du sort (cases) et la Ligne de Vue.
+  // Aucun nom de sort en dur : la catégorie/cible vient des DONNÉES classées (`supportSpells`).
+  const support = input.supportSpells ?? [];
+  if (!frenzied && support.length) {
+    // Distance de l'ennemi à une cible (empreintes), pour les gates de portée — symétrie avec castPool.
+    const inSpellRange = (sp: SupportSpellOpt, t: Combatant): boolean =>
+      sp.range == null || fpDist(t) <= sp.range;
+    const sees = (t: Combatant): boolean => losClear(scene, pos, t.pos!, smoke ?? []);
+    // Alliés vivants posés (escouade) + soi : le vivier de cibles AMIES (soin/buff/invocation s'ancrent ici).
+    const selfC = enemy; // soi (auto-buff / invocation centrée sur soi)
+    for (const sp of support) {
+      if (sp.cat === 'heal') {
+        // SOIN : un allié (ou soi) BLESSÉ, à portée + LdV, dont les PB MANQUANTS justifient le soin. Utilité ∝
+        // PB réellement récupérables (min(soin, manquants)) → on ne soigne PAS un allié quasi plein (anti-spam
+        // naturel : manquants ≈ 0 → utilité ≈ 0, battue par n'importe quelle attaque utile).
+        const friends = [selfC, ...squad];
+        for (const f of friends) {
+          if (!f.pos) continue;
+          const missing = Math.max(0, f.wounds.max - f.wounds.current);
+          if (missing <= 0) continue; // allié plein → jamais de soin (repli attaque)
+          if (f.id !== selfC.id && (!inSpellRange(sp, f) || !sees(f))) continue;
+          const recoverable = Math.min(sp.magnitude, missing);
+          const u = Weff.healValue * recoverable;
+          candidates.push({ action: { kind: 'cast', targetId: f.id, spell: sp.id }, kind: 'cast', utility: u, targetId: f.id, coord: f.pos });
+        }
+      } else if (sp.cat === 'buffSelf') {
+        // BUFF sur SOI : pas si déjà actif (anti-spam via activeEffects). Utilité = magnitude du buff.
+        if (!hasActiveSpell(selfC, sp.id)) {
+          candidates.push({ action: { kind: 'cast', targetId: selfC.id, spell: sp.id }, kind: 'cast', utility: Weff.buffValue * sp.magnitude, targetId: selfC.id, coord: pos });
+        }
+      } else if (sp.cat === 'buffAlly') {
+        // BUFF sur un ALLIÉ pertinent (à portée + LdV, n'a PAS déjà le buff). On privilégie un allié qui peut
+        // AGIR/attaque (a une arme) — proxy simple : tout allié vivant. À soi en repli si aucun allié éligible.
+        const friends = [...squad, selfC];
+        for (const f of friends) {
+          if (!f.pos || hasActiveSpell(f, sp.id)) continue; // déjà buffé → on ne réapplique pas
+          if (f.id !== selfC.id && (!inSpellRange(sp, f) || !sees(f))) continue;
+          candidates.push({ action: { kind: 'cast', targetId: f.id, spell: sp.id }, kind: 'cast', utility: Weff.buffValue * sp.magnitude, targetId: f.id, coord: f.pos });
+        }
+      } else if (sp.cat === 'debuff') {
+        // DÉBUFF d'un héros : le plus MENAÇANT à portée + LdV qui ne porte PAS déjà tous les États du sort
+        // (anti-spam). Utilité = valeur de contrôle de l'État × menace de la cible (priorise le dangereux).
+        const ctrl = controlValueOf(sp.condNames) || sp.magnitude;
+        const pool = restrict(fpick ? [fpick] : castPool).filter((h) => inSpellRange(sp, h) && sees(h) && !alreadyDebuffed(h, sp.condNames ?? []));
+        for (const h of pool) {
+          const u = Weff.debuffValue * ctrl * (1 + 0.1 * finite(targetThreat(enemy, h), 0));
+          candidates.push({ action: { kind: 'cast', targetId: h.id, spell: sp.id }, kind: 'cast', utility: u, targetId: h.id, coord: h.pos ?? null });
+        }
+      } else if (sp.cat === 'summon') {
+        // INVOCATION (sur soi/zone — résolue par castSpell self) : SOBRE et anti-boucle. Utilité ∝ nb de
+        // créatures, MAJORÉE par l'INFÉRIORITÉ numérique (ratio héros/alliés) — on renforce ses rangs quand
+        // on est en sous-nombre. PLAFOND anti-spam : si l'IA a DÉJÀ nettement plus d'alliés que de héros
+        // (escouade+soi ≥ 1,5× héros), l'invocation ne vaut rien (on n'empile pas une armée).
+        const allies = squad.length + 1; // + soi
+        const foes = Math.max(1, heroes.length);
+        // INFÉRIORITÉ STRICTE seulement (foes > allies) : à parité/supériorité, invoquer ne vaut rien (on
+        // ne renforce pas une armée déjà suffisante — anti-boucle d'invocation). Le facteur = l'AMPLEUR du
+        // sous-nombre (foes/allies − 1), borné, → plus on est débordé, plus l'invocation pèse.
+        const outnumberedFactor = Math.max(0, foes / allies - 1);
+        const u = Weff.summonValue * sp.magnitude * outnumberedFactor;
+        if (u > 0) {
+          candidates.push({ action: { kind: 'cast', targetId: selfC.id, spell: sp.id }, kind: 'cast', utility: u, targetId: selfC.id, coord: pos });
+        }
+      }
+      // `other` (utilitaire non décisif) : pas de candidat dédié — repli attaque (jamais de boucle de sort
+      // inutile). Le sort reste « visible » via le plan, mais l'IA ne le joue pas faute de gain mesurable.
+    }
+  }
+
   // Recharger (LDB 63 l.28-29) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée
   // justifiée. Utilité neutre (préparation) — préféré seulement faute de tir/mêlée meilleurs. Un
   // frénétique NE recharge PAS (Frénésie LDB 21 l.34 : seule Action = Test de CC/Athlétisme → mêlée).
