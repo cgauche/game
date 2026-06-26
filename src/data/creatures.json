@@ -51,7 +51,8 @@
       "page": 311
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Villageois"
     }
   },
   {
@@ -380,7 +381,8 @@
       "page": 313
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -436,7 +438,8 @@
       "page": 313
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -623,7 +626,8 @@
       "page": 48
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -5130,7 +5134,8 @@
       "page": 27
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Garde"
     }
   },
   {
@@ -5267,7 +5272,8 @@
       "page": 28
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Garde"
     }
   },
   {
@@ -5425,7 +5431,8 @@
       "page": 29
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Garde"
     }
   },
   {
@@ -5606,7 +5613,8 @@
       "page": 30
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Garde"
     }
   },
   {
@@ -5736,7 +5744,8 @@
       "page": 33
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Milicien"
     }
   },
   {
@@ -5882,7 +5891,8 @@
       "page": 34
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Milicien"
     }
   },
   {
@@ -6058,7 +6068,8 @@
       "page": 34
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Milicien"
     }
   },
   {
@@ -6251,7 +6262,8 @@
       "page": 36
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Milicien"
     }
   },
   {
@@ -6389,7 +6401,8 @@
       "page": 39
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur routier"
     }
   },
   {
@@ -6538,7 +6551,8 @@
       "page": 40
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur routier"
     }
   },
   {
@@ -6702,7 +6716,8 @@
       "page": 41
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur routier"
     }
   },
   {
@@ -6884,7 +6899,8 @@
       "page": 42
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur routier"
     }
   },
   {
@@ -7014,7 +7030,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur fluvial"
     }
   },
   {
@@ -7157,7 +7174,8 @@
       "page": 46
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur fluvial"
     }
   },
   {
@@ -7326,7 +7344,8 @@
       "page": 47
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur fluvial"
     }
   },
   {
@@ -7513,7 +7532,8 @@
       "page": 49
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Patrouilleur fluvial"
     }
   },
   {
@@ -7635,7 +7655,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Répurgateur"
     }
   },
   {
@@ -7787,7 +7808,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Répurgateur"
     }
   },
   {
@@ -7958,7 +7980,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Répurgateur"
     }
   },
   {
@@ -8148,7 +8171,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Répurgateur"
     }
   },
   {
@@ -8267,7 +8291,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Juriste"
     }
   },
   {
@@ -8407,7 +8432,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Juriste"
     }
   },
   {
@@ -8525,7 +8551,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Juriste"
     }
   },
   {
@@ -8664,7 +8691,8 @@
       "page": 60
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Juriste"
     }
   },
   {
@@ -8813,7 +8841,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Soldat"
     }
   },
   {
@@ -8978,7 +9007,8 @@
       "page": 62
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Soldat"
     }
   },
   {
@@ -9152,7 +9182,8 @@
       "page": 63
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Soldat"
     }
   },
   {
@@ -9343,7 +9374,8 @@
       "page": 64
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Soldat"
     }
   },
   {
@@ -9469,7 +9501,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Bourgeois"
     }
   },
   {
@@ -9595,7 +9628,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Bourgeois"
     }
   },
   {
@@ -9746,7 +9780,8 @@
       "page": 67
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Bourgeois"
     }
   },
   {
@@ -9919,7 +9954,8 @@
       "page": 68
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Bourgeois"
     }
   },
   {
@@ -10109,7 +10145,8 @@
       "page": 69
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Noble"
     }
   },
   {
@@ -10244,7 +10281,8 @@
       "page": 72
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Apothicaire"
     }
   },
   {
@@ -10403,7 +10441,8 @@
       "page": 73
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Apothicaire"
     }
   },
   {
@@ -10543,7 +10582,8 @@
       "page": 74
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Médecin"
     }
   },
   {
@@ -10700,7 +10740,8 @@
       "page": 74
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Médecin"
     }
   },
   {
@@ -10807,7 +10848,8 @@
       "page": 76
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Nonne"
     }
   },
   {
@@ -10975,7 +11017,8 @@
       "page": 77
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -11122,7 +11165,8 @@
       "page": 79
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Artisan"
     }
   },
   {
@@ -11287,7 +11331,8 @@
       "page": 80
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Artisan"
     }
   },
   {
@@ -11436,7 +11481,8 @@
       "page": 81
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Marchand"
     }
   },
   {
@@ -11599,7 +11645,8 @@
       "page": 82
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Marchand"
     }
   },
   {
@@ -11718,7 +11765,8 @@
       "page": 83
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Érudit"
     }
   },
   {
@@ -11853,7 +11901,8 @@
       "page": 84
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Érudit"
     }
   },
   {
@@ -11982,7 +12031,8 @@
       "page": 84
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Enquêteur"
     }
   },
   {
@@ -12133,7 +12183,8 @@
       "page": 86
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Enquêteur"
     }
   },
   {
@@ -12263,7 +12314,8 @@
       "page": 87
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -12450,7 +12502,8 @@
       "page": 88
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -12580,7 +12633,8 @@
       "page": 90
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -12770,7 +12824,8 @@
       "page": 91
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -12900,7 +12955,8 @@
       "page": 93
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Nonne"
     }
   },
   {
@@ -13091,7 +13147,8 @@
       "page": 94
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -13196,7 +13253,8 @@
       "page": 98
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -13321,7 +13379,8 @@
       "page": 99
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Receleur"
     }
   },
   {
@@ -13471,7 +13530,8 @@
       "page": 100
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Receleur"
     }
   },
   {
@@ -13600,7 +13660,8 @@
       "page": 101
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Entremetteur"
     }
   },
   {
@@ -13753,7 +13814,8 @@
       "page": 102
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Entremetteur"
     }
   },
   {
@@ -13887,7 +13949,8 @@
       "page": 103
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Spadassin"
     }
   },
   {
@@ -14039,7 +14102,8 @@
       "page": 104
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Chasseur de primes"
     }
   },
   {
@@ -14175,7 +14239,8 @@
       "page": 105
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -14329,7 +14394,8 @@
       "page": 106
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -14454,7 +14520,8 @@
       "page": 107
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Charlatan"
     }
   },
   {
@@ -14607,7 +14674,8 @@
       "page": 108
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Charlatan"
     }
   },
   {
@@ -14746,7 +14814,8 @@
       "page": 109
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Charlatan"
     }
   },
   {
@@ -14908,7 +14977,8 @@
       "page": 110
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Charlatan"
     }
   },
   {
@@ -15045,7 +15115,8 @@
       "page": 111
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Voleur"
     }
   },
   {
@@ -15197,7 +15268,8 @@
       "page": 112
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Voleur"
     }
   },
   {
@@ -15325,7 +15397,8 @@
       "page": 113
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Pilleur de tombes"
     }
   },
   {
@@ -15479,7 +15552,8 @@
       "page": 114
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Pilleur de tombes"
     }
   },
   {
@@ -15642,7 +15716,8 @@
       "page": 115
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Voleur"
     }
   },
   {
@@ -15782,7 +15857,8 @@
       "page": 121
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Villageois"
     }
   },
   {
@@ -15938,7 +16014,8 @@
       "page": 122
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Villageois"
     }
   },
   {
@@ -16112,7 +16189,8 @@
       "page": 123
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Villageois"
     }
   },
   {
@@ -16304,7 +16382,8 @@
       "page": 124
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Villageois"
     }
   },
   {
@@ -16451,7 +16530,8 @@
       "page": 127
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Artisan"
     }
   },
   {
@@ -16616,7 +16696,8 @@
       "page": 128
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Artisan"
     }
   },
   {
@@ -16769,7 +16850,8 @@
       "page": 129
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Marchand"
     }
   },
   {
@@ -16936,7 +17018,8 @@
       "page": 130
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Marchand"
     }
   },
   {
@@ -17078,7 +17161,8 @@
       "page": 131
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Batelier"
     }
   },
   {
@@ -17248,7 +17332,8 @@
       "page": 132
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Nautonier"
     }
   },
   {
@@ -17413,7 +17498,8 @@
       "page": 133
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Batelier"
     }
   },
   {
@@ -17591,7 +17677,8 @@
       "page": 134
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Batelier"
     }
   },
   {
@@ -17749,7 +17836,8 @@
       "page": 136
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Herboriste"
     }
   },
   {
@@ -17924,7 +18012,8 @@
       "page": 137
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Herboriste"
     }
   },
   {
@@ -18114,7 +18203,8 @@
       "page": 138
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Herboriste"
     }
   },
   {
@@ -18346,7 +18436,8 @@
       "page": 140
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Chasseur"
     }
   },
   {
@@ -18507,7 +18598,8 @@
       "page": 143
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier de village"
     }
   },
   {
@@ -18712,7 +18804,8 @@
       "page": 145
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier de village"
     }
   },
   {
@@ -18874,7 +18967,8 @@
       "page": 148
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Mystique"
     }
   },
   {
@@ -19066,7 +19160,8 @@
       "page": 149
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Mystique"
     }
   },
   {
@@ -19194,7 +19289,8 @@
       "page": 151
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Nonne"
     }
   },
   {
@@ -19349,7 +19445,8 @@
       "page": 152
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Nonne"
     }
   },
   {
@@ -19515,7 +19612,8 @@
       "page": 153
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -19723,7 +19821,8 @@
       "page": 154
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -19856,7 +19955,8 @@
       "page": 156
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -20005,7 +20105,8 @@
       "page": 157
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -20176,7 +20277,8 @@
       "page": 158
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -20388,7 +20490,8 @@
       "page": 160
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Prêtre"
     }
   },
   {
@@ -20505,7 +20608,8 @@
       "page": 163
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -20647,7 +20751,8 @@
       "page": 164
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -20807,7 +20912,8 @@
       "page": 165
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -20985,7 +21091,8 @@
       "page": 166
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Hors-la-loi"
     }
   },
   {
@@ -21107,7 +21214,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Contrebandier"
     }
   },
   {
@@ -21254,7 +21362,8 @@
       "page": 169
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Contrebandier"
     }
   },
   {
@@ -21419,7 +21528,8 @@
       "page": 170
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Contrebandier"
     }
   },
   {
@@ -21607,7 +21717,8 @@
       "page": 171
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Contrebandier"
     }
   },
   {
@@ -21728,7 +21839,8 @@
       "page": 173
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Naufrageur"
     }
   },
   {
@@ -21867,7 +21979,8 @@
       "page": 174
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Naufrageur"
     }
   },
   {
@@ -22025,7 +22138,8 @@
       "page": 175
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Naufrageur"
     }
   },
   {
@@ -22200,7 +22314,8 @@
       "page": 176
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Naufrageur"
     }
   },
   {
@@ -22926,7 +23041,7 @@
       "page": 0
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Cheval"
     }
   },
   {
@@ -23185,7 +23300,7 @@
       "page": 185
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Cheval"
     }
   },
   {
@@ -23310,7 +23425,7 @@
       "page": 187
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Cheval"
     }
   },
   {
@@ -23849,7 +23964,7 @@
       "page": 194
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Loup"
     }
   },
   {
@@ -24016,7 +24131,7 @@
       "page": 195
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Loup"
     }
   },
   {
@@ -25595,7 +25710,7 @@
       "page": 215
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Rat géant"
     }
   },
   {
@@ -26455,7 +26570,7 @@
       "page": 225
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Araignée"
     }
   },
   {
@@ -28920,7 +29035,8 @@
       "page": 255
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Guerrier du Chaos"
     }
   },
   {
@@ -29077,7 +29193,8 @@
       "page": 256
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Guerrier du Chaos"
     }
   },
   {
@@ -29259,7 +29376,8 @@
       "page": 258
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Guerrier du Chaos"
     }
   },
   {
@@ -29799,7 +29917,8 @@
       "page": 267
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -29991,7 +30110,8 @@
       "page": 269
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -30210,7 +30330,8 @@
       "page": 272
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -35830,7 +35951,7 @@
       "page": 357
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -36027,7 +36148,7 @@
       "page": 359
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -36237,7 +36358,7 @@
       "page": 362
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -36474,7 +36595,7 @@
       "page": 365
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -36817,7 +36938,7 @@
       "page": 371
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -37044,7 +37165,7 @@
       "page": 374
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -37305,7 +37426,7 @@
       "page": 377
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -37441,7 +37562,7 @@
       "page": 382
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -37617,7 +37738,7 @@
       "page": 384
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -37819,7 +37940,7 @@
       "page": 387
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -38039,7 +38160,7 @@
       "page": 390
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -38174,7 +38295,7 @@
       "page": 395
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -38342,7 +38463,7 @@
       "page": 397
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -38541,7 +38662,7 @@
       "page": 399
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -38753,7 +38874,7 @@
       "page": 401
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Skaven"
     }
   },
   {
@@ -38876,7 +38997,7 @@
       "page": 404
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Rat ogre"
     }
   },
   {
@@ -40769,7 +40890,7 @@
       "page": 438
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Gobelin"
     }
   },
   {
@@ -41897,7 +42018,7 @@
       "page": 452
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Gobelin"
     }
   },
   {
@@ -43570,7 +43691,7 @@
       "page": 477
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Orc"
     }
   },
   {
@@ -45626,7 +45747,8 @@
       "page": 515
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -45837,7 +45959,8 @@
       "page": 517
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -46099,7 +46222,8 @@
       "page": 520
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Sorcier"
     }
   },
   {
@@ -46486,7 +46610,7 @@
       "page": 527
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Goule"
     }
   },
   {
@@ -46671,7 +46795,7 @@
       "page": 528
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Goule"
     }
   },
   {
@@ -47349,7 +47473,7 @@
       "page": 539
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Squelette"
     }
   },
   {
@@ -47480,7 +47604,7 @@
       "page": 542
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Spectre"
     }
   },
   {
@@ -48514,7 +48638,7 @@
       "page": 565
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Varghulf"
     }
   },
   {
@@ -53002,7 +53126,8 @@
       "page": 70
     },
     "appearance": {
-      "species": "Humain"
+      "species": "Humain",
+      "tenue": "Cultiste"
     }
   },
   {

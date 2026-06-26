@@ -51,10 +51,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Apprenti Technomage": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Arachnarok": {
     "def": "Araignée",
@@ -93,10 +93,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Orc",
   },
   "Architechnomage": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Artisan (Services Ruraux Fréquents & Usuels)": {
     "def": null,
@@ -111,10 +111,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Assassin": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Avocat": {
     "def": null,
@@ -273,10 +273,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Chasseresse des Ombres": {
-    "def": null,
-    "plan": "biped",
+    "def": "Araignée",
+    "plan": "arachnid",
     "scale": 1,
-    "species": "Humain",
+    "species": "Araignée",
   },
   "Chat Sauvage": {
     "def": "Chat Sauvage",
@@ -345,10 +345,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Orc",
   },
   "Chef de Meute": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Loup",
+    "plan": "quadruped",
+    "scale": 0.82,
+    "species": "Loup",
   },
   "Chef de Meute du Clan Moulder": {
     "def": "Skaven",
@@ -393,10 +393,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Squelette",
   },
   "Chevalier des Tombes": {
-    "def": null,
+    "def": "Squelette",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Squelette",
   },
   "Chien": {
     "def": "Chien",
@@ -453,10 +453,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Cobaye Mutilé": {
-    "def": null,
+    "def": "Rat ogre",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Rat ogre",
   },
   "Cockatrice": {
     "def": "Cockatrice",
@@ -477,10 +477,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Contremaître": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Cornu": {
     "def": "Cornu",
@@ -495,16 +495,16 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Coureur d'égout",
   },
   "Coureur d’Égouts": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Coursier": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "Cheval",
   },
   "Cultiste": {
     "def": null,
@@ -633,10 +633,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Esprit Faible": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Spectre",
+    "plan": "spectral",
+    "scale": 0.98,
+    "species": "Spectre",
   },
   "Eusapia Balacañon": {
     "def": null,
@@ -681,16 +681,16 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Fimir",
   },
   "Fongus de Gork": {
-    "def": null,
+    "def": "Orc",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Orc",
   },
   "Fongus de Mork": {
-    "def": null,
+    "def": "Gobelin",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Gobelin",
   },
   "Fourgue": {
     "def": null,
@@ -849,16 +849,16 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Loup",
   },
   "Grand Maître des Hybridations": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Grand Moine de la Peste": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Grand Sanglier Ombrageux": {
     "def": "Sanglier",
@@ -1173,10 +1173,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Jeune Contremaître": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Jeune Délinquant": {
     "def": null,
@@ -1215,10 +1215,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Loup",
   },
   "Jeune Moine de la Peste": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Jeune Naufrageur": {
     "def": null,
@@ -1485,16 +1485,16 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Maître Assassin": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Maître des Hybridation": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Maître des Taillis": {
     "def": null,
@@ -1503,10 +1503,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Maître des Égouts": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Rat géant",
+    "plan": "quadruped",
+    "scale": 0.62,
+    "species": "Rat géant",
   },
   "Minotaure": {
     "def": "Minotaure",
@@ -1539,10 +1539,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Moine de la Peste": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Monture Décharné": {
     "def": "Cheval",
@@ -1641,10 +1641,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Nécrophage": {
-    "def": null,
+    "def": "Goule",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Goule",
   },
   "Officier": {
     "def": null,
@@ -1737,10 +1737,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Plongeur de la Mort": {
-    "def": null,
+    "def": "Gobelin",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Gobelin",
   },
   "Pol Dankels": {
     "def": null,
@@ -1755,10 +1755,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Démon",
   },
   "Poulain": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "Cheval",
   },
   "Preyton": {
     "def": "Preyton",
@@ -1785,10 +1785,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Prédicateur de la Peste": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Prêtre D’ulric": {
     "def": null,
@@ -1935,10 +1935,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Reine des Cryptes": {
-    "def": null,
+    "def": "Goule",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Goule",
   },
   "Religieuse Novice de Rhya": {
     "def": null,
@@ -2127,10 +2127,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Sommier": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "Cheval",
   },
   "Sorcier du Chaos": {
     "def": null,
@@ -2223,16 +2223,16 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Stégadon",
   },
   "Technomage": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Technomage Expérimenté": {
-    "def": null,
+    "def": "Skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Skaven",
   },
   "Technomage du Clan Skryre": {
     "def": "Skaven",
@@ -2241,10 +2241,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Skaven",
   },
   "Traqueur Impitoyable": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Loup",
+    "plan": "quadruped",
+    "scale": 0.82,
+    "species": "Loup",
   },
   "Troll": {
     "def": "Troll",
@@ -2313,10 +2313,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Vermine de choc",
   },
   "Vhargulf": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Varghulf",
+    "plan": "winged",
+    "scale": 1.1,
+    "species": "Varghulf",
   },
   "Vieil Ours Mal Léché": {
     "def": "Ours",
