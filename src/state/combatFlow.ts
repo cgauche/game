@@ -2586,9 +2586,12 @@ export function aiBestMissile(enemy: Combatant): string | undefined {
  *    Compétence de Focalisation du Vent (`focusSkillFor`), et `cn > maxSL`. À Dégâts écrits égaux, le
  *    NI le plus BAS (le plus vite focalisable). */
 export function aiFocusPlan(enemy: Combatant): { readyFocusedSpell?: string; focusableSpell?: string } {
+  // Focalisation IA bornée aux Projectiles MONO-CIBLE : un sort de ZONE (zdeRadiusTiles défini) lancé
+  // après Focalisation serait résolu en mono-cible par le `case 'cast'` (perte de la ZdE). Les ZdE
+  // passent par `aiAreaSpell`/`castArea` (faisables d'un jet). La Focalisation des ZdE est un lot ultérieur.
   const known = (enemy.spells ?? [])
     .map((id) => resolveSpell(id))
-    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
+    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp) && zdeRadiusTiles(sp.target, enemy) == null);
   const ready = known.find((sp) => enemy.focus?.spell === sp.id && (enemy.focus?.dr ?? 0) >= (sp.cn ?? 0));
   const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
   const focusable = known
