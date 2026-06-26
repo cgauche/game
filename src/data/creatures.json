@@ -18837,96 +18837,96 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 50
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 50
       },
       {
         "id": "charme",
-        "value": 0
+        "value": 45
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 50,
         "spec": "Rural"
       },
       {
         "id": "divertissement",
-        "value": 0,
+        "value": 45,
         "spec": "Conteur"
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 40
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 35,
         "spec": "Arme Simple"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 40
       },
       {
         "id": "priere",
-        "value": 0
+        "value": 50
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 45
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 50
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 40,
         "spec": "Local"
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 40,
         "spec": "Théologie"
       },
       {
         "id": "guerison",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 40
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 40
       },
       {
         "id": "emprise-sur-les-animaux",
-        "value": 0
+        "value": 40
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 30
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 30
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 30
       }
     ],
     "talents": [
@@ -22471,55 +22471,55 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 35
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 15
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 30
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 25
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 35
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 25
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 20
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 40
       },
       {
         "id": "pistage",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 25
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 35
       }
     ],
     "talents": [],
@@ -22591,56 +22591,56 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 15
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 55
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 45,
         "spec": "Bagarre"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 55
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 50
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 35
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 30
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "pistage",
-        "value": 0
+        "value": 45
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 45
       }
     ],
     "talents": [
@@ -22722,75 +22722,75 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 45
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 25
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 50,
         "spec": "Rural"
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 30
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 60
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 45,
         "spec": "Bagarre"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 65
       },
       {
         "id": "piegeage",
-        "value": 0
+        "value": 65
       },
       {
         "id": "pistage",
-        "value": 0
+        "value": 60
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 25
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 55,
         "spec": "Bêtes Sauvages"
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 50,
         "spec": "Local"
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 65
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 20
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 20
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 55
       }
     ],
     "talents": [
@@ -22873,56 +22873,56 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 50
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 45
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 65,
         "spec": "Bagarre"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 45
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 50
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 30
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 40
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 40
       }
     ],
     "talents": [
@@ -22989,47 +22989,47 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 30
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 10
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 30
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 15
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 25
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 15
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 15
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 35
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 15
       }
     ],
     "talents": [],
@@ -23089,62 +23089,62 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 45
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 45,
         "spec": "Rural"
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 55
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 35,
         "spec": "Bagarre"
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 50
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 55
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 30,
         "spec": "Local"
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 30
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 20
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 40
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 45
       }
     ],
     "talents": [
@@ -23221,61 +23221,61 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 60
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 35
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 55
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 60
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 35,
         "spec": "Bagarre"
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 65
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 15,
         "spec": "Local"
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 50
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 25
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 25
       }
     ],
     "talents": [
@@ -23348,56 +23348,56 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 35
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 30
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 35,
         "spec": "Rural"
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 85
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 35
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 75
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 75
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 25
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 75
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 25
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 25
       }
     ],
     "talents": [
@@ -23495,19 +23495,19 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 30
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 45
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 30
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 70
       },
       {
         "id": "intuition",
@@ -23515,32 +23515,32 @@
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 75,
         "spec": "Bagarre"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 75
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 25
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 65
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 25
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 25
       }
     ],
     "talents": [
@@ -26608,65 +26608,65 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 45
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 45
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 45,
         "spec": "Rural"
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 40
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 45
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 35
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 40,
         "spec": "Armes Simples"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 45
       },
       {
         "id": "divertissement",
-        "value": 0
+        "value": 25
       },
       {
         "id": "emprise-sur-les-animaux",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 30
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 25
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 25
       }
     ],
     "talents": [],
@@ -26864,74 +26864,74 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 55
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 35
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 40,
         "spec": "Rural"
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 55,
         "spec": "Arme Simple"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 55,
         "spec": "Bagarre"
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 55
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 30
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 25
       },
       {
         "id": "divertissement",
-        "value": 0
+        "value": 25
       },
       {
         "id": "emprise-sur-les-animaux",
-        "value": 0
+        "value": 30
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 30
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 30
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 30
       }
     ],
     "talents": [
@@ -31984,43 +31984,43 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 80
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 50
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 40
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 50
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 35
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 60
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 60
       }
     ],
     "talents": [],
@@ -32102,52 +32102,52 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 45
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 85
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 60
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 45
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 45
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 60
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 40
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 50,
         "spec": "Magick"
       },
       {
         "id": "focalisation",
-        "value": 0
+        "value": 85
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 70
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 40
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 70
       }
     ],
     "talents": [],
@@ -32245,52 +32245,52 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 50
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 95
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 70
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 50
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 50
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 70
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 45
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 60,
         "spec": "Magick"
       },
       {
         "id": "focalisation",
-        "value": 0
+        "value": 95
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 80
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 45
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 80
       }
     ],
     "talents": [],
@@ -32397,48 +32397,48 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 65
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 125
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 100
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 65
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 100
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 60
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 90,
         "spec": "Magick"
       },
       {
         "id": "focalisation",
-        "value": 0
+        "value": 125
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 110
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 60
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 110
       }
     ],
     "talents": [
@@ -32573,48 +32573,48 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 70
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 145
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 120
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 70
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 120
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 65
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 110,
         "spec": "Magick"
       },
       {
         "id": "focalisation",
-        "value": 0
+        "value": 145
       },
       {
         "id": "corps-a-corps",
-        "value": 0
+        "value": 130
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 65
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 130
       }
     ],
     "talents": [
@@ -39085,57 +39085,57 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 50
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 45
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 45,
         "spec": "Tunnel"
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 95
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 50
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 95
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 50
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 55,
         "spec": "Bagarre"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 50
       },
       {
         "id": "pistage",
-        "value": 0
+        "value": 50
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 85
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 10
       }
     ],
     "talents": [
@@ -39573,141 +39573,141 @@
     "skills": [
       {
         "id": "calme",
-        "value": 0
+        "value": 60
       },
       {
         "id": "charme",
-        "value": 0
+        "value": 50
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 60
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 75,
         "spec": "Souterrains"
       },
       {
         "id": "chevaucher",
-        "value": 0,
+        "value": 60,
         "spec": "Rat-Ogre"
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 75
       },
       {
         "id": "evaluation",
-        "value": 0
+        "value": 85
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 100
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 100,
         "spec": "Magick"
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 90,
         "spec": "Bataille"
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 90,
         "spec": "au choix"
       },
       {
         "id": "focalisation",
-        "value": 0,
+        "value": 70,
         "spec": "Dhar"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 70,
         "spec": "Armes Simples"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 70,
         "spec": "Arme Longue"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 100
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 50
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 100,
         "spec": "Magie"
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 85,
         "spec": "Bataille"
       },
       {
         "id": "soin-aux-animaux",
-        "value": 0
+        "value": 85
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 35
       },
       {
         "id": "recherche",
-        "value": 0
+        "value": 85
       },
       {
         "id": "divertissement",
-        "value": 0
+        "value": 45
       },
       {
         "id": "emprise-sur-les-animaux",
-        "value": 0
+        "value": 55
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 35
       },
       {
         "id": "marchandage",
-        "value": 0
+        "value": 45
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 85
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 85
       },
       {
         "id": "subornation",
-        "value": 0
+        "value": 45
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 35
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 85
       }
     ],
     "talents": [
@@ -39818,146 +39818,146 @@
     "skills": [
       {
         "id": "calme",
-        "value": 0
+        "value": 80
       },
       {
         "id": "charme",
-        "value": 0
+        "value": 90
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 100
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 95,
         "spec": "Souterrains"
       },
       {
         "id": "chevaucher",
-        "value": 0,
+        "value": 75,
         "spec": "Rat-Ogre"
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 95
       },
       {
         "id": "evaluation",
-        "value": 0
+        "value": 100
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 50
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 120
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 120,
         "spec": "Magick"
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 110,
         "spec": "Bataille"
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 110,
         "spec": "au choix"
       },
       {
         "id": "focalisation",
-        "value": 0,
+        "value": 90,
         "spec": "Dhar"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 90,
         "spec": "Armes Simples"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 90,
         "spec": "Arme Longue"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 120
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 90
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 120,
         "spec": "Magie"
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 100,
         "spec": "Bataille"
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 95,
         "spec": "au choix"
       },
       {
         "id": "soin-aux-animaux",
-        "value": 0
+        "value": 100
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 35
       },
       {
         "id": "recherche",
-        "value": 0
+        "value": 105
       },
       {
         "id": "divertissement",
-        "value": 0
+        "value": 75
       },
       {
         "id": "emprise-sur-les-animaux",
-        "value": 0
+        "value": 65
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 35
       },
       {
         "id": "marchandage",
-        "value": 0
+        "value": 75
       },
       {
         "id": "natation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 95
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 95
       },
       {
         "id": "subornation",
-        "value": 0
+        "value": 75
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 35
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 95
       }
     ],
     "talents": [
@@ -40071,82 +40071,82 @@
     "skills": [
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 30
       },
       {
         "id": "charme",
-        "value": 0
+        "value": 30
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 45,
         "spec": "Rural"
       },
       {
         "id": "divertissement",
-        "value": 0,
+        "value": 30,
         "spec": "Conteur"
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 45
       },
       {
         "id": "marchandage",
-        "value": 0
+        "value": 30
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 30,
         "spec": "Bagarre"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 25
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 30
       },
       {
         "id": "athletisme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 20
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 20
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 20
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 20
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 25
       },
       {
         "id": "subornation",
-        "value": 0
+        "value": 25
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 25
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 25
       },
       {
         "id": "projectiles",
-        "value": 0,
+        "value": 25,
         "spec": "Jet / Lancer"
       }
     ],
@@ -40806,66 +40806,66 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 55
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 40
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 30
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 50
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 55
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 35
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 40,
         "spec": "Bataille"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 50,
         "spec": "Armes d’Hast"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 45,
         "spec": "Armes Simples"
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 35
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 35
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 40
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 25
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 40
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 35
       }
     ],
     "talents": [
@@ -41441,100 +41441,100 @@
     "skills": [
       {
         "id": "metier",
-        "value": 0,
+        "value": 35,
         "spec": "Herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 50
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 45,
         "spec": "Rural"
       },
       {
         "id": "divertissement",
-        "value": 0,
+        "value": 40,
         "spec": "Conteur"
       },
       {
         "id": "escamotage",
-        "value": 0
+        "value": 40
       },
       {
         "id": "emprise-sur-les-animaux",
-        "value": 0
+        "value": 35
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 45
       },
       {
         "id": "langue",
-        "value": 0,
+        "value": 50,
         "spec": "Magick"
       },
       {
         "id": "focalisation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 40,
         "spec": "Hast"
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 45
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 40
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 50
       },
       {
         "id": "athletisme",
-        "value": 0
+        "value": 35
       },
       {
         "id": "commandement",
-        "value": 0
+        "value": 30
       },
       {
         "id": "chevaucher",
-        "value": 0
+        "value": 35
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 30
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 40
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 40
       }
     ],
     "talents": [
@@ -42105,77 +42105,77 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 35
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 55
       },
       {
         "id": "divertissement",
-        "value": 0,
+        "value": 25,
         "spec": "Insultes"
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "marchandage",
-        "value": 0
+        "value": 25
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 45,
         "spec": "Bagarre"
       },
       {
         "id": "ragot",
-        "value": 0
+        "value": 25
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 55
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 30
       },
       {
         "id": "charme",
-        "value": 0
+        "value": 20
       },
       {
         "id": "discretion",
-        "value": 0
+        "value": 30
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 20
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 20
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 25
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 20
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 25
       }
     ],
     "talents": [
@@ -42243,85 +42243,85 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 40
       },
       {
         "id": "resistance-a-l-alcool",
-        "value": 0
+        "value": 65
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 40,
         "spec": "Rural"
       },
       {
         "id": "divertissement",
-        "value": 0,
+        "value": 30,
         "spec": "Insultes"
       },
       {
         "id": "emprise-sur-les-animaux",
-        "value": 0
+        "value": 45
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 45
       },
       {
         "id": "chevaucher",
-        "value": 0,
+        "value": 40,
         "spec": "Sanglier"
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 45,
         "spec": "Armes Simples"
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 40
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 45
       },
       {
         "id": "pistage",
-        "value": 0
+        "value": 40
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 65
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 35,
         "spec": "Local"
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 35
       },
       {
         "id": "projectiles",
-        "value": 0,
+        "value": 45,
         "spec": "Arc"
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 35
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 35
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 35
       },
       {
         "id": "pari",
-        "value": 0
+        "value": 25
       }
     ],
     "talents": [
@@ -45027,49 +45027,49 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 25
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 20
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 25,
         "spec": "Tunnels"
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 25
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 15
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 30,
         "spec": "Bagarre"
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 25
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 30
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 10
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 10
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 5
       }
     ],
     "talents": [
@@ -45188,32 +45188,32 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 50
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 25
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 50,
         "spec": "Tunnels"
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 70
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 50
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 70
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 65,
         "spec": "Bagarre"
       },
       {
@@ -45226,19 +45226,19 @@
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 20
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 20
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 20
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 5
       }
     ],
     "talents": [
@@ -48556,66 +48556,66 @@
     "skills": [
       {
         "id": "athletisme",
-        "value": 0
+        "value": 60
       },
       {
         "id": "calme",
-        "value": 0
+        "value": 80
       },
       {
         "id": "discretion",
-        "value": 0,
+        "value": 60,
         "spec": "Rural"
       },
       {
         "id": "escalade",
-        "value": 0
+        "value": 75
       },
       {
         "id": "esquive",
-        "value": 0
+        "value": 65
       },
       {
         "id": "corps-a-corps",
-        "value": 0,
+        "value": 75,
         "spec": "Bagarre"
       },
       {
         "id": "orientation",
-        "value": 0
+        "value": 50
       },
       {
         "id": "perception",
-        "value": 0
+        "value": 55
       },
       {
         "id": "piegeage",
-        "value": 0
+        "value": 50
       },
       {
         "id": "pistage",
-        "value": 0
+        "value": 50
       },
       {
         "id": "resistance",
-        "value": 0
+        "value": 85
       },
       {
         "id": "savoir",
-        "value": 0,
+        "value": 20,
         "spec": "Local"
       },
       {
         "id": "survie-en-exterieur",
-        "value": 0
+        "value": 20
       },
       {
         "id": "intimidation",
-        "value": 0
+        "value": 65
       },
       {
         "id": "intuition",
-        "value": 0
+        "value": 45
       }
     ],
     "talents": [
