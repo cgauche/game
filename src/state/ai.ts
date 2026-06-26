@@ -5,20 +5,34 @@
  * d'un ennemi à partir de l'état tactique (positions, Blessures, armes, sorts).
  * La RÉSOLUTION (jets, dégâts, animations, timers) reste dans le store.
  *
- * Aucune règle inventée : le déplacement réutilise le BFS de `path.ts`, le choix
- * de cible n'utilise que les Blessures et les distances, et le tir/sort est
- * délégué au moteur via le store. La **Ligne de Vue** est respectée (on ne vise pas au tir/sort
- * une cible masquée — LDB 13 l.123) ; les bandes de portée restent appliquées par le moteur au jet.
+ * Aucune règle inventée : le déplacement réutilise le BFS de `path.ts`, l'ESPÉRANCE de dégâts
+ * (`expectedDamage`) réutilise les fonctions du moteur (`attackModifiers`/`combineMods`/`woundsFromHit`/
+ * `missileDamage`), le positionnement réutilise la géométrie (`isFlankOrRear`/`lineOfSightCover`). Les
+ * HEURISTIQUES de CHOIX (menace, positionnement) ne sont pas des règles canon (latitude permise), mais
+ * chaque chiffre dérive d'une fonction du moteur — pas de constante magique « pifométrique » — et toute
+ * action jouée passe par la résolution RAW (LoS LDB 13 l.123, bandes de portée appliquées au jet).
+ *
+ * Lot 3 — l'IA vise par MENACE (`targetThreat`, plus le « PV le plus bas »), achève proprement
+ * (`killSecure`), ne s'acharne pas (`overkillPenalty`), valorise les États infligés (`controlValue`,
+ * data-driven), couvre les paquets en ZdE (`aoeCoverage`) et se POSITIONNE (flanc/dos, couvert, portée
+ * préférée — `positionValue`). Le contexte d'ESCOUADE (surnombre, feu concentré, danger-map) est réservé
+ * au Lot 4 : `ai.ts` ne reçoit pas encore les alliés de l'ennemi.
  */
-import { Combatant } from '../engine/types';
+import { Combatant, Weapon } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, footprintN } from './footprint';
-import { losClear, tileSeenByFoe } from './lineOfSight';
-import { rangeBandModifier } from '../engine/combat';
+import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
+import { rangeBandModifier, attackModifiers, combineMods, woundsFromHit, combatValue } from '../engine/combat';
+import { effectiveWeaponDamage } from '../engine/weaponDamage';
+import { missileDamage, type SpellLike } from '../engine/magic';
+import { bonus, effectiveChar } from '../engine/characteristics';
 import { hasCondition, canTakeAction } from '../engine/conditions';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
+import { isFlankOrRear } from './combatGeometry';
+import { facingToward } from '../gameIso/rig/facing';
+import type { Dir8 } from './dir8';
 import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
@@ -49,6 +63,10 @@ export interface EnemyTurnInput {
   /** Portée du sort offensif en CASES (spellRangeTiles, résolue par l'appelant) ;
    *  null/absent = portée non chiffrable → pas de gate (comportement historique). */
   spellRange?: number | null;
+  /** Données STRUCTURÉES du sort offensif (`SpellData`) — résolues par l'appelant (couche impure qui a les
+   *  données). Servent à SCORER le sort (espérance via `missileDamage`, États via `op:'condition'`). Absent
+   *  = scoring neutre du sort (parité historique : on garde son palier sans bonus de menace/contrôle). */
+  offensiveSpellData?: SpellLike;
   /** Vol (LDB 85 p.343) : le déplacement ignore terrains/obstacles/personnages traversés. */
   flying?: boolean;
   /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
@@ -57,6 +75,10 @@ export interface EnemyTurnInput {
    *  vision nocturne incluse) — calculé par l'appelant via le moteur de vision. L'ennemi ne cible/poursuit
    *  que les héros sur ces cases (furtivité). ABSENT = pas de gate (comportement historique / tests purs). */
   perceived?: Set<string>;
+  /** Orientation MONDE (`Dir8`) des combattants, lue de `get().facing` par l'appelant (couche impure :
+   *  `ai.ts` est pur, sans store). Sert au bonus de FLANC/DOS du positionnement (`isFlankOrRear`, LDB 14
+   *  l.91). ABSENT = aucun bonus de flanc (graceful : tests purs / scène sans orientation). */
+  facing?: Record<string, Dir8>;
   /** Focalisation (LDB 46) — résolu par l'appelant (couche impure, qui a les données de sort) :
    *  un sort offensif DÉJÀ focalisé et PRÊT (`caster.focus.dr >= cn`) → lançable à NI 0 ce tour. */
   readyFocusedSpell?: string;
@@ -69,29 +91,178 @@ export interface EnemyTurnInput {
   areaSpell?: { spell: string; radius: number; range: number | null; cn: number };
 }
 
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// POIDS DES HEURISTIQUES (Lot 3) — centralisés et commentés pour régler le RESSENTI sans toucher au
+// code. Chaque poids module une grandeur dérivée du moteur (Blessures espérées, États, géométrie) ;
+// l'utilité finale d'un candidat est une SOMME pondérée (`scoreCandidate`). Plus le score est HAUT,
+// meilleur le candidat (argmax = max). Les grandeurs de base sont en « Blessures espérées » (l'unité
+// commune : ce qu'on retire de PB) ; les bonus de position/contrôle sont calibrés sur cette échelle.
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+const W = {
+  /** Espérance de Blessures qu'on inflige À la cible ce tour (cœur offensif). Unité native → ×1. */
+  damageDealt: 1,
+  /** Menace de la cible (dégâts qu'ELLE peut nous infliger × atteignabilité × fragilité). On vise en
+   *  priorité ce qui nous menace le plus tout en étant éliminable : pèse autant que nos propres dégâts. */
+  threat: 1,
+  /** Achever une cible (dégâts attendus ≥ PB restants) : prime forte — un mort ne riposte plus. */
+  killSecure: 12,
+  /** S'acharner sur une cible NEUTRALISÉE (à terre/inconsciente/0 PB) : malus FORT (anti-acharnement,
+   *  Lot 1) — on ne la frappe qu'en dernier recours (aucune menace debout). */
+  overkill: 100,
+  /** Valeur d'un État infligé (contrôle), pondérée par sa dangerosité (cf. `CONDITION_THREAT`). */
+  control: 1,
+  /** Héros couvert par une ZdE (au-delà du 1ᵉʳ — un missile mono-cible touche déjà 1). */
+  aoePerExtraHero: 6,
+  /** Frapper au FLANC/DOS (hors champ de vision avant de la cible, LDB 14 l.91) : gratuit → bonus modéré. */
+  flankRear: 4,
+  /** Gain de COUVERT pour soi en se déplaçant (par cran de couvert gagné : imparfaite/moyenne/totale). */
+  coverGain: 3,
+  /** Respect de la portée PRÉFÉRÉE : un tireur/lanceur qui reste à distance de tir+LdV plutôt que d'entrer
+   *  en mêlée ; un mêlée qui se met au contact. Bonus quand la case d'arrivée respecte la préférence. */
+  preferredRange: 5,
+  /** Pénalité de DISTANCE résiduelle à la cible après un `move` (par case) : à utilité égale, on choisit
+   *  la case qui réduit le plus la distance (départage des approches, calibré faible). */
+  approachDist: 0.2,
+} as const;
+
+/**
+ * Dangerosité d'un ÉTAT infligé (LDB 16), en « Blessures espérées équivalentes » — pour `controlValue`.
+ * LU EN DONNÉE par nom d'État (clé = `name` du `op:'condition'`), pas une liste de sorts : un nouvel État
+ * se règle ici. Calibrage : un État qui SUPPRIME l'Action (Étourdi/Inconscient) ou tue à petit feu
+ * (En flammes/Empoisonné/Hémorragie) vaut plus qu'un simple malus (Aveuglé/Assourdi/Ensanglanté). Les
+ * valeurs sont des poids de RESSENTI (latitude IA), pas des règles. États inconnus → 1 (contrôle mineur).
+ */
+const CONDITION_THREAT: Record<string, number> = {
+  inconscient: 8, // hors de combat
+  'a-terre': 3, // vulnérable + perd son prochain mouvement
+  etourdi: 6, // ne peut pas agir (LDB 16 l.123)
+  'en-flammes': 5, // 1d10/Round, force le « se rouler »
+  empoisonne: 4, // dégâts récurrents
+  hemorragie: 4, // dégâts récurrents
+  empetre: 5, // Mouvement nul + Action perdue à se libérer
+  aveugle: 4, // −10 et ne peut viser
+  assourdi: 2,
+  ensanglante: 2,
+  surpris: 4, // pas de réaction (LDB 16 l.132)
+};
+
 /**
  * Une cible est NEUTRALISÉE (au sol/inconsciente/0 PB encore là) : on n'a aucun intérêt tactique à
  * s'acharner dessus tant qu'une menace DEBOUT existe. Lue en DONNÉE (États + Blessures), sans nom en
  * dur — un combattant À Terre/Inconscient ou à ≤0 PB (encore dans le vivier) est « par terre ».
  */
 function isNeutralized(h: Combatant): boolean {
-  return hasCondition(h, 'a-terre') || hasCondition(h, 'inconscient') || h.wounds.current <= 0;
+  // `conditions` peut manquer sur un combattant de test minimal → garde (hasCondition lève sinon).
+  const cond = h.conditions ?? [];
+  return cond.some((c) => c.name === 'a-terre' || c.name === 'inconscient') || h.wounds.current <= 0;
+}
+
+/** Garde NaN : une grandeur dérivée du moteur peut être NaN si les Caractéristiques d'un combattant de
+ *  test sont absentes (`{} as never`). On retombe alors sur `fallback` (neutre) → scoring déterministe :
+ *  les heuristiques fines s'effacent et le palier d'action + les tie-breaks (cf. plus bas) décident. */
+const finite = (n: number, fallback = 0): number => (Number.isFinite(n) ? n : fallback);
+
+/**
+ * Probabilité de TOUCHER (0..1) d'une attaque, dérivée de la valeur cible RAW (base + modificateurs
+ * plafonnés par `combineMods`, comme la résolution) : `P = clamp(target, 5, 95) / 100` (un d100 réussit
+ * si ≤ cible ; bornes 5/95 ≈ l'auto-échec/réussite usuel). PUR, sans dé. Les modificateurs de PORTÉE/
+ * Taille/État/Avantage sont ceux du moteur → l'espérance reflète la vraie difficulté du jet.
+ */
+function hitProbability(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number): number {
+  const val = combatValue(attacker, kind, weapon);
+  const mods = combineMods(attackModifiers(attacker, target, weapon, { kind, distanceTiles }));
+  const targetVal = finite(val + mods, NaN);
+  if (!Number.isFinite(targetVal)) return NaN;
+  return Math.max(5, Math.min(95, targetVal)) / 100;
 }
 
 /**
- * Cible préférée — tri LEXICOGRAPHIQUE déterministe (anti-acharnement, P1 du diagnostic) :
- *  (a) cible NON neutralisée d'abord (tier 0) ; une neutralisée (tier 1) n'est choisie qu'en dernier
- *      recours (elle reste dans le vivier — on peut l'achever si c'est la seule option) ;
- *  (b) à tier égal, Blessures (PB) croissantes (on sécurise l'élimination du plus entamé DEBOUT) ;
- *  (c) puis distance Manhattan croissante. Stable et déterministe (aucun dé).
+ * Espérance de Blessures d'une attaque d'arme `attacker → target` (PUR, sans dé) : probabilité de
+ * toucher × Blessures d'un coup MOYEN. Les Dégâts d'un coup = Dégâts d'arme (`flat` + BF si `plusBF`) +
+ * un DR moyen modeste (1) ; les Blessures réelles passent par `woundsFromHit` (BE + PA à la localisation
+ * « corps », qualités d'arme) — MÊME résolveur que le combat. `min 1` (Robuste) inclus par `woundsFromHit`.
  */
-function bestTarget(enemyPos: Pt, heroes: Combatant[]): Combatant {
-  return [...heroes].sort((a, b) => {
-    const ta = isNeutralized(a) ? 1 : 0, tb = isNeutralized(b) ? 1 : 0;
-    if (ta !== tb) return ta - tb;
-    if (a.wounds.current !== b.wounds.current) return a.wounds.current - b.wounds.current;
-    return manhattan(enemyPos, a.pos!) - manhattan(enemyPos, b.pos!);
-  })[0];
+function expectedDamage(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number): number {
+  const p = hitProbability(attacker, target, weapon, kind, distanceTiles);
+  if (!Number.isFinite(p)) return NaN;
+  const bf = bonus(effectiveChar(attacker, 'F'));
+  const avgDR = 1; // DR moyen prudent (l'espérance d'un DR ≥ 0 sur une réussite) — calibrage IA, pas une règle
+  // Dégâts d'arme (Dégâts d'arme + BF si `plusBF`) résolus par le moteur (gère « Spécial »/literal → 0).
+  const totalDamage = finite(effectiveWeaponDamage(weapon, Number.isFinite(bf) ? bf : 0) + avgDR, NaN);
+  if (!Number.isFinite(totalDamage)) return NaN;
+  return p * safeWounds(weapon, target, totalDamage);
+}
+
+/** `woundsFromHit` défensif : un combattant de test minimal peut ne pas porter `armour` (le résolveur
+ *  lirait `c.armour[loc]` sur `undefined`). On lui prête une armure NULLE (objet vide) le cas échéant —
+ *  l'espérance reste prudente (sous-estime légèrement la mitigation). Renvoie 0 si NaN. */
+function safeWounds(weapon: Weapon, target: Combatant, totalDamage: number): number {
+  const safe = target.armour ? target : ({ ...target, armour: {} as Combatant['armour'] });
+  return finite(woundsFromHit(weapon, safe, 'corps', totalDamage), 0);
+}
+
+/** Espérance de Blessures d'un Projectile magique `caster → target` (PUR) : probabilité (≈ tir, via la
+ *  CT/valeur du sort approximée par la meilleure arme à distance OU une difficulté neutre) × Dégâts du
+ *  missile (`missileDamage` : Dégâts + DR moyen, − BE/PA sauf ignorePA/ignoreBE). Sans données de sort →
+ *  NaN (scoring neutre). Approximation assumée : la vraie valeur d'incantation (Langue (Magick)) n'est pas
+ *  dans `ai.ts` ; on prend une probabilité de référence (0,6) modulée par l'Avantage de l'attaquant. */
+function expectedSpellDamage(caster: Combatant, target: Combatant, spell: SpellLike | undefined): number {
+  if (!spell) return NaN;
+  const md = missileDamage(spell);
+  if (!md) return 0; // sort non-missile (débuff/contrôle) : 0 dégât direct (sa valeur passe par controlValue)
+  const bfm = bonus(effectiveChar(caster, 'FM'));
+  const avgDR = 1;
+  const raw = finite(md.damage + (Number.isFinite(bfm) ? bfm : 0) + avgDR, md.damage + avgDR);
+  const tb = bonus(effectiveChar(target, 'E'));
+  const ap = 0; // PA non connus finement ici ; l'espérance reste prudente (sous-estime légèrement)
+  const mitig = (md.ignoreBE ? 0 : finite(tb, 0)) + (md.ignorePA ? 0 : ap);
+  const wounds = Math.max(0, raw - mitig);
+  // Probabilité de référence (lanceur) ajustée par l'Avantage (×10 → /100 comme un mod de toucher).
+  const p = Math.max(0.1, Math.min(0.95, 0.6 + (caster.advantage ?? 0) * 0.1));
+  return p * wounds;
+}
+
+/**
+ * MENACE d'un héros pour l'ennemi (Lot 3 — REMPLACE le « PV le plus bas » comme critère de cible) :
+ *  menace = (dégâts qu'il peut nous infliger) × ATTEIGNABILITÉ (proche = menace immédiate) × FRAGILITÉ
+ *  (PB bas = plus facile à éliminer, donc cible prioritaire pour neutraliser sa menace).
+ * - dégâts du héros : espérance de son MEILLEUR coup contre l'ennemi (mêlée ou tir) — réutilise
+ *   `expectedDamage` (symétrie attaquant/défenseur). Plancher 1 (tout adversaire armé reste une menace).
+ * - atteignabilité : décroît avec la distance (1 au contact → ~0,3 au loin) — un archer lointain menace
+ *   moins qu'un bretteur au contact.
+ * - fragilité : (1 + (PBmax − PBcourant)/PBmax) → un héros entamé est ~2× plus « intéressant » (on
+ *   sécurise l'élimination, LDB tactique). PUR. NaN-garde sur les dégâts (Caractéristiques absentes).
+ */
+function targetThreat(enemy: Combatant, hero: Combatant): number {
+  const dist = chebyshev(enemy.pos!, hero.pos!);
+  const reachability = 1 / (1 + 0.15 * dist); // 1 au contact, décroissance douce
+  const maxW = Math.max(1, hero.wounds.max);
+  const fragility = 1 + Math.max(0, maxW - hero.wounds.current) / maxW; // 1 (intact) → 2 (presque mort)
+  // Danger brut du héros = meilleure espérance de SON coup contre l'ennemi (réciprocité).
+  const meleeW = hero.weapons?.find((w) => w.type === 'melee');
+  const rangedW = hero.weapons?.find((w) => w.type === 'ranged');
+  const dmgMelee = meleeW ? finite(expectedDamage(hero, enemy, meleeW, 'melee'), NaN) : NaN;
+  const dmgRanged = rangedW ? finite(expectedDamage(hero, enemy, rangedW, 'ranged', dist), NaN) : NaN;
+  const cand = [dmgMelee, dmgRanged].filter((d) => Number.isFinite(d)) as number[];
+  const danger = cand.length ? Math.max(...cand) : 1; // pas de Caractéristiques chiffrables → danger neutre (1)
+  return Math.max(1, danger) * reachability * fragility;
+}
+
+/** Valeur de CONTRÔLE d'un sort (États qu'il inflige, LUS dans ses `op:'condition'` — data-driven, pas
+ *  une liste de noms) : Σ dangerosité (`CONDITION_THREAT`) des États posés. Un sort sans `op:'condition'`
+ *  → 0 (pas de contrôle). PUR. La structure d'effets (`Flow`) est lue en profondeur (ops imbriqués). */
+function controlValue(spell: SpellLike | undefined): number {
+  if (!spell) return 0;
+  let total = 0;
+  const walk = (node: unknown): void => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { for (const n of node) walk(n); return; }
+    const o = node as Record<string, unknown>;
+    if (o.op === 'condition' && typeof o.name === 'string') total += CONDITION_THREAT[o.name] ?? 1;
+    for (const v of Object.values(o)) walk(v);
+  };
+  walk((spell as { effects?: unknown }).effects);
+  return total;
 }
 
 /**
@@ -135,25 +306,25 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 }
 
 /**
- * Un CANDIDAT d'action discrétionnaire (Lot 2 — Socle Utility).
- * `tier` = palier de priorité LEXICOGRAPHIQUE (plus PETIT = meilleur) — il REPRODUIT EXACTEMENT la
- * cascade historique : castArea(≥2) < focus < cast < reload < shoot < melee < move(approche).
- * `targetId`/`coord` servent UNIQUEMENT de départage déterministe à palier égal (tie-break stable),
- * ils ne renversent JAMAIS l'ordre des paliers. Les poids sont donc NEUTRES au Lot 2 : le moteur
- * « énumérer → scorer → argmax » recrée trait pour trait la décision précédente. Les heuristiques
- * fines (menace, positionnement) sont réservées au Lot 3 et n'apparaissent pas ici.
+ * Un CANDIDAT d'action discrétionnaire (Lot 3 — moteur Utility à score pondéré).
+ * `kind` = type d'action (sert au BIAIS de palier dans le départage : à utilité égale, on garde l'ordre
+ * castArea < focus < cast < reload < shoot < melee < move — la cascade historique comme tie-break stable,
+ * PAS comme priorité absolue : une utilité supérieure renverse désormais le palier). `utility` = somme
+ * pondérée des heuristiques (plus HAUT = mieux). `targetId`/`coord` = départage déterministe final.
  */
 interface Candidate {
   action: EnemyAction;
-  tier: number;
-  /** id de la cible visée (départage secondaire, stable) — vide si l'action n'en a pas. */
+  kind: keyof typeof TIER;
+  /** Utilité pondérée (Lot 3) — somme des heuristiques. Plus HAUT = meilleur. */
+  utility: number;
+  /** id de la cible visée (départage, stable) — vide si l'action n'en a pas. */
   targetId: string;
-  /** coordonnées de destination/centre (départage tertiaire) — null si l'action n'en a pas. */
+  /** coordonnées de destination/centre (départage) — null si l'action n'en a pas. */
   coord: Pt | null;
 }
 
-// Paliers de priorité (cascade historique, du plus prioritaire au moins). Énumérés ici une fois
-// pour que `scoreCandidate` et la lecture restent une SOURCE UNIQUE de l'ordre.
+// Paliers d'action (cascade historique, du plus prioritaire au moins). Au Lot 3 ils ne servent plus de
+// PRIORITÉ absolue (l'utilité prime) mais de BIAIS de départage stable à utilité égale (parité golden).
 const TIER = {
   castArea: 0, // ZdE couvrant ≥2 héros (LDB 47 l.44)
   focus: 1, // Focalisation d'un sort infaisable d'un jet (LDB 46)
@@ -165,36 +336,27 @@ const TIER = {
 } as const;
 
 /**
- * Score LEXICOGRAPHIQUE d'un candidat (Lot 2 : neutre — recrée la cascade). Le palier prime ; à
- * palier égal, on départage par id de cible (ordre stable, déterministe) puis par coordonnées (x,y).
- * Renvoie un tuple comparé champ par champ par `argmax`. Plus PETIT = meilleur (comme un tri).
+ * argmax déterministe (Lot 3) : meilleur candidat par UTILITÉ décroissante. Tie-break STABLE à utilité
+ * égale (départage lexicographique) : palier d'action (cascade historique) ↑, puis id de cible ↑, puis
+ * coordonnées (x,y) ↑, puis index d'énumération (ultime garde-fou). Les égalités d'utilité sont gérées
+ * proprement par cette chaîne — déterministe, sans dé.
  */
-function scoreCandidate(c: Candidate): [number, string, number, number] {
-  return [c.tier, c.targetId, c.coord?.x ?? 0, c.coord?.y ?? 0];
-}
-
-/** argmax déterministe : meilleur candidat (score lexicographique minimal). Tie-break stable. */
 function argmax(cands: Candidate[]): Candidate | null {
   let best: Candidate | null = null;
-  let bestScore: [number, number, string, number, number] | null = null;
+  let bi = -1;
   for (let i = 0; i < cands.length; i++) {
-    const s = scoreCandidate(cands[i]);
-    // On adjoint l'index d'énumération en dernier critère : ultime garde-fou de stabilité (deux
-    // candidats parfaitement égaux gardent l'ordre d'énumération — ne survient pas en pratique).
-    const full: [number, number, string, number, number] = [s[0], i, s[1], s[2], s[3]];
-    if (
-      bestScore == null ||
-      full[0] < bestScore[0] || (full[0] === bestScore[0] && (
-        full[2] < bestScore[2] || (full[2] === bestScore[2] && (
-          full[3] < bestScore[3] || (full[3] === bestScore[3] && (
-            full[4] < bestScore[4] || (full[4] === bestScore[4] && full[1] < bestScore[1])
-          ))
-        ))
-      ))
-    ) {
-      best = cands[i];
-      bestScore = full;
-    }
+    const c = cands[i];
+    if (best == null) { best = c; bi = i; continue; }
+    // Comparaison : utilité DÉCROISSANTE d'abord ; à égalité (à epsilon près), tie-break lexicographique.
+    const du = c.utility - best.utility;
+    let better: boolean;
+    if (Math.abs(du) > 1e-9) better = du > 0;
+    else if (TIER[c.kind] !== TIER[best.kind]) better = TIER[c.kind] < TIER[best.kind];
+    else if (c.targetId !== best.targetId) better = c.targetId < best.targetId;
+    else if ((c.coord?.x ?? 0) !== (best.coord?.x ?? 0)) better = (c.coord?.x ?? 0) < (best.coord?.x ?? 0);
+    else if ((c.coord?.y ?? 0) !== (best.coord?.y ?? 0)) better = (c.coord?.y ?? 0) < (best.coord?.y ?? 0);
+    else better = i < bi; // parfaitement égaux → ordre d'énumération (ne survient pas en pratique)
+    if (better) { best = c; bi = i; }
   }
   return best;
 }
@@ -202,7 +364,7 @@ function argmax(cands: Candidate[]): Candidate | null {
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
-  const { readyFocusedSpell, focusableSpell, areaSpell } = input;
+  const { readyFocusedSpell, focusableSpell, areaSpell, offensiveSpellData, facing } = input;
   // Vision réciproque : l'ennemi ne cible/poursuit que les héros qu'il PERÇOIT (LoS + lumière, comme le
   // groupe). `perceived` absent = aucun gate (comportement historique / tests purs).
   const heroes = input.perceived
@@ -236,7 +398,6 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
   // de tirer : une arme à distance sans Atout Pistolet ne tire pas en mêlée (LDB Armes l.297-298).
-  // C'est ce qui corrige l'arbalétrier qui canardait au loin alors qu'il était Engagé.
   const adjacentFoes = heroes.filter(inMelee);
   // Ligne de Vue (LDB 13 l.123) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
@@ -315,97 +476,181 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     return false;
   };
 
-  // === CŒUR DISCRÉTIONNAIRE — moteur Utility (Lot 2) =======================
+  // === CŒUR DISCRÉTIONNAIRE — moteur Utility (Lot 3 : score pondéré) =======================
   // Tout ce qui précède (gardes RAW/psychologie : fin de combat, En flammes, Brisé, Bestial, fuite,
-  // anti-immobilisme…) reste FORCÉ et n'entre PAS dans le scoring. Ici on ÉNUMÈRE les actions JOUABLES,
-  // on les SCORE par paliers neutres (= cascade historique) et on prend l'argmax. Aucune règle inventée :
-  // les gardes de validité (portée, LdV, canCast/canShoot/inMelee, ZdE, focalisable) sont IDENTIQUES.
+  // anti-immobilisme…) reste FORCÉ et n'entre PAS dans le scoring. Ici on ÉNUMÈRE PLUSIEURS candidats
+  // par type (un par cible atteignable, plusieurs cases d'approche), on les SCORE par UTILITÉ pondérée
+  // (menace, dégâts attendus, killSecure/overkill, contrôle, couverture, positionnement) et on prend
+  // l'argmax. Aucune règle inventée : gardes de validité (portée, LdV, canCast/canShoot/inMelee, ZdE,
+  // focalisable) IDENTIQUES ; chaque heuristique dérive d'une fonction du moteur.
 
   // Animosité/Haine ACTIVE (LDB 21 l.22/41) : filtre de VIVIER appliqué AVANT le choix de cible — on
-  // s'en prend en priorité au groupe haï présent dans le vivier considéré (sinon ciblage habituel).
+  // s'en prend en priorité au groupe haï présent dans le vivier considéré (sinon vivier brut).
   const hatedCibles = (enemy.psychState ?? [])
     .filter((p) => (p.type === 'animosite' || p.type === 'haine') && p.active && p.cible)
     .map((p) => p.cible!);
   const hatedOf = (pool: Combatant[]) =>
     hatedCibles.length ? pool.filter((h) => hatedCibles.some((cb) => groupMatch(cb, h.groups ?? []))) : [];
-  // Cible préférée d'un vivier filtré : on restreint au groupe haï s'il y en a un, sinon vivier brut ;
-  // Frénésie impose `nearest` (le plus proche en LdV, LDB 21 l.34) au lieu du tri lexicographique.
-  const chooseTarget = (vivier: Combatant[]): Combatant => {
-    if (frenzied) {
-      const visibleFoes = shootableHeroes.length ? shootableHeroes : heroes;
-      return nearest(pos, visibleFoes);
-    }
-    const pool = hatedOf(vivier);
-    return bestTarget(pos, pool.length ? pool : vivier);
+  /** Restreint un vivier au groupe haï s'il y en a un présent, sinon le vivier brut. */
+  const restrict = (pool: Combatant[]): Combatant[] => { const hp = hatedOf(pool); return hp.length ? hp : pool; };
+  /** En Frénésie, la cible est IMPÉRATIVEMENT le plus proche en LdV (LDB 21 l.34) — on contraint le vivier
+   *  d'énumération à ce seul héros (le scoring ne peut donc choisir personne d'autre). */
+  const frenzyPick = (): Combatant | null => {
+    if (!frenzied) return null;
+    const visibleFoes = shootableHeroes.length ? shootableHeroes : heroes;
+    return visibleFoes.length ? nearest(pos, visibleFoes) : null;
   };
 
-  // Meilleure case d'APPROCHE vers une cible (mêlée OU tireur dégageant la LdV) : adjacente à la
-  // cible si possible, sinon la plus proche. Tie-break inchangé : [adjacence, distance Manhattan].
-  const approachTowards = (target: Combatant): Pt | null => {
-    let best: Pt | null = null;
-    let bestScore: [number, number] | null = null;
+  // --- HEURISTIQUES de SCORE (Lot 3) ---------------------------------------
+  /** Utilité d'une ATTAQUE (mêlée/tir/sort) sur `target` : dégâts qu'on inflige + menace de la cible
+   *  + killSecure − overkill + contrôle. `dmgKind`/`weapon`/`spell` sélectionnent le calcul de dégâts. */
+  const attackUtility = (
+    target: Combatant,
+    src: { kind: 'melee'; weapon: Weapon } | { kind: 'ranged'; weapon: Weapon; dist: number } | { kind: 'spell'; spell?: SpellLike },
+  ): number => {
+    const dmg = src.kind === 'spell'
+      ? finite(expectedSpellDamage(enemy, target, src.spell), 0)
+      : src.kind === 'ranged'
+        ? finite(expectedDamage(enemy, target, src.weapon, 'ranged', src.dist), 0)
+        : finite(expectedDamage(enemy, target, src.weapon, 'melee'), 0);
+    const threat = finite(targetThreat(enemy, target), 0);
+    const control = src.kind === 'spell' ? controlValue(src.spell) : 0;
+    const securesKill = dmg >= target.wounds.current && target.wounds.current > 0 ? W.killSecure : 0;
+    const overkill = isNeutralized(target) ? W.overkill : 0;
+    return W.damageDealt * dmg + W.threat * threat + W.control * control + securesKill - overkill;
+  };
+
+  /** Bonus de POSITIONNEMENT d'une case d'arrivée `to` pour attaquer `target` (Lot 3) : flanc/dos +
+   *  gain de couvert pour soi + respect de la portée préférée (tireur/lanceur reste à distance+LdV ;
+   *  mêlée au contact). PAS de surnombre ni danger-map (Lot 4). PUR. */
+  const isShooterOrCaster = (canCast || canShoot) || (offensiveSpell != null) || (hasRanged && !hasMeleeWeapon);
+  const positionValue = (to: Pt, target: Combatant): number => {
+    let v = 0;
+    // Flanc/dos (LDB 14 l.91) : frapper hors du champ de vision avant de la cible (gratuit). Nécessite
+    // l'orientation de la cible (lue de `facing`) ; absente → 0 (graceful).
+    const tFacing = facing?.[target.id];
+    if (tFacing) {
+      const dirToAttacker = facingToward(target.pos!, to);
+      if (isFlankOrRear(tFacing, dirToAttacker)) v += W.flankRear;
+    }
+    // Gain de couvert POUR SOI face à la menace la plus proche : un couvert imparfait/moyen/total à
+    // l'arrivée réduit les tirs adverses (lineOfSightCover, direction héros→case). Cran gagné vs case actuelle.
+    const coverRank = (from: Pt): number => {
+      let worst = 0;
+      for (const h of heroes) {
+        const c = lineOfSightCover(scene, h.pos!, from, [], smoke ?? []);
+        const rank = c.cover === 'totale' ? 3 : c.cover === 'moyenne' ? 2 : c.cover === 'imparfaite' ? 1 : 0;
+        if (rank > worst) worst = rank;
+      }
+      return worst;
+    };
+    const coverDelta = coverRank(to) - coverRank(pos);
+    if (coverDelta > 0) v += W.coverGain * coverDelta;
+    // Portée préférée : un tireur/lanceur valorise une case d'où il TIRE (cible visible + à portée) sans
+    // être au contact ; un combattant de mêlée valorise le contact. Réutilise les gates de portée/LdV.
+    const d = chebyshev(to, target.pos!);
+    const seesFrom = losClear(scene, to, target.pos!, smoke ?? []);
+    if (isShooterOrCaster) {
+      const inShootRange = canCast
+        ? (spellRange == null || d <= spellRange)
+        : (maxWeaponRange === 0 || rangeBandModifier(d, maxWeaponRange) != null);
+      if (d > mr && seesFrom && inShootRange) v += W.preferredRange; // garde la distance ET la ligne de tir
+    } else if (withinMelee(to, target.pos!)) {
+      v += W.preferredRange; // mêlée : au contact
+    }
+    return v;
+  };
+
+  // Meilleure case d'APPROCHE vers une cible — énumère PLUSIEURS cases pertinentes (adjacentes à la
+  // cible, et la case qui réduit le plus la distance) plutôt qu'une seule (Lot 3 : laisse le scoring
+  // arbitrer position vs distance). Renvoie une liste de candidats `(to, utilité de position)`.
+  const approachCandidates = (target: Combatant): { to: Pt; posV: number }[] => {
+    const out: { to: Pt; posV: number }[] = [];
     for (const k of reach.keys()) {
       const [x, y] = k.split(',').map(Number);
       if (x === pos.x && y === pos.y) continue; // ne pas « bouger » sur place
-      const tile = { x, y };
-      const score: [number, number] = [withinMelee(tile, target.pos!) ? 0 : 1, manhattan(tile, target.pos!)];
-      if (!bestScore || score[0] < bestScore[0] || (score[0] === bestScore[0] && score[1] < bestScore[1])) {
-        best = tile;
-        bestScore = score;
-      }
+      const to = { x, y };
+      out.push({ to, posV: positionValue(to, target) });
     }
-    return best;
+    return out;
   };
 
-  // --- ÉNUMÉRATION des candidats JOUABLES ----------------------------------
-  // On ne produit qu'UN candidat par type d'action (Lot 2 : parité stricte — la cible est choisie par
-  // le `chooseTarget`/`bestTarget` historique ; l'élargissement à toutes les cibles est pour le Lot 3).
+  // --- ÉNUMÉRATION des candidats JOUABLES (Lot 3 : multi-cibles, multi-cases) ----------------
   const candidates: Candidate[] = [];
+  const fpick = frenzyPick();
 
   // ZdE (LDB 47 l.44) : un sort de ZONE castable dont le centre auto-posé couvre ≥2 héros (portée + LdV).
+  // Scoré par COUVERTURE (héros touchés) — `aoeCoverage` : bonus par héros au-delà du 1ᵉʳ + contrôle.
   if (!frenzied && areaSpell) {
     const ac = bestAreaCenter(pos, shootableHeroes, areaSpell.radius, areaSpell.range, (pt) => losClear(scene, pos, pt, smoke ?? []));
-    if (ac) candidates.push({ action: { kind: 'castArea', spell: areaSpell.spell, center: ac.center }, tier: TIER.castArea, targetId: '', coord: ac.center });
+    if (ac) {
+      const aoe = W.aoePerExtraHero * (ac.covered - 1); // « − alliés touchés » : pas d'alliés en entrée (Lot 4)
+      candidates.push({ action: { kind: 'castArea', spell: areaSpell.spell, center: ac.center }, kind: 'castArea', utility: aoe, targetId: '', coord: ac.center });
+    }
   }
   // Focalisation (LDB 46) : sort focalisable + AUCUN sort faisable d'un jet (`!canCast`), sauf menacé au
-  // contact avec un repli (arme de mêlée ou tir) — risque d'interruption (l.193).
+  // contact avec un repli (arme de mêlée ou tir) — risque d'interruption (l.193). Utilité neutre (0) :
+  // c'est un investissement de tour sans dégât immédiat — il ne « gagne » que faute de mieux.
+  // `committingPrep` : une action de PRÉPARATION (Focalisation/Recharge) est CHOISIE → on ne lui oppose
+  // pas une approche de mêlée (le lanceur/tireur reste en place, comme la cascade historique reload/focus
+  // < move). Sans elle, l'approche `move` (utilité de menace > 0) écraserait la prep neutre (régression).
+  let committingPrep = false;
   if (!frenzied && focusableSpell && !canCast) {
     const contactFallback = adjacentFoes.length > 0 && (hasMeleeWeapon || canShoot);
-    if (!contactFallback) candidates.push({ action: { kind: 'focus', spell: focusableSpell }, tier: TIER.focus, targetId: '', coord: null });
+    if (!contactFallback) { candidates.push({ action: { kind: 'focus', spell: focusableSpell }, kind: 'focus', utility: 0, targetId: '', coord: null }); committingPrep = true; }
   }
-  // Sort offensif mono-cible (sur la cible visible/à portée, résolu comme un projectile).
+  // Sort offensif mono-cible : UN candidat PAR cible visible/à portée (Lot 3 — multi-cibles), scoré par
+  // menace/dégâts/contrôle. Frénésie → seul `fpick`.
   if (canCast) {
-    const t = chooseTarget(castPool);
-    candidates.push({ action: { kind: 'cast', targetId: t.id, spell: castSpellId! }, tier: TIER.cast, targetId: t.id, coord: t.pos ?? null });
+    const pool = restrict(fpick ? [fpick].filter((h) => castPool.includes(h)) : castPool);
+    for (const t of pool) {
+      candidates.push({ action: { kind: 'cast', targetId: t.id, spell: castSpellId! }, kind: 'cast', utility: attackUtility(t, { kind: 'spell', spell: offensiveSpellData }), targetId: t.id, coord: t.pos ?? null });
+    }
   }
-  // Recharger (LDB 63 l.28-29) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée justifiée.
+  // Recharger (LDB 63 l.28-29) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée
+  // justifiée. Utilité neutre (préparation) — préféré seulement faute de tir/mêlée meilleurs.
   if (reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) {
-    candidates.push({ action: { kind: 'reload' }, tier: TIER.reload, targetId: '', coord: null });
+    candidates.push({ action: { kind: 'reload' }, kind: 'reload', utility: 0, targetId: '', coord: null });
+    committingPrep = true; // un tireur recharge sur place plutôt que de foncer en mêlée
   }
-  // Tir (hors Combat rapproché, cible visible) : tenir la position et tirer.
-  if (canShoot) {
-    const t = chooseTarget(shootPool);
-    candidates.push({ action: { kind: 'shoot', targetId: t.id }, tier: TIER.shoot, targetId: t.id, coord: t.pos ?? null });
+  // Tir (hors Combat rapproché, cible visible) : UN candidat PAR cible tirable (Lot 3 — multi-cibles).
+  if (canShoot && rangedW) {
+    const pool = restrict(fpick ? [fpick].filter((h) => shootPool.includes(h)) : shootPool);
+    for (const t of pool) {
+      candidates.push({ action: { kind: 'shoot', targetId: t.id }, kind: 'shoot', utility: attackUtility(t, { kind: 'ranged', weapon: rangedW, dist: fpDist(t) }), targetId: t.id, coord: t.pos ?? null });
+    }
   }
-  // Mêlée / approche : la cible de contact suit le comportement historique (tireur retenu au contact
-  // frappe l'adversaire à son contact ; sinon, cible frappable ce tour, sinon vivier complet).
-  if (!canCast && !canShoot) {
+  // Mêlée / approche : énumère un candidat de MÊLÉE par cible déjà au contact ET un candidat d'APPROCHE
+  // (move) par cible atteignable ce tour (Lot 3). La cible suit le vivier (tireur retenu au contact frappe
+  // l'adversaire à son contact ; sinon vivier complet). Un sort/tir jouable PRIME (parité historique : la
+  // cascade ne propose alors jamais de mêlée/move) — on ne produit ces candidats que si `!canCast && !canShoot`.
+  const meleeWeapon = enemy.weapons.find((w) => w.type === 'melee') ?? enemy.weapons[0];
+  if (!canCast && !canShoot && !committingPrep) {
     const heldInMelee = hasRanged && adjacentFoes.length > 0;
     const here = heldInMelee ? adjacentFoes : heroes.filter(meleeReachableNow);
-    const base = here.length ? here : heroes;
-    const t = chooseTarget(base);
-    if (hasMeleeWeapon && inMelee(t)) {
-      candidates.push({ action: { kind: 'melee', targetId: t.id }, tier: TIER.melee, targetId: t.id, coord: t.pos ?? null });
-    } else {
-      const to = approachTowards(t);
-      if (to) candidates.push({ action: { kind: 'move', to, thenTargetId: t.id }, tier: TIER.move, targetId: t.id, coord: to });
+    const baseVivier = here.length ? here : heroes;
+    const vivier = restrict(fpick ? [fpick] : baseVivier);
+    // Estimation d'attaque pour scorer une cible (utilité d'arme de mêlée si on en a une, sinon menace
+    // seule — un caster hors de portée qui s'approche n'a pas de dégât d'arme mais score la menace/fragilité).
+    const targetUtility = (t: Combatant): number =>
+      meleeWeapon ? attackUtility(t, { kind: 'melee', weapon: meleeWeapon }) : (W.threat * finite(targetThreat(enemy, t), 0) - (isNeutralized(t) ? W.overkill : 0));
+    for (const t of vivier) {
+      if (hasMeleeWeapon && meleeWeapon && inMelee(t)) {
+        // Cible déjà au contact → frappe (position déjà acquise, pas de bonus de déplacement).
+        candidates.push({ action: { kind: 'melee', targetId: t.id }, kind: 'melee', utility: attackUtility(t, { kind: 'melee', weapon: meleeWeapon }), targetId: t.id, coord: t.pos ?? null });
+      } else {
+        // Cible non au contact (ou sans arme de mêlée — caster qui doit se rapprocher) → candidats
+        // d'APPROCHE : utilité = utilité d'attaque de la cible + positionnement de la case − distance résiduelle.
+        const atk = targetUtility(t);
+        for (const { to, posV } of approachCandidates(t)) {
+          const u = atk + posV - W.approachDist * manhattan(to, t.pos!);
+          candidates.push({ action: { kind: 'move', to, thenTargetId: t.id }, kind: 'move', utility: u, targetId: t.id, coord: to });
+        }
+      }
     }
-  } else {
-    // Avec un sort/tir jouable : la cascade historique ne propose JAMAIS de mêlée/move (cast/shoot
-    // priment et retournent toujours). On ne produit donc pas de candidat de contact ici (parité).
   }
 
-  // --- ARGMAX : meilleur candidat (palier + tie-break déterministe) ---------
+  // --- ARGMAX : meilleur candidat (utilité pondérée + tie-break déterministe) ----------------
   const chosen = argmax(candidates);
   if (chosen) return chosen.action;
 

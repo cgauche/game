@@ -4155,12 +4155,14 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     movement: moveBudget,
     offensiveSpell,
     spellRange,
+    offensiveSpellData: offensiveSpellData ?? undefined, // données STRUCTURÉES du sort (scoring menace/contrôle, Lot 3)
     readyFocusedSpell,
     focusableSpell,
     areaSpell,
     smoke: smokeOf(battle),
     flying: flyM != null, // Vol : ignore terrains/obstacles/personnages traversés (LDB 85 p.343)
     perceived,
+    facing: get().facing, // orientation MONDE des combattants → bonus de FLANC/DOS du positionnement (Lot 3)
   });
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
@@ -4310,7 +4312,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // PARITÉ d'approche (LDB 15 l.74-82) : Charge à portée de Course si la Marche ne suffit pas,
       // sinon Course (Test d'Athlétisme instantané, pas d'attaque ce tour) — cf. aiApproachPlan.
       const { plan, ran } = aiApproachPlan(
-        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, spellRange, smoke: smokeOf(battle), flying: flyM != null },
+        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, spellRange, offensiveSpellData: offensiveSpellData ?? undefined, smoke: smokeOf(battle), flying: flyM != null, facing: get().facing },
         geom, action, battleRng(),
       );
       const mv = plan.kind === 'move' ? plan : action;
