@@ -29,6 +29,7 @@ import type { EntityAppearance } from '../../state/scene';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
 import { reverseGroups, bookContents } from './relations';
+import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
@@ -155,8 +156,6 @@ const reverseSections = (category: string, id: string | undefined): CodexSection
   }));
 
 /** Libellés FR du déclenchement / ciblage d'une Manœuvre (Codex). */
-const MANEUVER_ACTIVATION_LABEL: Record<string, string> = { action: 'Action', free: 'Gratuite', charge: 'À la Charge' };
-const MANEUVER_TARGETING_LABEL: Record<string, string> = { melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis' };
 const WEAPON_GROUP_KIND_LABEL: Record<string, string> = { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' };
 /** Libellés FR des CAPACITÉS irréductibles d'un Symptôme (drapeaux lus par la machinerie de maladie). */
 const SYMPTOM_CAP_LABEL: Record<string, string> = {

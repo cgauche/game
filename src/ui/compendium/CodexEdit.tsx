@@ -23,6 +23,7 @@ import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
 import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
+import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
 import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
@@ -419,18 +420,12 @@ function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] |
   );
 }
 
-const ACTIVATION_LABEL: Record<ManeuverDef['activation'], string> = {
-  action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge',
-};
 const STAT_LABEL: Record<NonNullable<ManeuverDef['stat']>, string> = { CC: 'CC (mêlée)', CT: 'CT (distance)' };
 const ADV_MODE_LABEL: Record<NonNullable<ManeuverDef['advantageMode']>, string> = {
   fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage',
 };
 const DEFENSE_LABEL: Record<NonNullable<ManeuverDef['defense']>, string> = {
   esquive: 'Esquive', parade: 'Parade', init: 'Initiative', resist: 'Résistance (cible)', auto: 'Meilleure (auto)',
-};
-const TARGETING_LABEL: Record<ManeuverDef['targeting'], string> = {
-  melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis',
 };
 
 /** Éditeur d'une MANŒUVRE (entité de 1ʳᵉ classe, `maneuvers.json`) : son PROFIL (type/activation/coût/
@@ -472,7 +467,7 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         </label>
         <label className="dr">Activation
           <select value={m.activation ?? 'free'} onChange={(e) => edit('activation', e.target.value as ManeuverDef['activation'])}>
-            {(Object.keys(ACTIVATION_LABEL) as ManeuverDef['activation'][]).map((a) => <option key={a} value={a}>{ACTIVATION_LABEL[a]}</option>)}
+            {(Object.keys(MANEUVER_ACTIVATION_LABEL) as ManeuverDef['activation'][]).map((a) => <option key={a} value={a}>{MANEUVER_ACTIVATION_LABEL[a]}</option>)}
           </select>
         </label>
         <label className="dr">Coût d’Avantage<input type="number" min={0} value={m.advantageCost ?? 0} onChange={(e) => edit('advantageCost', Math.max(0, Number(e.target.value) || 0))} /></label>
@@ -497,7 +492,7 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         </label>
         <label className="dr">Ciblage
           <select value={m.targeting ?? 'melee'} onChange={(e) => edit('targeting', e.target.value as ManeuverDef['targeting'])}>
-            {(Object.keys(TARGETING_LABEL) as ManeuverDef['targeting'][]).map((t) => <option key={t} value={t}>{TARGETING_LABEL[t]}</option>)}
+            {(Object.keys(MANEUVER_TARGETING_LABEL) as ManeuverDef['targeting'][]).map((t) => <option key={t} value={t}>{MANEUVER_TARGETING_LABEL[t]}</option>)}
           </select>
         </label>
         <label className="dr"><input type="checkbox" checked={!!m.magic} onChange={(e) => edit('magic', e.target.checked || undefined)} /> Magique</label>
