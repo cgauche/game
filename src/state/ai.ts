@@ -15,15 +15,20 @@
  * Lot 3 — l'IA vise par MENACE (`targetThreat`, plus le « PV le plus bas »), achève proprement
  * (`killSecure`), ne s'acharne pas (`overkillPenalty`), valorise les États infligés (`controlValue`,
  * data-driven), couvre les paquets en ZdE (`aoeCoverage`) et se POSITIONNE (flanc/dos, couvert, portée
- * préférée — `positionValue`). Le contexte d'ESCOUADE (surnombre, feu concentré, danger-map) est réservé
- * au Lot 4 : `ai.ts` ne reçoit pas encore les alliés de l'ennemi.
+ * préférée — `positionValue`).
+ *
+ * Lot 4 — CONTEXTE D'ESCOUADE (`squad` en entrée, OPTIONNEL : absent → comportement Lot 3 inchangé) :
+ * FEU CONCENTRÉ via le surnombre RAW (`outnumberEnvMelee` réutilise `outnumberMod`/LDB 14 avec le MÊME
+ * décompte que la résolution `combatFlow.ts:425` → l'IA converge sur une cible que ses alliés encadrent),
+ * ÉVITEMENT du DANGER (`dangerAt` : danger-map des héros, l'ennemi fuit les cases exposées) et COHÉSION
+ * légère (ne pas s'isoler de l'escouade). Aucun nouveau MODIFICATEUR de combat n'est inventé.
  */
 import { Combatant, Weapon } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
-import { footprintChebyshev, footprintN } from './footprint';
+import { footprintChebyshev, footprintN, combatDistance } from './footprint';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
-import { rangeBandModifier, attackModifiers, combineMods, woundsFromHit, combatValue } from '../engine/combat';
+import { rangeBandModifier, attackModifiers, combineMods, woundsFromHit, combatValue, outnumberMod, type ModLine } from '../engine/combat';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { missileDamage, type SpellLike } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
@@ -89,6 +94,12 @@ export interface EnemyTurnInput {
   /** Sort de ZONE de dégâts castable (id + géométrie résolue par l'appelant). L'IA le joue (auto-pose
    *  du centre) quand le centre couvre ≥2 héros. `range` null = portée non chiffrable → pas de gate. */
   areaSpell?: { spell: string; radius: number; range: number | null; cn: number };
+  /** ESCOUADE (Lot 4) : les ALLIÉS de l'ennemi encore en action et posés (l'ennemi lui-même EXCLU),
+   *  résolus par l'appelant (couche impure qui a le `battle`). Sert au FEU CONCENTRÉ (surnombre RAW en
+   *  mêlée, LDB 14 — même `outnumberMod` et même décompte que la résolution, cf. combatFlow.ts:425) et
+   *  à la COHÉSION légère (ne pas s'isoler / ne pas bloquer l'allié). ABSENT = comportement Lot 3 STRICTEMENT
+   *  inchangé (le golden et les fixtures sans escouade restent identiques). */
+  squad?: Combatant[];
 }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -123,6 +134,18 @@ const W = {
   /** Pénalité de DISTANCE résiduelle à la cible après un `move` (par case) : à utilité égale, on choisit
    *  la case qui réduit le plus la distance (départage des approches, calibré faible). */
   approachDist: 0.2,
+  // — Lot 4 (contexte d'escouade) ————————————————————————————————————————————————————————————————
+  /** ÉVITEMENT du DANGER (danger-map) : pénalité par Blessure espérée que les héros nous infligeraient
+   *  DEPUIS la case d'arrivée (Σ sur les héros, via `expectedDamage` réciproque). Calibré < 1 (l'unité
+   *  est déjà en « Blessures espérées ») pour rester un DÉPARTAGE de cases d'approche, jamais un veto qui
+   *  immobiliserait l'ennemi (l'utilité d'attaque, ×1..12, doit pouvoir l'emporter et faire avancer). */
+  dangerAvoid: 0.5,
+  /** COHÉSION : malus si la case d'arrivée ISOLE fortement l'ennemi de son escouade (aucun allié à
+   *  portée de soutien). SOBRE et faible — un simple départage à utilité d'attaque égale, pour préférer
+   *  rester en formation plutôt que de partir seul (n'inverse jamais un choix offensif/danger marqué). */
+  cohesion: 1.5,
+  // NB : le FEU CONCENTRÉ n'a PAS de poids ad hoc — il passe par le bonus de toucher `outnumberMod` (RAW,
+  // LDB 14), injecté dans l'espérance de dégâts (mêlée). C'est un EFFET ÉMERGENT, pas une constante inventée.
 } as const;
 
 /**
@@ -168,9 +191,11 @@ const finite = (n: number, fallback = 0): number => (Number.isFinite(n) ? n : fa
  * si ≤ cible ; bornes 5/95 ≈ l'auto-échec/réussite usuel). PUR, sans dé. Les modificateurs de PORTÉE/
  * Taille/État/Avantage sont ceux du moteur → l'espérance reflète la vraie difficulté du jet.
  */
-function hitProbability(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number): number {
+function hitProbability(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[]): number {
   const val = combatValue(attacker, kind, weapon);
-  const mods = combineMods(attackModifiers(attacker, target, weapon, { kind, distanceTiles }));
+  // `env` (Lot 4) : modificateurs de scène/contexte (ex. Surnombre RAW en mêlée) injectés EXACTEMENT comme
+  // la résolution (`attackModifiers({ env })`) → l'espérance reflète le vrai bonus de toucher, sans dérive.
+  const mods = combineMods(attackModifiers(attacker, target, weapon, { kind, distanceTiles, env }));
   const targetVal = finite(val + mods, NaN);
   if (!Number.isFinite(targetVal)) return NaN;
   return Math.max(5, Math.min(95, targetVal)) / 100;
@@ -182,8 +207,8 @@ function hitProbability(attacker: Combatant, target: Combatant, weapon: Weapon, 
  * un DR moyen modeste (1) ; les Blessures réelles passent par `woundsFromHit` (BE + PA à la localisation
  * « corps », qualités d'arme) — MÊME résolveur que le combat. `min 1` (Robuste) inclus par `woundsFromHit`.
  */
-function expectedDamage(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number): number {
-  const p = hitProbability(attacker, target, weapon, kind, distanceTiles);
+function expectedDamage(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[]): number {
+  const p = hitProbability(attacker, target, weapon, kind, distanceTiles, env);
   if (!Number.isFinite(p)) return NaN;
   const bf = bonus(effectiveChar(attacker, 'F'));
   const avgDR = 1; // DR moyen prudent (l'espérance d'un DR ≥ 0 sur une réussite) — calibrage IA, pas une règle
@@ -365,6 +390,9 @@ function argmax(cands: Candidate[]): Candidate | null {
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
   const { readyFocusedSpell, focusableSpell, areaSpell, offensiveSpellData, facing } = input;
+  // Escouade (Lot 4) : alliés posés encore en action (l'ennemi exclu par l'appelant). Absent → [] →
+  // surnombre/cohésion/danger-map neutres = comportement Lot 3 strictement inchangé.
+  const squad = input.squad ?? [];
   // Vision réciproque : l'ennemi ne cible/poursuit que les héros qu'il PERÇOIT (LoS + lumière, comme le
   // groupe). `perceived` absent = aucun gate (comportement historique / tests purs).
   const heroes = input.perceived
@@ -501,9 +529,23 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     return visibleFoes.length ? nearest(pos, visibleFoes) : null;
   };
 
-  // --- HEURISTIQUES de SCORE (Lot 3) ---------------------------------------
+  // --- HEURISTIQUES de SCORE (Lot 3 + escouade Lot 4) -----------------------
+  /** FEU CONCENTRÉ via SURNOMBRE (RAW, LDB 14) — MÊME `outnumberMod` et MÊME décompte que la résolution
+   *  (`src/state/combatFlow.ts:425`) : N = (alliés de l'escouade à `combatDistance ≤ 1` de la cible) + 1
+   *  (l'attaquant lui-même, qui SERA au contact en frappant). Renvoie le `ModLine` du bonus de toucher
+   *  (+20 à 2c1, +40 à 3+c1) sous forme d'`env` injecté DANS `expectedDamage` (mêlée UNIQUEMENT — le
+   *  surnombre RAW est mêlée-only, cf. combatFlow:425 qui ne sert que `attackEnv` de mêlée). Aucun
+   *  modificateur inventé : on réutilise la fonction du moteur. Squad vide → null (pas d'env). */
+  const outnumberEnvMelee = (target: Combatant): ModLine[] | undefined => {
+    if (squad.length === 0) return undefined;
+    const adj = squad.filter((c) => c.pos && combatDistance(c, target) <= 1).length;
+    const onm = outnumberMod(adj + 1); // +1 = l'attaquant courant (parité exacte avec combatFlow:425)
+    return onm ? [onm] : undefined;
+  };
+
   /** Utilité d'une ATTAQUE (mêlée/tir/sort) sur `target` : dégâts qu'on inflige + menace de la cible
-   *  + killSecure − overkill + contrôle. `dmgKind`/`weapon`/`spell` sélectionnent le calcul de dégâts. */
+   *  + killSecure − overkill + contrôle. `dmgKind`/`weapon`/`spell` sélectionnent le calcul de dégâts.
+   *  En MÊLÉE, le bonus de toucher de SURNOMBRE (feu concentré, Lot 4) est injecté dans l'espérance. */
   const attackUtility = (
     target: Combatant,
     src: { kind: 'melee'; weapon: Weapon } | { kind: 'ranged'; weapon: Weapon; dist: number } | { kind: 'spell'; spell?: SpellLike },
@@ -512,7 +554,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       ? finite(expectedSpellDamage(enemy, target, src.spell), 0)
       : src.kind === 'ranged'
         ? finite(expectedDamage(enemy, target, src.weapon, 'ranged', src.dist), 0)
-        : finite(expectedDamage(enemy, target, src.weapon, 'melee'), 0);
+        : finite(expectedDamage(enemy, target, src.weapon, 'melee', undefined, outnumberEnvMelee(target)), 0);
     const threat = finite(targetThreat(enemy, target), 0);
     const control = src.kind === 'spell' ? controlValue(src.spell) : 0;
     const securesKill = dmg >= target.wounds.current && target.wounds.current > 0 ? W.killSecure : 0;
@@ -520,9 +562,30 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     return W.damageDealt * dmg + W.threat * threat + W.control * control + securesKill - overkill;
   };
 
+  /** DANGER-MAP (Lot 4) : Blessures que les HÉROS nous infligeraient si l'on se tenait sur `to` — Σ sur
+   *  les héros de l'espérance de LEUR meilleur coup (mêlée/tir) contre l'ennemi POSÉ sur `to` (réutilise
+   *  `expectedDamage`, réciprocité, PUR). Un ennemi évite donc les cases exposées (et, blessé, d'autant
+   *  plus, puisque la pénalité s'ajoute à un score offensif moindre). Coût borné aux cases candidates ;
+   *  les armes des héros sont mémoïsées hors boucle. Squad/heroes vides → 0 (neutre). */
+  const heroThreatWeapons = heroes.map((h) => ({
+    h, melee: h.weapons?.find((w) => w.type === 'melee'), ranged: h.weapons?.find((w) => w.type === 'ranged'),
+  }));
+  const dangerAt = (to: Pt): number => {
+    const here = { ...enemy, pos: to } as Combatant;
+    let total = 0;
+    for (const { h, melee, ranged } of heroThreatWeapons) {
+      if (!h.pos) continue;
+      const dist = chebyshev(to, h.pos);
+      const dm = melee ? finite(expectedDamage(h, here, melee, 'melee'), 0) : 0;
+      const dr = ranged ? finite(expectedDamage(h, here, ranged, 'ranged', dist), 0) : 0;
+      total += Math.max(dm, dr); // le héros joue SON meilleur coup contre nous depuis cette case
+    }
+    return total;
+  };
+
   /** Bonus de POSITIONNEMENT d'une case d'arrivée `to` pour attaquer `target` (Lot 3) : flanc/dos +
    *  gain de couvert pour soi + respect de la portée préférée (tireur/lanceur reste à distance+LdV ;
-   *  mêlée au contact). PAS de surnombre ni danger-map (Lot 4). PUR. */
+   *  mêlée au contact). Lot 4 : − danger-map (cases exposées) + cohésion (ne pas s'isoler de l'escouade). PUR. */
   const isShooterOrCaster = (canCast || canShoot) || (offensiveSpell != null) || (hasRanged && !hasMeleeWeapon);
   const positionValue = (to: Pt, target: Combatant): number => {
     let v = 0;
@@ -558,6 +621,13 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     } else if (withinMelee(to, target.pos!)) {
       v += W.preferredRange; // mêlée : au contact
     }
+    // ÉVITEMENT du DANGER (Lot 4) : pénalise une case exposée à la menace des héros (danger-map). Calibré
+    // < 1 → départage de cases, jamais un veto (l'utilité d'attaque, ×1..12, peut l'emporter et faire avancer).
+    if (squad.length || heroes.length) v -= W.dangerAvoid * dangerAt(to);
+    // COHÉSION légère (Lot 4, SOBRE) : malus si la case isole l'ennemi de TOUTE son escouade (aucun allié
+    // à portée de soutien ≤ 3 cases) — préfère rester en formation, à utilité d'attaque égale. Si l'escouade
+    // est vide, pas de cohésion (un solitaire ne « s'isole » de personne).
+    if (squad.length && !squad.some((c) => c.pos && chebyshev(to, c.pos) <= 3)) v -= W.cohesion;
     return v;
   };
 

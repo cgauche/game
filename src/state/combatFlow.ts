@@ -4102,6 +4102,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     checkBattleOver(get, set);
     return;
   }
+  // ESCOUADE (Lot 4) : les ALLIÉS de l'acteur encore en action et posés (l'acteur lui-même EXCLU) →
+  // l'IA pure peut valoriser le FEU CONCENTRÉ (surnombre RAW, même décompte que combatFlow.ts:425),
+  // éviter le danger et rester en cohésion. (Décompte IDENTIQUE au filtre de `attackEnv` ligne ~425.)
+  const squad = battle.combatants.filter((c) => c.kind === enemy.kind && !isOutOfAction(c) && c.pos && c.id !== enemy.id);
 
   // Combat monté (LDB 14) : un PNJ à pied, non Engagé, adjacent à une monture LIBRE de son camp décide
   // de l'enfourcher (aucun jet → simple Mouvement ; il pourra ensuite ATTAQUER, mais pas se déplacer en plus).
@@ -4163,6 +4167,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     flying: flyM != null, // Vol : ignore terrains/obstacles/personnages traversés (LDB 85 p.343)
     perceived,
     facing: get().facing, // orientation MONDE des combattants → bonus de FLANC/DOS du positionnement (Lot 3)
+    squad, // alliés de l'ennemi (Lot 4) → feu concentré (surnombre RAW), danger-map, cohésion
   });
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
@@ -4312,7 +4317,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // PARITÉ d'approche (LDB 15 l.74-82) : Charge à portée de Course si la Marche ne suffit pas,
       // sinon Course (Test d'Athlétisme instantané, pas d'attaque ce tour) — cf. aiApproachPlan.
       const { plan, ran } = aiApproachPlan(
-        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, spellRange, offensiveSpellData: offensiveSpellData ?? undefined, smoke: smokeOf(battle), flying: flyM != null, facing: get().facing },
+        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, spellRange, offensiveSpellData: offensiveSpellData ?? undefined, smoke: smokeOf(battle), flying: flyM != null, facing: get().facing, squad },
         geom, action, battleRng(),
       );
       const mv = plan.kind === 'move' ? plan : action;
