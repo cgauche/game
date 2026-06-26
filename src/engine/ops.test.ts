@@ -7,6 +7,8 @@ import type { Combatant } from './types';
 import { makeRNG } from './dice';
 import { resolveFormula, applyOps, applyActiveEffect } from './ops';
 import { hasTraitKey } from './traits/dispatch';
+import { woundsFromHit } from './combat';
+import type { Weapon } from './types';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
@@ -37,6 +39,54 @@ describe('resolveFormula', () => {
   it('(Bonus de X) se résout contre la caractéristique EFFECTIVE (buffs compris)', () => {
     const c = hero({ activeEffects: [{ label: 'Buff', char: 'FM', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     expect(resolveFormula({ bonusOf: 'FM' }, c)).toBe(4); // 38+10 → 48 → bonus 4
+  });
+});
+
+describe("op:'wounds' mode COUP D'ARME (S1) — délègue à woundsFromHit (qualités/armure/localisation)", () => {
+  const sword = (qualities: { id: string; value?: number }[] = []): Weapon =>
+    ({ name: 'Épée', type: 'melee', damage: { flat: 4, plusBF: true }, qualities, reach: 'Moyenne' }) as unknown as Weapon;
+
+  it("weaponHit:true + ctx.weapon → Blessures == woundsFromHit (mêmes BE + PA à la localisation)", () => {
+    const c = hero({ wounds: { current: 30, max: 30 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 } });
+    const w = sword();
+    const expected = woundsFromHit(w, c, 'corps', 12); // 12 − BE(4) − PA(3) = 5
+    const before = c.wounds.current;
+    applyOps(c, [{ op: 'wounds', amount: 12, weaponHit: true }], { weapon: w, location: 'corps' });
+    expect(before - c.wounds.current).toBe(expected);
+    expect(expected).toBe(5);
+  });
+
+  it("respecte la LOCALISATION du contexte (PA d'une autre localisation)", () => {
+    const c = hero({ wounds: { current: 30, max: 30 }, armour: { tete: 5, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } });
+    const w = sword();
+    const before = c.wounds.current;
+    applyOps(c, [{ op: 'wounds', amount: 12, weaponHit: true }], { weapon: w, location: 'tete' }); // 12 − 4 − 5 = 3
+    expect(before - c.wounds.current).toBe(woundsFromHit(w, c, 'tete', 12));
+  });
+
+  it("réutilise les QUALITÉS de l'arme (Perforante) via woundsFromHit — équivalence par construction", () => {
+    const c = hero({ wounds: { current: 30, max: 30 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 4, jambeG: 0, jambeD: 0 } });
+    const w = sword([{ id: 'perforante' }]);
+    const before = c.wounds.current;
+    applyOps(c, [{ op: 'wounds', amount: 12, weaponHit: true }], { weapon: w, location: 'corps' });
+    expect(before - c.wounds.current).toBe(woundsFromHit(w, c, 'corps', 12));
+  });
+
+  it("weaponHit SANS ctx.weapon → repli en mode Formula (défaut : ignore BE+PA)", () => {
+    const c = hero({ wounds: { current: 30, max: 30 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 } });
+    const before = c.wounds.current;
+    applyOps(c, [{ op: 'wounds', amount: 12, weaponHit: true }], {}); // pas d'arme → Formula : 12 brut
+    expect(before - c.wounds.current).toBe(12);
+  });
+
+  it("mode Formula INCHANGÉ (sans weaponHit) : ignore BE+PA par défaut, déduit si flags", () => {
+    const c = hero({ wounds: { current: 30, max: 30 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 } });
+    const b1 = c.wounds.current;
+    applyOps(c, [{ op: 'wounds', amount: 10 }], {}); // défaut : 10 brut
+    expect(b1 - c.wounds.current).toBe(10);
+    const b2 = c.wounds.current;
+    applyOps(c, [{ op: 'wounds', amount: 10, ignoreTB: false, ignoreAP: false }], {}); // 10 − BE(4) − PA(3) = 3
+    expect(b2 - c.wounds.current).toBe(3);
   });
 });
 

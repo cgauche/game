@@ -11,6 +11,7 @@ import { t } from '../i18n';
 import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt, baseWithTraits } from './characteristics';
 import { bypassedAP } from './armourBypass';
+import { woundsFromHit } from './woundsCalc';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { findTableEntry } from './tables';
@@ -426,26 +427,10 @@ export interface AttackOptions {
   dmgProxy?: { sb: number; size: Combatant['size'] };
 }
 
-/**
- * Blessures perdues par une touche RÉUSSIE : `totalDamage` − (Bonus d'Endurance + PA de la
- * localisation, ce dernier réduit de 1 par l'Atout Perforante l.316), **plancher 1** (LDB
- * 13-Combat l.165 : une touche réussie coûte au moins 1 PB). Source unique partagée par
- * `applyHit` et les touches de Maladresse (touche d'allié / Incident de Tir, LDB 14).
- */
-export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number, extraAP = 0, minWounds = 1): number {
-  // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure »
-  // (`minWounds` par défaut = 1, le garantit pour un PERSONNAGE). Un NAVIRE passe `minWounds=0` : un coup trop faible
-  // peut ne lui infliger AUCUN Dégât (MDG ch.13 l.605 ; les petites armes ricochent sur la coque).
-  totalDamage -= talentDamageReduction(target);
-  const tb = bonus(effectiveChar(target, 'E'));
-  // PA effectifs = armure portée/naturelle + PA temporisés de sort (Armure Aethyrique, LDB 47)
-  // + PA conférés par l'arme d'opposition (Protectrice, LDB 62 l.306 — `extraAP`), Perforante déduite.
-  const baseAP = Math.max(0, effectiveArmourAt(target, location) + extraAP - qualitySum(weapon, 'armourReduction'));
-  // Ignorance de PA de l'arme (Épée de justice → 'all', etc.) via le moteur GÉNÉRAL (engine/armourBypass)
-  // — même mécanisme que l'attribut de Domaine pour les Projectiles.
-  const ap = Math.max(0, baseAP - bypassedAP(target, location, weapon.bypass, baseAP));
-  return Math.max(minWounds, totalDamage - (tb + ap));
-}
+// `woundsFromHit` (Blessures d'un coup d'arme) vit désormais dans le module FEUILLE `woundsCalc.ts`
+// (réutilisable sans cycle par `ops.ts` — `op:'wounds'` en mode coup d'arme y délègue). Importé en tête +
+// ré-exporté ici pour les importeurs historiques de `combat` (volley/combatFlow/combatArea…). INCHANGÉ.
+export { woundsFromHit };
 
 /** Atout Pistolet (LDB « Les armes » l.297-298 : « Vous pouvez utiliser cette arme pour attaquer
  *  en Combat rapproché »). Seule une arme à distance possédant cet Atout peut tirer en étant

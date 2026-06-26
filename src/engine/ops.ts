@@ -46,8 +46,10 @@ import {
   HitLocation,
   HIT_LOCATION_LABELS,
   ItemInstance,
+  Weapon,
 } from './types';
 import { formatTrait } from './traits/dispatch';
+import { woundsFromHit } from './woundsCalc';
 import type { TraitInstance } from './statEntry';
 import { t } from '../i18n';
 
@@ -182,7 +184,11 @@ export type GameOp =
       /** PA ADDITIONNELS de CE coup (situationnels), cumulés aux PA de la Localisation quand `ignoreAP:false` :
        *  ex. les +2 PA de poupe / +5 PA frontaux du Bélier d'une collision (`CollisionDamage.armorBonus`). Garde
        *  la mitigation DANS l'op (langue unique) plutôt que de la pré-calculer côté appelant. */
-      extraAP?: number }
+      extraAP?: number;
+      /** Mode COUP D'ARME : résout les Blessures via `woundsFromHit(ctx.weapon, …)` — donc qualités d'arme
+       *  (Perforante/Empaleuse), armure à la `ctx.location` et BE, comme une attaque normale (≠ formule + flags).
+       *  Requiert `ctx.weapon` ; `amount` = Dégâts totaux (arme + DR + qualités) ; `min` = plancher (0 navire). */
+      weaponHit?: boolean }
   /** Blessures rendues (plafonnées au max). */
   | { op: 'heal'; amount: Formula; perSL?: PerSL }
   /** Blessures rendues AU LANCEUR (« Puis vous Guérissez 1 Point de Blessure » — Drain).
@@ -596,6 +602,10 @@ export interface OpsCtx {
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];
+  /** ARME du coup courant — quand un `op:'wounds' { weaponHit:true }` résout les Blessures comme un coup
+   *  d'arme (`woundsFromHit` : qualités + armure à `location` + BE). Posé par le routeur d'attaque (S4) et
+   *  par les effets d'AIRE d'une arme (munitions). Absent → l'op reste en mode Formula. */
+  weapon?: Weapon;
 }
 
 /** Rounds attribués à un effet dont la durée (minutes/heures/jours) dépasse le combat. */
@@ -686,6 +696,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'wounds': {
         if (!groupGate(o.onlyGroups)) break;
         const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap) + slBonus(ctx.sl, o.perSL));
+        // MODE COUP D'ARME (S1) : délègue au résolveur partagé `woundsFromHit` → qualités d'arme
+        // (Perforante/Empaleuse), armure à la `ctx.location` et BE, sans dupliquer la mitigation.
+        if (o.weaponHit && ctx.weapon) {
+          const n = woundsFromHit(ctx.weapon, target, ctx.location ?? 'corps', raw, o.extraAP ?? 0, o.min ?? 1);
+          loseWounds(target, n);
+          lines.push(t('op.wounds', { name: target.name, n, mitig: '' }));
+          break;
+        }
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
         // `apFrom:'least'` → PA de la Localisation la moins protégée (En Flammes) ; sinon le Corps.
