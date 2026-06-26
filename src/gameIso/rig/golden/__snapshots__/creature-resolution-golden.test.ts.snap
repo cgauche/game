@@ -2,18 +2,6 @@
 
 exports[`golden — résolution espèce/id→apparence (anti-régression de-POC match-par-nom) > bestiaire (creatures.json) : label → (plan, espèce, def, échelle) 1`] = `
 {
-  "? (Créatures d’Outre-Tombe)": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "humain",
-  },
-  "? (Démons de Tzeentch)": {
-    "def": "Horreur rose",
-    "plan": "biped",
-    "scale": 1.15,
-    "species": "horreur-rose",
-  },
   "Affreuse Vieille Sorcière Troll des Marais": {
     "def": "Troll",
     "plan": "biped",
