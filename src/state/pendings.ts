@@ -74,6 +74,12 @@ export interface PendingTest {
   /** Compétence/Caractéristique RÉELLE testée (« Athlétisme », « Dextérité ») → libellé du cadre de
    *  jet (RollLine), comme « Calme » pour la Psychologie. À défaut, on retombe sur `label`. */
   skill?: string;
+  /** Réf STRUCTURÉE du Test (≠ `skill` libellé d'affichage) : id de Compétence + spec, ou Caractéristique —
+   *  lue par `talentTestSLBonus` (LDB 10 : +DR de Talent par id, plus de match par libellé). Threadée du
+   *  `FlowTest` (skill/spec/characteristic) au build du pending. */
+  skillId?: string;
+  spec?: string;
+  char?: CharKey;
   skillValue: number;
   difficulty: Difficulty;
   requireSL: number;

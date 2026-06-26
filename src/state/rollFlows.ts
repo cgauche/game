@@ -40,7 +40,7 @@ import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evalua
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { testValue } from '../engine/skills';
-import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, psychResolution } from '../engine/psychology';
 import { findSpellById } from '../data/index';
@@ -879,6 +879,10 @@ export const FLOWS = {
     touch: touchActors,
     caps: { forced: true },
     resolve: (s, p, actor, _get, forced) => {
+      // +DR de Talent (LDB 10) sur un Test RÉUSSI : `talentTestSLBonus` (matcher structuré `test.matches`,
+      // par id — règle UNIVERSELLE) + `talentTestDR` (combat features `testDR`, ensemble DISJOINT → pas de
+      // double-compte). Le contexte `when` n'est pas évalué ici (défaut conservateur ; cf. plan).
+      const tDR = actor ? talentTestDR(actor, p.label) + talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec }) : 0;
       if (forced) {
         if (p.success) return null; // (ancien `force.guard : !p.success`) — rien à forcer si déjà réussi
         // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double sur un Test de
@@ -886,7 +890,7 @@ export const FLOWS = {
         // comme sur un jet naturel, le seuil `requireSL` reste garanti).
         return {
           roll: 1, success: true,
-          sl: Math.max(evaluateTest(1, p.target).sl + (actor ? talentTestDR(actor, p.label) : 0), p.requireSL, 1),
+          sl: Math.max(evaluateTest(1, p.target).sl + tDR, p.requireSL, 1),
           forced: true,
         };
       }
@@ -901,8 +905,7 @@ export const FLOWS = {
           if (e.success) res = { ...e, isDouble: res.isDouble, sl: rev.capDR != null ? Math.min(e.sl, rev.capDR) : e.sl };
         }
       }
-      // Talents à bonus de DR (LDB 10 — Menaçant → Intimidation, Bonnes jambes → Saut…).
-      const sl = res.sl + (actor && res.success ? talentTestDR(actor, p.label) : 0);
+      const sl = res.sl + (res.success ? tDR : 0);
       return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && sl >= p.requireSL };
     },
     failed: (p) => (p.roll ?? 0) > p.target, // d100 propre raté (LDB ch.12 l.56 + l.29-31)

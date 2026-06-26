@@ -301,6 +301,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   set({
     pendingTest: {
       actorId: def.id, actorName: def.name, label, skill, skillValue: def.value, difficulty,
+      skillId: spec.skill, spec: spec.spec, char: spec.characteristic, // réf structurée pour talentTestSLBonus (LDB 10)
       requireSL: spec.requireSL ?? 0, target: def.target, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
       onSuccess, onFailure, after,
