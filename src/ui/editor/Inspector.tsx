@@ -576,9 +576,12 @@ function EntityPanel({
         <>
           <Fold title="Apparence" open>
             <label className="ed-field">
-              Espèce / apparence
-              <select value={ent.ref ?? 'Villageois'} onChange={(e) => updateSel({ ref: e.target.value })}>
-                <option value="Villageois">Villageois</option>
+              Espèce (rig)
+              {/* Espèce EXPLICITE de rendu (`appearance.species`) — découple l'apparence du nom/ref
+                  (cf. scene.ts). Vide = bipède Humain par défaut. Le profil de stats se choisit via la
+                  réf de créature (fold Rôle/Combat), distincte de l'apparence. */}
+              <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: { ...ent.appearance, species: e.target.value || undefined } })}>
+                <option value="">(par défaut : Humain)</option>
                 {creatureSpeciesNames().map((name) => (
                   <option key={name} value={name}>
                     {name}

@@ -49216,6 +49216,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Cataplasme pour plus de longévité et de vitalité"
+    },
+    "appearance": {
+      "species": "Grand Cerf"
     }
   },
   {
@@ -50840,6 +50843,9 @@
       "rarity": "Unique",
       "danger": "Inoffensive",
       "uses": "On peut prédire l'avenir en jetant ses écailles dans l'eau"
+    },
+    "appearance": {
+      "species": "Brochet du Stir"
     }
   },
   {
@@ -51208,6 +51214,9 @@
     "source": {
       "book": "ZI",
       "page": 43
+    },
+    "appearance": {
+      "species": "Rat Loup"
     }
   },
   {
@@ -51417,6 +51426,9 @@
       "rarity": "Limitée",
       "danger": "Inquiétante",
       "uses": "La gelée d'amibe est hautement inflammable"
+    },
+    "appearance": {
+      "species": "Amibe"
     }
   },
   {
@@ -52008,6 +52020,9 @@
       "rarity": "Unique",
       "danger": "Mortelle",
       "uses": "Les écailles d'une telle créature permettent de fabriquer une cape qui rend son porteur presque invisible"
+    },
+    "appearance": {
+      "species": "Le Déchiqueteur de Cadavres"
     }
   },
   {
@@ -52249,6 +52264,9 @@
       "rarity": "Exotique",
       "danger": "Inquiétante",
       "uses": "La lame d'une épée dont la poignée a été taillée dans son bois sera toujours tranchante"
+    },
+    "appearance": {
+      "species": "Preyton"
     }
   },
   {
@@ -52328,6 +52346,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Un cataplasme préparé à partir de ses yeux macérés permet de guérir la cécité"
+    },
+    "appearance": {
+      "species": "Grand Aigle"
     }
   },
   {
@@ -52400,6 +52421,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Les flèches dont l'empennage est fait de ses plumes atteignent toujours leur cible"
+    },
+    "appearance": {
+      "species": "Faucon des Montagnes Grises"
     }
   },
   {
@@ -52495,6 +52519,9 @@
       "rarity": "Exotique",
       "danger": "Mortelle",
       "uses": "Il est impossible de mentir quand on tient sa serre dans la main"
+    },
+    "appearance": {
+      "species": "Heomreth (Hibou Géant)"
     }
   },
   {
@@ -52589,6 +52616,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Ses yeux étourdissent quiconque croise son regard"
+    },
+    "appearance": {
+      "species": "Cockatrice"
     }
   },
   {
@@ -52711,6 +52741,9 @@
       "rarity": "Exotique",
       "danger": "Mortelle",
       "uses": "Sa fourrure inspire la crainte chez les animaux qui lui ressemblent"
+    },
+    "appearance": {
+      "species": "Chimère"
     }
   },
   {
@@ -53061,6 +53094,9 @@
       "rarity": "Exotique",
       "danger": "Inquiétante",
       "uses": "La malédiction d'un peau-de-loup peut être levée en écorchant vif une autre de ces créatures"
+    },
+    "appearance": {
+      "species": "Peau-de-Loup"
     }
   },
   {
@@ -53231,6 +53267,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Son urine serait un répulsif pour les rats"
+    },
+    "appearance": {
+      "species": "Trégara"
     }
   },
   {
@@ -53304,6 +53343,9 @@
       "rarity": "Limitée",
       "danger": "Inoffensive",
       "uses": "On dit qu'un couteau fabriqué à partir de son bec peut couper n'importe quoi et ignore les PA des armures non-magiques"
+    },
+    "appearance": {
+      "species": "Macareux à Bec Tranchant"
     }
   },
   {
@@ -53497,6 +53539,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Ses plaques seraient impénétrables"
+    },
+    "appearance": {
+      "species": "Stégadon"
     }
   },
   {
@@ -53582,6 +53627,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Les pointes de flèche faites avec ses dents percent n'importe quelle armure"
+    },
+    "appearance": {
+      "species": "Cornu"
     }
   },
   {
@@ -53678,6 +53726,9 @@
       "rarity": "Exotique",
       "danger": "Menaçante",
       "uses": "Son rugissement serait un remède contre la couardise"
+    },
+    "appearance": {
+      "species": "Carnosaure"
     }
   },
   {
@@ -53772,6 +53823,9 @@
       "rarity": "Commune",
       "danger": "Inquiétante",
       "uses": "Sa fourrure est très prisée"
+    },
+    "appearance": {
+      "species": "Chat Sauvage"
     }
   },
   {
@@ -53869,6 +53923,9 @@
       "rarity": "Unique",
       "danger": "Menaçante",
       "uses": "Sa fourrure est un signe de la faveur d'Ulric"
+    },
+    "appearance": {
+      "species": "Lion de Guerre de Chrace"
     }
   },
   {
@@ -54109,6 +54166,9 @@
       "rarity": "Exotique",
       "danger": "Mortelle",
       "uses": "Les os sculptés de léviathan confèrent des pouvoirs surnaturels"
+    },
+    "appearance": {
+      "species": "Léviathan"
     }
   },
   {
@@ -54188,6 +54248,9 @@
       "rarity": "Unique",
       "danger": "Mortelle",
       "uses": "Sa carapace serait faite de pierres précieuses"
+    },
+    "appearance": {
+      "species": "Il Potente Granchio"
     }
   },
   {

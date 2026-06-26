@@ -273,7 +273,7 @@ function parseTier(block, page, group) {
  * Apparence par défaut (bloc `appearance` du record) dérivée du CHAPITRE — pour que le rig rende ces
  * créatures comme leur espèce et non en Humain par défaut. Donnée, pas regex de rendu : c'est posé
  * sur le record (P2/B1, src/data app-owned). Les chapitres ANIMAUX (Chiens/Chevaux/Loups/Ours/
- * Sangliers/Rats Géants/Araignées) sont des non-bipèdes rendus par leur gabarit (bodyPlanOf) → pas
+ * Sangliers/Rats Géants/Araignées) sont des non-bipèdes rendus par leur gabarit (bodyPlanById) → pas
  * d'`appearance` ici ; les nuées non reconnues par le classifieur restent à traiter à part.
  */
 function appearanceFor(group, name) {

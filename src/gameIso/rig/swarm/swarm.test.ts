@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { planById, bodyPlanOf } from '../bodyPlan';
+import { planById, resolveSpecies } from '../bodyPlan';
 import { bonesToSvg } from '../renderBones';
 
 describe('gabarit swarm (nuée — piloté par le trait « Nuée », LDB 85)', () => {
@@ -16,7 +16,7 @@ describe('gabarit swarm (nuée — piloté par le trait « Nuée », LDB 85)', (
     expect(plan.idlePose?.(0.25)).not.toEqual(plan.restPose());
   });
 
-  it('un nom sans trait Nuée ne route PAS vers swarm (humanoïde → biped)', () => {
-    expect(bodyPlanOf('Soldat de l’Empire')).toBe('biped'); // pas de trait Nuée → pas d'amas
+  it('une espèce sans trait Nuée ne route PAS vers swarm (humanoïde → biped)', () => {
+    expect(resolveSpecies('Soldat de l’Empire').plan).toBe('biped'); // pas de trait Nuée → pas d'amas
   });
 });

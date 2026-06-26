@@ -12,28 +12,24 @@
  */
 import { describe, it, expect } from 'vitest';
 import { CREATURES, defByName } from '../creatures';
-import { resolveByName } from '../bodyPlan';
+import { resolveById, resolveSpecies, type RenderResolution } from '../bodyPlan';
 import { creatures as bestiary } from '../../../data';
 
 type Resolved = { plan: string; species: string | null; def: string | null; scale: number };
 
-/** Snapshot de la résolution de PROD (`resolveByName` = resolveRender data-driven : record/espèce
- *  exacte, plus de name-match flou). Fige plan/espèce/def/échelle de tout le bestiaire. */
-function resolve(name: string): Resolved {
-  const r = resolveByName(name);
-  return { plan: r.plan, species: r.species || null, def: defByName(r.species)?.name ?? null, scale: r.scale };
-}
-
-const mapOf = (names: string[]): Record<string, Resolved> =>
-  Object.fromEntries([...new Set(names)].sort().map((n) => [n, resolve(n)]));
+/** Fige plan/espèce/def/échelle d'une résolution. Deux entrées : par ESPÈCE explicite (registre des defs)
+ *  et par ID de record (bestiaire) — plus aucun chemin par libellé/nom. */
+const shape = (r: RenderResolution): Resolved =>
+  ({ plan: r.plan, species: r.species || null, def: defByName(r.species)?.name ?? null, scale: r.scale });
 
 describe('golden — résolution nom→apparence (anti-régression de-POC match-par-nom)', () => {
   it('defs du registre : name → (plan, espèce, def, échelle)', () => {
-    expect(mapOf(CREATURES.map((c) => c.name))).toMatchSnapshot();
+    const names = [...new Set(CREATURES.map((c) => c.name))].sort();
+    expect(Object.fromEntries(names.map((n) => [n, shape(resolveSpecies(n))]))).toMatchSnapshot();
   });
   it('bestiaire (creatures.json) : label → (plan, espèce, def, échelle)', () => {
     // Clé d'affichage = label ; résolution PAR ID (record du bestiaire).
-    const entries = bestiary.map((c) => [c.label, resolve(c.id)] as const).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    const entries = bestiary.map((c) => [c.label, shape(resolveById(c.id))] as const).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
     expect(Object.fromEntries(entries)).toMatchSnapshot();
   });
 });

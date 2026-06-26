@@ -18,7 +18,7 @@ import { FlowEditor } from '../editor/FlowEditor';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import { JsonField } from '../editor/JsonField';
-import { RACES } from '../../gameIso/rig/races';
+import { creatureSpeciesNames } from '../../gameIso/rig/creatures';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
@@ -344,9 +344,9 @@ function AppearanceField({ name, value, onChange }: { name: string; value: Entit
       <CreaturePreview name={name} appearance={a} />{/* aperçu LIVE : se met à jour à chaque modification */}
       <label className="ed-subfield">
         Espèce
-        <input value={a.species ?? ''} list="dl-rig-species" placeholder="(déduite du nom)"
+        <input value={a.species ?? ''} list="dl-rig-species" placeholder="(par défaut : Humain)"
           onChange={(e) => patch({ species: e.target.value || undefined })} />
-        <datalist id="dl-rig-species">{Object.keys(RACES).map((s) => <option key={s} value={s} />)}</datalist>
+        <datalist id="dl-rig-species">{creatureSpeciesNames().map((s) => <option key={s} value={s} />)}</datalist>
       </label>
       <MonsterPartsFields
         monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} parts={a.parts} tenue={a.tenue} eyes={a.eyes} features={a.features}

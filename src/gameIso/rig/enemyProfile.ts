@@ -16,7 +16,7 @@ import { weaponGroupKey } from './parts/weaponGroup';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
-import { bipedDef, defByName } from './creatures';
+import { bipedDef } from './creatures';
 import { resolveRender } from './bodyPlan';
 import { findCreatureById } from '../../data';
 import type { EntityAppearance } from '../../state/scene';
@@ -37,14 +37,14 @@ export interface EnemyRigProfile {
   equip: EquipCtx;
 }
 
-/** Classe de rendu d'un NOM (sans espèce explicite) — délègue au résolveur unique `resolveRender`
- *  (repli name-match). 'rig' (humanoïde → rig bipède) ou 'creature' (gabarit quad/ailé/… / nuée). */
+/** Classe de rendu d'un ID de créature — délègue au résolveur unique `resolveRender` (espèce du
+ *  record). 'rig' (humanoïde → rig bipède) ou 'creature' (gabarit quad/ailé/… / nuée). */
 export function classifyEnemy(creatureId: string): 'rig' | 'creature' {
   return resolveRender(undefined, findCreatureById(creatureId)?.traits, creatureId).kind === 'plan' ? 'creature' : 'rig';
 }
 
 /** Classe de rendu DATA-DRIVEN (de-POC P5) — délègue au résolveur unique `resolveRender` : trait
- *  Nuée ou espèce CANONIQUE explicite (lookup exact) ; repli name-match si l'espèce est absente. */
+ *  Nuée ou espèce EXPLICITE (arg/record, lookup exact) ; sans espèce → bipède (rig). */
 export function classifyBy(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, name: string): 'rig' | 'creature' {
   return resolveRender(species, traits, name).kind === 'plan' ? 'creature' : 'rig';
 }
@@ -96,9 +96,10 @@ function synthArmour(ap: ArmourPoints): ItemInstance[] {
 
 /** Résolution PARTAGÉE (combat ET exploration, IDENTIQUE) : espèce → def bipède canonique + race
  *  (défauts d'apparence partagés) + perso (surcharges d'espèce non-canonique). `override` = espèce
- *  explicite (combat : `c.species` ; exploration : `opts.species`), repli record créature puis nom-EXACT. */
-function bipedBase(override: string | undefined, name: string, cd: EntityAppearance | undefined) {
-  const species = override ?? cd?.species ?? (defByName(name) ? name : 'Humain');
+ *  explicite (combat : `c.species` ; exploration : `opts.species`), repli espèce du record. PLUS de
+ *  devinette par le nom — sans espèce explicite ni record → bipède Humain. */
+function bipedBase(override: string | undefined, cd: EntityAppearance | undefined) {
+  const species = override ?? cd?.species ?? 'Humain';
   const d = bipedDef(species);
   return { species, d, race: raceById(d?.race ?? baseSpeciesOf(species)), perso: d?.perso };
 }
@@ -143,7 +144,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 
   const seed = hashSeed(c.id);
   const cd = findCreatureById(c.creatureId)?.appearance; // apparence par défaut UNIFIÉE du record créature (par id)
-  const bb = bipedBase(c.species, c.name, cd); // résolution PARTAGÉE espèce→def/race/perso
+  const bb = bipedBase(c.species, cd); // résolution PARTAGÉE espèce→def/race/perso
   // Apparence : SOURCE UNIQUE `rigAppearance`. `c.appearance` (override d'instance) est déjà résolu au spawn.
   const appearance = rigAppearance(seed, bb, cd, c.appearance);
   // Tenue DATA-DRIVEN : carrière du Combatant → record → défaut de la def (perso/race) → Nu (l'auteur l'habille).
@@ -177,13 +178,13 @@ export function entityRigProfile(
     enrolled?: boolean },
 ): EnemyRigProfile | null {
   const rec = findCreatureById(name);
-  // Résolution d'espèce CANONIQUE (id→label→def, label-aware) — IDENTIQUE à resolveByName/resolveRender :
-  // un record dont l'id (kebab) ≠ le nom de def (libellé canon, ex. « Peau-de-Loup ») doit quand même
-  // résoudre vers ce def (sinon repli Humain → perso.head/race du def perdus). `r.species` porte ce résultat.
+  // Résolution d'espèce par la DONNÉE (espèce explicite de l'entité → espèce du record) — IDENTIQUE à
+  // resolveById/resolveRender : un record porte son `appearance.species` (ex. « Peau-de-Loup ») qui
+  // résout vers son def (sinon repli Humain → perso.head/race du def perdus). `r.species` porte ce résultat.
   const r = resolveRender(opts?.species ?? rec?.appearance?.species, rec?.traits, name);
   if (r.kind === 'plan') return null; // non-humanoïde → gabarit corporel
   const cd = rec?.appearance; // apparence par défaut UNIFIÉE du record créature
-  const base = bipedBase(r.species, name, cd); // espèce RÉSOLUE (label-aware) → def/race/perso corrects
+  const base = bipedBase(r.species, cd); // espèce RÉSOLUE → def/race/perso corrects
   // Override d'AUTHORING → `Partial<Appearance>` (yeux clés→art) passé au CONSTRUCTEUR UNIQUE `rigAppearance`.
   // Une entité d'ambiance « mutée » déclare ses parts/overlays dans son apparence (monster), pas via le nom.
   const override: Partial<Appearance> = {

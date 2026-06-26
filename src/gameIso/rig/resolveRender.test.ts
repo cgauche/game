@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveRender, resolveByName } from './bodyPlan';
+import { resolveRender, resolveById, resolveSpecies } from './bodyPlan';
 import { defByName } from './creatures';
 import { isSwarm } from '../../engine/traits/dispatch';
 import { creatures } from '../../data';
@@ -22,24 +22,25 @@ describe('resolveRender — résolution de rendu 100% data-driven (plus de name-
     }
   });
 
-  it('le REPLI (sans espèce) lit le RECORD — identique à passer l’espèce du record', () => {
+  it('le REPLI par ID (sans espèce passée) lit le RECORD — identique à passer l’espèce du record', () => {
     for (const c of creatures) {
       const sp = c.appearance?.species;
-      if (!sp) continue; // les 7 Nuée sans espèce sont couvertes par le trait (cas suivant)
-      expect(resolveByName(c.id), c.label).toEqual(resolveRender(sp, c.traits, c.id));
+      if (!sp) continue; // les Nuée sans espèce sont couvertes par le trait (cas suivant)
+      expect(resolveById(c.id), c.label).toEqual(resolveRender(sp, c.traits, c.id));
     }
   });
 
-  it('un NOM exact d’espèce canonique résout sans record (lookup EXACT defByName, pas de fuzzy)', () => {
-    // « Varghulf » : def ailé SANS record creatures.json → résolu par defByName(nom).
-    expect(resolveByName('Varghulf').plan).toBe(defByName('Varghulf')?.plan);
-    expect(resolveByName('Varghulf').plan).toBe('winged');
-    // « Liche » : def bipède sans record → espèce = le nom (exact).
-    expect(resolveByName('Liche')).toMatchObject({ kind: 'rig', plan: 'biped', species: 'Liche' });
+  it('une ESPÈCE EXPLICITE (resolveSpecies) résout sans record (lookup EXACT defByName, pas de fuzzy)', () => {
+    // « Varghulf » : def ailé SANS record creatures.json → résolu par l’espèce explicite.
+    expect(resolveSpecies('Varghulf').plan).toBe(defByName('Varghulf')?.plan);
+    expect(resolveSpecies('Varghulf').plan).toBe('winged');
+    // « Liche » : def bipède sans record → espèce = l’arg explicite (exact).
+    expect(resolveSpecies('Liche')).toMatchObject({ kind: 'rig', plan: 'biped', species: 'Liche' });
   });
 
-  it('un nom INCONNU (rôle générique sans record ni def) → bipède Humain par défaut', () => {
+  it('une espèce INCONNUE (rôle générique sans def) → bipède (rig) ; l’espèce explicite est conservée', () => {
+    // L'arg explicite gagne et est préservé tel quel ; sans def il rend en bipède (race via baseSpeciesOf).
     for (const n of ['Cultiste', 'Soldat', 'Rôle totalement inconnu xyz'])
-      expect(resolveByName(n), n).toMatchObject({ kind: 'rig', plan: 'biped', species: 'Humain' });
+      expect(resolveSpecies(n), n).toMatchObject({ kind: 'rig', plan: 'biped', species: n });
   });
 });

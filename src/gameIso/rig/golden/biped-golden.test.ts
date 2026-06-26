@@ -2,11 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
 import { entityRigProfile, weaponFromLabel } from '../enemyProfile';
+import { resolveSpecies } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Appearance } from '../appearance';
 import type { EquipCtx } from '../parts/equipment';
 
-// Espèces bipèdes couvertes (noms tels que résolus par le registre) + rôles génériques.
+// Espèces bipèdes couvertes (NOMS d'espèce canoniques) + rôles génériques. Comme un outil, on part
+// d'un NOM d'espèce → on le passe en espèce EXPLICITE (resolveSpecies : def name, ou 'Humain' si rôle
+// générique sans def) — plus aucun repli implicite par le nom dans entityRigProfile.
 const NAMES = ['Humain', 'Nain', 'Halfling', 'Haut-Elfe', 'Elfe sylvain', 'Gnome', 'Ogre',
   'Skaven', 'Orc', 'Gobelin', 'Snotling', 'Homme-bête', 'Minotaure', 'Squelette', 'Zombie',
   'Goule', 'Troll', 'Vampire', 'Démon', 'Liche', 'Démonette', 'Fimir', 'Géant',
@@ -17,7 +20,7 @@ describe('golden master — rendu bipède (anti-régression migration gabarit/ra
   for (const name of NAMES)
     for (const view of VIEWS) {
       it(`${name} / ${view} stable`, () => {
-        const prof = entityRigProfile(name, 7);
+        const prof = entityRigProfile(name, 7, { species: resolveSpecies(name).species });
         const svg = prof ? bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, [])) : '∅';
         expect(svg).toMatchSnapshot();
       });

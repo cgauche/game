@@ -71,7 +71,7 @@ function faceFrame(appearance: Appearance, equip: EquipCtx, tenue: string | unde
 /**
  * CLASSIFIEUR UNIQUE : décide quel backend monter (rig humanoïde / plan non-bipède / sprite)
  * et produit le corps prêt à insérer. Source unique remplaçant l'échelle
- * `isHero / enemyRigProfile / entityRigProfile / bodyPlanOf` dupliquée aux 4 sites de dispatch
+ * `isHero / enemyRigProfile / entityRigProfile / bodyPlanById` dupliquée aux 4 sites de dispatch
  * (IsoStage combat + exploration + leader, éditeur via EntityToken).
  *
  * `view: 'top'` (vue du dessus) → les ACTEURS deviennent un disque-portrait (vue de face cadrée,
@@ -123,6 +123,10 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   const refName = ent.ref ?? ent.label ?? 'villageois';
   // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.
   const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);
+  // Garde DEV : un personnage dont la `ref` n'est PAS un id de créature valide ET sans espèce explicite
+  // tombe silencieusement en bipède Humain (plus de devinette par le nom). Signale l'apparence perdue.
+  if (import.meta.env.DEV && ent.kind === 'personnage' && ent.ref && !ent.appearance?.species && !findCreatureById(ent.ref))
+    console.warn(`[pickBackend] entité « ${ent.id} » : ref « ${ent.ref} » non résolue (pas un id de créature) et sans Espèce (rig) → bipède Humain par défaut. Choisis une Espèce (rig) ou une réf de créature valide.`);
   const prof =
     ent.kind === 'personnage'
       ? entityRigProfile(refName, seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled: subject.enrolled })

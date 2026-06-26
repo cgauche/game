@@ -29,35 +29,36 @@ function mkEnemy(name: string, over: Partial<Combatant> = {}): Combatant {
 }
 
 describe('classifyEnemy (cosmétique : humanoïde peau-humaine → rig, sinon créature)', () => {
-  it('humanoïdes à équiper → rig', () => {
-    for (const n of [
-      'Bandit', 'Cultiste', 'Mutant', "Soldat de l'Empire", 'Guerrier du Chaos',
-      'Humain', 'Nain', 'Flagellant', 'Noble', 'Sorcier', 'Répurgateur', 'Mercenaire',
-      'Garde de la ville', 'Voleur', 'Sectateur', 'Halfling', 'Ogre',
-      // Phase B : skavens rapatriés dans le rig bipède (tête de rat + queue auto).
-      'Guerrier des clans', 'Rat ogre', 'Vermine de choc',
-      // Phase B : peaux-vertes, hommes-bêtes, morts-vivants humanoïdes, gros/démons → rig.
-      'Orc', 'Gobelin', 'Snotling', 'Squelette', 'Zombie', 'Goule de crypte',
-      'Gor', 'Ungor', 'Minotaure', 'Chamane-Brey',
-      'Troll', 'Vampire', 'Sanguinaire de Khorne',
-      'Liche', // mort-vivant humanoïde squelettique → rig bipède (jalon 3)
+  it('IDs de créatures humanoïdes (record → espèce bipède) → rig', () => {
+    // Résolution PAR ID : le record porte son espèce explicite → def bipède. Couvre peaux-humaines,
+    // peaux-vertes, hommes-bêtes, morts-vivants humanoïdes, skavens, gros/démons.
+    for (const id of [
+      'humain', 'nain', 'halfling', 'ogre',
+      'orc', 'gobelin', 'snotling', 'squelette', 'zombie', 'goule-de-crypte',
+      'gor', 'minotaure', 'troll', 'vampire',
+      'skaven', 'guerrier-des-clans', 'rat-ogre',
     ]) {
-      expect(classifyEnemy(n), n).toBe('rig');
+      expect(classifyEnemy(id), id).toBe('rig');
     }
   });
-  it('bêtes / morts-vivants non humanoïdes / démons exotiques → créature', () => {
-    for (const n of [ // ids de créatures (classifyEnemy résout par id)
+  it('un NOM générique sans record ni espèce (rôle) → bipède Humain par défaut → rig', () => {
+    // Plus de devinette par le nom : un rôle inconnu (sans record/def) tombe sur le bipède Humain (rig).
+    for (const n of ['Bandit', 'Cultiste', 'Mutant', "Soldat de l'Empire", 'Rôle inconnu xyz'])
+      expect(classifyEnemy(n), n).toBe('rig');
+  });
+  it('IDs de bêtes / morts-vivants non humanoïdes → créature', () => {
+    for (const id of [
       'rat-geant', 'dragon', 'loup', 'ours',
       'araignee-geante', 'spectre', 'bete-des-marais', 'hydre',
     ]) {
-      expect(classifyEnemy(n), n).toBe('creature');
+      expect(classifyEnemy(id), id).toBe('creature');
     }
   });
 });
 
 describe('enemyRigProfile', () => {
-  it('null pour une créature non-humanoïde', () => {
-    expect(enemyRigProfile(mkEnemy('Rat géant'))).toBeNull();
+  it('null pour une créature non-humanoïde (espèce explicite, comme au spawn)', () => {
+    expect(enemyRigProfile(mkEnemy('Rat géant', { species: 'Rat géant' }))).toBeNull();
   });
 
   it('non-null pour un humanoïde, et reprend les armes du combattant', () => {
@@ -162,8 +163,8 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     // L'ambiance porte sa tenue via `appearance.tenue` (pickBackend → opts.tenue) — honorée telle quelle.
     expect(entityRigProfile('Villageois', 1, { tenue: 'Mendiant' })!.tenue).toBe('Mendiant');
   });
-  it('non-humanoïde → null (garde le sprite créature)', () => {
-    expect(entityRigProfile('Rat géant', 1)).toBeNull();
+  it('non-humanoïde (id de record) → null (garde le sprite créature)', () => {
+    expect(entityRigProfile('rat-geant', 1)).toBeNull();
   });
   it('déterministe sur le seed', () => {
     expect(entityRigProfile('Mutant', 7)!.appearance).toEqual(entityRigProfile('Mutant', 7)!.appearance);

@@ -12,7 +12,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
 import { CLIPS, sampleClip, clipDuration } from '../src/gameIso/rig/anim/clips';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
-import { planById, bodyPlanOf, resolveByName, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
+import { planById, bodyPlanById, resolveById, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import { animatedRig } from './_lib-anim-rig';
 import { creatures } from '../src/data/index';
@@ -28,7 +28,7 @@ const PLAN_LABEL: Record<string, string> = {
   squig: 'Squigs', amorphous: 'Amorphes', jabberslythe: 'Jabberslythe',
 };
 const PLAN_ORDER = ['biped', 'quadruped', 'winged', 'serpentine', 'arachnid', 'avian', 'cephalopod', 'spectral', 'squig', 'amorphous', 'jabberslythe'];
-const planOf = (name: string): string => resolveByName(name).plan;
+const planOf = (id: string): string => resolveById(id).plan;
 
 /** Pré-scale (autour du centre) chaque os pour faire tenir les grandes espèces dans la boîte. */
 function scaleBones(bones: ResolvedBone[], z: number, cx = 60, cy = 78): ResolvedBone[] {
@@ -37,13 +37,13 @@ function scaleBones(bones: ResolvedBone[], z: number, cx = 60, cy = 78): Resolve
   return bones.map((b) => ({ ...b, matrix: mul(S, b.matrix) }));
 }
 
-/** Échantillons d'os animés d'une créature + durée du cycle (idle), exactement comme l'IsoStage. */
-function creatureFrames(name: string): { samples: ResolvedBone[][]; dur: number } {
-  const z = (() => { const s = resolveByName(name).scale; return s > 1 ? +(1 / s).toFixed(3) : 1; })();
-  const planId = bodyPlanOf(name);
+/** Échantillons d'os animés d'une créature (par ID de record) + durée du cycle (idle), comme l'IsoStage. */
+function creatureFrames(id: string): { samples: ResolvedBone[][]; dur: number } {
+  const z = (() => { const s = resolveById(id).scale; return s > 1 ? +(1 / s).toFixed(3) : 1; })();
+  const planId = bodyPlanById(id);
   if (planId !== 'biped') {
     const plan = planById(planId as BodyPlanId);
-    const species = resolveByName(name).species;
+    const species = resolveById(id).species;
     if (plan.idlePose) {
       const samples = Array.from({ length: NB }, (_, i) => scaleBones(plan.resolve(species, 'front', plan.idlePose!(i / (NB - 1)), {}), z));
       return { samples, dur: IDLE_MS };
@@ -51,7 +51,7 @@ function creatureFrames(name: string): { samples: ResolvedBone[][]; dur: number 
     return { samples: [scaleBones(plan.resolve(species, 'front', plan.restPose(), {}), z)], dur: IDLE_MS };
   }
   // Humanoïde → rig + respiration (clip idle).
-  const prof = entityRigProfile(name, 7);
+  const prof = entityRigProfile(id, 7);
   const dur = clipDuration(CLIPS.idle);
   if (!prof) return { samples: [[]], dur };
   const N = 8;
@@ -60,20 +60,20 @@ function creatureFrames(name: string): { samples: ResolvedBone[][]; dur: number 
   return { samples, dur };
 }
 
-function cell(name: string): string {
-  const { samples, dur } = creatureFrames(name);
+function cell(c: { id: string; label: string }): string {
+  const { samples, dur } = creatureFrames(c.id);
   const uid = `b${uidN++}`;
   const { css, svg } = animatedRig(samples, dur, uid);
   styles.push(css);
   return `<figure style="margin:0;text-align:center">
     <svg viewBox="0 0 120 150" width="116" height="145"><defs>${DEFS}</defs><rect width="120" height="150" fill="#171b26"/>${svg}</svg>
-    <figcaption style="color:#cdd;font:11px sans-serif">${name}</figcaption></figure>`;
+    <figcaption style="color:#cdd;font:11px sans-serif">${c.label}</figcaption></figure>`;
 }
 
-const groups = new Map<string, string[]>();
+const groups = new Map<string, { id: string; label: string }[]>();
 for (const c of creatures) {
-  const p = planOf(c.label);
-  (groups.get(p) ?? groups.set(p, []).get(p)!).push(c.label);
+  const p = planOf(c.id);
+  (groups.get(p) ?? groups.set(p, []).get(p)!).push({ id: c.id, label: c.label });
 }
 const sections = PLAN_ORDER.filter((p) => groups.has(p))
   .map((p) => {

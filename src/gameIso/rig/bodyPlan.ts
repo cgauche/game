@@ -1,8 +1,8 @@
 /**
  * Registre des GABARITS CORPORELS — indirige le rendu d'une créature vers son plan corporel.
  * UNE machinerie (FK générique + palette + facing) ; chaque
- * plan apporte son squelette + ses anims (poses). TOUT est registry-driven : `bodyPlanOf` dérive
- * le plan du nom via `creatures/defs/`, et la table PLANS est AUTO-ENREGISTRÉE depuis
+ * plan apporte son squelette + ses anims (poses). TOUT est registry-driven : `bodyPlanById` dérive
+ * le plan de l'espèce EXPLICITE du record via `creatures/defs/`, et la table PLANS est AUTO-ENREGISTRÉE depuis
  * `plans/defs/` — AJOUTER un gabarit = un module compose (BodyPlan exporté) + un `plans/defs/<id>.ts`
  * d'une ligne + des defs de créatures. ZÉRO édition de ce fichier.
  */
@@ -64,26 +64,33 @@ export function planById(id: BodyPlanId): BodyPlan {
 }
 
 /**
- * Plan corporel cosmétique d'un nom de créature. ENTIÈREMENT dérivé des `defs/` : chaque def
- * non-bipède porte son `plan` (gabarit rigué). Ajouter/router une créature =
- * un fichier def, ZÉRO édition ici (plus aucune liste de noms en dur). Défaut = bipède (tout
- * humanoïde nommé ou générique non couvert par un def rigué).
+ * Plan corporel d'un id de créature (RECORD). ENTIÈREMENT dérivé des `defs/` : chaque def
+ * non-bipède porte son `plan` (gabarit rigué). Ajouter/router une créature = un fichier def, ZÉRO
+ * édition ici. La résolution lit l'espèce EXPLICITE du record (`appearance.species`) — plus AUCUNE
+ * devinette par libellé. Défaut = bipède Humain (record sans espèce).
  */
-export function bodyPlanOf(name: string): BodyPlanId {
-  return resolveByName(name).plan; // délègue au résolveur unique
+export function bodyPlanById(id: string): BodyPlanId {
+  return resolveById(id).plan; // délègue au résolveur unique
 }
 
-/** Résolution de rendu d'un id de créature (sans espèce explicite) — sucre data-driven pour les outils
- *  DEV (galeries/QC) et chemins legacy : = `resolveRender(undefined, traits du record, id)`. */
-export function resolveByName(idOrName: string): RenderResolution {
-  return resolveRender(undefined, findCreatureById(idOrName)?.traits, idOrName);
+/** Résolution de rendu d'un id de créature (RECORD) — = `resolveRender(undefined, traits du record, id)`.
+ *  L'espèce vient de `appearance.species` du record ; sans espèce explicite → bipède Humain. */
+export function resolveById(id: string): RenderResolution {
+  return resolveRender(undefined, findCreatureById(id)?.traits, id);
+}
+
+/** Résout une ESPÈCE CANONIQUE connue (nom de def, lookup EXACT) → {kind,plan,species,scale}. Pour les
+ *  OUTILS dev (galeries/QC) et tests qui partent d'un NOM D'ESPÈCE, jamais d'un id de record. Passe par
+ *  la branche espèce-explicite (l'arg gagne) → EXACT-only, plus aucun match flou par libellé. */
+export function resolveSpecies(species: string): RenderResolution {
+  return resolveRender(species, undefined, species);
 }
 
 /** Résolution de rendu UNIFIÉE et 100% DATA-DRIVEN (de-POC P5/5d) : classe (rig/gabarit), id de
- *  gabarit, espèce canonique et échelle de token. Résout par la DONNÉE — espèce explicite → espèce du
- *  RECORD (`findCreatureById`) → le LIBELLÉ du record (ou l'entrée brute = nom d'auteur) s'il EST une
- *  espèce canonique (lookup EXACT `defByName`) → bipède Humain. Trait Nuée → 'swarm'. PLUS de match flou.
- *  3ᵉ arg = `id` de créature (scènes/spawn) OU un nom d'auteur (statbloc custom nommé d'après une espèce). */
+ *  gabarit, espèce canonique et échelle de token. Résout par la DONNÉE — espèce explicite (arg) →
+ *  espèce du RECORD (`findCreatureById(id).appearance.species`) → bipède Humain. Trait Nuée → 'swarm'.
+ *  PLUS aucun repli par libellé/nom d'auteur (le 3ᵉ arg ne sert qu'au record + match véhicule).
+ *  3ᵉ arg = `id` de créature (scènes/spawn) ; une ESPÈCE explicite passe par le 1er arg (cf. resolveSpecies). */
 export interface RenderResolution {
   kind: 'rig' | 'plan';
   plan: BodyPlanId;
@@ -97,9 +104,6 @@ export function resolveRender(species: string | undefined, traits: import('../..
   const veh = vehicles.find((v) => v.hull && (v.id === idOrName || v.label === idOrName));
   if (veh) return { kind: 'plan', plan: 'navire', species: veh.hull!.rig ?? 'mixte', scale: Math.max(0.7, Math.min(2.4, (veh.ship?.lengthM ?? 20) / 20)) };
   const rec = findCreatureById(idOrName);
-  // Pour le repli « nom EST une espèce » : le LIBELLÉ du record (ou l'entrée brute si pas de record —
-  // statbloc custom nommé « Nain »). Jamais un id (lowercase) ⇒ defByName(id) ne matche pas par accident.
-  const nameSp = rec?.label ?? idOrName;
   const swarmSp = PLANS.swarm?.speciesNames()[0] ?? '';
   if (isSwarm(traits)) {
     // Même résolution que la branche bipède : espèce explicite → espèce du RECORD → défaut Nuée.
@@ -107,9 +111,8 @@ export function resolveRender(species: string | undefined, traits: import('../..
     const sp = species ?? rec?.appearance?.species ?? swarmSp;
     return { kind: 'plan', plan: 'swarm', species: sp, scale: speciesScale(sp) };
   }
-  // Résolution par la DONNÉE : espèce explicite → espèce du record → le libellé s'il EST une espèce
-  // canonique (lookup EXACT, pas de fuzzy). Tout vient de `defByName`/`findCreatureById`.
-  const resolved = species ?? rec?.appearance?.species ?? (defByName(nameSp) ? nameSp : undefined);
+  // Résolution par la DONNÉE : espèce EXPLICITE (arg) → espèce du record. PLUS de repli par libellé.
+  const resolved = species ?? rec?.appearance?.species;
   if (resolved) {
     const d = defByName(resolved);
     if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: resolved, scale: speciesScale(resolved) };

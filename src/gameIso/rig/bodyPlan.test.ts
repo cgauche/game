@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { bodyPlanOf, planById } from './bodyPlan';
+import { bodyPlanById, resolveSpecies, planById } from './bodyPlan';
+
+/** Plan d'une ESPÈCE canonique (nom de def) et plan d'un ID de record — les deux chemins explicites. */
+const planOfSpecies = (s: string): string => resolveSpecies(s).plan;
+const planOfId = (id: string): string => bodyPlanById(id);
 
 describe('gabarits auto-enregistrés (plans/defs/ → PLANS dérivé)', () => {
   it('planById résout les 11 gabarits sans registre central', () => {
@@ -11,12 +15,12 @@ describe('gabarits auto-enregistrés (plans/defs/ → PLANS dérivé)', () => {
   });
 });
 
-describe('bodyPlanOf', () => {
+describe('résolution espèce/id → plan (resolveSpecies / bodyPlanById)', () => {
   it('quadrupèdes → quadruped', () => {
     for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Chien',
       // exotiques rapatriés en quad (reptilien/batracien/multi-têtes)
       'Basilic', 'Crapaud', 'Hydre']) {
-      expect(bodyPlanOf(n)).toBe('quadruped');
+      expect(planOfSpecies(n), n).toBe('quadruped');
     }
   });
   it('humanoïdes peau-humaine + monstres bipèdes (Phase B) → biped', () => {
@@ -28,39 +32,38 @@ describe('bodyPlanOf', () => {
       // jalon 3 : sortis du monolithique
       'Liche', 'Démonette de Slaanesh', 'Fimir', 'Géant',
     ]) {
-      expect(bodyPlanOf(n)).toBe('biped');
+      expect(planOfSpecies(n), n).toBe('biped');
     }
   });
   it('ailés (griffon/pégase/hippogriffe/dragon) → winged', () => {
-    // ids de créature (record→espèce) + espèces-defs sans record (Hippogriffe/Varghulf).
-    for (const n of ['griffon', 'pegase', 'Hippogriffe', 'dragon', 'demigriffon',
-      'manticore', 'Varghulf']) {
-      expect(bodyPlanOf(n)).toBe('winged');
-    }
+    // ESPÈCES-defs (sans record obligatoire) via resolveSpecies…
+    for (const n of ['Hippogriffe', 'Varghulf']) expect(planOfSpecies(n), n).toBe('winged');
+    // …et IDs de record (record→espèce) via bodyPlanById.
+    for (const id of ['griffon', 'pegase', 'dragon', 'demigriffon', 'manticore']) expect(planOfId(id), id).toBe('winged');
   });
   it('nouveaux squelettes exotiques → leur plan dédié', () => {
-    expect(bodyPlanOf('Serpent')).toBe('serpentine');
-    expect(bodyPlanOf('Sangsue')).toBe('serpentine');
-    expect(bodyPlanOf('Araignée')).toBe('arachnid');
-    expect(bodyPlanOf('Pigeon')).toBe('avian');
-    expect(bodyPlanOf('Pieuvre')).toBe('cephalopod');
+    expect(planOfSpecies('Serpent')).toBe('serpentine');
+    expect(planOfSpecies('Sangsue')).toBe('serpentine');
+    expect(planOfSpecies('Araignée')).toBe('arachnid');
+    expect(planOfSpecies('Pigeon')).toBe('avian');
+    expect(planOfSpecies('Pieuvre')).toBe('cephalopod');
   });
-  it('morts-vivants spectraux → spectral', () => {
-    for (const n of ['spectre-de-cairn', 'fantome', 'banshee']) expect(bodyPlanOf(n)).toBe('spectral');
+  it('morts-vivants spectraux (ids de record) → spectral', () => {
+    for (const id of ['spectre-de-cairn', 'fantome', 'banshee']) expect(planOfId(id), id).toBe('spectral');
   });
   it('squig → squig', () => {
-    expect(bodyPlanOf('Squig')).toBe('squig');
+    expect(planOfSpecies('Squig')).toBe('squig');
   });
   it('bête des marais → amorphous (gabarit hulk réutilisable)', () => {
-    expect(bodyPlanOf('Bête des marais')).toBe('amorphous');
+    expect(planOfSpecies('Bête des marais')).toBe('amorphous');
   });
   it('bêtes du Chaos (jabberslythes nommés) → jabberslythe — bespoke ANIMÉ, plus de monolithique', () => {
     for (const n of ['Jabberslythe', 'Slenderthigh Whiptongue', "Fr'hough Mournbreath"]) {
-      expect(bodyPlanOf(n)).toBe('jabberslythe');
+      expect(planOfSpecies(n), n).toBe('jabberslythe');
     }
   });
-  it('nom inconnu → bipède par défaut (le monolithique n’est plus qu’un fallback opt-in via def)', () => {
-    expect(bodyPlanOf('Créature totalement inconnue xyz')).toBe('biped');
+  it('espèce inconnue → bipède par défaut (le monolithique n’est plus qu’un fallback opt-in via def)', () => {
+    expect(planOfSpecies('Créature totalement inconnue xyz')).toBe('biped');
   });
 });
 
