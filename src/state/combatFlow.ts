@@ -1276,15 +1276,11 @@ export function applyAttackResult(
         target.wounds.current = Math.max(0, target.wounds.current - fb);
         critLog.push(tr('cf.woundingStrike', { name: target.name, n: fb }));
       }
-      // Taillade (Aux Armes p.89) : une Blessure Critique infligée par une arme de Taillade ajoute
-      // un État Hémorragique, en plus de tous les effets du Coup Critique.
-      if (res.critical && !lethal) {
-        for (const { def, caps } of resolveQualities(weapon)) {
-          if (!caps?.onCritCondition) continue;
-          addCondition(target, caps.onCritCondition);
-          critLog.push(tr('cf.onCritCondition', { name: target.name, cond: caps.onCritCondition, key: def.key }));
-        }
-      }
+      // Effets « sur Critique » (Taillade → Hémorragique, Aux Armes p.89, et tout futur Trait/Talent/Atout/État)
+      // — DISPATCHER UNIQUE générique (data-driven `effects:[{trigger:'onCrit'}]`), comme `onHit`. Plus de
+      // boucle bespoke par capacité.
+      if (res.critical && !lethal)
+        critLog.push(...fireTriggers(get, attacker, 'onCrit', { victim: target, weapon, location: loc, woundsDealt: res.woundsLost, attackType: weapon.type, rng: battleRng(), set }));
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill

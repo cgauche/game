@@ -553,8 +553,7 @@ export interface QualityCapabilities {
   pushback?: boolean;     // Perturbante : repousse au lieu de blesser
   bladeTrap?: boolean;    // Piège-lame : piéger/briser une lame sur un Critique défensif
   damagesArmour?: boolean;// Taille : endommage l'armure/le bouclier frappé
-  /** Empaleuse n'est PAS ici (op passive `critOnRoll`) ; Taillade ajoute un État sur Critique. */
-  onCritCondition?: string;
+  // (Taillade « État sur Critique » n'est PLUS une capability : `effects:[{trigger:'onCrit'}]` data-driven.)
   // Armes à feu / chargeurs
   firearm?: boolean;            // Poudre noire / Explosion : Incident de Tir + terreur (Nerveux)
   canFireWhileEngaged?: boolean;// Pistolet : tir au contact

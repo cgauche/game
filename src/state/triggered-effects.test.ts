@@ -47,6 +47,17 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(empetre(foe)?.value).toBe(1);
   });
 
+  it('ATOUT Taillade : effet sur CRITIQUE (déclencheur onCrit générique) → Hémorragique ; PAS à la touche simple', () => {
+    const knight = mk({ id: 'kn' });
+    const foe = mk({ id: 'fo' });
+    const weapon: Weapon = { name: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon;
+    const hemo = (c: Combatant) => c.conditions.find((x) => x.name === 'hemorragique');
+    fireTriggers(noBattle(), knight, 'onHit', { victim: foe, weapon }); // touche simple → RIEN (Taillade ne déclenche que sur Critique)
+    expect(hemo(foe)).toBeUndefined();
+    fireTriggers(noBattle(), knight, 'onCrit', { victim: foe, weapon }); // Critique → Hémorragique, via le MÊME dispatcher data-driven
+    expect(hemo(foe)?.value).toBe(1);
+  });
+
   it('déjà Empêtré → pas de re-application (unlessCondition)', () => {
     const spider = mk({ traits: [{ id: 'toile' }] });
     const prey = mk({ conditions: [{ name: 'empetre', value: 2 }] });

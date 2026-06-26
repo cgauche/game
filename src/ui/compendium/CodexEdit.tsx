@@ -377,6 +377,7 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
 
 const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'à la touche',
+  onCrit: 'sur un Critique',
   onWoundLoss: 'quand le porteur perd des PB',
   onSlain: 'à sa mise hors de combat (mort)',
   onRoundStart: 'au début de son Round',

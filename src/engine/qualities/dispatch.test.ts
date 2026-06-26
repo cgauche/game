@@ -64,8 +64,12 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     expect(parryDRAdjust(w(['Déséquilibrée']), w([]))).toBe(-1);
     expect(parryDRAdjust(w(['Défensive']), w(['Déséquilibrée']))).toBe(1);
   });
-  it('Taillade : ajoute un État Hémorragique sur Critique (capabilities.onCritCondition, donnée)', () => {
-    expect(findQualityById('taillade')?.capabilities?.onCritCondition).toBe('hemorragique');
+  it('Taillade : État Hémorragique sur Critique — canal générique effects:[{trigger:onCrit}] (donnée)', () => {
+    const eff = findQualityById('taillade')?.effects?.[0];
+    expect(eff?.trigger).toBe('onCrit');
+    const ops = (eff?.flow as { effect?: { ops?: { op: string; name?: string }[] } })?.effect?.ops;
+    expect(ops?.[0]).toMatchObject({ op: 'condition', name: 'hemorragique' });
+    expect(findQualityById('taillade')?.capabilities).toBeUndefined(); // plus de capability bespoke
   });
   it('Déstabilisante : effet onHit data-driven — choix (2 Av) → Test opposé Force/Athlétisme → À Terre (effects, donnée)', () => {
     const eff = findQualityById('destabilisante')?.effects?.[0];
@@ -116,7 +120,7 @@ describe('registry — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
     for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante',
       'Léger', 'Pratique', 'Raffiné', 'Solide', 'Bâclé', 'Laid', 'Peu Fiable', 'Volumineux',
-      'Taillade', 'Déséquilibrée', 'Déstabilisante', // Aux Armes p.89 — câblées (onCritCondition / defenderParryDR / effet onHit renversement)
+      'Taillade', 'Déséquilibrée', 'Déstabilisante', // Aux Armes p.89 — câblées (effets onCrit/onHit data-driven / defenderParryDR)
       "Arme d'équipe", 'Salve', 'Tir de zone']) { // Aux Armes p.124/126/89 — artillerie câblée (sous-effectif / chargeur / zone)
       expect(QUALITIES[k]).toBeTruthy();
     }
