@@ -14,12 +14,6 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.15,
     "species": "horreur-rose",
   },
-  "? (Ours)": {
-    "def": "Ours",
-    "plan": "quadruped",
-    "scale": 1.05,
-    "species": "ours",
-  },
   "Affreuse Vieille Sorcière Troll des Marais": {
     "def": "Troll",
     "plan": "biped",
@@ -2239,6 +2233,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "skaven",
+  },
+  "Terreur des Cavernes": {
+    "def": "Ours",
+    "plan": "quadruped",
+    "scale": 1.05,
+    "species": "ours",
   },
   "Traqueur Impitoyable": {
     "def": "Loup",
