@@ -16,7 +16,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects } from './flow';
@@ -93,6 +93,31 @@ function advanceCombatJet(get: () => GameState): void {
   const seq = get().pendingCascade;
   if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack'
     && !get().pendingAttack && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
+}
+
+/** Résout l'incantation FIGÉE une fois la fenêtre de Contre-sort close (`counterspellConfirm/Cancel`).
+ *  Une ZdE d'un lanceur IA (zone NON posée + centre auto-choisi `aiCenter`) se POSE sur ce centre via
+ *  `castCommitZone` (parité avec la pose auto du `case 'castArea'`) puis reprend le tour de l'IA ; tout
+ *  autre Sort (mono-cible héros/ennemi, zone posée par un joueur) passe par `castConfirm` (chemin
+ *  historique inchangé). Garantit qu'une ZdE ennemie passée par un Contre-sort NE soft-locke PAS (centre
+ *  jamais posé) et NE se résout PAS en mono-cible sur l'ancre lanceur. */
+function resolveAfterCounterspell(get: Get, set: Set): void {
+  const pc = get().pendingCast;
+  const aiCenter = pc?.zone && !pc.zone.center ? pc.zone.aiCenter : undefined;
+  if (aiCenter && pc) {
+    const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
+    // Sort DISSIPÉ par le Contre-sort (LDB 46 l.207) : il n'aboutit pas → aucune zone à poser.
+    // `castCommitZone` refuserait (castable=false) MAIS sans fermer le pending (réservé à la pose
+    // joueur) → on ferme proprement ici (data + cascade-hôte) pour ne PAS soft-locker le tour IA.
+    if (!pc.result?.cast) {
+      set({ pendingCast: null, pendingCascade: null });
+    } else {
+      castCommitZone(get, set, aiCenter); // pose la zone au DR net (ferme pendingCast/cascade)
+    }
+    if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set); // reprise armée (castCommitZone ne reprend pas l'IA)
+    return;
+  }
+  get().castConfirm(); // mono-cible / zone posée par un joueur : chemin historique (applique + reprend l'IA si ennemi)
 }
 
 /** Actions de combat inline du store — déplacées VERBATIM. Spreadées EN TÊTE du `create`. */
@@ -2121,12 +2146,12 @@ export function createCombatSlice(get: Get, set: Set) {
         const counter = actorIn(get(), best.id);
         if (counter) applyCounterspellOutcome(get, set, counter, best.result); // mute `pendingCast.result`
       }
-      get().castConfirm(); // applique le Sort (dissipé ou au DR net) + reprend le tour de l'IA
+      resolveAfterCounterspell(get, set); // applique le Sort (dissipé ou au DR net) — pose la ZdE IA / résout le mono-cible + reprend le tour de l'IA
     },
     counterspellCancel: () => {
       if (!get().pendingCounterspell) return;
       set({ pendingCounterspell: null });
-      get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel
+      resolveAfterCounterspell(get, set); // « Laisser passer » : le Sort se résout tel quel
     },
     // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).
     // « Une situation = une modale » : le Test étendu EST une cascade à une étape `jet:'extended'`,

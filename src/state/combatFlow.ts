@@ -4238,10 +4238,12 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       if (!canAct) return advanceTurn(get, set);
       // Sort de ZONE (ZdE, LDB 47 l.44) d'un lanceur IA : le centre est AUTO-POSÉ (l'IA pure l'a
       // choisi sur un paquet de héros) — sinon `pendingCast.zone` resterait sans centre et attendrait
-      // une pose JOUEUR (soft-lock). On reproduit le flux d'incantation (télégraphe → jet → pose) sans
-      // modale interactive. Simplification L1 ASSUMÉE : un Contre-sort de héros n'est PAS proposé sur
-      // une ZdE ennemie (le missile ennemi, lui, l'offre via routeEnemyCast) — fidélité mineure,
-      // l'auto-pose + auto-commit prime pour ne pas bloquer le tour.
+      // une pose JOUEUR (soft-lock). On reproduit le flux d'incantation (télégraphe → jet → Contre-sort
+      // → pose) sans modale de Lancer interactive. PARITÉ RAW avec le missile ennemi (LDB 46 l.201-202) :
+      // une fenêtre de Contre-sort/Dissipation est offerte aux héros AVANT la pose (`routeEnemyCast`), via
+      // le MÊME mécanisme `pendingCounterspell`. Le centre auto-choisi est MÉMORISÉ dans `zone.aiCenter`
+      // (le `counterspell*` résolveur posera la zone dessus) ; si aucun héros ne peut Dissiper, on pose et
+      // on reprend le tour IMMÉDIATEMENT (comportement historique, anti double-advance).
       const center = action.center;
       set({ actorAim: { fromId: enemy.id, toId: enemy.id, kind: 'cast' } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -4250,11 +4252,19 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         const b = get().battle;
         if (!b || b.over || !b.combatants.includes(enemy)) return;
         if (!castZoneSpell(get, set, enemy, action.spell)) { advanceTurn(get, set); return; } // pas une zone chiffrable → passe
-        if (!get().pendingCast) { resumeEnemyTurn(get, set); return; } // refus (contrecoup bloquant) — castZoneSpell a journalisé
+        const pc = get().pendingCast;
+        if (!pc) { resumeEnemyTurn(get, set); return; } // refus (contrecoup bloquant) — castZoneSpell a journalisé
+        // Mémorise le centre auto-choisi DANS le pending (zone non encore posée, `center` reste null pour
+        // que le Contre-sort s'intercale) — le résolveur de Contre-sort posera la zone dessus.
+        if (pc.zone) set({ pendingCast: { ...pc, zone: { ...pc.zone, aiCenter: center } } });
         get().castRoll(); // jet figé de l'IA (Surincantation no-op pour une ZdE — toutes cibles arrosées)
-        // Pose AUTOMATIQUE sur le centre choisi : castCommitZone applique le MÊME jet à tous les
-        // combattants du rayon final (parité flux joueur) + ferme pendingCast/cascade. La reprise du
-        // tour est ensuite armée explicitement (castCommitZone ne reprend pas l'IA de lui-même).
+        // Fenêtre de Contre-sort (parité missile) : ouvre `pendingCounterspell` si au moins un héros peut
+        // Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel (qui posent
+        // la zone sur `aiCenter` via castCommitZone). Sinon (aucun dissipeur) : pose + reprise immédiates.
+        routeEnemyCast(get, set);
+        if (get().pendingCounterspell) return; // Contre-sort ouvert → la résolution posera la zone & reprendra
+        // Aucun Contre-sort : pose AUTOMATIQUE sur le centre choisi (castCommitZone applique le MÊME jet à
+        // tous les combattants du rayon final + ferme pendingCast/cascade), puis reprise armée explicitement.
         castCommitZone(get, set, center);
         resumeEnemyTurn(get, set);
       }, TEMPO.aimTelegraph);

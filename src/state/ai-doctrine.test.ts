@@ -175,6 +175,42 @@ describe('Doctrines — comportements distincts vs standard', () => {
     if (aH.kind === 'move') expect(aH.to.x).toBeGreaterThanOrEqual(prey.pos!.x); // PAS le contournement prudent
   });
 
+  it('RACAILLE Empêtrée sous 1/3 PB ne FUIT PAS (M=0) : elle se LIBÈRE (recover empetre), pas son tour gâché', () => {
+    // Une racaille très entamée déclencherait le repli « doctrine » (retreatBelow 1/3) — MAIS Empêtrée
+    // (Mouvement 0) `fleeMove` renverrait `end` (tour perdu). La garde `!empetre` la laisse atteindre le
+    // fallback `recover empetre` (se libérer, LDB 16 l.61). (Fix L6 — point B.)
+    const rab = mk('rab', 'enemy', { x: 5, y: 5 }, {
+      groups: ['Criminel'], weapons: [MELEE], movement: 0,
+      wounds: { current: 2, max: 12 }, // < 1/3
+      conditions: [{ name: 'empetre', value: 1, sourceId: 'h' } as never],
+    });
+    const h = mk('h', 'hero', { x: 11, y: 11 }); // loin (pas au contact) → aucune mêlée jouable
+    expect(pickDoctrine(rab, [])).toBe('racaille');
+    expect(chooseEnemyAction(input(rab, [h], { movement: 0 }))).toEqual({ kind: 'recover', state: 'empetre' });
+  });
+
+  it('EMBUSCADE ≠ MEUTE : l’embusqué a l’initiative et NE recule JAMAIS (pas de retreatBelow), là où la racaille fuirait', () => {
+    // Même fixture très entamée et NON Engagée : la racaille (retreatBelow 1/3) FUIT ; l’embuscade (aucun
+    // macro de repli, override-only) reste à l’attaque. Prouve un comportement DISTINCT (≠ identité nominale).
+    const lowHP = { current: 2, max: 12 };
+    const rab = mk('rab', 'enemy', { x: 5, y: 5 }, { groups: ['Criminel'], weapons: [MELEE], wounds: { ...lowHP }, movement: 5 });
+    const amb = mk('amb', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE], wounds: { ...lowHP }, movement: 5, aiDoctrine: 'embuscade' });
+    const h = mk('h', 'hero', { x: 5, y: 9 }); // à portée d’approche, pas au contact
+    expect(pickDoctrine(rab, [])).toBe('racaille');
+    expect(pickDoctrine(amb, [])).toBe('embuscade');
+    const aRab = chooseEnemyAction(input(rab, [h]));
+    const aAmb = chooseEnemyAction(input(amb, [h]));
+    // La racaille fuit (s’éloigne du héros) ; l’embuscade fonce dessus (s’en rapproche). Distinction nette.
+    expect(aRab.kind).toBe('move');
+    expect(aAmb.kind).toBe('move');
+    const dist = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - h.pos!.x), Math.abs(p.y - h.pos!.y));
+    const d0 = dist({ x: 5, y: 5 }); // distance de départ au héros
+    if (aRab.kind === 'move' && aAmb.kind === 'move') {
+      expect(dist(aRab.to)).toBeGreaterThan(d0); // racaille S'ÉLOIGNE (repli)
+      expect(dist(aAmb.to)).toBeLessThan(d0); // embuscade SE RAPPROCHE (charge l'isolé)
+    }
+  });
+
   it('SOLDATS tiennent la formation : cohésion renforcée → préfèrent la case qui NE les isole PAS de l’escouade', () => {
     // L'ennemi peut aborder `prey` par deux cases de contact équidistantes : l'une PROCHE de l'allié
     // (en formation), l'autre LOIN (isolée > 3 cases de tout allié). La cohésion renforcée des soldats

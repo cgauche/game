@@ -211,10 +211,15 @@ const DOCTRINES: Record<DoctrineId, Doctrine> = {
   // se soucie pas de rester groupée ; le surnombre brut reste émergent via `outnumberMod`. Pas de repli (un
   // Insensible/Sans Peur ne fuit pas — et n'étant pas Bestial, aucune garde de fuite ne s'applique).
   horde: { dangerAvoid: 0, cohesion: 0 },
-  // EMBUSCADE : tient sa position puis fond sur la cible isolée. AUCUN signal auto fiable (furtivité/flag de
-  // scène) n'existe proprement → SÉLECTIONNABLE UNIQUEMENT par l'override `aiDoctrine` (donnée). Poids ≈ meute
-  // (charge la proie isolée, prise à revers) mais SANS repli — elle a l'initiative. Signalé dans le rapport.
-  embuscade: { threat: 1.8, flankRear: 8 },
+  // EMBUSCADE : « attaque-surprise sur l'isolé, pas de repli ». AUCUN signal auto fiable (furtivité/flag de
+  // scène / charge initiale d'embuscade) n'existe proprement → SÉLECTIONNABLE UNIQUEMENT par l'override
+  // `aiDoctrine` (donnée). DISTINCTE de la meute (≠ identité nominale, cf. relecture L5) : l'embusqué a
+  // l'INITIATIVE et frappe pour TUER la cible isolée d'entrée, prise à revers depuis sa cachette. ↑↑flankRear
+  // (frappe de dos depuis l'embuscade, plus marqué que la meute) ; ↑↑killSecure (le coup d'ouverture cherche
+  // l'élimination — pas un harcèlement de meute) ; ↑threat (priorise l'isolé fragile). Et SURTOUT : AUCUN
+  // `macro.retreatBelow` (l'embusqué a choisi son moment, il ne recule pas — contraste avec la racaille).
+  // DIFFÉRENCE MINIMALE DÉFENDABLE (faute d'un signal de charge initiale d'embuscade) — signalée au rapport.
+  embuscade: { threat: 1.8, flankRear: 12, killSecure: 18 },
 };
 
 /**
@@ -249,10 +254,19 @@ export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = []): Doctri
   // « racaille » à un groupe racial/criminel. ABSENCE de groupe ⇒ pas de signal (fixtures génériques → standard).
   const groups = enemy.groups ?? [];
   const inGroup = (cats: string[]) => cats.some((cat) => groupMatch(cat, groups));
-  // Catégories militaires (entraînées/organisées) et racaille/humanoïde — listes de CATÉGORIES de Groupe
-  // (pas de créature/carrière nommée), alignées sur `engine/groups.ts`. Le levier fin reste l'override `aiDoctrine`.
-  const MILITARY = ['Soldat', 'Garde', 'Militaire', 'Chevalier', 'Mercenaire'];
-  const RABBLE = ['Criminel', 'Bandit', 'Cultiste', 'Peau-Verte', 'Skaven'];
+  // Signaux MILITAIRE et RACAILLE — UNIQUEMENT des jetons qui matchent VRAIMENT un Groupe émis par
+  // `groupsFor` (`engine/groups.ts`), pour une classification HONNÊTE (relecture L6). Deux familles de
+  // signaux réels :
+  //  • Catégories de Groupe dérivées du folder bestiaire : `Cultiste`, `Peau-Verte`, `Skaven` (FOLDER_RULES).
+  //  • Libellés de CARRIÈRE poussés tels quels par `groupsFor` (`career.label`) : `Soldat`, `Garde`,
+  //    `Chevalier` sont de vraies carrières (`careers.json`). `Criminel` est auto-dérivé de la CLASSE
+  //    `roublards` (Hors-la-loi, Voleur, Receleur, Pilleur de tombes…) → couvre toute la racaille criminelle.
+  // RETIRÉ comme ENTRÉES MORTES (aucune dérivation correspondante, cf. relecture) : `Militaire` et
+  // `Mercenaire` (pas de carrière/catégorie de ce nom) côté militaire ; `Bandit` côté racaille (« Bandit »
+  // est un NIVEAU de la carrière Hors-la-loi, pas un libellé de carrière poussé en Groupe — déjà couvert
+  // par `Criminel`). Le levier fin reste l'override `aiDoctrine` (et les `extras` manuels de l'éditeur).
+  const MILITARY = ['Soldat', 'Garde', 'Chevalier'];
+  const RABBLE = ['Criminel', 'Cultiste', 'Peau-Verte', 'Skaven'];
   const isMilitary = inGroup(MILITARY);
   const isRabble = inGroup(RABBLE);
 
@@ -641,7 +655,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const doctrine = pickDoctrine(enemy, squad);
   const Weff = doctrineWeights(doctrine);
   const macro = DOCTRINES[doctrine].macro;
+  // GARDE Empêtré (LDB 16 l.61/85) : un Empêtré a un Mouvement NUL → `fleeMove` ne trouverait aucune
+  // case d'évasion et renverrait `end` (tour gâché). On NE déclenche donc PAS le repli « doctrine » pour
+  // un Empêtré : le cœur discrétionnaire ne produira aucun candidat (Mouvement 0) et le fallback final
+  // l'enverra sur `recover empetre` (se libérer) — le bon comportement, plutôt que passer son tour.
   if (macro?.retreatBelow != null && !isBestial(enemy.traits) && !isFrenzied(enemy) && !isEngaged(enemy)
+      && !hasCondition(enemy, 'empetre')
       && enemy.wounds.current < enemy.wounds.max * macro.retreatBelow) {
     return fleeMove();
   }
