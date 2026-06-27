@@ -4,6 +4,7 @@ import { CharFrame } from './CharFrame';
 import { Coins } from './Coins';
 import { MultiRollList } from './MultiRollList';
 import { TravelDayBody } from './TravelRecapModal';
+import { OptionChooser } from './OptionChooser';
 import { lodgingOptions, foodOptions, restCost, type RestLodging, type RestFood } from '../state/restFlow';
 import { weatherExposure, exposureTestCount, partyHasTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
@@ -112,30 +113,16 @@ export function RestModal() {
             <div key={h.id} className="rest-row">
               <CharFrame c={h} variant="full" size="sm" />
               <div className="rest-choices">
-                <div className="rest-seg">
-                  {lodgingOptions(p.places).map((l) => (
-                    <button
-                      key={l}
-                      className={`btn btn-sm ${cfg.lodging === l ? 'btn-primary' : ''}`}
-                      disabled={!mine}
-                      onClick={() => restSet(h.id, { lodging: l })}
-                    >
-                      {LODGING_META[l].icon} {LODGING_META[l].label}
-                    </button>
-                  ))}
-                </div>
-                <div className="rest-seg">
-                  {foodOptions(p.places, h).map((f) => (
-                    <button
-                      key={f}
-                      className={`btn btn-sm ${cfg.food === f ? 'btn-primary' : ''}`}
-                      disabled={!mine}
-                      onClick={() => restSet(h.id, { food: f })}
-                    >
-                      {FOOD_META[f].icon} {FOOD_META[f].label}
-                    </button>
-                  ))}
-                </div>
+                <OptionChooser
+                  layout="seg"
+                  groupLabel="Couchage"
+                  options={lodgingOptions(p.places).map((l) => ({ key: l, label: <>{LODGING_META[l].icon} {LODGING_META[l].label}</>, selected: cfg.lodging === l, disabled: !mine, onSelect: () => restSet(h.id, { lodging: l }) }))}
+                />
+                <OptionChooser
+                  layout="seg"
+                  groupLabel="Nourriture"
+                  options={foodOptions(p.places, h).map((f) => ({ key: f, label: <>{FOOD_META[f].icon} {FOOD_META[f].label}</>, selected: cfg.food === f, disabled: !mine, onSelect: () => restSet(h.id, { food: f }) }))}
+                />
                 {warns.length > 0 && <span className="rest-warn">{warns.join(' · ')}</span>}
               </div>
             </div>

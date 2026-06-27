@@ -18,13 +18,13 @@ import { registerCombatHook } from '../combatHooks';
 import { battleRng } from '../battleRng';
 import { ev, evLines } from '../combatLog';
 import { effectiveChar } from '../../engine/characteristics';
-import { isOutOfAction, addCondition, COND } from '../../engine/conditions';
+import { isOutOfAction, addCondition } from '../../engine/conditions';
 import { losClear } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
 import {
   fearSourceFor, sansPeurVs, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isFrenzied, isPsychImmune,
-  resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, suppressSupersededPsych, CIBLE_TYPES,
+  resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, suppressSupersededPsych, CIBLE_TYPES, psychResolution,
 } from '../../engine/psychology';
 import { psychologyLabel } from '../../data';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
@@ -99,13 +99,14 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     const src = fearSourceFor(enemy, foe);
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
     const sansPeur = sansPeurVs(enemy, foe); // Sans Peur (Ennemi, LDB 10 l.864) : Test de Calme +20 à la rencontre
-    if (src.kind === 'terreur') {
+    const res = psychResolution(src.kind);
+    if (res.mode === 'terreur') {
       const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits), sansPeur); // À sang-froid : inverse un raté (LDB 85)
-      if (!r.success) {
-        addCondition(enemy, COND.brise, r.brise);
+      if (r.brise > 0 && res.failCondition) {
+        addCondition(enemy, res.failCondition, r.brise);
         log.push(t('turn.terrified', { name: enemy.name, foe: foe.name, brise: r.brise }));
       }
-      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur (ignorée si Sans Peur réussit)
+      if (res.becomes) enemy.psychState.push({ type: res.becomes, sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur (ignorée si Sans Peur réussit)
     } else if (sansPeur) {
       // Sans Peur : UN seul Test de Calme Accessible (+20) à la rencontre ; réussi → Peur ignorée d'emblée.
       const r = resolvePeurTest(calmeValue(enemy), src.indice, 0, battleRng(), isColdBlooded(enemy.traits), true);
