@@ -24,6 +24,7 @@ import {
   rollRangedAttacker,
   defenseValue,
   combatValue,
+  hasWeaponGroupSkill,
   attackModifiers,
   combineMods,
   rollMeleeAttacker,
@@ -101,7 +102,7 @@ import { applyHullCritical } from '../engine/shipCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
-import { recomputeLoadout, weaponWithAmmo, selectedAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
+import { recomputeLoadout, weaponWithAmmo, selectedAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
@@ -117,7 +118,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, effectiveWeaponRange, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, effectiveWeaponRange, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -225,7 +226,23 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
     const present = servingCrewPresent(attacker, combatants);
     if (present != null) w = crewedFireWeapon(w, present);
   }
-  return w;
+  // Règles d'arme CONTEXTUELLES de Groupe (LDB 62) repliées sur le profil : Lance de cavalerie hors Charge
+  // → improvisée (l.59) ; Fléau sans la Spécialisation → Dangereuse + aucun Atout (l.146-147). Liées ICI —
+  // funnel UNIQUE attaquant ⊕ arme ⊕ contexte — donc la MÊME arme transformée sert la touche/les Dégâts
+  // (`resolveAttack` → `applyHit`) ET la Maladresse sur un RATÉ : `attackConfirm` et l'IA RE-DÉRIVENT l'arme
+  // par `firedWeapon`, si bien que `dangerousNine` voit la Dangereuse du Fléau sans compétence.
+  return effectiveWeapon(w, weaponContextOf(attacker, w));
+}
+
+/** Contexte d'usage d'une arme (règles d'arme CONTEXTUELLES de Groupe, LDB 62) dérivé de l'attaquant.
+ *  SOURCE UNIQUE de la dérivation : `firedWeapon` (attaque principale) ET `resolveDualSecond` (2ᵉ frappe du
+ *  Maniement de deux armes) l'appellent — aucune duplication de l'inférence `charged`/`mounted`/`hasGroupSkill`. */
+export function weaponContextOf(attacker: Combatant, w: Weapon): WeaponContext {
+  return {
+    charged: !!attacker.chargedThisTurn,
+    mounted: !!attacker.mountId,
+    hasGroupSkill: hasWeaponGroupSkill(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'),
+  };
 }
 
 /** Tir héros refusé faute de RESSOURCE : arme à défaut Recharge non chargée (LDB 63 l.28-29) ou plus
@@ -484,6 +501,10 @@ export function resolveDualSecond(
   mainRoll: number,
   opts?: { critValue?: number; location?: HitLocation },
 ): AttackResult {
+  // Règles d'arme contextuelles de Groupe (LDB 62) AUSSI pour la 2ᵉ frappe : Fléau sans Spé → Dangereuse +
+  // aucun Atout, Lance hors Charge → improvisée. Replié AVANT touche/Dégâts (même `weaponContextOf` que
+  // `firedWeapon` — source unique du ctx) car `applyAttackResult` fait confiance au `res` pré-calculé.
+  offWeapon = effectiveWeapon(offWeapon, weaponContextOf(attacker, offWeapon));
   const { env } = attackEnv(get, attacker, target, offWeapon, {});
   const mods = attackModifiers(attacker, target, offWeapon, { kind: 'melee', location: opts?.location, env });
   const toHit = combatValue(attacker, 'melee', offWeapon) + combineMods(mods);
@@ -1108,12 +1129,14 @@ export function previewCritEntry(target: Combatant, crit: CriticalResolved, ctx?
 }
 
 /** Déviation Critique (LDB 63 l.63-66) : sacrifie 1 PA à `loc` pour IGNORER le Critique ; la cible
- *  subit quand même les Blessures normales recalculées avec la PA réduite (probable +1 Blessure). */
-function deviateArmour(target: Combatant, weapon: Weapon, res: AttackResult, log: string[]): void {
-  damageArmour(target, res.location ?? 'corps');
+ *  subit quand même les Blessures normales recalculées avec la PA réduite (probable +1 Blessure).
+ *  RETOURNE false si rien n'a pu être sacrifié (aucune PA déductible) → la Déviation n'a pas lieu. */
+function deviateArmour(target: Combatant, weapon: Weapon, res: AttackResult, log: string[]): boolean {
+  if (!damageArmour(target, res.location ?? 'corps')) return false;
   const extra = Math.max(0, woundsFromHit(weapon, target, res.location ?? 'corps', res.damage ?? 0) - (res.woundsLost ?? 0));
   if (extra) target.wounds.current = Math.max(0, target.wounds.current - extra);
   log.push(tr('cf.deflectArmour', { name: target.name }));
+  return true;
 }
 
 /** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.82) — héros (pièces). */
@@ -1151,7 +1174,7 @@ function applyOpposedCritical(
   // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
   const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
-  if (victim.kind === 'enemy' && (victim.armour[loc] ?? 0) > 0) {
+  if (victim.kind === 'enemy' && deviatableArmourAt(victim, loc) > 0) {
     damageArmour(victim, loc);
     const line = tr('cf.deflectCrit', { name: victim.name });
     log.push(line);
@@ -1227,7 +1250,7 @@ export function applyAttackResult(
   const dloc = res.location ?? 'corps';
   // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
-  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero') {
+  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero' && deviatableArmourAt(target, dloc) > 0) {
     // Pré-tire le Coup Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
     const overkill = Math.max(0, res.woundsLost - target.wounds.current);
@@ -1258,10 +1281,11 @@ export function applyAttackResult(
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
     // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, l'ennemi ne dévie plus
     // automatiquement → il subit le Critique comme le héros sans déviation.
-    const autoDeviate = rule('combat-critical-deflect') && res.critical && target.kind === 'enemy' && (target.armour[loc] ?? 0) > 0; // ennemi : dévie toujours (auto)
-    if (res.critical && (autoDeviate || deviated === true)) {
-      deviateArmour(target, weapon, res, critLog); // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66)
-    } else if (res.critical || overkill > 0) {
+    const autoDeviate = rule('combat-critical-deflect') && res.critical && target.kind === 'enemy' && deviatableArmourAt(target, loc) > 0; // ennemi : dévie toujours (auto)
+    // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66). deviateArmour retourne false
+    // si aucun PA sacrifiable → la Déviation n'a pas lieu et le Critique est appliqué (chemin else ci-dessous).
+    const deviationApplied = res.critical && (autoDeviate || deviated === true) && deviateArmour(target, weapon, res, critLog);
+    if (!deviationApplied && (res.critical || overkill > 0)) {
       // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
       // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
       const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit, get);

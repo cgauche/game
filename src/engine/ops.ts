@@ -240,8 +240,10 @@ export type GameOp =
   | { op: 'charMod'; char: CharKey; mod: number; durationRounds?: Formula }
   /** PA à une Localisation (`loc`) ou à TOUTES (`loc` absent — Armure Aethyrique « +1 PA à toutes les
    *  Localisations »). Flow de sort → `ActiveEffect` temporisé (apAll/apAt) lu par effectiveArmourAt ;
-   *  `passive` de mutation/trait → armure naturelle permanente lue par mutationArmourBonus. */
-  | { op: 'ap'; loc?: HitLocation; amount: Formula }
+   *  `passive` de mutation/trait → armure naturelle permanente lue par mutationArmourBonus.
+   *  `noDeviation` (LDB 63 l.30 + EDO App.2 l.196) : ce PA conféré ne peut pas servir à la Déviation
+   *  Critique (Écailles) ; défaut absent = déviatable (Trait créature Armure / armure portée restent sacrifiables). */
+  | { op: 'ap'; loc?: HitLocation; amount: Formula; noDeviation?: boolean }
   // (Il n'existe PLUS d'op `test` : un Test est un nœud de la STRUCTURE Flow `{kind:'test'}`, jamais une
   //  feuille d'effet — résolu CADENCE-AWARE par `resolveFlowTest` (héros manuel = jet influençable ;
   //  ennemi/auto = inline), avec sa branche `onFail` et sa continuation honorées. Les derniers usages
@@ -853,6 +855,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0, duration: dur, ...(o.loc ? { apAt: { [o.loc]: n } } : { apAll: n }),
+          ...(o.noDeviation ? { noDeviation: true } : {}),
         });
         lines.push(t('op.ap', { name: target.name, n, src: ctx.label ?? 'sort', durTxt: dur.scale === 'rounds' ? `, ${t('op.frag.rounds', { n: dur.left })}` : '' }));
         break;

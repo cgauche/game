@@ -9,7 +9,7 @@ import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
-import { mutationArmourBonus } from './corruption';
+import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
 import { findTrappingById, findVehicleById, qualityInstance, type TrappingRef, trappingRefLabel } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
 import { slugId } from '../data/slug';
@@ -243,7 +243,11 @@ export function emptyArmour(ap = 0): ArmourPoints {
  *  `itemFromTrapping` sur l'ItemInstance. Repli pour les armes BRUTES sans `hands` typé (statblocs
  *  d'ennemis, armes synthétiques) : Groupe « Deux-mains » typé (`subType==='deux-mains'`). Aucun parse
  *  de chaîne d'affichage — l'ancien marqueur `(2M)` re-parsé par regex a été supprimé. */
-export function weaponHands(it: { hands?: 1 | 2; subType?: string }): 1 | 2 {
+export function weaponHands(it: { hands?: 1 | 2; subType?: string }, ctx?: { mounted?: boolean }): 1 | 2 {
+  // Cavalerie « (2M) » (LDB 62 l.142-143) : MONTÉE, l'arme est maniée à UNE main (l'autre tient les rênes) ;
+  // utilisée À PIED, « toutes les armes à deux mains du Groupe Cavalerie sont aussi considérées comme des
+  // armes à Deux Mains ». La donnée porte `hands:2` d'origine (= le profil à pied) ; on n'allège à 1 que monté.
+  if (ctx?.mounted && it.subType === 'cavalerie' && it.hands === 2) return 1;
   if (it.hands === 1 || it.hands === 2) return it.hands;
   if (it.subType === 'deux-mains') return 2; // Groupe « Deux-mains » (id stable, donnée typée)
   return 1;
@@ -352,7 +356,7 @@ export function recomputeLoadout(c: Combatant): void {
   }
   const toWeapon = (it: ItemInstance, hand: 'main' | 'off'): Weapon | null => {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
-    const hands = weaponHands(it);
+    const hands = weaponHands(it, { mounted: !!c.mountId }); // Cavalerie (2M) à pied → vraies 2 mains (LDB 62 l.142-143)
     if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
     const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
@@ -579,6 +583,13 @@ export function impenetrableAt(c: Combatant, loc: HitLocation): boolean {
   return (c.items ?? []).some(
     (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0 && hasQuality(i, QUALITY_IDS.Impenetrable),
   );
+}
+
+/** PA d'armure SACRIFIABLE pour la Déviation Critique (LDB 63 l.30) à `loc` : `c.armour[loc]` (armure portée +
+ *  statbloc créature + PA naturels de mutation) MOINS les PA marqués hors-Déviation (Écailles, EDO App.2 l.196).
+ *  Le PA de sort (activeEffects) n'est pas une pièce d'armure et n'entre pas. > 0 ⇔ « protégé par une armure ». */
+export function deviatableArmourAt(c: Combatant, loc: HitLocation): number {
+  return (c.armour?.[loc] ?? 0) - nonDeviatableMutationAP(c, loc);
 }
 
 /** Endommage de 1 PA l'armure de `c` à la localisation `loc` (LDB 63 l.52-55). Héros : endommage la

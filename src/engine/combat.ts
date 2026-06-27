@@ -121,6 +121,19 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
 }
 
 /**
+ * Le combattant possède-t-il la Spécialisation (de Corps à corps / Projectiles) du **Groupe** de l'arme
+ * (LDB 62 l.138-139) ? Réutilise `acceptableSpecs` — source UNIQUE des Spés autorisées par Groupe (comme
+ * `combatValue`). Faux si l'arme n'a pas de Groupe (`subType` absent) ou si aucune Augmentation ne le couvre.
+ * Sert aux règles de Groupe CONTEXTUELLES (Fléau sans compétence → Dangereuse, LDB 62 l.146-147).
+ */
+export function hasWeaponGroupSkill(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): boolean {
+  if (!weapon.subType) return false;
+  const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
+  const wanted = acceptableSpecs(weapon, kind);
+  return c.skills.some((s) => s.skillId === skillId && wanted.includes((s.spec ?? '').toLowerCase()));
+}
+
+/**
  * Valeur de défense (Parade = Corps à corps avec l'arme parante ; Esquive = Agilité + avances).
  * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB p.295). `weapon` (arme du
  * défenseur) n'est utilisé qu'en Parade, pour aligner la Spé de Corps à corps sur l'arme tenue.

@@ -22,6 +22,7 @@ export const QUALITY_IDS = {
   PointsFaibles: 'points-faibles',
   Impenetrable: 'impenetrable',
   Inoffensive: 'inoffensive',
+  Dangereuse: 'dangereuse',
   Empaleuse: 'empaleuse',
   Bacle: 'bacle',
   Infecte: 'infecte',

@@ -66,6 +66,25 @@ describe('resolveDualSecond : 2ᵉ attaque du Maniement de deux armes (LDB 10 l.
     const res = resolveDualSecond(useGame.getState, h, f2, off, 11, { critValue: 56 });
     expect(res.attackerRoll).toBe(56);
   });
+
+  // Règles d'arme contextuelles de Groupe (LDB 62 l.146-147) AUSSI pour la 2ᵉ frappe : `resolveDualSecond`
+  // replie `effectiveWeapon(off, weaponContextOf(attacker, off))` AVANT touche/Dégâts (le `res` est ensuite
+  // appliqué tel quel). Cible Surprise → pas de jet de défense → DR déterministe (jet d'attaque forcé = 23).
+  const flail = (): Weapon =>
+    ({ uid: 'o', name: 'Fléau', type: 'melee', subType: 'fleau', hand: 'off', hands: 1, damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'percutante' }] });
+
+  it('Fléau en main secondaire SANS la Spé → Atouts retirés (Percutante perdue) vs AVEC la Spé', () => {
+    const { h, f2 } = setupBattle();
+    const off = flail();
+    h.weapons = [W('m', 'main'), off];
+    f2.conditions = [{ name: 'surpris' } as any]; // ne se défend pas → résolution déterministe
+    h.skills = [];
+    const rSans = resolveDualSecond(useGame.getState, h, f2, off, 32); // jet forcé = reverseRoll(32) = 23 (3 unités) → touche
+    h.skills = [{ skillId: 'corps-a-corps', spec: 'Fléau', advances: 0 } as any];
+    const rAvec = resolveDualSecond(useGame.getState, h, f2, off, 32);
+    expect([rSans.hit, rAvec.hit]).toEqual([true, true]);
+    expect(rAvec.damage! - rSans.damage!).toBe(3); // Percutante (3 unités) conservée AVEC la Spé, retirée SANS
+  });
 });
 
 describe('applyAttackResult : defer de l’Avantage de l’attaquant', () => {

@@ -93,15 +93,50 @@ export function isImprovised(w: Weapon): boolean {
   return flat >= 0 && flat - effectiveDamageTaken(w) <= 0;
 }
 
-/**
- * Profil de combat EFFECTIF d'une arme : si elle a été usée jusqu'à +0, elle devient une **Arme
- * improvisée** (LDB 62 l.178) — Dégâts `+BF+1`, Atout `Inoffensive`, **plus aucun Atout** (Empaleuse/
- * Perforante/Pointue… perdus). Sinon l'arme est renvoyée telle quelle. À appliquer avant tout calcul
- * de touche/dégâts/critique pour que la dégradation bascule réellement le profil.
- */
-export function effectiveWeapon(w: Weapon): Weapon {
-  if (!isImprovised(w)) return w;
+/** Profil d'**Arme improvisée** (LDB 62 l.29/178/185) : Dégâts `+BF+1`, Atout `Inoffensive`, **plus aucun
+ *  autre Atout**, Allonge Moyenne. SOURCE UNIQUE — partagé par l'usure (Dégâts à +0) ET la Lance de
+ *  cavalerie hors Charge (`effectiveWeapon`), pour ne pas dupliquer le littéral. */
+function improvisedProfile(w: Weapon): Weapon {
   return { ...w, damage: { plusBF: true, flat: 1 }, qualities: [{ id: QUALITY_IDS.Inoffensive }], damageTaken: 0, reach: 'Moyenne' };
+}
+
+/** Lance de cavalerie (Groupe Cavalerie, nom contenant « lance ») — la règle « improvisée hors Charge »
+ *  (LDB 62 l.59) ne vise QUE les lances du Groupe, pas le Marteau à bec-de-corbin ni le Sabre. Détection
+ *  par la DONNÉE de combat (`subType` + nom), JAMAIS par le `WeaponDef.group` de rendu. */
+function isCavalryLance(w: Weapon): boolean {
+  return w.subType === 'cavalerie' && norm(w.name).includes('lance');
+}
+
+/** Contexte d'usage d'une arme — règles d'arme CONTEXTUELLES de Groupe (LDB 62), dérivé de l'attaquant
+ *  au moment où l'arme est liée à l'attaque (cf. `firedWeapon`). */
+export interface WeaponContext {
+  /** L'attaquant a Chargé ce Round (`Combatant.chargedThisTurn`). */
+  charged?: boolean;
+  /** L'attaquant est monté (`Combatant.mountId`). */
+  mounted?: boolean;
+  /** L'attaquant possède la Spécialisation de Corps à corps du Groupe de l'arme (`hasWeaponGroupSkill`). */
+  hasGroupSkill?: boolean;
+}
+
+/**
+ * Profil de combat EFFECTIF d'une arme, contexte d'usage compris. Sans `ctx` : seule l'usure→improvisée
+ * (LDB 62 l.178) s'applique — Dégâts `+BF+1`, Atout `Inoffensive`, plus aucun autre Atout ; une arme non
+ * altérée est renvoyée TELLE QUELLE (même référence). Avec `ctx`, deux règles de Groupe contextuelles
+ * s'ajoutent :
+ *  - Lance de cavalerie utilisée hors d'un Round de Charge → **Arme improvisée** (LDB 62 l.59).
+ *  - Fléau manié **sans la Spécialisation** appropriée → Défaut **Dangereuse**, et **aucun autre Atout**
+ *    n'est utilisé (LDB 62 l.146-147).
+ * À appliquer LÀ où l'arme se lie à l'attaque pour que la transformation atteigne la touche, les Dégâts ET
+ * le jet RATÉ (la Dangereuse se déclenche sur un échec). Idempotent : ré-appliquer sur un profil déjà
+ * transformé (ex. l'usure recalculée dans `applyHit`) ne le ré-altère pas.
+ */
+export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
+  if (isImprovised(w)) return improvisedProfile(w); // usure jusqu'à +0 (LDB 62 l.178)
+  if (ctx?.charged === false && isCavalryLance(w)) return improvisedProfile(w); // Lance hors Charge (l.59)
+  // Fléau sans la Spécialisation : Défaut Dangereuse + AUCUN autre Atout (l.146-147). Le Test reste sur la
+  // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances), le subType est gardé.
+  if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: QUALITY_IDS.Dangereuse }] };
+  return w;
 }
 
 /** Inflige 1 point de Dégât à l'arme (sauf Incassable). */

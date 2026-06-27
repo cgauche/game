@@ -1,0 +1,48 @@
+import { describe, it, expect } from 'vitest';
+import { firedWeapon, attackerFumbled } from './combatFlow';
+import { hasQuality } from '../engine/qualities/dispatch';
+import type { Combatant, Weapon } from '../engine/types';
+import type { AttackResult } from '../engine/combat';
+
+// Funnel UNIQUE des règles d'arme contextuelles (LDB 62) : `firedWeapon` lie attaquant ⊕ arme ⊕ contexte.
+// La MÊME arme transformée sert la touche/les Dégâts (resolveAttack) ET la Maladresse sur un RATÉ
+// (attackConfirm/IA re-dérivent via firedWeapon → attackerFumbled/dangerousNine voient la Dangereuse).
+
+const CHARS = { CC: 50, CT: 35, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const fleau: Weapon = { name: 'Fléau', type: 'melee', subType: 'fleau', reach: 'Moyenne', uid: 'fl', damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'perturbante' }] };
+const lance: Weapon = { name: 'Lance de cavalerie', type: 'melee', subType: 'cavalerie', reach: 'Très longue', uid: 'la', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'empaleuse' }, { id: 'percutante' }] };
+
+const mk = (p: Partial<Combatant>): Combatant => ({
+  id: 'a', name: 'X', kind: 'hero', characteristics: CHARS,
+  wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+  engagedWith: [], pos: { x: 0, y: 0 }, size: 'moyenne', weapons: [], items: [],
+  armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+  ...p,
+} as unknown as Combatant);
+const target = mk({ id: 't', kind: 'enemy', pos: { x: 1, y: 0 } });
+
+describe('firedWeapon — règles d’arme contextuelles repliées sur le profil (LDB 62)', () => {
+  it('Fléau SANS la Spé → Dangereuse + Atouts retirés ; un RATÉ avec 9 fumble', () => {
+    const atk = mk({ skills: [], weapons: [fleau] });
+    const w = firedWeapon(atk, target, 'fl');
+    expect(hasQuality(w, 'dangereuse')).toBe(true);
+    expect(hasQuality(w, 'perturbante')).toBe(false);
+    // Le RATÉ passe par le MÊME `w` que la touche → la Maladresse Dangereuse se déclenche.
+    const miss = { attackerDetail: { roll: 19, success: false } } as unknown as AttackResult;
+    expect(attackerFumbled(miss, w)).toBe(true);
+  });
+  it('Fléau AVEC la Spé → intact (pas Dangereuse, Atouts conservés)', () => {
+    const atk = mk({ skills: [{ skillId: 'corps-a-corps', spec: 'Fléau', advances: 10 } as any], weapons: [fleau] });
+    const w = firedWeapon(atk, target, 'fl');
+    expect(hasQuality(w, 'dangereuse')).toBe(false);
+    expect(hasQuality(w, 'perturbante')).toBe(true);
+  });
+  it('Lance de cavalerie : improvisée hors Charge, normale en Charge', () => {
+    const notCharged = firedWeapon(mk({ weapons: [lance] }), target, 'la');
+    expect(notCharged.damage).toEqual({ plusBF: true, flat: 1 });
+    expect(hasQuality(notCharged, 'inoffensive')).toBe(true);
+    const charged = firedWeapon(mk({ weapons: [lance], chargedThisTurn: true }), target, 'la');
+    expect(charged.damage).toEqual({ plusBF: true, flat: 6 });
+    expect(hasQuality(charged, 'empaleuse')).toBe(true);
+  });
+});

@@ -178,5 +178,18 @@ export function mutationArmourBonus(c: Combatant, loc: HitLocation): number {
   return d;
 }
 
+/** PA de mutation à `loc` marqués HORS Déviation Critique (op `ap` avec `noDeviation` — Écailles épineuses,
+ *  EDO App.2 l.196). Calque `mutationArmourBonus` mais ne somme QUE ces PA — à soustraire pour le PA sacrifiable
+ *  (`deviatableArmourAt`). Le Trait créature Armure (LDB 85) n'est PAS marqué → reste déviatable. */
+export function nonDeviatableMutationAP(c: Combatant, loc: HitLocation): number {
+  let d = 0;
+  for (const m of c.mutations ?? []) for (const op of m.passive ?? []) {
+    if (op.op === 'ap' && op.noDeviation === true && (op.loc == null || op.loc === loc)) {
+      d += typeof op.amount === 'number' ? op.amount : 0;
+    }
+  }
+  return d;
+}
+
 // Les mods de TEST des mutations (compétence nommée Groin poilu, ou char-qualifiés Visage inversé −20 Soc)
 // sont désormais émis par le collecteur passif unifié (`passiveSkillSum`/`passiveTestMod`, engine/trauma).

@@ -341,7 +341,8 @@
     "passive": [
       {
         "op": "ap",
-        "amount": 1
+        "amount": 1,
+        "noDeviation": true
       }
     ],
     "source": {
@@ -2309,7 +2310,8 @@
       },
       {
         "op": "ap",
-        "amount": 1
+        "amount": 1,
+        "noDeviation": true
       }
     ],
     "appearance": {
