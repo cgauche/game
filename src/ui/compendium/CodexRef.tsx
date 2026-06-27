@@ -23,7 +23,37 @@ export const CodexTooltipOnly = createContext(false);
 const truncate = (s: string, n = 260): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
 const POP_W = 320;
-const POP_H = 220; // estimation pour décider dessus/dessous
+const GAP = 6;
+const MARGIN = 8;
+
+export interface PopoverPlacement {
+  left: number;
+  /** Ancré par le HAUT (placé sous le déclencheur) — `bottom` absent. */
+  top?: number;
+  /** Ancré par le BAS (placé au-dessus) — indépendant de la hauteur réelle, `top` absent. */
+  bottom?: number;
+  maxHeight: number;
+  width: number;
+}
+
+/** Place un popover dans le viewport SANS deviner sa hauteur : on le pose du côté (dessous/dessus)
+ *  qui a le PLUS de place et on borne `maxHeight` à cette place réelle → jamais de débordement haut
+ *  ni bas (symétrique au bornage horizontal déjà fait sur `left`/`width`). Pur → testable. */
+export function computePopoverPos(
+  rect: { left: number; top: number; bottom: number },
+  vw: number,
+  vh: number,
+  popW = POP_W,
+): PopoverPlacement {
+  const width = Math.min(popW, vw - 2 * MARGIN);
+  const left = Math.max(MARGIN, Math.min(rect.left, vw - width - MARGIN));
+  const below = vh - rect.bottom - GAP - MARGIN; // place disponible sous le déclencheur
+  const above = rect.top - GAP - MARGIN; // place disponible au-dessus
+  const cap = Math.floor(vh * 0.6);
+  return below >= above
+    ? { left, top: rect.bottom + GAP, maxHeight: Math.max(0, Math.min(below, cap)), width }
+    : { left, bottom: vh - rect.top + GAP, maxHeight: Math.max(0, Math.min(above, cap)), width };
+}
 
 export function CodexRef({
   category,
@@ -60,17 +90,11 @@ export function CodexRef({
   const ctxTooltipOnly = useContext(CodexTooltipOnly);
   const item = codexLookup(category, label);
   const ref = useRef<HTMLSpanElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [pos, setPos] = useState<PopoverPlacement | null>(null);
 
   const show = useCallback(() => {
     const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const w = Math.min(POP_W, window.innerWidth - 16);
-    const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
-    // Sous le déclencheur par défaut ; au-dessus s'il n'y a pas la place en bas.
-    const top = r.bottom + 6 + POP_H > window.innerHeight ? Math.max(8, r.top - 6 - POP_H) : r.bottom + 6;
-    setPos({ top, left });
+    if (el) setPos(computePopoverPos(el.getBoundingClientRect(), window.innerWidth, window.innerHeight));
   }, []);
   const hide = useCallback(() => setPos(null), []);
 
@@ -82,7 +106,7 @@ export function CodexRef({
   const popSub = item?.sub ?? fallback?.sub;
   // Faits-clés (Dégâts/PA/Prix/NI/Portée…) DANS le tooltip — pas seulement la prose : le survol
   // d'une arme/d'un sort devient informatif sans ouvrir la fiche. Compact, 4 max.
-  const metaLine = item?.meta?.length ? item.meta.slice(0, 4).map((m) => `${m.label} ${m.value}`).join(' · ') : null;
+  const metaLine = item?.meta?.length ? truncate(item.meta.slice(0, 4).map((m) => `${m.label} ${m.value}`).join(' · '), 140) : null;
   const src = item?.source;
   const inst = instance && instance !== title ? instance : undefined;
   // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul
@@ -111,7 +135,7 @@ export function CodexRef({
       {children ?? label}
       {pos &&
         createPortal(
-          <span className="codex-pop" style={{ top: pos.top, left: pos.left, maxWidth: Math.min(POP_W, window.innerWidth - 16) }} role="tooltip">
+          <span className="codex-pop" style={{ top: pos.top, bottom: pos.bottom, left: pos.left, maxWidth: pos.width, maxHeight: pos.maxHeight }} role="tooltip">
             <span className="codex-pop-title">{inst ?? title}</span>
             {inst && <span className="codex-pop-sub">{title}</span>}
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
