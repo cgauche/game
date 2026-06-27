@@ -749,7 +749,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
     refRow('skills', `${skillInstanceLabel(s)} ${(ch[s.characteristic] ?? 0) + s.advances}`),
   );
-  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'text', text: `${w.name} (${w.damage})` }));
+  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'text', text: `${w.name} (${damageString(w.damage)})` }));
   const worn = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
   return sections(
     { title: 'Caractéristiques', layout: 'grid', rows: charRows },

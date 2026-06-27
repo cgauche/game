@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { CODEX } from './registry';
+import { CODEX, combatantSections } from './registry';
+import { pregen, PREGEN } from '../../data/pregens';
 
 /**
  * Garde-fou anti-régression de la classe de bug « [object Object] » au Codex.
@@ -18,6 +19,22 @@ describe('Codex — aucun champ structuré rendu brut', () => {
       for (const item of cat.items) {
         for (const f of item.meta ?? []) {
           if (f.value.includes('[object Object]')) offenders.push(`${cat.label} › ${item.label} › ${f.label}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('statbloc combattant (InspectPanel / inspection) : aucune ligne ne produit « [object Object] »', () => {
+    // Chemin DISTINCT de CODEX : `combatantSections(c)` rend les armes/armure/caracs d'un combattant LIVE
+    // (inspection en combat). Les prétirés portent des armes → exercent le rang d'armes (où w.damage est un
+    // WeaponDamageSpec qui doit passer par damageString, pas être rendu brut).
+    const offenders: string[] = [];
+    for (const key of Object.keys(PREGEN) as (keyof typeof PREGEN)[]) {
+      const c = pregen(PREGEN[key]);
+      for (const sec of combatantSections(c)) {
+        for (const row of sec.rows) {
+          if (JSON.stringify(row).includes('[object Object]')) offenders.push(`${String(key)} › ${sec.title} › ${JSON.stringify(row)}`);
         }
       }
     }
