@@ -2178,6 +2178,9 @@
     "source": {
       "book": "Middenheim",
       "page": 115
+    },
+    "capabilities": {
+      "spellDomainImmunity": "bete"
     }
   },
   {

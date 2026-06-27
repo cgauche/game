@@ -104,8 +104,6 @@ const JOURNAL_MJ = new Map<string, string>([
   // pas exprimable (skillDRBonus n'est pas conditionnel au Domaine) → reste à bâtir.
   ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
   // Traits du bestiaire de Middenheim (#60) — desc verbatim, mécaniques sans système support à ce jour.
-  // Manifestation de Ghur : MÊME primitive manquante que Aura de Mort (gating par Domaine du sort) → #18.
-  ['Manifestation de Ghur', 'immunité aux effets négatifs des sorts du Domaine de la Bête + vulnérabilité anti-démon/mort-vivant hors Bête — gating par Domaine du cast à bâtir (cf. Aura de Mort), #18'],
   ['Métamorphose', 'bascule forme humaine↔hybride ; la forme hybride EST le statbloc de combat ; op polymorph existe mais pas d’activation self de créature'],
 ]);
 
@@ -127,6 +125,12 @@ const DISPATCH = new Set<string>([
   // Aura de Dhar : aura `affects:'allies'` (10 m) + passive (porteur compris) = `skillDRBonus`
   // Focalisation/Langue, lue au lancement par `castTestTalentDR`. Dispatché (aura/passive en donnée).
   'Aura de Dhar',
+  // Manifestation de Ghur (#18) : capability `spellDomainImmunity:'bete'` (donnée), lue par id par
+  // `immuneToSpellDomain` au chemin d'incantation (`applyCast`) → un Sort du Domaine de la Bête
+  // n'applique aucun de ses effets au porteur. Clause RAW de vulnérabilité anti-démon/mort-vivant
+  // (hors Bête) NON modélisée (pas de concept de créature « vulnérable comme un démon/mort-vivant » —
+  // rien d'inventé) : documentée sur la capability `spellDomainImmunity`.
+  'Manifestation de Ghur',
   'Régénération', 'Résistance à la Magie', 'Rusé', 'Sang corrosif', 'Stupide', 'Taille', 'Territorial',
   'Toile', 'Vision nocturne', 'Vol',
 ]);

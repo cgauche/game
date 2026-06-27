@@ -199,6 +199,23 @@ export function immunityTypes(traits: TraitList | undefined): string[] {
   return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.damageImmunity && t.arg).map((t) => t.arg!.toLowerCase());
 }
 
+/** Manifestation de Ghur (Middenheim) : id du Domaine de Sort dont les effets n'affectent PAS le porteur
+ *  (immunité par lore — capability `spellDomainImmunity`, lue PAR ID). undefined si aucun trait porté ne
+ *  confère cette immunité. SOURCE UNIQUE — consommée par le chemin d'incantation (`immuneToSpellDomain`). */
+export function spellDomainImmunityOf(traits: TraitList | undefined): string | undefined {
+  for (const t of traits ?? []) {
+    const dom = traitById.get(t.id)?.capabilities?.spellDomainImmunity;
+    if (dom) return dom;
+  }
+  return undefined;
+}
+
+/** Le porteur est-il immunisé aux effets d'un Sort du Domaine `spellDomainId` (Manifestation de Ghur) ?
+ *  Comparaison d'id STRICTE — `null`/`undefined` (Sort sans Domaine) ne matche jamais. */
+export function immuneToSpellDomain(traits: TraitList | undefined, spellDomainId: string | null | undefined): boolean {
+  return spellDomainId != null && spellDomainImmunityOf(traits) === spellDomainId;
+}
+
 /** Instable (LDB 85 p.340). */
 export function isUnstable(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'unstable');
