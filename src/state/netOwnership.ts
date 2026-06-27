@@ -54,6 +54,9 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   // ne retire que SES héros.
   if (action === 'partyAddHero') return seatSlotsRemaining(s, seat) > 0;
   if (action === 'partyRemoveHero') return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
+  // Remplacement EN PLACE : le siège doit posséder l'ANCIEN héros (1er arg). L'effectif ne change
+  // pas (1 héros pour 1) → aucun check de quota d'emplacements.
+  if (action === 'partyReplaceHero') return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   // Activités d'interlude (audit M7) : le 1er argument est le héros visé — son propriétaire agit.
   if (/^interlude(Revenus|CraftStart|CraftRoll|Learn|Order|Bank|Identify)$/.test(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);

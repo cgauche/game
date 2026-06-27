@@ -200,7 +200,8 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
         return;
       }
       // Composition d'équipe : le siège vient du transport, jamais des args de l'invité.
-      if (action === 'partyAddHero') args = [args[0], args[1], seat];
+      // add = [hero, wealth, seat] ; replace = [oldId, hero, seat] → siège en 3ᵉ dans les deux cas.
+      if (action === 'partyAddHero' || action === 'partyReplaceHero') args = [args[0], args[1], seat];
       const fn = (useGame.getState() as unknown as Record<string, unknown>)[action];
       if (typeof fn === 'function') (fn as (...a: unknown[]) => void)(...args);
     },

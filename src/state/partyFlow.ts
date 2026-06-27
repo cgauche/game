@@ -490,6 +490,22 @@ export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
   set({ party: s.party.filter((h) => h.id !== heroId), net: { ...s.net, ownership } });
 }
 
+/** Remplace ATOMIQUEMENT le héros `oldId` par `hero` à SA position dans `party` (substitution en
+ *  place → préserve l'index/ordre) ; transfère la possession au `seat` (l'ancien id est libéré).
+ *  Source UNIQUE du remplacement, réutilisée par le créateur (édition en place) et le bouton
+ *  « Remplacer » du slot. Ne touche PAS la bourse (un remplacement n'est pas un recrutement). */
+export function partyReplaceHero(get: Get, set: Set, oldId: string, hero: Combatant, seat = 0): void {
+  const s = get();
+  const idx = s.party.findIndex((h) => h.id === oldId);
+  if (idx < 0) return;                                                    // l'ancien n'est plus là
+  if (hero.id !== oldId && s.party.some((h) => h.id === hero.id)) return; // doublon d'id
+  const copy: Combatant = structuredClone(hero);
+  const ownership = { ...s.net.ownership };
+  delete ownership[oldId];
+  ownership[copy.id] = seat;
+  set({ party: s.party.map((h, i) => (i === idx ? copy : h)), net: { ...s.net, ownership } });
+}
+
 
 /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche — même effet
  *  qu'en combat (`useConsumable`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */

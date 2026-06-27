@@ -188,7 +188,7 @@ export function CharacterCreator() {
   const net = useGame((s) => s.net);
   const setScreen = useGame((s) => s.setScreen);
   const addHero = useGame((s) => s.partyAddHero);
-  const removeHero = useGame((s) => s.partyRemoveHero);
+  const replaceHero = useGame((s) => s.partyReplaceHero);
   const editingHeroId = useGame((s) => s.editingHeroId);
   const setEditingHero = useGame((s) => s.setEditingHero);
 
@@ -222,10 +222,10 @@ export function CharacterCreator() {
     const wealth = draftWealth(d);
     rosterAdd({ hero, wealth, draft: d }); // roster persistant + brouillon EXACT (round-trip futur)
     if (editing) {
-      // Remplacement EN PLACE : on retire puis ré-ajoute au même siège pour préserver la possession.
+      // Remplacement EN PLACE (primitive atomique) : préserve l'index/ordre et transfère la
+      // possession au même siège — pas de re-crédit de la Richesse (déjà comptée à la création).
       const seat = net.ownership[editing.heroId] ?? net.mySeat ?? 0;
-      removeHero(editing.heroId);
-      addHero(hero, undefined, seat); // pas de re-crédit de la Richesse (déjà comptée à la création)
+      replaceHero(editing.heroId, hero, seat);
     } else {
       addHero(hero, wealth); // côté invité : intent vers l'hôte (l'état arrive par snapshot)
     }

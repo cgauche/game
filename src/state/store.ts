@@ -441,6 +441,9 @@ export interface GameState extends RollFlowActionsMap {
    *  l'hôte injecte le siège autoritaire) / retire un héros (propriétaire seul). */
   partyAddHero: (hero: Combatant, wealth?: import('../engine/money').Money, seat?: number) => void;
   partyRemoveHero: (heroId: string) => void;
+  /** Remplace EN PLACE le héros `oldId` par `hero` (substitution atomique, possession transférée au
+   *  siège ; ne touche pas la bourse) — créateur (édition) et bouton « Remplacer » du slot. */
+  partyReplaceHero: (oldId: string, hero: Combatant, seat?: number) => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
   /** Auto-save silencieuse vers l'emplacement AUTO (checkpoint d'entrée de scène). Hors combat,
@@ -1089,6 +1092,7 @@ export const useGame = create<GameState>((set, get) => ({
   netLeave: () => netFlow.netLeave(get, set),
   partyAddHero: (hero, wealth, seat) => partyFlow.partyAddHero(get, set, hero, wealth, seat),
   partyRemoveHero: (heroId) => partyFlow.partyRemoveHero(get, set, heroId),
+  partyReplaceHero: (oldId, hero, seat) => partyFlow.partyReplaceHero(get, set, oldId, hero, seat),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {

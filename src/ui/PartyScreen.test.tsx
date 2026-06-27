@@ -151,6 +151,36 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     expect(html).toContain(h.name); // affiché dans le slot du siège 1
     expect(html).not.toContain('Retirer'); // pas à l'hôte → pas de retrait
   });
+
+  it('slot possédé : bouton « Remplacer » rendu quand onReplaceHero est fourni', () => {
+    const h = savedHero();
+    const html = renderToStaticMarkup(
+      <PartyScreenView
+        party={[h]}
+        net={initialNet()}
+        title="Votre groupe d'aventuriers"
+        onMenu={noop} onQuitCoop={noop} onCreate={noop}
+        onAddHero={noop} onRemoveHero={noop} onReplaceHero={noop}
+        onAssignSlot={noop} onStart={noop}
+      />,
+    );
+    expect(html).toContain('Remplacer');
+  });
+
+  it('slot d’un AUTRE siège : pas de « Remplacer » (non possédé)', () => {
+    const h = savedHero();
+    const html = renderToStaticMarkup(
+      <PartyScreenView
+        party={[h]}
+        net={{ ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0] }}
+        title="Votre groupe d'aventuriers"
+        onMenu={noop} onQuitCoop={noop} onCreate={noop}
+        onAddHero={noop} onRemoveHero={noop} onReplaceHero={noop}
+        onAssignSlot={noop} onStart={noop}
+      />,
+    );
+    expect(html).not.toContain('Remplacer');
+  });
 });
 
 describe("PartyScreen -- libelles i18n Phase D", () => {

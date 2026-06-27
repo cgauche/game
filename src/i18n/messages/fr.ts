@@ -89,6 +89,7 @@ export const fr = {
   'party.slot.waiting': '⏳ En attente de {name}…',
   'party.slot.you': ' (vous)',
   'party.hero.edit': 'Modifier',
+  'party.hero.replace': 'Remplacer',
   'party.hero.remove': 'Retirer',
   'party.action.resume': 'Reprendre →',
   'party.action.start': 'Commencer →',
@@ -100,6 +101,7 @@ export const fr = {
   'party.campaign.pick.close': 'Fermer',
   // Modale de recrutement (PartyPicker) — Phase D.
   'picker.title': 'Recruter — {n}/4',
+  'picker.title.replace': 'Remplacer {name}',
   'picker.tab.roster': 'Mes personnages',
   'picker.tab.pregens': 'Pré-tirés',
   'picker.roster.create': '➕ Créer un personnage',
