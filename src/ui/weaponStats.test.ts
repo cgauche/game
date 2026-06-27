@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { ItemInstance, Weapon } from '../engine/types';
-import { weaponStatParts, rangeSpecLabel } from './weaponStats';
+import { weaponStatParts, rangeSpecLabel, ammoRangeModLabel } from './weaponStats';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
   ({ uid: 'u', name: 'x', kind: 'melee', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
@@ -50,5 +50,15 @@ describe('rangeSpecLabel (catalogue : formule sans BF de porteur)', () => {
     expect(rangeSpecLabel({ bf: 3 })).toBe('BF×3 m');
     expect(rangeSpecLabel(null)).toBeNull();
     expect(rangeSpecLabel(undefined)).toBeNull();
+  });
+});
+
+describe('ammoRangeModLabel (modificateur de Portée d’une munition)', () => {
+  it('{mult} → « ×½ »/« ×¼ » ; {add} → « +50 m »/« -10 m » ; null → null', () => {
+    expect(ammoRangeModLabel({ mult: 0.5 })).toBe('×½');
+    expect(ammoRangeModLabel({ mult: 0.25 })).toBe('×¼');
+    expect(ammoRangeModLabel({ add: 50 })).toBe('+50 m');
+    expect(ammoRangeModLabel({ add: -10 })).toBe('-10 m');
+    expect(ammoRangeModLabel(null)).toBeNull();
   });
 });
