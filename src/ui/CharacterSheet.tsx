@@ -5,11 +5,11 @@ import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel } from '../engine/items';
-import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { locationLabel } from '../engine/combat';
 import { effectiveChar, charBonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
-import { effectiveWeaponDamage } from '../engine/weaponDamage';
+import { weaponStatParts } from './weaponStats';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { isConsumable } from '../engine/consumables';
@@ -19,7 +19,7 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel, qualityRefLabel } from '../data';
 import { formatTrait } from '../engine/traits/dispatch';
 import { CodexRef } from './compendium/CodexRef';
 import { TalentChip } from './EntityChip';
@@ -373,13 +373,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
     // une identification RATÉE de beaucoup (ADE2) peut y ancrer de FAUSSES certitudes, affichées telles.
     const quals = it.identified === false
       ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : '')
-      : it.qualities.join(', ');
+      : it.qualities.map(qualityRefLabel).filter(Boolean).join(', ');
     if (it.kind === 'melee' || it.kind === 'ranged') {
-      // F5 : valeur RÉSOLUE entre parenthèses (« Dégâts +BF+4 (7) ») — BF du héros injecté, comme au combat.
-      const total = it.damage ? effectiveWeaponDamage(it as unknown as Weapon, charBonus(hero.characteristics, 'F')) : null;
-      return [it.damage && `Dégâts ${it.damage}${total != null ? ` (${total})` : ''}`, it.reach && `Allonge ${it.reach}`, it.range && `Portée ${it.range} m`, quals]
-        .filter(Boolean)
-        .join(' · ');
+      // Dégâts résolus (« +BF+4 (7) ») + Allonge/Portée via le composeur partagé `weaponStatParts`
+      // (BF du héros injecté, comme au combat) ; les qualités restent gérées ici (masquage non-identifié).
+      return [...weaponStatParts(it, charBonus(hero.characteristics, 'F')), quals].filter(Boolean).join(' · ');
     }
     if (it.kind === 'armor')
       return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', '), `couche ${armourLayer(it)}`]

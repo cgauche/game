@@ -39,6 +39,7 @@ import {
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics } from '../../engine/types';
 import { rule } from '../../engine/policy';
 import { bonus } from '../../engine/characteristics';
+import { damageString } from '../../engine/items';
 import { formatSpellRange, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { formatMoney } from '../../engine/money';
 import { makeRNG } from '../../engine/dice';
@@ -997,7 +998,7 @@ function trappingMeta(id: string): string {
   const t = findTrappingById(id);
   if (!t) return '';
   const bits: string[] = [];
-  if (t.damage) bits.push(`Dégâts ${t.damage}`);
+  if (t.damage) bits.push(`Dégâts ${damageString(t.damage)}`);
   if (t.pa) bits.push(`${t.pa} PA (${t.loc ?? ''})`);
   if (t.reach && t.type === 'melee') bits.push(`Allonge ${t.reach}`);
   if (t.reach && t.type === 'ranged') bits.push(`Portée ${t.reach}`);

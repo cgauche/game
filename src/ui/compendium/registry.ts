@@ -16,6 +16,7 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
+import { damageString } from '../../engine/items';
 import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
@@ -377,11 +378,13 @@ export const CODEX: CodexCategory[] = [
         t.isShelter ? 'Abri de campement' : null,
         t.isRations ? 'Ration de voyage' : null,
         t.isGrimoire ? 'Grimoire (lecture de Sorts)' : null,
-        t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.name} (${t.derivedWeapon.damage})` : null,
+        t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.name} (${damageString(t.derivedWeapon.damage)})` : null,
       ].filter(Boolean) as string[];
+      // Allonge = mêlée, Portée = distance (LDB 62) : un arc affiche « Portée 50 m », pas « Allonge 50 ».
+      const reachFact = t.type === 'ranged' ? fact('Portée', t.reach != null ? `${t.reach} m` : null) : fact('Allonge', t.reach);
       return {
         label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
-        meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
+        meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', t.damage ? damageString(t.damage) : null), fact('PA', t.pa), reachFact),
         sections: sections(
           chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)),
           props.length ? { title: 'Propriétés', layout: 'list', rows: [{ t: 'text', text: props.join(' · ') }] } : null,

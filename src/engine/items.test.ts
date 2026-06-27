@@ -40,6 +40,21 @@ describe('weaponHands (latéralité)', () => {
   });
 });
 
+describe('itemFromTrapping — Allonge (mêlée) ⊥ Portée (distance), LDB 62', () => {
+  it('arme à distance : reach nul, Portée dérivée en mètres (pas de doublon « Allonge 50 · Portée 50 »)', () => {
+    const arc = itemFromTrapping('Arc')!;
+    expect(arc.kind).toBe('ranged');
+    expect(arc.reach).toBeNull(); // un projectile n'a pas d'Allonge
+    expect(arc.range).toBe(50);
+  });
+  it('arme de mêlée : Allonge renseignée, pas de Portée', () => {
+    const hall = itemFromTrapping('Hallebarde')!;
+    expect(hall.kind).toBe('melee');
+    expect(hall.reach).toBe('Longue');
+    expect(hall.range).toBeNull();
+  });
+});
+
 describe('mutateurs de loadout (purs)', () => {
   const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
     ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, hands: 1, ...p } as ItemInstance);

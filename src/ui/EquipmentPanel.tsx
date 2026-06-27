@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import type { Combatant, HitLocation, ItemInstance, QualityInstance } from '../engine/types';
-import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, damageString, type ArmourLayer } from '../engine/items';
+import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, type ArmourLayer } from '../engine/items';
 import { RigSprite } from '../gameIso/rig/composeRig';
 import { DEFS } from '../gameIso/sprites';
 import { defaultAppearance } from '../gameIso/rig/appearance';
@@ -9,9 +9,9 @@ import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/com
 import { CodexRef } from './compendium/CodexRef';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect, type MediaOption } from './MediaSelect';
-import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { charBonus } from '../engine/characteristics';
 import { refLabel, qualityRefLabel } from '../data';
+import { weaponStatParts } from './weaponStats';
 
 /**
  * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : colonne
@@ -70,10 +70,10 @@ const weaponOpt = (w: ItemInstance): MediaOption => ({
 });
 const capeOpt = (c: ItemInstance): MediaOption => ({ key: c.uid, media: <ItemIcon item={c} size="sm" />, label: c.name });
 
-/** Corps du popover de stats (arme invoquée / hors-catalogue) : Dégâts effectifs + portée + qualités. */
+/** Corps du popover de stats (arme invoquée / hors-catalogue) : Dégâts résolus + Allonge/Portée
+ *  (composeur partagé `weaponStatParts`) + qualités. */
 function weaponStatsBody(it: ItemInstance, strBonus: number): string {
-  const reach = it.range != null ? `Portée ${it.range}` : it.reach ?? '';
-  return [`Dégâts ${effectiveWeaponDamage(it as never, strBonus)}`, reach, weaponQualities(it.qualities)].filter(Boolean).join(' · ');
+  return [...weaponStatParts(it, strBonus), weaponQualities(it.qualities)].filter(Boolean).join(' · ');
 }
 
 /**
@@ -281,7 +281,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                   <ItemIcon item={w} size="sm" />
                   <span className="weap-text">
                     <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef>{' '}
-                    <em>{damageString(w.damage)} = {effectiveWeaponDamage(w, strBonus)}</em>
+                    <em>{weaponStatParts(w, strBonus).join(' · ')}</em>
                     {quals && <span className="weap-quals"> · {quals}</span>}
                     {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
                   </span>

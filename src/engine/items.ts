@@ -170,7 +170,10 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     name: t.label,
     kind,
     damage: t.damage ?? undefined,
-    reach: t.reach,
+    // Allonge = mêlée seule (LDB 62) : la donnée range la Portée des armes à distance dans `reach`
+    // (« 50 ») → on la convertit en `range` (m) ET on laisse `reach` nul, pour ne pas afficher
+    // « Allonge 50 · Portée 50 m » (doublon + « Allonge » faux sur un projectile).
+    reach: kind === 'ranged' ? null : t.reach,
     range: kind === 'ranged' ? Number(t.reach) || null : null,
     qualities: (t.qualities ?? []).map(qualityInstance), // QualityRef[] (donnée) → QualityInstance[] runtime (structuré, frais)
     pa: t.pa ?? undefined,
