@@ -730,8 +730,11 @@ for (const b of books) {
  *  Exact d'abord, puis casse ignorée (les libellés à spécialisation s'écrivent parfois autrement). */
 export function codexLookup(category: string, label: string): CodexItem | undefined {
   const items = categoryByKey(category)?.items;
-  if (!items) return undefined;
-  return items.find((i) => i.label === label) ?? items.find((i) => i.label.toLowerCase() === label.toLowerCase());
+  // Robustesse : un libellé absent (entité sans nom — arme/compétence malformée) ou une entrée sans
+  // label NE DOIT PAS crasher tout le rendu. Pas de fiche trouvée → le CodexRef se replie en texte.
+  if (!items || !label) return undefined;
+  const lower = label.toLowerCase();
+  return items.find((i) => i.label === label) ?? items.find((i) => i.label?.toLowerCase() === lower);
 }
 
 const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG', 'jambeD'];
