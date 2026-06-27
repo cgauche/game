@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveWeaponDamage, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, solideSaveThreshold } from './weaponDamage';
+import { effectiveWeaponDamage, effectiveRange, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, solideSaveThreshold } from './weaponDamage';
 import { recomputeLoadout, damageString } from './items';
 import type { Weapon, Combatant } from './types';
 
@@ -20,6 +20,30 @@ describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
   it("préserve une arme non endommagée (mains nues +BF-2 inchangées)", () => {
     const fists: Weapon = { name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: -2 }, qualities: [] };
     expect(effectiveWeaponDamage(fists, 3)).toBe(1); // 3 - 2
+  });
+});
+
+describe('effectiveRange (LDB 62) — résolution de la Portée à l’usage (miroir effectiveWeaponDamage)', () => {
+  it('mètres fixes (number) → inchangés ; {bf} → BF×N ; null/undefined → null', () => {
+    expect(effectiveRange(50, 4)).toBe(50); // arc : 50 m quel que soit le BF
+    expect(effectiveRange({ bf: 3 }, 4)).toBe(12); // javelot : BF4 × 3
+    expect(effectiveRange({ bf: 1 }, 5)).toBe(5);  // bombe : BF×1
+    expect(effectiveRange(null, 4)).toBeNull();
+    expect(effectiveRange(undefined, 4)).toBeNull();
+  });
+  it('DYNAMIQUE : un BF plus haut allonge la Portée de jet (≠ mètres fixes)', () => {
+    expect(effectiveRange({ bf: 3 }, 2)).toBe(6);
+    expect(effectiveRange({ bf: 3 }, 5)).toBe(15);
+    expect(effectiveRange(30, 2)).toBe(30); // fixe : insensible au BF
+  });
+});
+
+describe('recomputeLoadout — Portée = SPEC COPIÉE (résolue à l’usage, pas au loadout)', () => {
+  it('une arme de jet conserve sa spec {bf} sur le Weapon actif (non pré-résolue)', () => {
+    const c = hero([{ uid: 'jav', name: 'Javelot', kind: 'ranged', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], enc: 1, equipped: true, range: { bf: 3 } }]);
+    recomputeLoadout(c);
+    const jav = c.weapons.find((w) => w.name === 'Javelot');
+    expect(jav?.range).toEqual({ bf: 3 }); // copiée telle quelle ; effectiveRange la résout au tir/affichage
   });
 });
 

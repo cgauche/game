@@ -170,11 +170,11 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     name: t.label,
     kind,
     damage: t.damage ?? undefined,
-    // Allonge = mêlée seule (LDB 62) : la donnée range la Portée des armes à distance dans `reach`
-    // (« 50 ») → on la convertit en `range` (m) ET on laisse `reach` nul, pour ne pas afficher
-    // « Allonge 50 · Portée 50 m » (doublon + « Allonge » faux sur un projectile).
-    reach: kind === 'ranged' ? null : t.reach,
-    range: kind === 'ranged' ? Number(t.reach) || null : null,
+    // Allonge (mêlée) ⊥ Portée (tir) — LDB 62. La donnée est NORMALISÉE : `reach` = string|null (Allonge
+    // ou formule de jet « BFx3 »), `range` = Portée numérique (m) des armes à portée fixe → copie DIRECTE,
+    // plus de `Number(t.reach)` (le « type menteur » d'avant la migration est éliminé).
+    reach: t.reach,
+    range: t.range ?? null,
     qualities: (t.qualities ?? []).map(qualityInstance), // QualityRef[] (donnée) → QualityInstance[] runtime (structuré, frais)
     pa: t.pa ?? undefined,
     locs: locs && locs.length ? locs : undefined,

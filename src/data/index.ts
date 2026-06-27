@@ -204,7 +204,16 @@ export interface TrappingData {
   subType: string | null;
   enc: number | null;
   availability: string | null;
+  /** Allonge de MÊLÉE (libellé d'ordre de portée : « Moyenne »/« Longue »…) — un vrai string, ou null. Ne
+   *  contient PLUS aucune Portée de tir (le « type menteur » est éliminé) : ni nombre, ni formule « BFx3 »
+   *  (→ `range:{bf}`), ni « Comme l'arme » (munition héritant de l'arme → null). Restent EN PLUS, sur les
+   *  munitions, des modificateurs de portée relatifs à l'arme (« Moitié de l'arme », « +50 »…) — axe ammo
+   *  distinct, hors `range` propre. */
   reach: string | null;
+  /** Portée de TIR — SPEC non résolue (`WeaponRangeSpec`) : `number` = mètres FIXES (arc/arbalète/
+   *  pistolet…), `{bf}` = Bonus de Force × bf mètres (armes de JET — javelot/bombe…). Absent/null pour
+   *  la mêlée et les munitions (qui héritent de l'arme). Résolue à l'usage par `effectiveRange`. */
+  range?: import('../engine/types').WeaponRangeSpec | null;
   loc: string | null;
   pa: number | null;
   /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — remplace la chaîne « +BF+4 » re-parsée au runtime. */

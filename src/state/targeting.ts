@@ -7,6 +7,7 @@ import { Combatant } from '../engine/types';
 import { combineMods } from '../engine/combat';
 import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
+import { effectiveRange } from '../engine/weaponDamage';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { findSpellById } from '../data';
@@ -98,7 +99,8 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
     const postes = bearingPostes(active, side); // sur ce bord ET chargées (pas en cours de recharge)
     if (!postes.length) return { kind: 'invalid', reason: 'arc' };
     const mpt = get().scene?.metresPerTile ?? 2;
-    const maxRange = Math.max(...postes.map((p) => p.item.range ?? 0)); // mètres — la plus longue pièce du bord
+    const gbf = () => bonus(effectiveChar(active, 'F')); // paresseux : la portée navale est fixe (number) → BF jamais évalué
+    const maxRange = Math.max(...postes.map((p) => effectiveRange(p.item.range, gbf) ?? 0)); // mètres — la plus longue pièce du bord
     if (maxRange && combatDistance(active, target) * mpt > maxRange) return { kind: 'invalid', reason: 'range' };
     return { kind: 'ok', line: 'dashed', title: `Bordée ${side}`, skill: 'Tir de batterie', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
   }

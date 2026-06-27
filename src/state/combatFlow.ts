@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -118,7 +118,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, effectiveRange, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -547,7 +547,8 @@ export function previewAttack(
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env });
   const target0 = base + combineMods(mods);
-  const inRange = kind === 'ranged' ? rangeBandModifier(dist, weapon.range ?? 0) != null : dist <= reachTiles(weapon);
+  const rangeM = effectiveRange(weapon.range, () => bonus(effectiveChar(attacker, 'F'))); // Portée résolue (jet `{bf}` → BF×N) ; null = pas de Portée → hors bande
+  const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM) != null) : dist <= reachTiles(weapon);
   return { weapon, kind, inRange, blocked: false, target: target0, base, mods, dmg, soak };
 }
 
@@ -1556,7 +1557,7 @@ function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Comba
   return allies.filter((a) => {
     if (!a.pos) return true;
     const d = combatDistance(c, a);
-    if (weapon.type === 'ranged' && weapon.range) return rangeBandModifier(d, weapon.range) != null;
+    if (weapon.type === 'ranged') { const rm = effectiveRange(weapon.range, () => bonus(effectiveChar(c, 'F'))); return rm != null && rangeBandModifier(d, rm) != null; }
     return d <= reachTiles(weapon);
   });
 }
@@ -3355,9 +3356,31 @@ export function resolveTriggerImpureOps(get: Get, set: SetFn, actor: Combatant, 
   const lines: string[] = [];
   for (const op of triggerEffectOps(actor, trigger)) {
     if (op.op === 'summon') lines.push(...applySummon(get, set, actor, op, { rng: battleRng() }));
+    else if (op.op === 'scheduleRespawn') lines.push(...scheduleRespawnFromOp(get, set, actor, op));
     else if (op.op === 'zone') placeZoneFromOp(get, actor, actor, op, actor.name, op.perRound ? 3 : 1, 0, 2, lines);
   }
   return lines;
+}
+
+/** RECONSTITUTION DIFFÉRÉE (op `scheduleRespawn`, Gardien éternel — Bestiaire de Middenheim) : à la mort du
+ *  porteur, PROGRAMME (file `scheduledEffects`, horloge) la ré-invocation de la créature à `gameTime + d10
+ *  jours`. Le délai `delayDays` est ROULÉ ici (`battleRng`, donc déterministe en test) ; `ref:'self'` se
+ *  résout au `creatureId` du défunt (repli sur son nom). Un INSTANTANÉ minimal du défunt (id/name/kind/pos)
+ *  sert de lanceur à `applySummon` au déclenchement. Le `cancelFlag` (précautions) reste désamorçable par un
+ *  Effet de scène. Sans position (hors grille) : pas de point de reconstitution → no-op. */
+function scheduleRespawnFromOp(
+  get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'scheduleRespawn' }>,
+): string[] {
+  if (!actor.pos) return [];
+  const days = Math.max(1, resolveFormula(op.delayDays, actor, battleRng()));
+  const count = Math.max(1, resolveFormula(op.count ?? 1, actor, battleRng()));
+  const ref = op.ref === 'self' ? (actor.creatureId ?? actor.name) : op.ref;
+  const respawn: ScheduledRespawn = {
+    caster: { id: actor.id, name: actor.name, kind: actor.kind, pos: { ...actor.pos } },
+    summon: { ref, count, allyOfCaster: op.allyOfCaster },
+  };
+  set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt: s.gameTime + days * MINUTES_PER_DAY, cancelFlag: op.cancelFlag, respawn }] }));
+  return [`${actor.name} est terrassé… mais sa Source le reconstituera dans ${days} jour${days > 1 ? 's' : ''}.`];
 }
 
 /** Type de Souffle « correspondant le mieux » au Domaine du lanceur (sort Souffle, LDB 47 p.244 :

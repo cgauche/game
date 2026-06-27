@@ -199,6 +199,13 @@ export type WeaponDamageSpec =
   | { literal: string }
   | { plusBF: boolean; flat: number; bare?: true };
 
+/** Portée d'arme à distance (LDB 62) : `number` = mètres FIXES (arc/arbalète/arme à feu) ; `{ bf }` =
+ *  Bonus de Force × `bf` mètres (armes de JET — javelot/couteau de lancer/bombe…). Résolue À L'USAGE
+ *  avec le BF du porteur (`effectiveRange`, MIROIR de `effectiveWeaponDamage` pour les Dégâts) : stockée
+ *  telle quelle sur `Weapon`/`ItemInstance`/`TrappingData`, JAMAIS pré-résolue — un changement de Force
+ *  en combat met la Portée à jour, exactement comme les Dégâts `+BF`. */
+export type WeaponRangeSpec = number | { bf: number };
+
 /** Atout/Défaut d'arme ou d'armure PORTÉ par un objet/arme au runtime. Forme STRUCTURÉE (id stable du
  *  registre + Indice éventuel) — miroir runtime de `QualityRef` de la donnée, sans l'aplatissement en
  *  chaîne « id value » re-parsée par regex. `value` = Indice (Solide N, Recharge N, Protectrice N) OU
@@ -221,8 +228,9 @@ export interface Weapon {
   /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — ex. `{plusBF:true,flat:4}` (« +BF+4 »). */
   damage: WeaponDamageSpec;
   reach?: string | null;
-  /** Portée en mètres (distance uniquement). */
-  range?: number | null;
+  /** Portée de tir — SPEC non résolue (cf. `WeaponRangeSpec`) : mètres fixes OU `{bf}`. Résolue à
+   *  l'usage par `effectiveRange(weapon.range, BF du tireur)` aux sites combat/affichage. */
+  range?: WeaponRangeSpec | null;
   qualities: QualityInstance[];
   /** `id` du Groupe d'arme/famille de munition (`WeaponGroupData.id`) — réf, ≠ libellé. Pilote la
    *  Spécialisation de combat (`combatValue`), la famille de munition (`ammoFamily`), le rendu (rig). */
@@ -523,7 +531,7 @@ export interface ItemInstance {
   kind: ItemKind;
   damage?: WeaponDamageSpec; // armes
   reach?: string | null;
-  range?: number | null;
+  range?: WeaponRangeSpec | null; // SPEC de Portée non résolue (mètres fixes ou {bf}) — cf. WeaponRangeSpec
   qualities: QualityInstance[];
   /** Enchantements actifs portés par l'ARME (op `augmentWeapon` / arme invoquée) — SOURCE DE VÉRITÉ,
    *  repliés dans l'arme dérivée par `recomputeLoadout` (`applyEnchants`). Temporisés via `ActiveEffect.enchantRef`. */

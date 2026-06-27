@@ -7,6 +7,8 @@
  */
 import type { Combatant, ItemInstance, HitLocation, WeaponDamageSpec, QualityInstance } from './types';
 import { damageScore, isUnarmed, damageString } from './items';
+import { effectiveRange } from './weaponDamage';
+import { bonus, effectiveChar } from './characteristics';
 import { QUALITY_IDS } from './qualities/ids';
 import { qualityRefLabel } from '../data';
 
@@ -75,7 +77,9 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
       const nr = REACH_RANK[item.reach ?? ''] ?? -1;
       rows.push({ label: 'Allonge', current: cur?.reach ?? '—', next: item.reach ?? '—', trend: trendOf(nr - cr) });
     } else {
-      rows.push({ label: 'Portée', current: cur?.range != null ? `${cur.range} m` : '—', next: item.range != null ? `${item.range} m` : '—', trend: trendOf((item.range ?? 0) - (cur?.range ?? 0)) });
+      const bf = () => bonus(effectiveChar(hero, 'F')); // BF du porteur, évalué SEULEMENT pour une Portée de jet `{bf}`
+      const curR = effectiveRange(cur?.range, bf), nextR = effectiveRange(item.range, bf);
+      rows.push({ label: 'Portée', current: curR != null ? `${curR} m` : '—', next: nextR != null ? `${nextR} m` : '—', trend: trendOf((nextR ?? 0) - (curR ?? 0)) });
     }
     const cq = (cur?.qualities ?? []).map(qualityRefLabel);
     const nq = item.qualities.map(qualityRefLabel);

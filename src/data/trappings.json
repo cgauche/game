@@ -906,7 +906,8 @@
     "subType": "arbalete",
     "enc": 2,
     "availability": "Commune",
-    "reach": 60,
+    "reach": null,
+    "range": 60,
     "loc": null,
     "pa": null,
     "damage": {
@@ -937,7 +938,8 @@
     "subType": "arbalete",
     "enc": 0,
     "availability": "Limitée",
-    "reach": 10,
+    "reach": null,
+    "range": 10,
     "loc": null,
     "pa": null,
     "damage": {
@@ -968,7 +970,8 @@
     "subType": "arbalete",
     "enc": 3,
     "availability": "Rare",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1003,7 +1006,8 @@
     "subType": "arc",
     "enc": 2,
     "availability": "Commune",
-    "reach": 50,
+    "reach": null,
+    "range": 50,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1030,7 +1034,8 @@
     "subType": "arc",
     "enc": 1,
     "availability": "Commune",
-    "reach": 20,
+    "reach": null,
+    "range": 20,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1057,7 +1062,8 @@
     "subType": "arc",
     "enc": 2,
     "availability": "Exotique",
-    "reach": 150,
+    "reach": null,
+    "range": 150,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1091,7 +1097,8 @@
     "subType": "arc",
     "enc": 3,
     "availability": "Limitée",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1121,7 +1128,8 @@
     "subType": "entraves",
     "enc": 0,
     "availability": "Commune",
-    "reach": 6,
+    "reach": null,
+    "range": 6,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1151,7 +1159,10 @@
     "subType": "entraves",
     "enc": 0,
     "availability": "Commune",
-    "reach": "BFx2",
+    "reach": null,
+    "range": {
+      "bf": 2
+    },
     "loc": null,
     "pa": null,
     "damage": null,
@@ -1178,7 +1189,10 @@
     "subType": "explosifs",
     "enc": 0,
     "availability": "Rare",
-    "reach": "BF",
+    "reach": null,
+    "range": {
+      "bf": 1
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1215,7 +1229,10 @@
     "subType": "explosifs",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "BF",
+    "reach": null,
+    "range": {
+      "bf": 1
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1248,7 +1265,8 @@
     "subType": "fronde",
     "enc": 0,
     "availability": "Commune",
-    "reach": 60,
+    "reach": null,
+    "range": 60,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1275,7 +1293,8 @@
     "subType": "fronde",
     "enc": 2,
     "availability": "Limitée",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1301,7 +1320,10 @@
     "subType": "lancer",
     "enc": 0,
     "availability": "Rare",
-    "reach": "BFx3",
+    "reach": null,
+    "range": {
+      "bf": 3
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1332,7 +1354,10 @@
     "subType": "lancer",
     "enc": 0,
     "availability": "Commune",
-    "reach": "BFx2",
+    "reach": null,
+    "range": {
+      "bf": 2
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1358,7 +1383,10 @@
     "subType": "lancer",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "BFx2",
+    "reach": null,
+    "range": {
+      "bf": 2
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1388,7 +1416,10 @@
     "subType": "lancer",
     "enc": 1,
     "availability": "Commune",
-    "reach": "BFx2",
+    "reach": null,
+    "range": {
+      "bf": 2
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1418,7 +1449,10 @@
     "subType": "lancer",
     "enc": 1,
     "availability": "Limitée",
-    "reach": "BFx3",
+    "reach": null,
+    "range": {
+      "bf": 3
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1448,7 +1482,10 @@
     "subType": "lancer",
     "enc": 0,
     "availability": "Commune",
-    "reach": "BFx3",
+    "reach": null,
+    "range": {
+      "bf": 3
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1476,7 +1513,8 @@
     "subType": "ingenierie",
     "enc": 3,
     "availability": "Rare",
-    "reach": 30,
+    "reach": null,
+    "range": 30,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1520,7 +1558,8 @@
     "subType": "ingenierie",
     "enc": 1,
     "availability": "Rare",
-    "reach": 10,
+    "reach": null,
+    "range": 10,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1568,7 +1607,8 @@
     "subType": "poudre-noire",
     "enc": 2,
     "availability": "Limitée",
-    "reach": 50,
+    "reach": null,
+    "range": 50,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1609,7 +1649,8 @@
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1652,7 +1693,8 @@
     "subType": "poudre-noire",
     "enc": 0,
     "availability": "Rare",
-    "reach": 20,
+    "reach": null,
+    "range": 20,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1693,7 +1735,8 @@
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Limitée",
-    "reach": 20,
+    "reach": null,
+    "range": 20,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1738,7 +1781,7 @@
     "subType": "arbalete",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -1766,7 +1809,7 @@
     "subType": "arc",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -1861,7 +1904,7 @@
     "subType": "fronde",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -1889,7 +1932,7 @@
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": {
@@ -1945,7 +1988,7 @@
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -7138,7 +7181,8 @@
     "subType": "armes-de-siege",
     "enc": 20,
     "availability": "Limitée",
-    "reach": 150,
+    "reach": null,
+    "range": 150,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7176,7 +7220,8 @@
     "subType": "armes-de-siege",
     "enc": 25,
     "availability": "Limitée",
-    "reach": 75,
+    "reach": null,
+    "range": 75,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7214,7 +7259,8 @@
     "subType": "armes-de-siege",
     "enc": 40,
     "availability": "Limitée",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7252,7 +7298,8 @@
     "subType": "armes-de-siege",
     "enc": 65,
     "availability": "Limitée",
-    "reach": 175,
+    "reach": null,
+    "range": 175,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7290,7 +7337,8 @@
     "subType": "armes-de-siege",
     "enc": 75,
     "availability": "Exotique",
-    "reach": 185,
+    "reach": null,
+    "range": 185,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7339,7 +7387,8 @@
     "subType": "armes-de-siege",
     "enc": 5,
     "availability": "Exotique",
-    "reach": 50,
+    "reach": null,
+    "range": 50,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7377,7 +7426,8 @@
     "subType": "armes-de-siege",
     "enc": 85,
     "availability": "Exotique",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7419,7 +7469,8 @@
     "subType": "armes-de-siege",
     "enc": 30,
     "availability": "Limitée",
-    "reach": 50,
+    "reach": null,
+    "range": 50,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7457,7 +7508,8 @@
     "subType": "armes-de-siege",
     "enc": 50,
     "availability": "Exotique",
-    "reach": 75,
+    "reach": null,
+    "range": 75,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7495,7 +7547,8 @@
     "subType": "armes-de-siege",
     "enc": 75,
     "availability": "Exotique",
-    "reach": 150,
+    "reach": null,
+    "range": 150,
     "loc": null,
     "pa": null,
     "damage": {
@@ -7533,7 +7586,8 @@
     "subType": "armes-de-siege",
     "enc": 50,
     "availability": "Exotique",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -7565,7 +7619,8 @@
     "subType": "armes-de-siege",
     "enc": 5,
     "availability": "Rare",
-    "reach": 30,
+    "reach": null,
+    "range": 30,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8128,7 +8183,7 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -8159,7 +8214,7 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -8253,7 +8308,8 @@
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
-    "reach": 50,
+    "reach": null,
+    "range": 50,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8292,7 +8348,8 @@
     "subType": "poudre-noire",
     "enc": 2,
     "availability": "Rare",
-    "reach": 50,
+    "reach": null,
+    "range": 50,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8327,7 +8384,8 @@
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Exotique",
-    "reach": 30,
+    "reach": null,
+    "range": 30,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8365,7 +8423,8 @@
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
-    "reach": 30,
+    "reach": null,
+    "range": 30,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8403,7 +8462,8 @@
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
-    "reach": 40,
+    "reach": null,
+    "range": 40,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8440,7 +8500,8 @@
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Exotique",
-    "reach": 10,
+    "reach": null,
+    "range": 10,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8479,7 +8540,8 @@
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Rare",
-    "reach": 20,
+    "reach": null,
+    "range": 20,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8517,7 +8579,8 @@
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Exotique",
-    "reach": 10,
+    "reach": null,
+    "range": 10,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8555,7 +8618,8 @@
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
-    "reach": 30,
+    "reach": null,
+    "range": 30,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8592,7 +8656,8 @@
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Rare",
-    "reach": 10,
+    "reach": null,
+    "range": 10,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8633,7 +8698,7 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8669,7 +8734,7 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8706,7 +8771,7 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8739,7 +8804,7 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8883,7 +8948,8 @@
       "page": 45
     },
     "desc": "La contrefaçon skaven du long fusil du Hochland. Utilisez le profil du long fusil, mais ajoutez-y le Défaut Dangereuse. De plus, les cibles qu'elle blesse doivent effectuer un Test de Corruption (Mineure), car ses balles sont incrustées de malepierre.",
-    "reach": 100,
+    "reach": null,
+    "range": 100,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8923,7 +8989,8 @@
       "page": 45
     },
     "desc": "Machine à tuer skaven à plusieurs canons. Il faut deux skavens pour s'en servir : un pour charger, l'autre pour la maintenir tant bien que mal. Arme à distance : +10 Dégâts, portée 40 mètres, Atouts À Poudre noire, Empaleuse, Explosion 3 et Perforante, Défauts Dangereuse et Imprécise. Ses balles étant incrustées de malepierre, les cibles blessées doivent effectuer un Test de Corruption (Mineure) Accessible (+20).",
-    "reach": 40,
+    "reach": null,
+    "range": 40,
     "loc": null,
     "pa": null,
     "damage": {
@@ -8969,7 +9036,8 @@
       "page": 45
     },
     "desc": "La version skaven des pistolets humains, « améliorée » selon leurs standards. Atouts À Poudre noire, Dévastatrice, Empaleuse, Perforante ; Défauts Dangereuse et Recharge 1. Ses balles étant incrustées de malepierre, les cibles qu'il blesse doivent effectuer un Test de Corruption (Mineure).",
-    "reach": 20,
+    "reach": null,
+    "range": 20,
     "loc": null,
     "pa": null,
     "damage": {
@@ -9586,7 +9654,7 @@
       "page": 114
     },
     "desc": "Munitions (6 par 1 Enc de composant). La sève durcissante d'un trégara couvre jusqu'à 6 carreaux ou flèches, qui doivent être tirés dans la journée. Les projectiles ainsi traités gagnent l'Atout Perforante.",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -9654,7 +9722,7 @@
       "page": 114
     },
     "desc": "Munitions (12 par 1 Enc de composant). Pointes faites d'écailles de dragon barbelé, incroyablement aiguisées (le tranchant se renouvelle quand il s'émousse). Les attaques avec ces munitions qui infligent au moins une Blessure appliquent également un État Hémorragique.",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,

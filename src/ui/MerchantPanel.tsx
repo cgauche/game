@@ -7,7 +7,8 @@ import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
 import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/items';
-import type { WeaponDamageSpec } from '../engine/types';
+import { rangeSpecLabel } from './weaponStats';
+import type { WeaponDamageSpec, WeaponRangeSpec } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
 import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
@@ -44,7 +45,7 @@ function availRank(id: string): number {
 }
 
 /** Colonnes de stats par famille (tableau comparatif). 1re colonne (`emph`) = info clé mise en avant. */
-type TrapRow = { damage?: WeaponDamageSpec | null; reach?: string | null; pa?: number | null; qualities?: QualityRef[] };
+type TrapRow = { damage?: WeaponDamageSpec | null; reach?: string | null; range?: WeaponRangeSpec | null; pa?: number | null; qualities?: QualityRef[] };
 const DASH = '—';
 const dmg = (t: TrapRow) => (t.damage ? damageString(t.damage) : DASH);
 const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; emph?: boolean }[]> = {
@@ -54,7 +55,7 @@ const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; 
   ],
   ranged: [
     { label: 'Dégâts', get: dmg, emph: true },
-    { label: 'Portée', get: (t) => { const r = Number(t.reach); return r ? `${r} m` : DASH; } },
+    { label: 'Portée', get: (t) => rangeSpecLabel(t.range) ?? (t.reach || DASH) }, // « N m » fixe / « BF×k m » jet ; sinon modificateur de munition
   ],
   ammo: [{ label: 'Dégâts', get: dmg, emph: true }],
   boucliers: [{ label: 'Protection', get: (t) => { const q = (t.qualities ?? []).find((x) => x.id === 'protectrice'); return q ? `Protectrice ${q.value ?? ''}`.trim() : DASH; }, emph: true }],

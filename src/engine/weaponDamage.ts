@@ -3,7 +3,7 @@
  * reçu réduit les Dégâts de l'arme de 1 ; à +0 (ou BF +0) l'arme est improvisée. L'Atout Incassable
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
-import { Weapon, WeaponEnchant, ArmourBypass } from './types';
+import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec } from './types';
 import type { TriggeredEffect } from '../state/flow';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
@@ -34,6 +34,18 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
   const dt = effectiveDamageTaken(w); // Solide(N) absorbe les N premiers points (LDB 60 l.64)
   const reduced = flat >= 0 ? Math.max(0, flat - dt) : flat;
   return Math.max(0, (usesBF ? strengthBonus : 0) + reduced);
+}
+
+/** Portée d'arme EFFECTIVE en mètres (MIROIR de `effectiveWeaponDamage` pour les Dégâts) : résout une
+ *  `WeaponRangeSpec` non résolue avec le BF du porteur. `number` (mètres fixes) → lui-même ; `{ bf }`
+ *  (arme de jet) → `BF * bf` ; null/undefined (pas de Portée) → null. Appelée AUX SITES d'usage (combat :
+ *  bandes de portée ; affichage : récap/Codex), jamais stockée — dynamique au BF courant. `strBonus` peut
+ *  être un fournisseur PARESSEUX (`() => BF`) : il n'est évalué QUE pour une Portée `{bf}` — une Portée
+ *  fixe n'exige donc PAS le BF (ni les caractéristiques) du porteur. */
+export function effectiveRange(range: WeaponRangeSpec | null | undefined, strBonus: number | (() => number)): number | null {
+  if (range == null) return null;
+  if (typeof range === 'number') return range;
+  return (typeof strBonus === 'function' ? strBonus() : strBonus) * range.bf;
 }
 
 /**

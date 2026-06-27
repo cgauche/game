@@ -28,6 +28,8 @@
 import type { Get, Set as SetFn } from './flowTypes';
 import type { Combatant, Weapon, HitLocation } from '../engine/types';
 import { woundsFromHit, rangeBandName } from '../engine/combat';
+import { bonus, effectiveChar } from '../engine/characteristics';
+import { effectiveRange } from '../engine/weaponDamage';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { loseWounds, isOutOfAction } from '../engine/conditions';
 import { exposedCrew } from '../engine/shipCritical';
@@ -114,7 +116,8 @@ export function resolveWeaponArea(
   const tz = quals.find((r) => r.caps?.areaFire);
   if (tz) {
     const indice = tz.indice ?? 1;
-    const band = weapon.range ? rangeBandName(hit.distanceTiles, weapon.range) : 'Bout portant';
+    const rangeM = effectiveRange(weapon.range, () => bonus(effectiveChar(hit.attacker, 'F'))); // Portée résolue (BF du tireur)
+    const band = rangeM != null ? rangeBandName(hit.distanceTiles, rangeM) : 'Bout portant';
     if (band === 'Bout portant') {
       // +Indice aux DÉGÂTS sur la cible seule (≠ +Indice Blessures brut). La cible a déjà encaissé `damage` ;
       // on applique le SURCROÎT de Blessures dû à `damage + indice` (woundsFromHit est monotone).

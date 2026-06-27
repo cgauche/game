@@ -18,6 +18,9 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
   }
   const w = value;
   const patch = (p: Partial<Weapon>) => onChange({ ...w, ...p });
+  // Portée : SPEC (mètres fixes OU `{bf}` = BF×N, arme de jet). Toggle « ×BF » + valeur, sans perte de donnée.
+  const rangeBf = typeof w.range === 'object' && w.range != null;
+  const rangeNum: number | '' = rangeBf ? (w.range as { bf: number }).bf : typeof w.range === 'number' ? w.range : '';
   return (
     <div className="ed-field ed-weapon">
       <label className="dr"><input type="checkbox" checked onChange={() => onChange(undefined)} /> ARME conférée</label>
@@ -40,7 +43,12 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
         {w.type === 'melee' ? (
           <label className="dr">Allonge<input placeholder="Moyenne…" value={w.reach ?? ''} onChange={(e) => patch({ reach: e.target.value || undefined })} /></label>
         ) : (
-          <label className="dr">Portée (m)<input type="number" min={0} value={w.range ?? ''} onChange={(e) => patch({ range: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value) || 0) })} /></label>
+          <label className="dr">Portée {rangeBf ? '(×BF)' : '(m)'}
+            <input type="number" min={0} value={rangeNum}
+              onChange={(e) => patch({ range: e.target.value === '' ? undefined : (rangeBf ? { bf: Math.max(0, Number(e.target.value) || 0) } : Math.max(0, Number(e.target.value) || 0)) })} />
+            <label className="bf-toggle"><input type="checkbox" checked={rangeBf}
+              onChange={(e) => { const n = typeof rangeNum === 'number' ? rangeNum : 0; patch({ range: e.target.checked ? { bf: n } : n }); }} /> ×BF</label>
+          </label>
         )}
       </div>
       <label className="dr">Qualités<input placeholder="Perçante, Solide 3… (séparées par des virgules)" value={w.qualities.map(qualityRefLabel).join(', ')}
