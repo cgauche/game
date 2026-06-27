@@ -536,13 +536,15 @@ export interface PendingDisengage {
   /** Esquive/Fuite disponibles ? Faux si l'Action est déjà dépensée (elles la coûtent) → seule
    *  l'option A « Sacrifier l'Avantage » reste, ce qui évite la boucle infinie d'Esquive. */
   canEsquive?: boolean;
-  phase: 'choice' | 'esquive' | 'fuir'; // 'choice' = menu ; 'esquive' = Test d'Esquive ; 'fuir' = coup dans le dos résolu, montré INLINE
+  phase: 'choice' | 'esquive' | 'fuir'; // 'choice' = menu ; 'esquive' = Test d'Esquive ; 'fuir' = coup dans le dos SUBI + Test de Calme influençable
   atk: TestResult | null; // Esquive : jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // Esquive : jet d'Esquive du mover
   result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
-  /** « Fuir » (l.98-109) : coup dans le dos + Test de Calme RÉSOLUS, présentés DANS la modale (plus
-   *  de popin RevealModal séparée). Les conséquences sont déjà appliquées ; « Continuer » ferme. */
-  fuir?: { attackerRoll: number; hit: boolean; woundsLost: number; calmeRoll?: number; broken: number };
+  /** « Fuir » (l.98-109) : coup dans le dos SUBI (montré INLINE). Sur un coup qui touche, le Test de
+   *  Calme du fuyard (`calme`) est un jet INFLUENÇABLE (flux `flee`, calqué sur `approach`) résolu DANS
+   *  la modale ; le Brisé et la libération/Course sont DIFFÉRÉS au confirm (`fleeConfirm`). `calme: null`
+   *  = pas (encore) de Test (coup manqué → fuite déjà complétée ; ou en attente du « Lancer »). */
+  fuir?: { attackerRoll: number; hit: boolean; woundsLost: number; calme: { success: boolean; roll: number; target?: number; sl: number } | null };
   /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }

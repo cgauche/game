@@ -1239,7 +1239,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(posBefore); // ni déplacement libre
   });
 
-  it('Désengagement — Fuir : adversaire +1 Avantage + attaque dans le dos, puis libéré et peut courir (LDB 15-Dépl l.98-109)', () => {
+  it('Désengagement — Fuir : adversaire +1 Avantage + coup dans le dos SUBI ; Test de Calme DIFFÉRÉ (flux flee) puis libéré et peut courir (LDB 15-Dépl l.98-109)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
@@ -1251,6 +1251,8 @@ describe('Boucle de jeu (store)', () => {
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     H.engagedWith = [E.id];
     E.engagedWith = [H.id];
+    E.characteristics.CC = 90; // le coup dans le dos (+20) touche à coup sûr → Test de Calme
+    H.wounds = { current: 40, max: 40, base: 40 } as never;
     const eAdvBefore = E.advantage;
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({
@@ -1260,14 +1262,23 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().disengageFlee();
     st = useGame.getState();
     const Ea = st.battle!.combatants.find((c) => c.id === E.id)!;
-    const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
-    expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 1); // +1 immédiat (l.101), +1 de plus si touché
-    expect(Ha.engagedWith).toEqual([]); // libéré de tous les Engagements
-    expect(st.battle!.action).toBeNull(); expect(st.battle!.reachable.size).toBeGreaterThan(0); // peut courir (budget de Course posé)
-    // Coup dans le dos montré INLINE (phase 'fuir') ; « Continuer » ferme.
+    let Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 2); // +1 immédiat (l.101) + +1 touché (l.107)
+    // Coup dans le dos SUBI montré INLINE (phase 'fuir') ; Test de Calme DIFFÉRÉ → fuite PAS encore complétée.
     expect(st.pendingDisengage!.phase).toBe('fuir');
-    useGame.getState().disengageFleeAck();
-    expect(useGame.getState().pendingDisengage).toBeNull();
+    expect(st.pendingDisengage!.fuir!.hit).toBe(true);
+    expect(st.pendingDisengage!.fuir!.calme).toBeNull(); // jet de Calme influençable en attente
+    expect(Ha.engagedWith).toEqual([E.id]); // toujours Engagé tant que le Calme n'est pas confirmé
+
+    // Test de Calme INFLUENÇABLE (flux `flee`) : Lancer → Appliquer (complète la fuite + ferme).
+    useGame.getState().fleeRoll();
+    useGame.getState().fleeConfirm();
+    st = useGame.getState();
+    Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(st.pendingDisengage).toBeNull();
+    expect(Ha.engagedWith).toEqual([]); // libéré de tous les Engagements
+    expect(st.battle!.action).toBeNull();
+    expect(st.battle!.reachable.size).toBeGreaterThan(0); // peut courir (budget de Course posé)
   });
 
   it('attaque en DIAGONALE : un ennemi diagonalement adjacent est à portée de mêlée (distance Chebyshev)', () => {

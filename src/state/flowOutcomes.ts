@@ -228,12 +228,15 @@ export function describeDisengage(pd: PendingDisengage): string {
       : t('out.disengageFail');
 }
 
-/** Désengagement — phase 'fuir' : issue du coup dans le dos + Test de Calme, montrée INLINE (popin). */
+/** Désengagement — phase 'fuir' : issue du coup dans le dos (SUBI) + Test de Calme, montrée INLINE
+ *  (popin). Le Test de Calme est INFLUENÇABLE (`fuir.calme`) ; l'État Brisé en découle (1 + DR négatif)
+ *  — calculé ici pour la narration, appliqué par `fleeConfirm`. `calme` non joué → pas encore d'issue. */
 export function describeDisengageFlee(pd: PendingDisengage): string {
   const f = pd.fuir;
   if (!f) return '';
-  const hit = f.hit
-    ? t('out.fleeHit', { wounds: f.woundsLost, s: f.woundsLost > 1 ? 's' : '', broken: f.broken ? t('out.fleeBroken', { broken: f.broken, s: f.broken > 1 ? 's' : '' }) : '' })
-    : t('out.fleeDodge');
+  if (!f.hit) return t('out.disengageFlee', { hit: t('out.fleeDodge') });
+  if (f.woundsLost > 0 && !f.calme) return ''; // coup qui touche : Test de Calme pas encore lancé
+  const broken = f.calme && !f.calme.success ? 1 + Math.max(0, -f.calme.sl) : 0;
+  const hit = t('out.fleeHit', { wounds: f.woundsLost, s: f.woundsLost > 1 ? 's' : '', broken: broken ? t('out.fleeBroken', { broken, s: broken > 1 ? 's' : '' }) : '' });
   return t('out.disengageFlee', { hit });
 }

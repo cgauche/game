@@ -150,6 +150,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'corruption', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'disengage', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'flee', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'focus', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'dispel', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'frenzy', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
@@ -581,6 +582,32 @@ export const FLOWS = {
         const opp = resolveOpposed(def2, p.atk!);
         return { def: def2, result: disengageOutcome(opp.winner) };
       },
+    },
+  }),
+
+  /** « Fuir » — Test de Calme du fuyard après le coup dans le dos qui touche (LDB 15-Dépl l.105-107) :
+   *  échec → État Brisé (1 + DR négatif). Test SEC de Calme Intermédiaire (+0), INFLUENÇABLE comme
+   *  `approach` (même patron) ; porté par `pendingDisengage.fuir.calme` (le coup dans le dos reste SUBI,
+   *  montré INLINE). `fleeConfirm` applique le Brisé et complète la fuite (libération + Course). */
+  flee: makeRollFlow<PendingDisengage>({
+    key: 'pendingDisengage',
+    rolled: (p) => !!p.fuir?.calme,
+    actor: (s, p) => actorIn(s, p.moverId),
+    caps: { forced: true },
+    resolve: (_s, p, actor, _get, forced) => {
+      if (!actor || !p.fuir) return null;
+      // RAW LDB 17 l.73 : avant le jet (calme==null → choisit 01) OU après un échec.
+      if (forced) return p.fuir.calme?.success ? null : { fuir: { ...p.fuir, calme: { success: true, roll: p.fuir.calme?.roll ?? 1, target: p.fuir.calme?.target, sl: Math.max(p.fuir.calme?.sl ?? 0, 0) } } };
+      const t = rollTest(calmeValue(actor), 'intermediaire', battleRng());
+      return { fuir: { ...p.fuir, calme: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } } };
+    },
+    failed: (p) => !p.fuir?.calme?.success,
+    bonus: {
+      // Chance « +1 DR » (LDB 17 l.26) — calque `heal` : +1 au DR, la réussite (d100 propre) NE change PAS.
+      // Utile ici car le nombre d'États Brisés décroît avec le DR (`broken = 1 + max(0,-sl)`, plancher 1
+      // sur un échec) ; passer un échec en réussite (Brisé 0) reste réservé à la relance/Résilience.
+      guard: (p) => !!p.fuir?.calme,
+      derive: (_s, p) => ({ fuir: { ...p.fuir!, calme: { ...p.fuir!.calme!, sl: p.fuir!.calme!.sl + 1 } } }),
     },
   }),
 

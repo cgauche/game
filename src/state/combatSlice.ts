@@ -30,7 +30,7 @@ import { disengageFrom, isEngaged, meleeReachTiles } from '../engine/engagement'
 import { gainAdvantage } from '../engine/advantage';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent } from '../engine/magic';
-import { rollTest, resolveOpposed, evaluateTest, extendedTestStep, assistBonus } from '../engine/tests';
+import { resolveOpposed, evaluateTest, extendedTestStep, assistBonus } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { hasActiveFlag } from '../engine/activeFlags';
@@ -231,9 +231,11 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // « Fuir » (LDB 15-Dépl l.98-109) : l'adversaire gagne +1 Avantage + une attaque gratuite dans
-    // le dos (+20) ; si elle touche, +1 Avantage de plus et Test de Calme ou État Brisé ; puis on
-    // se libère de TOUS les Engagements et on peut courir (Mouvement de Course).
+    // « Fuir » (LDB 15-Dépl l.98-109) : l'adversaire gagne +1 Avantage + une attaque gratuite dans le
+    // dos (+20, SUBIE) ; si elle touche, +1 Avantage de plus et un Test de Calme INFLUENÇABLE (flux
+    // `flee`, calqué sur `approach`) → État Brisé sur un échec. La libération de TOUS les Engagements +
+    // le budget de Course sont DIFFÉRÉS au confirm du Calme (`fleeConfirm`) quand il y a Test ; immédiats
+    // sinon (coup manqué). Le coup dans le dos reste SUBI (résolu/affiché ici).
     disengageFlee: () => {
       const { battle, scene, pendingDisengage: pd } = get();
       if (!battle || !scene || !pd) return;
@@ -243,23 +245,25 @@ export function createCombatSlice(get: Get, set: Set) {
       const log = [...battle.log];
       gainAdvantage(foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
       foe.gainedAdvThisRound = true;
-      const res = resolveBackstabAttack(foe, mover, battleRng());
+      const res = resolveBackstabAttack(foe, mover, battleRng()); // coup dans le dos SUBI (montré INLINE)
       log.push(ev('flee', t('cs.fleeBackstab', { name: mover.name, foe: foe.name, log: res.log }), mover.id, foe.id));
-      let calmeRoll: number | undefined;
-      let broken = 0;
       if (res.hit && res.woundsLost) {
         loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
         gainAdvantage(foe); // touché → +1 Avantage de plus (l.107)
-        // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
-        const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.skillId === 'calme')?.advances ?? 0);
-        const ct = rollTest(calme, 'intermediaire', battleRng());
-        broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
-        calmeRoll = ct.roll;
-        if (broken) {
-          addCondition(mover, COND.brise, broken);
-          log.push(ev('fear', t('cs.panic', { name: mover.name, broken }), mover.id));
+        // Test de Calme DIFFÉRÉ en jet INFLUENÇABLE : on n'applique NI le Brisé NI la libération/Course
+        // ici — `fleeConfirm` le fait après le jet. Phase 'fuir' ouverte avec le coup dans le dos SUBI.
+        set({ battle: { ...battle, log }, pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: true, woundsLost: res.woundsLost, calme: null } } });
+        bus.emit(EVT.SCENE_DIRTY);
+        // Aucune modale joueur affichable (fuyard non-héros, combat fini, Destin/révélation en attente)
+        // → on auto-résout le Calme par le flux (fleeConfirm complète la fuite et ferme).
+        const st = get();
+        if (mover.kind !== 'hero' || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
+          get().fleeRoll();
+          get().fleeConfirm();
         }
+        return;
       }
+      // Coup manqué / sans PB perdu : pas de Test de Calme → on complète la fuite directement.
       const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
       const blocked = occupied(battle, mover);
@@ -269,18 +273,40 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log } });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
-      // Coup dans le dos INTÉGRÉ à la modale (plus de popin RevealModal séparée) : on garde la modale
-      // ouverte sur la phase 'fuir' pour MONTRER le dé subi + le Test de Calme ; « Continuer » ferme et
-      // libère le déplacement de Fuite. Cas particuliers (PNJ, combat fini, mort→Destin, autre révélation
-      // en attente) : on ferme tout de suite pour ne pas empiler les modales.
       const st = get();
       if (mover.kind !== 'hero' || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
         set({ pendingDisengage: null, pendingCascade: null });
         return;
       }
-      set({ pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: res.hit, woundsLost: res.woundsLost ?? 0, calmeRoll, broken } } });
+      // Pas de Test de Calme (woundsLost 0) → `calme: null` permanent ; la modale montre « Continuer ».
+      set({ pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: res.hit, woundsLost: res.woundsLost ?? 0, calme: null } } });
     },
-    disengageFleeAck: () => set({ pendingDisengage: null, pendingCascade: null }), // « Continuer » : ferme la modale (conséquences déjà appliquées)
+    disengageFleeAck: () => set({ pendingDisengage: null, pendingCascade: null }), // « Continuer » (coup manqué) : ferme la modale (fuite déjà complétée)
+    // ── « Fuir » : Test de Calme du fuyard, INFLUENÇABLE (flux `flee`, calqué sur `approach`). « Lancer »
+    //    (fleeRoll) → Chance (relance / +1 DR) / Pacte / Résilience → « Appliquer » (fleeConfirm) applique le
+    //    Brisé + complète la fuite. Le +1 DR réduit le nombre d'États Brisés (broken = 1 + max(0,-sl)). ──
+    ...rollFlowActions('flee', FLOWS.flee, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
+    fleeConfirm: () => {
+      const { battle, scene, pendingDisengage: pd } = get();
+      if (!battle || !scene || !pd || !pd.fuir?.calme) return;
+      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
+      const calme = pd.fuir.calme;
+      const broken = calme.success ? 0 : 1 + Math.max(0, -calme.sl); // échec → 1 + DR négatif (LDB 15-Dépl l.107)
+      const log = [...battle.log];
+      if (broken) {
+        addCondition(mover, COND.brise, broken);
+        log.push(ev('fear', t('cs.panic', { name: mover.name, broken }), mover.id));
+      }
+      // Fuite complétée (différée) : libération de TOUS les Engagements + budget de Course (l.109).
+      const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+      for (const f of foes) disengageFrom(mover, f);
+      const blocked = occupied(battle, mover);
+      set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log }, pendingDisengage: null, pendingCascade: null });
+      bus.emit(EVT.SCENE_DIRTY);
+      checkBattleOver(get, set);
+    },
     disengageCancel: () => set({ pendingDisengage: null, pendingCascade: null }), // renonce avant tout jet : aucun coût
 
     battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => {

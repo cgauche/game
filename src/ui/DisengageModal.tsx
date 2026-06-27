@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { defenseValue, combatValue } from '../engine/combat';
+import { calmeValue } from '../engine/psychology';
 import { canReroll } from '../engine/fortune';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
@@ -17,8 +18,10 @@ import { testBreakdown } from './breakdown';
  * Modale de Désengagement (LDB 15-Dépl l.84-109). Le pré-jet est un MENU d'« options de jet »
  * (`OptionChooser` PARTAGÉ) : Sacrifier l'Avantage / Esquiver / Fuir.
  * - « Esquiver » → phase 'esquive' : Test opposé sur le panneau unique + rangée d'influence + Appliquer.
- * - « Fuir » → phase 'fuir' : le coup dans le dos (+ Test de Calme) est résolu et montré INLINE ici
- *   (plus de popin RevealModal séparée) ; « Continuer » ferme et libère le déplacement de Fuite.
+ * - « Fuir » → phase 'fuir' : le coup dans le dos est SUBI et montré INLINE ici (plus de popin
+ *   RevealModal séparée). S'il TOUCHE, le Test de Calme du fuyard est un jet INFLUENÇABLE (flux `flee`,
+ *   calqué sur l'Esquive influençable : Lancer → Chance/Pacte/Résilience → Appliquer) qui DIFFÈRE la
+ *   complétion de la fuite jusqu'au confirm. Coup manqué → « Continuer » (fuite déjà complétée).
  */
 export function DisengageModal() {
   const pd = useGame((s) => s.pendingDisengage);
@@ -32,6 +35,12 @@ export function DisengageModal() {
   const confirm = useGame((s) => s.disengageConfirm);
   const flee = useGame((s) => s.disengageFlee);
   const fleeAck = useGame((s) => s.disengageFleeAck);
+  const fleeRoll = useGame((s) => s.fleeRoll);
+  const fleeReroll = useGame((s) => s.fleeReroll);
+  const fleeBonusSL = useGame((s) => s.fleeBonusSL);
+  const fleeDarkPact = useGame((s) => s.fleeDarkPact);
+  const fleeForce = useGame((s) => s.fleeForceSuccess);
+  const fleeConfirm = useGame((s) => s.fleeConfirm);
   const cancel = useGame((s) => s.disengageCancel);
   if (!pd || !battle) return null;
   const mover = battle.combatants.find((c) => c.id === pd.moverId);
@@ -41,6 +50,8 @@ export function DisengageModal() {
   const rerollable = pd.phase === 'esquive' && canReroll(!pd.def?.success, !!pd.rerolled);
   const outcome = describeDisengage(pd);
   const f = pd.fuir;
+  const calme = f?.calme;
+  const calmeRerollable = !!calme && !calme.success && canReroll(true, !!pd.rerolled);
   const fleeOutcome = describeDisengageFlee(pd);
 
   return (
@@ -77,25 +88,64 @@ export function DisengageModal() {
         </>
       ) : pd.phase === 'fuir' ? (
         <>
-          {/* Coup dans le dos + Test de Calme RÉSOLUS, montrés INLINE (jets subis sur table). */}
+          {/* Coup dans le dos SUBI, montré INLINE (jet subi sur table). */}
           <TableRollLine
             table={`Coup dans le dos — ${foe.name} (+20)`}
             roll={f?.attackerRoll}
             result={f?.hit ? `Touché · ${f.woundsLost} Blessure${f.woundsLost > 1 ? 's' : ''}` : 'Manqué'}
           />
-          {f?.calmeRoll != null && (
-            <TableRollLine
-              table="Test de Calme"
-              roll={f.calmeRoll}
-              result={f.broken ? `Panique : ${f.broken} État${f.broken > 1 ? 's' : ''} Brisé` : 'Sang-froid gardé'}
-            />
+          {f && f.woundsLost > 0 ? (
+            <>
+              {/* Test de Calme INFLUENÇABLE (LDB 15-Dépl l.105-107) — calqué sur l'Esquive influençable. */}
+              <RollPanel
+                rows={[{ combatant: mover, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined }]}
+              />
+              {calme && (
+                <JournalLine className="rm-journal" event={ev('fear', fleeOutcome, mover.id, foe.id)} combatants={battle.combatants} />
+              )}
+              {!calme ? (
+                <>
+                  <div className="rm-influence">
+                    {/* Résilience AVANT le jet (LDB 17 l.73) : Calme forcé en réussite. */}
+                    <ResilienceButton resilience={mover.resilience ?? 0} show={(mover.resilience ?? 0) > 0} onForce={() => { fleeRoll(); fleeForce(); }} />
+                  </div>
+                  <div className="modal-actions">
+                    <button className="btn btn-primary" onClick={fleeRoll}>
+                      Lancer le Test de Calme
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <InfluenceRow
+                    actor={mover}
+                    rerollable={calmeRerollable}
+                    onReroll={fleeReroll}
+                    onBonusSL={fleeBonusSL}
+                    darkPactable={mover.kind === 'hero' && !calme.success}
+                    onDarkPact={fleeDarkPact}
+                    onForce={fleeForce}
+                    forceShow={!calme.success}
+                  />
+                  <div className="modal-actions">
+                    <button className="btn btn-primary" onClick={fleeConfirm}>
+                      Appliquer
+                    </button>
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Coup manqué : pas de Test de Calme, fuite déjà complétée. */}
+              <JournalLine className="rm-journal" event={ev('flee', fleeOutcome, mover.id, foe.id)} combatants={battle.combatants} />
+              <div className="modal-actions">
+                <button className="btn btn-primary" onClick={fleeAck}>
+                  Continuer
+                </button>
+              </div>
+            </>
           )}
-          <JournalLine className="rm-journal" event={ev('flee', fleeOutcome, mover.id, foe.id)} combatants={battle.combatants} />
-          <div className="modal-actions">
-            <button className="btn btn-primary" onClick={fleeAck}>
-              Continuer
-            </button>
-          </div>
         </>
       ) : (
         <>

@@ -831,8 +831,10 @@ export interface GameState extends RollFlowActionsMap {
   // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) + « vous choisissez le résultat » (dé forcé) :
   // {test,attack,defense,cast,disengage}ForceSuccess et {defense,cast,trample}SetForcedRoll sont aussi générés.
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
-  disengageFlee: () => void; // Fuir : attaque dans le dos + Course
-  disengageFleeAck: () => void; // « Continuer » après le coup dans le dos montré INLINE
+  disengageFlee: () => void; // Fuir : coup dans le dos SUBI, puis Test de Calme influençable (flux `flee`)
+  disengageFleeAck: () => void; // « Continuer » (coup manqué) : ferme la modale (fuite déjà complétée)
+  // flee{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap) — Test de Calme du fuyard (calqué `approach`).
+  fleeConfirm: () => void; // Appliquer : État Brisé (sur échec) + libération/Course différées
   disengageCancel: () => void;
   log: (msg: string) => void;
   /** Temps de jeu : minutes depuis l'époque (Hexenstag 2512 00:00, cf. clock.ts). « Tout est horodaté ». */

@@ -47,6 +47,8 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
   'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',
   'disengageCancel',
+  // Fuir : Test de Calme du fuyard (flux `flee`, calqué sur `approach`)
+  'fleeRoll', 'fleeReroll', 'fleeBonusSL', 'fleeDarkPact', 'fleeForceSuccess', 'fleeConfirm',
   // combat monté
   'mountTargetSelect', 'mountTargetCancel',
   // jets divers en combat (fabrique rollFlow) + témoin/critiques/Destin

@@ -65,7 +65,7 @@ const JUSTIFIED: Record<string, string> = {
   resolveTest: 'résolveur de la modale de Test de scène',
   resolveCorruption: 'résolveur « Continuer » de la modale d’exposition ; le Test de seuil est révélé (pendingReveals kind mutation)',
   disengageConfirmA: 'option « Sacrifier l’Avantage » de la modale de Désengagement (aucun jet de héros : choix acquitté)',
-  disengageFlee: 'option « Fuir » de la modale : attaque dans le dos SUBIE, résultat poussé en révélation (backstab)',
+  disengageFlee: 'option « Fuir » de la modale : coup dans le dos SUBI (resolveBackstabAttack) montré INLINE ; le Test de Calme du fuyard passe désormais par la cascade pending* (flux `flee` — fleeRoll/fleeConfirm influençables, suffixe RESOLVER)',
   dismissReveal: 'acquittement de la file de révélation (le jet a DÉJÀ été montré)',
   medicAct: 'infirmerie : ouvre pendingHeal (modale) — l’acte payant ne tire pas lui-même',
   surgeryNext: 'Chirurgie : APPLIQUE la passe (le Test de Médecine du chirurgien est différé en modale pendingSurgery, influençable). Les 1d10 PB SUBIS et le Test d’infection du patient (Résistance) sont des jets SUBIS poussés en RÉVÉLATION témoin 📜 — pas des jets de héros influençables',
