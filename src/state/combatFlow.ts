@@ -33,6 +33,7 @@ import {
   locationLabel,
   reverseRoll,
   woundsFromHit,
+  woundsAtCritLocation,
   rangeBandModifier,
   resolveStrayRangedHit,
   resolveTrample,
@@ -1251,6 +1252,18 @@ export function applyAttackResult(
   if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175)
   const critLog: string[] = [];
   if (res.hit && res.woundsLost) {
+    // LDB 18 l.53-55 : un Coup Critique RE-TIRE la localisation (1d100 frais, ou choix RAW-2 « Je ne
+    // faillirai pas ! », ou Critique déjà pré-tiré pour la Déviation) ; TOUTE la résolution du coup — Dégâts
+    // NON-critiques (+ PA), Déviation, armure Bâclée, table de Critiques — utilise CETTE localisation. On la
+    // fige sur `res` (location + critLocation) pour que l'aval (deviateArmour/breakBacleArmour/
+    // applyCriticalToTarget) la lise, puis on RECALCULE les Blessures de base à cette localisation
+    // (`woundsAtCritLocation`). L'overkill (≠ Coup Critique) garde la localisation de la touche.
+    if (res.critical) {
+      const fresh = prerolledCrit?.location ?? res.critLocation ?? critLocationRoll(battleRng(), target.bodyShape);
+      res.critLocation = fresh;
+      res.location = fresh;
+      res.woundsLost = woundsAtCritLocation(res, weapon, target, fresh);
+    }
     const currentBefore = target.wounds.current;
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
@@ -4164,6 +4177,35 @@ function describeAiAction(a: EnemyAction): string {
   }
 }
 
+/** Sélection de LOADOUT par l'IA (héros auto + ennemis à plusieurs sets d'armes). Un combattant qui porte un
+ *  set À DISTANCE et un set de MÊLÉE dégaine le bon selon la situation : son arme à distance quand AUCUN
+ *  adversaire ne l'engage (il tire/kite), son arme de mêlée au contact (ou en Frénésie, qui force la charge).
+ *  Maneuver GRATUITE 1/tour (`cs.draw`, comme `battleSwitchLoadout`). Sans ça, un Chasseur dont la fronde est
+ *  dans le set 2 (épée active en set 1) ne tirait JAMAIS (retour playtest 2026-06-27 : « le chasseur charge à
+ *  l'arme simple alors qu'il a une fronde »). Les ennemis à statbloc (armes posées en dur, sans `loadouts`)
+ *  ne passent pas ici. PUR-déterministe (aucun dé) → coop-safe ; seul l'état du combattant (set actif) change. */
+function aiSelectLoadout(set: SetFn, enemy: Combatant, battle: BattleState): void {
+  const sets = enemy.loadouts ?? [];
+  if (sets.length < 2 || !enemy.pos) return;
+  const items = enemy.items ?? [];
+  const setKind = (lo: { main?: string }): 'ranged' | 'melee' | null => {
+    const it = lo.main ? items.find((i) => i.uid === lo.main) : undefined;
+    return it?.kind === 'ranged' ? 'ranged' : it?.kind === 'melee' ? 'melee' : null;
+  };
+  const rangedSet = sets.find((l) => setKind(l) === 'ranged');
+  const meleeSet = sets.find((l) => setKind(l) === 'melee');
+  if (!rangedSet || !meleeSet) return; // pas un hybride tir+mêlée → on ne touche pas au set choisi
+  const foes = battle.combatants.filter((c) => c.kind !== enemy.kind && !isOutOfAction(c) && c.pos);
+  const engaged = foes.some((f) => combatDistance(enemy, f) <= 1);
+  const want = engaged || isFrenzied(enemy) ? meleeSet : rangedSet; // au contact / frénétique → mêlée ; sinon → tir
+  if (enemy.activeLoadoutId === want.id) return; // déjà le bon set en main
+  enemy.activeLoadoutId = want.id;
+  recomputeLoadout(enemy);
+  const drawn = enemy.weapons.find((w) => w.type === (want === meleeSet ? 'melee' : 'ranged'));
+  battle.log.push(ev('detail', tr('cs.draw', { name: enemy.name, weapon: drawn?.name ?? '' }), enemy.id));
+  set({ battle: { ...battle } });
+}
+
 export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return;
@@ -4211,6 +4253,9 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       bus.emit(EVT.SCENE_DIRTY);
     }
   }
+  // Sélection de loadout (avant de bâtir l'entrée IA) : dégaine l'arme à distance hors de portée de mêlée,
+  // l'arme de mêlée au contact — pour que `buildAiInput` voie le bon `weapons` (le tireur tire sa fronde).
+  aiSelectLoadout(set, enemy, battle);
   // Combat monté (LDB 14 l.215) : géométrie porteuse (monture) pour le déplacement réel — empreinte +
   // chemin ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
   const geom = mountOf(battle, enemy) ?? enemy;
