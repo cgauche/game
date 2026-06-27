@@ -34,7 +34,7 @@ import { selectedAmmo } from '../engine/items';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, expectedSpellOutput } from './aiSpellValue';
 import type { SpellData } from '../data';
-import { hasCondition, canTakeAction } from '../engine/conditions';
+import { hasCondition, canTakeAction, isActionLocked, restrictingConditions } from '../engine/conditions';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { isFlankOrRear } from './combatGeometry';
@@ -86,6 +86,7 @@ export type EnemyAction =
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
   | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
+  | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; name: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-63)
   | { kind: 'end' }; // rien à faire, passe la main
 
 export interface EnemyTurnInput {
@@ -445,7 +446,7 @@ function argmax(cands: Candidate[]): Candidate | null {
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, scene, blocked, movement, smoke, flying, facing } = input;
-  const spells = input.spells;
+  const spells = input.spells ?? []; // absent (tests purs / fixtures sans sort) → aucun candidat de sort
   // Escouade (Lot 4) : alliés posés encore en action (l'ennemi exclu par l'appelant). Absent → [] →
   // surnombre/cohésion/danger-map neutres = comportement Lot 3 strictement inchangé.
   const squad = input.squad ?? [];
@@ -557,9 +558,31 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     }
     return best.x === pos.x && best.y === pos.y ? { kind: 'end' } : { kind: 'move', to: best, thenTargetId: heroes[0].id };
   };
-  // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
-  // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
-  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return forced(fleeMove(true)); // Brisé : fuir hors de vue (cachette prioritaire)
+  // Dépense PROACTIVE de Détermination (LDB 17 l.57-63) pour se RESSAISIR : un acteur VERROUILLÉ
+  // (`restrictsAction`, ex. Brisé) peut dépenser 1 Détermination/pion pour RETIRER l'État (sans Test, même
+  // Engagé) au lieu de fuir/subir tout le combat. On ne le propose QUE si (a) la Détermination disponible
+  // suffit à NETTOYER ENTIÈREMENT l'État (anti-gaspi : un clear partiel laisse l'Action verrouillée) ET
+  // (b) agir a de la valeur (un adversaire est Engagé / au contact / atteignable en mêlée ce tour / en vue).
+  // Sinon, fuir/se cacher reste meilleur → null. DÉTERMINISTE (aucun RNG) ; ne touche QUE la Détermination.
+  const planProactiveSpend = (): EnemyAction | null => {
+    const resolve = enemy.resolve ?? 0;
+    if (resolve <= 0) return null;
+    const clearable = restrictingConditions(enemy).find((rc) => rc.stacks <= resolve);
+    if (!clearable) return null;
+    const reachableFoe = adjacentFoes.length > 0 || shootableHeroes.length > 0
+      || [...reach.keys()].some((k) => { const [x, y] = k.split(',').map(Number); return heroes.some((h) => withinMelee({ x, y }, h.pos!)); });
+    if (!isEngaged(enemy) && !reachableFoe) return null; // ni Engagé ni cible joignable → se cacher vaut mieux
+    return { kind: 'spendResource', resource: 'resolve', via: 'removeCondition', name: clearable.name };
+  };
+  // Verrouillage d'Action data-driven (`restrictsAction`, ex. Brisé LDB 16 l.55) : Mouvement + Action doivent
+  // servir à fuir/se cacher. AVANT de fuir, l'IA tente de se RESSAISIR par la Détermination ; sinon, fuir si
+  // NON Engagé (un Brisé Engagé ne peut PAS récupérer par Test, LDB 16 l.51 → il retombe dans le scoring et se
+  // bat à −10). PLUS de nom d'État en dur.
+  if (isActionLocked(enemy)) {
+    const spend = planProactiveSpend();
+    if (spend) return forced(spend);
+    if (!isEngaged(enemy)) return forced(fleeMove(true)); // fuir hors de vue (cachette prioritaire)
+  }
   // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
   // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
   // le drapeau frenzied de l'appelant).
@@ -678,7 +701,14 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   /** Bonus de POSITIONNEMENT d'une case d'arrivée `to` pour attaquer `target` (Lot 3) : flanc/dos +
    *  gain de couvert pour soi + respect de la portée préférée (tireur/lanceur reste à distance+LdV ;
    *  mêlée au contact). Lot 4 : − danger-map (cases exposées) + cohésion (ne pas s'isoler de l'escouade). PUR. */
-  const isShooterOrCaster = canCast || canShoot || hasAnyOffensiveSpell || (hasRanged && !hasMeleeWeapon);
+  // Un combattant qui PORTE une arme à distance (ou un sort offensif) se positionne en TIREUR : il vise sa
+  // PORTÉE de tir, pas le contact — même s'il garde une arme de mêlée de secours. L'ancien `&& !hasMeleeWeapon`
+  // déclassait à tort les HYBRIDES (chasseur fronde+dague, arbalétrier+épée) en mêleeurs dès qu'ils étaient
+  // hors de portée de tir → ils CHARGEAIENT au contact au lieu de s'approcher à distance de tir (retour
+  // playtest 2026-06-27 : « le chasseur charge à l'arme simple alors qu'il a une fronde »). La mêlée au
+  // contact (cible adjacente) et le tir en portée restent gérés par `canShoot`/le candidat mêlée direct ;
+  // seule l'APPROCHE/REPOSITION d'un hybride hors de portée change (il vise désormais sa distance de tir).
+  const isShooterOrCaster = canCast || canShoot || hasAnyOffensiveSpell || hasRanged;
   const positionValue = (to: Pt, target: Combatant): number => {
     let v = 0;
     // Flanc/dos (LDB 14 l.91) : frapper hors du champ de vision avant de la cible (gratuit). Nécessite
@@ -884,7 +914,16 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // REPOSITION (kiting/repli, NOUVEAU) : un lanceur/tireur se replace pour une MEILLEURE ligne de tir, un
   // couvert, ou pour fuir le danger (LDB 15-Dépl). Candidat émis SEULEMENT si amélioration STRICTE de
   // position (`posV > 0`) — en scène neutre il n'y a rien à gagner → aucun candidat (parité golden).
-  if ((canCast || canShoot) && !committingPrep && !frenzied && refEnemy) {
+  // GARDE « un coup jouable prime » (plan §6) : la REPOSITION est un REPLI — elle ne fait FEU sur RIEN ce
+  // tour. Son utilité est une échelle de POSITION (couvert/danger), incommensurable avec l'échelle Blessures
+  // d'une attaque ; le seul biais `TIER` ne suffit pas (il ne départage qu'à utilité ÉGALE). On ne l'émet
+  // donc QUE si AUCUNE attaque jouable (cast/castArea/tir/mêlée d'utilité > 0) n'existe ce tour — sinon le
+  // lanceur tire son coup (même peu fiable : un Carreau à 29 % vaut mieux qu'un repli pour un cran de couvert).
+  // C'est exactement le cas (e) du plan : « caster exposé SANS bon sort se replie ».
+  const hasPlayableAttack = candidates.some(
+    (c) => (c.kind === 'cast' || c.kind === 'castArea' || c.kind === 'shoot' || c.kind === 'melee') && c.utility > 0,
+  );
+  if ((canCast || canShoot) && !committingPrep && !frenzied && !hasPlayableAttack && refEnemy) {
     // AMÉLIORATION STRICTE vs rester sur place : `positionValue` mêle de l'absolu (portée préférée, flanc)
     // et du delta (couvert, déjà relatif à `pos`) ; le DELTA `to − pos` annule l'absolu commun → 0 en scène
     // neutre (rien à gagner) ⇒ aucun candidat (parité golden), positif seulement si `to` gagne couvert/

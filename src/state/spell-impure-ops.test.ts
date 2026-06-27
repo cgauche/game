@@ -23,16 +23,19 @@ const ok = (sl: number): CastResult => ({ cast: true, roll: 21, target: 70, sl, 
 const opOf = (label: string, op: string) => spellEffectOps(findSpell(label)!.effects).find((o) => o.op === op);
 
 describe('effets « lourds » présents dans le Flow éditable (données app-owned)', () => {
-  it('les 8 invocations portent une op `summon` (ref du bestiaire)', () => {
+  it('les 8 invocations portent une op `summon` (ref bestiaire en id slug, résout par findCreatureById)', () => {
+    // ref = id SLUG du bestiaire (résolu par `findCreatureById` au spawn) — PAS un libellé (qui dégénérait
+    // en mannequin B:10, cf. data-wellformed.test). Le polymorph voisin utilise déjà le slug (`ours`).
     const summons: [string, string][] = [
-      ['Réanimation', 'Zombie'], ['Relever les morts', 'Squelette'], ['Manifestation de Démon mineur', 'Sanguinaire de Khorne'],
-      ["Déchirer l'Aethyr", 'Sanguinaire de Khorne'], ["Destrier d'Ombre", 'Cheval'], ['Menace rampante', 'Rat géant'],
-      ['Hurlement du loup', 'Loup'], ['Roi de la Nature', 'Loup'],
+      ['Réanimation', 'zombie'], ['Relever les morts', 'squelette'], ['Manifestation de Démon mineur', 'sanguinaire-de-khorne'],
+      ["Déchirer l'Aethyr", 'sanguinaire-de-khorne'], ["Destrier d'Ombre", 'cheval'], ['Menace rampante', 'rat-geant'],
+      ['Hurlement du loup', 'loup'], ['Roi de la Nature', 'loup'],
     ];
     for (const [label, ref] of summons) {
       const op = opOf(label, 'summon') as { ref?: string } | undefined;
       expect(op, label).toBeTruthy();
       expect(op!.ref, label).toBe(ref);
+      expect(findCreatureById(op!.ref!), `${label}: la ref doit résoudre une vraie créature`).toBeTruthy();
     }
   });
 

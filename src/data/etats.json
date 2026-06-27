@@ -99,6 +99,7 @@
       "book": "LDB",
       "page": 168
     },
+    "restrictsAction": true,
     "passive": [
       {
         "op": "testMod",

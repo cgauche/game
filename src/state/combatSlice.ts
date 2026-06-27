@@ -40,7 +40,7 @@ import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget 
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus } from '../engine/combatFeatures/dispatch';
 import { isConsumable, useConsumable } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
 import { treatTrauma } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
@@ -1339,13 +1339,15 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationRemove', { name: active.name, cond: conditionName, extra }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    /** Détermination depuis une MODALE de jet (LDB 17 l.62-66) : même règle que `battleSpendResolve`,
-     *  mais pour N'IMPORTE QUEL héros (en défense, le héros n'est pas l'actif) et sans toucher au
-     *  mode d'action — le panneau pré-rempli recalcule ses modificateurs au re-rendu. */
+    /** Détermination (LDB 17 l.62-66) : même règle que `battleSpendResolve`, mais pour N'IMPORTE QUEL
+     *  COMBATTANT porteur de Détermination, par id, sans toucher au mode d'action — un héros en défense
+     *  (il n'est pas l'actif) comme un acteur AUTO-PILOTÉ Brisé (l'IA s'en sert pour se ressaisir : retirer
+     *  un pion d'un État verrouillant sans coûter l'Action, hôte-autoritaire). Un ennemi sans Détermination
+     *  (`resolve` 0/absent) → no-op : la garde `kind` héros est levée, seul le pool de Détermination compte. */
     spendResolveCondition: (combatantId: string, conditionName: string) => {
       const s = get();
       const hero = actorIn(s, combatantId);
-      if (!hero || hero.kind !== 'hero' || (hero.resolve ?? 0) <= 0) return;
+      if (!hero || (hero.resolve ?? 0) <= 0) return;
       if (!hero.conditions.some((c) => c.name === conditionName)) return;
       hero.resolve = (hero.resolve ?? 0) - 1;
       removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
@@ -1870,7 +1872,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
       // (« Se cacher » par Discrétion = pas de système de furtivité en combat ; approximé par « rester
       // hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
-      if (hasCondition(active, COND.brise) && a !== 'resolve' && a !== null) {
+      if (isActionLocked(active) && a !== 'resolve' && a !== null) {
         get().log(t('cs.brokenFlee', { name: active.name }));
         return;
       }

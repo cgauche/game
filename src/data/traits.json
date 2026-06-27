@@ -2088,7 +2088,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Zombie",
+                "ref": "zombie",
                 "count": {
                   "dice": {
                     "n": 3,

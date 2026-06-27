@@ -4159,6 +4159,7 @@ function describeAiAction(a: EnemyAction): string {
     case 'move': return `move→${a.thenTargetId}@${a.to.x},${a.to.y}`;
     case 'reload': return 'reload';
     case 'recover': return `recover ${a.state}`;
+    case 'spendResource': return `spend ${a.resource}→${a.name}`;
     case 'end': return 'end';
   }
 }
@@ -4215,9 +4216,23 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const geom = mountOf(battle, enemy) ?? enemy;
   // Entrée de l'IA MUTUALISÉE (sorts résolus + escouade/orientation/perception/mouvement/vol/blocage).
   // « Vient d'enfourcher » → Mouvement consommé ce tour (l'IA n'a plus que son Action).
-  const input = buildAiInput(enemy, get);
+  let input = buildAiInput(enemy, get);
   if (justMounted) input.movement = 0;
-  const action = chooseEnemyAction(input);
+  let action = chooseEnemyAction(input);
+  // Dépense PROACTIVE de Détermination (LDB 17 l.57-63) : si l'IA décide de se DÉVERROUILLER (action
+  // `spendResource`, ex. Brisé), on dépense la Détermination via l'action store `spendResolveCondition`
+  // (coop-safe, hôte-autoritaire, ne consomme PAS l'Action — retire 1 pion/dépense) PUIS on RE-CHOISIT
+  // l'action, le tout AVANT le dispatch, pour que l'acteur DÉVERROUILLÉ joue sa vraie action (melee/cast/
+  // move) le MÊME tour — sans ré-armer les hooks de début de tour. Borne anti-boucle STRICTE : 1 pion par
+  // tour ; on s'arrête si la dépense est sans effet (état inchangé) ou après les pions initiaux (safety).
+  for (let safety = 8; action.kind === 'spendResource' && safety > 0; safety--) {
+    const before = stacks(enemy, action.name);
+    get().spendResolveCondition(enemy.id, action.name);
+    if (stacks(enemy, action.name) >= before) break; // dépense inopérante → on n'insiste pas (anti-boucle dure)
+    input = buildAiInput(enemy, get);
+    if (justMounted) input.movement = 0;
+    action = chooseEnemyAction(input);
+  }
   // TRACE IA (DEV) : SEUL site d'enregistrement → `consumeAiRanking` vide le classement de l'appel qui
   // précède immédiatement (pas de pollution par aiApproachPlan/peek de Frénésie). `top` vide si flag off.
   AI_TURN_LOG.push({ round: battle.round, id: enemy.id, name: enemy.name, action: describeAiAction(action), top: consumeAiRanking() });
@@ -4267,6 +4282,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // déplacement mais n'attaque pas en arrivant.
   switch (action.kind) {
     case 'end':
+      return advanceTurn(get, set);
+    case 'spendResource':
+      // La boucle de dépense ci-dessus n'a PAS pu déverrouiller (dépense inopérante — l'acteur reste
+      // verrouillé) : il n'a aucune autre action légale ce tour → il passe la main (terminal anti-boucle).
       return advanceTurn(get, set);
     case 'cast': {
       if (!canAct) return advanceTurn(get, set);
