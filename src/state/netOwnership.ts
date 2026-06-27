@@ -4,7 +4,9 @@
  * source unique partagée avec le gating d'affichage UI) — ajouter une modale n'exige RIEN ici.
  */
 import type { GameState } from './store';
+import type { Combatant } from '../engine/types';
 import { modalOwnerOf } from './modalArbiter';
+import { cadenceAutoCombat } from '../engine/cadence';
 
 export { modalOwnerOf } from './modalArbiter';
 
@@ -22,17 +24,32 @@ export function ownsLocally(state: GameState, combatantId: string | undefined): 
   return (ownership[combatantId] ?? 0) === mySeat;
 }
 
-/** Le joueur LOCAL contrôle-t-il le combattant ACTIF du combat ? Faux pendant le tour du héros
- *  d'un AUTRE joueur (hôte inclus) : l'UI traite alors ce tour comme un tour ennemi — aucune
- *  affordance (grille de déplacement, réticule, clics de carte/portrait). Tour ennemi → vrai :
- *  l'IA tourne chez l'hôte et l'UI est déjà inerte par ses propres verrous. */
+/**
+ * Le combattant `c` est-il piloté par l'IA ? — base AGNOSTIQUE AU CAMP de l'orchestrateur de tour.
+ * Un ENNEMI l'est toujours (comportement inchangé). Un HÉROS l'est en mode Auto-combat ET s'il est
+ * contrôlé LOCALEMENT (coop : on ne joue jamais le héros d'un autre siège). Un PNJ ne l'est jamais.
+ * NB : `aiDriven` ne change PAS le `kind` du combattant — les règles indexées sur `kind` (Destin réservé
+ * aux héros, Corruption, déviation d'armure, Mort Subite) restent CORRECTES : un héros auto-piloté
+ * demeure un héros pour la résolution. (Vit ICI, avec les primitives d'« qui pilote quoi » : `controlsActive`
+ * en dépend ; `combatGate` le ré-exporte pour ses consommateurs historiques.)
+ */
+export function aiDriven(s: GameState, c: Combatant): boolean {
+  if (c.kind === 'enemy') return true;
+  return c.kind === 'hero' && cadenceAutoCombat() && ownsLocally(s, c.id);
+}
+
+/** Le joueur LOCAL contrôle-t-il (À LA MAIN) le combattant ACTIF du combat ? Faux pendant le tour du héros
+ *  d'un AUTRE joueur (hôte inclus), ET faux quand le héros actif est piloté par l'IA (Auto-combat) : l'UI
+ *  traite alors ce tour comme un tour ennemi — AUCUNE affordance (grille de déplacement, réticule, barre
+ *  d'action, raccourcis). Tour ennemi → vrai : l'IA tourne et l'UI est déjà inerte par ses propres verrous. */
 export function controlsActive(state: GameState): boolean {
-  if (state.net.mode === 'local') return true;
   const b = state.battle;
   if (!b || b.over) return true;
   const activeId = b.order[b.turn];
   const active = b.combatants.find((c) => c.id === activeId);
-  if (!active || active.kind !== 'hero') return true;
+  if (!active || active.kind !== 'hero') return true; // tour ennemi → UI déjà inerte par ses propres verrous
+  if (aiDriven(state, active)) return false; // Auto-combat : l'IA pilote ce héros → pas d'affordance joueur
+  if (state.net.mode === 'local') return true;
   return ownsLocally(state, activeId);
 }
 

@@ -658,6 +658,7 @@ export function buildApi() {
     cadence: (mode?: Cadence) => {
       if (!mode) return `cadence = ${rule('combat-cadence')} (manuel | rapide | auto)`;
       setRule('combat-cadence', mode);
+      useGame.getState().resumeCadence(); // ré-entre la boucle si on bascule en Auto/Rapide en plein tour (sinon figé)
       return `✅ Cadence de combat → ${mode}`;
     },
 

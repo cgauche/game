@@ -10,10 +10,10 @@
  * Module FEUILLE (convention « baril ») : n'importe RIEN de `combatFlow` ; ré-exporté par lui.
  */
 import type { ArbiterState } from './modalArbiter';
-import type { GameState } from './store';
-import type { Combatant } from '../engine/types';
-import { ownsLocally } from './netOwnership';
-import { cadenceAutoCombat } from '../engine/cadence';
+
+// `aiDriven` vit désormais avec les primitives d'« qui pilote quoi » (`netOwnership`, dont dépend
+// `controlsActive`) ; ré-exporté ICI pour ne pas casser ses consommateurs historiques (`from './combatGate'`).
+export { aiDriven } from './netOwnership';
 
 /**
  * Une modale de combat (ou la pause de Round) bloque-t-elle l'avancée/reprise de l'IA ?
@@ -33,17 +33,4 @@ export function combatAdvanceBlocked(
   // déjà couverte. La lister à part créait une 2ᵉ source de vérité désynchronisable → soft-lock.
   if (s.pendingFateSave || s.pendingCascade || (s.pendingReveals?.length ?? 0) > 0) return true;
   return false;
-}
-
-/**
- * Le combattant `c` est-il piloté par l'IA ? — base AGNOSTIQUE AU CAMP de l'orchestrateur de tour.
- * Un ENNEMI l'est toujours (comportement inchangé). Un HÉROS l'est en mode Auto-combat ET s'il est
- * contrôlé LOCALEMENT (coop : on ne joue jamais le héros d'un autre siège). Un PNJ ne l'est jamais.
- * NB : `aiDriven` ne change PAS le `kind` du combattant — les règles indexées sur `kind` (Destin réservé
- * aux héros, Corruption, déviation d'armure, Mort Subite) restent CORRECTES : un héros auto-piloté
- * demeure un héros pour la résolution.
- */
-export function aiDriven(s: GameState, c: Combatant): boolean {
-  if (c.kind === 'enemy') return true;
-  return c.kind === 'hero' && cadenceAutoCombat() && ownsLocally(s, c.id);
 }

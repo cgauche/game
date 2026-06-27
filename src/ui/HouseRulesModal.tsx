@@ -13,7 +13,13 @@ import { useGame } from '../state/store';
 export function HouseRulesModal({ onClose }: { onClose: () => void }) {
   const [, force] = useState(0);
   const rerender = () => force((n) => n + 1);
-  const change = (id: string, v: RuleValue) => { setHouseRule(id, v); rerender(); };
+  const change = (id: string, v: RuleValue) => {
+    setHouseRule(id, v);
+    // Basculer la Cadence en Auto/Rapide EN PLEIN COMBAT ne traverse pas la boucle de tours (règle hors store)
+    // → on relance explicitement, sinon le tour courant reste figé.
+    if (id === 'combat-cadence') useGame.getState().resumeCadence();
+    rerender();
+  };
   const reset = (id: string) => { resetHouseRule(id); rerender(); };
   const groups = [...new Set(OPTIONAL_RULES.map((r) => r.group))];
 

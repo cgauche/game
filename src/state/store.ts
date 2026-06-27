@@ -689,6 +689,9 @@ export interface GameState extends RollFlowActionsMap {
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
   battleEndTurn: () => void;
+  /** Reprise après un changement de Cadence de combat en plein combat (passage en Auto/Rapide) :
+   *  ré-entre la boucle (auto-résolution de modale + tour de l'IA). No-op en manuel / hors combat. */
+  resumeCadence: () => void;
   /** Chance, 3e usage (LDB ch.17 l.27) : en début de Round, place un héros en tête de l'ordre
    *  contre 1 point de Chance (pré-emption d'initiative). */
   roundStartPromote: (heroId: string) => void;

@@ -9,6 +9,7 @@
  * (les actions ne référencent jamais `useGame`) → import de TYPE seulement, aucun cycle d'exécution.
  */
 import type { Get, Set } from './flowTypes';
+import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
 import type { CounterParticipant } from './pendings';
 import { SceneEntity } from './scene';
@@ -1076,6 +1077,18 @@ export function createCombatSlice(get: Get, set: Set) {
       // Terreurs → UNE cascade (un héros par étape) qui suspend l'IA jusqu'à résolution.
       openRoundStartPsych(get, set);
       if (get().pendingCascade) return; // la cascade tient la main ; sa fermeture reprendra l'IA
+      maybeRunEnemyTurn(get, set);
+    },
+
+    /** Reprise après un CHANGEMENT DE CADENCE en plein combat. La cadence vit dans le registre de RÈGLES
+     *  (engine/policy), pas dans le store → la passer en Auto/Rapide ne traverse NI la boucle de tours NI la
+     *  souscription de `combatAuto` (aucun `set`) : le combat se figeait sur le tour courant. On RÉ-ENTRE donc
+     *  explicitement : `tickCombatAuto` auto-résout une éventuelle modale ouverte, `maybeRunEnemyTurn` joue le
+     *  tour de l'acteur si l'IA le pilote désormais. No-op en mode manuel / hors combat (gardes internes). */
+    resumeCadence: () => {
+      const b = get().battle;
+      if (!b || b.over) return;
+      tickCombatAuto(get, set);
       maybeRunEnemyTurn(get, set);
     },
 
