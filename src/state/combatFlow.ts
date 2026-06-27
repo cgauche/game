@@ -1879,7 +1879,10 @@ export function aiMaybeTrample(get: Get, set: SetFn, enemy: Combatant): void {
  *  Action. La MÊME donnée offre l'affordance au héros (`hasFreeWeaponAttack` → hotbar) : pas de jaloux.
  *  Résolution instantanée — comme autoCleave / aiMaybeTrample, l'IA ne déclenche pas de modale de défense. */
 export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || !hasFreeWeaponAttack(enemy) || isOutOfAction(enemy)) return;
+  // Gate `!aiDriven` (et non `kind!=='enemy'`) : la Frénésie donne une Attaque GRATUITE à TOUT frénétique, y
+  // compris un HÉROS en Auto-combat (sinon, faute d'UI, il ne la jouait jamais — retour playtest 2026-06-27).
+  // Un héros MANUEL (aiDriven faux) la déclenche LUI-MÊME via l'affordance UI (hasFreeWeaponAttack après `acted`).
+  if (!aiDriven(get(), enemy) || !hasFreeWeaponAttack(enemy) || isOutOfAction(enemy)) return;
   const battle = get().battle;
   if (!battle || battle.over || !enemy.pos) return;
   if ((enemy.weapons[0]?.type ?? 'melee') !== 'melee') return; // CC Test = corps à corps
