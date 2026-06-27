@@ -6,7 +6,7 @@ import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, weaponHands, isOffHandEligible } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
-import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant } from '../engine/types';
+import { CHAR_LABELS, HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { locationLabel } from '../engine/combat';
 import { effectiveChar, charBonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
@@ -24,6 +24,7 @@ import { careers, findSpellById, findStarById, spells as allSpells, speciesSingu
 import { formatTrait } from '../engine/traits/dispatch';
 import { formatRemaining } from '../engine/disease';
 import { CodexRef } from './compendium/CodexRef';
+import { CharStatsGrid } from './CharStatsGrid';
 import { TalentChip } from './EntityChip';
 import { FateChips } from './FateChips';
 import { ColorPalettePickers } from './ColorPalettePickers';
@@ -53,18 +54,6 @@ const LOC_SHORT: Record<HitLocation, string> = {
   corps: 'Corps',
   jambeG: 'Jambe G',
   jambeD: 'Jambe D',
-};
-const SHORT: Record<CharKey, string> = {
-  CC: 'CC',
-  CT: 'CT',
-  F: 'F',
-  E: 'E',
-  I: 'I',
-  Ag: 'Ag',
-  Dex: 'Dex',
-  Int: 'Int',
-  FM: 'FM',
-  Soc: 'Soc',
 };
 
 /** Description courte d'un effet actif (buff de carac, Trait/Talent accordé, enchantement…). */
@@ -460,19 +449,12 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           <div className="sheet-resources"><FateChips c={hero} /></div>
         )}
         <div className="mini-title">Caractéristiques</div>
-        <div className="char-stats sheet-stats">
-          {CHAR_KEYS.map((k) => {
-            const base = baseWithTalents(hero, k);
-            const eff = effectiveChar(hero, k);
-            const cls = eff > base ? ' ok-text' : eff < base ? ' warn-text' : '';
-            return (
-              <div className="stat" key={k} title={eff !== base ? `Base ${base} (${eff > base ? '+' : ''}${eff - base} de modificateurs actifs)` : undefined}>
-                <span className="stat-label">{SHORT[k]}</span>
-                <span className={`stat-val${cls}`}>{eff}</span>
-              </div>
-            );
-          })}
-        </div>
+        <CharStatsGrid
+          className="sheet-stats"
+          value={(k) => effectiveChar(hero, k)}
+          valClass={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e > b ? 'ok-text' : e < b ? 'warn-text' : ''; }}
+          note={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e !== b ? `Base ${b} (${e > b ? '+' : ''}${e - b} de modificateurs actifs)` : undefined; }}
+        />
         <ActiveEffectsPanel hero={hero} />
       </>)}
 

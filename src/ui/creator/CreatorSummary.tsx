@@ -5,11 +5,12 @@
  * Destin/Chance, Résilience/Détermination), PX bonus accumulés et bourse de départ.
  */
 import { useMemo } from 'react';
-import { CHAR_KEYS, Combatant } from '../../engine/types';
+import { Combatant } from '../../engine/types';
 import { formatMoney } from '../../engine/money';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import type { Appearance } from '../../gameIso/rig/appearance';
+import { CharStatsGrid } from '../CharStatsGrid';
 import { SkillChip, TalentChip } from '../EntityChip';
 import { findCareerById, rigSpeciesId } from '../../data';
 import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
@@ -46,18 +47,11 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
         </span>
       </div>
 
-      <div className="char-stats">
-        {CHAR_KEYS.map((k) => {
-          const v = hero?.characteristics[k] ?? baseChars[k];
-          const boosted = hero != null && v > baseChars[k];
-          return (
-            <div className="stat" key={k} title={boosted ? `${baseChars[k]} + Augmentations/talents` : undefined}>
-              <span className="stat-label">{k}</span>
-              <span className={`stat-val ${boosted ? 'boost' : ''}`}>{v}</span>
-            </div>
-          );
-        })}
-      </div>
+      <CharStatsGrid
+        value={(k) => hero?.characteristics[k] ?? baseChars[k]}
+        valClass={(k) => { const v = hero?.characteristics[k] ?? baseChars[k]; return hero != null && v > baseChars[k] ? 'boost' : ''; }}
+        note={(k) => { const v = hero?.characteristics[k] ?? baseChars[k]; return hero != null && v > baseChars[k] ? `${baseChars[k]} + Augmentations/talents` : undefined; }}
+      />
 
       <div className="creator-derived">
         <span>

@@ -1,24 +1,11 @@
 import type { KeyboardEvent } from 'react';
-import { Combatant, CHAR_KEYS, CharKey, CHAR_LABELS } from '../engine/types';
+import { Combatant } from '../engine/types';
 import { isUnarmed } from '../engine/items';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular, findSpeciesById, findCareerById } from '../data';
-import { CodexRef } from './compendium/CodexRef';
+import { CharStatsGrid } from './CharStatsGrid';
 import { SkillChip, TalentChip } from './EntityChip';
 import { FateChips } from './FateChips';
-
-const SHORT: Record<CharKey, string> = {
-  CC: 'CC',
-  CT: 'CT',
-  F: 'F',
-  E: 'E',
-  I: 'I',
-  Ag: 'Ag',
-  Dex: 'Dex',
-  Int: 'Int',
-  FM: 'FM',
-  Soc: 'Soc',
-};
 
 export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
   // F4 : aperçu d'équipement sur la mini-carte — armes en main + PA du corps.
@@ -45,16 +32,7 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
           </span>
         </div>
       </div>
-      <div className="char-stats">
-        {CHAR_KEYS.map((k) => (
-          <div className="stat" key={k}>
-            <span className="stat-label">
-              <CodexRef category="characteristics" label={CHAR_LABELS[k]}>{SHORT[k]}</CodexRef>
-            </span>
-            <span className="stat-val">{hero.characteristics[k]}</span>
-          </div>
-        ))}
-      </div>
+      <CharStatsGrid value={(k) => hero.characteristics[k]} />
       <div className="char-vitals">
         <div className="stat-chip">
           <span className="sc-label">Blessures</span>
