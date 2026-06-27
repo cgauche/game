@@ -17,7 +17,8 @@
  * normalement par le Bonus d'Endurance et les PA (p.238).
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest, resolveOpposed, isDoubleRoll, TestResult } from './tests';
+import { rollTest, resolveOpposed, isDoubleRoll, evaluateTest, TestResult } from './tests';
+import { getTestPolicy } from './testPolicy';
 import { hasTraitKey } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
@@ -223,7 +224,7 @@ export function isMagicMissile(spell: SpellLike): boolean {
 function matchApplies(
   m: TestMatch, inst: { spec?: string },
   q: { skill?: string; char?: CharKey; spec?: string },
-  whenHolds: (cond: import('../state/flow').Condition) => boolean,
+  whenHolds: (cond: import('./flowCore').Condition) => boolean,
 ): boolean {
   if (m.manual) return false;
   if (m.skill != null) {
@@ -248,7 +249,7 @@ function matchApplies(
 export function talentTestSLBonus(
   c: Combatant,
   q: { skill?: string; char?: CharKey; spec?: string },
-  whenHolds: (cond: import('../state/flow').Condition) => boolean = () => false,
+  whenHolds: (cond: import('./flowCore').Condition) => boolean = () => false,
 ): number {
   let n = 0;
   for (const inst of c.talents ?? []) {
@@ -380,6 +381,30 @@ export function resolveCasting(
   // l'évaluation : rederiveCastSL — Chance « +1 DR » — repart du DR déjà boosté).
   const tal = t.success ? castTestTalentDR(caster, info.skill, info.spec) : 0;
   return evaluateCasting(caster, spell, pen || tal ? { ...t, sl: t.sl - pen + tal } : t, focusedNI0);
+}
+
+/**
+ * Probabilité (0..1) déterministe qu'un Test d'Incantation ABOUTISSE (réussite ET DR≥NI).
+ * Énumère les 100 jets possibles sans RNG — AUCUN effet de bord. Miroir exact de `resolveCasting` :
+ * même `value`, même pénalité armure (`pen`), même bonus talent (`tal`), même condition `cast`.
+ * `focusedNI0 = true` → NI forcé à 0 (Sort focalisé, identique à `resolveCasting`).
+ */
+export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false): number {
+  const info = castInfo(spell);
+  if (!knowsCastingSkill(caster, info.skill, info.spec)) return 0;
+  const policy = getTestPolicy();
+  const value = castingValue(caster, info.skill, info.spec);
+  const pen = armourCastDRPenalty(caster);
+  const tal = castTestTalentDR(caster, info.skill, info.spec);
+  const ni = focusedNI0 ? 0 : (spell.cn ?? 0);
+  let lands = 0;
+  for (let r = 1; r <= 100; r++) {
+    const t = evaluateTest(r, value, policy);
+    if (!t.success) continue;
+    const dr = t.sl - pen + tal;
+    if (!info.requireNI || dr >= ni) lands++;
+  }
+  return lands / 100;
 }
 
 /**

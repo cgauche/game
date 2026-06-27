@@ -8,7 +8,7 @@
  */
 import { CharKey, Difficulty } from '../engine/types';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
-import type { Flow, Condition } from './flow';
+import type { Flow, Condition, EffectOp } from './flow';
 import { type DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
@@ -269,11 +269,11 @@ export type Effect =
    *  groupe (`party`) — piège, souffle scénarisé, tick… `amount` = Points de Blessure (0 PB → À Terre,
    *  géré par `loseWounds`). DÉTERMINISTE (pas de jet) → pas de modale. */
   /** EFFECTOP — pont UNIQUE entre la logique authorée (Flow) et le moteur mécanique des sorts : applique
-   *  des `GameOp` (Blessures/soin/État/charMod/Corruption/buffs… — vocabulaire PARTAGÉ avec les sorts,
-   *  `engine/ops`) à une cible. Un piège comme un sort lancent désormais les MÊMES ops. `on` = qui :
-   *  `party`/`hero` (scène, défaut `party`) ou `caster`/`target` (contexte d'incantation, résolu par le
-   *  flux de sort). Remplace `inflictDamage` (→ op `wounds`) et `applyCondition` (→ op `condition`). */
-  | { type: 'ops'; ops: import('../engine/ops').GameOp[]; on?: 'party' | 'hero' | 'caster' | 'target'; heroId?: string }
+   *  des `GameOp` à une cible (`party`/`hero` scène, ou `caster`/`target` incantation). Type défini dans
+   *  le noyau engine (`engine/flowCore` — c'est aussi la feuille PAR DÉFAUT du `Flow<E>` générique) ;
+   *  l'union `Effect` ci-dessous l'inclut comme l'un de ses membres. Remplace `inflictDamage` (→ op
+   *  `wounds`) et `applyCondition` (→ op `condition`). */
+  | EffectOp
   /** Souffle de ZONE (Lot 3) centré sur une case : tous les combattants à `radius` cases (Chebyshev)
    *  — en combat par position, hors combat le groupe (à partyPos) — subissent les `ops` (vocabulaire
    *  unique `GameOp`, appliquées par `applyOps` cible par cible). Bombe, grenade, piège de zone…
@@ -343,13 +343,10 @@ export interface Dialogue {
 
 /** Fenêtre horaire d'un trigger (heure-du-jour, `before` EXCLUSIF). Champs absents = borne ouverte ;
  *  objet vide = toujours vrai. Combinée en ET avec `rect`/`condition` : le déclencheur ne se produit
- *  qu'en entrant dans la zone PENDANT cette fenêtre (spot-check « au bon endroit au bon moment »). */
-export interface TemporalCondition {
-  afterHour?: number;
-  afterMinute?: number;
-  beforeHour?: number;
-  beforeMinute?: number;
-}
+ *  qu'en entrant dans la zone PENDANT cette fenêtre (spot-check « au bon endroit au bon moment »).
+ *  DÉCLARÉE dans le noyau engine (`engine/flowCore`, zéro dépendance) ; ré-exportée ici pour les
+ *  importeurs historiques de `./scene` (ConditionEditor, tests). */
+export type { TemporalCondition } from '../engine/flowCore';
 
 export interface Trigger {
   id: string;

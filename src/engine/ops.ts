@@ -32,8 +32,9 @@ import { polymorphOps } from './polymorph';
 import type { SizeCategory } from './size';
 import type { Duration } from './duration';
 // Type-only (effacé à la compilation) : la FORME unifiée des effets « à la touche » d'une arme
-// enchantée/invoquée = un `TriggeredEffect`, dispatché par `state/triggeredEffects` (pas ici).
-import type { TriggeredEffect } from '../state/flow';
+// enchantée/invoquée = un `TriggeredEffect` (feuille EffectOp — noyau engine pur, jamais de transition),
+// dispatché par `state/triggeredEffects` (pas ici).
+import type { TriggeredEffect } from './flowCore';
 import {
   ActiveEffect,
   ArmourBypass,
@@ -106,6 +107,22 @@ export interface PerSL {
 export function slBonus(sl: number | undefined, p?: PerSL): number {
   if (!p || sl == null || !Number.isFinite(sl)) return 0; // DR absent OU non fini → 0 (jamais de NaN propagé)
   return Math.floor(Math.max(0, sl) / Math.max(1, p.every)) * p.amount;
+}
+
+/** Estimation DÉTERMINISTE d'une `Formula` pour le SCORING (jamais de tirage — le planning ne doit PAS
+ *  consommer le RNG seedable, sous peine de désync du flux déterministe / coop / tests reproductibles, et
+ *  d'une magnitude aléatoire). Calque la convention statique de `missileDamage` (valeur écrite). Les dés
+ *  rendent leur MOYENNE (`n×(faces+1)/2 + plus`) ; `(X)`/`(Bonus de X)` la valeur réelle (déterministe) ;
+ *  `{rolled}` une valeur de référence neutre (le dé moyen d'un d10 ≈ 5,5) ; les axes relationnels (Indice/
+ *  stacks/écart d'Avantage) absents au planning → 0. PUR, sans RNG. */
+export function formulaExpectation(f: Formula, ref: Combatant): number {
+  if (typeof f === 'number') return f;
+  if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
+  if ('charOf' in f) return effectiveChar(ref, f.charOf);
+  if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);
+  if ('rolled' in f) return 5.5; // référence neutre (dé moyen d'un d10) — jamais tiré
+  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
+  return 0; // indiceOf / stacks / engagedAdvantageGap : hors contexte au planning
 }
 
 /** Somme des bonus de DR à une Compétence (`skillId`) conférés par les Traits du porteur — op PASSIVE

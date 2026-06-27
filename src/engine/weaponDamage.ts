@@ -4,7 +4,7 @@
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
 import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec, AmmoRangeMod } from './types';
-import type { TriggeredEffect } from '../state/flow';
+import type { TriggeredEffect } from './flowCore';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { norm } from '../lib/normalize';

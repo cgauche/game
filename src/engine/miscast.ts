@@ -9,7 +9,7 @@
  * puis émet des `GameOp` (engine/ops) — États nommés, Blessures ignorant BE+PA,
  * Points de Corruption, pénalités/blocages d'incantation temporisés, réduction à 0
  * PB + Inconscient — et, pour les entrées « Résistance ou Sonné », un nœud de Flow
- * `test` (`engine/flowKit`, type partagé avec la couche state) résolu CADENCE-AWARE
+ * `test` (`engine/flowCore`, noyau pur partagé avec la couche state) résolu CADENCE-AWARE
  * par `applyMiscast`→`runCombatFlow` (héros manuel = jet INFLUENÇABLE ; ennemi =
  * inline) — plus de jet imbriqué silencieux, plus d'op `test`. Tout le reste
  * (Pénitence, perte de Talents, invocation, lévitation…) n'est PAS inventé : son
@@ -24,9 +24,9 @@ import { GameOp } from './ops';
 import { Difficulty } from './types';
 // Type-only (effacé à la compilation, comme `domainAttributes`/`ops` importent déjà `TriggeredEffect`) :
 // le nœud de Test imbriqué d'une entrée de table EST un nœud de Flow `test` — la STRUCTURE de logique
-// partagée du jeu (state/flow), exécutée cadence-aware par `runCombatFlow`. AUCUNE dépendance runtime au
-// store : les tables restent du moteur pur (`rollMiscast` testable seul).
-import type { Flow } from '../state/flow';
+// partagée du jeu (noyau engine `flowCore`, feuille EffectOp), exécutée cadence-aware par `runCombatFlow`.
+// AUCUNE dépendance runtime au store : les tables restent du moteur pur (`rollMiscast` testable seul).
+import type { Flow } from './flowCore';
 import miscastJson from '../data/miscast.json';
 
 export type MiscastSeverity = 'mineure' | 'majeure' | 'colere';

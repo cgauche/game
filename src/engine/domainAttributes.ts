@@ -32,7 +32,7 @@
  * PLATE d'un statblock (matière inconnue) compte comme NON-métal et NON-magique.
  */
 import type { Combatant, HitLocation } from './types';
-import type { TriggeredEffect } from '../state/flow';
+import type { TriggeredEffect } from './flowCore';
 import { RNG, defaultRNG } from './dice';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
@@ -81,7 +81,10 @@ export const isLiving = (c: Combatant): boolean => !isUndead(c) && !isDaemon(c);
  *  Le gating (cible adverse / vivante / mort-vivante / résistance par Talent) vit dans les Conditions Flow
  *  `relation`/`has`. Appliqués par le dispatcher `state/triggeredEffects` (qui détient `runSpellFlowLines`). */
 export function domainOnHitEffects(spell: SpellDomainRef): TriggeredEffect[] {
-  return findDomainById(spell.domainId)?.effects ?? [];
+  // `DomainData.effects` est typé avec la feuille `Effect` complète (couche state, pour l'éditeur de
+  // Flow partagé) ; un rider de Domaine ne porte JAMAIS de transition/dialogue (que des `GameOp`), donc
+  // le rétrécir à la feuille `EffectOp` engine-pure est SAIN (signature publique du moteur = pure, #8).
+  return (findDomainById(spell.domainId)?.effects ?? []) as TriggeredEffect[];
 }
 
 /** Ops post-incantation appliquées AU LANCEUR après un Sort de Domaine réussi — PARAMÈTRE en données
