@@ -202,18 +202,24 @@ export interface TrappingData {
   /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
    *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */
   subType: string | null;
-  enc: number | null;
+  /** Encombrement (Points d'Encombrement). Honnête : la donnée porte aussi des STRINGS pour des cas
+   *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
+   *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */
+  enc: number | 'ND' | 'Variable' | null;
   availability: string | null;
-  /** Allonge de MÊLÉE (libellé d'ordre de portée : « Moyenne »/« Longue »…) — un vrai string, ou null. Ne
-   *  contient PLUS aucune Portée de tir (le « type menteur » est éliminé) : ni nombre, ni formule « BFx3 »
-   *  (→ `range:{bf}`), ni « Comme l'arme » (munition héritant de l'arme → null). Restent EN PLUS, sur les
-   *  munitions, des modificateurs de portée relatifs à l'arme (« Moitié de l'arme », « +50 »…) — axe ammo
-   *  distinct, hors `range` propre. */
+  /** Allonge de MÊLÉE — UNIQUEMENT un libellé d'ordre de portée whitelisté (Personnelle / Très courte /
+   *  Courte / Moyenne / Longue / Très longue / Considérable / Variable) ou null. NE conflate PLUS aucune
+   *  Portée de tir : ni nombre, ni formule « BFx3 » (→ `range:{bf}`), ni modificateur de munition
+   *  « Moitié de l'arme »/« +50 »/« Comme l'arme » (→ `ammoRangeMod`). */
   reach: string | null;
   /** Portée de TIR — SPEC non résolue (`WeaponRangeSpec`) : `number` = mètres FIXES (arc/arbalète/
    *  pistolet…), `{bf}` = Bonus de Force × bf mètres (armes de JET — javelot/bombe…). Absent/null pour
    *  la mêlée et les munitions (qui héritent de l'arme). Résolue à l'usage par `effectiveRange`. */
   range?: import('../engine/types').WeaponRangeSpec | null;
+  /** MUNITION : modificateur STRUCTURÉ de la Portée de l'arme de tir (`AmmoRangeMod` : `{mult}` fraction /
+   *  `{add}` mètres ±). Appliqué en combat (`effectiveWeaponRange`) à l'arme qui tire cette munition. « Comme
+   *  l'arme » = absent/null (Portée de l'arme inchangée). Sorti de `reach` (qui n'est qu'une Allonge mêlée). */
+  ammoRangeMod?: import('../engine/types').AmmoRangeMod | null;
   loc: string | null;
   pa: number | null;
   /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — remplace la chaîne « +BF+4 » re-parsée au runtime. */
@@ -479,6 +485,14 @@ export interface TraitCapabilities {
   wardSave?: boolean;
   magicResistance?: boolean;
   damageImmunity?: boolean;
+  /** Manifestation de Ghur (bestiaire de Middenheim) : le porteur est IMMUNISÉ aux effets des Sorts
+   *  du Domaine d'id donné (« bete » = Domaine de la Bête / Ghur). Lu PAR ID par le chemin
+   *  d'incantation (`immuneToSpellDomain` → `applyCast`) : les effets d'un Sort de ce Domaine ne
+   *  s'appliquent pas au porteur. NB : la clause RAW de vulnérabilité aux dégâts supplémentaires
+   *  anti-démon/mort-vivant (hors Bête) n'est PAS modélisée — le moteur n'a aucun concept de créature
+   *  « vulnérable comme un démon/mort-vivant » (les riders de Domaine ciblent l'appartenance LITTÉRALE
+   *  à un Groupe/Trait), donc rien d'inventé. */
+  spellDomainImmunity?: string;
   /** Contre-attaque en gagnant un Test opposé de défense (Champion LDB 85). MÊME capacité GÉNÉRIQUE que
    *  le talent Riposte (`CombatFeature.counterOnDefenseWin`) — un seul concept pour traits ET talents. */
   counterOnDefenseWin?: boolean;

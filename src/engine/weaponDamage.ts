@@ -3,7 +3,7 @@
  * reçu réduit les Dégâts de l'arme de 1 ; à +0 (ou BF +0) l'arme est improvisée. L'Atout Incassable
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
-import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec } from './types';
+import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec, AmmoRangeMod } from './types';
 import type { TriggeredEffect } from '../state/flow';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
@@ -46,6 +46,20 @@ export function effectiveRange(range: WeaponRangeSpec | null | undefined, strBon
   if (range == null) return null;
   if (typeof range === 'number') return range;
   return (typeof strBonus === 'function' ? strBonus() : strBonus) * range.bf;
+}
+
+/** Applique le modificateur de la MUNITION sélectionnée à la Portée déjà résolue de l'arme (mètres, LDB 62
+ *  colonne « Portée ») : `{ mult }` → `round(rangeM * mult)` (« Moitié de l'arme » = ×0.5) ; `{ add }` →
+ *  `max(0, rangeM + add)` (± mètres) ; mod absent/null OU arme sans Portée (`rangeM` null) → inchangé. */
+export function applyAmmoMod(rangeM: number | null, mod: AmmoRangeMod | null | undefined): number | null {
+  if (rangeM == null || mod == null) return rangeM;
+  return 'mult' in mod ? Math.round(rangeM * mod.mult) : Math.max(0, rangeM + mod.add);
+}
+
+/** Portée EFFECTIVE de l'arme avec la munition sélectionnée : `applyAmmoMod(effectiveRange(weapon.range,
+ *  strBonus), ammoMod)`. SOURCE UNIQUE pour les sites combat (bandes de portée) — le BF reste paresseux. */
+export function effectiveWeaponRange(weapon: { range?: WeaponRangeSpec | null }, ammoMod: AmmoRangeMod | null | undefined, strBonus: number | (() => number)): number | null {
+  return applyAmmoMod(effectiveRange(weapon.range, strBonus), ammoMod);
 }
 
 /**

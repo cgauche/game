@@ -22,11 +22,13 @@ describe('Artillerie navale — munitions MDG ch.12 (verbatim) + qualité Brise-
     // Carreau nain norse 8/– → 8 silver ; Brise-coque, Empaleuse, Perforante.
     expect(byId('carreau-nain-norse').price).toEqual({ gold: 0, silver: 8, bronze: 0 });
     expect(byId('carreau-nain-norse').qualities.map((q: any) => q.id)).toEqual(['brise-coque', 'empaleuse', 'perforante']);
-    // Mitraille 6/6 → 6 silver 6 brass, dégâts −5, Tir de zone 5, portée « Quart de l'arme ».
+    // Mitraille 6/6 → 6 silver 6 brass, dégâts −5, Tir de zone 5, portée « Quart de l'arme » (= ¼ de la
+    // Portée de l'arme) — STRUCTURÉE dans `ammoRangeMod:{mult:0.25}` (sortie de `reach`, qui n'est qu'une Allonge).
     expect(byId('mitraille-et-poudre').price).toEqual({ gold: 0, silver: 6, bronze: 6 });
     expect(byId('mitraille-et-poudre').damage).toEqual({ plusBF: false, flat: -5 });
     expect(byId('mitraille-et-poudre').qualities).toEqual([{ id: 'tir-de-zone', value: 5 }]);
-    expect(byId('mitraille-et-poudre').reach).toBe("Quart de l'arme");
+    expect(byId('mitraille-et-poudre').reach).toBeNull();
+    expect(byId('mitraille-et-poudre').ammoRangeMod).toEqual({ mult: 0.25 });
     // Bombe (mortier) 3 CO → 3 gold, +12, Explosion 5.
     expect(byId('bombe-de-mortier').price).toEqual({ gold: 3, silver: 0, bronze: 0 });
     expect(byId('bombe-de-mortier').damage.flat).toBe(12);

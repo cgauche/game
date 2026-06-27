@@ -10,12 +10,15 @@ import trappings from './trappings.json';
  *   - `range` = SPEC de Portée de tir : `number` (mètres fixes) OU `{bf}` (arme de jet : BF×bf m).
  *     UNIQUEMENT sur les armes à distance.
  */
-const rows = trappings as { id: string; type: string; subType?: string; reach?: unknown; range?: unknown }[];
+const rows = trappings as { id: string; type: string; subType?: string; reach?: unknown; range?: unknown; ammoRangeMod?: unknown; enc?: unknown }[];
 
+const ALLONGE = new Set(['Personnelle', 'Très courte', 'Courte', 'Moyenne', 'Longue', 'Très longue', 'Considérable', 'Variable']);
 const isNumericLike = (v: unknown): boolean =>
   typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && /^\d+(\.\d+)?$/.test(v.trim()));
 const isThrownFormula = (v: unknown): boolean => typeof v === 'string' && /^BF(x\d+)?$/.test(v.trim());
 const isBfSpec = (v: unknown): v is { bf: number } => typeof v === 'object' && v != null && typeof (v as { bf?: unknown }).bf === 'number';
+const isAmmoMod = (v: unknown): boolean => typeof v === 'object' && v != null &&
+  ((typeof (v as { mult?: unknown }).mult === 'number') !== (typeof (v as { add?: unknown }).add === 'number'));
 
 describe('trappings — invariant Allonge (reach) ⊥ Portée (range)', () => {
   it('AUCUN `reach` numérique ni formule de Portée « BFxN » (type menteur éliminé)', () => {
@@ -56,7 +59,28 @@ describe('trappings — invariant Allonge (reach) ⊥ Portée (range)', () => {
     expect(hall.range ?? null).toBeNull();
   });
 
-  it('naval intact : mitraille garde reach « Quart de l\'arme » (sémantique MDG préservée)', () => {
-    expect(rows.find((t) => t.id === 'mitraille-et-poudre')!.reach).toBe("Quart de l'arme");
+  it('`reach` = Allonge PURE : uniquement un libellé whitelisté, ou null (aucun modificateur de munition)', () => {
+    const bad = rows.filter((t) => t.reach != null && !(typeof t.reach === 'string' && ALLONGE.has(t.reach)));
+    expect(bad.map((t) => `${t.id}=${JSON.stringify(t.reach)}`)).toEqual([]);
+  });
+
+  it('modificateur de munition = `ammoRangeMod` STRUCTURÉ ({mult}|{add}), avec `reach:null`', () => {
+    const withMod = rows.filter((t) => t.ammoRangeMod != null);
+    expect(withMod.length).toBeGreaterThanOrEqual(12); // Moitié/Quart/+50/-10/+10…
+    expect(withMod.every((t) => isAmmoMod(t.ammoRangeMod) && t.reach == null)).toBe(true);
+    // échantillon : mitraille = ¼ ; baton-pointu = ½ ; flèche elfique = +50 m.
+    expect(rows.find((t) => t.id === 'mitraille-et-poudre')!.ammoRangeMod).toEqual({ mult: 0.25 });
+    expect(rows.find((t) => t.id === 'baton-pointu')!.ammoRangeMod).toEqual({ mult: 0.5 });
+    expect(rows.find((t) => t.id === 'fleche-elfique')!.ammoRangeMod).toEqual({ add: 50 });
+  });
+});
+
+describe('trappings — `enc` typé HONNÊTEMENT (number ou cas spéciaux non-encombrants)', () => {
+  // La donnée porte des STRINGS non chiffrées sur des objets non-encombrants : « ND » (ateliers),
+  // « Variable » (arme improvisée). Le type les déclare ; le calcul d'Encombrement les traite comme 0.
+  const ENC_STRINGS = new Set(['ND', 'Variable']);
+  it('`enc` est un nombre, null, ou une string autorisée (« ND »/« Variable ») — jamais une autre string', () => {
+    const bad = rows.filter((t) => t.enc != null && typeof t.enc !== 'number' && !(typeof t.enc === 'string' && ENC_STRINGS.has(t.enc)));
+    expect(bad.map((t) => `${t.id}=${JSON.stringify(t.enc)}`)).toEqual([]);
   });
 });

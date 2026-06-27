@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
+import { effectiveWeaponRange } from './weaponDamage';
+import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
 import { Combatant, ItemInstance, Weapon } from './types';
 
@@ -527,6 +529,21 @@ describe('Munitions & rechargement', () => {
     const tromblon = c.weapons.find((w) => w.name === 'Tromblon')!;
     expect(tromblon.reload).toBe(2);
     expect(tromblon.subType).toBe('poudre-noire'); // id de Groupe
+  });
+  it('munition à modificateur de Portée sélectionnée → la Portée (et la bande) de l’arme est modifiée (LDB 62)', () => {
+    const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [], subType: 'arc', reload: 0 };
+    const heavy = { ...itemFromTrapping('Flèche')!, ammoRangeMod: { mult: 0.5 as number }, qty: 10 };
+    const c = { items: [heavy], ammoUid: heavy.uid } as unknown as Combatant;
+    // selectedAmmo récupère la munition équipée et porte son modificateur.
+    expect(selectedAmmo(c, bow)?.ammoRangeMod).toEqual({ mult: 0.5 });
+    // Portée pleine 60 m → 30 m avec la munition (expression EXACTE des sites combat).
+    const full = effectiveWeaponRange(bow, null, 3);
+    const withAmmo = effectiveWeaponRange(bow, selectedAmmo(c, bow)?.ammoRangeMod, 3);
+    expect(full).toBe(60);
+    expect(withAmmo).toBe(30);
+    // À 6 m (distanceTiles 3) la fourchette se décale : « Bout portant » (pleine) → « Courte portée » (½).
+    expect(rangeBandName(3, full!)).toBe('Bout portant');
+    expect(rangeBandName(3, withAmmo!)).toBe('Courte portée');
   });
   it('recomputeLoadout : Arc (sans « Recharge ») → reload 0', () => {
     const c = {

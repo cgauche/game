@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveWeaponDamage, effectiveRange, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, solideSaveThreshold } from './weaponDamage';
+import { effectiveWeaponDamage, effectiveRange, applyAmmoMod, effectiveWeaponRange, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, solideSaveThreshold } from './weaponDamage';
 import { recomputeLoadout, damageString } from './items';
 import type { Weapon, Combatant } from './types';
 
@@ -35,6 +35,25 @@ describe('effectiveRange (LDB 62) — résolution de la Portée à l’usage (mi
     expect(effectiveRange({ bf: 3 }, 2)).toBe(6);
     expect(effectiveRange({ bf: 3 }, 5)).toBe(15);
     expect(effectiveRange(30, 2)).toBe(30); // fixe : insensible au BF
+  });
+});
+
+describe('applyAmmoMod + effectiveWeaponRange (LDB 62) — la munition modifie la Portée de l’arme', () => {
+  it('applyAmmoMod : {mult} arrondi, {add} ± mètres (plancher 0), null/sans-Portée inchangé', () => {
+    expect(applyAmmoMod(50, { mult: 0.5 })).toBe(25);
+    expect(applyAmmoMod(50, { mult: 0.25 })).toBe(13); // round(12.5)
+    expect(applyAmmoMod(50, { add: 50 })).toBe(100);
+    expect(applyAmmoMod(50, { add: -10 })).toBe(40);
+    expect(applyAmmoMod(5, { add: -10 })).toBe(0); // plancher 0
+    expect(applyAmmoMod(50, null)).toBe(50);
+    expect(applyAmmoMod(null, { mult: 0.5 })).toBeNull();
+  });
+  it('effectiveWeaponRange : arc 50 m + {mult:0.5} → 25 ; + {add:50} → 100 ; sans mod → 50', () => {
+    expect(effectiveWeaponRange({ range: 50 }, { mult: 0.5 }, 3)).toBe(25);
+    expect(effectiveWeaponRange({ range: 50 }, { add: 50 }, 3)).toBe(100);
+    expect(effectiveWeaponRange({ range: 50 }, null, 3)).toBe(50);
+    // arme de JET {bf} : BF×N résolu D'ABORD, puis modificateur de munition.
+    expect(effectiveWeaponRange({ range: { bf: 3 } }, { mult: 0.5 }, 4)).toBe(6); // (4×3=12) → ½ = 6
   });
 });
 

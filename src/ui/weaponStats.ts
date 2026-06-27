@@ -1,4 +1,4 @@
-import type { ItemInstance, Weapon, WeaponRangeSpec } from '../engine/types';
+import type { ItemInstance, Weapon, WeaponRangeSpec, AmmoRangeMod } from '../engine/types';
 import { damageString } from '../engine/items';
 import { effectiveWeaponDamage, effectiveRange } from '../engine/weaponDamage';
 
@@ -26,4 +26,15 @@ export function weaponStatParts(it: ItemInstance | Weapon, strBonus: number): st
 export function rangeSpecLabel(range: WeaponRangeSpec | null | undefined): string | null {
   if (range == null) return null;
   return typeof range === 'number' ? `${range} m` : `BF×${range.bf} m`;
+}
+
+/** Libellé d'AFFICHAGE du modificateur de Portée d'une MUNITION : `{mult}` → « ×½ »/« ×¼ »/« ×k » (fraction
+ *  de la Portée de l'arme) ; `{add}` → « +50 m »/« -10 m » (mètres ±). null → pas de modificateur. */
+export function ammoRangeModLabel(mod: AmmoRangeMod | null | undefined): string | null {
+  if (mod == null) return null;
+  if ('mult' in mod) {
+    const frac: Record<number, string> = { 0.25: '¼', 0.5: '½', 0.75: '¾' };
+    return `×${frac[mod.mult] ?? mod.mult}`;
+  }
+  return `${mod.add >= 0 ? '+' : ''}${mod.add} m`;
 }

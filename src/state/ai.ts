@@ -29,7 +29,8 @@ import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, footprintN, combatDistance } from './footprint';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
 import { rangeBandModifier, attackModifiers, combineMods, woundsFromHit, combatValue, outnumberMod, type ModLine } from '../engine/combat';
-import { effectiveWeaponDamage, effectiveRange } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, effectiveWeaponRange } from '../engine/weaponDamage';
+import { selectedAmmo } from '../engine/items';
 import { missileDamage, type SpellLike } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { hasCondition, canTakeAction } from '../engine/conditions';
@@ -653,7 +654,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Sans portée chiffrée (arme sans `range`, sort spécial) : pas de gate (stubs/exotiques).
   const fpDist = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h));
   const ebf = () => bonus(effectiveChar(enemy, 'F')); // BF du tireur → résout les Portées de jet `{bf}` (paresseux : ignoré pour une portée fixe)
-  const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveRange(w.range, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
+  const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveWeaponRange(w, selectedAmmo(enemy, w)?.ammoRangeMod, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
   const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.

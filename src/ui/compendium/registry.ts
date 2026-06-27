@@ -17,7 +17,7 @@ import {
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
-import { rangeSpecLabel } from '../weaponStats';
+import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
 import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
@@ -381,9 +381,11 @@ export const CODEX: CodexCategory[] = [
         t.isGrimoire ? 'Grimoire (lecture de Sorts)' : null,
         t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.name} (${damageString(t.derivedWeapon.damage)})` : null,
       ].filter(Boolean) as string[];
-      // Allonge = mêlée, Portée = distance (LDB 62) : un arc affiche « Portée 50 m », une arme de jet sa
-      // formule « Portée BF×3 m » (`rangeSpecLabel`, sans BF de porteur) ; jamais « Allonge 50 ».
-      const reachFact = t.type === 'ranged' ? fact('Portée', rangeSpecLabel(t.range) ?? t.reach) : fact('Allonge', t.reach);
+      // Allonge = mêlée, Portée = distance (LDB 62). Tir/munition : « Portée 50 m » (fixe) / « BF×3 m » (jet)
+      // sinon le modificateur de munition (« Portée ×½ », `ammoRangeModLabel`) ; jamais « Allonge 50 ».
+      const reachFact = (t.type === 'ranged' || t.type === 'ammunition')
+        ? fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod))
+        : fact('Allonge', t.reach);
       return {
         label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', t.damage ? damageString(t.damage) : null), fact('PA', t.pa), reachFact),

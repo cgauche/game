@@ -206,6 +206,12 @@ export type WeaponDamageSpec =
  *  en combat met la Portée à jour, exactement comme les Dégâts `+BF`. */
 export type WeaponRangeSpec = number | { bf: number };
 
+/** Modificateur de Portée d'une MUNITION sur la Portée de l'arme de tir (LDB 62, colonne « Portée ») :
+ *  `{ mult }` = fraction de la Portée de l'arme (« Moitié de l'arme » → `{mult:0.5}`, « Quart » → `0.25`) ;
+ *  `{ add }` = ± mètres (« +50 »/« -10 »). Appliqué à l'usage par `applyAmmoMod` quand la munition est
+ *  SÉLECTIONNÉE pour le tir. « Comme l'arme » = AUCUN modificateur (absent/null → Portée de l'arme inchangée). */
+export type AmmoRangeMod = { mult: number } | { add: number };
+
 /** Atout/Défaut d'arme ou d'armure PORTÉ par un objet/arme au runtime. Forme STRUCTURÉE (id stable du
  *  registre + Indice éventuel) — miroir runtime de `QualityRef` de la donnée, sans l'aplatissement en
  *  chaîne « id value » re-parsée par regex. `value` = Indice (Solide N, Recharge N, Protectrice N) OU
@@ -532,6 +538,9 @@ export interface ItemInstance {
   damage?: WeaponDamageSpec; // armes
   reach?: string | null;
   range?: WeaponRangeSpec | null; // SPEC de Portée non résolue (mètres fixes ou {bf}) — cf. WeaponRangeSpec
+  /** MUNITION : modificateur de la Portée de l'arme de tir (cf. `AmmoRangeMod`) — lu par `effectiveWeaponRange`
+   *  quand cette munition est sélectionnée. Copié du trapping ; absent sur une arme/objet non-munition. */
+  ammoRangeMod?: AmmoRangeMod | null;
   qualities: QualityInstance[];
   /** Enchantements actifs portés par l'ARME (op `augmentWeapon` / arme invoquée) — SOURCE DE VÉRITÉ,
    *  repliés dans l'arme dérivée par `recomputeLoadout` (`applyEnchants`). Temporisés via `ActiveEffect.enchantRef`. */
@@ -880,7 +889,7 @@ export interface Combatant {
    *  Manifestation de démon…) : `byId` = le lanceur ; `expiresAtRound` = la créature se dissipe au
    *  franchissement de Round une fois ce numéro dépassé ; `despawnIfSummonerDown` = elle s'effondre
    *  si le lanceur est hors de combat (minions de Nécromancie liés au sorcier). Géré par state/summonFlow. */
-  summon?: { byId: string; expiresAtRound?: number; despawnIfSummonerDown?: boolean; label?: string };
+  summon?: { byId: string; expiresAtRound?: number; despawnIfSummonerDown?: boolean; label?: string; spellId?: string };
   // NB : `ammoUid`/`loaded`/`reloadProgress` sont au niveau du combattant, pas de l'arme. Le modèle
   // suppose UNE arme à distance équipée à la fois (le tir et le rechargement ciblent la 1re `ranged`
   // via `attackWeapon`/`battleReload`). À porter sur l'arme si on autorise un jour 2 armes à distance.

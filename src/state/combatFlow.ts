@@ -57,7 +57,7 @@ import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
   traitSeesInDark, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
-  isSkittishMount,
+  isSkittishMount, immuneToSpellDomain,
 } from '../engine/traits/dispatch';
 import {
   isMagicMissile,
@@ -87,7 +87,7 @@ import {
   type SpellLike,
 } from '../engine/magic';
 import type { SpellRange } from '../engine/spellRange';
-import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx, type Formula } from '../engine/ops';
+import { applyOps, resolveFormula, skillDRBonus, formulaExpectation, type GameOp, type OpsCtx, type Formula } from '../engine/ops';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -102,7 +102,7 @@ import { applyHullCritical } from '../engine/shipCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
-import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
+import { recomputeLoadout, weaponWithAmmo, selectedAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
@@ -118,7 +118,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, effectiveRange, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, effectiveWeaponRange, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -194,7 +194,7 @@ import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, hasFreeWeaponAttack,
 } from './combatManeuvers';
-import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
+import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, conditionCtx, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
@@ -207,12 +207,6 @@ export function applyIncomingMeleeAdvantage(attacker: Combatant, target: Combata
     gainAdvantage(attacker, adv);
     attacker.gainedAdvThisRound = true;
   }
-}
-
-/** Munition que le héros tirera : celle sélectionnée (`ammoUid`) si compatible, sinon la 1re compatible. */
-export function selectedAmmo(attacker: Combatant, weapon: Weapon): ItemInstance | undefined {
-  const compat = compatibleAmmo(attacker, weapon);
-  return compat.find((a) => a.uid === attacker.ammoUid) ?? compat[0];
 }
 
 /** Arme effectivement tirée : mêlée au contact, distance sinon (Atout Pistolet pour tirer en Combat
@@ -547,7 +541,7 @@ export function previewAttack(
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env });
   const target0 = base + combineMods(mods);
-  const rangeM = effectiveRange(weapon.range, () => bonus(effectiveChar(attacker, 'F'))); // Portée résolue (jet `{bf}` → BF×N) ; null = pas de Portée → hors bande
+  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'F'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
   const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM) != null) : dist <= reachTiles(weapon);
   return { weapon, kind, inRange, blocked: false, target: target0, base, mods, dmg, soak };
 }
@@ -1557,7 +1551,7 @@ function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Comba
   return allies.filter((a) => {
     if (!a.pos) return true;
     const d = combatDistance(c, a);
-    if (weapon.type === 'ranged') { const rm = effectiveRange(weapon.range, () => bonus(effectiveChar(c, 'F'))); return rm != null && rangeBandModifier(d, rm) != null; }
+    if (weapon.type === 'ranged') { const rm = effectiveWeaponRange(weapon, selectedAmmo(c, weapon)?.ammoRangeMod, () => bonus(effectiveChar(c, 'F'))); return rm != null && rangeBandModifier(d, rm) != null; }
     return d <= reachTiles(weapon);
   });
 }
@@ -2678,22 +2672,6 @@ function opIsHostileControl(op: GameOp): boolean {
   }
 }
 
-/** Estimation DÉTERMINISTE d'une `Formula` pour le SCORING (jamais de tirage — le planning ne doit PAS
- *  consommer le RNG seedable, sous peine de désync du flux déterministe / coop / tests reproductibles, et
- *  d'une magnitude aléatoire). Calque la convention statique de `missileDamage` (valeur écrite). Les dés
- *  rendent leur MOYENNE (`n×(faces+1)/2 + plus`) ; `(X)`/`(Bonus de X)` la valeur réelle (déterministe) ;
- *  `{rolled}` une valeur de référence neutre (le dé moyen d'un d10 ≈ 5,5) ; les axes relationnels (Indice/
- *  stacks/écart d'Avantage) absents au planning → 0. PUR, sans RNG. */
-function formulaExpectation(f: Formula, ref: Combatant): number {
-  if (typeof f === 'number') return f;
-  if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
-  if ('charOf' in f) return effectiveChar(ref, f.charOf);
-  if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);
-  if ('rolled' in f) return 5.5; // référence neutre (dé moyen d'un d10) — jamais tiré
-  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
-  return 0; // indiceOf / stacks / engagedAdvantageGap : hors contexte au planning
-}
-
 /** « Magnitude » d'une op pour le scoring (échelle ≈ « Blessures espérées équivalentes ») : un `charMod`
  *  vaut |mod|/10 (un +10 ≈ 1 cran de DR), un État ≈ 2, un PA ≈ 1, une ressource (Chance/Destin) ≈ 3, un
  *  soin = ESPÉRANCE de sa formule (PB), un octroi ≈ 2. DÉTERMINISTE (aucun `battleRng()` — cf.
@@ -3000,6 +2978,9 @@ export function applyCast(
     // Touche d'un Projectile : application des Blessures + Critique (choix/overkill).
     const missileSpec = spell;
     const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
+      // Manifestation de Ghur (Middenheim, #18) : un Projectile du Domaine de la Bête n'affecte PAS le
+      // porteur — ses Dégâts ET ses effets (effets négatifs du Sort de la Bête) sont sautés sur cette cible.
+      if (immuneToSpellDomain(t.traits, spell.domainId)) { logLines.push(tr('cf.spellDomainImmune', { name: t.name, spell: spell.label })); return; }
       // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
       // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
       const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
@@ -3140,6 +3121,9 @@ export function applyCast(
         // op) ; sinon les ops portent sur la MARGE de DR (l'écart de l'opposition → échelles `perSL`).
         const opp = extras?.opposedOutcome?.[t.id];
         if (opp?.resisted) { logLines.push(tr('cf.spellResisted', { name: t.name, spell: spell.label })); continue; }
+        // Manifestation de Ghur (Middenheim, #18) : un Sort du Domaine de la Bête n'applique aucun de ses
+        // effets au porteur (immunité par lore — `spellDomainImmunity`, lue par id depuis ses Traits).
+        if (immuneToSpellDomain(t.traits, spell.domainId)) { logLines.push(tr('cf.spellDomainImmune', { name: t.name, spell: spell.label })); continue; }
         logLines.push(
           // Tout sort passe par le système Flow/EffectOp : `spell.effects` (Flow éditable, feuilles
           // `on:'target'`) → `runCombatFlow` (exécuteur unique, after-aware) → applyOps. Les feuilles
@@ -3259,7 +3243,7 @@ export function applyCast(
     const sumRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
     for (const sOp of spellOps(spell.effects, 'caster')) {
       if (sOp.op !== 'summon') continue;
-      logLines.push(...applySummon(get, set, caster, sOp, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng() }));
+      logLines.push(...applySummon(get, set, caster, sOp, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng(), spellId: spell.id }));
     }
     // Effets sur le LANCEUR (feuilles `on:'caster'` de `spell.effects` — Vol de vie « retirez tout État
     // Exténué dont vous souffrez », buffs de soi d'un sort offensif) : appliqués UNE seule fois par lancement.
@@ -3659,7 +3643,9 @@ export function finishVictory(get: Get, set: SetFn): void {
   // l'écran) ; ceux qui CHANGENT le contexte (téléport/dialogue/combat) sont DIFFÉRÉS au clic « Continuer »
   // (dismissVictory) — sinon le téléport masque l'écran de victoire (cas de l'arène).
   const CONTEXT = new Set(['transition', 'transitionBack', 'startDialogue', 'startCombat']);
-  const all = battle.onVictory ?? [];
+  // onVictory est un Flow (UN format avec triggers/dialogues) — on l'APLATIT ici (les `if` résolus contre
+  // l'état courant) pour garder la partition CONTEXT/immédiat + la mesure de récompense sur la séquence plate.
+  const all = battle.onVictory ? flattenFlow(battle.onVictory, conditionCtx(get())) : [];
   const deferred = all.filter((e) => CONTEXT.has(e.type));
   // L'ÉQUIPEMENT (giveTrapping sans heroId) devient du butin ATTRIBUABLE sur l'écran (qualités
   // conservées) au lieu d'aller d'office au 1er héros — même brique que la fenêtre de loot

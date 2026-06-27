@@ -1836,7 +1836,10 @@
     "subType": "arc",
     "enc": 0,
     "availability": "Exotique",
-    "reach": "+50",
+    "reach": null,
+    "ammoRangeMod": {
+      "add": 50
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1873,7 +1876,10 @@
     "subType": "fronde",
     "enc": 0,
     "availability": "Commune",
-    "reach": "-10",
+    "reach": null,
+    "ammoRangeMod": {
+      "add": -10
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -1965,7 +1971,10 @@
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Moitié de l'arme",
+    "reach": null,
+    "ammoRangeMod": {
+      "mult": 0.5
+    },
     "loc": null,
     "pa": null,
     "damage": null,
@@ -8147,7 +8156,10 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Moitié de l'arme",
+    "reach": null,
+    "ammoRangeMod": {
+      "mult": 0.5
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -8244,7 +8256,10 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
-    "reach": "-10",
+    "reach": null,
+    "ammoRangeMod": {
+      "add": -10
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -8274,7 +8289,10 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
-    "reach": "-10",
+    "reach": null,
+    "ammoRangeMod": {
+      "add": -10
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -8840,7 +8858,10 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Moitié de l'arme",
+    "reach": null,
+    "ammoRangeMod": {
+      "mult": 0.5
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -8873,7 +8894,10 @@
     "subType": "munitions",
     "enc": 1,
     "availability": "Limitée",
-    "reach": "Moitié de l'arme",
+    "reach": null,
+    "ammoRangeMod": {
+      "mult": 0.5
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -8906,7 +8930,10 @@
     "subType": "munitions",
     "enc": 0,
     "availability": "Exotique",
-    "reach": "+10",
+    "reach": null,
+    "ammoRangeMod": {
+      "add": 10
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -9685,7 +9712,10 @@
       "page": 114
     },
     "desc": "Munitions (12 par 1 Enc de composant). Flèches ou carreaux empennés de plumes de griffon par les maîtres-fléchiers d'Ostermark ; ils agissent comme des flèches elfiques.",
-    "reach": "+50",
+    "reach": null,
+    "ammoRangeMod": {
+      "add": 50
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -9916,7 +9946,7 @@
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -9946,7 +9976,7 @@
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -9979,7 +10009,7 @@
     "subType": "munition-de-siege",
     "enc": 1,
     "availability": "Limitée",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,
@@ -10010,7 +10040,10 @@
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Exotique",
-    "reach": "Quart de l'arme",
+    "reach": null,
+    "ammoRangeMod": {
+      "mult": 0.25
+    },
     "loc": null,
     "pa": null,
     "damage": {
@@ -10041,7 +10074,7 @@
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Rare",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": {
@@ -10078,7 +10111,10 @@
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Limitée",
-    "reach": "Moitié de l'arme",
+    "reach": null,
+    "ammoRangeMod": {
+      "mult": 0.5
+    },
     "loc": null,
     "pa": null,
     "damage": null,
@@ -10109,7 +10145,7 @@
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": {
@@ -10146,7 +10182,7 @@
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Commune",
-    "reach": "Comme l'arme",
+    "reach": null,
     "loc": null,
     "pa": null,
     "damage": null,

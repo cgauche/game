@@ -178,13 +178,14 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     qualities: (t.qualities ?? []).map(qualityInstance), // QualityRef[] (donnée) → QualityInstance[] runtime (structuré, frais)
     pa: t.pa ?? undefined,
     locs: locs && locs.length ? locs : undefined,
-    enc: t.enc ?? 0,
+    enc: typeof t.enc === 'number' ? t.enc : 0, // 'ND' (ateliers) / 'Variable' (arme improvisée) → non-encombrant (0), jamais NaN
     equipped: false,
     desc: t.desc,
     ...(t.consumable?.length ? { consumable: t.consumable } : {}), // effet de consommable (GameOp[]) copié du catalogue
     subType: t.subType ?? undefined,
     hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
     qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée
+    ...(t.ammoRangeMod != null ? { ammoRangeMod: t.ammoRangeMod } : {}), // modificateur de Portée de la munition (LDB 62)
     // Marqueurs fonctionnels de catégorie (multilangue-safe) — propagés tels quels du catalogue.
     ...(t.weatherProtection ? { weatherProtection: true } : {}),
     ...(t.isShelter ? { isShelter: true } : {}),
@@ -656,6 +657,14 @@ export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
   const fam = ammoFamily(weapon.subType);
   if (!fam) return [];
   return (c.items ?? []).filter((i) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && ammoFamily(i.subType) === fam);
+}
+
+/** Munition que le porteur tirera : celle sélectionnée (`ammoUid`) si compatible, sinon la 1re compatible.
+ *  PUR (inventaire/famille) — vit ici (≠ état) pour servir AUSSI les sites combat MOTEUR (bandes de portée
+ *  modifiées par la munition, `effectiveWeaponRange`). `undefined` = pas de munition (mod de Portée nul). */
+export function selectedAmmo(c: Combatant, weapon: Weapon): ItemInstance | undefined {
+  const compat = compatibleAmmo(c, weapon);
+  return compat.find((a) => a.uid === c.ammoUid) ?? compat[0];
 }
 
 /** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (flats additionnés, BF si l'un

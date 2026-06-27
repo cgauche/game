@@ -40,7 +40,7 @@ import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics } from '../../engine/t
 import { rule } from '../../engine/policy';
 import { bonus } from '../../engine/characteristics';
 import { damageString } from '../../engine/items';
-import { rangeSpecLabel } from '../weaponStats';
+import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
 import { formatSpellRange, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { formatMoney } from '../../engine/money';
 import { makeRNG } from '../../engine/dice';
@@ -1002,8 +1002,8 @@ function trappingMeta(id: string): string {
   if (t.damage) bits.push(`Dégâts ${damageString(t.damage)}`);
   if (t.pa) bits.push(`${t.pa} PA (${t.loc ?? ''})`);
   if (t.reach && t.type === 'melee') bits.push(`Allonge ${t.reach}`);
-  // Portée des armes à distance : « N m » (fixe) ou « BF×k m » (jet) via `rangeSpecLabel` ; sinon le reach.
-  if (t.type === 'ranged') { const p = rangeSpecLabel(t.range) ?? t.reach; if (p) bits.push(`Portée ${p}`); }
+  // Portée : « N m » (fixe) / « BF×k m » (jet) ; sinon le modificateur de la munition (« ×½ »).
+  if (t.type === 'ranged' || t.type === 'ammunition') { const p = rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod); if (p) bits.push(`Portée ${p}`); }
   if (t.enc) bits.push(`Enc. ${t.enc}`);
   if (t.qualities?.length) bits.push(t.qualities.map(qualityRefLabel).join(', '));
   return bits.join(' · ');
