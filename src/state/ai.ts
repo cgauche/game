@@ -32,7 +32,11 @@ import { rangeBandModifier, outnumberMod, type ModLine } from '../engine/combat'
 import { effectiveWeaponRange } from '../engine/weaponDamage';
 import { selectedAmmo } from '../engine/items';
 import { bonus, effectiveChar } from '../engine/characteristics';
-import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, expectedSpellOutput } from './aiSpellValue';
+import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, spellTargetHarm } from './aiSpellValue';
+
+/** Aversion au TIR AMI d'une ZdE : blesser/incapaciter un allié pèse FOIS-CECI un gain ennemi équivalent
+ *  (>1 → l'IA ne nuke jamais son camp pour un gain marginal). Ressenti, latitude IA. */
+const FRIENDLY_FIRE_AVERSION = 2;
 import type { SpellData } from '../data';
 import { hasCondition, canTakeAction, isActionLocked, restrictingConditions } from '../engine/conditions';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -818,8 +822,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
             let net: number;
             if (offensiveZde) {
               const foesIn = shootableHeroes.filter((e) => inRadius(center, e.pos!));
-              const allyFire = allies.reduce((s, a) => inRadius(center, a.pos!) ? s + sp.landProb * finite(expectedSpellOutput(enemy, a, sp.data), 0) : s, 0);
-              net = spellActionValue(enemy, sp.data, { kind: 'area', covered: foesIn }, ctx) - allyFire;
+              // TIR AMI : on évalue le MAL fait aux alliés couverts comme aux ennemis (dégâts ET États hostiles,
+              // via `spellTargetHarm` — l'ancien calcul ne comptait QUE les dégâts → une ZdE de contrôle KO les
+              // alliés sans pénalité). AVERSION ×2 : blesser/incapaciter un allié coûte deux fois un gain ennemi
+              // équivalent — un lanceur ne nuke pas son propre camp pour un gain marginal (retour playtest 2026-06-27).
+              const allyHarm = allies.reduce((s, a) => inRadius(center, a.pos!) ? s + sp.landProb * finite(spellTargetHarm(enemy, a, sp.data), 0) : s, 0);
+              net = spellActionValue(enemy, sp.data, { kind: 'area', covered: foesIn }, ctx) - FRIENDLY_FIRE_AVERSION * allyHarm;
             } else {
               net = spellActionValue(enemy, sp.data, { kind: 'area', covered: allies.filter((a) => inRadius(center, a.pos!)) }, ctx);
             }
