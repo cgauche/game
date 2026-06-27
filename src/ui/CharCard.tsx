@@ -1,11 +1,11 @@
 import type { KeyboardEvent } from 'react';
 import { Combatant } from '../engine/types';
-import { isUnarmed } from '../engine/items';
+import { isUnarmed, damageString } from '../engine/items';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular, findSpeciesById, findCareerById } from '../data';
 import { CharStatsGrid } from './CharStatsGrid';
 import { ZONES } from './EquipmentPanel';
-import { SkillChip, TalentChip } from './EntityChip';
+import { SkillChip, TalentChip, EntityRef } from './EntityChip';
 import { FateChips } from './FateChips';
 
 export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
@@ -48,7 +48,11 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       </div>
       {(arms.length > 0 || wornZones.length > 0) && (
         <div className="char-equip">
-          {arms.length > 0 && <span className="ce-weap">⚔ {arms.map((w) => w.name).join(', ')}</span>}
+          {arms.length > 0 && (
+            <span className="ce-weap">⚔ {arms.map((w, i) => (
+              <EntityRef key={i} category="trappings" label={w.name} show={w.name} badge={damageString(w.damage)} />
+            ))}</span>
+          )}
           {wornZones.length > 0 && (
             <span className="ce-pa" title="Points d'Armure par zone (couches rigide + flexible cumulées)">
               🛡 {wornZones.map((z) => `${z.label} ${z.ap}`).join(' · ')}
