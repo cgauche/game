@@ -367,6 +367,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Tables de mutations du Compagnon T1 (physiques + mentales), alignées par Puissance du Chaos. ldb = Tableaux du Livre de base (RAW, défaut). toute = tables EDOC « Toute Puissance » (élargies). khorne/nurgle/slaanesh/tzeentch = tables alignées sur un dieu (pour une campagne dédiée). Une mutation peut différer du Livre de base (ex. Écailles épineuses).',
   },
   {
+    id: 'psych-acquisition-optional',
+    label: 'Acquisition de Traits psychologiques',
+    ref: 'ADE2 Annexe I',
+    group: 'Psychologie',
+    kind: 'flag',
+    default: false,
+    hint: 'Règles facultatives ADE II (Annexe I) pour gagner de nouveaux Traits psychologiques en cours de partie : Phobie du noir (États Brisé de Terreur cumulés ≥ Bonus de FM → Phobie), Animosité & Haine (dépenser le Destin pour survivre → Test de Calme ; échec → Animosité, doublon → Haine), Trauma (Ambition rendue impossible → Test de Calme ; échec → Trauma). Désactivé par défaut.',
+  },
+  {
     id: 'disease-mode',
     label: 'Utilisation des maladies',
     ref: 'LDB 20 l.36',

@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple } from './psychology';
+import { describe, it, expect, afterEach } from 'vitest';
+import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, gainPhobieIfThreshold, animositeOrHaine, traumaOnImpossibleAmbition } from './psychology';
 import { makeRNG } from './dice';
+import { setRule, resetRule } from './policy';
 import type { Combatant } from './types';
 
 describe('Psychologie (pur)', () => {
@@ -75,5 +76,52 @@ describe('Psychologie (pur)', () => {
     const r = resolveCalmeSimple(80, makeRNG(2));
     expect(typeof r.success).toBe('boolean');
     expect(typeof r.roll).toBe('number');
+  });
+});
+
+describe('Acquisition de Traits psychologiques (ADE II Annexe I, règle FACULTATIVE)', () => {
+  // RNG fixe (un d100 constant) — fail (roll 100) / success (roll 1), déterministe.
+  const fixed = (n: number) => ({ int: () => n } as ReturnType<typeof makeRNG>);
+  const mk = (p: Partial<Combatant> = {}): Combatant => ({
+    id: 's', name: 'S', kind: 'hero',
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 35, Soc: 30 },
+    skills: [], talents: [], psychTraits: [], psychState: [], traits: [], groups: [],
+    wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, armour: {} as never, weapons: [],
+    ...p,
+  } as unknown as Combatant);
+
+  afterEach(() => resetRule('psych-acquisition-optional'));
+
+  it('toutes les fonctions sont INERTES (null) tant que la règle est éteinte (défaut)', () => {
+    const c = mk();
+    expect(gainPhobieIfThreshold(c, 99, 'Vampires')).toBeNull();
+    expect(animositeOrHaine(c, 'Skavens', fixed(100))).toBeNull();
+    expect(traumaOnImpossibleAmbition(c, fixed(100))).toBeNull();
+  });
+
+  it('Phobie du noir : Brisé(Terreur) cumulés ≥ BFM → Phobie liée à la cause (+ reset)', () => {
+    setRule('psych-acquisition-optional', true);
+    const c = mk(); // FM 35 → BFM 3
+    expect(gainPhobieIfThreshold(c, 2, 'Vampires')).toBeNull(); // sous le seuil
+    expect(gainPhobieIfThreshold(c, 3, 'Vampires')).toEqual({ phobie: { type: 'phobie', cible: 'Vampires', indice: 1 }, resetCounter: true });
+  });
+
+  it('Animosité & Haine : Calme raté → Animosité ; doublon → Haine ; réussite → rien', () => {
+    setRule('psych-acquisition-optional', true);
+    const fresh = mk();
+    expect(animositeOrHaine(fresh, 'Reiklanders', fixed(100))).toMatchObject({ trait: { type: 'animosite', cible: 'Reiklanders' }, replacesAnimosite: false });
+    const dup = mk({ psychTraits: [{ type: 'animosite', cible: 'Reiklanders' }] });
+    expect(animositeOrHaine(dup, 'Reiklanders', fixed(100))).toMatchObject({ trait: { type: 'haine', cible: 'Reiklanders' }, replacesAnimosite: true });
+    const ok = animositeOrHaine(mk(), 'Reiklanders', fixed(1)); // Calme réussi
+    expect(ok!.test.success).toBe(true);
+    expect(ok!.trait).toBeUndefined();
+  });
+
+  it('Trauma : Ambition rendue impossible → Calme Accessible raté → Trauma ; réussite → rien', () => {
+    setRule('psych-acquisition-optional', true);
+    expect(traumaOnImpossibleAmbition(mk(), fixed(100))).toMatchObject({ trait: { type: 'trauma' } });
+    const ok = traumaOnImpossibleAmbition(mk(), fixed(1));
+    expect(ok!.test.success).toBe(true);
+    expect(ok!.trait).toBeUndefined();
   });
 });

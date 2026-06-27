@@ -100,7 +100,7 @@ export function applyMutation(set: Set, hero: Combatant, test?: { roll: number; 
   const a = align ?? (mode === 'ldb' ? null : mode);
   const table = a ? `edoc-${kind === 'physique' ? 'phys' : 'mental'}-${a}` : kind;
   const m = rollMutation(table, rng);
-  attachMutation(hero, m);
+  attachMutation(hero, m, rng);
   // Effets dérivés immédiats : PA naturels (loadout) + Blessures max si F/E/FM permanents.
   if (hero.items?.length) recomputeLoadout(hero);
   refreshWounds(hero);

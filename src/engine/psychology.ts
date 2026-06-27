@@ -9,7 +9,7 @@ import { t } from '../i18n';
 import { RNG, defaultRNG } from './dice';
 import { rollTest, evaluateTest, extendedTestStep } from './tests';
 import { rule } from './policy';
-import { effectiveChar } from './characteristics';
+import { bonus, effectiveChar } from './characteristics';
 import { findPsychologyById, psychologies } from '../data';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
@@ -311,6 +311,64 @@ export function failConditionAmount(
   const base = spec?.base === undefined || spec.base === 'indice' ? indice : spec.base;
   const perDeg = spec?.perDegreeOfFailure ?? 1;
   return base + perDeg * Math.max(0, -sl);
+}
+
+// ---------------------------------------------------------------------------
+// Acquisition de Traits psychologiques — RÈGLES FACULTATIVES (ADE II, Annexe I « Troubles
+// psychologiques »). Gatées par la règle optionnelle `psych-acquisition-optional` (par défaut OFF) :
+// fonctions PURES qui DÉCIDENT du Trait à poser ; l'APPLICATION (push dans `psychTraits`, remplacement
+// d'Animosité par Haine) et le DÉCLENCHEMENT (dépense de Destin, résolution de Terreur, Ambition rendue
+// impossible) vivent dans la couche state/combat — voir le rapport pour les points d'intégration différés.
+// ---------------------------------------------------------------------------
+
+/** Phobie du noir (ADE II Annexe I) : « Lorsque le total d'États Brisé d'un Personnage [subis à cause de
+ *  la Terreur] est supérieur ou égal à son Bonus de Force Mentale actuelle, il reçoit une Phobie » liée à
+ *  la cause de la Terreur la plus récente/fréquente ; le compteur est ensuite remis à zéro. PUR : renvoie
+ *  la Phobie à POSER (+ `resetCounter`), ou null si le seuil n'est pas atteint / la règle est éteinte.
+ *  Le compteur cumulé (`cumulativeBriseFromTerreur`) et l'ajout sont gérés par l'appelant (couche state). */
+export function gainPhobieIfThreshold(
+  c: Combatant,
+  cumulativeBriseFromTerreur: number,
+  cause: string,
+): { phobie: PsychTrait; resetCounter: true } | null {
+  if (!rule('psych-acquisition-optional')) return null;
+  if (cumulativeBriseFromTerreur < bonus(effectiveChar(c, 'FM'))) return null;
+  // Phobie = Peur 1 sur la source (même convention que parsePsychTraits, LDB 21 l.84-87).
+  return { phobie: { type: 'phobie', cible: cause, indice: 1 }, resetCounter: true };
+}
+
+/** Animosité & Haine (ADE II Annexe I) : « Lorsqu'un Personnage dépense un point de Destin pour rester en
+ *  vie […] il doit effectuer un Test de Calme Intermédiaire (+0). En cas d'échec, il obtient le Trait
+ *  Psychologique Animosité, en prenant pour cible l'individu ou l'élément qui l'a presque tué. […] Si un
+ *  Personnage obtient une Animosité qu'il possède déjà, celle-ci devient de la Haine. » PUR / seedé : lance
+ *  le Test de Calme et renvoie sa résolution + le Trait à poser (`animosite`, ou `haine` qui REMPLACE
+ *  l'Animosité existante via `replacesAnimosite`). Réussite (ou règle éteinte) → aucun Trait. */
+export function animositeOrHaine(
+  c: Combatant,
+  cible: string,
+  rng: RNG = defaultRNG,
+): { test: { success: boolean; roll: number; sl: number; target: number }; trait?: PsychTrait; replacesAnimosite?: boolean } | null {
+  if (!rule('psych-acquisition-optional')) return null;
+  const test = resolveCalmeSimple(calmeValue(c), rng); // Calme Intermédiaire (+0)
+  if (test.success) return { test };
+  const hasAnimosite = (c.psychTraits ?? []).some((p) => p.type === 'animosite' && p.cible === cible);
+  return hasAnimosite
+    ? { test, trait: { type: 'haine', cible }, replacesAnimosite: true }
+    : { test, trait: { type: 'animosite', cible }, replacesAnimosite: false };
+}
+
+/** Trauma (ADE II Annexe I) : « Si un Personnage est témoin d'un événement qui rend l'une de ses Ambitions
+ *  complètement irréalisable, il doit effectuer un Test de Calme Accessible (+20). En cas d'échec, il
+ *  développe un Trauma Psychologique. » PUR / seedé : lance le Test de Calme Accessible et renvoie sa
+ *  résolution + le Trait `trauma` à poser sur un échec. Réussite (ou règle éteinte) → aucun Trait. */
+export function traumaOnImpossibleAmbition(
+  c: Combatant,
+  rng: RNG = defaultRNG,
+): { test: { success: boolean; roll: number; sl: number; target: number }; trait?: PsychTrait } | null {
+  if (!rule('psych-acquisition-optional')) return null;
+  const t = rollTest(calmeValue(c), 'accessible', rng); // Calme Accessible (+20)
+  const test = { success: t.success, roll: t.roll, sl: t.sl, target: t.target };
+  return t.success ? { test } : { test, trait: { type: 'trauma' } };
 }
 
 /** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;

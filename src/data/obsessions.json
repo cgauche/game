@@ -1,0 +1,104 @@
+{
+  "source": {
+    "book": "EDOC",
+    "page": 69
+  },
+  "ref": "EDOC ch.8 l.170",
+  "table": [
+    {
+      "min": 2,
+      "max": 2,
+      "label": "Objets inanimés"
+    },
+    {
+      "min": 3,
+      "max": 3,
+      "label": "Pauvreté"
+    },
+    {
+      "min": 4,
+      "max": 4,
+      "label": "Feu"
+    },
+    {
+      "min": 5,
+      "max": 5,
+      "label": "Figures/Symboles de guerre"
+    },
+    {
+      "min": 6,
+      "max": 6,
+      "label": "Figures/Symboles d'autorité"
+    },
+    {
+      "min": 7,
+      "max": 7,
+      "label": "Figures/Symboles religieux"
+    },
+    {
+      "min": 8,
+      "max": 8,
+      "label": "Monstres"
+    },
+    {
+      "min": 9,
+      "max": 9,
+      "label": "Mutants"
+    },
+    {
+      "min": 10,
+      "max": 10,
+      "label": "Halflings"
+    },
+    {
+      "min": 11,
+      "max": 11,
+      "label": "Humains"
+    },
+    {
+      "min": 12,
+      "max": 12,
+      "label": "Nains"
+    },
+    {
+      "min": 13,
+      "max": 13,
+      "label": "Elfes"
+    },
+    {
+      "min": 14,
+      "max": 14,
+      "label": "Animaux sauvages"
+    },
+    {
+      "min": 15,
+      "max": 15,
+      "label": "Animaux domestiques"
+    },
+    {
+      "min": 16,
+      "max": 16,
+      "label": "Magie"
+    },
+    {
+      "min": 17,
+      "max": 17,
+      "label": "Maladie"
+    },
+    {
+      "min": 18,
+      "max": 18,
+      "label": "Eau"
+    },
+    {
+      "min": 19,
+      "max": 19,
+      "label": "Richesse"
+    },
+    {
+      "min": 20,
+      "max": 20,
+      "label": "Bonheur"
+    }
+  ]
+}

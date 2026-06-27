@@ -1067,7 +1067,8 @@
     "passive": [
       {
         "op": "grantTrait",
-        "traitId": "haine"
+        "traitId": "haine",
+        "argFrom": "obsessions"
       }
     ],
     "note": "Gagne le Trait de créature Haine (Cible). Lancez les dés sur le Tableau des Obsessions au début de chaque jour pour déterminer la Cible",
@@ -1230,7 +1231,8 @@
     "passive": [
       {
         "op": "grantTrait",
-        "traitId": "effraye"
+        "traitId": "effraye",
+        "argFrom": "obsessions"
       }
     ],
     "note": "Gagne le Trait de créature Effrayé (Cible), déterminer la Cible avec un jet sur le Tableau des Obsessions",
