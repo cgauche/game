@@ -2592,13 +2592,21 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
     // Focalisation prête (DR cumulé ≥ NI) → fiabilité calculée à NI 0 ; sinon fiabilité normale.
     const ready = enemy.focus?.spell === data.id && (enemy.focus?.dr ?? 0) >= cn;
     const landProb = castLandProbability(enemy, data, ready);
+    // Un sort dont le payload est une INVOCATION alliée (`op:summon on:caster`) est routé 'self' (et JAMAIS
+    // 'focusable' : on ne focalise pas une invocation, on la LANCE) AVANT toute logique de zone — la machinerie
+    // `castArea` = zone de DÉGÂTS (centre sur un paquet d'ennemis) ne convient pas (un summon sans ennemi dans
+    // la zone ne se résout pas, tour gâché). En 'self', le chemin `cast` normal déclenche le summon (`applyCast`)
+    // et pose `spell.id` sur le lien → Unicité (plus de re-invocation en boucle). La `target.kind='area'` d'un
+    // tel sort (Réanimation) est COSMÉTIQUE — `applySummon` place les invoqués près du lanceur.
+    const hasAllySummon = spellOps(data.effects, 'caster').some((o) => o.op === 'summon' && o.allyOfCaster !== false);
     const focusState: CastableSpell['focusState'] = ready ? 'ready'
-      : (landProb < 0.5 && isArcaneSpell(data) && !!focusSkillFor(enemy, data)) ? 'focusable'
+      : (!hasAllySummon && landProb < 0.5 && isArcaneSpell(data) && !!focusSkillFor(enemy, data)) ? 'focusable'
         : 'none';
-    const radius = zdeRadiusTiles(data.target, enemy);
-    const shape: CastableSpell['shape'] = radius != null ? { area: { radius } }
-      : (data.range?.kind === 'self' || data.target?.kind === 'self') ? 'self'
-        : 'single';
+    const radius = hasAllySummon ? null : zdeRadiusTiles(data.target, enemy);
+    const shape: CastableSpell['shape'] = hasAllySummon ? 'self'
+      : radius != null ? { area: { radius } }
+        : (data.range?.kind === 'self' || data.target?.kind === 'self') ? 'self'
+          : 'single';
     spells.push({
       id: data.id, data, cn, range: spellRangeTiles(data.range, enemy), shape, landProb, focusState,
       active: isSpellActive(data, enemy, battle),
