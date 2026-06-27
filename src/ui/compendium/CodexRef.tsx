@@ -9,16 +9,11 @@
  * contexte d'empilement. `pointer-events: none` → pur tooltip, pas de pont de survol ; le clic
  * (déclencheur) ouvre le Codex.
  */
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup } from './registry';
 import { mdToText } from '../Prose';
-
-/** Contexte « popover-seul » : sous ce fournisseur, tout `CodexRef` informe au survol mais son clic
- *  n'ouvre PAS la fiche plein écran (équivaut à `tooltipOnly`). Posé autour de l'assistant de création
- *  pour qu'une référence de règle ne fasse pas quitter le flux — ce qui réinitialisait le brouillon. */
-export const CodexTooltipOnly = createContext(false);
 
 const truncate = (s: string, n = 260): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
@@ -87,7 +82,6 @@ export function CodexRef({
   fallback?: { sub?: string; body?: string };
 }) {
   const openCodex = useGame((s) => s.openCodex);
-  const ctxTooltipOnly = useContext(CodexTooltipOnly);
   const item = codexLookup(category, label);
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<PopoverPlacement | null>(null);
@@ -109,9 +103,9 @@ export function CodexRef({
   const metaLine = item?.meta?.length ? truncate(item.meta.slice(0, 4).map((m) => `${m.label} ${m.value}`).join(' · '), 140) : null;
   const src = item?.source;
   const inst = instance && instance !== title ? instance : undefined;
-  // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul
-  // (prop `tooltipOnly` ou contexte `CodexTooltipOnly`, ex. assistant de création).
-  const interactive = !tooltipOnly && !ctxTooltipOnly && !!item;
+  // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul (prop
+  // `tooltipOnly`, ex. cellule d'équipement déjà cliquable comme picker).
+  const interactive = !tooltipOnly && !!item;
   const open = () => { if (item) openCodex({ category, label: item.label, instance: inst }); };
 
   return (

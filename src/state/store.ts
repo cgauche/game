@@ -187,10 +187,16 @@ export interface GameState extends RollFlowActionsMap {
   /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`), null = page d'accueil du Codex.
    *  `instance` = libellé paramétré porté par le lien (« 8 Tentacules +8 ») affiché en tête de fiche. */
   compendiumFocus: { category: string; label: string; instance?: string } | null;
-  /** Écran à restaurer en quittant le Codex (capturé à l'ouverture). */
+  /** Écran à restaurer en quittant le Codex plein écran (capturé depuis le menu). */
   compendiumReturn: Screen;
-  /** Ouvre le Codex (optionnellement sur une entrée), en mémorisant l'écran courant pour le retour. */
+  /** Drill-in d'une réf Codex EN JEU : fiche ouverte en MODALE par-dessus la partie (sans changer
+   *  d'écran → musique et fiche perso intactes derrière). null = pas de modale. */
+  codexOverlay: { category: string; label: string; instance?: string } | null;
+  /** Ouvre le Codex sur une entrée. Depuis le jeu (focus fourni) → modale ; depuis le menu (sans
+   *  focus) → écran plein ; déjà ouvert → on s'y déplace en place. */
   openCodex: (focus?: { category: string; label: string; instance?: string }) => void;
+  /** Ferme la modale Codex (drill-in). */
+  closeCodexOverlay: () => void;
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';
@@ -874,6 +880,7 @@ export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
   compendiumFocus: null,
   compendiumReturn: 'menu',
+  codexOverlay: null,
   pendingCampaign: null,
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
@@ -1025,7 +1032,18 @@ export const useGame = create<GameState>((set, get) => ({
   setScreen: (s) => set({ screen: s }),
   editingHeroId: null,
   setEditingHero: (id) => set({ editingHeroId: id }),
-  openCodex: (focus) => set((st) => ({ screen: 'compendium', compendiumFocus: focus ?? null, compendiumReturn: st.screen === 'compendium' ? st.compendiumReturn : st.screen })),
+  openCodex: (focus) =>
+    set((st) => {
+      // Déjà sur l'écran Codex (parcours plein écran) : on se déplace sur l'entrée en place.
+      if (st.screen === 'compendium') return { compendiumFocus: focus ?? null };
+      // Déjà dans la modale Codex : une cross-réf plonge DANS la modale (pas de nouvel écran).
+      if (st.codexOverlay) return { codexOverlay: focus ?? st.codexOverlay };
+      // Drill-in depuis le jeu (réf cliquée) : modale focalisée — écran, musique et fiche intacts.
+      if (focus) return { codexOverlay: focus };
+      // Parcours complet (depuis le menu) : écran plein, retour à l'écran courant.
+      return { screen: 'compendium', compendiumFocus: null, compendiumReturn: st.screen };
+    }),
+  closeCodexOverlay: () => set({ codexOverlay: null }),
   setPendingCampaign: (pc) => set({ pendingCampaign: pc }),
 
   // ── Entre deux aventures (LDB 22-23, Jalon 5) ──

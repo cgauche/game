@@ -46,7 +46,7 @@ import { generateName } from '../../engine/names';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
-import { CodexRef, CodexTooltipOnly } from '../compendium/CodexRef';
+import { CodexRef } from '../compendium/CodexRef';
 import { TabbedEntry } from '../TabbedEntry';
 import { Prose, mdToText } from '../Prose';
 import { CodexSections } from '../compendium/CodexEntry';
@@ -232,10 +232,9 @@ export function CharacterCreator() {
 
   const zone = STEP_META[curId].zone({ d, setD });
 
-  // Les références Codex de l'assistant sont popover-SEUL : un clic ne doit pas ouvrir le Compendium
-  // plein écran (ce qui démontait l'assistant et perdait le brouillon, en cours de création).
+  // Une réf Codex cliquée ouvre la fiche en MODALE par-dessus l'assistant (cf. CodexOverlay) : le
+  // brouillon reste intact (plus de changement d'écran qui le réinitialisait).
   return (
-    <CodexTooltipOnly.Provider value={true}>
     <div className="screen creator">
       <header className="bar">
         <button className="btn small" onClick={closeCreator}>
@@ -296,7 +295,6 @@ export function CharacterCreator() {
         )}
       </footer>
     </div>
-    </CodexTooltipOnly.Provider>
   );
 }
 

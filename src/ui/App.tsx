@@ -14,6 +14,7 @@ const TestScenariosScreen = lazy(() => import('./TestScenariosScreen').then((m) 
 const InterludeScreen = lazy(() => import('./InterludeScreen').then((m) => ({ default: m.InterludeScreen })));
 const CoopLobby = lazy(() => import('./CoopLobby').then((m) => ({ default: m.CoopLobby })));
 const CompendiumScreen = lazy(() => import('./compendium/CompendiumScreen').then((m) => ({ default: m.CompendiumScreen })));
+const CodexOverlay = lazy(() => import('./compendium/CompendiumScreen').then((m) => ({ default: m.CodexOverlay })));
 
 /** Bannière coop non bloquante : reconnexions en cours (invité comme hôte). */
 function CoopBanner() {
@@ -33,6 +34,7 @@ function CoopBanner() {
 
 export function App() {
   const screen = useGame((s) => s.screen);
+  const codexOverlay = useGame((s) => s.codexOverlay);
   // Règles maison persistées → registre (avant tout jet) ; lien d'invitation ?join=CODE → écran coop.
   useEffect(() => {
     loadHouseRules();
@@ -51,6 +53,9 @@ export function App() {
         {screen === 'interlude' && <InterludeScreen />}
         {screen === 'coop' && <CoopLobby />}
         {screen === 'compendium' && <CompendiumScreen />}
+        {/* Drill-in d'une réf Codex EN JEU : modale par-dessus l'écran courant (n'importe lequel),
+            sans démonter le jeu/la fiche → musique et contexte préservés (cf. openCodex). */}
+        {codexOverlay && <CodexOverlay />}
       </Suspense>
     </div>
   );
