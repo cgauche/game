@@ -1,7 +1,8 @@
 /**
  * #40 — Armes de base d'Aux Armes (AA) absentes de la base : Cimeterre, Dague ballock, Massue,
  * Pique d'armes. Stats VERBATIM du « TABLEAU DES ARMES DE BASE » (folio imprimé 91). Sabre et
- * Gantelets existaient déjà. Griffes de Tigre : ABSENTE volontairement (aucun RAW autorisé — ni AA ni ZI).
+ * Gantelets existaient déjà. Griffes de Tigre : PAS dans AA/ZI (le ticket mal-sourçait) — en réalité
+ * dans NADJ « Le mariage de Nastassia » (folio 67) ; ajoutée comme arme de Bagarre au profil de Dague.
  */
 import { describe, it, expect } from 'vitest';
 import { findTrappingById, findQualityById } from './index';
@@ -35,8 +36,12 @@ describe("#40 — Armes de base AA (Aux Armes, folio 91)", () => {
     });
   }
 
-  it('Griffes de Tigre : ABSENTE (aucun RAW autorisé — ni AA ni ZI)', () => {
-    expect(findTrappingById('griffes-de-tigre')).toBeUndefined();
-    expect(findTrappingById('griffe-de-tigre')).toBeUndefined();
+  it('Griffes de Tigre : présente, source NADJ folio 67 (pas AA), arme de Bagarre au profil de Dague', () => {
+    const t = findTrappingById('griffe-de-tigre');
+    expect(t, 'griffe-de-tigre doit exister (NADJ)').toBeTruthy();
+    expect(t!.type).toBe('melee');
+    expect(t!.subType).toBe('bagarre'); // « utilisation se base sur Corps à corps (Bagarre) »
+    expect(t!.damage).toEqual({ plusBF: true, flat: 2 }); // « mêmes caractéristiques qu'une Dague »
+    expect(t!.source).toEqual({ book: 'NADJ', page: 67 });
   });
 });

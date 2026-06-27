@@ -8185,6 +8185,32 @@
     }
   },
   {
+    "id": "griffe-de-tigre",
+    "label": "Griffes de Tigre",
+    "type": "melee",
+    "subType": "bagarre",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
+    "qualities": [],
+    "desc": "Ressemblent à des gants renforcés munis de quatre lames saillantes. Elles possèdent les mêmes caractéristiques qu'une Dague mais leur utilisation se base sur la Compétence Corps à corps (Bagarre) avec les règles additionnelles suivantes : sur un Test réussi de Corps à corps (Bagarre), la blessure occasionnée peut sembler avoir été provoquée par un gros chat ou un autre animal similaire.",
+    "price": {
+      "gold": 0,
+      "silver": 16,
+      "bronze": 0
+    },
+    "source": {
+      "book": "NADJ",
+      "page": 67
+    }
+  },
+  {
     "id": "gantelet-verrouille",
     "label": "Gantelet verrouillé",
     "type": "melee",
