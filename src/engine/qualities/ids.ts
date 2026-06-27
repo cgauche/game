@@ -36,4 +36,5 @@ export const QUALITY_IDS = {
   PeuFiable: 'peu-fiable',
   Devastatrice: 'devastatrice',
   Percutante: 'percutante',
+  Perforante: 'perforante',
 } as const;

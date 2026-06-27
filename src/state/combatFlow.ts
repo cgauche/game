@@ -449,6 +449,7 @@ export function resolveAttack(
   intoCrowd?: boolean,
   heldGround?: boolean,
   weaponUid?: string,
+  withhold?: boolean, // « Retenir ses coups » (Aux Armes l.2503-2505) — déclaré avant le jet, mêlée seule
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target, weaponUid, get().battle?.combatants); // arme choisie + munition + sous-effectif du poste servi
@@ -488,7 +489,7 @@ export function resolveAttack(
   // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → dodgeMod.
   const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
   const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'F')), size: chargeMount.size } : undefined;
-  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy }), weapon };
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold }), weapon };
 }
 
 /** 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638). Jet d'attaquant IMPOSÉ : `reverseRoll(mainRoll)`,

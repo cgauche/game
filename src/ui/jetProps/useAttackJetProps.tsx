@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { useGame, movementRemaining } from '../../state/store';
 import { FLOWS } from '../../state/rollFlows';
 import { HitLocation } from '../../engine/types';
-import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel } from '../../engine/combat';
+import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
@@ -40,6 +40,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   const cancel = useGame((s) => s.attackCancel);
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
   const setHeldGround = useGame((s) => s.attackSetHeldGround);
+  const setWithhold = useGame((s) => s.attackSetWithhold);
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
   const setForcedRoll = useGame((s) => s.attackSetForcedRoll);
   const spendResolve = useGame((s) => s.spendResolveCondition);
@@ -64,6 +65,9 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   // déplacer (sinon il est immobile d'office, pas de −10 à annuler) — annule le −10 « Tir en bougeant » au
   // prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
   const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
+  // « Retenir ses coups » (Aux Armes l.2503-2505) : maîtriser sans tuer. Proposé seulement quand c'est légal —
+  // attaque de MÊLÉE (jamais tir/sort), arme qui n'inflige PAS *En flammes* (l.2505), avant le jet.
+  const canWithhold = !res && weapon?.type === 'melee' && attacker.kind === 'hero' && !weaponInflictsFlames(weapon);
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
@@ -164,6 +168,18 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
               {pa.heldGround
                 ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
                 : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
+            </div>
+          )}
+          {canWithhold && (
+            <div className="rm-crowd">
+              <button
+                className={`btn small ${pa.withhold ? 'btn-primary' : ''}`}
+                onClick={() => setWithhold(!pa.withhold)}
+                title="Maîtriser sans tuer : tu infliges des Blessures normales, mais aucune Blessure Critique tant que l'adversaire n'est pas à 0. Tu perds les Atouts Empaleuse, Percutante, Perforante et Taille. (Aux Armes)"
+              >
+                ✊ Retenir ses coups
+              </button>
+              {pa.withhold && <span className="rm-crowd-note">Non létal : Critique seulement si la cible tombe à 0 ; sans Empaleuse/Percutante/Perforante/Taille.</span>}
             </div>
           )}
         </div>

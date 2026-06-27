@@ -1469,6 +1469,11 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!pa || pa.result) return; // choix avant le jet seulement
       set({ pendingAttack: { ...pa, heldGround: v } });
     },
+    attackSetWithhold: (v: boolean) => {
+      const pa = get().pendingAttack;
+      if (!pa || pa.result) return; // « Retenir ses coups » se déclare AVANT le jet (Aux Armes l.2503)
+      set({ pendingAttack: { ...pa, withhold: v } });
+    },
     attackSetCritLocation: (loc: HitLocation) => {
       const pa = get().pendingAttack;
       // RAW-2 (LDB 17 l.73) : réservé à un Coup Critique issu d'un succès FORCÉ (« Je ne faillirai pas ! »).
@@ -1482,7 +1487,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = battle.combatants.find((c) => c.id === pa.targetId);
       if (!attacker || !target) return;
       applyIncomingMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-      const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223)
+      const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223) ; pa.withhold = Retenir ses coups (AA)
       if (!r) {
         get().log(firedWeapon(attacker, target, pa.weaponUid).type === 'ranged' ? t('cf.noLoSMasked') : t('cs.meleeOutOfRange'));
         set({ pendingAttack: null });

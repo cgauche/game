@@ -26,6 +26,7 @@ import { incomingAttackMod, incomingDamageNullified } from './ops';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
+import { spellEffectOps } from './flowCore';
 import { weaponGroupLabel, findPsychologyById } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
 import { isEngagedWith, reachRank } from './engagement';
@@ -442,6 +443,10 @@ export interface AttackOptions {
   /** Combat monté — CHARGE (LDB 14 l.223) : pour le calcul des DÉGÂTS seulement, on substitue la Force
    *  (Bonus `sb`) et la Taille de la MONTURE à celles du cavalier (le toucher reste la CC du cavalier). */
   dmgProxy?: { sb: number; size: Combatant['size'] };
+  /** « Retenir ses coups » (Aux Armes l.2503-2505) : maîtriser sans tuer — déclaré AVANT le jet. N'agit
+   *  qu'en MÊLÉE (jamais tir/sort) et pas avec une arme infligeant *En flammes*. Retire Empaleuse/
+   *  Percutante/Perforante + l'Atout Taille du coup, et supprime le Critique SAUF si la cible tombe à 0. */
+  withhold?: boolean;
 }
 
 // `woundsFromHit` (Blessures d'un coup d'arme) vit désormais dans le module FEUILLE `woundsCalc.ts`
@@ -532,9 +537,10 @@ export function finishMelee(
   dodgeMod = 0,
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + Atouts + pénalité main 2nde)
+  withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505)
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
-  return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, dmgProxy, parryWeapon, dodgeMod });
+  return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, dmgProxy, parryWeapon, dodgeMod, withhold });
 }
 
 /**
@@ -553,7 +559,7 @@ function combineOpposed(
   def: TestResult,
   defenseMode: 'parade' | 'esquive',
   atkBd: ReturnType<typeof bd>,
-  opts: { location?: HitLocation; dmgProxy?: AttackOptions['dmgProxy']; parryWeapon?: Weapon; dodgeMod?: number } = {},
+  opts: { location?: HitLocation; dmgProxy?: AttackOptions['dmgProxy']; parryWeapon?: Weapon; dodgeMod?: number; withhold?: boolean } = {},
 ): AttackResult {
   const { location, dmgProxy } = opts;
   const parryWeapon = opts.parryWeapon ?? defender.weapons[0];
@@ -599,7 +605,7 @@ function combineOpposed(
   }
   const critical = atk.isDouble && atk.success;
   // Protectrice (LDB 62 l.306) : opposer l'attaque avec l'arme → Indice PA à toutes les localisations.
-  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location, dmgProxy, defenseMode === 'parade' ? protectriceAP(parryWeapon) : 0);
+  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location, dmgProxy, defenseMode === 'parade' ? protectriceAP(parryWeapon) : 0, opts.withhold);
   res.defenderRoll = def.roll;
   res.defenderDetail = defBd;
   res.parryWeapon = usedParry;
@@ -630,10 +636,11 @@ export function resolveMeleePassive(
   location?: HitLocation,
   env: ModLine[] = [],
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
+  withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505)
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
-  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender), atk.isDouble && atk.success, location, dmgProxy); // Imprécise : −1 DR à l'attaque (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21)
+  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21)
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
@@ -657,10 +664,10 @@ export function resolveMelee(
   const autoKill = helpless && rule('combat-helpless-mode') === 'mort-auto';
   let res: AttackResult;
   if (defenseMode === 'none') {
-    res = resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy);
+    res = resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy, opts.withhold);
   } else {
     const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod, defender.weapons[0], weapon);
-    res = finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy);
+    res = finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy, defender.weapons[0], opts.withhold);
   }
   if (autoKill && res.hit) res.autoKill = true;
   return res;
@@ -847,6 +854,18 @@ export function resolveTrample(attacker: Combatant, target: Combatant, rng: RNG 
   return applyHit(attacker, target, fist, atkBd, atk.sl, atk.isDouble && atk.success);
 }
 
+/** Atouts retirés du profil quand on « Retient ses coups » (Aux Armes l.2505) — Empaleuse, Percutante,
+ *  Perforante. La « Taille » (Atouts conférés + ×N) est traitée à part, en forçant `noSize` dans `applyHit`. */
+const WITHHELD_QUALITY_IDS = new Set<string>([QUALITY_IDS.Empaleuse, QUALITY_IDS.Percutante, QUALITY_IDS.Perforante]);
+
+/** L'arme inflige-t-elle l'État *En flammes* (un onHitEffect posant la Condition `en-flammes`, ex. Épée
+ *  ardente de Rhuin) ? Une telle arme NE peut PAS Retenir ses coups (Aux Armes l.2505). */
+export function weaponInflictsFlames(weapon: Weapon): boolean {
+  return (weapon.onHitEffects ?? []).some((e) =>
+    spellEffectOps(e.flow).some((o) => o.op === 'condition' && o.name === COND.enFlammes),
+  );
+}
+
 function applyHit(
   attacker: Combatant,
   defender: Combatant,
@@ -857,10 +876,17 @@ function applyHit(
   forcedLoc?: HitLocation,
   dmgProxy?: AttackOptions['dmgProxy'],
   extraAP = 0, // PA conférés par l'arme d'opposition du défenseur (Protectrice, LDB 62 l.306)
+  withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505) — voir applyHit, n'agit qu'en mêlée
 ): AttackResult {
   // Arme usée à +0 → improvisée (LDB 62 l.178). L'enchantement (Magique/Dégâts/onHit) est DÉJÀ replié
   // dans l'arme active par recomputeLoadout (applyEnchants) — porté par l'objet, plus de merge ici.
   weapon = effectiveWeapon(weapon);
+  // Retenir ses coups (Aux Armes l.2503-2505) : maîtriser sans tuer. N'a d'effet qu'en MÊLÉE, jamais avec
+  // une arme infligeant *En flammes* (l.2505). On retire Empaleuse/Percutante/Perforante du profil POUR CE
+  // COUP (sans muter l'objet partagé) et on force `noSize` (ni Atout de Taille ni ×N — « perdez l'Atout
+  // Taille »). Le Critique est ensuite suspendu sauf si la cible tombe à 0 Blessure (calculé plus bas).
+  const withholding = withhold && weapon.type === 'melee' && !weaponInflictsFlames(weapon);
+  if (withholding) weapon = { ...weapon, qualities: (weapon.qualities ?? []).filter((q) => !WITHHELD_QUALITY_IDS.has(q.id)) };
   const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
   // Éthéré (LDB 85 p.339) : « ne peut être blessée que par les Attaques magiques » — une attaque
   // non magique (créature non Magique/Démoniaque, arme non magique) passe au travers : 0 Blessure.
@@ -884,7 +910,7 @@ function applyHit(
   // par la Taille (attaquant plus grand, LDB 85 l.295) fusionnés via `extra` (qualityDamageStep).
   // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.
   // Épuisante (LDB 63 l.16-17) : Percutante/Dévastatrice de l'arme inertes hors Charge (`charged`).
-  const noSize = !!attacker.swarm || !!defender.swarm;
+  const noSize = !!attacker.swarm || !!defender.swarm || withholding; // Retenir ses coups perd l'Atout Taille (l.2505)
   const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units, charged: !!attacker.chargedThisTurn }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
   let damage = weaponDmg + Math.max(0, dmgDR) + dmgBonus;
   // Talents de Dégâts (LDB 10) : Coup puissant (mêlée), Tir précis (distance), Combat déloyal
@@ -894,18 +920,27 @@ function applyHit(
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
   // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18-Traumatisme l.30) est désormais
   // géré par le STORE (pipeline de critique), car il dépend des PB courants de la cible — pas des PB max.
+  // Empaleuse déjà retirée du profil si l'on Retient ses coups → `empale` est alors false (pas de Critique
+  // « multiple de 10 » ni de bypass d'armure Empaleuse).
   const empale = qualityCritTriggered(weapon, atkBd.roll);
   let isCritical = critical || empale;
   // Impénétrable (LDB 63) : « Toutes les Blessures Critiques causées par un nombre impair pour vous
   // toucher sont ignorées » — pièce Impénétrable à la localisation + jet de toucher impair.
   if (isCritical && atkBd.roll % 2 === 1 && impenetrableAt(defender, loc)) isCritical = false;
+  // Retenir ses coups (l.2503) : le coup est non létal — pour le calcul d'armure, on le traite comme NON
+  // critique (les Blessures normales sont infligées comme d'habitude). Le Critique n'est ré-autorisé que si
+  // la cible tombe à 0 Blessure (juste après, sur `defeated`).
+  const critForArmour = withholding ? false : isCritical;
   // Partielle / Points faibles (LDB 63) : PA des pièces concernées ignorés par CETTE touche.
-  const ignoredAP = ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: isCritical, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) });
+  const ignoredAP = ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: critForArmour, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) });
   // Tir sûr (LDB 10) : ignore niveau PA de la cible au tir.
   const sureShot = weapon.type === 'ranged' ? talentRangedAPIgnore(attacker) : 0;
   const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
+  // Retenir ses coups (l.2503) : « vous N'infligez de Blessure Critique QUE SI votre adversaire tombe à 0
+  // Blessure ». Sinon le Critique est supprimé (les Blessures normales restent infligées).
+  if (withholding) isCritical = isCritical && defeated;
   return {
     hit: true,
     attackerRoll: atkBd.roll,
@@ -1002,6 +1037,7 @@ export function rederivePassiveAttack(
   atk: TestResult,
   kind: 'melee' | 'ranged',
   location?: HitLocation,
+  withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505) — n'agit qu'en mêlée (gardé par applyHit)
 ): AttackResult {
   // Sans la distance ici, le détail des modificateurs d'un tir omet la bande de portée → la somme
   // ne reconcilie pas et l'UI retombe sur l'affichage groupé (garde côté RollLine). En mêlée c'est complet.
@@ -1018,5 +1054,5 @@ export function rederivePassiveAttack(
       log: kind === 'ranged' ? `${attacker.name} manque sa cible.` : `${attacker.name} manque ${defender.name}.`,
     };
   }
-  return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location, undefined, 0, withhold);
 }

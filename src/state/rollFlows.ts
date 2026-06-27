@@ -53,9 +53,10 @@ function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack
   if (r.defenderDetail) {
     const dd = r.defenderDetail;
     const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
-    return finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), p.location ?? undefined);
+    // p.withhold (Retenir ses coups, AA) propagé : la re-dérivation Chance/Résilience garde le coup non létal.
+    return finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), p.location ?? undefined, [], 0, undefined, undefined, p.withhold);
   }
-  return rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', p.location ?? undefined);
+  return rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', p.location ?? undefined, p.withhold);
 }
 
 /** Résout le résultat d'une défense réactive : TIR DÉFENDU (`finishRanged`, opposition RAW à distance —
@@ -207,7 +208,7 @@ export const FLOWS = {
         const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       }
-      const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid);
+      const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid, p.withhold);
       return r ? { result: r.res, victimId: r.victim?.id } : null;
     },
     // 2ᵉ frappe du Maniement de deux armes : jet IMPOSÉ (d100 inversé) — ni relance ni Pacte.

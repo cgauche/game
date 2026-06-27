@@ -715,6 +715,8 @@ export interface GameState extends RollFlowActionsMap {
   attackSetIntoCrowd: (v: boolean) => void;
   /** Tir immobile : bascule l'option « je ne bouge pas » (annule le −10 Tir en bougeant, consomme le Mouvement). */
   attackSetHeldGround: (v: boolean) => void;
+  /** « Retenir ses coups » (Aux Armes l.2503-2505) : bascule le coup non létal de mêlée (avant le jet). */
+  attackSetWithhold: (v: boolean) => void;
   /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.73) : choisit la Localisation d'un Coup Critique forcé. */
   attackSetCritLocation: (loc: HitLocation) => void;
   attackRoll: () => void;
