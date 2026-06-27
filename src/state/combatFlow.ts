@@ -131,7 +131,8 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable, sceneMetresPerTile } from './scene';
+import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene } from './scene';
+import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent } from './shipPostes';
@@ -3740,7 +3741,16 @@ export function advanceTurn(get: Get, set: SetFn) {
       battle.log.push(ev('round', tr('cf.roundHeader', { round })));
       // Ordre du Round : on REPART de l'ordre canonique (baseOrder) — donc tout réordonnancement
       // (Maladresse « agir en dernier » Oups! 21-40, pré-emption Chance) ne dure qu'UN Round (l.22-25).
-      const base = battle.baseOrder ?? battle.order;
+      // Règle optionnelle « Relancer l'Initiative chaque Round » (LDB 13 l.43, « effectuer un lancer pour
+      // chaque Round ») : on re-tire la VALEUR d'Initiative de chaque combattant via `rollInitiative` (même
+      // méthode `combat-init-method` qu'à l'ouverture) puis on recalcule l'ordre — ce nouvel ordre devient
+      // la base canonique de CE Round. OFF (défaut) : `baseOrder` est conservé (comportement inchangé).
+      let base = battle.baseOrder ?? battle.order;
+      if (rule('combat-init-reroll')) {
+        for (const c of battle.combatants) c.initiative = rollInitiative(c, battleRng());
+        base = combatOrder(battle.combatants, isMerScene(get().scene), battleRng());
+        battle.baseOrder = base;
+      }
       // Agir en dernier : Maladresse (Oups! 21-40, 1 Round) OU arme Lente active (LDB 63 l.25, permanent).
       const lastIds = battle.combatants.filter((c) => c.actLastNextRound || strikesLast(c.weapons)).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];

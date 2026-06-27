@@ -247,6 +247,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'roll-i = 1d10 + Initiative (défaut) ; fixed-i = Initiative fixe, sans dé (ordre stable d’un Round à l’autre) ; roll-bi = 1d10 + Bonus d’Initiative + Bonus d’Agilité.',
   },
   {
+    id: 'combat-init-reroll',
+    label: 'Relancer l’Initiative chaque Round',
+    ref: 'LDB 13 l.43',
+    group: 'Combat',
+    kind: 'flag',
+    default: false,
+    hint: 'Option « effectuer un lancer pour chaque Round » : au début de chaque Round, l’Initiative de tous les combattants est re-tirée (selon la Méthode d’Initiative ci-dessus) et l’ordre recalculé — les plus lents ne sont plus toujours derniers. Désactivé (défaut) = l’ordre d’ouverture est conservé pour tout le combat.',
+  },
+  {
     id: 'combat-se-fatiguer',
     label: 'Se fatiguer au combat',
     ref: 'LDB 16 l.99',

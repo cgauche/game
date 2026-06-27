@@ -39,8 +39,10 @@ export function rollInitiative(c: Combatant, rng: RNG): number {
  * les PASSAGERS (`isPassengerInBattle` : équipage d'une coque — le NAVIRE agit en unité, MDG ch.14). Les passagers
  * RESTENT dans `battle.combatants` ; seul leur slot d'`order` est retiré. Au person-scale (ou sans navire), `order`
  * est inchangé — y compris les MONTURES, qui gardent leur tour (RAW Combat monté LDB 14 l.182). PUR.
+ * `rng` (optionnel) : départage RAW des égalités EXACTES d'Initiative+Agilité par Test d'Agilité (LDB 13
+ * l.31), propagé à `initiativeOrder`. Absent = tri stable déterministe (tests purs inchangés).
  */
-export function combatOrder(all: Combatant[], merScale: boolean): string[] {
-  const ordered = initiativeOrder(all).filter((c) => !isPassengerInBattle(c, all, merScale));
+export function combatOrder(all: Combatant[], merScale: boolean, rng?: RNG): string[] {
+  const ordered = initiativeOrder(all, rng).filter((c) => !isPassengerInBattle(c, all, merScale));
   return [...ordered.filter((c) => !strikesLast(c.weapons)), ...ordered.filter((c) => strikesLast(c.weapons))].map((c) => c.id);
 }

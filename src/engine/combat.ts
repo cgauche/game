@@ -944,13 +944,39 @@ function miss(
 }
 
 
-/** Ordre d'initiative : Initiative décroissante, départage par Agilité. */
-export function initiativeOrder(combatants: Combatant[]): Combatant[] {
+/**
+ * Ordre d'initiative (LDB 13 l.31) : Initiative décroissante, départage par Agilité décroissante.
+ * « S'il y a encore égalité, demandez un Test opposé d'Agilité » : pour un GROUPE de combattants à
+ * Initiative ÉGALE **et** Agilité ÉGALE (égalité EXACTE), l'ordre relatif est résolu par un Test
+ * d'Agilité — chaque membre lance un d100 vs sa valeur d'Ag, et l'on ordonne par DR décroissant (puis,
+ * à DR égal, par jet croissant = la plus grande marge de réussite, départage stable).
+ * `rng` ABSENT → aucun jet (tri stable déterministe, comportement historique inchangé) ; PRÉSENT → les
+ * groupes à égalité exacte sont départagés par le Test (déterministe à graine fixée). Le Test n'est roulé
+ * QUE pour les membres d'un groupe à égalité exacte (zéro tirage sinon → aucune dérive du RNG en aval).
+ * PUR (RNG injecté).
+ */
+export function initiativeOrder(combatants: Combatant[], rng?: RNG): Combatant[] {
+  const initOf = (c: Combatant) => c.initiative ?? baseWithTraits(c, 'I');
+  const agOf = (c: Combatant) => baseWithTraits(c, 'Ag');
+  const tieTest = new Map<Combatant, TestResult>();
+  if (rng) {
+    const groupKey = (c: Combatant) => `${initOf(c)}|${agOf(c)}`;
+    const groupSize = new Map<string, number>();
+    for (const c of combatants) groupSize.set(groupKey(c), (groupSize.get(groupKey(c)) ?? 0) + 1);
+    // Roulé dans l'ordre d'ENTRÉE, uniquement pour les égalités exactes → consommation RNG minimale et déterministe.
+    for (const c of combatants) if ((groupSize.get(groupKey(c)) ?? 0) > 1) tieTest.set(c, rollTest(effectiveChar(c, 'Ag'), 'intermediaire', rng));
+  }
   return [...combatants].sort((a, b) => {
-    const ia = a.initiative ?? baseWithTraits(a, 'I');
-    const ib = b.initiative ?? baseWithTraits(b, 'I');
+    const ia = initOf(a), ib = initOf(b);
     if (ib !== ia) return ib - ia;
-    return baseWithTraits(b, 'Ag') - baseWithTraits(a, 'Ag');
+    const aga = agOf(a), agb = agOf(b);
+    if (agb !== aga) return agb - aga;
+    const ta = tieTest.get(a), tb = tieTest.get(b);
+    if (ta && tb) {
+      if (tb.sl !== ta.sl) return tb.sl - ta.sl;         // DR décroissant
+      if (ta.roll !== tb.roll) return ta.roll - tb.roll; // à DR égal : jet le plus bas d'abord (marge la plus grande)
+    }
+    return 0; // égalité totale → tri stable (ordre d'entrée préservé)
   });
 }
 

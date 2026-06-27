@@ -1816,7 +1816,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       // Ordre d'initiative (arme « Lente » en dernier, LDB 63 l.25). À l'échelle MER, l'équipage est PASSAGER
       // (hors `order`) : seules les coques ont un tour (navire-unité, MDG ch.14). Au person-scale, ordre complet.
-      const order = combatOrder(all, isMerScene(scene));
+      const order = combatOrder(all, isMerScene(scene), battleRng()); // départage RAW des égalités exactes par Test d'Ag (LDB 13 l.31)
       const battle: BattleState = {
         combatants: all,
         order,
