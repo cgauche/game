@@ -15,25 +15,31 @@ function ModChips({ mods }: { mods: ModLine[] }) {
   );
 }
 
+/** Cellule de calcul d'un jet : « base ±mod = cible ». S'il n'y a AUCUN modificateur (nul ou
+ *  compensé), on n'affiche QUE la cible — jamais « 55 = 55 ». `hidden` = ligne adverse opaque
+ *  (dé + DR seuls). Source UNIQUE partagée par RollLine (résolu) et PendingRollLine (pré-jet). */
+function RollCalc({ base, modifier, target, hidden }: { base?: number; modifier: number; target: number; hidden?: boolean }) {
+  const hasMod = modifier !== 0;
+  return (
+    <span className="rm-roll-calc" title={hidden || !hasMod ? undefined : 'Compétence de base + modificateurs détaillés ci-dessous = cible à ne pas dépasser'}>
+      {!hidden && (hasMod
+        ? <>{base} {modifier > 0 ? '+' : '−'}{Math.abs(modifier)} = <b>{target}</b></>
+        : <b>{target}</b>)}
+    </span>
+  );
+}
+
 /** Une ligne de jet : base + modificateurs = cible · d100 · DR (✓/✗), + le détail étiqueté
  *  des modificateurs (« Courte portée +40 », « Viser +20 »…) quand il réconcilie le total. */
 export function RollLine({ d }: { d: RollBreakdown }) {
-  const mod = d.modifier === 0 ? '' : ` ${d.modifier > 0 ? '+' : '−'}${Math.abs(d.modifier)}`;
   const mods = d.mods ?? [];
   const showMods = mods.length > 0 && mods.reduce((s, m) => s + m.value, 0) === d.modifier;
   return (
     <div className="rm-roll-block">
       <div className={`rm-roll ${d.success ? 'ok' : 'fail'}`}>
         <span className="rm-roll-label">{d.label}</span>
-        <span className="rm-roll-calc" title={d.hideValue ? undefined : 'Compétence de base + modificateurs détaillés ci-dessous = cible à ne pas dépasser'}>
-          {/* Valeur CACHÉE (adversaire opaque, ex. Marchandage du marchand) : on ne montre que dé + DR. */}
-          {!d.hideValue && (
-            <>
-              {d.base}
-              {mod} = <b>{d.target}</b>
-            </>
-          )}
-        </span>
+        {/* Valeur CACHÉE (adversaire opaque, ex. Marchandage du marchand) : on ne montre que dé + DR. */}
+        <RollCalc base={d.base} modifier={d.modifier} target={d.target} hidden={d.hideValue} />
         <span className="rm-roll-dice">
           🎲 <b><Dice roll={d.roll} /></b>
         </span>
@@ -71,14 +77,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
     <div className="rm-roll-block">
       <div className="rm-roll pending">
         <span className="rm-roll-label">{p.label}</span>
-        <span className="rm-roll-calc" title={showValue ? 'Compétence de base + modificateurs détaillés ci-dessous = cible à ne pas dépasser' : undefined}>
-          {showValue && (
-            <>
-              {p.base}
-              {diff !== 0 ? ` ${diff > 0 ? '+' : '−'}${Math.abs(diff)}` : ''} = <b>{target}</b>
-            </>
-          )}
-        </span>
+        <RollCalc base={p.base} modifier={diff} target={target} hidden={!showValue} />
         <span className="rm-roll-dice">
           🎲 <b className="rm-roll-empty">--</b>
         </span>

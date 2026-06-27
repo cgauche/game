@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { RollLine } from './RollLine';
+import { RollLine, PendingRollLine } from './RollLine';
 
 describe('RollLine — détail d’un jet pour la modale', () => {
   it('réussite : base + modificateur = cible, le d100, et le DR', () => {
@@ -42,5 +42,39 @@ describe('RollLine — détail d’un jet pour la modale', () => {
       <RollLine d={{ label: 'Projectiles', base: 38, modifier: 40, target: 78, roll: 50, success: true, sl: 3, mods: [{ label: 'Viser', value: 20 }] }} />,
     );
     expect(html).not.toContain('Viser'); // 20 ≠ 40 → repli sur l'affichage groupé
+  });
+
+  it('aucun modificateur → « 55 » seul, pas « 55 = 55 »', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Sociabilité', base: 55, modifier: 0, target: 55, roll: 40, success: true, sl: 1 }} />,
+    );
+    expect(html).toContain('55');
+    expect(html).not.toContain('= <b>'); // pas de « = cible » redondant
+  });
+
+  it('mods qui s’annulent (+10 / −10) → ligne « 55 » SANS « = », mais chips conservées', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Esquive', base: 55, modifier: 0, target: 55, roll: 40, success: true, sl: 1, mods: [{ label: 'Avantage', value: 10 }, { label: 'Sonné', value: -10 }] }} />,
+    );
+    expect(html).not.toContain('= <b>');
+    expect(html).toContain('Avantage'); // chips toujours visibles pour expliquer le wash
+    expect(html).toContain('Sonné');
+  });
+});
+
+describe('PendingRollLine — pré-jet (même règle « pas de = redondant »)', () => {
+  it('aucun modificateur → « 55 » seul', () => {
+    const html = renderToStaticMarkup(<PendingRollLine p={{ label: 'Sociabilité', base: 55, target: 55 }} />);
+    expect(html).toContain('55');
+    expect(html).not.toContain('= <b>');
+  });
+
+  it('avec modificateur → « 45 +10 = 55 »', () => {
+    const html = renderToStaticMarkup(
+      <PendingRollLine p={{ label: 'Corps à corps', base: 45, target: 55, mods: [{ label: 'Avantage', value: 10 }] }} />,
+    );
+    expect(html).toContain('45');
+    expect(html).toContain('= <b>');
+    expect(html).toContain('Avantage');
   });
 });
