@@ -537,10 +537,10 @@
     "label": "Dressé (Cavalerie de choc)",
     "prefix": null,
     "suffix": null,
-    "desc": "Réservé à un animal possédant déjà Dressé (Guerre). La monture ignore le péril de charger en bon ordre au milieu d'une unité ennemie bien armée et fonce droit sur une masse d'ennemis (Aux Armes).",
+    "desc": "Ce Trait ne peut être pris que par un animal possédant déjà le Trait Dressé (Guerre). La plupart des bêtes de cavalerie, même celles dressées à supporter les rigueurs de la guerre, ne chargeront pas en bon ordre en plein milieu d'une unité ennemie bien armée. Les montures dotées de ce Trait ont été spécialement dressées pour ignorer ce péril et pour foncer directement sur une masse d'ennemis.\n\nQuand ils effectuent une Charge, les Personnages chevauchant une monture qui possède ce Trait peuvent passer outre les créatures plus petites pendant leur Mouvement pour atteindre leur cible. Chaque créature que la monture renverse de cette manière doit réussir un Test d'**Esquive Intermédiaire (+0)** sous peine de subir 4 + Bonus de Force de la monture Dégâts.\n\nToute créature qui subit des Dégâts de cette manière réduit le Mouvement restant de la monture de 2 mètres. Les créatures de Taille supérieure ou égale à celle de la monture arrêtent sa progression. Dans les deux cas, une fois que la Charge de la monture a pris fin, toute créature ennemie à portée d'Allonge d'une attaque au corps à corps est à présent considérée comme Engagée normalement et la Charge est résolue comme si l'une de ces créatures en avait été la cible.",
     "source": {
-      "book": "LDB",
-      "page": 339
+      "book": "AA",
+      "page": 107
     }
   },
   {
