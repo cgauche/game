@@ -427,6 +427,21 @@ export type GameOp =
    *  l'arme visée (contexte sérialisé `ctx.bladeTrap`). `applyOps` (moteur pur) le laisse INERTE — comme
    *  `grantFreeAttack`/`interruptFocus`/`summon`/`zone`. */
   | { op: 'breakBlade' }
+  /** POUSSÉE POSITIONNELLE (Poussée, LDB 47 p.244) : chaque cible affectée est repoussée en ligne
+   *  (direction lanceur→cible) de `meters` mètres jusqu'à l'obstacle ; la collision est journalisée. Op
+   *  IMPURE (déplace sur la grille) — INERTE dans applyOps, résolue par combatFlow (`applyCast` : scan
+   *  `spellOps(spell.effects,'caster')`, `pushAway` + `applyZoneCrossings`). */
+  | { op: 'push'; meters: Formula }
+  /** TÉLÉPORTATION du lanceur (Téléportation / Portail d'Ombre / Eau de la terre, LDB 47 p.244-245) : le
+   *  lanceur se déplace de `meters` mètres (+`perSL` « +metersFormula par `every` DR ») en survolant les
+   *  obstacles. Op IMPURE (pose le mode 'teleport' = choix de case d'arrivée) — INERTE dans applyOps,
+   *  résolue par combatFlow (`applyCast` : scan + `flyReachable`, puis pose différée `action:'teleport'`). */
+  | { op: 'teleport'; meters: Formula; perSL?: { every: number; metersFormula: Formula } }
+  /** ATTAQUES EN CHAÎNE (LDB 47 p.243) : si le Projectile réduit la cible à 0 Blessure, il rebondit sur
+   *  l'ennemi le plus proche (≤ `hopMeters` m, dans la portée initiale), mêmes Dégâts, jusqu'à `maxBounces`
+   *  rebonds. Op IMPURE (rebond sur la grille) — INERTE dans applyOps, résolue par combatFlow (`applyCast`,
+   *  branche missile : scan + boucle de rebond). */
+  | { op: 'chain'; maxBounces: Formula; hopMeters: Formula }
   /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
    *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
    *  LDB 47). Généralise l'ancien « État par Round » : 1 Ration/Round (Récolte de Rhya), 1 État
@@ -1282,11 +1297,15 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'grantFreeAttack':
       case 'interruptFocus':
       case 'breakBlade':
+      case 'push':
+      case 'teleport':
+      case 'chain':
         // Effets IMPURS (grille + initiative / reconstitution programmée / zones de bataille / ouverture
-        // d'une frappe / interruption de Focalisation / désarmement-bris de Piège-lame) — résolus par la
-        // couche state (combatFlow : applySummon / scheduleRespawn → file horloge / placeSpellZone ; les
-        // hooks `freeAttack`/`focusInterrupt`/`bladeTrap` appelés par `runCombatFlow`), qui détient get/set
-        // et le combattant. `applyOps` (moteur pur) les laisse INERTES.
+        // d'une frappe / interruption de Focalisation / désarmement-bris de Piège-lame / poussée /
+        // téléportation / rebond de Projectile) — résolus par la couche state (combatFlow : applySummon /
+        // scheduleRespawn → file horloge / placeSpellZone ; les hooks `freeAttack`/`focusInterrupt`/
+        // `bladeTrap` appelés par `runCombatFlow` ; `applyCast` scanne push/teleport/chain), qui détient
+        // get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
         break;
       case 'polymorph':
         // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure. + override

@@ -70,24 +70,23 @@ import {
   castInfo,
   castingValue,
   castPenaltyMod,
-  castTestTalentDR,
   knowsCastingSkill,
   isDispellableSpell,
   resolveCounterspell,
   castTestOf,
   rederiveCastSL,
-  missileDamage,
   zdeDiameterMeters,
   zdeRadiusTiles,
   isArcaneSpell,
   focusSkillFor,
+  castLandProbability,
   type CastResult,
   type MissileResult,
   type CounterspellOutcome,
   type SpellLike,
 } from '../engine/magic';
 import type { SpellRange } from '../engine/spellRange';
-import { applyOps, resolveFormula, skillDRBonus, formulaExpectation, type GameOp, type OpsCtx, type Formula } from '../engine/ops';
+import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx, type Formula } from '../engine/ops';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -97,7 +96,7 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById } from '../data';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, type SpellData } from '../data';
 import { applyHullCritical } from '../engine/shipCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
@@ -140,7 +139,7 @@ import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzi
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
-import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
+import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
@@ -2546,213 +2545,80 @@ const spellSightBlocked = (sight: SpellSight | undefined, caster: Combatant, t: 
 export const spellSightOf = (get: Get): SpellSight =>
   get().scene && get().battle ? { scene: get().scene!, smoke: smokeOf(get().battle!) } : null;
 
-/** Meilleur Projectile magique CONNU et jouable d'un ennemi (IA). Un Sort n'aboutit que si
- *  DR ≥ NI (LDB 46) : le SL maximal d'un Test = valeur/10 (Avantage compris, LDB 46 l.176) →
- *  on écarte les NI hors d'atteinte, puis on prend les Dégâts écrits les plus hauts (« Dégâts +N »,
- *  les DR du Test s'y ajoutent), à égalité le NI le plus bas (plus fiable). Repli : aucun NI
- *  atteignable → le moins exigeant (les Sorts mineurs NI 0 y pourvoient en pratique). */
-/** SL MAXIMAL d'un Test d'Incantation d'un lanceur pour CE sort SANS Focalisation (LDB 46 l.176) :
- *  valeur/10 (Avantage compris) + les DR de Talent lié au Test réussi (LDB 10 l.20 — Diction
- *  instinctive ×N). C'est le NI plafond passable en un seul jet. SOURCE UNIQUE (missile + focus). */
-function aiCastMaxSL(caster: Combatant, sp: SpellLike): number {
-  const info = castInfo(sp);
-  return Math.floor(castingValue(caster, info.skill, info.spec) / 10) + castTestTalentDR(caster, info.skill, info.spec);
-}
-
-export function aiBestMissile(enemy: Combatant): string | undefined {
-  const known = (enemy.spells ?? [])
-    .map((id) => resolveSpell(id))
-    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
-  if (!known.length) return undefined;
-  const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
-  const feasible = known.filter((sp) => (sp.cn ?? 0) <= aiCastMaxSL(enemy, sp));
-  const pool = feasible.length ? feasible : known;
-  pool.sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0));
-  return pool[0].id; // id STABLE (consommé par resolveSpell/castSpell — plus de libellé)
-}
-
-/** Plan de FOCALISATION de l'IA (LDB 46). Lit les DONNÉES de sort (pas de nom en dur) :
- *  - `readyFocusedSpell` : un Projectile magique DÉJÀ focalisé et PRÊT (`enemy.focus.dr >= cn`) → lançable
- *    à NI 0 ce tour (prime sur le missile faisable d'un jet).
- *  - `focusableSpell` : le meilleur Projectile magique FOCALISABLE mais infaisable d'un seul jet —
- *    arcanique (`isArcaneSpell`, ce qui exclut Magie mineure type Fléchette), l'ennemi possède la
- *    Compétence de Focalisation du Vent (`focusSkillFor`), et `cn > maxSL`. À Dégâts écrits égaux, le
- *    NI le plus BAS (le plus vite focalisable). */
-export function aiFocusPlan(enemy: Combatant): { readyFocusedSpell?: string; focusableSpell?: string } {
-  // Focalisation IA bornée aux Projectiles MONO-CIBLE : un sort de ZONE (zdeRadiusTiles défini) lancé
-  // après Focalisation serait résolu en mono-cible par le `case 'cast'` (perte de la ZdE). Les ZdE
-  // passent par `aiAreaSpell`/`castArea` (faisables d'un jet). La Focalisation des ZdE est un lot ultérieur.
-  const known = (enemy.spells ?? [])
-    .map((id) => resolveSpell(id))
-    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp) && zdeRadiusTiles(sp.target, enemy) == null);
-  const ready = known.find((sp) => enemy.focus?.spell === sp.id && (enemy.focus?.dr ?? 0) >= (sp.cn ?? 0));
-  const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
-  const focusable = known
-    .filter((sp) => isArcaneSpell(sp) && !!focusSkillFor(enemy, sp) && (sp.cn ?? 0) > aiCastMaxSL(enemy, sp))
-    .sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0))[0];
-  return { readyFocusedSpell: ready?.id, focusableSpell: focusable?.id };
-}
-
-/** Meilleur sort de ZONE de DÉGÂTS castable de l'IA (LDB 47 l.44) — DONNÉES : ZdE chiffrable
- *  (`zdeRadiusTiles`) ET Projectile (`missile`, dégâts) ET faisable d'un seul jet (`cn <= maxSL`). À
- *  Dégâts écrits égaux, NI le plus bas. Renvoie id/rayon/portée(cases)/cn, ou undefined. */
-export function aiAreaSpell(enemy: Combatant): { spell: string; radius: number; range: number | null; cn: number } | undefined {
-  const cand = (enemy.spells ?? [])
-    .map((id) => resolveSpell(id))
-    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => {
-      if (!sp || !isMagicMissile(sp)) return false;
-      const r = zdeRadiusTiles(sp.target, enemy);
-      return r != null && (sp.cn ?? 0) <= aiCastMaxSL(enemy, sp);
-    });
-  if (!cand.length) return undefined;
-  const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
-  cand.sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0));
-  const sp = cand[0];
-  return { spell: sp.id, radius: zdeRadiusTiles(sp.target, enemy)!, range: spellRangeTiles(sp.range, enemy), cn: sp.cn ?? 0 };
-}
-
-/** Catégorie d'un sort de SOUTIEN/UTILITAIRE jouable par l'IA, DÉDUITE de ses DONNÉES (jamais d'un nom) :
- *  - `heal`     : rend des PB / soigne (op `heal`/`cureCriticalWound`) → cible un ALLIÉ blessé (ou soi) ;
- *  - `buffSelf` : effet bénéfique de portée « Vous » (op positive `on:'caster'`/`self`) → soi ;
- *  - `buffAlly` : effet bénéfique ciblant un allié (op positive `on:'target'`, portée non-soi) → allié ;
- *  - `debuff`   : effet HOSTILE sans dégât direct (État négatif / `charMod` négatif, SANS `wounds`) → ennemi ;
- *  - `summon`   : invocation de créature(s) (op `summon` alliée du lanceur) → soi/zone ;
- *  - `other`    : utilitaire non décisif en combat (drapeaux divers) → repli basse priorité.
- *  Les sorts de DÉGÂTS (missile / ZdE de dégâts) sont EXCLUS ici (gérés par `aiBestMissile`/`aiAreaSpell`). */
-export type SupportSpellCat = 'heal' | 'buffSelf' | 'buffAlly' | 'debuff' | 'summon' | 'other';
-export interface SupportSpellOption {
-  /** id STABLE du sort (consommé par `castSpell`/`resolveSpell` — IA = héros). */
-  id: string;
-  cat: SupportSpellCat;
-  /** Niveau d'Incantation (0 pour une Prière). */
-  cn: number;
-  /** Portée en CASES (`spellRangeTiles`) ; null = non chiffrable (pas de gate de portée). */
-  range: number | null;
-  /** « Magnitude » de l'effet (≈ Σ |charMod| + 2/État + PB soignés estimés + créatures invoquées) — sert
-   *  au scoring pur (utilité d'un buff/débuff/soin/invocation). Toujours ≥ 0. */
-  magnitude: number;
-  /** Nombre estimé de créatures invoquées (catégorie `summon` uniquement, 0 sinon) — heuristique d'infériorité. */
-  summonCount?: number;
-  /** Noms des États infligés (catégorie `debuff`) — anti-spam + valeur de contrôle côté IA pure. */
-  condNames?: string[];
-}
-
-/** Une op de `GameOp[]` est-elle BÉNÉFIQUE ? (data-driven, par `op` — pas de nom de sort.) Couvre les
- *  octrois (talent/trait/arme/PA/ressources/Avantage), les `charMod` POSITIFS et les soins. */
-function opIsBeneficial(op: GameOp): boolean {
-  switch (op.op) {
-    case 'heal': case 'healCaster': case 'cureCriticalWound': case 'cureDisease':
-    case 'reduceDiseaseDays': case 'preventInfection': case 'removeCondition': case 'endPsych':
-    case 'grantTalent': case 'grantTrait': case 'augmentWeapon': case 'grantWeapon':
-    case 'grantNaturalWeapon': case 'ap': case 'gainResource': case 'gainAdvantage':
-    case 'freeReroll': case 'critTwice': case 'ignoreStatePenalties': case 'suppressPsych':
-    case 'noBreath': case 'noHunger': case 'weatherWard': case 'castWard': case 'arrowWard':
-    case 'domeWard': case 'attackWardFM': case 'martyr': case 'giveTrapping':
-      return true;
-    case 'charMod': return op.mod > 0;
-    case 'skillMod': return op.mod > 0;
-    default: return false;
-  }
-}
-
-/** Une op est-elle HOSTILE sans dégât direct ? (État négatif, `charMod`/`skillMod` négatif, corruption,
- *  suffocation…). Les `wounds`/`reduceToZero`/`banish` sont des DÉGÂTS (gérés par le chemin missile/ZdE),
- *  pas du débuff pur → exclus ici. */
-function opIsHostileControl(op: GameOp): boolean {
-  switch (op.op) {
-    case 'condition': return true; // États infligés (Empêtré, Exténué, Sonné…) — la polarité « négatif » est portée par le ciblage hostile
-    case 'corruption': return op.amount > 0;
-    case 'suffocate': case 'exposeDisease': case 'contractDisease': case 'castPenalty':
-    case 'damageArmour':
-      return true;
-    case 'charMod': return op.mod < 0;
-    case 'skillMod': return op.mod < 0;
-    case 'testMod': return op.amount < 0;
-    default: return false;
-  }
-}
-
-/** « Magnitude » d'une op pour le scoring (échelle ≈ « Blessures espérées équivalentes ») : un `charMod`
- *  vaut |mod|/10 (un +10 ≈ 1 cran de DR), un État ≈ 2, un PA ≈ 1, une ressource (Chance/Destin) ≈ 3, un
- *  soin = ESPÉRANCE de sa formule (PB), un octroi ≈ 2. DÉTERMINISTE (aucun `battleRng()` — cf.
- *  `formulaExpectation`). Heuristique de RESSENTI (latitude IA), data-driven. */
-function opMagnitude(op: GameOp, ref: Combatant): number {
-  switch (op.op) {
-    case 'heal': case 'healCaster': return Math.max(1, formulaExpectation(op.amount, ref));
-    case 'cureCriticalWound': return 4 * (op.count ?? 1);
-    case 'cureDisease': return 3 * (op.count ?? 1);
-    case 'charMod': return Math.abs(op.mod) / 10;
-    case 'skillMod': case 'testMod': return Math.abs((op as { mod?: number; amount?: number }).mod ?? (op as { amount?: number }).amount ?? 0) / 10;
-    case 'condition': return 2;
-    case 'ap': return Math.max(1, formulaExpectation(op.amount, ref));
-    case 'gainResource': return 3 * (op.amount ?? 1);
-    case 'gainAdvantage': return 2;
-    case 'grantTalent': case 'grantTrait': case 'augmentWeapon': case 'grantWeapon':
-    case 'grantNaturalWeapon': case 'removeCondition': case 'endPsych': case 'suppressPsych':
-      return 2;
-    default: return 1;
-  }
+/** Unicité RAW (arcane LDB 46 l.116-121 / divin 40 l.16-19) : un effet OU une invocation de CE sort est-il
+ *  DÉJÀ actif du côté du lanceur ? `true` si un combattant ALLIÉ porte un effet de ce sort (par identité de
+ *  sort, `sourceSpellId`/`spell.spellId`) OU si une créature invoquée par CE sort et CE lanceur est encore
+ *  en jeu. Empêche le re-cast en boucle d'un buff durable / d'une invocation. */
+function isSpellActive(spell: SpellData, caster: Combatant, battle: BattleState | null): boolean {
+  if (!battle) return false;
+  const buffed = battle.combatants.some(
+    (c) => c.kind === caster.kind && (c.activeEffects ?? []).some((e) => e.sourceSpellId === spell.id || e.spell?.spellId === spell.id),
+  );
+  if (buffed) return true;
+  return battle.combatants.some((c) => c.summon?.spellId === spell.id && c.summon?.byId === caster.id && !isOutOfAction(c));
 }
 
 /**
- * PLAN de sorts NON-dégâts de l'IA (Jalon « grimoire entier ») : classe CHAQUE sort connu de l'ennemi
- * (hors missile/ZdE de dégâts, traités ailleurs) par sa POLARITÉ et sa CIBLE — TOUT en DONNÉES (ops du
- * Flow `spellOps`, portée `spellRangeTiles`, ZdE `zdeRadiusTiles`, Prière `castInfoIsPrayer`), JAMAIS par
- * nom. Faisabilité RAW : `cn ≤ aiCastMaxSL` (DR ≥ NI en un jet ; une Prière a `cn=null` → toujours faisable,
- * pas de NI). Renvoie des options STRUCTURÉES exploitables par le scoring PUR (ai.ts) — la résolution reste
- * le MÊME `castSpell` (IA = héros). Arcane ET Prière (les Prières ne sont pas filtrées). Aucun sort connu
- * n'est « invisible » : un utilitaire non classable tombe en `other` (repli basse priorité, jamais un crash).
+ * Construit l'entrée de l'IA pour `enemy` : la LISTE complète de ses sorts RÉSOLUS + enrichis
+ * (`CastableSpell[]` — portée/forme/fiabilité d'incantation/Focalisation/Unicité), plus le contexte
+ * tactique partagé (escouade/orientation/perception/mouvement/blocage/fumée/vol). MUTUALISÉ par
+ * `runEnemyAI`, le frais d'`aiApproachPlan` et les replans de budget (qui surchargent juste `movement`).
+ * Couche IMPURE : a les DONNÉES de sort + le `battle`. Le `movement` n'inclut PAS le cas « vient
+ * d'enfourcher » (Mouvement consommé) — l'appelant le force à 0 le cas échéant.
  */
-export function aiSpellPlan(enemy: Combatant): SupportSpellOption[] {
-  const out: SupportSpellOption[] = [];
+export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
+  const battle = get().battle!;
+  const scene = get().scene!;
+  const foeKind = enemy.kind === 'enemy' ? 'hero' : 'enemy';
+  const heroes = battle.combatants.filter((c) => c.kind === foeKind && !isOutOfAction(c));
+  const squad = battle.combatants.filter((c) => c.kind === enemy.kind && !isOutOfAction(c) && c.pos && c.id !== enemy.id);
+  // Géométrie porteuse (Combat monté, LDB 14) → empreinte + Mouvement + cases bloquées.
+  const geom = mountOf(battle, enemy) ?? enemy;
+  const blocked = occupied(battle, geom);
+  const cavalryCharge = !!enemy.mountId && !isEngaged(enemy); // cavalier non Engagé : portée de Course (2×)
+  let movement = Math.floor(effectiveMovement(geom) * (cavalryCharge ? 2 * runMultiplier(geom.traits) : 1));
+  const flyM = flyMeters(enemy.traits); // Vol (Indice) (LDB 85 p.343) : remplace la Marche s'il porte plus loin
+  if (flyM != null) movement = Math.max(movement, Math.floor(flyM / 2));
+  const perceived = perceivedTiles(
+    { scene, battle, party: get().party, partyPos: get().partyPos, gameTime: get().gameTime, lightLevel: get().lightLevel },
+    enemy,
+  );
+  // Sorts connus, résolus + enrichis (portée en cases, forme, fiabilité d'incantation, Focalisation, Unicité).
+  const spells: CastableSpell[] = [];
   for (const id of enemy.spells ?? []) {
-    const sp = resolveSpell(id);
-    if (!sp) continue;
-    // Faisable en un seul jet (DR ≥ NI, LDB 46) — Prière (cn null) toujours faisable (pas de NI).
-    const cn = sp.cn ?? 0;
-    if (sp.cn != null && cn > aiCastMaxSL(enemy, sp)) continue;
-    // Les sorts de DÉGÂTS sont gérés par aiBestMissile/aiAreaSpell → on ne les double pas ici.
-    if (isMagicMissile(sp)) continue;
-    const targetOps = spellOps(sp.effects, 'target');
-    const casterOps = spellOps(sp.effects, 'caster');
-    const allOps = [...targetOps, ...casterOps];
-    const range = spellRangeTiles(sp.range, enemy);
-    const isSelf = sp.range?.kind === 'self' || sp.target?.kind === 'self';
-    const summonOps = casterOps.filter((o): o is Extract<GameOp, { op: 'summon' }> => o.op === 'summon');
-    // INVOCATION (op summon ALLIÉE du lanceur — un démon « hors de contrôle » n'est pas un soutien).
-    const allySummons = summonOps.filter((o) => o.allyOfCaster !== false);
-    if (allySummons.length) {
-      const count = allySummons.reduce((n, o) => n + Math.max(1, Math.round(formulaExpectation(o.count, enemy))), 0);
-      out.push({ id: sp.id, cat: 'summon', cn, range, magnitude: 2 * count, summonCount: count });
-      continue;
-    }
-    const heal = allOps.some((o) => o.op === 'heal' || o.op === 'healCaster' || o.op === 'cureCriticalWound');
-    if (heal) {
-      const mag = allOps.filter((o) => o.op === 'heal' || o.op === 'healCaster' || o.op === 'cureCriticalWound').reduce((s, o) => s + opMagnitude(o, enemy), 0);
-      out.push({ id: sp.id, cat: 'heal', cn, range, magnitude: Math.max(1, mag) });
-      continue;
-    }
-    // DÉBUFF pur : la cible (`on:'target'`) ne reçoit QUE des effets hostiles, sans dégât.
-    const hasWounds = allOps.some((o) => o.op === 'wounds' || o.op === 'reduceToZero' || o.op === 'banish');
-    const hostileTarget = targetOps.some(opIsHostileControl);
-    const beneficialTarget = targetOps.some(opIsBeneficial);
-    if (hostileTarget && !beneficialTarget && !hasWounds) {
-      const mag = targetOps.filter(opIsHostileControl).reduce((s, o) => s + opMagnitude(o, enemy), 0);
-      const condNames = targetOps.filter((o): o is Extract<GameOp, { op: 'condition' }> => o.op === 'condition').map((o) => o.name);
-      out.push({ id: sp.id, cat: 'debuff', cn, range, magnitude: Math.max(1, mag), condNames });
-      continue;
-    }
-    // BUFF : effets bénéfiques (sur soi → buffSelf ; sur un allié → buffAlly), sans rien d'hostile/dégât.
-    const beneficial = allOps.some(opIsBeneficial);
-    if (beneficial && !hostileTarget && !hasWounds) {
-      const mag = allOps.filter(opIsBeneficial).reduce((s, o) => s + opMagnitude(o, enemy), 0);
-      out.push({ id: sp.id, cat: isSelf ? 'buffSelf' : 'buffAlly', cn, range, magnitude: Math.max(1, mag) });
-      continue;
-    }
-    // Sort utilitaire non décisif (drapeaux divers, narratif) : repli basse priorité — JAMAIS ignoré silencieusement.
-    out.push({ id: sp.id, cat: 'other', cn, range, magnitude: 0 });
+    const data = resolveSpell(id);
+    if (!data) continue;
+    const cn = data.cn ?? 0;
+    // Focalisation prête (DR cumulé ≥ NI) → fiabilité calculée à NI 0 ; sinon fiabilité normale.
+    const ready = enemy.focus?.spell === data.id && (enemy.focus?.dr ?? 0) >= cn;
+    const landProb = castLandProbability(enemy, data, ready);
+    const focusState: CastableSpell['focusState'] = ready ? 'ready'
+      : (landProb < 0.5 && isArcaneSpell(data) && !!focusSkillFor(enemy, data)) ? 'focusable'
+        : 'none';
+    const radius = zdeRadiusTiles(data.target, enemy);
+    const shape: CastableSpell['shape'] = radius != null ? { area: { radius } }
+      : (data.range?.kind === 'self' || data.target?.kind === 'self') ? 'self'
+        : 'single';
+    spells.push({
+      id: data.id, data, cn, range: spellRangeTiles(data.range, enemy), shape, landProb, focusState,
+      active: isSpellActive(data, enemy, battle),
+    });
   }
-  return out;
+  return {
+    enemy, heroes, scene, blocked, movement, spells,
+    smoke: smokeOf(battle), flying: flyM != null, perceived, facing: get().facing, squad,
+  };
+}
+
+/** La meilleure action IA de `enemy` est-elle de PRÉPARER un sort (cast/castArea/focus) plutôt que d'agir
+ *  au contact ? Peek DÉTERMINISTE lu par le hook de Frénésie (`aiMaybeFrenzy`) pour DIFFÉRER l'entrée en
+ *  Frénésie tant qu'un sort (buff/invocation/dégâts) prime sur charger — RAW : l'entrée en Frénésie est un
+ *  CHOIX (psychologie.md l.170). L'Unicité retire ces sorts un à un ; quand il ne reste que charger, la
+ *  Frénésie passe au tour suivant. N'utilise AUCUN `battleRng` et ne mute rien (`buildAiInput`/
+ *  `chooseEnemyAction` déterministes et purs) → planning de coop sans désync. */
+export function aiWouldPrepareSpell(enemy: Combatant, get: Get): boolean {
+  const a = chooseEnemyAction(buildAiInput(enemy, get));
+  return a.kind === 'cast' || a.kind === 'castArea' || a.kind === 'focus';
 }
 
 /** Surincantation AUTOMATIQUE d'un lanceur ENNEMI (LDB 47 l.28-31 : « Pour chaque +2 DR […]
@@ -2927,9 +2793,9 @@ export function applyCast(
   // `OpsCtx.sourceSpell` → `applyOps`) pour autoriser un Test étendu de Langue (Magick) jusqu'au NI. Sorts
   // seulement (les Prières ne se dissipent pas par Contre-sort). Sort instantané → aucun effet → rien à marquer.
   const sourceSpell = isSort ? { spellId: spell.id, ni: spell.cn ?? 0, casterId: caster.id, label: spell.label } : undefined;
-  // IDENTITÉ du sort (anti-spam IA) : posée sur TOUT effet durable de ce lancement — Prières COMPRISES
-  // (≠ `sourceSpell`, réservé à la dissipation arcanique). Une bénédiction durable est ainsi reconnue par
-  // `aiSpellPlan`/l'IA pour ne pas la re-lancer en boucle (FIX buff-spam des prières).
+  // IDENTITÉ du sort (Unicité RAW / anti-spam IA) : posée sur TOUT effet durable de ce lancement — Prières
+  // COMPRISES (≠ `sourceSpell`, réservé à la dissipation arcanique). Une bénédiction durable est ainsi
+  // reconnue par `isSpellActive`/`buildAiInput` pour ne pas la re-lancer en boucle (LDB 46 l.116-121).
   const sourceSpellId = spell.id;
   // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.201-202) n'est pas lancé : pas d'effet Critique
   // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
@@ -3068,9 +2934,10 @@ export function applyCast(
     // rebondit sur une autre cible » — ennemi du lanceur le plus proche de la cible précédente
     // (≤ BFM m), dans la portée INITIALE du sort, jamais re-touché ; mêmes Dégâts (même jet) ;
     // max BFM rebonds. S'arrête dès qu'une cible survit.
-    if (missileSpec.chainOnKill && res.cast && battle && caster.pos) {
-      const maxBounces = Math.max(0, resolveFormula(missileSpec.chainOnKill.maxBounces, caster, battleRng()));
-      const hopTiles = Math.max(1, Math.ceil(Math.max(0, resolveFormula(missileSpec.chainOnKill.hopMeters, caster, battleRng())) / 2));
+    const chainOp = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'chain' }> => o.op === 'chain');
+    if (chainOp && res.cast && battle && caster.pos) {
+      const maxBounces = Math.max(0, resolveFormula(chainOp.maxBounces, caster, battleRng()));
+      const hopTiles = Math.max(1, Math.ceil(Math.max(0, resolveFormula(chainOp.hopMeters, caster, battleRng())) / 2));
       const initialRange = spellRangeTiles(spell.range, caster);
       const hitIds = new Set([target.id, ...extraTargets.map((t) => t.id)]);
       let prev = target;
@@ -3148,8 +3015,9 @@ export function applyCast(
       // POUSSÉE (Jalon 2.6 — « Toutes les créatures à BFM mètres sont repoussées de BFM
       // mètres », LDB 47 p.244) : recul en ligne (direction lanceur→cible) jusqu'à
       // l'obstacle ; la collision est journalisée (Dégâts = distance restante, MJ).
-      if (spec.pushMeters != null && battle && caster.pos) {
-        const pushTiles = Math.max(1, Math.floor(resolveFormula(spec.pushMeters, caster, battleRng()) / 2));
+      for (const op of spellOps(spell.effects, 'caster')) {
+        if (op.op !== 'push' || !battle || !caster.pos) continue;
+        const pushTiles = Math.max(1, Math.floor(resolveFormula(op.meters, caster, battleRng()) / 2));
         for (const t of [target, ...extraTargets]) {
           if (t.id === caster.id || !t.pos || isOutOfAction(t)) continue;
           const r = pushAway(get().scene!, caster.pos, t.pos, pushTiles, occupied(battle, t));
@@ -3189,11 +3057,12 @@ export function applyCast(
       // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
       // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
       // cases = survol des obstacles, atterrissage libre — battleClickTile).
-      if (spec.teleportMeters != null && res.cast) {
-        let meters = Math.max(0, resolveFormula(spec.teleportMeters, caster, battleRng()));
-        if (spec.teleportPerSL) {
-          meters += Math.floor(Math.max(0, res.sl) / Math.max(1, spec.teleportPerSL.every))
-            * Math.max(0, resolveFormula(spec.teleportPerSL.metersFormula, caster, battleRng()));
+      const tpOp = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'teleport' }> => o.op === 'teleport');
+      if (tpOp && res.cast) {
+        let meters = Math.max(0, resolveFormula(tpOp.meters, caster, battleRng()));
+        if (tpOp.perSL) {
+          meters += Math.floor(Math.max(0, res.sl) / Math.max(1, tpOp.perSL.every))
+            * Math.max(0, resolveFormula(tpOp.perSL.metersFormula, caster, battleRng()));
         }
         if (battle && caster.pos) {
           const tpTiles = Math.max(1, Math.floor(meters / 2));
@@ -4273,11 +4142,6 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     checkBattleOver(get, set);
     return;
   }
-  // ESCOUADE (Lot 4) : les ALLIÉS de l'acteur encore en action et posés (l'acteur lui-même EXCLU) →
-  // l'IA pure peut valoriser le FEU CONCENTRÉ (surnombre RAW, même décompte que combatFlow.ts:425),
-  // éviter le danger et rester en cohésion. (Décompte IDENTIQUE au filtre de `attackEnv` ligne ~425.)
-  const squad = battle.combatants.filter((c) => c.kind === enemy.kind && !isOutOfAction(c) && c.pos && c.id !== enemy.id);
-
   // Combat monté (LDB 14) : un PNJ à pied, non Engagé, adjacent à une monture LIBRE de son camp décide
   // de l'enfourcher (aucun jet → simple Mouvement ; il pourra ensuite ATTAQUER, mais pas se déplacer en plus).
   let justMounted = false;
@@ -4291,61 +4155,14 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       bus.emit(EVT.SCENE_DIRTY);
     }
   }
-  // Combat monté (LDB 14 l.215) : un cavalier ENNEMI se déplace selon la géométrie de sa MONTURE
-  // (empreinte + Mouvement) ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
+  // Combat monté (LDB 14 l.215) : géométrie porteuse (monture) pour le déplacement réel — empreinte +
+  // chemin ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
   const geom = mountOf(battle, enemy) ?? enemy;
-  const blocked = occupied(battle, geom);
-  // Meilleur Projectile magique connu et JOUABLE (NI atteignable, Dégâts max — cf. aiBestMissile) :
-  // la détection a besoin des données de sort, donc elle reste ici (couche impure), pas dans ai.ts.
-  // Focalisation (LDB 46) : un sort DÉJÀ focalisé et prêt prime sur le missile faisable d'un jet ; un
-  // sort focalisable (NI hors d'atteinte d'un seul jet) est signalé à l'IA pure pour qu'elle FOCALISE.
-  const { readyFocusedSpell, focusableSpell } = aiFocusPlan(enemy);
-  const offensiveSpell = readyFocusedSpell ?? aiBestMissile(enemy);
-  // Portée du sort en CASES, résolue ici (ai.ts est pur, sans données de sort) — gate de ciblage IA.
-  // (Le sort réellement lancé est `readyFocusedSpell ?? aiBestMissile` → on en dérive SA portée.)
-  const offensiveSpellData = offensiveSpell ? resolveSpell(offensiveSpell) : undefined;
-  const spellRange = offensiveSpellData ? spellRangeTiles(offensiveSpellData.range, enemy) : undefined;
-  // Sort de ZONE de dégâts castable (auto-pose du centre par l'IA pure si ≥2 héros groupés).
-  const areaSpell = aiAreaSpell(enemy);
-  // PLAN de soutien / utilitaire (grimoire NON-dégât classé par les DONNÉES : heal/buff/débuff/invocation/
-  // other) — résolu ici (couche impure qui a les données de sort) et passé à l'IA pure pour qu'elle ÉNUMÈRE
-  // des candidats `cast` sur un allié/soi/ennemi, résolus par le MÊME castSpell (IA = héros). Vide → aucun
-  // candidat de soutien → comportement inchangé (golden).
-  const supportSpells = aiSpellPlan(enemy);
-  // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
-  // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).
-  const cavalryCharge = !!enemy.mountId && !isEngaged(enemy);
-  // Bond ×2 / Foulée ×1,5 (LDB 85) sur la portée de COURSE/CHARGE (cavalerie) de la géométrie porteuse.
-  let moveBudget = justMounted ? 0 : Math.floor(effectiveMovement(geom) * (cavalryCharge ? 2 * runMultiplier(geom.traits) : 1));
-  // Vol (Indice) (LDB 85 p.343) : « elle peut voler jusqu'à Indice mètres » (1 case = 2 m) — le vol
-  // remplace la Marche s'il porte plus loin. (Les obstacles traversés sont ignorés via `flying`.)
-  const flyM = flyMeters(enemy.traits);
-  if (!justMounted && flyM != null) moveBudget = Math.max(moveBudget, Math.floor(flyM / 2));
-  // Vision RÉCIPROQUE (LDB 13 l.123 + lumière) : l'ennemi ne cible/poursuit que les héros qu'il PERÇOIT
-  // réellement (Ligne de Vue + lumière, vision nocturne incluse) — même moteur que la vue du groupe.
-  const perceived = perceivedTiles(
-    { scene, battle, party: get().party, partyPos: get().partyPos, gameTime: get().gameTime, lightLevel: get().lightLevel },
-    enemy,
-  );
-  const action = chooseEnemyAction({
-    enemy,
-    heroes,
-    scene,
-    blocked,
-    movement: moveBudget,
-    offensiveSpell,
-    spellRange,
-    offensiveSpellData: offensiveSpellData ?? undefined, // données STRUCTURÉES du sort (scoring menace/contrôle, Lot 3)
-    readyFocusedSpell,
-    focusableSpell,
-    areaSpell,
-    smoke: smokeOf(battle),
-    flying: flyM != null, // Vol : ignore terrains/obstacles/personnages traversés (LDB 85 p.343)
-    perceived,
-    facing: get().facing, // orientation MONDE des combattants → bonus de FLANC/DOS du positionnement (Lot 3)
-    squad, // alliés de l'ennemi (Lot 4) → feu concentré (surnombre RAW), danger-map, cohésion
-    supportSpells, // grimoire NON-dégât classé (heal/buff/débuff/invocation) → candidats `cast` (IA = héros)
-  });
+  // Entrée de l'IA MUTUALISÉE (sorts résolus + escouade/orientation/perception/mouvement/vol/blocage).
+  // « Vient d'enfourcher » → Mouvement consommé ce tour (l'IA n'a plus que son Action).
+  const input = buildAiInput(enemy, get);
+  if (justMounted) input.movement = 0;
+  const action = chooseEnemyAction(input);
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
 
@@ -4423,9 +4240,11 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const center = action.center;
       // Télégraphe de ZONE (parité missile) : peint le DISQUE cible (centre + rayon) ~0,7 s avant la
       // résolution, au lieu de l'ancien `actorAim` dégénéré (ligne enemy→enemy, n'indiquait PAS l'aire).
-      // Rayon = celui du plan de ZdE (`areaSpell`, même sort), repli sur `zdeRadiusTiles` du sort résolu.
+      // Rayon = celui du sort CHOISI (forme `area` portée par `input.spells`), repli sur `zdeRadiusTiles`.
+      const chosenAoe = input.spells.find((s) => s.id === action.spell);
       const aoeSp = resolveSpell(action.spell);
-      const aoeRadius = areaSpell?.radius ?? (aoeSp ? zdeRadiusTiles(aoeSp.target, enemy) ?? 1 : 1);
+      const aoeRadius = (chosenAoe && typeof chosenAoe.shape === 'object' ? chosenAoe.shape.area.radius : undefined)
+        ?? (aoeSp ? zdeRadiusTiles(aoeSp.target, enemy) ?? 1 : 1);
       set({ actorAoe: { casterId: enemy.id, center, radius: aoeRadius } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => {
@@ -4505,16 +4324,13 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       //    ennemi Engagé qui se repositionne ne paie pas l'Esquive/le sacrifice d'Avantage.
       // PARITÉ d'approche (LDB 15 l.74-82) : Charge à portée de Course si la Marche ne suffit pas,
       // sinon Course (Test d'Athlétisme instantané, pas d'attaque ce tour) — cf. aiApproachPlan.
-      const { plan, ran } = aiApproachPlan(
-        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, spellRange, offensiveSpellData: offensiveSpellData ?? undefined, smoke: smokeOf(battle), flying: flyM != null, facing: get().facing, squad, supportSpells },
-        geom, action, battleRng(),
-      );
+      const { plan, ran } = aiApproachPlan(input, geom, action, battleRng());
       const mv = plan.kind === 'move' ? plan : action;
       if (ran) battle.log.push(ev('move', tr('cf.enemyRun', { name: enemy.name, skill: enemy.mountId ? tr('cf.skillRide') : tr('cf.skillAthletics'), roll: ran.roll === 100 ? '00' : ran.roll, budget: ran.budget }), enemy.id));
       const wasEngaged = isEngaged(enemy);
       const distBefore = combatDistance(enemy, targetOf(mv.thenTargetId)); // distance de combat AVANT le déplacement
       const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
-      const path = pathTo(scene, enemy.pos!, mv.to, blocked, sizeFootprint(geom.size));
+      const path = pathTo(scene, enemy.pos!, mv.to, input.blocked, sizeFootprint(geom.size));
       // Télégraphe de DÉPLACEMENT (parité héros) : montrer le chemin + la destination AVANT que l'ennemi
       // bouge (« où il va »), puis il glisse dessus. Le mouvement réel + la suite (attaque/fin de tour)
       // sont DIFFÉRÉS après la tenue (beatHold moveTelegraph) — mêmes effets, juste annoncés d'abord.

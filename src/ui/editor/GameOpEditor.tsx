@@ -68,6 +68,9 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   grantFreeAttack: '⚔️ Accorder une attaque gratuite',
   interruptFocus: '🔮 Interrompre la Focalisation', // marqueur combat-interne (branche d’échec du Test de Calme) — non author-pickable
   breakBlade: '🗡️ Désarmer / briser la lame', // marqueur combat-interne (victoire du Test de Piège-lame) — non author-pickable
+  push: '➡️ Poussée (repousser de N m)',
+  teleport: '✨ Téléportation du lanceur',
+  chain: '⚡ Attaques en chaîne (rebond)',
 
   grantTrait: '🐾 Accorder un Trait',
   grantPsychTrait: '🧠 Accorder un Trait psychologique',
@@ -119,6 +122,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
+  ['🪄 Projection & téléportation', ['push', 'teleport', 'chain']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn', 'removeShipPoste']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
@@ -265,6 +269,9 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'perRound': return { op: 'perRound', ops: [] };
     case 'summon': return { op: 'summon', ref: 'Loup', count: 1, allyOfCaster: true };
     case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'FM' } };
+    case 'push': return { op: 'push', meters: { bonusOf: 'FM' } };
+    case 'teleport': return { op: 'teleport', meters: { bonusOf: 'FM' } };
+    case 'chain': return { op: 'chain', maxBounces: { bonusOf: 'FM' }, hopMeters: { bonusOf: 'FM' } };
     case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
@@ -342,6 +349,9 @@ export function opSummary(o: GameOp): string {
     case 'summon': return `${L} ${formulaSummary(o.count)}× ${o.ref}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
     case 'scheduleRespawn': return `${L} ${o.ref} dans ${formulaSummary(o.delayDays)} j${o.cancelFlag ? ` (sauf « ${o.cancelFlag} »)` : ''}`;
     case 'zone': return `${L} ${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;
+    case 'push': return `${L} ${formulaSummary(o.meters)} m`;
+    case 'teleport': return `${L} ${formulaSummary(o.meters)} m${o.perSL ? ` (+${formulaSummary(o.perSL.metersFormula)}/${o.perSL.every} DR)` : ''}`;
+    case 'chain': return `${L} ${formulaSummary(o.maxBounces)} rebond(s), saut ${formulaSummary(o.hopMeters)} m`;
     case 'polymorph': return `${L} ${o.ref}`;
     case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;
     case 'loseTurn': return `${L} saute le tour`;
@@ -360,7 +370,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal',
+  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain',
 ]);
 
 function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void }) {
@@ -506,6 +516,27 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                 <option value="ceil">supérieur</option>
               </select>
             </label>
+          </>
+        )}
+        {op.op === 'push' && (
+          <FormulaField label="Distance (m)" value={o.meters} min={0} onChange={(meters) => upd({ meters })} />
+        )}
+        {op.op === 'chain' && (
+          <>
+            <FormulaField label="Rebonds max" value={o.maxBounces} min={0} onChange={(maxBounces) => upd({ maxBounces })} />
+            <FormulaField label="Saut (m)" value={o.hopMeters} min={0} onChange={(hopMeters) => upd({ hopMeters })} />
+          </>
+        )}
+        {op.op === 'teleport' && (
+          <>
+            <FormulaField label="Distance (m)" value={o.meters} min={0} onChange={(meters) => upd({ meters })} />
+            <label className="dr"><input type="checkbox" checked={o.perSL != null} onChange={(e) => upd({ perSL: e.target.checked ? { every: 2, metersFormula: { bonusOf: 'FM' } } : undefined })} /> bonus par DR</label>
+            {o.perSL != null && (
+              <>
+                <label className="dr">tous les<input type="number" min={1} title="DR" value={o.perSL.every ?? 2} onChange={(e) => upd({ perSL: { ...o.perSL, every: Math.max(1, Number(e.target.value) || 1) } })} /> DR</label>
+                <FormulaField label="Bonus (m)" value={o.perSL.metersFormula} min={0} onChange={(metersFormula) => upd({ perSL: { ...o.perSL, metersFormula } })} />
+              </>
+            )}
           </>
         )}
         {op.op === 'narrative' && (

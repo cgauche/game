@@ -720,20 +720,10 @@ export interface SpellData {
   /** Vrai pour une entrée curée de la base officielle. Absent/false pour les sorts homebrew (frenchy.bzh).
    *  Permet au test de couverture de vérifier que TOUS les sorts officiels ont une spec complète. */
   curated?: boolean;
-  /** TÉLÉPORTATION du lanceur (Jalon 2.6 — « vous vous téléportez de BFM mètres ») : après
-   *  l'Appliquer, le jeu propose le choix d'une case d'arrivée dans ce rayon (survol des
-   *  obstacles, atterrissage libre). */
-  teleportMeters?: import('../engine/ops').Formula;
-  /** Bonus de téléportation par surincantation : `+metersFormula` mètres tous les `every` DR. */
-  teleportPerSL?: { every: number; metersFormula: import('../engine/ops').Formula };
-  /** POUSSÉE — chaque cible affectée est repoussée en ligne (direction lanceur→cible)
-   *  de ce nombre de mètres jusqu'à l'obstacle ; la collision est journalisée (LDB). */
-  pushMeters?: import('../engine/ops').Formula;
+  // POUSSÉE / TÉLÉPORTATION / ATTAQUES EN CHAÎNE : effets POSITIONNELS désormais portés par des ops
+  // IMPURES (`push`/`teleport`/`chain`, on:'caster') dans `effects`, résolus par combatFlow (cf. engine/ops).
   /** Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait Souffle. */
   breathAttack?: true;
-  /** Attaques en chaîne (LDB 47) : rebond si réduit la cible à 0 Blessure,
-   *  jusqu'à `maxBounces` fois, chaque rebond à `hopMeters` mètres. */
-  chainOnKill?: { maxBounces: import('../engine/ops').Formula; hopMeters: import('../engine/ops').Formula };
   /** OPPOSITION de la cible (multijet dans la modale d'incantation).
    *  `resist` : Test opposé par la caractéristique/compétence `char`/`skill` de la cible.
    *  `contact` : Sort de Portée Contact — frappe via Test opposé de Corps à corps (Bagarre). */

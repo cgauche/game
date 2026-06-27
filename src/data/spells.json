@@ -2152,7 +2152,26 @@
     "desc": "Vous formez un éperon de magie fracassante, tournoyant vers votre cible. Il s'agit d'un Projectile magique avec Dégâts +4. Si Attaques en chaîne réduit la cible à 0 Blessure, il rebondit sur une autre cible dans la portée initiale du Sort, et à une distance en mètres de la cible précédente égale à votre Bonus de Force Mentale, infligeant de nouveau les mêmes Dégâts. Il peut rebondir un nombre maximum de fois égal à votre Bonus de Force Mentale. Pour chaque +2 DR obtenu, il peut cibler une cible supplémentaire.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "chain",
+                "maxBounces": {
+                  "bonusOf": "FM"
+                },
+                "hopMeters": {
+                  "bonusOf": "FM"
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "LDB",
@@ -2161,14 +2180,6 @@
     "family": "arcane",
     "missile": true,
     "damage": 4,
-    "chainOnKill": {
-      "maxBounces": {
-        "bonusOf": "FM"
-      },
-      "hopMeters": {
-        "bonusOf": "FM"
-      }
-    },
     "curated": true
   },
   {
@@ -2815,6 +2826,21 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "push",
+                "meters": {
+                  "bonusOf": "FM"
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -2823,9 +2849,6 @@
       "page": 244
     },
     "family": "arcane",
-    "pushMeters": {
-      "bonusOf": "FM"
-    },
     "curated": true
   },
   {
@@ -2967,22 +2990,35 @@
     "desc": "En utilisant la magie, vous pouvez vous téléporter jusqu'à une distance en mètres égale à votre Bonus de Force Mentale. Ce déplacement vous permet de traverser des espaces, d'éviter des dangers et des pièges et d'ignorer les obstacles. Pour chaque +2 DR, vous pouvez augmenter la distance parcourue d'un nombre de mètres égal à votre Bonus de Force Mentale.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "teleport",
+                "meters": {
+                  "bonusOf": "FM"
+                },
+                "perSL": {
+                  "every": 2,
+                  "metersFormula": {
+                    "bonusOf": "FM"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "LDB",
       "page": 244
     },
     "family": "arcane",
-    "teleportMeters": {
-      "bonusOf": "FM"
-    },
-    "teleportPerSL": {
-      "every": 2,
-      "metersFormula": {
-        "bonusOf": "FM"
-      }
-    },
     "curated": true
   },
   {
@@ -6740,6 +6776,21 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "teleport",
+                "meters": {
+                  "charOf": "FM"
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -6749,9 +6800,6 @@
     },
     "domainId": "ombres",
     "family": "arcane",
-    "teleportMeters": {
-      "charOf": "FM"
-    },
     "curated": true
   },
   {
@@ -6880,6 +6928,27 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "teleport",
+                "meters": {
+                  "charOf": "FM"
+                },
+                "perSL": {
+                  "every": 2,
+                  "metersFormula": {
+                    "charOf": "FM"
+                  }
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -6889,15 +6958,6 @@
     },
     "domainId": "vie",
     "family": "arcane",
-    "teleportMeters": {
-      "charOf": "FM"
-    },
-    "teleportPerSL": {
-      "every": 2,
-      "metersFormula": {
-        "charOf": "FM"
-      }
-    },
     "curated": true
   },
   {

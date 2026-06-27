@@ -74,7 +74,10 @@ export type SpellAffinity = 'enemy' | 'ally' | 'any';
  *  (narratif, mixte, sans op de cible) → 'any' (réticule permissif des deux côtés). La SOURCE est
  *  l'effet canon du sort (spells.json), pas une heuristique de mots-clés sur la description. */
 export function spellAffinity(spell: NonNullable<ReturnType<typeof findSpellById>>): SpellAffinity {
-  if (isMagicMissile(spell) || spell.opposed || spell.breathAttack || spell.pushMeters != null) return 'enemy';
+  if (isMagicMissile(spell) || spell.opposed || spell.breathAttack) return 'enemy';
+  // Poussée/Attaques en chaîne portent leur effet positionnel en op `on:'caster'` (push/chain) — invisible
+  // au scan 'target' mais OFFENSIF (repousse/rebondit sur l'ennemi) → ciblage ennemi. teleport reste neutre ('any').
+  if (spellOps(spell.effects, 'caster').some((o) => o.op === 'push' || o.op === 'chain')) return 'enemy';
   const ops = spellOps(spell.effects, 'target').map((o) => o.op);
   if (ops.some((o) => HARMFUL_TARGET_OPS.has(o))) return 'enemy';
   if (ops.some((o) => HELPFUL_TARGET_OPS.has(o))) return 'ally';

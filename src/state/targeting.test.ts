@@ -137,4 +137,5 @@ describe('spellAffinity — côté visé DÉRIVÉ des effets modélisés (parit�
   it('Enchevêtrement (État Empêtré) → enemy', () => expect(spellAffinity(findSpellById('enchevetrement')!)).toBe('enemy'));
   it('Armure aethyrique (apAll +1 sur la cible) → ally', () => expect(spellAffinity(findSpellById('armure-aethyrique')!)).toBe('ally'));
   it('Lumière (effet narratif seul) → any', () => expect(spellAffinity(findSpellById('lumiere')!)).toBe('any'));
+  it('Poussée (op push on:caster, offensif positionnel) → enemy', () => expect(spellAffinity(findSpell('Poussée')!)).toBe('enemy'));
 });

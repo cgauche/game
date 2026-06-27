@@ -42,7 +42,9 @@ for (const [group, list] of [...groups.entries()].sort(([a], [b]) => a.localeCom
   for (const s of [...list].sort((a, b) => a.label.localeCompare(b.label, 'fr'))) {
     // Les EFFETS (ops) vivent sur `SpellData.effects` (Flow) ; on les extrait par cible.
     const ops = [...spellOps(s.effects, 'target'), ...spellOps(s.effects, 'caster')];
-    const support = spellSupport(spellOps(s.effects, 'target'), s, isMagicMissile(s));
+    // Support mécanique = TOUTES les ops (target + caster) : un effet de lanceur (téléportation/poussée/
+    // chaîne/invocation/zone/vol de vie) compte autant qu'un effet de cible (parité avec le runtime).
+    const support = spellSupport(ops, s, isMagicMissile(s));
     totals[support]++;
     if (s.curated) totals.curated++;
     const reste = ops
