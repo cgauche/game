@@ -4,13 +4,15 @@ import { isUnarmed } from '../engine/items';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular, findSpeciesById, findCareerById } from '../data';
 import { CharStatsGrid } from './CharStatsGrid';
+import { ZONES } from './EquipmentPanel';
 import { SkillChip, TalentChip } from './EntityChip';
 import { FateChips } from './FateChips';
 
 export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
-  // F4 : aperçu d'équipement sur la mini-carte — armes en main + PA du corps.
+  // F4/T3 : aperçu d'équipement sur la mini-carte — armes en main + PA par ZONE (le défaut était
+  // « armure réduite au corps » ; on montre Tête/Bras/Corps/Jambes, couches rigide + flexible cumulées).
   const arms = hero.weapons.filter((w) => !isUnarmed(w));
-  const bodyPA = hero.armour?.corps ?? 0;
+  const wornZones = ZONES.map((z) => ({ label: z.label, ap: hero.armour?.[z.apLoc] ?? 0 })).filter((z) => z.ap > 0);
   return (
     <div className={`char-card panel ${compact ? 'compact' : ''}`}>
       <div
@@ -44,10 +46,14 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
         </div>
         <FateChips c={hero} />
       </div>
-      {(arms.length > 0 || bodyPA > 0) && (
+      {(arms.length > 0 || wornZones.length > 0) && (
         <div className="char-equip">
           {arms.length > 0 && <span className="ce-weap">⚔ {arms.map((w) => w.name).join(', ')}</span>}
-          {bodyPA > 0 && <span className="ce-pa" title="Points d'Armure (corps)">🛡 PA {bodyPA}</span>}
+          {wornZones.length > 0 && (
+            <span className="ce-pa" title="Points d'Armure par zone (couches rigide + flexible cumulées)">
+              🛡 {wornZones.map((z) => `${z.label} ${z.ap}`).join(' · ')}
+            </span>
+          )}
         </div>
       )}
       {!compact && (
