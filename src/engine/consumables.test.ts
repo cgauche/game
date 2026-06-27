@@ -56,8 +56,20 @@ describe('consommables — catalogue migré (LDB 307, donnée réelle)', () => {
     ]);
     expect(isConsumable(itemFromTrappingById('potion-de-guerison')!)).toBe(true);
   });
-  it('exactement les 6 consommables de la base portent `consumable` (poisons/armes exclus à la migration)', () => {
+  it('les consommables de la base portent `consumable`', () => {
     const ids = trappings.filter((t) => t.consumable?.length).map((t) => t.id).sort();
-    expect(ids).toEqual(['bandages', 'faxtoryll', 'necessaire-antipoison', 'potion-de-guerison', 'potion-de-vitalite', 'soude-commune']);
+    expect(ids).toEqual([
+      'bandages',
+      'brise-coeur',
+      'cataplasme-de-guerison',
+      'faxtoryll',
+      'gesundheit',
+      'lotus-noir',
+      'necessaire-antipoison',
+      'potion-de-guerison',
+      'potion-de-vitalite',
+      'racine-des-tombes',
+      'soude-commune',
+    ]);
   });
 });

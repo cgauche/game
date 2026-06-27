@@ -5656,7 +5656,14 @@
     "source": {
       "book": "LDB",
       "page": 306
-    }
+    },
+    "consumable": [
+      {
+        "op": "condition",
+        "name": "empoisonne",
+        "value": 4
+      }
+    ]
   },
   {
     "id": "delice-de-ranald",
@@ -5725,7 +5732,70 @@
     "source": {
       "book": "LDB",
       "page": 306
-    }
+    },
+    "consumable": [
+      {
+        "op": "augmentWeapon",
+        "onHitEffects": [
+          {
+            "trigger": "onHit",
+            "on": "victim",
+            "flow": {
+              "kind": "if",
+              "cond": {
+                "kind": "all",
+                "of": [
+                  {
+                    "kind": "woundsDealt",
+                    "op": ">",
+                    "value": 0
+                  },
+                  {
+                    "kind": "not",
+                    "of": {
+                      "kind": "compare",
+                      "subject": {
+                        "who": "target",
+                        "condition": "empoisonne"
+                      },
+                      "op": ">=",
+                      "value": 1
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "kind": "test",
+                "test": {
+                  "characteristic": "E",
+                  "skill": "resistance",
+                  "difficulty": "complexe",
+                  "unlessImmune": "poison"
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "victim",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "empoisonne",
+                        "value": 2
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "mystracine",
@@ -5817,7 +5887,12 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "preventInfection"
+      }
+    ]
   },
   {
     "id": "faxtoryll",
@@ -5987,6 +6062,150 @@
     "source": {
       "book": "LDB",
       "page": 307
+    }
+  },
+  {
+    "id": "gesundheit",
+    "label": "Gesundheit",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Un cataplasme de feuilles de *gesundheit* appliqué sur une *Blessure Purulente* (**WFJDR**, p. 186) permet au patient de faire un Test de **Résistance Accessible (+20)** en réduire la durée d'un jour par DR obtenu. Cette opération peut être réalisée seulement une fois par jour, avec un cataplasme frais à chaque fois, et ce jusqu'à ce que la blessure cesse d'être *Purulente*.",
+    "price": {
+      "gold": 0,
+      "silver": 15,
+      "bronze": 0
+    },
+    "source": {
+      "book": "T2C",
+      "page": 13
+    },
+    "consumable": [
+      {
+        "op": "reduceDiseaseDays",
+        "days": 1
+      }
+    ]
+  },
+  {
+    "id": "racine-des-tombes",
+    "label": "Racine des tombes",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Étalée sur une arme, la sève coagulée issue du tubercule de cette plante est nocive pour les créatures qui ont le Trait Mortvivant, et leur inflige un État *Empoisonné* si elles ne réussissent pas un Test de **Résistance Complexe (–10)**.\n\nUn cataplasme de racine des tombes, appliqué à une *Blessure Purulente* causée par une créature *Mort-vivante* qui a le Trait Infecté, donne au patient un bonus de +20 à tous les Tests qu'il pourra faire pour résister à sa blessure pendant la journée. Il n'a aucun effet sur les *Blessure Purulentes* provoquées par des créatures qui ne sont pas mort-vivantes.\n\nAssez étrangement, toute personne qui consomme une potion de racine de tombes préparée correctement devient soudain d'une pâleur cadavérique, et sa peau devient froide au toucher pendant 1d10+2 heures. Si la potion a d'autres effets plus utiles, la plupart des herboristes l'ignorent.",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "T2C",
+      "page": 14
+    },
+    "consumable": [
+      {
+        "op": "augmentWeapon",
+        "onHitEffects": [
+          {
+            "trigger": "onHit",
+            "on": "victim",
+            "flow": {
+              "kind": "if",
+              "cond": {
+                "kind": "all",
+                "of": [
+                  {
+                    "kind": "woundsDealt",
+                    "op": ">",
+                    "value": 0
+                  },
+                  {
+                    "kind": "not",
+                    "of": {
+                      "kind": "compare",
+                      "subject": {
+                        "who": "target",
+                        "condition": "empoisonne"
+                      },
+                      "op": ">=",
+                      "value": 1
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "kind": "test",
+                "test": {
+                  "characteristic": "E",
+                  "skill": "resistance",
+                  "difficulty": "complexe",
+                  "onlyGroups": [
+                    "Mort-vivant"
+                  ],
+                  "unlessImmune": "poison"
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "victim",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "empoisonne",
+                        "value": 1,
+                        "onlyGroups": [
+                          "Mort-vivant"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rouille-mouchetee",
+    "label": "Rouille mouchetée",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Cette plante peut être utilisée pour traiter la *Vérole du Tanneur* (**WFJDR**, p. 187). Si le patient reçoit une dose par jour jusqu'à ce qu'il soit guéri, il bénéficie d'un bonus de +10 à tous les Tests en lien avec la maladie.\n\nUne potion de rouille mouchetée ne permet pas de prévenir l'arrivée de la *Vérole du Tanneur*, mais elle peut être utilisée pour la traiter une fois qu'elle est là. Chaque dose réduit la durée de la maladie de 1d10 jours. Prendre plus d'une dose par jour provoque des *Nausées* (**WFJDR**, p. 189) pendant les 1d10 heures suivantes.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "T2C",
+      "page": 14
     }
   },
   {
