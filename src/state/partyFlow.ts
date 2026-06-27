@@ -37,6 +37,7 @@ import { spellCost } from '../engine/grimoire';
 import { levelsForCareer, findSkill, findTalent, findCareerById, findSpellById } from '../data/index';
 import { slugId } from '../data/slug';
 import { seatSlotsRemaining } from './netOwnership';
+import { rosterUpdate } from './roster';
 import { bus, EVT } from './bus';
 
 import type { Get, Set } from './flowTypes';
@@ -394,6 +395,20 @@ export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: s
     party: s.party.map((h) => h.id === heroId ? { ...h, componentSpells: [...(h.componentSpells ?? []), spellId] } : h),
   }));
   get().log(`${hero.name} achète un composant pour ${sp.label} (−${formatMoney(cost)}).`);
+}
+
+/** Édite la bio MUTABLE d'un héros (hors combat) : Motivation + Ambitions court/long terme (LDB 05).
+ *  Mute `store.party` (→ persisté par la save) ET propage au roster s'il y est (rosterUpdate). */
+export function setHeroBackground(get: Get, set: Set, heroId: string, patch: { motivation?: string; ambitionShort?: string; ambitionLong?: string }): void {
+  set((s) => ({
+    party: s.party.map((h) => h.id === heroId ? {
+      ...h,
+      motivation: patch.motivation ?? h.motivation,
+      details: { ...h.details, ambitionShort: patch.ambitionShort ?? h.details?.ambitionShort, ambitionLong: patch.ambitionLong ?? h.details?.ambitionLong },
+    } : h),
+  }));
+  const hero = get().party.find((h) => h.id === heroId);
+  if (hero) rosterUpdate(hero);
 }
 
 /** Retire UN composant d'incantation possédé pour un Sort (sans remboursement). */

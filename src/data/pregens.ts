@@ -19,6 +19,11 @@ export interface PregenDef {
   career: string;
   seed: number;
   motivation: string;
+  /** Ambitions à court / long terme (LDB 05 l.710-717) — flavor APP-OWNED du pré-tiré, atterrit dans `details`. */
+  ambitionShort?: string;
+  ambitionLong?: string;
+  /** Âge (LDB 05 étape 6) — sinon laissé indéfini (pas de tirage moteur côté pré-tiré). */
+  age?: number;
   /** Talent de carrière CHOISI (libellé concret) — sans lui, createHero prend la 1ʳᵉ entrée du
    *  Niveau, qui n'est PAS forcément le talent d'incantation requis (Magie mineure, Béni…). */
   careerTalent?: string;
@@ -35,12 +40,18 @@ export function makePregens(): Combatant[] {
   const out: Combatant[] = [];
   for (const d of pregens) {
     try {
+      // Bio APP-OWNED du pré-tiré (ambitions LDB 05) → `details` ; undefined si rien n'est noté.
+      const details =
+        d.ambitionShort || d.ambitionLong || d.age != null
+          ? { age: d.age, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }
+          : undefined;
       const hero = createHero({
         speciesId: d.species,
         careerId: d.career,
         name: d.name,
         motivation: d.motivation,
         careerTalent: d.careerTalent,
+        details,
         rng: makeRNG(d.seed),
         id: `pregen-${d.seed}`,
       });

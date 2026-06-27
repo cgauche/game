@@ -483,6 +483,8 @@ export interface GameState extends RollFlowActionsMap {
   buySpellComponent: (heroId: string, spellId: string) => void;
   /** Retire un composant d'incantation possédé pour un Sort (sans remboursement). */
   removeSpellComponent: (heroId: string, spellId: string) => void;
+  /** Édite la bio mutable d'un héros hors combat (Motivation + Ambitions court/long, LDB 05) — persisté en save + roster. */
+  setHeroBackground: (heroId: string, patch: { motivation?: string; ambitionShort?: string; ambitionLong?: string }) => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
@@ -1154,6 +1156,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   buySpellComponent: (heroId, spellId) => partyFlow.buySpellComponent(get, set, heroId, spellId),
   removeSpellComponent: (heroId, spellId) => partyFlow.removeSpellComponent(get, set, heroId, spellId),
+  setHeroBackground: (heroId, patch) => partyFlow.setHeroBackground(get, set, heroId, patch),
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
   creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),

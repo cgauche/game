@@ -88,6 +88,15 @@ describe('composition d’équipe (partyFlow + net.slots)', () => {
     expect(useGame.getState().party.map((h) => h.id)).toEqual(['a', 'b']);
   });
 
+  it('setHeroBackground : édite Motivation + Ambitions sur le héros du groupe (hors combat)', () => {
+    useGame.getState().partyAddHero(hero('a'));
+    useGame.getState().setHeroBackground('a', { motivation: 'Foi', ambitionShort: 'Survivre', ambitionLong: 'Régner' });
+    const h = useGame.getState().party.find((x) => x.id === 'a')!;
+    expect(h.motivation).toBe('Foi');
+    expect(h.details?.ambitionShort).toBe('Survivre');
+    expect(h.details?.ambitionLong).toBe('Régner');
+  });
+
   it('netAssignSlot : hôte seul, bornes 0-3', () => {
     useGame.getState().netAssignSlot(1, 1); // mode local → refusé
     expect(useGame.getState().net.slots).toEqual([0, 0, 0, 0]);
