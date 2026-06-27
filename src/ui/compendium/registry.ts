@@ -18,6 +18,7 @@ import {
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
+import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
@@ -517,7 +518,10 @@ export const CODEX: CodexCategory[] = [
     items: spells.map((s) => ({
       label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
       meta: facts(
-        fact('NI', s.cn), fact('Portée', s.range), fact('Cible', s.target), fact('Durée', s.duration),
+        fact('NI', s.cn),
+        fact('Portée', s.range ? formatSpellRange(s.range) : null),
+        fact('Cible', s.target ? formatSpellTarget(s.target) : null),
+        fact('Durée', s.duration ? formatSpellDuration(s.duration) : null),
         // Projectile magique (#2 data-driven) : Dégâts additifs + DR + BFM, ignore éventuellement PA/BE.
         fact('Projectile', s.missile ? `Dégâts ${s.damage ? `${s.damage} + ` : ''}DR + BFM${s.ignorePA ? ' · ignore PA' : ''}${s.ignoreBE ? ' · ignore BE' : ''}` : null),
       ),
