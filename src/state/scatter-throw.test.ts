@@ -1,0 +1,65 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useGame, type BattleState } from './store';
+import { applyAttackResult } from './combatFlow';
+import { seedBattleRng } from './battleRng';
+import { emptyScene } from './scene';
+import type { Combatant, Weapon } from '../engine/types';
+import type { AttackResult } from '../engine/combat';
+
+// Câblage de la Dispersion (LDB 14 l.144-151) : un TIR DE LANCER raté dévie (journal de Dispersion),
+// un tir d'ARC raté reste un simple échec sans déviation (Portée FIXE ≠ Portée `{bf}`).
+
+const CHARS = { CC: 40, CT: 45, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+
+const hero = (p: Partial<Combatant>): Combatant =>
+  ({
+    id: 'h1', name: 'Lanceur', kind: 'hero', characteristics: CHARS,
+    wounds: { current: 15, max: 15 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+    engagedWith: [], pos: { x: 2, y: 2 }, size: 'moyenne', weapons: [], items: [], fate: 0,
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    ...p,
+  } as unknown as Combatant);
+
+const enemy = (p: Partial<Combatant>): Combatant =>
+  ({
+    id: 'e1', name: 'Cible', kind: 'enemy', characteristics: CHARS,
+    wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+    engagedWith: [], pos: { x: 8, y: 2 }, size: 'moyenne',
+    weapons: [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    ...p,
+  } as unknown as Combatant);
+
+const thrown: Weapon = { name: 'Hache de jet', type: 'ranged', damage: { plusBF: true, flat: 0, bare: true }, range: { bf: 3 }, qualities: [] } as Weapon;
+const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 6 }, range: 30, qualities: [] } as Weapon;
+
+const missRes = (): AttackResult => ({
+  hit: false, attackerRoll: 88, netSL: -3, critical: false, advantageTo: null, defenderDefeated: false, log: 'manque sa cible.',
+});
+
+function setBattle(combatants: Combatant[]) {
+  const battle: BattleState = {
+    combatants, order: combatants.map((c) => c.id), baseOrder: combatants.map((c) => c.id),
+    turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
+    movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+  } as unknown as BattleState;
+  useGame.setState({ battle, mode: 'battle', scene: emptyScene(), gameTime: 12 * 60, pendingReveals: [], pendingCascade: null, pendingFateSave: null });
+}
+
+const logText = () => useGame.getState().battle!.log.map((e: { text: string }) => e.text).join(' | ');
+
+describe('Dispersion — câblage d’un raté de Lancer (LDB 14 l.144-151)', () => {
+  beforeEach(() => { seedBattleRng(20260627); });
+
+  it('tir de LANCER raté → ligne de journal de Dispersion', () => {
+    setBattle([hero({ weapons: [thrown] }), enemy({})]);
+    applyAttackResult(useGame.getState, useGame.setState, useGame.getState().battle!.combatants[0], useGame.getState().battle!.combatants[1], thrown, missRes());
+    expect(logText()).toMatch(/Dispersion/);
+  });
+
+  it('tir d’ARC raté → AUCUNE Dispersion (Portée fixe, pas une arme de jet)', () => {
+    setBattle([hero({ weapons: [bow] }), enemy({})]);
+    applyAttackResult(useGame.getState, useGame.setState, useGame.getState().battle!.combatants[0], useGame.getState().battle!.combatants[1], bow, missRes());
+    expect(logText()).not.toMatch(/Dispersion/);
+  });
+});

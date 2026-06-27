@@ -118,7 +118,8 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, effectiveWeaponRange, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
+import { scatter } from '../engine/scatter';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -1460,6 +1461,15 @@ export function applyAttackResult(
   bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense, weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon) });
   const evKind: CombatEventKind = weapon.type === 'ranged' ? 'shoot' : 'attack';
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
+  // Dispersion (LDB 14 l.144-151) : une arme de JET (Portée `{bf}`) dont le Test de Projectiles (Lancer)
+  // ÉCHOUE dévie vers une tuile (1d10 direction / 9 = pieds du lanceur / 10 = pieds de la cible, 2d10 m
+  // plafonnés à la demi-distance). Le jeu ne modélise pas l'arme au sol → l'effet visible RAW = la tuile
+  // d'atterrissage (floater FX + journal). Les tirs à Portée FIXE (arc/arbalète/poudre) ratent sans dévier.
+  if (!res.hit && isThrownWeapon(weapon) && attacker.pos && target.pos) {
+    const land = scatter(attacker.pos, target.pos, battleRng(), sceneMetresPerTile(get().scene), get().scene?.dimensions);
+    bus.emit(EVT.ANIM_FLOAT, { pos: land, text: tr('cf.scatterFloat'), kind: 'miss' });
+    log.push(ev(evKind, tr('cf.scatter', { name: attacker.name }), attacker.id, target.id));
+  }
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
   // Nerveux (LDB 85 p.340) : « facilement effrayée par […] les bruits forts » — un coup d'arme à
   // feu (Poudre noire/Explosion) terrifie les créatures Nerveuses présentes : +3 État Brisé.

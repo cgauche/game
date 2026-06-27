@@ -429,6 +429,8 @@ export const fr = {
   'cf.wardTestFail': '{name} — Test de Force Mentale Accessible (+20) : 🎲 {roll}/{target} → échec.',
   'cf.strayHit': 'Tir dans le tas : {name} est touché au hasard{rescued}.',
   'cf.fragRescued': ' (succès dû au bonus → 0 DR)',
+  'cf.scatter': "L'arme de {name} dévie et atterrit (Dispersion).",
+  'cf.scatterFloat': '⤬ dévie',
   'cf.componentDowngrade': "{name} : le composant dégrade l'Incantation Imparfaite (Majeure → Mineure).",
   'cf.grimoireRefused': '{name} ne peut pas lancer {spell} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).',
   'cf.castOutOfRange': '{spell} : cible hors de portée ({range} cases).',
