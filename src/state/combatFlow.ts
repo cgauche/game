@@ -139,7 +139,7 @@ import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzi
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
-import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
+import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
@@ -4108,6 +4108,30 @@ registerCascadeApplier(
 // endFrenzyIfDone / aiMaybeFrenzy / resolvePsychAI (cycle de tour ennemi) déplacés → state/combat/turnHooks
 // (hooks `turnStart` ordonnés), ré-exportés en tête de ce fichier pour frenzy*.test / psych*.test.
 
+// === TRACE DE DÉCISION IA (DEV uniquement) ==================================================
+// Buffer en anneau des derniers tours pilotés par l'IA : action CHOISIE + classement des candidats
+// (l'« intention », via `consumeAiRanking`). Rempli au SEUL site d'enregistrement de `runEnemyAI`
+// (jamais pollué par les appels secondaires aiApproachPlan / peek de Frénésie). Lu par les devtools
+// (`__wfrp.aiLog`). N'a de contenu que si le flag `AI_TRACE` (ai.ts) est ON — sinon `top` reste vide.
+export interface AiTurnRec { round: number; id: string; name: string; action: string; top: AiCandTrace[]; }
+const AI_TURN_LOG: AiTurnRec[] = [];
+export function aiTurnLog(): AiTurnRec[] { return AI_TURN_LOG; }
+export function clearAiTurnLog() { AI_TURN_LOG.length = 0; }
+/** Résumé COURT d'une action IA pour la trace (un coup d'œil = quoi/qui/où). */
+function describeAiAction(a: EnemyAction): string {
+  switch (a.kind) {
+    case 'cast': return `cast ${a.spell}→${a.targetId}`;
+    case 'castArea': return `castArea ${a.spell}@${a.center.x},${a.center.y}`;
+    case 'focus': return `focus ${a.spell}`;
+    case 'shoot': return `shoot ${a.targetId}`;
+    case 'melee': return `melee ${a.targetId}`;
+    case 'move': return `move→${a.thenTargetId}@${a.to.x},${a.to.y}`;
+    case 'reload': return 'reload';
+    case 'recover': return `recover ${a.state}`;
+    case 'end': return 'end';
+  }
+}
+
 export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return;
@@ -4163,6 +4187,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const input = buildAiInput(enemy, get);
   if (justMounted) input.movement = 0;
   const action = chooseEnemyAction(input);
+  // TRACE IA (DEV) : SEUL site d'enregistrement → `consumeAiRanking` vide le classement de l'appel qui
+  // précède immédiatement (pas de pollution par aiApproachPlan/peek de Frénésie). `top` vide si flag off.
+  AI_TURN_LOG.push({ round: battle.round, id: enemy.id, name: enemy.name, action: describeAiAction(action), top: consumeAiRanking() });
+  if (AI_TURN_LOG.length > 400) AI_TURN_LOG.shift();
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
 

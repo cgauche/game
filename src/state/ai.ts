@@ -44,6 +44,17 @@ import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial, isMindless, isStupid } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 
+// === TRACE DE DÉCISION IA (DEV uniquement, GATÉE) ============================================
+// Diagnostic dev : capture le CLASSEMENT des candidats (l'« intention ») du DERNIER appel à
+// `chooseEnemyAction`. GATÉE par `AI_TRACE` (off par défaut) → quand off, `_lastRanking` n'est JAMAIS
+// écrit ⇒ l'IA pure reste pure (zéro effet en prod ET dans les tests). Activée par les devtools (DEV).
+let AI_TRACE = false;
+export function setAiTrace(on: boolean) { AI_TRACE = on; }
+export interface AiCandTrace { kind: string; spell?: string; targetId?: string; utility: number; }
+let _lastRanking: AiCandTrace[] = [];
+/** Récupère ET vide le classement du dernier choix (consommateur UNIQUE = `runEnemyAI`). */
+export function consumeAiRanking(): AiCandTrace[] { const r = _lastRanking; _lastRanking = []; return r; }
+
 /** UN sort connu de l'ennemi, RÉSOLU + enrichi de ses métadonnées impures (données, portée en cases,
  *  forme, fiabilité d'incantation, état de Focalisation, Unicité) par la couche impure (`buildAiInput`,
  *  combatFlow). L'énumération PURE en dérive des candidats `cast`/`castArea`/`focus` scorés par
@@ -443,11 +454,13 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const heroes = input.perceived
     ? input.heroes.filter((h) => h.pos && input.perceived!.has(`${h.pos.x},${h.pos.y},0`))
     : input.heroes;
-  if (input.heroes.length === 0) return { kind: 'end' }; // plus AUCUN adversaire (combat fini) → passe la main
-  if (!canTakeAction(enemy) && effectiveMovement(enemy) === 0) return { kind: 'end' }; // ni Action ni Mouvement (Surpris LDB 16 l.132…) → passe la main (gating data-driven, plus de nom en dur)
+  // Gardes FORCÉES (psychologie/RAW, hors scoring) : la trace = action forcée, classement VIDE.
+  const forced = (a: EnemyAction): EnemyAction => { if (AI_TRACE) _lastRanking = []; return a; };
+  if (input.heroes.length === 0) return forced({ kind: 'end' }); // plus AUCUN adversaire (combat fini) → passe la main
+  if (!canTakeAction(enemy) && effectiveMovement(enemy) === 0) return forced({ kind: 'end' }); // ni Action ni Mouvement (Surpris LDB 16 l.132…) → passe la main (gating data-driven, plus de nom en dur)
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
-  if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return { kind: 'recover', state: 'en-flammes' };
+  if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return forced({ kind: 'recover', state: 'en-flammes' });
   const pos = enemy.pos!;
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
@@ -470,7 +483,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Un ennemi sans AUCUN moyen d'agir (aucun sort jouable NI arme) passe la main : un sort (offensif OU
   // soutien) compte comme une capacité d'action → un lanceur de pur soutien DOIT pouvoir agir.
   const hasAnyMagic = spells.some((sp) => !sp.active);
-  if (!hasAnyMagic && enemy.weapons.length === 0) return { kind: 'end' };
+  if (!hasAnyMagic && enemy.weapons.length === 0) return forced({ kind: 'end' });
 
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
   // de tirer : une arme à distance sans Atout Pistolet ne tire pas en mêlée (LDB Armes l.297-298).
@@ -516,7 +529,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // seul), au lieu de passer son tour planté. Pur : aucune cible non perçue n'est jamais visée.
   if (heroes.length === 0) {
     const closest = [...input.heroes].filter((h) => h.pos).sort((a, b) => manhattan(pos, a.pos!) - manhattan(pos, b.pos!))[0];
-    if (!closest) return { kind: 'end' };
+    if (!closest) return forced({ kind: 'end' });
     let to: Pt | null = null;
     let bestD: number | null = null;
     for (const k of reach.keys()) {
@@ -525,7 +538,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       const d = manhattan({ x, y }, closest.pos!);
       if (bestD == null || d < bestD) { bestD = d; to = { x, y }; }
     }
-    return to ? { kind: 'move', to, thenTargetId: closest.id } : { kind: 'end' };
+    return forced(to ? { kind: 'move', to, thenTargetId: closest.id } : { kind: 'end' });
   }
 
   // Fuite (Brisé / Bestial blessé). `preferHidden` (Brisé, LDB 16 l.55 « hors de vue de l'ennemi ») :
@@ -546,12 +559,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   };
   // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
   // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
-  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return fleeMove(true); // Brisé : fuir hors de vue (cachette prioritaire)
+  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return forced(fleeMove(true)); // Brisé : fuir hors de vue (cachette prioritaire)
   // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
   // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
   // le drapeau frenzied de l'appelant).
   if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !isFrenzied(enemy)
-      && enemy.wounds.current < enemy.wounds.max / 2 && !isEngaged(enemy)) return fleeMove();
+      && enemy.wounds.current < enemy.wounds.max / 2 && !isEngaged(enemy)) return forced(fleeMove());
 
   // === DOCTRINE TACTIQUE (Lot 5) ===========================================================
   // La doctrine (déduite des signaux DATA ou forcée par `enemy.aiDoctrine`) module les POIDS du cœur
@@ -569,7 +582,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (macro?.retreatBelow != null && !isBestial(enemy.traits) && !isFrenzied(enemy) && !isEngaged(enemy)
       && !hasCondition(enemy, 'empetre')
       && enemy.wounds.current < enemy.wounds.max * macro.retreatBelow) {
-    return fleeMove();
+    return forced(fleeMove());
   }
 
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une
@@ -744,6 +757,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // opposition). La POLARITÉ (offensif/bénéfique) et la valeur viennent des OPS, jamais d'un nom de sort
   // ni d'une catégorie. Un FRÉNÉTIQUE ne lance AUCUN sort (Frénésie LDB 21 l.34) → on saute le bloc.
   if (!frenzied) {
+    // Existe-t-il un sort OFFENSIF lançable IMMÉDIATEMENT (en un jet, cible en portée) ? Si oui, FOCALISER
+    // (qui ne produit RIEN ce tour) n'a pas de sens — on frappe maintenant (gate du candidat `focus` plus bas).
+    const hasImmediateOffensive = spells.some((o) => !o.active && (o.focusState === 'none' || o.focusState === 'ready')
+      && spellIsOffensive(o.data) && shootableHeroes.some((h) => o.range == null || fpDist(h) <= o.range));
     for (const sp of spells) {
       if (sp.active) continue; // Unicité : un effet/une invocation de CE sort est déjà actif → on ne le relance pas
       const ctx = { landProb: sp.landProb, refEnemy, horizon: HORIZON };
@@ -781,14 +798,15 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
           if (best && best.net > 0) candidates.push({ action: { kind: 'castArea', spell: sp.id, center: best.center }, kind: 'castArea', utility: best.net, targetId: '', coord: best.center });
         }
       } else if (sp.focusState === 'focusable') {
-        // Focalisation (LDB 46) : sort arcanique de forte valeur, peu fiable d'un jet — on y consacre le
-        // tour plutôt que de rater un NI hors d'atteinte, sauf menacé au contact avec un repli (l.193).
+        // Focalisation (LDB 46) : on n'y consacre le tour QUE faute de mieux — si AUCUN sort offensif n'est
+        // lançable d'un jet (sinon on frappe MAINTENANT : focaliser ne produit RIEN ce tour), et pas menacé au
+        // contact avec un repli (risque d'interruption l.193). La valeur est escomptée par la SURVIE : investir
+        // dans un payoff DIFFÉRÉ n'a de sens que si on a des chances d'être encore là (danger entrant vs PB).
         const contactFallback = adjacentFoes.length > 0 && (hasMeleeWeapon || canShoot);
-        if (!contactFallback && refEnemy) {
-          // Utilité = valeur ESCOMPTÉE du sort une fois focalisé (NI 0 → fiabilité ~1), actualisée (½ :
-          // un tour investi + risque d'interruption). Borne ≥ 0.
-          const fv = 0.5 * spellActionValue(enemy, sp.data, { kind: 'unit', subject: refEnemy }, { landProb: 1, refEnemy, horizon: HORIZON });
-          candidates.push({ action: { kind: 'focus', spell: sp.id }, kind: 'focus', utility: Math.max(0, fv), targetId: '', coord: null });
+        if (!hasImmediateOffensive && !contactFallback && refEnemy) {
+          const full = spellActionValue(enemy, sp.data, { kind: 'unit', subject: refEnemy }, { landProb: 1, refEnemy, horizon: HORIZON });
+          const survival = Math.max(0.1, Math.min(1, 1 - dangerAt(pos) / Math.max(1, enemy.wounds.current)));
+          candidates.push({ action: { kind: 'focus', spell: sp.id }, kind: 'focus', utility: Math.max(0, 0.5 * full * survival), targetId: '', coord: null });
           committingPrep = true;
         }
       } else if (spellIsOffensive(sp.data)) {
@@ -882,6 +900,8 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   }
 
   // --- ARGMAX : meilleur candidat (utilité pondérée + tie-break déterministe) ----------------
+  // TRACE (DEV gated) : classement des candidats (top 8 par utilité décroissante) = l'« intention » du tour.
+  if (AI_TRACE) _lastRanking = [...candidates].sort((a, b) => b.utility - a.utility).slice(0, 8).map((c) => ({ kind: c.kind, spell: (c.action as { spell?: string }).spell, targetId: c.targetId || undefined, utility: Math.round(c.utility * 100) / 100 }));
   const chosen = argmax(candidates);
   if (chosen) return chosen.action;
 

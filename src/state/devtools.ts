@@ -1,6 +1,7 @@
 import { useGame } from './store';
 import { actorIn } from './combatOrParty';
-import { checkBattleOver, resolveFreeAttacks, approachFearTrigger } from './combatFlow';
+import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog } from './combatFlow';
+import { setAiTrace } from './ai';
 import { pushCombatStep } from './combatEffects';
 import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
@@ -35,6 +36,7 @@ import type { Cadence } from '../engine/cadence';
  *   __wfrp.aim('id')      → vérité state du ciblage (ok/invalid + raison, compétence, dégâts)
  *   __wfrp.battle()       → snapshot combat (round, actif, modales, combattants en une ligne chacun)
  *   __wfrp.log(n)         → queue lisible des journaux (exploration + feed de combat)
+ *   __wfrp.aiLog(n)       → DIAGNOSTIC IA : action choisie + classement des candidats (intention) par tour
  *   __wfrp.turn('id')     → TRICHE : donne le tour à un combattant ; __wfrp.place('id',{x,y}) → téléporte
  *   __wfrp.turnShip('id', 'tribord'|'babord'|crans) → vire le cap d'un NAVIRE (manœuvre) → re-mappe ses bordées
  *   __wfrp.modal()        → modale(s) ouvertes ; __wfrp.roll()/confirm()/cancel() → pilote LA modale
@@ -254,6 +256,7 @@ export function buildApi() {
       if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.icon} ${sc.title}`);
       const sc = testScenarios.find((t) => t.id === id);
       if (!sc) return `❌ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
+      clearAiTurnLog(); // trace IA vierge pour ce scénario
       const s = g();
       if (seed != null) s.seedRng(seed);
       if (sc.rules) for (const [rid, v] of Object.entries(sc.rules)) setRule(rid, v);
@@ -353,6 +356,13 @@ export function buildApi() {
         combat: (s.battle?.log ?? []).slice(-n).map((e) => `[${e.kind}] ${e.text}`),
       };
     },
+
+    /** DIAGNOSTIC IA (DEV) : les `n` derniers tours pilotés par l'IA — action CHOISIE + classement des
+     *  candidats (l'« intention » : `kind[:sort][→cible]=utilité`, top 8 par utilité ↓). « (forcé) » =
+     *  garde psychologie/RAW hors scoring (frénésie/Brisé/Bestial/recover/fin) → classement vide. Défaut 50. */
+    aiLog: (n = 50) =>
+      aiTurnLog().slice(-n).map((r) =>
+        `R${r.round} ${r.name}: ${r.action}${r.top.length ? '  | ' + r.top.map((t) => `${t.kind}${t.spell ? ':' + t.spell : ''}${t.targetId ? '→' + t.targetId : ''}=${t.utility}`).join('  ') : '  (forcé)'}`),
 
     /** Modale(s) `pending*` ouvertes + les actions de pilotage dérivées (convention <flux>Roll/Confirm/Cancel). */
     modal: () => {
@@ -680,4 +690,5 @@ export function installDevtools() {
   const w = window as unknown as { __wfrp?: ReturnType<typeof buildApi>; __game?: typeof useGame };
   w.__wfrp = buildApi();
   w.__game = useGame; // handle brut du store (à côté de __wfrp) pour les recettes navigateur
+  setAiTrace(true); // DEV uniquement (devtools chargé en dev) → la trace de décision IA s'enregistre
 }

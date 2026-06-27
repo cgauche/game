@@ -107,6 +107,15 @@ describe('chooseEnemyAction — sorts (énumération op-driven)', () => {
     expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'vortex-d-ames', focusState: 'focusable' })] }))).toEqual({ kind: 'focus', spell: 'vortex-d-ames' });
   });
 
+  it('un sort offensif lançable d’un JET existe → ne focalise PAS (focaliser ne produit rien ce tour)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const h = mk('h', 'hero', { x: 5, y: 9 });
+    const immediate = castable({ id: 'carreau', range: 20, focusState: 'none' });        // offensif, d’un jet
+    const big = castable({ id: 'vortex-d-ames', range: 20, focusState: 'focusable' });    // gros sort à focaliser
+    const a = chooseEnemyAction(input(e, [h], { spells: [immediate, big] }));
+    expect(a).toEqual({ kind: 'cast', targetId: 'h', spell: 'carreau' }); // frappe maintenant, jamais focus
+  });
+
   it('sort déjà focalisé et PRÊT (focusState ready) → cast à NI 0', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h = mk('h', 'hero', { x: 5, y: 9 });
