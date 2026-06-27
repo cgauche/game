@@ -72,7 +72,8 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
 - **ZI** (Zoo Impérial / *The Imperial Zoo*) = `Source/WH - V4 - Le zoo impérial/` — créatures exotiques + le trait
   **Redoutable** (*Grim*) (autorisé 2026-06-14). NB : AA/ZI ne sont PAS dans `all-data.json` → leur donnée est
-  intégrée par **extraction curée** (`scripts/frenchy/` + datasets `src/data/*.json` taggés à leur source), pas par `build:data`.
+  **curée à la main directement dans `src/data/*.json`** (commitée, éditable au Codex), chaque entrée taguée à sa
+  `source`, pas par `build:data`.
 - **MDG** (La Mer des Griffes / *Sea of Claws*) = `Source/WH - V4 - La Mer de Griffe/` — **cadre côtier + règles navales**
   (autorisé 2026-06-22) : navires & construction/artillerie (ch.12), navigation/manœuvres/**combat naval** + dégâts &
   Critiques sur navire (ch.13), tests d'équipage & moral (ch.14), longs voyages/commerce/**activités & maladies en mer**

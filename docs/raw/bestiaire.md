@@ -395,7 +395,7 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 | `LDB 82` | Les morts sans repos | Zombies, squelettes, fantômes, vampires, nécromancers |
 | `LDB 83` | Esclaves des Ténèbres | Skavens, cultistes du Chaos, hommes-bêtes, démons |
 | **ZI** | Le Zoo Impérial | Créatures exotiques (tigre à dents de sabre, etc.) + trait Redoutable |
-| **frenchy.bzh** | Guide v4.5 | 88 créatures Part II (importées via `scripts/frenchy/`) |
+| **frenchy.bzh** | Guide v4.5 | 88 créatures Part II (homebrew, taguées `source: "frenchy.bzh"`) |
 | **EDO** | L'Ennemi dans l'Ombre | Créatures du Chaos : Horreurs, Furies, etc. |
 | **T2/T2C** | Mort sur le Reik | Créatures aquatiques, PNJ nommés statblockés |
 | **T3** | Le Pouvoir derrière le Trône | Créatures de scénario |
@@ -406,7 +406,6 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 
 **Implémente** :
 - `src/data/creatures.json` — source app-owned commitée ; index via `findCreatureById`, `allCreatures` (`src/data/index.ts`).
-- `scripts/frenchy/import-creatures.mjs` — importe les 88 créatures frenchy.bzh.
 
 ---
 
