@@ -4090,5 +4090,18 @@
       "book": "ADE2",
       "page": 20
     }
+  },
+  {
+    "id": "sang-neuf",
+    "label": "Sang Neuf",
+    "max": 1,
+    "test": null,
+    "desc": "Votre famille est vue comme une nouvelle venue dans la Laurelorn, et est traitée avec condescendance par les Éonirs des autres lignages. Votre Statut est toujours considéré comme plus bas que celui des autres Éonirs, à moins qu'ils aient, eux aussi, le Talent Sang neuf. Un membre du jeune lignage de deuxième génération peut perdre ce Talent s'il réussit une série d'épreuves pour rejoindre l lignée des Enfants de la forêt.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "ADE1",
+      "page": 78
+    }
   }
 ]

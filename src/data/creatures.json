@@ -54710,5 +54710,311 @@
     "appearance": {
       "species": "rat-ogre"
     }
+  },
+  {
+    "id": "predateur-sanglant",
+    "label": "Prédateur sanglant",
+    "title": null,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 7,
+      "CC": 56,
+      "CT": null,
+      "F": 75,
+      "E": 62,
+      "I": 45,
+      "Ag": 49,
+      "Dex": 15,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 104
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 11
+      },
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "cornes",
+        "value": 10
+      },
+      {
+        "id": "fabrique"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "taille",
+        "arg": "Énorme"
+      },
+      {
+        "id": "terreur",
+        "value": 3
+      },
+      {
+        "id": "territorial"
+      },
+      {
+        "id": "manifestation-de-ghur"
+      },
+      {
+        "id": "gardien-eternel"
+      },
+      {
+        "id": "hurlement-de-la-bete-indomptable"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "En temps normal, la création d'un élémentaire incarné de _Ghur_ nécessite un rituel puissant et complexe mené à bien par un praticien de la magie d'Ambre. Ce rituel a pour composants des crânes monstrueux et des fourrures fraîchement dépecées, ce qui vaut aux créatures qu'il produit le surnom de « Prédateurs sanglants » auprès des sorciers. Il arrive néanmoins qu'un élémentaire se forme spontanément aux alentours de la Source de _Ghur_ à cause de l'extrême concentration de Vent d'Ambre qui y règne.\n\nLe dernier élémentaire ainsi formé est une créature humanoïde gigantesque, couverte de muscles saillants et bariolée de tendons aussi épais que des fouets. Sa tête est un crâne décharné doté de défenses acérées et de bois démesurés. Ses pattes avant sont des serres d'aigle, et ses pattes arrière ressemblent à celles d'un lion. Cette créature représente à la perfection la férocité des prédateurs naturels les plus sauvages. Elle n'a qu'un but : traquer toute créature qui empiète sur son territoire, la mettre en pièces jusqu'à ce qu'elle ne se débatte plus, puis se repaître de sa chair.",
+    "source": {
+      "book": "Middenheim",
+      "page": 115
+    }
+  },
+  {
+    "id": "enfant-d-ulric",
+    "label": "Enfant d'Ulric",
+    "title": null,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 5,
+      "CC": 40,
+      "CT": 30,
+      "F": 40,
+      "E": 40,
+      "I": 40,
+      "Ag": 40,
+      "Dex": 20,
+      "Int": 20,
+      "FM": 30,
+      "Soc": 10,
+      "B": 16
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "arg": "BF +4"
+      },
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "morsure",
+        "arg": "BF +3"
+      },
+      {
+        "id": "peur",
+        "value": 2
+      },
+      {
+        "id": "pisteur"
+      },
+      {
+        "id": "vision-nocturne"
+      },
+      {
+        "id": "metamorphose"
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Belliqueux"
+      },
+      {
+        "key": "Béni",
+        "arg": "Ulric"
+      },
+      {
+        "key": "Bestial"
+      },
+      {
+        "key": "Champion"
+      },
+      {
+        "key": "Grand"
+      },
+      {
+        "key": "Frénésie"
+      },
+      {
+        "key": "Increvable"
+      },
+      {
+        "key": "Immunité Psychologique"
+      },
+      {
+        "key": "Rapide"
+      },
+      {
+        "key": "Régénération"
+      },
+      {
+        "key": "Taille",
+        "arg": "Grande"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "« Enfant d'Ulric » est un terme utilisé dans tout l'Empire pour désigner les humains capables de se transformer entièrement ou partiellement en loup. La plupart peuvent prendre la forme d'un hybride terrifiant : une puissante créature à tête de loup et couverte de fourrure, pourtant toujours capable de se tenir debout.\n\nLa nature de telles créatures est obscure, mais la plupart des habitants de l'Empire les considèrent comme des abominations du Chaos. C'est notamment le cas du culte de Sigmar, et leurs répurgateurs font tout leur possible pour les éradiquer. Pourtant, la transmission de leurs capacités par hérédité les rend différentes des mutants ordinaires. On ne croise que peu de ces créatures dans les Terres du Sud, mais elles sont moins rares au nord, où les traditions folkloriques les associent à la bénédiction d'Ulric. Certaines vivent même au sein de communautés humaines isolées dans les bois, où elles s'occupent de protéger la nature.\n\nMais il est indéniable que la corruption du Chaos peut causer ou exacerber la lycanthropie, et même les Enfants d'Ulric qui vivent au sein de communautés humaines peuvent avoir du mal à contrôler les accès de rage sanguinaire qui les assaillent lorsqu'ils se transforment. Même les plus fervents défenseurs des droits des lycanthropes font de leur mieux pour garder leurs distances.\n\nLes Enfants d'Ulric n'ont pas de profil défini. Le MJ doit créer un personnage humain, puis décider du degré de manifestation de ses capacités. Certains Enfants d'Ulric se transforment complètement en loups (voir **WFJDR**, p. 315). Ceux qui peuvent prendre la forme d'un hybride altèrent leur profil selon les règles suivantes lorsqu'ils se transforment. Le MJ peut aussi choisir si le personnage garde ses Compétences et ses Traits lorsqu'il adopte sa forme hybride.",
+    "source": {
+      "book": "Middenheim",
+      "page": 116
+    },
+    "appearance": {
+      "species": "humain"
+    }
+  },
+  {
+    "id": "spectre-middenheim",
+    "label": "Spectre",
+    "title": null,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 40,
+      "CT": null,
+      "F": null,
+      "E": 40,
+      "I": 40,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 18,
+      "FM": 18,
+      "Soc": null,
+      "B": 10
+    },
+    "traits": [
+      {
+        "id": "ethere"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "mort-vivant"
+      },
+      {
+        "id": "peur",
+        "value": 2
+      },
+      {
+        "id": "frisson-paralysant"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Pour quiconque ignore tout du domaine de la nécromancie, rien ne différencie un spectre d'un fantôme. Après tout, il s'agit de deux entités mortes-vivantes éthérées et incorporelles d'apparence et de nature similaires. Leur création aussi est semblable : les deux ont besoin de rites nécromantiques, de fortes concentrations de _Dhar_, et de preuves de volonté inhabituelles de la part d'une âme défunte.\n\nPour certains spécialistes de la nécromancie, un esprit peut prendre la forme d'un spectre s'il essaie d'honorer dans la mort un serment inachevé de son vivant. Mais ce qui différencie réellement les spectres des autres esprits morts-vivants est leur capacité à paralyser leurs victimes.",
+    "source": {
+      "book": "Middenheim",
+      "page": 117
+    },
+    "appearance": {
+      "species": "spectre"
+    }
+  },
+  {
+    "id": "loup-blanc",
+    "label": "Loup Blanc",
+    "title": null,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 5,
+      "CC": 45,
+      "CT": null,
+      "F": 45,
+      "E": 45,
+      "I": 35,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 28,
+      "FM": 35,
+      "Soc": null,
+      "B": 30
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 7
+      },
+      {
+        "id": "armure",
+        "value": 1
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "morsure",
+        "value": 6
+      },
+      {
+        "id": "pisteur"
+      },
+      {
+        "id": "taille",
+        "arg": "Grande"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Belliqueux"
+      },
+      {
+        "key": "Béni",
+        "arg": "Ulric"
+      },
+      {
+        "key": "Bestial"
+      },
+      {
+        "key": "Frénésie"
+      },
+      {
+        "key": "Furtif"
+      },
+      {
+        "key": "Increvable"
+      },
+      {
+        "key": "Rapide"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les loups blancs mythiques sont très présents dans le folklore populaire. Ils ont tantôt représenté un danger incommensurable, tantôt endossé le rôle de protecteurs bienveillants. Nul ne sait rien des origines de ces créatures. Dans le folklore, Ulric a engendré de nombreux enfants avec des femmes Teutogens ; certains plaisantins éméchés suggèrent que les loups blancs sont peut-être les descendants des louves qui ont tapé dans son œil lubrique. Quoi qu'il en soit, les loups blancs sont des monstres rares, énormes et couverts d'une fourrure épaisse d'un blanc argenté. Ils sont plus féroces et plus intelligents que les loups des autres espèces.\n\nAux yeux du clergé d'Ulric, les loups blancs sont des créatures sacrées qui incarnent les défis associés à leur dieu. Partir en quête d'un loup blanc, le pourfendre et s'emparer de sa fourrure est un véritable rite de passage pour les dirigeants du culte. Seule une poignée d'élus a pu accomplir ce haut fait.",
+    "source": {
+      "book": "Middenheim",
+      "page": 117
+    },
+    "appearance": {
+      "species": "loup"
+    }
   }
 ]
