@@ -2,6 +2,7 @@
  *  niveaux de carrière, bénédictions…) dont les entités citées sont des liens `CodexRef`. */
 import type { CodexItem, CodexRow, CodexSection } from './registry';
 import { EntityRef, ChoiceChips } from '../EntityChip';
+import { CodexRef } from './CodexRef';
 import { CreaturePreview } from './CreaturePreview';
 import { TabbedEntry, type EntryTab } from '../TabbedEntry';
 import { Prose } from '../Prose';
@@ -22,7 +23,7 @@ function CodexRowView({ row }: { row: CodexRow }) {
     case 'kv':
       return (
         <div className="codex-kv">
-          <span className="ck-k">{row.k}</span>
+          <span className="ck-k">{row.kref ? <CodexRef category={row.kref.category} label={row.kref.label}>{row.k}</CodexRef> : row.k}</span>
           <span className="ck-v">{row.v}</span>
         </div>
       );

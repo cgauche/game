@@ -65,7 +65,7 @@ export interface CodexFact {
 /** Une ligne d'une section. */
 export type CodexRow =
   | { t: 'text'; text: string }
-  | { t: 'kv'; k: string; v: string }
+  | { t: 'kv'; k: string; v: string; kref?: { category: string; label: string } }
   /** Lien vers une autre fiche. `label` = clé de résolution (base) ; `show` = libellé affiché,
    *  qui PORTE les Indices (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance.
    *  `badge` = annotation de fin NON cliquable (rang « N2 », « facultatif », « Bénédiction »…). */
@@ -745,9 +745,9 @@ const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG',
 export function combatantSections(c: Combatant): CodexSection[] {
   const ch = c.characteristics;
   const charRows: CodexRow[] = [
-    { t: 'kv', k: 'M', v: String(c.movement) },
-    ...CHAR_KEYS.map((k) => ({ t: 'kv', k, v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–' } as CodexRow)),
-    { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] },
+    { t: 'kv', k: 'M', v: String(c.movement), kref: { category: 'characteristics', label: 'Mouvement' } },
+    ...CHAR_KEYS.map((k) => ({ t: 'kv', k, v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–', kref: { category: 'characteristics', label: CHAR_LABELS[k] } } as CodexRow)),
+    { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] }, // Taille : pas une caractéristique → pas de lien Codex
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
     refRow('skills', `${skillInstanceLabel(s)} ${(ch[s.characteristic] ?? 0) + s.advances}`),
