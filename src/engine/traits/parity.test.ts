@@ -31,6 +31,8 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Hurlement fantomatique', 'cri de zone (creatureAttacks.ts + combatFlow)'],
   ['Regard pétrifiant', 'attaque-Action (creatureAttacks.ts + combatFlow)'],
   ['Vomissement', 'attaque de zone (creatureAttacks.ts + combatFlow)'],
+  ['Hurlement de la Bête indomptable', 'cri de zone — manœuvre gratuite 1 Avantage, 3 Assourdi + Calme→3 Brisé (creatureAttacks.ts + combatFlow)'],
+  ['Frisson paralysant', 'attaque-Action de mêlée magique, 1 Sonné/DR sans dégât (creatureAttacks.ts + combatFlow)'],
   ['Venin', 'Empoisonné sur PB infligés — `effects` AUTHORÉ du trait (Test de Résistance paramétré par l’arg, fireTriggers onHit)'],
   ['Constricteur', 'Empêtré sur touche — `effects` AUTHORÉ du trait (condition empetre, escapeStrength=Force, fireTriggers onHit)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects — gating « kind=morsure » sans Condition Flow)'],
@@ -98,6 +100,11 @@ const JOURNAL_MJ = new Map<string, string>([
   // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est
   // pas exprimable (skillDRBonus n'est pas conditionnel au Domaine) → reste à bâtir.
   ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
+  // Traits du bestiaire de Middenheim (#60) — desc verbatim, mécaniques sans système support à ce jour.
+  // Manifestation de Ghur : MÊME primitive manquante que Aura de Mort (gating par Domaine du sort) → #18.
+  ['Manifestation de Ghur', 'immunité aux effets négatifs des sorts du Domaine de la Bête + vulnérabilité anti-démon/mort-vivant hors Bête — gating par Domaine du cast à bâtir (cf. Aura de Mort), #18'],
+  ['Gardien éternel', 'reconstitution en d10 jours si tué sauf précautions — résurrection hors-combat (arbitrage MJ, cf. Increvable), #19'],
+  ['Métamorphose', 'bascule forme humaine↔hybride ; la forme hybride EST le statbloc de combat ; op polymorph existe mais pas d’activation self de créature'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/

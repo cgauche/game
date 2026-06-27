@@ -1262,8 +1262,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // `runCombatFlow`), qui détient get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
         break;
       case 'polymorph':
-        // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure.
+        // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure. + override
+        // d'APPARENCE le temps de l'effet (morphRef, rendu par la couche rig), restitué à l'expiration.
         lines.push(...applyOps(target, polymorphOps(target, o.ref), ctx));
+        applyActiveEffect(target, { label: ctx.label ?? 'Métamorphose', morphRef: o.ref, bonus: 0, duration: durationFromCtx(ctx) });
         break;
       case 'lifeSteal': {
         const who = ctx.caster ?? target;

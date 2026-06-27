@@ -15,6 +15,15 @@ import type { GameOp } from './ops';
 import { findCreatureById } from '../data';
 import { baseWithTraits } from './characteristics';
 
+/** id de créature dont l'apparence rig doit être rendue actuellement (op `polymorph` en cours), sinon
+ *  `undefined` (forme de base). Le DERNIER effet `morphRef` actif l'emporte. Lu par la couche rig
+ *  (`combatantAppearance`) — restitué seul à l'expiration de l'effet (plus de `morphRef` → forme de base). */
+export function liveMorphRef(c: Combatant): string | undefined {
+  let ref: string | undefined;
+  for (const e of c.activeEffects ?? []) if (e.morphRef) ref = e.morphRef;
+  return ref;
+}
+
 export function polymorphOps(target: Combatant, ref: string): GameOp[] {
   const cr = findCreatureById(ref);
   if (!cr) return [{ op: 'narrative', text: `Forme bestiale : « ${ref} » introuvable au bestiaire — arbitrage MJ.` }];

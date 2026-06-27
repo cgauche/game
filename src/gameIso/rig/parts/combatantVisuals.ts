@@ -16,8 +16,9 @@ import { feat as catalogFeatures, featureMorpho } from './elements';
 import { eyesArtFromKeys } from './eyes';
 import { injuryOverlaysFor, injuryAppearance } from './injuries';
 import { traitOverlaysFor } from './traitVisuals';
-import { traitById } from '../../../data';
+import { traitById, findCreatureById } from '../../../data';
 import { mutationById } from '../../../data/mutations';
+import { liveMorphRef } from '../../../engine/polymorph';
 
 /** Fragments d'apparence déclarés par l'état : mutations PHYSIQUES + traits porteurs d'un `appearance`.
  *  Source unique lue par les deux fonctions (calques via `features`, couleurs/yeux/morpho).
@@ -48,6 +49,13 @@ export function combatantOverlays(c: Combatant): RigOverlay[] {
 /** Apparence modifiée par l'état : couleurs/yeux des fragments + morpho CUMULÉE des difformités
  *  (carrure/jambes/visage retourné), puis blessures. Même référence si rien ne s'applique (stabilité). */
 export function combatantAppearance(a: Appearance, c: Combatant): Appearance {
+  // Métamorphose en cours (op `polymorph`, #17) : on rend l'apparence de la créature-cible le temps de
+  // l'effet (espèce/tenue/monstre…), tout en gardant sexe/carrure/seed de base — restitué à l'expiration.
+  const mref = liveMorphRef(c);
+  if (mref) {
+    const morphApp = findCreatureById(mref)?.appearance;
+    if (morphApp) a = { ...a, ...(morphApp as Partial<Appearance>) };
+  }
   const frags = stateFragments(c);
   let out = a;
   if (frags.length) {

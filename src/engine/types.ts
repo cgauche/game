@@ -370,6 +370,10 @@ export interface ActiveEffect {
   /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : le
    *  `TraitInstance` exact posé dans `c.traits`, retiré (une instance) à l'expiration (engine/grantedTraits). */
   grantedTrait?: import('./statEntry').TraitInstance;
+  /** Apparence de REMPLACEMENT le temps de l'effet (op `polymorph`) : id de créature dont la couche rig
+   *  rend l'apparence (`combatantAppearance` via `liveMorphRef`). Le moteur ne porte QUE l'id (pureté —
+   *  aucune dépendance au rig) ; l'override est auto-restitué à l'expiration (effet retiré → plus de morphRef). */
+  morphRef?: string;
   /** Arme INVOQUÉE temporaire (op `grantWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
    *  l'objet `conjured` est posé dans un SET d'armes DÉDIÉ (réutilise le système de loadouts) rendu
    *  actif. À l'expiration, `dropExpiredGrantedWeapons` retire l'objet ET le set, et réactive le set

@@ -584,6 +584,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "haut-elfe",
   },
+  "Enfant d'Ulric": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Enquêteur Chevronné": {
     "def": null,
     "plan": "biped",
@@ -1358,6 +1364,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.82,
     "species": "loup",
   },
+  "Loup Blanc": {
+    "def": "Loup",
+    "plan": "quadruped",
+    "scale": 0.82,
+    "species": "loup",
+  },
   "Loup funeste": {
     "def": "Loup",
     "plan": "quadruped",
@@ -1761,6 +1773,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "prophete-gris",
   },
   "Protagoniste": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Prédateur sanglant": {
     "def": null,
     "plan": "biped",
     "scale": 1,
