@@ -33,6 +33,9 @@ export interface InitiativeStripProps {
   /** Survol d'un portrait (frise uniquement) : pilote le réticule sur la carte + le peek caméra.
    *  `null` au relâchement. Souris seulement (le tactile n'a pas de survol). */
   onHover?: (id: string | null) => void;
+  /** Combattant actuellement survolé (token carte OU portrait) — surligne le portrait correspondant
+   *  (réciprocité). Lu depuis store.hovered par CampaignView. */
+  hoveredId?: string | null;
   onPromote: (id: string) => void;
 }
 
@@ -58,6 +61,7 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                 variant="full"
                 size="sm"
                 active={!p.over && i === p.turn}
+                hovered={c.id === p.hoveredId}
                 onClick={() => p.onActivate(id)}
                 title={p.targeting ? `${c.name} — cibler` : c.name}
               />

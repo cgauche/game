@@ -35,6 +35,9 @@ export interface PortraitTileProps {
   active?: boolean;
   /** Tuile-radio d'un picker : accentuée comme choix courant. */
   selected?: boolean;
+  /** Survolé (token sur la carte OU ce portrait) → léger halo de focus NEUTRE, distinct de l'actif
+   *  (or) et du picker (sel). Réciprocité frise↔carte. */
+  hovered?: boolean;
   /** Fond d'équipe derrière le portrait (vert allié / rouge ennemi). */
   team?: 'ally' | 'enemy';
   maxStates?: number;
@@ -42,7 +45,7 @@ export interface PortraitTileProps {
   title?: string;
 }
 
-export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, team, maxStates = 4, onClick, title }: PortraitTileProps) {
+export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, hovered, team, maxStates = 4, onClick, title }: PortraitTileProps) {
   const px = CHAR_SIZE_PX[size];
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
   const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'inconscient');
@@ -54,7 +57,7 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
     <div className="ptile-wrap">
       <button
         type="button"
-        className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${ko ? 'ko' : ''} ${team ? `team-${team}` : ''}`}
+        className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${hovered ? 'hov' : ''} ${ko ? 'ko' : ''} ${team ? `team-${team}` : ''}`}
         style={{ width: s }}
         onClick={onClick}
         title={title ?? c.name}

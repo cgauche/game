@@ -154,6 +154,7 @@ export function IsoStage() {
   // Combattant survolé depuis un PORTRAIT (frise) : pilote le réticule sur la carte + le peek caméra,
   // à parité du survol d'un token. Read-only (jamais réseau).
   const hoverCombatantId = useGame((s) => s.hoverCombatantId);
+  const setHovered = useGame((s) => s.setHovered);
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
   const [shownEdge, setShownEdge] = useState(camEdge);
   const [turning, setTurning] = useState(false);
@@ -414,6 +415,18 @@ export function IsoStage() {
     }
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
   }, [hover, hoverCombatantId, mode, battle, scene, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+
+  // Combattant SOUS le focus (tuile survolée OU portrait de frise/Tab) — INDÉPENDANT du ciblage
+  // (hoverAim exige Mon Tour + cible valide). Pilote le halo de focus du token ET, synchronisé au
+  // store (`hovered`), le miroir réciproque sur la frise. Source unique du « qui est mis en évidence ».
+  const hoveredId = useMemo<string | null>(() => {
+    if (mode !== 'battle' || !battle) return null;
+    const occ = hoverCombatantId
+      ? battle.combatants.find((c) => c.id === hoverCombatantId && c.pos && !isOutOfAction(c))
+      : hover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y)) : null;
+    return occ?.id ?? null;
+  }, [mode, battle, hover, hoverCombatantId]);
+  useEffect(() => { setHovered(hoveredId); }, [hoveredId, setHovered]);
 
   // Aperçu de DÉPLACEMENT au SURVOL (desktop) : le chemin + le coût se matérialisent sous la
   // souris, le clic UNIQUE commet — le tap-1 (battle.preview) reste le flux tactile. Mêmes
@@ -811,7 +824,7 @@ export function IsoStage() {
         discR: discR(fp),
         ghost: ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
-        highlight: hoverAim?.toId === c.id ? relationColor(c.kind) : undefined, // cible courante → halo couleur de relation (rouge/vert/or)
+        highlight: c.id === hoveredId ? relationColor(c.kind) : undefined, // FOCUS (survol token/frise) → halo couleur de relation, indépendant du ciblage (hoverAim = réticule)
       });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
@@ -839,12 +852,31 @@ export function IsoStage() {
     for (const b of scene.buildings ?? []) {
       if (!b.door) continue;
       const c = tileCenter(b.door.x, b.door.y, dims);
+      const doorHovered = mode === 'exploration' && !!hover && hover.x === b.door.x && hover.y === b.door.y;
       objs.push({
         d: depth(b.door.x, b.door.y, dims) + 0.6, // au-dessus du mur de façade (même tuile)
         el: (
-          <g key={`door-halo-${b.id}`} className="interact-halo" pointerEvents="none">
+          <g key={`door-halo-${b.id}`} className={doorHovered ? 'interact-halo hovered' : 'interact-halo'} pointerEvents="none">
             <ellipse cx={c.cx} cy={c.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.16} />
             <ellipse cx={c.cx} cy={c.cy + 4} rx={15} ry={7.5} fill="none" stroke="#ffe27a" strokeWidth={1.5} opacity={0.65} />
+          </g>
+        ),
+      });
+    }
+    // PNJ / marchand (interlocuteurs) : PAS de halo permanent (ils ne « réclament » pas comme une
+    // fouille/porte) — halo révélé au SURVOL seul, cohérent avec le curseur main. Rendu HORS du memo
+    // entityObjs (qui ignore `hover` pour rester stable) → 1 seule tuile à la fois, peu coûteux.
+    if (hover) for (const ent of scene.entities) {
+      if (ent.kind === 'prop' || ent.interact) continue; // fouille = halo permanent (boucle props ci-dessus)
+      if (!ent.dialogueId && !ent.merchant) continue;
+      if (ent.pos.x !== hover.x || ent.pos.y !== hover.y || (ent.z ?? 0) !== (hover.z ?? 0)) continue;
+      const cc = tileCenter(ent.pos.x, ent.pos.y, dims, feetZ(ent.pos.x, ent.pos.y, ent.z ?? 0));
+      objs.push({
+        d: depth(ent.pos.x, ent.pos.y, dims, ent.z ?? 0) + 0.55,
+        el: (
+          <g key={`npc-halo-${ent.id}`} className="interact-halo hovered" pointerEvents="none">
+            <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.2} />
+            <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="none" stroke="#ffd75e" strokeWidth={1.8} opacity={0.85} />
           </g>
         ),
       });
@@ -1064,7 +1096,8 @@ export function IsoStage() {
     const sc = useGame.getState().scene;
     const overInteractive =
       !!sc && !!t && useGame.getState().mode === 'exploration' &&
-      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0) && (e.dialogueId || !!e.interact || !!e.merchant));
+      (sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0) && (e.dialogueId || !!e.interact || !!e.merchant))
+        || (sc.buildings ?? []).some((b) => b.door && b.door.x === t.x && b.door.y === t.y));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile (cf. garde plus bas), donc peu de re-rendus.

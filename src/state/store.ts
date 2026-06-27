@@ -237,6 +237,10 @@ export interface GameState extends RollFlowActionsMap {
    *  réseau), read-only : actif même hors de son tour. null = aucun survol de portrait. */
   hoverCombatantId: string | null;
   setHoverCombatant: (id: string | null) => void;
+  /** Combattant mis en évidence par le SURVOL (token carte OU portrait frise) — pilote le miroir
+   *  réciproque sur la frise. Distinct de hoverCombatantId (frise/Tab → peek caméra). */
+  hovered: string | null;
+  setHovered: (id: string | null) => void;
   /** Surcharges de touches du remap clavier (id de raccourci → event.code), persistées en
    *  localStorage ; lues par `useGameKeyboard` via `effectiveCodes`. */
   keyOverrides: Record<string, string>;
@@ -1012,6 +1016,8 @@ export const useGame = create<GameState>((set, get) => ({
   setInspectId: (id) => set((s) => (s.inspectId === id ? {} : { inspectId: id })),
   hoverCombatantId: null,
   setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
+  hovered: null,
+  setHovered: (id) => set((s) => (s.hovered === id ? {} : { hovered: id })),
   keyOverrides: loadKeyOverrides(),
   setKeyBinding: (id, code) => set((s) => { const o = { ...s.keyOverrides, [id]: code }; saveKeyOverrides(o); return { keyOverrides: o }; }),
   resetKeyBindings: () => { saveKeyOverrides({}); set({ keyOverrides: {} }); },

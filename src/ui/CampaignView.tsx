@@ -74,6 +74,7 @@ export function CampaignView() {
   const inspectId = useGame((s) => s.inspectId); // statbloc inspecté (store : frise ET token l'ouvrent)
   const setInspectId = useGame((s) => s.setInspectId);
   const setHoverCombatant = useGame((s) => s.setHoverCombatant);
+  const hovered = useGame((s) => s.hovered);
   const pendingCast = useGame((s) => s.pendingCast);
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
@@ -144,6 +145,7 @@ export function CampaignView() {
             onToggleInspect={toggleInspect}
             onActivate={onStripPortrait}
             onHover={setHoverCombatant}
+            hoveredId={hovered}
             onPromote={roundStartPromote}
           />
         )}

@@ -52,6 +52,13 @@
   outline: 2px solid var(--gold2);
   outline-offset: 1px;
 }
+/* Survolé (token carte ↔ portrait frise, réciproque) : halo de focus NEUTRE, distinct de l'or
+   (actif/picker). N'agrandit pas — juste un liseré clair reliant le portrait au pion survolé. */
+.ptile.hov {
+  outline: 1.5px solid rgba(233, 240, 255, 0.85);
+  outline-offset: 1px;
+  box-shadow: 0 0 9px rgba(210, 228, 255, 0.5);
+}
 /* Rangée de tuiles-radio (désigner un héros) — remplace les <select> de noms. */
 .frame-row {
   display: inline-flex;
