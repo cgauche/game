@@ -116,6 +116,9 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
+  /* libellés longs non sécables (Encombrement, Détermination…) : enroulement au lieu du débordement à 360px */
+  overflow-wrap: anywhere;
+  line-height: 1.1;
 }
 .stat-chip > .sc-value {
   font-size: 16px;
