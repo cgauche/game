@@ -31,7 +31,8 @@ const CATEGORIES: Record<string, { id: string }[]> = { traits, talents, qualitie
 /** Ensemble VOULU des ids partagés entre ≥ 2 catalogues (cf. familles documentées ci-dessus). */
 const KNOWN_CROSS = [
   'arme', 'beni', 'bouclier', 'broyeur-d-os', 'carreau', 'cornes', 'effrayant', 'etreinte-glaciale',
-  'flechette', 'frenesie', 'haine', 'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique',
+  'flechette', 'frenesie', 'frisson-paralysant', 'haine', 'hurlement-de-la-bete-indomptable',
+  'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique',
   'morsure', 'nuee', 'perturbant', 'pistolet', 'protection', 'rapide', 'regard-petrifiant', 'regeneration',
   'resistance', 'resistance-a-la-magie', 'sang-corrosif', 'souffle', 'taille', 'tentacules',
   'vision-nocturne', 'vol', 'vomissement',

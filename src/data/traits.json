@@ -2200,7 +2200,12 @@
     "source": {
       "book": "Middenheim",
       "page": 115
-    }
+    },
+    "grantsManeuvers": [
+      {
+        "id": "hurlement-de-la-bete-indomptable"
+      }
+    ]
   },
   {
     "id": "frisson-paralysant",
@@ -2210,8 +2215,13 @@
     "desc": "en combat, les spectres n'infligent jamais de dégâts. À la place, ils font subir à leurs adversaires un frisson surnaturel qui les tétanise sous le choc. Lors d'un combat, si un spectre touche sa cible, il lui inflige 1 État _Sonné_ par DR.",
     "source": {
       "book": "Middenheim",
-      "page": 116
-    }
+      "page": 117
+    },
+    "grantsManeuvers": [
+      {
+        "id": "frisson-paralysant"
+      }
+    ]
   },
   {
     "id": "metamorphose",

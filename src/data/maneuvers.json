@@ -859,5 +859,108 @@
       "book": "LDB",
       "page": 85
     }
+  },
+  {
+    "id": "hurlement-de-la-bete-indomptable",
+    "label": "Hurlement de la Bête indomptable",
+    "kind": "hurlement",
+    "activation": "free",
+    "advantageCost": 1,
+    "targeting": "allFoes",
+    "defense": "auto",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "assourdi",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "test",
+              "test": {
+                "skill": "calme",
+                "difficulty": "complexe"
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "victim",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "name": "brise",
+                      "value": 3
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Lors de son tour, le prédateur peut dépenser 1 Avantage pour effectuer une attaque gratuite de hurlement : toute cible vivante à un nombre de mètres égal à son Initiative gagne 3 États Assourdi, puis effectue un Test de Calme Difficile (-10) et gagne 3 États Brisé en cas d'échec. Middenheim p.115.",
+    "source": {
+      "book": "Middenheim",
+      "page": 115
+    }
+  },
+  {
+    "id": "frisson-paralysant",
+    "label": "Frisson paralysant",
+    "kind": "etreinte",
+    "activation": "action",
+    "advantageCost": 0,
+    "stat": "CC",
+    "defense": "esquive",
+    "targeting": "melee",
+    "magic": true,
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "victim",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "sonne",
+                "valuePerSL": {
+                  "every": 1,
+                  "amount": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "desc": "En combat, le spectre n'inflige jamais de dégâts. À la place, s'il touche sa cible, il lui inflige 1 État Sonné par DR. Middenheim p.117.",
+    "source": {
+      "book": "Middenheim",
+      "page": 117
+    }
   }
 ]
