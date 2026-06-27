@@ -16,7 +16,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
@@ -25,8 +25,8 @@ import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear } fro
 import { ev, evLines } from './combatLog';
 import { afterApproach } from './combatDirector';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, resolveBackstabAttack, resolveMeleePassive, attackWeapon } from '../engine/combat';
-import { disengageFrom, isEngaged, meleeReachTiles } from '../engine/engagement';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, resolveBackstabAttack, resolveMeleePassive, attackWeapon } from '../engine/combat';
+import { disengageFrom, isEngaged, setContact, clearContact, reachRank, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent } from '../engine/magic';
@@ -93,6 +93,19 @@ function advanceCombatJet(get: () => GameState): void {
   const seq = get().pendingCascade;
   if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack'
     && !get().pendingAttack && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
+}
+
+/** Applique l'issue d'« Au Contact » (LDB 62 l.176) : pose/retire l'état au contact selon le choix du
+ *  vainqueur (`'contact'`/`'normal'`, ou `null` = égalité → statu quo), CONSOMME l'Action (le Test
+ *  opposé EST l'Action) et ferme la modale. Pas de jet ici — pose une relation symétrique. */
+function applyAuContact(get: Get, set: Set, mover: Combatant, foe: Combatant, choice: 'normal' | 'contact' | null): void {
+  const battle = get().battle!;
+  if (choice === 'contact') setContact(mover, foe);
+  else if (choice === 'normal') clearContact(mover, foe);
+  const key = choice === 'contact' ? 'cs.auContactClose' : choice === 'normal' ? 'cs.auContactNormal' : 'cs.auContactTie';
+  const log = [...battle.log, ev('attack', t(key, { name: mover.name, foe: foe.name }), mover.id, foe.id)];
+  set({ pendingAuContact: null, battle: { ...battle, acted: true, action: null, log } });
+  bus.emit(EVT.SCENE_DIRTY);
 }
 
 /** Actions de combat inline du store — déplacées VERBATIM. Spreadées EN TÊTE du `create`. */
@@ -316,6 +329,57 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     disengageCancel: () => set({ pendingDisengage: null, pendingCascade: null }), // renonce avant tout jet : aucun coût
 
+    // ── « Au Contact » (LDB 62 l.176, Option « Longueur d'arme », règle `combat-weapon-reach`) :
+    //    Test opposé de Corps à corps mover vs foe pour entrer dans la longueur d'arme ; le VAINQUEUR
+    //    choisit « combat normal » ou « au contact » (toute arme > Courte y devient improvisée). ──
+    battleAuContact: (targetId: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return; // le Test opposé coûte l'Action
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      const foe = battle.combatants.find((c) => c.id === targetId);
+      if (!foe || !auContactEligible(active, foe)) return;
+      startAuContact(get, set, active, foe);
+    },
+    // « Lancer » : jet de Corps à corps du mover, opposé au jet figé du foe (mover = « attaquant »).
+    auContactRoll: () => {
+      const { battle, pendingAuContact: pd } = get();
+      if (!battle || !pd || pd.phase !== 'roll' || pd.def) return; // déjà lancé → no-op
+      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      if (!mover || !pd.atk) return;
+      const def = rollDisengageAttack(mover, battleRng());
+      const opp = resolveOpposed(def, pd.atk);
+      set({ pendingAuContact: { ...pd, def, result: disengageOutcome(opp.winner) } });
+    },
+    // Cycle Chance/+1 DR/Pacte/Résilience (spec `auContact`) : foe (atk) figé, seul le jet du mover se (re)joue.
+    ...rollFlowActions('auContact', FLOWS.auContact, get, set, ['reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
+    // « Appliquer » : le Test opposé EST l'Action. Le mover (héros) gagne → IL choisit (phase 'choice') ;
+    // le foe gagne → l'IA tranche par heuristique (arme la plus courte = au contact) ; égalité → statu quo.
+    auContactConfirm: () => {
+      const { battle, pendingAuContact: pd } = get();
+      if (!battle || !pd || !pd.result) return;
+      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      if (!mover || !foe) return set({ pendingAuContact: null });
+      if (pd.result === 'success') return set({ pendingAuContact: { ...pd, phase: 'choice' } }); // le héros tranche
+      if (pd.result === 'tie') return applyAuContact(get, set, mover, foe, null); // statu quo, Action consommée
+      // Le foe (IA) l'emporte → au contact si SON arme est plus COURTE (il neutralise l'allonge adverse).
+      const fr = reachRank(foe.weapons.find((w) => w.type === 'melee')?.reach);
+      const mr = reachRank(mover.weapons.find((w) => w.type === 'melee')?.reach);
+      applyAuContact(get, set, mover, foe, fr < mr ? 'contact' : 'normal');
+    },
+    // Le vainqueur HÉROS tranche : « au contact » pose l'état, « combat normal » le retire.
+    auContactChoose: (mode: 'normal' | 'contact') => {
+      const { battle, pendingAuContact: pd } = get();
+      if (!battle || !pd || pd.phase !== 'choice' || pd.result !== 'success') return;
+      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      if (!mover || !foe) return set({ pendingAuContact: null });
+      applyAuContact(get, set, mover, foe, mode);
+    },
+    auContactCancel: () => set({ pendingAuContact: null }), // renonce avant tout jet : aucun coût
+
     battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => {
       const { battle, scene } = get();
       if (!battle || !scene || battle.over) return;
@@ -518,6 +582,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // `targetId` = clic = victime/point d'impact ; Avantage variable de Regard → 1) ; la MÊLÉE (Arme +
       // Morsure/Caudale/Tentacule) passe par l'approche-puis-frappe ci-dessous.
       if (option.targeting === 'trample') return get().battleTrample(target.id);
+      // « Au Contact » (LDB 62 l.176) : action de Test opposé (pas une frappe) → flux dédié, jamais l'approche-puis-frappe.
+      if (option.targeting === 'aucontact') return get().battleAuContact(target.id);
       if (option.targeting === 'zone') {
         set({ pendingManeuver: { attackerId: active.id, kind: option.kind!, targetId: target.id, avantageSpent: option.advantageMode === 'variable' ? 1 : option.cost.advantage, result: null }, battle: { ...battle, action: null, selectedAttack: undefined } });
         return;

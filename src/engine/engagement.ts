@@ -61,21 +61,47 @@ export function engage(a: Combatant, b: Combatant): void {
   }
 }
 
-/** Retire le lien Engagé A↔B des deux côtés (désengagement réussi, ou cible hors d'action). */
+/** Retire le lien Engagé A↔B des deux côtés (désengagement réussi, ou cible hors d'action). Le lien
+ *  « au contact » A↔B (LDB 62 l.176) est un SOUS-ENSEMBLE de l'Engagement → purgé de pair. */
 export function disengageFrom(a: Combatant, b: Combatant): void {
   if (a.engagedWith) a.engagedWith = a.engagedWith.filter((id) => id !== b.id);
   if (b.engagedWith) b.engagedWith = b.engagedWith.filter((id) => id !== a.id);
+  clearContact(a, b);
 }
 
 /** Retire `id` (combattant qui vient d'être neutralisé) de TOUS les liens d'Engagement, des deux côtés.
  *  À appeler DÈS qu'une cible tombe hors d'action : on ne reste pas Engagé avec une cible morte (LDB 13).
- *  Sans cela, l'Engagement avec le cadavre persisterait jusqu'au franchissement de Round (decayEngagement). */
+ *  Sans cela, l'Engagement avec le cadavre persisterait jusqu'au franchissement de Round (decayEngagement).
+ *  Purge AUSSI le lien « au contact » (sous-ensemble de l'Engagement, LDB 62 l.176). */
 export function clearEngagementOf(all: Combatant[], id: string): void {
   for (const c of all) {
     if (c.engagedWith?.length) c.engagedWith = c.engagedWith.filter((x) => x !== id);
+    if (c.contactWith?.length) c.contactWith = c.contactWith.filter((x) => x !== id);
   }
   const self = all.find((c) => c.id === id);
-  if (self) self.engagedWith = [];
+  if (self) { self.engagedWith = []; self.contactWith = []; }
+}
+
+/** Deux combattants sont-ils « au contact » (LDB 62 l.176) ? Relation SYMÉTRIQUE (posée par paire) — un
+ *  seul côté suffit donc à la lire. Pure. */
+export function areInContact(a: Combatant, b: Combatant): boolean {
+  return !!a.contactWith?.includes(b.id) || !!b.contactWith?.includes(a.id);
+}
+
+/** Pose « au contact » symétriquement (LDB 62 l.176). Idempotent. À n'appeler qu'entre deux combattants
+ *  Engagés (le contact est un sous-ensemble de l'Engagement) — le vainqueur du Test opposé l'a choisi. */
+export function setContact(a: Combatant, b: Combatant): void {
+  for (const [x, y] of [[a, b], [b, a]] as const) {
+    x.contactWith ??= [];
+    if (!x.contactWith.includes(y.id)) x.contactWith.push(y.id);
+  }
+}
+
+/** Retire le lien « au contact » A↔B des deux côtés (le vainqueur a choisi « combat normal », ou
+ *  l'Engagement tombe). Idempotent. */
+export function clearContact(a: Combatant, b: Combatant): void {
+  if (a.contactWith) a.contactWith = a.contactWith.filter((id) => id !== b.id);
+  if (b.contactWith) b.contactWith = b.contactWith.filter((id) => id !== a.id);
 }
 
 /** Fin de Round : lève l'Engagement d'une paire si AUCUNE mêlée n'a été échangée ce Round
@@ -89,6 +115,12 @@ export function decayEngagement(all: Combatant[]): void {
   for (const c of all) {
     if (c.engagedWith?.length) {
       c.engagedWith = c.engagedWith.filter((id) => alive.has(id) && (fresh.get(c.id)?.has(id) || fresh.get(id)?.has(c.id)));
+    }
+    // « Au contact » (LDB 62 l.176) est un SOUS-ENSEMBLE de l'Engagement : un lien dont l'Engagement
+    // vient de tomber tombe aussi. On le restreint aux ids encore Engagés.
+    if (c.contactWith?.length) {
+      const eng = new Set(c.engagedWith ?? []);
+      c.contactWith = c.contactWith.filter((id) => eng.has(id));
     }
     c.meleeThisRound = [];
   }

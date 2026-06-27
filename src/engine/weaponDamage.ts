@@ -7,6 +7,7 @@ import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec, AmmoRangeMod } fr
 import type { TriggeredEffect } from './flowCore';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
+import { reachRank } from './engagement';
 import { norm } from '../lib/normalize';
 
 /** L'arme matche-t-elle la FAMILLE requise par un enchantement (mot-clé sur nom/sous-type — « épée »,
@@ -123,6 +124,9 @@ export interface WeaponContext {
   mounted?: boolean;
   /** L'attaquant possède la Spécialisation de Corps à corps du Groupe de l'arme (`hasWeaponGroupSkill`). */
   hasGroupSkill?: boolean;
+  /** Combat « au contact » avec la cible (LDB 62 l.176, Option « Longueur d'arme ») : toute arme plus
+   *  longue que Courte y est traitée comme une Arme improvisée. Dérivé de `areInContact(attacker, target)`. */
+  auContact?: boolean;
 }
 
 /**
@@ -140,6 +144,10 @@ export interface WeaponContext {
 export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   if (isImprovised(w)) return improvisedProfile(w); // usure jusqu'à +0 (LDB 62 l.178)
   if (ctx?.charged === false && isCavalryLance(w)) return improvisedProfile(w); // Lance hors Charge (l.59)
+  // Combat « au contact » (LDB 62 l.176) : « n'importe quelle arme plus longue que Courte est considérée
+  // comme une Arme improvisée » (l'adversaire est entré dans la longueur d'arme). Allonge ≤ Courte
+  // (mains nues / dague) → inchangée. MÊME branche que la Lance hors Charge (profil improvisé partagé).
+  if (ctx?.auContact && w.type === 'melee' && reachRank(w.reach) > reachRank('Courte')) return improvisedProfile(w);
   // Fléau sans la Spécialisation : Défaut Dangereuse + AUCUN autre Atout (l.146-147). Le Test reste sur la
   // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances), le subType est gardé.
   if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: QUALITY_IDS.Dangereuse }] };

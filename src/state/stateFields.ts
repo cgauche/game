@@ -26,7 +26,7 @@ export type ResetScope = 'scene' | 'combatStart';
 type FieldKey =
   | 'pendingTest' | 'pendingCorruption' | 'pendingBargain' | 'pendingAppraise' | 'pendingAttack'
   | 'actorAim' | 'actorMove' | 'actorAoe' | 'hoverDelta' | 'pendingReload' | 'pendingStateRecovery' | 'pendingDefense'
-  | 'pendingRenounce' | 'pendingMountTarget' | 'pendingDisengage' | 'pendingInteract' | 'pendingCast'
+  | 'pendingRenounce' | 'pendingMountTarget' | 'pendingDisengage' | 'pendingAuContact' | 'pendingInteract' | 'pendingCast'
   | 'pendingCounterspell' | 'pendingExtendedTest' | 'pendingForceDoor' | 'pendingCascade'
   | 'pendingCastOpposition' | 'pendingHeal' | 'pendingSurgery' | 'medic' | 'pendingRest' | 'pendingCleave'
   | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingManeuver'
@@ -53,6 +53,7 @@ const STATE_FIELDS: Manifest = {
   pendingRenounce: { init: null, resetOn: [] },
   pendingMountTarget: { init: null, resetOn: ['combatStart'] },
   pendingDisengage: { init: null, resetOn: ['scene', 'combatStart'] },
+  pendingAuContact: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingInteract: { init: null, resetOn: ['scene'] },
   pendingCast: { init: null, resetOn: ['combatStart'] },
   pendingCounterspell: { init: null, resetOn: ['combatStart'] },

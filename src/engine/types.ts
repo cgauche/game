@@ -948,6 +948,11 @@ export interface Combatant {
   /** IDs avec qui une attaque de mêlée a été échangée CE Round (upkeep de fin de Round,
    *  parallèle à gainedAdvThisRound) → sert à purger l'Engagement périmé (l.175). */
   meleeThisRound?: string[];
+  /** « Au contact » (LDB 62 l.176, Option « Longueur d'arme ») : adversaires dans la longueur d'arme
+   *  desquels ce combattant est entré. Relationnel et symétrique (comme `engagedWith`) ; SOUS-ENSEMBLE
+   *  de l'Engagement (purgé par paire dès que l'Engagement A↔B tombe). Toute arme plus longue que Courte
+   *  vaut alors une Arme improvisée (cf. `effectiveWeapon` / `WeaponContext.auContact`). */
+  contactWith?: string[];
   /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
    *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
   appearance?: import('../gameIso/rig/appearance').Appearance;

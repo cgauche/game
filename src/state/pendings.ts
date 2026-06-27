@@ -563,6 +563,23 @@ export interface PendingDisengage {
   rerolled?: boolean;
 }
 
+/** « Au Contact » en attente (LDB 62 l.176, Option « Longueur d'arme », règle `combat-weapon-reach`) :
+ *  Test opposé de Corps à corps `mover` vs `foe` pour entrer dans la longueur d'arme. Le VAINQUEUR
+ *  choisit « combat normal » (retire l'état au contact) ou « au contact » (le pose). Calque
+ *  `PendingDisengage` : le jet du foe (`atk`) est figé, seul le jet du mover (`def`, Corps à corps)
+ *  se (re)joue. `phase 'roll'` = Test opposé influençable ; `phase 'choice'` = le vainqueur HÉROS
+ *  tranche (un foe IA tranche par heuristique, sans phase de choix montrée). */
+export interface PendingAuContact {
+  moverId: string; // héros initiateur (actif)
+  foeId: string; // adversaire ciblé (Engagé en mêlée)
+  phase: 'roll' | 'choice';
+  atk: TestResult | null; // jet de Corps à corps du foe, figé (jamais relancé)
+  def: TestResult | null; // jet de Corps à corps du mover (influençable)
+  result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover (héros) l'emporte ; 'tie' = statu quo
+  /** Relance par Chance du jet du mover déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
+}
+
 /** Incantation en attente : flux par modale (sélection → « Lancer » jet figé → Chance → appliquer),
  *  comme l'attaque. Tous les jets méritent leur modale. */
 export interface PendingCast {

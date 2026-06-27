@@ -47,6 +47,10 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
   'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',
   'disengageCancel',
+  // « Au Contact » (LDB 62 l.176) : Test opposé de Corps à corps + choix du vainqueur
+  'battleAuContact', 'auContactRoll', 'auContactReroll', 'auContactBonusSL',
+  'auContactDarkPact', 'auContactForceSuccess', 'auContactConfirm', 'auContactChoose',
+  'auContactCancel',
   // Fuir : Test de Calme du fuyard (flux `flee`, calqué sur `approach`)
   'fleeRoll', 'fleeReroll', 'fleeBonusSL', 'fleeDarkPact', 'fleeForceSuccess', 'fleeConfirm',
   // combat monté

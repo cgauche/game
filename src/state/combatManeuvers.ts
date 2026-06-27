@@ -36,6 +36,8 @@ import { combatantsWithinRadius } from './combatGeometry';
 import { smokeZone } from './lineOfSight';
 import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
+import { isEngagedWith, reachRank } from '../engine/engagement';
+import { rule } from '../engine/policy';
 import { bus, EVT } from './bus';
 import { t } from '../i18n';
 
@@ -96,7 +98,7 @@ export interface AttackOption {
   kind?: AttackKind;
   label: string;
   icon: string;
-  targeting: 'melee' | 'zone' | 'trample';
+  targeting: 'melee' | 'zone' | 'trample' | 'aucontact';
   reach?: number;
   forceMelee?: boolean;
   cost: { action: boolean; advantage: number };
@@ -128,6 +130,19 @@ export const hasFreeWeaponAttack = (c: Combatant): boolean => {
         return true;
   return false;
 };
+
+/** Adversaire de mêlée VALIDE pour l'action « Au Contact » d'un héros (LDB 62 l.176, Option « Longueur
+ *  d'arme ») : ennemi vivant Engagé avec `mover` ET tel qu'une différence d'allonge soit PERTINENTE —
+ *  l'un des deux porte une arme de mêlée plus longue que Courte (sinon « au contact » ne reclasse rien).
+ *  Source UNIQUE de l'éligibilité (option de la hotbar + clic). Pure. */
+export function auContactEligible(mover: Combatant, foe: Combatant): boolean {
+  if (foe.kind === mover.kind || isOutOfAction(foe) || !isEngagedWith(mover, foe.id)) return false;
+  const longer = (c: Combatant) => {
+    const w = c.weapons.find((x) => x.type === 'melee');
+    return !!w && reachRank(w.reach) > reachRank('Courte');
+  };
+  return longer(mover) || longer(foe);
+}
 
 /** Attaques que le héros ACTIF peut lancer MAINTENANT — UNE liste à coût (Arme d'abord, puis gratuites/
  *  zone abordables, Piétinement, mutation Tentacule). Subsume l'attaque d'arme implicite ET la garde de
@@ -184,6 +199,12 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
     const w = active.weapons.find((x) => x.uid === active.mannedPoste!.item.uid);
     if (w) out.push({ id: 'poste', label: `Servir ${w.name}`, icon: '💥', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 } });
   }
+  // (5) « Au Contact » (LDB 62 l.176, Option « Longueur d'arme », règle optionnelle `combat-weapon-reach`) :
+  //     Test opposé de Corps à corps pour entrer dans la longueur d'arme. Dispo si la règle est ON, l'Action
+  //     dispo, et un adversaire Engagé présente une différence d'allonge pertinente. `priority:0` → jamais
+  //     auto-choisie (clic droit/IA) : c'est un choix EXPLICITE de l'« Attaque ▾ », pas une frappe.
+  if (rule('combat-weapon-reach') && !battle.acted && canTakeAction(active) && battle.combatants.some((c) => auContactEligible(active, c)))
+    out.push({ id: 'aucontact', label: 'Au contact', icon: '🤜', targeting: 'aucontact', cost: { action: true, advantage: 0 }, priority: 0 });
   // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
   return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
 }

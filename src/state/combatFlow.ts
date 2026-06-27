@@ -47,7 +47,7 @@ import {
   defenseModifiers,
   DEFENSE_LABEL,
 } from '../engine/combat';
-import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, reachTiles, meleeReachTiles } from '../engine/engagement';
+import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
@@ -233,17 +233,20 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
   // funnel UNIQUE attaquant ⊕ arme ⊕ contexte — donc la MÊME arme transformée sert la touche/les Dégâts
   // (`resolveAttack` → `applyHit`) ET la Maladresse sur un RATÉ : `attackConfirm` et l'IA RE-DÉRIVENT l'arme
   // par `firedWeapon`, si bien que `dangerousNine` voit la Dangereuse du Fléau sans compétence.
-  return effectiveWeapon(w, weaponContextOf(attacker, w));
+  return effectiveWeapon(w, weaponContextOf(attacker, w, target));
 }
 
 /** Contexte d'usage d'une arme (règles d'arme CONTEXTUELLES de Groupe, LDB 62) dérivé de l'attaquant.
  *  SOURCE UNIQUE de la dérivation : `firedWeapon` (attaque principale) ET `resolveDualSecond` (2ᵉ frappe du
- *  Maniement de deux armes) l'appellent — aucune duplication de l'inférence `charged`/`mounted`/`hasGroupSkill`. */
-export function weaponContextOf(attacker: Combatant, w: Weapon): WeaponContext {
+ *  Maniement de deux armes) l'appellent — aucune duplication de l'inférence `charged`/`mounted`/`hasGroupSkill`.
+ *  `target` (optionnel — rétro-compat) sert le combat « au contact » (LDB 62 l.176) : une arme plus longue
+ *  que Courte devient improvisée quand attaquant et cible sont entrés dans la longueur d'arme l'un de l'autre. */
+export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combatant): WeaponContext {
   return {
     charged: !!attacker.chargedThisTurn,
     mounted: !!attacker.mountId,
     hasGroupSkill: hasWeaponGroupSkill(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'),
+    auContact: !!target && areInContact(attacker, target),
   };
 }
 
@@ -507,7 +510,7 @@ export function resolveDualSecond(
   // Règles d'arme contextuelles de Groupe (LDB 62) AUSSI pour la 2ᵉ frappe : Fléau sans Spé → Dangereuse +
   // aucun Atout, Lance hors Charge → improvisée. Replié AVANT touche/Dégâts (même `weaponContextOf` que
   // `firedWeapon` — source unique du ctx) car `applyAttackResult` fait confiance au `res` pré-calculé.
-  offWeapon = effectiveWeapon(offWeapon, weaponContextOf(attacker, offWeapon));
+  offWeapon = effectiveWeapon(offWeapon, weaponContextOf(attacker, offWeapon, target));
   const { env } = attackEnv(get, attacker, target, offWeapon, {});
   const mods = attackModifiers(attacker, target, offWeapon, { kind: 'melee', location: opts?.location, env });
   const toHit = combatValue(attacker, 'melee', offWeapon) + combineMods(mods);
@@ -769,6 +772,15 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
   // via l'étape `jet:'disengage'`). `pendingDisengage` reste le porteur de données/phases ; les
   // résolveurs ferment LES DEUX. La ligne d'attaque figée du foe et les portraits restent inchangés.
   startCascade(get, set, { title: 'Se désengager', icon: '↩', purpose: 'combat', steps: [{ id: 'disengage', kind: 'disengageStep', jet: 'disengage', actorId: mover.id }] });
+}
+
+/** Lance l'action « Au Contact » d'un héros Engagé en mêlée (LDB 62 l.176, Option « Longueur d'arme »,
+ *  règle `combat-weapon-reach`) : Test opposé de Corps à corps `mover` vs `foe`. Le jet du foe est tiré et
+ *  FIGÉ d'avance (pattern Désengagement/Défense — montré dans la ligne adverse de la modale) ; le mover
+ *  jouera SON jet influençable, et le VAINQUEUR choisira « combat normal » ou « au contact ». */
+export function startAuContact(get: Get, set: SetFn, mover: Combatant, foe: Combatant): void {
+  const atk = rollDisengageAttack(foe, battleRng()); // Corps à corps du foe, figé (jamais relancé)
+  set({ pendingAuContact: { moverId: mover.id, foeId: foe.id, phase: 'roll', atk, def: null, result: null } });
 }
 
 /** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */

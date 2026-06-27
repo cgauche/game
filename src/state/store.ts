@@ -70,7 +70,7 @@ import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
-  PendingDisengage, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
+  PendingDisengage, PendingAuContact, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
@@ -280,6 +280,8 @@ export interface GameState extends RollFlowActionsMap {
   /** « Je te renie ! » (LDB 17 l.71) : choix subir la mutation / la refuser (1 Résilience). */
   pendingRenounce: PendingRenounce | null;
   pendingDisengage: PendingDisengage | null;
+  /** « Au Contact » (LDB 62 l.176, Option « Longueur d'arme ») : Test opposé de Corps à corps + choix du vainqueur. */
+  pendingAuContact: PendingAuContact | null;
   /** Déplacement-puis-fouille : id du décor interactif visé, déclenché à l'arrivée adjacente (P5). */
   pendingInteract: string | null;
   pendingCast: PendingCast | null;
@@ -841,6 +843,13 @@ export interface GameState extends RollFlowActionsMap {
   // flee{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap) — Test de Calme du fuyard (calqué `approach`).
   fleeConfirm: () => void; // Appliquer : État Brisé (sur échec) + libération/Course différées
   disengageCancel: () => void;
+  /** « Au Contact » (LDB 62 l.176, Option « Longueur d'arme ») : Test opposé de Corps à corps + choix du vainqueur. */
+  battleAuContact: (targetId: string) => void;
+  auContactRoll: () => void; // Lancer le jet de Corps à corps du mover (Test opposé)
+  // auContact{Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
+  auContactConfirm: () => void; // Appliquer : le mover gagne → phase de choix ; le foe gagne (IA) → choix auto ; égalité → statu quo
+  auContactChoose: (mode: 'normal' | 'contact') => void; // le vainqueur HÉROS tranche
+  auContactCancel: () => void;
   log: (msg: string) => void;
   /** Temps de jeu : minutes depuis l'époque (Hexenstag 2512 00:00, cf. clock.ts). « Tout est horodaté ». */
   gameTime: number;
