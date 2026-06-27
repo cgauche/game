@@ -92,6 +92,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Artur Piedmarteau": {
+    "def": "Ogre",
+    "plan": "biped",
+    "scale": 1,
+    "species": "ogre",
+  },
   "Assassin": {
     "def": "Skaven",
     "plan": "biped",
@@ -1118,6 +1124,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Isrogdal l'Empressé": {
+    "def": "Ogre",
+    "plan": "biped",
+    "scale": 1,
+    "species": "ogre",
+  },
   "Jabberslythe": {
     "def": "Jabberslythe",
     "plan": "jabberslythe",
@@ -1567,6 +1579,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "humain",
+  },
+  "Nazzaalta Affabule": {
+    "def": "Ogre",
+    "plan": "biped",
+    "scale": 1,
+    "species": "ogre",
   },
   "Notable": {
     "def": null,
@@ -2281,6 +2299,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "humain",
+  },
+  "Ugrik l'Égarée": {
+    "def": "Ogre",
+    "plan": "biped",
+    "scale": 1,
+    "species": "ogre",
   },
   "Ungor": {
     "def": "Ungor",

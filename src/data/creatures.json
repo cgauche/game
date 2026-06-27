@@ -55016,5 +55016,532 @@
     "appearance": {
       "species": "loup"
     }
+  },
+  {
+    "id": "isrogdal-lempresse",
+    "label": "Isrogdal l'Empressé",
+    "title": "Spadassin ogre, ancien Pugiliste (Argent 1)",
+    "folder": "Ogres (ADE II)",
+    "char": {
+      "M": 6,
+      "CC": 41,
+      "CT": 32,
+      "F": 58,
+      "E": 52,
+      "I": 11,
+      "Ag": 32,
+      "Dex": 25,
+      "Int": 22,
+      "FM": 33,
+      "Soc": 26,
+      "B": 36
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 9,
+        "arg": "Coup-de-poing"
+      },
+      {
+        "id": "arme",
+        "value": 9,
+        "arg": "Massue"
+      },
+      {
+        "id": "armure",
+        "value": 2
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 45
+      },
+      {
+        "id": "calme",
+        "value": 37
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 54,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 51,
+        "spec": "Base"
+      },
+      {
+        "id": "divertissement",
+        "value": 27,
+        "spec": "Raillerie"
+      },
+      {
+        "id": "esquive",
+        "value": 42
+      },
+      {
+        "id": "intimidation",
+        "value": 72
+      },
+      {
+        "id": "langue",
+        "value": 27,
+        "spec": "Reikspiel"
+      },
+      {
+        "id": "marchandage",
+        "value": 27
+      },
+      {
+        "id": "pari",
+        "value": 32
+      },
+      {
+        "id": "ragot",
+        "value": 27
+      },
+      {
+        "id": "resistance",
+        "value": 62
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 57
+      },
+      {
+        "id": "savoir",
+        "value": 25,
+        "spec": "Ogres"
+      },
+      {
+        "id": "subornation",
+        "value": 28
+      }
+    ],
+    "talents": [
+      {
+        "id": "combat-deloyal"
+      },
+      {
+        "id": "combat-instinctif"
+      },
+      {
+        "id": "combattant-au-contact"
+      },
+      {
+        "id": "massif"
+      },
+      {
+        "id": "resistance",
+        "spec": "Poisons ingérés"
+      },
+      {
+        "id": "tres-fort"
+      },
+      {
+        "id": "vice",
+        "spec": "Nourriture"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "L'ogre gladiateur devenu mercenaire est bien connu dans toute la Tilée, ainsi que dans les parties les plus à l'est de l'Empire, à la fois pour la rapidité avec laquelle il commet ses meurtres et pour son empressement à manger ses victimes. À plusieurs reprises, il a commencé à dévorer des morceaux de ses adversaires dans la fosse alors que leur combat n'était pas encore terminé. Isrogdal est actuellement très demandé dans le milieu criminel de l'Empire, car en tant que gros bras intimidant, il n'a pas son pareil. Son « enthousiasme » l'a déjà contraint à déménager plusieurs fois, car plus d'un « client » avec qui il devait simplement discuter s'est retrouvé dans son assiette.",
+    "source": {
+      "book": "ADE2",
+      "page": 14
+    },
+    "appearance": {
+      "species": "ogre",
+      "tenue": "ogre"
+    }
+  },
+  {
+    "id": "ugrik-legaree",
+    "label": "Ugrik l'Égarée",
+    "title": "Hors-la-loi ogre (Bronze 2)",
+    "folder": "Ogres (ADE II)",
+    "char": {
+      "M": 6,
+      "CC": 48,
+      "CT": 30,
+      "F": 53,
+      "E": 50,
+      "I": 22,
+      "Ag": 33,
+      "Dex": 25,
+      "Int": 25,
+      "FM": 33,
+      "Soc": 22,
+      "B": 36
+    },
+    "traits": [
+      {
+        "id": "a-distance",
+        "value": 8,
+        "arg": "Arc",
+        "range": 50
+      },
+      {
+        "id": "arme",
+        "value": 9,
+        "arg": "Massue"
+      },
+      {
+        "id": "armure",
+        "value": 3
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 43
+      },
+      {
+        "id": "calme",
+        "value": 38
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 53,
+        "spec": "Base"
+      },
+      {
+        "id": "esquive",
+        "value": 38
+      },
+      {
+        "id": "guerison",
+        "value": 27
+      },
+      {
+        "id": "intimidation",
+        "value": 58
+      },
+      {
+        "id": "langue",
+        "value": 28,
+        "spec": "Reikspiel"
+      },
+      {
+        "id": "orientation",
+        "value": 25
+      },
+      {
+        "id": "pari",
+        "value": 30
+      },
+      {
+        "id": "perception",
+        "value": 27
+      },
+      {
+        "id": "pistage",
+        "value": 27
+      },
+      {
+        "id": "projectiles",
+        "value": 35,
+        "spec": "Arc"
+      },
+      {
+        "id": "resistance",
+        "value": 55
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 55
+      },
+      {
+        "id": "savoir",
+        "value": 30,
+        "spec": "Ogres"
+      },
+      {
+        "id": "savoir",
+        "value": 30,
+        "spec": "Région"
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 30
+      }
+    ],
+    "talents": [
+      {
+        "id": "combat-deloyal"
+      },
+      {
+        "id": "combat-instinctif"
+      },
+      {
+        "id": "combattant-au-contact"
+      },
+      {
+        "id": "frappe-assommante"
+      },
+      {
+        "id": "massif"
+      },
+      {
+        "id": "nomade"
+      },
+      {
+        "id": "resistance",
+        "spec": "Poisons ingérés"
+      },
+      {
+        "id": "tres-fort"
+      },
+      {
+        "id": "vice",
+        "spec": "Nourriture"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Ogresse tout à fait quelconque, Ugrik s'est fait connaître après avoir attaqué une caravane de l'Empire qui s'approchait de son camp dans le sud de l'Ostermark. Le convoi essayait en fait d'engager les ogres pour l'aider à faire face aux invasions de goules qui ravageaient alors le Stirland, mais ces derniers, qui n'avaient pas mangé depuis plusieurs heures, n'étaient pas d'humeur à discuter. Pendant cette escarmouche, Ugrik reçut un boulet de canon sur le côté de la tête, ce qui faillit la tuer, mais heureusement pour elle, les ogres ont la tête dure. Pour plaisanter, les canonniers avaient inscrit sur leurs munitions diverses prières et insultes, une pratique très répandue, bien que peu avisée. Le boulet ayant atteint Ugrik indiquait « Retour à l'envoyeur ». L'ogresse, très affectée par le fait d'avoir frôlé la mort, lut cette demande à haute voix et décida de lui donner une suite favorable. Elle transforma le projectile difforme en une lourde massue et depuis, elle voyage vers Nuln dans l'espoir de « _retrouver les canons_ ».",
+    "source": {
+      "book": "ADE2",
+      "page": 14
+    },
+    "appearance": {
+      "species": "ogre",
+      "tenue": "ogre"
+    }
+  },
+  {
+    "id": "nazzaalta-affabule",
+    "label": "Nazzaalta Affabule",
+    "title": "Débardeur ogre, ancien Porteur",
+    "folder": "Ogres (ADE II)",
+    "char": {
+      "M": 6,
+      "CC": 36,
+      "CT": 17,
+      "F": 49,
+      "E": 43,
+      "I": 21,
+      "Ag": 28,
+      "Dex": 26,
+      "Int": 25,
+      "FM": 29,
+      "Soc": 19,
+      "B": 28
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 38
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 39,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 46,
+        "spec": "Base"
+      },
+      {
+        "id": "divertissement",
+        "value": 29,
+        "spec": "Narration"
+      },
+      {
+        "id": "escalade",
+        "value": 54
+      },
+      {
+        "id": "esquive",
+        "value": 33
+      },
+      {
+        "id": "intimidation",
+        "value": 52
+      },
+      {
+        "id": "natation",
+        "value": 54
+      },
+      {
+        "id": "ragot",
+        "value": 24
+      },
+      {
+        "id": "resistance",
+        "value": 51
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 53
+      }
+    ],
+    "talents": [
+      {
+        "id": "combat-deloyal"
+      },
+      {
+        "id": "infatigable"
+      },
+      {
+        "id": "massif"
+      },
+      {
+        "id": "resistance",
+        "spec": "Poisons ingérés"
+      },
+      {
+        "id": "tres-fort"
+      },
+      {
+        "id": "vice",
+        "spec": "Nourriture"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "L'histoire de Nazzaalta est assez connue sur les quais d'Ubersreik, non pas en raison de sa banalité, mais parce qu'elle a tendance à la raconter en hurlant à toute heure de la journée. Née à bord d'un navire remontant le Reik depuis Marienburg et jetée sous un pont, Nazzaalta aurait dû connaître une mort certaine. Mais c'était sans compter sur une bande de débardeurs qui ont perçu sa valeur dès son plus jeune âge. Ils l'ont donc prise sous leur aile et l'ont élevée comme l'une des leurs.\n\nGrâce à sa musculature, cette ogresse infatigable est plus que la bienvenue sur les quais, mais c'est surtout sa voix retentissante qui attire l'attention. Avec le temps, même les hauts responsables de la Guilde des débardeurs ont fini par comprendre la véritable utilité d'un ogre à la voix porteuse : il est difficile de dire « non » à quelqu'un qui ne demande qu'à vous dévorer tout entier.\n\nNazzaalta aime ce qu'elle est devenue. Sur les quais, où elle est bien nourrie, elle se sent chez elle. De plus, les passants ont l'air d'apprécier les histoires à dormir debout qu'elle recueille auprès des marins qui vont et viennent en permanence. Et de temps en temps, les personnes bienveillantes qui lui disent quoi ramasser et où le poser lui ordonnent d'écraser le bras ou de casser les jambes de quelqu'un. Qu'est-ce qu'une ogresse pourrait demander de plus ?",
+    "source": {
+      "book": "ADE2",
+      "page": 26
+    },
+    "appearance": {
+      "species": "ogre",
+      "tenue": "ogre"
+    }
+  },
+  {
+    "id": "artur-piedmarteau",
+    "label": "Artur Piedmarteau",
+    "title": "Artisan ogre, ancien Apprenti Artisan",
+    "folder": "Ogres (ADE II)",
+    "char": {
+      "M": 6,
+      "CC": 29,
+      "CT": 19,
+      "F": 68,
+      "E": 61,
+      "I": 3,
+      "Ag": 21,
+      "Dex": 36,
+      "Int": 25,
+      "FM": 36,
+      "Soc": 26,
+      "B": 42
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 26
+      },
+      {
+        "id": "calme",
+        "value": 41
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 34,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 32,
+        "spec": "Base"
+      },
+      {
+        "id": "discretion",
+        "value": 26,
+        "spec": "Urbaine"
+      },
+      {
+        "id": "esquive",
+        "value": 26
+      },
+      {
+        "id": "evaluation",
+        "value": 30
+      },
+      {
+        "id": "intimidation",
+        "value": 71
+      },
+      {
+        "id": "langue",
+        "value": 28,
+        "spec": "Grumbarth"
+      },
+      {
+        "id": "metier",
+        "value": 42,
+        "spec": "Forgeron"
+      },
+      {
+        "id": "resistance",
+        "value": 71
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 66
+      },
+      {
+        "id": "savoir",
+        "value": 30,
+        "spec": "Ogres"
+      }
+    ],
+    "talents": [
+      {
+        "id": "combat-deloyal"
+      },
+      {
+        "id": "maitre-artisan",
+        "spec": "Forgeron"
+      },
+      {
+        "id": "massif"
+      },
+      {
+        "id": "resistance",
+        "spec": "Poisons ingérés"
+      },
+      {
+        "id": "tres-fort"
+      },
+      {
+        "id": "vice",
+        "spec": "Nourriture"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "En général, les nains et les ogres ne s'entendent pas très bien. Les nains sont petits et attachent beaucoup d'importance à la tradition et à l'artisanat, tandis que les ogres... Eh bien, les ogres ne se soucient pas de ce genre de choses. Sauf Artur. Artur Piedmarteau s'intéresse vivement à l'histoire des ogres et il aime marteler le métal pour lui donner une forme esthétique. Cependant, tout ce qu'il sait faire, ce sont des pansières marquées de la forme de son pied.\n\nArtur rêve secrètement de renverser les nains de Karak Azgaraz et de dévorer tous ces « _jambons ambulants_ », comme il les appelle. Étant donné qu'il ne se montre pas particulièrement discret à ce sujet, les nains savent ce qu'il mijote. Heureusement qu'il fabrique ces pansières pour une armée inexistante, sinon ils feraient de la vie des Altdorfers un véritable enfer.\n\nPourtant, de nombreux nobles commencent à s'intéresser à ce « savoir-faire » rudimentaire, et quelques clients ont acheté des pansières à Artur pour les accrocher aux murs à l'occasion de grands festins. Ses créations deviennent à la mode parmi les aristocrates les plus éclectiques de la ville. Ce n'est pas la clientèle qu'Artur recherchait, mais l'afflux d'argent attire l'attention des quelques ogres entreprenants de la ville. Peut-être que cette armée n'est pas aussi imaginaire que les gens le pensent.",
+    "source": {
+      "book": "ADE2",
+      "page": 26
+    },
+    "appearance": {
+      "species": "ogre",
+      "tenue": "ogre"
+    }
   }
 ]
