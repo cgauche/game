@@ -1,4 +1,5 @@
 import { useGame } from './store';
+import { actorIn } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger } from './combatFlow';
 import { pushCombatStep } from './combatEffects';
 import type { PendingBladeTrap } from './pendings';
@@ -531,7 +532,7 @@ export function buildApi() {
         party: s.party.map(tweak),
         battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(tweak) } : s.battle,
       }));
-      const c = g().battle?.combatants.find((x) => x.id === id) ?? g().party.find((x) => x.id === id);
+      const c = actorIn(g(), id);
       return c ? `✅ ${c.name} : arme « ${c.weapons?.[0]?.name} » + ${label}${advantage != null ? ` · ${advantage} Av` : ''}` : `❌ ${id} introuvable`;
     },
 
@@ -539,7 +540,7 @@ export function buildApi() {
      *  triggers onGainCondition (Mâchoires d'acier ouvre alors sa modale de Résistance influençable). */
     condition: (id: string, name = 'sonne', n = 1) => {
       const s = g();
-      const c = s.battle?.combatants.find((x) => x.id === id) ?? s.party.find((x) => x.id === id);
+      const c = actorIn(s, id);
       if (!c) return `❌ combattant ${id} introuvable`;
       addCondition(c, name, n);
       useGame.setState((st) => ({
@@ -579,7 +580,7 @@ export function buildApi() {
      *  dégâts) déclenche `checkFocusInterruption` : Test de Calme Difficile INFLUENÇABLE (héros manuel). */
     focus: (id: string, spell = 'armure-aethyrique', dr = 3) => {
       const s = g();
-      const c = s.battle?.combatants.find((x) => x.id === id) ?? s.party.find((x) => x.id === id);
+      const c = actorIn(s, id);
       if (!c) return `❌ combattant ${id} introuvable`;
       c.focus = { spell, dr };
       useGame.setState((st) => ({

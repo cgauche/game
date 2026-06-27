@@ -297,7 +297,7 @@ export function unarmedWeapon(): Weapon {
   return { ..._unarmed, hand: 'main' };
 }
 
-/** Loadout actif d'un combattant, ou null si aucun (chemin legacy = toutes armes équipées). */
+/** Loadout actif d'un combattant, ou null si le combattant n'a aucun set (cas traité par ensureDefaultLoadout dans recomputeLoadout). */
 export function activeLoadout(c: Combatant): WeaponLoadout | null {
   if (!c.loadouts?.length) return null;
   return c.loadouts.find((l) => l.id === c.activeLoadoutId) ?? c.loadouts[0];
@@ -311,7 +311,7 @@ export function isWeaponActive(c: Combatant, uid?: string): boolean {
 }
 
 /** Recalcule armes/armure actives + encombrement. Les ARMES viennent du loadout actif (contrainte 2 mains,
- *  tag `hand`) ; sans loadout = comportement historique (toutes armes équipées, `hand:'main'`). */
+ *  tag `hand`) ; si aucun loadout, ensureDefaultLoadout en crée un automatiquement — UN SEUL modèle. */
 export function recomputeLoadout(c: Combatant): void {
   const items = c.items ?? [];
   // Auto-prune : un slot référençant une arme qui a quitté l'inventaire (vente/transfert/perte) OU qui est

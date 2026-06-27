@@ -27,7 +27,7 @@ export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle'
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
 export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine' | 'sans';
 /** Crinière le long de l'encolure : crin couché (équin), hirsute (fourrure dressée — loup/
- *  sanglier), sans. Défaut historique : dérivée de `tail==='crin'` (rétro-compat). */
+ *  sanglier), sans. */
 export type QuadMane = 'crin' | 'hirsute' | 'sans';
 export interface QuadProps {
   sl: number; // échelle globale (taille)
@@ -44,7 +44,7 @@ export interface QuadProps {
   frontFoot?: QuadFoot; // pied AVANT distinct (griffon : serres devant / pattes derrière)
   wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
   wingSpan?: number; // envergure (× sur l'art des ailes, défaut 1 — dragon ample, demigriffon court)
-  mane?: QuadMane; // crinière d'encolure (défaut : 'crin' si tail==='crin', sinon 'sans')
+  mane: QuadMane; // crinière d'encolure
   ridge?: 'epines' | 'crete' | 'plaques' | 'sans'; // dorsale (défaut : 'epines' si draconic, sinon 'sans')
   markings?: 'taches' | 'rayures' | 'balzanes' | 'sans'; // robe : taches/rayures de flanc, balzanes aux membres
   headgear?: 'bois' | 'cornes'; // coiffe de crâne : bois ramifiés (cerf) ou cornes courbées — défaut aucun

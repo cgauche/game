@@ -1311,7 +1311,7 @@ export function createCombatSlice(get: Get, set: Set) {
      *  mode d'action — le panneau pré-rempli recalcule ses modificateurs au re-rendu. */
     spendResolveCondition: (combatantId: string, conditionName: string) => {
       const s = get();
-      const hero = (s.battle?.combatants ?? s.party).find((c) => c.id === combatantId);
+      const hero = actorIn(s, combatantId);
       if (!hero || hero.kind !== 'hero' || (hero.resolve ?? 0) <= 0) return;
       if (!hero.conditions.some((c) => c.name === conditionName)) return;
       hero.resolve = (hero.resolve ?? 0) - 1;

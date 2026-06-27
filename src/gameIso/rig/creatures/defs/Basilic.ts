@@ -13,7 +13,7 @@ export const creature: CreatureDef = {
     // corps allongé, membres courts, tête portée en avant, queue massive (tailLen). Le plan
     // quadruped ne rend que 4 des 8 pattes canon — la lisibilité « reptile » prime.
     sl: 1.1, build: 'draconic', girth: 1.0, bodyLen: 1.42, neckLen: 0.52, neckAngle: -6,
-    legLen: 0.42, head: 'dragon', headScale: 1.12, tail: 'reptile', tailLen: 1.55,
+    legLen: 0.42, head: 'dragon', headScale: 1.12, tail: 'reptile', mane: 'sans', tailLen: 1.55,
     ears: 'courtes', foot: 'patte', ridge: 'epines',
     stored: { corps: '#7a8430', corpsO: '#454c1c', corpsH: '#a8b452', cheveux: '#3a3e16', cheveuxO: '#23260e', cuir: '#6b6e28' },
   },

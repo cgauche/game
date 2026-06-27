@@ -8,7 +8,7 @@ export const creature: CreatureDef = {
   plan: 'quadruped',
   quad: {
     sl: 1.0, build: 'equine', girth: 0.88, bodyLen: 1.04, neckLen: 0.82, neckAngle: -36, legLen: 1.16,
-    head: 'cheval', tail: 'crin', ears: 'pointues', foot: 'sabot', headgear: 'bois', headScale: 0.92, tailLen: 0.6,
+    head: 'cheval', tail: 'crin', mane: 'crin', ears: 'pointues', foot: 'sabot', headgear: 'bois', headScale: 0.92, tailLen: 0.6,
     stored: { corps: '#8a5e38', corpsO: '#523620', corpsH: '#b78a56', cheveux: '#3a2818', cheveuxO: '#22160c', cuir: '#2c2620' },
   },
 };

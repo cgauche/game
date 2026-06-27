@@ -9,7 +9,7 @@ import type { Weapon, ArmourPoints } from './types';
 import type { TraitInstance, TraitList } from './statEntry';
 import { buildWeapon, emptyArmour } from './items';
 import type { WeaponDamageSpec } from './types';
-import { resolveTraits, traitLabelById } from './traits/dispatch';
+import { findResolvedTrait, traitLabelById } from './traits/dispatch';
 import { findTraitById } from '../data/index';
 
 /**
@@ -60,7 +60,7 @@ export function weaponsFromTraits(traits: TraitList): Weapon[] {
 /** PA plats du trait « Armure (Indice) » (LDB 85, profils d'éditeur) — lus par le REGISTRE des
  *  Traits (Indice ou argument), plus de regex propre. 0 si absent. */
 export function armourFromTraits(traits: TraitList): ArmourPoints {
-  const r = resolveTraits(traits).find((x) => x.def.key === 'Armure');
+  const r = findResolvedTrait(traits, 'armure');
   const n = r ? Number(r.indice ?? r.arg ?? 0) : 0;
   return emptyArmour(Number.isFinite(n) ? n : 0);
 }

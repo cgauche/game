@@ -86,6 +86,8 @@ export function parseTrait(raw: string): ParsedTrait | null {
 }
 
 export interface ResolvedTrait {
+  /** `id` STABLE du trait (slug, identique à `TraitInstance.id`). */
+  id: string;
   def: TraitDef;
   indice?: number;
   arg?: string;
@@ -97,7 +99,7 @@ export function resolveTraits(traits: TraitList | undefined): ResolvedTrait[] {
   const out: ResolvedTrait[] = [];
   for (const t of traits ?? []) {
     const def = TRAITS[t.id];
-    if (def) out.push({ def, indice: t.value, arg: t.arg });
+    if (def) out.push({ id: t.id, def, indice: t.value, arg: t.arg });
   }
   return out;
 }
@@ -105,6 +107,11 @@ export function resolveTraits(traits: TraitList | undefined): ResolvedTrait[] {
 /** La créature possède-t-elle le trait d'`id` donné ? (registre `defs/` UNIQUEMENT). */
 export function hasTrait(traits: TraitList | undefined, id: string): boolean {
   return (traits ?? []).some((t) => t.id === id && !!TRAITS[id]);
+}
+
+/** Résout UN trait du registre par son `id` STABLE — source unique des lookups par-id (armure, taille…). */
+export function findResolvedTrait(traits: TraitList | undefined, id: string): ResolvedTrait | undefined {
+  return resolveTraits(traits).find((x) => x.id === id);
 }
 
 /** La créature porte-t-elle un trait/attaque d'`id` donné (registre OU hors registre : Venin, Lanceur

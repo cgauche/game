@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { weaponFromTrait, renderWeaponsFromTraits, weaponsFromTraits } from './creatureEquip';
+import { weaponFromTrait, renderWeaponsFromTraits, weaponsFromTraits, armourFromTraits } from './creatureEquip';
 import type { TraitInstance } from './statEntry';
 
 const t = (o: { id: string; arg?: string; value?: number; range?: number }): TraitInstance => o as TraitInstance;
@@ -41,7 +41,19 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
     const fallback = weaponsFromTraits([]);
     expect(fallback).toHaveLength(1);
     expect(fallback[0].name).toBe('Arme');
-    // avec un trait d’arme explicite, pas de repli ajouté
+    // avec un trait d'arme explicite, pas de repli ajouté
     expect(weaponsFromTraits([t({ id: 'arme', arg: 'Hache', value: 6 })])).toHaveLength(1);
+  });
+});
+
+describe('creatureEquip — armourFromTraits (lookup par id stable)', () => {
+  it('trait « armure » (id stable) value 2 → PA 2 sur toutes les localisations', () => {
+    const ap = armourFromTraits([t({ id: 'armure', value: 2 })]);
+    expect(ap).toEqual({ tete: 2, brasG: 2, brasD: 2, corps: 2, jambeG: 2, jambeD: 2 });
+  });
+
+  it('aucun trait armure → PA 0 partout', () => {
+    const ap = armourFromTraits([t({ id: 'vol', value: 6 })]);
+    expect(ap).toEqual({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
   });
 });

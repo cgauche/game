@@ -756,7 +756,7 @@ export interface Combatant {
   encumbrance?: number;
   skills: SkillInstance[];
   talents: TalentInstance[];
-  /** Sets d'armes du héros (les ennemis n'en ont pas → chemin legacy = toutes armes équipées). */
+  /** Sets d'armes du héros (les ennemis n'en ont pas — leurs armes viennent du statbloc, posées à l'instanciation via spawn.ts). */
   loadouts?: WeaponLoadout[];
   activeLoadoutId?: string;
   /** Sorts/prières connus (libellés référençant src/data/spells.json). */

@@ -216,14 +216,13 @@ export function diamondPath(x: number, y: number, dims: Dims, z = 0): string {
 }
 
 /** Profondeur de tri (plus grand = devant), dans l'orientation courante, niveau `z` compris.
- *  iso : diagonale écran (r.x+r.y) ; top : par rangée écran (r.y prime, r.x départage). Un niveau
- *  z+1 ajoute LEVEL_DEPTH → il se dessine TOUJOURS après tout le niveau z (ordre intra-niveau
- *  préservé). `dims` optionnel : absent ⇒ rot 0 (rétro-compat des appelants non encore migrés).
- *  z=0 (défaut) = comportement plan-sol historique. */
-export function depth(x: number, y: number, dims?: Dims, z = 0) {
-  const r = dims ? rotTile(x, y, dims) : { x, y };
-  const st = dims ? axisStep(dims) : null;
-  const base = st ? r.y * (dims!.w + dims!.h) + r.x : r.x + r.y;
+ *  iso : diagonale écran (r.x+r.y) ; top/edge : par rangée écran (r.y prime, r.x départage). Un
+ *  niveau z+1 ajoute LEVEL_DEPTH → il se dessine TOUJOURS après tout le niveau z (ordre
+ *  intra-niveau préservé). z=0 (défaut) = comportement plan-sol historique. */
+export function depth(x: number, y: number, dims: Dims, z = 0) {
+  const r = rotTile(x, y, dims);
+  const st = axisStep(dims); // null en iso losange — la branche r.x+r.y est VIVANTE
+  const base = st ? r.y * (dims.w + dims.h) + r.x : r.x + r.y;
   return base + z * LEVEL_DEPTH;
 }
 

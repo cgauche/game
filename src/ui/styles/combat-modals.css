@@ -417,7 +417,7 @@
   right: 12px;
   z-index: 2;
 }
-/* Layout : L'ESSENTIEL à gauche (permanent) · détail en onglets à droite. S'empile ≤760px. */
+/* Layout : L'ESSENTIEL à gauche (permanent) · détail en onglets à droite. S'empile ≤700px. */
 .sheet-layout {
   flex: 1;
   min-height: 0; /* L1 : remplit la hauteur stable du modal, autorise le scroll interne des colonnes */
@@ -510,7 +510,7 @@
   pointer-events: none;
 }
 .crew-remove:hover::after { display: flex; }
-@media (max-width: 760px) {
+@media (max-width: 700px) {
   .sheet-layout {
     grid-template-columns: 1fr;
   }

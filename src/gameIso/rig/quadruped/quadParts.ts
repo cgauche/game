@@ -8,8 +8,7 @@ import type { View } from '../facing';
 import type { QuadBoneId, QuadProps, QuadFoot, QuadMane } from './quadSkeleton';
 import { scalesPatch, plumeFan } from '../parts/textures';
 
-/** Crinière effective (rétro-compat : les équins historiques dérivaient de tail==='crin'). */
-const maneOf = (p: QuadProps): QuadMane => p.mane ?? (p.tail === 'crin' ? 'crin' : 'sans');
+const maneOf = (p: QuadProps): QuadMane => p.mane;
 
 // ============================ helpers ============================
 const cap = (len: number, th: number, fill: string, stroke: string): string => {
@@ -418,7 +417,7 @@ function bodyFrontCanine(p: QuadProps): string {
     `<path d="M${w} -4 Q${w} 11 5 21 L6 18 Q${w - 2} 9 ${w - 2} -3 Z" fill="@corpsO" opacity="0.5"/>`;
   const bib = `<path d="M-3.6 -18 Q0 -21 3.6 -18 Q4.4 -2 2 15 Q0 18 -2 15 Q-4.4 -2 -3.6 -18 Z" fill="@corpsH" opacity="0.3"/>`;
   // fraise hirsute (loup) : lobes de fourrure dentelés débordant le haut du poitrail.
-  const ruff = p.mane === 'hirsute'
+  const ruff = maneOf(p) === 'hirsute'
     ? `<path d="M-3 -19 Q-13 -16 -16 -3 Q-17 5 -13 12 Q-12.5 4 -9 -2 l-3.5 5.5 Q-9.5 -5 -5.5 -11 l-3 4.5 Q-6 -10 -2.5 -16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` +
       `<path d="M3 -19 Q13 -16 16 -3 Q17 5 13 12 Q12.5 4 9 -2 l3.5 5.5 Q9.5 -5 5.5 -11 l3 4.5 Q6 -10 2.5 -16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>`
     : '';
@@ -488,7 +487,7 @@ function bodyBackCanine(p: QuadProps): string {
   const cleft = `<path d="M0 -20 Q1.4 -2 0 19" fill="none" stroke="@corpsO" stroke-width="1" opacity="0.55"/>`;
   const shade = `<path d="M${w} -6 Q${w - 1} 9 7 19 L8 16 Q${w - 2} 8 ${w - 2} -4 Z" fill="@corpsO" opacity="0.42"/>`;
   // fourrure dorsale dressée (loup hirsute) au sommet de la croupe.
-  const ridge = p.mane === 'hirsute' ? `<path d="M0 -23 l-2 -3 l0.5 3.2 l-2.4 -1.4 l1.1 3 Q-1.4 -8 -1 -2 L1 -2 Q1.4 -8 1 -5 l2.4 -1.6 l-2.1 -0.4 l1.3 -2.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4" opacity="0.8"/>` : '';
+  const ridge = maneOf(p) === 'hirsute' ? `<path d="M0 -23 l-2 -3 l0.5 3.2 l-2.4 -1.4 l1.1 3 Q-1.4 -8 -1 -2 L1 -2 Q1.4 -8 1 -5 l2.4 -1.6 l-2.1 -0.4 l1.3 -2.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4" opacity="0.8"/>` : '';
   return `<g>${body}${haunch}${cleft}${shade}${ridge}</g>`;
 }
 function bodyBack(p: QuadProps): string {
