@@ -1,127 +1,93 @@
 import { pregenParty, PREGEN } from '../../data/pregens';
-import { spells, blessingsOf, miraclesOf, findSkill, findTalent } from '../../data';
-import { slugId } from '../../data/slug';
-import { splitLabel } from '../../engine/careerSlots';
 import { arena, setEncounters } from './_shared';
+import { clone, makePriest, makeSorceress, makeFlagellant } from './_casters';
 import type { TestScenario } from './_shared';
-import type { Combatant, CharKey, SkillInstance, TalentInstance } from '../../engine/types';
+import type { Combatant } from '../../engine/types';
 
-const scene = arena({ id: 'test-magie', nom: 'Magie — sorcière elfe & prêtres', w: 30, h: 22, heroStart: { x: 3, y: 11 } });
-scene.startMessage = 'Casters de haut niveau : invoquez (Réanimation, Hurlement du loup), enchantez, drainez, corrompez.';
-// Ennemis VIVANTS uniquement (pas de Mort-vivant) → aucun Test de Peur au début de combat, qui
-// interromprait la recette des sorts. La Nécromancie reste testable : les invoqués sont des ALLIÉS.
-// Grande arène + warband VARIÉE en 3 clusters à distances différentes : éprouve la VARIÉTÉ des sorts,
-// le ciblage d'AoE NET (ne pas se canarder), la Focalisation des gros sorts, et le positionnement.
+const scene = arena({ id: 'test-magie', nom: 'Concile & arsenal', w: 30, h: 22, heroStart: { x: 3, y: 11 } });
+scene.startMessage =
+  'Concile de prêtres (un par dieu à miracles de combat) + Haute Sorcière + flagellant + Tueur. Casters de haut niveau : ' +
+  'enchantez, bénissez, invoquez (Réanimation, Hurlement du loup), drainez, AVANT de charger. ⚠ L’Envoûteuse au fond ' +
+  'cause Peur 2 + Terreur 2 dès l’ouverture du combat — le concile encaisse aussi un Test de Psychologie.';
+// Warband VIVANTE variée en 3 clusters à distances différentes (éprouve la VARIÉTÉ des sorts, le ciblage
+// d'AoE NET, la Focalisation des gros sorts, le positionnement) + 1 casteur ennemi au fond (Envoûteuse :
+// 12 sorts → l'IA ennemie joue aussi son arsenal). Réfs par ID STABLE (findCreatureById) — un libellé
+// ne résoudrait PAS (repli silencieux sur un mannequin B:10).
 setEncounters(scene, [
   {
     id: 'enc-magie',
     enemies: [
       // Meute de bêtes (rapides, chargent) — flanc haut.
-      { ref: 'Loup', pos: { x: 20, y: 7 } },
-      { ref: 'Loup', pos: { x: 21, y: 8 } },
-      { ref: 'Sanglier', pos: { x: 22, y: 6 } },
+      { ref: 'loup', pos: { x: 20, y: 7 } },
+      { ref: 'loup', pos: { x: 21, y: 8 } },
+      { ref: 'sanglier', pos: { x: 22, y: 6 } },
       // Mob peau-verte — centre groupé (cible de choix pour une ZdE bien posée).
-      { ref: 'Orc', pos: { x: 25, y: 11 } },
-      { ref: 'Orc', pos: { x: 26, y: 12 } },
-      { ref: 'Gobelin', pos: { x: 24, y: 13 } },
-      { ref: 'Gobelin', pos: { x: 25, y: 14 } },
+      { ref: 'orc', pos: { x: 25, y: 11 } },
+      { ref: 'orc', pos: { x: 26, y: 12 } },
+      { ref: 'gobelin', pos: { x: 24, y: 13 } },
+      { ref: 'gobelin', pos: { x: 25, y: 14 } },
       // Hors-la-loi + bestiaux — flanc bas.
-      { ref: 'Bandit de Grand Chemin', pos: { x: 23, y: 16 } },
-      { ref: 'Brigand', pos: { x: 24, y: 17 } },
-      { ref: 'Ungor', pos: { x: 27, y: 9 } },
+      { ref: 'seigneur-brigand', pos: { x: 23, y: 16 } },
+      { ref: 'brigand', pos: { x: 24, y: 17 } },
+      { ref: 'ungor', pos: { x: 27, y: 9 } },
+      // Casteur ennemi au fond (12 sorts) — l'IA adverse débuffe/contre depuis l'arrière.
+      { ref: 'envouteuse', pos: { x: 28, y: 11 } },
     ],
   },
 ]);
 
-/** Deep-clone d'un pré-tiré (données pures) pour le bricoler sans toucher la base. */
-const clone = (c: Combatant): Combatant => JSON.parse(JSON.stringify(c)) as Combatant;
-
-/** Monte (ou ajoute) une Compétence d'incantation à un niveau d'avances donné. */
-function boostSkill(c: Combatant, name: string, spec: string | undefined, characteristic: CharKey, advances: number): void {
-  const skillId = findSkill(name)?.id ?? slugId(name);
-  const s = c.skills.find((x) => x.skillId === skillId && (spec == null || x.spec === spec));
-  if (s) s.advances = Math.max(s.advances, advances);
-  else c.skills.push({ skillId, spec, characteristic, advances } as SkillInstance);
-}
-
-const setChars = (c: Combatant, over: Partial<Record<CharKey, number>>) => {
-  for (const [k, v] of Object.entries(over)) c.characteristics[k as CharKey] = v as number;
-};
-
-/** Ajoute des Talents (libellés concrets) sans doublon. */
-function addTalents(c: Combatant, names: string[]): void {
-  for (const name of names) {
-    const { name: base, spec } = splitLabel(name);
-    const talentId = findTalent(base)?.id ?? slugId(base);
-    if (!c.talents.some((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''))) c.talents.push({ talentId, spec, times: 1 } as TalentInstance);
-  }
-}
-
-/** IDS des sorts d'un type (+ sous-type optionnel) depuis la base — `c.spells` = ids (ActionBar → findSpellById). */
-const spellsOf = (type: string, subTypes?: (string | null)[]): string[] =>
-  spells.filter((s) => s.type === type && (!subTypes || subTypes.includes(s.subType ?? null))).map((s) => s.id);
-
-/** Prêtre COMPLET d'un culte : Prière + Béni/Invocation (Culte) + TOUTES ses Bénédictions ET Miracles. */
-function makePriest(base: Combatant, id: string, name: string, cult: string, chars: Partial<Record<CharKey, number>>): Combatant {
-  const p = clone(base);
-  p.id = id; p.name = name;
-  setChars(p, chars);
-  p.fate = 3; p.fortune = 3;
-  boostSkill(p, 'Prière', undefined, 'Soc', 50);
-  addTalents(p, [`Béni (${cult})`, `Invocation (${cult})`]);
-  p.spells = [...blessingsOf(cult), ...miraclesOf(cult)]; // roster COMPLET du culte (data-driven)
-  return p;
-}
+/** Un dieu à miracles de combat → un Prêtre COMPLET (toutes Bénédictions + Miracles, talents de culte). */
+const PRIESTS: { id: string; name: string; cult: string; chars: Record<string, number>; pos: { x: number; y: number } }[] = [
+  { id: 'pr-sigmar', name: 'Frère Anselm, Grand Prêtre de Sigmar', cult: 'Sigmar', chars: { Soc: 68, FM: 60, F: 45, E: 45 }, pos: { x: 3, y: 4 } },
+  { id: 'pr-ulric', name: "Wulfric, Prêtre d'Ulric", cult: 'Ulric', chars: { Soc: 66, FM: 58, F: 48, E: 48 }, pos: { x: 3, y: 8 } },
+  { id: 'pr-myrmidia', name: 'Valentina, Prêtresse de Myrmidia', cult: 'Myrmidia', chars: { Soc: 64, FM: 58, F: 44, E: 44 }, pos: { x: 3, y: 12 } },
+  { id: 'pr-shallya', name: 'Sœur Helga, Prêtresse de Shallya', cult: 'Shallya', chars: { Soc: 66, FM: 60, F: 38, E: 42 }, pos: { x: 2, y: 16 } },
+  { id: 'pr-morr', name: 'Helmut, Prêtre de Morr', cult: 'Morr', chars: { Soc: 62, FM: 60, F: 42, E: 44 }, pos: { x: 2, y: 19 } },
+  { id: 'pr-taal', name: 'Gunnar, Prêtre de Taal', cult: 'Taal', chars: { Soc: 62, FM: 56, F: 46, E: 46 }, pos: { x: 4, y: 6 } },
+  { id: 'pr-verena', name: 'Adelheid, Prêtresse de Verena', cult: 'Verena', chars: { Soc: 66, FM: 60, F: 40, E: 42 }, pos: { x: 4, y: 10 } },
+  { id: 'pr-manann', name: 'Bjorn, Prêtre de Manann', cult: 'Manann', chars: { Soc: 62, FM: 58, F: 46, E: 46 }, pos: { x: 4, y: 14 } },
+  { id: 'pr-ranald', name: 'Lukas, Prêtre de Ranald', cult: 'Ranald', chars: { Soc: 66, FM: 56, F: 42, E: 42 }, pos: { x: 4, y: 18 } },
+  { id: 'pr-rhya', name: 'Brunhilde, Prêtresse de Rhya', cult: 'Rhya', chars: { Soc: 64, FM: 58, F: 44, E: 46 }, pos: { x: 2, y: 6 } },
+];
 
 /**
- * Test « Magie » de haut niveau (recette B4) — la composition couvre TOUTES les familles de sorts
- * curées : une Haute Sorcière elfe MULTI-DOMAINE (RAW : un sorcier elfe maîtrise plusieurs Vents)
- * pour l'arcane + la Nécromancie (invocations), et deux Prêtres (Sigmar guerrier + Ulric, qui
- * invoque le loup blanc). Caractéristiques/avances gonflées pour que les NI élevés passent.
+ * « Concile & arsenal » : Aelindra (Haute Sorcière multi-domaine + Nécromancie) + UN Prêtre COMPLET de
+ * chaque dieu à miracles de combat (Sigmar, Ulric, Myrmidia, Shallya, Morr, Taal, Verena, Manann, Ranald,
+ * Rhya) + 1 flagellant (prêtre d'Ulric frénétique, grande hache) + Grunni le Tueur. Grand groupe en
+ * formation LÂCHE (back-line de casters, flagellant + tueur devant) — éprouve TOUTES les familles de sorts
+ * curées et l'IA caster (jouer l'arsenal entier avant d'engager).
  */
 function makeMagicParty(): Combatant[] {
-  const [wil, ans, tueur] = pregenParty(PREGEN.sorcier, PREGEN.pretre, PREGEN.tueur); // Wilhelmina · Anselm · Grunni
+  const ans = pregenParty(PREGEN.pretre)[0]; // base prêtre (clonée par makePriest/makeFlagellant)
 
-  // — Haute Sorcière elfe : arcane multi-domaine COMPLET + Nécromancie (invocations) —
-  const ARC_DOMAINS = ['Feu', 'Mort', 'Cieux', 'Bête', 'Vie'];
-  const sorc = clone(wil);
-  sorc.id = 'sc-elfe';
-  sorc.name = 'Aelindra, Haute Sorcière';
-  setChars(sorc, { Int: 75, FM: 70, Ag: 58, Dex: 52, I: 62, E: 45 });
-  sorc.wounds = { current: 18, max: 18, base: 18 };
-  sorc.fate = 4; sorc.fortune = 4; sorc.resilience = 3; sorc.resolve = 3;
-  boostSkill(sorc, 'Langue', 'Magick', 'Int', 55);
-  for (const dom of ARC_DOMAINS) boostSkill(sorc, 'Focalisation', dom, 'FM', 40);
-  addTalents(sorc, ['Magie mineure', ...ARC_DOMAINS.map((d) => `Magie des Arcanes (${d})`), 'Nécromancie']);
-  // Roster COMPLET (data-driven) : Magie mineure + Arcanes communs + ses 5 Domaines + Nécromancie.
-  sorc.spells = [
-    ...spellsOf('Magie mineure'),
-    ...spellsOf('Magie des Arcanes', [null, ...ARC_DOMAINS, 'Nécromancie']),
-  ];
-  sorc.appearance = { species: 'Hauts Elfes', sex: 'F', build: 0.38 };
-  sorc.species = 'Hauts Elfes';
-  sorc.pos = { x: 3, y: 9 };
+  const sorc = makeSorceress('sc-elfe', 'Aelindra, Haute Sorcière', { x: 2, y: 11 });
+  const priests = PRIESTS.map((p) => {
+    const pr = makePriest(ans, p.id, p.name, p.cult, p.chars);
+    pr.pos = { ...p.pos };
+    return pr;
+  });
+  // Varie l'apparence des prêtres (sinon clones visuels de la même base) — alterne sexe et carrure.
+  priests.forEach((pr, i) => {
+    if (!pr.appearance) return;
+    pr.appearance.sex = i % 2 ? 'F' : 'M';
+    pr.appearance.build = 0.5 + (i % 4) * 0.06;
+  });
 
-  // — Prêtres COMPLETS (toutes leurs Bénédictions ET Miracles, talents de culte) —
-  const sigmar = makePriest(ans, 'pr-sigmar', 'Frère Anselm, Grand Prêtre', 'Sigmar', { Soc: 68, FM: 60, F: 45, E: 45 });
-  sigmar.pos = { x: 2, y: 11 };
-  const ulric = makePriest(ans, 'pr-ulric', "Wulfric, Prêtre d'Ulric", 'Ulric', { Soc: 66, FM: 58, F: 48, E: 48 });
-  ulric.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.62 };
-  ulric.pos = { x: 3, y: 13 };
+  const flagellant = makeFlagellant(ans, 'pr-flagellant', 'Konrad le Flagellant', 'Ulric', { Soc: 60, FM: 56, CC: 60, F: 52, E: 50 }, { x: 6, y: 10 });
 
-  const grunni = clone(tueur);
-  grunni.pos = { x: 4, y: 11 };
+  const grunni = clone(pregenParty(PREGEN.tueur)[0]);
+  grunni.pos = { x: 6, y: 12 };
 
-  return [sorc, sigmar, ulric, grunni];
+  return [sorc, ...priests, flagellant, grunni];
 }
 
 export const scenario: TestScenario = {
   id: 'magie',
   order: 6,
   icon: '✨',
-  title: 'Magie',
-  tests: 'Toutes les familles curées (B4) : invocations, drains, enchantements, zones, Corruption, Chance.',
-  partyNote: 'Aelindra (Haute Sorcière elfe, multi-domaine + Nécromancie) + Prêtres de Sigmar & Ulric + Tueur',
+  title: 'Concile & arsenal',
+  tests: 'Concile (1 prêtre/dieu de combat + Sorcière + flagellant) : toutes les familles curées (invocations, drains, enchantements, zones, soins, Corruption), arbitrage IA invoquer/enchanter→Frénésie, Psychologie (Peur/Terreur de l’Envoûteuse), caster ennemi qui débuffe.',
+  partyNote: 'Aelindra (Haute Sorcière multi-domaine + Nécromancie) + 10 Prêtres (Sigmar/Ulric/Myrmidia/Shallya/Morr/Taal/Verena/Manann/Ranald/Rhya) + flagellant + Tueur',
   makeParty: makeMagicParty,
   scene,
   autoCombat: 'enc-magie',
