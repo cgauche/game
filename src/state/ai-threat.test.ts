@@ -11,10 +11,10 @@
  * espérances de dégâts (`expectedDamage`) soient chiffrables (≠ tests à `{} as never` qui restent neutres).
  */
 import { describe, it, expect } from 'vitest';
-import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
+import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene, type Scene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
-import type { SpellLike } from '../engine/magic';
+import type { SpellData } from '../data';
 import type { Dir8 } from './dir8';
 
 const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
@@ -37,7 +37,7 @@ function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, o
 const scene = emptyScene(20, 20);
 
 function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
-  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, ...extra };
+  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
 
 const tidOf = (a: EnemyAction): string | undefined =>
@@ -94,20 +94,24 @@ describe('Lot 3 — overkill : ignore la cible neutralisée', () => {
   });
 });
 
-describe('Lot 3 — controlValue : préfère un débuff utile quand pertinent', () => {
-  // Deux sorts de même portée : l'un sans contrôle (Dégâts modestes), l'autre infligeant un État fort
-  // (Étourdi). À cibles identiques, le caster choisit le sort de CONTRÔLE (valeur des États lue dans
-  // les `op:'condition'`). On vérifie via le `spell` choisi (l'appelant fournit `offensiveSpellData`).
-  const controlSpell: SpellLike & { effects?: unknown } = {
-    label: 'Choc mental', type: 'sort', cn: 0, desc: '', missile: true, damage: 2,
-    effects: [{ op: 'condition', name: 'etourdi', value: { const: 1 } }],
+describe('Lot 3 — valeur de CONTRÔLE : un sort qui inflige un État (op:condition) est offensif et jouable', () => {
+  // Sort de Projectile portant EN PLUS une op `condition` (Étourdi) sur la cible : `spellIsOffensive` le
+  // voit (op hostile), `spellActionValue` somme dégâts + CONDITION_THREAT['etourdi']. La valeur de l'État
+  // vient des `GameOp` de `data.effects` (Flow `do/ops`), JAMAIS d'un champ de catégorie.
+  const controlSpell: CastableSpell = {
+    id: 'choc-mental', cn: 0, range: 20, shape: 'single', landProb: 1, focusState: 'none', active: false,
+    data: {
+      id: 'choc-mental', label: 'Choc mental', type: 'sort', subType: null, family: 'arcane', cn: 0,
+      range: null, target: null, duration: null, desc: '', missile: true, damage: 2,
+      effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'etourdi' }] } },
+      source: { book: 'LDB', page: 0 },
+    } as unknown as SpellData,
   };
-  it('un sort qui ÉTOURDIT (op:condition) score plus haut grâce à controlValue (préféré quand on l’offre)', () => {
+  it('un sort qui ÉTOURDIT (op:condition) est lancé sur la cible (sa valeur intègre l’État infligé)', () => {
     const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [] });
     const h = mk('h', 'hero', { x: 10, y: 13 });
-    // Le sort de contrôle est jouable et à portée → cast avec CE sort (controlValue > 0 le rend attrayant).
-    const a = chooseEnemyAction(input(e, [h], { offensiveSpell: 'Choc mental', spellRange: 20, offensiveSpellData: controlSpell }));
-    expect(a).toEqual({ kind: 'cast', targetId: 'h', spell: 'Choc mental' });
+    const a = chooseEnemyAction(input(e, [h], { spells: [controlSpell] }));
+    expect(a).toEqual({ kind: 'cast', targetId: 'h', spell: 'choc-mental' });
   });
 });
 

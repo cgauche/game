@@ -1,11 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { chooseEnemyAction, EnemyTurnInput } from './ai';
+import { chooseEnemyAction, EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene } from './scene';
 import { manhattan } from './path';
 import type { Combatant, Weapon } from '../engine/types';
+import type { SpellData } from '../data';
 
 const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+
+/** Sort RÉSOLU minimal (`CastableSpell`) — porte un `data: SpellData` réduit aux champs lus par
+ *  l'évaluateur (effects/missile/damage/opposed). Défaut = Projectile magique mono-cible jouable. */
+function spellData(over: Partial<SpellData> = {}): SpellData {
+  return { id: 'sp', label: 'Sort', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
+}
+function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {
+  const data = over.data ?? spellData({ id: over.id ?? 'sp', missile: true, damage: 8 });
+  return { id: over.id ?? data.id, data, cn: over.cn ?? data.cn ?? 0, range: over.range ?? null, shape: over.shape ?? 'single', landProb: over.landProb ?? 1, focusState: over.focusState ?? 'none', active: over.active ?? false };
+}
 
 function mk(
   id: string,
@@ -40,6 +51,7 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
     scene,
     blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)),
     movement: enemy.movement,
+    spells: [],
     ...extra,
   };
 }
@@ -101,13 +113,13 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
     expect(chooseEnemyAction(input(e, [h]))).toEqual({ kind: 'shoot', targetId: 'h' });
   });
 
-  it('sort offensif prêt → incante sur la cible', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { spells: ['flechette'] });
+  it('sort offensif jouable (missile en portée) → incante sur la cible', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h = mk('h', 'hero', { x: 1, y: 1 });
-    expect(chooseEnemyAction(input(e, [h], { offensiveSpell: 'Fléchette' }))).toEqual({
+    expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'flechette', range: 20 })] }))).toEqual({
       kind: 'cast',
       targetId: 'h',
-      spell: 'Fléchette',
+      spell: 'flechette',
     });
   });
 

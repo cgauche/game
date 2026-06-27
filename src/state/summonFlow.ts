@@ -55,6 +55,8 @@ export interface SummonOpts {
   /** Libellé du Sort (journal de dissipation). */
   label?: string;
   rng?: RNG;
+  /** Id du sort source (absent pour un death-spawn de trait). */
+  spellId?: string;
 }
 
 /**
@@ -91,6 +93,7 @@ export function applySummon(get: Get, set: SetFn, caster: Combatant, summon: Sum
       ...(opts.label ? { label: opts.label } : {}),
       ...(opts.rounds != null ? { expiresAtRound: battle.round + opts.rounds } : {}),
       ...(summon.despawnIfCasterDown ? { despawnIfSummonerDown: true } : {}),
+      ...(opts.spellId ? { spellId: opts.spellId } : {}),
     };
     battle.combatants.push(c);
     insertAfter(battle.baseOrder, caster.id, id);

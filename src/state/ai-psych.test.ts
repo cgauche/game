@@ -15,7 +15,7 @@ function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, o
 }
 const scene = emptyScene(12, 12);
 function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
-  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, ...extra };
+  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
 
 describe('Frénésie/Haine IA — contrainte de cible (LDB 21, P3)', () => {

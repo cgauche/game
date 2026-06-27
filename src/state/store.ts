@@ -813,6 +813,10 @@ export interface GameState extends RollFlowActionsMap {
   defenseCancel: () => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
   renounceResolve: (renounce: boolean) => void;
+  /** Peek du planificateur IA (déterministe, sans RNG ni mutation) : la meilleure action du combattant `id`
+   *  est-elle de PRÉPARER un sort (cast/castArea/focus) ? Lu par le hook de Frénésie pour différer l'entrée
+   *  en Frénésie tant qu'un sort prime (RAW : entrée = choix, psychologie.md l.170). */
+  aiWouldCast: (id: string) => boolean;
   /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Aucun jet
    *  (Chevaucher sans Test, LDB 09 l.99) → pas une Action : consomme le MOUVEMENT (on peut ensuite attaquer). */
   battleMount: () => void;

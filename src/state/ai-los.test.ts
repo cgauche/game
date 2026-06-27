@@ -1,13 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { chooseEnemyAction } from './ai';
+import { chooseEnemyAction, type CastableSpell } from './ai';
 import { Scene } from './scene';
 import { Combatant } from '../engine/types';
+import type { SpellData } from '../data';
+
+/** Projectile magique RÉSOLU minimal (`CastableSpell`) — `range` en cases (null = pas de gate). */
+function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {
+  const data = { id: over.id ?? 'carreau', label: 'Carreau', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', missile: true, damage: 8, source: { book: 'LDB', page: 0 } } as unknown as SpellData;
+  return { id: over.id ?? 'carreau', data, cn: 0, range: over.range ?? null, shape: 'single', landProb: 1, focusState: 'none', active: false };
+}
 
 const enemy = (over: Partial<Combatant> = {}): Combatant =>
   ({ id: 'E', name: 'Tireur', kind: 'enemy', characteristics: {} as any, wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }], armour: {} as any, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 }, ...over }) as unknown as Combatant;
 
 const hero = (x: number): Combatant =>
-  ({ id: 'H', name: 'Héros', kind: 'hero', wounds: { current: 10, max: 10 }, pos: { x, y: 0 } }) as unknown as Combatant;
+  ({ id: 'H', name: 'Héros', kind: 'hero', characteristics: {} as any, wounds: { current: 10, max: 10 }, pos: { x, y: 0 } }) as unknown as Combatant;
 
 function scene(w: number, tiles?: Record<string, string>): Scene {
   const grid = new Array(w).fill('herbe');
@@ -17,11 +24,11 @@ function scene(w: number, tiles?: Record<string, string>): Scene {
 
 describe('IA — respecte la Ligne de Vue au tir (LDB 13 l.123)', () => {
   it('cible visible → tire', () => {
-    const action = chooseEnemyAction({ enemy: enemy(), heroes: [hero(5)], scene: scene(7), blocked: new Set(), movement: 4 });
+    const action = chooseEnemyAction({ enemy: enemy(), heroes: [hero(5)], scene: scene(7), blocked: new Set(), movement: 4, spells: [] });
     expect(action.kind).toBe('shoot');
   });
   it('cible derrière un mur (LdV bloquée) → ne tire PAS', () => {
-    const action = chooseEnemyAction({ enemy: enemy(), heroes: [hero(6)], scene: scene(8, { '3,0': 'mur' }), blocked: new Set(), movement: 4 });
+    const action = chooseEnemyAction({ enemy: enemy(), heroes: [hero(6)], scene: scene(8, { '3,0': 'mur' }), blocked: new Set(), movement: 4, spells: [] });
     expect(action.kind).not.toBe('shoot');
   });
 });
@@ -30,20 +37,20 @@ describe('IA — respecte la PORTÉE (tir : bande Extrême ×3 ; sort : portée 
   it('héros au-delà de Portée ×3 → ne tire pas (s’approche) ; à exactement ×3 → tire', () => {
     // Arc 10 m → Extrême ≤ 30 m = 15 cases.
     const e = () => enemy({ weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 10, qualities: [] }] as never });
-    const far = chooseEnemyAction({ enemy: e(), heroes: [hero(20)], scene: scene(25), blocked: new Set(), movement: 4 });
+    const far = chooseEnemyAction({ enemy: e(), heroes: [hero(20)], scene: scene(25), blocked: new Set(), movement: 4, spells: [] });
     expect(far.kind).toBe('move');
-    const edge = chooseEnemyAction({ enemy: e(), heroes: [hero(15)], scene: scene(25), blocked: new Set(), movement: 4 });
+    const edge = chooseEnemyAction({ enemy: e(), heroes: [hero(15)], scene: scene(25), blocked: new Set(), movement: 4, spells: [] });
     expect(edge.kind).toBe('shoot');
   });
   it('sort hors de portée → ne lance pas (s’approche) ; à portée → cast', () => {
     const e = () => enemy({ weapons: [] });
-    const far = chooseEnemyAction({ enemy: e(), heroes: [hero(5)], scene: scene(10), blocked: new Set(), movement: 4, offensiveSpell: 'Carreau', spellRange: 3 });
+    const far = chooseEnemyAction({ enemy: e(), heroes: [hero(5)], scene: scene(10), blocked: new Set(), movement: 4, spells: [castable({ range: 3 })] });
     expect(far.kind).toBe('move');
-    const ok = chooseEnemyAction({ enemy: e(), heroes: [hero(3)], scene: scene(10), blocked: new Set(), movement: 4, offensiveSpell: 'Carreau', spellRange: 3 });
+    const ok = chooseEnemyAction({ enemy: e(), heroes: [hero(3)], scene: scene(10), blocked: new Set(), movement: 4, spells: [castable({ range: 3 })] });
     expect(ok.kind).toBe('cast');
   });
   it('portée non chiffrable (sort spécial / arme sans Portée) → pas de gate', () => {
-    const ok = chooseEnemyAction({ enemy: enemy({ weapons: [] }), heroes: [hero(8)], scene: scene(10), blocked: new Set(), movement: 4, offensiveSpell: 'Carreau', spellRange: null });
+    const ok = chooseEnemyAction({ enemy: enemy({ weapons: [] }), heroes: [hero(8)], scene: scene(10), blocked: new Set(), movement: 4, spells: [castable({ range: null })] });
     expect(ok.kind).toBe('cast');
   });
 });

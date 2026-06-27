@@ -9,13 +9,22 @@
  * déterministes ; on donne des Caractéristiques RÉELLES pour que les espérances de dégâts soient chiffrables.
  */
 import { describe, it, expect } from 'vitest';
-import { chooseEnemyAction, pickDoctrine, type EnemyAction, type EnemyTurnInput } from './ai';
+import { chooseEnemyAction, pickDoctrine, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
-import type { SpellLike } from '../engine/magic';
+import type { SpellData } from '../data';
 
 const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+
+/** Sort RÉSOLU minimal (`CastableSpell`) pour piloter l'énumération op-driven. */
+function spellData(over: Partial<SpellData> = {}): SpellData {
+  return { id: 'sp', label: 'Sort', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
+}
+function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {
+  const data = over.data ?? spellData({ id: over.id ?? 'sp', missile: true, damage: 8 });
+  return { id: over.id ?? data.id, data, cn: over.cn ?? data.cn ?? 0, range: over.range ?? null, shape: over.shape ?? 'single', landProb: over.landProb ?? 1, focusState: over.focusState ?? 'none', active: over.active ?? false };
+}
 
 const CHARS = { CC: 45, CT: 45, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 };
 const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -33,7 +42,7 @@ function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, o
 const scene = emptyScene(24, 24);
 
 function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
-  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, ...extra };
+  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
 
 const tidOf = (a: EnemyAction): string | undefined =>
@@ -119,25 +128,24 @@ describe('Doctrines — comportements distincts vs standard', () => {
     expect(a.kind).toBe('shoot');
   });
 
-  it('ARTILLERIE pose une ZdE sur un paquet là où STANDARD tirerait mono-cible', () => {
-    // Deux héros COLLÉS (un centre couvre les 2), MENAÇANTS (arme de mêlée) → le missile mono-cible a une
-    // utilité franche (menace + dégâts > la ZdE modeste à aoePerExtraHero=6). Sort de zone ET missile jouables.
+  it('ARTILLERIE pose une ZdE sur un paquet — et la décision ZdE est doctrine-AGNOSTIQUE (op-driven)', () => {
+    // NOUVELLE RÉFÉRENCE (op-driven) : il n'y a PLUS de poids `aoePerExtraHero` par doctrine. La valeur d'une
+    // ZdE = Σ de la sortie de ses GameOp sur les héros couverts (`spellActionValue`), identique pour TOUTE
+    // doctrine. Une ZdE qui couvre 2 héros (16 Blessures-équiv.) bat un missile mono (~10) → castArea, que le
+    // lanceur soit classé `standard` OU `artillerie`. La distinction d'artillerie vit désormais dans ses poids
+    // de POSITIONNEMENT (dangerAvoid/preferredRange/coverGain), pas dans la valeur des sorts.
     const h1 = mk('h1', 'hero', { x: 10, y: 16 }, { weapons: [MELEE] });
-    const h2 = mk('h2', 'hero', { x: 11, y: 16 }, { weapons: [MELEE] });
-    const area = { spell: 'vortex-d-ames', radius: 1, range: 30, cn: 8 };
-    const spellData: SpellLike = { label: 'Carreau', type: 'sort', cn: 4, desc: '', missile: true, damage: 8 } as SpellLike;
-    const common: Partial<EnemyTurnInput> = { areaSpell: area, offensiveSpell: 'carreau', spellRange: 30, offensiveSpellData: spellData };
-    // STANDARD : un lanceur à l'esprit médiocre (Int 20 < 30 → PAS artillerie, aucun autre signal) → standard.
-    // À aoePerExtraHero=6, la ZdE (×1 héros en plus = 6) ne bat PAS le missile mono sur cible menaçante.
-    const plain = mk('plain', 'enemy', { x: 10, y: 10 }, { weapons: [], spells: ['carreau'], characteristics: { ...CHARS, Int: 20 } });
+    const h2 = mk('h2', 'hero', { x: 11, y: 16 }, { weapons: [MELEE] }); // collés (un centre couvre les 2)
+    const areaSp = castable({ id: 'vortex-d-ames', shape: { area: { radius: 1 } }, range: 30, data: spellData({ id: 'vortex-d-ames', effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount: 8 }] } } }) });
+    const missileSp = castable({ id: 'carreau', range: 30 });
+    const common: Partial<EnemyTurnInput> = { spells: [areaSp, missileSp] };
+    // STANDARD (Int 20) ET ARTILLERIE (Int 40) : même décision ZdE (valeur op-driven, pas de poids de doctrine).
+    const plain = mk('plain', 'enemy', { x: 10, y: 10 }, { weapons: [], characteristics: { ...CHARS, Int: 20 } });
     expect(pickDoctrine(plain, [])).toBe('standard');
-    const aStd = chooseEnemyAction(input(plain, [h1, h2], common));
-    expect(aStd.kind).toBe('cast'); // standard : missile mono-cible
-    // ARTILLERIE : aoePerExtraHero=14 → la couverture du paquet l'emporte → castArea.
+    expect(chooseEnemyAction(input(plain, [h1, h2], common)).kind).toBe('castArea');
     const arty = mk('arty', 'enemy', { x: 10, y: 10 }, { weapons: [], spells: ['carreau'], characteristics: { ...CHARS, Int: 40 } });
     expect(pickDoctrine(arty, [])).toBe('artillerie');
-    const aArty = chooseEnemyAction(input(arty, [h1, h2], common));
-    expect(aArty.kind).toBe('castArea');
+    expect(chooseEnemyAction(input(arty, [h1, h2], common)).kind).toBe('castArea');
   });
 
   it('MEUTE prend la proie au FLANC/DOS (flankRear renforcé)', () => {

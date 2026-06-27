@@ -8,13 +8,23 @@
  * Pur : aucun dé, aucun mock — `chooseEnemyAction` est déterministe.
  */
 import { describe, it, expect } from 'vitest';
-import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
+import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene, type Scene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
+import type { SpellData } from '../data';
 
 const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
 const CROSSBOW: Weapon = { name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, reload: 1, qualities: [] };
+
+/** Sort RÉSOLU minimal (`CastableSpell`) pour les fixtures golden — défaut = Projectile mono-cible. */
+function spellData(over: Partial<SpellData> = {}): SpellData {
+  return { id: 'sp', label: 'Sort', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
+}
+function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {
+  const data = over.data ?? spellData({ id: over.id ?? 'sp', missile: true, damage: 8 });
+  return { id: over.id ?? data.id, data, cn: over.cn ?? data.cn ?? 0, range: over.range ?? null, shape: over.shape ?? 'single', landProb: over.landProb ?? 1, focusState: over.focusState ?? 'none', active: over.active ?? false };
+}
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
@@ -34,7 +44,7 @@ function walledScene(w: number, walls: Record<string, string> = {}): Scene {
 }
 
 function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
-  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, ...extra };
+  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
 
 /** Helper : id de cible quel que soit le kind d'action. */
@@ -162,32 +172,33 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
   it('lanceur missile FAISABLE en portée → cast mono-cible', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h = mk('h', 'hero', { x: 5, y: 9 });
-    expect(chooseEnemyAction(input(e, [h], { offensiveSpell: 'Carreau', spellRange: 20 }))).toEqual({ kind: 'cast', targetId: 'h', spell: 'Carreau' });
+    expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'Carreau', range: 20 })] }))).toEqual({ kind: 'cast', targetId: 'h', spell: 'Carreau' });
   });
 
-  it('sort déjà FOCALISÉ et prêt → cast à NI 0', () => {
+  it('sort déjà FOCALISÉ et prêt (focusState ready) → cast à NI 0', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h = mk('h', 'hero', { x: 5, y: 9 });
-    expect(chooseEnemyAction(input(e, [h], { readyFocusedSpell: 'carreau', spellRange: 20 }))).toEqual({ kind: 'cast', targetId: 'h', spell: 'carreau' });
+    expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'carreau', range: 20, focusState: 'ready' })] }))).toEqual({ kind: 'cast', targetId: 'h', spell: 'carreau' });
   });
 
-  it('sort FOCALISABLE (cn>maxSL) et rien de faisable → focus', () => {
+  it('sort FOCALISABLE (peu fiable d’un jet) et rien de faisable → focus', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h = mk('h', 'hero', { x: 5, y: 9 });
-    expect(chooseEnemyAction(input(e, [h], { focusableSpell: 'vortex-d-ames' }))).toEqual({ kind: 'focus', spell: 'vortex-d-ames' });
+    expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'vortex-d-ames', focusState: 'focusable' })] }))).toEqual({ kind: 'focus', spell: 'vortex-d-ames' });
   });
 
   it('focalisable MAIS adversaire au contact + arme de mêlée → se replie en mêlée (pas focus)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE] });
     const adj = mk('adj', 'hero', { x: 5, y: 6 });
-    expect(chooseEnemyAction(input(e, [adj], { focusableSpell: 'vortex-d-ames' }))).toEqual({ kind: 'melee', targetId: 'adj' });
+    expect(chooseEnemyAction(input(e, [adj], { spells: [castable({ id: 'vortex-d-ames', focusState: 'focusable' })] }))).toEqual({ kind: 'melee', targetId: 'adj' });
   });
 
   it('ZdE : ≥2 héros groupés → castArea couvrant le paquet', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h1 = mk('h1', 'hero', { x: 5, y: 9 });
     const h2 = mk('h2', 'hero', { x: 6, y: 9 });
-    const a = chooseEnemyAction(input(e, [h1, h2], { areaSpell: { spell: 'vortex-d-ames', radius: 1, range: 20, cn: 8 } }));
+    const areaSp = castable({ id: 'vortex-d-ames', shape: { area: { radius: 1 } }, range: 20, data: spellData({ id: 'vortex-d-ames', effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount: 8 }] } } }) });
+    const a = chooseEnemyAction(input(e, [h1, h2], { spells: [areaSp] }));
     expect(a.kind).toBe('castArea');
   });
 
@@ -195,10 +206,8 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
     const h1 = mk('h1', 'hero', { x: 1, y: 1 });
     const h2 = mk('h2', 'hero', { x: 14, y: 14 });
-    const a = chooseEnemyAction(input(e, [h1, h2], {
-      areaSpell: { spell: 'vortex-d-ames', radius: 1, range: 30, cn: 8 },
-      offensiveSpell: 'carreau', spellRange: 40,
-    }));
+    const areaSp = castable({ id: 'vortex-d-ames', shape: { area: { radius: 1 } }, range: 30, data: spellData({ id: 'vortex-d-ames', effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount: 8 }] } } }) });
+    const a = chooseEnemyAction(input(e, [h1, h2], { spells: [areaSp, castable({ id: 'carreau', range: 40 })] }));
     expect(a.kind).toBe('cast');
   });
 
@@ -218,7 +227,7 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
   it('LdV : cible derrière un mur → ne tire pas (move)', () => {
     const e = { id: 'E', name: 'T', kind: 'enemy', characteristics: {} as never, wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], weapons: [RANGED], armour: {} as never, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 } } as unknown as Combatant;
     const h = { id: 'H', name: 'H', kind: 'hero', wounds: { current: 10, max: 10 }, pos: { x: 6, y: 0 } } as unknown as Combatant;
-    const a = chooseEnemyAction({ enemy: e, heroes: [h], scene: walledScene(8, { '3,0': 'mur' }), blocked: new Set(), movement: 4 });
+    const a = chooseEnemyAction({ enemy: e, heroes: [h], scene: walledScene(8, { '3,0': 'mur' }), blocked: new Set(), movement: 4, spells: [] });
     expect(a.kind).not.toBe('shoot');
   });
 
@@ -227,5 +236,33 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
     const h = mk('h', 'hero', { x: 1, y: 1 });
     const blocked = new Set(['4,5', '6,5', '5,4', '5,6']);
     expect(chooseEnemyAction(input(e, [h], { blocked })).kind).toBe('end');
+  });
+});
+
+describe('GOLDEN — extensions op-driven (kiting / pas de move parasite)', () => {
+  // (a) KITING : un lanceur SANS arme, EXPOSÉ (au contact d'un héros) et n'ayant qu'un sort FAIBLE,
+  // se REPOSITIONNE pour garder la distance (gain STRICT de portée préférée) plutôt que de lancer son
+  // sort dérisoire au contact. La reposition n'est émise que si `positionValue(to) > positionValue(pos)` :
+  // ici reculer hors de la portée de mêlée gagne `preferredRange` (au contact d=1 ≤ mr → 0 ; à d=2 → +5),
+  // ce qui dépasse l'utilité du cast faible (~dégât 1 + menace).
+  it('caster exposé + sort faible → se replie (move de kiting), gain de position STRICT', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [], movement: 4 });
+    const h = mk('h', 'hero', { x: 5, y: 6 }); // AU CONTACT (d=1)
+    const weakSpell = castable({ id: 'etincelle', range: 4, data: spellData({ id: 'etincelle', missile: true, damage: 0 }) });
+    const a = chooseEnemyAction(input(e, [h], { spells: [weakSpell] }));
+    expect(a.kind).toBe('move');
+    if (a.kind === 'move') {
+      expect(a.thenTargetId).toBe('h');
+      expect(Math.max(Math.abs(a.to.x - 5), Math.abs(a.to.y - 6))).toBeGreaterThan(1); // a reculé hors mêlée
+    }
+  });
+
+  // (b) PAS de MOVE PARASITE : en scène NEUTRE (déjà à bonne distance, rien à gagner en position), le
+  // lanceur LANCE son sort — aucune reposition (gain de position ≤ 0 partout → aucun candidat `move`).
+  it('scène neutre : le lanceur cast (pas de reposition parasite)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [], movement: 4 });
+    const h = mk('h', 'hero', { x: 5, y: 9 }); // déjà à distance de tir (d=4 > mr), LdV dégagée
+    const a = chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'carreau', range: 20 })] }));
+    expect(a).toEqual({ kind: 'cast', targetId: 'h', spell: 'carreau' });
   });
 });

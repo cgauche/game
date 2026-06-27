@@ -55,6 +55,23 @@ describe('applySummon', () => {
     const s = h.state().battle.combatants.find((x: Combatant) => x.summon);
     expect(s.kind).toBe('enemy'); // hostile à un lanceur héros
   });
+
+  // Unicité RAW (LDB 46/40) : l'invocation porte l'IDENTITÉ du sort source (`summon.spellId`) → l'IA sait
+  // qu'une invocation de CE sort est déjà vivante et ne la relance pas. Le death-spawn/trait ne passe PAS
+  // de `spellId` (pas un sort) → reste `undefined`.
+  it('opts.spellId → marque summon.spellId (Unicité) ; sans → undefined', () => {
+    const c1 = caster();
+    const h1 = harness(c1, battle([c1]));
+    applySummon(h1.get, h1.set, c1, { ref: 'Loup', count: 1, allyOfCaster: true }, { rounds: 2, label: 'Hurlement du loup', spellId: 'hurlement-du-loup' });
+    const withId = h1.state().battle.combatants.find((x: Combatant) => x.summon);
+    expect(withId.summon.spellId).toBe('hurlement-du-loup');
+
+    const c2 = caster();
+    const h2 = harness(c2, battle([c2]));
+    applySummon(h2.get, h2.set, c2, { ref: 'Loup', count: 1, allyOfCaster: true }, { rounds: 2, label: 'Hurlement du loup' });
+    const noId = h2.state().battle.combatants.find((x: Combatant) => x.summon);
+    expect(noId.summon.spellId).toBeUndefined();
+  });
 });
 
 describe('purgeExpiredSummons', () => {

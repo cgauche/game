@@ -1,12 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { aiBestMissile, aiOvercastPlan, aiFocusPlan, aiAreaSpell } from './combatFlow';
-import { chooseEnemyAction, type EnemyTurnInput } from './ai';
+import { aiOvercastPlan } from './combatFlow';
+import { chooseEnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
+import { opValue, spellActionValue, type SpellPlacement } from './aiSpellValue';
 import { creatureToCombatant } from './spawn';
 import { emptyScene } from './scene';
-import { findCreature, findSpell, findSpellById } from '../data';
+import { findCreature, findSpell, type SpellData } from '../data';
 import type { Combatant, Weapon } from '../engine/types';
 
-/** Héros minimal posé en (x,y) pour les plans de ciblage. */
+/**
+ * IA — ÉVALUATEUR DE SORT op-driven (remplace `aiBestMissile`/`aiFocusPlan`/`aiAreaSpell`, supprimés).
+ * Plus de planner par-catégorie : la valeur d'un sort = Σ valeur de ses `GameOp` (`opValue`/
+ * `spellActionValue`, src/state/aiSpellValue.ts) × fiabilité × opposition. `chooseEnemyAction` reçoit
+ * `spells: CastableSpell[]` et en dérive des décisions `cast`/`castArea`/`focus`. `aiOvercastPlan`
+ * (Surincantation auto, LDB 47) reste inchangé.
+ */
+const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+
+/** Héros minimal posé en (x,y). */
 function foeAt(id: string, x: number, y: number): Combatant {
   return {
     id, name: id, kind: 'hero',
@@ -17,40 +27,135 @@ function foeAt(id: string, x: number, y: number): Combatant {
   } as Combatant;
 }
 
-describe('aiBestMissile — choix du Projectile magique de l’IA (DR ≥ NI exigé, LDB 46)', () => {
-  const eusapia = () => creatureToCombatant(findCreature('Eusapia Balacañon')!, 'e1', { x: 0, y: 0 });
+/** `SpellData` réduit aux champs lus par l'évaluateur (effects/missile/damage/opposed). */
+function spellData(over: Partial<SpellData> = {}): SpellData {
+  return { id: 'sp', label: 'Sort', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
+}
+const doOps = (ops: unknown[], on: 'target' | 'caster' = 'target') => ({ kind: 'do', effect: { type: 'ops', on, ops } }) as unknown as SpellData['effects'];
+function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {
+  const data = over.data ?? spellData({ id: over.id ?? 'sp', missile: true, damage: 8 });
+  return { id: over.id ?? data.id, data, cn: over.cn ?? data.cn ?? 0, range: over.range ?? null, shape: over.shape ?? 'single', landProb: over.landProb ?? 1, focusState: over.focusState ?? 'none', active: over.active ?? false };
+}
 
-  it('Eusapia (Langue (Magick) 63, SL max 6) : Carreau (NI 4, Dégâts +4) plutôt que Fléchette (+0)', () => {
-    expect(aiBestMissile(eusapia())).toBe('carreau');
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// opValue / spellActionValue — la valeur vient des GameOp, flag `missile` OU non
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe('opValue / spellActionValue — un sort de dégâts vaut des Blessures, missile ou pas', () => {
+  const caster = (): Combatant => ({
+    id: 'e', name: 'e', kind: 'enemy', characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 60, FM: 60, Soc: 40 },
+    wounds: { current: 12, max: 12, base: 12 }, advantage: 0, conditions: [], weapons: [], armour: {} as never, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 },
+  } as Combatant);
+  const enemy = (): Combatant => foeAt('h', 3, 0);
+
+  it('op `wounds` SANS missile → valeur > 0 (un dégât authoré en GameOp compte, jadis « invisible »)', () => {
+    const v = opValue({ op: 'wounds', amount: 6 } as never, caster(), enemy(), { refEnemy: enemy(), horizon: 3 });
+    expect(v).toBeGreaterThan(0);
   });
 
-  it('avec 2 Avantages (+20 au Test, LDB 46 l.176) : La lance d’Ambre (NI 8, Dégâts +12) devient jouable', () => {
-    const c = eusapia();
-    c.advantage = 2;
-    expect(aiBestMissile(c)).toBe('la-lance-d-ambre');
+  it('sort de DÉGÂTS non-missile (effects op wounds) → spellActionValue > 0', () => {
+    const sp = spellData({ effects: doOps([{ op: 'wounds', amount: 6 }]) });
+    const placement: SpellPlacement = { kind: 'unit', subject: enemy() };
+    expect(spellActionValue(caster(), sp, placement, { landProb: 1, refEnemy: enemy(), horizon: 3 })).toBeGreaterThan(0);
   });
 
-  it('les DR de Talent lié au Test (LDB 10 l.20) comptent : Diction instinctive ×2 → SL max 8 → La lance d’Ambre', () => {
-    const c = eusapia();
-    c.talents = [...c.talents, { talentId: 'diction-instinctive', times: 2 }];
-    expect(aiBestMissile(c)).toBe('la-lance-d-ambre'); // 63/10 = 6, +2 de Talent ≥ NI 8
-  });
-
-  it('aucun NI atteignable → repli sur le moins exigeant (rien d’injouable choisi en boucle)', () => {
-    const c = eusapia();
-    c.skills = []; // plus de Langue (Magick) : valeur = Int 48 → SL max 4… on coupe aussi Int
-    c.characteristics.Int = 20; // SL max 2 < NI 4 (Carreau) : seul Fléchette (NI 0) aboutira
-    expect(aiBestMissile(c)).toBe('flechette');
-  });
-
-  it('sans sorts → undefined', () => {
-    const c = eusapia();
-    c.spells = [];
-    expect(aiBestMissile(c)).toBeUndefined();
+  it('Projectile magique (flag missile) → spellActionValue > 0', () => {
+    const sp = spellData({ missile: true, damage: 8 });
+    const placement: SpellPlacement = { kind: 'unit', subject: enemy() };
+    expect(spellActionValue(caster(), sp, placement, { landProb: 1, refEnemy: enemy(), horizon: 3 })).toBeGreaterThan(0);
   });
 });
 
-describe('aiOvercastPlan — Surincantation automatique de l’IA (LDB 47 l.28-31 : +1 Cible par +2 DR)', () => {
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// chooseEnemyAction — décisions de sort (cast / castArea / focus), via spells: CastableSpell[]
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe('chooseEnemyAction — sorts (énumération op-driven)', () => {
+  const scene = emptyScene(16, 16);
+  function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
+    return {
+      id, name: id, kind, pos, wounds: { current: 10, max: 10 }, weapons: [MELEE],
+      characteristics: {} as never, advantage: 0, conditions: [], armour: {} as never,
+      skills: [], talents: [], movement: 4, ...opts,
+    } as Combatant;
+  }
+  function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
+    return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
+  }
+
+  it('missile FAISABLE (focusState none, en portée) → cast mono-cible', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const h = mk('h', 'hero', { x: 5, y: 9 });
+    expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'carreau', range: 20 })] }))).toEqual({ kind: 'cast', targetId: 'h', spell: 'carreau' });
+  });
+
+  it('ZdE couvrant ≥2 héros groupés → castArea auto-posé', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const h1 = mk('h1', 'hero', { x: 5, y: 9 });
+    const h2 = mk('h2', 'hero', { x: 6, y: 9 }); // collés (Chebyshev 1)
+    const areaSp = castable({ id: 'vortex-d-ames', shape: { area: { radius: 1 } }, range: 20, data: spellData({ id: 'vortex-d-ames', effects: doOps([{ op: 'wounds', amount: 8 }]) }) });
+    const a = chooseEnemyAction(input(e, [h1, h2], { spells: [areaSp] }));
+    expect(a.kind).toBe('castArea');
+    if (a.kind === 'castArea') {
+      expect(a.spell).toBe('vortex-d-ames');
+      const cov = [h1, h2].filter((h) => Math.max(Math.abs(h.pos!.x - a.center.x), Math.abs(h.pos!.y - a.center.y)) <= 1).length;
+      expect(cov).toBe(2);
+    }
+  });
+
+  it('sort FOCALISABLE (peu fiable d’un jet) hors contact → focus (au lieu de rater en boucle)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const h = mk('h', 'hero', { x: 5, y: 9 });
+    expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'vortex-d-ames', focusState: 'focusable' })] }))).toEqual({ kind: 'focus', spell: 'vortex-d-ames' });
+  });
+
+  it('sort déjà focalisé et PRÊT (focusState ready) → cast à NI 0', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const h = mk('h', 'hero', { x: 5, y: 9 });
+    expect(chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'carreau', range: 20, focusState: 'ready' })] }))).toEqual({ kind: 'cast', targetId: 'h', spell: 'carreau' });
+  });
+
+  it('Unicité : un sort déjà ACTIF est EXCLU de l’énumération (seul sort + sans arme → end)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const h = mk('h', 'hero', { x: 5, y: 9 });
+    const a = chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'carreau', range: 20, active: true })] }));
+    expect(a.kind).toBe('end'); // sort actif ignoré + aucune arme → aucune action
+  });
+
+  // ── ZdE NET : anti tir-ami (indiscriminée, RAW) + buff/soin de zone ──────────────────────────────
+  const areaDmg = (radius: number) => castable({ id: 'comete', shape: { area: { radius } }, range: 20, data: spellData({ id: 'comete', effects: doOps([{ op: 'wounds', amount: 8 }]) }) });
+
+  it('AoE indiscriminée : un allié SEUL dans le rayon (1 ennemi touché ≈ 1 allié) → net ≤ 0 → ne se canarde PAS', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const foe = mk('h', 'hero', { x: 5, y: 9 });
+    const ally = mk('a', 'enemy', { x: 4, y: 9 }, { weapons: [MELEE] }); // dans le rayon 1 de l'unique ennemi
+    const a = chooseEnemyAction(input(e, [foe], { spells: [areaDmg(1)], squad: [ally] }));
+    expect(a.kind).not.toBe('castArea'); // dégâts au seul ennemi − tir ami sur l'allié ⇒ net ≤ 0
+  });
+
+  it('AoE indiscriminée : alliés HORS du rayon → castArea (net positif, aucun tir ami)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
+    const h1 = mk('h1', 'hero', { x: 5, y: 9 });
+    const h2 = mk('h2', 'hero', { x: 6, y: 9 }); // 2 ennemis groupés
+    const ally = mk('a', 'enemy', { x: 0, y: 0 }, { weapons: [MELEE] }); // loin, hors du rayon
+    const a = chooseEnemyAction(input(e, [h1, h2], { spells: [areaDmg(1)], squad: [ally] }));
+    expect(a.kind).toBe('castArea'); // dégâts à 2 ennemis − 0 tir ami > 0
+  });
+
+  it('buff de ZONE (bénéfique) → castArea sur les alliés (jadis ignoré : le bloc ZdE scorait sur les ennemis)', () => {
+    const C = { CC: 45, CT: 40, F: 45, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 } as Combatant['characteristics'];
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE], characteristics: C });
+    const foe = mk('h', 'hero', { x: 5, y: 14 }, { characteristics: C }); // ennemi très loin (rien à frapper/approcher d'utile)
+    const ally = mk('a', 'enemy', { x: 5, y: 6 }, { weapons: [MELEE], characteristics: C }); // allié armé adjacent
+    const buff = castable({ id: 'prouesses', shape: { area: { radius: 2 } }, range: null, data: spellData({ id: 'prouesses', effects: doOps([{ op: 'charMod', char: 'CC', mod: 20 }]) }) });
+    const a = chooseEnemyAction(input(e, [foe], { spells: [buff], squad: [ally] }));
+    expect(a.kind).toBe('castArea'); // le buff de zone couvre soi + l'allié armé → bénéfice marginal > 0
+    if (a.kind === 'castArea') expect(a.spell).toBe('prouesses');
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// aiOvercastPlan — Surincantation AUTOMATIQUE (LDB 47 l.28-31 : +1 Cible par +2 DR) — INCHANGÉ
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe('aiOvercastPlan — Surincantation automatique de l’IA (LDB 47 l.28-31)', () => {
   const eusapia = () => creatureToCombatant(findCreature('Eusapia Balacañon')!, 'e1', { x: 0, y: 0 });
   const carreau = findSpell('Carreau')!; // NI 4, Portée (Force Mentale) mètres → FM 53 → 26 cases
 
@@ -73,123 +178,5 @@ describe('aiOvercastPlan — Surincantation automatique de l’IA (LDB 47 l.28-3
     const c = eusapia();
     const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 12 }, [foeAt('h1', 1, 0), foeAt('h2', 2, 0)]);
     expect(plan.extraTargetIds).toEqual(['h2']); // budget 4 mais une seule cible en plus
-  });
-});
-
-describe('aiFocusPlan — Focalisation de l’IA (LDB 46) : DONNÉES de sort, pas de nom en dur', () => {
-  const eusapia = () => creatureToCombatant(findCreature('Eusapia Balacañon')!, 'e1', { x: 0, y: 0 });
-
-  it('un sort arcanique infaisable en un jet ET focalisable → focusableSpell ; rien de PRÊT', () => {
-    const c = eusapia();
-    // Force la Focalisation possédée (Eusapia n’a pas forcément la Compétence) — la donnée gate, pas un nom.
-    if (!c.skills.some((s) => s.skillId === 'focalisation')) c.skills.push({ skillId: 'focalisation', advances: 10, characteristic: 'FM' } as never);
-    c.characteristics.Int = 20; // SL max très bas → les NI ≥ 4 (Carreau…) deviennent infaisables d’un jet
-    c.skills = c.skills.filter((s) => s.skillId !== 'langue').concat([{ skillId: 'focalisation', advances: 10, characteristic: 'FM' } as never]);
-    const plan = aiFocusPlan(c);
-    expect(plan.readyFocusedSpell).toBeUndefined();
-    expect(plan.focusableSpell).toBeTruthy(); // un sort arcanique connu, hors d’atteinte d’un seul jet
-  });
-
-  it('sans Compétence de Focalisation → aucun focusableSpell (la donnée gate, pas l’envie)', () => {
-    const c = eusapia();
-    c.skills = c.skills.filter((s) => s.skillId !== 'focalisation');
-    c.traits = (c.traits ?? []).filter((tr) => !/lanceur/i.test(JSON.stringify(tr))); // au cas où
-    c.characteristics.Int = 20;
-    expect(aiFocusPlan(c).focusableSpell).toBeUndefined();
-  });
-
-  it('un sort déjà focalisé et PRÊT (focus.dr ≥ NI) → readyFocusedSpell', () => {
-    const c = eusapia();
-    const sp = (c.spells ?? []).map((id) => findSpellById(id)).find((s) => s && (s.cn ?? 0) > 0 && s.family === 'arcane' && s.missile === true);
-    expect(sp).toBeTruthy();
-    c.focus = { spell: sp!.id, dr: (sp!.cn ?? 0) + 1 }; // assez de DR cumulés
-    expect(aiFocusPlan(c).readyFocusedSpell).toBe(sp!.id);
-  });
-});
-
-describe('aiAreaSpell — sort de ZONE de dégâts castable (LDB 47 l.44)', () => {
-  it('Eusapia (SL max 6) : aucun sort de ZONE faisable d’un jet (NI ≥ 8) → undefined', () => {
-    const c = creatureToCombatant(findCreature('Eusapia Balacañon')!, 'e1', { x: 0, y: 0 });
-    expect(aiAreaSpell(c)).toBeUndefined();
-  });
-
-  it('lanceur surpuissant connaissant un sort ZdE+Projectile faisable → renvoie id/rayon/portée', () => {
-    const c = creatureToCombatant(findCreature('Eusapia Balacañon')!, 'e1', { x: 0, y: 0 });
-    c.characteristics.Int = 99; c.characteristics.FM = 99;
-    c.skills = c.skills.map((s) => (s.skillId === 'langue' ? { ...s, advances: 90 } : s));
-    c.spells = [...(c.spells ?? []), 'vortex-d-ames']; // arcane, missile, ZdE, NI 8
-    const a = aiAreaSpell(c);
-    expect(a?.spell).toBe('vortex-d-ames');
-    expect(a!.radius).toBeGreaterThanOrEqual(0);
-  });
-});
-
-describe('chooseEnemyAction — décisions MAGIQUES pures (focus / cast focalisé / ZdE)', () => {
-  const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-  const scene = emptyScene(16, 16);
-  function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
-    return {
-      id, name: id, kind, pos, wounds: { current: 10, max: 10 }, weapons: [MELEE],
-      characteristics: {} as never, advantage: 0, conditions: [], armour: {} as never,
-      skills: [], talents: [], movement: 4, ...opts,
-    } as Combatant;
-  }
-  function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
-    return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, ...extra };
-  }
-
-  it('readyFocusedSpell → lance CE sort (NI 0) sur la cible, même sans missile faisable', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
-    const h = mk('h', 'hero', { x: 5, y: 9 });
-    const a = chooseEnemyAction(input(e, [h], { readyFocusedSpell: 'carreau', spellRange: 20 }));
-    expect(a).toEqual({ kind: 'cast', targetId: 'h', spell: 'carreau' });
-  });
-
-  it('cn > maxSL focalisable et rien de faisable → FOCALISE (au lieu de planter)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
-    const h = mk('h', 'hero', { x: 5, y: 9 });
-    const a = chooseEnemyAction(input(e, [h], { focusableSpell: 'vortex-d-ames' }));
-    expect(a).toEqual({ kind: 'focus', spell: 'vortex-d-ames' });
-  });
-
-  it('focalisable MAIS adversaire au contact + arme de mêlée → se replie en mêlée (risque d’interruption, LDB 46 l.193)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE] });
-    const adj = mk('adj', 'hero', { x: 5, y: 6 });
-    const a = chooseEnemyAction(input(e, [adj], { focusableSpell: 'vortex-d-ames' }));
-    expect(a).toEqual({ kind: 'melee', targetId: 'adj' }); // pas de focus sous la menace
-  });
-
-  it('FRÉNÉTIQUE avec arme à distance déchargée → NE recharge PAS (Frénésie LDB 21 l.34 : CC/Athlétisme) → approche', () => {
-    const CROSSBOW: Weapon = { name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 40, reload: 1, qualities: [] };
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [CROSSBOW], loaded: false, psychState: [{ type: 'frenesie' }] } as Partial<Combatant>);
-    const h = mk('h', 'hero', { x: 5, y: 9 }); // en vue/portée mais pas au contact
-    const a = chooseEnemyAction(input(e, [h]));
-    expect(a.kind).not.toBe('reload'); // la Frénésie interdit la Recharge
-    expect(a.kind).toBe('move'); // elle fonce vers l'ennemi le plus proche
-  });
-
-  it('ZdE : ≥2 héros groupés et sort de zone castable → castArea auto-posé couvrant le paquet', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] });
-    const h1 = mk('h1', 'hero', { x: 5, y: 9 });
-    const h2 = mk('h2', 'hero', { x: 6, y: 9 }); // collés (Chebyshev 1)
-    const a = chooseEnemyAction(input(e, [h1, h2], { areaSpell: { spell: 'vortex-d-ames', radius: 1, range: 20, cn: 8 } }));
-    expect(a.kind).toBe('castArea');
-    if (a.kind === 'castArea') {
-      expect(a.spell).toBe('vortex-d-ames');
-      // le centre couvre les 2 héros (Chebyshev ≤ radius)
-      const cov = [h1, h2].filter((h) => Math.max(Math.abs(h.pos!.x - a.center.x), Math.abs(h.pos!.y - a.center.y)) <= 1).length;
-      expect(cov).toBe(2);
-    }
-  });
-
-  it('ZdE : héros DISPERSÉS (aucun centre ne couvre 2) → pas de castArea (repli missile/mêlée)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [], spells: ['carreau'] });
-    const h1 = mk('h1', 'hero', { x: 1, y: 1 });
-    const h2 = mk('h2', 'hero', { x: 14, y: 14 });
-    const a = chooseEnemyAction(input(e, [h1, h2], {
-      areaSpell: { spell: 'vortex-d-ames', radius: 1, range: 30, cn: 8 },
-      offensiveSpell: 'carreau', spellRange: 30,
-    }));
-    expect(a.kind).toBe('cast'); // pas de ZdE : on retombe sur le missile mono-cible
   });
 });

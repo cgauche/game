@@ -16,7 +16,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
@@ -113,6 +113,13 @@ export function createCombatSlice(get: Get, set: Set) {
   // LDB 62 l.295) — appelée par `runCombatFlow` sur le `do`/`breakBlade`.
   setBladeTrapHook(applyBladeTrap);
   return {
+    // Peek du planificateur IA exposé au store (convention feuille « tout via get().xxx ») : le hook de
+    // Frénésie (`turnHooks`, module feuille) y lit la meilleure action sans importer `combatFlow` (pas de
+    // cycle). Déterministe, zéro `battleRng`, ne mute rien.
+    aiWouldCast: (id: string): boolean => {
+      const e = get().battle?.combatants.find((c) => c.id === id);
+      return !!e && aiWouldPrepareSpell(e, get);
+    },
     // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
     // Enfourcher/descendre ne demande AUCUN jet (Chevaucher sans Test si l'on a la Compétence, LDB 09 l.99)
     // → ce n'est PAS une Action (critère : tout jet = une Action) : c'est juste du MOUVEMENT (repositionnement

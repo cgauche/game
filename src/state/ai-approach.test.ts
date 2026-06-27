@@ -23,7 +23,7 @@ const C = (kind: 'hero' | 'enemy', id: string, x: number, over: Partial<Combatan
 function planFor(heroX: number, over: Partial<Combatant> = {}) {
   const enemy = C('enemy', 'e', 2, over);
   const hero = C('hero', 'h', heroX);
-  const input: EnemyTurnInput = { enemy, heroes: [hero], scene: scene(), blocked: new Set([`${heroX},10`]), movement: 4 };
+  const input: EnemyTurnInput = { enemy, heroes: [hero], scene: scene(), blocked: new Set([`${heroX},10`]), movement: 4, spells: [] };
   const action = chooseEnemyAction(input);
   return { enemy, hero, ...aiApproachPlan(input, enemy, action, makeRNG(3)), action };
 }

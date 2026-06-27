@@ -13,9 +13,9 @@
  * action jouée passe par la résolution RAW (LoS LDB 13 l.123, bandes de portée appliquées au jet).
  *
  * Lot 3 — l'IA vise par MENACE (`targetThreat`, plus le « PV le plus bas »), achève proprement
- * (`killSecure`), ne s'acharne pas (`overkillPenalty`), valorise les États infligés (`controlValue`,
- * data-driven), couvre les paquets en ZdE (`aoeCoverage`) et se POSITIONNE (flanc/dos, couvert, portée
- * préférée — `positionValue`).
+ * (`killSecure`), ne s'acharne pas (`overkillPenalty`), valorise les États infligés (`CONDITION_THREAT`,
+ * data-driven), couvre les paquets en ZdE et se POSITIONNE (flanc/dos, couvert, portée préférée —
+ * `positionValue`).
  *
  * Lot 4 — CONTEXTE D'ESCOUADE (`squad` en entrée, OPTIONNEL : absent → comportement Lot 3 inchangé) :
  * FEU CONCENTRÉ via le surnombre RAW (`outnumberEnvMelee` réutilise `outnumberMod`/LDB 14 avec le MÊME
@@ -28,11 +28,12 @@ import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, footprintN, combatDistance } from './footprint';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
-import { rangeBandModifier, attackModifiers, combineMods, woundsFromHit, combatValue, outnumberMod, type ModLine } from '../engine/combat';
-import { effectiveWeaponDamage, effectiveWeaponRange } from '../engine/weaponDamage';
+import { rangeBandModifier, outnumberMod, type ModLine } from '../engine/combat';
+import { effectiveWeaponRange } from '../engine/weaponDamage';
 import { selectedAmmo } from '../engine/items';
-import { missileDamage, type SpellLike } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
+import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, expectedSpellOutput } from './aiSpellValue';
+import type { SpellData } from '../data';
 import { hasCondition, canTakeAction } from '../engine/conditions';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
@@ -43,20 +44,26 @@ import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial, isMindless, isStupid } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 
-/** Catégorie d'un sort de soutien/utilitaire (miroir PUR de `SupportSpellCat` de combatFlow — ai.ts
- *  reste sans dépendance vers le store/les données ; la couche impure produit ces options). */
-export type SupportSpellCat = 'heal' | 'buffSelf' | 'buffAlly' | 'debuff' | 'summon' | 'other';
-/** Option de sort de soutien classée (depuis ses DONNÉES) — consommée par l'énumération pure. */
-export interface SupportSpellOpt {
+/** UN sort connu de l'ennemi, RÉSOLU + enrichi de ses métadonnées impures (données, portée en cases,
+ *  forme, fiabilité d'incantation, état de Focalisation, Unicité) par la couche impure (`buildAiInput`,
+ *  combatFlow). L'énumération PURE en dérive des candidats `cast`/`castArea`/`focus` scorés par
+ *  `spellActionValue`. `data` porte les `effects`/`opposed`/`range`/`target` lus par l'évaluateur. */
+export interface CastableSpell {
   id: string;
-  cat: SupportSpellCat;
+  data: SpellData;
+  /** Niveau d'Incantation (0 pour une Prière). */
   cn: number;
+  /** Portée en CASES (`spellRangeTiles`) ; null = non chiffrable → pas de gate de portée. */
   range: number | null;
-  magnitude: number;
-  summonCount?: number;
-  /** Noms d'États infligés (catégorie `debuff`) — pour l'anti-spam (ne pas réappliquer un État déjà porté)
-   *  et la valeur de contrôle. Vide pour les autres catégories. */
-  condNames?: string[];
+  /** `single` (mono-cible) / `self` (sur soi) / `{area}` (ZdE, rayon en cases). */
+  shape: 'single' | 'self' | { area: { radius: number } };
+  /** Probabilité (0..1) DÉTERMINISTE que l'incantation aboutisse (réussite ET DR≥NI) — `castLandProbability`. */
+  landProb: number;
+  /** Focalisation (LDB 46) : `ready` = sort focalisé et prêt (NI 0) ; `focusable` = arcane peu fiable
+   *  qu'il vaut mieux focaliser que rater en boucle ; `none` = lançable d'un jet. */
+  focusState: 'none' | 'ready' | 'focusable';
+  /** Unicité RAW (LDB 46 l.116-121 / 40 l.16-19) : un effet/une invocation de CE sort est déjà actif. */
+  active: boolean;
 }
 
 export type EnemyAction =
@@ -80,15 +87,11 @@ export interface EnemyTurnInput {
   blocked: Set<string>;
   /** Mouvement effectif en cases (dérivé de l'Encombrement par l'appelant). */
   movement: number;
-  /** Libellé d'un sort offensif prêt, déjà résolu par l'appelant (qui a les données). */
-  offensiveSpell?: string;
-  /** Portée du sort offensif en CASES (spellRangeTiles, résolue par l'appelant) ;
-   *  null/absent = portée non chiffrable → pas de gate (comportement historique). */
-  spellRange?: number | null;
-  /** Données STRUCTURÉES du sort offensif (`SpellData`) — résolues par l'appelant (couche impure qui a les
-   *  données). Servent à SCORER le sort (espérance via `missileDamage`, États via `op:'condition'`). Absent
-   *  = scoring neutre du sort (parité historique : on garde son palier sans bonus de menace/contrôle). */
-  offensiveSpellData?: SpellLike;
+  /** TOUS les sorts connus de l'ennemi, RÉSOLUS + enrichis par l'appelant (couche impure qui a les
+   *  données + le `battle`) : portée/forme/fiabilité/Focalisation/Unicité. L'énumération PURE en dérive
+   *  des candidats `cast`/`castArea`/`focus` scorés par `spellActionValue`. Vide = aucun sort → aucun
+   *  candidat de sort (comportement strictement inchangé pour les fixtures sans sort). */
+  spells: CastableSpell[];
   /** Vol (LDB 85 p.343) : le déplacement ignore terrains/obstacles/personnages traversés. */
   flying?: boolean;
   /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
@@ -101,23 +104,6 @@ export interface EnemyTurnInput {
    *  `ai.ts` est pur, sans store). Sert au bonus de FLANC/DOS du positionnement (`isFlankOrRear`, LDB 14
    *  l.91). ABSENT = aucun bonus de flanc (graceful : tests purs / scène sans orientation). */
   facing?: Record<string, Dir8>;
-  /** Focalisation (LDB 46) — résolu par l'appelant (couche impure, qui a les données de sort) :
-   *  un sort offensif DÉJÀ focalisé et PRÊT (`caster.focus.dr >= cn`) → lançable à NI 0 ce tour. */
-  readyFocusedSpell?: string;
-  /** Meilleur sort offensif FOCALISABLE mais infaisable en un seul jet (`cn > maxSL`, isArcaneSpell,
-   *  Compétence de Focalisation possédée) — résolu par l'appelant. L'IA y consacre son tour à FOCALISER
-   *  (au lieu de rater un NI hors d'atteinte en boucle), sauf menacée au contact avec un repli. */
-  focusableSpell?: string;
-  /** Sort de ZONE de dégâts castable (id + géométrie résolue par l'appelant). L'IA le joue (auto-pose
-   *  du centre) quand le centre couvre ≥2 héros. `range` null = portée non chiffrable → pas de gate. */
-  areaSpell?: { spell: string; radius: number; range: number | null; cn: number };
-  /** SORTS de SOUTIEN/UTILITAIRE classés par l'appelant (couche impure qui a les DONNÉES de sort) :
-   *  chaque option = un sort NON-dégât (heal/buffSelf/buffAlly/debuff/summon/other) faisable d'un jet,
-   *  avec sa catégorie/cn/portée/magnitude DÉDUITES de ses ops (cf. `aiSpellPlan` dans combatFlow). L'IA
-   *  pure en dérive des candidats `cast` (sur un allié blessé, soi, un héros menaçant, ou une invocation),
-   *  résolus par le MÊME `castSpell` (IA = héros). ABSENT = aucun candidat de soutien → comportement
-   *  STRICTEMENT inchangé (golden et fixtures sans soutien restent identiques). */
-  supportSpells?: SupportSpellOpt[];
   /** ESCOUADE (Lot 4) : les ALLIÉS de l'ennemi encore en action et posés (l'ennemi lui-même EXCLU),
    *  résolus par l'appelant (couche impure qui a le `battle`). Sert au FEU CONCENTRÉ (surnombre RAW en
    *  mêlée, LDB 14 — même `outnumberMod` et même décompte que la résolution, cf. combatFlow.ts:425) et
@@ -144,10 +130,6 @@ const W = {
   /** S'acharner sur une cible NEUTRALISÉE (à terre/inconsciente/0 PB) : malus FORT (anti-acharnement,
    *  Lot 1) — on ne la frappe qu'en dernier recours (aucune menace debout). */
   overkill: 100,
-  /** Valeur d'un État infligé (contrôle), pondérée par sa dangerosité (cf. `CONDITION_THREAT`). */
-  control: 1,
-  /** Héros couvert par une ZdE (au-delà du 1ᵉʳ — un missile mono-cible touche déjà 1). */
-  aoePerExtraHero: 6,
   /** Frapper au FLANC/DOS (hors champ de vision avant de la cible, LDB 14 l.91) : gratuit → bonus modéré. */
   flankRear: 4,
   /** Gain de COUVERT pour soi en se déplaçant (par cran de couvert gagné : imparfaite/moyenne/totale). */
@@ -168,21 +150,10 @@ const W = {
    *  portée de soutien). SOBRE et faible — un simple départage à utilité d'attaque égale, pour préférer
    *  rester en formation plutôt que de partir seul (n'inverse jamais un choix offensif/danger marqué). */
   cohesion: 1.5,
-  // — SOUTIEN (grimoire de soutien : buff/soin/débuff/invocation) ————————————————————————————————————
-  /** SOIN d'un allié : facteur appliqué aux PB réellement RÉCUPÉRABLES (min(soin, PB manquants)). À ~1, un
-   *  soin de N PB pèse comme N Blessures infligées — on soigne quand ça « rend » autant qu'attaquer rapporte. */
-  healValue: 1,
-  /** BUFF (soi/allié) : facteur sur la magnitude du buff (≈ |charMod|/10 + 2/État…). Calibré modeste : un
-   *  buff utile bat une attaque faible mais pas une bonne attaque/un achèvement (anti buff-spam). */
-  buffValue: 1.5,
-  /** DÉBUFF d'un ennemi : facteur sur la valeur de CONTRÔLE de l'État infligé (`controlValue`) × menace de
-   *  la cible (on débuffe le héros le plus menaçant). Aligné sur l'échelle de `control` (États). */
-  debuffValue: 1,
-  /** INVOCATION : facteur sur la magnitude (≈ 2 × nb de créatures), MAJORÉ par l'infériorité numérique
-   *  (× ratio héros/alliés). Sobre — l'IA renforce ses rangs quand elle est en sous-nombre, sans boucler. */
-  summonValue: 1,
   // NB : le FEU CONCENTRÉ n'a PAS de poids ad hoc — il passe par le bonus de toucher `outnumberMod` (RAW,
   // LDB 14), injecté dans l'espérance de dégâts (mêlée). C'est un EFFET ÉMERGENT, pas une constante inventée.
+  // La VALEUR d'un sort (dégâts/contrôle/soin/buff/invocation) vient de l'évaluateur op-driven
+  // (`spellActionValue`/`opValue`, src/state/aiSpellValue.ts) — plus de poids par-catégorie ici.
 } as const;
 
 /** Jeu de poids EFFECTIF utilisé par le scoring. `W` (ci-dessus) est le DÉFAUT neutre ; une doctrine en
@@ -234,18 +205,15 @@ const DOCTRINES: Record<DoctrineId, Doctrine> = {
   // surnombre `outnumberMod` est déjà dans l'espérance de dégâts en mêlée → on RENFORCE le poids de dégâts
   // pour que la cible encadrée par les alliés l'emporte plus nettement), tient le COUVERT (↑coverGain),
   // préfère le contact (↑preferredRange : tenir la ligne au corps-à-corps), cohésion plus marquée (formation).
-  soldats: { damageDealt: 1.4, coverGain: 6, preferredRange: 8, cohesion: 3, healValue: 1.3, buffValue: 1.8 },
+  soldats: { damageDealt: 1.4, coverGain: 6, preferredRange: 8, cohesion: 3 },
   // TIRAILLEURS / kiting (arme à distance + Agilité haute, pas de préférence mêlée) : garde la DISTANCE,
   // recule devant l'approche, vise les casters. ↑preferredRange (rester à portée de tir+LdV est très valorisé),
   // ↑dangerAvoid (kiting : fuir les cases au contact), ↑threat (un caster dangereux monte en menace → ciblé).
   tirailleurs: { preferredRange: 12, dangerAvoid: 1.2, threat: 1.6 },
   // ARTILLERIE / lanceurs (possède des sorts, Int/FM hautes) : reste LOIN, à couvert, et arrose les paquets.
-  // ↑aoePerExtraHero (la ZdE sur un amas écrase nettement le missile mono-cible), ↑control (valorise les États),
-  // ↑dangerAvoid + ↑preferredRange (se tient hors de portée), ↑coverGain (se planque).
-  artillerie: { aoePerExtraHero: 14, control: 2, dangerAvoid: 1.2, preferredRange: 10, coverGain: 6,
-    // Un lanceur valorise davantage son grimoire de soutien (débuff/buff/invocation) — il a le temps,
-    // loin de la mêlée. Sobre : les candidats existent déjà par défaut, la doctrine ne fait qu'accentuer.
-    debuffValue: 1.5, summonValue: 1.5, buffValue: 2 },
+  // ↑dangerAvoid + ↑preferredRange (se tient hors de portée), ↑coverGain (se planque). La VALEUR des sorts
+  // (ZdE/débuff/invocation) vient de l'évaluateur op-driven, plus d'un poids par-catégorie ici.
+  artillerie: { dangerAvoid: 1.2, preferredRange: 10, coverGain: 6 },
   // HORDE / Insensible-Stupide (mort-vivant Fabriqué, Stupide) : AVANCE DROIT, sans auto-préservation ni
   // cohésion (aucune pensée de groupe). dangerAvoid=0 et cohesion=0 → elle ne contourne pas le danger et ne
   // se soucie pas de rester groupée ; le surnombre brut reste émergent via `outnumberMod`. Pas de repli (un
@@ -342,105 +310,6 @@ function doctrineWeights(id: DoctrineId): Weights {
 }
 
 /**
- * Dangerosité d'un ÉTAT infligé (LDB 16), en « Blessures espérées équivalentes » — pour `controlValue`.
- * LU EN DONNÉE par nom d'État (clé = `name` du `op:'condition'`), pas une liste de sorts : un nouvel État
- * se règle ici. Calibrage : un État qui SUPPRIME l'Action (Étourdi/Inconscient) ou tue à petit feu
- * (En flammes/Empoisonné/Hémorragie) vaut plus qu'un simple malus (Aveuglé/Assourdi/Ensanglanté). Les
- * valeurs sont des poids de RESSENTI (latitude IA), pas des règles. États inconnus → 1 (contrôle mineur).
- */
-const CONDITION_THREAT: Record<string, number> = {
-  inconscient: 8, // hors de combat
-  'a-terre': 3, // vulnérable + perd son prochain mouvement
-  etourdi: 6, // ne peut pas agir (LDB 16 l.123)
-  'en-flammes': 5, // 1d10/Round, force le « se rouler »
-  empoisonne: 4, // dégâts récurrents
-  hemorragie: 4, // dégâts récurrents
-  empetre: 5, // Mouvement nul + Action perdue à se libérer
-  aveugle: 4, // −10 et ne peut viser
-  assourdi: 2,
-  ensanglante: 2,
-  surpris: 4, // pas de réaction (LDB 16 l.132)
-};
-
-/**
- * Une cible est NEUTRALISÉE (au sol/inconsciente/0 PB encore là) : on n'a aucun intérêt tactique à
- * s'acharner dessus tant qu'une menace DEBOUT existe. Lue en DONNÉE (États + Blessures), sans nom en
- * dur — un combattant À Terre/Inconscient ou à ≤0 PB (encore dans le vivier) est « par terre ».
- */
-function isNeutralized(h: Combatant): boolean {
-  // `conditions` peut manquer sur un combattant de test minimal → garde (hasCondition lève sinon).
-  const cond = h.conditions ?? [];
-  return cond.some((c) => c.name === 'a-terre' || c.name === 'inconscient') || h.wounds.current <= 0;
-}
-
-/** Garde NaN : une grandeur dérivée du moteur peut être NaN si les Caractéristiques d'un combattant de
- *  test sont absentes (`{} as never`). On retombe alors sur `fallback` (neutre) → scoring déterministe :
- *  les heuristiques fines s'effacent et le palier d'action + les tie-breaks (cf. plus bas) décident. */
-const finite = (n: number, fallback = 0): number => (Number.isFinite(n) ? n : fallback);
-
-/**
- * Probabilité de TOUCHER (0..1) d'une attaque, dérivée de la valeur cible RAW (base + modificateurs
- * plafonnés par `combineMods`, comme la résolution) : `P = clamp(target, 5, 95) / 100` (un d100 réussit
- * si ≤ cible ; bornes 5/95 ≈ l'auto-échec/réussite usuel). PUR, sans dé. Les modificateurs de PORTÉE/
- * Taille/État/Avantage sont ceux du moteur → l'espérance reflète la vraie difficulté du jet.
- */
-function hitProbability(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[]): number {
-  const val = combatValue(attacker, kind, weapon);
-  // `env` (Lot 4) : modificateurs de scène/contexte (ex. Surnombre RAW en mêlée) injectés EXACTEMENT comme
-  // la résolution (`attackModifiers({ env })`) → l'espérance reflète le vrai bonus de toucher, sans dérive.
-  const mods = combineMods(attackModifiers(attacker, target, weapon, { kind, distanceTiles, env }));
-  const targetVal = finite(val + mods, NaN);
-  if (!Number.isFinite(targetVal)) return NaN;
-  return Math.max(5, Math.min(95, targetVal)) / 100;
-}
-
-/**
- * Espérance de Blessures d'une attaque d'arme `attacker → target` (PUR, sans dé) : probabilité de
- * toucher × Blessures d'un coup MOYEN. Les Dégâts d'un coup = Dégâts d'arme (`flat` + BF si `plusBF`) +
- * un DR moyen modeste (1) ; les Blessures réelles passent par `woundsFromHit` (BE + PA à la localisation
- * « corps », qualités d'arme) — MÊME résolveur que le combat. `min 1` (Robuste) inclus par `woundsFromHit`.
- */
-function expectedDamage(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[]): number {
-  const p = hitProbability(attacker, target, weapon, kind, distanceTiles, env);
-  if (!Number.isFinite(p)) return NaN;
-  const bf = bonus(effectiveChar(attacker, 'F'));
-  const avgDR = 1; // DR moyen prudent (l'espérance d'un DR ≥ 0 sur une réussite) — calibrage IA, pas une règle
-  // Dégâts d'arme (Dégâts d'arme + BF si `plusBF`) résolus par le moteur (gère « Spécial »/literal → 0).
-  const totalDamage = finite(effectiveWeaponDamage(weapon, Number.isFinite(bf) ? bf : 0) + avgDR, NaN);
-  if (!Number.isFinite(totalDamage)) return NaN;
-  return p * safeWounds(weapon, target, totalDamage);
-}
-
-/** `woundsFromHit` défensif : un combattant de test minimal peut ne pas porter `armour` (le résolveur
- *  lirait `c.armour[loc]` sur `undefined`). On lui prête une armure NULLE (objet vide) le cas échéant —
- *  l'espérance reste prudente (sous-estime légèrement la mitigation). Renvoie 0 si NaN. */
-function safeWounds(weapon: Weapon, target: Combatant, totalDamage: number): number {
-  const safe = target.armour ? target : ({ ...target, armour: {} as Combatant['armour'] });
-  return finite(woundsFromHit(weapon, safe, 'corps', totalDamage), 0);
-}
-
-/** Espérance de Blessures d'un Projectile magique `caster → target` (PUR) : probabilité (≈ tir, via la
- *  CT/valeur du sort approximée par la meilleure arme à distance OU une difficulté neutre) × Dégâts du
- *  missile (`missileDamage` : Dégâts + DR moyen, − BE/PA sauf ignorePA/ignoreBE). Sans données de sort →
- *  NaN (scoring neutre). Approximation assumée : la vraie valeur d'incantation (Langue (Magick)) n'est pas
- *  dans `ai.ts` ; on prend une probabilité de référence (0,6) modulée par l'Avantage de l'attaquant. */
-function expectedSpellDamage(caster: Combatant, target: Combatant, spell: SpellLike | undefined): number {
-  if (!spell) return NaN;
-  const md = missileDamage(spell);
-  if (!md) return 0; // sort non-missile (débuff/contrôle) : 0 dégât direct (sa valeur passe par controlValue)
-  const bfm = bonus(effectiveChar(caster, 'FM'));
-  const avgDR = 1;
-  const raw = finite(md.damage + (Number.isFinite(bfm) ? bfm : 0) + avgDR, md.damage + avgDR);
-  const tb = bonus(effectiveChar(target, 'E'));
-  const ap = 0; // PA non connus finement ici ; l'espérance reste prudente (sous-estime légèrement)
-  const mitig = (md.ignoreBE ? 0 : finite(tb, 0)) + (md.ignorePA ? 0 : ap);
-  const wounds = Math.max(0, raw - mitig);
-  // Probabilité de référence (lanceur) ajustée par l'Avantage (×10 → /100 comme un mod de toucher).
-  const p = Math.max(0.1, Math.min(0.95, 0.6 + (caster.advantage ?? 0) * 0.1));
-  return p * wounds;
-}
-
-/**
  * MENACE d'un héros pour l'ennemi (Lot 3 — REMPLACE le « PV le plus bas » comme critère de cible) :
  *  menace = (dégâts qu'il peut nous infliger) × ATTEIGNABILITÉ (proche = menace immédiate) × FRAGILITÉ
  *  (PB bas = plus facile à éliminer, donc cible prioritaire pour neutraliser sa menace).
@@ -464,29 +333,6 @@ function targetThreat(enemy: Combatant, hero: Combatant): number {
   const cand = [dmgMelee, dmgRanged].filter((d) => Number.isFinite(d)) as number[];
   const danger = cand.length ? Math.max(...cand) : 1; // pas de Caractéristiques chiffrables → danger neutre (1)
   return Math.max(1, danger) * reachability * fragility;
-}
-
-/** Valeur de CONTRÔLE d'un sort (États qu'il inflige, LUS dans ses `op:'condition'` — data-driven, pas
- *  une liste de noms) : Σ dangerosité (`CONDITION_THREAT`) des États posés. Un sort sans `op:'condition'`
- *  → 0 (pas de contrôle). PUR. La structure d'effets (`Flow`) est lue en profondeur (ops imbriqués). */
-function controlValue(spell: SpellLike | undefined): number {
-  if (!spell) return 0;
-  let total = 0;
-  const walk = (node: unknown): void => {
-    if (!node || typeof node !== 'object') return;
-    if (Array.isArray(node)) { for (const n of node) walk(n); return; }
-    const o = node as Record<string, unknown>;
-    if (o.op === 'condition' && typeof o.name === 'string') total += CONDITION_THREAT[o.name] ?? 1;
-    for (const v of Object.values(o)) walk(v);
-  };
-  walk((spell as { effects?: unknown }).effects);
-  return total;
-}
-
-/** Valeur de CONTRÔLE d'une liste d'États nommés (mêmes poids `CONDITION_THREAT` que `controlValue`) —
- *  pour scorer un débuff classé en DONNÉE (les noms d'États viennent du classifieur, pas d'un nom de sort). */
-function controlValueOf(condNames: string[] | undefined): number {
-  return (condNames ?? []).reduce((s, n) => s + (CONDITION_THREAT[n] ?? 1), 0);
 }
 
 /**
@@ -517,23 +363,6 @@ function bestAreaCenter(
     }
   }
   return best && best.covered >= 2 ? best : null;
-}
-
-/** ANTI-SPAM des BUFFS : la cible porte-t-elle DÉJÀ un effet actif issu de CE sort ? On lit l'IDENTITÉ du
- *  sort source sur l'effet actif — `sourceSpellId` (posé pour TOUT lancement, **Prières COMPRISES**) ET
- *  `spell.spellId` (Sorts dissipables). C'est ce qui empêche un prêtre de RE-LANCER en boucle une bénédiction
- *  durable (charMod CC+10 sur 6 Rounds) sur le même allié. PUR, data-driven (par id de sort, jamais par nom). */
-function hasActiveSpell(target: Combatant, spellId: string): boolean {
-  return (target.activeEffects ?? []).some((e) => e.sourceSpellId === spellId || e.spell?.spellId === spellId);
-}
-
-/** ANTI-SPAM des DÉBUFFS : la cible porte-t-elle DÉJÀ un État infligé par ce sort ? On lit les `condition`
- *  du sort (data-driven) et on vérifie si la cible porte chacun. Si TOUS les États du sort sont déjà
- *  présents → inutile de le relancer. (Source unique `controlConditionNames` ci-dessous.) */
-function alreadyDebuffed(target: Combatant, condNames: string[]): boolean {
-  if (!condNames.length) return false;
-  const cond = target.conditions ?? [];
-  return condNames.every((n) => cond.some((c) => c.name === n));
 }
 
 /** Frénésie (LDB 21 l.34) : le frénétique vise IMPÉRATIVEMENT l'ennemi le plus PROCHE de sa Ligne de
@@ -604,8 +433,8 @@ function argmax(cands: Candidate[]): Candidate | null {
 
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
-  const { enemy, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
-  const { readyFocusedSpell, focusableSpell, areaSpell, offensiveSpellData, facing } = input;
+  const { enemy, scene, blocked, movement, smoke, flying, facing } = input;
+  const spells = input.spells;
   // Escouade (Lot 4) : alliés posés encore en action (l'ennemi exclu par l'appelant). Absent → [] →
   // surnombre/cohésion/danger-map neutres = comportement Lot 3 strictement inchangé.
   const squad = input.squad ?? [];
@@ -627,7 +456,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
   const inMelee = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h)) <= mr;
 
-  const hasRanged = offensiveSpell == null && enemy.weapons.some((w) => w.type === 'ranged');
+  // Possède-t-il un sort OFFENSIF jouable (data-driven : Projectile ou op de dégât/contrôle hostile) ? Si
+  // oui, il LANCE plutôt que de tirer (parité avec l'ancien `offensiveSpell == null` du gate de tir).
+  const hasAnyOffensiveSpell = spells.some((sp) => !sp.active && spellIsOffensive(sp.data));
+  const hasRanged = !hasAnyOffensiveSpell && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
   // Rechargement (LDB 63 l.28-29) : une arme à Recharge DÉCHARGÉE ne peut pas tirer → il faut recharger
   // d'abord. `loaded` n'est suivi que pour les acteurs concernés (héros ayant tiré) ; un ennemi reste
@@ -635,11 +467,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const rangedW = enemy.weapons.find((w) => w.type === 'ranged');
   const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !enemy.loaded;
 
-  // Un ennemi sans AUCUN moyen d'agir (sort offensif/focalisé/focalisable/ZdE/SOUTIEN NI sort, ni arme)
-  // ne peut rien faire d'utile → il passe la main (les sorts comptent comme une capacité d'action, soutien
-  // inclus : un lanceur de pur soutien — soin/buff/débuff/invocation — DOIT pouvoir agir, pas passer son tour).
-  const hasAnyMagic = offensiveSpell != null || readyFocusedSpell != null || focusableSpell != null || areaSpell != null
-    || (input.supportSpells?.length ?? 0) > 0;
+  // Un ennemi sans AUCUN moyen d'agir (aucun sort jouable NI arme) passe la main : un sort (offensif OU
+  // soutien) compte comme une capacité d'action → un lanceur de pur soutien DOIT pouvoir agir.
+  const hasAnyMagic = spells.some((sp) => !sp.active);
   if (!hasAnyMagic && enemy.weapons.length === 0) return { kind: 'end' };
 
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
@@ -656,14 +486,25 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const ebf = () => bonus(effectiveChar(enemy, 'F')); // BF du tireur → résout les Portées de jet `{bf}` (paresseux : ignoré pour une portée fixe)
   const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveWeaponRange(w, selectedAmmo(enemy, w)?.ammoRangeMod, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
-  const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = isFrenzied(enemy);
-  // Sort offensif à lancer ce tour : un sort DÉJÀ focalisé et prêt (lançable à NI 0) prime sur le
-  // meilleur missile faisable en un jet (l'appelant a résolu `spellRange` pour CE sort).
-  const castSpellId = readyFocusedSpell ?? offensiveSpell;
+  // LdV vers un point (centre de ZdE) — réutilisé par le gate `canCast` et l'énumération de zone.
+  const losAt = (pt: Pt): boolean => losClear(scene, pos, pt, smoke ?? []);
+  // Peut-il LANCER un sort offensif ce tour ? (mono-cible en portée+LdV, OU ZdE couvrant ≥2 héros.) Gate
+  // le bonus de portée préférée et le sous-bloc de REPOSITION (un lanceur kite). Les ZdE offensives comptent
+  // ici (le lanceur a de quoi agir → il ne fonce pas bêtement au contact).
+  const canCast = !frenzied && spells.some((sp) => !sp.active && sp.focusState !== 'focusable' && spellIsOffensive(sp.data) && (
+    sp.shape === 'single' ? shootableHeroes.some((h) => sp.range == null || fpDist(h) <= sp.range)
+      : sp.shape === 'self' ? false
+        : !!bestAreaCenter(pos, shootableHeroes, sp.shape.area.radius, sp.range, losAt)));
+  // Portée OFFENSIVE de référence (max des portées des sorts offensifs non-soi) → portée préférée du kiting.
+  let castRange: number | null = 0;
+  for (const sp of spells) {
+    if (sp.active || sp.focusState === 'focusable' || sp.shape === 'self' || !spellIsOffensive(sp.data)) continue;
+    if (sp.range == null) { castRange = null; break; }
+    castRange = Math.max(castRange ?? 0, sp.range);
+  }
   const canShoot = !frenzied && hasRanged && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
-  const canCast = !frenzied && castSpellId != null && castPool.length > 0;
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
@@ -781,23 +622,23 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     return onm ? [onm] : undefined;
   };
 
-  /** Utilité d'une ATTAQUE (mêlée/tir/sort) sur `target` : dégâts qu'on inflige + menace de la cible
-   *  + killSecure − overkill + contrôle. `dmgKind`/`weapon`/`spell` sélectionnent le calcul de dégâts.
+  /** Utilité tactique d'une ATTAQUE (mêlée/tir/sort) sur `target` : valeur de l'effet + menace de la cible
+   *  + killSecure − overkill. Pour un SORT, la valeur EST `spellActionValue` (déjà = dégâts + contrôle ×
+   *  fiabilité × opposition), passée précalculée ; le contrôle n'est PLUS ajouté à part (il est dedans).
    *  En MÊLÉE, le bonus de toucher de SURNOMBRE (feu concentré, Lot 4) est injecté dans l'espérance. */
   const attackUtility = (
     target: Combatant,
-    src: { kind: 'melee'; weapon: Weapon } | { kind: 'ranged'; weapon: Weapon; dist: number } | { kind: 'spell'; spell?: SpellLike },
+    src: { kind: 'melee'; weapon: Weapon } | { kind: 'ranged'; weapon: Weapon; dist: number } | { kind: 'spell'; value: number },
   ): number => {
     const dmg = src.kind === 'spell'
-      ? finite(expectedSpellDamage(enemy, target, src.spell), 0)
+      ? src.value
       : src.kind === 'ranged'
         ? finite(expectedDamage(enemy, target, src.weapon, 'ranged', src.dist), 0)
         : finite(expectedDamage(enemy, target, src.weapon, 'melee', undefined, outnumberEnvMelee(target)), 0);
     const threat = finite(targetThreat(enemy, target), 0);
-    const control = src.kind === 'spell' ? controlValue(src.spell) : 0;
     const securesKill = dmg >= target.wounds.current && target.wounds.current > 0 ? Weff.killSecure : 0;
     const overkill = isNeutralized(target) ? Weff.overkill : 0;
-    return Weff.damageDealt * dmg + Weff.threat * threat + Weff.control * control + securesKill - overkill;
+    return Weff.damageDealt * dmg + Weff.threat * threat + securesKill - overkill;
   };
 
   /** DANGER-MAP (Lot 4) : Blessures que les HÉROS nous infligeraient si l'on se tenait sur `to` — Σ sur
@@ -824,7 +665,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   /** Bonus de POSITIONNEMENT d'une case d'arrivée `to` pour attaquer `target` (Lot 3) : flanc/dos +
    *  gain de couvert pour soi + respect de la portée préférée (tireur/lanceur reste à distance+LdV ;
    *  mêlée au contact). Lot 4 : − danger-map (cases exposées) + cohésion (ne pas s'isoler de l'escouade). PUR. */
-  const isShooterOrCaster = (canCast || canShoot) || (offensiveSpell != null) || (hasRanged && !hasMeleeWeapon);
+  const isShooterOrCaster = canCast || canShoot || hasAnyOffensiveSpell || (hasRanged && !hasMeleeWeapon);
   const positionValue = (to: Pt, target: Combatant): number => {
     let v = 0;
     // Flanc/dos (LDB 14 l.91) : frapper hors du champ de vision avant de la cible (gratuit). Nécessite
@@ -853,7 +694,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const seesFrom = losClear(scene, to, target.pos!, smoke ?? []);
     if (isShooterOrCaster) {
       const inShootRange = canCast
-        ? (spellRange == null || d <= spellRange)
+        ? (castRange == null || d <= castRange)
         : (maxWeaponRange === 0 || rangeBandModifier(d, maxWeaponRange) != null);
       if (d > mr && seesFrom && inShootRange) v += Weff.preferredRange; // garde la distance ET la ligne de tir
     } else if (withinMelee(to, target.pos!)) {
@@ -887,106 +728,85 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const candidates: Candidate[] = [];
   const fpick = frenzyPick();
 
-  // ZdE (LDB 47 l.44) : un sort de ZONE castable dont le centre auto-posé couvre ≥2 héros (portée + LdV).
-  // Scoré par COUVERTURE (héros touchés) — `aoeCoverage` : bonus par héros au-delà du 1ᵉʳ + contrôle.
-  if (!frenzied && areaSpell) {
-    const ac = bestAreaCenter(pos, shootableHeroes, areaSpell.radius, areaSpell.range, (pt) => losClear(scene, pos, pt, smoke ?? []));
-    if (ac) {
-      const aoe = Weff.aoePerExtraHero * (ac.covered - 1); // « − alliés touchés » : pas d'alliés en entrée (Lot 4)
-      candidates.push({ action: { kind: 'castArea', spell: areaSpell.spell, center: ac.center }, kind: 'castArea', utility: aoe, targetId: '', coord: ac.center });
-    }
-  }
-  // Focalisation (LDB 46) : sort focalisable + AUCUN sort faisable d'un jet (`!canCast`), sauf menacé au
-  // contact avec un repli (arme de mêlée ou tir) — risque d'interruption (l.193). Utilité neutre (0) :
-  // c'est un investissement de tour sans dégât immédiat — il ne « gagne » que faute de mieux.
-  // `committingPrep` : une action de PRÉPARATION (Focalisation/Recharge) est CHOISIE → on ne lui oppose
-  // pas une approche de mêlée (le lanceur/tireur reste en place, comme la cascade historique reload/focus
-  // < move). Sans elle, l'approche `move` (utilité de menace > 0) écraserait la prep neutre (régression).
+  // refEnemy : le héros le plus MENAÇANT visible (cible des buffs offensifs + opposition des Sorts de
+  // Contact). Null si aucun héros visible → bénéfice marginal contre un mannequin neutre (aiSpellValue).
+  const HORIZON = 3; // K ≈ 3 Rounds : horizon de bénéfice d'un buff (borne le bénéfice marginal).
+  const refEnemy: Combatant | null = shootableHeroes.length
+    ? [...shootableHeroes].sort((a, b) => finite(targetThreat(enemy, b), 0) - finite(targetThreat(enemy, a), 0))[0]
+    : (heroes[0] ?? null);
+  // `committingPrep` : une action de PRÉPARATION (Focalisation/Recharge) est CHOISIE → on ne lui oppose pas
+  // une APPROCHE de mêlée (le lanceur/tireur reste en place). MÊLÉE reste possible (un acculé se défend).
   let committingPrep = false;
-  if (!frenzied && focusableSpell && !canCast) {
-    const contactFallback = adjacentFoes.length > 0 && (hasMeleeWeapon || canShoot);
-    if (!contactFallback) { candidates.push({ action: { kind: 'focus', spell: focusableSpell }, kind: 'focus', utility: 0, targetId: '', coord: null }); committingPrep = true; }
-  }
-  // Sort offensif mono-cible : UN candidat PAR cible visible/à portée (Lot 3 — multi-cibles), scoré par
-  // menace/dégâts/contrôle. Frénésie → seul `fpick`.
-  if (canCast) {
-    const pool = restrict(fpick ? [fpick].filter((h) => castPool.includes(h)) : castPool);
-    for (const t of pool) {
-      candidates.push({ action: { kind: 'cast', targetId: t.id, spell: castSpellId! }, kind: 'cast', utility: attackUtility(t, { kind: 'spell', spell: offensiveSpellData }), targetId: t.id, coord: t.pos ?? null });
-    }
-  }
-  // SORTS de SOUTIEN / UTILITAIRE (grimoire NON-dégât : heal/buff/débuff/invocation) — énumérés EN PLUS
-  // des candidats offensifs ; le scoring arbitre (un buff redondant/inutile PERD face à une bonne attaque →
-  // anti buff-spam + repli attaque). Tout passe par un candidat `cast` résolu par le MÊME `castSpell` (IA =
-  // héros). Un FRÉNÉTIQUE ne lance AUCUN sort (Frénésie LDB 21 l.34) → on saute tout le bloc. Le SELF (soi)
-  // ne demande pas de portée ; un allié/ennemi est gaté par la portée du sort (cases) et la Ligne de Vue.
-  // Aucun nom de sort en dur : la catégorie/cible vient des DONNÉES classées (`supportSpells`).
-  const support = input.supportSpells ?? [];
-  if (!frenzied && support.length) {
-    // Distance de l'ennemi à une cible (empreintes), pour les gates de portée — symétrie avec castPool.
-    const inSpellRange = (sp: SupportSpellOpt, t: Combatant): boolean =>
-      sp.range == null || fpDist(t) <= sp.range;
-    const sees = (t: Combatant): boolean => losClear(scene, pos, t.pos!, smoke ?? []);
-    // Alliés vivants posés (escouade) + soi : le vivier de cibles AMIES (soin/buff/invocation s'ancrent ici).
-    const selfC = enemy; // soi (auto-buff / invocation centrée sur soi)
-    for (const sp of support) {
-      if (sp.cat === 'heal') {
-        // SOIN : un allié (ou soi) BLESSÉ, à portée + LdV, dont les PB MANQUANTS justifient le soin. Utilité ∝
-        // PB réellement récupérables (min(soin, manquants)) → on ne soigne PAS un allié quasi plein (anti-spam
-        // naturel : manquants ≈ 0 → utilité ≈ 0, battue par n'importe quelle attaque utile).
-        const friends = [selfC, ...squad];
-        for (const f of friends) {
+
+  // === SORTS (énumération UNIFIÉE, op-driven) — un évaluateur unique, plus de planner par-catégorie ====
+  // Pour CHAQUE sort connu NON déjà actif (Unicité RAW, LDB 46 l.116-121 / 40 l.16-19), on dérive des
+  // candidats `cast`/`castArea`/`focus` scorés par `spellActionValue` (Σ valeur des GameOp × fiabilité ×
+  // opposition). La POLARITÉ (offensif/bénéfique) et la valeur viennent des OPS, jamais d'un nom de sort
+  // ni d'une catégorie. Un FRÉNÉTIQUE ne lance AUCUN sort (Frénésie LDB 21 l.34) → on saute le bloc.
+  if (!frenzied) {
+    for (const sp of spells) {
+      if (sp.active) continue; // Unicité : un effet/une invocation de CE sort est déjà actif → on ne le relance pas
+      const ctx = { landProb: sp.landProb, refEnemy, horizon: HORIZON };
+      if (sp.shape === 'self') {
+        // Sur soi (auto-buff / invocation centrée / auto-soin) : gardé par valeur > 0 (anti-spam naturel).
+        if (sp.focusState !== 'focusable') {
+          const v = spellActionValue(enemy, sp.data, { kind: 'self' }, ctx);
+          if (v > 0) candidates.push({ action: { kind: 'cast', targetId: enemy.id, spell: sp.id }, kind: 'cast', utility: v, targetId: enemy.id, coord: pos });
+        }
+      } else if (typeof sp.shape === 'object') {
+        // ZdE : on choisit le CENTRE au meilleur NET. Une AoE pleut sur TOUS dans le rayon (indiscriminée,
+        // RAW) → un sort OFFENSIF marque `Σ dégâts ENNEMIS − Σ TIR AMI` (alliés/soi pris dans le rayon) ;
+        // un sort BÉNÉFIQUE (buff/soin de ZONE, ex. Prouesses Martiales) marque `Σ valeur aux ALLIÉS
+        // couverts`. Pas de cast si net ≤ 0 (anti tir-ami suicidaire / buff qui ne couvre personne d'utile).
+        if (sp.focusState !== 'focusable') {
+          const radius = sp.shape.area.radius;
+          const offensiveZde = spellIsOffensive(sp.data);
+          const allies = [enemy, ...squad].filter((a) => a.pos);
+          const inRadius = (center: Pt, p: Pt) => chebyshev(center, p) <= radius;
+          let best: { center: Pt; net: number } | null = null;
+          for (const cand of offensiveZde ? shootableHeroes : allies) {
+            const center = cand.pos!;
+            if (sp.range != null && chebyshev(pos, center) > sp.range) continue;
+            if (!losAt(center)) continue;
+            let net: number;
+            if (offensiveZde) {
+              const foesIn = shootableHeroes.filter((e) => inRadius(center, e.pos!));
+              const allyFire = allies.reduce((s, a) => inRadius(center, a.pos!) ? s + sp.landProb * finite(expectedSpellOutput(enemy, a, sp.data), 0) : s, 0);
+              net = spellActionValue(enemy, sp.data, { kind: 'area', covered: foesIn }, ctx) - allyFire;
+            } else {
+              net = spellActionValue(enemy, sp.data, { kind: 'area', covered: allies.filter((a) => inRadius(center, a.pos!)) }, ctx);
+            }
+            if (!best || net > best.net) best = { center, net };
+          }
+          if (best && best.net > 0) candidates.push({ action: { kind: 'castArea', spell: sp.id, center: best.center }, kind: 'castArea', utility: best.net, targetId: '', coord: best.center });
+        }
+      } else if (sp.focusState === 'focusable') {
+        // Focalisation (LDB 46) : sort arcanique de forte valeur, peu fiable d'un jet — on y consacre le
+        // tour plutôt que de rater un NI hors d'atteinte, sauf menacé au contact avec un repli (l.193).
+        const contactFallback = adjacentFoes.length > 0 && (hasMeleeWeapon || canShoot);
+        if (!contactFallback && refEnemy) {
+          // Utilité = valeur ESCOMPTÉE du sort une fois focalisé (NI 0 → fiabilité ~1), actualisée (½ :
+          // un tour investi + risque d'interruption). Borne ≥ 0.
+          const fv = 0.5 * spellActionValue(enemy, sp.data, { kind: 'unit', subject: refEnemy }, { landProb: 1, refEnemy, horizon: HORIZON });
+          candidates.push({ action: { kind: 'focus', spell: sp.id }, kind: 'focus', utility: Math.max(0, fv), targetId: '', coord: null });
+          committingPrep = true;
+        }
+      } else if (spellIsOffensive(sp.data)) {
+        // OFFENSIF mono-cible (none/ready) : UN candidat par cible visible + à portée. Le sort passe par
+        // `attackUtility` (sa valeur + menace de la cible + killSecure − overkill, comme un tir/une mêlée).
+        for (const t of restrict(shootableHeroes).filter((h) => sp.range == null || fpDist(h) <= sp.range)) {
+          const v = spellActionValue(enemy, sp.data, { kind: 'unit', subject: t }, ctx);
+          candidates.push({ action: { kind: 'cast', targetId: t.id, spell: sp.id }, kind: 'cast', utility: attackUtility(t, { kind: 'spell', value: v }), targetId: t.id, coord: t.pos ?? null });
+        }
+      } else {
+        // BÉNÉFIQUE mono-cible (soin/buff sur un allié) : soi + escouade en portée + LdV ; gardé par valeur > 0.
+        for (const f of [enemy, ...squad]) {
           if (!f.pos) continue;
-          const missing = Math.max(0, f.wounds.max - f.wounds.current);
-          if (missing <= 0) continue; // allié plein → jamais de soin (repli attaque)
-          if (f.id !== selfC.id && (!inSpellRange(sp, f) || !sees(f))) continue;
-          const recoverable = Math.min(sp.magnitude, missing);
-          const u = Weff.healValue * recoverable;
-          candidates.push({ action: { kind: 'cast', targetId: f.id, spell: sp.id }, kind: 'cast', utility: u, targetId: f.id, coord: f.pos });
-        }
-      } else if (sp.cat === 'buffSelf') {
-        // BUFF sur SOI : pas si déjà actif (anti-spam via activeEffects). Utilité = magnitude du buff.
-        if (!hasActiveSpell(selfC, sp.id)) {
-          candidates.push({ action: { kind: 'cast', targetId: selfC.id, spell: sp.id }, kind: 'cast', utility: Weff.buffValue * sp.magnitude, targetId: selfC.id, coord: pos });
-        }
-      } else if (sp.cat === 'buffAlly') {
-        // BUFF sur un ALLIÉ pertinent (à portée + LdV, n'a PAS déjà le buff). On privilégie un allié qui peut
-        // AGIR/attaque (a une arme) — proxy simple : tout allié vivant. À soi en repli si aucun allié éligible.
-        const friends = [...squad, selfC];
-        for (const f of friends) {
-          if (!f.pos || hasActiveSpell(f, sp.id)) continue; // déjà buffé → on ne réapplique pas
-          if (f.id !== selfC.id && (!inSpellRange(sp, f) || !sees(f))) continue;
-          candidates.push({ action: { kind: 'cast', targetId: f.id, spell: sp.id }, kind: 'cast', utility: Weff.buffValue * sp.magnitude, targetId: f.id, coord: f.pos });
-        }
-      } else if (sp.cat === 'debuff') {
-        // DÉBUFF d'un héros : le plus MENAÇANT à portée + LdV qui ne porte PAS déjà tous les États du sort
-        // (anti-spam). Utilité = valeur de contrôle de l'État × menace de la cible (priorise le dangereux).
-        // VIVIER = héros VISIBLES filtrés par la portée PROPRE du sort de débuff (`inSpellRange(sp,…)`) — PAS
-        // `castPool` (filtré par la portée du missile offensif, qui clipperait un débuff de plus longue portée).
-        const ctrl = controlValueOf(sp.condNames) || sp.magnitude;
-        const pool = restrict(fpick ? [fpick] : shootableHeroes).filter((h) => inSpellRange(sp, h) && sees(h) && !alreadyDebuffed(h, sp.condNames ?? []));
-        for (const h of pool) {
-          const u = Weff.debuffValue * ctrl * (1 + 0.1 * finite(targetThreat(enemy, h), 0));
-          candidates.push({ action: { kind: 'cast', targetId: h.id, spell: sp.id }, kind: 'cast', utility: u, targetId: h.id, coord: h.pos ?? null });
-        }
-      } else if (sp.cat === 'summon') {
-        // INVOCATION (sur soi/zone — résolue par castSpell self) : SOBRE et anti-boucle. Utilité ∝ nb de
-        // créatures, MAJORÉE par l'INFÉRIORITÉ numérique (ratio héros/alliés) — on renforce ses rangs quand
-        // on est en sous-nombre. PLAFOND anti-spam : si l'IA a DÉJÀ nettement plus d'alliés que de héros
-        // (escouade+soi ≥ 1,5× héros), l'invocation ne vaut rien (on n'empile pas une armée).
-        const allies = squad.length + 1; // + soi
-        const foes = Math.max(1, heroes.length);
-        // INFÉRIORITÉ STRICTE seulement (foes > allies) : à parité/supériorité, invoquer ne vaut rien (on
-        // ne renforce pas une armée déjà suffisante — anti-boucle d'invocation). Le facteur = l'AMPLEUR du
-        // sous-nombre (foes/allies − 1), borné, → plus on est débordé, plus l'invocation pèse.
-        const outnumberedFactor = Math.max(0, foes / allies - 1);
-        const u = Weff.summonValue * sp.magnitude * outnumberedFactor;
-        if (u > 0) {
-          candidates.push({ action: { kind: 'cast', targetId: selfC.id, spell: sp.id }, kind: 'cast', utility: u, targetId: selfC.id, coord: pos });
+          if (f.id !== enemy.id && (!(sp.range == null || fpDist(f) <= sp.range) || !losAt(f.pos))) continue;
+          const v = spellActionValue(enemy, sp.data, { kind: 'unit', subject: f }, ctx);
+          if (v > 0) candidates.push({ action: { kind: 'cast', targetId: f.id, spell: sp.id }, kind: 'cast', utility: v, targetId: f.id, coord: f.pos });
         }
       }
-      // `other` (utilitaire non décisif) : pas de candidat dédié — repli attaque (jamais de boucle de sort
-      // inutile). Le sort reste « visible » via le plan, mais l'IA ne le joue pas faute de gain mesurable.
     }
   }
 
@@ -1004,33 +824,60 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       candidates.push({ action: { kind: 'shoot', targetId: t.id }, kind: 'shoot', utility: attackUtility(t, { kind: 'ranged', weapon: rangedW, dist: fpDist(t) }), targetId: t.id, coord: t.pos ?? null });
     }
   }
-  // Mêlée / approche : énumère un candidat de MÊLÉE par cible déjà au contact ET un candidat d'APPROCHE
-  // (move) par cible atteignable ce tour (Lot 3). La cible suit le vivier (tireur retenu au contact frappe
-  // l'adversaire à son contact ; sinon vivier complet). Un sort/tir jouable PRIME (parité historique : la
-  // cascade ne propose alors jamais de mêlée/move) — on ne produit ces candidats que si `!canCast && !canShoot`.
+  // === MÊLÉE / APPROCHE / REPOSITION =================================================================
+  // Plus de gate `!canCast && !canShoot` : un lanceur/tireur peut AUSSI frapper au contact (acculé) ou se
+  // REPOSITIONNER (kiting/repli). Le biais `TIER` (cast < shoot < melee < move) garantit qu'un coup jouable
+  // prime à utilité comparable.
   const meleeWeapon = enemy.weapons.find((w) => w.type === 'melee') ?? enemy.weapons[0];
-  if (!canCast && !canShoot && !committingPrep) {
-    const heldInMelee = hasRanged && adjacentFoes.length > 0;
-    const here = heldInMelee ? adjacentFoes : heroes.filter(meleeReachableNow);
-    const baseVivier = here.length ? here : heroes;
-    const vivier = restrict(fpick ? [fpick] : baseVivier);
-    // Estimation d'attaque pour scorer une cible (utilité d'arme de mêlée si on en a une, sinon menace
-    // seule — un caster hors de portée qui s'approche n'a pas de dégât d'arme mais score la menace/fragilité).
-    const targetUtility = (t: Combatant): number =>
-      meleeWeapon ? attackUtility(t, { kind: 'melee', weapon: meleeWeapon }) : (Weff.threat * finite(targetThreat(enemy, t), 0) - (isNeutralized(t) ? Weff.overkill : 0));
-    for (const t of vivier) {
-      if (hasMeleeWeapon && meleeWeapon && inMelee(t)) {
-        // Cible déjà au contact → frappe (position déjà acquise, pas de bonus de déplacement).
-        candidates.push({ action: { kind: 'melee', targetId: t.id }, kind: 'melee', utility: attackUtility(t, { kind: 'melee', weapon: meleeWeapon }), targetId: t.id, coord: t.pos ?? null });
-      } else {
-        // Cible non au contact (ou sans arme de mêlée — caster qui doit se rapprocher) → candidats
-        // d'APPROCHE : utilité = utilité d'attaque de la cible + positionnement de la case − distance résiduelle.
-        const atk = targetUtility(t);
-        for (const { to, posV } of approachCandidates(t)) {
-          const u = atk + posV - Weff.approachDist * manhattan(to, t.pos!);
-          candidates.push({ action: { kind: 'move', to, thenTargetId: t.id }, kind: 'move', utility: u, targetId: t.id, coord: to });
-        }
+  // Sorts OFFENSIFS mono-cible lançables d'un jet — pour savoir si une cible est « frappable sur place ».
+  const offensiveSingles = spells.filter((sp) => !sp.active && sp.shape === 'single' && sp.focusState !== 'focusable' && spellIsOffensive(sp.data));
+  // Une cible est ATTAQUABLE ce tour (mêlée au contact, tir, ou sort offensif en portée) → on ne s'en
+  // APPROCHE pas (on la frappe sur place) — c'est ce qui fait kiter un tireur/lanceur (il n'avance que vers
+  // l'inatteignable).
+  const attackableNow = (t: Combatant): boolean =>
+    (hasMeleeWeapon && !!meleeWeapon && inMelee(t))
+    || (canShoot && shootPool.includes(t))
+    || (canCast && shootableHeroes.includes(t) && offensiveSingles.some((sp) => sp.range == null || fpDist(t) <= sp.range));
+
+  // MÊLÉE + APPROCHE — UN vivier hate-restreint (LDB 21) ; MÊLÉE pour les cibles au contact, APPROCHE
+  // (suspendue en PRÉPARATION) pour les cibles non attaquables ce tour.
+  const heldInMelee = hasRanged && adjacentFoes.length > 0;
+  const here = heldInMelee ? adjacentFoes : heroes.filter(meleeReachableNow);
+  const baseVivier = here.length ? here : heroes;
+  const vivier = restrict(fpick ? [fpick] : baseVivier);
+  // Estimation d'attaque pour scorer une cible (utilité d'arme de mêlée si on en a une, sinon menace seule
+  // — un caster hors de portée qui s'approche n'a pas de dégât d'arme mais score la menace/fragilité).
+  const targetUtility = (t: Combatant): number =>
+    meleeWeapon ? attackUtility(t, { kind: 'melee', weapon: meleeWeapon }) : (Weff.threat * finite(targetThreat(enemy, t), 0) - (isNeutralized(t) ? Weff.overkill : 0));
+  for (const t of vivier) {
+    if (hasMeleeWeapon && meleeWeapon && inMelee(t)) {
+      // Cible déjà au contact → frappe (position déjà acquise, pas de bonus de déplacement).
+      candidates.push({ action: { kind: 'melee', targetId: t.id }, kind: 'melee', utility: attackUtility(t, { kind: 'melee', weapon: meleeWeapon }), targetId: t.id, coord: t.pos ?? null });
+    } else if (!committingPrep && !attackableNow(t)) {
+      // Cible non attaquable ce tour → candidats d'APPROCHE : utilité d'attaque + positionnement − distance.
+      const atk = targetUtility(t);
+      for (const { to, posV } of approachCandidates(t)) {
+        const u = atk + posV - Weff.approachDist * manhattan(to, t.pos!);
+        candidates.push({ action: { kind: 'move', to, thenTargetId: t.id }, kind: 'move', utility: u, targetId: t.id, coord: to });
       }
+    }
+  }
+
+  // REPOSITION (kiting/repli, NOUVEAU) : un lanceur/tireur se replace pour une MEILLEURE ligne de tir, un
+  // couvert, ou pour fuir le danger (LDB 15-Dépl). Candidat émis SEULEMENT si amélioration STRICTE de
+  // position (`posV > 0`) — en scène neutre il n'y a rien à gagner → aucun candidat (parité golden).
+  if ((canCast || canShoot) && !committingPrep && !frenzied && refEnemy) {
+    // AMÉLIORATION STRICTE vs rester sur place : `positionValue` mêle de l'absolu (portée préférée, flanc)
+    // et du delta (couvert, déjà relatif à `pos`) ; le DELTA `to − pos` annule l'absolu commun → 0 en scène
+    // neutre (rien à gagner) ⇒ aucun candidat (parité golden), positif seulement si `to` gagne couvert/
+    // portée/sécurité. C'est ce gain net qui fait kiter/se replier un lanceur exposé.
+    const posHere = positionValue(pos, refEnemy);
+    for (const k of reach.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      if (x === pos.x && y === pos.y) continue;
+      const to = { x, y };
+      const gain = positionValue(to, refEnemy) - posHere;
+      if (gain > 0) candidates.push({ action: { kind: 'move', to, thenTargetId: refEnemy.id }, kind: 'move', utility: gain, targetId: refEnemy.id, coord: to });
     }
   }
 

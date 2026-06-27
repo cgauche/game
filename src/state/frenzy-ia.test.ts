@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { chooseEnemyAction, EnemyTurnInput } from './ai';
+import { chooseEnemyAction, EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene } from './scene';
 import { useGame } from './store';
 import { aiMaybeFrenzy, aiFrenzyAttack } from './combatFlow';
@@ -8,6 +8,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant, Weapon } from '../engine/types';
+import type { SpellData } from '../data';
 
 const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
@@ -23,9 +24,15 @@ function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, o
   } as Combatant;
 }
 
+/** Invocation alliée RÉSOLUE (shape 'self', op summon sur 'caster'). */
+function summonSpell(): CastableSpell {
+  const data = { id: 'invoc', label: 'Invocation', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, effects: { kind: 'do', effect: { type: 'ops', on: 'caster', ops: [{ op: 'summon', ref: 'Loup', count: 1, allyOfCaster: true }] } } } as unknown as SpellData;
+  return { id: 'invoc', data, cn: 0, range: 0, shape: 'self', landProb: 1, focusState: 'none', active: false };
+}
+
 const scene = emptyScene(12, 12);
 function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
-  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, ...extra };
+  return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
 
 describe('Frénésie IA — cible la plus proche (chooseEnemyAction, pur, LDB 21 l.34)', () => {
@@ -45,6 +52,23 @@ describe('Frénésie IA — cible la plus proche (chooseEnemyAction, pur, LDB 21
     const action = chooseEnemyAction(input(e, [near, far]));
     const tid = (action as { targetId?: string; thenTargetId?: string }).targetId ?? (action as { thenTargetId?: string }).thenTargetId;
     expect(tid).toBe('far');
+  });
+});
+
+describe('Frénésie IA — ORDRE (report tant qu’un sort prime, Couche 3)', () => {
+  // PRÉDICAT du report (aiWouldPrepareSpell = action ∈ {cast,castArea,focus}) au niveau PUR : pas encore
+  // frénétique (le peek tourne AVANT l'entrée), une invocation jouable + héros loin → l'IA PRÉPARE le sort
+  // (cast), donc la Frénésie est différée. Sans sort → mêlée/approche (pas de report).
+  it('un sort jouable (invocation, héros loin) → la meilleure action est `cast` (→ report de Frénésie)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] }); // pas encore frénétique
+    const h = mk('h', 'hero', { x: 5, y: 11 }); // loin → ni mêlée ni bonne approche
+    expect(chooseEnemyAction(input(e, [h], { spells: [summonSpell()] })).kind).toBe('cast');
+  });
+
+  it('sans sort jouable → la meilleure action n’est PAS un sort (pas de report)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE] });
+    const h = mk('h', 'hero', { x: 5, y: 11 });
+    expect(['cast', 'castArea', 'focus']).not.toContain(chooseEnemyAction(input(e, [h])).kind);
   });
 });
 
@@ -99,6 +123,36 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     E.characteristics.FM = 99; // mais aucun trait/talent « Frénésie »
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
     expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(false);
+  });
+
+  // ORDRE (Couche 3) : le report passe par le store (`aiWouldCast`). Un ennemi frénésie-CAPABLE dont la
+  // meilleure action est un SORT (ici un Projectile sur le héros, seule action d'un lanceur DÉSARMÉ) ne
+  // frénésie PAS — il lance son sort d'abord (l'Unicité retirera les sorts un à un avant de charger).
+  it('aiMaybeFrenzy : un sort jouable prime (aiWouldCast vrai) → REPORTE la Frénésie', () => {
+    useGame.getState().seedRng(5);
+    const { H, E } = setupBattle();
+    E.traits = [{ id: 'frenesie' }];
+    E.characteristics.FM = 99; E.characteristics.Int = 60; // FM → entrerait sinon en Frénésie ; Int → incantation fiable
+    E.skills = [{ skillId: 'langue', spec: 'Magick', advances: 40, characteristic: 'Int' } as never];
+    E.spells = ['flechette']; // Projectile magique (NI 0 → fiable), offensif
+    E.weapons = []; // DÉSARMÉ → aucune mêlée concurrente ; le sort est la seule action
+    E.pos = { x: 10, y: 7 }; H.pos = { x: 10, y: 10 }; // héros en LdV, à 3 cases (en portée du sort, hors mêlée)
+    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    expect(useGame.getState().aiWouldCast(E.id)).toBe(true); // sa meilleure action est un sort
+    aiMaybeFrenzy(useGame.getState, useGame.setState, E);
+    expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(false); // reporté
+  });
+
+  it('aiMaybeFrenzy : AUCUN sort jouable (aiWouldCast faux) → entre bien en Frénésie', () => {
+    useGame.getState().seedRng(5);
+    const { E } = setupBattle();
+    E.traits = [{ id: 'frenesie' }];
+    E.characteristics.FM = 99;
+    E.spells = []; // rien à préparer
+    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    expect(useGame.getState().aiWouldCast(E.id)).toBe(false);
+    aiMaybeFrenzy(useGame.getState, useGame.setState, E);
+    expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(true);
   });
 
   it('aiFrenzyAttack : attaque de mêlée LIBRE (ne consomme pas l’Action) contre un adversaire adjacent', () => {

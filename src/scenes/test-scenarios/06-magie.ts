@@ -6,18 +6,29 @@ import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 import type { Combatant, CharKey, SkillInstance, TalentInstance } from '../../engine/types';
 
-const scene = arena({ id: 'test-magie', nom: 'Magie — sorcière elfe & prêtres', w: 18, h: 12, heroStart: { x: 2, y: 6 } });
+const scene = arena({ id: 'test-magie', nom: 'Magie — sorcière elfe & prêtres', w: 30, h: 22, heroStart: { x: 3, y: 11 } });
 scene.startMessage = 'Casters de haut niveau : invoquez (Réanimation, Hurlement du loup), enchantez, drainez, corrompez.';
 // Ennemis VIVANTS uniquement (pas de Mort-vivant) → aucun Test de Peur au début de combat, qui
 // interromprait la recette des sorts. La Nécromancie reste testable : les invoqués sont des ALLIÉS.
+// Grande arène + warband VARIÉE en 3 clusters à distances différentes : éprouve la VARIÉTÉ des sorts,
+// le ciblage d'AoE NET (ne pas se canarder), la Focalisation des gros sorts, et le positionnement.
 setEncounters(scene, [
   {
     id: 'enc-magie',
     enemies: [
-      { ref: 'Bandit de Grand Chemin', pos: { x: 12, y: 4 } },
-      { ref: 'Bandit de Grand Chemin', pos: { x: 14, y: 5 } },
-      { ref: 'loup', pos: { x: 12, y: 8 } },
-      { ref: 'loup', pos: { x: 13, y: 6 } },
+      // Meute de bêtes (rapides, chargent) — flanc haut.
+      { ref: 'Loup', pos: { x: 20, y: 7 } },
+      { ref: 'Loup', pos: { x: 21, y: 8 } },
+      { ref: 'Sanglier', pos: { x: 22, y: 6 } },
+      // Mob peau-verte — centre groupé (cible de choix pour une ZdE bien posée).
+      { ref: 'Orc', pos: { x: 25, y: 11 } },
+      { ref: 'Orc', pos: { x: 26, y: 12 } },
+      { ref: 'Gobelin', pos: { x: 24, y: 13 } },
+      { ref: 'Gobelin', pos: { x: 25, y: 14 } },
+      // Hors-la-loi + bestiaux — flanc bas.
+      { ref: 'Bandit de Grand Chemin', pos: { x: 23, y: 16 } },
+      { ref: 'Brigand', pos: { x: 24, y: 17 } },
+      { ref: 'Ungor', pos: { x: 27, y: 9 } },
     ],
   },
 ]);
@@ -89,17 +100,17 @@ function makeMagicParty(): Combatant[] {
   ];
   sorc.appearance = { species: 'Hauts Elfes', sex: 'F', build: 0.38 };
   sorc.species = 'Hauts Elfes';
-  sorc.pos = { x: 2, y: 5 };
+  sorc.pos = { x: 3, y: 9 };
 
   // — Prêtres COMPLETS (toutes leurs Bénédictions ET Miracles, talents de culte) —
   const sigmar = makePriest(ans, 'pr-sigmar', 'Frère Anselm, Grand Prêtre', 'Sigmar', { Soc: 68, FM: 60, F: 45, E: 45 });
-  sigmar.pos = { x: 2, y: 6 };
+  sigmar.pos = { x: 2, y: 11 };
   const ulric = makePriest(ans, 'pr-ulric', "Wulfric, Prêtre d'Ulric", 'Ulric', { Soc: 66, FM: 58, F: 48, E: 48 });
   ulric.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.62 };
-  ulric.pos = { x: 2, y: 7 };
+  ulric.pos = { x: 3, y: 13 };
 
   const grunni = clone(tueur);
-  grunni.pos = { x: 3, y: 6 };
+  grunni.pos = { x: 4, y: 11 };
 
   return [sorc, sigmar, ulric, grunni];
 }

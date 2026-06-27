@@ -29,6 +29,7 @@ import {
 import { psychologyLabel } from '../../data';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
 import { fireTriggers, hasFoeInLoS } from '../triggeredEffects';
+import { aiDriven } from '../combatGate';
 import { t } from '../../i18n';
 import type { Combatant } from '../../engine/types';
 import type { Get, Set as SetFn } from '../flowTypes';
@@ -68,8 +69,13 @@ function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, tr
  *  Mentale ; sur un succès, il entre en Frénésie (état psy `frenesie` posé en `psychState`). La SORTIE est
  *  un effet déclenché `onTurnStart` en DONNÉES (`psychology.json`) — plus de hook `end-frenzy` par-nom. */
 export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || isFrenzied(enemy) || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
+  if (!aiDriven(get(), enemy) || isFrenzied(enemy) || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
   if (!hasFoeInLoS(get, enemy)) return; // adversaire vivant en Ligne de Vue (primitive partagée, sens acteur→foe)
+  // RAW : l'entrée en Frénésie est un CHOIX (psychologie.md l.170) → l'IA la DIFFÈRE tant que sa meilleure
+  // action est de PRÉPARER un sort (buff/invocation/dégâts). L'Unicité les retire un à un ; quand il ne reste
+  // que charger, la Frénésie passe au tour suivant. Peek déterministe, sans RNG (avant le test FM) → aucune
+  // perturbation du flux `battleRng` quand on diffère, golden RNG préservé sinon.
+  if (get().aiWouldCast(enemy.id)) return;
   if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
     (enemy.psychState ??= []).push({ type: 'frenesie' });
     set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnter', { name: enemy.name }), enemy.id)] } });
