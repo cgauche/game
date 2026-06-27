@@ -281,6 +281,10 @@ export interface Weapon {
    *  était DÉJÀ porté (MDG ch.12 l.460 : −10/Défaut redoublé). Posée par `crewedFireWeapon`, ajoutée aux
    *  modificateurs de touche par `attackModifiers` (comme Précise, mais négative). Absent = aucune. */
   crewedTohitPenalty?: number;
+  /** Gantelet verrouillé (AA folio 94) : Round où le porteur a évité de LÂCHER cette arme (anti-lâcher).
+   *  Tant que `round ≤ gauntletSavedRound + 1` (période de « 1 Round min »), un SECOND lâcher forcé fait
+   *  tomber l'arme ; au-delà, la protection se réarme. Marqueur transitoire posé/lu par `applyBladeTrap`. */
+  gauntletSavedRound?: number;
 }
 
 /** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;

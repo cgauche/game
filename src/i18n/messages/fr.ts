@@ -485,6 +485,7 @@ export const fr = {
   'cf.bladeResists': '{weapon} résiste à la casse (Incassable/Solide) mais est arrachée des mains de {name}.',
   'cf.bladeTrapLabel': 'Piège-lame',
   'cf.weaponDropped': '{name} laisse tomber {weapon}, arrachée de ses mains !',
+  'cf.lockedGauntletHold': 'Le gantelet verrouillé de {name} retient {weapon} (−20 à tous ses Tests avec cette arme pendant 1 Round).',
   'cf.roundHeader': '— Round {round} —',
   'cf.actLast': '{name} agira en dernier ce Round (Maladresse).',
   'cf.roundEndTitle': 'Fin du Round {n}',

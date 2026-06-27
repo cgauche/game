@@ -96,7 +96,7 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, type SpellData } from '../data';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, type SpellData } from '../data';
 import { applyHullCritical } from '../engine/shipCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
@@ -3562,6 +3562,20 @@ export function finishCombatEnd(get: Get, set: SetFn): void {
   set({ battle: { ...get().battle!, over: 'defeat', log: [...get().battle!.log, ev('info', tr('cf.defeat'))] } });
 }
 
+/** Gantelet verrouillé (AA folio 94) — anti-lâcher GÉNÉRIQUE (capacité lue en DONNÉE `preventForcedDrop`,
+ *  jamais par le nom de l'objet). Renvoie true si le porteur GARDE l'arme `drop` (la 1re fois dans la période
+ *  de « 1 Round minimum » — il subit alors −20 pendant 1 Round, journalisé par l'appelant) ; false s'il doit
+ *  la LÂCHER (aucun gantelet, ou SECOND évènement de lâcher pendant la période). Pose/réarme le marqueur
+ *  transitoire `drop.gauntletSavedRound`. */
+function lockedGauntletHolds(wielder: Combatant, drop: Weapon, round: number): boolean {
+  const hasGauntlet = (wielder.items ?? []).some((i) => !!i.trappingId && !!findTrappingById(i.trappingId)?.preventForcedDrop);
+  if (!hasGauntlet) return false;
+  const saved = drop.gauntletSavedRound;
+  if (saved != null && round <= saved + 1) { drop.gauntletSavedRound = undefined; return false; } // 2e évènement dans la période → lâche
+  drop.gauntletSavedRound = round; // 1re sauvegarde (ou période écoulée → réarmement) : garde l'arme, −20/1 Round
+  return true;
+}
+
 /**
  * Conséquence PROCÉDURALE d'un Test opposé de Piège-lame GAGNÉ par le défenseur (op `breakBlade`, hook
  * `bladeTrap`) : l'adversaire est désarmé de la lame visée (`bt.weaponUid`), arrachée de ses mains. Marge
@@ -3589,6 +3603,15 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
       : tr('cf.bladeResists', { weapon: drop.name, name: attacker.name });
   } else {
     line = tr('cf.weaponDropped', { name: attacker.name, weapon: drop.name });
+  }
+  // Gantelet verrouillé (AA folio 94) : anti-lâcher — la lame DÉTRUITE échappe à cette grâce (un gantelet
+  // ne sauve pas une arme brisée). Sinon, la 1re fois dans la période le porteur GARDE l'arme (−20/1 Round) ;
+  // le 2e évènement de lâcher la fait tomber. Capacité lue en DONNÉE (`preventForcedDrop`), jamais par nom.
+  if (!drop.destroyed && lockedGauntletHolds(attacker, drop, battle.round)) {
+    pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: '🛡️', label: tr('cf.bladeTrapLabel'), outcome: [tr('cf.lockedGauntletHold', { name: attacker.name, weapon: drop.name })], interactive: true });
+    bus.emit(EVT.SCENE_DIRTY);
+    checkBattleOver(get, set);
+    return;
   }
   attacker.weapons = attacker.weapons.filter((w) => w !== drop);
   // Étape d'AFFICHAGE empilée (comme un Coup Critique) : visible « l'un sous l'autre », acquittée par le

@@ -412,6 +412,139 @@
     }
   },
   {
+    "id": "cimeterre",
+    "label": "Cimeterre",
+    "type": "melee",
+    "subType": "base",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Courte",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "taillade",
+        "spec": "1A"
+      }
+    ],
+    "desc": "Populaire dans l'est de l'Empire, à Kislev et en Arabie, le cimeterre est doté d'une lame courbe capable d'infliger de terribles blessures tranchantes. Certes, sa forme réduit la capacité de fente et d'estoc de celui qui le manie, ce qui signifie que même si les cimeterres font à peu près la même longueur que les épées droites, ils ont une Allonge plus courte.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 91
+    }
+  },
+  {
+    "id": "dague-ballock",
+    "label": "Dague ballock",
+    "type": "melee",
+    "subType": "base",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
+    "qualities": [
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "precise"
+      }
+    ],
+    "desc": "La lame courte et fine d'une dague ballock en fait une arme bien modeste, à moins que votre adversaire en armure lourde soit à votre merci.",
+    "price": {
+      "gold": 0,
+      "silver": 16,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 91
+    }
+  },
+  {
+    "id": "massue",
+    "label": "Massue",
+    "type": "melee",
+    "subType": "base",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "desequilibree"
+      },
+      {
+        "id": "inoffensive"
+      }
+    ],
+    "desc": "Les massues sont aussi souvent improvisées que fabriquées. Le prix indiqué concerne le cas de figure où l'acheteur a besoin de cette arme très rapidement, mais si un Personnage se trouve dans un environnement boisé, il peut se procurer lui-même une massue en réussissant un Test étendu de Survie en extérieur Intermédiaire (+0) nécessitant un total de 7 DR.",
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 91
+    }
+  },
+  {
+    "id": "pique-d-armes",
+    "label": "Pique d'armes",
+    "type": "melee",
+    "subType": "base",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "desequilibree"
+      },
+      {
+        "id": "perforante"
+      }
+    ],
+    "desc": "Les pioches grossières sont à peine plus qu'un pic de métal au bout d'un bâton, mais les armes mieux fabriquées sont forgées dans de l'acier. Les pioches sont peu maniables, mais sont bien conçues pour fendre les armures.",
+    "price": {
+      "gold": 0,
+      "silver": 15,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 91
+    }
+  },
+  {
     "id": "lance-de-cavalerie",
     "label": "Lance de cavalerie",
     "type": "melee",
@@ -3658,7 +3791,17 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "desc": "Les bésicles de verre dotées de poignées confèrent un bonus de +20 aux Tests de Lire/Écrire pour déchiffrer une écriture minuscule ou inintelligible. Les Tests de Perception pour chercher des détails précis, tels qu'une porte ou un",
+    "skillBonus": [
+      {
+        "skill": "langue",
+        "value": 20
+      },
+      {
+        "skill": "perception",
+        "value": 20
+      }
+    ],
+    "desc": "Les bésicles de verre dotées de poignées confèrent un bonus de +20 aux Tests de Lire/Écrire pour déchiffrer une écriture minuscule ou inintelligible. Les Tests de Perception pour chercher des détails précis, tels qu'une porte ou un compartiment secret reçoivent aussi un bonus de +20.",
     "price": {
       "gold": 3,
       "silver": 0,
@@ -8060,6 +8203,7 @@
         "id": "inoffensive"
       }
     ],
+    "preventForcedDrop": true,
     "desc": "Un gantelet verrouillé est formé de plaques d'acier recouvrant le poing et peut être maintenu en position fermée par une vis ou un loquet. Il peut certes servir d'arme de bagarre, mais il est surtout employé comme méthode pour s'assurer que celui qui le porte ne lâche pas une arme tenue dans la main gantée. Un gantelet verrouillé peut être acheté en tant que partie d'une armure de plates pour un bras. Ajoutez le prix du gantelet verrouillé à celui de l'armure, mais utilisez seulement l'Encombrement de l'armure elle-même ; le gantelet verrouillé ne rajoute pas de poids significatif.\n\nUn Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). Si pendant cette période un nouvel évènement se produit qui aurait encore une fois dû le contraindre à lâcher l'objet, il le lâche même s'il porte un gantelet verrouillé.",
     "price": {
       "gold": 1,
@@ -8068,7 +8212,7 @@
     },
     "source": {
       "book": "AA",
-      "page": 90
+      "page": 94
     }
   },
   {

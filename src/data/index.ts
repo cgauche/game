@@ -252,6 +252,15 @@ export interface TrappingData {
   /** Source de lumière PORTÉE (brouillard de guerre) : rayon d'éclairage en cases tant que l'objet est
    *  dans l'inventaire. Bougie 5 / Lanterne 10 (= 10/20 m, `LDB 74 l.72`/`LDB 75 l.15`, échelle 1 case=2 m). */
   light?: { radiusTiles: number };
+  /** Gantelet verrouillé (AA folio 94) : le porteur NE LÂCHE PAS l'arme tenue dans la main gantée la 1re
+   *  fois que les circonstances l'y forceraient (désarmement / Piège-lame) — il subit −20 pendant 1 Round
+   *  (min) à la place ; un SECOND évènement de lâcher pendant cette période fait tomber l'arme. Lu
+   *  GÉNÉRIQUEMENT par le moteur de combat (`applyBladeTrap`), jamais par le nom de l'objet. */
+  preventForcedDrop?: boolean;
+  /** Bonus de Compétence conféré tant que l'objet est porté (LDB 67/68 — Bésicles : +20 Lire/Écrire &
+   *  Perception). `skill` = `id` STABLE d'une Compétence (`skills.json`). Sommé dans `engine/skills.testValue`
+   *  pour TOUT Test de la Compétence ciblée. */
+  skillBonus?: { skill: string; value: number }[];
 }
 /** Groupe d'objet (taxonomie `subType` id-ifiée) : Groupe d'ARME (Base, Escrime, Deux-mains, Armes
  *  d'hast…), famille de MUNITION (Arc, Arbalète, Poudre noire…), type d'ARMURE (Plate, Mailles, Cuir
