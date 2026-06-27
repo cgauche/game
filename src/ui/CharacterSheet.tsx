@@ -6,6 +6,7 @@ import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel } from '../engine/items';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
+import { locationLabel } from '../engine/combat';
 import { effectiveChar, charBonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
@@ -489,7 +490,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             ))}
             {(hero.traumas ?? []).map((t, i) => (
               <div key={`t${i}`} className="inv-row" title={t.desc} style={{ alignItems: 'center' }}>
-                <span className="ir-name">🩼 {t.label}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
+                <span className="ir-name">🩼 {t.label}{t.location ? ` (${locationLabel(t.location, hero.bodyShape)})` : ''}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {t.recoveryDays != null
                     ? `convalescence ${t.recoveryDays} j`

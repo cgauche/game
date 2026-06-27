@@ -1,5 +1,5 @@
-import { HIT_LOCATION_LABELS } from '../engine/types';
-import type { HitLocation } from '../engine/types';
+import type { HitLocation, BodyShape } from '../engine/types';
+import { locationLabel } from '../engine/combat';
 import { maxForcedRoll } from '../engine/tests';
 
 /** Les 6 localisations d'un Coup Critique (ordre du tableau LDB). */
@@ -10,9 +10,11 @@ const CRIT_LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', '
  * obtenu via « Je ne faillirai pas ! », le joueur CHOISIT la localisation atteinte). Un seul endroit
  * d'affichage — les modales qui en ont besoin la posent (attaque), elles ne la recopient plus.
  */
-export function CritLocationPicker({ current, onSet }: {
+export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
   current?: HitLocation | null;
   onSet: (loc: HitLocation) => void;
+  /** Forme du corps de la cible → libellés de localisation adaptés (patte/aile… vs bras/jambe). */
+  shape?: BodyShape;
 }) {
   return (
     <div className="rm-options">
@@ -20,7 +22,7 @@ export function CritLocationPicker({ current, onSet }: {
       <div className="rm-loc-grid">
         {CRIT_LOCS.map((l) => (
           <button key={l} className={`btn small ${current === l ? 'btn-primary' : ''}`} onClick={() => onSet(l)}>
-            {HIT_LOCATION_LABELS[l]}
+            {locationLabel(l, shape)}
           </button>
         ))}
       </div>

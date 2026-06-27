@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react';
 import { useGame, movementRemaining } from '../../state/store';
 import { FLOWS } from '../../state/rollFlows';
-import { HitLocation, HIT_LOCATION_LABELS } from '../../engine/types';
-import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers } from '../../engine/combat';
+import { HitLocation } from '../../engine/types';
+import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
@@ -136,7 +136,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
             >
               <option value="">🎯 Au hasard</option>
               {LOCS.map((l) => (
-                <option key={l} value={l}>{HIT_LOCATION_LABELS[l]} (-10)</option>
+                <option key={l} value={l}>{locationLabel(l, target.bodyShape)} (-10)</option>
               ))}
             </select>
           </div>
@@ -201,7 +201,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
       />
     ) : undefined,
     forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
-    forcedExtra: res?.critical && pa.forced ? <CritLocationPicker current={res.critLocation} onSet={setCritLocation} /> : undefined,
+    forcedExtra: res?.critical && pa.forced ? <CritLocationPicker current={res.critLocation} onSet={setCritLocation} shape={target.bodyShape} /> : undefined,
     fortune: attacker.fortune ?? 0,
     freeReroll: freeRerollOf(attacker),
     rerollable,

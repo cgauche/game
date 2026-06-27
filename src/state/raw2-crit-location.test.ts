@@ -26,7 +26,7 @@ describe('applyCriticalToTarget — choix de localisation sur Coup Critique forc
     seedBattleRng(1);
     const log: string[] = [];
     applyCriticalToTarget(mk(), 'corps', true, 0, log, () => {}, 'tete');
-    expect(log.some((l) => l.includes('(Tête)'))).toBe(true); // localisation affichée en FR (HIT_LOCATION_LABELS)
+    expect(log.some((l) => l.includes('(Tête)'))).toBe(true); // localisation affichée en FR via locationLabel(loc, shape)
   });
 
   it('sans choix → localisation aléatoire (comportement inchangé), un critique est bien appliqué', () => {
@@ -34,6 +34,18 @@ describe('applyCriticalToTarget — choix de localisation sur Coup Critique forc
     const log: string[] = [];
     applyCriticalToTarget(mk(), 'corps', true, 0, log, () => {});
     expect(log.some((l) => l.includes('Blessure critique'))).toBe(true);
+  });
+});
+
+describe('applyCriticalToTarget — libellé de localisation adapté à la forme du corps (créatures)', () => {
+  it('critique sur quadrupède → localisation « (Membre antérieur droit) », jamais « (Bras droit) » humanoïde', () => {
+    seedBattleRng(1);
+    const log: string[] = [];
+    const t = mk();
+    t.bodyShape = 'quadrupede';
+    applyCriticalToTarget(t, 'corps', true, 0, log, () => {}, 'brasD'); // localisation forcée pour le déterminisme
+    expect(log.some((l) => l.includes('(Membre antérieur droit)'))).toBe(true);
+    expect(log.some((l) => l.includes('(Bras droit)'))).toBe(false);
   });
 });
 

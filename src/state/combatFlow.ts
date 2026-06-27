@@ -6,7 +6,7 @@
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze } from './pendings';
-import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
+import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
@@ -108,7 +108,7 @@ import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition,
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
-import { domainOnHitEffects, domainMissileMods, domainAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
+import { domainOnHitEffects, domainMissileMods, domainCasterOps, hasArcaneTalent } from '../engine/domainAttributes';
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, contractionDue, applyContraction, hasActiveCapability, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
@@ -1015,8 +1015,7 @@ export function applyCriticalToTarget(
   if (crit.traumas.length) {
     target.traumas = [...(target.traumas ?? []), ...crit.traumas];
     for (const t of crit.traumas) {
-      const locLbl = HIT_LOCATION_LABELS[t.location];
-      const text = t.label.includes(locLbl) ? t.label : `${t.label} (${locLbl})`;
+      const text = `${t.label} (${locationLabel(t.location, target.bodyShape)})`;
       log.push(`  ↳ ${text}.`);
       revealLines.push(`  ↳ ${text}.`);
       details.push({ text, note: t.desc });
@@ -1050,7 +1049,7 @@ export function applyCriticalToTarget(
       kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id,
       severity: 'grave',
       actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
-      crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
+      crit: { location: locationLabel(crit.location, target.bodyShape), woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
     });
   }
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
@@ -1098,8 +1097,7 @@ export function previewCritEntry(target: Combatant, crit: CriticalResolved, ctx?
   const lines = [crit.log];
   const details: { text: string; note?: string }[] = [];
   for (const t of crit.traumas) {
-    const locLbl = HIT_LOCATION_LABELS[t.location];
-    const text = t.label.includes(locLbl) ? t.label : `${t.label} (${locLbl})`;
+    const text = `${t.label} (${locationLabel(t.location, target.bodyShape)})`;
     lines.push(`  ↳ ${text}.`);
     details.push({ text, note: t.desc });
   }
@@ -1111,7 +1109,7 @@ export function previewCritEntry(target: Combatant, crit: CriticalResolved, ctx?
   return {
     kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines, subjectId: target.id,
     actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
-    crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
+    crit: { location: locationLabel(crit.location, target.bodyShape), woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
   };
 }
 
@@ -1166,7 +1164,7 @@ function applyOpposedCritical(
     // Le Critique paré DOIT rester VISIBLE dans la cascade (sinon la fenêtre se referme sans rien montrer)
     // quand un héros est concerné — il l'a PLACÉ (parade) ou le SUBIT ; sinon (ennemi↔ennemi) : journal seul.
     if (heroConcerned) pushReveal(set, { kind: 'critical', title: tr('cf.critDeflectedTitle'), dice: roll,
-      lines: [tr('cf.critDeflectedReveal', { loc: HIT_LOCATION_LABELS[loc] }), line], subjectId: victim.id, severity: 'minor', actorId: ctx.attackerId, weapon: ctx.weapon });
+      lines: [tr('cf.critDeflectedReveal', { loc: locationLabel(loc, victim.bodyShape) }), line], subjectId: victim.id, severity: 'minor', actorId: ctx.attackerId, weapon: ctx.weapon });
     return;
   }
   const currentBefore = victim.wounds.current;
@@ -2233,7 +2231,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     rng: battleRng(),
     label: m.name,
     now: get().gameTime,
-    onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
+    onCorruption: caster.kind === 'hero' ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
   };
   lines.push(...applyOps(caster, m.ops, opsCtx));
   // « Un jet = une modale » : le héros voit la conséquence (Colère/Imparfaite) INLINE dans la séquence
@@ -3054,7 +3052,7 @@ export function applyCast(
           ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
-          onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
+          onCorruption: t.kind === 'hero' ? (n, align) => gainCorruption(get, set, t, n, align) : undefined,
         }));
       }
       // Vol de vie (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : op `lifeSteal` du Flow (on:'caster')
@@ -3155,7 +3153,7 @@ export function applyCast(
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
             ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
-            onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
+            onCorruption: t.kind === 'hero' ? (n, align) => gainCorruption(get, set, t, n, align) : undefined,
           }),
         );
         // Métamorphose (Forme bestiale, LDB 48) : op `polymorph` du Flow (on:'target') — appliquée
@@ -3248,8 +3246,8 @@ export function applyCast(
     }
     // (L'arc de zone des Cieux/Azyr est un `effects` AUTHORÉ du domaine — ciblage `on:{near:'victim'}` +
     //  op `wounds bypassArmour:'metal'` — dispatché par le `domainOnHitEffects` ci-dessus, plus de code dédié.)
-    // Effet post-incantation au LANCEUR (Bête → Peur 1) — paramètre en données (DomainData.afterCast).
-    logLines.push(...domainAfterCast(caster, spell, battleRng()));
+    // Ops post-incantation au LANCEUR (Bête → Peur 1) — paramètre en données (DomainData.casterOps).
+    logLines.push(...domainCasterOps(caster, spell, battleRng()));
     // Effets sur le LANCEUR (op casterOps — Vol de vie « retirez tout État Exténué dont vous
     // souffrez », buffs de soi d'un sort offensif) : appliqués une seule fois par lancement.
     const castSpec = spell;
@@ -3272,7 +3270,7 @@ export function applyCast(
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
         ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
-        onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
+        onCorruption: caster.kind === 'hero' ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
       }));
     }
   }

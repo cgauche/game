@@ -7,8 +7,8 @@ import { d100, d10, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
-import { hitLocationByShape } from './combat';
-import { BodyShape, Combatant, HitLocation, Trauma, HIT_LOCATION_LABELS } from './types';
+import { hitLocationByShape, locationLabel } from './combat';
+import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES } from '../data/criticals';
 import { traumaById, traumaFicheById } from './trauma';
 import type { GameOp } from './ops';
@@ -121,7 +121,7 @@ export function rollCritical(
     }
     // Plaie chirurgicale (l.333/401) : retirée par la Chirurgie ; bloque la guérison jusqu'à l'opération.
     traumas.push({
-      label: `Amputation (${HIT_LOCATION_LABELS[location]})`,
+      label: 'Amputation', // localisation portée par `t.location`, rendue shape-aware à l'affichage (pas bakée)
       location,
       needsSurgery: true,
       desc: 'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.',
@@ -138,6 +138,6 @@ export function rollCritical(
     traumas,
     desc: entry.desc,
     roll,
-    log: `Blessure critique (${HIT_LOCATION_LABELS[location]}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
+    log: `Blessure critique (${locationLabel(location, target.bodyShape)}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
   };
 }
