@@ -12,7 +12,7 @@
 import type {
   GameState,
   PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
-  PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
+  PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
   PendingForceDoor, ForceDoorParticipant,
@@ -154,6 +154,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'dispel', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'frenzy', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'heal', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'surgery', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'maneuver', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'recover', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'reload', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
@@ -970,7 +971,7 @@ export const FLOWS = {
   }),
 
   /** Soin de Guérison (LDB 09) — combat ⇄ hors combat (`actorIn`). La Chirurgie (Test étendu
-   *  multi-passes, `surgeryPass`) garde son flux dédié dans le store. */
+   *  multi-passes) a son propre flux `surgery` ci-dessous (une passe = une modale influençable). */
   heal: makeRollFlow<PendingHeal>({
     key: 'pendingHeal',
     rolled: (p) => p.roll != null,
@@ -988,5 +989,28 @@ export const FLOWS = {
     },
     failed: (p) => (p.roll ?? 0) > p.target,
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) }, // le soin scale avec le DR (LDB 17 l.26)
+  }),
+
+  /** Chirurgie — le Test de Médecine d'UNE passe (Test ÉTENDU, LDB 10 l.154 / 12 l.200). Calque
+   *  `heal` : acteur = le chirurgien (héros → Chance/Pacte/Résilience ; PNJ → influence no-op). Ici
+   *  `resolve` ne fait QUE le jet de la passe (DR = `sl`) ; le CUMUL du DR + 1d10 PB + Hémorragie +
+   *  le Test d'infection vivent dans `surgeryNext` (medicFlow), comme `extendedTestNext`. */
+  surgery: makeRollFlow<PendingSurgery>({
+    key: 'pendingSurgery',
+    rolled: (p) => p.roll != null,
+    actor: (s, p) => actorIn(s, p.healerId),
+    caps: { forced: true },
+    resolve: (_s, p, _actor, _get, forced) => {
+      if (forced) {
+        if (p.success) return null; // (ancien `force.guard`) — rien à forcer si déjà réussi
+        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, 01 → DR MAXIMUM
+        // (la passe scale avec le DR — Test étendu, le cumul progresse d'autant).
+        return { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1) };
+      }
+      const res = rollTest(p.skillValue, p.difficulty, battleRng());
+      return { roll: res.roll, sl: res.sl, success: res.success };
+    },
+    failed: (p) => (p.roll ?? 0) > p.target,
+    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) }, // +1 DR (LDB 17 l.26) — la passe scale avec le DR
   }),
 };

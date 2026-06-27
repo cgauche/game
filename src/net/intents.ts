@@ -66,7 +66,11 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'recoverDarkPact', 'recoverConfirm', 'recoverCancel', 'healRoll', 'healReroll',
   'healBonusSL', 'healDarkPact', 'healForceSuccess', 'healConfirm', 'healCancel',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.
-  'medicSelectPatient', 'medicAct', 'medicSetWound', 'medicSurgeryPass', 'medicEndSurgery', 'closeMedic',
+  // Chirurgie : openSurgeryPass POSE la passe, les verbes surgery* l'influencent (fabrique rollFlow),
+  // surgeryNext applique, surgeryCancel annule (remplacent l'ancien medicSurgeryPass/medicEndSurgery inline).
+  'medicSelectPatient', 'medicAct', 'medicSetWound', 'closeMedic',
+  'openSurgeryPass', 'surgeryRoll', 'surgeryReroll', 'surgeryBonusSL', 'surgeryDarkPact',
+  'surgeryForceSuccess', 'surgeryNext', 'surgeryCancel',
   // Repos (nuit) : chacun règle SES héros (restSet vise un héros, 1er argument) + ready-check.
   'restSet', 'restReady',
   // (Psychologie à la rencontre : passe désormais par les intents `cascade*` ci-dessus.)

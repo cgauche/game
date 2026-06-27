@@ -53,7 +53,7 @@ const offendersOf = (body: string): string[] => {
 
 // Les RÉSOLVEURS de modale (le jet différé lui-même) : convention de suffixe.
 // `*Resolve` : résolveurs aussi (resolveTest ; la psy de combat/rencontre passe par FLOWS.cascade).
-const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|SurgeryPass|Resolve)$/;
+const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|Resolve)$/;
 
 /**
  * Liste blanche JUSTIFIÉE — chaque entrée dit OÙ le jet est montré au joueur (catégories 2/3).
@@ -68,6 +68,7 @@ const JUSTIFIED: Record<string, string> = {
   disengageFlee: 'option « Fuir » de la modale : attaque dans le dos SUBIE, résultat poussé en révélation (backstab)',
   dismissReveal: 'acquittement de la file de révélation (le jet a DÉJÀ été montré)',
   medicAct: 'infirmerie : ouvre pendingHeal (modale) — l’acte payant ne tire pas lui-même',
+  surgeryNext: 'Chirurgie : APPLIQUE la passe (le Test de Médecine du chirurgien est différé en modale pendingSurgery, influençable). Les 1d10 PB SUBIS et le Test d’infection du patient (Résistance) sont des jets SUBIS poussés en RÉVÉLATION témoin 📜 — pas des jets de héros influençables',
   startDisengage: 'OUVRE pendingDisengage : le jet du foe est tiré et FIGÉ pour la modale (pattern Défense — montré dans la ligne adverse)',
   resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',
   applyCounterspell: 'Contre-sort : Test opposé du contre-lanceur, issue affichée dans la modale d’incantation (et déclaré pendant le jet ennemi)',

@@ -72,9 +72,11 @@ export const MODAL_DEFS = [
   { key: 'shipBattery', when: (s) => !!s.pendingShipBattery, owner: (s) => s.pendingShipBattery?.shipId, auto: { mode: 'choice' } }, // Tir de batterie MULTI (Artilleurs) — idem manœuvre
   { key: 'focus', when: (s) => !!s.pendingFocus, owner: (s) => s.pendingFocus?.casterId, auto: { mode: 'self', drive: ['focusRoll', 'focusConfirm'] } },
   { key: 'dispel', when: (s) => !!s.pendingDispel, owner: (s) => s.pendingDispel?.casterId, auto: { mode: 'self', drive: ['dispelRoll', 'dispelConfirm'] } },
-  // Infirmerie OUVERTE : c'est ELLE qui rend le jet de soin (zone embarquée) — la modale `heal`
-  // autonome ne sert qu'au combat (ActionBar). Owner : le soigneur du jet en cours, sinon tous.
-  { key: 'medic', when: (s) => !!s.medic, owner: (s) => s.pendingHeal?.healerId ?? '*', auto: { mode: 'hostOnly' } },
+  // Infirmerie OUVERTE : c'est ELLE qui rend les jets EMBARQUÉS (soin OU passe de Chirurgie) — les
+  // modales autonomes `heal`/surgery ne servent qu'au combat (et la Chirurgie est toujours hors combat).
+  // Owner : le soigneur/chirurgien du jet INFLUENÇABLE en cours (coop), sinon tous. `pendingSurgery`
+  // n'a PAS d'entrée propre : il vit DANS l'infirmerie (rendu par MedicModal), comme `pendingHeal` ici.
+  { key: 'medic', when: (s) => !!s.medic, owner: (s) => s.pendingHeal?.healerId ?? s.pendingSurgery?.healerId ?? '*', auto: { mode: 'hostOnly' } },
   // Repos (nuit) : chacun règle SES héros, ready-check, l'hôte dort — modale chez tous.
   { key: 'rest', when: (s) => !!s.pendingRest, owner: () => '*', auto: { mode: 'hostOnly' } },
   { key: 'heal', when: (s) => !!s.pendingHeal && !s.medic, owner: (s) => s.pendingHeal?.healerId, auto: { mode: 'self', drive: ['healRoll', 'healConfirm'] } },

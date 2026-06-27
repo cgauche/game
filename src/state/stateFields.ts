@@ -28,7 +28,7 @@ type FieldKey =
   | 'actorAim' | 'actorMove' | 'actorAoe' | 'hoverDelta' | 'pendingReload' | 'pendingStateRecovery' | 'pendingDefense'
   | 'pendingRenounce' | 'pendingMountTarget' | 'pendingDisengage' | 'pendingInteract' | 'pendingCast'
   | 'pendingCounterspell' | 'pendingExtendedTest' | 'pendingForceDoor' | 'pendingCascade'
-  | 'pendingCastOpposition' | 'pendingHeal' | 'medic' | 'pendingRest' | 'pendingCleave'
+  | 'pendingCastOpposition' | 'pendingHeal' | 'pendingSurgery' | 'medic' | 'pendingRest' | 'pendingCleave'
   | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingManeuver'
   | 'pendingRun' | 'pendingShipManeuver' | 'pendingShipBattery' | 'pendingApproach' | 'pendingWard' | 'pendingFocus' | 'pendingDispel' | 'pendingFrenzy' | 'pendingRoundStart'
   | 'pendingFateSave' | 'pendingVictory' | 'pendingLoot' | 'document' | 'previousScene';
@@ -61,6 +61,7 @@ const STATE_FIELDS: Manifest = {
   pendingCascade: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingCastOpposition: { init: null, resetOn: [] },
   pendingHeal: { init: null, resetOn: ['combatStart'] },
+  pendingSurgery: { init: null, resetOn: [] }, // hors-combat, vit DANS l'infirmerie (medic, resetOn []) — purgé avec elle
   medic: { init: null, resetOn: [] },
   pendingRest: { init: null, resetOn: [] },
   pendingCleave: { init: null, resetOn: ['scene', 'combatStart'] },

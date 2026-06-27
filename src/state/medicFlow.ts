@@ -5,10 +5,12 @@
  * mono-acte, chirurgie autonome). Le RAW vit dans engine/healing + engine/trauma (sources uniques),
  * ici : orchestration seulement. En combat, le flux ActionBar reste (un acte = une Action).
  *
- * La CHIRURGIE (Test ÉTENDU, LDB 10 l.154 / 12 l.200) est « armée » sur l'infirmerie : soigneur
- * figé, patient verrouillé ; chaque passe (jet instantané, DrBar) inflige 1d10 PB + 1 Hémorragie.
- * Entre deux passes, Bander (wounds) et Hémorragie (bleed) redeviennent des ACTES NORMAUX du même
- * patient — jet complet (Chance/Résilience), sans interrompre le cumul.
+ * La CHIRURGIE (Test ÉTENDU, LDB 10 l.154 / 12 l.200) est « armée » sur l'infirmerie (`medic.surgery` :
+ * chirurgien figé, patient verrouillé) ; chaque passe est un jet INFLUENÇABLE (`pendingSurgery` via
+ * `FLOWS.surgery` — Chance/Pacte/Résilience comme tout jet de héros), qui inflige 1d10 PB + 1 Hémorragie
+ * et cumule le DR (DrBar) à l'application (`surgeryNext`). Le Test d'infection du patient (cible atteinte)
+ * est un jet SUBI poussé en RÉVÉLATION témoin. Entre deux passes, Bander (wounds) et Hémorragie (bleed)
+ * redeviennent des ACTES NORMAUX du même patient — jet complet (Chance/Résilience), sans interrompre le cumul.
  *
  * Acte PAYANT (PNJ `medicalAid`, LDB 75 : l'aide médicale se paie à l'acte, 4-6 pistoles) :
  * débit au clic d'acte ; « Annuler » AVANT le jet rembourse ; arrêter une opération jamais
@@ -16,7 +18,7 @@
  */
 import type { Combatant } from '../engine/types';
 import { battleRng } from './battleRng';
-import { rollTest, extendedTestStep } from '../engine/tests';
+import { extendedTestStep } from '../engine/tests';
 import { partyAssisted } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds } from '../engine/conditions';
@@ -25,7 +27,7 @@ import { removeSurgicalTrauma } from '../engine/trauma';
 import { rollContraction } from '../engine/disease';
 import { toMoney, canAfford, subtract as moneySub, add as moneyAdd } from '../engine/money';
 import { touchActors } from './combatOrParty';
-import { finishPlayerAction } from './combatFlow';
+import { finishPlayerAction, pushReveal } from './combatFlow';
 import type { GameState } from './store';
 
 export interface MedicCost { gold?: number; silver?: number; brass?: number }
@@ -144,45 +146,77 @@ export function medicSetWound(get: Get, set: Set, idx: number): void {
   set({ medic: { ...m, surgery: { ...m.surgery, traumaIdx: idx } } });
 }
 
-/** Une PASSE de Chirurgie : cumule le DR (repart à 0 sous 0, LDB 12 l.200), inflige 1d10 PB +
- *  1 Hémorragie (LDB 10 l.154). Cible atteinte → Blessure Critique réparée + Test d'Infection
- *  (LDB 10 l.365). Patient à 0 PB → opération interrompue. */
-export function medicSurgeryPass(get: Get, set: Set): void {
+/** OUVRE le jet INFLUENÇABLE d'UNE passe de Chirurgie (`pendingSurgery`) depuis l'opération armée
+ *  (`medic.surgery`) — le jet de Médecine du chirurgien passe par `FLOWS.surgery` (Chance/Pacte/
+ *  Résilience ; PNJ → influence no-op), `surgeryNext` applique. Idempotent : no-op si une passe est
+ *  déjà posée (appelé pour la 1re passe ET pour rouvrir la suivante depuis `surgeryNext`). Ne TIRE rien. */
+export function openSurgeryPass(get: Get, set: Set): void {
   const m = get().medic;
   const sg = m?.surgery;
-  if (!m || !sg || get().pendingHeal) return;
+  if (!m || !sg || get().pendingSurgery) return;
   const patient = get().party.find((h) => h.id === m.patientId);
   if (!patient) { set({ medic: { ...m, surgery: undefined } }); return; }
-  const res = rollTest(sg.skill, 'intermediaire', battleRng());
-  const { total: cum } = extendedTestStep(sg.cumDR, res, sg.targetDR); // Test étendu mutualisé (LDB 12) — chirurgie LDB 10
+  set({
+    pendingSurgery: {
+      healerId: sg.healerId ?? 'pnj-soigneur', healerName: sg.healerName,
+      targetId: patient.id, targetName: patient.name,
+      skillValue: sg.skill, intBonus: sg.intBonus, difficulty: 'intermediaire', target: sg.skill,
+      roll: null, success: false, sl: 0,
+      traumaIdx: sg.traumaIdx, targetDR: sg.targetDR, cumDR: sg.cumDR, paidCost: sg.paidCost,
+    },
+  });
+}
+
+/** APPLIQUE la passe de Chirurgie (calque `extendedTestNext`) : prend le jet FIGÉ de `pendingSurgery`
+ *  (déjà roulé + influencé en modale), cumule le DR (repart à 0 sous 0, LDB 12 l.200), inflige 1d10 PB +
+ *  1 Hémorragie (LDB 10 l.154). Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT
+ *  (LDB 10 l.365) RÉVÉLÉ témoin (jet SUBI, pas influençable — comme toute contraction de maladie). Patient
+ *  à 0 PB → opération interrompue. Sinon → cumule sur `medic.surgery` et RÉOUVRE la passe suivante. */
+export function surgeryNext(get: Get, set: Set): void {
+  const ps = get().pendingSurgery;
+  const m = get().medic;
+  const sg = m?.surgery;
+  if (!ps || ps.roll == null || !m || !sg) return;
+  const patient = get().party.find((h) => h.id === m.patientId);
+  if (!patient) { set({ pendingSurgery: null, medic: { ...m, surgery: undefined } }); return; }
+  const { total: cum } = extendedTestStep(sg.cumDR, { success: ps.success, sl: ps.sl }, sg.targetDR); // Test étendu mutualisé (LDB 12) — chirurgie LDB 10
   const harm = battleRng().int(1, 10);
   loseWounds(patient, harm);
   addCondition(patient, 'hemorragique');
-  const log = [`${sg.healerName} opère ${patient.name} — passe : DR ${res.sl >= 0 ? '+' : ''}${res.sl} (total ${cum}/${sg.targetDR}), ${harm} PB + 1 Hémorragie.`];
+  const log = [`${sg.healerName} opère ${patient.name} — passe : DR ${ps.sl >= 0 ? '+' : ''}${ps.sl} (total ${cum}/${sg.targetDR}), ${harm} PB + 1 Hémorragie.`];
   if (patient.wounds.current <= 0) { // « de fortes chances de tuer » (LDB 10) : on interrompt
     log.push(`${patient.name} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
-    set({ medic: { ...m, surgery: undefined } });
+    set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
     return;
   }
   if (cum >= sg.targetDR) { // cible atteinte : la Blessure Critique est réparée
     log.push(...removeSurgicalTrauma(patient, sg.traumaIdx));
+    // Test d'infection du PATIENT (LDB 10 l.365) : Résistance Accessible (+20), jet SUBI poussé en
+    // RÉVÉLATION témoin (pas un pending influençable) — calque la contraction de maladie révélée.
     const resVal = effectiveChar(patient, 'E') + (patient.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    log.push(...rollContraction(patient, 'infection-mineure', resVal, 'accessible', battleRng()));
-    set({ medic: { ...m, surgery: undefined } });
+    const infection = rollContraction(patient, 'infection-mineure', resVal, 'accessible', battleRng());
+    const infectionLines = infection.length ? infection : [`${patient.name} résiste à l'infection post-opératoire.`];
+    pushReveal(set, { kind: 'effet', title: 'Suites de l’opération', lines: infectionLines, subjectId: patient.id, severity: infection.length ? 'grave' : 'minor' });
+    log.push(...infectionLines);
+    set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
     return;
   }
-  set({ medic: { ...m, surgery: { ...sg, cumDR: cum, last: { roll: res.roll, sl: res.sl } } }, ...touchActors(get()) });
+  // Passe intermédiaire : cumule (medic.surgery), journalise, et RÉOUVRE la passe suivante (FLOWS.surgery).
+  set({ medic: { ...m, surgery: { ...sg, cumDR: cum, last: { roll: ps.roll, sl: ps.sl } } }, pendingSurgery: null, ...touchActors(get()) });
   get().log(log[0]);
+  openSurgeryPass(get, set);
 }
 
-/** Arrête l'opération (le cumul est perdu — Test étendu interrompu). Jamais commencée → remboursée. */
-export function medicEndSurgery(get: Get, set: Set): void {
+/** Annule la Chirurgie (le cumul est perdu — Test étendu interrompu, LDB 12 l.200). Jamais commencée
+ *  (aucune passe appliquée) → l'acte PNJ est remboursé, comme `healCancel`. Ferme la passe en cours
+ *  (`pendingSurgery`) ET l'opération armée (`medic.surgery`). */
+export function surgeryCancel(get: Get, set: Set): void {
   const m = get().medic;
   const sg = m?.surgery;
-  if (!m || !sg) return;
+  if (!m || !sg) { set({ pendingSurgery: null }); return; }
   if (!sg.last && sg.paidCost) set((s: GameState) => ({ money: moneyAdd(s.money, toMoney(sg.paidCost!)) }));
-  set({ medic: { ...m, surgery: undefined } });
-  if (sg.last) get().log(`${sg.healerName} interrompt l'opération — le travail est à refaire.`); // Test étendu interrompu (LDB 12 l.200)
+  set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
+  if (sg.last) get().log(`${sg.healerName} interrompt l'opération — le travail est à refaire.`);
 }

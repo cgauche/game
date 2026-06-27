@@ -1881,6 +1881,9 @@ export function createCombatSlice(get: Get, set: Set) {
     // ── Infirmerie (hors combat) : modale de soins PERSISTANTE — cf. state/medicFlow ──
 
     ...rollFlowActions('heal', FLOWS.heal, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
+    // Chirurgie : jet INFLUENÇABLE d'une passe (le chirurgien peut être un héros) — surgeryNext applique
+    // (medicFlow), surgeryCancel annule. openSurgeryPass POSE la passe (cf. délégations medic, store.ts).
+    ...rollFlowActions('surgery', FLOWS.surgery, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
 
     /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. L'infirmerie
      *  (`medic`) n'est PAS touchée : la modale persistante reste ouverte pour l'acte suivant. */

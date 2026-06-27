@@ -5,6 +5,10 @@ import { TeamPortrait } from './TeamPortrait';
 import { Coins } from './Coins';
 import { DrBar } from './DrBar';
 import { HealRollFlow } from './HealModal';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown, testPending } from './breakdown';
+import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { isHealable, availableHealModes, type HealMode } from '../engine/healing';
 import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas } from '../engine/trauma';
 import { bestHealerFor } from '../state/medicFlow';
@@ -37,6 +41,58 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
 }
 
 /**
+ * Zone de jet EMBARQUÉE d'UNE passe de Chirurgie (Test ÉTENDU influençable) — calque `HealRollFlow` :
+ * « Lancer » → Chance (relance / +1 DR) → Résilience → « Appliquer la passe » (surgeryNext). Le chirurgien
+ * peut être un héros (Chance/Résilience) ; PNJ payant → ressources à 0. « Arrêter l'opération » (avant le
+ * jet) annule la passe et l'opération (surgeryCancel), remboursant l'acte tant qu'aucune passe n'a abouti.
+ */
+function SurgeryRollFlow() {
+  const ps = useGame((s) => s.pendingSurgery);
+  const party = useGame((s) => s.party);
+  const roll = useGame((s) => s.surgeryRoll);
+  const reroll = useGame((s) => s.surgeryReroll);
+  const bonusSL = useGame((s) => s.surgeryBonusSL);
+  const darkPact = useGame((s) => s.surgeryDarkPact);
+  const force = useGame((s) => s.surgeryForceSuccess);
+  const next = useGame((s) => s.surgeryNext);
+  const cancel = useGame((s) => s.surgeryCancel);
+  if (!ps) return null;
+  const surgeon = party.find((c) => c.id === ps.healerId); // absent (PNJ médecin) → Chance/Résilience à 0
+  const fortune = surgeon?.fortune ?? 0;
+  const rolled = ps.roll != null;
+  return (
+    <RollFlowShell
+      embedded
+      title="🔪 Opérer (une passe)"
+      subtitle={
+        <>
+          <strong>{ps.healerName}</strong> opère <strong>{ps.targetName}</strong>{' '}
+          <span className="rm-weapon">(Guérison, Intermédiaire +0)</span>
+        </>
+      }
+      rolled={rolled}
+      onRoll={roll}
+      onCancel={cancel}
+      cancelLabel="Arrêter l’opération"
+      breakdown={rolled ? testBreakdown('Guérison', ps.skillValue, { roll: ps.roll!, target: ps.target, sl: ps.sl, success: ps.success }, ps.difficulty) : undefined}
+      pending={testPending('Guérison', ps.skillValue, ps.target, ps.difficulty)}
+      fortune={fortune}
+      freeReroll={freeRerollOf(surgeon)}
+      rerollable={rolled && canReroll(ps.roll! > ps.target, !!ps.rerolled) && (fortune > 0 || freeRerollOf(surgeon))}
+      onReroll={reroll}
+      onBonusSL={bonusSL}
+      darkPactable={rolled && ps.roll! > ps.target && surgeon?.kind === 'hero'}
+      onDarkPact={darkPact}
+      resilience={surgeon?.resilience ?? 0}
+      onForce={force}
+      forceShow={!ps.success}
+      confirmLabel="Appliquer la passe"
+      onConfirm={next}
+    />
+  );
+}
+
+/**
  * INFIRMERIE — modale de soins PERSISTANTE (hors combat) : bandeau patients (tuiles full, la jauge
  * et les pastilles d'États SONT le diagnostic) → dossier du patient (actes : Guérison / Hémorragie /
  * Déchirure / Chirurgie, tarifés chez un PNJ `medicalAid`) → zone de jet embarquée (HealRollFlow).
@@ -47,18 +103,19 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
 export function MedicModal() {
   const medic = useGame((s) => s.medic);
   const ph = useGame((s) => s.pendingHeal);
+  const ps = useGame((s) => s.pendingSurgery);
   const party = useGame((s) => s.party);
   const money = useGame((s) => s.money);
   const selectPatient = useGame((s) => s.medicSelectPatient);
   const act = useGame((s) => s.medicAct);
   const setWound = useGame((s) => s.medicSetWound);
-  const surgeryPass = useGame((s) => s.medicSurgeryPass);
-  const endSurgery = useGame((s) => s.medicEndSurgery);
+  const openPass = useGame((s) => s.openSurgeryPass);
+  const cancelSurgery = useGame((s) => s.surgeryCancel);
   const close = useGame((s) => s.closeMedic);
   if (!medic) return null;
   const patient = party.find((c) => c.id === medic.patientId) ?? null;
   const sg = medic.surgery;
-  const busy = !!ph || !!sg; // jet posé ou opération en cours : patients verrouillés, pas de sortie
+  const busy = !!ph || !!sg || !!ps; // jet posé ou opération en cours : patients verrouillés, pas de sortie
   const npc = medic.npc;
   const paid = npc?.acts.some((a) => a.cost);
   const hasSurgeon = npc ? true : !!bestHealerFor(party, 'surgery');
@@ -111,12 +168,17 @@ export function MedicModal() {
               {sg.last && <p className="rm-note">Dernière passe : {sg.last.sl >= 0 ? '+' : ''}{sg.last.sl} DR</p>}
               {/* coût RAW d'une passe : LDB 10 l.154 */}
               <p className="rm-note">Chaque passe inflige 1d10 PB + 1 Hémorragie. À 0 PB, l’opération s’interrompt.</p>
-              <div className="modal-actions">
-                <button className="btn btn-ghost" onClick={endSurgery} title={sg.last ? 'Le cumul de DR est perdu' : 'Renoncer (acte remboursé)'}>
-                  Arrêter l’opération
-                </button>
-                <button className="btn btn-primary" onClick={surgeryPass}>🔪 Opérer (une passe)</button>
-              </div>
+              {/* La passe est un jet INFLUENÇABLE (modale embarquée) ; avant le 1er jet, on l'arme/renonce. */}
+              {ps ? (
+                <SurgeryRollFlow />
+              ) : (
+                <div className="modal-actions">
+                  <button className="btn btn-ghost" onClick={cancelSurgery} title={sg.last ? 'Le cumul de DR est perdu' : 'Renoncer (acte remboursé)'}>
+                    Arrêter l’opération
+                  </button>
+                  <button className="btn btn-primary" onClick={openPass}>🔪 Opérer (une passe)</button>
+                </div>
+              )}
             </div>
           )}
           <div className="medic-acts">

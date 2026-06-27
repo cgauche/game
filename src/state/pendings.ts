@@ -892,3 +892,29 @@ export interface PendingHeal {
   /** Acte PAYANT d'un PNJ (infirmerie) : prix déjà débité — remboursé si Annuler AVANT le jet. */
   paidCost?: { gold?: number; silver?: number; brass?: number };
 }
+
+/** Chirurgie (Test ÉTENDU multi-passes, LDB 10 l.154 / 12 l.200) — le Test de Médecine d'UNE passe,
+ *  DIFFÉRÉ en modale INFLUENÇABLE (« un jet = une modale ») : le chirurgien peut être un HÉROS, qui
+ *  dépense Chance/Pacte/Résilience sur SON jet (PNJ → `actorIn` introuvable → influence no-op, comme
+ *  `PendingHeal`). Calque `PendingHeal` (jet du soigneur) + `PendingExtendedTest` (cumul du DR). Le cumul
+ *  et la sélection patient/Critique vivent sur `medic.surgery` (état de setup) ; chaque passe inflige
+ *  1d10 PB + 1 Hémorragie à la validation (`surgeryNext`). `traumaIdx/targetDR/cumDR` sont recopiés de
+ *  `medic.surgery` à l'ouverture de la passe (affichage DrBar dans la modale). */
+export interface PendingSurgery extends PendingBase {
+  healerId: string; // chirurgien (héros → influence ; PNJ → no-op)
+  healerName: string;
+  targetId: string; // patient opéré
+  targetName: string;
+  skillValue: number; // testValue(chirurgien, 'Guérison')
+  intBonus: number; // Bonus d'Intelligence du chirurgien
+  difficulty: Difficulty; // 'intermediaire' (+0)
+  target: number; // cible effective d'une passe (affichage) = skillValue
+  roll: number | null; // null tant que pas lancé (Chance possible ensuite)
+  success: boolean;
+  sl: number; // DR de la passe
+  traumaIdx: number; // Blessure Critique visée (index dans surgeryTraumas) — figé de medic.surgery
+  targetDR: number; // DR cumulé cible (LDB 10) — recopié de medic.surgery (DrBar)
+  cumDR: number; // DR cumulé courant — recopié de medic.surgery (DrBar)
+  /** Acte PAYANT d'un PNJ (infirmerie) : prix déjà débité — remboursé si on annule AVANT toute passe. */
+  paidCost?: { gold?: number; silver?: number; brass?: number };
+}

@@ -70,7 +70,7 @@ import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
-  PendingDisengage, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
+  PendingDisengage, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
@@ -312,6 +312,8 @@ export interface GameState extends RollFlowActionsMap {
   hoverDelta: { action: number; move: number; adv: number } | null;
   /** Soin de Guérison en cours (modale interactive, combat ou hors-combat). */
   pendingHeal: PendingHeal | null;
+  /** Passe de Chirurgie en cours (jet INFLUENÇABLE du chirurgien, modale embarquée dans l'infirmerie). */
+  pendingSurgery: PendingSurgery | null;
   /** Infirmerie ouverte (modale de soins persistante, hors combat — state/medicFlow). */
   medic: MedicState | null;
   /** Modale de Repos (nuit à l'auberge / chez soi / campement — state/restFlow). */
@@ -563,10 +565,14 @@ export interface GameState extends RollFlowActionsMap {
   medicAct: (act: HealMode) => void;
   /** Choisit la Blessure Critique à opérer (avant la 1re passe). */
   medicSetWound: (idx: number) => void;
-  /** Une passe de Chirurgie (1d10 PB + Hémorragie, cumule le DR jusqu'à la cible). */
-  medicSurgeryPass: () => void;
-  /** Arrête l'opération (cumul perdu ; jamais commencée → acte remboursé). */
-  medicEndSurgery: () => void;
+  /** OUVRE le jet INFLUENÇABLE d'une passe de Chirurgie (pendingSurgery) depuis l'opération armée. */
+  openSurgeryPass: () => void;
+  // surgery{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
+  /** « Appliquer » la passe : cumule le DR (Test étendu), 1d10 PB + Hémorragie ; cible atteinte → trauma
+   *  réparé + infection révélée ; sinon réouvre la passe suivante (calque extendedTestNext). */
+  surgeryNext: () => void;
+  /** Annule la Chirurgie (cumul perdu ; jamais commencée → acte remboursé). */
+  surgeryCancel: () => void;
   closeMedic: () => void;
   /** REPOS (state/restFlow) : modale de nuit — réglages PAR HÉROS (couchage + pitance,
    *  orthogonaux : on peut manger à l'auberge et dormir dehors), puis bilan globalisé. */
@@ -1391,8 +1397,9 @@ export const useGame = create<GameState>((set, get) => ({
   medicSelectPatient: (id) => medicFlow.medicSelectPatient(get, set, id),
   medicAct: (act) => medicFlow.medicAct(get, set, act),
   medicSetWound: (idx) => medicFlow.medicSetWound(get, set, idx),
-  medicSurgeryPass: () => medicFlow.medicSurgeryPass(get, set),
-  medicEndSurgery: () => medicFlow.medicEndSurgery(get, set),
+  openSurgeryPass: () => medicFlow.openSurgeryPass(get, set),
+  surgeryNext: () => medicFlow.surgeryNext(get, set),
+  surgeryCancel: () => medicFlow.surgeryCancel(get, set),
   closeMedic: () => medicFlow.closeMedic(get, set),
 
   // ── Repos (modale de nuit) : cf. state/restFlow ──
