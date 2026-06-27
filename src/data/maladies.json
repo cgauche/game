@@ -385,5 +385,45 @@
       "book": "T2C",
       "page": 92
     }
+  },
+  {
+    "id": "fievre-cerebrale-pourpre",
+    "label": "Fièvre Cérébrale Pourpre",
+    "desc": "La fièvre cérébrale pourpre est une maladie redoutée. La tête gonfle jusqu'à atteindre une taille impressionnante et s'accompagne de fièvres et de délires. Le visage prend une couleur prune effrayante, les yeux sortent de leurs orbites et la langue gonfle jusqu'à ce que la bouche ne puisse plus la contenir. La mort survient généralement au bout d'une semaine.",
+    "contractDifficulty": "accessible",
+    "incubation": {
+      "n": 0,
+      "sides": 1
+    },
+    "duration": {
+      "n": 1,
+      "sides": 10
+    },
+    "symptoms": [
+      {
+        "symptomId": "convulsions"
+      },
+      {
+        "symptomId": "delire"
+      },
+      {
+        "symptomId": "fievre",
+        "severity": "grave"
+      },
+      {
+        "symptomId": "gonflement"
+      },
+      {
+        "symptomId": "persistant",
+        "difficulty": "difficile"
+      },
+      {
+        "symptomId": "toxine"
+      }
+    ],
+    "source": {
+      "book": "EDO",
+      "page": 145
+    }
   }
 ]

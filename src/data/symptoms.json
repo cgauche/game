@@ -346,5 +346,23 @@
       "book": "LDB",
       "page": 189
     }
+  },
+  {
+    "id": "delire",
+    "label": "Délire",
+    "desc": "Votre raison bascule, avec des moments de clarté remplacés soudain par des accès de délire, d'hallucinations et de terreur. Faites un Test de **Force Mentale Intermédiaire (+0)** toutes les heures et consultez le tableau suivant.\n\n| 1d10 | Effet |\n|------|-------|\n| 1-2  | Épisode lucide : vous vivez une période de calme reposant. Tous les États que vous avez précédemment acquis à cause de votre délire sont supprimés. |\n| 3-5  | Sommeil agité : vous vous tournez et vous retournez, endormi mais pas reposé. Vous gagnez 1 État Inconscient pendant l'heure suivante et 1 État Exténué pendant les 1d10 heures suivantes. |\n| 6-9  | Confusion : en proie à des visions étranges et déformées, vous gagnez un État Sonné pendant l'heure qui suit. |\n| 10   | Hallucinations : vous êtes en proie à des visions étranges et terrifiantes, et vous devez faire un Test contre Terreur 3 toutes les 10 minutes pendant l'heure suivante. Vous gagnez également +1 à l'État Sonné pendant les 1d10 heures suivantes. |\n\n**Traitement :** certaines sommités médicales traitent le délire comme une fièvre, prescrivant les mêmes soins. Les remèdes coûtent de quelques sous de cuivre à quelques pistoles d'argent, et 10 % sont authentiques. Avec le bon médicament, un Test de **Guérison Intermédiaire (+0)** réussi bannit les hallucinations pendant 1d10 heures.\n\nIl est également courant de calmer les patients délirants avec un tranquillisant, tel que la fleur de lune ou même le lotus noir, pour les soulager jusqu'à ce que la maladie soit passée, les plongeant dans un sommeil agité jusqu'à ce qu'ils récupèrent ou en meurent.",
+    "source": {
+      "book": "EDO",
+      "page": 145
+    }
+  },
+  {
+    "id": "gonflement",
+    "label": "Gonflement",
+    "desc": "Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au rouge ou au violacé et devenant presque inutilisable. La partie du corps affectée est normalement l'emplacement d'une plaie ou d'une morsure provoquant cette réaction, ou le point où une maladie ou une infection est entrée en contact avec le corps.\n\n**Traitement :** la plupart des traitements consistent à plonger la partie infectée, ou parfois tout le corps, dans un bain d'eau glacée pour réduire la chaleur qui accompagne les gonflements. Un Test étendu de **Guérison Difficile (-20)** nécessitant +3 DR et réduit le gonflement de 2d10 heures. Chaque Test dure une heure. Le patient se retrouve avec un État *Exténué* +1 pour chaque Test effectué au cours du processus.\n\nCertains médecins saignent plutôt le patient avec une lame ou des sangsues. Un Test étendu de **Guérison** prolongé réussi nécessitant +4 DR et des outils professionnels (médecin) réduit le gonflement de (1d10 + le Bonus d'Endurance du patient) heures. Chaque Test a une Difficulté de base Impossible (-50) et dure une demi-heure.\n\n| Localisation | Effet |\n|---|---|\n| Tête | Les yeux et la langue gonflent, les joues deviennent violettes, la mâchoire s'ouvre involontairement. Manger est impossible, mais les liquides peu épais peuvent être sirotés en petites quantités. Tous les Tests nécessitant la parole sont 3 niveaux plus difficiles. |\n| Bras | Le bras et la main gonflent, les articulations de l'épaule et du coude ne peuvent plus bouger et la main devient inutile. Pour la durée du gonflement, le bras est considéré comme amputé (WFJDR, page 180). |\n| Corps | Tout le corps gonfle jusqu'à ce que la victime ne puisse plus porter de vêtements. Tous les Tests impliquant un mouvement deviennent 3 niveaux plus difficiles. |\n| Jambe | La jambe gonfle de façon grotesque, devenant aussi grosse que la partie la plus large de la cuisse et sur toute sa longueur. Le pied est presque impossible à discerner. Pour la durée du gonflement, la jambe est considérée comme amputée (WFJDR, page 180). |\n\nCette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).\n\nQuelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.",
+    "source": {
+      "book": "EDO",
+      "page": 145
+    }
   }
 ]
