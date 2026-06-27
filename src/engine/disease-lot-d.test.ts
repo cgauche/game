@@ -4,6 +4,7 @@ import {
   diseaseBlesseCount, hasActiveCapability, contagiousDiseases, Disease,
 } from './disease';
 import { makeRNG } from './dice';
+import { MINUTES_PER_DAY } from './clock';
 import type { Combatant } from './types';
 import type { GameOp } from './ops';
 
@@ -72,7 +73,7 @@ describe('nouveaux symptômes — pénalités (LDB 20 l.99-200)', () => {
 describe('Vérole Urticante — immunité après guérison (l.97)', () => {
   it('guérison naturelle → inscrite dans diseaseImmunities ; recontraction impossible', () => {
     const c = mk({ diseases: [contractDisease('verole-urticante', makeRNG(2), { incubation: 0, duration: 1 })!] });
-    tickDisease(c, 2, makeRNG(3), 40);
+    tickDisease(c, 2 * MINUTES_PER_DAY, makeRNG(3), 40);
     expect(c.diseases).toEqual([]);
     expect(c.diseaseImmunities).toContain('verole-urticante');
     const log = rollContraction(c, 'verole-urticante', 0, 'tresDifficile', makeRNG(4)); // Test impossible à réussir
@@ -85,7 +86,7 @@ describe('gangrène — progression journalière (l.135+)', () => {
   it('échecs cumulés > BE → Localisation perdue (journalisée)', () => {
     const c = mk({ diseases: [contractDisease('peste-noire', makeRNG(5), { incubation: 0, duration: 30 })!] });
     // resistVal 0 → tout Test raté ; BE ≈ 0 → perdue dès le 1er échec.
-    const log = tickDisease(c, 3, makeRNG(6), 0);
+    const log = tickDisease(c, 3 * MINUTES_PER_DAY, makeRNG(6), 0);
     expect(log.some((l) => /Gangrène a gagné/.test(l))).toBe(true);
     expect(c.diseases![0].gangreneLost).toBe(true);
   });

@@ -5,12 +5,18 @@
     "desc": "Les Infections mineures – des blessures guérissant lentement, qui n’enflent quasiment pas et ne provoquent pas de fièvre – sont très répandues. La plupart guérissent d’elles-mêmes, donc peu de personnes s’en soucient réellement avant qu’il ne soit trop tard et que les Portes de Morr ne s’ouvrent.",
     "contractDifficulty": "tresFacile",
     "incubation": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -31,12 +37,18 @@
     "desc": "Les coupures infectées et les égratignures sont monnaie courante, ce qui explique qu’il existe de nombreuses superstitions quant à la meilleure façon de les traiter. Les cataplasmes confectionnés à partir de fumier enveloppé dans des feuilles, la peau de crapaud, ou encore les plumes de colombe sont très répandus, tout comme le fait de frotter la blessure avec de la bonne terre de Sigmar. La plupart des physiciens considèrent ces pratiques comme de pures âneries et vont préférer des remèdes plus scientifiques, comme le mélange de la bile d’un bœuf noir avec trois cuillères de l’urine du patient et une demi-cuillère de sel de mer, mixture ensuite appliquée sur la blessure purulente. Les hurlements qui suivent généralement cette application sont bien la preuve de son efficacité.",
     "contractDifficulty": "facile",
     "incubation": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -60,13 +72,18 @@
     "desc": "Votre sang est infecté et votre cœur répand la maladie dans votre corps. Il est possible de vous soigner par l’intermédiaire de saignées, mais certains doktors préfèrent effectuer des incisions à un endroit très précis au niveau du cou pour expulser le sang contaminé et demandent au patient d’ingérer d’énormes quantités de sang sain pour remplacer celui qui a été perdu. Que le patient accepte ou non ce remède, si aucun traitement n’est appliqué, l’ Infection du sang est mortelle et se conclura par une visite à la Guilde des Thanatopracteurs et du Culte de Morr.",
     "contractDifficulty": "tresFacile",
     "incubation": {
-      "n": 0,
-      "sides": 1,
-      "plus": -1
+      "dice": {
+        "n": 0,
+        "sides": 0
+      },
+      "unit": "hours"
     },
     "duration": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -87,12 +104,18 @@
     "desc": "On raconte que la nourriture des halflings ne peut pas donner de Courante galopante, une maladie peu ragoûtante et malheureusement trop répandue au sein de l’Empire à cause du manque de soins apportés à la préparation de la nourriture. Même si ceux souffrant de « Vengeance des Rumsters » après avoir ingurgité des tourtes bon marché des halflings vendues à Altdorf vous diront le contraire, s’ils peuvent quitter les toilettes assez longtemps…",
     "contractDifficulty": "facile",
     "incubation": {
-      "n": 0,
-      "sides": 1
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "hours"
     },
     "duration": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -113,14 +136,20 @@
     "desc": "La très redoutée Fièvre du rongeur est transmise, comme son nom l’indique, par des rongeurs infectés et cause des irritations douloureuses et des ulcérations avant que la fièvre ne monte et que le corps ne soit secoué de spasmes. Même si cette maladie est rarement fatale, elle est débilitante et il faut patienter longtemps avant de s’en remettre totalement. C’est pourquoi chacun cherchera à en atténuer les symptômes. Parmi les remèdes les plus connus, il y a, à Altdorf, l’auto-flagellation, réputée soulager toutes les infections cutanées. À Talabheim, on préconise de se recouvrir d’une mixture composée d’un mélange de fromage de chèvre relevé de poivre glacé importé de Kislev. Dans les villes et les cités les plus importantes, la Fièvre du rongeur est également connue sous le nom de Fièvre de la tourte, car il est notoire que, bien souvent, on remplace la viande la plus chère par du rat infecté dans ce genre de mets.",
     "contractDifficulty": "accessible",
     "incubation": {
-      "n": 3,
-      "sides": 10,
-      "plus": 5
+      "dice": {
+        "n": 3,
+        "sides": 10,
+        "plus": 5
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 3,
-      "sides": 10,
-      "plus": 10
+      "dice": {
+        "n": 3,
+        "sides": 10,
+        "plus": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -150,12 +179,18 @@
     "desc": "Le Flux sanglant est un problème récurrent au sein de l’Empire et d’une manière générale, est considéré comme une malédiction infligée par les dieux aux impies. Cette maladie infâme oblige la pauvre victime à se vider sans cesse. Le Flux sanglant est endémique au sein des Armées de l’État, où il tue bien plus de soldats que les forces ennemies. Parmi les remèdes les plus fréquents, il y a l’ingurgitation de boudin pour remplacer les humeurs perdues, le « bouchonnage », et le massage des parties avec des substances grasses afin d’atténuer la douleur aigüe.",
     "contractDifficulty": "facile",
     "incubation": {
-      "n": 2,
-      "sides": 10
+      "dice": {
+        "n": 2,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -183,12 +218,18 @@
     "desc": "Les historiens affirment qu’il y a des siècles de cela, les rats ont déferlé sur l’Empire et que la Peste Noire s’ensuivit, décimant neuf âmes sur dix. Des recrudescences inexpliquées de cette horrible maladie apparaissent encore de nos jours et sont systématiquement accompagnées de la présence des pragmatiques nonnes blanches. Le Culte de Shallya a juré de faire tout ce qui était en son pouvoir pour éradiquer cette terrible maladie, et, en application de droits ancestraux qui lui sont conférés, des cordons sanitaires, délimités par des cordes blanches, sont déployés partout ou l’épidémie surgit, afin d’être certain que personne ne puisse entrer ou sortir de la zone de quarantaine. Et ce, jusqu’à ce que la recrudescence soit maîtrisée et que les corps aient été correctement traités.",
     "contractDifficulty": "accessible",
     "incubation": {
-      "n": 0,
-      "sides": 1
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "minutes"
     },
     "duration": {
-      "n": 3,
-      "sides": 10
+      "dice": {
+        "n": 3,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -215,12 +256,18 @@
     "desc": "C’est une maladie très répandue parmi les chasseurs, les fourreurs et les marchands, transmise par les moutons et le bétail, respectivement par la laine et la peau, et par les cadavres de ceux qui sont morts de cette maladie. Elle se manifeste au départ par de légères démangeaisons, très vite remplacées par des boursoufflures roses qui vont se propager sur tout le corps, et particulièrement sur le torse et les bras. Ce n’est pas la forme de vérole la plus grave de l’Empire, mais elle persiste assez longtemps et peut quelquefois s’avérer mortelle.",
     "contractDifficulty": "facile",
     "incubation": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 5,
-      "sides": 10
+      "dice": {
+        "n": 5,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -238,13 +285,19 @@
     "desc": "Tous les ans, la plupart des villes et des cités de l’Empire subissent une épidémie de Vérole urticante. La maladie, qui fait apparaître des boursouflures qui démangent sur la quasi-totalité du corps, reste relativement bénigne et ne provoque que très rarement des complications, et n’est donc un réel souci que pour certains patients qui vont s’inquiéter et les nobliaux oisifs. La maladie est tellement répandue qu’on trouve dans la plupart des temples de Shallya des ampoules remplies de pâte blanche qui permettent de soulager les démangeaisons des malades. Antoine Droste - antoine.droste@gmail.com WARHAMMER FANTASY",
     "contractDifficulty": "accessible",
     "incubation": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 1,
-      "sides": 10,
-      "plus": 7
+      "dice": {
+        "n": 1,
+        "sides": 10,
+        "plus": 7
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -262,12 +315,19 @@
     "desc": "La plupart des gens ont le mal de mer la première fois qu'ils naviguent, mais tous ceux qui le font régulièrement en guérissent après un certain temps. Les elfes ont tendance à être immunisés contre ce mal, au grand agacement des marins nains. Contraction : les Personnages elfes sont immunisés au mal de mer. Pour les autres Personnages, éviter le mal de mer nécessite de réussir un Test de Résistance Complexe (-10) s'ils entreprennent pour la première fois un voyage en mer, ou un Test de Résistance Intermédiaire (+0) par mauvais temps (Vent violent ou plus). Durée : pour le mal de mer venant du manque d'expérience sur les vagues, effectuez un Test de Résistance Intermédiaire (+0) après chaque jour passé en mer. En cas de succès, le Personnage ne souffrira plus jamais de cette forme de mal de mer. Pour le mal de mer parce que l'océan est déchaîné ou à cause d'un autre effet temporaire, effectuez un Test de Résistance Intermédiaire (+0) par heure. Symptômes : malaise, nausée.",
     "contractDifficulty": "complexe",
     "incubation": {
-      "n": 0,
-      "sides": 1
+      "dice": {
+        "n": 0,
+        "sides": 0
+      },
+      "unit": "hours"
     },
     "duration": {
-      "n": 1,
-      "sides": 1
+      "dice": {
+        "n": 0,
+        "sides": 0,
+        "plus": 1
+      },
+      "unit": "hours"
     },
     "symptoms": [
       {
@@ -289,12 +349,18 @@
     "desc": "Le scorbut peut toucher ceux qui restent en mer pendant de longues périodes. La cause exacte de la maladie n'est pas claire. Les Bretonniens croient que passer trop de temps loin de leur nation bien-aimée est naturellement mauvais pour eux. Certains pensent que c'est le signe d'une faiblesse de caractère. La maladie commence par de la fatigue, de la faiblesse physique et de l'ennui. Puis elle provoque des saignements spontanés et donne un sang trop fluide qui peut se transformer en plaies ouvertes. Enfin, les os du malade se fragilisent et ses dents tombent. Contraction : pour chaque mois passé sans nourriture correcte, le Personnage doit effectuer un Test de Résistance Intermédiaire (+0). En cas d'échec, il a contracté le scorbut. Si le Personnage mange régulièrement de la soupe de chou fermenté, il effectue un Test de Résistance Facile (+40) pour ne pas contracter la maladie. Durée : la maladie persiste jusqu'à 1d10 jours après avoir recommencé à manger régulièrement des fruits et des légumes frais. Symptômes : blessé, intoxication alimentaire, malaise, nausée. 1 % de chances de perdre une dent chaque jour.",
     "contractDifficulty": "intermediaire",
     "incubation": {
-      "n": 0,
-      "sides": 1
+      "dice": {
+        "n": 0,
+        "sides": 0
+      },
+      "unit": "hours"
     },
     "duration": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -317,12 +383,19 @@
     "desc": "Le patient est saisi par les douleurs abdominales aiguës qui donnent son nom à cette maladie. Elles surviennent de manière irrégulière, sans prévenir et peuvent être accompagnées de Fièvre, d'Intoxication alimentaire et de Vomissement.\n\nPresque tous les herboristes et les vieilles mégères des campagnes de l'Empire prétendent avoir un remède infaillible ; ils prennent tous la forme d'un bouillon ou d'un thé, et bien que les ingrédients varient, aucun ne semble être plus efficace que l'autre. Le seul véritable traitement de cette maladie consiste à s'hydrater, pour compenser la perte de liquides, et à s'armer de patience.\n\n**Crampes abdominales** — De violentes crampes abdominales saisissent le patient par intermittence, l'obligeant à se tordre de douleur. Ce dernier subit une pénalité de –20 à tous les Tests en raison de la perturbation provoquée par ces crampes douloureuses. Lorsqu'un Test se solde par un échec normal ou pire, il se plie en deux de douleur, incapable de bouger ou d'agir pendant le prochain Round, et gagne l'État *Sonné*. Sur un Échec Impressionnant ou pire, il doit effectuer un Test de **Force Mentale** ou tomber au sol, gagnant l'État *À Terre*. Sur un Échec Stupéfiant, il s'évanouit de douleur, gagnant l'État *Inconscient*. **Traitement :** une infusion d'écorce de saule peut aider un peu (bonus de +10 à tous les Tests résultant de coliques pendant d10 heures), mais il n'y a pas grand-chose d'autre à faire, mis à part attendre que la maladie suive son cours.",
     "contractDifficulty": "intermediaire",
     "incubation": {
-      "n": 0,
-      "sides": 1
+      "dice": {
+        "n": 0,
+        "sides": 0,
+        "plus": 2
+      },
+      "unit": "hours"
     },
     "duration": {
-      "n": 2,
-      "sides": 10
+      "dice": {
+        "n": 2,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {
@@ -350,14 +423,20 @@
     "desc": "Le ver de carie est un parasite inquiétant qui infeste les eaux sales et les denrées alimentaires avariées. D'une longueur d'environ 2,5 cm et d'une largeur de 6 mm, ce ver a une peau marbrée vert-brun qui forme un étrange motif de crâne au niveau de sa tête. Les mères racontent des histoires sur les vers de carie pour effrayer leurs enfants et les inciter à garder la bouche propre. La plupart des habitants du Vieux Monde considèrent donc ces créatures comme de simples mises en garde. Malheureusement, ils se trompent lourdement.\n\n**Effets des vers de carie** — Une fois ingéré, le ver de carie s'enfonce dans les tissus mous de la bouche ou de la gorge. Il sécrète un liquide anesthésiant qui engourdit instantanément la zone affectée. Chaque jour, la victime peut effectuer un Test de **Perception Intermédiaire (+0)** pour remarquer la croissance du ver. En cas de succès, sa présence est remarquée. Un Médecin ou un autre Personnage qualifié peut réaliser un Test de **Guérison Accessible (+20)** pour retirer le ver. Les Personnages non qualifiés doivent effectuer un Test de **Dextérité Intermédiaire (+0)**. Les Personnages qui tentent de se soigner eux-mêmes ont besoin d'un miroir et subissent une pénalité de –10. Si le Test échoue, la personne atteinte gagne l'État *Hémorragique*.\n\nUne fois installé dans la bouche de sa victime, le ver de carie se nourrit de son souffle : l'essence de l'esprit. Tant que ce parasite demeure, son hôte subit une pénalité de –10 à tous les Tests.\n\nAu bout d'une semaine, le parasite se dirige vers le cerveau de sa victime. Chaque jour, cette dernière peut effectuer un Test de **Perception Accessible (+20)**, qui lui permet de remarquer qu'une petite quantité de sang s'écoule de sa bouche. À ce stade, l'élimination du ver de carie nécessite un Test de **Guérison Complexe (–10)** effectué par un Personnage possédant le Talent Chirurgie.\n\nSi le ver de carie n'est pas éliminé dans les trois jours qui suivent, il n'est plus possible de le retirer sans tuer l'hôte. À mesure que le ver s'enfonce dans le cerveau et se prépare à pondre ses œufs, la victime doit effectuer un Test d'**Endurance Accessible (+20)** chaque jour. Chaque jour où le Test est raté, lancez 1d10, ajoutez le nombre de DR négatifs et consultez le tableau suivant :\n\n| Lancer modifié 1d10 | Résultat |\n|---|---|\n| 1–2 | –1d10 Initiative |\n| 3–4 | –1d10 Intelligence |\n| 5–6 | –1d10 Force Mentale |\n| 7–8 | –1d10 Sociabilité |\n| 9 | Gain du Trait Nerveux |\n| 10 | Gain du Trait Stupide |\n| 11–12 | Gain du Trait Bestial |\n| 13 | Mort |\n\nLes œufs du ver de carie éclosent 1d10 jours après avoir été pondus, suintant des narines de la victime à la recherche d'un nouvel hôte. Pour ceux qui survivent à ce processus, toutes les pénalités sont permanentes et ne peuvent être annulées que par des moyens magiques ou miraculeux.",
     "contractDifficulty": "intermediaire",
     "incubation": {
-      "n": 1,
-      "sides": 10,
-      "plus": 5
+      "dice": {
+        "n": 1,
+        "sides": 10,
+        "plus": 5
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 0,
-      "sides": 1,
-      "plus": 7
+      "dice": {
+        "n": 0,
+        "sides": 1,
+        "plus": 7
+      },
+      "unit": "days"
     },
     "symptoms": [],
     "source": {
@@ -371,14 +450,20 @@
     "desc": "N'importe quelle masse d'eau peut être porteuse du ver du Reik, et différents guérisseurs ont toutes sortes de méthodes farfelues qui sont censées les tenir à distance, comme faire tourner l'eau dans sa bouche six fois avant de l'avaler (une superstition courante dans l'Ostermark) ou ne jamais boire de l'eau non vérifiée lorsque Morrslieb est visible (Nordland).\n\nLorsque la minuscule larve du ver du Reik pénètre dans le corps, elle s'enfonce profondément dans les intestins de son hôte, où elle se nourrit et se développe. Rapidement, le système immunitaire de l'hôte est affaibli, ce qui réduit sa résistance à d'autres maladies.\n\nAu bout de trois mois, le ver atteint une longueur d'un mètre et est prêt à entamer la phase suivante de son cycle de vie. Le premier signe visible du parasite est une cloque énorme qui se forme à la surface de la peau. Après une semaine, cette cloque éclate, provoquant une douleur intense semblable à une brûlure. En général, les personnes malades plongent leurs plaies enflammées dans de l'eau froide pour les soulager. Dans ce cas, le ver du Reik, qui a atteint sa maturité, émerge et crache une nouvelle portée de vers sous la forme d'un liquide jaunâtre et écœurant qui se disperse rapidement dans l'eau, prêt à infecter de nouveaux hôtes. Ensuite, le ver meurt.\n\n**Effets des vers du Reik** — Pour chaque période complète de 30 jours d'infection, le Personnage subit une pénalité de –5 à tous les Tests de **Résistance** permettant de résister aux maladies. Cette pénalité est réduite de 1 point par jour après la mort du ver.\n\nPour déterminer où le ver fait surface, effectuez un lancer de Localisation comme lors d'un combat normal. Lorsque l'ampoule se forme, le patient subit une pénalité de –5 % à tous les Tests d'Agilité en raison de l'irritation constante. De plus, si l'ampoule se trouve à un endroit visible, le Personnage subit également une pénalité de –10 aux Tests de Sociabilité.\n\nLe septième jour suivant l'apparition de la cloque, la personne atteinte doit effectuer un Test de Résistance toutes les heures. Au premier échec, ou à la dernière heure du jour si tous les Tests sont réussis, la cloque éclate, infligeant 1 Blessure et provoquant un État *Sonné* en raison de la sensation de brûlure presque insupportable qui en résulte. Ce phénomène persiste jusqu'à ce que la plaie reçoive des soins médicaux, mais il peut être temporairement atténué si l'ampoule est immergée dans l'eau.\n\nIl n'existe pas de traitement connu contre les vers du Reik, si ce n'est de laisser le cycle suivre son cours. Certains médecins ont essayé de le retirer du patient une fois que la cloque s'est formée et que l'emplacement où se cachait ce parasite est devenu visible, mais cette approche fait généralement plus de mal que de bien, et le patient met plus de temps à s'en remettre.",
     "contractDifficulty": "intermediaire",
     "incubation": {
-      "n": 1,
-      "sides": 10,
-      "plus": 85
+      "dice": {
+        "n": 1,
+        "sides": 10,
+        "plus": 85
+      },
+      "unit": "days"
     },
     "duration": {
-      "n": 0,
-      "sides": 1,
-      "plus": 7
+      "dice": {
+        "n": 0,
+        "sides": 1,
+        "plus": 7
+      },
+      "unit": "days"
     },
     "symptoms": [],
     "source": {
@@ -392,12 +477,18 @@
     "desc": "La fièvre cérébrale pourpre est une maladie redoutée. La tête gonfle jusqu'à atteindre une taille impressionnante et s'accompagne de fièvres et de délires. Le visage prend une couleur prune effrayante, les yeux sortent de leurs orbites et la langue gonfle jusqu'à ce que la bouche ne puisse plus la contenir. La mort survient généralement au bout d'une semaine.",
     "contractDifficulty": "accessible",
     "incubation": {
-      "n": 0,
-      "sides": 1
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "hours"
     },
     "duration": {
-      "n": 1,
-      "sides": 10
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
     },
     "symptoms": [
       {

@@ -25,6 +25,7 @@ import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize } from '../../engine/size';
 import { formatDice } from '../../engine/dice';
+import { formatDiseaseTime } from '../../engine/disease';
 import { costPerEnc } from '../../engine/harvest';
 import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../state/scene';
@@ -422,8 +423,8 @@ export const CODEX: CodexCategory[] = [
       sub: m.symptoms.map((s) => symptomLabel(s.symptomId)).join(', '),
       meta: facts(
         fact('Contraction', DIFFICULTY_LABELS[m.contractDifficulty]),
-        fact('Incubation', `${diceLabel(m.incubation)} jours`),
-        fact('Durée', `${diceLabel(m.duration)} jours`),
+        fact('Incubation', formatDiseaseTime(m.incubation)),
+        fact('Durée', formatDiseaseTime(m.duration)),
       ),
       sections: sections({
         title: 'Symptômes', layout: 'list',

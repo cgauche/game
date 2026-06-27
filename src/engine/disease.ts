@@ -5,8 +5,10 @@
  * qu'en TYPE (`GameOp`), jamais `applyOps` — les conséquences `onFail` sont appliquées CÔTÉ STATE
  * (`restFlow`, via `applyOps`) → pas de cycle ops↔disease.
  *
- * Cycle de vie (l.10-24) : Contraction (Test raté) → Incubation (jours) → symptômes ACTIFS → Durée (jours)
- * → résolution (capacité `endTest` : Test de fin, sinon guérison naturelle). Décompté JOUR PAR JOUR (`rest.ts`).
+ * Cycle de vie (l.10-24) : Contraction (Test raté) → Incubation → symptômes ACTIFS → Durée → résolution
+ * (capacité `endTest` : Test de fin, sinon guérison naturelle). Incubation/durée RAW en jours, heures OU
+ * minutes (`DiseaseTime`), décomptées en MINUTES écoulées (`tickDisease`) ; les Tests de cycle RAW
+ * « par jour » (symptômes/gangrène) restent cadencés à la JOURNÉE pleine.
  *
  * SYMPTÔMES = DONNÉE (`symptoms.json`, éditable au Codex), pas un enum. La mécanique vit sur le symptôme
  * en 3 canaux (comme un trait/qualité) — ce module ne fait que les LIRE :
@@ -19,10 +21,40 @@
  *    `nausea` (combat), `endTest` (Persistant).
  */
 import { Combatant, Difficulty, UpkeepDeferTest } from './types';
-import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
+import { RNG, defaultRNG, roll, type DiceSpec, rollDice, formatDice } from './dice';
+import { MINUTES_PER_DAY } from './clock';
 import { rollTest } from './tests';
 import { maladies, diseaseLabel, findSymptomById, symptomLabel, type SymptomCapabilities } from '../data';
 import type { GameOp } from './ops';
+
+/** Unité d'un temps de maladie (incubation/durée). La base de calcul/stockage reste la MINUTE (`clock.ts`). */
+export type TimeUnit = 'days' | 'hours' | 'minutes';
+const UNIT_MINUTES: Record<TimeUnit, number> = { days: MINUTES_PER_DAY, hours: 60, minutes: 1 };
+
+/** Incubation/durée d'une maladie : un jet de dés (`dice`) + son `unit`. Source UNIQUE (RAW « Incubation »/
+ *  « Durée »), convertie en MINUTES par `rollDiseaseTime` → plus de perte « sous-journalier ≈ 0 jour ».
+ *  Une valeur FIXE (Colique « 2 heures ») = `{ dice:{n:0,sides:0,plus:2}, unit:'hours' }` ; « instantanée »
+ *  = `{ dice:{n:0,sides:0}, unit:'hours' }` (= 0). */
+export interface DiseaseTime {
+  dice: DiceSpec;
+  unit: TimeUnit;
+}
+/** Tire un `DiseaseTime` → MINUTES (jet × facteur d'unité). PUR (RNG injecté). */
+export const rollDiseaseTime = (t: DiseaseTime, rng: RNG = defaultRNG): number => rollDice(t.dice, rng) * UNIT_MINUTES[t.unit];
+/** Écriture d'affichage : « 1d10 heures », « 3d10+10 jours », « 2 heures » (valeur fixe). */
+export function formatDiseaseTime(t: DiseaseTime): string {
+  const label = t.unit === 'days' ? 'jours' : t.unit === 'hours' ? 'heures' : 'minutes';
+  const fixed = t.dice.n === 0 || t.dice.sides === 0; // pas de dé → valeur fixe (le seul `plus`)
+  return `${fixed ? String(t.dice.plus ?? 0) : formatDice(t.dice)} ${label}`;
+}
+
+/** Restant d'une instance (base MINUTES) → libellé humain à l'échelle la plus parlante (j / h / min). */
+export function formatRemaining(minutes: number): string {
+  const m = Math.max(0, minutes);
+  if (m >= MINUTES_PER_DAY) return `${Math.round(m / MINUTES_PER_DAY)} j`;
+  if (m >= 60) return `${Math.round(m / 60)} h`;
+  return `${Math.round(m)} min`;
+}
 
 /** Instance de symptôme sur une maladie : RÉFÉRENCE un symptôme de `symptoms.json` par `symptomId`,
  *  + `severity`/`difficulty` PAR-INSTANCE (Convulsions Modérée → `severePassive` ; Persistant
@@ -43,8 +75,10 @@ export interface DiseaseDef {
   desc: string;
   /** Difficulté du Test de Contraction (pour mémoire/journal — la contraction est déclenchée par l'appelant). */
   contractDifficulty: Difficulty;
-  incubation: DiceSpec;
-  duration: DiceSpec;
+  /** Incubation RAW (jours/heures/minutes) — tirée en minutes à la contraction. */
+  incubation: DiseaseTime;
+  /** Durée active RAW (jours/heures/minutes) — tirée en minutes à la contraction. */
+  duration: DiseaseTime;
   symptoms: DiseaseSymptom[];
   /** Vérole Urticante (l.97) : « vous ne pouvez pas l'attraper une seconde fois » — immunité après guérison. */
   immuneAfterCure?: boolean;
@@ -55,10 +89,11 @@ export interface Disease {
   name: string;
   symptoms: DiseaseSymptom[];
   phase: 'incubation' | 'active';
-  /** Jours restants dans la phase courante (incubation, puis durée active). */
-  daysLeft: number;
-  /** Durée active (mémorisée pendant l'incubation pour la basculer une fois l'incubation finie). */
-  durationDays: number;
+  /** MINUTES restantes dans la phase courante (incubation, puis durée active). Base = la minute
+   *  (`clock.ts`) → une incubation/durée sous-journalière (heures/minutes) est décomptée fidèlement. */
+  minutesLeft: number;
+  /** Durée active EN MINUTES (mémorisée pendant l'incubation pour la basculer une fois l'incubation finie). */
+  durationMinutes: number;
   /** Difficulté du Test « persistant » de fin de durée (dérivée des symptômes). */
   persistDifficulty?: Difficulty;
   /** Gangrène (l.135+) : échecs cumulés du Test journalier — au-delà du BE, la Localisation est perdue. */
@@ -88,8 +123,9 @@ export const DISEASES = {
   pesteNoire: 'peste-noire', veroleDuTanneur: 'verole-du-tanneur', veroleUrticante: 'verole-urticante',
 } as const;
 
-/** Construit une instance de maladie (tire incubation/durée). `opts.incubation`/`opts.duration` figent les
- *  jets (tests, ou contraction « instantanée » depuis un autre symptôme — l.32). Renvoie `null` si inconnue. */
+/** Construit une instance de maladie (tire incubation/durée → MINUTES). `opts.incubation`/`opts.duration`
+ *  figent les jets EN JOURS (tests, ou contraction « instantanée » depuis un autre symptôme — l.32 :
+ *  `{ incubation: 0 }`). Renvoie `null` si inconnue. */
 export function contractDisease(
   name: string,
   rng: RNG = defaultRNG,
@@ -97,15 +133,15 @@ export function contractDisease(
 ): Disease | null {
   const def = DISEASE_DEFS[name];
   if (!def) return null;
-  const incub = Math.max(0, opts?.incubation ?? rollDice(def.incubation, rng));
-  const dur = Math.max(1, opts?.duration ?? rollDice(def.duration, rng));
+  const incub = Math.max(0, opts?.incubation != null ? opts.incubation * MINUTES_PER_DAY : rollDiseaseTime(def.incubation, rng));
+  const dur = Math.max(1, opts?.duration != null ? opts.duration * MINUTES_PER_DAY : rollDiseaseTime(def.duration, rng));
   const persist = def.symptoms.find((s) => symptomHasCapability(s.symptomId, 'endTest'))?.difficulty;
   return {
     name,
     symptoms: def.symptoms,
     phase: incub > 0 ? 'incubation' : 'active',
-    daysLeft: incub > 0 ? incub : dur,
-    durationDays: dur,
+    minutesLeft: incub > 0 ? incub : dur,
+    durationMinutes: dur,
     persistDifficulty: persist,
   };
 }
@@ -229,18 +265,24 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
   if (success) cure();
   else if (sl <= -6) { remove(); log.push(`${c.name} : ${diseaseLabel(dz.name)} dégénère (échec stupéfiant).`); log.push(...contractDiseaseOnce(c, 'infection-du-sang', rng)); }
   else if (sl <= -2) { remove(); log.push(`${c.name} : ${diseaseLabel(dz.name)} s'infecte (échec).`); log.push(...contractDiseaseOnce(c, 'blessure-purulente', rng)); }
-  else { const extra = roll(1, 10, rng); dz.daysLeft = extra; log.push(`${c.name} : ${diseaseLabel(dz.name)} persiste (+${extra} jours).`); }
+  else { const extra = roll(1, 10, rng); dz.minutesLeft = extra * MINUTES_PER_DAY; log.push(`${c.name} : ${diseaseLabel(dz.name)} persiste (+${extra} jours).`); }
   return log;
 }
 
 /**
- * Décompte de `days` jours de maladie pour `c` (appelé jour par jour par le repos). Mute `c.diseases`,
- * renvoie le journal. `resistVal` = Résistance effective (E + augmentations de Résistance) ; `beForGangrene`
- * = Bonus d'Endurance SEUL (seuil de Gangrène, ≠ resistVal). Tous deux passés par l'appelant (cycle évité). Par jour :
- *  - incubation : −1 jour ; à 0 → symptômes ACTIFS (durée mémorisée) ;
- *  - active : symptômes à `onTick` (Blessé, Toxine) → Test de cycle quotidien (difficulté de l'onTick) ;
- *             capacité `amputation` (Gangrène) → Test journalier + comptage > BE → Localisation perdue ;
- *             −1 jour ; à 0 → résolution (capacité `endTest`/`persistDifficulty`, l.162), sinon guérison.
+ * Décompte de `minutes` de maladie écoulées pour `c` (l'entretien quotidien feed `MINUTES_PER_DAY` par
+ * journée calendaire ; les tests peuvent passer un délai sous-journalier). Mute `c.diseases`, renvoie le
+ * journal. `resistVal` = Résistance effective (E + augmentations) ; `beForGangrene` = Bonus d'Endurance
+ * SEUL (seuil de Gangrène, ≠ resistVal). Tous deux passés par l'appelant (cycle évité).
+ *
+ * Le délai est découpé en PAS : autant de JOURNÉES PLEINES (`MINUTES_PER_DAY`) que possible, puis un
+ * reliquat sous-journalier. Par pas :
+ *  - incubation : −`pas` minutes ; à ≤0 → symptômes ACTIFS (durée mémorisée → `durationMinutes`) ;
+ *  - active : sur une JOURNÉE PLEINE seulement (Tests RAW « par jour »), symptômes à `onTick` (Blessé,
+ *             Toxine) → Test de cycle quotidien, et capacité `amputation` (Gangrène) → Test journalier ;
+ *             puis −`pas` minutes ; à ≤0 → résolution (capacité `endTest`/`persistDifficulty`, l.162),
+ *             sinon guérison. Une durée sous-journalière (heures/minutes) s'épuise donc DANS la journée,
+ *             sans déclencher de Test « quotidien ».
  *
  * `defer` (CASCADE de nuit, journée unique) : les Tests de Résistance (cycle `onTick`/gangrène/persistant)
  * sont COLLECTÉS en étapes influençables au lieu d'être roulés ici ; l'état avance (incubation/durée),
@@ -248,11 +290,11 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
  * d'un `onTick` (GameOp `onFail`) est appliquée par l'applier `diseaseTick` côté state (restFlow) ;
  * gangrène/persistant par `applyDiseaseGangrene/Persist`.
  */
-export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10)): string[] {
-  if (!c.diseases?.length || days <= 0) return [];
+export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10)): string[] {
+  if (!c.diseases?.length || minutes <= 0) return [];
   const log: string[] = [];
-  // On boucle jour par jour ; les nouvelles maladies (Blessure Purulente / Infection du Sang) sont
-  // accumulées puis ajoutées en fin de tick (elles n'évoluent qu'aux jours suivants).
+  // On boucle par PAS (journées pleines + reliquat) ; les nouvelles maladies (Blessure Purulente /
+  // Infection du Sang) sont accumulées puis ajoutées en fin de tick (elles n'évoluent qu'aux pas suivants).
   const contracted: Disease[] = [];
   const contractOnce = (name: string) => {
     if (c.diseases!.some((d) => d.name === name) || contracted.some((d) => d.name === name)) return false;
@@ -264,14 +306,22 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
     return true;
   };
 
-  for (let day = 0; day < days; day++) {
+  // Pas d'avancement : N journées pleines (cycle de Tests RAW « par jour ») + reliquat sous-journalier.
+  const fullDays = Math.floor(minutes / MINUTES_PER_DAY);
+  const remainder = minutes - fullDays * MINUTES_PER_DAY;
+  const steps: number[] = [];
+  for (let i = 0; i < fullDays; i++) steps.push(MINUTES_PER_DAY);
+  if (remainder > 0) steps.push(remainder);
+
+  for (const stepMin of steps) {
+    const isFullDay = stepMin === MINUTES_PER_DAY; // Tests de cycle RAW « par jour » : journée pleine uniquement
     const survivors: Disease[] = [];
     for (const dz of c.diseases) {
       if (dz.phase === 'incubation') {
-        dz.daysLeft -= 1;
-        if (dz.daysLeft <= 0) {
+        dz.minutesLeft -= stepMin;
+        if (dz.minutesLeft <= 0) {
           dz.phase = 'active';
-          dz.daysLeft = dz.durationDays;
+          dz.minutesLeft = dz.durationMinutes;
           log.push(`${c.name} : les symptômes de « ${diseaseLabel(dz.name)} » se déclarent.`);
         }
         survivors.push(dz);
@@ -280,27 +330,30 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
       // active — symptômes à Test de cycle quotidien (`onTick` : Blessé, Toxine). DONNÉE-DRIVEN : on lit
       // l'onTick du symptôme (difficulté + conséquence GameOp `onFail`). DIFFÉRÉ en cascade influençable
       // (l'`onFail` est appliqué par l'applier d'étape côté state via applyOps) ; sinon roulé ici (chemin
-      // non-différé/tests : on interprète la conséquence `contractDisease`).
-      for (const inst of dz.symptoms) {
-        const tick = symptomOnTick(inst);
-        if (!tick) continue;
-        if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: resistVal, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
-        else if (!rollTest(resistVal, tick.difficulty, rng).success) for (const op of tick.onFail) if (op.op === 'contractDisease') contractOnce(op.disease);
-      }
-      // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
-      // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
-      if (diseaseHasCapability(dz, 'amputation') && !dz.gangreneLost) {
-        if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, be: beForGangrene } });
-        else if (!rollTest(resistVal, 'accessible', rng).success) {
-          dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
-          if (dz.gangreneFails > beForGangrene) {
-            dz.gangreneLost = true;
-            log.push(`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`);
-          } else log.push(`${c.name} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`);
+      // non-différé/tests : on interprète la conséquence `contractDisease`). Cadence RAW « par jour » →
+      // uniquement sur une JOURNÉE PLEINE (une durée sous-journalière s'épuise sans Test « quotidien »).
+      if (isFullDay) {
+        for (const inst of dz.symptoms) {
+          const tick = symptomOnTick(inst);
+          if (!tick) continue;
+          if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: resistVal, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
+          else if (!rollTest(resistVal, tick.difficulty, rng).success) for (const op of tick.onFail) if (op.op === 'contractDisease') contractOnce(op.disease);
+        }
+        // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
+        // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
+        if (diseaseHasCapability(dz, 'amputation') && !dz.gangreneLost) {
+          if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, be: beForGangrene } });
+          else if (!rollTest(resistVal, 'accessible', rng).success) {
+            dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
+            if (dz.gangreneFails > beForGangrene) {
+              dz.gangreneLost = true;
+              log.push(`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`);
+            } else log.push(`${c.name} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`);
+          }
         }
       }
-      dz.daysLeft -= 1;
-      if (dz.daysLeft > 0) {
+      dz.minutesLeft -= stepMin;
+      if (dz.minutesLeft > 0) {
         survivors.push(dz);
         continue;
       }
@@ -323,7 +376,7 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
             contractOnce('blessure-purulente');
           } else {
             const extra = roll(1, 10, rng); // échec minime → +1d10 jours (l.163)
-            dz.daysLeft = extra;
+            dz.minutesLeft = extra * MINUTES_PER_DAY;
             log.push(`${c.name} : ${diseaseLabel(dz.name)} persiste (+${extra} jours).`);
             survivors.push(dz);
           }

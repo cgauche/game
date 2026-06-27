@@ -5,6 +5,7 @@ import { cureCriticalWounds, traumaById, dechirureFractureFicheId } from './trau
 import type { HitLocation } from './types';
 const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
 import { contractDisease } from './disease';
+import { MINUTES_PER_DAY } from './clock';
 import { stacks } from './conditions';
 import type { Combatant } from './types';
 
@@ -47,9 +48,9 @@ describe('reduceDiseaseDays — Bénédiction de Convalescence (LDB 41)', () => 
   it('−1 jour (min 1), UNE seule fois par maladie', () => {
     const c = dummy({ diseases: [sick('infection-mineure', 5)] });
     blessDiseaseDuration(c, 1);
-    expect(c.diseases![0].daysLeft).toBe(4);
+    expect(c.diseases![0].minutesLeft).toBe(4 * MINUTES_PER_DAY);
     const log = blessDiseaseDuration(c, 1); // 2e tentative sur la même maladie → refus
-    expect(c.diseases![0].daysLeft).toBe(4);
+    expect(c.diseases![0].minutesLeft).toBe(4 * MINUTES_PER_DAY);
     expect(log.join(' ')).toMatch(/aucune maladie/);
   });
 });

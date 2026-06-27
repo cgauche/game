@@ -30,6 +30,7 @@ import { rollTest } from './tests';
 import { effectiveChar, bonus } from './characteristics';
 import { addCondition, removeCondition, stacks, hasCondition, nightmareCheck } from './conditions';
 import { tickDisease, activeMalaiseCount, diseaseBlesseCount, DISEASE_DEFS } from './disease';
+import { MINUTES_PER_DAY } from './clock';
 import { isStarving } from './provisions';
 
 /** États à dégâts périodiques qui empêchent un repos réparateur (LDB 16 l.105 : on ne « reprend pas ses
@@ -56,10 +57,11 @@ export function restResistVal(c: Combatant): number {
 export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor = false, defer?: UpkeepDeferTest): string[] {
   if (c.dead || !c.diseases?.length) return [];
   const malaiseStart = activeMalaiseCount(c);
-  const log = tickDisease(c, 1, rng, restResistVal(c), defer, bonus(effectiveChar(c, 'E')));
+  const log = tickDisease(c, MINUTES_PER_DAY, rng, restResistVal(c), defer, bonus(effectiveChar(c, 'E')));
   if (caredFor) {
     for (const dz of c.diseases ?? []) {
-      if (dz.phase === 'active' && dz.daysLeft > 1) dz.daysLeft -= 1;
+      // −1 JOUR supplémentaire par maladie active, minimum 1 jour restant (LDB 09-Compétences).
+      if (dz.phase === 'active' && dz.minutesLeft > MINUTES_PER_DAY) dz.minutesLeft -= MINUTES_PER_DAY;
     }
   }
   const malaiseDelta = activeMalaiseCount(c) - malaiseStart;
@@ -99,8 +101,9 @@ export function blessDiseaseDuration(c: Combatant, days = 1): string[] {
   const dz = (c.diseases ?? []).find((d) => d.phase === 'active' && !d.convalescenceBlessed);
   if (!dz) return [`${c.name} : aucune maladie active à soulager (ou déjà bénie).`];
   dz.convalescenceBlessed = true;
-  dz.daysLeft = Math.max(1, dz.daysLeft - days);
-  return [`${c.name} : la durée de « ${dz.name} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${dz.daysLeft} j).`];
+  dz.minutesLeft = Math.max(MINUTES_PER_DAY, dz.minutesLeft - days * MINUTES_PER_DAY); // −`days` jour(s), min 1 jour restant
+  const resteJ = Math.round(dz.minutesLeft / MINUTES_PER_DAY);
+  return [`${c.name} : la durée de « ${dz.name} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${resteJ} j).`];
 }
 
 /** Jet d'une nuit (bilan structuré de la modale de Repos) : récupération ou cauchemars. */

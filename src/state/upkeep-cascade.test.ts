@@ -62,7 +62,7 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
     const c = hero({ diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
     useGame.setState({ party: [c], gameTime: 12 * 60, lastUpkeepDay: 0 });
     useGame.getState().restParty(); // dort jusqu'à l'aube → 1 franchissement de jour
-    expect(useGame.getState().party[0].diseases![0].daysLeft).toBe(5); // 6 − 1, PAS − 2
+    expect(useGame.getState().party[0].diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY); // 6 − 1 jour, PAS − 2
   });
 
   it('un contrecoup d’incantation à durée d’horloge expiré est purgé par le REPOS (bug A1)', () => {

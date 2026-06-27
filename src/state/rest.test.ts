@@ -7,7 +7,7 @@ const tk = (k: 'dechirure' | 'fracture', s: 'mineur' | 'majeur', loc: HitLocatio
 import { contractDisease } from '../engine/disease';
 import { hasCondition, stacks } from '../engine/conditions';
 import { seedBattleRng } from './battleRng';
-import { dayPhase } from '../engine/clock';
+import { dayPhase, MINUTES_PER_DAY } from '../engine/clock';
 import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 
@@ -100,7 +100,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     const alone = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
     dailyDiseaseUpkeep(cared, { int: () => 10 }, true);  // soigné : tick naturel −1 + soins −1
     dailyDiseaseUpkeep(alone, { int: () => 10 }, false); // seul : tick naturel −1
-    expect(cared.diseases![0].daysLeft).toBe(alone.diseases![0].daysLeft - 1);
+    expect(cared.diseases![0].minutesLeft).toBe(alone.diseases![0].minutesLeft - MINUTES_PER_DAY);
   });
 
   it('maladie : un symptôme « blessé » bloque la guérison d’1 PB (LDB 20 l.110)', () => {

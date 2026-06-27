@@ -16,6 +16,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import { makeRNG } from './dice';
+import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, tickDisease, diseasePassiveOps } from './disease';
 import { findSymptomById, findDiseaseById } from '../data';
 
@@ -25,11 +26,15 @@ const sick = (over: Partial<Combatant> = {}): Combatant =>
 // ── Maladie ────────────────────────────────────────────────────────────────────────────────────
 
 describe('Fièvre Cérébrale Pourpre — EDO App.2 p.145', () => {
-  it("contractDisease → instance active immédiatement (incubation 1d10 heures ≡ 0 jour dans le moteur)", () => {
-    // incubation {n:0, sides:1} = 0 → phase 'active' dès la contraction (comme Colique 2 heures)
-    const dz = contractDisease('fievre-cerebrale-pourpre', makeRNG(42))!;
+  it("contractDisease → incubation 1d10 HEURES (sous-journalière, EDO App.2) — vrai temps, plus arrondi à 0", () => {
+    // incubation 1d10 heures (jet=5 → 300 min) : la dette « heures ≈ 0 jour » est levée → phase incubation.
+    const dz = contractDisease('fievre-cerebrale-pourpre', { int: () => 5 })!;
     expect(dz).not.toBeNull();
-    expect(dz.phase).toBe('active');
+    expect(dz.phase).toBe('incubation');
+    expect(dz.minutesLeft).toBe(5 * 60);
+    const c = sick({ diseases: [dz] });
+    tickDisease(c, 5 * 60, { int: () => 5 }, 80); // 5 h écoulées (sous la journée) → symptômes ACTIFS
+    expect(c.diseases![0].phase).toBe('active');
   });
 
   it("symptômes requis (6) : convulsions, delire, fievre, gonflement, persistant, toxine", () => {
@@ -64,7 +69,7 @@ describe('Fièvre Cérébrale Pourpre — EDO App.2 p.145', () => {
     const dz = contractDisease('fievre-cerebrale-pourpre', makeRNG(1), { incubation: 0, duration: 1 })!;
     const c = sick({ diseases: [dz] });
     // d100 = 1 pour tous les jets → Toxine Très Facile (cible E+60) et Persistant Difficile (cible E−20) réussis
-    const log = tickDisease(c, 1, { int: () => 1 }, 80);
+    const log = tickDisease(c, MINUTES_PER_DAY, { int: () => 1 }, 80);
     expect(c.diseases).toHaveLength(0);
     expect(log.some((l) => /guérit/.test(l))).toBe(true);
   });

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Combatant } from './types';
 import { RNG, makeRNG } from './dice';
+import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, tickDisease } from './disease';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre. */
@@ -21,7 +22,7 @@ describe('Mal de mer (MDG ch.14) — cycle de maladie réutilisé', () => {
 
   it('guérison (Test de fin réussi) → immunité « ne souffrira plus jamais de cette forme » (immuneAfterCure)', () => {
     const c = sick({ diseases: [contractDisease('mal-de-mer', seq([]), { incubation: 0, duration: 1 })!] });
-    tickDisease(c, 1, seq([3]), 60); // fin de durée → Résistance 3/60 = réussite auto → guéri
+    tickDisease(c, MINUTES_PER_DAY, seq([3]), 60); // fin de durée → Résistance 3/60 = réussite auto → guéri
     expect(c.diseases).toHaveLength(0);
     expect(c.diseaseImmunities).toContain('mal-de-mer');
   });
@@ -32,7 +33,7 @@ describe('Scorbut (MDG ch.14) — cycle de maladie réutilisé', () => {
     const dz = contractDisease('scorbut', makeRNG(1), { incubation: 0 })!;
     expect(dz.phase).toBe('active');
     expect(dz.symptoms.map((s) => s.symptomId).sort()).toEqual(['blesse', 'intoxication', 'malaise', 'nausee']);
-    expect(dz.durationDays).toBeGreaterThanOrEqual(1);
-    expect(dz.durationDays).toBeLessThanOrEqual(10);
+    expect(dz.durationMinutes).toBeGreaterThanOrEqual(1 * MINUTES_PER_DAY);
+    expect(dz.durationMinutes).toBeLessThanOrEqual(10 * MINUTES_PER_DAY);
   });
 });
