@@ -26,6 +26,9 @@ describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () =
     expect(CHAR_LABELS.Soc).toBe('Sociabilité');
     expect(DIFFICULTY_LABELS.tresFacile).toBe(t('difficulty.tresFacile'));
     expect(DIFFICULTY_LABELS.intermediaire).toBe('Intermédiaire (+0)');
+    // Difficultés extrêmes EDO (App.2) : labels dérivés du catalogue comme les autres.
+    expect(DIFFICULTY_LABELS.presqueImpossible).toBe(t('difficulty.presqueImpossible'));
+    expect(DIFFICULTY_LABELS.impossible).toBe('Impossible (−50)');
     expect(HIT_LOCATION_LABELS.tete).toBe(t('hitloc.tete'));
     expect(HIT_LOCATION_LABELS.jambeD).toBe('Jambe droite');
     expect(DEFENSE_LABEL.parade).toBe('Parade');

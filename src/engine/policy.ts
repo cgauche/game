@@ -169,7 +169,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 0,
     max: 100,
     step: 10,
-    hint: 'Plafond de la SOMME des malus de Difficulté d’un Test (RAW −30 = Très Difficile), exprimé en valeur positive.',
+    hint: 'Plafond de la SOMME des malus de Difficulté d’un Test (RAW −30 = Très Difficile), exprimé en valeur positive. Règle optionnelle EDO (Difficultés extrêmes, réf EDO App.2) : porter ce plafond à 50.',
   },
   {
     id: 'combat-frappe-mortelle',

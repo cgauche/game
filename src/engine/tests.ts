@@ -12,8 +12,8 @@ import { type TestPolicy, getTestPolicy } from './testPolicy';
 /** Chiffre des dizaines d'un d100 (00 = 100 → 10). SOURCE UNIQUE du calcul de DR. */
 export const tens = (n: number): number => Math.floor(n / 10);
 
-/** Échelle de Difficulté ORDONNÉE, du plus FACILE (tresFacile +60) au plus difficile (tresDifficile −30). */
-export const DIFFICULTY_LADDER: Difficulty[] = ['tresFacile', 'facile', 'accessible', 'intermediaire', 'complexe', 'difficile', 'tresDifficile'];
+/** Échelle de Difficulté ORDONNÉE, du plus FACILE (tresFacile +60) au plus difficile (impossible −50, EDO App.2). */
+export const DIFFICULTY_LADDER: Difficulty[] = ['tresFacile', 'facile', 'accessible', 'intermediaire', 'complexe', 'difficile', 'tresDifficile', 'presqueImpossible', 'impossible'];
 
 /** Difficulté (clé) depuis un libellé FR — paramétrage générique d'un Test par l'argument d'instance
  *  d'un porteur (« Venin (Difficile) » → difficile). Ordre des tests : variantes « Très » avant la base.
@@ -24,6 +24,9 @@ export function difficultyFromLabel(label: string | undefined): Difficulty {
   if (l.includes('facile')) return 'facile';
   if (l.includes('accessible')) return 'accessible';
   if (l.includes('très difficile') || l.includes('tres difficile')) return 'tresDifficile';
+  // EDO App.2 : « presque impossible » AVANT « impossible » (sinon le second matche le premier).
+  if (l.includes('presque impossible')) return 'presqueImpossible';
+  if (l.includes('impossible')) return 'impossible';
   if (l.includes('complexe')) return 'complexe';
   if (l.includes('difficile')) return 'difficile';
   return 'intermediaire';

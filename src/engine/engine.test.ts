@@ -414,6 +414,10 @@ describe('Difficulté (canon : Accessible/Complexe/Difficile)', () => {
     expect(keys).not.toContain('moyen');
     expect(keys).not.toContain('epique');
   });
+  it('Difficultés extrêmes EDO (App.2 l.156-165) : Presque Impossible −40, Impossible −50', () => {
+    expect(DIFFICULTY_MODIFIERS.presqueImpossible).toBe(-40);
+    expect(DIFFICULTY_MODIFIERS.impossible).toBe(-50);
+  });
 });
 
 describe('Test opposé (départage canon)', () => {

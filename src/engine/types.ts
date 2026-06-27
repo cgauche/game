@@ -385,6 +385,8 @@ export interface ActiveEffect {
   apAll?: number;
   /** PA temporisés à une Localisation précise (op `ap` avec `loc`) — lus par effectiveArmourAt. */
   apAt?: Partial<Record<HitLocation, number>>;
+  /** Ce PA (apAll/apAt) ne peut pas servir à la Déviation Critique (op ap avec noDeviation — LDB 63 l.30 + EDO App.2 l.196). Le PA de sort (couche magique) n'entre de toute façon pas dans le PA déviatable. */
+  noDeviation?: boolean;
   /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : le
    *  `TraitInstance` exact posé dans `c.traits`, retiré (une instance) à l'expiration (engine/grantedTraits). */
   grantedTrait?: import('./statEntry').TraitInstance;
@@ -962,7 +964,10 @@ export type Difficulty =
   | 'intermediaire' // +0
   | 'complexe' // -10
   | 'difficile' // -20
-  | 'tresDifficile'; // -30
+  | 'tresDifficile' // -30
+  // Difficultés extrêmes de L'Ennemi dans l'Ombre (EDO App.2 l.156-165, « MAIS C'EST IMPOSSIBLE ! »).
+  | 'presqueImpossible' // -40
+  | 'impossible'; // -50
 
 export const DIFFICULTY_MODIFIERS: Record<Difficulty, number> = {
   tresFacile: 60,
@@ -972,6 +977,8 @@ export const DIFFICULTY_MODIFIERS: Record<Difficulty, number> = {
   complexe: -10,
   difficile: -20,
   tresDifficile: -30,
+  presqueImpossible: -40,
+  impossible: -50,
 };
 
 /** Spec d'un Test de Résistance d'entretien DIFFÉRÉ (cascade de nuit influençable) : le moteur le
@@ -994,4 +1001,6 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   complexe: t('difficulty.complexe'),
   difficile: t('difficulty.difficile'),
   tresDifficile: t('difficulty.tresDifficile'),
+  presqueImpossible: t('difficulty.presqueImpossible'),
+  impossible: t('difficulty.impossible'),
 };

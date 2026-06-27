@@ -23,6 +23,9 @@ export const fr = {
   'difficulty.complexe': 'Complexe (−10)',
   'difficulty.difficile': 'Difficile (−20)',
   'difficulty.tresDifficile': 'Très difficile (−30)',
+  // Difficultés extrêmes de L'Ennemi dans l'Ombre (EDO App.2 l.156-165).
+  'difficulty.presqueImpossible': 'Presque Impossible (−40)',
+  'difficulty.impossible': 'Impossible (−50)',
   // Localisations d'impact (LDB) — migré de engine/types.ts (HIT_LOCATION_LABELS).
   'hitloc.tete': 'Tête',
   'hitloc.brasG': 'Bras gauche',
