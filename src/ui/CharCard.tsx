@@ -7,6 +7,7 @@ import { CharStatsGrid } from './CharStatsGrid';
 import { ZONES } from './EquipmentPanel';
 import { SkillChip, TalentChip, EntityRef } from './EntityChip';
 import { FateChips } from './FateChips';
+import { CodexRef } from './compendium/CodexRef';
 
 export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
   // F4/T3 : aperçu d'équipement sur la mini-carte — armes en main + PA par ZONE (le défaut était
@@ -37,11 +38,11 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       <CharStatsGrid value={(k) => hero.characteristics[k]} />
       <div className="char-vitals">
         <div className="stat-chip">
-          <span className="sc-label">Blessures</span>
+          <span className="sc-label"><CodexRef category="characteristics" label="Blessure">Blessures</CodexRef></span>
           <span className="sc-value">{hero.wounds.max}</span>
         </div>
         <div className="stat-chip">
-          <span className="sc-label">Mouvement</span>
+          <span className="sc-label"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
           <span className="sc-value">{hero.movement}</span>
         </div>
         <FateChips c={hero} />

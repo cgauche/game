@@ -425,11 +425,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
       {section === 'profil' && (<>
         <div className="sheet-vitals">
           <div className="stat-chip pv">
-            <span className="sc-label">Blessures</span>
+            <span className="sc-label"><CodexRef category="characteristics" label="Blessure">Blessures</CodexRef></span>
             <span className="sc-value">{hero.wounds.current}/{hero.wounds.max}</span>
           </div>
           <div className="stat-chip">
-            <span className="sc-label">Mouvement</span>
+            <span className="sc-label"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
             <span className="sc-value">{hero.movement}</span>
           </div>
           <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
