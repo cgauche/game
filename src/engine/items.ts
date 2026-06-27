@@ -459,24 +459,22 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
 }
 
 let loadoutCounter = 0;
-/** Noms canoniques des DEUX sets d'armes fixes de la fiche (façon jeu vidéo). */
-export const WEAPON_SET_NAMES = ['Set I', 'Set II'] as const;
-/** Génère les DEUX sets d'armes fixes d'un héros qui n'en a pas : « Set I » = meilleure arme de
- *  mêlée (+ bouclier/2e arme à 1 main en secondaire), « Set II » = 1re arme à distance (sinon
- *  vide). Idempotent. */
+/** Génère les DEUX sets d'armes par défaut d'un héros qui n'en a pas : le 1er = meilleure arme de
+ *  mêlée (+ bouclier/2e arme à 1 main en secondaire), le 2nd = 1re arme à distance (sinon vide).
+ *  Idempotent. Le libellé d'un set est DÉRIVÉ de son contenu à l'affichage (`loadoutLabel`), pas stocké. */
 export function ensureDefaultLoadout(c: Combatant): void {
   if (c.loadouts?.length) return;
   const items = (c.items ?? []).filter((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged'));
   const melee = items.filter((i) => i.kind === 'melee');
   const ranged = items.filter((i) => i.kind === 'ranged');
 
-  const set1: WeaponLoadout = { id: `lo-${++loadoutCounter}`, name: WEAPON_SET_NAMES[0] };
+  const set1: WeaponLoadout = { id: `lo-${++loadoutCounter}` };
   if (melee.length) {
     const main = [...melee].sort((a, b) => damageScore(b.damage) - damageScore(a.damage))[0];
     set1.main = main.uid;
     if (weaponHands(main) === 1) set1.off = melee.find((i) => i.uid !== main.uid && weaponHands(i) === 1)?.uid;
   }
-  const set2: WeaponLoadout = { id: `lo-${++loadoutCounter}`, name: WEAPON_SET_NAMES[1], main: ranged[0]?.uid };
+  const set2: WeaponLoadout = { id: `lo-${++loadoutCounter}`, main: ranged[0]?.uid };
   c.loadouts = [set1, set2];
   c.activeLoadoutId = (set1.main ? set1 : set2.main ? set2 : set1).id;
 }
@@ -486,27 +484,12 @@ export function newLoadoutId(): string {
   return `lo-${++loadoutCounter}`;
 }
 
-/** Garantit l'existence du set fixe d'index 0/1 (« Set I »/« Set II ») et le renvoie — complète les
- *  héros d'avant les sets fixes (sauvegardes à 0 ou 1 loadout) sans toucher au set actif. */
-export function ensureWeaponSet(c: Combatant, setIndex: number): WeaponLoadout {
-  ensureDefaultLoadout(c);
-  while ((c.loadouts ?? []).length <= setIndex) {
-    c.loadouts = [...(c.loadouts ?? []), { id: newLoadoutId(), name: WEAPON_SET_NAMES[Math.min(c.loadouts!.length, WEAPON_SET_NAMES.length - 1)] }];
-  }
-  return c.loadouts![setIndex];
-}
-
-/** Crée un loadout vide nommé, le rend actif, et renvoie son id. */
-export function loadoutCreate(c: Combatant, name: string): string {
+/** Crée un loadout vide, le rend actif, et renvoie son id. */
+export function loadoutCreate(c: Combatant): string {
   const id = newLoadoutId();
-  c.loadouts = [...(c.loadouts ?? []), { id, name }];
+  c.loadouts = [...(c.loadouts ?? []), { id }];
   c.activeLoadoutId = id;
   return id;
-}
-
-export function loadoutRename(c: Combatant, id: string, name: string): void {
-  const lo = c.loadouts?.find((l) => l.id === id);
-  if (lo) lo.name = name;
 }
 
 /** Supprime un loadout ; si c'était l'actif, bascule sur le 1ᵉʳ restant (ou undefined). */

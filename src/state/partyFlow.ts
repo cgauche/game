@@ -6,7 +6,7 @@
  */
 import type { GameState } from './store';
 import { Combatant, CharKey, CHAR_LABELS } from '../engine/types';
-import { recomputeLoadout, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts, ensureWeaponSet, WEAPON_SET_NAMES } from '../engine/items';
+import { recomputeLoadout, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts } from '../engine/items';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -118,11 +118,8 @@ function mutLoadout(set: Set, heroId: string, fn: (c: Combatant) => void): void 
   }));
 }
 
-export function createLoadout(_get: Get, set: Set, heroId: string, name: string): void {
-  mutLoadout(set, heroId, (c) => loadoutCreate(c, name));
-}
-export function renameLoadout(_get: Get, set: Set, heroId: string, id: string, name: string): void {
-  mutLoadout(set, heroId, (c) => loadoutRename(c, id, name));
+export function createLoadout(_get: Get, set: Set, heroId: string): void {
+  mutLoadout(set, heroId, (c) => loadoutCreate(c));
 }
 export function deleteLoadout(_get: Get, set: Set, heroId: string, id: string): void {
   mutLoadout(set, heroId, (c) => loadoutDelete(c, id));
@@ -132,19 +129,6 @@ export function setActiveLoadout(_get: Get, set: Set, heroId: string, id: string
 }
 export function setLoadoutSlot(_get: Get, set: Set, heroId: string, id: string, slot: 'main' | 'off', uid: string | null): void {
   mutLoadout(set, heroId, (c) => loadoutSetSlot(c, id, slot, uid));
-}
-
-/** Pose une arme dans l'un des DEUX sets fixes de la fiche (`setIndex` 0 = Set I, 1 = Set II) en les
- *  créant au besoin — les sauvegardes d'avant les sets fixes peuvent n'avoir que 0 ou 1 loadout. */
-export function setWeaponSetSlot(_get: Get, set: Set, heroId: string, setIndex: number, slot: 'main' | 'off', uid: string | null): void {
-  if (setIndex < 0 || setIndex >= WEAPON_SET_NAMES.length) return;
-  mutLoadout(set, heroId, (c) => loadoutSetSlot(c, ensureWeaponSet(c, setIndex).id, slot, uid));
-}
-
-/** Rend ACTIF le set fixe d'index 0/1 (créé au besoin — un set vide actif = Mains nues). */
-export function activateWeaponSet(_get: Get, set: Set, heroId: string, setIndex: number): void {
-  if (setIndex < 0 || setIndex >= WEAPON_SET_NAMES.length) return;
-  mutLoadout(set, heroId, (c) => loadoutSetActive(c, ensureWeaponSet(c, setIndex).id));
 }
 
 export function transferItem(get: Get, set: Set, uid: string, fromHeroId: string, toHeroId: string): void {

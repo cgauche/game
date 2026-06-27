@@ -39,7 +39,7 @@ export const scenario: TestScenario = {
     const off = itemFromTrappingById('dague');
     h.items = [...(h.items ?? []), main, off].filter(Boolean) as ItemInstance[];
     if (main && off) {
-      const id = loadoutCreate(h, 'Deux armes');
+      const id = loadoutCreate(h);
       loadoutSetSlot(h, id, 'main', main.uid);
       loadoutSetSlot(h, id, 'off', off.uid);
     }

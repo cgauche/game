@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -65,9 +65,8 @@ describe('mutateurs de loadout (purs)', () => {
 
   it('loadoutCreate ajoute un loadout vide et le rend actif', () => {
     const c = hero([w('e', 'Epee')]);
-    const id = loadoutCreate(c, 'Test');
+    const id = loadoutCreate(c);
     const lo = c.loadouts!.find((l) => l.id === id)!;
-    expect(lo.name).toBe('Test');
     expect(lo.main).toBeUndefined();
     expect(lo.off).toBeUndefined();
     expect(c.activeLoadoutId).toBe(id);
@@ -75,7 +74,7 @@ describe('mutateurs de loadout (purs)', () => {
 
   it('loadoutSetSlot pose une arme ; une arme 2 mains en main vide le slot off', () => {
     const c = hero([w('h2', 'Hallebarde', { hands: 2 }), w('b', 'Bouclier')]);
-    const id = loadoutCreate(c, 'L');
+    const id = loadoutCreate(c);
     loadoutSetSlot(c, id, 'off', 'b');
     loadoutSetSlot(c, id, 'main', 'h2'); // 2 mains → off effacé
     const lo = c.loadouts!.find((l) => l.id === id)!;
@@ -85,18 +84,16 @@ describe('mutateurs de loadout (purs)', () => {
 
   it('loadoutSetSlot(slot, null) vide le slot', () => {
     const c = hero([w('e', 'Epee')]);
-    const id = loadoutCreate(c, 'L');
+    const id = loadoutCreate(c);
     loadoutSetSlot(c, id, 'main', 'e');
     loadoutSetSlot(c, id, 'main', null);
     expect(c.loadouts!.find((l) => l.id === id)!.main).toBeUndefined();
   });
 
-  it('loadoutRename / loadoutSetActive (ignore un id invalide)', () => {
+  it('loadoutSetActive (ignore un id invalide)', () => {
     const c = hero([w('e', 'Epee')]);
-    const id = loadoutCreate(c, 'L');
-    loadoutRename(c, id, 'Garde');
-    expect(c.loadouts!.find((l) => l.id === id)!.name).toBe('Garde');
-    loadoutCreate(c, 'L2');
+    const id = loadoutCreate(c);
+    loadoutCreate(c); // actif = le 2e
     loadoutSetActive(c, id);
     expect(c.activeLoadoutId).toBe(id);
     loadoutSetActive(c, 'inconnu');
@@ -105,8 +102,8 @@ describe('mutateurs de loadout (purs)', () => {
 
   it('loadoutDelete : supprime ; si actif, bascule sur le 1er restant', () => {
     const c = hero([w('e', 'Epee')]);
-    const a = loadoutCreate(c, 'A');
-    const b = loadoutCreate(c, 'B'); // actif = b
+    const a = loadoutCreate(c);
+    const b = loadoutCreate(c); // actif = b
     loadoutDelete(c, b);
     expect(c.loadouts!.map((l) => l.id)).toEqual([a]);
     expect(c.activeLoadoutId).toBe(a);
@@ -114,7 +111,7 @@ describe('mutateurs de loadout (purs)', () => {
 
   it('loadoutSetSlot : une même arme ne peut occuper les DEUX mains (déplacée, pas dupliquée)', () => {
     const c = hero([w('e', 'Epee'), w('d', 'Dague')]);
-    const id = loadoutCreate(c, 'L');
+    const id = loadoutCreate(c);
     loadoutSetSlot(c, id, 'off', 'e'); // Épée en 2nde
     loadoutSetSlot(c, id, 'main', 'e'); // puis en principale → retirée de la 2nde
     const lo = c.loadouts!.find((l) => l.id === id)!;
@@ -129,13 +126,13 @@ describe('loadoutLabel (auto-étiquetage par contenu)', () => {
   const c = ({ items: [it_('e', 'Épée'), it_('b', 'Bouclier')] } as unknown) as Combatant;
 
   it('main + off → « X + Y »', () => {
-    expect(loadoutLabel({ id: 'l', name: '', main: 'e', off: 'b' }, c)).toBe('Épée + Bouclier');
+    expect(loadoutLabel({ id: 'l', main: 'e', off: 'b' }, c)).toBe('Épée + Bouclier');
   });
   it('main seule → « X »', () => {
-    expect(loadoutLabel({ id: 'l', name: '', main: 'e' }, c)).toBe('Épée');
+    expect(loadoutLabel({ id: 'l', main: 'e' }, c)).toBe('Épée');
   });
   it('set vide → « Mains nues »', () => {
-    expect(loadoutLabel({ id: 'l', name: '' }, c)).toBe('Mains nues');
+    expect(loadoutLabel({ id: 'l' }, c)).toBe('Mains nues');
   });
 });
 
@@ -174,11 +171,11 @@ describe('activeLoadout', () => {
     expect(activeLoadout(base({}))).toBeNull();
   });
   it('renvoie le loadout actif par id', () => {
-    const c = base({ loadouts: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }], activeLoadoutId: 'b' });
+    const c = base({ loadouts: [{ id: 'a' }, { id: 'b' }], activeLoadoutId: 'b' });
     expect(activeLoadout(c)?.id).toBe('b');
   });
   it('id inconnu → 1er loadout (repli)', () => {
-    const c = base({ loadouts: [{ id: 'a', name: 'A' }], activeLoadoutId: 'zzz' });
+    const c = base({ loadouts: [{ id: 'a' }], activeLoadoutId: 'zzz' });
     expect(activeLoadout(c)?.id).toBe('a');
   });
 });
@@ -238,34 +235,34 @@ describe('ensureDefaultLoadout', () => {
       w('b', 'Bouclier', { subType: 'Base', hands: 1, damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }] }),
     ]);
     ensureDefaultLoadout(c);
-    const lo = c.loadouts!.find((l) => l.name === 'Set I')!;
+    const lo = c.loadouts![0]; // 1er set = mêlée
     expect(lo.main).toBe('e');
     expect(lo.off).toBe('b');
     expect(c.activeLoadoutId).toBe(lo.id);
   });
 
-  it('crée TOUJOURS deux sets : « Set II » porte la 1re arme à distance (sinon vide)', () => {
+  it('crée TOUJOURS deux sets : le 2nd porte la 1re arme à distance (sinon vide)', () => {
     const c = hero([
       w('e', 'Epee', { subType: 'Base', hands: 1 }),
       w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: { plusBF: false, flat: 9 } }),
     ]);
     ensureDefaultLoadout(c);
-    expect(c.loadouts!.map((l) => l.name)).toEqual(['Set I', 'Set II']);
-    expect(c.loadouts!.find((l) => l.name === 'Set II')!.main).toBe('arc');
+    expect(c.loadouts!).toHaveLength(2);
+    expect(c.loadouts![1].main).toBe('arc'); // 2nd set = distance
     const soloMelee = hero([w('e', 'Epee', { subType: 'Base', hands: 1 })]);
     ensureDefaultLoadout(soloMelee);
-    expect(soloMelee.loadouts!.map((l) => [l.name, l.main])).toEqual([['Set I', 'e'], ['Set II', undefined]]);
+    expect(soloMelee.loadouts!.map((l) => l.main)).toEqual(['e', undefined]);
   });
 
   it('héros sans arme distance équipée : actif = Set I ; sans mêlée : actif = Set II', () => {
     const c = hero([w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: { plusBF: false, flat: 9 } })]);
     ensureDefaultLoadout(c);
-    expect(c.loadouts!.find((l) => l.id === c.activeLoadoutId)!.name).toBe('Set II');
+    expect(c.activeLoadoutId).toBe(c.loadouts![1].id); // pas de mêlée → actif = 2nd set (distance)
   });
 
   it('idempotent : ne recrée pas si loadouts déjà présents', () => {
     const c = hero([w('e', 'Epee', { subType: 'Base', hands: 1 })]);
-    c.loadouts = [{ id: 'x', name: 'Custom', main: 'e' }];
+    c.loadouts = [{ id: 'x', main: 'e' }];
     c.activeLoadoutId = 'x';
     ensureDefaultLoadout(c);
     expect(c.loadouts).toHaveLength(1);

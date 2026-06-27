@@ -276,7 +276,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           );
         })}
         {(hero.loadouts?.length ?? 0) < 3 && (
-          <button className="btn small set-add" disabled={inBattle} title={lockTitle ?? 'Ajouter un set d’armes (vide, devient actif)'} onClick={() => createLoadout(hero.id, '')}>
+          <button className="btn small set-add" disabled={inBattle} title={lockTitle ?? 'Ajouter un set d’armes (vide, devient actif)'} onClick={() => createLoadout(hero.id)}>
             + Set d’armes
           </button>
         )}

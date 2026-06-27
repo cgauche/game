@@ -448,15 +448,10 @@ export interface GameState extends RollFlowActionsMap {
   importGame: (json: string) => boolean;
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
-  createLoadout: (heroId: string, name: string) => void;
-  renameLoadout: (heroId: string, id: string, name: string) => void;
+  createLoadout: (heroId: string) => void;
   deleteLoadout: (heroId: string, id: string) => void;
   setActiveLoadout: (heroId: string, id: string) => void;
   setLoadoutSlot: (heroId: string, id: string, slot: 'main' | 'off', uid: string | null) => void;
-  /** Pose une arme dans l'un des DEUX sets fixes de la fiche (0 = Set I, 1 = Set II), créés au besoin. */
-  setWeaponSetSlot: (heroId: string, setIndex: number, slot: 'main' | 'off', uid: string | null) => void;
-  /** Rend actif le set fixe d'index 0/1 (créé au besoin). */
-  activateWeaponSet: (heroId: string, setIndex: number) => void;
   /** Donne un objet d'un héros à un autre (transfert d'inventaire). Arrive NON équipé chez le
    *  destinataire ; recalcule les deux loadouts. Permet de confier une arme/armure au bon porteur. */
   transferItem: (uid: string, fromHeroId: string, toHeroId: string) => void;
@@ -1118,13 +1113,10 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Actions GROUPE (équipement / avancement) : déléguées à partyFlow ──
   toggleEquip: (heroId, uid) => partyFlow.toggleEquip(get, set, heroId, uid),
-  createLoadout: (heroId, name) => partyFlow.createLoadout(get, set, heroId, name),
-  renameLoadout: (heroId, id, name) => partyFlow.renameLoadout(get, set, heroId, id, name),
+  createLoadout: (heroId) => partyFlow.createLoadout(get, set, heroId),
   deleteLoadout: (heroId, id) => partyFlow.deleteLoadout(get, set, heroId, id),
   setActiveLoadout: (heroId, id) => partyFlow.setActiveLoadout(get, set, heroId, id),
   setLoadoutSlot: (heroId, id, slot, uid) => partyFlow.setLoadoutSlot(get, set, heroId, id, slot, uid),
-  setWeaponSetSlot: (heroId, setIndex, slot, uid) => partyFlow.setWeaponSetSlot(get, set, heroId, setIndex, slot, uid),
-  activateWeaponSet: (heroId, setIndex) => partyFlow.activateWeaponSet(get, set, heroId, setIndex),
   transferItem: (uid, fromHeroId, toHeroId) => partyFlow.transferItem(get, set, uid, fromHeroId, toHeroId),
   setItemSkin: (heroId, uid, patch) => partyFlow.setItemSkin(get, set, heroId, uid, patch),
   grantXp: (heroId, amount) => partyFlow.grantXp(get, set, heroId, amount),

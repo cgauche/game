@@ -268,7 +268,7 @@ export interface Weapon {
   form?: string;
   /** Effets « à la touche » repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
    *  invoquée) par `recomputeLoadout` → lus par `effectsOf` (state/triggeredEffects). */
-  onHitEffects?: import('../state/flow').TriggeredEffect[];
+  onHitEffects?: import('./flowCore').TriggeredEffect[];
   /** Nature d'attaque NATURELLE (morsure/cornes/caudale/tentacules/pietinement…) STAMPÉE à la
    *  construction de l'arme (depuis le `kind` de la manœuvre/attaque gratuite qui la connaît). Clé de
    *  POSE (même domaine que le retour de `creatureAttackKind`) lue pour l'anim et la Condition Flow
@@ -297,7 +297,7 @@ export interface WeaponEnchant {
   /** Ignorance de PA conférée (Épée de justice → 'all') — descripteur général ArmourBypass. */
   bypass?: ArmourBypass;
   /** Effets DÉCLENCHÉS « à la touche » — forme `TriggeredEffect` (Marteau ardent → En flammes/À Terre). */
-  onHitEffects?: import('../state/flow').TriggeredEffect[];
+  onHitEffects?: import('./flowCore').TriggeredEffect[];
 }
 
 /** Points d'Armure par localisation. */
@@ -662,7 +662,6 @@ export interface ShipDeck {
 /** Set d'armes nommé (les 2 mains). `off` ignoré si l'arme `main` est à 2 mains. uids → ItemInstance. */
 export interface WeaponLoadout {
   id: string;
-  name: string;
   main?: string;
   off?: string;
 }
