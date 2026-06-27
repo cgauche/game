@@ -75,9 +75,11 @@ export function shipHitLocation(rig: ShipRig, roll: number): ShipLocation {
   return findTableEntry(SHIP_LOC, roll)[rig];
 }
 
-/** Étiquette FR d'une localisation pour une forme de corps (LDB p.312). */
+/** Étiquette FR d'une localisation pour une forme de corps (LDB p.312). Forme inconnue/absente de
+ *  la table → libellés humanoïdes (`HIT_LOCATION_LABELS`), comme `hitLocationByShape` retombe sur
+ *  `humanoide` — les deux jumeaux tolèrent une forme hors table. */
 export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'): string {
-  return BODY_SHAPE_LOC_LABELS[shape][loc] ?? HIT_LOCATION_LABELS[loc];
+  return BODY_SHAPE_LOC_LABELS[shape]?.[loc] ?? HIT_LOCATION_LABELS[loc];
 }
 
 /**

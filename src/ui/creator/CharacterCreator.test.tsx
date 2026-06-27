@@ -60,11 +60,11 @@ describe('CharacterCreator (assistant) — rendu statique', () => {
     expect(html).toContain('title="Compétences : '); // tooltip d'évolution → libellés résolus
   });
 
-  it('les références Codex de l\'assistant sont popover-seul (clic n\'ouvre pas le Compendium → pas de perte de brouillon)', () => {
+  it('les références Codex de l\'assistant sont INTERACTIVES (clic → fiche en modale, brouillon préservé)', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
-    expect(html).toContain('codex-static'); // ≥1 ref résolue, rendue en popover-seul
-    // Aucune ref Codex ne doit être un bouton de navigation sous l'assistant.
-    expect(html).not.toMatch(/class="codex-ref[^"]*"[^>]*role="button"/);
+    // Désormais le clic ouvre le Codex en MODALE par-dessus l'assistant (cf. CodexOverlay), sans
+    // changer d'écran → le brouillon reste intact. (Avant : neutralisées en popover-seul `codex-static`.)
+    expect(html).toMatch(/class="codex-ref[^"]*"[^>]*role="button"/); // ≥1 ref cliquable
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {
