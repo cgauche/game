@@ -365,6 +365,30 @@ textarea:focus {
   color: var(--muted);
 }
 
+/* Beat d'OUVERTURE de combat (symétrique de .victory-overlay) — décoratif, ne bloque rien. */
+.combat-splash { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; pointer-events: none; }
+.combat-splash-inner { text-align: center; animation: combat-splash-in 1.7s ease-out forwards; }
+.combat-splash-word {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 12vw, 120px);
+  letter-spacing: 2px; line-height: 1;
+  color: var(--gold2);
+  text-shadow: 0 2px 18px rgba(0,0,0,0.8), 0 0 30px rgba(227,196,90,0.35);
+}
+.combat-splash.is-ambush .combat-splash-word { color: var(--accent2); text-shadow: 0 2px 18px rgba(0,0,0,0.85), 0 0 34px rgba(179,64,46,0.5); }
+.combat-splash-sub { font-family: var(--font-display); font-size: clamp(14px, 3vw, 22px); color: var(--text); opacity: 0.85; margin-top: 8px; letter-spacing: 1px; }
+@keyframes combat-splash-in {
+  0%   { opacity: 0; transform: scale(0.82); }
+  14%  { opacity: 1; transform: scale(1.04); }
+  26%  { transform: scale(1); }
+  70%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.02); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combat-splash-inner { animation: combat-splash-fade 1.3s ease-out forwards; }
+}
+@keyframes combat-splash-fade { 0%, 68% { opacity: 1; } 100% { opacity: 0; } }
+
 /* Écran de victoire plein écran (fin de combat) — XP/or/butin assignable/vaincus. */
 .victory-overlay {
   position: fixed;
@@ -740,17 +764,20 @@ textarea:focus {
 .af-adv    { --gc: #ff9b3d; } /* Avantage — orange (plafond 10, option RAW LDB 15 l.17) */
 /* Aperçu de clic (tap 1) : crans qui VONT être dépensés (clignotent) / gagnés (se remplissent en
    clignotant) — montre le coût/gain de l'opération avant le commit du 2ᵉ clic. */
-@keyframes af-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.28; } }
-.af-bar i.spend { animation: af-pulse 0.7s ease-in-out infinite; }
+@property --af-pulse { syntax: '<number>'; inherits: true; initial-value: 1; }
+@keyframes af-pulse { 0%, 100% { --af-pulse: 1; } 50% { --af-pulse: 0.28; } }
+/* Une seule horloge par barre : tous les crans en cours d'évolution clignotent EN PHASE. */
+.af-bar:has(i.spend), .af-bar:has(i.gain) { animation: af-pulse 0.7s ease-in-out infinite; }
+.af-bar i.spend { opacity: var(--af-pulse); }
 .af-bar i.gain {
   background: var(--gc);
   border-color: var(--gc);
   box-shadow: 0 0 4px var(--gc);
-  opacity: 0.6;
-  animation: af-pulse 0.7s ease-in-out infinite;
+  opacity: var(--af-pulse);
 }
 @media (prefers-reduced-motion: reduce) {
-  .af-bar i.spend, .af-bar i.gain { animation: none; }
+  .af-bar { animation: none; }
+  .af-bar i.spend, .af-bar i.gain { opacity: 1; }
   .af-bar i.spend { outline: 1px solid rgba(255, 255, 255, 0.85); outline-offset: -1px; }
 }
 .af-hp {

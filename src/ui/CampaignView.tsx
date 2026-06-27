@@ -19,6 +19,7 @@ import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { InspectPanel } from './InspectPanel';
 import { InitiativeStrip } from './InitiativeStrip';
+import { CombatStartSplash } from './CombatStartSplash';
 import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
 import { GameMenu } from './GameMenu';
@@ -131,23 +132,24 @@ export function CampaignView() {
         <IsoStage />
         {/* ── Overlays HUD plein-champ (façon BG3, mobile-first) ── */}
         {mode === 'battle' && battle && (
-          <InitiativeStrip
-            order={battle.order}
-            turn={battle.turn}
-            round={battle.round}
-            combatants={battle.combatants}
-            over={battle.over != null}
-            pendingRound={pendingRoundStart?.round ?? null}
-            canFirstIds={canFirstIds}
-            freeFirstIds={freeFirstIds}
-            inspectEnabled={inspectEnabled}
-            targeting={isTargeting}
-            onToggleInspect={toggleInspect}
-            onActivate={onStripPortrait}
-            onHover={setHoverCombatant}
-            hoveredId={hovered}
-            onPromote={roundStartPromote}
-          />
+          <>
+            <InitiativeStrip
+              order={battle.order}
+              turn={battle.turn}
+              combatants={battle.combatants}
+              over={battle.over != null}
+              canFirstIds={canFirstIds}
+              freeFirstIds={freeFirstIds}
+              inspectEnabled={inspectEnabled}
+              targeting={isTargeting}
+              onToggleInspect={toggleInspect}
+              onActivate={onStripPortrait}
+              onHover={setHoverCombatant}
+              hoveredId={hovered}
+              onPromote={roundStartPromote}
+            />
+            <CombatStartSplash />
+          </>
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :

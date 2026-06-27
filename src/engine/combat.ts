@@ -16,7 +16,7 @@ import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { findTableEntry } from './tables';
 import locJson from '../data/localisation.json';
-import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
+import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition, COND } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
 import { traumaDodgePenalty, damageSBBonus } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
@@ -939,6 +939,16 @@ export function initiativeOrder(combatants: Combatant[]): Combatant[] {
     if (ib !== ia) return ib - ia;
     return baseWithTraits(b, 'Ag') - baseWithTraits(a, 'Ag');
   });
+}
+
+/** Type d'OUVERTURE d'un combat, dérivé du RÉSULTAT de surprise déjà résolu (État Surpris posé par
+ *  applySurprise au démarrage) — PAS de l'intention `enc.surprise` (un guetteur peut résister).
+ *  'ambush' = un héros est surpris (on nous tombe dessus) ; 'assault' = un ennemi est surpris (on les
+ *  prend par surprise) ; 'combat' = personne. L'embuscade prime (alarme dominante). */
+export function combatOpening(combatants: Combatant[]): 'ambush' | 'assault' | 'combat' {
+  if (combatants.some((c) => c.kind === 'hero' && hasCondition(c, COND.surpris))) return 'ambush';
+  if (combatants.some((c) => c.kind === 'enemy' && hasCondition(c, COND.surpris))) return 'assault';
+  return 'combat';
 }
 
 /**

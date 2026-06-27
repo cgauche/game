@@ -1,24 +1,23 @@
 import { PortraitTile } from './PortraitTile';
 import { ALLY_TINT, ENEMY_TINT } from '../gameIso/teamColors';
+import { strikesLast } from '../engine/qualities/dispatch';
 import type { Combatant } from '../engine/types';
 
 /**
  * Frise d'INITIATIVE (haut du champ, façon BG3) : une tuile-portrait par combattant dans l'ordre
  * du Round (`battle.order`), cadre = teinte d'ÉQUIPE (vert allié / rouge ennemi — la forme
  * pleine/tirets du cadre vient de RigPortrait, R9 daltonisme), actif = or + ▼, KO grisé ✕.
+ * Badge de score d'Initiative (LDB 13) en coin de chaque tuile (héros + ennemis), ⏳ si arme Lente.
  * Pendant la pause de début de Round (LDB ch.17 l.27), badge « ⏫🍀 » sous les héros éligibles
- * (pré-emption d'initiative — l'ancien « Agir en premier » de BattlePanel). Chip « Round N » +
- * toggle 🔍 d'inspection au bout. Pur à props — câblé par CampaignView.
+ * (pré-emption d'initiative — l'ancien « Agir en premier » de BattlePanel). Toggle 🔍 d'inspection
+ * au bout. Pur à props — câblé par CampaignView.
  */
 export interface InitiativeStripProps {
   order: string[];
   turn: number;
-  round: number;
   combatants: Combatant[];
   /** battle.over != null → plus de marqueur actif. */
   over: boolean;
-  /** Round de la pause d'initiative en cours (pendingRoundStart), sinon null. */
-  pendingRound: number | null;
   /** Ids des combattants pouvant « agir en premier » (canActFirst, calculé par CampaignView). */
   canFirstIds: string[];
   /** Ids dont la pré-emption est GRATUITE (arme Rapide, LDB 62 l.318-319) — badge ⚡, pas de coût en Chance. */
@@ -54,6 +53,10 @@ export function InitiativeStrip(p: InitiativeStripProps) {
               onMouseEnter={() => p.onHover?.(id)}
               onMouseLeave={() => p.onHover?.(null)}
             >
+              <span className={`is-score${strikesLast(c.weapons) ? ' lente' : ''}`}
+                title={strikesLast(c.weapons) ? `Initiative ${c.initiative} — arme Lente : frappe en dernier` : `Initiative ${c.initiative}`}>
+                {c.initiative}{strikesLast(c.weapons) ? ' ⏳' : ''}
+              </span>
               <PortraitTile
                 c={c}
                 ring={isHero ? ALLY_TINT : ENEMY_TINT}

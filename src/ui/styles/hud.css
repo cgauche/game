@@ -273,18 +273,24 @@
   scrollbar-width: thin;
 }
 .is-cell {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 4px;
 }
-.is-round {
-  align-self: center;
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  padding: 0 2px;
+/* Score d'initiative (LDB 13) : badge permanent en coin de cellule de frise — explique l'ordre du
+   Round et la pré-emption « agir en premier ». Visible pour tous (héros + ennemis). */
+.is-score {
+  position: absolute; top: -4px; left: -4px; z-index: 2;
+  min-width: 16px; padding: 0 3px; height: 16px; line-height: 16px;
+  border-radius: 8px; text-align: center;
+  font-size: 10px; font-weight: 700;
+  background: rgba(8, 6, 12, 0.82); color: var(--gold2);
+  border: 1px solid rgba(227, 196, 90, 0.5);
+  pointer-events: none;
 }
+.is-score.lente { color: var(--muted); border-color: rgba(163, 147, 111, 0.5); }
 .is-tiles .inspect-toggle {
   align-self: center;
 }
@@ -297,13 +303,6 @@
   padding: 1px 4px;
   cursor: pointer;
   white-space: nowrap;
-}
-.is-pause {
-  font-size: 11px;
-  color: var(--gold2);
-  background: rgba(10, 14, 20, 0.7);
-  border-radius: 10px;
-  padding: 2px 10px;
 }
 @media (max-width: 700px) {
   .initiative-strip { left: 4px; }
