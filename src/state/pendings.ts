@@ -3,7 +3,7 @@
  * monnaie — types PURS, sans logique, extraits de store.ts pour le garder navigable.
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */
-import type { CharKey, Difficulty, HitLocation, Weapon, FireArc } from '../engine/types';
+import type { CharKey, Difficulty, HitLocation, Weapon, FireArc, Combatant } from '../engine/types';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Effect } from './scene';
@@ -39,13 +39,23 @@ export interface PendingLoot {
   gold?: Money;
   gear: LootGear[];
 }
-/** Entrée de la file d'effets PROGRAMMÉS (runtime, Lot 0) : `flow` exécuté (via runFlow → branches/Test
- *  possibles) quand l'horloge atteint `executeAt` (minute absolue `gameTime`), sauf si `cancelFlag` a
- *  été posé entre-temps. */
+/** Reconstitution DIFFÉRÉE programmée à la mort (Gardien éternel) : à l'échéance d'un `ScheduledEffect`,
+ *  ré-invoque la créature `summon.ref` près de `caster.pos`, dans le camp de `caster.kind`
+ *  (cf. `summonFlow.applySummon`). `caster` est un INSTANTANÉ minimal du défunt — les seuls champs lus
+ *  par `applySummon` (id/name/kind/pos). */
+export interface ScheduledRespawn {
+  caster: { id: string; name: string; kind: Combatant['kind']; pos: Pt };
+  summon: { ref: string; count: number; allyOfCaster?: boolean };
+}
+/** Entrée de la file d'effets PROGRAMMÉS (runtime, Lot 0), déclenchée quand l'horloge atteint `executeAt`
+ *  (minute absolue `gameTime`), sauf si `cancelFlag` a été posé entre-temps. Deux charges possibles : un
+ *  `flow` (minuterie `delayedEffect` : exécuté via runFlow → branches/Test possibles) OU un `respawn`
+ *  (reconstitution d'une créature à la mort — résolu par `applySummon`). */
 export interface ScheduledEffect {
   executeAt: number;
-  flow: Flow;
+  flow?: Flow;
   cancelFlag?: string;
+  respawn?: ScheduledRespawn;
 }
 /** Récompenses capturées à la victoire (pour l'écran de fin de combat) : XP de groupe gagnée, or récupéré,
  *  butin (noms d'objets, dans l'inventaire de groupe, assignables à un héros), ennemis vaincus (groupés). */

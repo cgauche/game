@@ -55,6 +55,9 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Corruption', 'exposition du groupe (corruptionFlow — Lot E)'],
   // Invocation à la mort — op `summon` du Flow `onSlain`, moissonnée par notifySlain → summonFlow.applySummon
   ['Charnier', 'death-spawn : 3d10 Zombies à la mort (op summon onSlain → resolveTriggerImpureOps/applySummon)'],
+  // Reconstitution différée — op `scheduleRespawn` du Flow `onSlain` : programme la ré-invocation à
+  // gameTime + d10 j (file scheduledEffects, horloge) ; fireScheduledEffects → applySummon ; précautions = cancelFlag.
+  ['Gardien éternel', 'reconstitution d10 j si tué (op scheduleRespawn onSlain → resolveTriggerImpureOps → fireScheduledEffects/applySummon ; précautions = cancelFlag), #19'],
   // Dressé (Magie) : trait MARQUEUR sans effet propre — lu par le gate `startleCause` de Nerveux
   // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.89, données).
   ['Dressé (Magie)', 'marqueur lu par le gate `startleCause` de Nerveux (exemption magie, données)'],
@@ -103,7 +106,6 @@ const JOURNAL_MJ = new Map<string, string>([
   // Traits du bestiaire de Middenheim (#60) — desc verbatim, mécaniques sans système support à ce jour.
   // Manifestation de Ghur : MÊME primitive manquante que Aura de Mort (gating par Domaine du sort) → #18.
   ['Manifestation de Ghur', 'immunité aux effets négatifs des sorts du Domaine de la Bête + vulnérabilité anti-démon/mort-vivant hors Bête — gating par Domaine du cast à bâtir (cf. Aura de Mort), #18'],
-  ['Gardien éternel', 'reconstitution en d10 jours si tué sauf précautions — résurrection hors-combat (arbitrage MJ, cf. Increvable), #19'],
   ['Métamorphose', 'bascule forme humaine↔hybride ; la forme hybride EST le statbloc de combat ; op polymorph existe mais pas d’activation self de créature'],
 ]);
 

@@ -80,6 +80,7 @@ const JUSTIFIED: Record<string, string> = {
   // ── Jets d’ENTRETIEN / monde — subis et RÉVÉLÉS (catégorie 2) ou ambiants (catégorie 3) ──
   startCombat: 'Initiative (I+1d10) en début de combat — lue dans la frise d’initiative (R2)',
   advanceTime: 'cascade quotidienne #T3 : franchissement de jour → RÉVÉLATION témoin « Entretien quotidien » (lignes du bilan)',
+  fireScheduledEffects: 'échéances programmées (Lot 0) franchies par advanceTime (horloge) : effet différé (flow) OU reconstitution AMBIANTE d’une créature à l’échéance (Gardien éternel → applySummon, comme spawnEnemy : génération de monde, pas un Test de héros), RÉVÉLÉE au journal',
   restParty: 'repos hors modale (scénarios/recette) — même bilan de nuit (NightEntry) que la modale de Repos',
   runDailyUpkeep: 'entretien QUOTIDIEN (rations/maladies/convalescence) — RENVOIE ses lignes, chaque appelant les AFFICHE (révélation/bilan de nuit/recap de voyage)',
   outOfCombatUpkeep: 'États récurrents hors combat (Hémorragique…) — rejoue endOfRound, journalisé',

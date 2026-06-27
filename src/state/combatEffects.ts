@@ -19,6 +19,7 @@ import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
 import { findCreatureById, refLabel } from '../data';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
+import { applySummon } from './summonFlow';
 import { contractDisease, DISEASE_DEFS } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
@@ -229,7 +230,11 @@ export function fireScheduledEffects(get: Get, set: SetFn) {
   const flags = get().flags;
   for (const s of due) {
     if (s.cancelFlag && flags[s.cancelFlag]) continue;
-    runFlow(get, set, s.flow, 'Événement');
+    // Reconstitution DIFFÉRÉE (Gardien éternel) : ré-invoque la créature programmée à la mort, près de sa
+    // position de chute et dans son camp (`applySummon`, MÊME résolveur que les invocations de sort). Le
+    // `caster` est un instantané minimal du défunt — applySummon n'en lit que id/name/kind/pos.
+    if (s.respawn) { for (const line of applySummon(get, set, s.respawn.caster as unknown as Combatant, s.respawn.summon, { rng: battleRng() })) get().log(line); continue; }
+    if (s.flow) runFlow(get, set, s.flow, 'Événement');
   }
 }
 
@@ -284,7 +289,8 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance.
     const sout = soutienBonus(living, actor, spec.skill, spec.characteristic, spec.spec);
     const value = testValue(actor, spec.skill, spec.characteristic, spec.spec) + (socialMod ? socialMod(actor) : 0) + sout;
-    const tool = spec.tool ? actor.items?.find((i) => i.name === spec.tool && !i.destroyed) : undefined;
+    // Objet catalogué → match par `trappingId` stable ; objet CUSTOM (sans trappingId) → repli nom.
+    const tool = spec.tool ? actor.items?.find((i) => (i.trappingId === spec.tool || i.name === spec.tool) && !i.destroyed) : undefined;
     return {
       id: actor.id, name: actor.name, value,
       target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty])),

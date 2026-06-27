@@ -2189,7 +2189,33 @@
     "source": {
       "book": "Middenheim",
       "page": 115
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onSlain",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "scheduleRespawn",
+                "ref": "self",
+                "delayDays": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                "cancelFlag": "ghur-source-securisee"
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "hurlement-de-la-bete-indomptable",

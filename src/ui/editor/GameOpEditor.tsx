@@ -91,6 +91,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   giveTrapping: '🎒 Donner un objet',
   perRound: '🔄 Effet récurrent (chaque Round)',
   summon: '🐺 Invoquer une créature',
+  scheduleRespawn: '⏳ Reconstitution différée (à la mort)', // marqueur de DONNÉE (op onSlain, non author-pickable)
   zone: '🌐 Zone persistante (mur / disque)',
   polymorph: '🦌 Métamorphose en créature',
   lifeSteal: '🩸 Vol de vie (drain de Blessures)',
@@ -339,6 +340,7 @@ export function opSummary(o: GameOp): string {
     case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
     case 'perRound': return `${L} ${o.ops.length} op(s) chaque Round`;
     case 'summon': return `${L} ${formulaSummary(o.count)}× ${o.ref}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
+    case 'scheduleRespawn': return `${L} ${o.ref} dans ${formulaSummary(o.delayDays)} j${o.cancelFlag ? ` (sauf « ${o.cancelFlag} »)` : ''}`;
     case 'zone': return `${L} ${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;
     case 'polymorph': return `${L} ${o.ref}`;
     case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;

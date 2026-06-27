@@ -429,6 +429,14 @@ export type GameOp =
    *  = s'effondre si le lanceur tombe (minions liés au sorcier). */
   | { op: 'summon'; ref: string; count: Formula; countPerSL?: PerSL; addTraits?: TraitInstance[];
       size?: SizeCategory; allyOfCaster?: boolean; despawnIfCasterDown?: boolean }
+  /** RECONSTITUTION DIFFÉRÉE (Gardien éternel, Middenheim — « se reconstitue au bout de d10 jours »).
+   *  À la MORT du porteur, programme la ré-invocation de la créature `ref` (`'self'` = la défunte, par son
+   *  `creatureId`) après `delayDays` jours d'HORLOGE, sauf si `cancelFlag` est posé entre-temps (les
+   *  « précautions appropriées » : drain/rituel/corruption de la Source — un Effet de scène/MJ pose le flag).
+   *  Effet IMPUR (file `scheduledEffects` + `applySummon`) RÉSOLU par la couche state — programmé par
+   *  `resolveTriggerImpureOps` au décès, déclenché par `fireScheduledEffects` à l'échéance ; INERTE dans
+   *  `applyOps` (moteur pur), comme `summon`. */
+  | { op: 'scheduleRespawn'; ref: string; delayDays: Formula; count?: Formula; allyOfCaster?: boolean; cancelFlag?: string }
   /** ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). Effet IMPUR
    *  (pose une zone dans la scène/bataille) RÉSOLU par la couche state (`state/combatEffects`) ; INERTE
    *  dans `applyOps`. `shape` disc/wall ; `radiusMeters` (disque) ou `lengthMeters` (mur, +`lengthPerSL`
@@ -1252,14 +1260,16 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'summon':
+      case 'scheduleRespawn':
       case 'zone':
       case 'grantFreeAttack':
       case 'interruptFocus':
       case 'breakBlade':
-        // Effets IMPURS (grille + initiative / zones de bataille / ouverture d'une frappe / interruption de
-        // Focalisation / désarmement-bris de Piège-lame) — résolus par la couche state (combatFlow :
-        // applySummon / placeSpellZone ; les hooks `freeAttack`/`focusInterrupt`/`bladeTrap` appelés par
-        // `runCombatFlow`), qui détient get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
+        // Effets IMPURS (grille + initiative / reconstitution programmée / zones de bataille / ouverture
+        // d'une frappe / interruption de Focalisation / désarmement-bris de Piège-lame) — résolus par la
+        // couche state (combatFlow : applySummon / scheduleRespawn → file horloge / placeSpellZone ; les
+        // hooks `freeAttack`/`focusInterrupt`/`bladeTrap` appelés par `runCombatFlow`), qui détient get/set
+        // et le combattant. `applyOps` (moteur pur) les laisse INERTES.
         break;
       case 'polymorph':
         // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure. + override
