@@ -33,7 +33,7 @@ import type { EntityAppearance } from '../../state/scene';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
 import { reverseGroups, bookContents } from './relations';
-import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';
+import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
@@ -486,7 +486,7 @@ export const CODEX: CodexCategory[] = [
       meta: facts(
         fact('Activation', MANEUVER_ACTIVATION_LABEL[m.activation]),
         fact('Coût Av', m.advantageCost),
-        fact('Portée', m.range),
+        fact('Portée', m.range ? formatManeuverMeasure(m.range) : null),
         fact('Cible', MANEUVER_TARGETING_LABEL[m.targeting]),
       ),
       sections: sections(...reverseSections('maneuvers', m.id)),

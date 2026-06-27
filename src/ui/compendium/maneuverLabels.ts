@@ -1,4 +1,5 @@
-import type { ManeuverDef } from '../../data';
+import type { ManeuverDef, ManeuverMeasure } from '../../data';
+import { CHAR_LABELS } from '../../engine/types';
 
 /** SOURCE UNIQUE des libellés FR du profil d'une manœuvre (`ManeuverDef`) partagés par l'AFFICHAGE
  *  lecture seule du Codex (`registry.ts`) ET l'éditeur (`CodexEdit.tsx`). Seuls les deux champs
@@ -11,3 +12,13 @@ export const MANEUVER_ACTIVATION_LABEL: Record<ManeuverDef['activation'], string
 export const MANEUVER_TARGETING_LABEL: Record<ManeuverDef['targeting'], string> = {
   melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis',
 };
+
+/** Portée/Souffle d'une manœuvre (`ManeuverMeasure`, mètres = bonus(carac) + plus) → prose FR DÉRIVÉE
+ *  de la structure (comme `formatSpellRange`) : « (Bonus de Endurance) m », « (Bonus de Endurance) + 20 m »,
+ *  « 20 m ». Affichage seul (le combat résout en mètres via `measureMeters`). */
+export function formatManeuverMeasure(m: ManeuverMeasure): string {
+  const bonus = m.bonusOf ? `(Bonus de ${CHAR_LABELS[m.bonusOf]})` : null;
+  const plus = m.plus ? String(m.plus) : null;
+  const expr = bonus && plus ? `${bonus} + ${plus}` : bonus ?? plus ?? '0';
+  return `${expr} m`;
+}
