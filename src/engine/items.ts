@@ -254,6 +254,18 @@ export function isTwoHandedWeapon(it: ItemInstance): boolean {
   return weaponHands(it) === 2;
 }
 
+/** Arme éligible à la MAIN SECONDAIRE (LDB 14 l.138 : « une arme de combat rapproché à une main OU un
+ *  pistolet ») : arme de mêlée à UNE main, ou une arme à distance portant l'Atout Pistolet (qualité
+ *  `pistolet` — « peut attaquer en Combat rapproché », inclut l'Arbalète de poing). Exclut donc les
+ *  arcs/arbalètes ordinaires et toute arme à deux mains. Détection du pistolet par la QUALITÉ (id stable,
+ *  multilangue-safe), pas par le nom. */
+export function isOffHandEligible(it: ItemInstance): boolean {
+  if (it.kind !== 'melee' && it.kind !== 'ranged') return false;
+  if (weaponHands(it) !== 1) return false;
+  if (it.kind === 'melee') return true;
+  return hasQuality(it, 'pistolet'); // Atout Pistolet (qualities.json id) — seule arme à distance utilisable de la 2nde main
+}
+
 /** Couche de PORT d'une pièce d'armure (LDB 63) : le « Cuir souple » « peut être porté sans pénalité
  *  sous n'importe quelle autre Armure » (l.93) ; une armure Flexible « peut être portée sous une
  *  couche d'armure non Flexible » (l.105-106) ; le reste forme la couche extérieure rigide.
@@ -299,6 +311,18 @@ export function unarmedWeapon(): Weapon {
       : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [{ id: QUALITY_IDS.Inoffensive }], subType: 'bagarre', builtinId: 'mains-nues' });
   }
   return { ..._unarmed, hand: 'main' };
+}
+
+/** Libellé AUTO d'un set d'armes, DÉRIVÉ de son CONTENU (façon Dragon Age / Pillars) : nom de l'arme
+ *  `main` (+ « + » nom de l'`off` quand il y en a une), ou « Mains nues » si le set est vide. Les noms sont
+ *  lus dans l'inventaire du combattant (`c.items`). Remplace l'affichage du champ `name` (« Set I/II »). PUR. */
+export function loadoutLabel(lo: WeaponLoadout, c: Combatant): string {
+  const items = c.items ?? [];
+  const nameOf = (uid?: string) => (uid ? items.find((i) => i.uid === uid)?.name : undefined);
+  const main = nameOf(lo.main);
+  const off = nameOf(lo.off);
+  if (main && off) return `${main} + ${off}`;
+  return main ?? off ?? 'Mains nues';
 }
 
 /** Loadout actif d'un combattant, ou null si le combattant n'a aucun set (cas traité par ensureDefaultLoadout dans recomputeLoadout). */
@@ -495,14 +519,19 @@ export function loadoutSetActive(c: Combatant, id: string): void {
   if (c.loadouts?.some((l) => l.id === id)) c.activeLoadoutId = id;
 }
 
-/** Assigne (ou retire si `uid` null) une arme à un slot. Une arme à 2 mains en `main` vide le slot `off`. */
+/** Assigne (ou retire si `uid` null) une arme à un slot. Une arme à 2 mains en `main` vide le slot `off` ;
+ *  une même arme ne peut occuper les DEUX mains (l'assigner à une main la retire de l'autre). */
 export function loadoutSetSlot(c: Combatant, id: string, slot: 'main' | 'off', uid: string | null): void {
   const lo = c.loadouts?.find((l) => l.id === id);
   if (!lo) return;
   lo[slot] = uid ?? undefined;
-  if (slot === 'main' && uid) {
-    const it = (c.items ?? []).find((i) => i.uid === uid);
-    if (it && weaponHands(it) === 2) lo.off = undefined; // 2 mains → pas de secondaire
+  if (uid) {
+    const other = slot === 'main' ? 'off' : 'main';
+    if (lo[other] === uid) lo[other] = undefined; // une arme ne peut pas être tenue des deux mains à la fois
+    if (slot === 'main') {
+      const it = (c.items ?? []).find((i) => i.uid === uid);
+      if (it && weaponHands(it) === 2) lo.off = undefined; // 2 mains → pas de secondaire
+    }
   }
 }
 

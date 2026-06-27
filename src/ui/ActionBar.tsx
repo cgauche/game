@@ -11,7 +11,7 @@ import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions
 import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable, isFrenzied } from '../engine/psychology';
 import { isConsumable } from '../engine/consumables';
-import { compatibleAmmo } from '../engine/items';
+import { compatibleAmmo, loadoutLabel } from '../engine/items';
 import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
@@ -527,7 +527,7 @@ export function ActionBar() {
                         className={`btn btn-sm ${active.activeLoadoutId === lo.id ? 'btn-primary' : ''}`}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 2, padding: '2px 5px' }}
                         disabled={!!battle.loadoutSwapped && active.activeLoadoutId !== lo.id}
-                        title={`Set : ${mainItem?.name ?? 'mains nues'}${offItem ? ` + ${offItem.name}` : ''}`}
+                        title={`Set : ${loadoutLabel(lo, active)}`}
                         onClick={() => switchLoadout(lo.id)}
                       >
                         {mainItem ? <ItemIcon item={mainItem} size={20} /> : <span aria-hidden style={{ fontSize: 16 }}>✊</span>}

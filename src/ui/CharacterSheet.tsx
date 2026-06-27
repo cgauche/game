@@ -4,7 +4,8 @@ import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
-import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel } from '../engine/items';
+import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, weaponHands, isOffHandEligible } from '../engine/items';
+import { OptionChooser } from './OptionChooser';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { locationLabel } from '../engine/combat';
 import { effectiveChar, charBonus } from '../engine/characteristics';
@@ -344,6 +345,49 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   );
 }
 
+/** Contrôle compact « En main » d'une arme du Sac (façon Dragon Age / Pillars) : assigne l'arme à la
+ *  Main principale ou secondaire du set ACTIF. Réutilise OptionChooser (seg). La main secondaire impose
+ *  −20 (LDB 14 l.139) et n'accepte qu'une arme de mêlée à une main ou un pistolet (LDB 14 l.138). Cliquer
+ *  l'option déjà active la retire. (Verrouillé en combat : la bascule de set passe par la barre d'action.) */
+function HandPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
+  const setLoadoutSlot = useGame((s) => s.setLoadoutSlot);
+  const lo = (hero.loadouts ?? []).find((l) => l.id === hero.activeLoadoutId) ?? hero.loadouts?.[0];
+  if (!lo) return null;
+  const isMain = lo.main === it.uid;
+  const isOff = lo.off === it.uid;
+  const mainItem = lo.main ? (hero.items ?? []).find((i) => i.uid === lo.main) : undefined;
+  const mainTwoH = mainItem ? weaponHands(mainItem) === 2 : false;
+  const offOk = isOffHandEligible(it) && !mainTwoH;
+  return (
+    <div className="ir-hand" title="Régler la main qui tient cette arme (set actif)">
+    <OptionChooser
+      layout="seg"
+      options={[
+        {
+          key: 'main',
+          label: 'Principale',
+          selected: isMain,
+          title: 'Tenir dans la main principale',
+          onSelect: () => setLoadoutSlot(hero.id, lo.id, 'main', isMain ? null : it.uid),
+        },
+        {
+          key: 'off',
+          label: <>2nde <em className="off-malus">−20</em></>,
+          selected: isOff,
+          disabled: !offOk,
+          title: offOk
+            ? 'Main secondaire : −20 aux attaques de cette main (LDB 14)'
+            : mainTwoH
+              ? 'Main principale à deux mains — pas de seconde main'
+              : 'Inéligible : seules une arme de mêlée à une main ou un pistolet vont en seconde main',
+          onSelect: () => setLoadoutSlot(hero.id, lo.id, 'off', isOff ? null : it.uid),
+        },
+      ]}
+    />
+    </div>
+  );
+}
+
 function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'combat' | 'competences' | 'sac' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const transferItem = useGame((s) => s.transferItem);
@@ -582,10 +626,16 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       </button>
                     );
                   })()}
-                  {isWeaponItem && handLabel && (
-                    <span className="ir-loadout on" title="Arme en main — réglable dans l'onglet Combat">
-                      ✋ {handLabel}
-                    </span>
+                  {isWeaponItem && (
+                    inBattleNow ? (
+                      handLabel && (
+                        <span className="ir-loadout on" title="Arme en main (verrouillé en combat — changez de set depuis la barre d’action)">
+                          ✋ {handLabel}
+                        </span>
+                      )
+                    ) : (
+                      <HandPicker hero={hero} it={it} />
+                    )
                   )}
                   {equipable ? (
                     <button

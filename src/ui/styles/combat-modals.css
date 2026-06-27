@@ -743,11 +743,12 @@
   gap: 8px;
   min-width: 0;
 }
-/* Carte de set d'armes COMPACTE : 2 cellules (Main · 2nde) + actions à droite, sur UNE rangée. */
+/* Carte de set d'armes AUTO-ÉTIQUETÉE par son contenu : titre (loadoutLabel) + rangée 2 cellules
+   (Principale · 2nde) légendées + actions. S'empile proprement à 360px (corps wrappable). */
 .set-card {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -760,9 +761,51 @@
   border-style: dashed;
   border-color: var(--gold2);
 }
+.set-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.set-card-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.set-card.active .set-card-name {
+  color: var(--gold);
+}
+.set-card-head .lo-name {
+  font-size: 14px;
+  color: var(--gold2);
+}
+.set-card-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .set-card-slots {
   display: flex;
   gap: 6px;
+}
+.set-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.set-slot-cap {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.set-slot-cap .off-malus,
+.off-malus {
+  font-style: normal;
+  color: var(--danger-soft);
 }
 .set-card-actions {
   display: flex;
@@ -773,6 +816,9 @@
 .set-card-actions .lo-name {
   font-size: 16px;
   color: var(--gold2);
+}
+.set-add {
+  align-self: flex-start;
 }
 .eq-active-weapons {
   margin-top: 2px;
@@ -866,6 +912,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap; /* les contrôles (Évaluer/équiper/En main/donner) s'enroulent sous l'objet à 360px */
   background: var(--panel2);
   border: 1px solid var(--border);
   border-left: 3px solid var(--border);
@@ -903,6 +950,14 @@
   font-size: 11px;
   color: var(--muted);
   font-style: italic;
+}
+/* Contrôle « En main » d'une arme du Sac (HandPicker) : seg compacte, sans marge, intégrée à la rangée. */
+.ir-hand .rm-loc-inline {
+  margin-bottom: 0;
+}
+.ir-hand .seg button {
+  padding: 3px 8px;
+  font-size: 11px;
 }
 .muted {
   color: var(--muted);

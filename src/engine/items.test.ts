@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -110,6 +110,49 @@ describe('mutateurs de loadout (purs)', () => {
     loadoutDelete(c, b);
     expect(c.loadouts!.map((l) => l.id)).toEqual([a]);
     expect(c.activeLoadoutId).toBe(a);
+  });
+
+  it('loadoutSetSlot : une même arme ne peut occuper les DEUX mains (déplacée, pas dupliquée)', () => {
+    const c = hero([w('e', 'Epee'), w('d', 'Dague')]);
+    const id = loadoutCreate(c, 'L');
+    loadoutSetSlot(c, id, 'off', 'e'); // Épée en 2nde
+    loadoutSetSlot(c, id, 'main', 'e'); // puis en principale → retirée de la 2nde
+    const lo = c.loadouts!.find((l) => l.id === id)!;
+    expect(lo.main).toBe('e');
+    expect(lo.off).toBeUndefined();
+  });
+});
+
+describe('loadoutLabel (auto-étiquetage par contenu)', () => {
+  const it_ = (uid: string, name: string): ItemInstance =>
+    ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, hands: 1 } as ItemInstance);
+  const c = ({ items: [it_('e', 'Épée'), it_('b', 'Bouclier')] } as unknown) as Combatant;
+
+  it('main + off → « X + Y »', () => {
+    expect(loadoutLabel({ id: 'l', name: '', main: 'e', off: 'b' }, c)).toBe('Épée + Bouclier');
+  });
+  it('main seule → « X »', () => {
+    expect(loadoutLabel({ id: 'l', name: '', main: 'e' }, c)).toBe('Épée');
+  });
+  it('set vide → « Mains nues »', () => {
+    expect(loadoutLabel({ id: 'l', name: '' }, c)).toBe('Mains nues');
+  });
+});
+
+describe('isOffHandEligible (LDB 14 l.138 — main secondaire)', () => {
+  const melee = (hands: 1 | 2): ItemInstance =>
+    ({ uid: 'm', name: 'X', kind: 'melee', qualities: [], enc: 1, equipped: true, hands } as ItemInstance);
+
+  it('mêlée à une main → éligible ; à deux mains → exclue', () => {
+    expect(isOffHandEligible(melee(1))).toBe(true);
+    expect(isOffHandEligible(melee(2))).toBe(false);
+  });
+  it('arme à distance NON-pistolet (Arc) → exclue', () => {
+    expect(isOffHandEligible(itemFromTrapping('Arc')!)).toBe(false);
+  });
+  it('pistolet (Atout Pistolet) → éligible ; Arbalète de poing (même Atout) aussi', () => {
+    expect(isOffHandEligible(itemFromTrapping('Pistolet')!)).toBe(true);
+    expect(isOffHandEligible(itemFromTrapping('Arbalète de poing')!)).toBe(true);
   });
 });
 

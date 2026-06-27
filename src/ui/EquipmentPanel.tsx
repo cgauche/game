@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import type { Combatant, HitLocation, ItemInstance, QualityInstance } from '../engine/types';
-import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, type ArmourLayer } from '../engine/items';
+import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, loadoutLabel, isOffHandEligible, isUnarmed, type ArmourLayer } from '../engine/items';
 import { RigSprite } from '../gameIso/rig/composeRig';
 import { DEFS } from '../gameIso/sprites';
 import { defaultAppearance } from '../gameIso/rig/appearance';
@@ -123,10 +123,9 @@ function SlotCell({ item, pa, fallback, options, value, onSelect, disabled, empt
 
 export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
-  const setWeaponSetSlot = useGame((s) => s.setWeaponSetSlot);
   const setLoadoutSlot = useGame((s) => s.setLoadoutSlot);
-  const activateWeaponSet = useGame((s) => s.activateWeaponSet);
   const setActiveLoadout = useGame((s) => s.setActiveLoadout);
+  const createLoadout = useGame((s) => s.createLoadout);
   const deleteLoadout = useGame((s) => s.deleteLoadout);
   const inBattle = useGame((s) => !!s.battle);
   const lockTitle = inBattle ? 'Équipement verrouillé en combat (changez de set depuis la barre d’action)' : undefined;
@@ -136,7 +135,8 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const capes = items.filter(isCapeItem);
   const wornCape = capes.find((i) => i.equipped);
   const weapons = items.filter((i) => (i.kind === 'melee' || i.kind === 'ranged') && !i.destroyed);
-  const oneHanded = weapons.filter((w) => weaponHands(w) === 1);
+  // Main SECONDAIRE (LDB 14 l.138) : armes de mêlée à une main OU pistolets seulement (pas d'arc/arbalète ordinaire).
+  const offHandWeapons = weapons.filter(isOffHandEligible);
   const strBonus = charBonus(hero.characteristics, 'F');
 
   // Mannequin : MÊME recette que le token de jeu (pickBackend) — apparence enrichie des
@@ -215,57 +215,71 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
         </svg>
       </div>
 
-      {/* COLONNE DROITE — sets d'armes en cartes compactes (Set I/II fixes + perso/invoquée) + récap */}
+      {/* COLONNE DROITE — sets d'armes auto-étiquetés par leur contenu (façon Dragon Age) + récap */}
       <div className="equip-sets">
-        {(hero.loadouts ?? []).map((lo, idx) => {
-          const fixed = idx < WEAPON_SET_NAMES.length;
+        {(hero.loadouts ?? []).map((lo) => {
           const conjured = !!(hero.items ?? []).find((it) => it.uid === lo.main)?.conjured;
           const setActive = hero.activeLoadoutId === lo.id;
           const mainItem = weapons.find((w) => w.uid === lo.main);
           const offItem = weapons.find((w) => w.uid === lo.off);
           const mainTwoHanded = mainItem ? weaponHands(mainItem) === 2 : false;
           const editable = !conjured && !inBattle; // arme invoquée = lecture seule (auto-gérée)
-          const onMain = (v: string) => fixed ? setWeaponSetSlot(hero.id, idx, 'main', v || null) : setLoadoutSlot(hero.id, lo.id, 'main', v || null);
-          const onOff = (v: string) => fixed ? setWeaponSetSlot(hero.id, idx, 'off', v || null) : setLoadoutSlot(hero.id, lo.id, 'off', v || null);
+          const canDelete = !conjured && (hero.loadouts?.length ?? 0) > 1; // garder ≥1 set
           return (
             <div key={lo.id} className={`set-card ${setActive ? 'active' : ''} ${conjured ? 'conjured' : ''}`}>
-              <div className="set-card-slots">
-                <SlotCell
-                  item={mainItem}
-                  fallback={weaponFallback(mainItem, conjured)}
-                  disabled={!editable}
-                  value={lo.main ?? ''}
-                  emptyTitle={lockTitle ?? 'Main — choisir une arme'}
-                  options={[{ key: '', label: '— mains nues —' }, ...weapons.map(weaponOpt)]}
-                  onSelect={onMain}
-                />
-                <SlotCell
-                  item={offItem}
-                  fallback={weaponFallback(offItem, conjured)}
-                  disabled={!editable || mainTwoHanded}
-                  value={lo.off ?? ''}
-                  emptyTitle={mainTwoHanded ? 'Arme à deux mains — pas de seconde main' : (lockTitle ?? '2nde — arme à une main / bouclier')}
-                  options={[{ key: '', label: mainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...oneHanded.filter((w) => w.uid !== lo.main).map(weaponOpt)]}
-                  onSelect={onOff}
-                />
-              </div>
-              <span className="set-card-actions">
+              <div className="set-card-head">
+                <span className="set-card-name">{loadoutLabel(lo, hero)}</span>
                 {conjured && <span className="lo-name" title="Arme invoquée (auto-gérée)">✦</span>}
-                <button
-                  className={`btn small ${setActive ? 'btn-primary' : ''}`}
-                  disabled={inBattle}
-                  title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
-                  onClick={() => (fixed ? activateWeaponSet(hero.id, idx) : setActiveLoadout(hero.id, lo.id))}
-                >
-                  {setActive ? '● Actif' : 'Activer'}
-                </button>
-                {!fixed && !conjured && (
-                  <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
-                )}
-              </span>
+              </div>
+              <div className="set-card-body">
+                <div className="set-card-slots">
+                  <div className="set-slot">
+                    <SlotCell
+                      item={mainItem}
+                      fallback={weaponFallback(mainItem, conjured)}
+                      disabled={!editable}
+                      value={lo.main ?? ''}
+                      emptyTitle={lockTitle ?? 'Main principale — choisir une arme'}
+                      options={[{ key: '', label: '— mains nues —' }, ...weapons.map(weaponOpt)]}
+                      onSelect={(v) => setLoadoutSlot(hero.id, lo.id, 'main', v || null)}
+                    />
+                    <span className="set-slot-cap">Principale</span>
+                  </div>
+                  <div className="set-slot">
+                    <SlotCell
+                      item={offItem}
+                      fallback={weaponFallback(offItem, conjured)}
+                      disabled={!editable || mainTwoHanded}
+                      value={lo.off ?? ''}
+                      emptyTitle={mainTwoHanded ? 'Arme à deux mains — pas de seconde main' : (lockTitle ?? '2nde — arme de mêlée à une main, bouclier ou pistolet')}
+                      options={[{ key: '', label: mainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...offHandWeapons.filter((w) => w.uid !== lo.main).map(weaponOpt)]}
+                      onSelect={(v) => setLoadoutSlot(hero.id, lo.id, 'off', v || null)}
+                    />
+                    <span className="set-slot-cap">2nde <em className="off-malus" title="Attaquer de la main secondaire : −20 (LDB 14)">−20</em></span>
+                  </div>
+                </div>
+                <span className="set-card-actions">
+                  <button
+                    className={`btn small ${setActive ? 'btn-primary' : ''}`}
+                    disabled={inBattle}
+                    title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
+                    onClick={() => setActiveLoadout(hero.id, lo.id)}
+                  >
+                    {setActive ? '● Actif' : 'Activer'}
+                  </button>
+                  {canDelete && (
+                    <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
+                  )}
+                </span>
+              </div>
             </div>
           );
         })}
+        {(hero.loadouts?.length ?? 0) < 3 && (
+          <button className="btn small set-add" disabled={inBattle} title={lockTitle ?? 'Ajouter un set d’armes (vide, devient actif)'} onClick={() => createLoadout(hero.id, '')}>
+            + Set d’armes
+          </button>
+        )}
 
         {/* Récap des armes EN MAIN du set actif (Dégâts effectifs, qualités/effets, munitions) */}
         <div className="eq-active-weapons">
