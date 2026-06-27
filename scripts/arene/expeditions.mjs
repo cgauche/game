@@ -1,6 +1,6 @@
 /** Expéditions de la carte du monde (#T2) — on y VOYAGE depuis le Bourg (rations, péripéties,
  *  embuscades), on en revient par la carte. Pas de retour-hub automatique : la route est le retour. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, testNode } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, testNode, flowOf } from './lib.mjs';
 
 // ── La Vieille Futaie (40×28) : harde en lisière + camp de Bella la Noire (PNJ nommée) ──────
 
@@ -107,10 +107,10 @@ export function makeForet() {
           { ref: 'Loup', pos: { x: 14, y: 12 } },
           { ref: 'Loup', pos: { x: 17, y: 23 } },
         ],
-        onVictory: [
+        onVictory: flowOf([
           { type: 'giveXp', amount: 120 },
           { type: 'journal', text: 'La harde de lisière est dispersée. Plus profond, une fumée monte du camp des brigands…' },
-        ],
+        ]),
       },
       {
         // Le camp de Bella la Noire — PNJ NOMMÉE du bestiaire (ADE), à la tête de ses coupe-jarrets.
@@ -121,11 +121,11 @@ export function makeForet() {
           { ref: 'Humain', pos: { x: 33, y: 13 }, weapon: 'Épée bâtarde', randomChars: true, label: 'Spadassin de Bella', appearance: { career: 'Voleur' } },
           { ref: 'Chien', pos: { x: 28, y: 14 } },
         ],
-        onVictory: [
+        onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_foret_fait' },
           { type: 'giveXp', amount: 160 },
           { type: 'journal', text: 'Bella la Noire est tombée, sa bande éparpillée. CONTRAT REMPLI — le Maître paiera. (Le coffre du camp est à vous ; retour par la carte du monde.)' },
-        ],
+        ]),
       },
     ],
   });
@@ -222,12 +222,12 @@ export function makeMarais() {
           { ref: 'Serpent', pos: { x: 9, y: 20 } },
           { ref: 'Serpent', pos: { x: 21, y: 16 } },
         ],
-        onVictory: [
+        onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_marais_fait' },
           { type: 'giveXp', amount: 180 },
           { type: 'giveMoney', gold: 3 },
           { type: 'journal', text: 'La chose FABRIQUÉE a cessé de se recoudre. CONTRAT REMPLI — la tourbière redevient juste sinistre. (Retour par la carte du monde.)' },
-        ],
+        ]),
       },
     ],
   });
@@ -338,11 +338,11 @@ export function makeVillage() {
           { ref: 'Zombie', pos: { x: 16, y: 19 } },
           { ref: 'Goule de crypte', pos: { x: 20, y: 20 } },
         ],
-        onVictory: [
+        onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_village_fait' },
           { type: 'giveXp', amount: 200 },
           { type: 'journal', text: 'Felsbach repose enfin. CONTRAT REMPLI — rapportez le journal du prévôt au Maître. (Retour par la carte du monde.)' },
-        ],
+        ]),
       },
     ],
   });
@@ -404,11 +404,11 @@ export function makeEmbuscade() {
           { ref: 'Gobelin', pos: { x: 10, y: 10 } },
           { ref: 'Orc', pos: { x: 21, y: 5 } },
         ],
-        onVictory: [
+        onVictory: flowOf([
           { type: 'giveXp', amount: 80 },
           { type: 'giveMoney', silver: 15 },
           { type: 'journal', text: 'Les détrousseurs sont détroussés (15 pa). Reprenez la route par la carte du monde.' },
-        ],
+        ]),
       },
     ],
   });

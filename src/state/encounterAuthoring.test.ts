@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildEncounter, buildEncounters } from './encounterAuthoring';
+import { flowFromEffects } from './flow';
 
 describe('buildEncounter — authoring terse → entités + members canoniques', () => {
   it("un ennemi devient une entité 'personnage' + un membre qui la référence (profil porté par l'entité)", () => {
@@ -41,9 +42,9 @@ describe('buildEncounter — authoring terse → entités + members canoniques',
     expect(bandit).toEqual({ entityId: 'enemy-e-1', ridesEntityId: 'enemy-e-0' });
   });
 
-  it('surprise + onVictory passent sur la rencontre', () => {
-    const onV = [{ type: 'giveXp', amount: 10 } as const];
-    const { encounter } = buildEncounter({ id: 'e', surprise: 'enemies', onVictory: [...onV], enemies: [{ ref: 'Orc', pos: { x: 1, y: 1 } }] });
+  it('surprise + onVictory (Flow) passent sur la rencontre', () => {
+    const onV = flowFromEffects([{ type: 'giveXp', amount: 10 }]);
+    const { encounter } = buildEncounter({ id: 'e', surprise: 'enemies', onVictory: onV, enemies: [{ ref: 'Orc', pos: { x: 1, y: 1 } }] });
     expect(encounter.surprise).toBe('enemies');
     expect(encounter.onVictory).toEqual(onV);
   });

@@ -17,7 +17,7 @@ import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
-import { EMPTY_FLOW } from './flow';
+import { EMPTY_FLOW, type Flow } from './flow';
 export { movementRemaining, canMove } from './mount';
 
 import { type BattleZone } from './zones';
@@ -144,7 +144,7 @@ export interface BattleState {
   loadoutSwapped?: boolean;
   log: CombatEvent[];
   over: null | 'victory' | 'defeat';
-  onVictory?: Effect[];
+  onVictory?: Flow;
   /** Zones persistantes (L11 — généralise l'ancienne fumée) : fumée du Souffle (blocksLoS),
    *  Mur de feu (onCross), Grands feux d'U'Zhul (perRound)… TTL décrémenté à chaque frontière
    *  de Round (state/zones.ts). */
@@ -553,7 +553,7 @@ export interface GameState extends RollFlowActionsMap {
 
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
-  startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
+  startCombat: (encounterId: string, onVictory?: Flow, opts?: { noSurprise?: boolean }) => void;
   battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;

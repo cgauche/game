@@ -248,29 +248,47 @@
               "entityId": "enemy-enc-zone1-5"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "silver": 8
-            },
-            {
-              "type": "giveXp",
-              "amount": 100
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone1_clear"
-            },
-            {
-              "type": "journal",
-              "text": "La Cour : vaincue ! Retournez voir le maître d’arène."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "silver": 8
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 100
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone1_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "La Cour : vaincue ! Retournez voir le maître d’arène."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -4040,29 +4058,47 @@
               "entityId": "enemy-enc-zone2-4"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "silver": 12
-            },
-            {
-              "type": "giveXp",
-              "amount": 120
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone2_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Les Ruines : nettoyées ! (La salle au trésor, au nord-est, n’a pas dit son dernier mot.)"
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "silver": 12
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 120
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone2_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Les Ruines : nettoyées ! (La salle au trésor, au nord-est, n’a pas dit son dernier mot.)"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         },
         {
           "id": "enc-ruines-tresor",
@@ -4078,16 +4114,25 @@
             }
           ],
           "surprise": "enemies",
-          "onVictory": [
-            {
-              "type": "giveXp",
-              "amount": 50
-            },
-            {
-              "type": "journal",
-              "text": "Le gardien du trésor est tombé — la salle est à vous. Fouillez le coffre !"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 50
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Le gardien du trésor est tombé — la salle est à vous. Fouillez le coffre !"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -4984,29 +5029,47 @@
               "entityId": "enemy-enc-zone3-5"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "silver": 16
-            },
-            {
-              "type": "giveXp",
-              "amount": 140
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone3_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Les Égouts : purgés ! Remontez respirer au Bourg."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "silver": 16
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 140
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone3_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Les Égouts : purgés ! Remontez respirer au Bourg."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -5946,32 +6009,53 @@
             }
           ],
           "surprise": "party",
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 1
-            },
-            {
-              "type": "giveXp",
-              "amount": 160
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone4_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Le Charnier : recouché ! Mais certaines images ne s’oublient pas…"
-            },
-            {
-              "type": "inflictNightmares"
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 1
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 160
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone4_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Le Charnier : recouché ! Mais certaines images ne s’oublient pas…"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "inflictNightmares"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -6807,30 +6891,48 @@
               "entityId": "enemy-enc-zone5-5"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 1,
-              "silver": 10
-            },
-            {
-              "type": "giveXp",
-              "amount": 180
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone5_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Les Lices : remportées sous la pluie ! Le Bourg parle déjà de votre charge."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 1,
+                  "silver": 10
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 180
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone5_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Les Lices : remportées sous la pluie ! Le Bourg parle déjà de votre charge."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -7747,29 +7849,47 @@
             }
           ],
           "surprise": "party",
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 2
-            },
-            {
-              "type": "giveXp",
-              "amount": 200
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone6_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Le Marais : la harde est brisée — et son Fimir avec. Le brouillard se lève enfin."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 2
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 200
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone6_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Le Marais : la harde est brisée — et son Fimir avec. Le brouillard se lève enfin."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -8977,30 +9097,48 @@
               "entityId": "enemy-enc-zone7-6"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 2,
-              "silver": 10
-            },
-            {
-              "type": "giveXp",
-              "amount": 220
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone7_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Le Nid : brûlé ! La vouivre ne sifflera plus sous l’arène."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 2,
+                  "silver": 10
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 220
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone7_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Le Nid : brûlé ! La vouivre ne sifflera plus sous l’arène."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -9953,29 +10091,47 @@
               "entityId": "enemy-enc-zone8-6"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 3
-            },
-            {
-              "type": "giveXp",
-              "amount": 240
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone8_clear"
-            },
-            {
-              "type": "journal",
-              "text": "La Fosse : le Minotaure est tombé ! Le gladiateur vous salue et disparaît par le tunnel des bêtes."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 3
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 240
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone8_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "La Fosse : le Minotaure est tombé ! Le gladiateur vous salue et disparaît par le tunnel des bêtes."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -10899,30 +11055,48 @@
               "entityId": "enemy-enc-zone9-3"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 3,
-              "silver": 10
-            },
-            {
-              "type": "giveXp",
-              "amount": 260
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone9_clear"
-            },
-            {
-              "type": "journal",
-              "text": "La Caverne : le Troll est resté à terre (cette fois pour de bon). L’alcôve du fond vous tend les bras…"
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 3,
+                  "silver": 10
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 260
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone9_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "La Caverne : le Troll est resté à terre (cette fois pour de bon). L’alcôve du fond vous tend les bras…"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         },
         {
           "id": "enc-caverne-ogre",
@@ -10931,16 +11105,25 @@
               "entityId": "enemy-enc-caverne-ogre-0"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveXp",
-              "amount": 60
-            },
-            {
-              "type": "journal",
-              "text": "L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous."
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 60
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous."
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -12141,29 +12324,47 @@
               "entityId": "enemy-enc-zone10-8"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 4
-            },
-            {
-              "type": "giveXp",
-              "amount": 280
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone10_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Le Nid de Vermine : enfumé ! Les terriers resteront silencieux… un temps."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 4
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 280
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone10_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Le Nid de Vermine : enfumé ! Les terriers resteront silencieux… un temps."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -13375,29 +13576,47 @@
               "entityId": "enemy-enc-zone11-8"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 5
-            },
-            {
-              "type": "giveXp",
-              "amount": 300
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone11_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Le Cercle Maudit : le chant s’est tu. L’idole n’est plus qu’une pierre — fouillez le coffre du célébrant."
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 5
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 300
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone11_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Le Cercle Maudit : le chant s’est tu. L’idole n’est plus qu’une pierre — fouillez le coffre du célébrant."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -14518,32 +14737,53 @@
               "entityId": "enemy-enc-zone12-6"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 6
-            },
-            {
-              "type": "giveXp",
-              "amount": 320
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone12_clear"
-            },
-            {
-              "type": "journal",
-              "text": "Le Sépulcre : le seigneur est recouché, ses gens dispersés. Son épée, elle, ne dort pas — fouillez le sarcophage."
-            },
-            {
-              "type": "inflictNightmares"
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 6
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 320
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone12_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Le Sépulcre : le seigneur est recouché, ses gens dispersés. Son épée, elle, ne dort pas — fouillez le sarcophage."
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "inflictNightmares"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -15601,29 +15841,47 @@
               "entityId": "enemy-enc-zone13-5"
             }
           ],
-          "onVictory": [
-            {
-              "type": "giveMoney",
-              "gold": 10
-            },
-            {
-              "type": "giveXp",
-              "amount": 450
-            },
-            {
-              "type": "setFlag",
-              "flag": "zone13_clear"
-            },
-            {
-              "type": "journal",
-              "text": "LE DRAGON EST TOMBÉ. L’arène entière retient son souffle — puis HURLE. Allez réclamer votre titre au Maître !"
-            },
-            {
-              "type": "transition",
-              "scene": "arene-hub",
-              "entry": "porte-arene"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 10
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 450
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "zone13_clear"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "LE DRAGON EST TOMBÉ. L’arène entière retient son souffle — puis HURLE. Allez réclamer votre titre au Maître !"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "transition",
+                  "scene": "arene-hub",
+                  "entry": "porte-arene"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -17267,16 +17525,25 @@
             }
           ],
           "surprise": "party",
-          "onVictory": [
-            {
-              "type": "giveXp",
-              "amount": 120
-            },
-            {
-              "type": "journal",
-              "text": "La harde de lisière est dispersée. Plus profond, une fumée monte du camp des brigands…"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 120
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "La harde de lisière est dispersée. Plus profond, une fumée monte du camp des brigands…"
+                }
+              }
+            ]
+          }
         },
         {
           "id": "enc-foret-bande",
@@ -17294,20 +17561,32 @@
               "entityId": "enemy-enc-foret-bande-3"
             }
           ],
-          "onVictory": [
-            {
-              "type": "setFlag",
-              "flag": "contrat_foret_fait"
-            },
-            {
-              "type": "giveXp",
-              "amount": 160
-            },
-            {
-              "type": "journal",
-              "text": "Bella la Noire est tombée, sa bande éparpillée. CONTRAT REMPLI — le Maître paiera. (Le coffre du camp est à vous ; retour par la carte du monde.)"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "contrat_foret_fait"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 160
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Bella la Noire est tombée, sa bande éparpillée. CONTRAT REMPLI — le Maître paiera. (Le coffre du camp est à vous ; retour par la carte du monde.)"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -18769,24 +19048,39 @@
             }
           ],
           "surprise": "party",
-          "onVictory": [
-            {
-              "type": "setFlag",
-              "flag": "contrat_marais_fait"
-            },
-            {
-              "type": "giveXp",
-              "amount": 180
-            },
-            {
-              "type": "giveMoney",
-              "gold": 3
-            },
-            {
-              "type": "journal",
-              "text": "La chose FABRIQUÉE a cessé de se recoudre. CONTRAT REMPLI — la tourbière redevient juste sinistre. (Retour par la carte du monde.)"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "contrat_marais_fait"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 180
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "gold": 3
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "La chose FABRIQUÉE a cessé de se recoudre. CONTRAT REMPLI — la tourbière redevient juste sinistre. (Retour par la carte du monde.)"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -20185,20 +20479,32 @@
               "entityId": "enemy-enc-village-5"
             }
           ],
-          "onVictory": [
-            {
-              "type": "setFlag",
-              "flag": "contrat_village_fait"
-            },
-            {
-              "type": "giveXp",
-              "amount": 200
-            },
-            {
-              "type": "journal",
-              "text": "Felsbach repose enfin. CONTRAT REMPLI — rapportez le journal du prévôt au Maître. (Retour par la carte du monde.)"
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "setFlag",
+                  "flag": "contrat_village_fait"
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 200
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Felsbach repose enfin. CONTRAT REMPLI — rapportez le journal du prévôt au Maître. (Retour par la carte du monde.)"
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},
@@ -21207,20 +21513,32 @@
             }
           ],
           "surprise": "party",
-          "onVictory": [
-            {
-              "type": "giveXp",
-              "amount": 80
-            },
-            {
-              "type": "giveMoney",
-              "silver": 15
-            },
-            {
-              "type": "journal",
-              "text": "Les détrousseurs sont détroussés (15 pa). Reprenez la route par la carte du monde."
-            }
-          ]
+          "onVictory": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveXp",
+                  "amount": 80
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "giveMoney",
+                  "silver": 15
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "journal",
+                  "text": "Les détrousseurs sont détroussés (15 pa). Reprenez la route par la carte du monde."
+                }
+              }
+            ]
+          }
         }
       ],
       "flags": {},

@@ -266,11 +266,11 @@ const scene: Scene = {
     {
       id: 'enc-etudiants',
       members: [{ entityId: 'etudiant-1' }, { entityId: 'etudiant-2' }],
-      onVictory: [
+      onVictory: flowFromEffects([
         { type: 'journal', text: 'Les deux étudiants sont maîtrisés et remis à la garde — ils passeront la nuit en cellule.' },
         { type: 'setFlag', flag: 'etudiantsArretes' },
         { type: 'giveXp', amount: 10 }, // les étudiants en artillerie contrecarrés (source 08 l.277)
-      ],
+      ]),
     },
   ],
   flags: {},

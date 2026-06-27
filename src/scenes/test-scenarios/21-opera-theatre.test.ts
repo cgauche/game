@@ -1,4 +1,4 @@
-import { flowEffects, type Flow } from '../../state/flow';
+import { flowEffects, EMPTY_FLOW, type Flow } from '../../state/flow';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { validateScene } from '../../state/validateScene';
 import { isWalkable, type Effect } from '../../state/scene';
@@ -130,7 +130,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
       (effs ?? []).filter((e): e is Extract<Effect, { type: 'giveXp' }> => e.type === 'giveXp').reduce((n, e) => n + e.amount, 0);
     expect(xpIn(flowEffects(detect.success))).toBe(50); // bombe déjouée (l.275)
     expect(xpIn(flowEffects(spotNode().success))).toBe(15); // vol de clés empêché (l.297)
-    expect(xpIn(scenario.scene.encounters.find((e) => e.id === 'enc-etudiants')!.onVictory)).toBe(10); // étudiants arrêtés (l.277)
+    expect(xpIn(flowEffects(scenario.scene.encounters.find((e) => e.id === 'enc-etudiants')!.onVictory ?? EMPTY_FLOW))).toBe(10); // étudiants arrêtés (l.277)
   });
 
   it('confronter les étudiants offre un combat optionnel (les arrêter)', () => {

@@ -125,10 +125,10 @@ function build(): Scene {
         statblock: { name: 'Terenz', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 3 }, traits: [{ id: 'arme', value: 7, arg: 'Hache' }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Crétin' }] },
       },
     ],
-    onVictory: [
+    onVictory: flowFromEffects([
       { type: 'setFlag', flag: 'embuscade_nettoyee' },
       { type: 'journal', text: 'La bande de Knud Cratinx gît à son tour. La route, enfin, se tait.' },
-    ],
+    ]),
   });
 
   return {

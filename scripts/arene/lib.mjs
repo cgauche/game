@@ -105,14 +105,14 @@ export function fightTrigger(encounter, rect, extra = {}) {
  *  l'équipement lourd se GAGNE sur toute l'échelle, pas au premier combat. XP : ~100 → 450 par
  *  zone (progression de carrière sentie à CHAQUE victoire, pas tous les 3 combats). */
 export function zoneVictory(n, { money, xp, journal, extra = [] }) {
-  return [
+  return flowOf([
     { type: 'giveMoney', ...money },
     { type: 'giveXp', amount: xp },
     { type: 'setFlag', flag: `zone${n}_clear` },
     { type: 'journal', text: journal },
     ...extra,
     { type: 'transition', scene: 'arene-hub', entry: 'porte-arene' },
-  ];
+  ]);
 }
 
 /** Fouille interactive (décor). Accepte une LISTE d'Effets (butin ramassable, → flowOf) OU un Flow

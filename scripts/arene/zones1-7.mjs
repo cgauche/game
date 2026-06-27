@@ -161,10 +161,10 @@ export function makeZone2() {
           { ref: 'Gobelin', pos: { x: 20, y: 3 } },
           { ref: 'Gobelin', pos: { x: 24, y: 6 } },
         ],
-        onVictory: [
+        onVictory: flowOf([
           { type: 'giveXp', amount: 50 },
           { type: 'journal', text: 'Le gardien du trésor est tombé — la salle est à vous. Fouillez le coffre !' },
-        ],
+        ]),
       },
     ],
   });

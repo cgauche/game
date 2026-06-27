@@ -1,4 +1,4 @@
-import { flowEffects, flowFromEffects, flowHasTest, walkFlow, type Flow } from '../../state/flow';
+import { flowEffects, flowHasTest, walkFlow, EMPTY_FLOW, type Flow } from '../../state/flow';
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -90,7 +90,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     });
     for (const s of project) {
       for (const t of s.triggers) walk(t.flow);
-      for (const e of s.encounters) walk(flowFromEffects(e.onVictory));
+      for (const e of s.encounters) walk(e.onVictory ?? EMPTY_FLOW);
       for (const ent of s.entities) if (ent.interact) walk(ent.interact.flow);
       for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) if (c.flow) walk(c.flow);
     }
@@ -148,20 +148,20 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     });
     for (const s of project) {
       for (const t of s.triggers) walk(t.flow);
-      for (const e of s.encounters) walk(flowFromEffects(e.onVictory));
+      for (const e of s.encounters) walk(e.onVictory ?? EMPTY_FLOW);
       for (const ent of s.entities) if (ent.interact) walk(ent.interact.flow);
       for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) if (c.flow) walk(c.flow);
     }
     expect(totalSb).toBeLessThanOrEqual(100 * 240);
     const z1 = project[0].encounters.find((e) => e.id === 'enc-zone1')!;
-    const z1money = z1.onVictory!.find((e) => e.type === 'giveMoney') as any;
+    const z1money = flowEffects(z1.onVictory!).find((e) => e.type === 'giveMoney') as any;
     expect(z1money.gold ?? 0).toBe(0); // l'échauffement paie en PISTOLES
     // XP : chaque victoire de zone vaut ≥100 PX (progression sentie à CHAQUE combat),
     // et l'échelle complète en cumule ≥2500.
     let ladder = 0;
     for (let n = 1; n <= 13; n++) {
       const z = project.find((s) => s.id === `arene-zone${n}`)!;
-      const xp = z.encounters.find((e) => e.id === `enc-zone${n}`)!.onVictory!.find((e) => e.type === 'giveXp') as any;
+      const xp = flowEffects(z.encounters.find((e) => e.id === `enc-zone${n}`)!.onVictory!).find((e) => e.type === 'giveXp') as any;
       expect(xp.amount, `XP zone${n}`).toBeGreaterThanOrEqual(100);
       ladder += xp.amount;
     }
@@ -292,7 +292,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
 
   it('boucle complète : chaque zone se solde par un retour au hub (transition)', () => {
     for (const z of project.filter((s) => s.id.startsWith('arene-zone'))) {
-      const ov = z.encounters[0]?.onVictory ?? [];
+      const ov = flowEffects(z.encounters[0]?.onVictory ?? EMPTY_FLOW);
       expect(ov.some((e) => e.type === 'transition' && e.scene === 'arene-hub')).toBe(true);
       expect(ov.some((e) => e.type === 'setFlag')).toBe(true);
     }
@@ -315,7 +315,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       expect(choices.some((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes(`!contrat_${key}`)), `proposition ${key}`).toBe(true);
       expect(choices.some((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes(`contrat_${key}_fait`)), `prime ${key}`).toBe(true);
       // et une rencontre d'expédition pose bien le flag _fait
-      const setters = project.flatMap((s) => s.encounters.flatMap((e) => e.onVictory ?? []));
+      const setters = project.flatMap((s) => s.encounters.flatMap((e) => flowEffects(e.onVictory ?? EMPTY_FLOW)));
       expect(setters.some((e) => e.type === 'setFlag' && e.flag === `contrat_${key}_fait`), `flag contrat_${key}_fait`).toBe(true);
     }
   });

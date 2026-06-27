@@ -1,6 +1,6 @@
 import type { Scene, Effect } from './scene';
 import { isWalkable } from './scene';
-import { type Flow, type Condition, walkFlow, walkConditionTimes, flowFromEffects } from './flow';
+import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, EMPTY_FLOW } from './flow';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
 // canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
@@ -128,7 +128,11 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     }
     const entIds = new Set(s.entities.map((e) => e.id));
     for (const e of s.encounters) {
-      checkFlow(flowFromEffects(e.onVictory), e.id, 'encounter'); // onVictory = liste d'Effets (delayedEffect.flow récursé)
+      checkFlow(e.onVictory ?? EMPTY_FLOW, e.id, 'encounter'); // onVictory est déjà un Flow (delayedEffect.flow récursé)
+      // onVictory est APPLIQUÉ À PLAT à la victoire (finishVictory → flattenFlow), pour préserver la
+      // déférence transition/dialogue → « Continuer ». flattenFlow lève sur un nœud interactif → on
+      // l'interdit ici (les `if` conditionnels restent permis, eux, car flattenFlow les évalue).
+      if (e.onVictory && flowHasTest(e.onVictory)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » : onVictory ne peut pas contenir de jet interactif (Test/Choix) — il est appliqué à plat à la victoire`);
       for (const m of e.members ?? []) {
         if (!entIds.has(m.entityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → membre inexistant « ${m.entityId} »`);
         if (m.ridesEntityId && !entIds.has(m.ridesEntityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → monture inexistante « ${m.ridesEntityId} »`);

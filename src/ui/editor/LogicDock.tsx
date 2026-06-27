@@ -11,7 +11,7 @@ import type { Warning } from '../../state/validateScene';
 import { nextEntityId } from '../../state/entityId';
 import { CreatureData } from '../../data';
 import { addEnemyMember, removeMember, patchMember, flowEffects } from './editorState';
-import { EffectList, effectCtxOf, Ctx } from './EffectList';
+import { effectCtxOf, Ctx } from './EffectList';
 import { FlowEditor } from './FlowEditor';
 import { WhenEditor, condSummary } from './ConditionEditor';
 import { DialogueDetail } from './DialogueDetail';
@@ -426,7 +426,7 @@ function EncountersTab({
             <option value="party">Le groupe est surpris (les ennemis embusquent)</option>
           </select>
           <div className="mini-title">À la victoire (récompenses : PX, butin, flag…)</div>
-          <EffectList effects={enc.onVictory ?? []} onChange={(eff) => upd({ onVictory: eff })} ctx={ctx} />
+          <FlowEditor flow={enc.onVictory ?? EMPTY_FLOW} onChange={(flow) => upd({ onVictory: flow })} ctx={ctx} />
         </div>
       ) : (
         <div className="logic-detail hint">Une rencontre = des ennemis du bestiaire placés sur la grille. Référencée par un effet « Démarrer un combat ».</div>

@@ -9,7 +9,8 @@
  * Utilisé par les scènes de test (`src/scenes/**`). Le générateur d'arène (`scripts/arene/lib.mjs`,
  * Node pur) en porte un miroir JS — garder les deux alignés.
  */
-import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, Effect, SceneEntity } from './scene';
+import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, SceneEntity } from './scene';
+import type { Flow } from './flow';
 import type { TraitInstance } from '../engine/statEntry';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -52,7 +53,7 @@ export interface AuthoredEncounter {
   enemies: AuthoredEnemy[];
   /** Camp pris en embuscade (Test de Surprise opposé, LDB 13). */
   surprise?: 'party' | 'enemies';
-  onVictory?: Effect[];
+  onVictory?: Flow;
   /** Invisibles en exploration jusqu'au combat (embuscade visuelle). Défaut : false (visibles). */
   hidden?: boolean;
 }

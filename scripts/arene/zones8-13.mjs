@@ -167,10 +167,10 @@ export function makeZone9() {
         // L'invité de marque : un Ogre mercenaire a flairé le magot avant vous.
         id: 'enc-caverne-ogre',
         enemies: [{ ref: 'Ogre', pos: { x: 27, y: 9 }, optionals: ['Affamé'] }],
-        onVictory: [
+        onVictory: flowOf([
           { type: 'giveXp', amount: 60 },
           { type: 'journal', text: 'L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous.' },
-        ],
+        ]),
       },
     ],
   });

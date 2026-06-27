@@ -386,8 +386,10 @@ export interface EncounterDef {
    *  `buildEncounter`). SOURCE UNIQUE lue par le runtime — chaque membre pointe une `SceneEntity`
    *  'personnage' qui porte tout le profil (ref/statblock/apparence/arme/`combat.hiddenUntilCombat`). */
   members?: EncounterMember[];
-  /** Scène/flag déclenché à la victoire. */
-  onVictory?: Effect[];
+  /** Scène/flag déclenché à la victoire — Flow (UN seul format avec `Trigger.flow`/`DialogueChoice.flow`).
+   *  Aplati en `Effect[]` par `finishVictory` (la déférence transition/dialogue + la mesure de récompense
+   *  restent sur la séquence plate). */
+  onVictory?: Flow;
   /** Surprise (LDB 13 l.52-81) : camp pris en EMBUSCADE au début du combat. Les combattants de ce camp
    *  font un Test opposé de Perception vs la meilleure Discrétion des embusqueurs ; les vaincus gagnent
    *  l'État `Surpris`. Absent = personne n'est surpris. */

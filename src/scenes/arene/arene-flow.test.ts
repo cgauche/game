@@ -49,7 +49,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
   it('onVictory : argent + flag zone1_clear + transition vers le hub', () => {
     useGame.getState().setParty(makeShowcaseParty());
     useGame.getState().loadProject(project, 'arene-zone1');
-    applyEffects(useGame.getState, useGame.setState, zone1.encounters[0].onVictory!);
+    runFlow(useGame.getState, useGame.setState, zone1.encounters[0].onVictory!);
     expect(useGame.getState().flags.zone1_clear).toBe(true);
     expect(useGame.getState().scene?.id).toBe('arene-hub');
   });
@@ -57,7 +57,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
   it('au hub, la porte des Ruines s’ouvre une fois la Cour nettoyée', () => {
     useGame.getState().setParty(makeShowcaseParty());
     useGame.getState().loadProject(project, 'arene-zone1');
-    applyEffects(useGame.getState, useGame.setState, zone1.encounters[0].onVictory!);
+    runFlow(useGame.getState, useGame.setState, zone1.encounters[0].onVictory!);
     const hub = useGame.getState().scene!;
     const dlgHub = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
     const ruines = dlgHub.nodes.flatMap((n) => n.choices).find((c) => c.text.includes('Ruines'))!;
@@ -76,7 +76,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
       // … on applique la victoire de la zone (enc principal = enc-zoneN) → flag + retour Bourg
       const z = project.find((s) => s.id === `arene-zone${n}`)!;
       const enc = z.encounters.find((e) => e.id === `enc-zone${n}`)!;
-      applyEffects(useGame.getState, useGame.setState, enc.onVictory!);
+      runFlow(useGame.getState, useGame.setState, enc.onVictory!);
       expect(useGame.getState().flags[`zone${n}_clear`], `zone${n}_clear`).toBe(true);
       expect(useGame.getState().scene?.id).toBe('arene-hub');
       // … et la porte se REFERME (déjà nettoyée)
@@ -105,7 +105,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     useGame.getState().loadProject(project, 'arene-hub');
     const foret = project.find((s) => s.id === 'arene-exp-foret')!;
     const bande = foret.encounters.find((e) => e.id === 'enc-foret-bande')!;
-    applyEffects(useGame.getState, useGame.setState, bande.onVictory!);
+    runFlow(useGame.getState, useGame.setState, bande.onVictory!);
     expect(useGame.getState().flags.contrat_foret_fait).toBe(true);
     const dlgHub = project.find((s) => s.id === 'arene-hub')!.dialogues.find((d) => d.id === 'dlg-hub')!;
     const prime = dlgHub.nodes.flatMap((n) => n.choices).find((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes('contrat_foret_fait'))!;

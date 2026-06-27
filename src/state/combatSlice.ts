@@ -11,7 +11,7 @@
 import type { Get, Set } from './flowTypes';
 import type { GameState, BattleState } from './store';
 import type { CounterParticipant } from './pendings';
-import { SceneEntity, Effect } from './scene';
+import { SceneEntity } from './scene';
 import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
@@ -19,7 +19,7 @@ import { battleRng } from './battleRng';
 import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
-import { EMPTY_FLOW, flowEffects } from './flow';
+import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import { ev, evLines } from './combatLog';
@@ -1724,7 +1724,7 @@ export function createCombatSlice(get: Get, set: Set) {
     ...rollFlowActions('attack', FLOWS.attack, get, set, ['forceSuccess', 'setForcedRoll']),
     ...rollFlowActions('defense', FLOWS.defense, get, set, ['forceSuccess', 'setForcedRoll']),
 
-    startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => {
+    startCombat: (encounterId: string, onVictory?: Flow, opts?: { noSurprise?: boolean }) => {
       const { scene, party, partyPos } = get();
       if (!scene) return;
       const enc = scene.encounters.find((e) => e.id === encounterId);
