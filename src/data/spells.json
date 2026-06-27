@@ -5079,10 +5079,11 @@
             "on": "target",
             "ops": [
               {
-                "op": "reduceToZero",
+                "op": "banish",
                 "onlyGroups": [
                   "Démon"
-                ]
+                ],
+                "narration": "unravel"
               },
               {
                 "op": "narrative",

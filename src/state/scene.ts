@@ -303,9 +303,6 @@ export type Effect =
   // `align` (Puissance du Chaos) facultatif : si la mutation survient, force la table EDOC alignée
   // (sinon la règle globale décide). C'est à l'éditeur de niveau de le poser quand la source est dédiée.
   | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'resistance' | 'calme'; align?: import('../engine/corruption').ChaosAlign; heroId?: string }
-  /** Points de Corruption DIRECTS (LDB 19) — contact d'un artefact maudit, Sombre Pacte scénarisé…
-   *  (sans Test ; pour l'exposition testée, utiliser `corruptionExposure`). `align` : cf. ci-dessus. */
-  | { type: 'giveCorruption'; amount?: number; align?: import('../engine/corruption').ChaosAlign; heroId?: string }
   /** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…).
    *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
    *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */

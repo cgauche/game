@@ -3,7 +3,6 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
-import { hasCondition } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -76,8 +75,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
     useGame.getState().oppositionConfirm(); // agrège → applyCast
     expect(useGame.getState().pendingCast).toBeNull();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
-    expect(after.wounds.current).toBe(0);
-    expect(hasCondition(after, 'inconscient')).toBe(true);
+    expect(after.dead).toBe(true); // bannie/retirée du jeu (Fauche-démon)
   });
 
   it('la cible résiste (FM élevée) → le Sort ne l’affecte pas (PB intacts, pas d’annihilation)', () => {
@@ -93,7 +91,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
     const after = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     // Résiste à l'incantation entière : ni op (annihilation) ni rider de Domaine (frappe d'Hysh).
     expect(after.wounds.current).toBe(12);
-    expect(hasCondition(after, 'inconscient')).toBe(false);
+    expect(after.dead ?? false).toBe(false);
   });
 
   it('paramétrage par Sort : Parole de Tzeentch oppose l’INTELLIGENCE (pas la FM)', () => {

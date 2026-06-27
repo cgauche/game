@@ -9,6 +9,7 @@
  * « 0 » puis écrasé). Un nouveau type d'op = 1 entrée dans `OP_GROUPS` + 1 défaut dans `newOp`.
  */
 import { Formula, GameOp } from '../../engine/ops';
+import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel } from '../../data';
@@ -308,7 +309,7 @@ export function opSummary(o: GameOp): string {
     case 'freeReroll': return `${L} relance gratuite`;
     case 'critTwice': return `${L} deux lancers de Critique`;
     case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
-    case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
+    case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
     case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
     case 'castWard': return `${L} −20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
@@ -332,7 +333,7 @@ export function opSummary(o: GameOp): string {
     case 'noHunger': return `${L} plus besoin de manger`;
     case 'weatherWard': return `${L} immunité aux intempéries`;
     case 'damageArmour': return `${L} cuir −1 PA`;
-    case 'reduceToZero': return `${L} Blessures à 0 (Inconscient)`;
+    case 'reduceToZero': return `${L} Blessures à 0`;
     case 'banish': return `${L} retirée du jeu`;
     case 'martyr': return `${L} reçoit les Dégâts`;
     case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
@@ -377,7 +378,15 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           <FormulaField label="Quantité" value={o.amount} min={0} onChange={(amount) => upd({ amount })} />
         )}
         {op.op === 'corruption' && (
-          <label className="dr">Points<input type="number" value={o.amount ?? 1} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+          <>
+            <label className="dr">Points<input type="number" value={o.amount ?? 1} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+            <select value={o.align ?? ''} onChange={(e) => upd({ align: (e.target.value || undefined) as ChaosAlign | undefined })}>
+              <option value="">Mutation : règle globale</option>
+              {(Object.keys(CHAOS_ALIGN_LABELS) as ChaosAlign[]).map((k) => (
+                <option key={k} value={k}>Table EDOC : {CHAOS_ALIGN_LABELS[k]}</option>
+              ))}
+            </select>
+          </>
         )}
         {op.op === 'gainResource' && (
           <>

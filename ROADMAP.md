@@ -648,7 +648,7 @@ iso-POC pour les sorts non curés (curation incrémentale, zéro régression —
   MÊME sur Prière réussie** (l.45), +10/Péché au jet, **Péché −1 après chaque jet** (l.53), Effet
   d'éditeur `giveSin`, ⚖️ sur la fiche.
 - ✅ **Lot 2 — Corruption & mutations** (LDB 19) : expositions (mineure/modérée/majeure, gains par
-  seuils de DR — Effet `corruptionExposure` en modale + `giveCorruption`), **seuil BFM+BE → Test de
+  seuils de DR — Effet `corruptionExposure` en modale + op `corruption`+`align`), **seuil BFM+BE → Test de
   Résistance ou MUTATION** (−BFM, d100 corps/esprit PAR ESPÈCE, **Tableaux physique/mentale
   verbatim** dans `data/mutations.ts` — caracs permanentes, Mouvement, PA naturels, mods de Tests,
   Traits Tentacules/Frénésie), **limites → DAMNÉ** (hors-jeu) ; effets lus à la volée (patron

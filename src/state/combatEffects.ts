@@ -647,7 +647,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (on !== 'party' && on !== 'hero') return;
       const targets = env.targets(on, e.heroId);
       if (!targets.length) return;
-      const lines = targets.flatMap((c) => applyOps(c, e.ops, { rng: defaultRNG }));
+      const lines = targets.flatMap((c) => applyOps(c, e.ops, { rng: defaultRNG, onCorruption: (n, align) => gainCorruption(env.get, env.set, c, n, align) }));
       env.set(touchActors(env.get()));
       lines.forEach((l) => env.log(l));
     },
@@ -763,19 +763,6 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
       const who = env.mutateHero(e.heroId, (h) => ({ ...h, nightmares: true }));
       if (who) env.log(t('eff.nightmares', { name: who.name }));
-    },
-  },
-  giveCorruption: {
-    group: '☠️ Afflictions', label: 'Points de Corruption directs (LDB 19)', icon: '🧬',
-    make: () => ({ type: 'giveCorruption', amount: 1, heroId: '' }),
-    apply: (e, env) => {
-      // Gain direct (artefact maudit, Pacte scénarisé…) — applique aussi seuil → mutation.
-      const hero = corruptionTarget(env.get(), e.heroId);
-      if (hero) {
-        const lines = gainCorruption(env.get, env.set, hero, Math.max(1, e.amount ?? 1), e.align);
-        for (const l of lines) env.log(l);
-        env.set({ party: [...env.get().party] });
-      }
     },
   },
   corruptionExposure: {

@@ -579,7 +579,7 @@ Quand la menace choisie est **Mutation** : réussir automatiquement le premier T
 | Haine sporadique + Tableau des Obsessions (EDOC) | **Non implémenté** |
 | Mutations spécifiques EDO App.2 (Chair Nécrosée, Crétin, Écailles épineuses EDO, Pattes Chèvre, Tête Pointue EDO) | **Non implémenté** dans mutations.json — ces entrées ne sont pas présentes |
 | Sombres Murmures (perdre 1 PC en commettant un acte répréhensible MJ) | **(Non implémenté)** — pas de mécanique store pour cette perte narrative |
-| Absolution (perte narrative de PC) | **(Non implémenté)** — pas de `giveCorruption(-n)` ou équivalent |
+| Absolution (perte narrative de PC) | **(Non implémenté)** — pas de `{ op: 'corruption', amount: -n }` ou équivalent |
 | Arme naturelle Écailles Épineuses EDOC (-10 Dex, -10 Soc) vs LDB (+1 PA seul) | **Divergence** — la version EDOC pénalise Dex et Soc en plus du PA ; `mutations.json` (`ecailles-epineuses`) n'a que `apAll: 1`, pas de malus Dex/Soc |
 
 ### Note : « Écailles Épineuses » — version LDB vs EDOC

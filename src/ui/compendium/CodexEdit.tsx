@@ -100,7 +100,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
   if (categoryKey === 'classes' || categoryKey === 'careerLevels') add('trappings');
   if (categoryKey === 'careerLevels') add('characteristics');
-  if (categoryKey === 'domains') add('castBonus', 'missile', 'afterCast');
+  if (categoryKey === 'domains') add('castBonus', 'missile', 'casterOps');
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
   return k;
@@ -213,7 +213,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const hasCharKeys = categoryKey === 'careerLevels';
   // Étoile : `sub` = sous-fourchette d100 [min,max] (Étoile du Sorcier) → deux inputs number.
   const hasStarSub = categoryKey === 'stars';
-  // Domaine de magie : `castBonus`/`missile`/`afterCast` = petits objets d'effet typés (éditeur dédié).
+  // Domaine de magie : `castBonus`/`missile`/`casterOps` = attributs de domaine (éditeur dédié).
   const hasDomainEffects = categoryKey === 'domains';
   // Créature : `traits`/`optionals` = TraitInstance[] (réutilise `TraitListField` du StatblockEditor),
   // `harvest` = objet { rareté, dangerosité, usages } (HarvestField) → sortis du repli JSON.
@@ -306,10 +306,10 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
             <DomainEffectsField
               castBonus={entry.castBonus as DomainData['castBonus']}
               missile={entry.missile as DomainData['missile']}
-              afterCast={entry.afterCast as DomainData['afterCast']}
+              casterOps={entry.casterOps as DomainData['casterOps']}
               onCastBonus={(v) => edit('castBonus', v)}
               onMissile={(v) => edit('missile', v)}
-              onAfterCast={(v) => edit('afterCast', v)}
+              onCasterOps={(v) => edit('casterOps', v)}
             />
             <RefDatalist ds="etats" /* alimente l'autocomplétion « par État » de castBonus */ />
           </>

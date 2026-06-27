@@ -499,7 +499,7 @@ export const CODEX: CodexCategory[] = [
       meta: facts(
         fact('Projectile', d.missile ? `ignore les PA ${d.missile.bypass === 'metal' ? 'métalliques' : 'non magiques'}${d.missile.bonusFromBypass ? ' (+ Dégâts)' : ''}` : null),
         fact('Bonus d’incantation', d.castBonus ? `+${d.castBonus.bonus} par « ${d.castBonus.perCondition} » à ≤ B${d.castBonus.radiusStat} m` : null),
-        fact('Post-incantation', d.afterCast?.grantTrait ? `${d.afterCast.grantTrait} (1d${d.afterCast.durationDice ?? 1} Rounds)` : null),
+        fact('Post-incantation', d.casterOps?.length ? `${d.casterOps.length} op(s) au lanceur` : null),
       ),
       sections: sections(effectsSection(d.effects, 'Riders à la touche'), ...reverseSections('domains', d.id)),
     })),

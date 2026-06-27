@@ -12,8 +12,8 @@
  *    Corruption ») → choix par modale (`pendingRenounce`), la mutation est suspendue.
  *  - Sombre Pacte (l.16/41) : +1 Point volontaire pour RELANCER un Test raté, même
  *    après une relance de Chance — branché dans les modales de jet (ChanceButtons).
- *  - Effets d'éditeur : `corruptionExposure` (Test différé par modale) et
- *    `giveCorruption` (gain direct, artefact maudit…).
+ *  - Effets d'éditeur : `corruptionExposure` (Test différé par modale) ; gain direct
+ *    via l'Effet générique `ops` (op `corruption` + champ `align` optionnel).
  */
 import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';

@@ -137,7 +137,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\corruption.md** L579 — | Haine sporadique + Tableau des Obsessions (EDOC) | **Non implémenté** |
 - **docs\raw\corruption.md** L580 — | Mutations spécifiques EDO App.2 (Chair Nécrosée, Crétin, Écailles épineuses EDO, Pattes Chèvre, Tête Pointue EDO) | **Non implémenté** dans mutations.json — ces entrées ne sont pas présentes |
 - **docs\raw\corruption.md** L581 — | Sombres Murmures (perdre 1 PC en commettant un acte répréhensible MJ) | **(Non implémenté)** — pas de mécanique store pour cette perte narrative |
-- **docs\raw\corruption.md** L582 — | Absolution (perte narrative de PC) | **(Non implémenté)** — pas de `giveCorruption(-n)` ou équivalent |
+- **docs\raw\corruption.md** L582 — | Absolution (perte narrative de PC) | **(Non implémenté)** — pas de `{ op: 'corruption', amount: -n }` ou équivalent |
 - **docs\raw\deplacement.md** L564 — | Endurance monture (allures) | EDOC ch.4 : BE heures au trot, ½ BE au galop | Non implémenté (combat uniquement) | Hors périmètre actuel. |
 - **docs\raw\deplacement.md** L565 — | Tableau Incidents de Monte | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |
 - **docs\raw\deplacement.md** L566 — | Véhicules (Problèmes de Véhicule) | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |

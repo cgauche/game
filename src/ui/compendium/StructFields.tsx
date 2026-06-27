@@ -394,12 +394,12 @@ export function StarSubField({ value, onChange }: { value: [number, number] | un
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * 7) domains.castBonus / missile / afterCast — petits objets d'effet typés.
+ * 7) domains.castBonus / missile / casterOps — attributs de Domaine (LDB 48).
  *    `castBonus` { perCondition (label État), radiusStat (CharKey fermé), bonus }
+ *      → CAPABILITY irréductible (modif du JET d'incantation via géométrie arène, hors GameOp).
  *    `missile`   { bypass ('metal'|'nonMagic'), bonusFromBypass? }
- *    `afterCast` { grantTrait (label de trait + Indice, ex. « Peur 1 »), durationDice }
- *  `grantTrait` reste un LIBELLÉ (parsé par `parseTraitInstance` côté moteur, indice inclus) → input
- *   texte avec autocomplétion des libellés de trait, PAS un RefField (qui stockerait un id sans indice).
+ *    `casterOps` GameOp[] — ops appliquées AU LANCEUR après incantation réussie (ex. Bête → Peur 1).
+ *      → Edité via `GameOpEditor` (source unique, même brique que sorts/traits/mutations).
  * ──────────────────────────────────────────────────────────────────────────── */
 
 const BYPASS_LABEL: Record<NonNullable<DomainData['missile']>['bypass'], string> = {
@@ -407,19 +407,15 @@ const BYPASS_LABEL: Record<NonNullable<DomainData['missile']>['bypass'], string>
 };
 
 export function DomainEffectsField(
-  { castBonus, missile, afterCast, onCastBonus, onMissile, onAfterCast }:
+  { castBonus, missile, casterOps, onCastBonus, onMissile, onCasterOps }:
   {
-    castBonus: DomainData['castBonus']; missile: DomainData['missile']; afterCast: DomainData['afterCast'];
-    onCastBonus: (v: DomainData['castBonus']) => void; onMissile: (v: DomainData['missile']) => void; onAfterCast: (v: DomainData['afterCast']) => void;
+    castBonus: DomainData['castBonus']; missile: DomainData['missile']; casterOps: DomainData['casterOps'];
+    onCastBonus: (v: DomainData['castBonus']) => void; onMissile: (v: DomainData['missile']) => void; onCasterOps: (v: DomainData['casterOps']) => void;
   },
 ) {
-  // `grantTrait` = LIBELLÉ + indice (« Peur 1 »), parsé par `parseTraitInstance` → autocomplétion des
-  // libellés de trait (champ auto-suffisant, pas de prop plombée) ; pas un RefField (qui perdrait l'indice).
-  const traitLabels = (datasetArray('traits') as { label: string }[]).map((t) => t.label);
-  const dlTraits = 'dl-domain-grant-traits';
   return (
     <div className="ed-field">
-      <span>attributs du domaine (LDB 48 — bonus d'incantation conditionnel / mitigation de Projectile / effet post-incantation)</span>
+      <span>attributs du domaine (LDB 48 — bonus d'incantation conditionnel / mitigation de Projectile / ops au lanceur)</span>
       <div className="ed-subfield">
         <label className="dr"><input type="checkbox" checked={!!castBonus} onChange={(e) => onCastBonus(e.target.checked ? { perCondition: '', radiusStat: 'FM', bonus: 10 } : undefined)} /> Bonus d'incantation conditionnel</label>
         {castBonus && (
@@ -450,16 +446,8 @@ export function DomainEffectsField(
         )}
       </div>
       <div className="ed-subfield">
-        <label className="dr"><input type="checkbox" checked={!!afterCast} onChange={(e) => onAfterCast(e.target.checked ? { grantTrait: '', durationDice: 10 } : undefined)} /> Effet post-incantation (Trait au lanceur)</label>
-        {afterCast && (
-          <div className="tf-row">
-            <label className="dr">Trait octroyé
-              <input list={dlTraits} placeholder="ex. Peur 1" value={afterCast.grantTrait ?? ''} onChange={(e) => onAfterCast({ ...afterCast, grantTrait: e.target.value || undefined })} />
-              <datalist id={dlTraits}>{traitLabels.map((l) => <option key={l} value={l} />)}</datalist>
-            </label>
-            <label className="dr">durée 1d<input type="number" min={1} value={afterCast.durationDice ?? 1} onChange={(e) => onAfterCast({ ...afterCast, durationDice: Math.max(1, Number(e.target.value) || 1) })} /></label>
-          </div>
-        )}
+        <span>Ops post-incantation (appliquées au lanceur après incantation réussie — ex. Bête → Peur 1 pour 1d10 Rounds)</span>
+        <GameOpEditor ops={casterOps ?? []} onChange={(ops) => onCasterOps(ops.length ? ops : undefined)} />
       </div>
     </div>
   );

@@ -439,10 +439,19 @@
       "book": "LDB",
       "page": 48
     },
-    "afterCast": {
-      "grantTrait": "Peur 1",
-      "durationDice": 10
-    }
+    "casterOps": [
+      {
+        "op": "grantTrait",
+        "traitId": "peur",
+        "indice": 1,
+        "durationRounds": {
+          "dice": {
+            "n": 1,
+            "sides": 10
+          }
+        }
+      }
+    ]
   },
   {
     "id": "gueule",

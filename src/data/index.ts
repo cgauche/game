@@ -624,9 +624,9 @@ export interface SymptomData {
   capabilities?: SymptomCapabilities;
 }
 /** Domaine de magie (Couleur, LDB 48) : ses ATTRIBUTS éditables au Codex — riders « à la touche »
- *  (`onHitEffects`, gatés par les Conditions Flow `relation`/`has`), mitigation de Projectile
- *  (`missile`), effet post-incantation (`afterCast`). Le `label` correspond au `subType` d'un Sort
- *  d'Arcane (`domainOf`). */
+ *  (`effects`, gatés par les Conditions Flow `relation`/`has`), mitigation de Projectile
+ *  (`missile`), ops post-incantation au lanceur (`casterOps`). Le `label` correspond au `subType`
+ *  d'un Sort d'Arcane (`domainOf`). */
 export interface DomainData {
   id: string;
   label: string;
@@ -638,13 +638,17 @@ export interface DomainData {
   /** Mitigation des Projectiles : ignore les PA d'une matière (`metal`/`nonMagic`) ; `bonusFromBypass`
    *  les ajoute aussi aux Dégâts (Métal). */
   missile?: { bypass: 'metal' | 'nonMagic'; bonusFromBypass?: boolean };
-  /** Effet appliqué au LANCEUR après une incantation réussie (Bête : `grantTrait` pendant 1d`durationDice` Rounds). */
-  afterCast?: { grantTrait?: string; durationDice?: number };
+  /** Ops appliquées AU LANCEUR après une incantation réussie (ex. Bête → Peur 1 pendant 1d10 Rounds).
+   *  Canal CAPABILITY (pas passive ni effects) : l'effet cible le lanceur lui-même, non une cible.
+   *  Exécutées par `domainCasterOps` (engine/domainAttributes) via `applyOps`. */
+  casterOps?: import('../engine/ops').GameOp[];
   /** Élément du Souffle conféré par le Talent Magie des Arcanes du Domaine (Cieux → Électricité,
    *  Métal → Corrosif, Ombres → Fumée, Feu → Feu) — lu par le résolveur de Souffle. */
   breathType?: string;
   /** Bonus d'incantation CONDITIONNEL (Aqshy l.157) : +`bonus` par État `perCondition` porté par un
-   *  combattant situé à `radiusStat` (Bonus de carac.) mètres du lanceur (géométrie résolue par state). */
+   *  combattant situé à `radiusStat` (Bonus de carac.) mètres du lanceur (géométrie résolue par state).
+   *  CAPABILITY irréductible : modifie le JET d'incantation via la géométrie de l'arène → hors GameOp
+   *  (cf. 3 canaux passive / effects / capabilities). */
   castBonus?: { perCondition: string; radiusStat: import('../engine/types').CharKey; bonus: number };
   /** Caractéristique des Tests d'Incantation (Langue (Magick)) des Sorts de ce Domaine, à la place de la
    *  carac par défaut (ADE II l.653 : la Magie de la Gueule, réservée aux ogres, se lance sur l'Endurance).

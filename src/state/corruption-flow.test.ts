@@ -224,11 +224,34 @@ describe('Sombre Pacte (l.16/41)', () => {
   });
 });
 
-describe('Effet giveCorruption (gain direct)', () => {
-  it('cible le héros désigné et applique le compteur', () => {
+describe('Effet ops { op: corruption } (gain direct via ops generiques)', () => {
+  it('cible le heros designe et applique le compteur via l\'Effet ops', () => {
     const { b, party } = party2();
     useGame.setState({ party });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'giveCorruption', amount: 2, heroId: b.id }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'ops', on: 'hero', heroId: b.id, ops: [{ op: 'corruption', amount: 2, align: 'nurgle' }] }]);
     expect(useGame.getState().party.find((h) => h.id === b.id)!.corruption).toBe(2);
+  });
+
+  it('align voyage jusqu\'a gainCorruption : seuil declenche la table EDOC nurgle', () => {
+    const { a, party } = party2();
+    a.characteristics.E = 1; // BE 0
+    a.characteristics.FM = 30; // BFM 3
+    a.corruption = 4; // seuil depasse au prochain gain
+    a.resilience = 0; // mutation directe
+    useGame.setState({ party });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'ops', on: 'hero', heroId: a.id, ops: [{ op: 'corruption', amount: 1, align: 'nurgle' }] }]);
+    const pc = useGame.getState().pendingCorruption!;
+    expect(pc.kind).toBe('seuil');
+    expect(pc.align).toBe('nurgle'); // l\'alignement voyage source -> modale
+    useGame.getState().corruptionRoll();
+    useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 30, sl: -7, success: false } });
+    useGame.getState().resolveCorruption();
+    const after = useGame.getState().party.find((h) => h.id === a.id)!;
+    expect(after.mutations?.length).toBe(1);
+    const nurgleRefs = new Set(
+      (mutationTables as { id: string; ranges: { mutation: string }[] }[])
+        .filter((t) => t.id.includes('nurgle')).flatMap((t) => t.ranges.map((r) => r.mutation)),
+    );
+    expect(nurgleRefs.has(after.mutations![0].id)).toBe(true);
   });
 });

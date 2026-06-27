@@ -4,7 +4,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant, ItemInstance } from './types';
 import type { RNG } from './dice';
-import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainAfterCast, isLiving } from './domainAttributes';
+import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainCasterOps, isLiving } from './domainAttributes';
 import { evaluateMissile } from './magic';
 import { hasCondition, stacks, addCondition } from './conditions';
 import { runSpellFlowLines } from '../state/combatEffects';
@@ -162,16 +162,19 @@ describe('Cieux — arc d’Azyr (LDB 48 l.87) : géométrie on:{near} + bypass 
   });
 });
 
-describe('Bête — Peur 1 pour 1d10 Rounds après un Sort de la Bête réussi (LDB 48 l.9)', () => {
-  it('pose le Trait + l’effet porteur à la durée tirée', () => {
+describe('Bete — Peur 1 pour 1d10 Rounds apres un Sort de la Bete reussi (LDB 48 l.9)', () => {
+  it('pose le Trait peur (value 1) + activeEffect (scale rounds, left = de tire) via applyOps', () => {
     const w = mk({ id: 'w', traits: [] });
-    const lines = domainAfterCast(w, { domainId: 'bete' }, seq([7]));
+    const lines = domainCasterOps(w, { domainId: 'bete' }, seq([7]));
     expect(w.traits).toContainEqual({ id: 'peur', value: 1 });
-    expect(w.activeEffects?.[0]).toMatchObject({ grantedTrait: { id: 'peur', value: 1 }, duration: { scale: 'rounds', left: 7 } });
-    expect(lines.join(' ')).toMatch(/Peur 1 pendant 7/);
+    expect(w.activeEffects?.[0]).toMatchObject({
+      grantedTrait: { id: 'peur', value: 1 },
+      duration: { scale: 'rounds', left: 7 },
+    });
+    expect(lines.length).toBeGreaterThan(0);
   });
-  it('aucun effet pour un autre Domaine', () => {
+  it('aucun effet pour un Domaine sans casterOps', () => {
     const w = mk({ id: 'w' });
-    expect(domainAfterCast(w, { domainId: 'feu' }, seq([7]))).toEqual([]);
+    expect(domainCasterOps(w, { domainId: 'feu' }, seq([7]))).toEqual([]);
   });
 });

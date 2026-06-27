@@ -33,13 +33,13 @@
  */
 import type { Combatant, HitLocation } from './types';
 import type { TriggeredEffect } from '../state/flow';
-import { RNG, defaultRNG, roll as rollDice } from './dice';
-import { grantTrait } from './grantedTraits';
+import { RNG, defaultRNG } from './dice';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
-import { hasTraitKey, parseTraitInstance } from './traits/dispatch';
+import { hasTraitKey } from './traits/dispatch';
 import { findDomainById } from '../data';
 import { arcaneDomainOf } from './combatFeatures/dispatch';
+import { applyOps } from './ops';
 
 /** Forme MINIMALE d'un sort pour la résolution de son Domaine : le RUNTIME lit le seul `domainId`
  *  (id STABLE, indépendant de la langue) ; absent = Sort sans Domaine (Magie Mineure, Prière…). */
@@ -84,15 +84,11 @@ export function domainOnHitEffects(spell: SpellDomainRef): TriggeredEffect[] {
   return findDomainById(spell.domainId)?.effects ?? [];
 }
 
-/** Effet post-incantation appliqué au LANCEUR après un Sort de Domaine réussi — PARAMÈTRE en données
- *  (`DomainData.afterCast`) : Bête (Ghur) octroie le Trait `grantTrait` pour 1d`durationDice` Rounds. */
-export function domainAfterCast(caster: Combatant, spell: SpellDomainRef, rng: RNG = defaultRNG): string[] {
-  const after = findDomainById(spell.domainId)?.afterCast;
-  if (!after?.grantTrait) return [];
-  const rounds = after.durationDice ? rollDice(1, after.durationDice, rng) : 1;
-  const tr = parseTraitInstance(after.grantTrait);
-  grantTrait(caster, tr);
-  caster.activeEffects = caster.activeEffects ?? [];
-  caster.activeEffects.push({ label: `Attribut de domaine (${after.grantTrait})`, bonus: 0, duration: { scale: 'rounds', left: rounds }, grantedTrait: tr });
-  return [`${caster.name} gagne ${after.grantTrait} pendant ${rounds} Round(s) (attribut de domaine).`];
+/** Ops post-incantation appliquées AU LANCEUR après un Sort de Domaine réussi — PARAMÈTRE en données
+ *  (`DomainData.casterOps` : `GameOp[]`). Ex. Bête (Ghur) : `grantTrait` Peur 1 pendant 1d10 Rounds.
+ *  Exécutées via `applyOps` — source unique, pas de réimplémentation de grantTrait ici. */
+export function domainCasterOps(caster: Combatant, spell: SpellDomainRef, rng: RNG = defaultRNG): string[] {
+  const ops = findDomainById(spell.domainId)?.casterOps;
+  if (!ops?.length) return [];
+  return applyOps(caster, ops, { rng, label: 'Attribut de domaine' });
 }

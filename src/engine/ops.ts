@@ -50,6 +50,7 @@ import {
 import { formatTrait } from './traits/dispatch';
 import { woundsFromHit } from './woundsCalc';
 import type { TraitInstance } from './statEntry';
+import type { ChaosAlign } from './corruption';
 import { t } from '../i18n';
 
 // ---------------------------------------------------------------------------
@@ -231,8 +232,9 @@ export type GameOp =
   //  Flow `test` produits par `engine/miscast` et joués par `applyMiscast`→`runCombatFlow` (Lot 4d).
   //  « vocabulaire de Test UNIQUE » : aucun jet de héros ne se résout en silence.)
   /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
-   *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
-  | { op: 'corruption'; amount: number; perSL?: PerSL }
+   *  mutation → damnation) ; sans contexte, simple incrément du compteur.
+   *  `align` : Puissance du Chaos de la source — force la table EDOC alignée si une mutation survient. */
+  | { op: 'corruption'; amount: number; perSL?: PerSL; align?: ChaosAlign }
   /** Points de Chance OU de Destin accordés (`resource`, LDB 47 — « Les Signes d'Amul », « Que la
    *  chance persiste », « Maître du Destin », « Troisième Signe d'Amul ») : incrément immédiat (peut
    *  dépasser le maximum — c'est un grant de Sort) ; `temporary` pose un effet actif qui RETIRE les
@@ -250,7 +252,7 @@ export type GameOp =
    *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ». */
-  | { op: 'grantTrait'; traitId: string; arg?: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[] }
+  | { op: 'grantTrait'; traitId: string; arg?: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula }
   /** Trait PSYCHOLOGIQUE conféré (Colère impie → Frénésie). PASSIF (mutation/trait) : posé dans
    *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). */
   | { op: 'grantPsychTrait'; psychType: string; cible?: string }
@@ -296,15 +298,16 @@ export type GameOp =
   /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation
    *  (Larmes de Shallya, LDB 42). */
   | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
-  /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). `onlyGroups` : gaté par
-   *  Groupe (Fauche-démon → cible Démoniaque seulement). */
-  | { op: 'reduceToZero'; onlyGroups?: string[] }
+  /** PB réduits à 0 SEUL (Châtiment, Tonnerre et foudre — LDB 40). L'Inconscient/Enflammé est posé
+   *  par une op `condition` séparée dans l'entrée appelante. */
+  | { op: 'reduceToZero' }
   /** RETRAIT DU JEU : la cible est destituée, sa forme se dissipe — la force qui la soutenait cède.
    *  `narration` choisit la prose : défaut/`'chaos'` = Démoniaque banni (« son âme retourne dans les
    *  Royaumes du Chaos », LDB 85 p.339) ; `'unravel'` = Instable qui se délite (« les magies la maintenant
    *  s'effondrent », LDB 85 l.177). Op IMPURE (marque `dead`), portée par l'`effects` du trait (édité au
-   *  Codex) — plus de branche en dur. L'unicité est garantie en amont (déclencheur `onSlain` / `if` à 0 PB). */
-  | { op: 'banish'; narration?: 'chaos' | 'unravel' }
+   *  Codex) — plus de branche en dur. L'unicité est garantie en amont (déclencheur `onSlain` / `if` à 0 PB).
+   *  `onlyGroups` : gaté par Groupe (Fauche-démon → cible Démoniaque seulement). */
+  | { op: 'banish'; narration?: 'chaos' | 'unravel'; onlyGroups?: string[] }
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. */
   | { op: 'ignoreStatePenalties' }
@@ -608,7 +611,7 @@ export interface OpsCtx {
   nearestFoeDist?: number;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
-  onCorruption?: (n: number) => string[];
+  onCorruption?: (n: number, align?: ChaosAlign) => string[];
   /** ARME du coup courant — quand un `op:'wounds' { weaponHit:true }` résout les Blessures comme un coup
    *  d'arme (`woundsFromHit` : qualités + armure à `location` + BE). Posé par le routeur d'attaque (S4) et
    *  par les effets d'AIRE d'une arme (munitions). Absent → l'op reste en mode Formula. */
@@ -824,8 +827,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           target.corruption = Math.max(0, before + amount);
           lines.push(t('op.corruptionRemove', { name: target.name, delta: target.corruption - before, total: target.corruption }));
         } else if (ctx.onCorruption) {
-          lines.push(...ctx.onCorruption(amount));
+          lines.push(...ctx.onCorruption(amount, o.align));
         } else {
+          // Sans contexte store (moteur pur, tests unitaires) : simple incrément — align ignoré.
           target.corruption = (target.corruption ?? 0) + amount;
           lines.push(t('op.corruptionAdd', { name: target.name, amount, s: amount > 1 ? 's' : '', total: target.corruption }));
         }
@@ -891,7 +895,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromCtx(ctx),
+          duration: o.durationRounds != null ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) } : durationFromCtx(ctx),
           grantedTrait: inst,
         });
         lines.push(t('op.grantTrait', { name: target.name, trait: formatTrait(inst), src: ctx.label ?? 'sort' }));
@@ -979,13 +983,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'reduceToZero': {
-        if (!groupGate(o.onlyGroups)) break; // Fauche-démon : n'annihile qu'une cible Démoniaque
+        // PB à 0 SEUL ; l'Inconscient ou l'Enflammé est posé par une op `condition` séparée
+        // dans l'entrée appelante (ex. Châtiment ajoute inconscient, Tonnerre ajoute en-flammes).
         target.wounds.current = 0;
-        addCondition(target, 'inconscient');
         lines.push(t('op.reduceToZero', { name: target.name }));
         break;
       }
       case 'banish': {
+        if (!groupGate(o.onlyGroups)) break; // Fauche-démon : ne bannit qu'une cible Démoniaque
         // Retrait du jeu — pas de corps/Inconscient/Critique. Émet TOUJOURS la narration (la cible peut être
         // déjà `dead` d'un Critique létal : le retrait est l'issue NARRÉE de SA mort). L'unicité est garantie
         // en amont (déclencheur `onSlain` pour le Démoniaque, `if woundsCurrent<=0` pour l'Instable).

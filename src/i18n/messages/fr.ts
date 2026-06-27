@@ -201,7 +201,7 @@ export const fr = {
   'op.preventInfection': "{name} : ses blessures ne s'infecteront pas ({src}).",
   'op.noCritToCure': "{name} n'a aucune Blessure critique guérissable (les amputations sont hors d'atteinte).",
   'op.grantTalent': '{name} gagne le Talent {talent} ({src}).',
-  'op.reduceToZero': '{name} : Blessures réduites à 0 (Inconscient).',
+  'op.reduceToZero': '{name} : Blessures réduites à 0.',
   'op.banish': '{name} est bannie — son essence retourne aux Royaumes du Chaos !',
   'op.banish.unravel': '{name} se délite — les magies qui la maintenaient s\'effondrent.',
   'op.removeShipPoste': '{name} passe par-dessus bord — perdu !',
