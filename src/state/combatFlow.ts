@@ -1233,6 +1233,9 @@ export function applyAttackResult(
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
     const overkill = Math.max(0, res.woundsLost - target.wounds.current);
     const cloc = res.critLocation ?? critLocationRoll(battleRng(), target.bodyShape);
+    res.critLocation = cloc; // LDB 18 l.55 (#80) : FIGE la localisation re-tirée du Coup Critique AVANT la
+    // suspension — la reprise (Dévier comme Subir) la réutilise sans RE-tirer ; sinon « Dévier » (qui ne
+    // repasse pas `prerolledCrit`) sacrifierait 1 PA à une localisation ≠ de celle montrée au joueur.
     const crit = rollCritical(target, cloc, battleRng(), overkill, hasActiveFlag(attacker, 'critRollTwice'));
     const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.name });
     // Folding P3a : le choix Dévier/Subir devient une ÉTAPE de la séquence (Critique riche + options),
