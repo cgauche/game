@@ -40,6 +40,9 @@ export { splitLabel };
 export interface SlotOption {
   /** Nom de groupe (« Sens aiguisé ») ou libellé simple (« Baratiner »). */
   name: string;
+  /** Id STABLE du talent/compétence sous-jacent : apparie les entités possédées par id+spec
+   *  (langue-indépendant). Absent pour un slot de tirage aléatoire (« N Talent aléatoire »). */
+  optionId?: string;
   /** Spécialisation explicite (« Vue ») — absente si non groupé ou joker. */
   spec?: string;
   /** Joker : toute spec du groupe est désignable (« Au choix »). */
@@ -148,8 +151,8 @@ export function parseAdvancement(entry: string): AdvancementRef {
  *  jamais de re-parse de prose). `name` reste un LIBELLÉ (consommé par `findSkill`/`concreteLabel`).
  *  Remplace le round-trip `advancementLabel(ref) → parseEntry(prose)`. */
 export function slotOptionsFromRef(category: string, a: AdvancementRef): SlotOption[] {
-  if ('ref' in a) return [{ name: refLabel(category, { id: a.ref.id }), ...(a.ref.spec ? { spec: a.ref.spec } : {}), wildcard: false }];
-  if ('wildcard' in a) return [{ name: refLabel(category, { id: a.wildcard.id }), wildcard: true, ...(a.specOptions ? { specOptions: a.specOptions } : {}) }];
+  if ('ref' in a) return [{ name: refLabel(category, { id: a.ref.id }), optionId: a.ref.id, ...(a.ref.spec ? { spec: a.ref.spec } : {}), wildcard: false }];
+  if ('wildcard' in a) return [{ name: refLabel(category, { id: a.wildcard.id }), optionId: a.wildcard.id, wildcard: true, ...(a.specOptions ? { specOptions: a.specOptions } : {}) }];
   if ('choice' in a) return a.choice.flatMap((x) => slotOptionsFromRef(category, x));
   return [{ name: advancementLabel(category, a), wildcard: false }]; // tirage aléatoire (« N Talent aléatoire »)
 }

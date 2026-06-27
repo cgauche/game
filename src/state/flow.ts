@@ -275,7 +275,10 @@ export interface FlowTest {
   /** DR minimum requis (défaut 0 = simple réussite). */
   requireSL?: number;
   label?: string;
-  /** Outil utilisé : sa qualité d'artisanat module l'issue / casse l'objet. */
+  /** Outil utilisé : `trappingId` de la possession cataloguée (ex. `'marteau'`) pour un objet du
+   *  catalogue, ou nom libre pour un objet CUSTOM (sans `trappingId`). Résolu au runtime par id en
+   *  priorité (`i.trappingId === tool`), repli sur le nom (`i.name === tool`) pour les objets custom.
+   *  Sa qualité d'artisanat module l'issue / casse l'objet. */
   tool?: string;
   /** Groupes de l'interlocuteur : malus Animosité/Préjugé sur un Test de Sociabilité (LDB 21). */
   vsGroups?: string[];

@@ -169,7 +169,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const specPool = o.specOptions ?? wildcardSpecs(o.name);
     const options = specPool
       .filter((spec) => !taken.has(concreteLabel(o.name, spec)))
-      .map((spec) => ({ spec, ownedAdvances: hero.skills.find((s) => (findSkillById(s.skillId)?.label ?? s.skillId) === o.name && (s.spec ?? '') === spec)?.advances ?? 0 }));
+      .map((spec) => ({ spec, ownedAdvances: hero.skills.find((s) => s.skillId === o.optionId && (s.spec ?? '') === spec)?.advances ?? 0 }));
     const characteristic = findSkill(o.name)?.characteristic ?? 'Int';
     skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.name, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
@@ -178,7 +178,11 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   const talents: TalentSlotRow[] = tSlots.map((slot) => {
     const label = slot.needsChoice ? designations[slot.key] : concreteLabel(slot.options[0].name, slot.options[0].spec);
     if (label) {
-      const times = hero.talents.find((t) => talentConcrete(t) === label)?.times ?? 0;
+      // Match de l'entité possédée par id+spec (le libellé reste l'affichage) : id du choix désigné/explicite
+      // résolu depuis l'option de slot dont le `name` correspond, puis spec depuis le libellé concret.
+      const { name: lblName, spec } = splitLabel(label);
+      const optionId = slot.options.find((o) => o.name === lblName)?.optionId;
+      const times = hero.talents.find((t) => t.talentId === optionId && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
       return { slotKey: slot.key, entry: slot.entry, label, times, nextCost: talentCost(times), maxReached: talentMaxReached(hero, label) };
     }
     // Slot à choix non désigné : proposer les options concrètes non prises par la carrière.
@@ -189,7 +193,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
       for (const spec of pool) {
         const lbl = concreteLabel(o.name, spec);
         if (taken.has(lbl)) continue;
-        options.push({ label: lbl, owned: (hero.talents.find((t) => talentConcrete(t) === lbl)?.times ?? 0) > 0 });
+        options.push({ label: lbl, owned: (hero.talents.find((t) => t.talentId === o.optionId && (t.spec ?? '') === (spec ?? ''))?.times ?? 0) > 0 });
       }
     }
     return { slotKey: slot.key, entry: slot.entry, times: 0, nextCost: talentCost(0), maxReached: false, options };

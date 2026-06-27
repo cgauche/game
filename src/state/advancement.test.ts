@@ -119,3 +119,34 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
     expect(open!.options.length).toBeGreaterThan(0);
   });
 });
+
+// Issue #10 : les entités POSSÉDÉES (talents/compétences) sont appariées contre les emplacements
+// de carrière par id (+spec), plus par libellé round-trippé. Ces cas verrouillent le chemin de
+// match-possédé (faiblement couvert auparavant). Les libellés D'AFFICHAGE restent inchangés.
+describe('buildAdvancementView — match d\'entité possédée par id+spec (Issue #10)', () => {
+  it('Talent EXPLICITE possédé : times lu par id (Artisan N3 → Bricoleur)', () => {
+    const v = buildAdvancementView(hero({ career: 'artisan', careerLevel: 3, talents: [{ talentId: 'bricoleur', times: 1 }] }));
+    const bricoleur = v.talents.find((t) => t.label === 'Bricoleur');
+    expect(bricoleur).toBeTruthy();
+    expect(bricoleur!.times).toBe(1);
+  });
+
+  it('Talent à spec wildcard possédé : owned lu par id+spec (Sens aiguisé (Goût) ≠ (Toucher))', () => {
+    const v = buildAdvancementView(hero({ career: 'artisan', careerLevel: 3, talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }] }));
+    const slot = v.talents.find((t) => t.options?.some((o) => o.label.startsWith('Sens aiguisé')));
+    expect(slot).toBeTruthy();
+    const gout = slot!.options!.find((o) => o.label === 'Sens aiguisé (Goût)')!;
+    const toucher = slot!.options!.find((o) => o.label === 'Sens aiguisé (Toucher)')!;
+    expect(gout.owned).toBe(true); // possédé avec la bonne spec
+    expect(toucher.owned).toBe(false); // même talent, autre spec → non possédé
+  });
+
+  it('Compétence à spec wildcard possédée : ownedAdvances lu par id+spec (Savoir (Empire))', () => {
+    const v = buildAdvancementView(hero({ career: 'erudit', careerLevel: 1, skills: [{ skillId: 'savoir', spec: 'Empire', characteristic: 'Int', advances: 3 }] }));
+    const open = v.skillSlotsOpen.find((s) => s.group === 'Savoir');
+    expect(open).toBeTruthy();
+    const empire = open!.options.find((o) => o.spec === 'Empire');
+    expect(empire).toBeTruthy();
+    expect(empire!.ownedAdvances).toBe(3);
+  });
+});

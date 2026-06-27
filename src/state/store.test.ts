@@ -253,19 +253,34 @@ describe('Boucle de jeu (store)', () => {
   });
 
   // ── Phase C2a — qualité d'outil sur les Tests HORS COMBAT (Pratique/Peu Fiable/Bâclé) ──
-  it('Effect.test : le nom d’outil est résolu vers pendingTest.itemUid (héros qui agit)', () => {
+  it('Effect.test : outil résolu par trappingId (id catalogue) vers pendingTest.itemUid', () => {
     const chars = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 55, Int: 30, FM: 30, Soc: 30 };
     const hero = {
       id: 'h1', name: 'Lest', kind: 'hero', characteristics: chars, wounds: { current: 10, max: 10 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-      items: [{ uid: 't1', name: 'Rossignols', kind: 'melee', qualities: [{ id: 'pratique' }], enc: 0, equipped: false }],
+      // tool = 'marteau' (id catalogue) ; l'item porte trappingId: 'marteau' → match par id
+      items: [{ uid: 't1', name: 'Marteau', trappingId: 'marteau', kind: 'trapping', qualities: [{ id: 'pratique' }], enc: 0, equipped: false }],
     } as unknown as Combatant;
     useGame.setState({ party: [hero] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', tool: 'Rossignols', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', tool: 'marteau', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.itemUid).toBe('t1');
     expect(pt.isDouble).toBe(false); // amorcé à false (pas encore lancé)
+  });
+
+  it('Effect.test : outil custom (sans trappingId) résolu par repli nom', () => {
+    const chars = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 55, Int: 30, FM: 30, Soc: 30 };
+    const hero = {
+      id: 'h1', name: 'Lest', kind: 'hero', characteristics: chars, wounds: { current: 10, max: 10 },
+      advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      // objet CUSTOM : pas de trappingId → spec.tool = nom libre, résolu par i.name
+      items: [{ uid: 't2', name: 'Rossignols', kind: 'trapping', qualities: [], enc: 0, equipped: false }],
+    } as unknown as Combatant;
+    useGame.setState({ party: [hero] });
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', tool: 'Rossignols', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    expect(useGame.getState().pendingTest!.itemUid).toBe('t2');
   });
 
   it('testRoll peuple pendingTest.isDouble (booléen, pour la casse Bâclé)', () => {
