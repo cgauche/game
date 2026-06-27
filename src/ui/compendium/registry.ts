@@ -749,11 +749,14 @@ export function combatantSections(c: Combatant): CodexSection[] {
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
     refRow('skills', `${skillInstanceLabel(s)} ${(ch[s.characteristic] ?? 0) + s.advances}`),
   );
-  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'text', text: `${w.name} (${damageString(w.damage)})` }));
+  // Comme les compétences/talents/sorts : chaque arme est une ENTITÉ (CodexRef vers sa fiche Codex
+  // « trappings » — popover au survol + clic — repli gracieux en texte pour une arme naturelle hors
+  // catalogue type « Morsure »), avec les Dégâts en BADGE (damageString, jamais l'objet brut).
+  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'ref', category: 'trappings', label: w.name, show: w.name, badge: damageString(w.damage) }));
   const worn = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
   return sections(
     { title: 'Caractéristiques', layout: 'grid', rows: charRows },
-    weaponRows.length ? { title: 'Armes', layout: 'list', rows: weaponRows } : null,
+    weaponRows.length ? { title: 'Armes', layout: 'chips', rows: weaponRows } : null,
     worn.length ? { title: 'Armure', layout: 'list', rows: [{ t: 'text', text: worn.map((l) => `${HIT_LOCATION_LABELS[l]} ${c.armour![l]}`).join(' · ') }] } : null,
     chips('Traits', 'traits', traitLabels(c.traits)),
     skillRows.length ? { title: 'Compétences', layout: 'chips', rows: skillRows } : null,
