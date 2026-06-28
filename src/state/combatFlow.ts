@@ -192,7 +192,7 @@ import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModif
 export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
-  rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, hasFreeWeaponAttack,
+  rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, hasFreeWeaponAttack, availableFreeAttackOps,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, conditionCtx, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -1876,33 +1876,27 @@ export function aiMaybeTrample(get: Get, set: SetFn, enemy: Combatant): void {
   applyTrample(get, set, enemy, target);
 }
 
-/** Résolution IA d'une attaque d'Arme GRATUITE « disponible » (déclarée en DONNÉE par `grantFreeAttack
- *  {when:'available'}` — l'état Frénésie LDB 21 l.34 : « un Test de CC gratuit chaque Round »). L'ennemi
- *  porte une attaque de mêlée supplémentaire avec son arme contre un adversaire adjacent ; ni Avantage ni
- *  Action. La MÊME donnée offre l'affordance au héros (`hasFreeWeaponAttack` → hotbar) : pas de jaloux.
- *  Résolution instantanée — comme autoCleave / aiMaybeTrample, l'IA ne déclenche pas de modale de défense. */
-export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
-  // Gate `!aiDriven` (et non `kind!=='enemy'`) : la Frénésie donne une Attaque GRATUITE à TOUT frénétique, y
-  // compris un HÉROS en Auto-combat (sinon, faute d'UI, il ne la jouait jamais — retour playtest 2026-06-27).
-  // Un héros MANUEL (aiDriven faux) la déclenche LUI-MÊME via l'affordance UI (hasFreeWeaponAttack après `acted`).
-  if (!aiDriven(get(), enemy) || !hasFreeWeaponAttack(enemy) || isOutOfAction(enemy)) return;
+/** Résolution IA des attaques d'Arme GRATUITES « disponibles » (`grantFreeAttack {when:'available'}` —
+ *  aujourd'hui l'état Frénésie, LDB 21 l.34 : « un Test de CC gratuit chaque Round ») d'un combattant PILOTÉ
+ *  PAR L'IA. Gate `!aiDriven` : ennemi OU héros en Auto-combat (un héros MANUEL la déclenche lui-même via
+ *  l'affordance UI `hasFreeWeaponAttack`). DÉLÈGUE chaque op au MÊME résolveur que les attaques gratuites
+ *  RÉACTIVES (`applyTalentFreeAttack` : plafond, coût d'Avantage, jet d'attaque, Action préservée) — un seul
+ *  résolveur partagé, plus de chemin frenzy-spécifique ni de jet dupliqué. Cible = adversaire adjacent. */
+export function aiAvailableFreeAttack(get: Get, set: SetFn, actor: Combatant): void {
+  if (!aiDriven(get(), actor) || isOutOfAction(actor)) return;
   const battle = get().battle;
-  if (!battle || battle.over || !enemy.pos) return;
-  if ((enemy.weapons[0]?.type ?? 'melee') !== 'melee') return; // CC Test = corps à corps
+  if (!battle || battle.over || !actor.pos) return;
   const target = battle.combatants.find(
-    (t) => t.kind !== enemy.kind && !isOutOfAction(t) && !!t.pos && combatDistance(enemy, t) <= 1,
+    (t) => t.kind !== actor.kind && !isOutOfAction(t) && !!t.pos && combatDistance(actor, t) <= 1,
   );
   if (!target) return;
-  const prevActed = get().battle?.acted ?? false; // gratuite : on restaure l'état d'Action après coup
-  const r = resolveAttack(get, enemy, target);
-  if (!r) return;
-  applyAttackResult(get, set, enemy, r.victim ?? target, r.weapon, r.res, false); // instantané (pas de modale)
-  set({ battle: { ...get().battle!, acted: prevActed } });
+  for (const { op, cap } of availableFreeAttackOps(actor))
+    applyTalentFreeAttack(get, set, actor, op, { targetId: target.id, key: 'arme', cap });
 }
 
 // ── Attaques GRATUITES accordées par un TALENT déclenché (Assaut féroce `onHit`, Frappe réactive
 //    `onCharged`) : op `grantFreeAttack{when:'immediate'}` portée en DONNÉE par le talent. Résolution
-//    INSTANTANÉE (motif aiFrenzyAttack — pas de modale), arme TENUE, Action PRÉSERVÉE. La frappe est
+//    INSTANTANÉE (motif aiAvailableFreeAttack — pas de modale), arme TENUE, Action PRÉSERVÉE. La frappe est
 //    OUVERTE par le hook `freeAttack` que `runCombatFlow` appelle sur le `do`/`grantFreeAttack` — un
 //    éventuel jet préalable (Frappe réactive : Test d'Initiative LDB 10 l.429-432) est un nœud Flow
 //    `test` EN AMONT (cadence-aware : héros manuel = jet influençable ; ennemi/auto = inline). ──
@@ -4309,7 +4303,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
       if (!suspended) {
-        aiFrenzyAttack(get, set, enemy); // Frénésie : Test de CC gratuit après l'attaque principale (instantané, LDB 21 l.34)
+        aiAvailableFreeAttack(get, set, enemy); // Frénésie : Test de CC gratuit après l'attaque principale (instantané, LDB 21 l.34)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
         // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
         if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), beatHold(get, 'postAttack'));

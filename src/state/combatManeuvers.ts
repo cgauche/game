@@ -29,7 +29,11 @@ import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
 import { findTalentById, findPsychologyById, type ManeuverDef, type ManeuverMeasure } from '../data';
+import type { GameOp } from '../engine/ops';
 import { sizeGap } from '../engine/size';
+
+/** Op d'attaque gratuite (Frénésie/talent) — narrowing partagé. */
+type GrantFreeAttackOp = Extract<GameOp, { op: 'grantFreeAttack' }>;
 import { combatDistance } from './footprint';
 import { chebyshev, type Pt } from './path';
 import { combatantsWithinRadius } from './combatGeometry';
@@ -114,19 +118,30 @@ export interface AttackOption {
  *  gratuite (Action préservée). Plafond /Round = niveau du talent (`times`), compté via
  *  `freeAttacksThisTurn['arme']` (reset de tour). GÉNÉRIQUE : tout talent du même genre s'ajoute en donnée,
  *  sans code. Lue par `availableAttacks` + ActionBar/IsoStage/turnEconomy (l'affordance « attaque libre »). */
-export const hasFreeWeaponAttack = (c: Combatant): boolean => {
-  const used = c.freeAttacksThisTurn?.['arme'] ?? 0;
-  // Sources DONNÉES d'une attaque d'Arme gratuite « disponible » : Talents ET États PSY. L'état Frénésie
-  // porte LUI-MÊME `grantFreeAttack` (LDB 21 l.34) → HÉROS comme ENNEMI, MÊME donnée (pas de jaloux).
+/** Sources DONNÉE d'une attaque d'Arme gratuite « DISPONIBLE » (`grantFreeAttack when:'available'`) sur SON
+ *  tour — Talents ET États PSY. L'état Frénésie porte LUI-MÊME son `grantFreeAttack` (LDB 21 l.34) → HÉROS
+ *  comme ENNEMI, MÊME donnée (pas de jaloux). Renvoie l'op + son plafond /Round (`cap` = niveau du talent,
+ *  ou 1 pour un État). SOURCE UNIQUE lue par `hasFreeWeaponAttack` (affordance UI) ET la résolution IA
+ *  (`aiAvailableFreeAttack`) → l'attaque libre du frénétique passe par le MÊME résolveur que les attaques
+ *  RÉACTIVES (`applyTalentFreeAttack`), plus de chemin frenzy-spécifique ni de jet en double. */
+export function availableFreeAttackOps(c: Combatant): { op: GrantFreeAttackOp; cap: number }[] {
+  const out: { op: GrantFreeAttackOp; cap: number }[] = [];
   for (const t of c.talents ?? [])
     for (const op of findTalentById(t.talentId)?.passive ?? [])
-      if (op.op === 'grantFreeAttack' && op.when === 'available' && (op.activeIf !== 'frenzied' || isFrenzied(c)) && used < (t.times ?? 1))
-        return true;
+      if (op.op === 'grantFreeAttack' && op.when === 'available' && (op.activeIf !== 'frenzied' || isFrenzied(c)))
+        out.push({ op, cap: t.times ?? 1 });
   for (const p of c.psychState ?? [])
     for (const op of findPsychologyById(p.type)?.passive ?? [])
-      if (op.op === 'grantFreeAttack' && op.when === 'available' && used < 1)
-        return true;
-  return false;
+      if (op.op === 'grantFreeAttack' && op.when === 'available')
+        out.push({ op, cap: 1 });
+  return out;
+}
+
+/** Une attaque d'Arme GRATUITE est-elle ENCORE disponible ce Round ? (compteur partagé `freeAttacksThisTurn
+ *  ['arme']` < plafond de la source). Lue par `availableAttacks` + ActionBar/IsoStage/turnEconomy. */
+export const hasFreeWeaponAttack = (c: Combatant): boolean => {
+  const used = c.freeAttacksThisTurn?.['arme'] ?? 0;
+  return availableFreeAttackOps(c).some((s) => used < s.cap);
 };
 
 /** Attaques que le héros ACTIF peut lancer MAINTENANT — UNE liste à coût (Arme d'abord, puis gratuites/

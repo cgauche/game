@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { chooseEnemyAction, EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene } from './scene';
 import { useGame } from './store';
-import { aiMaybeFrenzy, aiFrenzyAttack } from './combatFlow';
+import { aiMaybeFrenzy, aiAvailableFreeAttack } from './combatFlow';
 import { isFrenzied } from '../engine/psychology';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -155,27 +155,27 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(true);
   });
 
-  it('aiFrenzyAttack : attaque de mêlée LIBRE (ne consomme pas l’Action) contre un adversaire adjacent', () => {
+  it('aiAvailableFreeAttack : attaque de mêlée LIBRE (ne consomme pas l’Action) contre un adversaire adjacent', () => {
     useGame.getState().seedRng(4);
     const { E } = setupBattle();
     (E.psychState ??= []).push({ type: 'frenesie' });
     E.weapons = [MELEE];
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false } });
     const logBefore = useGame.getState().battle!.log.length;
-    aiFrenzyAttack(useGame.getState, useGame.setState, E);
+    aiAvailableFreeAttack(useGame.getState, useGame.setState, E);
     const st = useGame.getState();
     expect(st.battle!.log.length).toBeGreaterThan(logBefore); // une attaque a bien été résolue
     expect(st.battle!.acted).toBe(false); // gratuite : l'Action n'est pas consommée
   });
 
-  it('aiFrenzyAttack : aucun adversaire adjacent → no-op', () => {
+  it('aiAvailableFreeAttack : aucun adversaire adjacent → no-op', () => {
     const { E } = setupBattle();
     (E.psychState ??= []).push({ type: 'frenesie' });
     E.pos = { x: 1, y: 1 }; // loin du héros (10,10)
     E.weapons = [MELEE];
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false } });
     const logBefore = useGame.getState().battle!.log.length;
-    aiFrenzyAttack(useGame.getState, useGame.setState, E);
+    aiAvailableFreeAttack(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.log.length).toBe(logBefore);
   });
 });

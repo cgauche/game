@@ -86,7 +86,7 @@ export interface ExecCtx {
 /** HOOK de résolution d'une ATTAQUE GRATUITE (`grantFreeAttack`, op IMPURE) — injecté par le store
  *  (`setFreeAttackHook` dans `createCombatSlice`), pointe sur `applyTalentFreeAttack` (combatFlow). Appelé
  *  par `runCombatFlow` lorsqu'un `do`/`ops` porte un `grantFreeAttack` : il ouvre la VRAIE frappe (motif
- *  aiFrenzyAttack — instantanée, Action préservée). Inversion de dépendance (cette brique reste sans import
+ *  aiAvailableFreeAttack — instantanée, Action préservée). Inversion de dépendance (cette brique reste sans import
  *  de combatFlow → pas de cycle). Absent (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`). */
 type FreeAttackHook = (
   get: Get, set: SetFn, actor: Combatant, op: Extract<import('../../engine/ops').GameOp, { op: 'grantFreeAttack' }>,

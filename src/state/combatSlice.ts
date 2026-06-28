@@ -17,7 +17,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
@@ -1701,7 +1701,7 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.
-      if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
+      if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
       // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
       if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
       // la défense est l'étape de SA cascade combat → enchaîner le curseur
@@ -1733,7 +1733,7 @@ export function createCombatSlice(get: Get, set: Set) {
         } else autoCleave(get, set, attacker, defender, res); // Frappe Mortelle (attaque principale)
       }
       // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.
-      if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
+      if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
       // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
       if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
       // la défense est l'étape de SA cascade combat → enchaîner le curseur.
