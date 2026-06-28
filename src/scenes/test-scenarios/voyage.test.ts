@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { useGame } from '../../state/store';
 import { setRule, resetRule } from '../../engine/policy';
 import { seedBattleRng } from '../../state/battleRng';
-import { scenario } from './16-voyage';
+import { scenario } from './voyage';
 
 describe('16-voyage — intégration Voyage par Étapes', () => {
   afterEach(() => resetRule('travel-etapes'));

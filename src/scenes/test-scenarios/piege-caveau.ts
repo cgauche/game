@@ -89,7 +89,7 @@ scene.triggers.push(
 
 export const scenario: TestScenario = {
   id: 'piege-caveau',
-  order: 22,
+  order: 10,
   category: '🗺️ Scénarios complets',
   icon: '🪤',
   title: 'Le Caveau piégé',

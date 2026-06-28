@@ -1,5 +1,5 @@
 /**
- * QC — rend le THÉÂTRE de l'Opéra (scénario 21) en réutilisant le tri de profondeur de IsoStage :
+ * QC — rend le THÉÂTRE de l'Opéra (scénario « Opéra ») en réutilisant le tri de profondeur de IsoStage :
  * planchers par étage (floorDepth) + props (propSvg, positionnés comme BodyToken) + PNJ (jetons).
  * Preuve visuelle de la salle multi-niveaux. npx tsx scripts/qc/render-opera-theatre.mts
  */
@@ -9,7 +9,7 @@ import { groundTile } from '../../src/gameIso/ground';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { DEFS } from '../../src/gameIso/sprites';
 import { stageSize, tileCenter, depth, floorDepth, type Dims } from '../../src/gameIso/iso';
-import { scenario } from '../../src/scenes/test-scenarios/21-opera-theatre';
+import { scenario } from '../../src/scenes/test-scenarios/opera';
 
 const scene = scenario.scene;
 const d: Dims = { w: scene.dimensions.w, h: scene.dimensions.h };

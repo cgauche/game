@@ -280,7 +280,7 @@ const scene: Scene = {
 
 export const scenario: TestScenario = {
   id: 'opera',
-  order: 21,
+  order: 9,
   category: '🗺️ Scénarios complets',
   icon: '🎭',
   title: 'Opéra',

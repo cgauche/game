@@ -22,7 +22,7 @@ scene.startMessage =
 
 export const scenario: TestScenario = {
   id: 'magie-hors-combat',
-  order: 9,
+  order: 4,
   category: '✨ Magie',
   icon: '🔮',
   title: 'Magie hors combat',

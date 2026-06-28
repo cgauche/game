@@ -70,7 +70,7 @@ setEncounters(scene, [
 
 export const scenario: TestScenario = {
   id: 'bestiaire',
-  order: 15,
+  order: 5,
   category: '🐲 Créatures',
   icon: '🐲',
   title: 'Bestiaire, traits & états',

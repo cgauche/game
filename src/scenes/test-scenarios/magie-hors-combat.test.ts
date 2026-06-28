@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scenario } from './09-incantation-hors-combat';
+import { scenario } from './magie-hors-combat';
 import { findSpell } from '../../data';
 import { knowsCastingSkill, isArcaneSpell, isMagicMissile, castInfo } from '../../engine/magic';
 

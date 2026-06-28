@@ -171,7 +171,7 @@ const carte: WorldMap = {
 
 export const scenario: TestScenario = {
   id: 'voyage',
-  order: 15,
+  order: 6,
   category: '🧭 Survie',
   icon: '🧭',
   title: 'Voyage & temps long',

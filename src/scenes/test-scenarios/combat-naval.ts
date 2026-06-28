@@ -70,7 +70,7 @@ setEncounters(scene, [
 
 export const scenario: TestScenario = {
   id: 'combat-naval',
-  order: 25,
+  order: 11,
   category: '⛵ Naval',
   icon: '⛵',
   title: 'Combat naval',

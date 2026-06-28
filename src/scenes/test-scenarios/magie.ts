@@ -119,7 +119,7 @@ function makeMagicParty(): Combatant[] {
 
 export const scenario: TestScenario = {
   id: 'magie',
-  order: 6,
+  order: 3,
   category: '✨ Magie',
   icon: '✨',
   title: 'Magie en combat',

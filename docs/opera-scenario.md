@@ -20,7 +20,7 @@ typecheck. Props **QC visuels** : `npx tsx scripts/qc/render-opera-props.mts` (m
 
 ## Scène jouable
 
-`src/scenes/test-scenarios/20-opera-bombe.ts` — menu **« 🧪 Tests — scénarios » → 💣 Opéra — Bombe**.
+`src/scenes/test-scenarios/opera.ts` — menu **« 🧪 Tests — scénarios » → 🎭 Opéra**.
 L'antichambre de la loge royale, meublée, avec la bombe dissimulée dans une plante en pot :
 - un **trigger d'entrée** arme la mèche (`delayedEffect` 1 h → `zoneBlast 1d10+15` + En flammes, `cancelFlag`) ;
 - **interagir avec la plante** lance un Test de Perception Complexe (**−1 cran si Poudre noire**, `easierIf`) ;

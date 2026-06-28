@@ -7,7 +7,7 @@ import { useGame } from '../../state/store';
 import { applyEffects } from '../../state/combatEffects';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
-import { scenario } from './21-opera-theatre';
+import { scenario } from './opera';
 
 /**
  * Le théâtre multi-niveaux est du CONTENU pur (données éditeur). Ce gate vérifie qu'il est

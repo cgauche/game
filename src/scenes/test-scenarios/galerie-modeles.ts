@@ -98,7 +98,7 @@ scene.entities = [...scene.entities, ...ents]; // conserve le heroStart d'arena
 
 export const scenario: TestScenario = {
   id: 'galerie-modeles',
-  order: 7,
+  order: 12,
   category: '🖼️ Rendu',
   icon: '🖼️',
   title: 'Galerie de modèles',

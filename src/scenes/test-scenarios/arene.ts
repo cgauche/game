@@ -25,7 +25,7 @@ function groupe() {
 
 export const scenario: TestScenario = {
   id: 'arene',
-  order: 18,
+  order: 8,
   category: '🗺️ Scénarios complets',
   icon: '🏟️',
   title: 'Arène 2.0 — le Bourg',

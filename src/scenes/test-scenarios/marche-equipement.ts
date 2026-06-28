@@ -101,7 +101,7 @@ scene.triggers = [
 
 export const scenario: TestScenario = {
   id: 'marche-equipement',
-  order: 10,
+  order: 7,
   category: '🛒 Marché',
   icon: '🛒',
   title: 'Marché & équipement',

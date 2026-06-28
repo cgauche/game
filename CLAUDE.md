@@ -273,7 +273,7 @@ src/state/asciiMap.ts       AUTHORING de map en ASCII — la MÉTHODE À PRIVIL�
                             `~`eau `D`porte `_`fosse `=`planches (surchargeable). Garde-fou : lignes de
                             largeurs inégales / char inconnu → throw. Entités/props/départ : poser des
                             MARQUEURS custom dans l'ASCII (ex. `@BFLr`), nettoyer avant le parse (`replace`)
-                            puis scanner leurs positions. Ex. `src/scenes/test-scenarios/23-vision-lumiere.ts`.
+                            puis scanner leurs positions.
 src/net/                    Coop en ligne (relay WebSocket) : relay.ts (RelayClient heartbeat/backoff,
                             RoomHost = un Transport virtuel par siège, RoomGuest), session.ts (hôte-
                             autoritaire : intents allowlist + snapshots), protocol.ts, compress.ts,

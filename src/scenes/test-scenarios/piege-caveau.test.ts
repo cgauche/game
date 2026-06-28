@@ -3,7 +3,7 @@ import { evalCondition, flowHasTest, flowEffects } from '../../state/flow';
 import { validateScene } from '../../state/validateScene';
 import { useGame } from '../../state/store';
 import { runFlow } from '../../state/combatEffects';
-import { scenario } from './22-piege-caveau';
+import { scenario } from './piege-caveau';
 
 /**
  * « Le Caveau piégé » est du CONTENU pur (données éditeur). Ce gate prouve que la VITRINE Flow+Condition
