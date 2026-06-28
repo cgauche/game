@@ -46,6 +46,7 @@ import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial, isMindless, isStupid } from '../engine/traits/dispatch';
+import { creatureAttacks } from '../engine/creatureAttacks';
 import { isFrenzied } from '../engine/psychology';
 
 // === TRACE DE DÉCISION IA (DEV uniquement, GATÉE) ============================================
