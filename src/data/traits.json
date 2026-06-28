@@ -323,6 +323,7 @@
                     "op": "condition",
                     "name": "empetre",
                     "value": 1,
+                    "grapple": true,
                     "unlessCondition": "empetre",
                     "escapeStrength": {
                       "charOf": "F"

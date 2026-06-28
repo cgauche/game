@@ -5,6 +5,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { resetRule, setRule } from '../engine/policy';
+import { areGrappling } from '../engine/grapple';
 import type { Combatant } from '../engine/types';
 
 // Attaques GRATUITES de créature (Taille & traits) : Morsure / Attaque caudale / Piétinement,
@@ -192,15 +193,18 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(st.battle!.acted).toBe(false); // gratuites : l'Action n'est pas consommée
   });
 
-  it('Constricteur : toute touche → Empêtré ; Vampirique : la Morsure soigne l’attaquant', () => {
+  it('Constricteur : toute touche → Empêtré + PRISE d’Empoignade établie ; Vampirique : la Morsure soigne', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'morsure', value: 14 }, { id: 'constricteur' }, { id: 'vampirique' }]; E.advantage = 1;
     E.wounds = { current: 10, max: 40, base: 40 } as Combatant['wounds']; // blessé → peut se soigner
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const st = useGame.getState();
-    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.some((c) => c.name === 'empetre')).toBe(true);
-    expect(st.battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBeGreaterThan(10); // drainé (Vampirique)
+    const hLive = st.battle!.combatants.find((c) => c.id === H.id)!;
+    const eLive = st.battle!.combatants.find((c) => c.id === E.id)!;
+    expect(hLive.conditions.some((c) => c.name === 'empetre')).toBe(true);
+    expect(areGrappling(eLive, hLive)).toBe(true); // `grapple:true` : la touche établit la PRISE (LDB 14 p.338 — l'IA la travaille ensuite, LOT B)
+    expect(eLive.wounds.current).toBeGreaterThan(10); // drainé (Vampirique)
   });
 
   it('Hurlement fantomatique : zone vivante, 1d10 ignore BE+PA + 3 Assourdi, dépense tous les Av', () => {
