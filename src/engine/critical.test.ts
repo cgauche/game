@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import type { RNG } from './dice';
-import { rollCritical, critLocationRoll, permanentAmputations } from './critical';
+import { rollCritical, critLocationRoll, critWoundLocation, permanentAmputations } from './critical';
 import { removeSurgicalTrauma } from './trauma';
 import { CRITICAL_TABLES } from '../data/criticals';
 import type { Combatant } from './types';
@@ -170,5 +170,16 @@ describe('critLocationRoll — localisation d’un Coup Critique (1d100 direct, 
       expect(['tete', 'corps']).toContain(critLocationRoll(makeRNG(s), 'serpent'));
       expect(['tete', 'jambeD', 'corps']).toContain(critLocationRoll(makeRNG(s), 'araignee'));
     }
+  });
+});
+
+describe('critWoundLocation — règle UNIQUE de localisation du Coup Critique (LDB 18 l.53)', () => {
+  it('sans override → 1d100 frais (= critLocationRoll au même seed)', () => {
+    expect(critWoundLocation(makeRNG(3), 'humanoide')).toBe(critLocationRoll(makeRNG(3), 'humanoide'));
+  });
+  it('avec override (loc choisie / Critique pré-montré) → l’override, jamais le tirage', () => {
+    expect(critWoundLocation(makeRNG(3), 'humanoide', 'tete')).toBe('tete');
+    // forme du corps ignorée quand l’override est fourni (c’est une loc déjà résolue en amont).
+    expect(critWoundLocation(makeRNG(7), 'serpent', 'jambeD')).toBe('jambeD');
   });
 });

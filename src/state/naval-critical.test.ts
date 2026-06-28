@@ -62,7 +62,7 @@ describe('applyCriticalToTarget — l’équipage lié (crewIds) encaisse via la
       const crew = Array.from({ length: 8 }, (_, i) => sailor(`m${i}`));
       s.crewIds = crew.map((c) => c.id);
       const get = (() => ({ battle: { combatants: crew } })) as never;
-      applyCriticalToTarget(s, 'corps', true, 0, [], setStub, undefined, undefined, undefined, undefined, get);
+      applyCriticalToTarget(s, 'corps', true, 0, [], setStub, undefined, undefined, undefined, get);
       crewTouched = crew.some((c) => c.wounds.current < 13 || (c.traumas?.length ?? 0) > 0 || c.conditions.length > 0);
     }
     expect(crewTouched).toBe(true);

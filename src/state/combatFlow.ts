@@ -118,7 +118,7 @@ import { rollContraction, contractDisease, contractionDue, applyContraction, has
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
-import { rollCritical, critLocationRoll, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
+import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
 import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
@@ -1028,7 +1028,6 @@ export function applyCriticalToTarget(
   overkill: number,
   log: string[],
   set: SetFn,
-  chosenCritLocation?: HitLocation, // RAW-2 : localisation CHOISIE (« Je ne faillirai pas ! », LDB 17 l.73)
   ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean }, // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
   prerolled?: CriticalResolved, // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
   suppressReveal?: boolean, // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
@@ -1048,9 +1047,10 @@ export function applyCriticalToTarget(
   if (target.bodyShape === 'vehicule') {
     return applyHullCriticalToTarget(target, log, set, ctx, suppressReveal, get);
   }
-  // Coup Critique : localisation fraîche (1d100) SAUF si le joueur l'a choisie via « Je ne faillirai pas ! »
-  // (RAW-2, LDB 17 l.73). Hors Coup Critique (overkill), on garde la localisation de la touche.
-  const loc = prerolled ? prerolled.location : isCoupCritique ? (chosenCritLocation ?? critLocationRoll(battleRng(), target.bodyShape)) : location;
+  // La Localisation est RÉSOLUE par l'appelant (Coup Critique = 1d100 frais via `critWoundLocation`, qui
+  // honore aussi la loc choisie « Je ne faillirai pas ! » / le Critique pré-montré ; overkill = loc de
+  // touche) et passée telle quelle : `applyCriticalToTarget` ne re-tire JAMAIS la loc → zéro double tirage.
+  const loc = location;
   const crit = prerolled ?? rollCritical(target, loc, battleRng(), overkill, ctx?.critTwice);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
@@ -1202,7 +1202,7 @@ export function applyOpposedCritical(
   ctx: { attackerId?: string; weapon?: string },
   log: string[],
 ): void {
-  const loc = critLocationRoll(battleRng(), victim.bodyShape); // LDB 18 l.53 : Coup Critique → 1d100 frais (pas l'inversion de touche)
+  const loc = critWoundLocation(battleRng(), victim.bodyShape); // LDB 18 l.53 : Coup Critique → 1d100 frais (pas l'inversion de touche)
   // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
   const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
@@ -1217,7 +1217,7 @@ export function applyOpposedCritical(
     return;
   }
   const currentBefore = victim.wounds.current;
-  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, loc, // `loc` = 1d100 frais déjà tiré → pas de 2e tirage interne (déflecteur/révélation/table cohérents)
+  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, // `loc` (1d100 frais) est la loc finale → déflecteur/révélation/table cohérents, aucun re-tirage
     { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined }, undefined, undefined, get);
   if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
 }
@@ -1292,7 +1292,7 @@ export function applyAttackResult(
   // ici (réutilisée sans re-tirer par la reprise Dévier/Subir). RNG-neutre : le tirage est seulement AVANCÉ
   // (aucun `battleRng` intercalé jusqu'à son point d'origine, au bloc Critique ci-dessous).
   const dloc = (res.critical && deviated === undefined && target.kind === 'hero')
-    ? (res.critLocation ??= critLocationRoll(battleRng(), target.bodyShape))
+    ? (res.critLocation ??= critWoundLocation(battleRng(), target.bodyShape))
     : (res.location ?? 'corps');
   // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
@@ -1300,7 +1300,7 @@ export function applyAttackResult(
     // Pré-tire le Coup Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
     const overkill = Math.max(0, res.woundsLost - target.wounds.current);
-    const cloc = res.critLocation ?? critLocationRoll(battleRng(), target.bodyShape);
+    const cloc = critWoundLocation(battleRng(), target.bodyShape, res.critLocation);
     res.critLocation = cloc; // LDB 18 l.55 (#80) : FIGE la localisation re-tirée du Coup Critique AVANT la
     // suspension — la reprise (Dévier comme Subir) la réutilise sans RE-tirer ; sinon « Dévier » (qui ne
     // repasse pas `prerolledCrit`) sacrifierait 1 PA à une localisation ≠ de celle montrée au joueur.
@@ -1339,7 +1339,7 @@ export function applyAttackResult(
     // applyCriticalToTarget) la lise, puis on RECALCULE les Blessures de base à cette localisation
     // (`woundsAtCritLocation`). L'overkill (≠ Coup Critique) garde la localisation de la touche.
     if (res.critical) {
-      const fresh = prerolledCrit?.location ?? res.critLocation ?? critLocationRoll(battleRng(), target.bodyShape);
+      const fresh = critWoundLocation(battleRng(), target.bodyShape, prerolledCrit?.location ?? res.critLocation);
       res.critLocation = fresh;
       res.location = fresh;
       res.woundsLost = woundsAtCritLocation(res, weapon, target, fresh);
@@ -1358,7 +1358,7 @@ export function applyAttackResult(
     if (!deviationApplied && (res.critical || overkill > 0)) {
       // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
       // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit, get);
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit, get);
       // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
       const fb = talentCritExtraWounds(attacker);
       if (fb > 0 && !lethal) {
@@ -2958,7 +2958,7 @@ export function applyCast(
       // LDB 18 l.53/55 : un Projectile Coup Critique re-tire la Localisation (1d100 frais, MÊME primitive
       // que la mêlée — pas le dé inversé) et RÉ-ÉVALUE ses Dégâts à cette loc AVANT les atténuations
       // magiques ci-dessous (Résistance/Dôme/Martyr). `crit` = double d'Incantation, `choice` = Incantation Critique.
-      if (crit && choice === 'critique') mres = evaluateMissile(caster, t, spell, mres, critLocationRoll(battleRng(), t.bodyShape));
+      if (crit && choice === 'critique') mres = evaluateMissile(caster, t, spell, mres, critWoundLocation(battleRng(), t.bodyShape));
       // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
       // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
       const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
@@ -2996,7 +2996,7 @@ export function applyCast(
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, critWound ? mres.location : undefined, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') }, undefined, undefined, get);
+        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') }, undefined, undefined, get);
         if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);

@@ -21,15 +21,15 @@ const mk = (): Combatant =>
     skills: [], talents: [], movement: 4, bodyShape: 'humanoide', pos: { x: 0, y: 0 },
   }) as unknown as Combatant;
 
-describe('applyCriticalToTarget — choix de localisation sur Coup Critique forcé (RAW-2)', () => {
-  it('localisation CHOISIE → le critique est résolu à cette localisation', () => {
+describe('applyCriticalToTarget — la Localisation fournie est utilisée verbatim (résolue en amont)', () => {
+  it('localisation fournie → le Critique est résolu à cette localisation', () => {
     seedBattleRng(1);
     const log: string[] = [];
-    applyCriticalToTarget(mk(), 'corps', true, 0, log, () => {}, 'tete');
+    applyCriticalToTarget(mk(), 'tete', true, 0, log, () => {});
     expect(log.some((l) => l.includes('(Tête)'))).toBe(true); // localisation affichée en FR via locationLabel(loc, shape)
   });
 
-  it('sans choix → localisation aléatoire (comportement inchangé), un critique est bien appliqué', () => {
+  it('un Critique est bien appliqué à la localisation donnée', () => {
     seedBattleRng(1);
     const log: string[] = [];
     applyCriticalToTarget(mk(), 'corps', true, 0, log, () => {});
@@ -43,7 +43,7 @@ describe('applyCriticalToTarget — libellé de localisation adapté à la forme
     const log: string[] = [];
     const t = mk();
     t.bodyShape = 'quadrupede';
-    applyCriticalToTarget(t, 'corps', true, 0, log, () => {}, 'brasD'); // localisation forcée pour le déterminisme
+    applyCriticalToTarget(t, 'brasD', true, 0, log, () => {}); // localisation fournie pour le déterminisme
     expect(log.some((l) => l.includes('(Membre antérieur droit)'))).toBe(true);
     expect(log.some((l) => l.includes('(Bras droit)'))).toBe(false);
   });

@@ -78,6 +78,14 @@ export function critLocationRoll(rng: RNG = defaultRNG, shape: BodyShape = 'huma
   return hitLocationByShape(d100(rng), shape);
 }
 
+/** LDB 18 l.53 : la Localisation d'un Coup Critique est un 1d100 FRAIS (jamais l'inversion de la touche),
+ *  SAUF `override` — le Critique déjà montré (Déviation) ou la loc choisie (« Je ne faillirai pas ! »,
+ *  LDB 17 l.73). SOURCE UNIQUE de la règle : mêlée, défense opposée et tir/magie en dérivent, puis
+ *  passent le résultat à `applyCriticalToTarget` qui ne re-tire JAMAIS → le double tirage est impossible. */
+export function critWoundLocation(rng: RNG, bodyShape: BodyShape = 'humanoide', override?: HitLocation): HitLocation {
+  return override ?? critLocationRoll(rng, bodyShape);
+}
+
 /**
  * Résout une Blessure critique sur `target` à la `location`. `overkill` = PB perdus au-delà des
  * PB courants (0 pour un Coup Critique sans overkill). Le Test de Résistance d'une entrée est
