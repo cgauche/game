@@ -23,6 +23,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { spells, blessingsOf, findSpellById, type SpellData } from '../data'; // Bénédictions par culte : dataset gods (façade)
 import { featuresOf } from './combatFeatures/dispatch';
 import type { CastingKind } from './combatFeatures/types';
+import { itemCapability } from './capabilities';
 
 export interface CasterTalent {
   kind: CastingKind;
@@ -117,10 +118,11 @@ export function learnableSpells(c: Combatant): { spell: SpellData; cost: number 
   return out;
 }
 
-/** Un objet-grimoire PORTÉ (LDB 47 l.34 — lecture à deux mains). Détecté par le marqueur STABLE
- *  `isGrimoire` du trapping (≠ nom — multilangue-safe). */
+/** Un objet-grimoire dans le paquetage (LDB 47 l.34 — lecture à deux mains). Capacité par-OBJET
+ *  `isGrimoire`, NON gatée sur le port (un grimoire dans le sac reste lisible) — lue PAR ID dans le
+ *  catalogue (≠ nom — multilangue-safe). */
 export function carriedGrimoire(c: Combatant): { name: string } | undefined {
-  return (c.items ?? []).find((i) => i.isGrimoire && !i.destroyed);
+  return (c.items ?? []).find((i) => itemCapability(i, 'isGrimoire') && !i.destroyed);
 }
 
 /** Sort lançable DEPUIS le grimoire porté (LDB 47 l.34) : non mémorisé, du Domaine

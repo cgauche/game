@@ -1533,7 +1533,7 @@ export function applyAttackResult(
   // d'attaque (`weapon.type`) voyage dans le contexte ; un effet peut s'y restreindre (`attackType`).
   // Dispatcher générique (state/triggeredEffects), plus de handler en dur ni de branche par-nom.
   if (res.hit && res.woundsLost) {
-    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set, attackType: weapon.type })) critLog.push(line);
+    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set, attackType: weapon.type, woundsDealt: res.woundsLost })) critLog.push(line);
   }
   // Effet déclenché « à la mise hors de combat d'un adversaire » authoré (Affamé : Test de FM ou
   // festoie — perd Action + Mouvement) — dispatcher générique (state/triggeredEffects).

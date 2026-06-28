@@ -15,7 +15,7 @@ import { toBrass } from '../engine/money';
 import { stacks } from '../engine/conditions';
 import type { Combatant, ItemInstance } from '../engine/types';
 
-const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', isRations: true, kind: 'misc', qualities: [], enc: 0, equipped: false });
+const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
 /** Déroule la cascade de nuit (lance + valide chaque étape) jusqu'à la fin ; renvoie les `kind` vus
  *  (les étapes INSÉRÉES en cours de route — Exposition après l'abri — y figurent). */
@@ -148,7 +148,7 @@ describe('openRest / choix par héros', () => {
     const sc = emptyScene(10, 10);
     sc.weather = 'pluie';
     useGame.setState({ scene: sc });
-    useGame.getState().party[1].items!.push({ uid: 't', name: 'Tente', isShelter: true, kind: 'misc', qualities: [], enc: 2, equipped: false } as ItemInstance);
+    useGame.getState().party[1].items!.push({ uid: 't', name: 'Tente', trappingId: 'tente', kind: 'misc', qualities: [], enc: 2, equipped: false } as ItemInstance);
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSleep();
     const cas = useGame.getState().pendingCascade!;

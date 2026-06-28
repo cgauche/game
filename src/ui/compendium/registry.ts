@@ -375,12 +375,14 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'trappings', label: 'Possessions', group: 'Équipement',
     items: trappings.map((t) => {
-      // Propriétés FONCTIONNELLES (flags multilangue-safe) + arme dérivée tant qu'équipée.
+      // Capacités FONCTIONNELLES (canal `capabilities`, lu PAR ID — ≠ nom FR) + arme dérivée tant qu'équipée.
+      const caps = t.capabilities;
       const props = [
-        t.weatherProtection ? 'Protège des intempéries' : null,
-        t.isShelter ? 'Abri de campement' : null,
-        t.isRations ? 'Ration de voyage' : null,
-        t.isGrimoire ? 'Grimoire (lecture de Sorts)' : null,
+        caps?.weatherProtection ? 'Protège des intempéries' : null,
+        caps?.isShelter ? 'Abri de campement' : null,
+        caps?.isRations ? 'Ration de voyage' : null,
+        caps?.isGrimoire ? 'Grimoire (lecture de Sorts)' : null,
+        caps?.preventForcedDrop ? 'Empêche le lâcher forcé (gantelet verrouillé)' : null,
         t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.name} (${damageString(t.derivedWeapon.damage)})` : null,
       ].filter(Boolean) as string[];
       // Allonge = mêlée, Portée = distance (LDB 62). Tir/munition : « Portée 50 m » (fixe) / « BF×3 m » (jet)

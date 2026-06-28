@@ -14,7 +14,7 @@ import { rationCount } from '../engine/provisions';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, ItemInstance } from '../engine/types';
 
-const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', isRations: true, kind: 'misc', qualities: [], enc: 0, equipped: false });
+const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({

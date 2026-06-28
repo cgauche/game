@@ -31,6 +31,7 @@ import { Combatant, CharKey, ItemInstance, UpkeepDeferTest } from './types';
 import { RNG, defaultRNG, d10 } from './dice';
 import { rollTest } from './tests';
 import { hasActiveFlag } from './activeFlags';
+import { itemCapability } from './capabilities';
 
 /** État de faim d'un personnage (absent = nourri normalement). */
 export interface HungerState {
@@ -49,10 +50,10 @@ export function hasBrouet(c: Combatant): boolean {
   return (c.talents ?? []).some((t) => t.talentId === 'brouet' && (t.times ?? 1) >= 1);
 }
 
-/** L'objet est-il une ration de voyage (« Ration (1 jour) », LDB p.302) ? Détecté par le marqueur
- *  STABLE `isRations` du trapping (≠ nom — multilangue-safe). */
-export function isRation(it: Pick<ItemInstance, 'isRations'>): boolean {
-  return !!it.isRations;
+/** L'objet est-il une ration de voyage (« Ration (1 jour) », LDB p.302) ? Capacité par-OBJET `isRations`,
+ *  NON gatée sur le port (on mange depuis le sac) — lue PAR ID dans le catalogue (≠ nom — multilangue-safe). */
+export function isRation(it: ItemInstance): boolean {
+  return itemCapability(it, 'isRations');
 }
 
 /** Nombre de rations portées par un héros. */

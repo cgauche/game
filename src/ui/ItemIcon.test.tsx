@@ -36,7 +36,7 @@ describe('ItemIcon', () => {
   });
 
   it('cape → glyphe 🧥', () => {
-    expect(html(mk({ kind: 'misc', name: 'Cape', weatherProtection: true }))).toContain('🧥');
+    expect(html(mk({ kind: 'misc', name: 'Cape', trappingId: 'cape' }))).toContain('🧥');
   });
 
   it('consommable (effet structuré) → glyphe 🧪', () => {

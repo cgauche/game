@@ -21,6 +21,7 @@ import type { Combatant, CharKey } from './types';
 import type { RNG } from './dice';
 import { rollTest } from './tests';
 import { addCondition, hasCondition, loseWounds } from './conditions';
+import { hasCapability, itemCapability } from './capabilities';
 
 export type ExposureSeverity = 'clement' | 'difficile' | 'extreme';
 
@@ -31,16 +32,18 @@ export function weatherExposure(weather?: string): ExposureSeverity {
   return 'clement';
 }
 
-/** Le personnage porte-t-il une protection contre les intempéries (Manteau/Cape, ch.66 l.46) ? Détecté
- *  par le marqueur STABLE `weatherProtection` du trapping (≠ nom — multilangue-safe). */
+/** Le personnage PORTE-t-il une protection contre les intempéries (Manteau/Cape, ch.66 l.46) ? Capacité
+ *  `weatherProtection` AGRÉGÉE et GATÉE sur le port (`engine/capabilities`) — une cape doit être PORTÉE
+ *  pour protéger du froid ; lue PAR ID (≠ nom de l'objet). */
 export function hasCoat(c: Combatant): boolean {
-  return (c.items ?? []).some((it) => it.weatherProtection);
+  return hasCapability(c, 'weatherProtection');
 }
 
-/** Un abri (Tente) dans le paquetage du groupe ? (campement — application déclarée). Détecté par le
- *  marqueur STABLE `isShelter` du trapping (≠ nom — multilangue-safe). */
+/** Un abri (Tente) dans le paquetage du groupe ? (campement — application déclarée). Capacité `isShelter`
+ *  par-OBJET, NON gatée sur le port (une tente n'a pas à être « portée » au sens armure pour abriter le
+ *  camp) — lue PAR ID dans le catalogue (≠ nom de l'objet). */
 export function partyHasTent(party: Combatant[]): boolean {
-  return party.some((h) => (h.items ?? []).some((it) => it.isShelter));
+  return party.some((h) => (h.items ?? []).some((it) => itemCapability(it, 'isShelter')));
 }
 
 export interface ExposureRoll {
