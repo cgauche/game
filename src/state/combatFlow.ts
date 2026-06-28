@@ -50,7 +50,7 @@ import {
   DEFENSE_LABEL,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
-import { grappleEnvMod } from '../engine/grapple';
+import { areGrappling, clearGrapple, grappleEnvMod } from '../engine/grapple';
 import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
@@ -798,6 +798,23 @@ export function startGrapple(get: Get, set: SetFn, actor: Combatant, foe: Combat
   const atk = rollGrappleForce(foe, battleRng()); // Force du foe, figée (jamais relancée)
   const canBreak = actor.advantage > foe.advantage;
   set({ pendingGrapple: { actorId: actor.id, foeId: foe.id, phase: 'roll', canBreak, atk, def: null, result: null } });
+}
+
+/** Cœur PARTAGÉ (flux joueur ET résolveur IA) d'une victoire d'Empoignade (LDB 14 l.161) : applique
+ *  `GRAPPLE.win[mode]` (DONNÉE) — `free` se libère SOI-MÊME, `damage`/`entangle` frappent l'adversaire — et
+ *  renvoie la ligne de journal. `dr` = DR du Test gagné (→ `ctx.sl`) ; `forceRoll` = jet de Force du VAINQUEUR
+ *  (Localisation au lancer de Force, l.161). MUTE actor/foe ; ne touche NI `battle` NI `pending` (chaque
+ *  appelant fait son propre `set`) → une SEULE application, deux orchestrations (modale joueur / instantané IA). */
+export function resolveGrappleWin(actor: Combatant, foe: Combatant, mode: 'damage' | 'entangle' | 'free', dr: number, forceRoll: number): string {
+  const beforeW = foe.wounds.current;
+  const beforeEmp = stacks(actor, COND.empetre);
+  applyOps(mode === 'free' ? actor : foe, GRAPPLE.win[mode], { caster: actor, sl: dr });
+  if (mode === 'damage') {
+    const loc = locationLabel(hitLocationByShape(reverseRoll(forceRoll), foe.bodyShape), foe.bodyShape); // Localisation au lancer de Force (l.161)
+    return tr('cs.grappleDamage', { name: actor.name, foe: foe.name, n: beforeW - foe.wounds.current, loc });
+  }
+  if (mode === 'entangle') return tr('cs.grappleEntangle', { name: actor.name, foe: foe.name });
+  return tr('cs.grappleFree', { name: actor.name, n: beforeEmp - stacks(actor, COND.empetre) });
 }
 
 /** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */
@@ -4273,6 +4290,7 @@ function describeAiAction(a: EnemyAction): string {
     case 'reload': return 'reload';
     case 'recover': return `recover ${a.state}`;
     case 'spendResource': return `spend ${a.resource}→${a.name}`;
+    case 'grapple': return `grapple ${a.resolution}→${a.targetId}`;
     case 'end': return 'end';
   }
 }
@@ -4370,10 +4388,24 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // l'action, le tout AVANT le dispatch, pour que l'acteur DÉVERROUILLÉ joue sa vraie action (melee/cast/
   // move) le MÊME tour — sans ré-armer les hooks de début de tour. Borne anti-boucle STRICTE : 1 pion par
   // tour ; on s'arrête si la dépense est sans effet (état inchangé) ou après les pions initiaux (safety).
-  for (let safety = 8; action.kind === 'spendResource' && safety > 0; safety--) {
-    const before = stacks(enemy, action.name);
-    get().spendResolveCondition(enemy.id, action.name);
-    if (stacks(enemy, action.name) >= before) break; // dépense inopérante → on n'insiste pas (anti-boucle dure)
+  // ... et MÊME boucle pour « Briser l'Empoignade » (LDB 14 l.161) : Briser est GRATUIT (par le Mouvement) et
+  // n'épuise PAS l'Action → l'ennemi libéré RE-DÉCIDE et joue sa vraie action (tir/cast/charge) le même tour.
+  // Multi-Empoignade : chaque tour de boucle dénoue UN lien ; `grapplingWith` se vide → la garde ne re-fire plus.
+  for (let safety = 8; safety > 0; safety--) {
+    if (action.kind === 'spendResource') {
+      const before = stacks(enemy, action.name);
+      get().spendResolveCondition(enemy.id, action.name);
+      if (stacks(enemy, action.name) >= before) break; // dépense inopérante → on n'insiste pas (anti-boucle dure)
+    } else if (action.kind === 'grapple' && action.resolution === 'break') {
+      const targetId = action.targetId; // capture AVANT la closure (narrowing perdu sur un `let` réassigné)
+      const foe = battle.combatants.find((c) => c.id === targetId);
+      if (!foe) break;
+      clearGrapple(enemy, foe);
+      removeCondition(enemy, COND.empetre, stacks(enemy, COND.empetre)); // se défait de l'*Empêtré* lié (LDB 14 l.161)
+      battle.log.push(ev('dodge', tr('cs.grappleBreak', { name: enemy.name, foe: foe.name }), enemy.id, foe.id));
+      set({ battle: { ...battle } });
+      bus.emit(EVT.SCENE_DIRTY);
+    } else break;
     input = buildAiInput(enemy, get);
     if (justMounted) input.movement = 0;
     action = chooseEnemyAction(input);
@@ -4539,6 +4571,33 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       set({ battle: { ...battle, log: [...battle.log, ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
+      return;
+    }
+    case 'grapple': {
+      // Empoignade (LDB 14 l.161) : l'Action d'un Empoigné = Test opposé de FORCE (le « Briser » a déjà été
+      // résolu en amont par la boucle de re-décision, comme `spendResource`). Résolution INSTANTANÉE (pas de
+      // modale ni de Chance) — calque du `recover` ; le `resolveGrappleWin` PARTAGÉ applique l'issue (joueur+IA).
+      if (!canAct) return advanceTurn(get, set);
+      const foe = targetOf(action.targetId);
+      if (!foe || isOutOfAction(foe) || !areGrappling(enemy, foe)) return advanceTurn(get, set); // lien dénoué entre-temps
+      const enemyRoll = rollGrappleForce(enemy, battleRng()); // acteur = « attaquant » du Test opposé
+      const foeRoll = rollGrappleForce(foe, battleRng());
+      const opp = resolveOpposed(enemyRoll, foeRoll);
+      const result = disengageOutcome(opp.winner);
+      let line: string;
+      if (result === 'success') {
+        // Politique IA : l'option DÉGÂTS (BF + DR, PA ignorés) — meilleure valeur garantie pour une créature
+        // qui l'emporte (les options Empêtrer/Se libérer restent en DONNÉE, offertes au joueur). Localisation
+        // au lancer de Force du vainqueur (l.161).
+        line = resolveGrappleWin(enemy, foe, 'damage', Math.max(0, opp.netSL), enemyRoll.roll);
+      } else {
+        if (result === 'failure') gainAdvantage(foe, 1); // l'adversaire l'emporte → +1 Avantage (l.161)
+        line = tr(result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie', { name: enemy.name, foe: foe.name });
+      }
+      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('attack', line, enemy.id, foe.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      checkBattleOver(get, set);
+      setTimeout(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
       return;
     }
     case 'move': {

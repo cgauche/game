@@ -17,7 +17,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
@@ -26,7 +26,7 @@ import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear } fro
 import { ev, evLines } from './combatLog';
 import { afterApproach } from './combatDirector';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive, attackWeapon, hitLocationByShape, reverseRoll, locationLabel } from '../engine/combat';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive, attackWeapon } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank, meleeReachTiles } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
@@ -53,7 +53,7 @@ import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, withCrewActed } from './shipCrew';
-import { findCrewTestTypeById, findCrewRoleById, findVehicleById, GRAPPLE } from '../data';
+import { findCrewTestTypeById, findCrewRoleById, findVehicleById } from '../data';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
@@ -111,29 +111,15 @@ function applyAuContact(get: Get, set: Set, mover: Combatant, foe: Combatant, ch
   bus.emit(EVT.SCENE_DIRTY);
 }
 
-/** Applique le CHOIX du vainqueur d'un Test opposé d'Empoignade gagné (LDB 14 l.161) : `damage` = BF + DR
- *  ignorant les PA (`GRAPPLE.win.damage` en DONNÉE via `applyOps`, Localisation au lancer de Force pour la
- *  narration) ; `entangle` = conférer 1 *Empêtré* à l'adversaire ; `free` = se défaire de son *Empêtré* + 1
- *  par DR. Le Test opposé EST l'Action → `acted`. `dr` = DR net du Test gagné (passé en `ctx.sl`). */
+/** Applique le CHOIX du vainqueur d'un Test opposé d'Empoignade gagné (LDB 14 l.161) côté JOUEUR : délègue
+ *  l'issue au cœur PARTAGÉ `resolveGrappleWin` (`damage` = BF+DR PA ignorés / `entangle` / `free`, tout en
+ *  DONNÉE) puis ferme le pending. Le Test opposé EST l'Action → `acted`. `dr` = DR net du Test (→ `ctx.sl`). */
 function applyGrapple(get: Get, set: Set, actor: Combatant, foe: Combatant, mode: 'damage' | 'entangle' | 'free', dr: number, forceRoll: number): void {
   const battle = get().battle!;
-  // Mécanique 100% en DONNÉE (`GRAPPLE.win`, `ctx.sl` = DR) : damage/entangle frappent l'ADVERSAIRE, free se
-  // libère SOI-MÊME. Le flux n'orchestre QUE le choix ; les nombres (Blessures / pions) se relisent par diff.
-  const target = mode === 'free' ? actor : foe;
-  const beforeW = foe.wounds.current;
-  const beforeEmp = stacks(actor, COND.empetre);
-  applyOps(target, GRAPPLE.win[mode], { caster: actor, sl: dr });
-  let line: string;
-  if (mode === 'damage') {
-    const loc = locationLabel(hitLocationByShape(reverseRoll(forceRoll), foe.bodyShape), foe.bodyShape); // Localisation au lancer de Force (l.161)
-    line = t('cs.grappleDamage', { name: actor.name, foe: foe.name, n: beforeW - foe.wounds.current, loc }); // `loseWounds` (op:'wounds') pose déjà À Terre à 0 PB
-  } else if (mode === 'entangle') {
-    line = t('cs.grappleEntangle', { name: actor.name, foe: foe.name });
-  } else {
-    line = t('cs.grappleFree', { name: actor.name, n: beforeEmp - stacks(actor, COND.empetre) });
-  }
-  const log = [...battle.log, ev('attack', line, actor.id, foe.id)];
-  set({ pendingGrapple: null, battle: { ...battle, acted: true, action: null, log } });
+  // Application 100% en DONNÉE, PARTAGÉE avec le résolveur IA (`resolveGrappleWin`) : une SEULE voie d'issue,
+  // deux orchestrations (cette modale joueur / instantané IA). Le flux n'orchestre ICI que la fermeture du pending.
+  const line = resolveGrappleWin(actor, foe, mode, dr, forceRoll);
+  set({ pendingGrapple: null, battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('attack', line, actor.id, foe.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 

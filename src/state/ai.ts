@@ -91,6 +91,7 @@ export type EnemyAction =
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
   | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
   | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; name: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-63)
+  | { kind: 'grapple'; targetId: string; resolution: 'break' | 'test' } // Empoigné à son tour (LDB 14 l.161) : son Action EST le Test opposé de Force, OU « Briser » (Avantage supérieur) pour regagner sa liberté d'action puis re-décider
   | { kind: 'end' }; // rien à faire, passe la main
 
 export interface EnemyTurnInput {
@@ -713,6 +714,20 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // contact (cible adjacente) et le tir en portée restent gérés par `canShoot`/le candidat mêlée direct ;
   // seule l'APPROCHE/REPOSITION d'un hybride hors de portée change (il vise désormais sa distance de tir).
   const isShooterOrCaster = canCast || canShoot || hasAnyOffensiveSpell || hasRanged;
+  // Empoignade (LDB 14 l.161) : Empoigné au DÉBUT de son tour, son Action EST le Test opposé de Force — une
+  // créature Empoignée ne peut PAS prendre d'action normale (cast/tir/mêlée), son tour est VERROUILLÉ sur la
+  // lutte. Préempte donc le scoring (comme `isActionLocked`). « Briser » (Avantage STRICTEMENT supérieur,
+  // gratuit) n'est BÉNÉFIQUE qu'à un tireur/lanceur (il veut sa distance) : un mêleeur GAGNE à rester Empoigné
+  // (Dégâts BF+DR ignorant les PA + il fixe l'adversaire au sol). La décision break/test est PURE ; le
+  // résolveur impur (`runEnemyAI`) exécute « break » par re-décision (comme `spendResource`) ou le Test opposé.
+  {
+    const partner = enemy.grapplingWith?.find((id) => heroes.some((h) => h.id === id));
+    if (partner) {
+      const foe = heroes.find((h) => h.id === partner)!;
+      const resolution: 'break' | 'test' = enemy.advantage > foe.advantage && isShooterOrCaster ? 'break' : 'test';
+      return forced({ kind: 'grapple', targetId: partner, resolution });
+    }
+  }
   const positionValue = (to: Pt, target: Combatant): number => {
     let v = 0;
     // Flanc/dos (LDB 14 l.91) : frapper hors du champ de vision avant de la cible (gratuit). Nécessite
