@@ -20,6 +20,11 @@ import {
   addMember,
   addEnemyMember,
   removeMember,
+  placeEmplacement,
+  setPosteCrew,
+  setPosteSide,
+  setPosteEngine,
+  SIEGE_ENGINES,
   selRect,
   sameSel,
   DEFAULT_LAYERS,
@@ -197,6 +202,72 @@ describe('editorState — pose', () => {
     const f = edge.scene.buildings![0].foot;
     expect(f.x + f.w).toBeLessThanOrEqual(10);
     expect(f.y + f.h).toBeLessThanOrEqual(10);
+  });
+});
+
+describe('editorState — emplacement de siège (postes authorés à l’éditeur)', () => {
+  it('SIEGE_ENGINES = catalogue armes-de-siege non vide (baliste présente)', () => {
+    expect(SIEGE_ENGINES.length).toBeGreaterThan(0);
+    expect(SIEGE_ENGINES.every((t) => t.subType === 'armes-de-siege')).toBe(true);
+    expect(SIEGE_ENGINES.some((t) => t.id === 'baliste')).toBe(true);
+  });
+
+  it('placeEmplacement : pose un personnage portant un poste (engin résolu, équipage vide)', () => {
+    const out = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 3, y: 3 })!;
+    const ent = out.scene.entities.find((e) => e.id === out.id)!;
+    expect(ent.kind).toBe('personnage'); // seul kind enrôlable → spawn en Combattant
+    expect(ent.label).toBe('Baliste');
+    expect(ent.postes).toHaveLength(1);
+    expect(ent.postes![0].item.trappingId).toBe('baliste');
+    expect(ent.postes![0].crewIds).toEqual([]); // pas d'équipage tant que non assigné
+    expect(ent.postes![0].side).toBeUndefined(); // par défaut tir omni
+  });
+
+  it('placeEmplacement : engin inconnu → null (pas d’entité fantôme)', () => {
+    expect(placeEmplacement(emptyScene(10, 10), 'engin-inexistant', { x: 1, y: 1 })).toBeNull();
+  });
+
+  it('placeEmplacement : pose sur l’étage courant (z), absent au sol', () => {
+    expect(placeEmplacement(emptyScene(10, 10), 'baliste', { x: 1, y: 1 }, 0)!.scene.entities[0].z).toBeUndefined();
+    const up = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 1, y: 1 }, 2)!;
+    expect(up.scene.entities.find((e) => e.id === up.id)!.z).toBe(2);
+  });
+
+  it('setPosteCrew : peuple crewIds DANS L’ORDRE (chef = crewIds[0]) ; réordonner change le chef', () => {
+    let s = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 3, y: 3 })!.scene;
+    const id = s.entities[0].id;
+    s = setPosteCrew(s, id, ['g1', 'g2']);
+    expect(s.entities[0].postes![0].crewIds).toEqual(['g1', 'g2']);
+    s = setPosteCrew(s, id, ['g2', 'g1']); // réordonner → chef devient g2
+    expect(s.entities[0].postes![0].crewIds![0]).toBe('g2');
+  });
+
+  it('setPosteSide : pose puis RETIRE `side` (directionnel ↔ omni — clé absente, pas juste undefined)', () => {
+    let s = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 3, y: 3 })!.scene;
+    const id = s.entities[0].id;
+    s = setPosteSide(s, id, 'tribord');
+    expect(s.entities[0].postes![0].side).toBe('tribord');
+    s = setPosteSide(s, id, undefined);
+    expect(s.entities[0].postes![0].side).toBeUndefined();
+    expect('side' in s.entities[0].postes![0]).toBe(false); // retirée
+  });
+
+  it('setPosteEngine : change l’engin (nouvelle ItemInstance + libellé), équipage conservé', () => {
+    let s = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 3, y: 3 })!.scene;
+    const id = s.entities[0].id;
+    s = setPosteCrew(s, id, ['g1']);
+    s = setPosteEngine(s, id, 'mortier');
+    expect(s.entities[0].postes![0].item.trappingId).toBe('mortier');
+    expect(s.entities[0].label).toBe(SIEGE_ENGINES.find((t) => t.id === 'mortier')!.label);
+    expect(s.entities[0].postes![0].crewIds).toEqual(['g1']); // équipage inchangé
+    expect(setPosteEngine(s, id, 'engin-inexistant')).toBe(s); // engin inconnu → no-op
+  });
+
+  it('les mutations de poste sont des no-op sur une entité SANS poste', () => {
+    const s = placeEntity(emptyScene(10, 10), 'personnage', undefined, { x: 1, y: 1 }).scene;
+    const id = s.entities[0].id;
+    expect(setPosteCrew(s, id, ['x']).entities[0].postes).toBeUndefined();
+    expect(setPosteSide(s, id, 'proue').entities[0].postes).toBeUndefined();
   });
 });
 

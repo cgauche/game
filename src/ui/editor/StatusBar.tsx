@@ -5,7 +5,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { TERRAINS } from '../../state/terrain';
 import type { Layers, Pt, Tool } from './editorState';
-import { KIND_LABEL } from './editorState';
+import { KIND_LABEL, SIEGE_ENGINES } from './editorState';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 
@@ -31,6 +31,7 @@ export function toolLabel(tool: Tool): string {
     case 'zone': return tool.zone === 'trigger' ? '🟦 Zone trigger' : '⛺ Zone de repos';
     case 'entry': return '⚑ Point d’entrée';
     case 'encounter': return '⚔️ Placer des ennemis';
+    case 'emplacement': return `💥 ${SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}`;
     case 'stair': return '🪜 Escalier (vers l’étage au-dessus)';
     case 'wall': return tool.paint === 'door' ? '🧱 Porte' : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? '🧱 Diagonale' : '🧱 Cloison';
     case 'elev': return `⛰ Élévation ${tool.value > 0 ? '+' : ''}${tool.value}`;

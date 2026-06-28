@@ -28,7 +28,8 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects } from './editorState';
+import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine } from './editorState';
+import type { FireArc } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
@@ -63,6 +64,16 @@ function MusicSelect({ label, value, onChange }: { label: string; value: string 
 }
 
 const ENT_ICON: Record<string, string> = { heroStart: '🏁', personnage: '🙂', prop: '🌳' };
+/** Icône d'entité — un emplacement de siège (entité portant un poste) prime sur l'icône de kind. */
+const entIcon = (ent: SceneEntity): string => (ent.postes?.length ? '💥' : ENT_ICON[ent.kind] ?? '•');
+
+/** Arcs de tir d'un créneau directionnel (FireArc), libellés terrestres (relatifs au facing du chef de pièce). */
+const FIRE_ARCS: { side: FireArc; label: string }[] = [
+  { side: 'proue', label: 'Avant (proue)' },
+  { side: 'tribord', label: 'Droite (tribord)' },
+  { side: 'poupe', label: 'Arrière (poupe)' },
+  { side: 'babord', label: 'Gauche (bâbord)' },
+];
 
 export function Inspector({
   scene,
@@ -111,7 +122,7 @@ export function Inspector({
   };
 
   const title = ent
-    ? `${ENT_ICON[ent.kind] ?? '•'} ${ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}`
+    ? `${entIcon(ent)} ${ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}`
     : selB
       ? `🏠 ${selB.label ?? BUILDINGS_META[selB.type]?.label ?? selB.type}`
       : selT
@@ -211,6 +222,8 @@ export function Inspector({
               })}
             </Fold>
           )}
+
+          {ent && !!ent.postes?.length && <EmplacementFold ent={ent} scene={scene} setScene={setScene} />}
 
           {selB && (
             <>
@@ -781,6 +794,90 @@ function EntityPanel({
   );
 }
 
+/** Emplacement de siège — édite le poste UNIQUE porté par l'entité (engin, créneau, équipage) EN PLACE
+ *  (doctrine éditeur v2, pas de modale) ; chaque changement passe par `setScene` → undo global. */
+function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Scene; setScene: (s: Scene) => void }) {
+  const poste = ent.postes![0];
+  const directional = !!poste.side;
+  return (
+    <Fold title="💥 Emplacement de siège" open>
+      <p className="hint">Pièce d'artillerie servie par un équipage. Enrôlez l'emplacement ET ses servants dans une rencontre (fold ⚔️ Combat) ; au combat, le chef (1ᵉʳ servant) sert la pièce et tire.</p>
+      <label className="ed-field">
+        Engin
+        <select value={poste.item.trappingId ?? ''} onChange={(e) => setScene(setPosteEngine(scene, ent.id, e.target.value))}>
+          {SIEGE_ENGINES.map((t) => (
+            <option key={t.id} value={t.id}>{t.label}</option>
+          ))}
+        </select>
+      </label>
+      <div className="ed-field">
+        <span>Créneau de tir</span>
+        <div className="row-flex">
+          <button className={`btn small ${directional ? '' : 'btn-primary'}`} title="Pivot libre — tire dans toutes les directions" onClick={() => setScene(setPosteSide(scene, ent.id, undefined))}>
+            ↻ Omni
+          </button>
+          <button className={`btn small ${directional ? 'btn-primary' : ''}`} title="Arc fixe, relatif à l'orientation-monde du chef de pièce" onClick={() => setScene(setPosteSide(scene, ent.id, poste.side ?? 'proue'))}>
+            ➤ Directionnel
+          </button>
+        </div>
+      </div>
+      {directional && (
+        <label className="ed-field">
+          Arc (relatif au cap du chef de pièce)
+          <select value={poste.side} onChange={(e) => setScene(setPosteSide(scene, ent.id, e.target.value as FireArc))}>
+            {FIRE_ARCS.map((a) => (
+              <option key={a.side} value={a.side}>{a.label}</option>
+            ))}
+          </select>
+        </label>
+      )}
+      <CrewPicker ent={ent} scene={scene} setScene={setScene} />
+    </Fold>
+  );
+}
+
+/** Équipage du poste = picker multi-réf des SceneEntity-personnages (JAMAIS d'id tapé), ordre = chef en
+ *  tête (`crewIds[0]`). Promotion par ▲, retrait par ✕ ; candidats = autres personnages de la scène. */
+function CrewPicker({ ent, scene, setScene }: { ent: SceneEntity; scene: Scene; setScene: (s: Scene) => void }) {
+  const crew = ent.postes![0].crewIds ?? [];
+  const candidates = scene.entities.filter((e) => e.kind === 'personnage' && e.id !== ent.id);
+  const labelOf = (id: string) => {
+    const e = scene.entities.find((x) => x.id === id);
+    return e ? e.label ?? e.ref ?? e.id : `${id} (supprimé)`;
+  };
+  const setCrew = (next: string[]) => setScene(setPosteCrew(scene, ent.id, next));
+  const addable = candidates.filter((c) => !crew.includes(c.id));
+  return (
+    <div className="ed-field">
+      <span>Équipage <em className="de-hint">(le 1ᵉʳ = chef de pièce ★)</em></span>
+      {crew.map((id, i) => (
+        <div key={`${id}-${i}`} className="de-reflrow">
+          <span className="chip" title={i === 0 ? 'Chef de pièce' : `Servant ${i + 1}`}>{i === 0 ? '★' : i + 1}</span>
+          <select value={id} onChange={(e) => setCrew(crew.map((c, j) => (j === i ? e.target.value : c)))}>
+            {!candidates.some((c) => c.id === id) && <option value={id}>{labelOf(id)}</option>}
+            {candidates.map((c) => (
+              <option key={c.id} value={c.id} disabled={crew.includes(c.id) && c.id !== id}>
+                {c.label ?? c.ref ?? c.id}
+              </option>
+            ))}
+          </select>
+          <button className="btn small" title="Promouvoir (vers le chef)" disabled={i === 0} onClick={() => { const n = [...crew]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setCrew(n); }}>
+            ▲
+          </button>
+          <button className="btn small danger" title="Retirer du poste" onClick={() => setCrew(crew.filter((_, j) => j !== i))}>
+            ✕
+          </button>
+        </div>
+      ))}
+      {addable.length > 0 ? (
+        <button className="btn small" onClick={() => setCrew([...crew, addable[0].id])}>+ Affecter un servant</button>
+      ) : candidates.length === 0 ? (
+        <p className="hint">Posez des personnages (servants) sur la carte, puis affectez-les ici.</p>
+      ) : null}
+    </div>
+  );
+}
+
 /** Propriétés de la SCÈNE (rien de sélectionné) + liste filtrable du contenu. */
 function SceneProps({
   scene,
@@ -925,7 +1022,7 @@ function SceneProps({
           {ents.map((e) => (
             <button key={e.id} className="listrow insp-row" onClick={() => setSel({ type: 'entity', id: e.id })}>
               <span className="lr-name">
-                {ENT_ICON[e.kind] ?? '•'} {e.label ?? e.ref ?? e.id}
+                {entIcon(e)} {e.label ?? e.ref ?? e.id}
               </span>
               <span className="chip">
                 ({e.pos.x},{e.pos.y})

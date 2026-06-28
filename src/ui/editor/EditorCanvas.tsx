@@ -20,7 +20,7 @@ import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, addStair, eraseAt, sameSel,
+  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, addStair, eraseAt, sameSel,
   toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge, canonEdge,
 } from './editorState';
 
@@ -142,6 +142,16 @@ export function EditorCanvas({
         const out = placeEntry(scene, p);
         setScene(out.scene);
         onSelect({ type: 'entry', id: out.name });
+        return;
+      }
+      case 'emplacement': {
+        const existing = scene.entities.find((en) => en.pos.x === p.x && en.pos.y === p.y && (en.z ?? 0) === currentLevel);
+        if (existing) return onSelect({ type: 'entity', id: existing.id });
+        const out = placeEmplacement(scene, tool.trappingId, p, currentLevel);
+        if (out) {
+          setScene(out.scene);
+          onSelect({ type: 'entity', id: out.id }); // édition immédiate (engin / arc / équipage) dans l'inspecteur
+        }
         return;
       }
       case 'encounter': {

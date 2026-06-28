@@ -5,6 +5,7 @@
  * Fonctions PURES (Scene → Scene) testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
  */
 import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles, Effect, WallSeg } from '../../state/scene';
+import type { FireArc, ShipPoste } from '../../engine/types';
 import { EMPTY_FLOW, flowFromEffects, flowEffects } from '../../state/flow';
 export { flowEffects };
 import { nextEntityId } from '../../state/entityId';
@@ -12,6 +13,8 @@ import { defaultDoor } from '../../state/buildings';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
+import { itemFromTrappingById } from '../../engine/items';
+import { trappings, findTrappingById } from '../../data';
 import { propRefPatch } from './propDefaults';
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -29,7 +32,15 @@ export type Tool =
   | { mode: 'stair' }
   | { mode: 'wall'; paint: WallPaint }
   | { mode: 'elev'; value: number }
+  // Emplacement de siège : pose une SceneEntity portant un poste d'artillerie (`trappingId` = engin du
+  // catalogue `armes-de-siege`). Le créneau (arc) et l'équipage s'éditent ensuite dans l'inspecteur.
+  | { mode: 'emplacement'; trappingId: string }
   | { mode: 'erase' };
+
+/** Catalogue des pièces d'artillerie posables (engins de siège, AA/MDG) — SOURCE UNIQUE de l'outil
+ *  Palette et du sélecteur d'engin de l'inspecteur. L'invariant `subType === 'armes-de-siege'` ne vit
+ *  qu'ici (et non dupliqué dans chaque écran). */
+export const SIEGE_ENGINES = trappings.filter((t) => t.subType === 'armes-de-siege');
 
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
 export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';
@@ -324,6 +335,57 @@ export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefi
   else if (ref && kind === 'personnage') ent = { ...ent, appearance: { species: ref }, label: speciesLabel(ref) };
   if (z) ent = { ...ent, z }; // pose sur l'étage courant ; sol (0) = champ absent
   return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
+}
+
+/** Pose un EMPLACEMENT DE SIÈGE à p : une SceneEntity-personnage portant un poste d'artillerie
+ *  (`postes:[{ item, crewIds:[] }]`, engin résolu depuis le catalogue `armes-de-siege`). L'entité est un
+ *  `personnage` car c'est le seul kind qui s'enrôle en rencontre (→ spawn en Combattant) et porte le profil
+ *  du Combattant-affût ; au combat, `applyShipPostes` sert la pièce au chef (`crewIds[0]`). Engin inconnu →
+ *  null (pas d'entité fantôme), comme `addBuilding`. */
+export function placeEmplacement(scene: Scene, trappingId: string, p: Pt, z = 0): { scene: Scene; id: string } | null {
+  const item = itemFromTrappingById(trappingId);
+  if (!item) return null;
+  const id = nextEntityId('personnage', scene.entities.map((e) => e.id));
+  const poste: ShipPoste = { item, crewIds: [] };
+  let ent: SceneEntity = { id, kind: 'personnage', pos: { ...p }, label: findTrappingById(trappingId)?.label ?? trappingId, postes: [poste] };
+  if (z) ent = { ...ent, z };
+  return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
+}
+
+/** Patche le poste UNIQUE (postes[0]) de l'emplacement `entityId` (no-op si l'entité n'en porte pas). */
+function patchPoste0(scene: Scene, entityId: string, fn: (p: ShipPoste) => ShipPoste): Scene {
+  return {
+    ...scene,
+    entities: scene.entities.map((e) => (e.id === entityId && e.postes?.length ? { ...e, postes: e.postes.map((p, i) => (i === 0 ? fn(p) : p)) } : e)),
+  };
+}
+
+/** Affecte l'équipage du poste (ids d'entités, ORDRE = chef de pièce en tête → `crewIds[0]`). */
+export function setPosteCrew(scene: Scene, entityId: string, crewIds: string[]): Scene {
+  return patchPoste0(scene, entityId, (p) => ({ ...p, crewIds }));
+}
+
+/** Pose / retire l'arc de tir du créneau : `side` absent = tir OMNI (pivot libre) ; présent = arc relatif
+ *  à l'orientation-monde du chef de pièce. */
+export function setPosteSide(scene: Scene, entityId: string, side: FireArc | undefined): Scene {
+  return patchPoste0(scene, entityId, (p) => {
+    const next = { ...p };
+    if (side) next.side = side;
+    else delete next.side;
+    return next;
+  });
+}
+
+/** Change l'engin du poste (nouvelle ItemInstance résolue + libellé de l'entité), équipage conservé. No-op
+ *  si l'engin est inconnu. */
+export function setPosteEngine(scene: Scene, entityId: string, trappingId: string): Scene {
+  const item = itemFromTrappingById(trappingId);
+  if (!item) return scene;
+  const label = findTrappingById(trappingId)?.label ?? trappingId;
+  return {
+    ...scene,
+    entities: scene.entities.map((e) => (e.id === entityId && e.postes?.length ? { ...e, label, postes: e.postes.map((p, i) => (i === 0 ? { ...p, item } : p)) } : e)),
+  };
 }
 
 /** Colle une copie de `data` (id frais) à la case p. */

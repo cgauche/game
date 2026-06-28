@@ -12,10 +12,11 @@ import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import type { Tool } from './editorState';
+import { SIEGE_ENGINES } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
-type Family = 'select' | 'tile' | 'wall' | 'elev' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'stair' | 'erase';
+type Family = 'select' | 'tile' | 'wall' | 'elev' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'stair' | 'erase';
 
 const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
@@ -29,6 +30,7 @@ const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'zone', icon: '🟦', label: 'Dessiner une zone — trigger ou zone de repos' },
   { key: 'entry', icon: '⚑', label: 'Poser un point d’entrée (cible des transitions)' },
   { key: 'encounter', icon: '⚔️', label: 'Placer des ennemis (rencontre de combat)' },
+  { key: 'emplacement', icon: '💥', label: 'Emplacement de siège — poser une pièce d’artillerie (baliste, catapulte, canon…) servie par un équipage' },
   { key: 'stair', icon: '🪜', label: 'Escalier — relie cette case à l’étage au-dessus (traversée multi-niveaux)' },
   { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },
 ];
@@ -90,6 +92,7 @@ export function Palette({
   const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
   const [lastProp, setLastProp] = useState('tonneau');
   const [lastBuilding, setLastBuilding] = useState(Object.keys(BUILDINGS_META)[0] ?? 'maison');
+  const [lastEngine, setLastEngine] = useState(SIEGE_ENGINES[0]?.id ?? 'baliste');
 
   const pick = (f: Family) => {
     setSearch('');
@@ -105,6 +108,7 @@ export function Palette({
       case 'zone': return setTool({ mode: 'zone', zone: 'trigger' });
       case 'entry': return setTool({ mode: 'entry' });
       case 'encounter': return setTool({ mode: 'encounter' });
+      case 'emplacement': return setTool({ mode: 'emplacement', trappingId: lastEngine });
       case 'stair': return setTool({ mode: 'stair' });
       case 'erase': return setTool({ mode: 'erase' });
     }
@@ -338,6 +342,28 @@ export function Palette({
               ))}
             </div>
             <p className="hint">Chaque clic sur la carte ajoute la créature à la rencontre cible. Traits, sorts et apparence du spawn s'éditent dans l'inspecteur.</p>
+          </>
+        )}
+
+        {family === 'emplacement' && tool.mode === 'emplacement' && (
+          <>
+            <div className="mini-title">Pièce d'artillerie à poser</div>
+            {searchBox('engin de siège…')}
+            <div className="pal-list">
+              {SIEGE_ENGINES.filter((t) => match(t.label)).map((t) => (
+                <button
+                  key={t.id}
+                  className={`pal-item${tool.trappingId === t.id ? ' active' : ''}`}
+                  onClick={() => {
+                    setLastEngine(t.id);
+                    setTool({ mode: 'emplacement', trappingId: t.id });
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <p className="hint">Cliquez la carte pour poser l'emplacement. Orientation du créneau et équipage s'éditent dans l'inspecteur ; enrôlez-le dans une rencontre (fold ⚔️ Combat) pour qu'il entre en jeu.</p>
           </>
         )}
 
