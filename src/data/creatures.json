@@ -56739,5 +56739,498 @@
       "species": "humain",
       "tenue": "bailli"
     }
+  },
+  {
+    "id": "wulfric-tore",
+    "label": "Wulfric Tore",
+    "title": "Marchand (Argent 5)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 34,
+      "CT": 27,
+      "F": 22,
+      "E": 24,
+      "I": 38,
+      "Ag": 40,
+      "Dex": 32,
+      "Int": 36,
+      "FM": 31,
+      "Soc": 48,
+      "B": 9
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 51
+      },
+      {
+        "id": "conduite-d-attelage",
+        "value": 42
+      },
+      {
+        "id": "marchandage",
+        "value": 49
+      },
+      {
+        "id": "ragot",
+        "value": 54
+      },
+      {
+        "id": "soin-aux-animaux",
+        "value": 33
+      },
+      {
+        "id": "subornation",
+        "value": 49
+      }
+    ],
+    "talents": [
+      {
+        "id": "baratiner"
+      },
+      {
+        "id": "destinee",
+        "spec": "Ta mort viendra d'en haut"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "negociateur"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Wulfric est un jeune marchand avec une incapacité remarquable à progresser, que ce soit physiquement ou intellectuellement. Wilhelm Tore, le magnat du verre, est son père. Même si Wulfric a fait preuve d'un talent de base pour la comptabilité, il peine à s'épanouir parmi les négociateurs et les entrepreneurs sans pitié qui côtoient son père. À vrai dire, Wulfric a honte d'être riche, et estime être indigne de l'immense héritage qui doit lui revenir.\n\nPlutôt que de fréquenter les acheteurs et les clients, Wulfric a pris l'habitude de s'installer au bar des différentes tavernes de Middenheim, où il a fait la connaissance du fringant capitaine Valgeir. Wulfric s'est en quelque sorte épris du capitaine, une affection platonique, mais intense à sa façon. Il ennuie tous ses autres amis en leur répétant les récits des nombreux exploits du capitaine.\n\nDésireux de suivre les traces de son idole, Wulric a récemment secrètement approché des recruteurs pour les régiments. Il est particulièrement mal adapté à la vie dans l'armée, et son père le renierait s'il découvrait qu'il avait manqué plusieurs réunions d'affaires en faveur d'un verre avec le capitaine de bataillon.",
+    "source": {
+      "book": "Middenheim",
+      "page": 52
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "marchand"
+    }
+  },
+  {
+    "id": "waldtraud-blass",
+    "label": "Waldtraud Blass",
+    "title": "Maître apothicaire, ancien apprenti artisan (Argent 3)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 23,
+      "CT": 29,
+      "F": 32,
+      "E": 42,
+      "I": 48,
+      "Ag": 34,
+      "Dex": 50,
+      "Int": 48,
+      "FM": 31,
+      "Soc": 33,
+      "B": 14
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "metier",
+        "value": 55,
+        "spec": "Apothicaire"
+      },
+      {
+        "id": "perception",
+        "value": 55
+      },
+      {
+        "id": "ragot",
+        "value": 47
+      },
+      {
+        "id": "recherche",
+        "value": 53
+      },
+      {
+        "id": "savoir",
+        "value": 68,
+        "spec": "Chimie"
+      },
+      {
+        "id": "savoir",
+        "value": 63,
+        "spec": "Médecine"
+      },
+      {
+        "id": "savoir",
+        "value": 53,
+        "spec": "Science"
+      }
+    ],
+    "talents": [
+      {
+        "id": "concocter"
+      },
+      {
+        "id": "criminel"
+      },
+      {
+        "id": "destinee",
+        "spec": "Pris à votre propre piège"
+      },
+      {
+        "id": "infatigable"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "maitre-artisan",
+        "spec": "Apothicaire"
+      },
+      {
+        "id": "pharmacologie"
+      },
+      {
+        "id": "travailleur-qualifie",
+        "spec": "Apothicaire"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "delice-de-ranald"
+      },
+      {
+        "id": "outils-professionnels-apothicaire"
+      },
+      {
+        "id": "potion-de-guerison"
+      }
+    ],
+    "spells": [],
+    "desc": "Waldtraud travaillait jadis dans les tanneries du Neumarkt. Apothicaire talentueuse, sa capacité à reconnaître et à mélanger les composés chimiques s'est avérée inestimable. Femme robuste aux épaules larges et au dos solide, elle s'enorgueillissait de transporter des peaux depuis et vers les fosses alcalines aux côtés des employés de la tannerie.\n\nLes tanneurs paient un lourd tribut pour leur travail, et après des décennies à exercer ce métier dans des conditions répugnantes, Waldtraud s'est retrouvée très abîmée, éprouvant des difficultés à respirer à cause de ses poumons enflammés. Désormais incapable de soulever des charges, Waldtraud a rassemblé ses économies et a déménagé dans le Nordtor, avec pour ultime ambition de mourir en paix.\n\nElle a pu trouver une seconde vie en travaillant à la fabrication du Délice de Ranald pour « l'Homme ». Des doses régulières de poudre apaisent la douleur dans sa poitrine mieux que des préparations médicinales, et, pour payer sa propre consommation, elle passe ses journées dans la Geist Haus à en produire plus. Sa supervision professionnelle a permis à « l'Homme » d'accaparer le marché avec un produit de qualité exceptionnelle.",
+    "source": {
+      "book": "Middenheim",
+      "page": 78
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "apothicaire"
+    }
+  },
+  {
+    "id": "ritta",
+    "label": "Ritta",
+    "title": "Arnaqueur (Argent 2)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 32,
+      "CT": 33,
+      "F": 32,
+      "E": 34,
+      "I": 46,
+      "Ag": 34,
+      "Dex": 46,
+      "Int": 38,
+      "FM": 41,
+      "Soc": 48,
+      "B": 13
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 52
+      },
+      {
+        "id": "divertissement",
+        "value": 61,
+        "spec": "Narration"
+      },
+      {
+        "id": "escamotage",
+        "value": 52
+      },
+      {
+        "id": "esquive",
+        "value": 48
+      },
+      {
+        "id": "evaluation",
+        "value": 59
+      },
+      {
+        "id": "marchandage",
+        "value": 56
+      },
+      {
+        "id": "perception",
+        "value": 60
+      },
+      {
+        "id": "ragot",
+        "value": 55
+      },
+      {
+        "id": "subornation",
+        "value": 57
+      }
+    ],
+    "talents": [
+      {
+        "id": "baratiner"
+      },
+      {
+        "id": "destinee",
+        "spec": "Un ami dans le besoin précipitera ta fin"
+      },
+      {
+        "id": "chanceux"
+      },
+      {
+        "id": "criminel"
+      },
+      {
+        "id": "identite-secrete"
+      },
+      {
+        "id": "negociateur"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Criminels"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "necessaire-de-deguisement"
+      }
+    ],
+    "spells": [],
+    "desc": "Pour tous, Ritta semble être une jeune femme naïve, récemment arrivée à Middenheim en provenance de la campagne. Elle porte les habits démodés typiques des jeunes filles issues de la ruralité, et imite l'accent d'une fille de fermier. En réalité, cette arnaqueuse futée est née et a grandi à Ostwald.\n\nElle escroque régulièrement les nouveaux arrivants dans la cité avec la même méthode. Ritta se tient à l'extérieur de la boutique de Pfandleiher, le prêteur sur gages, feignant de pleurer. Lorsqu'on lui demande ce qui lui cause ces tracas, elle raconte qu'elle est arrivée à Middenheim dans l'espoir de vendre une grosse pierre précieuse, un héritage familial, et a rencontré un homme qui lui a dit qu'il en obtiendrait un bon prix. Mais l'homme s'est enfui avec le bijou, qui est désormais proposé à la vente chez Pfandleiher au prix d'une Couronne. Ritta explique que sa seule consolation est que le bijou vaut dix fois ce montant. En réalité, il s'agit d'un bijou en toc sans aucune valeur, mais les pigeons crédules se jettent sur l'occasion dès que Ritta a le dos tourné. Pfandleiher et Ritta se partagent équitablement les profits.",
+    "source": {
+      "book": "Middenheim",
+      "page": 85
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "charlatan"
+    }
+  },
+  {
+    "id": "wulfrum-viert",
+    "label": "Wulfrum Viert",
+    "title": "Régisseur (Or 1)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 44,
+      "CT": 33,
+      "F": 42,
+      "E": 43,
+      "I": 38,
+      "Ag": 30,
+      "Dex": 31,
+      "Int": 46,
+      "FM": 46,
+      "Soc": 49,
+      "B": 16
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "calme",
+        "value": 58
+      },
+      {
+        "id": "charme",
+        "value": 63
+      },
+      {
+        "id": "chevaucher",
+        "value": 40,
+        "spec": "Cheval"
+      },
+      {
+        "id": "commandement",
+        "value": 66
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 52,
+        "spec": "Base"
+      },
+      {
+        "id": "emprise-sur-les-animaux",
+        "value": 54
+      },
+      {
+        "id": "intuition",
+        "value": 57
+      },
+      {
+        "id": "natation",
+        "value": 50
+      },
+      {
+        "id": "perception",
+        "value": 62
+      },
+      {
+        "id": "ragot",
+        "value": 55
+      },
+      {
+        "id": "resistance",
+        "value": 53
+      },
+      {
+        "id": "savoir",
+        "value": 58,
+        "spec": "Local"
+      },
+      {
+        "id": "subornation",
+        "value": 57
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 54
+      }
+    ],
+    "talents": [
+      {
+        "id": "affinite-avec-les-animaux"
+      },
+      {
+        "id": "cooperatif"
+      },
+      {
+        "id": "destinee",
+        "spec": "Ton âme, consumée par ton ire, sera aveugle face à l'ennemi invisible"
+      },
+      {
+        "id": "frappe-assommante"
+      },
+      {
+        "id": "menacant"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "numismate"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Serviteurs"
+      },
+      {
+        "id": "vision-nocturne"
+      },
+      {
+        "id": "vivacite"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Du haut de ses 67 ans, Wulfrum est l'un des plus vieux serviteurs du graf Boris. Cela fait plus de quarante ans qu'il est l'intendant du Krallepalaz. Wulfrum est un meneur efficace capable de gérer le personnel permanent du petit palais, et il se débrouille remarquablement bien pour coordonner les cohortes de suivants qui accompagnent les invités importants qu'il doit héberger. Au cours de ses années de service, Wulfrum s'est occupé, et a reçu la gratitude personnelle, de 20 Comtes Électeurs, 2 Grands Théogonistes, et du Roi de Bretonnie.\n\nMais son âge avancé a rendu Wulfrum cynique et aigri. Lui qui était jadis un modèle de professionnalisme éprouve aujourd'hui une certaine rancune à l'encontre du graf Boris, qui n'a jamais cru bon de le promouvoir au poste de Chambellan. Dans un désir secret de prendre sa revanche sur le Graf, Wulfrum attise en secret les flammes du séparatisme nordlander. Toutes les deux ou trois semaines, il se rend à la taverne de la Cloche et du seau pour y laisser échapper tout ragot qu'il pense susceptible d'aider le Nordland à retrouver son indépendance.",
+    "source": {
+      "book": "Middenheim",
+      "page": 89
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "intendant"
+    }
+  },
+  {
+    "id": "emmille-munzstatter",
+    "label": "Emmille Münzstätter",
+    "title": "Artisan (Argent 1)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 29,
+      "CT": 36,
+      "F": 48,
+      "E": 33,
+      "I": 33,
+      "Ag": 32,
+      "Dex": 39,
+      "Int": 32,
+      "FM": 32,
+      "Soc": 27,
+      "B": 13
+    },
+    "traits": [
+      {
+        "id": "prejuge",
+        "arg": "Sigmarites"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "discretion",
+        "value": 38,
+        "spec": "Urbaine"
+      },
+      {
+        "id": "evaluation",
+        "value": 40
+      },
+      {
+        "id": "marchandage",
+        "value": 34
+      },
+      {
+        "id": "metier",
+        "value": 44,
+        "spec": "Frappeur de monnaie"
+      },
+      {
+        "id": "resistance",
+        "value": 51
+      },
+      {
+        "id": "savoir",
+        "value": 37,
+        "spec": "Local"
+      }
+    ],
+    "talents": [
+      {
+        "id": "artiste"
+      },
+      {
+        "id": "destinee",
+        "spec": "Ne sois point curieuse ; l'ignorance sera ton unique bouclier"
+      },
+      {
+        "id": "doigts-de-fee"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Emmille travaille dans l'enceinte morne de l'Hôtel des Monnaies depuis presque trente ans. Elle n'était qu'une petite fille lorsqu'elle est devenue apprentie. Les années passées, penchée sur des matrices de pièces et prosternée devant les grandes figures qu'elle rencontrait sur le chemin de l'Hôtel des Monnaies, ont courbé son dos et rendu sa respiration sifflante.\n\nLa vie d'Emmille est sur le point de basculer. Il y a quelques jours, elle a découvert un vide sanitaire étriqué caché derrière un placard non loin de son poste de travail. Comme elle s'ennuyait et qu'elle n'était surveillée par personne, elle s'y est glissée et a découvert un petit réseau de galeries. Mais Emmille est tombée sur un spectacle qu'elle n'aurait jamais dû voir : une rencontre clandestine entre un grand homme d'allure royale et un autre vêtu comme un Chevalier Panthère de haut rang. Ils se tenaient dans une petite pièce uniquement éclairée par quelques bougies, et examinaient une bouteille bombée où se tortillait une créature éphémère.\n\nDepuis ce jour, Emmille est incapable de se concentrer sur son travail, et rumine sans cesse ce qu'elle a vu. Elle est devenue un peu paranoïaque, et elle est persuadée que ses péchés ne sont pas passés inaperçus. Elle est retournée dans les galeries pour s'assurer qu'elle n'y avait laissé aucun signe de sa présence, mais elle sait que si elle a oublié quoi que ce soit, un objet ou une empreinte, elle sera bientôt découverte. Emmille a prévu de s'enfuir loin de Middenheim tant qu'il en est encore temps. Mais l'Hôtel des Monnaies va rapidement s'inquiéter de son absence ; son départ devra donc être soudain, preste, et définitif.",
+    "source": {
+      "book": "Middenheim",
+      "page": 89
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "artisan"
+    }
   }
 ]
