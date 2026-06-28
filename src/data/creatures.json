@@ -57232,5 +57232,664 @@
       "species": "humain",
       "tenue": "artisan"
     }
+  },
+  {
+    "id": "yanni-weber",
+    "label": "Yanni Weber",
+    "title": "Maître sorcier (Or 1)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 52,
+      "CT": 33,
+      "F": 38,
+      "E": 35,
+      "I": 38,
+      "Ag": 45,
+      "Dex": 35,
+      "Int": 58,
+      "FM": 59,
+      "Soc": 28,
+      "B": 14
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 7,
+        "arg": "Bâton de combat"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "calme",
+        "value": 63
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 58,
+        "spec": "Armes d'hast"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 55,
+        "spec": "Base"
+      },
+      {
+        "id": "esquive",
+        "value": 51
+      },
+      {
+        "id": "focalisation",
+        "value": 65,
+        "spec": "Ghur"
+      },
+      {
+        "id": "intuition",
+        "value": 62
+      },
+      {
+        "id": "langue",
+        "value": 66,
+        "spec": "Magick"
+      },
+      {
+        "id": "perception",
+        "value": 63
+      },
+      {
+        "id": "savoir",
+        "value": 66,
+        "spec": "Magie"
+      },
+      {
+        "id": "soin-aux-animaux",
+        "value": 64
+      }
+    ],
+    "talents": [
+      {
+        "id": "destinee",
+        "spec": "L'amour sera ton dernier cri"
+      },
+      {
+        "id": "diction-instinctive"
+      },
+      {
+        "id": "harmonisation-aethyrique"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "Bête"
+      },
+      {
+        "id": "magie-mineure"
+      },
+      {
+        "id": "menacant"
+      },
+      {
+        "id": "perception-de-la-magie"
+      },
+      {
+        "id": "seconde-vue"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "grimoire"
+      },
+      {
+        "text": "licence magique"
+      },
+      {
+        "text": "Morg, le crâne de rat qui parle"
+      }
+    ],
+    "spells": [],
+    "desc": "La plupart des chamanes de l'Ordre d'Ambre se sentent mal à l'aise dans les cités de l'Empire. D'habitude, ils revêtent des fourrures d'animaux ornées des crocs et des griffes de bêtes féroces pour attirer le Vent d'Ambre jusqu'à eux. Mais à Middenheim, *Ghur* est tellement omniprésent que les sorciers d'Ambre en reçoivent bien plus que nécessaire sans même se servir de leur attirail traditionnel. Certains des chamanes les plus sobres mènent même leurs recherches magiques dans la cité. Ces excentriques ont beaucoup de valeur aux yeux de l'Ordre d'Ambre, pour leur étude des singularités magiques qui imprègnent Middenheim.\n\nYanni fait partie des chamanes urbains de l'Ordre d'Ambre. Bien qu'elle vive, étudie et travaille à Middenheim, elle ressent aussi le besoin de passer une bonne partie de son temps dans les environs du Hohain : certains de ses rituels demandent d'être accomplis à l'un des rares endroits de la cité que l'on pourrait toujours qualifier de sauvage.\n\nYanni peut paraître étrange à ceux qui ont l'habitude des chamanes typiques de l'Ordre d'Ambre. Ses cheveux noirs sont toujours bien coiffés, et sa tenue est celle d'une citoyenne ordinaire. Mais elle porte aussi quelques-uns des insignes de son ordre : un crâne de rat orne le revers de son manteau, et plusieurs plumes sont accrochées au ruban de son chapeau. Elle s'interroge depuis peu sur les étranges tourbillons magiques qui enveloppent les menhirs. Cependant, malgré sa rigueur scientifique, elle n'a encore rien découvert d'inhabituel.",
+    "source": {
+      "book": "Middenheim",
+      "page": 69
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "sorcier"
+    }
+  },
+  {
+    "id": "johen",
+    "label": "Johen",
+    "title": "Sorcier dissident (Argent 3)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 34,
+      "CT": 34,
+      "F": 38,
+      "E": 38,
+      "I": 42,
+      "Ag": 37,
+      "Dex": 35,
+      "Int": 31,
+      "FM": 50,
+      "Soc": 48,
+      "B": 14
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 58
+      },
+      {
+        "id": "calme",
+        "value": 64
+      },
+      {
+        "id": "focalisation",
+        "value": 66
+      },
+      {
+        "id": "intuition",
+        "value": 54
+      },
+      {
+        "id": "metier",
+        "value": 47,
+        "spec": "Apothicaire"
+      },
+      {
+        "id": "resistance",
+        "value": 44
+      },
+      {
+        "id": "savoir",
+        "value": 44,
+        "spec": "Magie noire"
+      }
+    ],
+    "talents": [
+      {
+        "id": "criminel"
+      },
+      {
+        "id": "destinee",
+        "spec": "Lorsque le joueur de pipeau jouera son air, ton cœur se brisera"
+      },
+      {
+        "id": "diction-instinctive"
+      },
+      {
+        "id": "mains-agiles"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "Sorcellerie"
+      },
+      {
+        "id": "magie-mineure"
+      },
+      {
+        "id": "menacant"
+      },
+      {
+        "id": "sixieme-sens"
+      },
+      {
+        "id": "sorcier"
+      }
+    ],
+    "trappings": [],
+    "spells": [
+      {
+        "id": "menace-rampante"
+      },
+      {
+        "id": "malediction-de-douleur-paralysante"
+      },
+      {
+        "id": "horreur-obsedante"
+      },
+      {
+        "id": "mauvais-oeil"
+      }
+    ],
+    "desc": "L'une des raisons expliquant le succès éclatant de l'organisation dirigée par « l'Homme » est sa propension à employer des utilisateurs de magie non agréés. Johen est un jeune homme au talent prononcé pour la sorcellerie. Avec sa carrure athlétique superbement proportionnée, son visage rond marqué par un large sourire étincelant et des cheveux blonds bouclés, il paraît plutôt désarmant. Il est toutefois un démoniste déterminé dont les habitudes personnelles choqueraient les fidèles du Sceptre de Jade.\n\nC'est à la magie noire de Johen que la Geist Haus doit de conserver sa réputation de lieu hanté. Il utilise des sorts tels que *Menace rampante*, *Malédiction de douleur paralysante*, *Horreur obsédante* et le *Mauvais œil* pour s'assurer que quiconque s'égare sur ce terrain se retrouve convaincu qu'une présence surnaturelle est tapie à l'intérieur de la maison.\n\nJohen a quelques talents d'apothicaire, mais il apprend beaucoup de Waldtraud, plus professionnelle. Il sait qu'elle est mourante et cherche à acquérir le plus de connaissances possible sur la préparation des produits chimiques avant qu'elle ne soit vaincue par sa maladie.",
+    "source": {
+      "book": "Middenheim",
+      "page": 80
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "sorcier-dissident"
+    }
+  },
+  {
+    "id": "frere-bengt",
+    "label": "Frère Bengt",
+    "title": "Prêtre (Argent 1)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 34,
+      "CT": 32,
+      "F": 38,
+      "E": 46,
+      "I": 42,
+      "Ag": 40,
+      "Dex": 32,
+      "Int": 50,
+      "FM": 41,
+      "Soc": 48,
+      "B": 15
+    },
+    "traits": [
+      {
+        "id": "prejuge",
+        "arg": "Mauvais auditeurs"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "calme",
+        "value": 49
+      },
+      {
+        "id": "charme",
+        "value": 53
+      },
+      {
+        "id": "divertissement",
+        "value": 57,
+        "spec": "Narration"
+      },
+      {
+        "id": "intuition",
+        "value": 57
+      },
+      {
+        "id": "priere",
+        "value": 52
+      },
+      {
+        "id": "ragot",
+        "value": 53
+      },
+      {
+        "id": "resistance",
+        "value": 52
+      },
+      {
+        "id": "savoir",
+        "value": 57,
+        "spec": "Théologie"
+      }
+    ],
+    "talents": [
+      {
+        "id": "baratiner"
+      },
+      {
+        "id": "beni",
+        "spec": "Ulric"
+      },
+      {
+        "id": "destinee",
+        "spec": "À l'épreuve de l'eau et du feu, mais pas de la pierre"
+      },
+      {
+        "id": "invocation",
+        "spec": "Ulric"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "studieux"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Frère Bengt a maintenant la quarantaine, et il n'a plus la vigueur de la jeunesse. S'il ressemble en tout point au parfait zélote ulricain, avec de longues mèches de cheveux sombres en désordre et des yeux gris perçants, c'est en réalité un homme paisible et affable. Bengt est loquace, et il est capable de parler avec une telle vitesse et une telle intensité que la plupart de ses interlocuteurs ont du mal à le suivre. Passionné de savoir, il connait intimement tous les manuscrits de la Lore Haus dédiés à l'histoire ulricaine et à la loi religieuse.\n\nBengt est toujours intéressé par les histoires des aventuriers (à condition que ces derniers tolèrent ses incessantes interruptions). Si les Personnages acceptent de lui raconter le récit de leurs péripéties, ils gagneront facilement son amitié. Il pourra faire en sorte qu'un aventurier l'ayant convaincu de sa bonne nature et de ses nobles intentions puisse faire bénir ses armes dans la Flamme éternelle.",
+    "source": {
+      "book": "Middenheim",
+      "page": 102
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "pretre"
+    }
+  },
+  {
+    "id": "grand-vizir-bhar",
+    "label": "Grand vizir Bhar",
+    "title": "Nécromancien (Argent 3)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 42,
+      "CT": 37,
+      "F": 32,
+      "E": 55,
+      "I": 45,
+      "Ag": 37,
+      "Dex": 40,
+      "Int": 62,
+      "FM": 54,
+      "Soc": 49,
+      "B": 18
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "calme",
+        "value": 70
+      },
+      {
+        "id": "charme",
+        "value": 54
+      },
+      {
+        "id": "discretion",
+        "value": 65,
+        "spec": "Rurale"
+      },
+      {
+        "id": "emprise-sur-les-animaux",
+        "value": 64
+      },
+      {
+        "id": "escamotage",
+        "value": 58
+      },
+      {
+        "id": "esquive",
+        "value": 52
+      },
+      {
+        "id": "focalisation",
+        "value": 74
+      },
+      {
+        "id": "intimidation",
+        "value": 49
+      },
+      {
+        "id": "intuition",
+        "value": 56
+      },
+      {
+        "id": "langue",
+        "value": 99,
+        "spec": "Arabien"
+      },
+      {
+        "id": "langue",
+        "value": 81,
+        "spec": "Classique"
+      },
+      {
+        "id": "langue",
+        "value": 80,
+        "spec": "Magick"
+      },
+      {
+        "id": "metier",
+        "value": 52,
+        "spec": "Herboriste"
+      },
+      {
+        "id": "marchandage",
+        "value": 67
+      },
+      {
+        "id": "perception",
+        "value": 56
+      },
+      {
+        "id": "ragot",
+        "value": 52
+      },
+      {
+        "id": "recherche",
+        "value": 88
+      },
+      {
+        "id": "resistance",
+        "value": 68
+      },
+      {
+        "id": "savoir",
+        "value": 65,
+        "spec": "Démonologie"
+      },
+      {
+        "id": "savoir",
+        "value": 68,
+        "spec": "Magie noire"
+      },
+      {
+        "id": "savoir",
+        "value": 75,
+        "spec": "Nécromancie"
+      },
+      {
+        "id": "savoir",
+        "value": 72,
+        "spec": "Tzeentch"
+      },
+      {
+        "id": "subornation",
+        "value": 55
+      }
+    ],
+    "talents": [
+      {
+        "id": "affinite-avec-les-animaux"
+      },
+      {
+        "id": "attirant"
+      },
+      {
+        "id": "chanceux"
+      },
+      {
+        "id": "criminel"
+      },
+      {
+        "id": "detection-d-artefact"
+      },
+      {
+        "id": "diction-instinctive"
+      },
+      {
+        "id": "effrayant"
+      },
+      {
+        "id": "harmonisation-aethyrique"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "Démonologie, Nécromancie, Tzeentch, Sorcellerie"
+      },
+      {
+        "id": "magie-mineure"
+      },
+      {
+        "id": "mains-agiles"
+      },
+      {
+        "id": "menacant"
+      },
+      {
+        "id": "obstine"
+      },
+      {
+        "id": "perception-de-la-magie"
+      },
+      {
+        "id": "savant",
+        "spec": "Nécromancie"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Criminels, Cultistes"
+      },
+      {
+        "id": "studieux"
+      },
+      {
+        "id": "sixieme-sens"
+      },
+      {
+        "id": "sorcier"
+      },
+      {
+        "id": "tour-des-souvenirs",
+        "times": 4
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le Vizir est un nécromancien talentueux qui a dû fuir l'Arabie lorsque ses méfaits magiques ont été découverts. Étant donné que les philosophies qui régissent la maîtrise de la non-mort entrent en conflit avec celles de la mutabilité violente, la plupart des sorciers du Chaos condamnent la nécromancie. Le Vizir n'a pas ce genre de scrupules, et pense qu'une synthèse des disciplines sert davantage les dieux du Chaos. Très peu de personnes possèdent le talent de pratiquer à la fois la nécromancie et la démonologie sans devenir complètement fou, mais pour l'instant, Bhar a encore toute sa tête.\n\nSon approche innovante lui a rapporté des alliés chez les cultistes du Chaos, qui considèrent toute adhésion à une idéologie contreproductive. Lorsqu'il a quitté l'Arabie, la Main Pourpre de Middenheim l'a invité à les rejoindre pour aider leur service de recherches, l'*Ordo Terribilis*.\n\nLe vizir Bhar est un atout important du culte, malgré son refus de raser son bouc et sa tendance à s'afficher dans des soieries arabiennes qui attirent l'attention. Son âge est difficile à deviner, mais ses acolytes pensent qu'il est plus vieux qu'il en a l'air. Il a atteint le grade de suppléant du *Magister Terribilis*, ce qui laisse à Karl Heinz Wasmeier le temps de se consacrer à d'autres projets.",
+    "source": {
+      "book": "Middenheim",
+      "page": 108
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "sorcier"
+    }
+  },
+  {
+    "id": "hugo-vallonvert",
+    "label": "Hugo Vallonvert",
+    "title": "« Magister » (Serment de Volans)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 3,
+      "CC": 22,
+      "CT": 45,
+      "F": 18,
+      "E": 39,
+      "I": 41,
+      "Ag": 40,
+      "Dex": 42,
+      "Int": 36,
+      "FM": 34,
+      "Soc": 52,
+      "B": 9
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 57
+      },
+      {
+        "id": "discretion",
+        "value": 43
+      },
+      {
+        "id": "escamotage",
+        "value": 45
+      },
+      {
+        "id": "evaluation",
+        "value": 49
+      },
+      {
+        "id": "marchandage",
+        "value": 65
+      },
+      {
+        "id": "metier",
+        "value": 44,
+        "spec": "Charpentier"
+      },
+      {
+        "id": "langue",
+        "value": 41,
+        "spec": "Halfling"
+      },
+      {
+        "id": "perception",
+        "value": 49
+      },
+      {
+        "id": "resistance",
+        "value": 44
+      },
+      {
+        "id": "savoir",
+        "value": 51,
+        "spec": "Local"
+      },
+      {
+        "id": "savoir",
+        "value": 61,
+        "spec": "Magie"
+      },
+      {
+        "id": "savoir",
+        "value": 51,
+        "spec": "Politique"
+      }
+    ],
+    "talents": [
+      {
+        "id": "cooperatif"
+      },
+      {
+        "id": "insignifiant"
+      },
+      {
+        "id": "intrigant"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "petit"
+      },
+      {
+        "id": "resistance",
+        "spec": "Chaos"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "Goût"
+      },
+      {
+        "id": "sociable"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Hugo est un halfling collet monté et zélé du clan Vallonvert. Le clan est réputé au Kleinmoot pour son savoir-faire artisanal et commercial, et Hugo semble bien décidé à perpétuer la tradition. Autrefois apprenti charpentier prometteur, Hugo a perdu trois doigts de sa main principale à cause d'un accident dans l'atelier.\n\nAprès son accident, il a fréquenté la société du Serment de la Dévotion de Volans, car il était fasciné par l'histoire de la magie, et espérait même trouver une solution magique pour remédier à sa blessure. Le cercle intérieur de la société a rapidement remarqué le don d'Hugo pour palabrer. Comme un halfling n'a pas de capacités magiques, qui d'autre que lui pourrait représenter la société et convaincre qu'ils sont simplement des amateurs de magie plutôt que des pratiquants ?\n\nHugo se consacre à la protection des intérêts de l'organisation, et malgré le manque de talent de son espèce pour la magie, il persiste à apprendre tout ce qu'il peut sur la magie et la sorcellerie.",
+    "source": {
+      "book": "Middenheim",
+      "page": 143
+    },
+    "appearance": {
+      "species": "halfling",
+      "tenue": "artisan"
+    }
   }
 ]
