@@ -30,8 +30,8 @@ describe('weaponForms — contrat des armes tenues en main', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it('83 armes-arts + 3 boucliers', () => {
-    expect(WEAPON_FORMS).toHaveLength(83);
+  it('88 armes-arts + 3 boucliers', () => {
+    expect(WEAPON_FORMS).toHaveLength(88);
     expect(SHIELD_FORMS).toHaveLength(3);
   });
 });

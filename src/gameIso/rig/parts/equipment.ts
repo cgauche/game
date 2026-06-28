@@ -6,7 +6,7 @@ import type { PartArt } from './types';
 import { GENERATED_ARMOUR, ARMOUR_PALETTES } from './generated/armour';
 import { WEAPON_DEFS } from './weapons/_registry.generated';
 import { weaponGroupKey } from './weaponGroup';
-import { WEAPON_FORMS, norm as wnorm } from './weaponForms';
+import { WEAPON_FORMS, norm as wnorm, formSlug } from './weaponForms';
 import { buildTokenMap, applyTokenMap } from '../palette';
 
 /** Épée — front / dos (lame grise mate) / profil (fine). Art directionnel. */
@@ -50,16 +50,15 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
  */
 const SYNONYMS: Record<string, string> = {
   // épée générique & variantes hors-catalogue
-  epee: 'epee', 'epee courte': 'epee', sabre: 'epee', espadon: 'zweihander',
+  epee: 'epee', 'epee courte': 'epee', espadon: 'zweihander',
   // contondant hors-catalogue
-  masse: 'masse', massue: 'gourdin', marteau: 'masse', maillet: 'masse', canne: 'baton',
+  masse: 'masse', marteau: 'masse', maillet: 'masse', canne: 'baton',
   // tranchant hors-catalogue
   hache: 'hache', 'hache de main': 'hache', hachette: 'hache', cognee: 'hache',
   poignard: 'dague', stylet: 'dague', epieu: 'lance',
-  // attaques NATURELLES (traits) : aucune arme tenue — la part du corps fait foi
-  'mains nues': '', poings: '', morsure: '', griffes: '', griffe: '', tentacule: '', tentacules: '',
-  bec: '', dard: '', corne: '', cornes: '', queue: '', pietinement: '', crachat: '',
-  // prothèse-arme : le crochet est dessiné SUR la main (injuries.ts), pas tenu
+  // prothèse-arme : le crochet est dessiné SUR la main (injuries.ts), pas tenu. Les autres
+  // attaques NATURELLES (morsure/griffes/bec/dard/corne/queue/piétinement/crachat/poings/
+  // mains nues) sont captées par la regex NATURAL_ATTACK avant ART_BY_LABEL → inutile ici.
   crochet: '',
 };
 const ART_BY_LABEL: Record<string, string> = { ...SYNONYMS };
@@ -77,7 +76,10 @@ const ART_BY_GROUP: Record<string, string> = {
 const NATURAL_ATTACK = /^(morsure|griffes?|serres?|tentacules?|bec|dard|cornes?|queue|pi[ée]tinement|crachat|poings?|mains nues)\b/i;
 
 export function weaponFamily(w: Weapon): string {
-  if (NATURAL_ATTACK.test(w.name)) return ''; // pas d'objet en main (Morsure/Griffe accordées par un Sort)
+  // Attaque NATURELLE (corps) : pas d'objet en main (Morsure/Griffe accordées par un Sort) —
+  // SAUF si le nom EST un libellé catalogué (ex. « Griffes de Tigre », arme de Bagarre tenue),
+  // qui prime sur l'heuristique de préfixe.
+  if (NATURAL_ATTACK.test(w.name) && !formSlug(w.name)) return '';
   // Silhouette de rendu forcée (arme invoquée nommée « Arme aethyrique » mais dessinée comme la
   // forme choisie) : un libellé catalogue → son slug de forme. Prioritaire sur le nom.
   if (w.form) {
