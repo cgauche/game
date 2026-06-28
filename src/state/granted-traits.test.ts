@@ -93,9 +93,9 @@ describe('moveReachFor — Vol héros (Envol, Jalon 2.6)', () => {
     const s = scene(6, 3, ['2,0', '2,1', '2,2']);
     const walker = dummy({});
     const flyer = dummy({ traits: [{ id: 'vol', value: 35 }] });
-    const ground = moveReachFor(walker, s, { x: 0, y: 1 }, 4, new Set());
+    const ground = moveReachFor(walker, s, { x: 0, y: 1 }, 4, { blocked: new Set() });
     expect(ground.has('4,1')).toBe(false);
-    const air = moveReachFor(flyer, s, { x: 0, y: 1 }, 4, new Set());
+    const air = moveReachFor(flyer, s, { x: 0, y: 1 }, 4, { blocked: new Set() });
     expect(air.has('4,1')).toBe(true); // survole le mur
     expect(air.has('2,1')).toBe(false); // mais n'ATTERRIT pas sur le mur
   });

@@ -48,14 +48,14 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
   it('la loge royale est ATTEIGNABLE depuis l’entrée par l’escalier (pathfinding 3D)', () => {
     const start = scene.entities.find((e) => e.kind === 'heroStart')!.pos;
     // depuis le vestibule, on doit traverser le hall, monter un escalier (z change) et gagner la loge royale
-    const path = pathTo(scene, { x: start.x, y: start.y, z: 0 }, { x: 10, y: 13, z: 1 }, new Set<string>());
+    const path = pathTo(scene, { x: start.x, y: start.y, z: 0 }, { x: 10, y: 13, z: 1 }, { blocked: new Set<string>() });
     expect(path).not.toBeNull();
     expect(path!.some((p) => (p.z ?? 0) === 1)).toBe(true);
   });
 
   it('la scène est accessible depuis le parterre (plan connexe au sol)', () => {
     const start = scene.entities.find((e) => e.kind === 'heroStart')!.pos;
-    expect(pathTo(scene, { x: start.x, y: start.y }, { x: 10, y: 3 }, new Set<string>())).not.toBeNull();
+    expect(pathTo(scene, { x: start.x, y: start.y }, { x: 10, y: 3 }, { blocked: new Set<string>() })).not.toBeNull();
   });
 });
 

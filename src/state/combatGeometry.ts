@@ -10,7 +10,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { Scene, isWalkable } from './scene';
-import { Pt } from './path';
+import { Pt, MoveEnv } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
 import { sizeGap } from '../engine/size';
 import { isOutOfAction } from '../engine/conditions';
@@ -24,7 +24,9 @@ import { bus, EVT } from './bus';
  * Tuiles qui BLOQUENT le déplacement de `mover` : l'empreinte (LDB 15 l.55) de chaque AUTRE
  * combattant, SAUF ceux de Taille STRICTEMENT inférieure au mover — une créature plus grande
  * « dégage les combattants de taille inférieure du chemin, se déplaçant où elle veut » (LDB 85
- * l.308-309). Passer un id (legacy/tests) ⇒ aucun filtrage de Taille (toutes les empreintes bloquent).
+ * l.373-374). C'est l'ensemble de TRANSIT (ce qui interrompt le passage). Pour ce qui interdit de
+ * FINIR son déplacement (on ne s'arrête jamais sur une autre créature), voir `cannotStopOn`.
+ * Passer un id (legacy/tests) ⇒ aucun filtrage de Taille (toutes les empreintes bloquent).
  */
 export function occupied(battle: BattleState, mover: Combatant | string): Set<string> {
   const exceptId = typeof mover === 'string' ? mover : mover.id;
@@ -32,7 +34,7 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
   const s = new Set<string>();
   for (const c of battle.combatants) {
     if (c.id === exceptId || isOutOfAction(c) || !c.pos) continue;
-    if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.308-309)
+    if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.373-374)
     for (const t of footprintTiles(c.pos, footprintN(c))) s.add(`${t.x},${t.y}`);
   }
   // BARRIÈRES (zones authorées/sorts) : leurs cases sont infranchissables pour le mover gaté — point
@@ -40,6 +42,39 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
   const moverC = typeof mover === 'string' ? battle.combatants.find((c) => c.id === mover) : mover;
   for (const t of barrierTilesFor(battle.zones, moverC)) s.add(`${t.x},${t.y}`);
   return s;
+}
+
+/**
+ * Cases que `mover` peut TRAVERSER mais où il ne peut PAS FINIR son déplacement (« soft-block »,
+ * à passer en `noStop` aux fonctions de portée) : les empreintes des créatures de Taille STRICTEMENT
+ * inférieure qu'il dégage de son chemin (LDB 85 l.373-374 — il les traverse) sans pour autant pouvoir
+ * s'arrêter sur leur case. RAW : on ne FINIT jamais sur la case d'une autre créature ; la SEULE entrée
+ * dans la case adverse est la Frappe Mortelle (LDB 85 l.362). Complément de `occupied` (transit) : les
+ * créatures de Taille ≥ y sont déjà infranchissables, donc inutiles ici.
+ *
+ * VIDE si `mover` a une empreinte > 1 : en arrivant, il DÉPLACE les plus petits sous son empreinte
+ * (`displaceSmaller`) et peut donc finir en les chevauchant (« se déplaçant où il veut »). Un mover 1×1
+ * ne déplace personne → il ne peut finir sur AUCUNE autre créature (les ≥ via `occupied`, les < via ici).
+ */
+export function cannotStopOn(battle: BattleState, mover: Combatant): Set<string> {
+  const s = new Set<string>();
+  if (footprintN(mover) > 1) return s;
+  for (const c of battle.combatants) {
+    if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos) continue;
+    if (sizeGap(c.size, mover.size) >= 0) continue; // Taille ≥ → déjà dans `occupied` (transit-bloqué)
+    for (const t of footprintTiles(c.pos, footprintN(c))) s.add(`${t.x},${t.y}`);
+  }
+  return s;
+}
+
+/**
+ * Contraintes de déplacement de `mover` assemblées en UN point (le seul) : transit (`occupied`),
+ * empreinte (`footprintN`), arrêt interdit (`cannotStopOn`). Tout calcul de portée/chemin d'un
+ * combattant passe ce `MoveEnv` aux fonctions de `path.ts` → l'invariant « on ne finit pas sur une
+ * autre créature » ne peut plus être oublié par un appelant. (`jump` non fixé : le combat ne saute pas.)
+ */
+export function moveEnv(battle: BattleState, mover: Combatant): MoveEnv {
+  return { blocked: occupied(battle, mover), foot: footprintN(mover), noStop: cannotStopOn(battle, mover) };
 }
 
 /** Perturbante (LDB 62 l.275-276) : repousse `target` d'au plus `tiles` cases dans la direction

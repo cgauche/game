@@ -18,11 +18,11 @@ const empty = new Set<string>();
 
 describe('path — saut par-dessus un gouffre', () => {
   it('sans saut (jump=0), un gouffre vertical est infranchissable', () => {
-    expect(pathTo(chasm(5, [2]), { x: 1, y: 1 }, { x: 3, y: 1 }, empty)).toBeNull();
+    expect(pathTo(chasm(5, [2]), { x: 1, y: 1 }, { x: 3, y: 1 }, { blocked: empty })).toBeNull();
   });
 
   it('jump=2 franchit un gouffre d’1 case (atterrit 2 cases plus loin)', () => {
-    const path = pathTo(chasm(5, [2]), { x: 1, y: 1 }, { x: 3, y: 1 }, empty, 1, 2);
+    const path = pathTo(chasm(5, [2]), { x: 1, y: 1 }, { x: 3, y: 1 }, { blocked: empty, jump: 2 });
     expect(path).not.toBeNull();
     expect(path![0]).toEqual({ x: 1, y: 1 });
     expect(path![path!.length - 1]).toEqual({ x: 3, y: 1 });
@@ -30,14 +30,14 @@ describe('path — saut par-dessus un gouffre', () => {
   });
 
   it('un gouffre de 2 cases exige jump≥3', () => {
-    expect(pathTo(chasm(6, [2, 3]), { x: 1, y: 1 }, { x: 4, y: 1 }, empty, 1, 2)).toBeNull();
-    expect(pathTo(chasm(6, [2, 3]), { x: 1, y: 1 }, { x: 4, y: 1 }, empty, 1, 3)).not.toBeNull();
+    expect(pathTo(chasm(6, [2, 3]), { x: 1, y: 1 }, { x: 4, y: 1 }, { blocked: empty, jump: 2 })).toBeNull();
+    expect(pathTo(chasm(6, [2, 3]), { x: 1, y: 1 }, { x: 4, y: 1 }, { blocked: empty, jump: 3 })).not.toBeNull();
   });
 
   it('non-régression : sur terrain plein, jump>0 donne le même chemin que jump=0', () => {
     const s = emptyScene(5, 5);
-    const a = pathTo(s, { x: 0, y: 0 }, { x: 3, y: 0 }, empty, 1, 0);
-    const b = pathTo(s, { x: 0, y: 0 }, { x: 3, y: 0 }, empty, 1, 3);
+    const a = pathTo(s, { x: 0, y: 0 }, { x: 3, y: 0 }, { blocked: empty, jump: 0 });
+    const b = pathTo(s, { x: 0, y: 0 }, { x: 3, y: 0 }, { blocked: empty, jump: 3 });
     expect(b).toEqual(a); // aucun saut déclenché quand on peut marcher
   });
 });

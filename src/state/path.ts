@@ -104,10 +104,31 @@ function footFits(scene: Scene, x: number, y: number, z: number, foot: number, b
 }
 
 /**
- * Cases atteignables depuis `start` en au plus `range` pas, en évitant les
- * cases occupées par `blocked`. Retourne une map clé→distance.
+ * Contraintes de déplacement d'un mover sur la grille. Objet UNIQUE passé en dernier argument à
+ * toutes les fonctions de portée/chemin — chacune lit le sous-ensemble pertinent, les champs inertes
+ * sont ignorés. Côté combat, assemblé en UN point par `moveEnv(battle, mover)` (combatGeometry).
+ *
+ * - `blocked` : cases infranchissables (TRANSIT) — TOUTES les fonctions.
+ * - `foot`    : côté d'empreinte N×N (défaut 1) — portée + `pathTo`.
+ * - `noStop`  : « soft-block », cases TRAVERSABLES mais interdites à l'ARRÊT (on les franchit pendant
+ *               le BFS, mais elles sont retirées des destinations) — portée seulement. Sert à passer à
+ *               travers une créature plus petite sans finir sur sa case (LDB 85 l.373-374 vs « on ne
+ *               finit jamais sur la case d'une autre créature »).
+ * - `jump`    : portée de Saut LDB 15 (défaut 0) — `pathTo` seulement.
  */
-export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1): Map<string, number> {
+export interface MoveEnv {
+  blocked: Set<string>;
+  foot?: number;
+  noStop?: Set<string>;
+  jump?: number;
+}
+
+/**
+ * Cases atteignables depuis `start` en au plus `range` pas, en évitant les
+ * cases occupées par `env.blocked`. Retourne une map clé→distance.
+ */
+export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv): Map<string, number> {
+  const { blocked, foot = 1, noStop } = env;
   const links = stairLinks(scene);
   const edges = wallEdges(scene);
   const dist = new Map<string, number>();
@@ -123,11 +144,12 @@ export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<s
         if (dist.has(k)) continue;
         if (!footFits(scene, n.x, n.y, nz, foot, blocked)) continue; // l'empreinte entière doit tenir (LDB 15 l.55)
         dist.set(k, step + 1);
-        next.push(n);
+        next.push(n); // franchie pour l'expansion même si interdite à l'arrêt (`noStop`)
       }
     }
     frontier = next;
   }
+  if (noStop?.size) for (const k of noStop) dist.delete(k); // traversées, jamais des destinations
   return dist;
 }
 
@@ -136,7 +158,8 @@ export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<s
  * terrains, obstacles et personnages qui s'interposent » ; seul l'ATTERRISSAGE exige une empreinte
  * praticable et libre. Coût = distance de Tchebychev (déplacement libre dans les airs).
  */
-export function flyReachable(scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1): Map<string, number> {
+export function flyReachable(scene: Scene, start: Pt, range: number, env: MoveEnv): Map<string, number> {
+  const { blocked, foot = 1, noStop } = env;
   const dist = new Map<string, number>();
   const sz = pz(start); // le vol reste à l'étage du voltigeur (l'atterrissage doit y tenir)
   dist.set(key(start.x, start.y, sz), 0);
@@ -146,6 +169,7 @@ export function flyReachable(scene: Scene, start: Pt, range: number, blocked: Se
       const nx = start.x + dx;
       const ny = start.y + dy;
       if (!footFits(scene, nx, ny, sz, foot, blocked)) continue; // l'atterrissage doit tenir
+      if (noStop?.has(key(nx, ny, sz))) continue; // ne peut pas atterrir sur une autre créature
       dist.set(key(nx, ny, sz), Math.max(Math.abs(dx), Math.abs(dy)));
     }
   return dist;
@@ -158,9 +182,9 @@ export function flyReachable(scene: Scene, start: Pt, range: number, blocked: Se
  */
 export function moveReachFor(
   mover: Pick<Combatant, 'traits'>,
-  scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1,
+  scene: Scene, start: Pt, range: number, env: MoveEnv,
 ): Map<string, number> {
-  return (hasTrait(mover.traits, 'vol') ? flyReachable : reachable)(scene, start, range, blocked, foot);
+  return (hasTrait(mover.traits, 'vol') ? flyReachable : reachable)(scene, start, range, env);
 }
 
 /**
@@ -170,8 +194,9 @@ export function moveReachFor(
  * d'arrivée, le nombre de cases parcourues et s'il y a eu COLLISION (cases restantes > 0).
  */
 export function pushAway(
-  scene: Scene, from: Pt, target: Pt, tiles: number, blocked: Set<string>,
+  scene: Scene, from: Pt, target: Pt, tiles: number, env: MoveEnv,
 ): { dest: Pt; pushed: number; collided: boolean } {
+  const { blocked } = env;
   const sx = Math.sign(target.x - from.x);
   const sy = Math.sign(target.y - from.y);
   const tz = pz(target); // la poussée glisse au même étage que la cible
@@ -189,21 +214,45 @@ export function pushAway(
   return { dest: pt(cur.x, cur.y, tz), pushed, collided: false };
 }
 
+/** Symétrique de `pushAway` : tire `target` VERS `anchor` (Langue préhensile, LDB 85 p.340 — la proie de
+ *  Taille inférieure est « entraînée vers la créature »). Avance pas à pas le long de la ligne target→anchor,
+ *  jusqu'à `tiles` cases, en s'arrêtant AVANT la case de l'anchor (rester adjacent) et AVANT tout obstacle /
+ *  case occupée (donc avant l'empreinte d'un grand anchor, dont les tuiles sont dans `env.blocked`). Pur. */
+export function pullToward(
+  scene: Scene, anchor: Pt, target: Pt, tiles: number, env: MoveEnv,
+): { dest: Pt; pulled: number } {
+  const { blocked } = env;
+  const sx = Math.sign(anchor.x - target.x);
+  const sy = Math.sign(anchor.y - target.y);
+  const tz = pz(target); // la traction glisse au même étage que la proie
+  if ((!sx && !sy) || tiles <= 0) return { dest: { ...target }, pulled: 0 };
+  let cur = { x: target.x, y: target.y };
+  let pulled = 0;
+  for (let i = 0; i < tiles; i++) {
+    const next = { x: cur.x + sx, y: cur.y + sy };
+    if ((next.x === anchor.x && next.y === anchor.y) || !isWalkable(scene, next.x, next.y, tz) || blocked.has(key(next.x, next.y, tz))) break;
+    cur = next;
+    pulled++;
+  }
+  return { dest: pt(cur.x, cur.y, tz), pulled };
+}
+
 /** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de
  *  votre adversaire ») : la portée de Course (`range`) restreinte aux cases qui n'APPROCHENT PAS `foe` —
  *  leur distance de Tchebychev à l'adversaire doit être ≥ à celle de la case de départ. Pur. */
-export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, blocked: Set<string>, foot = 1): Map<string, number> {
+export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, env: MoveEnv): Map<string, number> {
   const here = chebyshev(from, foe);
   const out = new Map<string, number>();
-  for (const [k, v] of reachable(scene, from, range, blocked, foot)) {
+  for (const [k, v] of reachable(scene, from, range, env)) {
     const [x, y] = k.split(',').map(Number);
     if (chebyshev({ x, y }, foe) >= here) out.set(k, v);
   }
   return out;
 }
 
-/** Plus court chemin (BFS) de `start` à `goal`, ou null. */
-export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, foot = 1, jump = 0): Pt[] | null {
+/** Plus court chemin (BFS) de `start` à `goal`, ou null. (`env.noStop` ignoré : le but est validé en amont.) */
+export function pathTo(scene: Scene, start: Pt, goal: Pt, env: MoveEnv): Pt[] | null {
+  const { blocked, foot = 1, jump = 0 } = env;
   const links = stairLinks(scene);
   const edges = wallEdges(scene);
   const gz = pz(goal);

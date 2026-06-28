@@ -11,14 +11,14 @@ describe('fleeReachable — Fuite dans la direction OPPOSÉE à l’adversaire (
   const scene = emptyScene(14, 14);
   const has = (m: Map<string, number>, x: number, y: number) => m.has(`${x},${y}`);
   it('exclut les cases qui RAPPROCHENT de l’adversaire, garde celles qui s’en éloignent', () => {
-    const m = fleeReachable(scene, { x: 6, y: 6 }, { x: 6, y: 4 }, 4, new Set()); // adversaire au NORD (Tchebychev 2)
+    const m = fleeReachable(scene, { x: 6, y: 6 }, { x: 6, y: 4 }, 4, { blocked: new Set() }); // adversaire au NORD (Tchebychev 2)
     expect(has(m, 6, 9)).toBe(true); // plein SUD : s'éloigne → permise
     expect(has(m, 6, 5)).toBe(false); // vers le NORD : rapproche → exclue
     expect(has(m, 6, 4)).toBe(false); // la case du foe : exclue
     expect(has(m, 8, 6)).toBe(true); // latérale à distance égale (Tchebychev 2) : ne rapproche pas → permise
   });
   it('bornée au range de Course passé', () => {
-    const m = fleeReachable(scene, { x: 6, y: 6 }, { x: 6, y: 4 }, 4, new Set());
+    const m = fleeReachable(scene, { x: 6, y: 6 }, { x: 6, y: 4 }, 4, { blocked: new Set() });
     expect(has(m, 6, 6)).toBe(true); // origine
     expect(has(m, 6, 12)).toBe(false); // 6 cases au sud > range 4 → hors de portée
   });

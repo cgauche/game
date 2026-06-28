@@ -30,22 +30,22 @@ describe('murs sur arêtes — walkability', () => {
   });
 
   it('un mur plein sur arête isole la moitié droite (pathTo null)', () => {
-    expect(pathTo(walledColumn(), { x: 0, y: 0 }, { x: 3, y: 0 }, empty)).toBeNull();
+    expect(pathTo(walledColumn(), { x: 0, y: 0 }, { x: 3, y: 0 }, { blocked: empty })).toBeNull();
   });
 
   it('une PORTE dans le mur rétablit le passage (le chemin l’emprunte)', () => {
-    const path = pathTo(walledColumn(2), { x: 0, y: 0 }, { x: 3, y: 0 }, empty);
+    const path = pathTo(walledColumn(2), { x: 0, y: 0 }, { x: 3, y: 0 }, { blocked: empty });
     expect(path).not.toBeNull();
     expect(path!.some((t) => t.x === 1 && t.y === 2)).toBe(true); // passe par la porte (y=2)
   });
 
   it('reachable n’atteint pas l’autre côté d’un mur plein', () => {
-    const reach = reachable(walledColumn(), { x: 0, y: 0 }, 20, empty);
+    const reach = reachable(walledColumn(), { x: 0, y: 0 }, 20, { blocked: empty });
     expect(reach.has('0,0')).toBe(true);
     expect(reach.has('3,0')).toBe(false); // muré
   });
 
   it('non-régression : sans `walls`, le BFS est inchangé', () => {
-    expect(pathTo(emptyScene(4, 4), { x: 0, y: 0 }, { x: 3, y: 3 }, empty)).not.toBeNull();
+    expect(pathTo(emptyScene(4, 4), { x: 0, y: 0 }, { x: 3, y: 3 }, { blocked: empty })).not.toBeNull();
   });
 });

@@ -14,7 +14,7 @@ export function adjacentWalkable(sc: Scene, target: Pt, from: Pt): Pt | null {
       if (!dx && !dy) continue;
       const c: Pt = tz ? { x: target.x + dx, y: target.y + dy, z: tz } : { x: target.x + dx, y: target.y + dy };
       if (!isWalkable(sc, c.x, c.y, tz)) continue;
-      const p = pathTo(sc, from, c, new Set());
+      const p = pathTo(sc, from, c, { blocked: new Set() });
       if (p && p.length < bestLen) {
         best = c;
         bestLen = p.length;

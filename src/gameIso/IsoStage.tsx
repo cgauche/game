@@ -451,7 +451,7 @@ export function IsoStage() {
     if (!dest) return null;
     const heroes = party.filter((h) => !h.dead && h.wounds.current > 0);
     const partyM = heroes.length ? Math.min(...heroes.map((h) => effectiveMovement(h))) : 0;
-    const path = pathTo(scene, partyPos, dest, new Set(), 1, maxJumpTiles(partyM));
+    const path = pathTo(scene, partyPos, dest, { blocked: new Set(), jump: maxJumpTiles(partyM) });
     return path && path.length >= 2 ? path : null;
   }, [hover, mode, dialogue, scene, partyPos, party]);
 
@@ -1134,7 +1134,7 @@ export function IsoStage() {
     // de router des sauts par-dessus un gouffre vers la destination cliquée (Saut LDB 15).
     const heroes = useGame.getState().party.filter((h) => !h.dead && h.wounds.current > 0);
     const partyM = heroes.length ? Math.min(...heroes.map((h) => effectiveMovement(h))) : 0;
-    const path = pathTo(sc, from, to, new Set(), 1, maxJumpTiles(partyM));
+    const path = pathTo(sc, from, to, { blocked: new Set(), jump: maxJumpTiles(partyM) });
     if (!path || path.length < 2) return;
     movingRef.current = true;
     if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path });
