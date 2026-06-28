@@ -1871,7 +1871,8 @@ export function createCombatSlice(get: Get, set: Set) {
         if (casc && casc.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
         return;
       }
-      // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.
+      // Attaque(s) d'Arme GRATUITE(S) « disponible(s) » de l'attaquant après l'attaque PRINCIPALE (jamais après
+      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.34 = seule en donnée.
       if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
       // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
       if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
@@ -1903,7 +1904,8 @@ export function createCombatSlice(get: Get, set: Set) {
           applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…
         } else autoCleave(get, set, attacker, defender, res); // Frappe Mortelle (attaque principale)
       }
-      // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.
+      // Attaque(s) d'Arme GRATUITE(S) « disponible(s) » de l'attaquant après l'attaque PRINCIPALE (jamais après
+      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.34 = seule en donnée.
       if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
       // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
       if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;

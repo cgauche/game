@@ -1202,7 +1202,7 @@ function applyOpposedCritical(
   ctx: { attackerId?: string; weapon?: string },
   log: string[],
 ): void {
-  const loc = hitLocationByShape(reverseRoll(roll), victim.bodyShape);
+  const loc = critLocationRoll(battleRng(), victim.bodyShape); // LDB 18 l.53 : Coup Critique → 1d100 frais (pas l'inversion de touche)
   // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
   const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
@@ -2949,6 +2949,10 @@ export function applyCast(
       // Manifestation de Ghur (Middenheim, #18) : un Projectile du Domaine de la Bête n'affecte PAS le
       // porteur — ses Dégâts ET ses effets (effets négatifs du Sort de la Bête) sont sautés sur cette cible.
       if (immuneToSpellDomain(t.traits, spell.domainId)) { logLines.push(tr('cf.spellDomainImmune', { name: t.name, spell: spell.label })); return; }
+      // LDB 18 l.53/55 : un Projectile Coup Critique re-tire la Localisation (1d100 frais, MÊME primitive
+      // que la mêlée — pas le dé inversé) et RÉ-ÉVALUE ses Dégâts à cette loc AVANT les atténuations
+      // magiques ci-dessous (Résistance/Dôme/Martyr). `crit` = double d'Incantation, `choice` = Incantation Critique.
+      if (crit && choice === 'critique') mres = evaluateMissile(caster, t, spell, mres, critLocationRoll(battleRng(), t.bodyShape));
       // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
       // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
       const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
@@ -4393,7 +4397,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
       if (!suspended) {
-        aiAvailableFreeAttack(get, set, enemy); // Frénésie : Test de CC gratuit après l'attaque principale (instantané, LDB 21 l.34)
+        aiAvailableFreeAttack(get, set, enemy); // attaque(s) d'Arme GRATUITE(S) « disponible(s) » après l'attaque principale (Frénésie LDB 21 l.34 = seule source en donnée)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
         // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
         if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), beatHold(get, 'postAttack'));

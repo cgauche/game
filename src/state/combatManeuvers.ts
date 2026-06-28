@@ -116,11 +116,6 @@ export interface AttackOption {
   priority?: number;
 }
 
-/** Une attaque d'Arme GRATUITE est-elle disponible ce Round ? Lue de la DONNÉE : un talent (Frénésie, LDB 21
- *  l.34) porte `passive: grantFreeAttack{when:'available', activeIf:'frenzied'}` → l'attaque d'Arme reste
- *  gratuite (Action préservée). Plafond /Round = niveau du talent (`times`), compté via
- *  `freeAttacksThisTurn['arme']` (reset de tour). GÉNÉRIQUE : tout talent du même genre s'ajoute en donnée,
- *  sans code. Lue par `availableAttacks` + ActionBar/IsoStage/turnEconomy (l'affordance « attaque libre »). */
 /** Sources DONNÉE d'une attaque d'Arme gratuite « DISPONIBLE » (`grantFreeAttack when:'available'`) sur SON
  *  tour — Talents ET États PSY. L'état Frénésie porte LUI-MÊME son `grantFreeAttack` (LDB 21 l.34) → HÉROS
  *  comme ENNEMI, MÊME donnée (pas de jaloux). Renvoie l'op + son plafond /Round (`cap` = niveau du talent,

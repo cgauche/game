@@ -67,19 +67,37 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
   return effects.map((eff) => ({ ...eff, flow: visit(eff.flow) }));
 }
 
-/** Effets déclenchés portés par une créature (ses Traits) et, le cas échéant, par l'arme qui frappe :
- *  son ENCHANTEMENT replié (`weapon.onHitEffects` — Marteau ardent, Épée ardente…), ses Traits, ses
- *  Atouts. Source UNIQUE d'agrégation : les trois sont traités à l'identique (`TriggeredEffect`). Ordre
- *  FIGÉ (enchant → traits → atouts) pour un déroulé RNG déterministe quand plusieurs portent un Test. */
-function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
-  const out: TriggeredEffect[] = [];
-  if (weapon?.onHitEffects) out.push(...weapon.onHitEffects);
-  for (const raw of actor.traits ?? []) { const inst = raw; out.push(...withArg(traitById.get(inst.id)?.effects ?? [], inst.arg, inst.value)); }
-  if (weapon) for (const { id } of resolveQualities(weapon)) out.push(...(qualityById.get(id)?.effects ?? []));
-  // Talents POSSÉDÉS portant des effets déclenchés (Assaut féroce onHit, Frappe réactive onCharged…) —
-  // mêmes `TriggeredEffect` que les traits. Appendus en fin (ordre RNG existant enchant→traits→atouts préservé).
-  for (const t of actor.talents ?? []) out.push(...(findTalentById(t.talentId)?.effects ?? []));
+/**
+ * SOURCE UNIQUE d'énumération des sources d'effet DÉCLENCHÉ d'un combattant — TOUS les KINDS en UN endroit :
+ * Atouts d'arme (`weapon.onHitEffects`), Traits, Qualités d'arme, Talents, ÉTATS, états PSY. Chaque source
+ * est taguée `key`/`cap`/`label` (+ `stacks` pour les statuts, pions réduits d'une capacité de la cible).
+ * TOUT le reste en DÉRIVE (zéro énumérateur parallèle) : `fireTriggers` (via `effectsOf` non-statut +
+ * `fireConditionEffects`/`firePsychEffects`), `resolveFreeAttacks` (via `freeAttackSourcesOf`). AJOUTER UN
+ * KIND = ICI seulement. Ordre FIGÉ (enchant → traits → atouts → talents → États → psy) = déroulé RNG déterministe. */
+function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
+  const out: TriggerSource[] = [];
+  if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
+  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg, tr.value), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
+  if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
+  for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
+  for (const cond of actor.conditions ?? []) {
+    const d = findConditionById(cond.name);
+    if (!d?.effects?.length) continue;
+    const reduce = d.stacksReducedBy ? featureLevel(actor, d.stacksReducedBy as keyof CombatFeature) : 0; // Hémorragique − Endurci…
+    out.push({ effects: d.effects, cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name, stacks: Math.max(0, (cond.value ?? 1) - reduce) });
+  }
+  for (const p of actor.psychState ?? []) { const d = findPsychologyById(p.type); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `psy:${p.type}`, label: d.label ?? p.type, stacks: 1 }); }
   return out;
+}
+
+/** Un tag de STATUT (État ou état psy) — il porte `stacks` et son dispatch (`fireConditionEffects`/
+ *  `firePsychEffects`) injecte ses pions ; les KINDS « durs » (arme/trait/qualité/talent) n'en ont pas. */
+const isStatusSource = (s: TriggerSource): boolean => s.key.startsWith('cond:') || s.key.startsWith('psy:');
+
+/** Effets déclenchés NON-statut à plat (Atouts d'arme → Traits → Qualités → Talents) — sous-vue de
+ *  `effectSourcesOf`. Les États/psy ont leur propre dispatch (avec pions), d'où le filtre. Ordre RNG figé. */
+function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
+  return effectSourcesOf(actor, weapon).filter((s) => !isStatusSource(s)).flatMap((s) => s.effects);
 }
 
 /** Ops d'un déclencheur `trigger` portées par le combattant (Traits/Talents/Atouts), à plat. Sert à
@@ -92,21 +110,16 @@ export function triggerEffectOps(actor: Combatant, trigger: EffectTrigger): Game
 }
 
 /** Une SOURCE d'effets déclenchés du combattant, AVEC son identité (`key`) et son plafond (`cap`) —
- *  nécessaires aux ATTAQUES GRATUITES (imputation /Round par source ; plafond par source). */
-export interface TriggerSource { effects: TriggeredEffect[]; cap: number; key: string; label: string; }
+ *  nécessaires aux ATTAQUES GRATUITES (imputation /Round par source ; plafond par source). `stacks` = pions
+ *  de la source quand c'est un STATUT (État/psy), injectés dans le `ctx` du dispatch ; absent sinon. */
+export interface TriggerSource { effects: TriggeredEffect[]; cap: number; key: string; label: string; stacks?: number; }
 
-/** Énumère TOUTES les sources d'attaque gratuite du combattant — MÊME couverture que `effectsOf` (Atouts
- *  d'arme, Traits, Qualités, Talents) + les ÉTATS — chacune taguée `key`/`cap`/`label`. Permet à
- *  `resolveFreeAttacks` de jouer un `grantFreeAttack` quel que soit le KIND de la source (plus de chemin
- *  talent-only) : un Trait/État de créature qui riposte à la charge fonctionne comme le talent. */
+/** Sources d'attaque gratuite DÉCLENCHÉE = LES MÊMES sources que le dispatcher (`effectSourcesOf`, source
+ *  unique) — `resolveFreeAttacks` filtre celles qui portent un `grantFreeAttack` (`flowHasFreeAttack`), quel
+ *  que soit le KIND (Atout d'arme/Trait/Qualité/Talent/État/psy). NB : l'attaque libre « disponible » de la
+ *  Frénésie vit dans son `passive` (`when:'available'`) → `availableFreeAttackOps`/`aiAvailableFreeAttack`, pas ici. */
 export function freeAttackSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
-  const out: TriggerSource[] = [];
-  if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
-  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg, tr.value), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
-  if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
-  for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
-  for (const cond of actor.conditions ?? []) { const d = findConditionById(cond.name); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name }); }
-  return out;
+  return effectSourcesOf(actor, weapon);
 }
 
 /** Combattants visés par un effet selon `on` (le porteur, la victime touchée, ou TOUS ceux Engagés
@@ -341,11 +354,7 @@ function fireStatusEffects(
  * (Hémorragique − Endurci `bleedIgnore`, LDB 10 — générique, jamais par-nom). Inerte sans `effects`.
  */
 export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
-  return fireStatusEffects(get, c, trigger, ctx, [...(c.conditions ?? [])].map((cond) => {
-    const data = findConditionById(cond.name);
-    const reduce = data?.stacksReducedBy ? featureLevel(c, data.stacksReducedBy as keyof CombatFeature) : 0;
-    return { effects: data?.effects, stacks: Math.max(0, (cond.value ?? 1) - reduce) };
-  }));
+  return fireStatusEffects(get, c, trigger, ctx, effectSourcesOf(c).filter((s) => s.key.startsWith('cond:')).map((s) => ({ effects: s.effects, stacks: s.stacks ?? 1 })));
 }
 
 /**
@@ -354,7 +363,7 @@ export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrig
  * vit dans `psychology.json`. Inerte tant que `psychState` ne porte aucun type doté d'`effects`.
  */
 export function firePsychEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
-  return fireStatusEffects(get, c, trigger, ctx, [...(c.psychState ?? [])].map((p) => ({ effects: findPsychologyById(p.type)?.effects, stacks: 1 })));
+  return fireStatusEffects(get, c, trigger, ctx, effectSourcesOf(c).filter((s) => s.key.startsWith('psy:')).map((s) => ({ effects: s.effects, stacks: s.stacks ?? 1 })));
 }
 
 /** Effets onHit AUTHORÉS de la manœuvre `kind` portée par `actor` (Caudale → À Terre, Tentacules →
