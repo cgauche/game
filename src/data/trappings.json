@@ -6848,9 +6848,12 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "light": {
-      "radiusTiles": 5
-    },
+    "passive": [
+      {
+        "op": "light",
+        "radiusTiles": 5
+      }
+    ],
     "desc": "Fournit un éclairage sur 10 mètres lorsqu'elle est allumée.",
     "price": {
       "gold": 0,
@@ -7127,9 +7130,12 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "light": {
-      "radiusTiles": 10
-    },
+    "passive": [
+      {
+        "op": "light",
+        "radiusTiles": 10
+      }
+    ],
     "desc": "Des obturateurs protègent la flamme du vent, et permet également de diriger la lumière dans un arc de 90° ou de l'obscurcir complètement. Fournit un éclairage sur 20 mètres, ou 30 quand il est ciblé.",
     "price": {
       "gold": 1,
@@ -7153,9 +7159,12 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "light": {
-      "radiusTiles": 10
-    },
+    "passive": [
+      {
+        "op": "light",
+        "radiusTiles": 10
+      }
+    ],
     "desc": "Fournit un éclairage sur 20 mètres.",
     "price": {
       "gold": 0,

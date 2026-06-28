@@ -299,11 +299,19 @@ export type GameOp =
   /** Trait de créature TEMPORISÉ (Jalon 2.6 — « vous gagnez le Trait X tant que le Sort est
    *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
-   *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ». */
-  | { op: 'grantTrait'; traitId: string; arg?: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula }
+   *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ».
+   *  `argFrom` : la Cible (`arg`) est TIRÉE à l'attache plutôt que littérale — `'obsessions'` =
+   *  Tableau des Obsessions (EDOC ch.8 : mutation « Haine sporadique » → Haine (Cible déterminée
+   *  par les Obsessions)). Résolu par `attachMutation` (seul consommateur d'`argFrom` à ce jour). */
+  | { op: 'grantTrait'; traitId: string; arg?: string; argFrom?: 'obsessions'; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula }
   /** Trait PSYCHOLOGIQUE conféré (Colère impie → Frénésie). PASSIF (mutation/trait) : posé dans
-   *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). */
-  | { op: 'grantPsychTrait'; psychType: string; cible?: string }
+   *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). `argFrom` : la Cible
+   *  (`cible`) est TIRÉE à l'attache (Tableau des Obsessions, EDOC ch.8) plutôt que littérale. */
+  | { op: 'grantPsychTrait'; psychType: string; cible?: string; argFrom?: 'obsessions' }
+  /** Retire UN Trait psychologique porté (`c.psychTraits` — la DONNÉE persistée, ≠ `endPsych` qui
+   *  retire une affliction de combat `psychState`). `psychType` absent = un Trait AU CHOIX (le 1ᵉʳ
+   *  porté). Convalescence « Les choses s'arrangent » (ADE II Annexe I) : éliminer un Trait psy indésirable. */
+  | { op: 'removePsychTrait'; psychType?: string }
   /** Talent TEMPORISÉ (Jalon 2.6 — « +1 Talent Sans peur tant que le Sort est actif ») : porté
    *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
    *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet.
@@ -600,6 +608,10 @@ export type GameOp =
   /** Dépense `amount` Points d'Avantage du RÉFÉRENT (Déstabilisante : coût d'un Test de renversement).
    *  Effet PUR appliqué par `applyOps` (jamais sous 0). */
   | { op: 'spendAdvantage'; amount: number }
+  /** Émission de LUMIÈRE (rayon en cases, brouillard de guerre, 1 case=2 m). Côté OBJET (`passive`) :
+   *  INERTE dans applyOps — lu par `combatantLights` (vision) pour les objets PORTÉS/TENUS. Côté SORT :
+   *  pousse un `ActiveEffect.light` temporisé (durée), lu au MÊME point. */
+  | { op: 'light'; radiusTiles: number; durationRounds?: Formula }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -869,6 +881,27 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         if (target.psychState?.some((p) => p.type === o.type)) {
           target.psychState = target.psychState.filter((p) => p.type !== o.type);
           lines.push(t('op.endPsych', { name: target.name, psych: psychologyLabel(o.type) }));
+        }
+        break;
+      }
+      case 'grantPsychTrait': {
+        // Trait PSYCHOLOGIQUE conféré (≠ état de combat) : posé dans `c.psychTraits` (la DONNÉE persistée).
+        // Calque la branche `grantPsychTrait` de `attachMutation` (Colère impie → Frénésie, mutation → Haine).
+        target.psychTraits = [...(target.psychTraits ?? []), { type: o.psychType as PsychType, ...(o.cible ? { cible: o.cible } : {}) }];
+        lines.push(t('op.grantPsychTrait', { name: target.name, psych: psychologyLabel(o.psychType), src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'removePsychTrait': {
+        // Convalescence « Les choses s'arrangent » (ADE II Annexe I) : retire UN Trait psy de `c.psychTraits`
+        // (≠ `endPsych`, qui apaise une affliction de combat `psychState`). Sans `psychType` = le 1ᵉʳ porté.
+        const traits = [...(target.psychTraits ?? [])];
+        const idx = o.psychType ? traits.findIndex((p) => p.type === o.psychType) : (traits.length ? 0 : -1);
+        if (idx >= 0) {
+          const [removed] = traits.splice(idx, 1);
+          target.psychTraits = traits;
+          lines.push(t('op.removePsychTrait', { name: target.name, psych: psychologyLabel(removed.type) }));
+        } else {
+          lines.push(t('op.noPsychToRemove', { name: target.name }));
         }
         break;
       }
@@ -1371,6 +1404,17 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           skillMods: { [o.skill]: o.mod },
         });
         lines.push(t('op.skillMod', { name: target.name, mod: `${o.mod >= 0 ? '+' : ''}${o.mod}`, skill: o.skill, src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'light': {
+        // Chemin SORT : pose un ActiveEffect.light TEMPORISÉ (durée du sort), lu par `combatantLights`
+        // (vision) au MÊME point que la lumière d'un objet porté. (Côté OBJET le `passive` n'est jamais
+        // exécuté par applyOps → l'op est naturellement inerte là-bas.)
+        const dur: Duration = o.durationRounds != null
+          ? { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) }
+          : durationFromCtx(ctx);
+        applyActiveEffect(target, { label: ctx.label ?? 'Lumière', bonus: 0, light: { radiusTiles: o.radiusTiles }, duration: dur });
+        lines.push(t('op.light', { name: target.name, n: o.radiusTiles, src: ctx.label ?? 'sort' }));
         break;
       }
       case 'moveScale': {

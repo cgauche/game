@@ -1485,8 +1485,12 @@
             "on": "target",
             "ops": [
               {
+                "op": "light",
+                "radiusTiles": 10
+              },
+              {
                 "op": "narrative",
-                "text": "Lumière : lueur de torche (modulable de bougie à lanterne) émanant de vous."
+                "text": "Lumière : lueur de torche, modulable de bougie à lanterne sur un Test de Focalisation (+20)."
               }
             ]
           }

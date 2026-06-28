@@ -93,7 +93,10 @@ export const scenario: TestScenario = {
     const caster = P.find((p) => (p.spells?.length ?? 0) > 0 && darkSightTiles(p) === 0) ?? P.find((p) => (p.spells?.length ?? 0) > 0);
     const human = P.find((p) => darkSightTiles(p) === 0 && p !== caster) ?? P[0];
     const lant = itemFromTrappingById('lanterne');
-    if (lant) human.items = [...(human.items ?? []), lant];
+    if (lant) {
+      lant.equipped = true; // PORTÉE (gate de lumière : un objet rangé n'éclaire pas)
+      human.items = [...(human.items ?? []), lant];
+    }
     if (caster) caster.spells = ['lumiere', ...(caster.spells ?? [])];
     return P;
   },

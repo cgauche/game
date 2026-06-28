@@ -34,7 +34,16 @@ function sceneLightField(s: VisionInput): { light: ReturnType<typeof computeLigh
     if (s.battle.zones) smoke = smokeOf(s.battle as never);
     for (const c of s.battle.combatants) sources.push(...combatantLights(c));
   } else {
-    sources.push(...combatantLights({ pos: s.partyPos, items: (s.party ?? []).flatMap((p) => p.items ?? []) }));
+    // Combattant SYNTHÉTIQUE du groupe : items + armes tenues + effets actifs agrégés → `combatantLights`
+    // applique LE MÊME gate de port qu'en combat (un objet rangé n'éclaire pas ; une lanterne portée /
+    // un sort Lumière oui). Le gate vit en UN seul endroit (combatantLights), pas redupliqué ici.
+    const party = s.party ?? [];
+    sources.push(...combatantLights({
+      pos: s.partyPos,
+      items: party.flatMap((p) => p.items ?? []),
+      weapons: party.flatMap((p) => p.weapons ?? []),
+      activeEffects: party.flatMap((p) => p.activeEffects ?? []),
+    }));
   }
   return { light: computeLightField(scene, ambient, sources, smoke), smoke };
 }

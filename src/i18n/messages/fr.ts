@@ -236,6 +236,7 @@ export const fr = {
   'op.martyr': '{caster} recevra les Dégâts subis par {name} ({src}).',
   'op.lifeSteal': '{name} draine {n} Blessure(s).',
   'op.skillMod': '{name} : {mod} aux Tests de {skill} ({src}).',
+  'op.light': '{name} émet de la lumière sur {n} cases ({src}).',
   'op.moveScale': '{name} : Mouvement ×{num}/{den} ({src}).',
   'op.moveMod': '{name} : {mod} Mouvement ({src}).',
   'op.maxWeaponHands': '{name} : armes limitées à {hands} main(s) ({src}).',

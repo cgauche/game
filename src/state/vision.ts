@@ -138,13 +138,28 @@ export function mapLights(scene: Scene): LightSource[] {
   return out;
 }
 
-/** Source de lumière PORTÉE par un combattant/groupe : le plus grand rayon parmi ses objets émetteurs
- *  (`TrappingData.light`), émis depuis `pos`. PUR. (Un interrupteur « allumé » est un raffinement futur.) */
-export function combatantLights(c: { pos?: Pt; items?: { trappingId?: string }[] }): LightSource[] {
+/** Source de lumière PORTÉE par un combattant/groupe : le plus grand rayon parmi ses émetteurs, émis depuis
+ *  `pos`. PUR. Deux canaux UNIFIÉS (op `light`) : (1) un OBJET portant un `passive` `op:'light'`, GATÉ sur
+ *  le port — équipé (`it.equipped`) ou tenu dans le loadout actif (`c.weapons`) ; un objet RANGÉ dans le sac
+ *  n'éclaire pas (RAW : on s'éclaire avec une lanterne en main, pas au fond du sac). (2) un SORT actif
+ *  (`ActiveEffect.light`, ex. Lumière) pendant sa durée. */
+export function combatantLights(c: {
+  pos?: Pt;
+  items?: { uid?: string; trappingId?: string; equipped?: boolean }[];
+  weapons?: { uid?: string }[];
+  activeEffects?: { light?: { radiusTiles: number } }[];
+}): LightSource[] {
   if (!c.pos) return [];
   let r = 0;
   for (const it of c.items ?? []) {
-    const lr = it.trappingId ? findTrappingById(it.trappingId)?.light?.radiusTiles : undefined;
+    const held = !!it.equipped || (c.weapons ?? []).some((w) => w.uid === it.uid);
+    if (!held || !it.trappingId) continue;
+    for (const op of findTrappingById(it.trappingId)?.passive ?? []) {
+      if (op.op === 'light' && op.radiusTiles > r) r = op.radiusTiles;
+    }
+  }
+  for (const e of c.activeEffects ?? []) {
+    const lr = e.light?.radiusTiles;
     if (lr && lr > r) r = lr;
   }
   return r > 0 ? [{ pos: c.pos, radiusTiles: r }] : [];

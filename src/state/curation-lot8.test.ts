@@ -49,7 +49,9 @@ describe('couverture de curation', () => {
     const choc = findSpellById('choc')!; // Magie mineure
     expect(sup(choc, isMagicMissile(choc))).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;
-    expect(sup(lumiere, false)).toBe('narratif');
+    // Lumière émet désormais une VRAIE lumière (op `light` → brouillard de guerre) : volet mécanique +
+    // la narration de modulation bougie↔lanterne (Test de Focalisation, non modélisé, arbitrage MJ) → partiel.
+    expect(sup(lumiere, false)).toBe('partiel');
     // Cautériser : mécanique (heal/removeCondition/preventInfection/Inconscient sur −6 DR) + un volet
     // « arbitrage MJ » (le hurlement de douleur). Le Test interne a migré en nœud Flow `test` (Lot 4b) :
     // sa narration vit désormais dans la branche `fail`, où `spellEffectOps` la voit (avant, elle était

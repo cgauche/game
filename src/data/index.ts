@@ -272,9 +272,6 @@ export interface TrappingData {
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
    *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
   derivedWeapon?: Weapon;
-  /** Source de lumière PORTÉE (brouillard de guerre) : rayon d'éclairage en cases tant que l'objet est
-   *  dans l'inventaire. Bougie 5 / Lanterne 10 (= 10/20 m, `LDB 74 l.72`/`LDB 75 l.15`, échelle 1 case=2 m). */
-  light?: { radiusTiles: number };
   /** Capacités IRRÉDUCTIBLES de l'objet (drapeaux NON exprimables en GameOp) — canal `capabilities`,
    *  MÊME logique que `TraitCapabilities`/`QualityCapabilities` : règles que le moteur INTERROGE par id
    *  (`engine/capabilities`), jamais par le nom FR de l'objet. Couvre les 5 marqueurs de catégorie :
