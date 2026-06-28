@@ -2026,10 +2026,9 @@
                 "ignoreAP": true
               },
               {
-                "op": "healCaster",
-                "amount": {
-                  "bonusOf": "F"
-                }
+                "op": "lifeSteal",
+                "num": 1,
+                "den": 1
               }
             ]
           }

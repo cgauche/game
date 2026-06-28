@@ -82,6 +82,17 @@ describe('Absorption (EDO p.147) — engloutissement de fin de Round, data-drive
     expect(b.wounds.current).toBe(14); // 10 + 4, la créature guérit le même nombre
   });
 
+  it('(b) digestion qui TUE (PB restants < BF) : la créature ne guérit que les Blessures RÉELLEMENT perdues, pas le BF entier (RAW « le même nombre »)', () => {
+    const b = beast(0, { wounds: { current: 10, max: 30 }, grapplingWith: ['v'] });
+    const v = prey('v', 'moyenne', 0, {
+      grapplingWith: ['beast'], conditions: [{ name: 'empetre', value: 4 }, { name: 'digere', value: 1 }],
+      wounds: { current: 2, max: 20 }, // 2 PB restants < BF 4
+    });
+    fireTriggers(get(b, v), b, 'onRoundEnd', { rng: makeRNG(1) });
+    expect(v.wounds.current).toBe(0);  // 2 − min(BF 4, 2) = 0
+    expect(b.wounds.current).toBe(12); // 10 + 2 (le RÉEL), surtout PAS 10 + 4
+  });
+
   it('(c) redirection : une attaque infligeant N PB à la créature inflige N PB à la victime absorbée', () => {
     const b = beast(0, { grapplingWith: ['v'] });
     const v = prey('v', 'moyenne', 0, {
