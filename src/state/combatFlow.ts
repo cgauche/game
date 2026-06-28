@@ -50,7 +50,7 @@ import {
   DEFENSE_LABEL,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
-import { setGrapple, grappleEnvMod } from '../engine/grapple';
+import { grappleEnvMod } from '../engine/grapple';
 import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
@@ -100,7 +100,7 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, type SpellData } from '../data';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
 import { applyHullCritical } from '../engine/shipCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
@@ -1326,8 +1326,9 @@ export function applyAttackResult(
   // l'État *Empêtré* ». Pose APRÈS l'Engagement (les deux Empoignés) ; le bloc de Dégâts ci-dessous est
   // inerte (woundsLost neutralisé plus haut). RAW : pas de Dégâts sur l'initiation.
   if (grapple && res.hit) {
-    setGrapple(attacker, target);
-    addCondition(target, COND.empetre, 1);
+    // VOIE UNIQUE d'initiation, en DONNÉE : `GRAPPLE.init` pose l'*Empêtré* ET la relation (op `condition
+    // {grapple:true}`) — mêmes effets qu'avant, mais éditables, partagés avec Constricteur/Tentacules/Langue.
+    applyOps(target, GRAPPLE.init, { caster: attacker });
     critLog.push(tr('cf.grappleInit', { name: attacker.name, foe: target.name }));
   }
   if (res.hit && res.woundsLost) {
