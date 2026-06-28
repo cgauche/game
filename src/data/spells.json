@@ -15447,9 +15447,9 @@
   {
     "id": "infecte-benediction",
     "label": "Infecte Bénédiction",
-    "type": "Sort",
-    "subType": null,
-    "cn": "6",
+    "type": "Magie des Arcanes",
+    "subType": "Sorcellerie",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": {
