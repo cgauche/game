@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -84,6 +84,7 @@ import {
   isArcaneSpell,
   focusSkillFor,
   castLandProbability,
+  magicDeviationEligible,
   type CastResult,
   type MissileResult,
   type CounterspellOutcome,
@@ -144,7 +145,7 @@ import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
-import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
@@ -153,7 +154,7 @@ import { emitCombatEvent } from './combatEvents';
 // Géométrie de combat extraite (placement/déplacement/zones/flanc-dos/vision) — importée pour
 // l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
 import {
-  occupied, findFreeTile, displaceSmaller, removeEntity, removeEntities, inRect,
+  occupied, cannotStopOn, moveEnv, findFreeTile, displaceSmaller, removeEntity, removeEntities, inRect,
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
@@ -704,7 +705,7 @@ export function movePreviewAt(get: Get, pt: Pt): { kind: 'move' | 'run'; path: P
   const runReach = inWalk ? null : computeRunReach(get);
   if (!inWalk && !runReach?.has(k)) return null;
   const geom = mountOf(battle, active) ?? active;
-  const path = pathTo(scene, active.pos, pt, occupied(battle, geom), sizeFootprint(geom.size)) ?? [];
+  const path = pathTo(scene, active.pos, pt, moveEnv(battle, geom)) ?? [];
   if (path.length < 2) return null;
   return { kind: inWalk ? 'move' : 'run', path, cost: (inWalk ? reach.get(k) : runReach!.get(k)) ?? 0 };
 }
@@ -750,8 +751,7 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
       battle.log.push(ev('move', tr('cf.pushThrough', { name: mover.name }), mover.id));
     }
     // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
-    const blocked = occupied(battle, mover);
-    set({ battle: { ...battle, action: null, reachable: moveReachFor(mover, get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
+    set({ battle: { ...battle, action: null, reachable: moveReachFor(mover, get().scene!, mover.pos!, effectiveMovement(mover), moveEnv(battle, mover)) } });
     return;
   }
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
@@ -817,6 +817,21 @@ export function resolveGrappleWin(actor: Combatant, foe: Combatant, mode: 'damag
   return tr('cs.grappleFree', { name: actor.name, n: beforeEmp - stacks(actor, COND.empetre) });
 }
 
+/** Résolution PARTAGÉE d'un Test opposé de FORCE d'Empoignade par l'IA (LDB 14 l.161) : `actor` (« attaquant »)
+ *  vs `foe`, jets de Force FIGÉS (jamais relancés). Sur succès → option Dégâts (BF+DR, PA ignorés ; Localisation
+ *  au lancer de Force, via `resolveGrappleWin`) ; sur échec → `foe` gagne +1 Avantage ; égalité → rien. Renvoie
+ *  la ligne de journal. MUTE actor/foe ; ne touche NI `battle` NI `pending` (l'appelant orchestre — Action
+ *  verrouillée vs Attaque gratuite de tentacule/langue). SOURCE UNIQUE de l'issue opposée IA. */
+export function resolveGrappleOpposed(actor: Combatant, foe: Combatant): string {
+  const actorRoll = rollGrappleForce(actor, battleRng());
+  const foeRoll = rollGrappleForce(foe, battleRng());
+  const opp = resolveOpposed(actorRoll, foeRoll);
+  const result = disengageOutcome(opp.winner);
+  if (result === 'success') return resolveGrappleWin(actor, foe, 'damage', Math.max(0, opp.netSL), actorRoll.roll);
+  if (result === 'failure') gainAdvantage(foe, 1); // l'adversaire l'emporte → +1 Avantage (l.161)
+  return tr(result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie', { name: actor.name, foe: foe.name });
+}
+
 /** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */
 export function bestAdjacentReachable(reach: Map<string, number>, target: Pt, targetN = 1, moverN = 1): Pt | null {
   let best: Pt | null = null;
@@ -846,8 +861,7 @@ export function computeMoveReach(get: Get): Map<string, number> {
   if (!active || active.kind !== 'hero' || !active.pos) return new Map();
   if (isEngaged(active) || !canMove(battle, active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
-  const blocked = occupied(battle, geom);
-  const reach = moveReachFor(geom, scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
+  const reach = moveReachFor(geom, scene, active.pos, movementRemaining(battle, active), moveEnv(battle, geom));
   return briseFleeFilter(scene, battle, active, reach);
 }
 
@@ -881,10 +895,9 @@ export function computeRunReach(get: Get): Map<string, number> {
   if (!active || active.kind !== 'hero' || !active.pos) return new Map();
   if (isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
-  const blocked = occupied(battle, geom);
   const M = mountMovement(battle, active);
   if (M <= 0) return new Map();
-  const reach = moveReachFor(geom, scene, active.pos, M * 3, blocked, sizeFootprint(geom.size));
+  const reach = moveReachFor(geom, scene, active.pos, M * 3, moveEnv(battle, geom));
   return briseFleeFilter(scene, battle, active, reach);
 }
 
@@ -994,21 +1007,21 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   // Mêlée hors d'Allonge :
   if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
   const geom = mountOf(battle, active) ?? active;
-  const blocked = occupied(battle, geom);
+  const env = moveEnv(battle, geom);
   if (battle.movementUsed === 0 && !hasCondition(active, COND.aTerre)) {
     // Charge (LDB 15 l.74-77) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
     // adjacente la moins chère.
     const M = mountMovement(battle, active);
-    const reach = moveReachFor(geom, scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size));
+    const reach = moveReachFor(geom, scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), env);
     const dest = bestAdjacentReachable(reach, target.pos!, footprintN(target), footprintN(geom));
     if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de Charge.' };
-    return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], adv: chargeAdvantage(M, footprintChebyshev(active.pos!, footprintN(geom), target.pos!, footprintN(target))) };
+    return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, env) ?? [], adv: chargeAdvantage(M, footprintChebyshev(active.pos!, footprintN(geom), target.pos!, footprintN(target))) };
   }
   // Mouvement entamé (ou À Terre) : rejoindre dans la Marche restante.
   const reach = displayedReach(get);
   const dest = bestAdjacentReachable(reach, target.pos!, footprintN(target), footprintN(geom));
   if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de mêlée.' };
-  return { kind: 'moveAttack', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], cost: reach.get(`${dest.x},${dest.y}`)! };
+  return { kind: 'moveAttack', dest, path: pathTo(scene, active.pos!, dest, env) ?? [], cost: reach.get(`${dest.x},${dest.y}`)! };
 }
 
 /** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir
@@ -1177,15 +1190,56 @@ export function previewCritEntry(target: Combatant, crit: CriticalResolved, ctx?
   };
 }
 
-/** Déviation Critique (LDB 63 l.63-66) : sacrifie 1 PA à `loc` pour IGNORER le Critique ; la cible
- *  subit quand même les Blessures normales recalculées avec la PA réduite (probable +1 Blessure).
- *  RETOURNE false si rien n'a pu être sacrifié (aucune PA déductible) → la Déviation n'a pas lieu. */
-function deviateArmour(target: Combatant, weapon: Weapon, res: AttackResult, log: string[]): boolean {
-  if (!damageArmour(target, res.location ?? 'corps')) return false;
-  const extra = Math.max(0, woundsFromHit(weapon, target, res.location ?? 'corps', res.damage ?? 0) - (res.woundsLost ?? 0));
-  if (extra) target.wounds.current = Math.max(0, target.wounds.current - extra);
-  log.push(tr('cf.deflectArmour', { name: target.name }));
+/** Dévier 1 PA pour IGNORER le Critique (LDB 63 l.30) : sacrifie 1 PA à `location` ; la cible subit
+ *  quand même les Blessures normales + `extraWounds` (recalcul à PA−1). RETOURNE false si aucune PA
+ *  sacrifiable → la Déviation n'a pas lieu. Arme-agnostique (l'`extraWounds` est calculé par l'appelant). */
+function deflectCrit(target: Combatant, location: HitLocation, extraWounds: number, log: string[]): boolean {
+  if (!damageArmour(target, location)) return false;
+  if (extraWounds > 0) target.wounds.current = Math.max(0, target.wounds.current - extraWounds);
+  log.push(tr('cf.deflect', { name: target.name }));
   return true;
+}
+
+/** Triptyque PARTAGÉ d'application d'un Critique (mêlée/opposé/magie) : applique la table puis finalise
+ *  une éventuelle mort par le chemin normal. `woundsBefore` = PB AVANT les dégâts de base (passé par
+ *  l'appelant → restauration Destin correcte au Subir). */
+function applyCritAndFinalize(
+  get: Get, set: SetFn, target: Combatant, location: HitLocation, isCoupCritique: boolean, overkill: number,
+  log: string[], ctx: DeviationCtx, woundsBefore: number, crit?: CriticalResolved, suppressReveal?: boolean,
+): boolean {
+  const lethal = applyCriticalToTarget(target, location, isCoupCritique, overkill, log, set, ctx, crit, suppressReveal, get);
+  if (lethal) finalizeHeroDeath(get, set, target, 'hit', woundsBefore);
+  return lethal;
+}
+
+/** Déviation AUTO de l'ennemi (LDB 63) : rule-gated, sacrifie 1 PA à la loc du Critique si possible →
+ *  Critique ignoré. RETOURNE true si la Déviation a eu lieu. Révélation « dévié » si un héros est
+ *  concerné (parité avec la révélation du Critique subi). Source UNIQUE pour les 3 chemins. */
+function enemyAutoDeviate(
+  set: SetFn, target: Combatant, location: HitLocation, extraWounds: number,
+  ctx: { attackerId?: string; weapon?: string }, roll: number, log: string[], heroConcerned: boolean,
+): boolean {
+  if (!rule('combat-critical-deflect')) return false;
+  if (deviatableArmourAt(target, location) <= 0) return false;
+  if (!deflectCrit(target, location, extraWounds, log)) return false;
+  if (heroConcerned)
+    pushReveal(set, {
+      kind: 'critical', title: tr('cf.critDeflectedTitle'), dice: roll, severity: 'minor',
+      lines: [tr('cf.critDeflectedReveal', { loc: locationLabel(location, target.bodyShape) }), tr('cf.deflect', { name: target.name })],
+      subjectId: target.id, actorId: ctx.attackerId, weapon: ctx.weapon,
+    });
+  return true;
+}
+
+/** Pousse l'étape de cascade « Coup Critique — dévier ? » (choix Dévier/Subir + révélation riche du
+ *  Critique pré-tiré dans la MÊME modale). Builder UNIQUE des 3 chemins. */
+function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
+  pushCombatStep(set, {
+    id: `cons-deviation-${dev.targetId}`, kind: 'deviation', actorId: dev.targetId, icon: '💥',
+    label: 'Coup Critique — dévier ?',
+    options: [{ key: 'devier', label: '🛡️ Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
+    defaultChoice: 'devier', deviation: dev, reveal: dev.reveal, interactive: true,
+  });
 }
 
 /** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.82) — héros (pièces). */
@@ -1207,10 +1261,11 @@ export function weaponHasBlade(w: Weapon | undefined): boolean {
 }
 
 /** Blessure critique « sèche » d'un Test opposé (LDB 14 l.7) : un double réussi inflige une Blessure
- *  critique à l'adversaire indépendamment du vainqueur de l'échange. Localisation dérivée du jet
- *  critique inversé (comme une touche). Un ENNEMI avec de la PA à la zone dévie toujours (−1 PA,
- *  Critique ignoré — parité avec la Déviation auto de l'IA, LDB 63 l.63-66) ; un HÉROS victime le
- *  subit directement (pas de modale de déviation sur ce chemin secondaire — limitation documentée). */
+ *  critique à l'adversaire indépendamment du vainqueur de l'échange. Localisation = 1d100 frais (LDB 18
+ *  l.53). Critique « sec » → aucune composante de Dégâts de base (overkill=0, deflectExtraWounds=0). La
+ *  Déviation Critique (LDB 63 l.30) est offerte sur les TROIS chemins via les atomes partagés : l'ENNEMI
+ *  dévie AUTO (`enemyAutoDeviate`, rule-gated), le HÉROS blindé CHOISIT (étape `self`), sinon le Critique
+ *  est subi (`applyCritAndFinalize`). */
 export function applyOpposedCritical(
   get: Get,
   set: SetFn,
@@ -1223,20 +1278,20 @@ export function applyOpposedCritical(
   // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
   const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
-  if (victim.kind === 'enemy' && deviatableArmourAt(victim, loc) > 0) {
-    damageArmour(victim, loc);
-    const line = tr('cf.deflectCrit', { name: victim.name });
-    log.push(line);
-    // Le Critique paré DOIT rester VISIBLE dans la cascade (sinon la fenêtre se referme sans rien montrer)
-    // quand un héros est concerné — il l'a PLACÉ (parade) ou le SUBIT ; sinon (ennemi↔ennemi) : journal seul.
-    if (heroConcerned) pushReveal(set, { kind: 'critical', title: tr('cf.critDeflectedTitle'), dice: roll,
-      lines: [tr('cf.critDeflectedReveal', { loc: locationLabel(loc, victim.bodyShape) }), line], subjectId: victim.id, severity: 'minor', actorId: ctx.attackerId, weapon: ctx.weapon });
+  const c2: DeviationCtx = { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined };
+  if (victim.kind === 'enemy') {
+    if (enemyAutoDeviate(set, victim, loc, 0, ctx, roll, log, heroConcerned)) return;
+  } else if (rule('combat-critical-deflect') && deviatableArmourAt(victim, loc) > 0) {
+    // HÉROS blindé : on SUSPEND pour son choix Dévier/Subir (étape `self`, Critique « sec » pré-tiré).
+    const crit = rollCritical(victim, loc, battleRng(), 0, c2.critTwice);
+    const reveal = previewCritEntry(victim, crit, ctx);
+    pushDeviationStep(set, {
+      mode: 'self', attackerId: ctx.attackerId ?? '', targetId: victim.id, location: loc, crit,
+      isCoupCritique: true, overkill: 0, deflectExtraWounds: 0, woundsBefore: victim.wounds.current, reveal, resumeAfter: true, ctx: c2,
+    });
     return;
   }
-  const currentBefore = victim.wounds.current;
-  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, // `loc` (1d100 frais) est la loc finale → déflecteur/révélation/table cohérents, aucun re-tirage
-    { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined }, undefined, undefined, get);
-  if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
+  applyCritAndFinalize(get, set, victim, loc, true, 0, log, c2, victim.wounds.current);
 }
 
 export function applyAttackResult(
@@ -1304,33 +1359,30 @@ export function applyAttackResult(
   // #80 (LDB 18 l.55) : un Coup Critique RE-TIRE sa localisation, et « TOUTE la résolution du coup — Dégâts
   // non-critiques, DÉVIATION, armure Bâclée, table de Critiques — utilise CETTE localisation ». L'éligibilité
   // #43.2 à la Déviation (LDB 63 l.30, « emplacement protégé par une armure ») se teste donc sur la
-  // localisation RE-TIRÉE du Critique — là où `deviateArmour` sacrifiera le PA — et NON sur la localisation de
+  // localisation RE-TIRÉE du Critique — là où `deflectCrit` sacrifiera le PA — et NON sur la localisation de
   // touche, sinon on offrirait au héros une Déviation sans PA sacrifiable à la zone réellement frappée. Figée
   // ici (réutilisée sans re-tirer par la reprise Dévier/Subir). RNG-neutre : le tirage est seulement AVANCÉ
   // (aucun `battleRng` intercalé jusqu'à son point d'origine, au bloc Critique ci-dessous).
+  // Blessure Critique = Coup Critique sur double OU dépassement (LDB 18 l.53) — la Déviation couvre LES DEUX
+  // (LDB 63 l.30). `overkill0` = PB COURANTS dépassés par les Dégâts de base (avant re-localisation du Critique).
+  const overkill0 = Math.max(0, (res.woundsLost ?? 0) - target.wounds.current);
   const dloc = (res.critical && deviated === undefined && target.kind === 'hero')
     ? (res.critLocation ??= critWoundLocation(battleRng(), target.bodyShape))
-    : (res.location ?? 'corps');
+    : (res.location ?? 'corps'); // dépassement (≠ double) : loc de touche, pas de re-tirage
   // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
-  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero' && deviatableArmourAt(target, dloc) > 0) {
-    // Pré-tire le Coup Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
+  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && (res.critical || overkill0 > 0) && target.kind === 'hero' && deviatableArmourAt(target, dloc) > 0) {
+    // Pré-tire la Blessure Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
-    const overkill = Math.max(0, res.woundsLost - target.wounds.current);
-    const cloc = critWoundLocation(battleRng(), target.bodyShape, res.critLocation);
-    res.critLocation = cloc; // LDB 18 l.55 (#80) : FIGE la localisation re-tirée du Coup Critique AVANT la
-    // suspension — la reprise (Dévier comme Subir) la réutilise sans RE-tirer ; sinon « Dévier » (qui ne
-    // repasse pas `prerolledCrit`) sacrifierait 1 PA à une localisation ≠ de celle montrée au joueur.
-    const crit = rollCritical(target, cloc, battleRng(), overkill, hasActiveFlag(attacker, 'critRollTwice'));
+    const cloc = res.critical ? critWoundLocation(battleRng(), target.bodyShape, res.critLocation) : dloc;
+    if (res.critical) res.critLocation = cloc; // LDB 18 l.55 (#80) : FIGE la loc re-tirée du Coup Critique AVANT la
+    // suspension — la reprise (Dévier comme Subir) la réutilise sans RE-tirer ; sinon « Dévier » (qui ne repasse
+    // pas `prerolledCrit`) sacrifierait 1 PA à une localisation ≠ de celle montrée au joueur. (Dépassement : pas de re-tirage.)
+    const crit = rollCritical(target, cloc, battleRng(), overkill0, hasActiveFlag(attacker, 'critRollTwice'));
     const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.name });
     // Folding P3a : le choix Dévier/Subir devient une ÉTAPE de la séquence (Critique riche + options),
     // au lieu d'une modale `pendingDeviation` séparée. L'applier 'deviation' appelle resolveDeviation.
-    const dev: PendingDeviation = { attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true };
-    pushCombatStep(set, {
-      id: `cons-deviation-${target.id}`, kind: 'deviation', actorId: target.id, icon: '💥',
-      label: 'Coup Critique — dévier ?', options: [{ key: 'devier', label: '🛡️ Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
-      defaultChoice: 'devier', deviation: dev, reveal, interactive: true, // défaut = DÉVIER (sacrifie 1 PA, évite le Critique)
-    });
+    pushDeviationStep(set, { mode: 'melee', attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true });
     return true; // suspendu — la résolution part de l'applier 'deviation' (resolveDeviation, resume:false)
   }
   const battle = get().battle!;
@@ -1352,8 +1404,8 @@ export function applyAttackResult(
     // LDB 18 l.53-55 : un Coup Critique RE-TIRE la localisation (1d100 frais, ou choix RAW-2 « Je ne
     // faillirai pas ! », ou Critique déjà pré-tiré pour la Déviation) ; TOUTE la résolution du coup — Dégâts
     // NON-critiques (+ PA), Déviation, armure Bâclée, table de Critiques — utilise CETTE localisation. On la
-    // fige sur `res` (location + critLocation) pour que l'aval (deviateArmour/breakBacleArmour/
-    // applyCriticalToTarget) la lise, puis on RECALCULE les Blessures de base à cette localisation
+    // fige sur `res` (location + critLocation) pour que l'aval (deflectCrit/enemyAutoDeviate/breakBacleArmour/
+    // applyCritAndFinalize) la lise, puis on RECALCULE les Blessures de base à cette localisation
     // (`woundsAtCritLocation`). L'overkill (≠ Coup Critique) garde la localisation de la touche.
     if (res.critical) {
       const fresh = critWoundLocation(battleRng(), target.bodyShape, prerolledCrit?.location ?? res.critLocation);
@@ -1366,16 +1418,23 @@ export function applyAttackResult(
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
     const loc = res.location ?? 'corps';
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
-    // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, l'ennemi ne dévie plus
-    // automatiquement → il subit le Critique comme le héros sans déviation.
-    const autoDeviate = rule('combat-critical-deflect') && res.critical && target.kind === 'enemy' && deviatableArmourAt(target, loc) > 0; // ennemi : dévie toujours (auto)
-    // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66). deviateArmour retourne false
-    // si aucun PA sacrifiable → la Déviation n'a pas lieu et le Critique est appliqué (chemin else ci-dessous).
-    const deviationApplied = res.critical && (autoDeviate || deviated === true) && deviateArmour(target, weapon, res, critLog);
+    // Blessures supplémentaires d'une Déviation (Dégâts recalculés à PA−1, LDB 63 l.30) : la PA n'est pas
+    // encore sacrifiée ici (deflectCrit/enemyAutoDeviate le font) → on recompute woundsFromHit à PA−1
+    // (`extraAP:-1`) et on isole le DELTA par rapport aux Blessures de base déjà appliquées.
+    const extra = Math.max(0, woundsFromHit(weapon, target, loc, res.damage ?? 0, -1) - (res.woundsLost ?? 0));
+    // Déviation (LDB 63 l.63-66) : l'ENNEMI dévie AUTO (rule-gated, `enemyAutoDeviate`) ; le HÉROS « Dévier »
+    // sur re-entrée (deviated===true, sans prerolledCrit, `deflectCrit`). Sacrifient 1 PA puis ajoutent `extra`.
+    let deviationApplied = false;
+    if (res.critical || overkill > 0) {
+      if (target.kind === 'enemy')
+        deviationApplied = enemyAutoDeviate(set, target, loc, extra, { attackerId: attacker.id, weapon: weapon?.name }, prerolledCrit?.roll ?? res.attackerRoll, critLog, attacker.kind === 'hero');
+      else if (deviated === true)
+        deviationApplied = deflectCrit(target, loc, extra, critLog);
+    }
     if (!deviationApplied && (res.critical || overkill > 0)) {
-      // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
-      // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit, get);
+      // « Subir » après déviation proposée : applique LA Blessure Critique déjà montrée (prerolledCrit), sans
+      // re-tirer ni re-révéler (la modale l'a affichée). Sinon : tirage + révélation normaux.
+      const lethal = applyCritAndFinalize(get, set, target, loc, !!res.critical, Math.max(0, overkill), critLog, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, currentBefore, prerolledCrit, !!prerolledCrit);
       // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
       const fb = talentCritExtraWounds(attacker);
       if (fb > 0 && !lethal) {
@@ -1384,10 +1443,9 @@ export function applyAttackResult(
       }
       // Effets « sur Critique » (Taillade → Hémorragique, Aux Armes p.89, et tout futur Trait/Talent/Atout/État)
       // — DISPATCHER UNIQUE générique (data-driven `effects:[{trigger:'onCrit'}]`), comme `onHit`. Plus de
-      // boucle bespoke par capacité.
+      // boucle bespoke par capacité. (`woundingStrike`/`onCrit` restent dans la branche Subir uniquement.)
       if (res.critical && !lethal)
         critLog.push(...fireTriggers(get, attacker, 'onCrit', { victim: target, weapon, location: loc, woundsDealt: res.woundsLost, attackType: weapon.type, rng: battleRng(), set }));
-      if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
     // déclenche une Blessure critique mais ne dispense pas de l'État À Terre) ; sauf si déjà KO/mort.
@@ -2145,8 +2203,33 @@ export function applyAreaAttack(get: Get, set: SetFn, attacker: Combatant, a: Cr
 
 /** Langue préhensile (IA) : jet CT puis résolution ; gratuit (Action préservée). Clôt par `checkBattleOver`. */
 export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack): void {
+  const battle = get().battle;
+  if (!battle || !attacker.pos) return;
+  // Cible = la plus proche (sélection IDENTIQUE à resolveManeuver pour une manœuvre à cible unique) ; on la
+  // PASSE explicitement (chosenTarget) → la proie tirée = la proie touchée, sans ré-dériver.
+  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos);
+  const target = foes.length ? foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c)) : undefined;
+  const hadEmpetre = target ? stacks(target, COND.empetre) : 0;
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
-  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage);
+  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, target);
+  // Entraînement vers la créature (LDB 85 p.340) : « s'il a une Taille INFÉRIEURE, il est entraîné vers la
+  // créature ». Sur une TOUCHE (un pion *Empêtré* posé ce tour) d'une proie plus petite, on la tire à elle —
+  // pathing + comparaison de Taille = impur → résolu ICI (pas en GameOp). Réutilise `pullToward` (symétrique
+  // de pushAway) : avance la proie le long de la ligne jusqu'à être adjacente à l'empreinte de la créature.
+  if (target && target.pos && stacks(target, COND.empetre) > hadEmpetre && sizeGap(attacker.size, target.size) > 0) {
+    const b = get().battle;
+    if (b) {
+      const r = pullToward(get().scene!, attacker.pos, target.pos, chebyshev(attacker.pos, target.pos), { blocked: occupied(b, target) });
+      if (r.pulled > 0) {
+        const from = { ...target.pos };
+        target.pos = { ...r.dest };
+        bus.emit(EVT.ANIM_MOVE, { id: target.id, path: [{ ...r.dest }] });
+        applyZoneCrossings(get, target, [...tilesBetween(from, r.dest), { ...r.dest }]); // une traction TRAVERSE (Mur de feu, L11)
+        set({ battle: { ...b, log: [...b.log, ev('move', tr('cs.tonguePull', { name: attacker.name, foe: target.name }), attacker.id, target.id)] } });
+        bus.emit(EVT.SCENE_DIRTY);
+      }
+    }
+  }
   checkBattleOver(get, set);
 }
 
@@ -2206,23 +2289,45 @@ export function aiMaybeSpecialAction(get: Get, set: SetFn, enemy: Combatant): bo
  *  true si une modale s'est ouverte (tour SUSPENDU). */
 /** Résout une Déviation Critique — invoquée par l'applier de l'étape de séquence 'deviation' (la reprise
  *  de l'IA est gérée par la FERMETURE de la séquence, pas ici). « Subir » applique le Critique pré-tiré
- *  (`dev.crit`) tel quel ; « Dévier » l'ignore (−1 PA). */
+ *  (`dev.crit`) tel quel ; « Dévier » l'ignore (−1 PA). Union discriminée :
+ *  - `melee` → RÉ-ENTRE `applyAttackResult` avec la décision (son tail décision-indépendant tourne UNE fois) ;
+ *  - `self` → auto-contenu (opposé/magie n'ont pas de tail) : déflexion vs Critique pré-tiré directement. */
 export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, deviate: boolean): void {
   const battle = get().battle;
   if (!battle) return;
-  const attacker = battle.combatants.find((c) => c.id === dev.attackerId);
-  const target = battle.combatants.find((c) => c.id === dev.targetId);
-  if (attacker && target) {
-    applyAttackResult(get, set, attacker, target, dev.weapon, dev.res, deviate, deviate ? undefined : dev.crit);
-    autoCleave(get, set, attacker, target, dev.res); // balayage de l'ennemi plus grand sur les AUTRES héros
-    // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
-    if (target.kind === 'hero' && defenderFumbled(dev.res, target.weapons[0]) && !isOutOfAction(target)) {
-      // Maladresse = étape APPENDUE à la cascade (donnée SUR l'étape — source unique, plus de `pendingFumble`) ;
-      // la séquence avance déviation → Maladresse, et la reprise IA suit la fermeture (fumbleConfirm → cascadeNext).
-      pushCombatStep(set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id, fumble: { weapon: target.weapons[0], result: null } });
-      return;
+  if (dev.mode === 'melee') {
+    const attacker = battle.combatants.find((c) => c.id === dev.attackerId);
+    const target = battle.combatants.find((c) => c.id === dev.targetId);
+    if (attacker && target) {
+      applyAttackResult(get, set, attacker, target, dev.weapon, dev.res, deviate, deviate ? undefined : dev.crit);
+      autoCleave(get, set, attacker, target, dev.res); // balayage de l'ennemi plus grand sur les AUTRES héros
+      // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
+      if (target.kind === 'hero' && defenderFumbled(dev.res, target.weapons[0]) && !isOutOfAction(target)) {
+        // Maladresse = étape APPENDUE à la cascade (donnée SUR l'étape — source unique, plus de `pendingFumble`) ;
+        // la séquence avance déviation → Maladresse, et la reprise IA suit la fermeture (fumbleConfirm → cascadeNext).
+        pushCombatStep(set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id, fumble: { weapon: target.weapons[0], result: null } });
+        return;
+      }
     }
+    return;
   }
+  // mode 'self' (opposé/tir/magie) : auto-contenu — pas de ré-entrée d'attaque, pas de tail.
+  const target = battle.combatants.find((c) => c.id === dev.targetId);
+  if (!target) return;
+  const log: string[] = [];
+  if (deviate) deflectCrit(target, dev.location, dev.deflectExtraWounds, log); // −1 PA, Critique ignoré, + Blessures recalculées
+  else applyCritAndFinalize(get, set, target, dev.location, dev.isCoupCritique, dev.overkill, log, dev.ctx, dev.woundsBefore, dev.crit, true); // Subir : Critique pré-tiré
+  // 0 PB → À Terre (LDB 18 l.28) ; cible neutralisée → on lève engagement + effets psy (parité avec la mêlée).
+  if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, COND.inconscient)) applyZeroWounds(target);
+  if (isOutOfAction(target)) {
+    clearEngagementOf(get().battle?.combatants ?? [], target.id);
+    clearPsychOf(get().battle?.combatants ?? [], target.id);
+  }
+  if (log.length) {
+    const b = get().battle;
+    if (b) set({ battle: { ...b, log: [...b.log, ...evLines(log, 'crit', target.id)] } });
+  }
+  checkBattleOver(get, set);
 }
 
 /** Applier de l'étape de CHOIX « déviation » (folding P3a) : « Subir » applique le Critique pré-tiré,
@@ -2239,6 +2344,23 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
   if (!battle || battle.over) { enemy.pendingFreeAttacks = undefined; return false; }
   if (enemy.pendingFreeAttacks === undefined) {
     const atks = creatureAttacks(enemy.traits ?? []);
+    // Empoignade tenue par un Tentacule / la Langue (LDB 85 p.343/340) : « vous pouvez utiliser une Action
+    // d'Attaque GRATUITE pour résoudre l'Empoignade AU LIEU de l'Action de la créature » — le membre tient
+    // pendant que le corps agit. Pour CHAQUE adversaire encore Empoigné et en vie : Test opposé de Force
+    // GRATUIT (résolveur PARTAGÉ `resolveGrappleOpposed`), instantané. La créature N'EST PAS verrouillée
+    // (ai.ts saute le verrou LOT B pour ce trait) → elle CONSERVE son Action normale. En tête (avant qu'une
+    // Langue ne RE-saisisse une cible ce tour) → une prise établie CE tour n'est pas écrasée dans la foulée.
+    if (atks.some((a) => a.kind === 'tentacules' || a.kind === 'langue')) {
+      for (const fid of [...(enemy.grapplingWith ?? [])]) {
+        const foe = battle.combatants.find((c) => c.id === fid);
+        if (!foe || isOutOfAction(foe) || !areGrappling(enemy, foe)) continue;
+        const line = resolveGrappleOpposed(enemy, foe);
+        const b = get().battle; if (!b) break;
+        set({ battle: { ...b, log: [...b.log, ev('attack', line, enemy.id, foe.id)] } });
+        bus.emit(EVT.SCENE_DIRTY);
+        checkBattleOver(get, set);
+      }
+    }
     // Attaques de ZONE (gratuites, instantanées) : Souffle (2 Av) puis Vomissement (3 Av) si abordables.
     const souffle = atks.find((a) => a.kind === 'souffle');
     if (souffle && enemy.advantage >= souffle.avantage) applyAreaAttack(get, set, enemy, souffle);
@@ -2730,7 +2852,7 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
     });
   }
   return {
-    enemy, heroes, scene, blocked, movement, spells,
+    enemy, heroes, scene, blocked, noStop: cannotStopOn(battle, geom), movement, spells,
     smoke: smokeOf(battle), flying: flyM != null, perceived, facing: get().facing, squad,
   };
 }
@@ -3013,8 +3135,27 @@ export function applyCast(
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') }, undefined, undefined, get);
-        if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
+        const loc = mres.location ?? 'corps';
+        const c2: DeviationCtx = { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') };
+        const heroConcerned = t.kind === 'hero' || caster.kind === 'hero';
+        // Déviation Critique (LDB 63 l.30) : SEULEMENT sur un double d'Incantation (`critWound`) ET une PA
+        // réellement mitigante (`magicDeviationEligible` : pas de bypass de Domaine, sort qui n'ignore pas les PA).
+        // Un dépassement (overkill) par Projectile n'offre PAS le troc — cohérent avec la mêlée (overkill ≠ double re-tiré).
+        const elig = critWound ? magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, mr) : { eligible: false, extraWounds: 0 };
+        if (critWound && elig.eligible && t.kind === 'enemy') {
+          enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned);
+        } else if (critWound && elig.eligible && t.kind === 'hero') {
+          // HÉROS blindé : SUSPEND son choix (étape `self`, push SYNCHRONE — la boucle multi-cibles continue,
+          // chaque cible porte SON propre step indépendant). Subir applique le Critique « sec » pré-tiré (overkill 0).
+          const cr2 = rollCritical(t, loc, battleRng(), 0, c2.critTwice);
+          pushDeviationStep(set, {
+            mode: 'self', attackerId: caster.id, targetId: t.id, location: loc, crit: cr2,
+            isCoupCritique: true, overkill: 0, deflectExtraWounds: elig.extraWounds, woundsBefore: currentBefore,
+            reveal: previewCritEntry(t, cr2, { attackerId: caster.id, weapon: spell.label }), resumeAfter: true, ctx: c2,
+          });
+        } else {
+          applyCritAndFinalize(get, set, t, loc, critWound, Math.max(0, overkill), logLines, c2, currentBefore);
+        }
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);
       }
@@ -3149,7 +3290,7 @@ export function applyCast(
         const pushTiles = Math.max(1, Math.floor(resolveFormula(op.meters, caster, battleRng()) / 2));
         for (const t of [target, ...extraTargets]) {
           if (t.id === caster.id || !t.pos || isOutOfAction(t)) continue;
-          const r = pushAway(get().scene!, caster.pos, t.pos, pushTiles, occupied(battle, t));
+          const r = pushAway(get().scene!, caster.pos, t.pos, pushTiles, { blocked: occupied(battle, t) });
           if (r.pushed > 0) {
             const fromPos = { ...t.pos };
             t.pos = { ...r.dest };
@@ -3195,7 +3336,7 @@ export function applyCast(
         }
         if (battle && caster.pos) {
           const tpTiles = Math.max(1, Math.floor(meters / 2));
-          teleportReach = flyReachable(get().scene!, caster.pos, tpTiles, occupied(battle, caster), sizeFootprint(caster.size));
+          teleportReach = flyReachable(get().scene!, caster.pos, tpTiles, moveEnv(battle, caster));
           logLines.push(tr('cf.teleportChoose', { name: caster.name, m: meters }));
         } else {
           logLines.push(tr('cf.teleportFree', { name: caster.name, m: meters }));
@@ -4580,20 +4721,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       if (!canAct) return advanceTurn(get, set);
       const foe = targetOf(action.targetId);
       if (!foe || isOutOfAction(foe) || !areGrappling(enemy, foe)) return advanceTurn(get, set); // lien dénoué entre-temps
-      const enemyRoll = rollGrappleForce(enemy, battleRng()); // acteur = « attaquant » du Test opposé
-      const foeRoll = rollGrappleForce(foe, battleRng());
-      const opp = resolveOpposed(enemyRoll, foeRoll);
-      const result = disengageOutcome(opp.winner);
-      let line: string;
-      if (result === 'success') {
-        // Politique IA : l'option DÉGÂTS (BF + DR, PA ignorés) — meilleure valeur garantie pour une créature
-        // qui l'emporte (les options Empêtrer/Se libérer restent en DONNÉE, offertes au joueur). Localisation
-        // au lancer de Force du vainqueur (l.161).
-        line = resolveGrappleWin(enemy, foe, 'damage', Math.max(0, opp.netSL), enemyRoll.roll);
-      } else {
-        if (result === 'failure') gainAdvantage(foe, 1); // l'adversaire l'emporte → +1 Avantage (l.161)
-        line = tr(result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie', { name: enemy.name, foe: foe.name });
-      }
+      // Politique IA : l'option DÉGÂTS (BF + DR, PA ignorés) — meilleure valeur garantie pour une créature qui
+      // l'emporte (les options Empêtrer/Se libérer restent en DONNÉE, offertes au joueur). Test opposé PARTAGÉ
+      // avec l'Attaque gratuite de tentacule/langue (`resolveGrappleOpposed`) ; ici il CONSOMME l'Action (l.161).
+      const line = resolveGrappleOpposed(enemy, foe);
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('attack', line, enemy.id, foe.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
@@ -4612,7 +4743,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const wasEngaged = isEngaged(enemy);
       const distBefore = combatDistance(enemy, targetOf(mv.thenTargetId)); // distance de combat AVANT le déplacement
       const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
-      const path = pathTo(scene, enemy.pos!, mv.to, input.blocked, sizeFootprint(geom.size));
+      const path = pathTo(scene, enemy.pos!, mv.to, { blocked: input.blocked, foot: sizeFootprint(geom.size) });
       // Télégraphe de DÉPLACEMENT (parité héros) : montrer le chemin + la destination AVANT que l'ennemi
       // bouge (« où il va »), puis il glisse dessus. Le mouvement réel + la suite (attaque/fin de tour)
       // sont DIFFÉRÉS après la tenue (beatHold moveTelegraph) — mêmes effets, juste annoncés d'abord.

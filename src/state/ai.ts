@@ -100,8 +100,12 @@ export interface EnemyTurnInput {
   /** Héros encore en action (vivants), tous avec `pos`. */
   heroes: Combatant[];
   scene: Scene;
-  /** Cases occupées par d'autres combattants (l'ennemi lui-même exclu). */
+  /** Cases occupées par d'autres combattants (l'ennemi lui-même exclu) — bloquent le TRANSIT. */
   blocked: Set<string>;
+  /** Cases TRAVERSABLES mais où l'ennemi ne peut pas FINIR son déplacement (créatures plus petites
+   *  dégagées du chemin, LDB 85 l.373-374 — on ne s'arrête jamais sur une autre créature). ABSENT =
+   *  aucune contrainte d'arrêt (tests purs). */
+  noStop?: Set<string>;
   /** Mouvement effectif en cases (dérivé de l'Encombrement par l'appelant). */
   movement: number;
   /** TOUS les sorts connus de l'ennemi, RÉSOLUS + enrichis par l'appelant (couche impure qui a les
@@ -527,7 +531,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
-  const reach = (flying ? flyReachable : reachable)(scene, pos, movement, blocked, footprintN(enemy));
+  const reach = (flying ? flyReachable : reachable)(scene, pos, movement, { blocked, foot: footprintN(enemy), noStop: input.noStop });
 
   // ANTI-IMMOBILISME (combat ENGAGÉ, fidélité LDB 13 l.123) : si la perception ne montre AUCUNE cible
   // (lumière/Ligne de Vue) mais que des adversaires EXISTENT, l'ennemi avance d'un cran vers le plus

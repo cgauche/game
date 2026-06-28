@@ -17,7 +17,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
@@ -204,14 +204,13 @@ export function createCombatSlice(get: Get, set: Set) {
         .filter((c): c is Combatant => !!c);
       mover.advantage = 0; // « ramener votre Avantage à 0 » (l.87)
       for (const f of foes) disengageFrom(mover, f); // se place hors de portée de TOUS (l.87)
-      const blocked = occupied(battle, mover);
       set({
         pendingDisengage: null,
         pendingCascade: null, // ferme la cascade-hôte du Désengagement
         battle: {
           ...battle,
           action: null, // mouvement libre rouvert (clic-sol), sans pénalité (l.87) ; Action préservée
-          reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
+          reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), moveEnv(battle, mover)),
           log: [...battle.log, ev('flee', t('cs.disengageSacrifice', { name: mover.name }), mover.id)],
         },
       });
@@ -248,10 +247,9 @@ export function createCombatSlice(get: Get, set: Set) {
           .map((id) => battle.combatants.find((c) => c.id === id))
           .filter((c): c is Combatant => !!c);
         for (const f of foes) disengageFrom(mover, f);
-        const blocked = occupied(battle, mover);
         log.push(ev('flee', t('cs.disengageDodge', { name: mover.name }), mover.id, foe.id));
         set({
-          battle: { ...battle, acted: true, action: null, reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
+          battle: { ...battle, acted: true, action: null, reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), moveEnv(battle, mover)), log },
         });
       } else if (pd.result === 'tie') {
         // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
@@ -301,11 +299,10 @@ export function createCombatSlice(get: Get, set: Set) {
       // Coup manqué / sans PB perdu : pas de Test de Calme → on complète la fuite directement.
       const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
-      const blocked = occupied(battle, mover);
       // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
       // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
       // Fuite ! (LDB 10) : Mouvement +1 quand on fuit.
-      set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log } });
+      set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, moveEnv(battle, mover)), log } });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
       const st = get();
@@ -337,8 +334,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Fuite complétée (différée) : libération de TOUS les Engagements + budget de Course (l.109).
       const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
-      const blocked = occupied(battle, mover);
-      set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log }, pendingDisengage: null, pendingCascade: null });
+      set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, moveEnv(battle, mover)), log }, pendingDisengage: null, pendingCascade: null });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
     },
@@ -543,12 +539,12 @@ export function createCombatSlice(get: Get, set: Set) {
       };
       // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
       const geom = mountOf(battle, active) ?? active;
-      const blocked = occupied(battle, geom);
+      const env = moveEnv(battle, geom);
       const prev = battle.preview;
       if (!inWalk) {
         // Zone de Course : tap 1 = aperçu « Courir » ; tap 2 = Test d'Athlétisme (pendingRun + destination).
         if (!opts?.confirm && !(prev?.kind === 'run' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
-          const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size)) ?? [];
+          const path = pathTo(scene, active.pos!, pt, env) ?? [];
           set({ battle: { ...battle, preview: { kind: 'run', tile: { ...pt }, path, cost: stepCost } } });
           bus.emit(EVT.SCENE_DIRTY);
           return;
@@ -559,7 +555,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
       if (!opts?.confirm && !(prev?.kind === 'move' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
-        const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size)) ?? [];
+        const path = pathTo(scene, active.pos!, pt, env) ?? [];
         set({ battle: { ...battle, preview: { kind: 'move', tile: { ...pt }, path, cost: stepCost } } });
         bus.emit(EVT.SCENE_DIRTY);
         return;
@@ -576,7 +572,7 @@ export function createCombatSlice(get: Get, set: Set) {
               movedPreAction: battle.movedPreAction,
             }
           : battle.moveSnapshot ?? null;
-      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size));
+      const path = pathTo(scene, active.pos!, pt, env);
       active.pos = { ...pt };
       if (geom !== active) geom.pos = { ...pt }; // déplace la monture sous le cavalier (couple solidaire)
       displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
@@ -939,12 +935,12 @@ export function createCombatSlice(get: Get, set: Set) {
       // Combat monté : Course au Mouvement de la monture, empreinte/collisions de la monture (couple solidaire).
       const geom = mountOf(battle, c) ?? c;
       const range = mountMovement(battle, c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
-      const blocked = occupied(battle, geom);
+      const env = moveEnv(battle, geom);
       const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
       // Le jet peut porter MOINS loin que la destination demandée : on suit le chemin et on s'arrête au
       // dernier point que le budget permet (« au max qu'il puisse faire »).
-      const reach = reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size));
-      const path = pathTo(scene, c.pos!, pr.dest, blocked, sizeFootprint(geom.size)) ?? [];
+      const reach = reachable(scene, c.pos!, range, env);
+      const path = pathTo(scene, c.pos!, pr.dest, env) ?? [];
       let stopIdx = -1;
       for (let i = path.length - 1; i >= 0; i--) {
         if (reach.has(`${path[i].x},${path[i].y}`)) { stopIdx = i; break; }
