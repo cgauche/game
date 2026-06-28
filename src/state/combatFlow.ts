@@ -29,6 +29,7 @@ import {
   combineMods,
   rollMeleeAttacker,
   rollDisengageAttack,
+  rollGrappleForce,
   attackWeapon,
   hitLocationByShape,
   locationLabel,
@@ -48,6 +49,7 @@ import {
   DEFENSE_LABEL,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
+import { setGrapple, grappleEnvMod } from '../engine/grapple';
 import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
@@ -395,6 +397,10 @@ export function attackEnv(
   const battle = get().battle!;
   const sc = sceneCombatModifiers(scene, get().gameTime);
   const env: ModLine[] = [];
+  // Empoignade (LDB 14 l.169) : un attaquant NON partie à l'Empoignade gagne +20 (cible au plus FAIBLE
+  // Avantage des deux Empoignés) ou +10 (au plus FORT) pour la toucher — mêlée comme tir.
+  const gm = grappleEnvMod(attacker, target, battle.combatants);
+  if (gm) env.push(gm);
   if (weapon.type === 'ranged') {
     const occupants = battle.combatants
       .filter((c) => c.id !== attacker.id && c.id !== target.id && !isOutOfAction(c) && c.pos)
@@ -781,6 +787,16 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
 export function startAuContact(get: Get, set: SetFn, mover: Combatant, foe: Combatant): void {
   const atk = rollDisengageAttack(foe, battleRng()); // Corps à corps du foe, figé (jamais relancé)
   set({ pendingAuContact: { moverId: mover.id, foeId: foe.id, phase: 'roll', atk, def: null, result: null } });
+}
+
+/** Ouvre l'action d'Empoignade d'un combattant à son tour (LDB 14 l.161). Test opposé de FORCE `actor`
+ *  vs `foe` ; le jet du foe est tiré et FIGÉ d'avance (pattern Désengagement/Au Contact). `canBreak` =
+ *  l'acteur a un Avantage STRICTEMENT supérieur → il peut BRISER l'Empoignade gratuitement, ou tenter le
+ *  Test opposé pour son Action (Dégâts / Empêtré). Le VAINQUEUR du Test choisit. */
+export function startGrapple(get: Get, set: SetFn, actor: Combatant, foe: Combatant): void {
+  const atk = rollGrappleForce(foe, battleRng()); // Force du foe, figée (jamais relancée)
+  const canBreak = actor.advantage > foe.advantage;
+  set({ pendingGrapple: { actorId: actor.id, foeId: foe.id, phase: 'roll', canBreak, atk, def: null, result: null } });
 }
 
 /** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */
@@ -1215,6 +1231,7 @@ export function applyAttackResult(
   deviated?: boolean,
   prerolledCrit?: CriticalResolved, // « Subir » après déviation : applique CE Critique (déjà montré) sans re-tirer
   deferAttackerAdvantage?: boolean, // Maniement de deux armes (LDB 10 l.638) : l'Avantage de l'attaquant est accordé à part (si les deux touchent)
+  grapple?: boolean, // Empoignade (LDB 14 l.159) : « Au lieu d'infliger des Dégâts » — sur une touche, pose l'Empoignade + Empêtré au lieu de blesser
 ): boolean {
   // Surpris (LDB 16 l.136) : « après la première tentative effectuée pour vous toucher, vous perdez
   // l'État Surpris ». On le retire après une attaque STANDARD (deviated===undefined) — le +20 / l'absence
@@ -1229,6 +1246,10 @@ export function applyAttackResult(
   // l'offre de Déviation Critique restent INLINE ci-dessous. Les saves posent leur ligne dans `res.log`
   // (journalisé par l'`ev(evKind, res.log, …)` final) → `sink` no-op ici.
   res = runHitModifiers({ get, set, attacker, target, weapon, res, sink: () => {} });
+  // Empoignade (LDB 14 l.159) : « Au lieu d'infliger des Dégâts ». Sur une touche, on NEUTRALISE Dégâts,
+  // Critique et mort-auto de CE coup (les branches Surpris/Engagé/Avantage/journal restent intactes) ; la
+  // pose de l'Empoignade + de l'État *Empêtré* se fait après l'Engagement, plus bas.
+  if (grapple && res.hit) res = { ...res, woundsLost: 0, critical: false, autoKill: false };
   // Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.112) : en CORPS À CORPS la cible est
   // tuée automatiquement. On applique la mort par le MÊME chemin que les morts normales (`finalizeHeroDeath`
   // → un héros à Destin est suspendu via pendingFateSave, sinon `dead = true`), pas un early-return brutal.
@@ -1288,6 +1309,14 @@ export function applyAttackResult(
 
   if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175)
   const critLog: string[] = [];
+  // Empoignade (LDB 14 l.159) : « vous ET votre adversaire êtes Empoignés, et votre adversaire gagne
+  // l'État *Empêtré* ». Pose APRÈS l'Engagement (les deux Empoignés) ; le bloc de Dégâts ci-dessous est
+  // inerte (woundsLost neutralisé plus haut). RAW : pas de Dégâts sur l'initiation.
+  if (grapple && res.hit) {
+    setGrapple(attacker, target);
+    addCondition(target, COND.empetre, 1);
+    critLog.push(tr('cf.grappleInit', { name: attacker.name, foe: target.name }));
+  }
   if (res.hit && res.woundsLost) {
     const currentBefore = target.wounds.current;
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)

@@ -41,6 +41,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
   const setHeldGround = useGame((s) => s.attackSetHeldGround);
   const setWithhold = useGame((s) => s.attackSetWithhold);
+  const setGrapple = useGame((s) => s.attackSetGrapple);
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
   const setForcedRoll = useGame((s) => s.attackSetForcedRoll);
   const spendResolve = useGame((s) => s.spendResolveCondition);
@@ -68,6 +69,9 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   // « Retenir ses coups » (Aux Armes l.2503-2505) : maîtriser sans tuer. Proposé seulement quand c'est légal —
   // attaque de MÊLÉE (jamais tir/sort), arme qui n'inflige PAS *En flammes* (l.2505), avant le jet.
   const canWithhold = !res && weapon?.type === 'melee' && attacker.kind === 'hero' && !weaponInflictsFlames(weapon);
+  // « Empoignade » (LDB 14 l.159) : déclarée AVANT le jet, MAINS NUES seulement, en mêlée. Sur une touche,
+  // « au lieu d'infliger des Dégâts », pose l'Empoignade (les deux) + l'État Empêtré (cible).
+  const canGrapple = !res && weapon?.type === 'melee' && isUnarmed(weapon) && attacker.kind === 'hero';
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
@@ -180,6 +184,18 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
                 ✊ Retenir ses coups
               </button>
               {pa.withhold && <span className="rm-crowd-note">Non létal : Critique seulement si la cible tombe à 0 ; sans Empaleuse/Percutante/Perforante/Taille.</span>}
+            </div>
+          )}
+          {canGrapple && (
+            <div className="rm-crowd">
+              <button
+                className={`btn small ${pa.grapple ? 'btn-primary' : ''}`}
+                onClick={() => setGrapple(!pa.grapple)}
+                title="Empoigner au lieu de blesser : sur une touche, tu n'infliges AUCUN Dégât — vous êtes tous deux Empoignés et l'adversaire gagne l'État Empêtré. (LDB 14)"
+              >
+                🤼 Empoigner
+              </button>
+              {pa.grapple && <span className="rm-crowd-note">Sur une touche : aucun Dégât ; Empoignade + Empêtré (cible).</span>}
             </div>
           )}
         </div>

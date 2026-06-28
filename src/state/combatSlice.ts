@@ -16,7 +16,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
@@ -25,8 +25,10 @@ import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear } fro
 import { ev, evLines } from './combatLog';
 import { afterApproach } from './combatDirector';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, resolveBackstabAttack, resolveMeleePassive, attackWeapon } from '../engine/combat';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive, attackWeapon, hitLocationByShape, reverseRoll, locationLabel } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank, meleeReachTiles } from '../engine/engagement';
+import { areGrappling, clearGrapple, grappleDamageOps } from '../engine/grapple';
+import { applyOps } from '../engine/ops';
 import { gainAdvantage } from '../engine/advantage';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent } from '../engine/magic';
@@ -105,6 +107,32 @@ function applyAuContact(get: Get, set: Set, mover: Combatant, foe: Combatant, ch
   const key = choice === 'contact' ? 'cs.auContactClose' : choice === 'normal' ? 'cs.auContactNormal' : 'cs.auContactTie';
   const log = [...battle.log, ev('attack', t(key, { name: mover.name, foe: foe.name }), mover.id, foe.id)];
   set({ pendingAuContact: null, battle: { ...battle, acted: true, action: null, log } });
+  bus.emit(EVT.SCENE_DIRTY);
+}
+
+/** Applique le CHOIX du vainqueur d'un Test opposé d'Empoignade gagné (LDB 14 l.161) : `damage` = BF + DR
+ *  ignorant les PA (`grappleDamageOps` via `applyOps`, Localisation au lancer de Force pour la narration) ;
+ *  `entangle` = conférer 1 *Empêtré* à l'adversaire ; `free` = se défaire de son *Empêtré* + 1 par DR
+ *  (`recoveredStacks`). Le Test opposé EST l'Action → `acted`. `dr` = DR net du Test gagné. */
+function applyGrapple(get: Get, set: Set, actor: Combatant, foe: Combatant, mode: 'damage' | 'entangle' | 'free', dr: number, forceRoll: number): void {
+  const battle = get().battle!;
+  let line: string;
+  if (mode === 'damage') {
+    const before = foe.wounds.current;
+    applyOps(foe, grappleDamageOps(actor, dr), { caster: actor }); // BF + DR, tous PA ignorés (woundsCalc déduit la BE)
+    const n = before - foe.wounds.current;
+    const loc = locationLabel(hitLocationByShape(reverseRoll(forceRoll), foe.bodyShape), foe.bodyShape); // Localisation au lancer de Force (l.161)
+    line = t('cs.grappleDamage', { name: actor.name, foe: foe.name, n, loc }); // `loseWounds` (op:'wounds') pose déjà À Terre à 0 PB
+  } else if (mode === 'entangle') {
+    addCondition(foe, COND.empetre, 1); // conférer 1 *Empêtré* à l'adversaire
+    line = t('cs.grappleEntangle', { name: actor.name, foe: foe.name });
+  } else {
+    const removed = recoveredStacks(dr, stacks(actor, COND.empetre), true); // se défaire : 1 + DR pions retirés
+    removeCondition(actor, COND.empetre, removed);
+    line = t('cs.grappleFree', { name: actor.name, n: removed });
+  }
+  const log = [...battle.log, ev('attack', line, actor.id, foe.id)];
+  set({ pendingGrapple: null, battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 
@@ -380,6 +408,71 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     auContactCancel: () => set({ pendingAuContact: null }), // renonce avant tout jet : aucun coût
 
+    // ── Empoignade (LDB 14 l.161) : action à son tour entre deux Empoignés. Test opposé de FORCE OU
+    //    « Briser » (Avantage supérieur, gratuit) ; le VAINQUEUR choisit Dégâts / Empêtrer / Se libérer. ──
+    battleGrapple: (targetId: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return; // le Test opposé coûte l'Action
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      const foe = battle.combatants.find((c) => c.id === targetId);
+      if (!foe || !areGrappling(active, foe) || isOutOfAction(foe)) return;
+      startGrapple(get, set, active, foe);
+    },
+    // « Briser l'Empoignade » (l.161) : gratuit (via le Mouvement), réservé à un Avantage SUPÉRIEUR, AVANT
+    // tout jet. Libère les deux + retire l'*Empêtré* lié de l'acteur. NE consomme PAS l'Action.
+    grappleBreak: () => {
+      const { battle, pendingGrapple: pd } = get();
+      if (!battle || !pd || pd.phase !== 'roll' || pd.def || !pd.canBreak) return;
+      const actor = battle.combatants.find((c) => c.id === pd.actorId);
+      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      if (!actor || !foe) return set({ pendingGrapple: null });
+      clearGrapple(actor, foe);
+      removeCondition(actor, COND.empetre, stacks(actor, COND.empetre)); // l'acteur se libère de l'*Empêtré* de l'Empoignade
+      const log = [...battle.log, ev('dodge', t('cs.grappleBreak', { name: actor.name, foe: foe.name }), actor.id, foe.id)];
+      set({ pendingGrapple: null, battle: { ...battle, log } }); // gratuit : pas d'`acted`
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    // « Lancer » : jet de Force de l'acteur, opposé au jet figé du foe (acteur = « attaquant »).
+    grappleRoll: () => {
+      const { battle, pendingGrapple: pd } = get();
+      if (!battle || !pd || pd.phase !== 'roll' || pd.def) return; // déjà lancé → no-op
+      const actor = battle.combatants.find((c) => c.id === pd.actorId);
+      if (!actor || !pd.atk) return;
+      const def = rollGrappleForce(actor, battleRng());
+      const opp = resolveOpposed(def, pd.atk);
+      set({ pendingGrapple: { ...pd, def, result: disengageOutcome(opp.winner) } });
+    },
+    // Cycle Chance/+1 DR/Pacte/Résilience (spec `grapple`) : foe (atk) figé, seul le jet de l'acteur se (re)joue.
+    ...rollFlowActions('grapple', FLOWS.grapple, get, set, ['reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
+    // « Appliquer » : le Test opposé EST l'Action. Succès → l'acteur choisit (phase 'options') ; échec →
+    // +1 Avantage au foe (l.161) ; égalité → statu quo.
+    grappleConfirm: () => {
+      const { battle, pendingGrapple: pd } = get();
+      if (!battle || !pd || !pd.result) return;
+      const actor = battle.combatants.find((c) => c.id === pd.actorId);
+      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      if (!actor || !foe) return set({ pendingGrapple: null });
+      if (pd.result === 'success') return set({ pendingGrapple: { ...pd, phase: 'options' }, battle: { ...battle, acted: true, action: null } }); // l'acteur tranche ; Action dépensée
+      if (pd.result === 'failure') gainAdvantage(foe, 1); // l'adversaire l'emporte → +1 Avantage
+      const key = pd.result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie';
+      const log = [...battle.log, ev('attack', t(key, { name: actor.name, foe: foe.name }), actor.id, foe.id)];
+      set({ pendingGrapple: null, battle: { ...battle, acted: true, action: null, log } });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    // Le vainqueur tranche : Dégâts (BF+DR, PA ignorés) / Empêtrer l'adversaire / Se libérer (LDB 14 l.161).
+    grappleChoose: (mode: 'damage' | 'entangle' | 'free') => {
+      const { battle, pendingGrapple: pd } = get();
+      if (!battle || !pd || pd.phase !== 'options' || pd.result !== 'success') return;
+      const actor = battle.combatants.find((c) => c.id === pd.actorId);
+      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      if (!actor || !foe || !pd.def || !pd.atk) return set({ pendingGrapple: null });
+      const dr = Math.max(0, resolveOpposed(pd.def, pd.atk).netSL); // DR net du Test gagné
+      applyGrapple(get, set, actor, foe, mode, dr, pd.def.roll);
+    },
+    grappleCancel: () => set({ pendingGrapple: null }), // renonce avant tout jet : aucun coût
+
     battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => {
       const { battle, scene } = get();
       if (!battle || !scene || battle.over) return;
@@ -584,6 +677,8 @@ export function createCombatSlice(get: Get, set: Set) {
       if (option.targeting === 'trample') return get().battleTrample(target.id);
       // « Au Contact » (LDB 62 l.176) : action de Test opposé (pas une frappe) → flux dédié, jamais l'approche-puis-frappe.
       if (option.targeting === 'aucontact') return get().battleAuContact(target.id);
+      // Empoignade (LDB 14 l.161) : action de Test opposé de Force entre deux Empoignés → flux dédié.
+      if (option.targeting === 'grapple') return get().battleGrapple(target.id);
       if (option.targeting === 'zone') {
         set({ pendingManeuver: { attackerId: active.id, kind: option.kind!, targetId: target.id, avantageSpent: option.advantageMode === 'variable' ? 1 : option.cost.advantage, result: null }, battle: { ...battle, action: null, selectedAttack: undefined } });
         return;
@@ -1540,6 +1635,11 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!pa || pa.result) return; // « Retenir ses coups » se déclare AVANT le jet (Aux Armes l.2503)
       set({ pendingAttack: { ...pa, withhold: v } });
     },
+    attackSetGrapple: (v: boolean) => {
+      const pa = get().pendingAttack;
+      if (!pa || pa.result) return; // « Empoignade » se déclare AVANT le lancer pour toucher (LDB 14 l.159)
+      set({ pendingAttack: { ...pa, grapple: v } });
+    },
     attackSetCritLocation: (loc: HitLocation) => {
       const pa = get().pendingAttack;
       // RAW-2 (LDB 17 l.73) : réservé à un Coup Critique issu d'un succès FORCÉ (« Je ne faillirai pas ! »).
@@ -1586,7 +1686,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const isDualSecond = !!pa.dualSecond; // 2ᵉ frappe (off-hand)
         // Maniement de deux armes (LDB 10 l.638) : l'Avantage des deux frappes est différé — accordé seulement
         // si LES DEUX touchent (cf. blocs isDualSecond ci-dessous).
-        applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond);
+        applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond, pa.grapple); // pa.grapple = Empoignade (LDB 14 l.159) : pose l'Empoignade au lieu des Dégâts
         // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
         if (attacker.kind === 'hero' && attackerFumbled(pa.result, weapon)) {
           // Maladresse = étape de la cascade d'attaque (comme le Critique) ; advanceCombatJet l'enchaîne au bout.

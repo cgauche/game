@@ -248,6 +248,10 @@ export interface PendingAttack {
    *  MÊLÉE seulement, jamais avec une arme *En flammes*. Le moteur (`applyHit`) ignore le drapeau hors
    *  mêlée ; il retire Empaleuse/Percutante/Perforante + l'Atout Taille et supprime le Critique sauf mise à 0. */
   withhold?: boolean;
+  /** « Empoignade » (LDB 14 l.159) : déclarée AVANT le lancer pour toucher — sur une touche, « au lieu
+   *  d'infliger des Dégâts », pose l'Empoignade (les deux) + l'État *Empêtré* (cible), sans Dégâts. MAINS
+   *  NUES seulement (cf. `applyAttackResult(..., grapple)`). */
+  grapple?: boolean;
   /** Attaque-Action en mode « des deux armes » (main directrice) : chaîne une 2ᵉ frappe si elle touche (LDB 10 l.638). */
   dualMode?: boolean;
   /** Cette attaque EST la 2ᵉ frappe (off-hand) d'un Maniement de deux armes : jet imposé, pas de relance. */
@@ -577,6 +581,23 @@ export interface PendingAuContact {
   def: TestResult | null; // jet de Corps à corps du mover (influençable)
   result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover (héros) l'emporte ; 'tie' = statu quo
   /** Relance par Chance du jet du mover déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
+}
+
+/** Action d'Empoignade en attente (LDB 14 l.161) : Test opposé de FORCE `actor` vs `foe` pour son
+ *  Action, OU « Briser » (gratuit) si Avantage supérieur. Calque `PendingAuContact` : le jet de Force du
+ *  foe (`atk`) est figé, seul le jet de l'acteur (`def`) se (re)joue. `phase 'roll'` = Test opposé
+ *  influençable (+ bouton « Briser » si `canBreak`) ; `phase 'options'` = le vainqueur choisit Dégâts /
+ *  Empêtrer l'adversaire / Se libérer (LDB 14 l.161). */
+export interface PendingGrapple {
+  actorId: string; // celui qui agit (Empoigné, à son tour)
+  foeId: string; // l'autre Empoigné
+  phase: 'roll' | 'options';
+  canBreak: boolean; // Avantage STRICTEMENT supérieur → peut Briser l'Empoignade gratuitement
+  atk: TestResult | null; // jet de Force du foe, figé (jamais relancé)
+  def: TestResult | null; // jet de Force de l'acteur (influençable)
+  result: 'success' | 'failure' | 'tie' | null; // 'success' = l'acteur l'emporte ; 'tie' = statu quo
+  /** Relance par Chance du jet de l'acteur déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }
 

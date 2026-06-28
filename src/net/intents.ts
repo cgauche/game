@@ -23,7 +23,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'spendResolveCondition',
   // attaque (modale différée)
   'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode', 'attackSetIntoCrowd',
-  'attackSetHeldGround', 'attackSetWithhold', 'attackSetCritLocation', 'attackSetForcedRoll', 'attackRoll',
+  'attackSetHeldGround', 'attackSetWithhold', 'attackSetGrapple', 'attackSetCritLocation', 'attackSetForcedRoll', 'attackRoll',
   'attackReroll', 'attackBonusSL', 'attackDarkPact', 'attackForceSuccess', 'attackConfirm',
   'attackCancel',
   // défense réactive
@@ -51,6 +51,9 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'battleAuContact', 'auContactRoll', 'auContactReroll', 'auContactBonusSL',
   'auContactDarkPact', 'auContactForceSuccess', 'auContactConfirm', 'auContactChoose',
   'auContactCancel',
+  // Empoignade (LDB 14 l.161) : Test opposé de Force OU « Briser » + choix du vainqueur
+  'battleGrapple', 'grappleBreak', 'grappleRoll', 'grappleReroll', 'grappleBonusSL',
+  'grappleDarkPact', 'grappleForceSuccess', 'grappleConfirm', 'grappleChoose', 'grappleCancel',
   // Fuir : Test de Calme du fuyard (flux `flee`, calqué sur `approach`)
   'fleeRoll', 'fleeReroll', 'fleeBonusSL', 'fleeDarkPact', 'fleeForceSuccess', 'fleeConfirm',
   // combat monté

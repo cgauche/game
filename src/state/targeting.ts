@@ -16,7 +16,7 @@ import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
 import { spellOps } from './flow';
 import type { GameState } from './store';
-import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget, auContactEligible, firedAttackBlock } from './combatFlow';
+import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget, auContactEligible, grappleActionEligible, firedAttackBlock } from './combatFlow';
 
 export type HoverTargeting =
   | { kind: 'none' }
@@ -159,6 +159,10 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
   if (option.targeting === 'aucontact') // « Au Contact » (LDB 62 l.176) : Test opposé de Corps à corps, pas une frappe
     return auContactEligible(active, target)
       ? { kind: 'ok', line: 'dashed', title: 'Au contact', skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
+      : { kind: 'none' };
+  if (option.targeting === 'grapple') // Empoignade (LDB 14 l.161) : Test opposé de Force, pas une frappe
+    return grappleActionEligible(active, target)
+      ? { kind: 'ok', line: 'dashed', title: 'Empoignade', skill: 'Force', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
       : { kind: 'none' };
   // === MÊLÉE (Arme + gratuites) : approche-puis-frappe — chemin réel + réticule au survol (le clic commet) ;
   // l'aperçu est calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact). L'Allonge suit l'option.

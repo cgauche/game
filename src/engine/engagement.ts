@@ -77,9 +77,11 @@ export function clearEngagementOf(all: Combatant[], id: string): void {
   for (const c of all) {
     if (c.engagedWith?.length) c.engagedWith = c.engagedWith.filter((x) => x !== id);
     if (c.contactWith?.length) c.contactWith = c.contactWith.filter((x) => x !== id);
+    // Empoignade (LDB 14 l.159) : une cible hors d'action ne lutte plus → on lève aussi ses liens.
+    if (c.grapplingWith?.length) c.grapplingWith = c.grapplingWith.filter((x) => x !== id);
   }
   const self = all.find((c) => c.id === id);
-  if (self) { self.engagedWith = []; self.contactWith = []; }
+  if (self) { self.engagedWith = []; self.contactWith = []; self.grapplingWith = []; }
 }
 
 /** Deux combattants sont-ils « au contact » (LDB 62 l.176) ? Relation SYMÉTRIQUE (posée par paire) — un

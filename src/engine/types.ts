@@ -953,6 +953,11 @@ export interface Combatant {
    *  de l'Engagement (purgé par paire dès que l'Engagement A↔B tombe). Toute arme plus longue que Courte
    *  vaut alors une Arme improvisée (cf. `effectiveWeapon` / `WeaponContext.auContact`). */
   contactWith?: string[];
+  /** « Empoignés » (LDB 14 l.159, Option « Empoignade ») : adversaires avec qui ce combattant est en
+   *  Empoignade. Relationnel et symétrique (comme `engagedWith`/`contactWith`), posé par paire ; l'État
+   *  *Empêtré* de l'Empoigné est une DONNÉE distincte (addCondition). Purgé sur sortie de combat
+   *  (`clearGrappleOf`, appelé là où `clearEngagementOf` purge l'Engagement). */
+  grapplingWith?: string[];
   /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
    *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
   appearance?: import('../gameIso/rig/appearance').Appearance;

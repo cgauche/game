@@ -515,6 +515,13 @@ export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): Test
   return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe));
 }
 
+/** Jet de FORCE « brut » pour le Test opposé d'Empoignade (LDB 14 l.161 : « un Test opposé de Force »).
+ *  Valeur = caractéristique de Force + Avantage×10 + pénalités d'États (`baseTestMods`), sans Atout
+ *  d'arme (c'est une lutte au corps à corps, pas une frappe portée). Partagé flux joueur + IA. */
+export function rollGrappleForce(c: Combatant, rng: RNG = defaultRNG): TestResult {
+  return rollTest(effectiveChar(c, 'F'), 'intermediaire', rng, baseTestMods(c));
+}
+
 /** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15-Dépl l.101,107) : Test de Corps
  *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
 export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {

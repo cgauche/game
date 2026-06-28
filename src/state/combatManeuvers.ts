@@ -37,6 +37,7 @@ import { smokeZone } from './lineOfSight';
 import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
 import { isEngagedWith, reachRank } from '../engine/engagement';
+import { areGrappling } from '../engine/grapple';
 import { rule } from '../engine/policy';
 import { bus, EVT } from './bus';
 import { t } from '../i18n';
@@ -98,7 +99,7 @@ export interface AttackOption {
   kind?: AttackKind;
   label: string;
   icon: string;
-  targeting: 'melee' | 'zone' | 'trample' | 'aucontact';
+  targeting: 'melee' | 'zone' | 'trample' | 'aucontact' | 'grapple';
   reach?: number;
   forceMelee?: boolean;
   cost: { action: boolean; advantage: number };
@@ -142,6 +143,13 @@ export function auContactEligible(mover: Combatant, foe: Combatant): boolean {
     return !!w && reachRank(w.reach) > reachRank('Courte');
   };
   return longer(mover) || longer(foe);
+}
+
+/** Adversaire VALIDE pour l'action d'Empoignade d'un héros (LDB 14 l.161) : un combattant avec qui
+ *  `mover` est déjà Empoigné, encore en action. Source UNIQUE de l'éligibilité (option de la hotbar +
+ *  clic). Pure. */
+export function grappleActionEligible(mover: Combatant, foe: Combatant): boolean {
+  return areGrappling(mover, foe) && !isOutOfAction(foe); // `areGrappling` d'abord : ne sonde l'état que des partenaires
 }
 
 /** Attaques que le héros ACTIF peut lancer MAINTENANT — UNE liste à coût (Arme d'abord, puis gratuites/
@@ -205,6 +213,11 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   //     auto-choisie (clic droit/IA) : c'est un choix EXPLICITE de l'« Attaque ▾ », pas une frappe.
   if (rule('combat-weapon-reach') && !battle.acted && canTakeAction(active) && battle.combatants.some((c) => auContactEligible(active, c)))
     out.push({ id: 'aucontact', label: 'Au contact', icon: '🤜', targeting: 'aucontact', cost: { action: true, advantage: 0 }, priority: 0 });
+  // (6) Empoignade EN COURS (LDB 14 l.161) : action à son tour entre deux Empoignés — Test opposé de Force
+  //     (Dégâts / Empêtré) ou « Briser » (Avantage supérieur). Dispo si l'Action est dispo et un adversaire
+  //     est Empoigné. `priority:0` → jamais auto-choisie (choix EXPLICITE de l'« Attaque ▾ »).
+  if (!battle.acted && canTakeAction(active) && battle.combatants.some((c) => grappleActionEligible(active, c)))
+    out.push({ id: 'grapple', label: 'Empoignade', icon: '🤼', targeting: 'grapple', cost: { action: true, advantage: 0 }, priority: 0 });
   // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
   return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
 }

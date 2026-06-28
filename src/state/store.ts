@@ -70,7 +70,7 @@ import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
-  PendingDisengage, PendingAuContact, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
+  PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
@@ -282,6 +282,8 @@ export interface GameState extends RollFlowActionsMap {
   pendingDisengage: PendingDisengage | null;
   /** « Au Contact » (LDB 62 l.176, Option « Longueur d'arme ») : Test opposé de Corps à corps + choix du vainqueur. */
   pendingAuContact: PendingAuContact | null;
+  /** Empoignade (LDB 14 l.161) : action à son tour — Test opposé de Force OU « Briser » (Avantage supérieur). */
+  pendingGrapple: PendingGrapple | null;
   /** Déplacement-puis-fouille : id du décor interactif visé, déclenché à l'arrivée adjacente (P5). */
   pendingInteract: string | null;
   pendingCast: PendingCast | null;
@@ -719,6 +721,8 @@ export interface GameState extends RollFlowActionsMap {
   attackSetHeldGround: (v: boolean) => void;
   /** « Retenir ses coups » (Aux Armes l.2503-2505) : bascule le coup non létal de mêlée (avant le jet). */
   attackSetWithhold: (v: boolean) => void;
+  /** « Empoignade » (LDB 14 l.159) : bascule l'initiation d'Empoignade à mains nues (avant le jet). */
+  attackSetGrapple: (v: boolean) => void;
   /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.73) : choisit la Localisation d'un Coup Critique forcé. */
   attackSetCritLocation: (loc: HitLocation) => void;
   attackRoll: () => void;
@@ -850,6 +854,14 @@ export interface GameState extends RollFlowActionsMap {
   auContactConfirm: () => void; // Appliquer : le mover gagne → phase de choix ; le foe gagne (IA) → choix auto ; égalité → statu quo
   auContactChoose: (mode: 'normal' | 'contact') => void; // le vainqueur HÉROS tranche
   auContactCancel: () => void;
+  /** Empoignade (LDB 14 l.161) : action à son tour entre deux Empoignés. */
+  battleGrapple: (targetId: string) => void;
+  grappleBreak: () => void; // Briser l'Empoignade (gratuit, Avantage supérieur)
+  grappleRoll: () => void; // Lancer le Test opposé de Force de l'acteur
+  // grapple{Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
+  grappleConfirm: () => void; // Appliquer : succès → phase d'options ; échec → +1 Avantage au foe ; égalité → statu quo
+  grappleChoose: (mode: 'damage' | 'entangle' | 'free') => void; // le vainqueur choisit Dégâts / Empêtrer / Se libérer
+  grappleCancel: () => void;
   log: (msg: string) => void;
   /** Temps de jeu : minutes depuis l'époque (Hexenstag 2512 00:00, cf. clock.ts). « Tout est horodaté ». */
   gameTime: number;

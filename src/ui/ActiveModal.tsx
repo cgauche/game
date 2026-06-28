@@ -19,6 +19,7 @@ import { FocusModal } from './FocusModal';
 import { DispelModal } from './DispelModal';
 import { FrenzyModal } from './FrenzyModal';
 import { AuContactModal } from './AuContactModal';
+import { GrappleModal } from './GrappleModal';
 import { HealModal } from './HealModal';
 import { MedicModal } from './MedicModal';
 import { RestModal } from './RestModal';
@@ -37,7 +38,7 @@ import { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, renounce: RenounceModal,
   trample: TrampleModal, maneuver: ManeuverModal, reveal: RevealModal,
-  mountTarget: MountTargetModal, frenzy: FrenzyModal, auContact: AuContactModal, approach: ApproachModal, ward: WardModal, run: RunModal, shipManeuver: ShipManeuverModal, shipBattery: ShipBatteryModal, focus: FocusModal, dispel: DispelModal,
+  mountTarget: MountTargetModal, frenzy: FrenzyModal, auContact: AuContactModal, grapple: GrappleModal, approach: ApproachModal, ward: WardModal, run: RunModal, shipManeuver: ShipManeuverModal, shipBattery: ShipBatteryModal, focus: FocusModal, dispel: DispelModal,
   medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
   corruption: CorruptionModal, activity: ActivityModal,
 };

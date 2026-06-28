@@ -13,7 +13,7 @@ import type {
   GameState,
   PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
-  PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage, PendingAuContact,
+  PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
   PendingForceDoor, ForceDoorParticipant,
   PendingCastOpposition, OppositionParticipant,
@@ -33,7 +33,7 @@ import {
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
-import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, type AttackResult } from '../engine/combat';
+import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, type AttackResult } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
@@ -152,6 +152,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'disengage', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'auContact', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'grapple', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'flee', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'focus', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'dispel', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
@@ -605,6 +606,37 @@ export const FLOWS = {
         return { result: 'success' as const }; // l'emporte (LDB ch.17 l.73)
       }
       const def = rollDisengageAttack(actor, battleRng()); // Corps à corps du mover (mover = « attaquant » du Test opposé)
+      const opp = resolveOpposed(def, p.atk);
+      return { def, result: disengageOutcome(opp.winner) };
+    },
+    failed: (p) => !p.def?.success,
+    bonus: {
+      guard: (p) => !!p.def,
+      derive: (_s, p) => {
+        const def2 = bumpSL(p.def!);
+        const opp = resolveOpposed(def2, p.atk!);
+        return { def: def2, result: disengageOutcome(opp.winner) };
+      },
+    },
+  }),
+
+  /**
+   * Empoignade — Test opposé de FORCE (LDB 14 l.161). CALQUE EXACT d'Au Contact : le jet de Force du foe
+   * (`p.atk`) reste FIGÉ ; seul le jet de Force de l'acteur (`p.def`) se (re)joue (Chance/+1 DR/Pacte/
+   * Résilience). Issue BINAIRE (success/tie/fail) → la Résilience fait simplement l'emporter (Dégâts/Empêtré).
+   */
+  grapple: makeRollFlow<PendingGrapple>({
+    key: 'pendingGrapple',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.actorId),
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
+      if (!actor || !p.atk) return null;
+      if (forced) {
+        if (!p.result || !p.def) return null;
+        return { result: 'success' as const }; // l'emporte (LDB ch.17 l.73)
+      }
+      const def = rollGrappleForce(actor, battleRng()); // Force de l'acteur (= « attaquant » du Test opposé)
       const opp = resolveOpposed(def, p.atk);
       return { def, result: disengageOutcome(opp.winner) };
     },
