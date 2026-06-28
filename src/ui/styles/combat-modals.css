@@ -951,6 +951,18 @@
   color: var(--muted);
   font-style: italic;
 }
+/* Contenus d'un contenant (LDB 64) : petite liste indentée sous la rangée du sac. */
+.inv-nested {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 2px 18px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+.inv-nested .inv-row {
+  padding: 4px 8px;
+}
 /* Contrôle « En main » d'une arme du Sac (HandPicker) : seg compacte, sans marge, intégrée à la rangée. */
 .ir-hand .rm-loc-inline {
   margin-bottom: 0;

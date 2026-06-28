@@ -459,6 +459,8 @@ export interface GameState extends RollFlowActionsMap {
   importGame: (json: string) => boolean;
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
+  /** Range (`containerUid`) ou sort (null) un objet d'un héros d'un contenant (LDB 64). */
+  stowItem: (heroId: string, uid: string, containerUid: string | null) => void;
   createLoadout: (heroId: string) => void;
   deleteLoadout: (heroId: string, id: string) => void;
   setActiveLoadout: (heroId: string, id: string) => void;
@@ -1155,6 +1157,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Actions GROUPE (équipement / avancement) : déléguées à partyFlow ──
   toggleEquip: (heroId, uid) => partyFlow.toggleEquip(get, set, heroId, uid),
+  stowItem: (heroId, uid, containerUid) => partyFlow.stowItem(get, set, heroId, uid, containerUid),
   createLoadout: (heroId) => partyFlow.createLoadout(get, set, heroId),
   deleteLoadout: (heroId, id) => partyFlow.deleteLoadout(get, set, heroId, id),
   setActiveLoadout: (heroId, id) => partyFlow.setActiveLoadout(get, set, heroId, id),

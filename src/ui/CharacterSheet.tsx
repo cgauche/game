@@ -4,7 +4,7 @@ import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
-import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, weaponHands, isOffHandEligible } from '../engine/items';
+import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
 import { CHAR_LABELS, HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { locationLabel } from '../engine/combat';
@@ -384,6 +384,7 @@ function HandPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
 
 function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'combat' | 'competences' | 'sac' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
+  const stowItem = useGame((s) => s.stowItem);
   const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
   const usePartyItem = useGame((s) => s.usePartyItem);
@@ -550,7 +551,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           const renderRow = (it: ItemInstance) => {
             const isProsthesis = it.subType === 'protheses'; // prothèse (LDB 73, Groupe id) : se PORTE pour annuler un malus d'amputation
             const isCape = isCapeItem(it); // cape/manteau : emplacement Cape (cosmétique, onglet Combat)
-            const equipable = it.kind === 'armor' || isProsthesis || isCape; // armes = via les sets d'armes (cf. EquipmentPanel)
+            const consumable = isConsumable(it); // bandages / potion : utilisable depuis la fiche
+            const equipable = isWearable(it) && !consumable; // armure/accessoire porté sur le corps (LDB 61) — pas une arme (tenue), pas un consommable
+            // Rangement (LDB 64) : contenants où CET objet tient ; objet rangeable = ni contenant, ni déjà rangé, ≥1 sac dispo.
+            const containers = it.container || it.inside ? [] : items.filter((i) => i.container && canStow(hero, it, i.uid));
             const isWeaponItem = it.kind === 'melee' || it.kind === 'ranged';
             // E1 : état « en main » SANS jargon « set » (les sets = fonction avancée, cf. onglet Combat) —
             // on NOMME l'arme du set ACTIF Main principale / secondaire ; les autres armes n'affichent rien.
@@ -561,7 +565,6 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             // Surbrillance « équipé » : arme tenue dans le set ACTIF (plus de flag `equipped` d'arme) ; sinon armure portée.
             const highlighted = isWeaponItem ? isWeaponActive(hero, it.uid) : it.equipped;
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
-            const consumable = isConsumable(it); // bandages / potion : utilisable depuis la fiche
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
             const open = isSkinnable && skinFor === it.uid;
             return (
@@ -580,6 +583,9 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <span className="ir-stats">{itemStats(it)}</span>
                   </div>
                   <span className="ir-enc">Enc {it.enc}</span>
+                  {it.container && (
+                    <span className="ir-enc" title="Contenu rangé / capacité (Enc) — LDB 64">📦 {containerFillEnc(hero, it.uid)}/{it.container.capacity}</span>
+                  )}
                   {it.identified === false && !inBattleNow && (
                     <>
                       {it.appraiseTriedDay !== today && (
@@ -628,10 +634,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <button
                       className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
                       disabled={inBattleNow}
-                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : undefined}
+                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : it.kind === 'misc' ? 'Porter (−1 Enc)' : undefined}
                       onClick={() => toggleEquip(hero.id, it.uid)}
                     >
-                      {isProsthesis || isCape ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}
+                      {it.kind === 'armor' ? (it.equipped ? 'Équipé' : 'Équiper') : it.equipped ? 'Portée' : 'Porter'}
                     </button>
                   ) : consumable ? (
                     <button
@@ -644,6 +650,21 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     </button>
                   ) : (
                     <span className="ir-kind">{it.kind}</span>
+                  )}
+                  {containers.length > 0 && !inBattleNow && (
+                    <MediaSelect
+                      align="right"
+                      triggerClassName="btn small"
+                      title="Ranger dans un contenant (LDB 64)"
+                      trigger="🎒"
+                      options={containers.map((bag) => ({
+                        key: bag.uid,
+                        media: <ItemIcon item={bag} size="sm" />,
+                        label: bag.name,
+                        sub: `${containerFillEnc(hero, bag.uid)}/${bag.container?.capacity ?? 0}`,
+                      }))}
+                      onSelect={(cid) => stowItem(hero.id, it.uid, cid)}
+                    />
                   )}
                   {party.length > 1 && !inBattleNow && (
                     <MediaSelect
@@ -677,6 +698,21 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     </div>
                   </div>
                 )}
+                {it.container && (() => {
+                  const stowed = items.filter((i) => i.inside === it.uid);
+                  return stowed.length ? (
+                    <div className="inv-nested">
+                      {stowed.map((s) => (
+                        <div key={s.uid} className={`inv-row kind-${s.kind}`}>
+                          <ItemIcon item={s} size="sm" />
+                          <span className="ir-name">{s.name}</span>
+                          <span className="ir-enc" style={{ marginLeft: 'auto' }}>Enc {s.enc}</span>
+                          <button className="btn small" disabled={inBattleNow} title="Sortir du contenant" onClick={() => stowItem(hero.id, s.uid, null)}>Sortir</button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
               </div>
             );
           };
@@ -688,7 +724,8 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             { label: 'Divers', pred: () => true },
           ];
           const partition: ItemInstance[][] = GROUPS.map(() => []);
-          for (const it of items) {
+          // Niveau supérieur = objets NON rangés ; les objets `inside` sont rendus IMBRIQUÉS sous leur contenant.
+          for (const it of items.filter((i) => !i.inside)) {
             const gi = GROUPS.findIndex((g) => g.pred(it));
             partition[gi].push(it);
           }
