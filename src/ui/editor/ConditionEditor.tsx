@@ -58,6 +58,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['startleCause', 'Cause d’effarouchement'],
   ['woundsDealt', 'Blessures infligées'],
   ['engagedAdvantageGap', 'Écart d’Avantage (engagés)'],
+  ['engagedAdvantageLead', 'Avance d’Avantage (sur tous les engagés)'],
   ['foeInLoS', 'Ennemi en Ligne de Vue'],
   ['hiddenFromFoes', 'Caché de l’ennemi (hors de vue)'],
   ['engaged', 'Engagé avec un ennemi'],
@@ -99,6 +100,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'startleCause': return `effarouché par ${STARTLE_CAUSE_LABELS[c.is]}`;
     case 'woundsDealt': return `PB infligés ${c.op} ${c.value}`;
     case 'engagedAdvantageGap': return `écart d’Avantage ${c.op} ${c.value}`;
+    case 'engagedAdvantageLead': return `avance d’Avantage ${c.op} ${c.value}`;
     case 'foeInLoS': return 'ennemi en Ligne de Vue';
     case 'hiddenFromFoes': return 'caché (hors de vue de l’ennemi)';
     case 'engaged': return 'engagé avec un ennemi';
@@ -128,6 +130,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'startleCause': return { kind: 'startleCause', is: cond.kind === 'startleCause' ? cond.is : 'noise' };
     case 'woundsDealt': return cond.kind === 'woundsDealt' ? cond : { kind: 'woundsDealt', op: '>', value: 0 };
     case 'engagedAdvantageGap': return cond.kind === 'engagedAdvantageGap' ? cond : { kind: 'engagedAdvantageGap', op: '>', value: 0 };
+    case 'engagedAdvantageLead': return cond.kind === 'engagedAdvantageLead' ? cond : { kind: 'engagedAdvantageLead', op: '>', value: 0 };
     case 'foeInLoS': return { kind: 'foeInLoS' };
     case 'hiddenFromFoes': return { kind: 'hiddenFromFoes' };
     case 'engaged': return { kind: 'engaged' };
@@ -295,6 +298,14 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
           <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
+        </span>
+      )}
+      {cond.kind === 'engagedAdvantageLead' && (
+        <span className="cond-time">avance d’Avantage
+          <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
+            {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <input type="number" style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
         </span>
       )}
       {cond.kind === 'relation' && (

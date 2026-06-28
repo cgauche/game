@@ -386,7 +386,7 @@ export function runSpellFlowLines(target: Combatant, caster: Combatant | undefin
         // Condition `compare` : `target` = la cible du sous-Flow, `caster` = le lanceur/porteur.
         // `location`/`woundsDealt` : contexte de la touche courante (Assommante Tête, Venin sur PB).
         if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target], sl: ctx.sl,
-          location: ctx.location, woundsDealt: ctx.woundsDealt, engagedAdvantageGap: ctx.engagedAdvantageGap, foeInLoS: ctx.foeInLoS,
+          location: ctx.location, woundsDealt: ctx.woundsDealt, engagedAdvantageGap: ctx.engagedAdvantageGap, engagedAdvantageLead: ctx.engagedAdvantageLead, foeInLoS: ctx.foeInLoS,
           hiddenFromFoes: ctx.hiddenFromFoes, engaged: ctx.engaged, nearestFoeDist: ctx.nearestFoeDist,
           attackKind: ctx.attackKind, startleCause: ctx.startleCause, target: buildActorView(target), caster: buildActorView(caster) })) walk(f.then);
         else if (f.else) walk(f.else);

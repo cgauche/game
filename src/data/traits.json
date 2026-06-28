@@ -1969,7 +1969,94 @@
     "source": {
       "book": "EDO",
       "page": 147
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": {
+          "pick": "engaged",
+          "sizeAtMost": "self",
+          "max": 1
+        },
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "engagedAdvantageLead",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "empetre",
+                  "value": {
+                    "bonusOf": "F"
+                  },
+                  "grapple": true
+                },
+                {
+                  "op": "condition",
+                  "name": "digere"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "trigger": "onRoundEnd",
+        "on": "grappled",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "bonusOf": "F"
+                },
+                "ignoreTB": true,
+                "ignoreAP": true
+              },
+              {
+                "op": "healCaster",
+                "amount": {
+                  "bonusOf": "F"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "trigger": "onWoundLoss",
+        "on": "grappled",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "woundsDealt": true
+                },
+                "ignoreTB": true,
+                "ignoreAP": true
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "amorphe",

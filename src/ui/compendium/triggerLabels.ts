@@ -24,13 +24,19 @@ export const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onMiscast: 'Sur une Imparfaite',
 };
 
-/** Libellés des CIBLES « simples » d'un effet (les 3 valeurs éditables dans le `<select>` de l'éditeur). */
-export const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
+/** Libellés des CIBLES « simples » d'un effet (les valeurs chaîne éditables dans le `<select>` de l'éditeur). */
+export const ON_LABEL: Record<'self' | 'victim' | 'engaged' | 'grappled', string> = {
   self: 'soi-même',
   victim: 'la victime',
   engaged: 'les adversaires engagés',
+  grappled: 'la victime empoignée (absorbée)',
 };
 
-/** Libellé de la CIBLE d'un effet déclenché — chaîne simple OU géométrie (`{near, radiusMeters}`). */
+/** Libellé de la CIBLE d'un effet déclenché — chaîne simple, géométrie (`{near, radiusMeters}`) ou
+ *  sélection limitée d'un adversaire engagé (`{pick, sizeAtMost, max}`). */
 export const onLabel = (on: TriggeredEffect['on']): string =>
-  typeof on === 'object' ? `les cibles à ≤ ${on.radiusMeters} m de ${on.near === 'self' ? 'soi' : 'la victime'}` : ON_LABEL[on];
+  typeof on === 'object'
+    ? 'pick' in on
+      ? `${on.max} adversaire(s) engagé(s)${on.sizeAtMost === 'self' ? ' de Taille ≤ la sienne' : ''}`
+      : `les cibles à ≤ ${on.radiusMeters} m de ${on.near === 'self' ? 'soi' : 'la victime'}`
+    : ON_LABEL[on];

@@ -78,6 +78,10 @@ export type Formula =
    *  injecté par le dispatcher de combat (`ctx.engagedAdvantageGap`, calculé sur la `battle`). Valeur
    *  RELATIONNELLE de l'arène (Instable « perd la différence d'Avantage », LDB 85 l.177). 0 hors contexte. */
   | { engagedAdvantageGap: true }
+  /** Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`) — miroir Formula de la
+   *  Condition `woundsDealt`. Absorption « Toute attaque qui touche la créature inflige une quantité ÉGALE
+   *  de Dégâts à la victime absorbée » (EDO p.147) : `wounds { amount: { woundsDealt: true } }`. 0 hors contexte. */
+  | { woundsDealt: true }
   /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.77). Permet
    *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
   | { sum: Formula[] };
@@ -85,7 +89,7 @@ export type Formula =
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
  *  de l'attaque naturelle d'une manœuvre (`{indiceOf}`, 0 hors contexte). */
-export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number, gap?: number): number {
+export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number, gap?: number, woundsDealt?: number): number {
   if (typeof f === 'number') return f;
   if (typeof f !== 'object' || f === null) return 0; // formule malformée (donnée invalide) → 0, jamais un crash en plein combat
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
@@ -94,14 +98,15 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('indiceOf' in f) return indice ?? 0;
   if ('stacks' in f) return stacks ?? 0;
   if ('engagedAdvantageGap' in f) return gap ?? 0;
-  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap), 0);
+  if ('woundsDealt' in f) return woundsDealt ?? 0;
+  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap, woundsDealt), 0);
   return rollDice(f.dice, rng);
 }
 
 /** Clés reconnues d'une `Formula` OBJET — SOURCE UNIQUE, alignée sur l'union `Formula` et sur les
  *  branches de `resolveFormula`. Réutilisée par le garde-fou d'intégrité des données
  *  (`src/data/data-wellformed.test.ts`) pour valider les champs Formula des `GameOp` sans re-coder la liste. */
-export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'sum'] as const;
+export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'sum'] as const;
 
 /** Une valeur est-elle une `Formula` VALIDE — résoluble par `resolveFormula` sans planter ? `number` FINI,
  *  ou objet portant exactement une clé connue (`sum` récursif). PUR. Rejette une string (un `'$indice'`
@@ -658,6 +663,9 @@ export interface OpsCtx {
   /** Écart d'Avantage avec les adversaires Engagés — résout `{engagedAdvantageGap:true}` ET la Condition
    *  `engagedAdvantageGap` (Instable). Calculé sur la `battle` par le dispatcher de combat. */
   engagedAdvantageGap?: number;
+  /** Avance d'Avantage SIGNÉE sur tous les adversaires Engagés — résout la Condition `engagedAdvantageLead`
+   *  (Absorption : `> 0` = strictement supérieur à tous). Calculée sur la `battle` par le dispatcher. */
+  engagedAdvantageLead?: number;
   /** Localisation de la touche courante (dé inversé) — lue par la Condition Flow `location` (Assommante). */
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition Flow
@@ -771,7 +779,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     switch (o.op) {
       case 'wounds': {
         if (!groupGate(o.onlyGroups)) break;
-        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap) + slBonus(ctx.sl, o.perSL));
+        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap, ctx.woundsDealt) + slBonus(ctx.sl, o.perSL));
         // MODE COUP D'ARME (S1) : délègue au résolveur partagé `woundsFromHit` → qualités d'arme
         // (Perforante/Empaleuse), armure à la `ctx.location` et BE, sans dupliquer la mitigation.
         if (o.weaponHit && ctx.weapon) {

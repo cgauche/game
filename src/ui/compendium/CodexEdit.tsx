@@ -400,17 +400,26 @@ function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] |
               </select>
             </label>
             <label className="dr">Cible
-              <select value={typeof eff.on === 'object' ? 'near' : eff.on} onChange={(e) => set(i, { on: e.target.value === 'near' ? { near: 'victim', radiusMeters: 2 } : e.target.value as TriggeredEffect['on'] })}>
-                {(Object.keys(ON_LABEL) as ('self' | 'victim' | 'engaged')[]).map((o) => <option key={o} value={o}>{ON_LABEL[o]}</option>)}
+              <select value={typeof eff.on === 'object' ? ('pick' in eff.on ? 'pick' : 'near') : eff.on}
+                onChange={(e) => set(i, { on:
+                  e.target.value === 'near' ? { near: 'victim', radiusMeters: 2 }
+                  : e.target.value === 'pick' ? { pick: 'engaged', sizeAtMost: 'self', max: 1 }
+                  : e.target.value as TriggeredEffect['on'] })}>
+                {(Object.keys(ON_LABEL) as ('self' | 'victim' | 'engaged' | 'grappled')[]).map((o) => <option key={o} value={o}>{ON_LABEL[o]}</option>)}
                 <option value="near">les cibles à portée (zone)</option>
+                <option value="pick">un adversaire engagé (sélection)</option>
               </select>
             </label>
-            {typeof eff.on === 'object' && (
+            {typeof eff.on === 'object' && 'near' in eff.on && (
               <label className="dr">à ≤ <input type="number" min={1} style={{ width: '3.4em' }} value={eff.on.radiusMeters} onChange={(e) => set(i, { on: { near: (eff.on as { near: 'self' | 'victim' }).near, radiusMeters: Math.max(1, Number(e.target.value) || 1) } })} /> m de
               <select value={eff.on.near} onChange={(e) => set(i, { on: { near: e.target.value as 'self' | 'victim', radiusMeters: (eff.on as { radiusMeters: number }).radiusMeters } })}>
                 <option value="victim">la victime</option>
                 <option value="self">soi</option>
               </select></label>
+            )}
+            {typeof eff.on === 'object' && 'pick' in eff.on && (
+              <label className="dr">max <input type="number" min={1} style={{ width: '3.4em' }} value={eff.on.max} onChange={(e) => set(i, { on: { pick: 'engaged', ...((eff.on as { sizeAtMost?: 'self' }).sizeAtMost ? { sizeAtMost: 'self' as const } : {}), max: Math.max(1, Number(e.target.value) || 1) } })} />
+              <input type="checkbox" checked={(eff.on as { sizeAtMost?: 'self' }).sizeAtMost === 'self'} onChange={(e) => set(i, { on: { pick: 'engaged', ...(e.target.checked ? { sizeAtMost: 'self' as const } : {}), max: (eff.on as { max: number }).max } })} /> Taille ≤ la sienne</label>
             )}
             <button className="btn small danger" title="Supprimer l’effet" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
           </div>

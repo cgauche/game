@@ -129,7 +129,27 @@ function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victi
   if (on === 'victim') return victim ? [victim] : [];
   const battle = get().battle;
   if (!battle) return [];
-  if (typeof on === 'object') { // GÉOMÉTRIE : tous les combattants à portée d'un centre (arc d'Azyr, Trait/Talent d'aire)
+  if (on === 'grappled') { // les adversaires EMPOIGNÉS par le porteur (`grapplingWith`) — la victime absorbée
+    const held = new Set(actor.grapplingWith ?? []);
+    return battle.combatants.filter((c) => held.has(c.id));
+  }
+  if (typeof on === 'object') {
+    if ('pick' in on) {
+      // SÉLECTION d'un nombre LIMITÉ d'adversaires Engagés à engloutir (Absorption : « UN adversaire de taille
+      // égale ou inférieure », un à la fois). Capacité restante = `max` − empoignés déjà tenus (un seul à la
+      // fois pour max:1) ; candidats = Engagés vivants non encore tenus, de Taille ≤ la sienne, les + proches.
+      const held = actor.grapplingWith ?? [];
+      const capacity = Math.max(0, on.max - held.length);
+      if (capacity === 0) return [];
+      const selfSize = SIZE_ORDER[effectiveSize(actor.size)];
+      const eligible = battle.combatants.filter((c) =>
+        c.id !== actor.id && c.kind !== actor.kind && !isOutOfAction(c)
+        && isEngagedWith(c, actor.id) && !held.includes(c.id)
+        && (on.sizeAtMost !== 'self' || SIZE_ORDER[effectiveSize(c.size)] <= selfSize));
+      eligible.sort((a, b) => combatDistance(actor, a) - combatDistance(actor, b)); // les plus proches d'abord
+      return eligible.slice(0, capacity);
+    }
+    // GÉOMÉTRIE : tous les combattants à portée d'un centre (arc d'Azyr, Trait/Talent d'aire)
     const center = on.near === 'self' ? actor : victim;
     if (!center?.pos) return [];
     const radius = Math.max(1, Math.ceil(on.radiusMeters / 2)); // 1 case = 2 m
@@ -154,6 +174,9 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
   /** Écart d'Avantage avec les adversaires Engagés — alimente la Formula `{engagedAdvantageGap}` ET la
    *  Condition `engagedAdvantageGap` (Instable). Calculé par `applyTriggeredEffects` sur la `battle`. */
   engagedAdvantageGap?: number;
+  /** Avance d'Avantage SIGNÉE sur tous les adversaires Engagés — alimente la Condition `engagedAdvantageLead`
+   *  (Absorption). Calculée par `applyTriggeredEffects` sur la `battle`. */
+  engagedAdvantageLead?: number;
   /** Localisation de la touche courante (dé inversé) — alimente la Condition Flow `location` (Assommante). */
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — alimente la Condition Flow
@@ -230,6 +253,18 @@ function engagedAdvantageGap(get: Get, actor: Combatant): number {
   return Math.max(0, Math.max(...foes.map((e) => e.advantage ?? 0)) - (actor.advantage ?? 0));
 }
 
+/** AVANCE d'Avantage de `actor` sur TOUS ses adversaires ENGAGÉS : `son Avantage − le meilleur Avantage
+ *  ennemi engagé`, SIGNÉE et non bornée (≠ `engagedAdvantageGap` qui clampe à ≥ 0 l'excès ENNEMI). `> 0` =
+ *  Avantage STRICTEMENT supérieur à tous (Absorption « si la créature a un Avantage plus élevé que tous les
+ *  adversaires engagés », EDO p.147). Hors combat / sans foe engagé = 0. Valeur RELATIONNELLE de l'arène. */
+function engagedAdvantageLead(get: Get, actor: Combatant): number {
+  const battle = get().battle;
+  if (!battle) return 0;
+  const foes = battle.combatants.filter((e) => e.kind !== actor.kind && !isOutOfAction(e) && isEngagedWith(e, actor.id));
+  if (!foes.length) return 0;
+  return (actor.advantage ?? 0) - Math.max(...foes.map((e) => e.advantage ?? 0));
+}
+
 /** Un adversaire VIVANT est-il dans la Ligne de Vue de `actor` ? Géométrie d'arène (au-dessus de
  *  `lineOfSightCover`, fumées/zones bloquantes incluses) alimentant la Condition `foeInLoS` : sortie de
  *  Frénésie (LDB 21 l.36), fuite/récupération du Brisé (LDB 16 l.55). Hors combat / sans position = false. */
@@ -270,6 +305,7 @@ export function applyTriggeredEffects(
   // Valeur RELATIONNELLE de combat calculée UNE fois pour le porteur (battle-aware) : écart d'Avantage
   // avec ses adversaires Engagés (Instable, LDB 85 l.177). Voyage dans l'opsCtx → Formula/Condition.
   const gap = ctx.engagedAdvantageGap ?? engagedAdvantageGap(get, actor);
+  const lead = ctx.engagedAdvantageLead ?? engagedAdvantageLead(get, actor);
   const foeInLoS = ctx.foeInLoS ?? hasFoeInLoS(get, actor);
   // Géométrie de récupération du Brisé (caché/Engagé/proximité) — battle-aware, calculée UNE fois pour le
   // porteur, et SEULEMENT à la frontière de Round (seul moment où un État la consomme : LDB 16 l.55-59),
@@ -293,7 +329,7 @@ export function applyTriggeredEffects(
       // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
-      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist };
+      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, engagedAdvantageLead: lead, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist };
       if (flowHasTest(eff.flow)) {
         // Test de FIN DE ROUND (`deferInteractiveTest`, posé par le hook `end-of-round` : la cascade n'est
         // pas encore ouverte) : un héros MANUEL est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ;

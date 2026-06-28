@@ -37,7 +37,7 @@ export function buildActorView(c: Combatant | undefined): ActorView | undefined 
 export function combatConditionCtx(c: Combatant, ctx: OpsCtx): ConditionCtx {
   return {
     flags: {}, gameTime: ctx.now ?? 0, party: [c], sl: ctx.sl,
-    location: ctx.location, woundsDealt: ctx.woundsDealt, engagedAdvantageGap: ctx.engagedAdvantageGap,
+    location: ctx.location, woundsDealt: ctx.woundsDealt, engagedAdvantageGap: ctx.engagedAdvantageGap, engagedAdvantageLead: ctx.engagedAdvantageLead,
     attackKind: ctx.attackKind, startleCause: ctx.startleCause,
     foeInLoS: ctx.foeInLoS, hiddenFromFoes: ctx.hiddenFromFoes, engaged: ctx.engaged, nearestFoeDist: ctx.nearestFoeDist,
     target: buildActorView(c), caster: buildActorView(ctx.caster),

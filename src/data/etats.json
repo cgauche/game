@@ -836,5 +836,14 @@
       "page": 124
     },
     "desc": "L'Inondation a atteint l'Endurance du navire : le vaisseau COULE (MDG ch.13)."
+  },
+  {
+    "id": "digere",
+    "label": "Digéré",
+    "source": {
+      "book": "EDO",
+      "page": 147
+    },
+    "desc": "Une victime absorbée gagne un nombre d’États Empêtré égal au Bonus de Force de la créature et compte comme étant Empoigné. Une victime absorbée perd le Bonus de Force de la créature en Blessures à la fin de chaque tour ; les Points d’Armure, ou le Bonus d’Endurance, ne réduisent pas cette perte. Le même nombre de Blessures est « guéri » par la créature. Toute attaque qui touche la créature inflige une quantité égale de Dégâts à la victime absorbée."
   }
 ]
