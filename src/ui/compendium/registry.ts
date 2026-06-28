@@ -14,6 +14,7 @@ import {
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
+  isNamed,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
@@ -548,7 +549,11 @@ export const CODEX: CodexCategory[] = [
     items: creatures.map((c) => ({
       label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, source: src(c.source),
       appearance: c.appearance, previewRef: c.id, // aperçu rig résolu par id (Nuées/non-bipèdes lisent leurs traits)
-      meta: c.harvest ? facts(fact('Récolte (1 Enc)', formatMoney(costPerEnc(c.harvest)))) : undefined,
+      meta: facts(
+        // pastille d'en-tête TOUJOURS visible : marque l'individu nommé (lu via `isNamed`, jamais via `title`).
+        isNamed(c) ? fact('Type', 'Individu nommé') : null,
+        c.harvest ? fact('Récolte (1 Enc)', formatMoney(costPerEnc(c.harvest))) : null,
+      ),
       sections: sections(
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },
         chips('Traits', 'traits', traitLabels(c.traits)),

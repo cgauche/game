@@ -309,6 +309,9 @@ export interface CreatureData {
   id: string;
   label: string;
   title: string | null;
+  /** `true` = individu NOMMÉ (vs rôle générique / espèce de bestiaire) ; absent/`false` = générique.
+   *  SOURCE UNIQUE de la nommé-ité — ne PAS l'inférer de `title`. Éditable au Codex. */
+  named?: boolean;
   folder: string | null;
   char: Record<string, number | null>;
   /** Traits STRUCTURÉS (`TraitInstance[]`) — source app-owned migrée du parsing de chaînes (de-POC).
@@ -1208,6 +1211,10 @@ export function findCreatureById(id: string | undefined): CreatureData | undefin
 /** Libellé d'affichage d'une créature par son id (repli sur l'id si introuvable). */
 export function creatureLabel(id: string): string {
   return CREATURE_BY_ID.get(id)?.label ?? id;
+}
+/** Seul lecteur autorisé de la nommé-ité (jamais via `title`) : `true` si la créature est un individu nommé. */
+export function isNamed(c: CreatureData): boolean {
+  return c.named === true;
 }
 /** Lookup par LIBELLÉ — réservé à l'AUTHORING/affichage (picker éditeur, Codex) ; le runtime résout par id. */
 export function findCreature(label: string): CreatureData | undefined {

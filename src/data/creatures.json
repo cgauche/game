@@ -323,6 +323,7 @@
     "id": "bella-la-noire",
     "label": "Bella la Noire",
     "title": "Bandit humain",
+    "named": true,
     "folder": "Les peuples du Reikland",
     "char": {
       "M": 3,
@@ -389,6 +390,7 @@
     "id": "pol-dankels",
     "label": "Pol Dankels",
     "title": "Sorcier humain",
+    "named": true,
     "folder": "Les peuples du Reikland",
     "char": {
       "M": 4,
@@ -446,6 +448,7 @@
     "id": "eusapia-balacanon",
     "label": "Eusapia Balacañon",
     "title": "Maître sorcier humain (OR 1)",
+    "named": true,
     "folder": "Les peuples du Reikland",
     "char": {
       "M": 4,
@@ -4466,6 +4469,7 @@
     "id": "slenderthigh-whiptongue",
     "label": "Slenderthigh Whiptongue",
     "title": "Prince démon de Slaanesh",
+    "named": true,
     "folder": "Princes démons",
     "char": {
       "M": 6,
@@ -4545,6 +4549,7 @@
     "id": "fr-hough-mournbreath",
     "label": "Fr’hough Mournbreath",
     "title": "Prince démon de Nurgle",
+    "named": true,
     "folder": "Princes démons",
     "char": {
       "M": 4,
@@ -49131,6 +49136,7 @@
     "id": "l-ombre-du-fleuve",
     "label": "L'Ombre du Fleuve",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 9,
@@ -49612,6 +49618,7 @@
     "id": "raukos",
     "label": "Raukos",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 4,
@@ -49782,6 +49789,7 @@
     "id": "le-vieux-dos-de-pus",
     "label": "Le Vieux Dos-de-Pus",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 6,
@@ -50062,6 +50070,7 @@
     "id": "brise-krag",
     "label": "Brise-Krag",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 7,
@@ -50390,6 +50399,7 @@
     "id": "caledair-la-faux-de-feu",
     "label": "Caledair - la Faux de Feu",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 6,
@@ -50513,6 +50523,7 @@
     "id": "l-abominable-halagrundsor",
     "label": "« L'abominable » Halagrundsor",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "appearance": {
       "species": "geant",
@@ -51359,6 +51370,7 @@
     "id": "jetsam-la-gelee-intelligente",
     "label": "Jetsam - la Gelée Intelligente",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "appearance": {
       "species": "amibe"
@@ -51861,6 +51873,7 @@
     "id": "le-dechiqueteur-de-cadavres",
     "label": "Le Déchiqueteur de Cadavres",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 6,
@@ -52685,6 +52698,7 @@
     "id": "la-bete-de-l-oblast",
     "label": "La Bête de l'Oblast",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "appearance": {
       "species": "chimere"
@@ -54117,6 +54131,7 @@
     "id": "il-potente-granchio",
     "label": "Il Potente Granchio",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 4,
@@ -54455,6 +54470,7 @@
     "id": "le-fantasma",
     "label": "Le Fantasma",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 5,
@@ -54716,6 +54732,7 @@
     "id": "prototype-du-clan-skryre",
     "label": "« Prototype » du Clan Skryre",
     "title": null,
+    "named": true,
     "folder": "Zoo Impérial",
     "char": {
       "M": 5,
@@ -55095,6 +55112,7 @@
     "id": "isrogdal-lempresse",
     "label": "Isrogdal l'Empressé",
     "title": "Spadassin ogre, ancien Pugiliste (Argent 1)",
+    "named": true,
     "folder": "Ogres (ADE II)",
     "char": {
       "M": 6,
@@ -55238,6 +55256,7 @@
     "id": "ugrik-legaree",
     "label": "Ugrik l'Égarée",
     "title": "Hors-la-loi ogre (Bronze 2)",
+    "named": true,
     "folder": "Ogres (ADE II)",
     "char": {
       "M": 6,
@@ -55396,6 +55415,7 @@
     "id": "nazzaalta-affabule",
     "label": "Nazzaalta Affabule",
     "title": "Débardeur ogre, ancien Porteur",
+    "named": true,
     "folder": "Ogres (ADE II)",
     "char": {
       "M": 6,
@@ -55503,6 +55523,7 @@
     "id": "artur-piedmarteau",
     "label": "Artur Piedmarteau",
     "title": "Artisan ogre, ancien Apprenti Artisan",
+    "named": true,
     "folder": "Ogres (ADE II)",
     "char": {
       "M": 6,
