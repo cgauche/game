@@ -10,16 +10,14 @@
  * et `palette` fournit la table par défaut token→couleur. Un objet légendaire (ItemInstance)
  * pourra alors override `palette` pour un skin personnalisé sans toucher au def.
  */
-export interface WeaponDef {
-  slug: string;
-  label: string;
+import type { RigHeldDef } from '../types';
+
+/** Def d'ARME = base commune `RigHeldDef` (slug/label/target/art, comme les boucliers) + métadonnées
+ *  de COMBAT. `art` (hérité) peut porter des `@tokens` palette (skins légendaires) résolus via `palette`. */
+export interface WeaponDef extends RigHeldDef {
   type: 'melee' | 'ranged';
   /** Groupe canonique WFRP4 (subType) — métadonnée de FORME (l'anim, elle, passe par handling.ts). */
   group: string;
-  /** Cible silhouette-first (FR) — sert les workflows d'art. */
-  target: string;
-  /** SVG (repère os `arme`). Peut contenir des `@tokens` palette (skins). */
-  art: string;
   /** Table par défaut token→couleur pour les `@tokens` de `art` (override possible par objet légendaire). */
   palette?: Record<string, string>;
 }

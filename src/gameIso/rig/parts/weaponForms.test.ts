@@ -30,9 +30,9 @@ describe('weaponForms — contrat des armes tenues en main', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it('88 armes-arts + 3 boucliers', () => {
-    expect(WEAPON_FORMS).toHaveLength(88);
-    expect(SHIELD_FORMS).toHaveLength(3);
+  it('87 armes-arts + 4 boucliers', () => {
+    expect(WEAPON_FORMS).toHaveLength(87);
+    expect(SHIELD_FORMS).toHaveLength(4);
   });
 });
 
@@ -49,14 +49,14 @@ describe('routage forme par libellé', () => {
   });
 });
 
-describe('boucliers', () => {
-  it('3 noms → 3 silhouettes distinctes', () => {
-    const r = shieldPart(wep('Bouclier', 'melee'));
-    const g = shieldPart(wep('Bouclier (Grand)', 'melee'));
-    const t = shieldPart(wep('Bouclier (Targe)', 'melee'));
-    const front = (a: typeof r) => (typeof a === 'string' ? a : a.front);
-    expect(front(r)).not.toBe(front(g));
-    expect(front(g)).not.toBe(front(t));
-    expect(front(r)).not.toBe(front(t));
+describe('boucliers (registre data-driven shields/defs)', () => {
+  const front = (a: ReturnType<typeof shieldPart>) => (typeof a === 'string' ? a : a.front);
+  it('chaque bouclier du catalogue a SA silhouette (toutes distinctes)', () => {
+    const arts = SHIELD_FORMS.map((f) => front(shieldPart(wep(f.label, 'melee'))));
+    expect(new Set(arts).size).toBe(SHIELD_FORMS.length);
+    expect(SHIELD_FORMS.length).toBeGreaterThanOrEqual(4); // rondache / grand écu / targe / pavois
+  });
+  it('un bouclier au nom inconnu retombe sur la rondache (fallback)', () => {
+    expect(front(shieldPart(wep('Bouclier de la Garde', 'melee')))).toBe(front(shieldPart(wep('Bouclier', 'melee'))));
   });
 });

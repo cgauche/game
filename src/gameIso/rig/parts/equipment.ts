@@ -5,6 +5,7 @@ import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { GENERATED_ARMOUR, ARMOUR_PALETTES } from './generated/armour';
 import { WEAPON_DEFS } from './weapons/_registry.generated';
+import { SHIELD_DEFS } from './shields/_registry.generated';
 import { weaponGroupKey } from './weaponGroup';
 import { WEAPON_FORMS, norm as wnorm, formSlug } from './weaponForms';
 import { buildTokenMap, applyTokenMap } from '../palette';
@@ -121,16 +122,13 @@ export function weaponPart(w: Weapon): PartArt {
   return WEAPONS[f] ?? WEAPONS.epee;
 }
 
-/** Silhouette de bouclier par nom (rondache / grand écu / targe). Os `bouclier`, main G. */
-const SHIELDS: Record<'rond' | 'grand' | 'targe', string> = {
-  rond: `<circle cx="0" cy="6" r="13" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.6"/><circle cx="0" cy="6" r="13" fill="none" stroke="#6a4a2a" stroke-width="0.8"/><circle cx="0" cy="6" r="3.4" fill="#caa64a" stroke="#7a5a18" stroke-width="0.6"/><g fill="#9aa2ac"><circle cx="0" cy="-5" r="0.9"/><circle cx="0" cy="17" r="0.9"/><circle cx="-11" cy="6" r="0.9"/><circle cx="11" cy="6" r="0.9"/></g>`,
-  grand: `<path d="M-11 -10 Q0 -13 11 -10 L11 8 Q11 20 0 28 Q-11 20 -11 8 Z" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.6"/><path d="M0 -12 L0 27" stroke="#6a4a2a" stroke-width="1.1"/><path d="M-11 1 Q0 4 11 1" fill="none" stroke="#6a4a2a" stroke-width="1.1"/><circle cx="0" cy="3" r="2.4" fill="#caa64a" stroke="#7a5a18" stroke-width="0.5"/>`,
-  targe: `<circle cx="0" cy="6" r="9.5" fill="url(#g_steel)" stroke="#3a2a18" stroke-width="1.4"/><circle cx="0" cy="6" r="9.5" fill="none" stroke="#cfd8e6" stroke-width="0.5" opacity="0.7"/><circle cx="0" cy="6" r="3.2" fill="url(#g_steelD)" stroke="#2a3038" stroke-width="0.6"/>`,
-};
+/** Silhouette de bouclier (os `bouclier`, main faible) — registre DATA-DRIVEN `shields/defs/`,
+ *  routé par LIBELLÉ comme les armes (cf. ART_BY_LABEL) ; repli = le def marqué `fallback` (rondache).
+ *  Plus aucun SVG ni tableau en dur ici. */
+const SHIELD_BY_LABEL = new Map(SHIELD_DEFS.map((d) => [wnorm(d.label), d]));
+const SHIELD_FALLBACK = SHIELD_DEFS.find((d) => d.fallback) ?? SHIELD_DEFS[0];
 export function shieldPart(x: Weapon | ItemInstance): PartArt {
-  const n = (x.name ?? '').toLowerCase();
-  const key = /grand/.test(n) ? 'grand' : /targe/.test(n) ? 'targe' : 'rond';
-  return SHIELDS[key];
+  return (SHIELD_BY_LABEL.get(wnorm(x.name ?? '')) ?? SHIELD_FALLBACK).art;
 }
 
 /** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */

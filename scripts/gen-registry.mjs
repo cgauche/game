@@ -74,6 +74,15 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Boucliers (silhouette main faible) : 1 bouclier = 1 fichier defs/ — MÊME pattern que les armes.
+    dir: 'src/gameIso/rig/parts/shields/defs',
+    out: 'src/gameIso/rig/parts/shields/_registry.generated.ts',
+    exportName: 'shield',
+    arrayName: 'SHIELD_DEFS',
+    type: 'ShieldDef',
+    typeFrom: './types',
+  },
+  {
     // Gabarits (carrures réutilisables) : 1 carrure = 1 fichier defs/. Dissout PROPS.
     dir: 'src/gameIso/rig/gabarits/defs',
     out: 'src/gameIso/rig/gabarits/_registry.generated.ts',

@@ -5,6 +5,7 @@
  * les scripts QC. L'ART et la métadonnée vivent ensemble dans chaque `WeaponDef`.
  */
 import { WEAPON_DEFS } from './weapons/_registry.generated';
+import { SHIELD_DEFS } from './shields/_registry.generated';
 import { norm } from '../../../lib/normalize';
 export { norm }; // re-export (source unique) — aussi utilisé en interne ci-dessous
 
@@ -15,11 +16,8 @@ export interface ShieldForm { label: string; slug: string; target: string; }
 /** Source de vérité = registre des armes (`weapons/defs/`). Vue forme (l'`art` reste porté par le def). */
 export const WEAPON_FORMS: WeaponForm[] = WEAPON_DEFS;
 
-export const SHIELD_FORMS: ShieldForm[] = [
-  { label: 'Bouclier', slug: 'rond', target: 'rondache ronde à umbo central + rivets' },
-  { label: 'Bouclier (Grand)', slug: 'grand', target: 'grand écu haut (kite/pavois), pointe vers le bas' },
-  { label: 'Bouclier (Targe)', slug: 'targe', target: 'petite targe ronde bombée à umbo' },
-];
+// Dérivé du registre data-driven `shields/defs/` (même source que les armes) — plus de tableau en dur.
+export const SHIELD_FORMS: ShieldForm[] = SHIELD_DEFS.map((d) => ({ label: d.label, slug: d.slug, target: d.target }));
 
 const BY_LABEL = new Map(WEAPON_FORMS.map((f) => [norm(f.label), f.slug]));
 /** slug de forme pour un libellé d'arme catalogué (sinon undefined). */
