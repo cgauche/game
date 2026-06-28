@@ -14,14 +14,25 @@ const NON_PORTEE = new Set(['armes-de-siege', 'munitions']); // ids de Groupe
 
 const WEAPON_SLUGS = new Set(WEAPON_FORMS.map((f) => f.slug));
 const SHIELD_SLUGS = new Set(SHIELD_FORMS.map((f) => f.slug));
+/** `epee` = forme générique HARDCODÉE (pas une def) cataloguée dans `ART_BY_SLUG` (equipment.ts) :
+ *  un shape résolvable sans être un slug du registre. Le set miroite cette réalité du routage. */
+const GENERIC_WEAPON_SLUGS = new Set(['epee']);
+const isWeaponShape = (s: string) => WEAPON_SLUGS.has(s) || GENERIC_WEAPON_SLUGS.has(s);
 
 describe('weaponForms — shape catalogué sur les armes tenues en main', () => {
   it('chaque arme melee/ranged de la donnée (hors siège & munitions) porte un shape = slug réel', () => {
     const bad = (trappings as { id: string; label: string; type: string; subType?: string; shape?: string }[])
       .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !NON_PORTEE.has(t.subType ?? ''))
       .filter((t) => t.id !== 'mains-nues') // Mains nues : aucune silhouette tenue (pas de shape) — par design
-      .filter((t) => !(t.shape && (WEAPON_SLUGS.has(t.shape) || SHIELD_SLUGS.has(t.shape))))
+      .filter((t) => !(t.shape && (isWeaponShape(t.shape) || SHIELD_SLUGS.has(t.shape))))
       .map((t) => `${t.label} → shape=${t.shape ?? '∅'}`);
+    expect(bad).toEqual([]);
+  });
+
+  it('chaque formChoices d’un trapping est un shape d’arme résolvable (∈ WEAPON_SLUGS ∪ {epee})', () => {
+    const bad = (trappings as { id: string; label: string; formChoices?: string[] }[])
+      .filter((t) => t.formChoices?.length)
+      .flatMap((t) => (t.formChoices ?? []).filter((s) => !isWeaponShape(s)).map((s) => `${t.label} → ${s}`));
     expect(bad).toEqual([]);
   });
 
@@ -36,8 +47,8 @@ describe('weaponForms — shape catalogué sur les armes tenues en main', () => 
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it('87 armes-arts + 4 boucliers', () => {
-    expect(WEAPON_FORMS).toHaveLength(87);
+  it('89 armes-arts + 4 boucliers', () => {
+    expect(WEAPON_FORMS).toHaveLength(89);
     expect(SHIELD_FORMS).toHaveLength(4);
   });
 });
@@ -47,6 +58,12 @@ describe('routage de l’art PAR ID (shape) — plus aucun libellé', () => {
     const bad = WEAPON_FORMS.filter((f) => weaponFamily(byShape(f.slug, f.type)) !== f.slug)
       .map((f) => `${f.slug} → ${weaponFamily(byShape(f.slug, f.type))}`);
     expect(bad).toEqual([]);
+  });
+
+  it('formes de base de l’« Arme simple » (épée/hache/masse) routées par shape vers leur propre forme', () => {
+    expect(weaponFamily(byShape('epee'))).toBe('epee'); // forme générique hardcodée
+    expect(weaponFamily(byShape('hache'))).toBe('hache');
+    expect(weaponFamily(byShape('masse'))).toBe('masse');
   });
 
   it('une attaque naturelle (natural:true) → aucune arme tenue', () => {

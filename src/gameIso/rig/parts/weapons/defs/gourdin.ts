@@ -2,7 +2,7 @@ import type { WeaponDef } from '../types';
 
 export const weapon: WeaponDef = {
   slug: "gourdin",
-  label: "Arme simple",
+  label: "Gourdin",
   type: "melee",
   group: "Base",
   target: "gourdin/trique de bois simple",

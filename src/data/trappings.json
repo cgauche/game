@@ -249,7 +249,14 @@
       "book": "LDB",
       "page": 294
     },
-    "shape": "gourdin"
+    "shape": "epee",
+    "formChoices": [
+      "epee",
+      "hache",
+      "masse",
+      "marteau_guerre",
+      "demi_lance"
+    ]
   },
   {
     "id": "bouclier",

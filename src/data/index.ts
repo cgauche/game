@@ -235,6 +235,10 @@ export interface TrappingData {
    *  ≠ libellé. Posé à la migration par jointure `norm(label)` → forme. Absent pour munitions/armes de
    *  siège/Mains nues (aucune silhouette tenue). Propagé sur `ItemInstance.shape` puis `Weapon.shape`. */
   shape?: string;
+  /** Formes choisibles (slugs `WeaponDef.slug`) d'une arme ABSTRAITE (« Arme simple » → épée/hache/
+   *  masse/marteau de guerre/demi-lance). Le picker pose le choix sur `ItemInstance.shape` ; défaut =
+   *  `shape` du trapping. Absent pour une arme à forme unique. */
+  formChoices?: string[];
   /** Encombrement (Points d'Encombrement). Honnête : la donnée porte aussi des STRINGS pour des cas
    *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
    *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */

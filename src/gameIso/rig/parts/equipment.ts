@@ -44,8 +44,9 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
   return { weapons, armour, shield, cape };
 }
 
-/** Ensemble des slugs de FORME catalogués (clés de l'art rig) — pour valider un `shape` reçu en donnée. */
-const ART_BY_SLUG = new Set(WEAPON_DEFS.map((d) => d.slug));
+/** Ensemble des slugs de FORME catalogués (clés de l'art rig) — pour valider un `shape` reçu en donnée.
+ *  Inclut `epee` (forme générique HARDCODÉE, pas une def — repli du Groupe `base` + défaut final). */
+const ART_BY_SLUG = new Set([...WEAPON_DEFS.map((d) => d.slug), 'epee']);
 
 /** Forme par défaut d'un Groupe canonique (REPLI quand l'arme ne porte pas de `shape` : armes
  *  génériques de statbloc / hors catalogue). Le Groupe (WFRP4) n'encode pas la forme — c'est un
