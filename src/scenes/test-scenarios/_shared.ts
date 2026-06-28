@@ -12,10 +12,21 @@ export function setEncounters(scene: Scene, list: AuthoredEncounter[]): void {
   scene.encounters = built.encounters;
 }
 
+/** Sections du menu des scénarios de test (l'emoji fait partie du libellé affiché). */
+export type ScenarioCategory =
+  | '⚔️ Combat'
+  | '✨ Magie'
+  | '🐲 Créatures'
+  | '🧭 Survie'
+  | '🛒 Marché'
+  | '🗺️ Scénarios complets'
+  | '🖼️ Rendu';
+
 /** Un scénario de test = un groupe fixé + une scène adaptée (+ combat direct optionnel). */
 export interface TestScenario {
   id: string;
-  order: number; // tri d'affichage dans le menu
+  order: number; // tri d'affichage dans la section
+  category?: ScenarioCategory; // section du menu (non taguée → « Divers » pendant la migration)
   icon: string; // emoji de carte
   title: string;
   tests: string; // une ligne : « ce que ça vérifie »

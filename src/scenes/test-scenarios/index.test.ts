@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { testScenarios } from './index';
 
 describe('Registre des scénarios de test (auto-découverte)', () => {
-  it('contient le scénario Tir & Rechargement', () => {
-    expect(testScenarios.find((s) => s.id === 'tir-rechargement')).toBeTruthy();
+  it("contient le Terrain d'entraînement (sandbox)", () => {
+    expect(testScenarios.find((s) => s.id === 'entrainement')).toBeTruthy();
   });
   it('est trié par order, sans id dupliqué, et exclut _shared/index', () => {
     const orders = testScenarios.map((s) => s.order);

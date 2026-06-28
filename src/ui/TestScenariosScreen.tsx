@@ -1,6 +1,32 @@
 import { useGame } from '../state/store';
 import { setRule } from '../engine/policy';
-import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
+import { testScenarios, type TestScenario, type ScenarioCategory } from '../scenes/test-scenarios';
+
+/** Ordre des sections du menu (un scénario non tagué tombe dans « Divers », en queue). */
+const SECTIONS: ScenarioCategory[] = [
+  '⚔️ Combat',
+  '✨ Magie',
+  '🐲 Créatures',
+  '🧭 Survie',
+  '🛒 Marché',
+  '🗺️ Scénarios complets',
+  '🖼️ Rendu',
+];
+const FALLBACK = 'Divers';
+
+/** Regroupe les scénarios (déjà triés par `order`) par section, dans l'ordre de `SECTIONS`. */
+function groupBySection(list: TestScenario[]): { label: string; items: TestScenario[] }[] {
+  const byCat = new Map<string, TestScenario[]>();
+  for (const sc of list) {
+    const cat = sc.category ?? FALLBACK;
+    const bucket = byCat.get(cat) ?? [];
+    bucket.push(sc);
+    byCat.set(cat, bucket);
+  }
+  return [...SECTIONS, FALLBACK]
+    .filter((c) => byCat.has(c))
+    .map((c) => ({ label: c, items: byCat.get(c)! }));
+}
 
 /** Sous-écran « Scénarios de test » : chaque scénario fixe un groupe et une scène adaptée. */
 export function TestScenariosScreen() {
@@ -29,21 +55,26 @@ export function TestScenariosScreen() {
         </button>
         <h1 className="title">Scénarios de test</h1>
         <p className="subtitle">Chaque scénario fixe un groupe et une scène adaptée à ce qu'on vérifie.</p>
-        <div className="ts-grid">
-          {testScenarios.map((sc) => (
-            <div className="ts-card" key={sc.id}>
-              <div className="ts-head">
-                <span className="ts-ico">{sc.icon}</span>
-                <strong>{sc.title}</strong>
-              </div>
-              <p className="ts-tests">{sc.tests}</p>
-              <p className="ts-party">👥 {sc.partyNote}</p>
-              <button className="btn btn-primary" onClick={() => launch(sc)}>
-                Lancer
-              </button>
+        {groupBySection(testScenarios).map((sec) => (
+          <section className="ts-section" key={sec.label}>
+            <h2 className="mini-title">{sec.label}</h2>
+            <div className="ts-grid">
+              {sec.items.map((sc) => (
+                <div className="ts-card" key={sc.id}>
+                  <div className="ts-head">
+                    <span className="ts-ico">{sc.icon}</span>
+                    <strong>{sc.title}</strong>
+                  </div>
+                  <p className="ts-tests" title={sc.tests}>{sc.tests}</p>
+                  <p className="ts-party">👥 {sc.partyNote}</p>
+                  <button className="btn btn-primary" onClick={() => launch(sc)}>
+                    Lancer
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </section>
+        ))}
       </div>
     </div>
   );

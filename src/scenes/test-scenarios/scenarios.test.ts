@@ -5,11 +5,10 @@ describe('Batterie de scénarios de test', () => {
   it('couvre au moins 6 scénarios', () => {
     expect(testScenarios.length).toBeGreaterThanOrEqual(6);
   });
-  it.each(['embuscade', 'critiques-mort', 'destin-resilience', 'engagement', 'magie'])(
-    'le scénario %s existe, a un groupe non vide et une scène valide',
-    (id) => {
-      const s = testScenarios.find((x) => x.id === id)!;
-      expect(s).toBeTruthy();
+  // Invariants GÉNÉRIQUES sur tout le set (s'adapte à la refonte sans liste d'ids à maintenir).
+  it.each(testScenarios.map((s) => [s.id, s] as const))(
+    'le scénario %s a un groupe de héros non vide et une scène cohérente',
+    (_id, s) => {
       const party = s.makeParty();
       expect(party.length).toBeGreaterThanOrEqual(1);
       expect(party.every((h) => h.kind === 'hero')).toBe(true);
@@ -17,4 +16,8 @@ describe('Batterie de scénarios de test', () => {
       if (s.autoCombat) expect(s.scene.encounters.find((e) => e.id === s.autoCombat)).toBeTruthy();
     },
   );
+  it('contient les piliers Embuscade et Magie', () => {
+    expect(testScenarios.find((s) => s.id === 'embuscade')).toBeTruthy();
+    expect(testScenarios.find((s) => s.id === 'magie')).toBeTruthy();
+  });
 });

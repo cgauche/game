@@ -7,4 +7,4 @@ import { SCENARIOS } from './_registry.generated';
 // `import.meta.glob` (Vite-only, cassé sous tsx/Vitest) — même mécanique que les créatures.
 export const testScenarios: TestScenario[] = [...SCENARIOS].sort((a, b) => a.order - b.order);
 
-export type { TestScenario } from './_shared';
+export type { TestScenario, ScenarioCategory } from './_shared';
