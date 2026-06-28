@@ -472,24 +472,49 @@ export interface PendingCorruption {
   success?: boolean;
   rerolled?: boolean;
 }
-/** Déviation Critique en attente (LDB 63 l.63-66) : un HÉROS a subi un Coup Critique à une
- *  localisation où il porte de la PA ; il choisit Dévier (sacrifie 1 PA, ignore le Critique mais
- *  subit les Blessures recalculées PA−1) ou Subir (prend le Critique). `res`/`weapon` sont figés
- *  pour rejouer `applyAttackResult` avec la décision (une seule application, cf. combatFlow). */
-export interface PendingDeviation {
-  attackerId: string;
-  targetId: string; // héros qui subit le Critique (= la cible réelle, victime d'un tir dévié comprise)
-  weapon: Weapon;
-  res: AttackResult;
-  /** Coup Critique PRÉ-TIRÉ (graine figée) : affiché sur la modale ET appliqué tel quel sur « Subir »
-   *  (pas de re-tirage → ce qu'on montre = ce qu'on subit). La déviation survit même à un Critique létal. */
-  crit: CriticalResolved;
-  /** Révélation du Critique (riche : qui → arme → victime, dé, localisation, Blessures, États, effets)
-   *  rendue DANS la modale de déviation — plus de modale de Critique séparée. */
-  reveal: RevealEntry;
-  /** Reprendre le tour de l'IA après application (toujours vrai ici : la déviation survient pendant le tour ennemi). */
-  resumeAfter: boolean;
+/** Contexte d'un Critique (qui l'inflige + l'arme/sort en libellé) — modale enrichie + B. de Sauvagerie.
+ *  Forme identique au `ctx` d'`applyCriticalToTarget` : source UNIQUE du type. */
+export interface DeviationCtx {
+  attackerId?: string;
+  attackerKind?: Combatant['kind'];
+  weapon?: string;
+  critTwice?: boolean;
 }
+
+/** Déviation Critique en attente (LDB 63 l.30) : une victime a subi une Blessure Critique — Coup
+ *  Critique sur double OU dépassement — à une localisation où elle porte de la PA ; elle choisit
+ *  Dévier (sacrifie 1 PA, ignore le Critique, subit les Blessures recalculées PA−1) ou Subir.
+ *  Union discriminée par `mode` :
+ *  - `melee` : `res`/`weapon` figés → le résolveur REJOUE `applyAttackResult` avec la décision (son
+ *    « tail » décision-indépendant — riposte/triggers/ammo… — tourne ainsi une seule fois).
+ *  - `self` : auto-contenu (opposé/tir/magie n'ont pas de tail) → le résolveur applique directement
+ *    déflexion vs Critique pré-tiré, sans rejouer aucune attaque.
+ *  Le Critique PRÉ-TIRÉ (`crit`, graine figée) est affiché sur la modale ET appliqué tel quel sur Subir. */
+export type PendingDeviation =
+  | {
+      mode: 'melee';
+      attackerId: string;
+      targetId: string; // victime du Critique (cible réelle, y compris un tir dévié)
+      weapon: Weapon;
+      res: AttackResult;
+      crit: CriticalResolved;
+      reveal: RevealEntry;
+      resumeAfter: boolean;
+    }
+  | {
+      mode: 'self';
+      attackerId: string;
+      targetId: string;
+      location: HitLocation; // loc du Critique : re-tirée pour un double, loc de touche pour un dépassement
+      crit: CriticalResolved;
+      isCoupCritique: boolean; // double (true) vs dépassement (false) → applique le bon Critique au Subir
+      overkill: number; // dépassement (−20 à la table si > BE, LDB 18 l.30)
+      deflectExtraWounds: number; // Blessures ajoutées au Dévier (recalcul PA−1 ; 0 pour un critique « sec »)
+      woundsBefore: number; // PB avant CE coup → restauration Destin correcte au Subir
+      reveal: RevealEntry;
+      resumeAfter: boolean;
+      ctx: DeviationCtx;
+    };
 /** « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
  *  il choisit entre SUBIR la mutation et la REFUSER (1 Point de Résilience ; il ne perd alors aucun
  *  Point de Corruption). */

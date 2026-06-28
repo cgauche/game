@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame, type BattleState } from './store';
-import { applyAttackResult, attackEnv } from './combatFlow';
+import { applyAttackResult, applyOpposedCritical, attackEnv } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, Weapon } from '../engine/types';
@@ -110,6 +110,31 @@ describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.63)
     const ee = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!;
     expect(ee.armour.corps).toBe(3);          // PA intacte (pas d'auto-déviation)
     expect(ee.criticalWounds ?? 0).toBe(1);   // Critique subi
+  });
+
+  // Test OPPOSÉ (LDB 14 l.7) : la déviation auto de l'ENNEMI y était jadis INLINE et NON rule-gated.
+  // Mutualisée via `enemyAutoDeviate`, elle respecte désormais la règle (bug rule-gate corrigé). Armure
+  // uniforme sur toutes les localisations → la loc 1d100 frais du Critique sec porte toujours de la PA.
+  const armoured = { tete: 3, brasG: 3, brasD: 3, corps: 3, jambeG: 3, jambeD: 3 };
+  const apSum = (c: Combatant) => Object.values(c.armour).reduce((a, b) => a + b, 0);
+
+  it('opposé : ENNEMI blindé dévie AUTO quand la règle est ON (−1 PA, Critique ignoré)', () => {
+    const e = enemy({ armour: { ...armoured }, criticalWounds: 0 });
+    setBattle([hero({}), e]);
+    applyOpposedCritical(useGame.getState, useGame.setState, e, 11, { attackerId: 'h1' }, []);
+    const ee = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!;
+    expect(ee.criticalWounds ?? 0).toBe(0); // Critique dévié
+    expect(apSum(ee)).toBe(17);             // une zone −1 PA
+  });
+
+  it('opposé désactivé : ENNEMI blindé ne dévie PLUS (subit le Critique sec — bug rule-gate)', () => {
+    setRule('combat-critical-deflect', false);
+    const e = enemy({ armour: { ...armoured }, criticalWounds: 0 });
+    setBattle([hero({}), e]);
+    applyOpposedCritical(useGame.getState, useGame.setState, e, 11, { attackerId: 'h1' }, []);
+    const ee = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!;
+    expect(ee.criticalWounds ?? 0).toBe(1); // Critique subi (pas d'auto-déviation)
+    expect(apSum(ee)).toBe(18);             // PA toute intacte
   });
 });
 

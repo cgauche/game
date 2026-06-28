@@ -2450,6 +2450,10 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     H.reloadProgress = 1;
     H.loaded = false;
     H.pos = { x: 1, y: 0 };
+    // PB larges : la touche BLESSE sans DÉPASSER les PB courants → pas d'offre de Déviation Critique
+    // (un dépassement EST une Blessure Critique déviable, LDB 63 l.30) qui suspendrait l'application.
+    H.wounds.current = 25;
+    H.wounds.max = 25;
     E.pos = { x: 0, y: 0 }; // adjacents
     E.characteristics.F = 60; // gros frappeur → la touche inflige des Blessures
     const atk = { roll: 5, target: 80, success: true, sl: 7, isDouble: false };

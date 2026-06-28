@@ -23,6 +23,7 @@ import { hasTraitKey } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
+import { deviatableArmourAt } from './items';
 import { Formula, resolveFormula, skillDRBonus } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
@@ -525,6 +526,7 @@ export function evaluateMissile(
   spell: SpellLike,
   cr: CastResult,
   locOverride?: HitLocation,
+  apReduction = 0, // Déviation Critique (LDB 63) : recalcul des Dégâts à PA−1 quand le défenseur sacrifie 1 PA
 ): MissileResult {
   if (!cr.cast) {
     return { ...cr, hit: false, defenderDefeated: false };
@@ -536,7 +538,7 @@ export function evaluateMissile(
   const bfm = bonus(effectiveChar(caster, 'FM'));
   // Attribut de Domaine (LDB 48 — L14) : Métal ignore les PA métalliques ET les ajoute en Dégâts ;
   // Cieux ignore les PA métalliques ; Ombres ignore tous les PA non magiques.
-  const totalAP = effectiveArmourAt(target, loc); // PA portés + temporisés (Armure Aethyrique)
+  const totalAP = Math.max(0, effectiveArmourAt(target, loc) - apReduction); // PA portés + temporisés (Armure Aethyrique), moins le PA sacrifié en Déviation
   const dom = domainMissileMods(target, spell, loc, totalAP);
   const damage = (spellDmg?.damage ?? 0) + Math.max(0, cr.sl) + bfm + dom.bonusDamage;
   // Certains Projectiles ignorent le Bonus d'Endurance et/ou les PA (p.238 + sorts).
@@ -559,6 +561,29 @@ export function evaluateMissile(
       (cr.isCritical ? ' — CRITIQUE !' : '') +
       '.',
   };
+}
+
+/** Déviation Critique d'un Projectile magique (LDB 63) : éligible SEULEMENT si l'armure ABSORBE
+ *  réellement le coup à la loc du Critique — une vraie pièce sacrifiable (`deviatableArmourAt`) ET une PA
+ *  mitigante après bypass de Domaine (Ombres/Métal/Cieux) ET un sort qui n'ignore pas les PA. Sinon
+ *  « le coup absorbé par votre armure » n'a pas de sens → pas d'offre. `extraWounds` = Blessures
+ *  supplémentaires au Dévier (Dégâts recalculés à PA−1, Résistance à la Magie `mr` réappliquée). */
+export function magicDeviationEligible(
+  caster: Combatant,
+  target: Combatant,
+  loc: HitLocation,
+  spell: SpellLike,
+  cr: CastResult,
+  woundsAtFullPA: number,
+  mr: number,
+): { eligible: boolean; extraWounds: number } {
+  if (deviatableArmourAt(target, loc) <= 0) return { eligible: false, extraWounds: 0 };
+  if (missileDamage(spell)?.ignorePA) return { eligible: false, extraWounds: 0 };
+  const totalAP = effectiveArmourAt(target, loc);
+  const { apIgnored } = domainMissileMods(target, spell, loc, totalAP);
+  if (totalAP - apIgnored <= 0) return { eligible: false, extraWounds: 0 }; // PA entièrement bypassée → no-op
+  const at1 = evaluateMissile(caster, target, spell, cr, loc, 1).woundsLost ?? 0; // recalcul à PA−1
+  return { eligible: true, extraWounds: Math.max(0, Math.max(0, at1 - mr) - woundsAtFullPA) };
 }
 
 /**

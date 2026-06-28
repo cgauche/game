@@ -1,10 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { evaluateMissile, type CastResult } from '../engine/magic';
 import { applyOpposedCritical } from './combatFlow';
+import { useGame, type BattleState } from './store';
 import { seedBattleRng } from './battleRng';
+import { resetRule } from '../engine/policy';
 import { hitLocationByShape, reverseRoll } from '../engine/combat';
 import type { Combatant } from '../engine/types';
 import type { SpellData } from '../data';
+import { emptyScene } from './scene';
 
 /**
  * #80 — LDB 18 l.53/55 : un Coup Critique re-tire la Localisation (1d100 FRAIS, jamais l'inversion de
@@ -66,5 +69,23 @@ describe('#80 Critique de défense opposée — Localisation = 1d100 frais, déc
     expect(v1.criticalWounds).toBe(1); // un Critique a bien été appliqué
     expect(v1.traumas).toEqual(v2.traumas); // jet 11 ≠ 99 → Critique IDENTIQUE : la loc ne dérive plus de l’inversion
     expect(log1).toEqual(log2);
+  });
+});
+
+describe('#43.2 Critique de défense opposée — HÉROS blindé : étape de déviation (LDB 63 l.30)', () => {
+  afterEach(() => resetRule('combat-critical-deflect'));
+
+  it('héros victime AVEC armure → pousse une étape `self` (choix Dévier/Subir), Critique différé', () => {
+    seedBattleRng(7);
+    const h = mkTarget({ tete: 3, brasG: 3, brasD: 3, corps: 3, jambeG: 3, jambeD: 3 }); // id 'T', kind 'hero'
+    const battle = {
+      combatants: [h], order: ['T'], baseOrder: ['T'], turn: 0, round: 1, action: null,
+      selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+    } as unknown as BattleState;
+    useGame.setState({ battle, mode: 'battle', scene: emptyScene(), gameTime: 720, pendingReveals: [], pendingCascade: null, pendingFateSave: null });
+    applyOpposedCritical(useGame.getState, useGame.setState, h, 11, {}, []);
+    const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation')?.deviation;
+    expect(dev?.mode).toBe('self'); // suspendu : choix Dévier/Subir
+    expect(h.criticalWounds ?? 0).toBe(0); // Critique PAS encore appliqué (différé à la résolution)
   });
 });

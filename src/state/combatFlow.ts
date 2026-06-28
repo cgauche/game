@@ -107,6 +107,7 @@ import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon } from '../engine/items';
+import { hasCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
@@ -2325,7 +2326,7 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
   }
   if (log.length) {
     const b = get().battle;
-    if (b) set({ battle: { ...b, log: [...b.log, ...evLines(log, 'crit', target.id)] } });
+    if (b) set({ battle: { ...b, log: [...b.log, ...evLines(log, 'crit', dev.attackerId, dev.targetId)] } }); // acteur = attaquant, sujet = cible (parité mode melee)
   }
   checkBattleOver(get, set);
 }
@@ -3135,28 +3136,35 @@ export function applyCast(
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const loc = mres.location ?? 'corps';
+        const loc = mres.location ?? 'corps'; // double → loc re-tirée (#80) ; dépassement → loc de touche
+        const ovk = Math.max(0, overkill);
         const c2: DeviationCtx = { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') };
         const heroConcerned = t.kind === 'hero' || caster.kind === 'hero';
-        // Déviation Critique (LDB 63 l.30) : SEULEMENT sur un double d'Incantation (`critWound`) ET une PA
-        // réellement mitigante (`magicDeviationEligible` : pas de bypass de Domaine, sort qui n'ignore pas les PA).
-        // Un dépassement (overkill) par Projectile n'offre PAS le troc — cohérent avec la mêlée (overkill ≠ double re-tiré).
-        const elig = critWound ? magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, mr) : { eligible: false, extraWounds: 0 };
-        if (critWound && elig.eligible && t.kind === 'enemy' && enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
+        // Déviation Critique (LDB 63 l.30) : sur double (`critWound`) OU dépassement (`overkill`) — RAW complet,
+        // parité avec la mêlée — pourvu que l'armure ABSORBE réellement (`magicDeviationEligible` : PA déviatable,
+        // pas de bypass de Domaine Ombres/Métal/Cieux, sort qui n'ignore pas les PA).
+        const elig = magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, mr);
+        let suspended = false;
+        if (elig.eligible && t.kind === 'enemy' && enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
           // ennemi : déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF /
           // pas de PA), `enemyAutoDeviate` retourne false → on TOMBE sur `applyCritAndFinalize` (Critique subi).
-        } else if (critWound && elig.eligible && t.kind === 'hero') {
+        } else if (rule('combat-critical-deflect') && elig.eligible && t.kind === 'hero') {
           // HÉROS blindé : SUSPEND son choix (étape `self`, push SYNCHRONE — la boucle multi-cibles continue,
-          // chaque cible porte SON propre step indépendant). Subir applique le Critique « sec » pré-tiré (overkill 0).
-          const cr2 = rollCritical(t, loc, battleRng(), 0, c2.critTwice);
+          // chaque cible porte SON propre step indépendant). Le Critique pré-tiré PORTE l'overkill (−20 table si
+          // > BE, LDB 18 l.30) → un double qui dépasse garde sa sévérité au Subir.
+          const cr2 = rollCritical(t, loc, battleRng(), ovk, c2.critTwice);
           pushDeviationStep(set, {
             mode: 'self', attackerId: caster.id, targetId: t.id, location: loc, crit: cr2,
-            isCoupCritique: true, overkill: 0, deflectExtraWounds: elig.extraWounds, woundsBefore: currentBefore,
+            isCoupCritique: critWound, overkill: ovk, deflectExtraWounds: elig.extraWounds, woundsBefore: currentBefore,
             reveal: previewCritEntry(t, cr2, { attackerId: caster.id, weapon: spell.label }), resumeAfter: true, ctx: c2,
           });
+          suspended = true;
         } else {
-          applyCritAndFinalize(get, set, t, loc, critWound, Math.max(0, overkill), logLines, c2, currentBefore);
+          applyCritAndFinalize(get, set, t, loc, critWound, ovk, logLines, c2, currentBefore);
         }
+        // 0 PB → À Terre (LDB 18 l.28) — SAUF si suspendu (le Critique du héros n'est pas encore résolu :
+        // resolveDeviation `self` s'en charge). Parité avec la mêlée et resolveDeviation.
+        if (!suspended && t.wounds.current <= 0 && !t.dead && !hasCondition(t, COND.inconscient)) applyZeroWounds(t);
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);
       }
@@ -3831,7 +3839,7 @@ export function finishCombatEnd(get: Get, set: SetFn): void {
  *  la LÂCHER (aucun gantelet, ou SECOND évènement de lâcher pendant la période). Pose/réarme le marqueur
  *  transitoire `drop.gauntletSavedRound`. */
 function lockedGauntletHolds(wielder: Combatant, drop: Weapon, round: number): boolean {
-  const hasGauntlet = (wielder.items ?? []).some((i) => !!i.trappingId && !!findTrappingById(i.trappingId)?.preventForcedDrop);
+  const hasGauntlet = hasCapability(wielder, 'preventForcedDrop'); // capacité agrégée (gantelet PORTÉ/TENU)
   if (!hasGauntlet) return false;
   const saved = drop.gauntletSavedRound;
   if (saved != null && round <= saved + 1) { drop.gauntletSavedRound = undefined; return false; } // 2e évènement dans la période → lâche

@@ -197,7 +197,7 @@ export function CascadeModal() {
     let canDevier = true;
     if (dev) {
       const subj = pool.find((c) => c.id === dev.targetId);
-      const loc = dev.res.location ?? 'corps';
+      const loc = dev.mode === 'melee' ? (dev.res.critLocation ?? dev.res.location ?? 'corps') : dev.location;
       canDevier = (subj?.armour?.[loc] ?? 0) > 0;
     }
     const revActor = rev?.actorId ? pool.find((c) => c.id === rev.actorId) : undefined;
