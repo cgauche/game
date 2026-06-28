@@ -71,8 +71,10 @@ describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.63)
   afterEach(() => resetRule('combat-critical-deflect'));
 
   const critWeapon: Weapon = { name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+  // `critLocation: 'corps'` fige la localisation re-tirée du Critique (LDB 18 l.55, #80) sur la zone armée
+  // → la Déviation (#43.2, gatée sur cette localisation) y est offerte/sacrifiée de façon déterministe.
   const critRes = (): AttackResult => ({
-    hit: true, attackerRoll: 12, netSL: 4, location: 'corps', damage: 8, woundsLost: 3,
+    hit: true, attackerRoll: 12, netSL: 4, location: 'corps', critLocation: 'corps', damage: 8, woundsLost: 3,
     critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
   });
 

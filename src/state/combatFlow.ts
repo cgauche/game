@@ -1284,13 +1284,18 @@ export function applyAttackResult(
   // application UNE seule fois). Les sous-attaques (balayage/Piétinement) passent `deviated` explicite
   // pour résoudre instantanément (pas de modale imbriquée). Les sorts (applyCast) gèrent leurs Critiques
   // à part : ils n'atteignent jamais cette fonction, donc pas de garde « arme » nécessaire.
-  const dloc = res.location ?? 'corps';
+  // #80 (LDB 18 l.55) : un Coup Critique RE-TIRE sa localisation, et « TOUTE la résolution du coup — Dégâts
+  // non-critiques, DÉVIATION, armure Bâclée, table de Critiques — utilise CETTE localisation ». L'éligibilité
+  // #43.2 à la Déviation (LDB 63 l.30, « emplacement protégé par une armure ») se teste donc sur la
+  // localisation RE-TIRÉE du Critique — là où `deviateArmour` sacrifiera le PA — et NON sur la localisation de
+  // touche, sinon on offrirait au héros une Déviation sans PA sacrifiable à la zone réellement frappée. Figée
+  // ici (réutilisée sans re-tirer par la reprise Dévier/Subir). RNG-neutre : le tirage est seulement AVANCÉ
+  // (aucun `battleRng` intercalé jusqu'à son point d'origine, au bloc Critique ci-dessous).
+  const dloc = (res.critical && deviated === undefined && target.kind === 'hero')
+    ? (res.critLocation ??= critLocationRoll(battleRng(), target.bodyShape))
+    : (res.location ?? 'corps');
   // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
-  // NB (#43.2 × #80) : l'éligibilité se teste ici sur la localisation de TOUCHE (`dloc`), tandis que #80
-  // re-tire la localisation du Critique et `deviateArmour` y sacrifie le PA. Les deux coïncident sauf
-  // armure PARTIELLE + re-tirage hors zone armée (cas rare) → offre alors une Déviation no-op. À trancher
-  // côté #80 si l'on veut gater sur la localisation re-tirée (cf. note de fusion).
   if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero' && deviatableArmourAt(target, dloc) > 0) {
     // Pré-tire le Coup Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.

@@ -494,9 +494,9 @@ describe('Boucle de jeu (store)', () => {
     const h = b.combatants.find((c) => c.kind === 'hero')!;
     const e = b.combatants.find((c) => c.kind === 'enemy')!;
     const result = {
-      hit: true, attackerRoll: 12, netSL: 4, location: 'corps', damage: 8, woundsLost: 3,
+      hit: true, attackerRoll: 12, netSL: 4, location: 'corps', critLocation: 'corps', damage: 8, woundsLost: 3,
       critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
-    } as any;
+    } as any; // critLocation figée sur la zone armée (LDB 18 l.55, #80) → la Déviation #43.2 y est offerte
     useGame.setState({
       battle: { ...b },
       pendingDefense: {
