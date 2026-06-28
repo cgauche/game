@@ -43,13 +43,6 @@ export function clearGrapple(a: Combatant, b: Combatant): void {
   if (b.grapplingWith) b.grapplingWith = b.grapplingWith.filter((id) => id !== a.id);
 }
 
-/** Retire `id` (combattant neutralisé / sorti de combat) de TOUS les liens d'Empoignade, des deux côtés.
- *  À appeler partout où l'on purge l'Engagement (`clearEngagementOf`) — une cible morte ne lutte plus. */
-export function clearGrappleOf(all: Combatant[], id: string): void {
-  for (const c of all) if (c.grapplingWith?.length) c.grapplingWith = c.grapplingWith.filter((x) => x !== id);
-  const self = all.find((c) => c.id === id);
-  if (self) self.grapplingWith = [];
-}
 
 /**
  * Bonus de tiers (LDB 14 l.169) : un attaquant qui n'est PAS partie à l'Empoignade gagne **+20** pour

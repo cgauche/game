@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { areGrappling, setGrapple, clearGrapple, clearGrappleOf, grappleTierMod, grappleEnvMod, grappleDamageOps } from './grapple';
+import { areGrappling, setGrapple, clearGrapple, grappleTierMod, grappleEnvMod, grappleDamageOps } from './grapple';
 import { applyOps } from './ops';
 import type { Combatant } from './types';
 
@@ -37,15 +37,6 @@ describe('areGrappling / setGrapple / clearGrapple — relation symétrique + pu
     clearGrapple(a, b);
     expect(areGrappling(a, b)).toBe(false);
     expect(a.grapplingWith).toEqual([]);
-    expect(b.grapplingWith).toEqual([]);
-  });
-  it('clearGrappleOf purge un combattant tombé de TOUS les liens', () => {
-    const a = C('a'), b = C('b'), c = C('c');
-    setGrapple(a, b);
-    setGrapple(c, b);
-    clearGrappleOf([a, b, c], 'b'); // b sort du combat
-    expect(areGrappling(a, b)).toBe(false);
-    expect(areGrappling(c, b)).toBe(false);
     expect(b.grapplingWith).toEqual([]);
   });
 });

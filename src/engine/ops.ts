@@ -21,11 +21,12 @@ import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
+import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
-import { suppressPsychTraits } from './psychology';
+import { suppressPsychTraits, type PsychType } from './psychology';
 import { norm } from '../lib/normalize';
 import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
 import { polymorphOps } from './polymorph';
@@ -243,7 +244,12 @@ export type GameOp =
        *  Force d'entrave égale votre Force Mentale »), `{ charOf: 'Int' }` (Enchevêtrement des Arcanes),
        *  ou un littéral (`60`). Absente ⇒ le flux de récupération garde son défaut (Force de la source
        *  vivante, ou Test simple). */
-      escapeStrength?: Formula }
+      escapeStrength?: Formula;
+      /** Empoignade (LDB 14 l.159) : poser AUSSI la relation symétrique `grapplingWith` entre le RÉFÉRENT
+       *  (`ctx.caster`, l'attaquant) et la cible — la SEULE voie data-driven de démarrage d'une Empoignade
+       *  (Constricteur onHit, Tentacules/Langue, Absorption, et l'init JOUEUR migrée). L'État *Empêtré* est
+       *  l'effet visible ; ce flag ajoute le lien de lutte (résolu ensuite par le flux/IA d'Empoignade). */
+      grapple?: boolean }
   /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). `valuePerSL` : échelle
    *  « +1 par +N DR » ajoutée à `value` (Mâchoires d'acier : « chaque DR supprime un État Sonné
    *  supplémentaire », LDB 10) — inerte si absent (calque op `condition`). */
@@ -831,6 +837,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           addCondition(target, o.name, v, escape);
           lines.push(t('op.cond', { name: target.name, v, cond: conditionLabel(o.name) })); // libellé (« Exténué »), cohérent avec removeCond
         }
+        // Empoignade (LDB 14 l.159) : le flag `grapple` pose la relation symétrique entre l'attaquant
+        // (`ctx.caster`) et la cible — UNE seule fois (les ré-applications perRound ne portent pas le flag).
+        if (o.grapple && ctx.caster && ctx.caster.id !== target.id) setGrapple(ctx.caster, target);
         break;
       }
       case 'removeCondition': {

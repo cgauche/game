@@ -50,6 +50,7 @@ import pregensJson from './pregens.json';
 import oupsJson from './oups.json';
 import interludeEventsJson from './interludeEvents.json';
 import peripetiesJson from './peripeties.json';
+import grappleJson from './grapple.json';
 import { CharKey, Weapon, VehicleData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
@@ -58,6 +59,15 @@ import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la 
 import type { OupsEntry } from './oups';
 import type { InterludeEvent } from './interludeEvents';
 import type { Peripetie } from './peripeties';
+
+/** Règle d'EMPOIGNADE en DONNÉE (LDB 14 l.155-169) : `init` = ops à la touche d'une Empoignade déclarée
+ *  (Empêtré + relation via le flag `grapple`) ; `win` = les 3 options du Test opposé GAGNÉ (l.161), appliquées
+ *  avec `ctx.sl = DR`. La mécanique vit ICI (GameOp éditables), le flux `pendingGrapple` n'orchestre que le choix. */
+export interface GrappleRule {
+  init: import('../engine/ops').GameOp[];
+  win: { damage: import('../engine/ops').GameOp[]; entangle: import('../engine/ops').GameOp[]; free: import('../engine/ops').GameOp[] };
+}
+export const GRAPPLE = grappleJson as GrappleRule;
 
 export interface SpeciesData {
   /** id STABLE (slug du libellé) — cible de `Combatant.species`, pregens, draft. Le `label` ne sert
