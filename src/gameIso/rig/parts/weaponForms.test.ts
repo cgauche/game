@@ -14,10 +14,7 @@ const NON_PORTEE = new Set(['armes-de-siege', 'munitions']); // ids de Groupe
 
 const WEAPON_SLUGS = new Set(WEAPON_FORMS.map((f) => f.slug));
 const SHIELD_SLUGS = new Set(SHIELD_FORMS.map((f) => f.slug));
-/** `epee` = forme générique HARDCODÉE (pas une def) cataloguée dans `ART_BY_SLUG` (equipment.ts) :
- *  un shape résolvable sans être un slug du registre. Le set miroite cette réalité du routage. */
-const GENERIC_WEAPON_SLUGS = new Set(['epee']);
-const isWeaponShape = (s: string) => WEAPON_SLUGS.has(s) || GENERIC_WEAPON_SLUGS.has(s);
+const isWeaponShape = (s: string) => WEAPON_SLUGS.has(s);
 
 describe('weaponForms — shape catalogué sur les armes tenues en main', () => {
   it('chaque arme melee/ranged de la donnée (hors siège & munitions) porte un shape = slug réel', () => {
@@ -29,7 +26,7 @@ describe('weaponForms — shape catalogué sur les armes tenues en main', () => 
     expect(bad).toEqual([]);
   });
 
-  it('chaque formChoices d’un trapping est un shape d’arme résolvable (∈ WEAPON_SLUGS ∪ {epee})', () => {
+  it('chaque formChoices d’un trapping est un shape d’arme résolvable (∈ WEAPON_SLUGS)', () => {
     const bad = (trappings as { id: string; label: string; formChoices?: string[] }[])
       .filter((t) => t.formChoices?.length)
       .flatMap((t) => (t.formChoices ?? []).filter((s) => !isWeaponShape(s)).map((s) => `${t.label} → ${s}`));
@@ -47,8 +44,8 @@ describe('weaponForms — shape catalogué sur les armes tenues en main', () => 
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it('89 armes-arts + 4 boucliers', () => {
-    expect(WEAPON_FORMS).toHaveLength(89);
+  it('90 armes-arts + 4 boucliers', () => {
+    expect(WEAPON_FORMS).toHaveLength(90);
     expect(SHIELD_FORMS).toHaveLength(4);
   });
 });
@@ -61,7 +58,7 @@ describe('routage de l’art PAR ID (shape) — plus aucun libellé', () => {
   });
 
   it('formes de base de l’« Arme simple » (épée/hache/masse) routées par shape vers leur propre forme', () => {
-    expect(weaponFamily(byShape('epee'))).toBe('epee'); // forme générique hardcodée
+    expect(weaponFamily(byShape('epee'))).toBe('epee'); // épée générique = def du registre
     expect(weaponFamily(byShape('hache'))).toBe('hache');
     expect(weaponFamily(byShape('masse'))).toBe('masse');
   });

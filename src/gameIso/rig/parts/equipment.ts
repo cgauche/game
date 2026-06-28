@@ -9,14 +9,7 @@ import { SHIELD_DEFS } from './shields/_registry.generated';
 import { weaponGroupKey } from './weaponGroup';
 import { norm as wnorm } from './weaponForms';
 import { findTrappingById } from '../../../data';
-import { buildTokenMap, applyTokenMap } from '../palette';
-
-/** Épée — front / dos (lame grise mate) / profil (fine). Art directionnel. */
-const EPEE_ART: PartArt = {
-  front: `<rect x="-1.5" y="-2" width="3" height="6" fill="#5a3f24"/><rect x="-1" y="-30" width="2" height="28" fill="url(#g_steel)"/><rect x="-5" y="-2" width="10" height="2.5" fill="#caa64a"/>`,
-  back: `<rect x="-1.5" y="-2" width="3" height="6" fill="#4a3320"/><rect x="-1" y="-30" width="2" height="28" fill="#6a7384"/>`,
-  profile: `<rect x="-1.2" y="-2" width="2.4" height="6" fill="#5a3f24"/><rect x="-0.8" y="-30" width="1.6" height="28" fill="url(#g_steel)"/>`,
-};
+import { buildTokenMap, applyTokenMap, applyTokenMapArt } from '../palette';
 
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
 export interface EquipCtx {
@@ -45,8 +38,8 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
 }
 
 /** Ensemble des slugs de FORME catalogués (clés de l'art rig) — pour valider un `shape` reçu en donnée.
- *  Inclut `epee` (forme générique HARDCODÉE, pas une def — repli du Groupe `base` + défaut final). */
-const ART_BY_SLUG = new Set([...WEAPON_DEFS.map((d) => d.slug), 'epee']);
+ *  `epee` (forme générique, repli du Groupe `base` + défaut final) est une def du registre comme les autres. */
+const ART_BY_SLUG = new Set(WEAPON_DEFS.map((d) => d.slug));
 
 /** Forme par défaut d'un Groupe canonique (REPLI quand l'arme ne porte pas de `shape` : armes
  *  génériques de statbloc / hors catalogue). Le Groupe (WFRP4) n'encode pas la forme — c'est un
@@ -79,19 +72,17 @@ export function weaponFamily(w: Weapon): string {
 /**
  * Parts d'arme (repère local de l'os `arme`, manche à l'origine).
  * ART DES FORMES = registre auto-chargé `weapons/defs/` (1 arme = 1 fichier ; les réécritures
- * lisibilité de l'audit aveugle sont déjà bakées dans chaque def). On y ajoute seulement le
- * FALLBACK HORS-FORME `epee` (repli du Groupe `base` via `ART_BY_GROUP` + défaut final de `weaponPart`).
+ * lisibilité de l'audit aveugle sont déjà bakées dans chaque def). `epee` (forme générique, repli
+ * du Groupe `base` via `ART_BY_GROUP` + défaut final de `weaponPart`) est une def comme les autres.
  */
-// Art des formes RÉSOLU @défaut (palette `stored` du def). `applyTokenMap` est un no-op tant
-// que l'art ne contient pas de `@tokens` (armes non encore tokenisées) → sûr avant/après.
+// Art des formes RÉSOLU @défaut (palette `stored` du def). `applyTokenMapArt` est un no-op tant
+// que l'art ne contient pas de `@tokens` (armes non encore tokenisées) → sûr avant/après. Relevé sur
+// `PartArt` : préserve un art DIRECTIONNEL (front/dos/profil de l'épée) verbatim.
 const FORM_ART: Record<string, PartArt> = Object.fromEntries(
-  WEAPON_DEFS.map((d) => [d.slug, applyTokenMap(d.art, buildTokenMap(d.palette ?? {}))]),
+  WEAPON_DEFS.map((d) => [d.slug, applyTokenMapArt(d.art, buildTokenMap(d.palette ?? {}))]),
 );
 const FORM_DEF = new Map(WEAPON_DEFS.map((d) => [d.slug, d]));
-const WEAPONS: Record<string, PartArt> = {
-  epee: EPEE_ART, // épée générique : repli du Groupe `base` + défaut final de `weaponPart`
-  ...FORM_ART,
-};
+const WEAPONS: Record<string, PartArt> = FORM_ART;
 
 export function weaponPart(w: Weapon): PartArt {
   const f = weaponFamily(w);
@@ -99,7 +90,7 @@ export function weaponPart(w: Weapon): PartArt {
   // SKIN d'objet légendaire : re-résout l'art du def contre SA palette + l'override d'instance
   // (≠ tenues qui suivent la palette du PORTEUR). Sans skin → art @défaut précalculé.
   const def = w.skin ? FORM_DEF.get(f) : undefined;
-  if (def) return applyTokenMap(def.art, buildTokenMap(def.palette ?? {}, w.skin));
+  if (def) return applyTokenMapArt(def.art, buildTokenMap(def.palette ?? {}, w.skin));
   return WEAPONS[f] ?? WEAPONS.epee;
 }
 

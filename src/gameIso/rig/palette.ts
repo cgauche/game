@@ -9,6 +9,7 @@
  * dégradé survit au recoloriage. Résolu en hex (pas de var() CSS) → marche en navigateur
  * ET en rendu headless (resvg).
  */
+import type { PartArt } from './parts/types';
 
 /** Emplacements de couleur d'un personnage. Tout est optionnel (défauts sinon). */
 export interface Palette {
@@ -102,6 +103,19 @@ export function buildTokenMap(stored: StoredPalette, overrides: Palette = {}): R
 export function applyTokenMap(svg: string, map: Record<string, string>): string {
   if (!svg.includes('@')) return svg;
   return svg.replace(/@([a-zA-Z]\w*)/g, (whole, key: string) => map[key] ?? whole);
+}
+
+/** Relève `applyTokenMap` sur un `PartArt` : string → substitution directe ; art directionnel →
+ *  substitution sur chaque vue présente (les clés absentes restent absentes). No-op sur un art
+ *  sans `@token` (préserve l'art verbatim). Source unique pour recolorier un art tenu (arme/bouclier). */
+export function applyTokenMapArt(art: PartArt, map: Record<string, string>): PartArt {
+  return typeof art === 'string'
+    ? applyTokenMap(art, map)
+    : {
+        front: applyTokenMap(art.front, map),
+        ...(art.back !== undefined && { back: applyTokenMap(art.back, map) }),
+        ...(art.profile !== undefined && { profile: applyTokenMap(art.profile, map) }),
+      };
 }
 
 /** Commodité : (overrides, stored?) → SVG résolu. Pour 1 fragment ; sinon préférer

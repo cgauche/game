@@ -22,6 +22,7 @@ export interface RigHeldDef {
   label: string;
   /** Cible silhouette-first (FR) — sert les workflows d'art. */
   target: string;
-  /** SVG dans le repère local de l'os porteur (arme : manche en (0,0), lame vers -y ; bouclier : centré ~cy6). */
-  art: string;
+  /** Art dans le repère local de l'os porteur (arme : manche en (0,0), lame vers -y ; bouclier : centré ~cy6).
+   *  String = même art toutes vues ; objet `{front,back?,profile?}` pour un art DIRECTIONNEL (ex. l'épée). */
+  art: PartArt;
 }
