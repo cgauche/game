@@ -429,10 +429,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "chimere",
   },
   "Choses du Bois Mort": {
-    "def": null,
+    "def": "Choses du Bois Mort",
     "plan": "biped",
     "scale": 1,
-    "species": "humain",
+    "species": "choses-du-bois-mort",
   },
   "Citadin": {
     "def": null,
@@ -1797,10 +1797,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "humain",
   },
   "Prédateur sanglant": {
-    "def": null,
+    "def": "Prédateur sanglant",
     "plan": "biped",
-    "scale": 1,
-    "species": "humain",
+    "scale": 1.08,
+    "species": "predateur-sanglant",
   },
   "Prédicateur de la Peste": {
     "def": "Skaven",
@@ -2115,10 +2115,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "orc",
   },
   "Sirène": {
-    "def": null,
+    "def": "Sirène",
     "plan": "biped",
     "scale": 1,
-    "species": "humain",
+    "species": "sirene",
   },
   "Skaven": {
     "def": "Skaven",
@@ -2551,6 +2551,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.2,
     "species": "chimere",
   },
+  "choses-du-bois-mort": {
+    "def": "Choses du Bois Mort",
+    "plan": "biped",
+    "scale": 1,
+    "species": "choses-du-bois-mort",
+  },
   "cockatrice": {
     "def": "Cockatrice",
     "plan": "winged",
@@ -2875,6 +2881,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.62,
     "species": "pigeon",
   },
+  "predateur-sanglant": {
+    "def": "Prédateur sanglant",
+    "plan": "biped",
+    "scale": 1.08,
+    "species": "predateur-sanglant",
+  },
   "preyton": {
     "def": "Preyton",
     "plan": "winged",
@@ -2928,6 +2940,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "serpentine",
     "scale": 1,
     "species": "serpent",
+  },
+  "sirene": {
+    "def": "Sirène",
+    "plan": "biped",
+    "scale": 1,
+    "species": "sirene",
   },
   "skaven": {
     "def": "Skaven",

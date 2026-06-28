@@ -50858,6 +50858,14 @@
       "rarity": "Exotique",
       "danger": "Inquiétante",
       "uses": "Boire dans leur crâne permet de voir et d'entendre les morts"
+    },
+    "appearance": {
+      "species": "choses-du-bois-mort",
+      "features": [
+        "cornes-asymetriques",
+        "langue-pendante",
+        "tentacule-epais"
+      ]
     }
   },
   {
@@ -54230,6 +54238,12 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Une mèche de cheveux de sirène permet de respirer sous l'eau"
+    },
+    "appearance": {
+      "species": "sirene",
+      "features": [
+        "queue-de-poisson"
+      ]
     }
   },
   {
@@ -54809,6 +54823,9 @@
     "source": {
       "book": "Middenheim",
       "page": 115
+    },
+    "appearance": {
+      "species": "predateur-sanglant"
     }
   },
   {
