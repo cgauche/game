@@ -4069,7 +4069,8 @@
       },
       {
         "id": "arme",
-        "arg": "griffes"
+        "arg": "griffes",
+        "natural": true
       },
       {
         "id": "armure",
@@ -4206,7 +4207,8 @@
       {
         "id": "arme",
         "value": 8,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       },
       {
         "id": "cornes",
@@ -4304,7 +4306,8 @@
       {
         "id": "arme",
         "value": 8,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       },
       {
         "id": "corruption",
@@ -4396,7 +4399,8 @@
       {
         "id": "arme",
         "value": 6,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       },
       {
         "id": "corruption",
@@ -4986,7 +4990,8 @@
       {
         "id": "arme",
         "value": 9,
-        "arg": "Serres"
+        "arg": "Serres",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -49998,7 +50003,8 @@
       {
         "id": "arme",
         "value": 10,
-        "arg": "Cornes nasales"
+        "arg": "Cornes nasales",
+        "natural": true
       },
       {
         "id": "cornes",
@@ -50098,7 +50104,8 @@
       {
         "id": "arme",
         "value": 13,
-        "arg": "Cornes nasales"
+        "arg": "Cornes nasales",
+        "natural": true
       },
       {
         "id": "cornes",
@@ -50317,7 +50324,8 @@
       {
         "id": "arme",
         "value": 11,
-        "arg": "Griffes semblables à des racines"
+        "arg": "Griffes semblables à des racines",
+        "natural": true
       },
       {
         "id": "attaque-caudale",
@@ -50437,7 +50445,8 @@
       {
         "id": "arme",
         "value": 12,
-        "arg": "Griffes recouvertes de gromril"
+        "arg": "Griffes recouvertes de gromril",
+        "natural": true
       },
       {
         "id": "attaque-caudale",
@@ -50704,7 +50713,8 @@
       {
         "id": "arme",
         "value": 9,
-        "arg": "Queue mortelle"
+        "arg": "Queue mortelle",
+        "natural": true
       },
       {
         "id": "attaque-caudale",
@@ -50987,7 +50997,8 @@
       {
         "id": "arme",
         "value": 11,
-        "arg": "Griffes renforcées de métal"
+        "arg": "Griffes renforcées de métal",
+        "natural": true
       },
       {
         "id": "maladie",
@@ -51193,7 +51204,8 @@
       {
         "id": "arme",
         "value": 13,
-        "arg": "Griffes de la taille de faux"
+        "arg": "Griffes de la taille de faux",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -51819,7 +51831,8 @@
       {
         "id": "arme",
         "value": 5,
-        "arg": "Morsure de dents aiguisées"
+        "arg": "Morsure de dents aiguisées",
+        "natural": true
       }
     ],
     "optionals": [],
@@ -51977,7 +51990,8 @@
       {
         "id": "arme",
         "value": 8,
-        "arg": "Cornes en dents de scie"
+        "arg": "Cornes en dents de scie",
+        "natural": true
       },
       {
         "id": "cornes",
@@ -52056,7 +52070,8 @@
       {
         "id": "arme",
         "value": 8,
-        "arg": "Serres"
+        "arg": "Serres",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -52222,7 +52237,8 @@
       {
         "id": "arme",
         "value": 10,
-        "arg": "Serres"
+        "arg": "Serres",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -52306,7 +52322,8 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Serres"
+        "arg": "Serres",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -52385,7 +52402,8 @@
       {
         "id": "arme",
         "value": 9,
-        "arg": "Serres"
+        "arg": "Serres",
+        "natural": true
       }
     ],
     "optionals": [
@@ -52489,7 +52507,8 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Serres"
+        "arg": "Serres",
+        "natural": true
       },
       {
         "id": "attaque-caudale",
@@ -52598,7 +52617,8 @@
       {
         "id": "arme",
         "value": 10,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -52729,7 +52749,8 @@
       {
         "id": "arme",
         "value": 12,
-        "arg": "Griffes incurvées"
+        "arg": "Griffes incurvées",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -52979,7 +53000,8 @@
       {
         "id": "arme",
         "value": 10,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -53231,7 +53253,8 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Bec crochu"
+        "arg": "Bec crochu",
+        "natural": true
       }
     ],
     "optionals": [
@@ -53691,7 +53714,8 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -53794,7 +53818,8 @@
       {
         "id": "arme",
         "value": 10,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -53888,7 +53913,8 @@
       {
         "id": "arme",
         "value": 9,
-        "arg": "Serres"
+        "arg": "Serres",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -54198,7 +54224,8 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Griffes"
+        "arg": "Griffes",
+        "natural": true
       }
     ],
     "optionals": [
@@ -54381,7 +54408,8 @@
       {
         "id": "arme",
         "value": 11,
-        "arg": "Griffes recourbées"
+        "arg": "Griffes recourbées",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -54471,7 +54499,8 @@
       {
         "id": "arme",
         "value": 11,
-        "arg": "Griffes recourbées"
+        "arg": "Griffes recourbées",
+        "natural": true
       },
       {
         "id": "morsure",
@@ -54735,7 +54764,8 @@
       {
         "id": "arme",
         "value": 12,
-        "arg": "Poing à pistons"
+        "arg": "Poing à pistons",
+        "natural": true
       }
     ],
     "optionals": [],

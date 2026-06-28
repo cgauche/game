@@ -76,6 +76,10 @@ export interface TraitInstance {
   arg?: string;
   count?: number;
   range?: number;
+  /** Le trait d'arme est une attaque NATURELLE de corps (morsure/griffes/cornes…) → aucune arme tenue
+   *  n'est dessinée (le membre fait foi). Flag DONNÉE posé à la migration (depuis l'ancienne heuristique
+   *  de libellé), lu au spawn par `weaponFromTrait` → `Weapon.natural`. Absent = arme manufacturée. */
+  natural?: boolean;
 }
 
 /**

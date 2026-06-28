@@ -49,7 +49,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   // (b) Bouclier + armure corporelle : chemin os `bouclier` + parts armure
   const appGuardien: Appearance = { species: 'Humain', sex: 'F', build: 0.6, seed: 11 };
   const equipGuardien: EquipCtx = {
-    weapons: [weaponFromLabel('Hache')],
+    weapons: [weaponFromLabel('Grande hache')],
     armour: [
       { uid: 'syn-corps', name: 'Cotte de mailles', kind: 'armor', qualities: [], pa: 2, locs: ['corps'], enc: 1, equipped: true },
       { uid: 'syn-tete',  name: 'Heaume',            kind: 'armor', qualities: [], pa: 2, locs: ['tete'],  enc: 1, equipped: true },
@@ -69,7 +69,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
     colors: { vet1: '#3a5a7a' },
   };
   const equipMercenaire: EquipCtx = {
-    weapons: [weaponFromLabel('Hache')],
+    weapons: [weaponFromLabel('Grande hache')],
     armour: [],
   };
   for (const view of VIEWS) {

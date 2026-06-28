@@ -1,10 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { handlingClass, isTwoHanded, isRangedHandling, type Handling } from './handling';
 import { WEAPON_FORMS } from '../parts/weaponForms';
+import { shapeForLabel } from '../../../engine/creatureEquip';
 import type { Weapon } from '../../../engine/types';
 
+// Le maniement est routé PAR ID STABLE (`shape`) — l'arme est construite comme au SPAWN : libellé → shape.
 const w = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: shapeForLabel(name) } as Weapon);
+/** Arme routée directement par son slug de FORME (pas de libellé). */
+const byShape = (shape: string | undefined, type: 'melee' | 'ranged' = 'melee'): Weapon =>
+  ({ name: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
 
 describe('handlingClass — dérivé de la FORME, pas du Groupe de règles', () => {
   it('mappe un représentant de chaque classe', () => {
@@ -41,8 +46,8 @@ describe('handlingClass — dérivé de la FORME, pas du Groupe de règles', () 
   it('toute forme cataloguée résout vers UNE classe connue (aucune forme orpheline)', () => {
     const KNOWN: Handling[] = ['lame1m', 'escrime', 'lourde2m', 'hampe', 'lance_cav', 'fleau', 'parade', 'poings', 'arc', 'arbalete', 'arme_feu', 'fronde', 'jet', 'entraves', 'explosif'];
     for (const f of WEAPON_FORMS) {
-      const h = handlingClass(w(f.label, f.type));
-      expect(KNOWN, f.label).toContain(h);
+      const h = handlingClass(byShape(f.slug, f.type));
+      expect(KNOWN, f.slug).toContain(h);
     }
   });
 

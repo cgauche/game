@@ -25,10 +25,10 @@ type Resolved = { art: string; geom: Geom } | { glyph: string };
 const ARMOUR_SLOTS: Slot[] = ['torse', 'tete', 'bras', 'jambes'];
 
 /** Arme minimale pour le routage d'art (même recette que feu `ItemSkinPreview`) à partir d'un objet.
- *  Porte `skin` ET `form` (+`subType`) — le `form` route l'art spécial (épée ardente invoquée…) :
- *  sans lui, un ItemInstance retombait sur l'art générique alors que l'arme dérivée (Weapon) l'avait. */
+ *  Porte `shape` (id de FORME = routage de l'art), `skin`, `form` (+`subType`) — sans `shape` un
+ *  ItemInstance retomberait sur l'art générique alors que l'arme dérivée (Weapon) l'a déjà. */
 function asWeapon(item: ItemInstance): Weapon {
-  return { name: item.name, type: item.kind === 'ranged' ? 'ranged' : 'melee', damage: { plusBF: false, flat: 0 }, qualities: item.qualities ?? [], skin: item.skin, form: item.form, subType: item.subType };
+  return { name: item.name, type: item.kind === 'ranged' ? 'ranged' : 'melee', damage: { plusBF: false, flat: 0 }, qualities: item.qualities ?? [], skin: item.skin, form: item.form, shape: item.shape, subType: item.subType };
 }
 
 function resolve(item: ItemInstance | Weapon): Resolved {

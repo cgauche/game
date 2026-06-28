@@ -17,7 +17,6 @@ import type { Clip, ClipStep } from './clips';
 import type { Weapon } from '../../../engine/types';
 import { handlingClass, isRangedHandling, type Handling } from './handling';
 import { isShield } from '../parts/equipment';
-import { norm } from '../../../lib/normalize';
 
 const REST: Pose = {};
 const c = (steps: ClipStep[], onImpact?: number): Clip => ({ steps, onImpact });
@@ -169,8 +168,9 @@ const MIRROR_BONE: Record<string, string> = {
 const mirrorPose = (p: Pose): Pose =>
   Object.fromEntries(Object.entries(p).filter(([k]) => k !== 'arme').map(([k, v]) => [MIRROR_BONE[k] ?? k, v]));
 const mirrorClip = (cl: Clip): Clip => ({ ...cl, steps: cl.steps.map((s) => ({ ...s, pose: mirrorPose(s.pose) })) });
-/** L'attaque de cette arme se joue-t-elle sur le bras GAUCHE ? */
-const leftHanded = (w: Weapon): boolean => w.hand === 'off' || norm(w.name).startsWith('tentacule');
+/** L'attaque de cette arme se joue-t-elle sur le bras GAUCHE ? Routage PAR ID STABLE (kind
+ *  `attackKind`, jamais le libellé) : main secondaire, ou tentacule (membre gauche muté). */
+const leftHanded = (w: Weapon): boolean => w.hand === 'off' || w.attackKind === 'tentacules';
 
 /** Geste d'attaque selon la classe de maniement (défaut : lame1m), MIROITÉ pour le bras gauche. */
 export function weaponAttackClip(w?: Weapon): Clip {

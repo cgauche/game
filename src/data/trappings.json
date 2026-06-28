@@ -3058,7 +3058,9 @@
   {
     "id": "cape",
     "label": "Cape",
-    "weatherProtection": true,
+    "capabilities": {
+      "weatherProtection": true
+    },
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -3313,7 +3315,9 @@
   {
     "id": "manteau",
     "label": "Manteau",
-    "weatherProtection": true,
+    "capabilities": {
+      "weatherProtection": true
+    },
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -3774,7 +3778,9 @@
   {
     "id": "ration",
     "label": "Ration",
-    "isRations": true,
+    "capabilities": {
+      "isRations": true
+    },
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -4992,7 +4998,9 @@
   {
     "id": "grimoire",
     "label": "Grimoire",
-    "isGrimoire": true,
+    "capabilities": {
+      "isGrimoire": true
+    },
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -7323,7 +7331,9 @@
   {
     "id": "tente",
     "label": "Tente",
-    "isShelter": true,
+    "capabilities": {
+      "isShelter": true
+    },
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 2,
@@ -8324,7 +8334,9 @@
         "id": "inoffensive"
       }
     ],
-    "preventForcedDrop": true,
+    "capabilities": {
+      "preventForcedDrop": true
+    },
     "desc": "Un gantelet verrouillé est formé de plaques d'acier recouvrant le poing et peut être maintenu en position fermée par une vis ou un loquet. Il peut certes servir d'arme de bagarre, mais il est surtout employé comme méthode pour s'assurer que celui qui le porte ne lâche pas une arme tenue dans la main gantée. Un gantelet verrouillé peut être acheté en tant que partie d'une armure de plates pour un bras. Ajoutez le prix du gantelet verrouillé à celui de l'armure, mais utilisez seulement l'Encombrement de l'armure elle-même ; le gantelet verrouillé ne rajoute pas de poids significatif.\n\nUn Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). Si pendant cette période un nouvel évènement se produit qui aurait encore une fois dû le contraindre à lâcher l'objet, il le lâche même s'il porte un gantelet verrouillé.",
     "price": {
       "gold": 1,

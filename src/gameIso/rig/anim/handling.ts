@@ -9,15 +9,13 @@
  * encode la prise, et on ne retombe sur le Groupe que pour les armes NON dessinées.
  */
 import type { Weapon } from '../../../engine/types';
-import { formSlug } from '../parts/weaponForms';
 import { weaponGroupKey } from '../parts/weaponGroup';
-import { norm } from '../../../lib/normalize';
 
 export type Handling =
   | 'lame1m' | 'escrime' | 'lourde2m' | 'hampe' | 'lance_cav' | 'fleau' | 'parade' | 'poings'
   | 'arc' | 'arbalete' | 'arme_feu' | 'fronde' | 'jet' | 'entraves' | 'explosif' | 'cornes';
 
-/** FORME (slug d'art) → classe de maniement. Source : les 48 formes de weaponForms.ts. */
+/** FORME (slug d'art, `Weapon.shape`) → classe de maniement. Clés = slugs des formes (weaponForms.ts). */
 const FORM_HANDLING: Record<string, Handling> = {
   // Lame/percussion à UNE main (taille au côté). bec-de-corbin = pic 1-main (≠ son Groupe Cavalerie).
   couteau: 'lame1m', dague: 'lame1m', gourdin: 'lame1m', improvisee: 'lame1m', bec_de_corbin: 'lame1m',
@@ -60,21 +58,24 @@ const GROUP_HANDLING: Record<string, Handling> = {
   fronde: 'fronde', lancer: 'jet', entraves: 'entraves', explosifs: 'explosif',
 };
 
-/** ARMES NATURELLES (loadout de mutation/trait, pas de forme dessinée) → geste dédié :
- *  le tentacule FOUETTE (classe entraves), les cornes donnent un COUP DE TÊTE. */
+/** ARMES NATURELLES TYPÉES (kind STABLE stampé sur l'arme, `Weapon.attackKind`) → geste dédié :
+ *  le tentacule FOUETTE (classe entraves), les cornes donnent un COUP DE TÊTE. Clés = ids de kind
+ *  (`AttackKind` / id de trait naturel), JAMAIS un libellé. */
 const NATURAL_HANDLING: Record<string, Handling> = {
-  tentacule: 'entraves', tentacules: 'entraves',
-  corne: 'cornes', cornes: 'cornes',
+  tentacules: 'entraves',
+  cornes: 'cornes',
 };
 
-/** Classe de maniement d'une arme : naturelle d'abord, puis FORME (encode la prise), repli Groupe/type. */
+/** Classe de maniement d'une arme — routage PAR ID STABLE (plus aucun lookup de libellé au runtime) :
+ *  kind naturel (`attackKind`) d'abord, puis FORME (`shape`, encode la prise), repli Groupe/type. */
 export function handlingClass(w?: Weapon): Handling {
   if (!w) return 'lame1m';
-  const nat = NATURAL_HANDLING[norm(w.name)];
-  if (nat) return nat;
-  const slug = formSlug(w.name);
-  if (slug) {
-    const h = FORM_HANDLING[slug];
+  if (w.attackKind) {
+    const nat = NATURAL_HANDLING[w.attackKind];
+    if (nat) return nat;
+  }
+  if (w.shape) {
+    const h = FORM_HANDLING[w.shape];
     if (h) return h;
   }
   const h = GROUP_HANDLING[weaponGroupKey(w)];

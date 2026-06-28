@@ -10,7 +10,22 @@ import type { TraitInstance, TraitList } from './statEntry';
 import { buildWeapon, emptyArmour } from './items';
 import type { WeaponDamageSpec } from './types';
 import { findResolvedTrait, traitLabelById } from './traits/dispatch';
-import { findTraitById } from '../data/index';
+import { findTraitById, trappings } from '../data/index';
+import { norm } from '../lib/normalize';
+
+/**
+ * Slug de FORME (routage de l'art rig) d'un libellé d'arme MANUFACTURÉE — résolu AU SPAWN/AUTHORING
+ * uniquement (jamais au runtime de rendu) : `norm(libellé)` → trapping de catalogue → son `shape`.
+ * Map construite une fois depuis `trappings` (déjà peuplés en `shape` par la migration). `undefined`
+ * pour un libellé hors catalogue (« Hache », « Crocs »…) → le rendu retombera sur le Groupe.
+ */
+const SHAPE_BY_LABEL = new Map<string, string>(
+  (trappings as { label: string; shape?: string }[])
+    .filter((t) => t.shape)
+    .map((t) => [norm(t.label), t.shape as string]),
+);
+export const shapeForLabel = (label?: string): string | undefined =>
+  label ? SHAPE_BY_LABEL.get(norm(label)) : undefined;
 
 /**
  * Parse UN trait d'arme WFRP4 (français) en arme jouable, ou null. Gère le TYPE
@@ -26,14 +41,24 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
   const dmg: WeaponDamageSpec = t.value != null ? { plusBF: false, flat: t.value } : { plusBF: true, flat: 0, bare: true };
   if (t.id === 'a-distance') {
     if (t.value == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
-    return buildWeapon({ name: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined });
+    // Arme manufacturée nommée (« Arc » → shape `arc`) : résolution libellé→shape AU SPAWN ; hors
+    // catalogue → pas de shape (le rendu retombe sur le Groupe). Pas de flag `natural` sur `a-distance`.
+    return buildWeapon({ name: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined, shape: shapeForLabel(t.arg) });
   }
-  if (t.id === 'arme') return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg }); // mêlée par défaut
-  // Attaque naturelle (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ TYPÉE du trait
-  // (`capabilities.naturalWeapon`, donnée), plus par découpe du libellé au runtime. L'arme reste UNE
-  // (l'Action d'attaque) ; le compte joue sur les Attaques GRATUITES (aiCreatureFreeAttacks, LDB 85 l.354).
+  if (t.id === 'arme') {
+    // Attaque naturelle de corps (flag DONNÉE `natural`) → aucune arme dessinée (pas de shape).
+    if (t.natural) return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, natural: true });
+    // Arme manufacturée nommée (« Hallebarde » → shape `hallebarde`) : libellé→shape AU SPAWN ; hors
+    // catalogue → générique (pas de shape, repli par Groupe au rendu). Mêlée par défaut.
+    return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, shape: shapeForLabel(t.arg) });
+  }
+  // Attaque naturelle TYPÉE (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ du trait
+  // (`capabilities.naturalWeapon`, donnée). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur
+  // les Attaques GRATUITES (aiCreatureFreeAttacks, LDB 85 l.354). `natural` → aucune arme tenue dessinée.
+  // `attackKind = t.id` (l'id du trait EST le kind : morsure/cornes/tentacules) → la pose/anim route par
+  // ce champ STABLE (handlingClass), jamais par le libellé.
   const nat = findTraitById(t.id)?.capabilities?.naturalWeapon;
-  if (nat) return buildWeapon({ name: traitLabelById(t.id), type: nat.ranged ? 'ranged' : 'melee', damage: dmg });
+  if (nat) return buildWeapon({ name: traitLabelById(t.id), type: nat.ranged ? 'ranged' : 'melee', damage: dmg, natural: true, attackKind: t.id });
   return null;
 }
 

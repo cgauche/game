@@ -199,6 +199,25 @@ export interface TalentData {
    *  puissant `meleeDamageBonus`, Riposte, Tueur, castingKind…). Remplace les `combatFeatures/defs/*.ts`. */
   combat?: import('../engine/combatFeatures/types').CombatFeature;
 }
+/** Capacités IRRÉDUCTIBLES d'un objet (drapeaux NON exprimables en GameOp) — canal `capabilities`, MÊME
+ *  logique que `TraitCapabilities`/`QualityCapabilities` : règles que le moteur INTERROGE par id, jamais
+ *  par le nom FR de l'objet. Lues par `engine/capabilities` (`itemCapability` par-objet, `hasCapability`
+ *  agrégat par-personnage cross-source). */
+export interface ItemCapabilities {
+  /** Gantelet verrouillé (AA folio 94) : le porteur NE LÂCHE PAS l'arme tenue dans la main gantée la 1re
+   *  fois que les circonstances l'y forceraient (désarmement / Piège-lame) — lu par `applyBladeTrap`
+   *  (GATÉ sur le port). */
+  preventForcedDrop?: boolean;
+  /** Protège des intempéries (Cape/Manteau, LDB ch.66 l.46) — annule le malus de Test d'Exposition au
+   *  froid (GATÉ sur le port). */
+  weatherProtection?: boolean;
+  /** Abri de campement (Tente, LDB p.308) — annule/atténue l'Exposition d'une nuit dehors (NON gaté). */
+  isShelter?: boolean;
+  /** Ration de voyage (« Ration (1 jour) », LDB p.302) — consommée par l'entretien de Faim (NON gaté). */
+  isRations?: boolean;
+  /** Grimoire / livre de Sorts (LDB 47 l.34) — un Sort non mémorisé du Domaine peut y être lu (NON gaté). */
+  isGrimoire?: boolean;
+}
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */
   id: string;
@@ -253,26 +272,15 @@ export interface TrappingData {
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
    *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
   derivedWeapon?: Weapon;
-  // ── Marqueurs FONCTIONNELS de catégorie (multilangue-safe : la règle lit le flag, plus le nom FR).
-  //    Propagés tels quels sur `ItemInstance` par `itemFromTrappingById`. Ajouter un objet de la
-  //    catégorie = poser le flag dans `trappings.json` (éditable au Compendium).
-  /** Protège des intempéries (Cape/Manteau, LDB ch.66 l.46) — annule le malus de Test d'Exposition au
-   *  froid et fait office de protection pluie. */
-  weatherProtection?: boolean;
-  /** Abri de campement (Tente, LDB p.308) — annule/atténue l'Exposition d'une nuit dehors. */
-  isShelter?: boolean;
-  /** Ration de voyage (« Ration (1 jour) », LDB p.302) — consommée par l'entretien de Faim. */
-  isRations?: boolean;
-  /** Grimoire / livre de Sorts (LDB 47 l.34) — un Sort non mémorisé du Domaine peut y être lu. */
-  isGrimoire?: boolean;
   /** Source de lumière PORTÉE (brouillard de guerre) : rayon d'éclairage en cases tant que l'objet est
    *  dans l'inventaire. Bougie 5 / Lanterne 10 (= 10/20 m, `LDB 74 l.72`/`LDB 75 l.15`, échelle 1 case=2 m). */
   light?: { radiusTiles: number };
-  /** Gantelet verrouillé (AA folio 94) : le porteur NE LÂCHE PAS l'arme tenue dans la main gantée la 1re
-   *  fois que les circonstances l'y forceraient (désarmement / Piège-lame) — il subit −20 pendant 1 Round
-   *  (min) à la place ; un SECOND évènement de lâcher pendant cette période fait tomber l'arme. Lu
-   *  GÉNÉRIQUEMENT par le moteur de combat (`applyBladeTrap`), jamais par le nom de l'objet. */
-  preventForcedDrop?: boolean;
+  /** Capacités IRRÉDUCTIBLES de l'objet (drapeaux NON exprimables en GameOp) — canal `capabilities`,
+   *  MÊME logique que `TraitCapabilities`/`QualityCapabilities` : règles que le moteur INTERROGE par id
+   *  (`engine/capabilities`), jamais par le nom FR de l'objet. Couvre les 5 marqueurs de catégorie :
+   *  `weatherProtection` (Cape/Manteau), `isShelter` (Tente), `isRations` (Ration), `isGrimoire`
+   *  (Grimoire), `preventForcedDrop` (Gantelet verrouillé). Édité au Compendium. */
+  capabilities?: ItemCapabilities;
   /** Modificateurs PASSIFS continus de l'objet (GameOp[], MÊME vocabulaire que traits/qualités/sorts) —
    *  appliqués tant que l'objet est PORTÉ ou TENU (collecteur `passiveMods`). Ex. Bésicles → `skillMod`
    *  +20 Langue/Perception (LDB 67). */

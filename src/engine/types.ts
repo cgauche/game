@@ -266,6 +266,13 @@ export interface Weapon {
    *  « Bâton de combat » bien que nommée « Arme aethyrique ») — résolue par le rig (weaponFamily).
    *  Donnée opaque côté moteur (un simple libellé). */
   form?: string;
+  /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art (rig `weaponFamily`/
+   *  `shieldPart`), ≠ libellé. Stampé au spawn/à la construction depuis `ItemInstance.shape` ou le trait.
+   *  Absent = attaque naturelle / arme générique (repli par Groupe au rendu). */
+  shape?: string;
+  /** Attaque NATURELLE de corps (morsure/griffes/cornes…) : aucune arme tenue n'est dessinée (le rig
+   *  rend le membre). Stampé au spawn depuis `TraitInstance.natural` / la capacité `naturalWeapon`. */
+  natural?: boolean;
   /** Effets « à la touche » repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
    *  invoquée) par `recomputeLoadout` → lus par `effectsOf` (state/triggeredEffects). */
   onHitEffects?: import('./flowCore').TriggeredEffect[];
@@ -565,6 +572,9 @@ export interface ItemInstance {
   /** `id` du Groupe/famille (`WeaponGroupData.id`) — munition : famille compatible (arc/arbalete/
    *  poudre-noire) ; armure : type (plate/mailles/cuir-souple…). Correspond à `Weapon.subType`. */
   subType?: string;
+  /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art (rig), ≠ libellé.
+   *  Copié du catalogue (`TrappingData.shape`) par `itemFromTrappingById` ; propagé à `Weapon.shape`. */
+  shape?: string;
   /** Nombre de mains requises (1 ou 2), posé à la création par itemFromTrapping (marqueur `(2M)`). */
   hands?: 1 | 2;
   /** Quantité (paquet de munitions, ex. « (12) » → 12). */
@@ -605,16 +615,9 @@ export interface ItemInstance {
    *  rareté × dangerosité × Taille × Conservation déjà nettes. Revendu en DIRECT (sans le taux de
    *  revente catalogue), cf. `merchantFlow.sellGain`. Absent pour un objet ordinaire (prix = catalogue). */
   price?: import('./money').Money;
-  // ── Marqueurs FONCTIONNELS de catégorie (propagés du `TrappingData` par itemFromTrappingById) —
-  //    les règles détectent par flag STABLE, plus par nom FR (multilangue-safe). Cf. data/index.ts.
-  /** Protège des intempéries (Cape/Manteau) — Exposition au froid (exposure.ts) + cape de fiche (items.ts). */
-  weatherProtection?: boolean;
-  /** Abri de campement (Tente) — atténue l'Exposition d'une nuit dehors (exposure.ts). */
-  isShelter?: boolean;
-  /** Ration de voyage — consommée par l'entretien de Faim (provisions.ts). */
-  isRations?: boolean;
-  /** Grimoire / livre de Sorts — lecture d'un Sort non mémorisé (grimoire.ts). */
-  isGrimoire?: boolean;
+  // Les capacités FONCTIONNELLES de catégorie (weatherProtection/isShelter/isRations/isGrimoire/
+  // preventForcedDrop) ne sont PAS propagées sur l'instance : elles sont lues DEPUIS le catalogue par
+  // `trappingId` (canal `TrappingData.capabilities`), via `engine/capabilities` — comme `passive`.
   /** Contenant (sac/sac à dos, LDB 64) : capacité de rangement en Enc (« Contenu »). Propagé de TrappingData.container. */
   container?: { capacity: number };
   /** Rangé DANS un contenant (uid de l'ItemInstance porteur d'un `container`) : son Enc est absorbé par le

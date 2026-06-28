@@ -10,7 +10,7 @@ import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { equipFromCombatant } from './parts/equipment';
 import { newUid, emptyArmour } from '../../engine/items';
-import { renderWeaponsFromTraits, armourFromTraits } from '../../engine/creatureEquip';
+import { renderWeaponsFromTraits, armourFromTraits, shapeForLabel } from '../../engine/creatureEquip';
 import type { TraitList } from '../../engine/statEntry';
 import { weaponGroupKey } from './parts/weaponGroup';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
@@ -24,10 +24,14 @@ import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
 
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
-/** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
+/** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). Override de scène
+ *  `weapon:'X'` : le libellé est résolu en slug de FORME AU SPAWN (`shapeForLabel`, authoring) et posé
+ *  sur `Weapon.shape` → le rendu route l'art par id, jamais par libellé. Hors catalogue → pas de shape. */
 export function weaponFromLabel(label: string): import('../../engine/types').Weapon {
-  const w = { name: label, type: 'melee' as 'melee' | 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
+  const w: import('../../engine/types').Weapon = { name: label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
   if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
+  const shape = shapeForLabel(label);
+  if (shape) w.shape = shape;
   return w;
 }
 

@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { weaponRest, weaponAttackClip, weaponParryClip, mountedAttackClip, mountedParryClip, seatedClip, isRangedFamily } from './weaponClips';
 import { clipDuration, CLIPS } from './clips';
+import { shapeForLabel } from '../../../engine/creatureEquip';
 import type { Weapon } from '../../../engine/types';
 
-// Libellés CANONIQUES → résolus par la FORME (handlingClass), pas par le Groupe de règles.
-const w = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+// Construit l'arme comme au SPAWN (libellé → shape) ; le maniement est ensuite routé PAR ID STABLE
+// (`shape` manufacturé / `attackKind` naturel), jamais par le libellé.
+const w = (name: string, type: 'melee' | 'ranged' = 'melee', extra: Partial<Weapon> = {}): Weapon =>
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: shapeForLabel(name), ...extra } as Weapon);
 
 const windUp = (clip: ReturnType<typeof weaponAttackClip>) => clip.steps[0].pose;
 const anyStep = (clip: ReturnType<typeof weaponAttackClip>, pred: (p: Record<string, number>) => boolean) =>
@@ -129,7 +131,7 @@ describe('clips MONTÉS — gestes en selle (deltas sur mountedRest, jamais bass
   });
 
   it('le geste monté se joue sur le bras qui tient l’arme : tentacule → miroir gauche', () => {
-    const t = mountedAttackClip(w('Tentacule'));
+    const t = mountedAttackClip(w('Tentacule', 'melee', { attackKind: 'tentacules' }));
     expect(t.steps.some((s) => 'epauleG' in s.pose)).toBe(true);
     expect(t.steps.every((s) => !('arme' in s.pose))).toBe(true); // miroir = sans delta arme (ancrée à droite)
   });

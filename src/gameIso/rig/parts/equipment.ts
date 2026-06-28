@@ -7,7 +7,8 @@ import { GENERATED_ARMOUR, ARMOUR_PALETTES } from './generated/armour';
 import { WEAPON_DEFS } from './weapons/_registry.generated';
 import { SHIELD_DEFS } from './shields/_registry.generated';
 import { weaponGroupKey } from './weaponGroup';
-import { WEAPON_FORMS, norm as wnorm, formSlug } from './weaponForms';
+import { norm as wnorm } from './weaponForms';
+import { findTrappingById } from '../../../data';
 import { buildTokenMap, applyTokenMap } from '../palette';
 
 /** Épée — front / dos (lame grise mate) / profil (fine). Art directionnel. */
@@ -43,29 +44,12 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
   return { weapons, armour, shield, cape };
 }
 
-/**
- * FORME d'art de l'arme (clé du registre WEAPONS) = 1 silhouette par arme.
- * Dérivée de WEAPON_FORMS (les 48 armes de la donnée → leur slug), plus des SYNONYMES
- * pour les libellés génériques joués HORS-catalogue. Repli ART_BY_GROUP ensuite.
- * Le Groupe canonique (WFRP4) n'encode pas la forme — JAMAIS de parsing flou par sous-chaîne.
- */
-const SYNONYMS: Record<string, string> = {
-  // épée générique & variantes hors-catalogue
-  epee: 'epee', 'epee courte': 'epee', espadon: 'zweihander',
-  // contondant hors-catalogue
-  masse: 'masse', marteau: 'masse', maillet: 'masse', canne: 'baton',
-  // tranchant hors-catalogue
-  hache: 'hache', 'hache de main': 'hache', hachette: 'hache', cognee: 'hache',
-  poignard: 'dague', stylet: 'dague', epieu: 'lance',
-  // prothèse-arme : le crochet est dessiné SUR la main (injuries.ts), pas tenu. Les autres
-  // attaques NATURELLES (morsure/griffes/bec/dard/corne/queue/piétinement/crachat/poings/
-  // mains nues) sont captées par la regex NATURAL_ATTACK avant ART_BY_LABEL → inutile ici.
-  crochet: '',
-};
-const ART_BY_LABEL: Record<string, string> = { ...SYNONYMS };
-for (const f of WEAPON_FORMS) ART_BY_LABEL[wnorm(f.label)] = f.slug;
+/** Ensemble des slugs de FORME catalogués (clés de l'art rig) — pour valider un `shape` reçu en donnée. */
+const ART_BY_SLUG = new Set(WEAPON_DEFS.map((d) => d.slug));
 
-/** Forme par défaut d'un Groupe canonique (quand le libellé n'est pas dans la table). */
+/** Forme par défaut d'un Groupe canonique (REPLI quand l'arme ne porte pas de `shape` : armes
+ *  génériques de statbloc / hors catalogue). Le Groupe (WFRP4) n'encode pas la forme — c'est un
+ *  simple défaut visuel par famille, pas un routage de libellé. */
 const ART_BY_GROUP: Record<string, string> = {
   base: 'epee', escrime: 'rapiere', deuxmains: 'epee_batarde',
   cavalerie: 'lance_cavalerie', hast: 'lance', fleau: 'fleau', parade: 'main_gauche', bagarre: '',
@@ -73,31 +57,29 @@ const ART_BY_GROUP: Record<string, string> = {
   fronde: 'fronde', lancer: 'javelot', entraves: 'fouet', explosifs: 'bombe',
 };
 
-/** Attaques NATURELLES (corps) : aucune arme tenue n'est dessinée (la part du corps fait foi). */
-const NATURAL_ATTACK = /^(morsure|griffes?|serres?|tentacules?|bec|dard|cornes?|queue|pi[ée]tinement|crachat|poings?|mains nues)\b/i;
-
+/**
+ * FORME d'art de l'arme (clé du registre WEAPONS) = 1 silhouette. Routage PAR ID STABLE, plus aucun
+ * lookup de libellé/regex au runtime (« lookup par libellé = bug multilingue ») :
+ *  1. attaque naturelle (`w.natural`) → aucune arme tenue ;
+ *  2. arme invoquée (`w.form` = id de trapping) → son `shape` catalogué ;
+ *  3. `w.shape` catalogué (stampé au spawn depuis l'objet/le trait) ;
+ *  4. repli par Groupe canonique (armes génériques sans shape).
+ */
 export function weaponFamily(w: Weapon): string {
-  // Attaque NATURELLE (corps) : pas d'objet en main (Morsure/Griffe accordées par un Sort) —
-  // SAUF si le nom EST un libellé catalogué (ex. « Griffes de Tigre », arme de Bagarre tenue),
-  // qui prime sur l'heuristique de préfixe.
-  if (NATURAL_ATTACK.test(w.name) && !formSlug(w.name)) return '';
-  // Silhouette de rendu forcée (arme invoquée nommée « Arme aethyrique » mais dessinée comme la
-  // forme choisie) : un libellé catalogue → son slug de forme. Prioritaire sur le nom.
-  if (w.form) {
-    const f = wnorm(w.form);
-    if (f in ART_BY_LABEL) return ART_BY_LABEL[f];
+  if (w.natural) return ''; // attaque naturelle (corps) : la part du rig fait foi, rien en main
+  if (w.form) { // arme invoquée : `form` porte un id de trapping → résolu par id vers son shape
+    const s = findTrappingById(w.form)?.shape;
+    if (s && ART_BY_SLUG.has(s)) return s;
   }
-  const n = wnorm(w.name);
-  if (n in ART_BY_LABEL) return ART_BY_LABEL[n];
+  if (w.shape && ART_BY_SLUG.has(w.shape)) return w.shape;
   return ART_BY_GROUP[weaponGroupKey(w)] ?? (w.type === 'ranged' ? 'arc' : 'epee');
 }
 
 /**
  * Parts d'arme (repère local de l'os `arme`, manche à l'origine).
  * ART DES FORMES = registre auto-chargé `weapons/defs/` (1 arme = 1 fichier ; les réécritures
- * lisibilité de l'audit aveugle sont déjà bakées dans chaque def). On y ajoute seulement les
- * FALLBACKS HORS-FORME (synonymes/groupes joués sans silhouette dédiée : épée générique,
- * hache, masse) — eux restent dessinés ici.
+ * lisibilité de l'audit aveugle sont déjà bakées dans chaque def). On y ajoute seulement le
+ * FALLBACK HORS-FORME `epee` (repli du Groupe `base` via `ART_BY_GROUP` + défaut final de `weaponPart`).
  */
 // Art des formes RÉSOLU @défaut (palette `stored` du def). `applyTokenMap` est un no-op tant
 // que l'art ne contient pas de `@tokens` (armes non encore tokenisées) → sûr avant/après.
@@ -106,9 +88,7 @@ const FORM_ART: Record<string, PartArt> = Object.fromEntries(
 );
 const FORM_DEF = new Map(WEAPON_DEFS.map((d) => [d.slug, d]));
 const WEAPONS: Record<string, PartArt> = {
-  epee: EPEE_ART, // épée générique : front/back/profile
-  hache: `<rect x="-1.7" y="-30" width="3.4" height="36" rx="1.4" fill="#4a2f17"/><path d="M-1 -33 Q17 -35 14 -19 Q17 -4 -1 -9 Z" fill="url(#g_axe)" stroke="#2a3038" stroke-width="0.6"/><path d="M-1 -31 Q-8 -32 -8 -24 Q-8 -16 -1 -17 Z" fill="url(#g_axe)" stroke="#2a3038" stroke-width="0.5" opacity="0.9"/>`,
-  masse: `<rect x="-1.7" y="-26" width="3.4" height="32" rx="1.4" fill="#4a2f17"/><circle cx="0" cy="-28" r="6" fill="url(#g_steelD)" stroke="#2a3038" stroke-width="0.5"/><path d="M0 -37 l2.6 3.5 -5.2 0 z M0 -19 l2.6 -3.5 -5.2 0 z M-9.5 -28 l3.5 2.6 0 -5.2 z M9.5 -28 l-3.5 2.6 0 -5.2 z" fill="#aab2bd" stroke="#2a3038" stroke-width="0.3"/>`,
+  epee: EPEE_ART, // épée générique : repli du Groupe `base` + défaut final de `weaponPart`
   ...FORM_ART,
 };
 
@@ -123,12 +103,13 @@ export function weaponPart(w: Weapon): PartArt {
 }
 
 /** Silhouette de bouclier (os `bouclier`, main faible) — registre DATA-DRIVEN `shields/defs/`,
- *  routé par LIBELLÉ comme les armes (cf. ART_BY_LABEL) ; repli = le def marqué `fallback` (rondache).
- *  Plus aucun SVG ni tableau en dur ici. */
-const SHIELD_BY_LABEL = new Map(SHIELD_DEFS.map((d) => [wnorm(d.label), d]));
+ *  routé par SLUG de FORME (`x.shape`, stampé au spawn depuis le trapping), plus aucun lookup de
+ *  libellé ; repli = le def marqué `fallback` (rondache). Plus aucun SVG ni tableau en dur ici. */
+const SHIELD_BY_SLUG = new Map(SHIELD_DEFS.map((d) => [d.slug, d]));
 const SHIELD_FALLBACK = SHIELD_DEFS.find((d) => d.fallback) ?? SHIELD_DEFS[0];
 export function shieldPart(x: Weapon | ItemInstance): PartArt {
-  return (SHIELD_BY_LABEL.get(wnorm(x.name ?? '')) ?? SHIELD_FALLBACK).art;
+  const d = (x.shape ? SHIELD_BY_SLUG.get(x.shape) : undefined) ?? SHIELD_FALLBACK;
+  return d.art;
 }
 
 /** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */

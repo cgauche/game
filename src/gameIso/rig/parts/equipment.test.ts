@@ -6,7 +6,10 @@ import type { Combatant, Weapon, ItemInstance } from '../../../engine/types';
 const wep = (name: string, type: 'melee' | 'ranged', q: { id: string; value?: number }[] = []): Weapon =>
   ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: q } as Weapon);
 const wpv = (name: string, type: 'melee' | 'ranged' = 'melee') => pickView(weaponPart(wep(name, type)), 'front');
-const fam = (name: string, type: 'melee' | 'ranged' = 'melee') => weaponFamily(wep(name, type));
+/** Arme routée PAR SHAPE (id stable) — plus aucun routage par libellé au runtime. */
+const wepShape = (shape: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
+  ({ name: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
+const famShape = (shape: string, type: 'melee' | 'ranged' = 'melee') => weaponFamily(wepShape(shape, type));
 
 describe('weaponPart', () => {
   it('rend un SVG non vide pour une arme connue', () => {
@@ -17,16 +20,21 @@ describe('weaponPart', () => {
   });
 });
 
-// Contrat « 1 forme par arme » : des armes jadis confondues ont désormais des formes
-// (slugs) distincts. Testé au niveau FAMILLE (slug), robuste que l'art soit généré ou non.
-describe('weaponFamily — 1 forme par arme (anti-collapse)', () => {
-  it('chaque arme jadis confondue a sa propre forme', () => {
-    expect(fam('Arc court', 'ranged')).not.toBe(fam('Épée'));
-    expect(fam('Javelot', 'ranged')).not.toBe(fam('Lance de cavalerie'));
-    expect(fam('Main Gauche')).not.toBe(fam('Brise-épée'));
-    expect(fam('Main Gauche')).not.toBe(fam('Dague'));
-    expect(fam('Pioche à deux mains')).not.toBe(fam('Grande hache'));
-    expect(fam('Fleuret')).not.toBe(fam('Zweihänder'));
+// Contrat « 1 forme par arme » routé PAR SHAPE (id stable) : des armes jadis confondues gardent des
+// silhouettes (slugs) distinctes. Le routage par LIBELLÉ a été retiré (« lookup par libellé = bug
+// multilingue ») — une arme sans shape retombe sur le défaut de son Groupe.
+describe('weaponFamily — 1 forme par arme, routée par shape (anti-collapse)', () => {
+  it('chaque shape catalogué résout vers lui-même (formes distinctes préservées)', () => {
+    expect(famShape('arc_court', 'ranged')).toBe('arc_court');
+    expect(famShape('javelot', 'ranged')).not.toBe(famShape('lance_cavalerie'));
+    expect(famShape('main_gauche')).not.toBe(famShape('brise_epee'));
+    expect(famShape('main_gauche')).not.toBe(famShape('dague'));
+    expect(famShape('pioche_2m')).not.toBe(famShape('grande_hache'));
+    expect(famShape('fleuret')).not.toBe(famShape('zweihander'));
+  });
+  it('une arme SANS shape ne route plus par son nom → repli par Groupe', () => {
+    expect(weaponFamily(wep('Épée bâtarde', 'melee'))).toBe('epee_batarde'); // Groupe deux-mains → défaut
+    expect(weaponFamily(wep('Truc inconnu', 'melee'))).toBe('epee'); // défaut mêlée
   });
 });
 
@@ -106,7 +114,7 @@ describe('equipFromCombatant', () => {
   });
 
   it('cape/manteau porté → EquipCtx.cape (cosmétique) ; non porté → absent', () => {
-    const cape = { uid: 'c', name: 'Cape', weatherProtection: true, kind: 'misc', qualities: [], enc: 0, equipped: true } as ItemInstance;
+    const cape = { uid: 'c', name: 'Cape', trappingId: 'cape', kind: 'misc', qualities: [], enc: 0, equipped: true } as ItemInstance;
     const c = { weapons: [], items: [cape] } as unknown as Combatant;
     expect(equipFromCombatant(c).cape?.name).toBe('Cape');
     cape.equipped = false;

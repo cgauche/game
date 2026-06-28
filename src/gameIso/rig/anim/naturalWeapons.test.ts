@@ -1,19 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { handlingClass } from './handling';
 import { weaponAttackClip, weaponParryClip, weaponRest } from './weaponClips';
+import { shapeForLabel } from '../../../engine/creatureEquip';
 import type { Weapon } from '../../../engine/types';
 
-const w = (name: string): Weapon => ({ name, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] });
+// Arme construite comme au SPAWN : libellé manufacturé → shape ; les attaques naturelles portent
+// leur kind STABLE (`attackKind`) — c'est lui qui route le maniement, jamais le libellé.
+const w = (name: string, extra: Partial<Weapon> = {}): Weapon =>
+  ({ name, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], shape: shapeForLabel(name), ...extra });
+const tentacule = w('Tentacule', { attackKind: 'tentacules', natural: true });
+const cornes = w('Cornes', { attackKind: 'cornes', natural: true });
 
 describe('maniement des armes naturelles (mutations/traits)', () => {
   it('Tentacule → classe fouet (entraves) ; Cornes → coup de tête (cornes)', () => {
-    expect(handlingClass(w('Tentacule'))).toBe('entraves');
-    expect(handlingClass(w('Cornes'))).toBe('cornes');
+    expect(handlingClass(tentacule)).toBe('entraves');
+    expect(handlingClass(cornes)).toBe('cornes');
     expect(handlingClass(w('Fouet'))).toBe('entraves'); // l'arme Fouet inchangée
   });
 
   it('le geste se joue sur LE BRAS QUI TIENT L’ARME : tentacule et main gauche → miroité', () => {
-    const lash = weaponAttackClip(w('Tentacule'));
+    const lash = weaponAttackClip(tentacule);
     const all = lash.steps.flatMap((s) => Object.keys(s.pose));
     expect(all).toContain('epauleG');
     expect(all).not.toContain('epauleD'); // pas le bras d'arme droit
@@ -28,12 +34,12 @@ describe('maniement des armes naturelles (mutations/traits)', () => {
   });
 
   it('Cornes : coup de TÊTE (tête/cou/torse), pas un coup de bras ; parade = se couvrir', () => {
-    const butt = weaponAttackClip(w('Cornes'));
+    const butt = weaponAttackClip(cornes);
     const strike = butt.steps[1].pose;
     expect(strike.tete).toBeGreaterThan(0);
     expect(strike.torse).toBeGreaterThan(0);
-    expect(weaponRest(w('Cornes'))).toEqual({});
-    expect(weaponParryClip(w('Cornes'))).toBe(weaponParryClip(w('Mains nues'))); // BARE_BLOCK
+    expect(weaponRest(cornes)).toEqual({});
+    expect(weaponParryClip(cornes)).toBe(weaponParryClip(w('Mains nues'))); // BARE_BLOCK
   });
 
   it('la PARADE aussi se joue sur le bras qui tient l’arme (main-gauche → bras gauche)', () => {

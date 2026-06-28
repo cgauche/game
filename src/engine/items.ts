@@ -16,6 +16,7 @@ import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality, qualityIndice } from './qualities/dispatch';
 import { hasTraitKey } from './traits/dispatch';
+import { itemCapability } from './capabilities';
 
 let uidCounter = 0;
 export function newUid(): string {
@@ -59,6 +60,10 @@ export interface WeaponSpec {
   uid?: string | { prefix: string };
   skin?: Record<string, string>;
   form?: string;
+  /** Slug de FORME (routage de l'art rig) — propagé de l'ItemInstance/trait vers `Weapon.shape`. */
+  shape?: string;
+  /** Attaque naturelle de corps (aucune arme dessinée) — propagé vers `Weapon.natural`. */
+  natural?: boolean;
   /** Nature d'attaque naturelle STAMPÉE (morsure/cornes/caudale/tentacules/pietinement…) — pour la
    *  pose/anim et la Condition `attackKind` ; le constructeur la connaît. Cf. `Weapon.attackKind`. */
   attackKind?: string;
@@ -89,6 +94,8 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   w.uid = specUid(spec.uid); // TOUJOURS défini (universel : Pendings d'arme par uid)
   if (spec.skin !== undefined) w.skin = spec.skin;
   if (spec.form !== undefined) w.form = spec.form;
+  if (spec.shape !== undefined) w.shape = spec.shape;
+  if (spec.natural !== undefined) w.natural = spec.natural;
   if (spec.attackKind !== undefined) w.attackKind = spec.attackKind;
   if (spec.builtinId !== undefined) w.builtinId = spec.builtinId;
   return w;
@@ -180,17 +187,16 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     locs: locs && locs.length ? locs : undefined,
     enc: typeof t.enc === 'number' ? t.enc : 0, // 'ND' (ateliers) / 'Variable' (arme improvisée) → non-encombrant (0), jamais NaN
     equipped: false,
+    ...(t.shape ? { shape: t.shape } : {}), // slug de FORME (routage de l'art rig) — absent pour munitions/siège/Mains nues
     desc: t.desc,
     ...(t.consumable?.length ? { consumable: t.consumable } : {}), // effet de consommable (GameOp[]) copié du catalogue
     subType: t.subType ?? undefined,
     hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
     qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée
     ...(t.ammoRangeMod != null ? { ammoRangeMod: t.ammoRangeMod } : {}), // modificateur de Portée de la munition (LDB 62)
-    // Marqueurs fonctionnels de catégorie (multilangue-safe) — propagés tels quels du catalogue.
-    ...(t.weatherProtection ? { weatherProtection: true } : {}),
-    ...(t.isShelter ? { isShelter: true } : {}),
-    ...(t.isRations ? { isRations: true } : {}),
-    ...(t.isGrimoire ? { isGrimoire: true } : {}),
+    // Les capacités de catégorie (weatherProtection/isShelter/isRations/isGrimoire/preventForcedDrop) NE
+    // sont PAS copiées sur l'instance : elles restent lues DEPUIS le catalogue par `trappingId` (canal
+    // `capabilities`), via `engine/capabilities` — comme `passive`. Une seule source de vérité.
     ...(t.container ? { container: t.container } : {}), // Contenant (LDB 64) : capacité de rangement
   };
 }
@@ -286,11 +292,11 @@ export function armourLayer(it: ItemInstance): ArmourLayer {
 }
 
 /** Cape/manteau (« Vêtements et Accessoires », sans stats) : PORTABLE dans l'emplacement Cape de la
- *  fiche — purement cosmétique (rendu dorsal du rig), une seule à la fois. Détecté par le marqueur
- *  STABLE `weatherProtection` du trapping (≠ nom — multilangue-safe ; un objet sans stats qui protège
- *  des intempéries = un vêtement de dos). */
+ *  fiche — purement cosmétique (rendu dorsal du rig), une seule à la fois. Détecté par la capacité
+ *  par-OBJET `weatherProtection` (catalogue, ≠ nom — un objet `misc` qui protège des intempéries =
+ *  un vêtement de dos). */
 export function isCapeItem(it: ItemInstance): boolean {
-  return it.kind === 'misc' && !!it.weatherProtection;
+  return it.kind === 'misc' && itemCapability(it, 'weatherProtection');
 }
 
 /** Objet PORTABLE sur le corps (armure + accessoire). Les armes se TIENNENT (loadout), les munitions ne se portent pas. */
@@ -389,7 +395,7 @@ export function recomputeLoadout(c: Combatant): void {
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
-      skin: it.skin, form: it.form, hands, hand, uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
+      skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
   };
 
   // UN SEUL modèle : tout combattant porteur d'armes passe par un loadout (auto-généré si absent — plus de
@@ -485,7 +491,7 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
   return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
     range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
-    skin: it.skin, form: it.form, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
+    skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
 }
 
 let loadoutCounter = 0;

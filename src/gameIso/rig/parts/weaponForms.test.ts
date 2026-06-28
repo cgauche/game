@@ -1,27 +1,33 @@
 import { describe, it, expect } from 'vitest';
-import { WEAPON_FORMS, SHIELD_FORMS, norm } from './weaponForms';
+import { WEAPON_FORMS, SHIELD_FORMS } from './weaponForms';
 import { weaponFamily, shieldPart } from './equipment';
 import { trappings } from '../../../data';
 import type { Weapon } from '../../../engine/types';
 
-const wep = (label: string, type: 'melee' | 'ranged'): Weapon => ({ name: label, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+/** Arme minimale routée PAR SHAPE (id stable) — plus aucun routage par libellé. */
+const byShape = (shape: string | undefined, type: 'melee' | 'ranged' = 'melee'): Weapon =>
+  ({ name: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
 
 /** Sous-types NON tenus en main → hors contrat de silhouette : engins de siège servis par un équipage
- *  (Baliste/Canons/Catapultes/Mortier/Pierrier) et munitions/projectiles (flèches/cartouches/bombes/
- *  cailloux). Le rig ne dessine pas d'arme portée pour eux. */
+ *  et munitions/projectiles. Le rig ne dessine pas d'arme portée pour eux. */
 const NON_PORTEE = new Set(['armes-de-siege', 'munitions']); // ids de Groupe
 
-describe('weaponForms — contrat des armes tenues en main', () => {
-  it('couvre toutes les armes melee/ranged de la donnée (hors siège & munitions)', () => {
-    const known = new Set<string>([
-      ...WEAPON_FORMS.map((f) => norm(f.label)),
-      ...SHIELD_FORMS.map((s) => norm(s.label)),
-      norm('Mains nues'),
-    ]);
-    const missing = (trappings as { label: string; type: string; subType?: string }[])
-      .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !NON_PORTEE.has(t.subType ?? '') && !known.has(norm(t.label)))
-      .map((t) => t.label);
-    expect(missing).toEqual([]);
+const WEAPON_SLUGS = new Set(WEAPON_FORMS.map((f) => f.slug));
+const SHIELD_SLUGS = new Set(SHIELD_FORMS.map((f) => f.slug));
+
+describe('weaponForms — shape catalogué sur les armes tenues en main', () => {
+  it('chaque arme melee/ranged de la donnée (hors siège & munitions) porte un shape = slug réel', () => {
+    const bad = (trappings as { id: string; label: string; type: string; subType?: string; shape?: string }[])
+      .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !NON_PORTEE.has(t.subType ?? ''))
+      .filter((t) => t.id !== 'mains-nues') // Mains nues : aucune silhouette tenue (pas de shape) — par design
+      .filter((t) => !(t.shape && (WEAPON_SLUGS.has(t.shape) || SHIELD_SLUGS.has(t.shape))))
+      .map((t) => `${t.label} → shape=${t.shape ?? '∅'}`);
+    expect(bad).toEqual([]);
+  });
+
+  it('Mains nues n’a pas de shape (aucune arme dessinée)', () => {
+    const mn = (trappings as { id: string; shape?: string }[]).find((t) => t.id === 'mains-nues');
+    expect(mn?.shape).toBeUndefined();
   });
 
   it('slugs uniques et non vides', () => {
@@ -36,27 +42,31 @@ describe('weaponForms — contrat des armes tenues en main', () => {
   });
 });
 
-describe('routage forme par libellé', () => {
-  it('chaque arme catalogue résout vers son slug', () => {
-    const bad = WEAPON_FORMS.filter((f) => weaponFamily(wep(f.label, f.type)) !== f.slug)
-      .map((f) => `${f.label} → ${weaponFamily(wep(f.label, f.type))} (attendu ${f.slug})`);
+describe('routage de l’art PAR ID (shape) — plus aucun libellé', () => {
+  it('chaque forme d’arme catalogue résout vers son propre slug via shape', () => {
+    const bad = WEAPON_FORMS.filter((f) => weaponFamily(byShape(f.slug, f.type)) !== f.slug)
+      .map((f) => `${f.slug} → ${weaponFamily(byShape(f.slug, f.type))}`);
     expect(bad).toEqual([]);
   });
-  it('les arts morts sont branchés (lasso, bolas, poing)', () => {
-    expect(weaponFamily(wep('Lasso', 'ranged'))).toBe('lasso');
-    expect(weaponFamily(wep('Bolas', 'ranged'))).toBe('bolas');
-    expect(weaponFamily(wep('Coup-de-poing', 'melee'))).toBe('poing');
+
+  it('une attaque naturelle (natural:true) → aucune arme tenue', () => {
+    expect(weaponFamily({ name: 'Morsure', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], natural: true } as Weapon)).toBe('');
+  });
+
+  it('un shape inconnu retombe sur le Groupe (pas de crash, pas de routage par nom)', () => {
+    expect(weaponFamily(byShape('forme_inexistante', 'melee'))).not.toBe('forme_inexistante');
+    expect(weaponFamily(byShape(undefined, 'ranged'))).toBe('arc'); // défaut distance
   });
 });
 
-describe('boucliers (registre data-driven shields/defs)', () => {
+describe('boucliers (registre data-driven shields/defs) — routés par shape', () => {
   const front = (a: ReturnType<typeof shieldPart>) => (typeof a === 'string' ? a : a.front);
-  it('chaque bouclier du catalogue a SA silhouette (toutes distinctes)', () => {
-    const arts = SHIELD_FORMS.map((f) => front(shieldPart(wep(f.label, 'melee'))));
+  it('chaque bouclier du catalogue a SA silhouette (toutes distinctes) routée par shape', () => {
+    const arts = SHIELD_FORMS.map((f) => front(shieldPart(byShape(f.slug))));
     expect(new Set(arts).size).toBe(SHIELD_FORMS.length);
     expect(SHIELD_FORMS.length).toBeGreaterThanOrEqual(4); // rondache / grand écu / targe / pavois
   });
-  it('un bouclier au nom inconnu retombe sur la rondache (fallback)', () => {
-    expect(front(shieldPart(wep('Bouclier de la Garde', 'melee')))).toBe(front(shieldPart(wep('Bouclier', 'melee'))));
+  it('un bouclier sans shape (inconnu) retombe sur la rondache (fallback)', () => {
+    expect(front(shieldPart(byShape(undefined)))).toBe(front(shieldPart(byShape('rond'))));
   });
 });
