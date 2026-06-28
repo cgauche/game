@@ -20,7 +20,8 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel, qualityRefLabel } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel, qualityRefLabel, findTrappingById } from '../data';
+import { weaponFormLabel } from '../gameIso/rig/parts/weaponForms';
 import { formatTrait } from '../engine/traits/dispatch';
 import { formatRemaining } from '../engine/disease';
 import { CodexRef } from './compendium/CodexRef';
@@ -382,6 +383,33 @@ function HandPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
   );
 }
 
+/** Sélecteur visuel de FORME d'une arme ABSTRAITE (« Arme simple » → épée/hache/masse/marteau de
+ *  guerre/demi-lance) : pose `ItemInstance.shape` parmi les `formChoices` du trapping. Option courante =
+ *  `item.shape ?? trapping.shape` ; chaque option = la silhouette (ItemIcon par shape) + le libellé du
+ *  WeaponDef. Cosmétique RAW (stats identiques) — verrouillé en combat (le token rendu vient de la
+ *  copie de bataille, pas du groupe muté). Réutilise la primitive `MediaSelect`. */
+function FormPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
+  const setItemShape = useGame((s) => s.setItemShape);
+  const trapping = it.trappingId ? findTrappingById(it.trappingId) : undefined;
+  const choices = trapping?.formChoices;
+  if (!choices || choices.length < 2) return null;
+  const current = it.shape ?? trapping?.shape ?? choices[0];
+  return (
+    <div className="ir-form" title="Forme de l’arme (silhouette)">
+      <MediaSelect
+        value={current}
+        title="Choisir la forme de l’arme"
+        options={choices.map((slug) => ({
+          key: slug,
+          media: <ItemIcon item={{ ...it, shape: slug }} size="sm" />,
+          label: weaponFormLabel(slug),
+        }))}
+        onSelect={(slug) => setItemShape(hero.id, it.uid, slug)}
+      />
+    </div>
+  );
+}
+
 function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'combat' | 'competences' | 'sac' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const stowItem = useGame((s) => s.stowItem);
@@ -619,6 +647,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       </button>
                     );
                   })()}
+                  {isWeaponItem && !inBattleNow && <FormPicker hero={hero} it={it} />}
                   {isWeaponItem && (
                     inBattleNow ? (
                       handLabel && (

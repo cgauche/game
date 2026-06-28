@@ -18,3 +18,11 @@ export const WEAPON_FORMS: WeaponForm[] = WEAPON_DEFS;
 
 // Dérivé du registre data-driven `shields/defs/` (même source que les armes) — plus de tableau en dur.
 export const SHIELD_FORMS: ShieldForm[] = SHIELD_DEFS.map((d) => ({ label: d.label, slug: d.slug, target: d.target }));
+
+const FORM_LABEL_BY_SLUG = new Map(WEAPON_FORMS.map((f) => [f.slug, f.label]));
+/** Libellé d'affichage d'une FORME d'arme par son slug (`WeaponDef.label`). La forme générique `epee`
+ *  (hardcodée dans le routage d'art, hors registre) → « Épée » ; slug inconnu → le slug brut (jamais
+ *  de crash). Source unique consommée par le sélecteur de forme de la fiche héros. */
+export function weaponFormLabel(slug: string): string {
+  return FORM_LABEL_BY_SLUG.get(slug) ?? (slug === 'epee' ? 'Épée' : slug);
+}
