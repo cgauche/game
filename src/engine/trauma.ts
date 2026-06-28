@@ -12,7 +12,7 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
-import { findConditionById, findPsychologyById } from '../data';
+import { findConditionById, findPsychologyById, findTrappingById } from '../data';
 import { talentPassiveMods } from './talentEffects';
 import { diseasePassiveOps } from './disease';
 import { hungerCharPenalties } from './provisions';
@@ -487,6 +487,14 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   const soc = wornSocialMod(c);
   if (soc) out.push({ op: { op: 'testMod', amount: soc, char: 'Soc' }, kind: 'intrinsèque' });
   out.push(...qualityWearMods(c));
+  // Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]`
+  // (skillMod des Bésicles…) émis kind 'intrinsèque' — comme les mutations. Les objets RANGÉS (inside) ne
+  // comptent pas (ni equipped ni tenus). Lu par `passiveSkillSum` → `testValue`.
+  for (const it of c.items ?? []) {
+    const held = !!it.equipped || (c.weapons ?? []).some((w) => w.uid === it.uid);
+    if (!held || !it.trappingId) continue;
+    for (const op of findTrappingById(it.trappingId)?.passive ?? []) out.push({ op, kind: 'intrinsèque' });
+  }
   // Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs,
   // statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis
   // TELS QUELS. Les traits INHÉRENTS d'un profil bestiaire FINAL ne sont PAS dans `liveTraits` (déjà cuits dans

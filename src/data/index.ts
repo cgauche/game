@@ -212,6 +212,10 @@ export interface TrappingData {
   /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
    *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */
   subType: string | null;
+  /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art d'arme/bouclier (rig),
+   *  ≠ libellé. Posé à la migration par jointure `norm(label)` → forme. Absent pour munitions/armes de
+   *  siège/Mains nues (aucune silhouette tenue). Propagé sur `ItemInstance.shape` puis `Weapon.shape`. */
+  shape?: string;
   /** Encombrement (Points d'Encombrement). Honnête : la donnée porte aussi des STRINGS pour des cas
    *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
    *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */
@@ -269,10 +273,10 @@ export interface TrappingData {
    *  (min) à la place ; un SECOND évènement de lâcher pendant cette période fait tomber l'arme. Lu
    *  GÉNÉRIQUEMENT par le moteur de combat (`applyBladeTrap`), jamais par le nom de l'objet. */
   preventForcedDrop?: boolean;
-  /** Bonus de Compétence conféré tant que l'objet est porté (LDB 67/68 — Bésicles : +20 Lire/Écrire &
-   *  Perception). `skill` = `id` STABLE d'une Compétence (`skills.json`). Sommé dans `engine/skills.testValue`
-   *  pour TOUT Test de la Compétence ciblée. */
-  skillBonus?: { skill: string; value: number }[];
+  /** Modificateurs PASSIFS continus de l'objet (GameOp[], MÊME vocabulaire que traits/qualités/sorts) —
+   *  appliqués tant que l'objet est PORTÉ ou TENU (collecteur `passiveMods`). Ex. Bésicles → `skillMod`
+   *  +20 Langue/Perception (LDB 67). */
+  passive?: import('../engine/ops').GameOp[];
 }
 /** Groupe d'objet (taxonomie `subType` id-ifiée) : Groupe d'ARME (Base, Escrime, Deux-mains, Armes
  *  d'hast…), famille de MUNITION (Arc, Arbalète, Poudre noire…), type d'ARMURE (Plate, Mailles, Cuir

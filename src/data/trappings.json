@@ -31,7 +31,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "baton"
   },
   {
     "id": "hallebarde",
@@ -68,7 +69,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "hallebarde"
   },
   {
     "id": "lance",
@@ -99,7 +101,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "lance"
   },
   {
     "id": "pique",
@@ -130,7 +133,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "pique"
   },
   {
     "id": "mains-nues",
@@ -186,7 +190,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "poing"
   },
   {
     "id": "arme-improvisee",
@@ -216,7 +221,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "improvisee"
   },
   {
     "id": "arme-simple",
@@ -242,7 +248,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "gourdin"
   },
   {
     "id": "bouclier",
@@ -279,7 +286,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "rond"
   },
   {
     "id": "bouclier-grand",
@@ -316,7 +324,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "grand"
   },
   {
     "id": "bouclier-targe",
@@ -353,7 +362,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "targe"
   },
   {
     "id": "couteau",
@@ -383,7 +393,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "couteau"
   },
   {
     "id": "dague",
@@ -409,7 +420,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "dague"
   },
   {
     "id": "cimeterre",
@@ -440,7 +452,8 @@
     "source": {
       "book": "AA",
       "page": 91
-    }
+    },
+    "shape": "cimeterre"
   },
   {
     "id": "dague-ballock",
@@ -476,7 +489,8 @@
     "source": {
       "book": "AA",
       "page": 91
-    }
+    },
+    "shape": "dague_ballock"
   },
   {
     "id": "massue",
@@ -509,7 +523,8 @@
     "source": {
       "book": "AA",
       "page": 91
-    }
+    },
+    "shape": "massue"
   },
   {
     "id": "pique-d-armes",
@@ -542,7 +557,8 @@
     "source": {
       "book": "AA",
       "page": 91
-    }
+    },
+    "shape": "pique_armes"
   },
   {
     "id": "lance-de-cavalerie",
@@ -575,7 +591,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "lance_cavalerie"
   },
   {
     "id": "marteau-a-bec-de-corbin",
@@ -606,7 +623,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "bec_de_corbin"
   },
   {
     "id": "epee-batarde",
@@ -640,7 +658,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "epee_batarde"
   },
   {
     "id": "grande-hache",
@@ -677,7 +696,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "grande_hache"
   },
   {
     "id": "marteau-de-guerre",
@@ -714,7 +734,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "marteau_guerre"
   },
   {
     "id": "pioche-a-deux-mains",
@@ -751,7 +772,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "pioche_2m"
   },
   {
     "id": "zweihander",
@@ -785,7 +807,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "zweihander"
   },
   {
     "id": "fleuret",
@@ -824,7 +847,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "fleuret"
   },
   {
     "id": "rapiere",
@@ -857,7 +881,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "rapiere"
   },
   {
     "id": "fleau",
@@ -890,7 +915,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "fleau"
   },
   {
     "id": "fleau-a-grain",
@@ -926,7 +952,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "fleau_grain"
   },
   {
     "id": "fleau-d-armes",
@@ -966,7 +993,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "fleau_armes"
   },
   {
     "id": "brise-epee",
@@ -999,7 +1027,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "brise_epee"
   },
   {
     "id": "main-gauche",
@@ -1029,7 +1058,8 @@
     "source": {
       "book": "LDB",
       "page": 294
-    }
+    },
+    "shape": "main_gauche"
   },
   {
     "id": "arbalete",
@@ -1062,7 +1092,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arbalete"
   },
   {
     "id": "arbalete-de-poing",
@@ -1093,7 +1124,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arbalete_poing"
   },
   {
     "id": "arbalete-lourde",
@@ -1129,7 +1161,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arbalete_lourde"
   },
   {
     "id": "arc",
@@ -1157,7 +1190,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arc"
   },
   {
     "id": "arc-court",
@@ -1185,7 +1219,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arc_court"
   },
   {
     "id": "arc-elfique",
@@ -1220,7 +1255,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arc_elfique"
   },
   {
     "id": "arc-long",
@@ -1252,7 +1288,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arc_long"
   },
   {
     "id": "fouet",
@@ -1283,7 +1320,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "fouet"
   },
   {
     "id": "lasso",
@@ -1313,7 +1351,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "lasso"
   },
   {
     "id": "bombe",
@@ -1353,7 +1392,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "bombe"
   },
   {
     "id": "bombe-incendiaire",
@@ -1389,7 +1429,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "bombe_incendiaire"
   },
   {
     "id": "fronde",
@@ -1416,7 +1457,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "fronde"
   },
   {
     "id": "fustibale",
@@ -1444,7 +1486,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "fustibale"
   },
   {
     "id": "bolas",
@@ -1478,7 +1521,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "bolas"
   },
   {
     "id": "couteau-de-lancer",
@@ -1507,7 +1551,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "couteau_lancer"
   },
   {
     "id": "flechette",
@@ -1540,7 +1585,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "flechette"
   },
   {
     "id": "hache-de-lancer",
@@ -1573,7 +1619,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "hache_lancer"
   },
   {
     "id": "javelot",
@@ -1606,7 +1653,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "javelot"
   },
   {
     "id": "rocher",
@@ -1636,7 +1684,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "rocher"
   },
   {
     "id": "arquebus-a-repetition",
@@ -1682,7 +1731,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arquebus_rep"
   },
   {
     "id": "pistolet-a-repetition",
@@ -1730,7 +1780,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "pistolet_rep"
   },
   {
     "id": "arquebuse",
@@ -1772,7 +1823,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "arquebuse"
   },
   {
     "id": "long-fusil-d-hochland",
@@ -1817,7 +1869,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "hochland"
   },
   {
     "id": "pistolet",
@@ -1858,7 +1911,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "pistolet"
   },
   {
     "id": "tromblon",
@@ -1904,7 +1958,8 @@
     "source": {
       "book": "LDB",
       "page": 295
-    }
+    },
+    "shape": "tromblon"
   },
   {
     "id": "carreau",
@@ -3821,14 +3876,16 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "skillBonus": [
+    "passive": [
       {
+        "op": "skillMod",
         "skill": "langue",
-        "value": 20
+        "mod": 20
       },
       {
+        "op": "skillMod",
         "skill": "perception",
-        "value": 20
+        "mod": 20
       }
     ],
     "desc": "Les bésicles de verre dotées de poignées confèrent un bonus de +20 aux Tests de Lire/Écrire pour déchiffrer une écriture minuscule ou inintelligible. Les Tests de Perception pour chercher des détails précis, tels qu'une porte ou un compartiment secret reçoivent aussi un bonus de +20.",
@@ -7526,7 +7583,8 @@
     "source": {
       "book": "AA",
       "page": 92
-    }
+    },
+    "shape": "pavois"
   },
   {
     "id": "filet-leste",
@@ -7573,7 +7631,8 @@
     "source": {
       "book": "AA",
       "page": 95
-    }
+    },
+    "shape": "filet_leste"
   },
   {
     "id": "baliste",
@@ -8079,7 +8138,8 @@
     "source": {
       "book": "AA",
       "page": 90
-    }
+    },
+    "shape": "demi_lance"
   },
   {
     "id": "sabre",
@@ -8110,7 +8170,8 @@
     "source": {
       "book": "AA",
       "page": 90
-    }
+    },
+    "shape": "sabre"
   },
   {
     "id": "epee-de-cour",
@@ -8146,7 +8207,8 @@
     "source": {
       "book": "AA",
       "page": 90
-    }
+    },
+    "shape": "epee_cour"
   },
   {
     "id": "gaffe-2",
@@ -8179,7 +8241,8 @@
     "source": {
       "book": "AA",
       "page": 90
-    }
+    },
+    "shape": "gaffe"
   },
   {
     "id": "gantelet-a-pointes",
@@ -8212,7 +8275,8 @@
     "source": {
       "book": "AA",
       "page": 90
-    }
+    },
+    "shape": "gantelet_pointes"
   },
   {
     "id": "griffe-de-tigre",
@@ -8238,7 +8302,8 @@
     "source": {
       "book": "NADJ",
       "page": 67
-    }
+    },
+    "shape": "griffe_tigre"
   },
   {
     "id": "gantelet-verrouille",
@@ -8269,7 +8334,8 @@
     "source": {
       "book": "AA",
       "page": 94
-    }
+    },
+    "shape": "gantelet_verrouille"
   },
   {
     "id": "lacet-etrangleur",
@@ -8309,7 +8375,8 @@
     "source": {
       "book": "AA",
       "page": 90
-    }
+    },
+    "shape": "lacet_etrangleur"
   },
   {
     "id": "cape-2",
@@ -8345,7 +8412,8 @@
     "source": {
       "book": "AA",
       "page": 95
-    }
+    },
+    "shape": "cape"
   },
   {
     "id": "ahlspiess",
@@ -8379,7 +8447,8 @@
     "source": {
       "book": "AA",
       "page": 96
-    }
+    },
+    "shape": "ahlspiess"
   },
   {
     "id": "attrape-coquin",
@@ -8413,7 +8482,8 @@
     "source": {
       "book": "AA",
       "page": 96
-    }
+    },
+    "shape": "attrape_coquin"
   },
   {
     "id": "hache-d-armes",
@@ -8453,7 +8523,8 @@
     "source": {
       "book": "AA",
       "page": 96
-    }
+    },
+    "shape": "hache_armes"
   },
   {
     "id": "pertuisane-fauchard",
@@ -8491,7 +8562,8 @@
     "source": {
       "book": "AA",
       "page": 96
-    }
+    },
+    "shape": "pertuisane"
   },
   {
     "id": "serpe-de-guerre",
@@ -8528,7 +8600,8 @@
     "source": {
       "book": "AA",
       "page": 96
-    }
+    },
+    "shape": "serpe_guerre"
   },
   {
     "id": "zweihander-flamberge",
@@ -8566,7 +8639,8 @@
     "source": {
       "book": "AA",
       "page": 96
-    }
+    },
+    "shape": "zweihander_flamberge"
   },
   {
     "id": "baton-pointu",
@@ -8775,7 +8849,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "arquebuse_double"
   },
   {
     "id": "arquebuse-a-meche",
@@ -8811,7 +8886,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "arquebuse_meche"
   },
   {
     "id": "hache-arquebuse",
@@ -8850,7 +8926,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "hache_arquebuse"
   },
   {
     "id": "hallebarde-arquebuse",
@@ -8889,7 +8966,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "hallebarde_arquebuse"
   },
   {
     "id": "haquebute",
@@ -8928,7 +9006,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "haquebute"
   },
   {
     "id": "pistolet-patte-de-griffon",
@@ -8967,7 +9046,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "pistolet_griffon"
   },
   {
     "id": "tromblon-a-meche",
@@ -9007,7 +9087,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "tromblon_meche"
   },
   {
     "id": "canne-pistolet",
@@ -9045,7 +9126,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "canne_pistolet"
   },
   {
     "id": "mortier-a-main",
@@ -9084,7 +9166,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "mortier_main"
   },
   {
     "id": "poivriere",
@@ -9126,7 +9209,8 @@
     "source": {
       "book": "AA",
       "page": 100
-    }
+    },
+    "shape": "poivriere"
   },
   {
     "id": "balle-de-gros-calibre-et-poudre",
@@ -9416,7 +9500,8 @@
         "id": "dangereuse"
       }
     ],
-    "enc": 3
+    "enc": 3,
+    "shape": "jezail"
   },
   {
     "id": "canon-ratling",
@@ -9464,7 +9549,8 @@
         "id": "imprecise"
       }
     ],
-    "enc": 4
+    "enc": 4,
+    "shape": "canon_ratling"
   },
   {
     "id": "pistolet-a-malepierre",
@@ -9514,7 +9600,8 @@
         "value": 1
       }
     ],
-    "enc": 0
+    "enc": 0,
+    "shape": "pistolet_malepierre"
   },
   {
     "id": "baiser-de-la-vouivre",
@@ -9977,7 +10064,8 @@
       "flat": 2
     },
     "qualities": [],
-    "enc": 0
+    "enc": 0,
+    "shape": "dague_funeste"
   },
   {
     "id": "armure-de-plates-du-leviathan",
@@ -10037,7 +10125,8 @@
       "flat": 4
     },
     "qualities": [],
-    "enc": 1
+    "enc": 1,
+    "shape": "lame_bois_cerf"
   },
   {
     "id": "trempe-au-sang-de-dragon",
@@ -10081,7 +10170,8 @@
       "flat": 2
     },
     "qualities": [],
-    "enc": 0
+    "enc": 0,
+    "shape": "surin_aigle"
   },
   {
     "id": "seve-de-tregara",
@@ -10217,7 +10307,8 @@
         "id": "lente"
       }
     ],
-    "enc": 3
+    "enc": 3,
+    "shape": "broyeur_os"
   },
   {
     "id": "silence",
@@ -10247,7 +10338,8 @@
         "id": "devastatrice"
       }
     ],
-    "enc": 1
+    "enc": 1,
+    "shape": "silence"
   },
   {
     "id": "vision-de-vie",
@@ -10284,7 +10376,8 @@
         "id": "inoffensive"
       }
     ],
-    "enc": 1
+    "enc": 1,
+    "shape": "vision_vie"
   },
   {
     "id": "cape-du-loup",

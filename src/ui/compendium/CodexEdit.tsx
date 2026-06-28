@@ -88,7 +88,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (['creatures', 'traits', 'mutations'].includes(categoryKey)) add('appearance');
   if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats'].includes(categoryKey)) add('effects');
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
-  if (['traits', 'qualities', 'mutations', 'talents', 'etats'].includes(categoryKey)) add('passive');
+  if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings'].includes(categoryKey)) add('passive');
   if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick'); // GameOp[] + test de cycle → éditeurs dédiés (capabilities = sous-form générique)
   if (categoryKey === 'stars') add('effect', 'sub');
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
@@ -185,7 +185,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isManeuver = categoryKey === 'maneuvers';
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
   // Talents inclus (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack, tous en `passive`).
-  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'symptoms';
+  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'symptoms' || categoryKey === 'trappings';
   // Symptôme de maladie : pénalité aggravée `severePassive` (Modérée/Grave) + Test de cycle `onTick`
   // (difficulté + conséquence GameOp `onFail`) — éditeurs dédiés au-dessus du formulaire générique.
   const isSymptom = categoryKey === 'symptoms';

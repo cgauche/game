@@ -3,7 +3,7 @@
  * (hors combat) : Caractéristique + Augmentations de la compétence.
  */
 import { Combatant, CharKey, Difficulty } from './types';
-import { findSkillById, findTrappingById } from '../data';
+import { findSkillById } from '../data';
 import { groupMatch } from './groups';
 import { effectiveChar, bonus } from './characteristics';
 import { assistBonus } from './tests';
@@ -37,20 +37,6 @@ function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
  *  une CharKey ('Dex'…), multilangue-safe — plus de conversion par libellé. */
 export function skillCharKeyById(skillId: string): CharKey | undefined {
   return findSkillById(skillId)?.characteristic;
-}
-
-/** Bonus de Compétence conféré par les OBJETS portés (LDB 67/68 — Bésicles : +20 aux Tests de Lire/Écrire
- *  (= Compétence Langue) et de Perception). Canal GÉNÉRIQUE et DATA-DRIVEN : la donnée vit sur le catalogue
- *  (`TrappingData.skillBonus`, lue par `trappingId`), JAMAIS un test par nom d'objet. Somme les bonus de tous
- *  les objets du combattant dont la Compétence ciblée (`skillId`) correspond. Ajouter un outil = renseigner
- *  `skillBonus` dans `trappings.json`. */
-export function itemSkillBonus(c: Combatant, skillId: string): number {
-  let sum = 0;
-  for (const it of c.items ?? []) {
-    if (!it.trappingId) continue;
-    for (const b of findTrappingById(it.trappingId)?.skillBonus ?? []) if (b.skill === skillId) sum += b.value;
-  }
-  return sum;
 }
 
 /** Caractéristique EFFECTIVE d'un Test de compétence — POINT UNIQUE (consommé par `testValue` ET
@@ -90,9 +76,7 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   // (`passiveSkillSum` : Groin poilu +10 Pistage, −N% en X du port d'armure) + mods de Test char-qualifiés
   // (`passiveTestMod` : mutation Visage inversé −20 Soc, objet Laid −Soc).
   const passive = passiveSkillSum(c, skill) + passiveTestMod(c, ck);
-  // Bonus d'OBJET porté (LDB 67/68 — Bésicles +20 Langue/Perception) : canal data-driven scopé par Compétence.
-  const itemBonus = skill ? itemSkillBonus(c, skill) : 0;
-  return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive + itemBonus;
+  return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive;
 }
 
 /** Valeur de Test « NUE » d'une compétence : Caractéristique EFFECTIVE (buffs magiques + Traumatisme via
