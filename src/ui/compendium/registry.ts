@@ -65,7 +65,7 @@ export interface CodexFact {
 /** Une ligne d'une section. */
 export type CodexRow =
   | { t: 'text'; text: string }
-  | { t: 'kv'; k: string; v: string }
+  | { t: 'kv'; k: string; v: string; kref?: { category: string; label: string } }
   /** Lien vers une autre fiche. `label` = clé de résolution (base) ; `show` = libellé affiché,
    *  qui PORTE les Indices (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance.
    *  `badge` = annotation de fin NON cliquable (rang « N2 », « facultatif », « Bénédiction »…). */
@@ -730,8 +730,11 @@ for (const b of books) {
  *  Exact d'abord, puis casse ignorée (les libellés à spécialisation s'écrivent parfois autrement). */
 export function codexLookup(category: string, label: string): CodexItem | undefined {
   const items = categoryByKey(category)?.items;
-  if (!items) return undefined;
-  return items.find((i) => i.label === label) ?? items.find((i) => i.label.toLowerCase() === label.toLowerCase());
+  // Robustesse : un libellé absent (entité sans nom — arme/compétence malformée) ou une entrée sans
+  // label NE DOIT PAS crasher tout le rendu. Pas de fiche trouvée → le CodexRef se replie en texte.
+  if (!items || !label) return undefined;
+  const lower = label.toLowerCase();
+  return items.find((i) => i.label === label) ?? items.find((i) => i.label?.toLowerCase() === lower);
 }
 
 const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG', 'jambeD'];
@@ -742,18 +745,21 @@ const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG',
 export function combatantSections(c: Combatant): CodexSection[] {
   const ch = c.characteristics;
   const charRows: CodexRow[] = [
-    { t: 'kv', k: 'M', v: String(c.movement) },
-    ...CHAR_KEYS.map((k) => ({ t: 'kv', k, v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–' } as CodexRow)),
-    { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] },
+    { t: 'kv', k: 'M', v: String(c.movement), kref: { category: 'characteristics', label: 'Mouvement' } },
+    ...CHAR_KEYS.map((k) => ({ t: 'kv', k, v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–', kref: { category: 'characteristics', label: CHAR_LABELS[k] } } as CodexRow)),
+    { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] }, // Taille : pas une caractéristique → pas de lien Codex
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
     refRow('skills', `${skillInstanceLabel(s)} ${(ch[s.characteristic] ?? 0) + s.advances}`),
   );
-  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'text', text: `${w.name} (${w.damage})` }));
+  // Comme les compétences/talents/sorts : chaque arme est une ENTITÉ (CodexRef vers sa fiche Codex
+  // « trappings » — popover au survol + clic — repli gracieux en texte pour une arme naturelle hors
+  // catalogue type « Morsure »), avec les Dégâts en BADGE (damageString, jamais l'objet brut).
+  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'ref', category: 'trappings', label: w.name, show: w.name, badge: damageString(w.damage) }));
   const worn = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
   return sections(
     { title: 'Caractéristiques', layout: 'grid', rows: charRows },
-    weaponRows.length ? { title: 'Armes', layout: 'list', rows: weaponRows } : null,
+    weaponRows.length ? { title: 'Armes', layout: 'chips', rows: weaponRows } : null,
     worn.length ? { title: 'Armure', layout: 'list', rows: [{ t: 'text', text: worn.map((l) => `${HIT_LOCATION_LABELS[l]} ${c.armour![l]}`).join(' · ') }] } : null,
     chips('Traits', 'traits', traitLabels(c.traits)),
     skillRows.length ? { title: 'Compétences', layout: 'chips', rows: skillRows } : null,

@@ -191,6 +191,10 @@ export interface AttackResult {
   critLocation?: HitLocation;
   damage?: number; // dégâts bruts (avant mitigation)
   woundsLost?: number; // Blessures réellement perdues
+  /** PA externe location-INDÉPENDANT appliqué aux Dégâts (PA d'opposition `extraAP` − Tir sûr) — permet de
+   *  recalculer les Blessures à la localisation RE-TIRÉE d'un Coup Critique (`woundsAtCritLocation`, LDB 18
+   *  l.55), où seule l'ignorance de PA (Partielle / Points faibles) dépend de la localisation. */
+  apExternal?: number;
   critical: boolean;
   /** +1 Avantage gagné par l'attaquant (true) ou le défenseur (false), null = aucun. */
   advantageTo: 'attacker' | 'defender' | null;
@@ -956,6 +960,7 @@ function applyHit(
     location: loc,
     damage,
     woundsLost,
+    apExternal: extraAP - sureShot,
     critical: isCritical,
     advantageTo: 'attacker',
     defenderDefeated: defeated,
@@ -965,6 +970,20 @@ function applyHit(
       (isCritical ? ' — CRITIQUE !' : '') +
       '.',
   };
+}
+
+/**
+ * Recalcule les Blessures NON-critiques d'un Coup Critique à sa localisation RE-TIRÉE (`LDB 18 l.55` :
+ * « Pour calculer enfin les Dégâts non Critiques d'une Attaque, utilisez la nouvelle Localisation
+ * déterminée par la Blessure Critique »). Un Coup Critique re-tire la localisation (1d100 frais, ou choix
+ * RAW-2) ; les Dégâts non-critiques utilisent CETTE localisation → PA portée + ignorance de PA (Partielle /
+ * Points faibles, `ignoredArmourAP`) RÉ-ÉVALUÉS à la nouvelle localisation. Réutilise EXACTEMENT la queue de
+ * `applyHit` : `res.apExternal` (PA location-indépendant : Tir sûr / PA d'opposition) + `ignoredArmourAP` à
+ * `location`. Les PB du Critique eux-mêmes ignorent BE+PA (gérés à part, `LDB 18 l.53`).
+ */
+export function woundsAtCritLocation(res: AttackResult, weapon: Weapon, defender: Combatant, location: HitLocation): number {
+  const ignoredAP = ignoredArmourAP(defender, location, { roll: res.attackerRoll, critical: true, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) });
+  return woundsFromHit(weapon, defender, location, res.damage ?? 0, (res.apExternal ?? 0) - ignoredAP);
 }
 
 function miss(

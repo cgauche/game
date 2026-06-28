@@ -37,6 +37,7 @@ import { spellCost } from '../engine/grimoire';
 import { levelsForCareer, findSkill, findTalent, findCareerById, findSpellById } from '../data/index';
 import { slugId } from '../data/slug';
 import { seatSlotsRemaining } from './netOwnership';
+import { rosterUpdate } from './roster';
 import { bus, EVT } from './bus';
 
 import type { Get, Set } from './flowTypes';
@@ -396,6 +397,20 @@ export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: s
   get().log(`${hero.name} achète un composant pour ${sp.label} (−${formatMoney(cost)}).`);
 }
 
+/** Édite la bio MUTABLE d'un héros (hors combat) : Motivation + Ambitions court/long terme (LDB 05).
+ *  Mute `store.party` (→ persisté par la save) ET propage au roster s'il y est (rosterUpdate). */
+export function setHeroBackground(get: Get, set: Set, heroId: string, patch: { motivation?: string; ambitionShort?: string; ambitionLong?: string }): void {
+  set((s) => ({
+    party: s.party.map((h) => h.id === heroId ? {
+      ...h,
+      motivation: patch.motivation ?? h.motivation,
+      details: { ...h.details, ambitionShort: patch.ambitionShort ?? h.details?.ambitionShort, ambitionLong: patch.ambitionLong ?? h.details?.ambitionLong },
+    } : h),
+  }));
+  const hero = get().party.find((h) => h.id === heroId);
+  if (hero) rosterUpdate(hero);
+}
+
 /** Retire UN composant d'incantation possédé pour un Sort (sans remboursement). */
 export function removeSpellComponent(_get: Get, set: Set, heroId: string, spellId: string): void {
   set((s) => ({
@@ -488,6 +503,22 @@ export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
   const ownership = { ...s.net.ownership };
   delete ownership[heroId];
   set({ party: s.party.filter((h) => h.id !== heroId), net: { ...s.net, ownership } });
+}
+
+/** Remplace ATOMIQUEMENT le héros `oldId` par `hero` à SA position dans `party` (substitution en
+ *  place → préserve l'index/ordre) ; transfère la possession au `seat` (l'ancien id est libéré).
+ *  Source UNIQUE du remplacement, réutilisée par le créateur (édition en place) et le bouton
+ *  « Remplacer » du slot. Ne touche PAS la bourse (un remplacement n'est pas un recrutement). */
+export function partyReplaceHero(get: Get, set: Set, oldId: string, hero: Combatant, seat = 0): void {
+  const s = get();
+  const idx = s.party.findIndex((h) => h.id === oldId);
+  if (idx < 0) return;                                                    // l'ancien n'est plus là
+  if (hero.id !== oldId && s.party.some((h) => h.id === hero.id)) return; // doublon d'id
+  const copy: Combatant = structuredClone(hero);
+  const ownership = { ...s.net.ownership };
+  delete ownership[oldId];
+  ownership[copy.id] = seat;
+  set({ party: s.party.map((h, i) => (i === idx ? copy : h)), net: { ...s.net, ownership } });
 }
 
 

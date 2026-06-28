@@ -33,6 +33,7 @@ import { CharFrame } from './CharFrame';
 import { PortraitTile } from './PortraitTile';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect } from './MediaSelect';
+import { BackgroundPanel } from './BackgroundPanel';
 import type { Palette } from '../gameIso/rig/palette';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
@@ -112,12 +113,13 @@ function ActiveEffectsPanel({ hero }: { hero: Combatant }) {
   );
 }
 
-type SheetTab = 'combat' | 'competences' | 'sac' | 'sorts' | 'avancement';
+type SheetTab = 'combat' | 'competences' | 'sac' | 'sorts' | 'background' | 'avancement';
 const TAB_LABELS: Record<SheetTab, string> = {
   combat: 'Combat',
   competences: 'Compétences',
   sac: 'Sac',
   sorts: 'Sorts',
+  background: 'Background',
   avancement: 'Avancement',
 };
 
@@ -131,7 +133,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   if (!hero) return null;
 
   const isCaster = (hero.spells?.length ?? 0) > 0;
-  const tabs: SheetTab[] = ['combat', 'competences', 'sac', ...(isCaster ? ['sorts' as const] : []), 'avancement'];
+  const tabs: SheetTab[] = ['combat', 'competences', 'sac', ...(isCaster ? ['sorts' as const] : []), 'background', 'avancement'];
 
   return (
     <div className="modal-overlay sheet-overlay" onClick={onClose}>
@@ -176,6 +178,8 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 <AdvancementPanel hero={hero} />
               ) : tab === 'sorts' ? (
                 <SpellbookSection hero={hero} />
+              ) : tab === 'background' ? (
+                <BackgroundPanel hero={hero} />
               ) : (
                 <FicheBody hero={hero} section={tab} />
               )}
@@ -425,11 +429,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
       {section === 'profil' && (<>
         <div className="sheet-vitals">
           <div className="stat-chip pv">
-            <span className="sc-label">Blessures</span>
+            <span className="sc-label"><CodexRef category="characteristics" label="Blessure">Blessures</CodexRef></span>
             <span className="sc-value">{hero.wounds.current}/{hero.wounds.max}</span>
           </div>
           <div className="stat-chip">
-            <span className="sc-label">Mouvement</span>
+            <span className="sc-label"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
             <span className="sc-value">{hero.movement}</span>
           </div>
           <div className={`stat-chip ${over ? 'enc-over' : ''}`}>

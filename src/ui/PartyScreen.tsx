@@ -52,6 +52,7 @@ export function PartyScreen() {
   const sceneInProgress = useGame((s) => s.scene != null);
   const addHero = useGame((s) => s.partyAddHero);
   const removeHero = useGame((s) => s.partyRemoveHero);
+  const replaceHero = useGame((s) => s.partyReplaceHero);
   const setEditingHero = useGame((s) => s.setEditingHero);
   const assignSlot = useGame((s) => s.netAssignSlot);
   const leave = useGame((s) => s.netLeave);
@@ -85,6 +86,11 @@ export function PartyScreen() {
         onEditHero={(id) => { setEditingHero(id); setScreen('creator'); }}
         onAddHero={addHero}
         onRemoveHero={removeHero}
+        onReplaceHero={(oldId, hero) => {
+          // Le remplaçant prend le siège qui possédait l'ancien (solo : hôte, siège 0).
+          const seat = net.ownership[oldId] ?? net.mySeat ?? 0;
+          replaceHero(oldId, hero, seat);
+        }}
         onAssignSlot={assignSlot}
         onStart={startCampaign}
         onResume={() => setScreen('campaign')}
@@ -151,6 +157,7 @@ export function PartyScreenView({
   onEditHero,
   onAddHero,
   onRemoveHero,
+  onReplaceHero,
   onAssignSlot,
   onStart,
   onResume,
@@ -173,11 +180,16 @@ export function PartyScreenView({
   onEditHero?: (heroId: string) => void;
   onAddHero: (h: Combatant, wealth?: Money) => void;
   onRemoveHero: (heroId: string) => void;
+  /** Remplace EN PLACE le héros `oldId` par celui choisi dans le picker (bouton « Remplacer »).
+   *  Absent = pas de bouton « Remplacer ». La bourse (`wealth`) est ignorée (pas un recrutement). */
+  onReplaceHero?: (oldId: string, hero: Combatant, wealth?: Money) => void;
   onAssignSlot: (slot: number, seat: number) => void;
   onStart: () => void;
   onResume?: () => void;
 }) {
   const [picker, setPicker] = useState(false);
+  // Slot occupé → « Remplacer » : ouvre le picker MÊME à 4/4 (un remplacement ne change pas l'effectif).
+  const [replaceTarget, setReplaceTarget] = useState<string | null>(null);
   // F1 : cliquer le portrait d'un héros ouvre sa fiche complète (réutilise CharacterSheet).
   const [sheetId, setSheetId] = useState<string | null>(null);
   // L2 (solo) : carte slot→héros STABLE — l'emplacement d'un héros retiré RESTE en place (le trou ne
@@ -218,6 +230,19 @@ export function PartyScreenView({
     onAddHero(h, wealth);
     if (party.length + 1 >= 4) setPicker(false); // groupe complet → on ferme ; sinon on enchaîne
   };
+  // Le picker sert au recrutement (slot vide) ET au remplacement (slot occupé) : on aiguille selon
+  // `replaceTarget`. Fermeture commune : on réinitialise les deux modes.
+  const onPickHero = (h: Combatant, wealth?: Money) => {
+    if (replaceTarget) {
+      onReplaceHero?.(replaceTarget, h, wealth);
+      setReplaceTarget(null);
+      setPicker(false);
+      return;
+    }
+    pick(h, wealth);
+  };
+  const closePicker = () => { setPicker(false); setReplaceTarget(null); };
+  const replaceName = replaceTarget ? party.find((h) => h.id === replaceTarget)?.name : undefined;
 
   return (
     <div className="screen party-screen">
@@ -280,6 +305,11 @@ export function PartyScreenView({
                           {t('party.hero.edit')}
                         </button>
                       )}
+                      {onReplaceHero && (
+                        <button className="btn small" onClick={() => setReplaceTarget(h.id)}>
+                          {t('party.hero.replace')}
+                        </button>
+                      )}
                       <button className="btn small danger" onClick={() => onRemoveHero(h.id)}>
                         {t('party.hero.remove')}
                       </button>
@@ -327,7 +357,14 @@ export function PartyScreenView({
         </footer>
       )}
 
-      {picker && party.length < 4 && <PartyPicker party={party} onPick={pick} onClose={() => setPicker(false)} />}
+      {((picker && party.length < 4) || (replaceTarget && onReplaceHero)) && (
+        <PartyPicker
+          party={party}
+          title={replaceTarget ? t('picker.title.replace', { name: replaceName ?? '' }) : undefined}
+          onPick={onPickHero}
+          onClose={closePicker}
+        />
+      )}
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
     </div>
   );
@@ -338,10 +375,13 @@ export function PartyPicker({
   party,
   onPick,
   onClose,
+  title,
 }: {
   party: Combatant[];
   onPick: (h: Combatant, wealth?: Money) => void;
   onClose: () => void;
+  /** Titre du picker (défaut = recrutement). Le mode « Remplacer » passe « Remplacer {nom} ». */
+  title?: string;
 }) {
   const pregens = useState(() => makePregens())[0];
   const [roster, setRoster] = useState(() => rosterLoad());
@@ -373,7 +413,7 @@ export function PartyPicker({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="picker-title">{t('picker.title', { n: party.length })}</h3>
+        <h3 className="picker-title">{title ?? t('picker.title', { n: party.length })}</h3>
         <div className="sheet-tabs">
           <button className={`tab ${tab === 'roster' ? 'on' : ''}`} onClick={() => setTab('roster')}>
             {t('picker.tab.roster')}

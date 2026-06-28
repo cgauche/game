@@ -50,6 +50,21 @@ export function rosterRemove(heroId: string): void {
   save(rosterLoad().filter((e) => e.hero.id !== heroId));
 }
 
+/** Met à jour l'entrée roster d'un héros DÉJÀ présent (édition de bio en jeu) — n'AJOUTE pas un héros
+ *  absent du roster (un prétiré édité ne s'y invite pas). Resynchronise aussi `draft` (motivation/ambitions)
+ *  pour le round-trip créateur. */
+export function rosterUpdate(hero: Combatant): void {
+  const list = rosterLoad();
+  const i = list.findIndex((e) => e.hero.id === hero.id);
+  if (i < 0) return;
+  const prev = list[i];
+  const draft: CreatorDraft | undefined = prev.draft
+    ? { ...prev.draft, motivation: hero.motivation ?? '', ambitionShort: hero.details?.ambitionShort ?? '', ambitionLong: hero.details?.ambitionLong ?? '' }
+    : prev.draft;
+  list[i] = { ...prev, hero, draft };
+  save(list);
+}
+
 const EXPORT_KIND = 'wfrp4-hero';
 const EXPORT_VERSION = 1;
 

@@ -18,7 +18,7 @@ import { hasHealSkill, healableTargets, availableHealModes } from '../engine/hea
 import { mountableNear } from '../state/mount';
 import { shipOfCrew } from '../state/shipPostes';
 import { isVehicle } from '../engine/vehicle';
-import { controlsActive } from '../state/netOwnership';
+import { ownsLocally } from '../state/netOwnership';
 import { aiDriven } from '../state/combatGate';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
@@ -139,8 +139,12 @@ export function ActionBar() {
   const active = activeCombatant(battle);
   if (!active) return null;
 
-  // COOP : le combattant actif appartient à un AUTRE joueur → barre spectateur (pas de contrôles).
-  if (active.kind === 'hero' && !controlsActive(useGame.getState())) {
+  // COOP UNIQUEMENT : le combattant actif appartient à un AUTRE joueur → barre spectateur (« ⏳ X joue … »).
+  // Prédicat PRÉCIS = « héros d'un autre siège » (`net coop && !ownsLocally`), PAS `!controlsActive` : depuis
+  // que ce dernier vaut aussi pour MON héros en Auto-combat (l'IA le pilote), il ferait afficher le chip coop
+  // « L'hôte joue … » HORS coop / pour mon propre héros auto (retour playtest 2026-06-27). Mon héros auto
+  // (solo ou coop) tombe sur la barre « L'IA joue … » plus bas.
+  if (active.kind === 'hero' && net.mode !== 'local' && !ownsLocally(useGame.getState(), active.id)) {
     const seat = net.ownership[active.id] ?? 0;
     return (
       <div className="action-bar establishing-bar">

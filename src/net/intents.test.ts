@@ -15,7 +15,7 @@ describe('allowlist coop (net/intents)', () => {
   });
 
   it('la composition du groupe est allowlistée (chaque joueur remplit SES emplacements)', () => {
-    for (const name of ['partyAddHero', 'partyRemoveHero']) {
+    for (const name of ['partyAddHero', 'partyRemoveHero', 'partyReplaceHero']) {
       expect(PARTY_INTENTS.has(name), name).toBe(true);
       expect(GUEST_INTENTS.has(name), name).toBe(true);
     }

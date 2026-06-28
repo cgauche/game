@@ -93,7 +93,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
 
 /** Composition du groupe (écran d'équipe coop) : un invité remplit/retire SES emplacements.
  *  L'hôte injecte le siège autoritaire dans `partyAddHero` (netFlow) — jamais celui de l'invité. */
-export const PARTY_INTENTS: ReadonlySet<string> = new Set(['partyAddHero', 'partyRemoveHero']);
+export const PARTY_INTENTS: ReadonlySet<string> = new Set(['partyAddHero', 'partyRemoveHero', 'partyReplaceHero']);
 
 /** Activités d'interlude (LDB 23) : chacune vise un héros (1er argument ou pending/dépôt) —
  *  l'hôte valide la possession dans `intentAllowedFor`. `startInterlude`/`interludeEnd`

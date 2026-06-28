@@ -88,6 +88,12 @@ describe('possession réseau (netOwnership)', () => {
     expect(intentAllowedFor(s, 1, 'partyRemoveHero', ['h2'])).toBe(true);
     expect(intentAllowedFor(s, 1, 'partyRemoveHero', ['h1'])).toBe(false);
   });
+
+  it('partyReplaceHero : seul le propriétaire de l’ANCIEN héros (1er arg) peut le remplacer', () => {
+    const s = base({ battle: null } as unknown as Partial<GameState>);
+    expect(intentAllowedFor(s, 1, 'partyReplaceHero', ['h2'])).toBe(true);  // h2 = siège 1
+    expect(intentAllowedFor(s, 1, 'partyReplaceHero', ['h1'])).toBe(false); // h1 = hôte
+  });
 });
 
 describe('controlsActive — gating d’affichage : le tour d’un héros distant est inerte (comme un tour ennemi)', () => {

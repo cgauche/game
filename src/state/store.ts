@@ -445,6 +445,9 @@ export interface GameState extends RollFlowActionsMap {
    *  l'hôte injecte le siège autoritaire) / retire un héros (propriétaire seul). */
   partyAddHero: (hero: Combatant, wealth?: import('../engine/money').Money, seat?: number) => void;
   partyRemoveHero: (heroId: string) => void;
+  /** Remplace EN PLACE le héros `oldId` par `hero` (substitution atomique, possession transférée au
+   *  siège ; ne touche pas la bourse) — créateur (édition) et bouton « Remplacer » du slot. */
+  partyReplaceHero: (oldId: string, hero: Combatant, seat?: number) => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
   /** Auto-save silencieuse vers l'emplacement AUTO (checkpoint d'entrée de scène). Hors combat,
@@ -484,6 +487,8 @@ export interface GameState extends RollFlowActionsMap {
   buySpellComponent: (heroId: string, spellId: string) => void;
   /** Retire un composant d'incantation possédé pour un Sort (sans remboursement). */
   removeSpellComponent: (heroId: string, spellId: string) => void;
+  /** Édite la bio mutable d'un héros hors combat (Motivation + Ambitions court/long, LDB 05) — persisté en save + roster. */
+  setHeroBackground: (heroId: string, patch: { motivation?: string; ambitionShort?: string; ambitionLong?: string }) => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
@@ -690,6 +695,9 @@ export interface GameState extends RollFlowActionsMap {
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
   battleEndTurn: () => void;
+  /** Reprise après un changement de Cadence de combat en plein combat (passage en Auto/Rapide) :
+   *  ré-entre la boucle (auto-résolution de modale + tour de l'IA). No-op en manuel / hors combat. */
+  resumeCadence: () => void;
   /** Chance, 3e usage (LDB ch.17 l.27) : en début de Round, place un héros en tête de l'ordre
    *  contre 1 point de Chance (pré-emption d'initiative). */
   roundStartPromote: (heroId: string) => void;
@@ -1112,6 +1120,7 @@ export const useGame = create<GameState>((set, get) => ({
   netLeave: () => netFlow.netLeave(get, set),
   partyAddHero: (hero, wealth, seat) => partyFlow.partyAddHero(get, set, hero, wealth, seat),
   partyRemoveHero: (heroId) => partyFlow.partyRemoveHero(get, set, heroId),
+  partyReplaceHero: (oldId, hero, seat) => partyFlow.partyReplaceHero(get, set, oldId, hero, seat),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {
@@ -1170,6 +1179,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   buySpellComponent: (heroId, spellId) => partyFlow.buySpellComponent(get, set, heroId, spellId),
   removeSpellComponent: (heroId, spellId) => partyFlow.removeSpellComponent(get, set, heroId, spellId),
+  setHeroBackground: (heroId, patch) => partyFlow.setHeroBackground(get, set, heroId, patch),
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
   creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),

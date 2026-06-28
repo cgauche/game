@@ -6381,7 +6381,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Cheval",
+                "ref": "cheval",
                 "count": 1,
                 "addTraits": [
                   {
@@ -7833,7 +7833,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Rat géant",
+                "ref": "rat-geant",
                 "count": 1,
                 "addTraits": [
                   {
@@ -8006,7 +8006,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Sanguinaire de Khorne",
+                "ref": "sanguinaire-de-khorne",
                 "count": 1,
                 "allyOfCaster": true,
                 "despawnIfCasterDown": true
@@ -8237,7 +8237,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Zombie",
+                "ref": "zombie",
                 "count": {
                   "bonusOf": "FM"
                 },
@@ -8308,7 +8308,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Squelette",
+                "ref": "squelette",
                 "count": 1,
                 "countPerSL": {
                   "every": 1,
@@ -8525,7 +8525,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Sanguinaire de Khorne",
+                "ref": "sanguinaire-de-khorne",
                 "count": 1,
                 "allyOfCaster": false
               }
@@ -12550,7 +12550,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Loup",
+                "ref": "loup",
                 "count": 1,
                 "allyOfCaster": true
               }
@@ -12762,7 +12762,7 @@
             "ops": [
               {
                 "op": "summon",
-                "ref": "Loup",
+                "ref": "loup",
                 "count": 1,
                 "addTraits": [
                   {

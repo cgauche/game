@@ -64,6 +64,39 @@ describe('composition d’équipe (partyFlow + net.slots)', () => {
     expect(s.net.ownership['g1']).toBeUndefined();
   });
 
+  it('partyReplaceHero : substitution EN PLACE (index/ordre préservés), possession transférée, bourse INCHANGÉE', () => {
+    const st = useGame.getState();
+    st.partyAddHero(hero('a'));
+    st.partyAddHero(hero('b'));
+    st.partyAddHero(hero('c'));
+    const moneyBefore = toBrass(useGame.getState().money);
+    useGame.getState().partyReplaceHero('a', hero('z'), 0); // remplace le 1er de 3
+    const s = useGame.getState();
+    expect(s.party.map((h) => h.id)).toEqual(['z', 'b', 'c']); // longueur 3, ordre conservé, a→z en place
+    expect(s.net.ownership['z']).toBe(0); // possession transférée au siège
+    expect(s.net.ownership['a']).toBeUndefined(); // l'ancien id libéré
+    expect(toBrass(s.money)).toBe(moneyBefore); // pas de re-crédit (≠ recrutement)
+  });
+
+  it('partyReplaceHero : rejette un oldId inconnu et un hero.id déjà présent (doublon)', () => {
+    const st = useGame.getState();
+    st.partyAddHero(hero('a'));
+    st.partyAddHero(hero('b'));
+    useGame.getState().partyReplaceHero('zzz', hero('z')); // ancien absent → no-op
+    expect(useGame.getState().party.map((h) => h.id)).toEqual(['a', 'b']);
+    useGame.getState().partyReplaceHero('a', hero('b')); // 'b' déjà dans le groupe → no-op
+    expect(useGame.getState().party.map((h) => h.id)).toEqual(['a', 'b']);
+  });
+
+  it('setHeroBackground : édite Motivation + Ambitions sur le héros du groupe (hors combat)', () => {
+    useGame.getState().partyAddHero(hero('a'));
+    useGame.getState().setHeroBackground('a', { motivation: 'Foi', ambitionShort: 'Survivre', ambitionLong: 'Régner' });
+    const h = useGame.getState().party.find((x) => x.id === 'a')!;
+    expect(h.motivation).toBe('Foi');
+    expect(h.details?.ambitionShort).toBe('Survivre');
+    expect(h.details?.ambitionLong).toBe('Régner');
+  });
+
   it('netAssignSlot : hôte seul, bornes 0-3', () => {
     useGame.getState().netAssignSlot(1, 1); // mode local → refusé
     expect(useGame.getState().net.slots).toEqual([0, 0, 0, 0]);

@@ -25,7 +25,7 @@ import { weaponStatParts } from './weaponStats';
  */
 
 /** Zones de la fiche → localisations WFRP4. `apLoc` = localisation représentative pour le PA affiché. */
-const ZONES: { label: string; locs: HitLocation[]; apLoc: HitLocation }[] = [
+export const ZONES: { label: string; locs: HitLocation[]; apLoc: HitLocation }[] = [
   { label: 'Tête', locs: ['tete'], apLoc: 'tete' },
   { label: 'Bras', locs: ['brasG', 'brasD'], apLoc: 'brasG' },
   { label: 'Corps', locs: ['corps'], apLoc: 'corps' },

@@ -4,14 +4,18 @@
     "species": "humains-reiklander",
     "career": "soldat",
     "seed": 101,
-    "motivation": "Devoir"
+    "motivation": "Devoir",
+    "ambitionShort": "Survivre à la prochaine campagne",
+    "ambitionLong": "Commander sa propre compagnie"
   },
   {
     "name": "Grunni Pierre-de-Fer",
     "species": "nains",
     "career": "tueur",
     "seed": 202,
-    "motivation": "Honte (Malédiction du Tueur)"
+    "motivation": "Honte (Malédiction du Tueur)",
+    "ambitionShort": "Trouver une mort digne au combat",
+    "ambitionLong": "Effacer sa honte par un acte légendaire"
   },
   {
     "name": "Wilhelmina Faust",
@@ -19,6 +23,8 @@
     "career": "sorcier",
     "seed": 707,
     "motivation": "Connaissance",
+    "ambitionShort": "Maîtriser un nouveau sortilège",
+    "ambitionLong": "Percer les secrets des Vents de Magie",
     "careerTalent": "Magie mineure",
     "spells": [
       "Fléchette",
@@ -33,6 +39,8 @@
     "career": "pretre",
     "seed": 808,
     "motivation": "Foi",
+    "ambitionShort": "Protéger les fidèles sur la route",
+    "ambitionLong": "Bâtir un temple à la gloire de Sigmar",
     "careerTalent": "Béni (Sigmar)",
     "spells": [
       "Bénédiction de Guérison",
@@ -44,7 +52,9 @@
     "species": "elfes-sylvains",
     "career": "chasseur",
     "seed": 303,
-    "motivation": "Nature"
+    "motivation": "Nature",
+    "ambitionShort": "Pister la bête qui ravage la forêt",
+    "ambitionLong": "Préserver la forêt des intrusions humaines"
   },
   {
     "name": "Rosa Brandt",
@@ -52,6 +62,8 @@
     "career": "apothicaire",
     "seed": 404,
     "motivation": "Connaissance",
+    "ambitionShort": "Composer un remède contre la fièvre rouge",
+    "ambitionLong": "Ouvrir son propre comptoir d’apothicaire",
     "sex": "F",
     "build": 0.45
   },
@@ -60,13 +72,17 @@
     "species": "halflings",
     "career": "voleur",
     "seed": 505,
-    "motivation": "Curiosité"
+    "motivation": "Curiosité",
+    "ambitionShort": "Mettre la main sur une bourse bien garnie",
+    "ambitionLong": "Réussir le casse dont on parlera longtemps"
   },
   {
     "name": "Otto Hammerfest",
     "species": "humains-reiklander",
     "career": "repurgateur",
     "seed": 606,
-    "motivation": "Foi"
+    "motivation": "Foi",
+    "ambitionShort": "Démasquer un hérétique",
+    "ambitionLong": "Purger une cellule de cultistes du Chaos"
   }
 ]

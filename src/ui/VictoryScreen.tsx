@@ -1,9 +1,16 @@
+import { useState, useEffect } from 'react';
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { harvestProfileFor } from '../engine/harvest';
 import { Coins } from './Coins';
 import { TeamPortrait } from './TeamPortrait';
 import { GearAssignList } from './GearAssignList';
+
+/** Beat de lisibilité avant l'écran plein écran : on laisse voir le COUP FATAL et la chute du dernier
+ *  ennemi (le champ de bataille reste rendu sous l'overlay) avant de recouvrir la scène — sinon la victoire
+ *  « avale » la mort dès le 0 PB (retour playtest 2026-06-27 : « le combat s'est fini si vite que je n'ai pas
+ *  vu l'adversaire tomber »). ~Une seconde, calé sur le beat `postAttack` du Réalisateur (tempo.ts). */
+const VICTORY_REVEAL_MS = 950;
 
 /**
  * Écran de VICTOIRE plein écran (demande utilisateur) : récapitulatif de fin de combat — XP gagnée, or
@@ -24,7 +31,16 @@ export function VictoryScreen() {
   const dismiss = useGame((s) => s.dismissVictory);
   const victoryReady = useGame((s) => s.victoryReady);
   const state = useGame();
-  if (!battle || battle.over !== 'victory') return null;
+  // Tenue du coup fatal : on diffère l'apparition de l'écran d'un beat après `over:'victory'` (la scène, avec
+  // l'ennemi à terre, reste visible dessous). Les hooks restent AVANT tout early-return (règles des Hooks).
+  const overVictory = battle?.over === 'victory';
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => {
+    if (!overVictory) { setRevealed(false); return; }
+    const id = setTimeout(() => setRevealed(true), VICTORY_REVEAL_MS);
+    return () => clearTimeout(id);
+  }, [overVictory]);
+  if (!battle || battle.over !== 'victory' || !revealed) return null;
   const online = net.mode !== 'local';
   const ready = pv?.readyBySeat ?? {};
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));

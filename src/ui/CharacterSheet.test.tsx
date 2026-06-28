@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Combatant } from '../engine/types';
 import { AdvancementPanel } from './CharacterSheet';
+import { BackgroundPanel } from './BackgroundPanel';
 
 /** Héros « Agitateur » niveau 1 (« Pamphlétaire ») avec 1000 PX, Charme (in-carrière) + Esquive (hors). */
 const hero = (): Combatant =>
@@ -26,6 +27,8 @@ const hero = (): Combatant =>
     movement: 4,
     xp: 1000,
     charAdvances: {},
+    motivation: 'Devoir',
+    details: { age: 27, ambitionShort: 'Survivre à la prochaine campagne', ambitionLong: 'Commander sa propre compagnie' },
   }) as unknown as Combatant;
 
 describe('AdvancementPanel (rendu)', () => {
@@ -57,5 +60,20 @@ describe('AdvancementPanel (rendu)', () => {
     const broke = { ...hero(), xp: 5 } as Combatant;
     const html = renderToStaticMarkup(<AdvancementPanel hero={broke} />);
     expect(html).toContain('disabled'); // boutons d'achat désactivés (coût > 5 PX)
+  });
+});
+
+describe('BackgroundPanel (rendu)', () => {
+  it('affiche la bio en lecture seule (âge) et les champs éditables (motivation + ambitions)', () => {
+    const html = renderToStaticMarkup(<BackgroundPanel hero={hero()} />);
+    // Bio lecture seule : âge présent → affiché ; les champs absents (yeux/cheveux) ne sont pas inventés.
+    expect(html).toContain('27 ans');
+    expect(html).not.toContain('Yeux');
+    // Champs éditables (Motivation + Ambitions court/long) avec leurs valeurs.
+    expect(html).toContain('Motivation');
+    expect(html).toContain('Devoir'); // value de l'<input> motivation
+    expect(html).toContain('Survivre à la prochaine campagne'); // ambition court terme
+    expect(html).toContain('Commander sa propre compagnie'); // ambition long terme
+    expect(html).toContain('Modifiable hors combat');
   });
 });

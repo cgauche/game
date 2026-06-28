@@ -86,6 +86,7 @@ export type Formula =
  *  de l'attaque naturelle d'une manœuvre (`{indiceOf}`, 0 hors contexte). */
 export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number, gap?: number): number {
   if (typeof f === 'number') return f;
+  if (typeof f !== 'object' || f === null) return 0; // formule malformée (donnée invalide) → 0, jamais un crash en plein combat
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
   if ('rolled' in f) return rolled ?? 0;
@@ -94,6 +95,22 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('engagedAdvantageGap' in f) return gap ?? 0;
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap), 0);
   return rollDice(f.dice, rng);
+}
+
+/** Clés reconnues d'une `Formula` OBJET — SOURCE UNIQUE, alignée sur l'union `Formula` et sur les
+ *  branches de `resolveFormula`. Réutilisée par le garde-fou d'intégrité des données
+ *  (`src/data/data-wellformed.test.ts`) pour valider les champs Formula des `GameOp` sans re-coder la liste. */
+export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'sum'] as const;
+
+/** Une valeur est-elle une `Formula` VALIDE — résoluble par `resolveFormula` sans planter ? `number` FINI,
+ *  ou objet portant exactement une clé connue (`sum` récursif). PUR. Rejette une string (un `'$indice'`
+ *  non substitué qui atteindrait `resolveFormula` — le bug qu'on garde), un objet vide, `NaN`/`Infinity`. */
+export function isValidFormula(f: unknown): f is Formula {
+  if (typeof f === 'number') return Number.isFinite(f);
+  if (typeof f !== 'object' || f === null) return false;
+  const o = f as Record<string, unknown>;
+  if ('sum' in o) return Array.isArray(o.sum) && o.sum.every(isValidFormula);
+  return FORMULA_OBJECT_KEYS.some((k) => k in o);
 }
 
 /** Échelle « par +N DR » d'un sort (LDB 41/42/47 — « +1 par +2 DR », « +DR Dégâts ») :
@@ -117,6 +134,7 @@ export function slBonus(sl: number | undefined, p?: PerSL): number {
  *  stacks/écart d'Avantage) absents au planning → 0. PUR, sans RNG. */
 export function formulaExpectation(f: Formula, ref: Combatant): number {
   if (typeof f === 'number') return f;
+  if (typeof f !== 'object' || f === null) return 0; // formule malformée (donnée invalide) → 0, jamais un crash en plein combat
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
   if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);

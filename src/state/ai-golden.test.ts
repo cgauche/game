@@ -239,22 +239,48 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
   });
 });
 
-describe('GOLDEN — extensions op-driven (kiting / pas de move parasite)', () => {
-  // (a) KITING : un lanceur SANS arme, EXPOSÉ (au contact d'un héros) et n'ayant qu'un sort FAIBLE,
-  // se REPOSITIONNE pour garder la distance (gain STRICT de portée préférée) plutôt que de lancer son
-  // sort dérisoire au contact. La reposition n'est émise que si `positionValue(to) > positionValue(pos)` :
-  // ici reculer hors de la portée de mêlée gagne `preferredRange` (au contact d=1 ≤ mr → 0 ; à d=2 → +5),
-  // ce qui dépasse l'utilité du cast faible (~dégât 1 + menace).
-  it('caster exposé + sort faible → se replie (move de kiting), gain de position STRICT', () => {
+describe('GOLDEN — extensions op-driven (attaquer prime / pas de move parasite)', () => {
+  // « UN COUP JOUABLE PRIME » (plan §6, confirmé par le playtest 2026-06-27 : l'arbalétrière qui « fonce au
+  // centre au lieu de tirer » et la sorcière qui « spamme et rate » = MÊME bug). La REPOSITION/repli a une
+  // utilité d'ÉCHELLE DE POSITION (couvert/danger), incommensurable avec l'échelle Blessures d'une attaque ;
+  // le seul biais `TIER` ne départage qu'à utilité ÉGALE → un gain de couvert pouvait battre un tir/cast.
+  // CORRECTION : un tireur/lanceur qui a une cible JOUABLE à portée FAIT FEU — il ne se replie JAMAIS au prix
+  // de son attaque (même peu fiable : un Carreau à 30 % vaut mieux qu'un cran de couvert). La reposition ne
+  // sert plus QUE l'absence d'attaque jouable.
+  it('tireur (arc) + héros à portée + LdV → TIRE (ne fonce pas, ne se repositionne pas)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [RANGED], movement: 4 });
+    const h = mk('h', 'hero', { x: 5, y: 9 }); // d=4, à portée (60) + LdV dégagée
+    expect(chooseEnemyAction(input(e, [h]))).toEqual({ kind: 'shoot', targetId: 'h' });
+  });
+
+  it('lanceur AU CONTACT + sort jouable à portée → LANCE (n’abandonne pas son tour pour un repli)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [], movement: 4 });
-    const h = mk('h', 'hero', { x: 5, y: 6 }); // AU CONTACT (d=1)
-    const weakSpell = castable({ id: 'etincelle', range: 4, data: spellData({ id: 'etincelle', missile: true, damage: 0 }) });
-    const a = chooseEnemyAction(input(e, [h], { spells: [weakSpell] }));
-    expect(a.kind).toBe('move');
-    if (a.kind === 'move') {
-      expect(a.thenTargetId).toBe('h');
-      expect(Math.max(Math.abs(a.to.x - 5), Math.abs(a.to.y - 6))).toBeGreaterThan(1); // a reculé hors mêlée
-    }
+    const h = mk('h', 'hero', { x: 5, y: 6 }); // au contact (d=1)
+    const a = chooseEnemyAction(input(e, [h], { spells: [castable({ id: 'carreau', range: 4, landProb: 0.3 })] }));
+    expect(a.kind).toBe('cast');
+    expect(tidOf(a)).toBe('h');
+  });
+
+  it('tireur SANS LdV (cible derrière un mur) → se REPOSITIONNE (move), seule attaque indisponible déclenche le repli', () => {
+    const e = { id: 'e', name: 'e', kind: 'enemy', characteristics: {} as never, wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], weapons: [RANGED], armour: {} as never, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 } } as unknown as Combatant;
+    const h = { id: 'h', name: 'h', kind: 'hero', wounds: { current: 10, max: 10 }, pos: { x: 6, y: 0 } } as unknown as Combatant;
+    const a = chooseEnemyAction({ enemy: e, heroes: [h], scene: walledScene(8, { '3,0': 'mur' }), blocked: new Set(), movement: 4, spells: [] });
+    expect(a.kind).not.toBe('shoot'); // pas de LdV → ne tire pas
+    expect(a.kind).toBe('move'); // il bouge pour dégager la ligne / approcher
+  });
+
+  // (a-bis) HYBRIDE tir+mêlée (retour playtest 2026-06-27 : « le chasseur charge à l'arme simple alors qu'il
+  // a une fronde »). Un porteur d'arme à distance qui garde une arme de mêlée de secours reste un TIREUR : hors
+  // de portée de tir mais à portée de CHARGE, il s'approche à sa DISTANCE DE TIR (standoff) — il ne fonce PAS au
+  // contact. (Bug : `isShooterOrCaster` excluait les hybrides via `&& !hasMeleeWeapon` → mêlée au contact.)
+  it('hybride (fronde + épée) hors de portée de tir mais mêlée atteignable → STANDOFF (ne charge pas au contact)', () => {
+    const SLING: Weapon = { name: 'Fronde', type: 'ranged', damage: { plusBF: false, flat: 5 }, range: 2, qualities: [] };
+    const e = mk('e', 'enemy', { x: 8, y: 8 }, { weapons: [SLING, MELEE], movement: 4 });
+    const h = mk('h', 'hero', { x: 8, y: 12 }); // d=4 : hors bande de la fronde (portée 2) mais atteignable en mêlée (mvt 4)
+    const a = chooseEnemyAction(input(e, [h]));
+    expect(a.kind).toBe('move'); // s'approche (hors de portée de tir)
+    expect(tidOf(a)).toBe('h');
+    if (a.kind === 'move') expect(Math.max(Math.abs(a.to.x - 8), Math.abs(a.to.y - 12))).toBeGreaterThan(1); // STANDOFF, pas le contact
   });
 
   // (b) PAS de MOVE PARASITE : en scène NEUTRE (déjà à bonne distance, rien à gagner en position), le

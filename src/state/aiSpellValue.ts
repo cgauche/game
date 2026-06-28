@@ -165,6 +165,22 @@ export function expectedSpellOutput(caster: Combatant, target: Combatant | null,
   return total;
 }
 
+/**
+ * MAL total qu'un sort inflige à UNE cible (Blessures-équivalent) : dégâts (`expectedSpellOutput`) PLUS la
+ * menace des ÉTATS/contrôle hostiles posés sur la cible (op `condition`, `charMod<0`, `castPenalty`…). Sert
+ * la PÉNALITÉ DE TIR AMI d'une ZdE (alliés couverts), SYMÉTRIQUE au mal fait aux ennemis — l'ancien calcul ne
+ * comptait QUE les dégâts, donc une ZdE de CONTRÔLE/débuff n'avait aucune pénalité d'ami (l'IA KO ses alliés).
+ * HORS `on:caster` (effets du lanceur, pas un mal à la cible) et hors escompte de réussite (l'appelant ×landProb).
+ */
+export function spellTargetHarm(caster: Combatant, target: Combatant, spell: SpellData): number {
+  let harm = expectedSpellOutput(caster, target, spell);
+  for (const op of spellOps(spell.effects, 'target')) {
+    if (op.op === 'wounds' || op.op === 'reduceToZero' || op.op === 'banish') continue; // déjà dans expectedSpellOutput
+    if (opIsHostileControl(op)) harm += opValue(op, caster, target, { refEnemy: null, horizon: 1 });
+  }
+  return harm;
+}
+
 /** Σ EV de la meilleure arme de `c` contre `foe` (réutilise `expectedDamage`). 0 sans arme. */
 function bestAttackEV(c: Combatant, foe: Combatant | null): number {
   const target = foe ?? GENERIC_DUMMY;

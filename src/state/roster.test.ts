@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { rosterLoad, rosterAdd, rosterRemove, rosterExport, rosterImport, RosterEntry } from './roster';
+import { rosterLoad, rosterAdd, rosterRemove, rosterUpdate, rosterExport, rosterImport, RosterEntry } from './roster';
 import { Combatant } from '../engine/types';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
@@ -83,6 +83,25 @@ describe('roster — persistance des personnages créés', () => {
     expect(rosterLoad()).toEqual([]);
     expect(() => rosterAdd(entry('h1'))).not.toThrow();
     expect(() => rosterRemove('h1')).not.toThrow();
+  });
+
+  it('rosterUpdate : met à jour le héros présent (bio propagée), sans doublon', () => {
+    rosterAdd(entry('h1'));
+    const edited = { id: 'h1', name: 'Héros', motivation: 'Foi', details: { ambitionShort: 'Survivre', ambitionLong: 'Régner' } } as unknown as Combatant;
+    rosterUpdate(edited);
+    const list = rosterLoad();
+    expect(list).toHaveLength(1);
+    expect(list[0].hero.motivation).toBe('Foi');
+    expect(list[0].hero.details?.ambitionShort).toBe('Survivre');
+    expect(list[0].hero.details?.ambitionLong).toBe('Régner');
+  });
+
+  it('rosterUpdate : N’AJOUTE PAS un héros absent du roster (prétiré édité)', () => {
+    rosterAdd(entry('h1'));
+    rosterUpdate(hero('absent'));
+    const list = rosterLoad();
+    expect(list).toHaveLength(1);
+    expect(list[0].hero.id).toBe('h1');
   });
 });
 

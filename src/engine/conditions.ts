@@ -225,6 +225,22 @@ export function canTakeAction(c: Combatant): boolean {
   return !conditionGating(c).noAction;
 }
 
+/** États portés par `c` dont la DONNÉE déclare `restrictsAction` (Brisé : Mouvement + Action verrouillés
+ *  pour fuir/se cacher, LDB 16 l.55) — lus en DONNÉES (etats.json), JAMAIS par-nom. `stacks` = pions portés. */
+export function restrictingConditions(c: Combatant): { name: string; stacks: number }[] {
+  const out: { name: string; stacks: number }[] = [];
+  for (const cond of c.conditions ?? []) {
+    if (findConditionById(cond.name)?.restrictsAction) out.push({ name: cond.name, stacks: cond.value });
+  }
+  return out;
+}
+
+/** Le combattant porte-t-il un État qui VERROUILLE son Action (`restrictsAction`) ? Une seule vérité de
+ *  données partagée par le gate de hotbar (`battleSelectAction`) ET l'IA (`planProactiveSpend`). */
+export function isActionLocked(c: Combatant): boolean {
+  return restrictingConditions(c).length > 0;
+}
+
 /**
  * (Résistance à l'Empoisonné — LDB 16 l.70-72 — n'est PLUS du code moteur : c'est un `effects: onRoundEnd`
  *  à nœud `test` dans `etats.json` (retire 1+DR via `removeCondition`, puis Exténué si vidé via `if`/

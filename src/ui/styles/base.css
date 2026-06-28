@@ -411,6 +411,11 @@ h3 {
   flex-direction: column;
   gap: 8px;
 }
+/* La carte remplit le slot étiré par la grille (iso-hauteur entre slots) — scopé au slot d'équipe
+ * pour ne pas toucher la carte compacte du picker. */
+.party-slot > .char-card {
+  flex: 1;
+}
 .empty-slot {
   background: var(--panel);
   border: 2px dashed var(--border);
