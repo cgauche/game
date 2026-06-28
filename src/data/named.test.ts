@@ -23,7 +23,7 @@ describe('isNamed — source UNIQUE de la nommé-ité (jamais via `title`)', () 
   });
 });
 
-/** Garde de DONNÉE : les 47 individus nommés validés contre le RAW (desc verbatim singulier = individu)
+/** Garde de DONNÉE : les 50 individus nommés validés contre le RAW (desc verbatim singulier = individu)
  *  portent `named:true`, et rien d'autre. Les ex-« douteux » (sous-espèces/templates ZI décrits au
  *  PLURIEL) restent génériques — régression à garder si on retouche le backfill. */
 describe('creatures.json — backfill `named`', () => {
@@ -42,18 +42,19 @@ describe('creatures.json — backfill `named`', () => {
     'yanni-weber', 'johen', 'frere-bengt', 'grand-vizir-bhar', 'hugo-vallonvert',
     'alfric-demi-nez-brisenclume', 'agna-lottrisdottir', 'helmut-beckenbauer',
     'walpurga-wurklich', 'andrea-bruhn', 'jacopo-schmidt', 'traudl-bauer',
+    'beate-moser', 'le-vieil-otto', 'brigitte-schleigel',
   ];
   const GENERIC_IDS = [
     'brochet-du-stir', 'heomreth-hibou-geant', 'peau-de-loup', 'tregara',
     'experience-unique-du-clan-moulder', 'mangeuse-d-hommes-de-la-drakwald-araignee-geante',
   ];
 
-  it('les 47 nommés validés portent named:true (ids résolus)', () => {
+  it('les 50 nommés validés portent named:true (ids résolus)', () => {
     const bad = NAMED_IDS.filter((id) => { const c = findCreatureById(id); return !c || !isNamed(c); });
     expect(bad).toEqual([]);
   });
-  it('exactement 47 nommés dans la base (zéro générique flaggé)', () => {
-    expect(creatures.filter(isNamed).length).toBe(47);
+  it('exactement 50 nommés dans la base (zéro générique flaggé)', () => {
+    expect(creatures.filter(isNamed).length).toBe(50);
   });
   it('les ex-douteux (sous-espèces/templates au pluriel) restent génériques', () => {
     const bad = GENERIC_IDS.filter((id) => { const c = findCreatureById(id); return !c || isNamed(c); });

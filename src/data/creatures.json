@@ -58688,5 +58688,506 @@
       "species": "humain",
       "tenue": "flagellant"
     }
+  },
+  {
+    "id": "beate-moser",
+    "label": "Beate Moser",
+    "title": null,
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 41,
+      "CT": 44,
+      "F": 42,
+      "E": 41,
+      "I": 35,
+      "Ag": 29,
+      "Dex": 45,
+      "Int": 40,
+      "FM": 40,
+      "Soc": 37,
+      "B": 20
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 43
+      },
+      {
+        "id": "calme",
+        "value": 55
+      },
+      {
+        "id": "charme",
+        "value": 47
+      },
+      {
+        "id": "commandement",
+        "value": 49
+      },
+      {
+        "id": "divertissement",
+        "value": 44,
+        "spec": "Narration"
+      },
+      {
+        "id": "escalade",
+        "value": 54
+      },
+      {
+        "id": "esquive",
+        "value": 44
+      },
+      {
+        "id": "intuition",
+        "value": 49
+      },
+      {
+        "id": "marchandage",
+        "value": 44
+      },
+      {
+        "id": "perception",
+        "value": 49
+      },
+      {
+        "id": "priere",
+        "value": 57
+      },
+      {
+        "id": "ragot",
+        "value": 45
+      },
+      {
+        "id": "resistance",
+        "value": 56
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 56
+      },
+      {
+        "id": "savoir",
+        "value": 47,
+        "spec": "Bêtes"
+      },
+      {
+        "id": "savoir",
+        "value": 51,
+        "spec": "Politique"
+      },
+      {
+        "id": "savoir",
+        "value": 58,
+        "spec": "Théologie"
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 52
+      }
+    ],
+    "talents": [
+      {
+        "id": "baratiner"
+      },
+      {
+        "id": "beni",
+        "spec": "Ulric"
+      },
+      {
+        "id": "chat-de-gouttiere"
+      },
+      {
+        "id": "destinee",
+        "spec": "Morr deviendra ton ami lorsque tu seras abandonné et seul"
+      },
+      {
+        "id": "dur-a-cuire"
+      },
+      {
+        "id": "ergoteur"
+      },
+      {
+        "id": "ferveur-ardente"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "nomade"
+      },
+      {
+        "id": "orateur"
+      },
+      {
+        "id": "sociable"
+      },
+      {
+        "id": "visions-sacrees"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les signes de la faveur d'Ulric sont évidents dans l'apparence de Beate. Beate est une très jeune femme avec de longs cheveux d'un blanc immaculé, des yeux bleu pâle et une carrure robuste. Faiseuse de miracles, elle est actuellement considérée comme la dirigeante des Porteurs du Sang de Middenheim.\n\nAuparavant, les Porteurs du Sang étaient un petit groupe exclusif. Leur croyance selon laquelle leur relation avec Ulric les rend supérieurs aux gens normaux les empêche d'obtenir le soutien de la population. Beate est plus maligne que la plupart de ses camarades, et même si elle est convaincue de son propre droit d'imposer la volonté d'Ulric, elle sait que proférer cette croyance ne lui permettra pas de se faire des alliés.\n\nSi elle parvient à faire en sorte que ses lieutenants écoutent ses idées, les Porteurs du Sang reconcentreront leurs efforts et arrêteront de chercher à plaire aux partisans ulricains extrêmes pour prendre une approche plus mesurée. Beate a beaucoup de travail devant elle, car les Porteurs du Sang sont particulièrement conservateurs. Toutefois, si elle venait à faire une découverte capitale, comme apprendre qu'Ar-Ulric n'a pas respecté son serment de célibat, elle pourrait lancer sa campagne pour de bon.",
+    "source": {
+      "book": "Middenheim",
+      "page": 143
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "pretre"
+    }
+  },
+  {
+    "id": "le-vieil-otto",
+    "label": "Le vieil Otto",
+    "title": null,
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 32,
+      "CT": 37,
+      "F": 42,
+      "E": 38,
+      "I": 35,
+      "Ag": 38,
+      "Dex": 59,
+      "Int": 57,
+      "FM": 54,
+      "Soc": 59,
+      "B": 15
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "art",
+        "value": 65,
+        "spec": "Écriture"
+      },
+      {
+        "id": "calme",
+        "value": 68
+      },
+      {
+        "id": "charme",
+        "value": 69
+      },
+      {
+        "id": "commandement",
+        "value": 62
+      },
+      {
+        "id": "discretion",
+        "value": 46,
+        "spec": "Urbaine"
+      },
+      {
+        "id": "evaluation",
+        "value": 65
+      },
+      {
+        "id": "intuition",
+        "value": 45
+      },
+      {
+        "id": "marchandage",
+        "value": 65
+      },
+      {
+        "id": "metier",
+        "value": 65,
+        "spec": "Imprimeur"
+      },
+      {
+        "id": "perception",
+        "value": 46
+      },
+      {
+        "id": "ragot",
+        "value": 65
+      },
+      {
+        "id": "recherche",
+        "value": 65
+      },
+      {
+        "id": "resistance",
+        "value": 55
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 44
+      },
+      {
+        "id": "savoir",
+        "value": 58,
+        "spec": "Local"
+      },
+      {
+        "id": "savoir",
+        "value": 62,
+        "spec": "Politique"
+      }
+    ],
+    "talents": [
+      {
+        "id": "artiste"
+      },
+      {
+        "id": "bricoleur"
+      },
+      {
+        "id": "destinee",
+        "spec": "Dévoré par ta propre descendance"
+      },
+      {
+        "id": "doigts-de-fee"
+      },
+      {
+        "id": "ergoteur"
+      },
+      {
+        "id": "infatigable"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "negociateur"
+      },
+      {
+        "id": "tres-fort"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le vieil Otto, un artisan âgé, mais plein de vie, lève les yeux au-dessus de ses lunettes aux verres épais entourées d'une touffe rebelle de cheveux blancs ondulés et d'un bouc hirsute. Otto est un fervent adorateur de Verena et secrètement un chef de file au sein du mouvement radical des Nouveaux Millénaristes.\n\nLe vieil Otto n'est pas quelqu'un qu'on pourrait qualifier d'agitateur, même s'il encourage l'activisme politique de base au sein de Middenheim. Son rôle principal dans le mouvement est de permettre aux Nouveaux Millénaristes d'utiliser une presse privée qu'il cache dans l'arrière-boutique de son imprimerie. Otto a fait partie de plusieurs groupes d'opposition au cours de sa vie, et même s'il est content de laisser l'action en première ligne aux plus jeunes, cela ne remet pas en question son courage et son engagement. Il a conscience qu'il faut être calme et expérimenté pour protéger les atouts, offrir des conseils de stratégie et servir d'exemple aux membres les plus imprudents.\n\nOtto a tout de même tendance à savourer quelques verres de vin rouge et discuter politique, mais il fait attention à ne pas perdre le contrôle et à ne parler qu'à ceux en qui il peut avoir confiance. L'opération qu'il a organisée est trop précieuse pour être gâchée par des coups de gueule intempestifs.",
+    "source": {
+      "book": "Middenheim",
+      "page": 144
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "artisan"
+    }
+  },
+  {
+    "id": "brigitte-schleigel",
+    "label": "Brigitte Schleigel",
+    "title": null,
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 31,
+      "CT": 34,
+      "F": 31,
+      "E": 32,
+      "I": 45,
+      "Ag": 49,
+      "Dex": 35,
+      "Int": 50,
+      "FM": 34,
+      "Soc": 47,
+      "B": 12
+    },
+    "traits": [
+      {
+        "id": "effraye",
+        "arg": "créanciers"
+      },
+      {
+        "id": "prejuge",
+        "arg": "aristocrates, réactionnaires, miliciens, nantis, utilisateurs de mystracine"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "art",
+        "value": 45,
+        "spec": "Écriture"
+      },
+      {
+        "id": "charme",
+        "value": 57
+      },
+      {
+        "id": "divertissement",
+        "value": 57,
+        "spec": "Narration"
+      },
+      {
+        "id": "intuition",
+        "value": 55
+      },
+      {
+        "id": "marchandage",
+        "value": 57
+      },
+      {
+        "id": "metier",
+        "value": 50,
+        "spec": "Imprimeur"
+      },
+      {
+        "id": "ragot",
+        "value": 62
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 42
+      },
+      {
+        "id": "savoir",
+        "value": 60,
+        "spec": "Politique"
+      },
+      {
+        "id": "subornation",
+        "value": 57
+      }
+    ],
+    "talents": [
+      {
+        "id": "destinee",
+        "spec": "Ta mort est dissimulée dans le crépuscule"
+      },
+      {
+        "id": "ergoteur"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "perspicace"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Étoile montante des Nouveaux Millénaristes, Brigitte est une porte-parole éloquente, passionnée et acharnée pour l'extension des droits de l'ensemble des citoyens et pour l'abolition de lois qui défavorisent les pauvres et marginalisés de Middenheim. Sa silhouette est caractéristique : grande et blafarde, avec des touffes sèches de cheveux roux clairsemés. On la reconnaît à ses chemisiers à motifs très voyants. Elle adore débattre de sujets brûlants et de questions sociales, mais n'hésitera pas à persécuter son interlocuteur de façon moralisatrice si elle rencontre trop d'objections injustifiées.\n\nMalheureusement, Brigitte est stimulée par une consommation copieuse de Poudre hilarante. Elle en est complètement dépendante et souffre de manque si elle n'a pas sa dose quotidienne. Cette habitude est coûteuse et elle accumule les dettes envers plusieurs trafiquants et créanciers. Si son addiction venait à se savoir, cela pourrait la discréditer et nuire au mouvement qu'elle défend.\n\nLes Nouveaux Millénaristes ont récemment lancé une campagne de financement afin de parrainer une nuit au théâtre pour les familles démunies de Middenheim. Brigitte était responsable de ces fonds. Elle a pensé pouvoir se servir dedans et replacer l'argent plus tard. Mais elle s'est emballée et s'est acheté une nouvelle tenue, de nouvelles chaussures, un bon repas et une tournée à la taverne pour ses nombreux amis pendant le festival de Festag. Elle cherche désespérément un moyen de se sortir de cette situation de plus en plus délicate.",
+    "source": {
+      "book": "Middenheim",
+      "page": 144
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "agitateur"
+    }
+  },
+  {
+    "id": "brute",
+    "label": "Brute",
+    "title": null,
+    "named": false,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 47,
+      "CT": 32,
+      "F": 42,
+      "E": 42,
+      "I": 35,
+      "Ag": 35,
+      "Dex": 35,
+      "Int": 30,
+      "FM": 30,
+      "Soc": 30,
+      "B": 15
+    },
+    "traits": [
+      {
+        "id": "armure",
+        "arg": "Cuir 2"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 45
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 67,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "esquive",
+        "value": 45
+      }
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Il y a trois types généraux de joueurs de Middenball. Les premiers sont des brutes musclées douées d'un certain talent pour blesser les gens, les deuxièmes sont des athlètes agiles capables d'éviter d'être blessés, et les troisièmes sont des Nains.",
+    "source": {
+      "book": "Middenheim",
+      "page": 145
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "milicien"
+    }
+  },
+  {
+    "id": "athlete",
+    "label": "Athlète",
+    "title": null,
+    "named": false,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 5,
+      "CC": 38,
+      "CT": 44,
+      "F": 35,
+      "E": 35,
+      "I": 45,
+      "Ag": 45,
+      "Dex": 45,
+      "Int": 30,
+      "FM": 40,
+      "Soc": 30,
+      "B": 13
+    },
+    "traits": [
+      {
+        "id": "armure",
+        "arg": "Cuir 2"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 65
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 48,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "esquive",
+        "value": 65
+      }
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Il y a trois types généraux de joueurs de Middenball. Les premiers sont des brutes musclées douées d'un certain talent pour blesser les gens, les deuxièmes sont des athlètes agiles capables d'éviter d'être blessés, et les troisièmes sont des Nains.",
+    "source": {
+      "book": "Middenheim",
+      "page": 145
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "spadassin"
+    }
   }
 ]
