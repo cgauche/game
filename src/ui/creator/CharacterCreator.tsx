@@ -48,6 +48,7 @@ import { generateName } from '../../engine/names';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
+import { BackgroundFields } from '../BackgroundFields';
 import { CodexRef } from '../compendium/CodexRef';
 import { TabbedEntry } from '../TabbedEntry';
 import { Prose, mdToText } from '../Prose';
@@ -1108,37 +1109,27 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
   const main = (
     <>
       <Section title="Identité">
-        <div className="form-cols">
-          <label>
-            Nom
-            <span className="input-dice">
-              <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
-              <button
-                type="button"
-                className="btn small"
-                title="Nom aléatoire (race et sexe du personnage)"
-                onClick={() => {
-                  const n = generateName(sp.label, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
-                  if (n) setD({ ...d, name: n });
-                }}
-              >
-                🎲
-              </button>
-            </span>
-          </label>
-          <label>
-            Motivation <em className="hint">(recharge la Détermination)</em>
-            <input value={d.motivation} onChange={(e) => setD({ ...d, motivation: e.target.value })} placeholder="Ex. Devoir, Vengeance, Rebelle…" />
-          </label>
-          <label>
-            Ambition à court terme <em className="hint">(accomplie : +50 PX)</em>
-            <input value={d.ambitionShort} onChange={(e) => setD({ ...d, ambitionShort: e.target.value })} placeholder="Ex. Venger un camarade tombé au combat…" />
-          </label>
-          <label>
-            Ambition à long terme <em className="hint">(accomplie : +500 PX)</em>
-            <input value={d.ambitionLong} onChange={(e) => setD({ ...d, ambitionLong: e.target.value })} placeholder="Ex. Posséder un relais de diligences…" />
-          </label>
-        </div>
+        <label>
+          Nom
+          <span className="input-dice">
+            <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
+            <button
+              type="button"
+              className="btn small"
+              title="Nom aléatoire (race et sexe du personnage)"
+              onClick={() => {
+                const n = generateName(sp.label, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
+                if (n) setD({ ...d, name: n });
+              }}
+            >
+              🎲
+            </button>
+          </span>
+        </label>
+        <BackgroundFields
+          values={{ motivation: d.motivation, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }}
+          onChange={(patch) => setD({ ...d, ...patch })}
+        />
       </Section>
       <Section title="Apparence">
         <AppearancePanel

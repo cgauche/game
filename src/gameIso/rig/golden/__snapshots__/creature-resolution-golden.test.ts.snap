@@ -609,16 +609,16 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "humain",
   },
   "Esclave": {
-    "def": "Skaven",
+    "def": "Esclave skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "skaven",
+    "species": "esclave-skaven",
   },
   "Esclave Faible": {
-    "def": "Skaven",
+    "def": "Esclave skaven",
     "plan": "biped",
     "scale": 1,
-    "species": "skaven",
+    "species": "esclave-skaven",
   },
   "Escroc": {
     "def": null,
@@ -1023,16 +1023,16 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "horreur-bleue",
   },
   "Horreur des Profondeurs": {
-    "def": "Horreur rose",
-    "plan": "biped",
-    "scale": 1.15,
-    "species": "horreur-rose",
+    "def": "Rat géant",
+    "plan": "quadruped",
+    "scale": 0.62,
+    "species": "rat-geant",
   },
   "Horreur du Clan Moulder": {
-    "def": "Horreur rose",
+    "def": "Rat ogre",
     "plan": "biped",
-    "scale": 1.15,
-    "species": "horreur-rose",
+    "scale": 1,
+    "species": "rat-ogre",
   },
   "Horreur rose": {
     "def": "Horreur rose",
@@ -1305,10 +1305,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "troll",
   },
   "Jeune Ungor": {
-    "def": "Homme-bête",
+    "def": "Ungor",
     "plan": "biped",
     "scale": 1,
-    "species": "homme-bete",
+    "species": "ungor",
   },
   "Jeune Villageois": {
     "def": null,
@@ -2313,10 +2313,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "ungor",
   },
   "Ungor Adulte": {
-    "def": "Homme-bête",
+    "def": "Ungor",
     "plan": "biped",
     "scale": 1,
-    "species": "homme-bete",
+    "species": "ungor",
   },
   "Vampire": {
     "def": "Vampire",

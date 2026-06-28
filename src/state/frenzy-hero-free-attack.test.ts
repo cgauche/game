@@ -1,14 +1,14 @@
 /**
  * Attaque GRATUITE de Frénésie d'un HÉROS en Auto-combat (retour playtest 2026-06-27 : « un héros en
- * frénésie n'utilise pas son attaque gratuite »). `aiFrenzyAttack` était gardé `kind==='enemy'` → un héros
+ * frénésie n'utilise pas son attaque gratuite »). `aiAvailableFreeAttack` était gardé `kind==='enemy'` → un héros
  * AUTO-piloté (sans UI) ne la jouait jamais. Gate corrigé en `!aiDriven` : enemy + héros auto la jouent ;
- * un héros MANUEL la déclenche lui-même via l'affordance UI (donc `aiFrenzyAttack` reste un no-op pour lui).
+ * un héros MANUEL la déclenche lui-même via l'affordance UI (donc `aiAvailableFreeAttack` reste un no-op pour lui).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { makeShowcaseParty } from '../data/pregens';
 import { ambushTest } from '../scenes/ambush-test';
-import { aiFrenzyAttack } from './combatFlow';
+import { aiAvailableFreeAttack } from './combatFlow';
 import { hasFreeWeaponAttack } from './combatManeuvers';
 import { setRule } from '../engine/policy';
 
@@ -37,20 +37,20 @@ describe('Frénésie — attaque gratuite d’un héros (Auto-combat)', () => {
     expect(hasFreeWeaponAttack(hero)).toBe(true);
   });
 
-  it('AUTO : aiFrenzyAttack FRAPPE (le journal s’enrichit) ; MANUEL : no-op (l’UI gère)', () => {
+  it('AUTO : aiAvailableFreeAttack FRAPPE (le journal s’enrichit) ; MANUEL : no-op (l’UI gère)', () => {
     const { heroId } = frenziedHeroAdjacentToFoe();
     const hero = () => useGame.getState().battle!.combatants.find((c) => c.id === heroId)!;
 
-    // MANUEL : aiDriven faux → aiFrenzyAttack ne fait RIEN (le héros la jouera via l'affordance UI)
+    // MANUEL : aiDriven faux → aiAvailableFreeAttack ne fait RIEN (le héros la jouera via l'affordance UI)
     setRule('combat-cadence', 'manuel');
     const logManuel = useGame.getState().battle!.log.length;
-    aiFrenzyAttack(useGame.getState, useGame.setState, hero());
+    aiAvailableFreeAttack(useGame.getState, useGame.setState, hero());
     expect(useGame.getState().battle!.log.length).toBe(logManuel); // no-op
 
     // AUTO : aiDriven vrai → l'attaque gratuite est résolue (jet d'attaque journalisé)
     setRule('combat-cadence', 'auto');
     const logAuto = useGame.getState().battle!.log.length;
-    aiFrenzyAttack(useGame.getState, useGame.setState, hero());
+    aiAvailableFreeAttack(useGame.getState, useGame.setState, hero());
     expect(useGame.getState().battle!.log.length).toBeGreaterThan(logAuto); // a frappé
   });
 });
