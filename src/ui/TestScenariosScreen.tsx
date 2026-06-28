@@ -10,22 +10,18 @@ const SECTIONS: ScenarioCategory[] = [
   '🧭 Survie',
   '🛒 Marché',
   '🗺️ Scénarios complets',
+  '⛵ Naval',
   '🖼️ Rendu',
 ];
-const FALLBACK = 'Divers';
-
 /** Regroupe les scénarios (déjà triés par `order`) par section, dans l'ordre de `SECTIONS`. */
-function groupBySection(list: TestScenario[]): { label: string; items: TestScenario[] }[] {
-  const byCat = new Map<string, TestScenario[]>();
+function groupBySection(list: TestScenario[]): { label: ScenarioCategory; items: TestScenario[] }[] {
+  const byCat = new Map<ScenarioCategory, TestScenario[]>();
   for (const sc of list) {
-    const cat = sc.category ?? FALLBACK;
-    const bucket = byCat.get(cat) ?? [];
+    const bucket = byCat.get(sc.category) ?? [];
     bucket.push(sc);
-    byCat.set(cat, bucket);
+    byCat.set(sc.category, bucket);
   }
-  return [...SECTIONS, FALLBACK]
-    .filter((c) => byCat.has(c))
-    .map((c) => ({ label: c, items: byCat.get(c)! }));
+  return SECTIONS.filter((c) => byCat.has(c)).map((c) => ({ label: c, items: byCat.get(c)! }));
 }
 
 /** Sous-écran « Scénarios de test » : chaque scénario fixe un groupe et une scène adaptée. */

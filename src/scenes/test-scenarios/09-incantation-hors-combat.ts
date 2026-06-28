@@ -23,6 +23,7 @@ scene.startMessage =
 export const scenario: TestScenario = {
   id: 'magie-hors-combat',
   order: 9,
+  category: '✨ Magie',
   icon: '🔮',
   title: 'Magie hors combat',
   tests: 'Incantation HORS COMBAT depuis la fiche : soin/bénédiction (Prêtre), Focalisation + Sort d’Arcane (Sorcier), refus des Projectiles magiques.',

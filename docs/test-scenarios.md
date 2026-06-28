@@ -22,14 +22,16 @@ const scene = arena({ id: 'test-xxx', nom: '…', heroStart: { x: 2, y: 4 } });
 scene.encounters = [{ id: 'enc-xxx', enemies: [{ ref: 'Gobelin', pos: { x: 9, y: 4 } }] }];
 
 export const scenario: TestScenario = {
-  id: 'xxx', order: 7, icon: '🧪', title: '…',
+  id: 'xxx', order: 7, category: '⚔️ Combat', icon: '🧪', title: '…',
   tests: 'ce que ça vérifie', partyNote: 'le groupe',
   makeParty: () => [/* … */], scene, autoCombat: 'enc-xxx',
 };
 ```
 
-`index.ts` le ramasse via `import.meta.glob` (tri par `order`) — **aucun import manuel**. Les
-`*.test.ts` et les fichiers `_*` sont exclus du glob.
+`index.ts` le ramasse via le **registre généré** (`scripts/gen-registry.mjs` → `_registry.generated.ts`,
+auto en dev ; après ajout/suppression d'un fichier, lance `npm run gen`). Les scénarios sont triés par
+`order`, puis **groupés par `category`** en sections dans le menu (`TestScenariosScreen`). Les `*.test.ts`
+et les fichiers `_*` sont exclus.
 
 ## Conventions
 
@@ -41,18 +43,25 @@ export const scenario: TestScenario = {
   `M 0`, beaucoup de Blessures).
 - Le moteur reste couvert par Vitest ; les scénarios sont des fixtures de vérif manuelle/visuelle.
 
-## Catalogue actuel
+## Catalogue actuel (12 scénarios, par section)
 
-| Scénario | Vérifie |
-|---|---|
-| 🏹 Tir & Rechargement | tir + munition + modale de rechargement (Test étendu de Projectiles) |
-| 🩸 L'Embuscade | exploration → dialogue → combat (5 mutants, ch.2) |
-| 💀 Critiques & Mort | overkill/double → Critique ; 0 PB → À Terre → Inconscient → mort |
-| 🍀 Destin / Résilience | coup létal → sauvetage par le Destin ; réussite garantie |
-| ⚔️ Engagé / Charge / Désengagement | charge, Engagement, désengagement |
-| ✨ Magie | incantation (NI/DR/Maladresse), Focalisation, Bénédictions |
-| 🖼️ Galerie de modèles | tous les modèles : 58 créatures + **toutes les carrières** + **toutes les armes** + mutants (énumérés depuis la data), **exploration sans combat** |
-| 🧭 Voyage & Nourriture | carte du monde (3 lieux), voyage à pied/diligence (temps, rations, marche forcée), faim RAW, péripéties (embuscade → interruption + reprise), repas d'auberge (`mealParty`) |
+Chaque scénario est volontairement DENSE : il exerce une famille de systèmes liés plutôt qu'une seule
+mécanique (un terrain bien agencé, des mannequins bien placés).
+
+| Section | Scénario | Vérifie |
+|---|---|---|
+| ⚔️ Combat | 🎯 Terrain d'entraînement | sandbox : tir/rechargement, ciblage & LdV (muret), brouillard/vision (lanterne/vision nocturne/Lumière), Engagé/charge/désengagement & deux armes, forme d'arme, combat monté, Explosion en zone |
+| ⚔️ Combat | 🩸 L'Embuscade | combat complet exploration → dialogue → 5 mutants ; y surviennent Critiques & mort (héros fragile), sauvetage par le Destin/Résilience, Action Soigner |
+| ✨ Magie | ✨ Magie en combat | concile (toutes familles) + duel de lanceurs (casters 2 camps, Contre-sort/dissipation) + Jalon 2 (Péché/Colère, Corruption, ZdE, mémorisation) |
+| ✨ Magie | 🔮 Magie hors combat | incantation depuis la fiche : soin/bénédiction, Focalisation + Sort d'Arcane, refus des Projectiles |
+| 🐲 Créatures | 🐲 Bestiaire, traits & états | ménagerie : traits (Éthéré/Démoniaque/Régénération/Toile…), états + purge Shallya, Énorme/Piétinement, statblocs d'auteur, 19 mutations sur les héros |
+| 🧭 Survie | 🧭 Voyage & temps long | carte du monde, voyage à pied/diligence, postes d'Étapes (EDOC), haltes de nuit (récupération/faim/maladie/cauchemars), interlude d'Activités à l'arrivée |
+| 🛒 Marché | 🛒 Marché & équipement | Acheter/Vendre/Marchander/Évaluer/Réparer, 2 archétypes (armurier + herboriste via dialogue), écran d'EMPLACEMENTS (couches d'armure, sets d'armes) |
+| 🗺️ Scénarios complets | 🎭 Opéra | théâtre Staatsoper multi-niveaux ; bombe à minuterie (désamorçage Poudre noire), pétards/Glimbrin, étudiants saboteurs, dialogue gaté de la Comtesse |
+| 🗺️ Scénarios complets | 🪤 Le Caveau piégé | vitrine Flow+Condition : interactions (levier/clé → flags), condition composée, dalle piégée (Test à branches) |
+| 🗺️ Scénarios complets | 🏟️ Arène — le Bourg | campagne vitrine complète (Bourg, 13 zones, contrats, carte du monde, marchands, fouilles) |
+| ⛵ Naval | ⛵ Combat naval | postes d'artillerie servis (MDG), navire-Combattant à PV + Blindage, Critiques de NAVIRE, équipage lié, abordage (échelle éditable pour la vue mer ouverte) |
+| 🖼️ Rendu | 🖼️ Galerie de modèles | tous les modèles : créatures + toutes les carrières + toutes les armes + mutants (énumérés depuis la data), exploration sans combat |
 
 Un scénario peut embarquer **plusieurs scènes** (`extraScenes`) et une **carte du monde** (`worldMap`) :
 il est alors chargé comme un projet (`loadProject`).

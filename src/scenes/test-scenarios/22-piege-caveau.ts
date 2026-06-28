@@ -90,6 +90,7 @@ scene.triggers.push(
 export const scenario: TestScenario = {
   id: 'piege-caveau',
   order: 22,
+  category: '🗺️ Scénarios complets',
   icon: '🪤',
   title: 'Le Caveau piégé',
   tests: 'Vitrine Flow+Condition : interactions (levier/clé → flags), condition composée (clé OU levier) ET NON alarme pour la herse, dalle piégée = Test d’Athlétisme à branches (esquive / piques + À Terre + alarme).',

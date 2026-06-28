@@ -8,7 +8,7 @@ import { seedBattleRng } from '../../state/battleRng';
 import type { BattleState } from '../../state/store';
 import type { Combatant } from '../../engine/types';
 
-const scen = testScenarios.find((s) => s.id === 'bataille-navale')!;
+const scen = testScenarios.find((s) => s.id === 'combat-naval')!;
 
 /** Reconstruit le roster d'entités du scénario (ids déterministes `enemy-enc-naval-<i>` — cogue, pirates
  *  ET la barge AMIE), exactement comme `combatSlice` au démarrage : on transmet `crewIds` ET `postes`. */

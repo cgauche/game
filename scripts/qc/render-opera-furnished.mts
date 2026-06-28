@@ -14,7 +14,7 @@ import { propSvg } from '../../src/gameIso/catalog/decor';
 import { DEFS } from '../../src/gameIso/sprites';
 import { stageSize, floorDepth, tileCenter, depth, type Dims } from '../../src/gameIso/iso';
 import { decorFootGeometry } from '../../src/state/footprint';
-import { scenarioEntities } from '../../src/scenes/test-scenarios/22-opera-plan';
+import { scenarioEntities } from '../../src/scenes/opera/furnished';
 import type { SceneEntity } from '../../src/state/scene';
 
 const scene = buildOperaFloorplan();

@@ -249,7 +249,7 @@ export function buildApi() {
       return hoverTargeting(() => useGame.getState(), active, target);
     },
 
-    /** Lance un SCÉNARIO DE TEST sans passer par le menu : __wfrp.scenario('ciblage', 42).
+    /** Lance un SCÉNARIO DE TEST sans passer par le menu : __wfrp.scenario('entrainement', 42).
      *  Sans argument : liste les ids. `seed` (optionnel) rend l'initiative DÉTERMINISTE. Le combat
      *  démarre PRÊT (la pause d'ouverture du Round 1 est acquittée). */
     scenario: (id?: string, seed?: number) => {

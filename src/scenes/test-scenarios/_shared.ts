@@ -20,13 +20,14 @@ export type ScenarioCategory =
   | '🧭 Survie'
   | '🛒 Marché'
   | '🗺️ Scénarios complets'
+  | '⛵ Naval'
   | '🖼️ Rendu';
 
 /** Un scénario de test = un groupe fixé + une scène adaptée (+ combat direct optionnel). */
 export interface TestScenario {
   id: string;
   order: number; // tri d'affichage dans la section
-  category?: ScenarioCategory; // section du menu (non taguée → « Divers » pendant la migration)
+  category: ScenarioCategory; // section du menu
   icon: string; // emoji de carte
   title: string;
   tests: string; // une ligne : « ce que ça vérifie »

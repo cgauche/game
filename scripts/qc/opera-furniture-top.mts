@@ -8,7 +8,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
-import { scenarioEntities } from '../../src/scenes/test-scenarios/22-opera-plan';
+import { scenarioEntities } from '../../src/scenes/opera/furnished';
 
 const scene = buildOperaFloorplan();
 const W = scene.dimensions.w, H = scene.dimensions.h;

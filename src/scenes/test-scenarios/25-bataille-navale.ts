@@ -69,11 +69,17 @@ setEncounters(scene, [
 ]);
 
 export const scenario: TestScenario = {
-  id: 'bataille-navale',
+  id: 'combat-naval',
   order: 25,
+  category: '⛵ Naval',
   icon: '⛵',
-  title: 'Bataille navale',
-  tests: 'Postes d’artillerie SERVIS (MDG ch.12-13) : 2 héros servent les pierriers de leur barge (« Servir un poste », arc de bordée) au lieu de les porter en inventaire ; navire-Combattant à PV avec Amélioration d’instance « Blindage (fer) » (+2 PA de coque, MDG ch.12) ; Coup Critique → tables de NAVIRE (États Voie d’eau / En flammes) ; équipage lié (crewIds) → Éclats / critique « Équipage » sur de vrais marins.',
+  title: 'Combat naval',
+  tests:
+    'Postes d’artillerie SERVIS (MDG ch.12-13) : 2 héros servent les pierriers de leur barge (« Servir un ' +
+    'poste », arc de bordée) au lieu de les porter en inventaire ; navire-Combattant à PV avec Amélioration ' +
+    'd’instance « Blindage (fer) » (+2 PA de coque) ; Coup Critique → tables de NAVIRE (Voie d’eau / En flammes) ; ' +
+    'équipage lié (crewIds) → Éclats / critique « Équipage » sur de vrais marins ; le Tueur + le Sorcier abordent. ' +
+    'L’échelle de la scène (metresPerTile) est éditable : à 10 m/case, vue « mer ouverte » où chaque navire occupe sa Taille.',
   partyNote: 'Groupe d’arène ; le Soldat + le Chasseur servent les pierriers, le Tueur + le Sorcier abordent',
   makeParty: makeNavalParty,
   scene,

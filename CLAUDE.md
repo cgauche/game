@@ -141,7 +141,7 @@ jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**. Depuis
 - `__wfrp.talk('id')` → téléporte le groupe à côté de l'entité et l'**interpelle** (ouvre dialogue/marchand).
 - `__wfrp.goto('id'|{x,y})` → place le groupe sur la case (déclenche portes/triggers au pas).
 - `__wfrp.screen('menu'|'party'|…)` → navigue ; `__wfrp.store` = store Zustand brut (`getState`/`setState`).
-- `__wfrp.scenario('ciblage', seed?)` → **lance un scénario de test prêt à jouer** (sans menu, pause de Round 1
+- `__wfrp.scenario('entrainement', seed?)` → **lance un scénario de test prêt à jouer** (sans menu, pause de Round 1
   acquittée, initiative déterministe si `seed`) ; sans argument : liste les ids.
 - `__wfrp.hover('id'|{x,y}|null)` → **survol programmatique** en combat (tooltip + réticule de visée se rendent
   sans souris) ; `__wfrp.aim('id')` → vérité state du ciblage (ok/invalid + raison, compétence, dégâts).

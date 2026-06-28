@@ -4,7 +4,7 @@
  * ni hors de la grille. Liste les anomalies. Exit 0 si propre.  npx tsx scripts/qc/opera-furniture-check.mts
  */
 import { buildOperaFloorplan, parterreSeatCells } from '../../src/scenes/opera/floorplan';
-import { scenarioEntities } from '../../src/scenes/test-scenarios/22-opera-plan';
+import { scenarioEntities } from '../../src/scenes/opera/furnished';
 import { tileAt } from '../../src/state/scene';
 import { terrainWalkable } from '../../src/state/terrain';
 

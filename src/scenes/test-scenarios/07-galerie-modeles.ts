@@ -99,6 +99,7 @@ scene.entities = [...scene.entities, ...ents]; // conserve le heroStart d'arena
 export const scenario: TestScenario = {
   id: 'galerie-modeles',
   order: 7,
+  category: '🖼️ Rendu',
   icon: '🖼️',
   title: 'Galerie de modèles',
   tests: `Tous les modèles de l’IsoStage : ${creatures.length} créatures (empreintes par Taille) + TOUTES les carrières (${careers.length}) + TOUTES les armes (${weapons.length}) + mutants + démo Monstrueuse. Exploration, SANS combat.`,

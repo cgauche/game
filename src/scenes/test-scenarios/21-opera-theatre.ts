@@ -279,11 +279,16 @@ const scene: Scene = {
 };
 
 export const scenario: TestScenario = {
-  id: 'opera-theatre',
+  id: 'opera',
   order: 21,
+  category: '🗺️ Scénarios complets',
   icon: '🎭',
-  title: 'Opéra — Théâtre',
-  tests: 'Plan du Théâtre Staatsoper reproduit en ASCII (source 08 l.28-41) : coulisses+scène+parterre+hall+vestibule (z0), escaliers jumeaux → galerie+loges+loge royale & antichambre (z1) ; intrigues bombe + pétards/Glimbrin + étudiants.',
+  title: 'Opéra',
+  tests:
+    'Théâtre Staatsoper multi-niveaux en ASCII (coulisses/scène/parterre/hall z0, escaliers jumeaux → ' +
+    'galerie/loges/loge royale z1). Intrigues authorées : BOMBE à minuterie de la loge royale (delayedEffect ' +
+    '→ zoneBlast, désamorçage facilité par la Poudre noire, cancelFlag), pétards + vol des clés par Glimbrin ' +
+    '(Test caché à deux issues), étudiants saboteurs (combat optionnel), dialogue gaté de la Comtesse, PX canoniques.',
   partyNote: 'Pré-tirés',
   makeParty: () => makePregens(),
   scene,
