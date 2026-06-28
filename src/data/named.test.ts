@@ -23,7 +23,7 @@ describe('isNamed — source UNIQUE de la nommé-ité (jamais via `title`)', () 
   });
 });
 
-/** Garde de DONNÉE : les 25 individus nommés validés contre le RAW (desc verbatim singulier = individu)
+/** Garde de DONNÉE : les 30 individus nommés validés contre le RAW (desc verbatim singulier = individu)
  *  portent `named:true`, et rien d'autre. Les ex-« douteux » (sous-espèces/templates ZI décrits au
  *  PLURIEL) restent génériques — régression à garder si on retouche le backfill. */
 describe('creatures.json — backfill `named`', () => {
@@ -36,18 +36,20 @@ describe('creatures.json — backfill `named`', () => {
     'le-dechiqueteur-de-cadavres', 'la-bete-de-l-oblast', 'il-potente-granchio',
     'le-fantasma', 'prototype-du-clan-skryre', 'babrakkos',
     'gnawretch-skrray', 'kanker-flett', 'maitre-moulder-skree',
+    'wolfgard-hohmann', 'wereburga-krotpreffer', 'moritz-valgeir',
+    'stefan-hochen', 'marta-gerbenshreiber',
   ];
   const GENERIC_IDS = [
     'brochet-du-stir', 'heomreth-hibou-geant', 'peau-de-loup', 'tregara',
     'experience-unique-du-clan-moulder', 'mangeuse-d-hommes-de-la-drakwald-araignee-geante',
   ];
 
-  it('les 25 nommés validés portent named:true (ids résolus)', () => {
+  it('les 30 nommés validés portent named:true (ids résolus)', () => {
     const bad = NAMED_IDS.filter((id) => { const c = findCreatureById(id); return !c || !isNamed(c); });
     expect(bad).toEqual([]);
   });
-  it('exactement 25 nommés dans la base (zéro générique flaggé)', () => {
-    expect(creatures.filter(isNamed).length).toBe(25);
+  it('exactement 30 nommés dans la base (zéro générique flaggé)', () => {
+    expect(creatures.filter(isNamed).length).toBe(30);
   });
   it('les ex-douteux (sous-espèces/templates au pluriel) restent génériques', () => {
     const bad = GENERIC_IDS.filter((id) => { const c = findCreatureById(id); return !c || isNamed(c); });
