@@ -6,7 +6,7 @@ import { applyOps } from './ops';
 import { endOfRound } from './conditions';
 import { runSpellFlowLines } from '../state/combatEffects';
 import type { Combatant, ItemInstance, Weapon } from './types';
-import type { TriggeredEffect, Flow } from '../state/flow';
+import type { TriggeredEffect, Flow } from './flowCore';
 
 /** Construit un `TriggeredEffect` onHit→victim portant `ops` (forme unifiée des onHit d'arme). */
 const onHitFlow = (ops: unknown[]): TriggeredEffect =>
@@ -36,7 +36,7 @@ const weaponItem = (uid: string, name: string, damage: string): ItemInstance =>
 
 /** Combattant tenant une arme dans son set actif (l'op enchante l'arme TENUE). */
 const wielder = (item: ItemInstance, p: Partial<Combatant> = {}): Combatant => {
-  const c = dummy({ items: [item], loadouts: [{ id: 'lo', name: 'Set I', main: item.uid }], activeLoadoutId: 'lo', ...p });
+  const c = dummy({ items: [item], loadouts: [{ id: 'lo', main: item.uid }], activeLoadoutId: 'lo', ...p });
   recomputeLoadout(c);
   return c;
 };

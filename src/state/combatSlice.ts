@@ -38,7 +38,7 @@ import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
-import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive, mannedPosteWeapon } from '../engine/items';
+import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus } from '../engine/combatFeatures/dispatch';
 import { isConsumable, useConsumable } from '../engine/consumables';
@@ -1334,7 +1334,8 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || active.kind !== 'hero' || active.activeLoadoutId === loadoutId) return;
       loadoutSetActive(active, loadoutId);
       recomputeLoadout(active); // re-dérive les armes actives du combattant
-      const name = active.loadouts?.find((l) => l.id === loadoutId)?.name ?? 'set';
+      const lo = active.loadouts?.find((l) => l.id === loadoutId);
+      const name = lo ? loadoutLabel(lo, active) : 'set';
       set({ battle: { ...battle, loadoutSwapped: true, log: [...battle.log, ev('detail', t('cs.draw', { name: active.name, weapon: name }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },

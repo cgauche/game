@@ -10,8 +10,15 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { WEAPON_DEFS } from '../src/gameIso/rig/parts/weapons/_registry.generated';
+import type { PartArt } from '../src/gameIso/rig/parts/types';
 
 const WRITE = process.argv.includes('--write');
+
+/** SVG d'un art : la string, ou toutes les vues d'un art directionnel concaténées (extraction couleur). */
+const artText = (a: PartArt): string => (typeof a === 'string' ? a : [a.front, a.back, a.profile].filter(Boolean).join('\n'));
+/** Applique une réécriture string→string en préservant la FORME de l'art (string ↔ vues directionnelles). */
+const mapArt = (a: PartArt, fn: (s: string) => string): PartArt =>
+  typeof a === 'string' ? fn(a) : { front: fn(a.front), ...(a.back ? { back: fn(a.back) } : {}), ...(a.profile ? { profile: fn(a.profile) } : {}) };
 
 // ── HSL ──────────────────────────────────────────────────────────────────────
 function hsl(hex: string): { h: number; s: number; l: number } {
@@ -54,9 +61,10 @@ const report: string[] = [];
 for (const d of WEAPON_DEFS) {
   if (d.palette) { totDefs++; continue; } // déjà tokenisé → idempotent (ne re-tokenise que les defs neufs/regénérés)
   // couleurs présentes (hex + dégradés) avec fréquence
+  const svg = artText(d.art);
   const colors = new Map<string, number>();
-  for (const m of d.art.matchAll(/#[0-9a-fA-F]{6}\b/g)) colors.set(m[0].toLowerCase(), (colors.get(m[0].toLowerCase()) ?? 0) + 1);
-  for (const m of d.art.matchAll(/url\(#[\w]+\)/g)) colors.set(m[0], (colors.get(m[0]) ?? 0) + 1);
+  for (const m of svg.matchAll(/#[0-9a-fA-F]{6}\b/g)) colors.set(m[0].toLowerCase(), (colors.get(m[0].toLowerCase()) ?? 0) + 1);
+  for (const m of svg.matchAll(/url\(#[\w]+\)/g)) colors.set(m[0], (colors.get(m[0]) ?? 0) + 1);
 
   // groupe par famille (lightness via l'hex effectif : mid réel pour un dégradé)
   const byFam: Record<'metal' | 'cuir' | 'accent', Array<{ color: string; l: number; n: number }>> = { metal: [], cuir: [], accent: [] };
@@ -87,10 +95,12 @@ for (const d of WEAPON_DEFS) {
     for (const [token, r] of Object.entries(repr)) palette[token] = r.hex;
   }
 
-  // réécrit l'art (insensible à la casse pour les hex)
+  // réécrit l'art (insensible à la casse pour les hex), forme préservée (string ↔ vues)
   let replaced = 0, kept = 0;
-  let art = d.art.replace(/url\(#[\w]+\)/g, (m) => { const t = color2token.get(m); if (t) { replaced++; return t; } kept++; return m; });
-  art = art.replace(/#[0-9a-fA-F]{6}\b/g, (m) => { const t = color2token.get(m.toLowerCase()); if (t) { replaced++; return t; } kept++; return m; });
+  const rewrite = (s: string) =>
+    s.replace(/url\(#[\w]+\)/g, (m) => { const t = color2token.get(m); if (t) { replaced++; return t; } kept++; return m; })
+     .replace(/#[0-9a-fA-F]{6}\b/g, (m) => { const t = color2token.get(m.toLowerCase()); if (t) { replaced++; return t; } kept++; return m; });
+  const art = mapArt(d.art, rewrite);
   totReplaced += replaced; totKept += kept; totDefs++;
 
   report.push(`${d.slug.padEnd(18)} tokens=${Object.keys(palette).length}  remplacés=${replaced}  gardés=${kept}  pal={${Object.entries(palette).map(([k, v]) => k + ':' + v).join(' ')}}`);

@@ -7,7 +7,7 @@ import { conjureFormOptions } from './conjuredWeapons';
 import { runSpellFlowLines } from '../state/combatEffects';
 import { bonus } from './characteristics';
 import type { Combatant } from './types';
-import type { TriggeredEffect } from '../state/flow';
+import type { TriggeredEffect } from './flowCore';
 
 /** `TriggeredEffect` onHit→victim portant `ops` (forme unifiée des onHit d'arme invoquée/enchantée). */
 const onHitFlow = (ops: unknown[]): TriggeredEffect =>
@@ -61,13 +61,14 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
     const c = mage();
     applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 1 });
-    const conjuredSet = (c.loadouts ?? []).find((l) => l.name === 'Arme invoquée');
+    const conjuredUid = c.items?.find((it) => it.conjured)?.uid; // le SET dédié tient l'arme invoquée
+    const conjuredSet = (c.loadouts ?? []).find((l) => l.main === conjuredUid);
     expect(conjuredSet).toBeTruthy(); // SET dédié créé…
     expect(c.activeLoadoutId).toBe(conjuredSet!.id); // …et actif
     expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(true);
     endOfRound(c); // 1 Round → expire
     expect(c.items?.some((it) => it.conjured)).toBeFalsy(); // objet retiré
-    expect((c.loadouts ?? []).some((l) => l.name === 'Arme invoquée')).toBe(false); // set retiré
+    expect((c.loadouts ?? []).some((l) => l.id === conjuredSet!.id)).toBe(false); // set retiré
     expect(c.activeLoadoutId).not.toBe(conjuredSet!.id); // set d'origine réactivé
     expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(false);
   });

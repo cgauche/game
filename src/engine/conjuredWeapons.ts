@@ -24,7 +24,7 @@ export function equipConjuredWeapon(c: Combatant, item: ItemInstance): ConjuredS
   ensureDefaultLoadout(c); // sets réels présents → restoreLoadoutId pointe un vrai set
   const restoreLoadoutId = c.activeLoadoutId;
   const loadoutId = newLoadoutId();
-  c.loadouts = [...(c.loadouts ?? []), { id: loadoutId, name: 'Arme invoquée', main: item.uid }];
+  c.loadouts = [...(c.loadouts ?? []), { id: loadoutId, main: item.uid }];
   c.activeLoadoutId = loadoutId;
   recomputeLoadout(c);
   return { itemUid: item.uid, loadoutId, ...(restoreLoadoutId ? { restoreLoadoutId } : {}) };
