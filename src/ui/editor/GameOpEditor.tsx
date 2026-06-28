@@ -74,6 +74,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
 
   grantTrait: '🐾 Accorder un Trait',
   grantPsychTrait: '🧠 Accorder un Trait psychologique',
+  removePsychTrait: '🧠 Retirer un Trait psychologique',
   grantTalent: '🐾 Accorder un Talent',
   grantCareerSkill: '🎓 Compétence ajoutée aux carrières',
   grantCareerTalent: '🎓 Talent ajouté aux carrières',
@@ -98,6 +99,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   zone: '🌐 Zone persistante (mur / disque)',
   polymorph: '🦌 Métamorphose en créature',
   lifeSteal: '🩸 Vol de vie (drain de Blessures)',
+  light: '💡 Émettre de la lumière (rayon)',
   skillMod: '🎯 Modif. d’une Compétence',
   moveScale: '🦵 Échelle de Mouvement (×n/d)',
   moveMod: '🦵 Modif. de Mouvement (±N)',
@@ -120,11 +122,11 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'grantTalent', 'augmentWeapon']],
+  ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
   ['🪄 Projection & téléportation', ['push', 'teleport', 'chain']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
-  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn', 'removeShipPoste']],
+  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn', 'removeShipPoste', 'light']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
@@ -249,6 +251,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
     case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: 'frenesie' };
+    case 'removePsychTrait': return { op: 'removePsychTrait' };
     case 'grantTalent': return { op: 'grantTalent', talentId: 'sang-froid' };
     case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: 'metier', spec: 'Au choix' };
     case 'grantCareerTalent': return { op: 'grantCareerTalent', talentId: 'frenesie' };
@@ -275,6 +278,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'chain': return { op: 'chain', maxBounces: { bonusOf: 'FM' }, hopMeters: { bonusOf: 'FM' } };
     case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
+    case 'light': return { op: 'light', radiusTiles: 5 };
     case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
