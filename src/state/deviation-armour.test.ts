@@ -46,8 +46,10 @@ function setBattle(combatants: Combatant[]): BattleState {
 }
 
 const critWeapon: Weapon = { name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+// `critLocation: 'corps'` FIGE la localisation re-tirée du Coup Critique (LDB 18 l.55, #80) sur la zone
+// armurée du fixture → la Déviation (#43.2) y sacrifie le PA de façon déterministe.
 const critRes = (): AttackResult => ({
-  hit: true, attackerRoll: 12, netSL: 4, location: 'corps', damage: 8, woundsLost: 3,
+  hit: true, attackerRoll: 12, netSL: 4, location: 'corps', critLocation: 'corps', damage: 8, woundsLost: 3,
   critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
 });
 

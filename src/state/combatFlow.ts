@@ -1287,6 +1287,10 @@ export function applyAttackResult(
   const dloc = res.location ?? 'corps';
   // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
+  // NB (#43.2 × #80) : l'éligibilité se teste ici sur la localisation de TOUCHE (`dloc`), tandis que #80
+  // re-tire la localisation du Critique et `deviateArmour` y sacrifie le PA. Les deux coïncident sauf
+  // armure PARTIELLE + re-tirage hors zone armée (cas rare) → offre alors une Déviation no-op. À trancher
+  // côté #80 si l'on veut gater sur la localisation re-tirée (cf. note de fusion).
   if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero' && deviatableArmourAt(target, dloc) > 0) {
     // Pré-tire le Coup Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.

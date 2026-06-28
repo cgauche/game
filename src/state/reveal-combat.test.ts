@@ -70,7 +70,7 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     const devId = `cons-deviation-${hero.id}`;
     const res = {
       hit: true, attackerRoll: 33, netSL: 2, critical: true, advantageTo: 'attacker',
-      defenderDefeated: false, woundsLost: 3, location: 'corps', log: 'touche !',
+      defenderDefeated: false, woundsLost: 3, location: 'corps', critLocation: 'corps', log: 'touche !',
     } as AttackResult;
 
     // (1) Le Critique sur le héros armé SUSPEND, en posant une ÉTAPE DE CHOIX (Critique pré-tiré + options).
