@@ -57891,5 +57891,802 @@
       "species": "halfling",
       "tenue": "artisan"
     }
+  },
+  {
+    "id": "alfric-demi-nez-brisenclume",
+    "label": "Alfric « Demi-nez » Brisenclume",
+    "title": "Receleur (Argent 2)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 3,
+      "CC": 42,
+      "CT": 32,
+      "F": 42,
+      "E": 44,
+      "I": 38,
+      "Ag": 30,
+      "Dex": 36,
+      "Int": 49,
+      "FM": 41,
+      "Soc": 38,
+      "B": 16
+    },
+    "traits": [
+      {
+        "id": "animosite",
+        "arg": "Elfes"
+      },
+      {
+        "id": "arme",
+        "value": 6,
+        "arg": "Dague"
+      },
+      {
+        "id": "haine",
+        "arg": "Peaux-vertes"
+      },
+      {
+        "id": "prejuge",
+        "arg": "Étrangers"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "corps-a-corps",
+        "value": 50,
+        "spec": "Base"
+      },
+      {
+        "id": "evaluation",
+        "value": 64
+      },
+      {
+        "id": "intuition",
+        "value": 44
+      },
+      {
+        "id": "langue",
+        "value": 58,
+        "spec": "Khazalid"
+      },
+      {
+        "id": "marchandage",
+        "value": 45
+      },
+      {
+        "id": "metier",
+        "value": 38,
+        "spec": "Maçon"
+      },
+      {
+        "id": "perception",
+        "value": 55
+      },
+      {
+        "id": "ragot",
+        "value": 68
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 51
+      },
+      {
+        "id": "signes-secrets",
+        "value": 52,
+        "spec": "Voleur"
+      }
+    ],
+    "talents": [
+      {
+        "id": "costaud"
+      },
+      {
+        "id": "criminel"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "negociateur"
+      },
+      {
+        "id": "resistance-a-la-magie"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Criminels"
+      },
+      {
+        "id": "sociable"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "necessaire-d-ecriture"
+      }
+    ],
+    "spells": [],
+    "desc": "Comme son nom l'indique, Alfric a perdu une grande partie de son nez. Personne ne sait comment c'est arrivé, et Alfric se garde bien d'en parler. Alfric est un maître chanteur et un informateur de renom, l'un des plus importants de la cité. Il s'attire sagement les faveurs des Petits Rois de Middenheim, notamment en rapportant gratuitement des informations à la fois aux agents de Bleyden et à ceux d'Edam Gouda.\n\nS'il sent que des Personnages de passage ont des histoires intéressantes à raconter, il échange avec eux sur la base d'un *quid pro quo*. Sinon, il vend ses informations entre une et dix pistoles ; plus elles sont juteuses, plus il en demande cher. Il est capable de relayer tout ce qui se sait au sein de la communauté criminelle.\n\nAlfric a passé des accords avec un autre informateur connu uniquement sous le nom de Josef, pour s'assurer soigneusement que ni l'un, ni l'autre ne monopolise le marché. Pour cette raison, Alfric vend des rumeurs sur la pègre de Middenheim, alors que Josef se spécialise dans les ragots sur la haute société. Alfric peut corroborer une information vendue par Josef, mais uniquement si celui-ci a déjà été payé pour la relayer. Josef n'a pas de domicile fixe, mais pour le bon prix, Alfric sait toujours où le trouver.",
+    "source": {
+      "book": "Middenheim",
+      "page": 39
+    },
+    "appearance": {
+      "species": "nain",
+      "tenue": "receleur"
+    }
+  },
+  {
+    "id": "agna-lottrisdottir",
+    "label": "Agna Lottrisdottir",
+    "title": "Émissaire",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 3,
+      "CC": 41,
+      "CT": 28,
+      "F": 33,
+      "E": 40,
+      "I": 32,
+      "Ag": 25,
+      "Dex": 31,
+      "Int": 34,
+      "FM": 52,
+      "Soc": 19,
+      "B": 16
+    },
+    "traits": [
+      {
+        "id": "animosite",
+        "arg": "Elfes"
+      },
+      {
+        "id": "arme",
+        "value": 7,
+        "arg": "Dague"
+      },
+      {
+        "id": "armure",
+        "value": 1,
+        "arg": "Veste de cuir"
+      },
+      {
+        "id": "haine",
+        "arg": "Peaux-vertes"
+      },
+      {
+        "id": "prejuge",
+        "arg": "Ces nains lâches qui rechignent à guerroyer pour restaurer le Royaume éternel"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 29
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 46,
+        "spec": "Base"
+      },
+      {
+        "id": "intuition",
+        "value": 38
+      },
+      {
+        "id": "langue",
+        "value": 59,
+        "spec": "Khazalid"
+      },
+      {
+        "id": "marchandage",
+        "value": 25
+      },
+      {
+        "id": "ragot",
+        "value": 29
+      },
+      {
+        "id": "resistance",
+        "value": 50
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 55
+      }
+    ],
+    "talents": [
+      {
+        "id": "baratiner"
+      },
+      {
+        "id": "determine"
+      },
+      {
+        "id": "impitoyable"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "resistance-a-la-magie"
+      },
+      {
+        "id": "vision-nocturne"
+      },
+      {
+        "id": "voyageur-aguerri"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Agna est un émissaire personnel du Haut Roi des nains, mais son comportement brusque l'a empêchée de se faire une place à la cour de Middenheim au cours des trente dernières années. C'est aujourd'hui une naine malheureuse et sans le sou, que la honte et la peur empêchent de retourner à Karak Kadrin pour faire part de son échec. On la trouve généralement à la taverne des Sous Rutilants, où elle effectue de petits boulots en échange d'une pinte de Bugman XXXXXX.\n\nSi on l'interroge sur son passé, Agna affirme qu'elle est venue à Middenheim pour rassembler des soutiens pour une campagne de reconquête de Karak Khazarak, dans les Monts du Milieu. Cette forteresse a été prise aux nains il y a plusieurs milliers d'années, et depuis elle est dirigée par différents chefs de guerre orcs. Agna reproche aux nains de Middenheim de beaucoup parler de la conquête de la forteresse, sans jamais être prêts à s'y mettre sérieusement.\n\nLorsqu'elle est particulièrement ivre, Agna explique que le Haut Roi prévoit aussi de s'emparer du Fauschlag. Si elle tient de tels propos, les nains qui l'entendent expliquent aux autres personnes présentes que l'alcool lui a fait perdre la tête, et ils l'emmènent rapidement se coucher. Cependant, Agna maintient que le Haut Roi considère la Tour de Grungni comme faisant légitimement partie de son Royaume éternel et qu'il est prêt à affronter quiconque la lui refuserait. Quand elle n'est plus sous l'emprise de la boisson, Agna nie toute connaissance de tels projets.",
+    "source": {
+      "book": "Middenheim",
+      "page": 95
+    },
+    "appearance": {
+      "species": "nain",
+      "tenue": "emissaire"
+    }
+  },
+  {
+    "id": "helmut-beckenbauer",
+    "label": "Helmut Beckenbauer",
+    "title": "Chef de gang (Argent 3)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 53,
+      "CT": 32,
+      "F": 47,
+      "E": 45,
+      "I": 32,
+      "Ag": 33,
+      "Dex": 31,
+      "Int": 40,
+      "FM": 45,
+      "Soc": 53,
+      "B": 16
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 6,
+        "arg": "Coup-de-poing"
+      },
+      {
+        "id": "arme",
+        "value": 6,
+        "arg": "Dague"
+      },
+      {
+        "id": "armure",
+        "value": 2,
+        "arg": "Chemise de mailles"
+      },
+      {
+        "id": "prejuge",
+        "arg": "Ceux qui ne savent pas apprécier un bon match de Middenball"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 59
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 67,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 61,
+        "spec": "Base"
+      },
+      {
+        "id": "discretion",
+        "value": 46,
+        "spec": "Urbaine"
+      },
+      {
+        "id": "evaluation",
+        "value": 50
+      },
+      {
+        "id": "intimidation",
+        "value": 55
+      },
+      {
+        "id": "ragot",
+        "value": 56
+      },
+      {
+        "id": "savoir",
+        "value": 56,
+        "spec": "Local"
+      }
+    ],
+    "talents": [
+      {
+        "id": "combat-deloyal"
+      },
+      {
+        "id": "coup-puissant"
+      },
+      {
+        "id": "criminel"
+      },
+      {
+        "id": "destinee",
+        "spec": "Repos sanglant et os en bouillie"
+      },
+      {
+        "id": "frappe-assommante"
+      },
+      {
+        "id": "menacant"
+      },
+      {
+        "id": "robuste"
+      },
+      {
+        "id": "sans-peur",
+        "spec": "Miliciens"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Criminels"
+      },
+      {
+        "id": "volonte-de-fer"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "« L'Homme » emploie Wolfgang Bandpater, un membre respecté de la Guilde des Marchands, pour diriger ses activités de rançonneur, mais c'est son lieutenant, Helmut Beckenbauer, qui gère les affaires courantes. Les deux hommes sont rarement vus ensemble, et ils communiquent généralement par le biais de messages codés laissés à l'hospice des manouvriers.\n\nOutre ses activités criminelles, Beckenbauer est aussi un grand joueur de Middenball. L'époque où il était le centreavant le plus craint de la cité est révolue depuis longtemps, mais il continue de coacher et de gérer les fameux Frappeurs de la Porte Sud. Cette équipe de manouvriers s'entraîne dans le Grunpark, et elle est aujourd'hui considérée comme l'équipe de Middenball la plus aguerrie de la cité. Leurs rencontres avec les AltquEst de l'Altquartier valent le détour (à condition de savoir se défendre pendant la bagarre qui éclatera inévitablement après le match).",
+    "source": {
+      "book": "Middenheim",
+      "page": 95
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "ranconneur"
+    }
+  },
+  {
+    "id": "walpurga-wurklich",
+    "label": "Walpurga Wurklich",
+    "title": "Agitateur (Bronze 2)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 23,
+      "CT": 25,
+      "F": 25,
+      "E": 36,
+      "I": 40,
+      "Ag": 40,
+      "Dex": 37,
+      "Int": 44,
+      "FM": 46,
+      "Soc": 38,
+      "B": 12
+    },
+    "traits": [
+      {
+        "id": "animosite",
+        "arg": "Menteurs, trompeurs, sophistes"
+      },
+      {
+        "id": "prejuge",
+        "arg": "Acteurs, amateurs de théâtre"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "marchandage",
+        "value": 43
+      },
+      {
+        "id": "ragot",
+        "value": 48
+      },
+      {
+        "id": "savoir",
+        "value": 54,
+        "spec": "Théologie"
+      }
+    ],
+    "talents": [
+      {
+        "id": "destinee",
+        "spec": "Après avoir tenu debout tant que possible, un chancre"
+      },
+      {
+        "id": "ergoteur"
+      },
+      {
+        "id": "ferveur-ardente"
+      },
+      {
+        "id": "orateur"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "symbole-religieux"
+      }
+    ],
+    "spells": [],
+    "desc": "La petite silhouette de Walpurga n'est plus la bienvenue dans la plupart des salles de spectacle de Middenheim. Malgré sa petite taille (elle fait à peine 1,5 m) et sa fine constitution, elle a une voix digne d'une chalemie : fine et intolérablement puissante. Lorsqu'elle hurle directement dans l'oreille de quelqu'un, ce qui arrive assez régulièrement, elle est capable de provoquer des acouphènes.\n\nWalpurga est une adepte pieuse et consciencieuse de Verena, mais depuis quelques années, elle a quelque peu perdu le sens des perspectives. Elle s'est mise en tête de réformer les représentations théâtrales de la cité. Elle n'est pourtant pas scandalisée par la satire ni motivée par la volonté de censurer des pièces scabreuses. Elle admet même que le théâtre peut être utile pour représenter la partie sombre de l'existence et pousser les puissants de ce monde à se remettre en question. Son problème vient du fait qu'elle considère la comédie comme une forme de tromperie, et que toute cette profession serait donc un affront à Verena.\n\nLe culte officiel ne soutient pas la cause de Walpurga, mais il ne la dénonce pas pour autant. Selon le clergé de Verena, une protestation pacifique peut être considérée comme un outil des justes. Cependant, ils expliquent aussi que s'ils devaient se montrer aussi honnêtes que Walpurga l'exige, ils seraient dans l'obligation d'affirmer qu'elle leur fait franchement honte.",
+    "source": {
+      "book": "Middenheim",
+      "page": 100
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "agitateur"
+    }
+  },
+  {
+    "id": "andrea-bruhn",
+    "label": "Andrea Bruhn",
+    "title": "Conseiller municipal (Argent 5)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": 30,
+      "F": 32,
+      "E": 29,
+      "I": 43,
+      "Ag": 51,
+      "Dex": 45,
+      "Int": 52,
+      "FM": 38,
+      "Soc": 51,
+      "B": 10
+    },
+    "traits": [
+      {
+        "id": "prejuge",
+        "arg": "Les artistes qui ne sont pas aussi doués qu'ils le pensent"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 65
+      },
+      {
+        "id": "esquive",
+        "value": 60
+      },
+      {
+        "id": "evaluation",
+        "value": 54
+      },
+      {
+        "id": "intuition",
+        "value": 59
+      },
+      {
+        "id": "marchandage",
+        "value": 65
+      },
+      {
+        "id": "pari",
+        "value": 58
+      },
+      {
+        "id": "perception",
+        "value": 54
+      },
+      {
+        "id": "ragot",
+        "value": 71
+      },
+      {
+        "id": "recherche",
+        "value": 70
+      },
+      {
+        "id": "savoir",
+        "value": 58,
+        "spec": "Loi"
+      },
+      {
+        "id": "savoir",
+        "value": 69,
+        "spec": "Local"
+      },
+      {
+        "id": "subornation",
+        "value": 58
+      }
+    ],
+    "talents": [
+      {
+        "id": "cooperatif"
+      },
+      {
+        "id": "costaud"
+      },
+      {
+        "id": "destinee",
+        "spec": "Porter des rubans te rendra jolie"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "negociateur"
+      },
+      {
+        "id": "orateur"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Serviteur"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Guilde"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Noble"
+      },
+      {
+        "id": "sociable"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Silhouette au regard perçant, Andrea déambule dans Middenheim avec son manteau de cuir noir et un grand chapeau à larges bords. Malgré son physique de répurgateur, Andrea travaille pour la Komission pour les Travaux Publics en tant qu'Officier des Festivités. Il est de sa responsabilité de s'assurer que les événements se déroulent sans incident et de gérer les juges de spectacles, qui arbitrent les spectacles de rue du Carnaval.\n\nAndrea est une personne zélée qui ne prend aucun plaisir à faire son travail. Son indifférence peut être un atout lui permettant de se concentrer sur les détails techniques de la gestion du canalisation, mais les artistes se plaignent souvent de son attitude trop froide.\n\nAndrea ne s'implique pas beaucoup dans les festivals religieux, étant donné que les cultes aiment les organiser sans l'intervention de la Komission, mais elle est responsable du Carnaval, de l'anniversaire du Graf et d'autres célébrations laïques.\n\nEn l'absence de festival, Andrea passe son temps à chercher des talents. Si un artiste venait à approcher la Komission afin d'obtenir un boulot lors d'un festival, elle pourrait accepter de lui accorder une brève audience. Toutefois, si l'artiste ne parvenait pas à l'impressionner, faute de décrocher un travail, il recevrait des critiques sévères, mais néanmoins constructives. Elle visite parfois Talabheim ou Altdorf à la recherche de nouveaux talents.",
+    "source": {
+      "book": "Middenheim",
+      "page": 106
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "conseiller"
+    }
+  },
+  {
+    "id": "jacopo-schmidt",
+    "label": "Jacopo Schmidt",
+    "title": "Souteneur (Argent 1)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 45,
+      "CT": 35,
+      "F": 48,
+      "E": 37,
+      "I": 43,
+      "Ag": 48,
+      "Dex": 47,
+      "Int": 40,
+      "FM": 45,
+      "Soc": 57,
+      "B": 14
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "calme",
+        "value": 51
+      },
+      {
+        "id": "charme",
+        "value": 59
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 52,
+        "spec": "Base"
+      },
+      {
+        "id": "discretion",
+        "value": 49,
+        "spec": "Rurale"
+      },
+      {
+        "id": "discretion",
+        "value": 52,
+        "spec": "Urbaine"
+      },
+      {
+        "id": "escalade",
+        "value": 52
+      },
+      {
+        "id": "intuition",
+        "value": 44
+      },
+      {
+        "id": "pari",
+        "value": 45
+      },
+      {
+        "id": "perception",
+        "value": 53
+      },
+      {
+        "id": "ragot",
+        "value": 55
+      },
+      {
+        "id": "subornation",
+        "value": 55
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 52
+      }
+    ],
+    "talents": [
+      {
+        "id": "baratiner"
+      },
+      {
+        "id": "chat-de-gouttiere"
+      },
+      {
+        "id": "criminel"
+      },
+      {
+        "id": "destinee",
+        "spec": "L'Œil et la vanité de Katya te dépêcheront à ta mort"
+      },
+      {
+        "id": "discret"
+      },
+      {
+        "id": "effraction"
+      },
+      {
+        "id": "infatigable"
+      },
+      {
+        "id": "fuite"
+      },
+      {
+        "id": "sociable"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "On ne voit pas autant de mutants à Middenheim que dans la plupart des autres cités de l'Empire. Cependant, certaines rumeurs indiquent que les enfants difformes peuvent être acceptés au sein des masses grouillantes qui s'entassent à Warrenburg. C'est pourquoi, plutôt que de jeter leur progéniture altérée du haut de la Falaise des Soupirs, certains parents choisissent de rejoindre furtivement Warrenburg. Une fois arrivés, ils y sont accueillis par un homme étrange qui se présente sous le nom de Jacopo Schmidt (très certainement un nom d'emprunt). Jacopo permet aux enfants difformes de survivre en travaillant dans des tavernes délabrées et en délivrant des messages pour lui.\n\nPar contraste avec les pilleurs de poubelles qui habitent le quartier, Jacopo est charmant et courtois. Toujours affublé de l'un de ses nombreux couvre-chefs, il a à la fois des airs de pilleur de tombes, d'entremetteur et de chasseur de primes. Il possède des contacts parmi les agents de pas moins de trois sectes du Chaos différentes dans la cité, et pour l'instant, aucune des trois ne soupçonne qu'il fricote avec ses rivales.\n\nEn général, Jacopo travaille pour la Couronne Rouge. Sa tâche principale est de parcourir Warrenburg à la recherche de parents pleins de bonne volonté afin de les pousser à inculquer les valeurs de Tzeentch à leurs enfants.\n\nSes liens avec la Couronne Rouge l'ont aussi mis en relation avec le Sceptre de Jade. Ainsi, si des importuns ont la très bonne idée d'enquêter sur lui, il n'a qu'à les enlever et les revendre au Sceptre de Jade : après tout, la secte a toujours besoin de plus de sacrifices humains.",
+    "source": {
+      "book": "Middenheim",
+      "page": 114
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "entremetteur"
+    }
+  },
+  {
+    "id": "traudl-bauer",
+    "label": "Traudl Bauer",
+    "title": "Pénitent (Bronze 0)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 55,
+      "CT": 28,
+      "F": 40,
+      "E": 45,
+      "I": 31,
+      "Ag": 24,
+      "Dex": 39,
+      "Int": 24,
+      "FM": 39,
+      "Soc": 27,
+      "B": 19
+    },
+    "traits": [
+      {
+        "id": "animosite",
+        "arg": "Sigmarites"
+      },
+      {
+        "id": "arme",
+        "value": 9,
+        "arg": "Hache"
+      },
+      {
+        "id": "haine",
+        "arg": "Orcs et Gobelins"
+      },
+      {
+        "id": "prejuge",
+        "arg": "Ulricains pas assez zélés"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "calme",
+        "value": 44
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 60,
+        "spec": "Base"
+      },
+      {
+        "id": "esquive",
+        "value": 41
+      },
+      {
+        "id": "projectiles",
+        "value": 33,
+        "spec": "Fronde"
+      },
+      {
+        "id": "resistance",
+        "value": 50
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 44
+      }
+    ],
+    "talents": [
+      {
+        "id": "brouet"
+      },
+      {
+        "id": "destinee",
+        "spec": "Courage, persévérance ; bientôt, tranquillement, ta fin se hâtera"
+      },
+      {
+        "id": "dur-a-cuire"
+      },
+      {
+        "id": "endurci"
+      },
+      {
+        "id": "frenesie"
+      },
+      {
+        "id": "pansement-de-fortune"
+      },
+      {
+        "id": "voyageur-aguerri"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Beaucoup sont devenus Frères Loups après une confrontation désastreuse avec les forces du Chaos et de la Destruction. Jadis, Traudl travaillait dans une ferme de la baronnie d'Immelsheid, où elle s'occupait d'un troupeau de vaches dont elle envoyait le lait et la viande aux marchés de Middenheim. Elle vivait sa vie simplement, et faisait entièrement confiance au Baron, son seigneur, pour protéger son peuple.\n\nQuand les gobelins de la nuit menés par Spinny Frapp' dans l'Dos ont pillé la ferme de Traudl et massacré ses collègues, la fermière n'en a pas voulu au Baron. Élevée comme une fière ulricaine, elle a tout de suite compris que sa confiance avait été naïve. Elle est donc partie dans la nature, déterminée à ne laisser sa survie dépendre de personne d'autre qu'elle-même.\n\nDeux ans plus tard, Traudl est miraculeusement toujours en vie. Elle a vécu de nombreuses aventures, tantôt seule, tantôt accompagnée d'autres Frères Loups. Les cheveux en bataille, et uniquement vêtue de sa tenue rapiécée de vachère, elle hante les sentiers et les champs visibles du Fauschlag pour y récupérer de quoi manger avant de retourner prier à l'Autel des Frères Loups toutes les deux ou trois nuits.\n\nMalgré son traumatisme, Traudl n'est pas totalement incapable de communiquer. Elle voit beaucoup de ce qui se passe dans les terres qui entourent le Fauschlag. La faire parler n'est pas impossible, mais obtenir la moindre information demandera néanmoins beaucoup d'efforts.",
+    "source": {
+      "book": "Middenheim",
+      "page": 114
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "flagellant"
+    }
   }
 ]
