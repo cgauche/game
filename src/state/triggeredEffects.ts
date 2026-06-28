@@ -20,6 +20,7 @@ import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
 import { roundTestInteractive } from './combat/cadenceGate';
 import { isEngagedWith, isEngaged } from '../engine/engagement';
+import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev } from './path';
 import { losClear, tileSeenByFoe } from './lineOfSight';
