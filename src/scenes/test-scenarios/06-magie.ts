@@ -1,18 +1,49 @@
 import { pregenParty, PREGEN } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
+import { flowFromEffects } from '../../state/flow';
 import { clone, makePriest, makeSorceress, makeFlagellant } from './_casters';
 import type { TestScenario } from './_shared';
 import type { Combatant } from '../../engine/types';
 
-const scene = arena({ id: 'test-magie', nom: 'Concile & arsenal', w: 30, h: 22, heroStart: { x: 3, y: 11 } });
+/**
+ * « Magie en combat » : LA grande bataille magique, qui réunit le concile (toutes les familles curées),
+ * le duel de lanceurs (IA caster des DEUX camps + Contre-sort/dissipation) et le Jalon 2 (Péché/Colère,
+ * Corruption, ZdE, Surincantation, mémorisation aux PX). On entre en EXPLORATION : mémoriser un sort dans
+ * la fiche d'Aelindra (PX), traverser l'Influence corruptrice (exposition → mutation possible), puis
+ * franchir la ligne pour engager le combat.
+ */
+const scene = arena({ id: 'test-magie', nom: 'Magie en combat', w: 30, h: 22, heroStart: { x: 3, y: 11 } });
 scene.startMessage =
-  'Concile de prêtres (un par dieu à miracles de combat) + Haute Sorcière + flagellant + Tueur. Casters de haut niveau : ' +
-  'enchantez, bénissez, invoquez (Réanimation, Hurlement du loup), drainez, AVANT de charger. ⚠ L’Envoûteuse au fond ' +
-  'cause Peur 2 + Terreur 2 dès l’ouverture du combat — le concile encaisse aussi un Test de Psychologie.';
-// Warband VIVANTE variée en 3 clusters à distances différentes (éprouve la VARIÉTÉ des sorts, le ciblage
-// d'AoE NET, la Focalisation des gros sorts, le positionnement) + 1 casteur ennemi au fond (Envoûteuse :
-// 12 sorts → l'IA ennemie joue aussi son arsenal). Réfs par ID STABLE (findCreatureById) — un libellé
-// ne résoudrait PAS (repli silencieux sur un mannequin B:10).
+  'Concile de prêtres (un par dieu à miracles de combat) + Haute Sorcière + flagellant + Tueur, face à une ' +
+  'warband ET un trio de casters ennemis (Eusapia, Envoûteuse, Sorcière). EXPLORATION d’abord : fiche ' +
+  'd’Aelindra → Avancement (mémoriser un sort aux PX) ; traversez la zone de Malepierre (Influence ' +
+  'corruptrice → mutation possible, Aelindra est proche du seuil) ; PUIS franchissez la ligne à l’est pour ' +
+  'engager. En combat : enchantez/bénissez/invoquez/drainez, Explosion au clic-case (ZdE), surincantez, ' +
+  'Contre-sort & dissipation des deux camps ; le Prêtre a 3 Péchés (Colère possible même sur Prière réussie) ; ' +
+  '⚠ l’Envoûteuse cause Peur 2 + Terreur 2 à l’ouverture (Test de Psychologie).';
+
+// Influence corruptrice (LDB 19) puis ligne d'engagement : deux bandes verticales que le groupe traverse
+// en avançant vers l'est (réfs ennemies par ID STABLE — un libellé retomberait sur un mannequin B:10).
+scene.triggers = [
+  {
+    id: 'trg-corruption',
+    rect: { x: 10, y: 1, w: 1, h: 20 },
+    once: true,
+    flow: flowFromEffects([
+      { type: 'journal', text: 'Une veine de malepierre suinte entre les dalles — l’air poisse (Influence corruptrice modérée).' },
+      { type: 'corruptionExposure', level: 'moderee', skill: 'resistance' },
+    ]),
+  },
+  {
+    id: 'engager-le-combat',
+    rect: { x: 16, y: 1, w: 1, h: 20 },
+    once: true,
+    flow: flowFromEffects([
+      { type: 'journal', text: 'La warband vous a repérés — les casters ennemis lèvent déjà les mains. À l’assaut !' },
+      { type: 'startCombat', encounter: 'enc-magie' },
+    ]),
+  },
+];
 setEncounters(scene, [
   {
     id: 'enc-magie',
@@ -30,8 +61,10 @@ setEncounters(scene, [
       { ref: 'seigneur-brigand', pos: { x: 23, y: 16 } },
       { ref: 'brigand', pos: { x: 24, y: 17 } },
       { ref: 'ungor', pos: { x: 27, y: 9 } },
-      // Casteur ennemi au fond (12 sorts) — l'IA adverse débuffe/contre depuis l'arrière.
+      // TRIO de casters ennemis au fond (l'IA adverse joue son arsenal + Contre-sort/dissipation).
+      { ref: 'eusapia-balacanon', pos: { x: 28, y: 9 } },
       { ref: 'envouteuse', pos: { x: 28, y: 11 } },
+      { ref: 'sorciere', pos: { x: 28, y: 13 } },
     ],
   },
 ]);
@@ -51,21 +84,24 @@ const PRIESTS: { id: string; name: string; cult: string; chars: Record<string, n
 ];
 
 /**
- * « Concile & arsenal » : Aelindra (Haute Sorcière multi-domaine + Nécromancie) + UN Prêtre COMPLET de
- * chaque dieu à miracles de combat (Sigmar, Ulric, Myrmidia, Shallya, Morr, Taal, Verena, Manann, Ranald,
- * Rhya) + 1 flagellant (prêtre d'Ulric frénétique, grande hache) + Grunni le Tueur. Grand groupe en
- * formation LÂCHE (back-line de casters, flagellant + tueur devant) — éprouve TOUTES les familles de sorts
- * curées et l'IA caster (jouer l'arsenal entier avant d'engager).
+ * Aelindra (Haute Sorcière multi-domaine + Nécromancie) + UN Prêtre COMPLET de chaque dieu à miracles de
+ * combat + 1 flagellant + Grunni le Tueur. Tweaks Jalon 2 : Aelindra proche du seuil de Corruption et dotée
+ * de PX (mémorisation) + d'Explosion (ZdE) ; le Grand Prêtre porte 3 Péchés (Colère des dieux).
  */
 function makeMagicParty(): Combatant[] {
   const ans = pregenParty(PREGEN.pretre)[0]; // base prêtre (clonée par makePriest/makeFlagellant)
 
   const sorc = makeSorceress('sc-elfe', 'Aelindra, Haute Sorcière', { x: 2, y: 11 });
+  if (!sorc.spells?.includes('explosion')) sorc.spells = ['explosion', ...(sorc.spells ?? [])]; // ZdE au clic-case
+  sorc.xp = 300; // de quoi mémoriser un sort dans la fiche (Avancement)
+  sorc.corruption = 5; // proche du seuil BFM+BE → l'Influence corruptrice peut faire MUTER
+
   const priests = PRIESTS.map((p) => {
     const pr = makePriest(ans, p.id, p.name, p.cult, p.chars);
     pr.pos = { ...p.pos };
     return pr;
   });
+  priests[0].sinPoints = 3; // Grand Prêtre de Sigmar : ~30 % de Colère par Prière (dé des unités ≤ 3)
   // Varie l'apparence des prêtres (sinon clones visuels de la même base) — alterne sexe et carrure.
   priests.forEach((pr, i) => {
     if (!pr.appearance) return;
@@ -84,11 +120,16 @@ function makeMagicParty(): Combatant[] {
 export const scenario: TestScenario = {
   id: 'magie',
   order: 6,
+  category: '✨ Magie',
   icon: '✨',
-  title: 'Concile & arsenal',
-  tests: 'Concile (1 prêtre/dieu de combat + Sorcière + flagellant) : toutes les familles curées (invocations, drains, enchantements, zones, soins, Corruption), arbitrage IA invoquer/enchanter→Frénésie, Psychologie (Peur/Terreur de l’Envoûteuse), caster ennemi qui débuffe.',
-  partyNote: 'Aelindra (Haute Sorcière multi-domaine + Nécromancie) + 10 Prêtres (Sigmar/Ulric/Myrmidia/Shallya/Morr/Taal/Verena/Manann/Ranald/Rhya) + flagellant + Tueur',
+  title: 'Magie en combat',
+  tests:
+    'Grande bataille magique : toutes les familles curées (invocations, drains, enchantements, zones, soins), ' +
+    'IA caster des DEUX camps + Contre-sort & dissipation (trio ennemi Eusapia/Envoûteuse/Sorcière), ZdE au ' +
+    'clic-case + Surincantation, Péché → Colère (Prêtre, 3 Péchés), Corruption (zone de Malepierre → mutation, ' +
+    'Aelindra proche du seuil), mémorisation aux PX, Psychologie (Peur/Terreur de l’Envoûteuse).',
+  partyNote: 'Aelindra (Haute Sorcière + Nécromancie) + 10 Prêtres (un par dieu de combat) + flagellant + Tueur',
   makeParty: makeMagicParty,
   scene,
-  autoCombat: 'enc-magie',
+  // pas d'autoCombat : exploration (mémorisation, exposition à la Corruption) PUIS combat via le trigger.
 };
