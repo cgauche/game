@@ -102,7 +102,8 @@ describe('IA Empoignade — dispatch (runEnemyAI) : l’Empoigné LUTTE, le tire
     const { e } = arena();
     e.advantage = 0; // pas d'Avantage supérieur → Test opposé de Force
     runEnemyAI(useGame.getState, useGame.setState, e.id);
-    const last = aiTurnLog().at(-1);
+    const log = aiTurnLog();
+    const last = log[log.length - 1];
     expect(last?.action.startsWith('grapple')).toBe(true); // a LUTTÉ (pas « recover empetre »)
     expect(useGame.getState().battle!.acted).toBe(true); // le Test opposé EST l'Action (l.161)
   });
@@ -116,6 +117,7 @@ describe('IA Empoignade — dispatch (runEnemyAI) : l’Empoigné LUTTE, le tire
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
     expect(areGrappling(after, h)).toBe(false); // Brisé : lien dénoué DES DEUX côtés (synchrone)
     expect(stacks(after, 'empetre')).toBe(0);   // Empêtré lié retiré (gratuit, par le Mouvement)
-    expect(aiTurnLog().at(-1)?.action.startsWith('grapple')).toBe(false); // a re-décidé une vraie action le MÊME tour
+    const log = aiTurnLog();
+    expect(log[log.length - 1]?.action.startsWith('grapple')).toBe(false); // a re-décidé une vraie action le MÊME tour
   });
 });
