@@ -524,11 +524,14 @@ export function evaluateMissile(
   target: Combatant,
   spell: SpellLike,
   cr: CastResult,
+  locOverride?: HitLocation,
 ): MissileResult {
   if (!cr.cast) {
     return { ...cr, hit: false, defenderDefeated: false };
   }
-  const loc = hitLocationByShape(reverseRoll(cr.roll), target.bodyShape);
+  // Localisation : le jet d'Incantation inversé (LDB 46), SAUF Coup Critique → 1d100 frais (`locOverride`,
+  // LDB 18 l.53) ; les Dégâts ci-dessous sont alors RÉ-ÉVALUÉS à cette loc (PA + mods de Domaine, l.55).
+  const loc = locOverride ?? hitLocationByShape(reverseRoll(cr.roll), target.bodyShape);
   const spellDmg = missileDamage(spell);
   const bfm = bonus(effectiveChar(caster, 'FM'));
   // Attribut de Domaine (LDB 48 — L14) : Métal ignore les PA métalliques ET les ajoute en Dégâts ;

@@ -1194,7 +1194,7 @@ export function weaponHasBlade(w: Weapon | undefined): boolean {
  *  critique inversé (comme une touche). Un ENNEMI avec de la PA à la zone dévie toujours (−1 PA,
  *  Critique ignoré — parité avec la Déviation auto de l'IA, LDB 63 l.63-66) ; un HÉROS victime le
  *  subit directement (pas de modale de déviation sur ce chemin secondaire — limitation documentée). */
-function applyOpposedCritical(
+export function applyOpposedCritical(
   get: Get,
   set: SetFn,
   victim: Combatant,
@@ -1217,7 +1217,7 @@ function applyOpposedCritical(
     return;
   }
   const currentBefore = victim.wounds.current;
-  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined,
+  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, loc, // `loc` = 1d100 frais déjà tiré → pas de 2e tirage interne (déflecteur/révélation/table cohérents)
     { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined }, undefined, undefined, get);
   if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
 }
@@ -2995,7 +2995,7 @@ export function applyCast(
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') }, undefined, undefined, get);
+        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, critWound ? mres.location : undefined, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') }, undefined, undefined, get);
         if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);
