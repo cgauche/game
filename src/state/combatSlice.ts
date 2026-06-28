@@ -28,7 +28,7 @@ import { afterApproach } from './combatDirector';
 import { t } from '../i18n';
 import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive, attackWeapon, hitLocationByShape, reverseRoll, locationLabel } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank, meleeReachTiles } from '../engine/engagement';
-import { areGrappling, clearGrapple, grappleDamageOps } from '../engine/grapple';
+import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
 import { gainAdvantage } from '../engine/advantage';
 import { rule } from '../engine/policy';
@@ -53,7 +53,7 @@ import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, withCrewActed } from './shipCrew';
-import { findCrewTestTypeById, findCrewRoleById, findVehicleById } from '../data';
+import { findCrewTestTypeById, findCrewRoleById, findVehicleById, GRAPPLE } from '../data';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
@@ -112,25 +112,25 @@ function applyAuContact(get: Get, set: Set, mover: Combatant, foe: Combatant, ch
 }
 
 /** Applique le CHOIX du vainqueur d'un Test opposé d'Empoignade gagné (LDB 14 l.161) : `damage` = BF + DR
- *  ignorant les PA (`grappleDamageOps` via `applyOps`, Localisation au lancer de Force pour la narration) ;
- *  `entangle` = conférer 1 *Empêtré* à l'adversaire ; `free` = se défaire de son *Empêtré* + 1 par DR
- *  (`recoveredStacks`). Le Test opposé EST l'Action → `acted`. `dr` = DR net du Test gagné. */
+ *  ignorant les PA (`GRAPPLE.win.damage` en DONNÉE via `applyOps`, Localisation au lancer de Force pour la
+ *  narration) ; `entangle` = conférer 1 *Empêtré* à l'adversaire ; `free` = se défaire de son *Empêtré* + 1
+ *  par DR. Le Test opposé EST l'Action → `acted`. `dr` = DR net du Test gagné (passé en `ctx.sl`). */
 function applyGrapple(get: Get, set: Set, actor: Combatant, foe: Combatant, mode: 'damage' | 'entangle' | 'free', dr: number, forceRoll: number): void {
   const battle = get().battle!;
+  // Mécanique 100% en DONNÉE (`GRAPPLE.win`, `ctx.sl` = DR) : damage/entangle frappent l'ADVERSAIRE, free se
+  // libère SOI-MÊME. Le flux n'orchestre QUE le choix ; les nombres (Blessures / pions) se relisent par diff.
+  const target = mode === 'free' ? actor : foe;
+  const beforeW = foe.wounds.current;
+  const beforeEmp = stacks(actor, COND.empetre);
+  applyOps(target, GRAPPLE.win[mode], { caster: actor, sl: dr });
   let line: string;
   if (mode === 'damage') {
-    const before = foe.wounds.current;
-    applyOps(foe, grappleDamageOps(actor, dr), { caster: actor }); // BF + DR, tous PA ignorés (woundsCalc déduit la BE)
-    const n = before - foe.wounds.current;
     const loc = locationLabel(hitLocationByShape(reverseRoll(forceRoll), foe.bodyShape), foe.bodyShape); // Localisation au lancer de Force (l.161)
-    line = t('cs.grappleDamage', { name: actor.name, foe: foe.name, n, loc }); // `loseWounds` (op:'wounds') pose déjà À Terre à 0 PB
+    line = t('cs.grappleDamage', { name: actor.name, foe: foe.name, n: beforeW - foe.wounds.current, loc }); // `loseWounds` (op:'wounds') pose déjà À Terre à 0 PB
   } else if (mode === 'entangle') {
-    addCondition(foe, COND.empetre, 1); // conférer 1 *Empêtré* à l'adversaire
     line = t('cs.grappleEntangle', { name: actor.name, foe: foe.name });
   } else {
-    const removed = recoveredStacks(dr, stacks(actor, COND.empetre), true); // se défaire : 1 + DR pions retirés
-    removeCondition(actor, COND.empetre, removed);
-    line = t('cs.grappleFree', { name: actor.name, n: removed });
+    line = t('cs.grappleFree', { name: actor.name, n: beforeEmp - stacks(actor, COND.empetre) });
   }
   const log = [...battle.log, ev('attack', line, actor.id, foe.id)];
   set({ pendingGrapple: null, battle: { ...battle, acted: true, action: null, log } });

@@ -19,8 +19,6 @@
  */
 import type { Combatant } from './types';
 import type { ModLine } from './combat';
-import type { GameOp } from './ops';
-import { bonus, effectiveChar } from './characteristics';
 
 /** Deux combattants sont-ils mutuellement Empoignés (LDB 14 l.159) ? Relation SYMÉTRIQUE (posée par
  *  paire) — un seul côté suffit donc à la lire. Pure. */
@@ -63,15 +61,4 @@ export function grappleEnvMod(attacker: Combatant, target: Combatant, all: Comba
   if (!target.grapplingWith?.length || areGrappling(attacker, target)) return null;
   const partner = all.find((c) => target.grapplingWith!.includes(c.id));
   return grappleTierMod(attacker, target, partner);
-}
-
-/**
- * Dégâts de l'option « Dégâts » du Test opposé d'Empoignade gagné (LDB 14 l.161) : **BF + DR**, en
- * IGNORANT tous les PA. Exprimé en `GameOp[]` (langue unique) → `applyOps` déduit le Bonus d'Endurance
- * (`ignoreTB:false`) mais PAS les PA (`ignoreAP` défaut = ignoré) : RÉUTILISE le pipeline de mitigation
- * (`woundsCalc`) sans recopier la formule. `netSL` = DR net du Test opposé gagné (≥ 0). PUR.
- */
-export function grappleDamageOps(actor: Combatant, netSL: number): GameOp[] {
-  const amount = bonus(effectiveChar(actor, 'F')) + Math.max(0, netSL); // BF + DR
-  return [{ op: 'wounds', amount, ignoreTB: false }]; // ignoreAP défaut → tous les PA ignorés
 }

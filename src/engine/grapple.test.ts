@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { areGrappling, setGrapple, clearGrapple, grappleTierMod, grappleEnvMod, grappleDamageOps } from './grapple';
+import { areGrappling, setGrapple, clearGrapple, grappleTierMod, grappleEnvMod } from './grapple';
 import { applyOps } from './ops';
+import { GRAPPLE } from '../data';
 import type { Combatant } from './types';
 
 // Empoignade (Issue #42.1, LDB 14 l.159/161/169).
@@ -79,12 +80,12 @@ describe('grappleTierMod — bonus de tiers +20 / +10 (LDB 14 l.169)', () => {
   });
 });
 
-describe('grappleDamageOps — BF + DR, tous les PA IGNORÉS (LDB 14 l.161)', () => {
-  it('Dégâts = BF + DR, le Bonus d’Endurance est déduit, les PA sont ignorés', () => {
+describe('Empoignade — option Dégâts en DONNÉE (GRAPPLE.win.damage) : BF + DR, tous les PA IGNORÉS (LDB 14 l.161)', () => {
+  it('Dégâts = BF + DR (ctx.sl), le Bonus d’Endurance est déduit, les PA sont ignorés', () => {
     const actor = C('actor', { characteristics: { CC: 40, CT: 30, F: 50, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'] });
     const target = C('target', { characteristics: { CC: 40, CT: 30, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'] });
     const before = target.wounds.current;
-    applyOps(target, grappleDamageOps(actor, 3), { caster: actor }); // BF(5) + DR(3) = 8, − BE(3) = 5
+    applyOps(target, GRAPPLE.win.damage, { caster: actor, sl: 3 }); // BF(5) + DR(3) = 8, − BE(3) = 5
     expect(before - target.wounds.current).toBe(5);
   });
   it('une cible BLINDÉE subit AUTANT qu’une cible nue (PA ignorés)', () => {
@@ -94,9 +95,8 @@ describe('grappleDamageOps — BF + DR, tous les PA IGNORÉS (LDB 14 l.161)', ()
       characteristics: { CC: 40, CT: 30, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'],
       armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
     });
-    const ops = grappleDamageOps(actor, 3);
-    const dn = naked.wounds.current; applyOps(naked, ops, { caster: actor });
-    const da = armoured.wounds.current; applyOps(armoured, ops, { caster: actor });
+    const dn = naked.wounds.current; applyOps(naked, GRAPPLE.win.damage, { caster: actor, sl: 3 });
+    const da = armoured.wounds.current; applyOps(armoured, GRAPPLE.win.damage, { caster: actor, sl: 3 });
     expect(dn - naked.wounds.current).toBe(da - armoured.wounds.current); // PA ignorés → même perte
     expect(da - armoured.wounds.current).toBe(5);
   });
