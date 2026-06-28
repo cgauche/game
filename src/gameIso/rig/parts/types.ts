@@ -14,11 +14,11 @@ export function pickView(art: PartArt | undefined | null, view: View): string {
 }
 
 /** Base COMMUNE d'un def « équipement TENU » (silhouette sur un os de main) : armes ET boucliers.
- *  1 fichier = 1 def (registre auto-chargé `defs/`) ; les deux sont routés par LIBELLÉ. */
+ *  1 fichier = 1 def (registre auto-chargé `defs/`) ; les deux sont routés par SLUG (`shape`), jamais par libellé. */
 export interface RigHeldDef {
-  /** Clé de forme stable. */
+  /** Clé de forme stable — ce par quoi l'art est routé (`shape`). */
   slug: string;
-  /** Libellé catalogue (= label du trapping) — sert au routage. */
+  /** Libellé d'affichage (= label du trapping ; sert aussi à la jointure label→slug à l'AUTHORING). PAS au routage runtime. */
   label: string;
   /** Cible silhouette-first (FR) — sert les workflows d'art. */
   target: string;
