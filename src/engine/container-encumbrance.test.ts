@@ -1,0 +1,86 @@
+/**
+ * Phase 0 — fondation inventaire RAW : généralisation de l'état « porté » aux accessoires
+ * (LDB 61 l.21 : objet porté → Enc −1) + modèle de CONTENANTS (LDB 64 l.5 : le contenu rangé
+ * est absorbé par le contenant et ne compte plus au total ; seul l'Enc du contenant compte).
+ */
+import { describe, it, expect } from 'vitest';
+import { totalEncumbrance, containerFillEnc, canStow } from './items';
+import type { Combatant, ItemInstance } from './types';
+
+const mk = (items: ItemInstance[]): Combatant => ({ items } as unknown as Combatant);
+const item = (o: Partial<ItemInstance>): ItemInstance =>
+  ({ uid: o.uid ?? 'x', name: o.name ?? 'Objet', kind: 'misc', qualities: [], enc: 0, equipped: false, ...o } as unknown as ItemInstance);
+
+describe('Encombrement — objet PORTÉ (accessoire) : LDB 61 l.21', () => {
+  it('un accessoire misc porté (equipped) voit son Enc réduit de 1', () => {
+    // Cape Enc1 portée → 0 ; en vrac → 1.
+    const cape = item({ uid: 'cape', name: 'Cape', enc: 1 });
+    expect(totalEncumbrance(mk([{ ...cape, equipped: true }]))).toBe(0);
+    expect(totalEncumbrance(mk([{ ...cape, equipped: false }]))).toBe(1);
+  });
+
+  it('des bésicles Enc0 portées restent à 0 (max(0, 0−1) = 0)', () => {
+    const besicles = item({ uid: 'b', name: 'Bésicles', enc: 0, equipped: true });
+    expect(totalEncumbrance(mk([besicles]))).toBe(0);
+  });
+
+  it('un objet en vrac (ni porté ni rangé) compte son Enc plein', () => {
+    const corde = item({ uid: 'c', name: 'Corde', enc: 1 });
+    expect(totalEncumbrance(mk([corde]))).toBe(1);
+  });
+});
+
+describe('Encombrement — CONTENANTS : LDB 64 l.5', () => {
+  it('un objet rangé DANS un contenant ne compte pas ; seul l’Enc du contenant compte', () => {
+    const sac = item({ uid: 'sac', name: 'Sac', enc: 2, container: { capacity: 4 } });
+    const corde = item({ uid: 'corde', name: 'Corde', enc: 1, inside: 'sac' });
+    const torches = item({ uid: 'torches', name: 'Torches', enc: 2, inside: 'sac' });
+    // Sac 2 (compte) + corde 1 (absorbée) + torches 2 (absorbées) → 2.
+    expect(totalEncumbrance(mk([sac, corde, torches]))).toBe(2);
+  });
+
+  it('containerFillEnc somme l’Enc des objets rangés dedans', () => {
+    const sac = item({ uid: 'sac', enc: 2, container: { capacity: 4 } });
+    const corde = item({ uid: 'corde', enc: 1, inside: 'sac' });
+    const torches = item({ uid: 'torches', enc: 2, inside: 'sac' });
+    expect(containerFillEnc(mk([sac, corde, torches]), 'sac')).toBe(3);
+  });
+
+  it('canStow accepte tant que le Contenu restant suffit, refuse au-delà de la capacité', () => {
+    const sac = item({ uid: 'sac', enc: 2, container: { capacity: 4 } });
+    const dejaDedans = item({ uid: 'd', enc: 3, inside: 'sac' }); // remplissage 3 / capacité 4
+    const c = mk([sac, dejaDedans]);
+    const petit = item({ uid: 'petit', enc: 1 }); // 3 + 1 = 4 ≤ 4 → ok
+    const gros = item({ uid: 'gros', enc: 2 }); //  3 + 2 = 5 > 4 → refus
+    expect(canStow(c, petit, 'sac')).toBe(true);
+    expect(canStow(c, gros, 'sac')).toBe(false);
+  });
+
+  it('canStow refuse de ranger un contenant dans un autre (pas d’imbrication) et de s’auto-ranger', () => {
+    const sac = item({ uid: 'sac', enc: 2, container: { capacity: 4 } });
+    const besace = item({ uid: 'besace', enc: 1, container: { capacity: 2 } });
+    const c = mk([sac, besace]);
+    expect(canStow(c, besace, 'sac')).toBe(false); // un sac dans un sac
+    expect(canStow(c, sac, 'sac')).toBe(false); // s'auto-ranger
+  });
+
+  it('canStow refuse un contenant cible inexistant ou sans capacité', () => {
+    const sac = item({ uid: 'sac', enc: 2, container: { capacity: 4 } });
+    const objet = item({ uid: 'o', enc: 1 });
+    expect(canStow(mk([sac, objet]), objet, 'inconnu')).toBe(false);
+    const nonSac = item({ uid: 'nonSac', enc: 1 }); // pas de container
+    expect(canStow(mk([nonSac, objet]), objet, 'nonSac')).toBe(false);
+  });
+});
+
+describe('Encombrement — régressions préservées', () => {
+  it('une prothèse PORTÉE compte Enc 0 (LDB 73)', () => {
+    const jambe = item({ uid: 'j', name: 'Fausse jambe', enc: 1, subType: 'protheses', equipped: true });
+    expect(totalEncumbrance(mk([jambe]))).toBe(0);
+  });
+
+  it('une armure portée voit aussi son Enc réduit de 1', () => {
+    const cuir = item({ uid: 'a', name: 'Veste de cuir', kind: 'armor', enc: 1, equipped: true });
+    expect(totalEncumbrance(mk([cuir]))).toBe(0);
+  });
+});

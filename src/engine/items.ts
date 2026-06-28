@@ -191,6 +191,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     ...(t.isShelter ? { isShelter: true } : {}),
     ...(t.isRations ? { isRations: true } : {}),
     ...(t.isGrimoire ? { isGrimoire: true } : {}),
+    ...(t.container ? { container: t.container } : {}), // Contenant (LDB 64) : capacité de rangement
   };
 }
 
@@ -218,16 +219,19 @@ export function maxEncumbrance(c: Combatant): number {
   return bonus(baseWithTraits(c, 'F')) + bonus(baseWithTraits(c, 'E')) + talentEncumbranceBonus(c);
 }
 
-/** Encombrement transporté. Les objets PORTÉS (armure équipée) voient leur Encombrement
- *  réduit de 1 — souvent 0 une fois portés (LDB Encombrement l.22). Les armes tenues et
- *  le matériel simplement transporté gardent leur Encombrement plein. */
+/** Encombrement transporté. Les objets PORTÉS sur le corps (armure ET accessoire) voient leur
+ *  Encombrement réduit de 1 — souvent 0 une fois portés (LDB 61 l.21). Les armes tenues et le
+ *  matériel simplement transporté gardent leur Encombrement plein ; un objet RANGÉ dans un contenant
+ *  est absorbé par celui-ci (LDB 64 l.5) et ne compte pas au total. */
 export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => {
-    const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60 l.56/91)
+    if (i.inside) return s; // rangé dans un contenant → absorbé par lui (LDB 64 l.5), ne compte pas
+    const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60)
     if (!!i.equipped && i.subType === 'protheses') return s; // prothèse portée = Enc 0 (LDB 73)
-    const worn = !!i.equipped && i.kind === 'armor';
-    // Objet porté : -1 (LDB Enc l.22) ; une armure Volumineux portée vaut Enc 1 (LDB 60 l.91).
-    const eff = worn ? (hasQuality(i, QUALITY_IDS.Volumineux) ? 1 : enc - 1) : enc;
+    // Objet PORTÉ sur le corps (armure OU accessoire — PAS une arme, qui se TIENT) : -1 (LDB 61 l.21) ;
+    // armure Volumineux portée = 1 (LDB 60 l.91).
+    const worn = !!i.equipped && isWearable(i);
+    const eff = worn ? (i.kind === 'armor' && hasQuality(i, QUALITY_IDS.Volumineux) ? 1 : enc - 1) : enc;
     return s + Math.max(0, eff);
   }, 0);
 }
@@ -287,6 +291,28 @@ export function armourLayer(it: ItemInstance): ArmourLayer {
  *  des intempéries = un vêtement de dos). */
 export function isCapeItem(it: ItemInstance): boolean {
   return it.kind === 'misc' && !!it.weatherProtection;
+}
+
+/** Objet PORTABLE sur le corps (armure + accessoire). Les armes se TIENNENT (loadout), les munitions ne se portent pas. */
+export function isWearable(it: ItemInstance): boolean {
+  return it.kind === 'armor' || it.kind === 'misc';
+}
+
+/** Remplissage actuel d'un contenant (LDB 64) : somme de l'Enc des objets rangés DEDANS (`inside === containerUid`). PUR. */
+export function containerFillEnc(c: Combatant, containerUid: string): number {
+  return (c.items ?? [])
+    .filter((i) => i.inside === containerUid)
+    .reduce((s, i) => s + (i.enc || 0) + craftEncDelta(i), 0);
+}
+
+/** Peut-on ranger `it` dans le contenant `containerUid` (LDB 64) ? Le contenant existe et a une capacité ;
+ *  `it` n'est ni le contenant lui-même ni un contenant (pas d'imbrication) ; le Contenu restant suffit. PUR. */
+export function canStow(c: Combatant, it: ItemInstance, containerUid: string): boolean {
+  const container = (c.items ?? []).find((i) => i.uid === containerUid);
+  const capacity = container?.container?.capacity;
+  if (capacity == null) return false;
+  if (it.uid === containerUid || it.container) return false; // pas d'auto-rangement ni d'imbrication de sacs
+  return containerFillEnc(c, containerUid) + ((it.enc || 0) + craftEncDelta(it)) <= capacity;
 }
 
 /** Objets ÉQUIPÉS en conflit de port avec `it` : armure de MÊME couche sur ≥1 localisation commune

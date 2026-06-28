@@ -6,7 +6,7 @@
  */
 import type { GameState } from './store';
 import { Combatant, CharKey, CHAR_LABELS } from '../engine/types';
-import { recomputeLoadout, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts } from '../engine/items';
+import { recomputeLoadout, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts, canStow } from '../engine/items';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -93,6 +93,7 @@ export function toggleEquip(get: Get, set: Set, heroId: string, uid: string): vo
       const it = (clone.items ?? []).find((i) => i.uid === uid);
       if (it) {
         if (!it.equipped) {
+          it.inside = undefined; // on ne porte pas un objet rangé dans un sac : il en sort d'abord
           const out = equipConflicts(clone, it);
           for (const o of out) o.equipped = false;
           if (out.length) msg = `${clone.name} troque ${out.map((o) => o.name).join(' + ')} contre ${it.name} (même couche).`;
@@ -100,6 +101,37 @@ export function toggleEquip(get: Get, set: Set, heroId: string, uid: string): vo
         it.equipped = !it.equipped;
         recomputeLoadout(clone);
       }
+      return clone;
+    }),
+  }));
+  if (msg) get().log(msg);
+}
+
+/** Range (`containerUid` non-null) ou sort (null) un objet d'un héros d'un contenant (LDB 64). Ranger vérifie
+ *  la capacité (`canStow`) et met l'objet à l'état « rangé » (ni porté ni tenu) ; sortir le remet en vrac.
+ *  Même patron que `toggleEquip` (clone + recomputeLoadout). */
+export function stowItem(get: Get, set: Set, heroId: string, uid: string, containerUid: string | null): void {
+  let msg = '';
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const clone: Combatant = structuredClone(h);
+      const it = (clone.items ?? []).find((i) => i.uid === uid);
+      if (!it) return clone;
+      if (containerUid) {
+        if (!canStow(clone, it, containerUid)) {
+          msg = `${clone.name} : ${it.name} ne tient pas dans ce contenant.`;
+          return h;
+        }
+        const bag = (clone.items ?? []).find((i) => i.uid === containerUid);
+        it.inside = containerUid; // rangé : ni porté ni tenu
+        it.equipped = false;
+        msg = `${clone.name} range ${it.name}${bag ? ` dans ${bag.name}` : ''}.`;
+      } else {
+        it.inside = undefined; // sorti du sac (remis en vrac)
+        msg = `${clone.name} sort ${it.name} de son contenant.`;
+      }
+      recomputeLoadout(clone);
       return clone;
     }),
   }));

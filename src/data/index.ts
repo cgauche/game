@@ -241,6 +241,8 @@ export interface TrappingData {
    *  (`heal`/`removeCondition`/`preventInfection`), exécuté par `applyOps`. Remplace le parsing du `desc`
    *  au runtime ; édité au Codex via `GameOpEditor`. Copié sur `ItemInstance.consumable` à la construction. */
   consumable?: import('../engine/ops').GameOp[];
+  /** Contenant (LDB 64) : capacité de rangement (« Contenu », en Enc). Sacs/sacoches/sac à dos. */
+  container?: { capacity: number };
   price: { gold: number; silver: number; bronze: number };
   source: { book: string; page: number };
   /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est

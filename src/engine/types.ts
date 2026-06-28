@@ -615,6 +615,11 @@ export interface ItemInstance {
   isRations?: boolean;
   /** Grimoire / livre de Sorts — lecture d'un Sort non mémorisé (grimoire.ts). */
   isGrimoire?: boolean;
+  /** Contenant (sac/sac à dos, LDB 64) : capacité de rangement en Enc (« Contenu »). Propagé de TrappingData.container. */
+  container?: { capacity: number };
+  /** Rangé DANS un contenant (uid de l'ItemInstance porteur d'un `container`) : son Enc est absorbé par le
+   *  contenant (LDB 64 l.5) → ne compte pas au total porté. Absent = en vrac / porté / tenu. */
+  inside?: string;
 }
 
 /** Une pièce d'artillerie MONTÉE sur un navire (poste) — DONNÉE pure (item + côté + équipage). Authorée sur

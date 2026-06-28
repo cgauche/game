@@ -2592,6 +2592,9 @@
     "damage": null,
     "qualities": [],
     "desc": "Capacité: 145 litres de liquide.",
+    "container": {
+      "capacity": 12
+    },
     "price": {
       "gold": 0,
       "silver": 8,
@@ -2615,6 +2618,9 @@
     "damage": null,
     "qualities": [],
     "desc": "Considéré comme « porté » si vous le mettez en bandoulière.",
+    "container": {
+      "capacity": 2
+    },
     "price": {
       "gold": 0,
       "silver": 1,
@@ -2638,6 +2644,9 @@
     "damage": null,
     "qualities": [],
     "desc": null,
+    "container": {
+      "capacity": 1
+    },
     "price": {
       "gold": 0,
       "silver": 0,
@@ -2684,6 +2693,9 @@
     "damage": null,
     "qualities": [],
     "desc": "4/5 litres de liquide.",
+    "container": {
+      "capacity": 1
+    },
     "price": {
       "gold": 0,
       "silver": 3,
@@ -2753,6 +2765,9 @@
     "damage": null,
     "qualities": [],
     "desc": null,
+    "container": {
+      "capacity": 8
+    },
     "price": {
       "gold": 0,
       "silver": 18,
@@ -2776,6 +2791,9 @@
     "damage": null,
     "qualities": [],
     "desc": "Nécessite une main pour être transporté (ou deux mains s'il est plein).",
+    "container": {
+      "capacity": 6
+    },
     "price": {
       "gold": 0,
       "silver": 1,
@@ -2799,6 +2817,9 @@
     "damage": null,
     "qualities": [],
     "desc": "Capacité: 4/5 litres de liquide.",
+    "container": {
+      "capacity": 1
+    },
     "price": {
       "gold": 0,
       "silver": 1,
@@ -2822,6 +2843,9 @@
     "damage": null,
     "qualities": [],
     "desc": "Nécessite 1 main pour être transporté.",
+    "container": {
+      "capacity": 4
+    },
     "price": {
       "gold": 0,
       "silver": 1,
@@ -2845,6 +2869,9 @@
     "damage": null,
     "qualities": [],
     "desc": "Considéré comme « porté » si vous le fixez à votre dos.",
+    "container": {
+      "capacity": 4
+    },
     "price": {
       "gold": 0,
       "silver": 4,
@@ -2868,6 +2895,9 @@
     "damage": null,
     "qualities": [],
     "desc": "Capacité: 45 litres de liquide.",
+    "container": {
+      "capacity": 4
+    },
     "price": {
       "gold": 0,
       "silver": 3,
