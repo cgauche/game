@@ -804,6 +804,10 @@ export interface GameState extends RollFlowActionsMap {
   wardCancel: () => void;
   /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
   battleStandUp: () => void;
+  /** « Servir cette pièce » (MDG ch.12) : le héros actif devient chef d'un poste de siège NON servi adjacent (arme octroyée) — coûte l'Action. KIND-AGNOSTIQUE. */
+  battleManPoste: () => void;
+  /** « Quitter la pièce » (release) : libère le poste servi pour un autre — coûte l'Action. */
+  battleLeavePoste: () => void;
   /** Focalisation par modale (Test étendu) : Lancer, Chance, Appliquer (cumule le DR). */
   // focus{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
   focusConfirm: () => void;

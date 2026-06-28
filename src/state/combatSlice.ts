@@ -50,7 +50,7 @@ import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
-import { applyShipPostes, servingCrewPresent, shipOfCrew } from './shipPostes';
+import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, withCrewActed } from './shipCrew';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById } from '../data';
@@ -1159,6 +1159,40 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || active.kind !== 'hero' || !hasCondition(active, COND.aTerre) || active.wounds.current <= 0) return;
       removeCondition(active, COND.aTerre);
       set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, log: [...battle.log, ev('move', t('cs.standUp', { name: active.name }), active.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+
+    // « Servir cette pièce » (MDG ch.12-13) : le héros ACTIF devient chef d'un poste de siège NON servi adjacent
+    // (l'arme de siège lui est octroyée, taguée mountSide ; elle tirera au tour suivant via l'option 'poste').
+    // MÊME mutation KIND-AGNOSTIQUE (`serveAtPoste`) que l'IA et l'author-time ; `recomputeLoadout` canonicalise
+    // l'arme dérivée côté héros. Coûte l'Action. « Tout le monde peut servir une arme de siège » (cf. l'IA `manPoste`).
+    battleManPoste: () => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return;
+      const active = activeCombatant(battle);
+      if (!active || aiDriven(get(), active) || isOutOfAction(active) || !canTakeAction(active)) return;
+      const [first] = servablePostes(active, battle.combatants);
+      if (!first) return;
+      serveAtPoste(active, first.poste);
+      recomputeLoadout(active);
+      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t('cs.manPoste', { name: active.name, weapon: first.poste.item.name }), active.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    // « Quitter la pièce » (release) : le héros actif lâche le poste qu'il sert → il redevient servable par un autre.
+    // `leaveChef` retire le lien + l'équipage + l'arme ; `recomputeLoadout` re-dérive sans la pièce. Coûte l'Action.
+    battleLeavePoste: () => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return;
+      const active = activeCombatant(battle);
+      if (!active || aiDriven(get(), active)) return;
+      const poste = active.mannedPoste;
+      if (!poste) return;
+      const weapon = poste.item.name;
+      leaveChef(active, poste);
+      recomputeLoadout(active);
+      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t('cs.leavePoste', { name: active.name, weapon }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
 

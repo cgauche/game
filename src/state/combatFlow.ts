@@ -141,7 +141,7 @@ import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene } from './sce
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
-import { shipOfCrew, mountedWeaponBears, servingCrewPresent } from './shipPostes';
+import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, isPosteManned } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
@@ -2860,6 +2860,9 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
   return {
     enemy, heroes, scene, blocked, noStop: cannotStopOn(battle, geom), movement, spells,
     smoke: smokeOf(battle), flying: flyM != null, perceived, facing: get().facing, squad,
+    // « Servir cette pièce » (MDG ch.12) : postes de siège NON servis adjacents — KIND-AGNOSTIQUE (l'appelant
+    // impur a la liste complète des combattants). Vide en scène sans emplacement → aucun candidat (parité golden).
+    servablePostes: servablePostes(enemy, battle.combatants).map(({ hull, poste }) => ({ hullId: hull.id, posteUid: poste.item.uid })),
   };
 }
 
@@ -4446,6 +4449,7 @@ function describeAiAction(a: EnemyAction): string {
     case 'recover': return `recover ${a.state}`;
     case 'spendResource': return `spend ${a.resource}→${a.name}`;
     case 'grapple': return `grapple ${a.resolution}→${a.targetId}`;
+    case 'manPoste': return `manPoste ${a.hullId}/${a.posteUid}`;
     case 'end': return 'end';
   }
 }
@@ -4743,6 +4747,20 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
       setTimeout(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
+      return;
+    }
+    case 'manPoste': {
+      // « Servir cette pièce » (MDG ch.12) : devenir chef d'un poste de siège NON servi adjacent — MÊME mutation
+      // KIND-AGNOSTIQUE (`serveAtPoste`) que l'action joueur et l'author-time. Coûte l'Action. Re-garde l'occupation
+      // (un autre a pu prendre la pièce pendant la décision) ; pris/disparu entre-temps → passe la main.
+      if (!canAct) return advanceTurn(get, set);
+      const hull = battle.combatants.find((c) => c.id === action.hullId);
+      const poste = hull?.postes?.find((p) => p.item.uid === action.posteUid);
+      if (!poste || isPosteManned(poste, battle.combatants)) return advanceTurn(get, set);
+      serveAtPoste(enemy, poste);
+      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', tr('cs.manPoste', { name: enemy.name, weapon: poste.item.name }), enemy.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
     }
     case 'move': {

@@ -16,7 +16,7 @@ import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
-import { shipOfCrew } from '../state/shipPostes';
+import { shipOfCrew, servablePostes } from '../state/shipPostes';
 import { isVehicle } from '../engine/vehicle';
 import { ownsLocally } from '../state/netOwnership';
 import { aiDriven } from '../state/combatGate';
@@ -64,6 +64,8 @@ export function ActionBar() {
   const reload = useGame((s) => s.battleReload);
   const battleShipManeuver = useGame((s) => s.battleShipManeuver);
   const battleShipReload = useGame((s) => s.battleShipReload);
+  const manPoste = useGame((s) => s.battleManPoste);
+  const leavePoste = useGame((s) => s.battleLeavePoste);
   const recoverState = useGame((s) => s.battleRecoverState);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const aim = useGame((s) => s.battleAim);
@@ -332,6 +334,9 @@ export function ActionBar() {
   // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
   // Manœuvre navale (MDG ch.13) : un héros membre de l'équipage d'un navire peut prendre la barre (Test de Navigation).
   const shipSupport = isHero ? shipOfCrew(battle.combatants, active.id) : undefined;
+  // « Servir cette pièce » (MDG ch.12) : emplacement/pièce de siège NON servi adjacent que le héros peut prendre
+  // en main (KIND-AGNOSTIQUE — même source que l'IA). On n'offre « Servir » que s'il ne sert pas DÉJÀ une pièce.
+  const canServePoste = isHero && !active.mannedPoste && servablePostes(active, battle.combatants).length > 0;
   const slots: HotbarSlot[] = [];
   if (isHero) {
     if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: '↩️', label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
@@ -346,6 +351,8 @@ export function ActionBar() {
     if (mountCandidate) slots.push({ id: 'mount', disabled: moveStarted || broken, icon: '🐎', label: 'Monter', title: `Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`, run: mountUp });
     if (mounted) slots.push({ id: 'dismount', disabled: moveStarted || broken, icon: '🥾', label: 'Descendre', title: 'Descendre de sa monture — coûte le Mouvement', run: dismount });
     if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
+    if (canServePoste) slots.push({ id: 'man-poste', disabled: battle.acted || stunned || broken, icon: '💥', label: `Servir cette pièce${battle.acted ? ' ✓' : ''}`, title: "Prendre en main une pièce de siège adjacente non servie (l'arme vous est octroyée) — coûte l'Action", run: manPoste });
+    if (active.mannedPoste) slots.push({ id: 'leave-poste', disabled: battle.acted || stunned || broken, icon: '🚪', label: `Quitter la pièce${battle.acted ? ' ✓' : ''}`, title: "Quitter la pièce servie (la libère pour un autre) — coûte l'Action", run: leavePoste });
     if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: '🎯', label: active.aiming ? 'En joue ✓' : 'Viser', title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });
     if (canPush) slots.push({ id: 'pushback', icon: '↩️', label: active.pushbackMode ? 'Repousser ✓' : 'Repousser', title: "Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts", run: togglePushback });
     if (needsReload && !frenzied) slots.push({ id: 'reload', cls: `ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`, disabled: battle.acted || stunned || broken, icon: '🔄', label: `Recharger${active.reloadProgress ? ` (${active.reloadProgress}/${rangedW.reload})` : ''}`, title: "Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)", run: reload });

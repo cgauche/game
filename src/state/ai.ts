@@ -93,6 +93,7 @@ export type EnemyAction =
   | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
   | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; name: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-63)
   | { kind: 'grapple'; targetId: string; resolution: 'break' | 'test' } // Empoigné à son tour (LDB 14 l.161) : son Action EST le Test opposé de Force, OU « Briser » (Avantage supérieur) pour regagner sa liberté d'action puis re-décider
+  | { kind: 'manPoste'; hullId: string; posteUid: string } // « Servir cette pièce » (MDG ch.12) : devenir chef d'un poste de siège NON servi adjacent (l'arme de siège est octroyée) — coûte l'Action
   | { kind: 'end' }; // rien à faire, passe la main
 
 export interface EnemyTurnInput {
@@ -132,6 +133,10 @@ export interface EnemyTurnInput {
    *  à la COHÉSION légère (ne pas s'isoler / ne pas bloquer l'allié). ABSENT = comportement Lot 3 STRICTEMENT
    *  inchangé (le golden et les fixtures sans escouade restent identiques). */
   squad?: Combatant[];
+  /** Postes de siège NON servis à portée de SERVICE (emplacement/coque adjacent), surfacés par l'appelant
+   *  impur (`servablePostes`, qui a la liste COMPLÈTE des combattants). Donnent un candidat `manPoste`
+   *  KIND-AGNOSTIQUE. ABSENT/vide (toute fixture sans emplacement) → aucun candidat (parité golden). */
+  servablePostes?: { hullId: string; posteUid: string }[];
 }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -425,6 +430,7 @@ const TIER = {
   shoot: 4, // tir à distance
   melee: 5, // attaque de mêlée
   move: 6, // approche / repositionnement
+  manPoste: 7, // servir une pièce de siège (préparation : l'arme tire au tour suivant) — faute de mieux
 } as const;
 
 /**
@@ -492,9 +498,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !enemy.loaded;
 
   // Un ennemi sans AUCUN moyen d'agir (aucun sort jouable NI arme) passe la main : un sort (offensif OU
-  // soutien) compte comme une capacité d'action → un lanceur de pur soutien DOIT pouvoir agir.
+  // soutien) compte comme une capacité d'action → un lanceur de pur soutien DOIT pouvoir agir. Servir une
+  // pièce de siège adjacente (`servablePostes`) compte AUSSI comme un moyen d'agir (un servant désarmé prend
+  // sa pièce) → on ne passe pas la main s'il y en a une à portée.
   const hasAnyMagic = spells.some((sp) => !sp.active);
-  if (!hasAnyMagic && enemy.weapons.length === 0) return forced({ kind: 'end' });
+  const canServePoste = (input.servablePostes?.length ?? 0) > 0;
+  if (!hasAnyMagic && enemy.weapons.length === 0 && !canServePoste) return forced({ kind: 'end' });
 
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
   // de tirer : une arme à distance sans Atout Pistolet ne tire pas en mêlée (LDB Armes l.297-298).
@@ -972,6 +981,15 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       if (gain > 0) candidates.push({ action: { kind: 'move', to, thenTargetId: refEnemy.id }, kind: 'move', utility: gain, targetId: refEnemy.id, coord: to });
     }
   }
+
+  // SERVIR UNE PIÈCE DE SIÈGE (MDG ch.12) : un combattant adjacent à un emplacement/coque portant un poste NON
+  // servi peut en devenir le chef (l'arme de siège lui est octroyée, elle tirera au tour SUIVANT). La liste des
+  // postes servables est surfacée par l'appelant impur (`servablePostes`, KIND-AGNOSTIQUE) ; absente/vide (toute
+  // fixture sans emplacement) → aucun candidat (parité golden). Utilité NEUTRE (0) : c'est une PRÉPARATION (comme
+  // Recharger), choisie SEULEMENT faute d'attaque/approche jouable ce tour. Les tactiques fines (QUAND servir)
+  // sont hors scope : ceci garantit la seule DISPONIBILITÉ kind-agnostique. Un frénétique ne sert pas (LDB 21 l.34).
+  if (!frenzied) for (const sp of input.servablePostes ?? [])
+    candidates.push({ action: { kind: 'manPoste', hullId: sp.hullId, posteUid: sp.posteUid }, kind: 'manPoste', utility: 0, targetId: sp.hullId, coord: null });
 
   // --- ARGMAX : meilleur candidat (utilité pondérée + tie-break déterministe) ----------------
   // TRACE (DEV gated) : classement des candidats (top 8 par utilité décroissante) = l'« intention » du tour.

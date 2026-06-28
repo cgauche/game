@@ -402,6 +402,8 @@ export const fr = {
   'cs.shameOvercome': '{name} surmonte sa honte (FM 🎲 {roll}/{target}) et attaque {foe} malgré la Bénédiction de Protection.',
   'cs.shameBlocked': '{name} ne peut se résoudre à frapper {foe} (Bénédiction de Protection) — il doit choisir une autre cible ou une autre Action.',
   'cs.standUp': '{name} se relève.',
+  'cs.manPoste': '{name} prend en main {weapon}.',
+  'cs.leavePoste': '{name} quitte {weapon}.',
   'cs.actFirst': "{name} choisit d'agir en premier ({reason}).",
   'cs.reasonFast': 'arme Rapide',
   'cs.reasonLuck': 'Chance',

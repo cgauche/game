@@ -8,6 +8,8 @@
 import { inFireArc } from './fireArc';
 import { mannedPosteWeapon } from '../engine/items';
 import { exposedCrew } from '../engine/shipCritical';
+import { isOutOfAction } from '../engine/conditions';
+import { combatDistance } from './footprint';
 import type { FireArc } from './fireArc';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -88,10 +90,60 @@ export function mountedWeaponBears(weapon: { mountSide?: FireArc }, heading: Dir
 }
 
 /**
- * Au DÉBUT du combat (après spawn) : pour chaque Combattant-coque portant des `postes`, pose `mannedPoste`
- * sur le **chef de pièce** (`crewIds[0]`) de chaque poste, parmi `combatants`. Le canon apparaît ensuite
- * comme arme dérivée via `recomputeLoadout` (chefs héros). KIND-AGNOSTIQUE (ne regarde pas le `kind`). Mute
- * en place (comme les autres étapes de spawn). Chef de pièce introuvable / coque sans postes → ignoré.
+ * SERVICE d'une pièce par son chef (KIND-AGNOSTIQUE) : pose le lien `mannedPoste` et OCTROIE l'arme dérivée
+ * (taguée `mountSide`) DIRECTEMENT — pour que le canon apparaisse aussi sur un chef à STATBLOC (ennemi, qui
+ * ne passe pas par `recomputeLoadout`). Idempotent ; un chef héros la re-dérivera identiquement au prochain
+ * recompute (rebuild from scratch → pas de doublon). SOURCE UNIQUE du service, partagée par `applyShipPostes`
+ * (author-time, chef = `crewIds[0]`) ET `serveAtPoste` (runtime « Servir cette pièce »). Mute en place.
+ */
+export function serveChef(chef: Combatant, poste: ShipPoste): void {
+  chef.mannedPoste = poste;
+  const w = mannedPosteWeapon(chef, poste);
+  if (w && !(chef.weapons ?? []).some((x) => x.uid === w.uid)) (chef.weapons ??= []).push(w);
+}
+
+/** Le chef QUITTE la pièce (release, runtime « Quitter la pièce ») : retire le lien `mannedPoste`, se retire
+ *  de l'équipage, retire l'arme dérivée — la pièce redevient servable. KIND-AGNOSTIQUE. Mute en place. */
+export function leaveChef(chef: Combatant, poste: ShipPoste): void {
+  delete chef.mannedPoste;
+  poste.crewIds = (poste.crewIds ?? []).filter((id) => id !== chef.id);
+  if (chef.weapons) chef.weapons = chef.weapons.filter((w) => w.uid !== poste.item.uid);
+}
+
+/** Un combattant DEVIENT chef d'une pièce non servie (runtime « Servir cette pièce ») : il prend la TÊTE de
+ *  l'équipage (`crewIds[0]`) et SERT la pièce (lien + arme, via `serveChef`). KIND-AGNOSTIQUE. Mute en place. */
+export function serveAtPoste(actor: Combatant, poste: ShipPoste): void {
+  poste.crewIds = [actor.id, ...(poste.crewIds ?? []).filter((id) => id !== actor.id)];
+  serveChef(actor, poste);
+}
+
+/** Un poste est-il ACTUELLEMENT servi ? = sa tête d'équipage (`crewIds[0]`) est un combattant encore en action
+ *  qui SERT bien CE poste (`mannedPoste`). Sinon (équipage vide, chef hors d'état, ou tête d'équipage qui ne
+ *  sert pas) → NON servi, donc servable. KIND-AGNOSTIQUE. PUR. */
+export function isPosteManned(poste: ShipPoste, combatants: Combatant[]): boolean {
+  const chefId = poste.crewIds?.[0];
+  if (!chefId) return false;
+  const chef = combatants.find((c) => c.id === chefId);
+  return !!chef && !isOutOfAction(chef) && chef.mannedPoste?.item.uid === poste.item.uid;
+}
+
+/** Postes NON servis qu'un `actor` peut SERVIR maintenant : ceux d'un emplacement/coque ADJACENT (empreinte,
+ *  ≤ 1 case) dont aucune tête d'équipage en état ne sert. KIND-AGNOSTIQUE (héros/PNJ/ennemi) — SOURCE UNIQUE
+ *  de la disponibilité « Servir cette pièce », consommée par l'affordance JOUEUR ET l'énumération IA. PUR. */
+export function servablePostes(actor: Combatant, combatants: Combatant[]): { hull: Combatant; poste: ShipPoste }[] {
+  if (!actor.pos || isOutOfAction(actor)) return [];
+  const out: { hull: Combatant; poste: ShipPoste }[] = [];
+  for (const hull of combatants) {
+    if (!hull.postes?.length || !hull.pos || combatDistance(actor, hull) > 1) continue;
+    for (const poste of hull.postes) if (!isPosteManned(poste, combatants)) out.push({ hull, poste });
+  }
+  return out;
+}
+
+/**
+ * Au DÉBUT du combat (après spawn) : pour chaque Combattant-coque portant des `postes`, SERT chaque poste à son
+ * **chef de pièce** (`crewIds[0]`), parmi `combatants`. Le canon apparaît comme arme dérivée (via `serveChef`).
+ * KIND-AGNOSTIQUE (ne regarde pas le `kind`). Mute en place. Chef de pièce introuvable / coque sans postes → ignoré.
  */
 export function applyShipPostes(combatants: Combatant[]): void {
   const byId = new Map(combatants.map((c) => [c.id, c]));
@@ -99,12 +151,6 @@ export function applyShipPostes(combatants: Combatant[]): void {
     for (const poste of hull.postes ?? []) {
       const chefId = poste.crewIds?.[0];
       const chef = chefId ? byId.get(chefId) : undefined;
-      if (!chef) continue;
-      chef.mannedPoste = poste;
-      // OCTROI direct de l'arme dérivée (taguée mountSide) — pour que le canon apparaisse aussi sur un chef à
-      // STATBLOC (ennemi, qui ne passe pas par recomputeLoadout). Idempotent ; un chef héros la re-dérivera
-      // identiquement au prochain recompute (rebuild from scratch → pas de doublon).
-      const w = mannedPosteWeapon(chef, poste);
-      if (w && !(chef.weapons ?? []).some((x) => x.uid === w.uid)) (chef.weapons ??= []).push(w);
+      if (chef) serveChef(chef, poste);
     }
 }
