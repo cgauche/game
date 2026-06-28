@@ -43,7 +43,7 @@ export function ShipPostes({ ship, combatants }: { ship: Combatant; combatants: 
         const gun = (p.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
         return (
           <div className="ship-poste" key={i}>
-            <span className="ship-poste-name">🎯 {SIDE_LABEL[p.side] ?? p.side} · {p.item.name}</span>
+            <span className="ship-poste-name">🎯 {p.side ? SIDE_LABEL[p.side] ?? p.side : 'Omni'} · {p.item.name}</span>
             <div className="ship-crew-row">
               {gun.length ? gun.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={c.name} />) : <span className="muted">— sans servant —</span>}
             </div>

@@ -123,7 +123,7 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   // Répartition des pièces (MDG ch.12 l.432-433) : un bord surchargé pénalise −1/−2 M, Man ET DR de Navigation
   // (trois colonnes RAW DISTINCTES → cumulées). Sans Contenance connue → aucune pénalité.
   const place = vd?.capacity
-    ? placementPenalty((ship.postes ?? []).map((p) => ({ side: p.side, weight: p.item.enc })), vd.capacity)
+    ? placementPenalty((ship.postes ?? []).flatMap((p) => (p.side ? [{ side: p.side, weight: p.item.enc }] : [])), vd.capacity)
     : { m: 0, man: 0, navDR: 0 };
   // « Lissage » → op `moveMod` (M +1, l.293) ; « Peu maniable » → op `skillDRBonus` (Voile/Ramer, −1/niveau,
   // l.173, DISTINCT du Man) — lus en GameOp (`naval-traits.json`, langue unique) sur Traits+Améliorations.

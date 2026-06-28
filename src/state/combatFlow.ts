@@ -272,13 +272,16 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
   if (ammoFamily(w.subType) && !selectedAmmo(active, w)) return { reason: 'noammo', detail: `${active.name} n'a plus de munitions pour ${w.name}.` };
-  // Pièce d'artillerie MONTÉE (poste) : ne porte que dans son ARC, relatif au cap du navire support (MDG
-  // ch.12-13). KIND-AGNOSTIQUE (`shipOfCrew`/`mountedWeaponBears` ne regardent pas le `kind`). `mountSide`
-  // absent (arme non montée) ou support non résolu → aucune contrainte. NB : l'IA aura le MÊME prédicat.
+  // Pièce d'artillerie à ARC (poste) : ne porte que dans son arc. NAVAL = relatif au cap de la coque support
+  // (`shipOfCrew` → `facing[ship.id]`, `ship.pos`). EMPLACEMENT AU SOL (siège) : pas de coque (`shipOfCrew`
+  // → undefined) → l'arc pivote avec l'orientation-monde ET la position DU CHEF lui-même. KIND-AGNOSTIQUE.
+  // `mountSide` absent (arme non montée / pivot libre) → aucune contrainte. NB : l'IA aura le MÊME prédicat.
   if (w.mountSide && target.pos) {
     const battle = get().battle;
     const ship = battle ? shipOfCrew(battle.combatants, active.id) : undefined;
-    if (!mountedWeaponBears(w, ship ? get().facing[ship.id] : undefined, ship?.pos, target.pos))
+    const heading = ship ? get().facing[ship.id] : get().facing[active.id];
+    const pos = ship?.pos ?? active.pos;
+    if (!mountedWeaponBears(w, heading, pos, target.pos))
       return { reason: 'arc', detail: `${w.name} ne porte pas dans cet arc (${w.mountSide}).` };
   }
   return null;

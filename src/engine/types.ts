@@ -636,8 +636,10 @@ export interface ItemInstance {
 export interface ShipPoste {
   /** L'arme montée (instance complète — base via `trappingId` + `qualities`/`enchants` propres). */
   item: ItemInstance;
-  /** Côté de montage relatif au cap → arc de tir (`inFireArc`). */
-  side: FireArc;
+  /** Côté de montage relatif au cap → arc de tir (`inFireArc`). NAVAL : toujours authoré (bordée).
+   *  EMPLACEMENT AU SOL (siège) : ABSENT = pivot libre (tir omni, aucune contrainte d'arc) ; présent =
+   *  arc relatif à l'orientation-monde DU CHEF de pièce (pas d'une coque). */
+  side?: FireArc;
   /** Tire à travers un Sabord (Gun Port) → couvert TOTAL aux servants ; sinon depuis le pont (aucun couvert). */
   sabord?: boolean;
   /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
