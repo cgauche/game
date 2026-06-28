@@ -15,6 +15,7 @@ import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
 import { bellicosePsychImmune, hasTraitKey } from './traits/dispatch';
 import { fearImmuneVs } from './combatFeatures/dispatch';
+import { diseasePsychTraits } from './disease';
 
 export type PsychType =
   | 'peur'
@@ -224,9 +225,13 @@ export function clearPsychOf(all: Combatant[], deadId: string): void {
   }
 }
 
-/** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature OU Talent « Frénésie ». */
+/** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature, Talent « Frénésie »,
+ *  OU Trait psy 'frenesie' OCTROYÉ (mutation / maladie active — ex. Rage meurtrière), lu via
+ *  `effectivePsychTraits` (seul point de lecture des psychTraits, dérivés-maladie compris). */
 export function isFrenzyCapable(c: Combatant): boolean {
-  return hasTraitKey(c.traits, 'frenesie') || (c.talents ?? []).some((t) => t.talentId === 'frenesie');
+  return hasTraitKey(c.traits, 'frenesie')
+    || (c.talents ?? []).some((t) => t.talentId === 'frenesie')
+    || effectivePsychTraits(c).some((p) => p.type === 'frenesie');
 }
 
 /** Le combattant est-il EN Frénésie (LDB 21 l.34) ? État psychologique porté `frenesie` (`psychState`,
@@ -274,12 +279,25 @@ export function resolvePeurTest(
 /** Traits ciblés visant un ALLIÉ (on les défend) plutôt qu'un ennemi (LDB 21 : Amour l.74, Camaraderie l.79). */
 const TARGETS_ALLY = new Set<PsychType>(['amour', 'camaraderie']);
 
+/** Traits psychologiques EFFECTIFS de `c` : ceux STOCKÉS (`c.psychTraits` — natifs, mutations, sorts
+ *  accordés) PLUS ceux DÉRIVÉS des maladies ACTIVES (symptômes manifestés portant `grantPsychTrait` — Rage
+ *  meurtrière → Haine + Frénésie). POINT DE LECTURE UNIQUE des Traits psy possédés : un symptôme actif rend
+ *  son porteur sujet au Trait tant que la maladie dure et le perd à la guérison, SANS attache/détache (re-
+ *  dérivé à chaque lecture, comme les pénalités continues `diseasePassiveOps`). Lu par les déclencheurs
+ *  (`targetedTrigger`) et la pénalité sociale (`skills.containedSocialPenalty`). Les manipulations qui
+ *  ÉCRIVENT la donnée persistée (acquisition `animositeOrHaine`, suppression « Baume », sérialisation)
+ *  restent sur `c.psychTraits` brut — un Trait transitoire de maladie ne s'acquiert ni ne se suspend. */
+export function effectivePsychTraits(c: Combatant): PsychTrait[] {
+  const derived = diseasePsychTraits(c);
+  return derived.length ? [...(c.psychTraits ?? []), ...derived] : (c.psychTraits ?? []);
+}
+
 /** Premier Trait psy CIBLÉ de `self` déclenché ce Round : un membre du groupe `cible` est VISIBLE
  *  (ennemi pour animosite/haine/prejuge/phobie ; allié pour amour/camaraderie) et le trait n'est pas
  *  déjà en affliction active. `visible` = combattants en Ligne de Vue (filtrée par l'appelant, couche
  *  state). Une Cible indéfinie (« un au choix ») est inerte. Pur. Phobie porte son Indice (Peur 1). */
 export function targetedTrigger(self: Combatant, visible: Combatant[]): { type: PsychType; cible: string; sourceId: string; indice?: number } | null {
-  for (const tr of self.psychTraits ?? []) {
+  for (const tr of effectivePsychTraits(self)) {
     if (!tr.cible) continue; // « un au choix » → inerte
     if ((self.psychState ?? []).some((p) => p.type === tr.type && p.cible === tr.cible)) continue; // déjà testé/actif
     const wantAlly = TARGETS_ALLY.has(tr.type);

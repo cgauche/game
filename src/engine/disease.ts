@@ -26,6 +26,7 @@ import { MINUTES_PER_DAY } from './clock';
 import { rollTest } from './tests';
 import { maladies, diseaseLabel, findSymptomById, symptomLabel, type SymptomCapabilities } from '../data';
 import type { GameOp } from './ops';
+import type { PsychTrait, PsychType } from './psychology';
 
 /** Unité d'un temps de maladie (incubation/durée). La base de calcul/stockage reste la MINUTE (`clock.ts`). */
 export type TimeUnit = 'days' | 'hours' | 'minutes';
@@ -156,6 +157,19 @@ export function symptomPassive(inst: DiseaseSymptom): GameOp[] {
 /** GameOp passifs de TOUTES les maladies ACTIVES (collecte unifiée, lue par `passiveMods` kind 'maladie'). */
 export function diseasePassiveOps(c: Combatant): GameOp[] {
   return (c.diseases ?? []).filter((d) => d.phase === 'active').flatMap((d) => d.symptoms.flatMap(symptomPassive));
+}
+/** Traits PSYCHOLOGIQUES conférés par les symptômes ACTIFS — op `grantPsychTrait` du MÊME canal `passive`
+ *  que les pénalités continues (Rage meurtrière → Haine (toutes les choses vivantes) + Frénésie,
+ *  Middenheim p.131). DÉRIVÉS, pas attachés : présents tant que la maladie est active (filtre de
+ *  `diseasePassiveOps`), retirés d'office à la guérison — comme tout passif, ce module ne fait que LIRE le
+ *  symptôme (jamais de mutation de `c.psychTraits` ni d'`applyOps`, donc aucun bookkeeping attache/détache).
+ *  Fusionnés aux Traits STOCKÉS par `effectivePsychTraits` (psychology), seul POINT DE LECTURE. */
+export function diseasePsychTraits(c: Combatant): PsychTrait[] {
+  const out: PsychTrait[] = [];
+  for (const op of diseasePassiveOps(c)) {
+    if (op.op === 'grantPsychTrait') out.push({ type: op.psychType as PsychType, ...(op.cible ? { cible: op.cible } : {}) });
+  }
+  return out;
 }
 /** Test/conséquence de cycle quotidien d'une instance de symptôme (Blessé/Toxine) — donnée. */
 export function symptomOnTick(inst: DiseaseSymptom): { difficulty: Difficulty; onFail: GameOp[] } | undefined {

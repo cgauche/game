@@ -516,5 +516,49 @@
       "book": "EDO",
       "page": 145
     }
+  },
+  {
+    "id": "verole-cerebrale-a-taches-vertes",
+    "label": "Vérole cérébrale à taches vertes",
+    "desc": "Cette terrible maladie transforme ceux qui en souffrent en fous délirants, cherchant à mordre, griffer et démembrer quiconque croise leur chemin. La maladie elle-même se diffuse en infligeant une blessure, ce qui fait qu'à mesure que la violence se déchaîne en conséquence de la maladie, un nombre croissant de personnes y succombent.",
+    "contractDifficulty": "facile",
+    "incubation": {
+      "dice": {
+        "n": 3,
+        "sides": 10,
+        "plus": 5
+      },
+      "unit": "hours"
+    },
+    "duration": {
+      "dice": {
+        "n": 3,
+        "sides": 10,
+        "plus": 10
+      },
+      "unit": "days"
+    },
+    "symptoms": [
+      {
+        "symptomId": "bubons"
+      },
+      {
+        "symptomId": "convulsions"
+      },
+      {
+        "symptomId": "demangeaisons"
+      },
+      {
+        "symptomId": "persistant",
+        "difficulty": "accessible"
+      },
+      {
+        "symptomId": "rage-meurtriere"
+      }
+    ],
+    "source": {
+      "book": "Middenheim",
+      "page": 131
+    }
   }
 ]

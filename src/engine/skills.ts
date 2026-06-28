@@ -13,6 +13,7 @@ import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 import { rule } from './policy';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
+import { effectivePsychTraits } from './psychology';
 
 /** Règles optionnelles « caractéristique alternative » via policy (POINT UNIQUE de la famille) : Métier
  *  comme Savoir → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266). Renvoie la
@@ -110,7 +111,7 @@ export function actorHasSkill(c: Combatant, skillId: string, spec?: string): boo
  *  modélisé), la manifestation par défaut du trait possédé. En état ACTIF (Test ÉCHOUÉ) ce malus
  *  DISPARAÎT : le personnage est sous compulsion (attaquer l.24 / insulter l.52), pas socialement « contenu ». */
 function containedSocialPenalty(tester: Combatant, type: 'animosite' | 'prejuge', targetGroups: string[]): boolean {
-  const possede = (tester.psychTraits ?? []).some((t) => t.type === type && t.cible && groupMatch(t.cible, targetGroups));
+  const possede = effectivePsychTraits(tester).some((t) => t.type === type && t.cible && groupMatch(t.cible, targetGroups));
   if (!possede) return false;
   const actif = (tester.psychState ?? []).some((p) => p.type === type && p.active && p.cible && groupMatch(p.cible, targetGroups));
   return !actif;

@@ -364,5 +364,25 @@
       "book": "EDO",
       "page": 145
     }
+  },
+  {
+    "id": "rage-meurtriere",
+    "label": "Rage meurtrière",
+    "desc": "Vous êtes empli de furie et d'un désir de vous en prendre à tous ceux que vous rencontrez. Vous devenez sujet aux Traits psychologiques *Haine (toutes les choses vivantes)* et *Frénésie* (à l'exception du fait que la frénésie ne vous empêche pas d'être sujet à la *Haine*). Le désir de vous en prendre aux êtres vivants est si puissant que des Tests pour éviter les effets de la *Haine* doivent être effectués tous les cinq Rounds, de sorte que vous puissiez y succomber même après avoir réussi les Tests de Psychologie initiaux.\n\nSi vous réussissez le Test de Psychologie pour éviter les effets de la *Haine*, vous êtes suffisamment lucide pour pouvoir interagir de manière rudimentaire avec d'autres êtres vivants. Cette interaction se limite à les fuir, ou à les avertir qu'ils doivent s'écarter de votre chemin.",
+    "passive": [
+      {
+        "op": "grantPsychTrait",
+        "psychType": "haine",
+        "cible": "toutes les choses vivantes"
+      },
+      {
+        "op": "grantPsychTrait",
+        "psychType": "frenesie"
+      }
+    ],
+    "source": {
+      "book": "Middenheim",
+      "page": 131
+    }
   }
 ]

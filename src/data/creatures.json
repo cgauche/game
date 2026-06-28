@@ -55686,7 +55686,7 @@
       },
       {
         "id": "maladie",
-        "arg": "Vérole cérébrale à taches vertes"
+        "arg": "verole-cerebrale-a-taches-vertes"
       },
       {
         "id": "mort-vivant"
@@ -55765,6 +55765,347 @@
     },
     "appearance": {
       "species": "liche"
+    }
+  },
+  {
+    "id": "gnawretch-skrray",
+    "label": "Gnawretch Skrray",
+    "title": "Châtelain-Chef de guerre",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 5,
+      "CC": 54,
+      "CT": 36,
+      "F": 47,
+      "E": 45,
+      "I": 60,
+      "Ag": 45,
+      "Dex": 41,
+      "Int": 45,
+      "FM": 42,
+      "Soc": 45,
+      "B": 16
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 8,
+        "arg": "Épée"
+      },
+      {
+        "id": "armure",
+        "value": 4
+      },
+      {
+        "id": "attaque-caudale",
+        "value": 6
+      },
+      {
+        "id": "infecte"
+      },
+      {
+        "id": "mutation"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 75
+      },
+      {
+        "id": "calme",
+        "value": 57
+      },
+      {
+        "id": "commandement",
+        "value": 65
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 74,
+        "spec": "Base"
+      },
+      {
+        "id": "escalade",
+        "value": 57
+      },
+      {
+        "id": "esquive",
+        "value": 65
+      },
+      {
+        "id": "intimidation",
+        "value": 67
+      }
+    ],
+    "talents": [
+      {
+        "id": "combattant-en-espace-clos"
+      },
+      {
+        "id": "seigneur-de-guerre"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "Odorat"
+      },
+      {
+        "id": "vigilance"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le Châtelain-Chef de guerre de Sous-Middenheim est un skaven vieux et pernicieux nommé personnellement par un Seigneur de la Ruine du nom de Chef de guerre-Général Paskrit l'Immense. Gnawretch Skrray a le devoir d'attirer la résolution et l'efficacité des habitants de Sous-Middenheim. Il arpente les terriers, revêtu de l'acier rouillé des guerriers d'élite skavens, et quiconque s'attarde sur son chemin reçoit un coup de crochet ou l'atroce douleur de son dard.\n\nGnawretch était autrefois l'incarnation du guerrier skaven : grand, musclé et doté d'une fourrure épaisse et sombre. Réputé pour son impitoyable résilience, notamment lors d'une campagne dans les Montagnes du Bord du Monde où il a souffert de la famine et a dévoré sa propre queue et sa main gauche. Une sombre obstination lui a permis de survivre à ses blessures et d'obtenir le respect des skavens inférieurs. Le Chef de guerre-Général Paskrit a pris Gnawretch à son service, rompant ses liens avec son clan et allongeant son espérance de vie à l'aide d'élixirs de malepierre. Gnawretch s'est fait pousser une nouvelle queue, avec au bout un dard jaune vif. Il n'a pas eu autant de chance pour sa main, et porte une prothèse en forme de crochet.\n\nComme tous les bons tyrans, Gnawretch est un bureaucrate accompli qui adore faire respecter les quotas et les programmes. Si un groupe de recherche de nourriture Scruten revient en retard, ou si des chercheurs Moulder réquisitionnent plus de malepierre que prévu, il consigne ces écarts et distribue des sanctions sans attendre. Curieusement, il aime particulièrement rendre les autres aveugles. Un subalterne qui lui déplait une fois perd son œil gauche, et ceux qui récidivent se retrouvent à tâtonner aveuglément dans les terriers, condamnés à être tués et dévorés par leurs anciens camarades.\n\nGnawretch cherche à gagner de la gloire par le biais d'une gestion efficace de Sous-Middenheim. Il espère qu'un rationnement strict permettra d'augmenter la population. Il envoie des groupes d'éclaireurs du clan Scruten dans la zone environnante pour trouver des éclats de malepierre. Il en consomme la majorité, mais il stocke le reste pour les offrir au clan Skryre dans l'espoir qu'ils soutiennent le projet. En outre, il demande régulièrement au conseil l'autorisation de creuser des fosses de reproduction et un temple dédié au Rat Cornu, dans l'espoir d'améliorer les perspectives et la réputation du repaire.\n\nMais le conseil veut des résultats avant tout. Il souhaite que Gnawretch découvre les sources de la distribution d'eau de Middenheim et ce qui alimente la Flamme éternelle. Gnawretch envoie donc des groupes d'éclaireurs dans les tunnels supérieurs, mais sans succès. Ceux qui explorent les zones les plus intéressantes pour Gnawretch sont attaqués par un adversaire gigantesque que les skavens sont incapables d'identifier. Les rares survivants de ces attaques décrivent une « chose très grande à tête de chèvre ».",
+    "source": {
+      "book": "Middenheim",
+      "page": 109
+    },
+    "appearance": {
+      "species": "skaven"
+    }
+  },
+  {
+    "id": "kanker-flett",
+    "label": "Kanker Flett",
+    "title": "Archiprélat",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 1,
+      "CC": 32,
+      "CT": 30,
+      "F": 30,
+      "E": 56,
+      "I": 40,
+      "Ag": 35,
+      "Dex": 20,
+      "Int": 47,
+      "FM": 46,
+      "Soc": 32,
+      "B": 17
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 7,
+        "arg": "Épée"
+      },
+      {
+        "id": "corruption",
+        "arg": "Mineure"
+      },
+      {
+        "id": "infecte"
+      },
+      {
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "corps-a-corps",
+        "value": 42,
+        "spec": "Base"
+      },
+      {
+        "id": "esquive",
+        "value": 45
+      },
+      {
+        "id": "focalisation",
+        "value": 61
+      },
+      {
+        "id": "intuition",
+        "value": 50
+      },
+      {
+        "id": "langue",
+        "value": 62,
+        "spec": "Magick"
+      },
+      {
+        "id": "perception",
+        "value": 50
+      },
+      {
+        "id": "savoir",
+        "value": 57,
+        "spec": "Magie"
+      }
+    ],
+    "talents": [
+      {
+        "id": "diction-instinctive"
+      },
+      {
+        "id": "magie-des-arcanes"
+      },
+      {
+        "id": "magie-mineure"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "bequille"
+      }
+    ],
+    "spells": [
+      {
+        "id": "creer-un-petit-animal"
+      },
+      {
+        "id": "drain"
+      },
+      {
+        "id": "putrefaction"
+      },
+      {
+        "id": "flot-de-corruption"
+      },
+      {
+        "id": "malediction-de-douleur-paralysante"
+      },
+      {
+        "id": "menace-rampante"
+      },
+      {
+        "id": "infecte-benediction"
+      }
+    ],
+    "desc": "Kanker Flett du clan Pestilens est le prélat des sous-sols de Middenheim, un rang accordé aux individus chargés d'implanter les Pestilens dans une région où le clan était jusqu'alors inactif (Kanker a ajouté l'« Archi » lui-même et cela ne semble déranger personne).\n\nKanker et une clique de serviteurs Moines de la Peste viennent se s'installer dans Sous-Middenheim. Les valets chamailleurs de l'Archiprélat le portent d'un endroit à un autre sur un brancard de bois, car ses jambes ont dépéri et sa silhouette émaciée, cachée par ses vêtements verts en lambeaux, n'est plus qu'une enveloppe paralysée et véreuse. Kanker et son entourage font profil bas, et marmonnent des litanies dévouées au Rat Cornu à ceux qui peuvent les entendre. Même s'ils offrent leurs services au Châtelain-Chef de guerre, ce dernier ne sait pas vraiment comment les employer. Gnawretch et Kanker animent des conférences au cours desquelles Kanker jure de déchaîner une épidémie dans Middenheim une fois que Gnawretch aura découvert une source d'eau.\n\nKanker adorerait répandre une épidémie dans la ville au-dessus, mais il aimerait tout autant la déchaîner chez les skavens. Le Dieu Cornu qu'il vénère est Nurgle, et s'il terrasse Middenheim ou Sous-Middenheim avec une épidémie, son protecteur divin en sera ravi.",
+    "source": {
+      "book": "Middenheim",
+      "page": 110
+    },
+    "appearance": {
+      "species": "skaven"
+    }
+  },
+  {
+    "id": "maitre-moulder-skree",
+    "label": "Skree",
+    "title": "Maître-Moulder",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 5,
+      "CC": 47,
+      "CT": 34,
+      "F": 48,
+      "E": 46,
+      "I": 40,
+      "Ag": 35,
+      "Dex": 45,
+      "Int": 48,
+      "FM": 43,
+      "Soc": 28,
+      "B": 16
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 8,
+        "arg": "Épée"
+      },
+      {
+        "id": "armure",
+        "arg": "Peau 2"
+      },
+      {
+        "id": "increvable"
+      },
+      {
+        "id": "infecte"
+      },
+      {
+        "id": "morsure",
+        "value": 7
+      },
+      {
+        "id": "regeneration"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "corps-a-corps",
+        "value": 62,
+        "spec": "Armes d'hast"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 57,
+        "spec": "Base"
+      },
+      {
+        "id": "dressage",
+        "value": 58
+      },
+      {
+        "id": "escalade",
+        "value": 68
+      },
+      {
+        "id": "guerison",
+        "value": 58
+      },
+      {
+        "id": "perception",
+        "value": 60
+      },
+      {
+        "id": "piegeage",
+        "value": 65
+      },
+      {
+        "id": "resistance",
+        "value": 56
+      },
+      {
+        "id": "savoir",
+        "value": 58,
+        "spec": "Bêtes"
+      },
+      {
+        "id": "soin-aux-animaux",
+        "value": 58
+      }
+    ],
+    "talents": [
+      {
+        "id": "chirurgie"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "Odorat"
+      },
+      {
+        "id": "trappeur"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Skree lui-même ne sait plus lesquelles de ses malformations sont dues à une mutation ou à la chirurgie. Il ressemble davantage à un phacochère à écailles qu'à un rat. Chacune de ses mains possède six doigts et deux pouces. Sa silhouette colossale est habillée de tabliers de cuir avec toutes sortes de boucles et de lanières percées par des rangées de cornes tranchantes qui sortent de son dos voûté.\n\nSkree est le chef du clan skaven Moulder, qui a été envoyé dans Sous-Middenheim depuis Malefosse, une forteresse skaven située au nord dans les Montagnes du Bord du Monde au nord. Les Moulder sont soi-disant venus aider le Châtelain-Chef de guerre Gnawretch pour ses expéditions en lui fournissant des rats pisteurs entraînés en échange de malepierre.\n\nLes maîtres de Malefosse ont des intentions secrètes. Pour eux, Middenheim est associée à des légendes telles que les terribles loups blancs ou des humains qui se transforment en animaux avant de reprendre leur forme originale. La capture et l'étude de ces spécimens est essentielle à Malefosse. Le niveau de tolérance du corps humain à la malepierre les intéresse également. Skree a été chargé d'obtenir des sujets pour mener des expériences. Les négociations avec Gnawretch n'ont rien donné, car le Châtelain-Chef de guerre est trop prudent pour dévoiler son jeu en enlevant directement des Middenheimers.",
+    "source": {
+      "book": "Middenheim",
+      "page": 110
+    },
+    "appearance": {
+      "species": "skaven"
     }
   }
 ]

@@ -15445,6 +15445,58 @@
     "family": "arcane"
   },
   {
+    "id": "infecte-benediction",
+    "label": "Infecte Bénédiction",
+    "type": "Sort",
+    "subType": null,
+    "cn": "6",
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "FM"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "bonusOf": "FM"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "FM"
+      }
+    },
+    "desc": "Vous maudissez les lames, griffes et dents de ceux qui vous entourent pour entraîner des blessures infectées. Pour la durée du sort, chaque Personnage dans la zone d'effet compte comme possédant le Trait de créature Infecté.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "grantTrait",
+                "traitId": "infecte"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "Middenheim",
+      "page": 109
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
     "id": "furoncle-infecte",
     "label": "Furoncle Infecté",
     "type": "Sort",

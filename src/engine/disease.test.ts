@@ -8,9 +8,11 @@ import {
   activeMalaiseCount,
   diseaseBlesseCount,
   diseasePassiveOps,
+  diseasePsychTraits,
   rollContraction,
   applyDiseasePersist,
 } from './disease';
+import { effectivePsychTraits, isFrenzyCapable } from './psychology';
 import type { GameOp } from './ops';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre (déjà dans les bornes attendues). */
@@ -122,6 +124,43 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     const log = tickDisease(c, MINUTES_PER_DAY, seq([1, 100, 5]), 5);
     expect(c.diseases!.map((d) => d.name)).toContain('infection-du-sang');
     expect(log.some((l) => /stupéfiant/.test(l))).toBe(true);
+  });
+
+  it('grantPsychTrait des symptômes actifs (Rage meurtrière) : Haine + Frénésie EFFECTIFS tant que la maladie est active, retirés à la guérison', () => {
+    const lowRng: RNG = { int: () => 1 }; // tout Test réussit (roll=1) → cycle/persistant réussis
+    // Témoin : aucune maladie → aucun Trait psy dérivé.
+    expect(effectivePsychTraits(sick())).toEqual([]);
+
+    // Vérole cérébrale à taches vertes ACTIVE (symptôme « Rage meurtrière » manifesté).
+    const dz = contractDisease('verole-cerebrale-a-taches-vertes', lowRng, { incubation: 0, duration: 1 })!;
+    expect(dz.phase).toBe('active');
+    const c = sick({ diseases: [dz] });
+
+    // La donnée du symptôme (passive grantPsychTrait) est désormais CÂBLÉE : sujet à Haine (toutes les
+    // choses vivantes) + Frénésie. (diseasePsychTraits = le collecteur ; effectivePsychTraits = stockés ∪ dérivés.)
+    expect(diseasePsychTraits(c)).toEqual([
+      { type: 'haine', cible: 'toutes les choses vivantes' },
+      { type: 'frenesie' },
+    ]);
+    const active = effectivePsychTraits(c);
+    expect(active).toContainEqual({ type: 'haine', cible: 'toutes les choses vivantes' });
+    expect(active).toContainEqual({ type: 'frenesie' });
+    // EFFET RÉEL (pas juste l'appartenance à la liste) : la Frénésie octroyée par la maladie rend
+    // le combattant frénésie-CAPABLE — sinon le grant resterait inerte au combat.
+    expect(isFrenzyCapable(sick())).toBe(false); // témoin : sans maladie ni trait/talent
+    expect(isFrenzyCapable(c)).toBe(true);
+
+    // Fin de durée → Test persistant (Accessible) réussi → guérison → Traits retirés d'office (dérivation,
+    // zéro bookkeeping : la maladie n'est plus active donc plus rien à dériver).
+    tickDisease(c, MINUTES_PER_DAY, lowRng, 80);
+    expect(c.diseases).toHaveLength(0);
+    expect(effectivePsychTraits(c)).toEqual([]);
+  });
+
+  it('symptôme en INCUBATION : pas encore manifesté → aucun Trait psy dérivé', () => {
+    const dz = contractDisease('verole-cerebrale-a-taches-vertes', { int: () => 1 }, { incubation: 2, duration: 5 })!;
+    expect(dz.phase).toBe('incubation');
+    expect(diseasePsychTraits(sick({ diseases: [dz] }))).toEqual([]); // dérivation gatée par phase==='active'
   });
 
   it('diseasePassiveOps : fièvre = charMod −10 aux Physiques/Sociaux, rien au Mental', () => {
