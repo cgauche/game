@@ -1,21 +1,49 @@
 /**
- * Setup global Vitest (`test.setupFiles`) — FILET D'ISOLATION DES TIMERS.
+ * Setup global Vitest (`test.setupFiles`).
  *
- * Le combat planifie l'IA et l'enchaînement des tours via de VRAIS `setTimeout` (`combatFlow.ts` →
- * `advanceTurn`/`runEnemyAI`, délais `TEMPO` de `tempo.ts`) qui MUTENT `battle`. Un test qui arme
- * `vi.useFakeTimers()` sans le restaurer laisse des timers fantômes : un `setTimeout` planifié mais non
- * drainé se déclenche pendant un test ULTÉRIEUR et corrompt `battle.turn` → flake intermittent (le RNG
- * étant seedé, c'est 100 % ce timer résiduel, jamais le hasard).
+ * 1. RESET DES SINGLETONS ENTRE TESTS (requis par `test.isolate: false`, cf. vite.config.ts).
+ *    `isolate: false` partage le graphe de modules entre fichiers d'un même worker (le moteur pur +
+ *    ~1 Mo de `src/data/*.json` sont évalués UNE fois par worker, au lieu d'une fois par fichier) → la
+ *    suite passe de ~80 s à ~17 s. Contrepartie : les SINGLETONS de module gardent leur état d'un test
+ *    à l'autre. On repart donc d'un état NEUF avant CHAQUE test (les hooks de setupFile sont les plus
+ *    EXTERNES → s'exécutent AVANT le `beforeEach` propre du fichier, qui pose ensuite son décor) :
+ *    - le STORE Zustand (`useGame`) : même reset « zéro-maintenance » que `startScene` (le JSON
+ *      round-trip retire les fonctions → seules les données sont remises à plat ; le merge partiel de
+ *      zustand préserve les actions).
+ *    - le REGISTRE DES RÈGLES OPTIONNELLES (`engine/policy`) : `loadRuleOverrides({})` purge toute
+ *      surcharge runtime → toutes les règles reviennent à leur défaut RAW (sinon une règle maison
+ *      posée par un test — `cleave`, `combat-optional-rules`… — fuit dans un test pur ultérieur).
+ *    - le REGISTRE DES CONSÉQUENCES DE CASCADE (`state/cascade`) : peuplé à l'import par les modules de
+ *      domaine (restFlow/combatFlow/travelFlow — TOUJOURS importés ici via le store), mais aussi PAR
+ *      LES TESTS (`cascade.test` enregistre un faux `shelter`, `cadence-rapide` un faux `tally`…). On
+ *      capture le registre RÉEL avant chaque test et on le restaure après (retrait des kinds ajoutés,
+ *      restauration des kinds écrasés) — sinon un faux applier écrase le vrai et fuit (ex. `shelter`
+ *      écrasé → `rest-flow` n'insère plus l'Exposition).
  *
- * Ce hook GLOBAL garantit qu'AUCUN test (présent ET futur, sur les 419 fichiers) ne laisse de fake timer
- * actif. Il s'exécute APRÈS l'`afterEach` de chaque fichier (ordre Vitest : les hooks de setupFile sont
- * les plus EXTERNES) → no-op pour les fichiers déjà corrects (qui restaurent eux-mêmes), filet de
- * sécurité pour les autres. `vi.useRealTimers()` DÉSINSTALLE l'horloge factice et JETTE ses timers en
- * attente (le `setTimeout` fantôme de l'IA ne pourra plus se déclencher) ; appelé en mode réel, c'est un
- * no-op → ZÉRO risque (pas besoin de tester l'état, contrairement à `isFakeTimersInstalled` absent en v2.1).
+ * 2. FILET D'ISOLATION DES TIMERS. Le combat planifie l'IA et l'enchaînement des tours via de VRAIS
+ *    `setTimeout` (`combatFlow.ts`) qui MUTENT `battle`. Un test qui arme `vi.useFakeTimers()` sans le
+ *    restaurer laisse des timers fantômes : un `setTimeout` planifié mais non drainé se déclenche
+ *    pendant un test ULTÉRIEUR et corrompt `battle.turn` → flake. `vi.useRealTimers()` DÉSINSTALLE
+ *    l'horloge factice et JETTE ses timers en attente ; en mode réel, c'est un no-op → ZÉRO risque.
  */
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
+import { useGame, type GameState } from './state/store';
+import { loadRuleOverrides } from './engine/policy';
+import { cascadeAppliers } from './state/cascade';
+
+// État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
+// immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
+const PRISTINE_STATE = JSON.stringify(useGame.getInitialState());
+let cascadeSnapshot: Record<string, (typeof cascadeAppliers)[string]> = {};
+
+beforeEach(() => {
+  useGame.setState(JSON.parse(PRISTINE_STATE) as Partial<GameState>);
+  loadRuleOverrides({});
+  cascadeSnapshot = { ...cascadeAppliers };
+});
 
 afterEach(() => {
+  for (const k of Object.keys(cascadeAppliers)) if (!(k in cascadeSnapshot)) delete cascadeAppliers[k];
+  Object.assign(cascadeAppliers, cascadeSnapshot);
   vi.useRealTimers();
 });
