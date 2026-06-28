@@ -199,7 +199,7 @@ describe('Balayage en combat (store)', () => {
     expect(useGame.getState().pendingCleave).toBeNull();
   });
 
-  it('en se recalant sur la case d’un mort, un Énorme dégage les plus petits sous son empreinte (LDB 85 l.308-309)', () => {
+  it('en se recalant sur la case d’un mort, un Énorme dégage les plus petits sous son empreinte (LDB 85 l.373-374)', () => {
     useGame.getState().seedRng(7);
     const b = setupBattle(2);
     const heroes = b.combatants.filter((c) => c.kind === 'hero');

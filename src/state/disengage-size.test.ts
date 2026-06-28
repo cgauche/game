@@ -6,7 +6,7 @@ import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
 // ---------------------------------------------------------------------------
-// Désengagement gratuit du plus grand (LDB 85 - Traits de créature.md l.308-309)
+// Désengagement gratuit du plus grand (LDB 85 - Traits de créature.md l.373-374)
 // ---------------------------------------------------------------------------
 
 describe('Désengagement & Taille (store)', () => {

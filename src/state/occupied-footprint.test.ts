@@ -10,13 +10,13 @@ const flatScene = (w: number, h: number): Scene =>
   ({ id: 's', name: 's', dimensions: { w, h }, ambiance: 'jour', levels: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
 // occupied() = tuiles bloquant le déplacement d'un mover : empreinte (LDB 15 l.55) de chaque autre
-// combattant, SAUF ceux de Taille strictement inférieure (« dégagés du chemin », LDB 85 l.308-309).
+// combattant, SAUF ceux de Taille strictement inférieure (« dégagés du chemin », LDB 85 l.373-374).
 const mk = (id: string, x: number, y: number, size?: SizeCategory): Combatant =>
   ({ id, name: id, pos: { x, y }, size, wounds: { current: 10, max: 10, base: 10 }, conditions: [] }) as unknown as Combatant;
 const battle = (cs: Combatant[]): BattleState => ({ combatants: cs }) as unknown as BattleState;
 
 describe('occupied — empreinte + relativité de Taille au déplacement', () => {
-  it('un mover plus GRAND ignore les combattants plus petits (dégagés du chemin, 85 l.308-309)', () => {
+  it('un mover plus GRAND ignore les combattants plus petits (dégagés du chemin, 85 l.373-374)', () => {
     const big = mk('big', 0, 0, 'grande');
     const small = mk('small', 5, 5, 'moyenne');
     expect(occupied(battle([big, small]), big).has('5,5')).toBe(false);
@@ -45,7 +45,7 @@ describe('occupied — empreinte + relativité de Taille au déplacement', () =>
   });
 });
 
-describe('displaceSmaller — un grand dégage les plus petits de son empreinte (LDB 85 l.308-309)', () => {
+describe('displaceSmaller — un grand dégage les plus petits de son empreinte (LDB 85 l.373-374)', () => {
   it('pousse une créature plus petite sous l’empreinte vers une case libre hors-empreinte', () => {
     const big = mk('big', 5, 5, 'grande'); // occupe 5..6 × 5..6
     const small = mk('small', 6, 6, 'moyenne'); // SOUS l’empreinte du grand

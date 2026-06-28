@@ -108,7 +108,7 @@ export function findFreeTile(scene: Scene): Pt {
 
 /**
  * Après qu'un combattant a bougé, « dégage de son chemin » les combattants de Taille STRICTEMENT
- * inférieure dont la case est désormais SOUS son empreinte (LDB 85 l.308-309 : un plus grand « se
+ * inférieure dont la case est désormais SOUS son empreinte (LDB 85 l.373-374 : un plus grand « se
  * déplace où il veut ») : chacun est poussé vers la case libre la plus proche, hors de l'empreinte.
  * Mute les `pos` en place ; l'appelant émet SCENE_DIRTY / re-set la bataille. Renvoie true si déplacé.
  */

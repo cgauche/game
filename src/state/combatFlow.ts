@@ -741,9 +741,9 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
   const foes = (mover.engagedWith ?? [])
     .map((id) => battle.combatants.find((c) => c.id === id))
     .filter((c): c is Combatant => !!c && !isOutOfAction(c));
-  // Désengagement GRATUIT du plus grand (LDB 85 l.308-309) : une créature plus grande que TOUS ses
+  // Désengagement GRATUIT du plus grand (LDB 85 l.373-374) : une créature plus grande que TOUS ses
   // adversaires Engagés les écarte et se déplace librement, sans Test ni sacrifice d'Avantage.
-  // Plus grand que TOUS ses Engagés (85 l.308-309) OU Nuée (ignore l'Engagement en se déplaçant, l.200) → départ libre.
+  // Plus grand que TOUS ses Engagés (85 l.373-374) OU Nuée (ignore l'Engagement en se déplaçant, l.200) → départ libre.
   const freeDisengage = foes.length > 0 && (mover.swarm || foes.every((f) => sizeGap(mover.size, f.size) >= 1));
   if (!foes.length || freeDisengage) {
     if (freeDisengage) {
@@ -1957,7 +1957,7 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
   // Cible primaire tuée → l'attaquant se déplace sur sa case avant d'enchaîner (l.10).
   if (isOutOfAction(primaryTarget) && primaryTarget.pos) {
     attacker.pos = { ...primaryTarget.pos };
-    displaceSmaller(get, attacker); // en se recalant, un grand dégage les plus petits sous son empreinte (85 l.308-309)
+    displaceSmaller(get, attacker); // en se recalant, un grand dégage les plus petits sous son empreinte (85 l.373-374)
   }
   for (let n = 0; n < bcc; n++) {
     const battle = get().battle;
@@ -1971,7 +1971,7 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
     const killed = isOutOfAction(next);
     if (killed && next.pos) {
       attacker.pos = { ...next.pos }; // se déplace sur la case libérée
-      displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.308-309)
+      displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.373-374)
     }
     if (fm && !killed) break; // Frappe Mortelle : on ne poursuit qu'en TUANT (LDB 14 l.9)
   }
@@ -1996,7 +1996,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
   const hitIds = pc ? [...new Set([...pc.hitIds, target.id])] : [target.id];
   if (isOutOfAction(target) && target.pos) {
     attacker.pos = { ...target.pos }; // case libérée (l.10)
-    displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.308-309)
+    displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.373-374)
   }
   const battle = get().battle!;
   const bcc = bonus(effectiveChar(attacker, 'CC'));
@@ -2344,13 +2344,13 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
   if (!battle || battle.over) { enemy.pendingFreeAttacks = undefined; return false; }
   if (enemy.pendingFreeAttacks === undefined) {
     const atks = creatureAttacks(enemy.traits ?? []);
-    // Empoignade tenue par un Tentacule / la Langue (LDB 85 p.343/340) : « vous pouvez utiliser une Action
-    // d'Attaque GRATUITE pour résoudre l'Empoignade AU LIEU de l'Action de la créature » — le membre tient
-    // pendant que le corps agit. Pour CHAQUE adversaire encore Empoigné et en vie : Test opposé de Force
-    // GRATUIT (résolveur PARTAGÉ `resolveGrappleOpposed`), instantané. La créature N'EST PAS verrouillée
-    // (ai.ts saute le verrou LOT B pour ce trait) → elle CONSERVE son Action normale. En tête (avant qu'une
-    // Langue ne RE-saisisse une cible ce tour) → une prise établie CE tour n'est pas écrasée dans la foulée.
-    if (atks.some((a) => a.kind === 'tentacules' || a.kind === 'langue')) {
+    // Empoignade tenue par un Tentacule (LDB 85 p.343) UNIQUEMENT : « vous pouvez utiliser une Action d'Attaque
+    // GRATUITE pour résoudre l'Empoignade AU LIEU de l'Action de la créature » — le tentacule tient pendant que
+    // le corps agit. Pour CHAQUE adversaire encore Empoigné et en vie : Test opposé de Force GRATUIT (résolveur
+    // PARTAGÉ `resolveGrappleOpposed`), instantané. La créature N'EST PAS verrouillée (ai.ts saute le verrou
+    // LOT B pour le trait tentacule) → elle CONSERVE son Action normale. La Langue préhensile (p.340) n'a PAS
+    // cette dérogation (« voir page 163 ») → elle est verrouillée comme tout grappleur (LOT B), pas ici.
+    if (atks.some((a) => a.kind === 'tentacules')) {
       for (const fid of [...(enemy.grapplingWith ?? [])]) {
         const foe = battle.combatants.find((c) => c.id === fid);
         if (!foe || isOutOfAction(foe) || !areGrappling(enemy, foe)) continue;
@@ -3142,8 +3142,9 @@ export function applyCast(
         // réellement mitigante (`magicDeviationEligible` : pas de bypass de Domaine, sort qui n'ignore pas les PA).
         // Un dépassement (overkill) par Projectile n'offre PAS le troc — cohérent avec la mêlée (overkill ≠ double re-tiré).
         const elig = critWound ? magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, mr) : { eligible: false, extraWounds: 0 };
-        if (critWound && elig.eligible && t.kind === 'enemy') {
-          enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned);
+        if (critWound && elig.eligible && t.kind === 'enemy' && enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
+          // ennemi : déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF /
+          // pas de PA), `enemyAutoDeviate` retourne false → on TOMBE sur `applyCritAndFinalize` (Critique subi).
         } else if (critWound && elig.eligible && t.kind === 'hero') {
           // HÉROS blindé : SUSPEND son choix (étape `self`, push SYNCHRONE — la boucle multi-cibles continue,
           // chaque cible porte SON propre step indépendant). Subir applique le Critique « sec » pré-tiré (overkill 0).
@@ -4757,7 +4758,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         if (!b || b.over || !b.combatants.includes(enemy)) return;
         enemy.pos = mv.to;
         if (geom !== enemy) geom.pos = { ...mv.to }; // Combat monté : la monture suit le cavalier (couple solidaire)
-        displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
+        displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.373-374)
         get().faceFromPath(enemy.id, path);
         if (geom !== enemy) get().faceFromPath(geom.id, path);
         bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });

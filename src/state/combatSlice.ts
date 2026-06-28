@@ -470,6 +470,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const mount = mountOf(battle, active);
         active.pos = { ...pt };
         if (mount) mount.pos = { ...pt }; // couple cavalier↔monture solidaire (comme le déplacement)
+        displaceSmaller(get, mount ?? active); // un grand qui se téléporte dégage aussi les plus petits sous son empreinte (LDB 85 l.373-374)
         get().faceFromPath(active.id, [from, pt]);
         bus.emit(EVT.ANIM_MOVE, { id: active.id, path: [{ ...pt }] });
         if (mount) bus.emit(EVT.ANIM_MOVE, { id: mount.id, path: [{ ...pt }] });
@@ -575,7 +576,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const path = pathTo(scene, active.pos!, pt, env);
       active.pos = { ...pt };
       if (geom !== active) geom.pos = { ...pt }; // déplace la monture sous le cavalier (couple solidaire)
-      displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
+      displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.373-374)
       get().faceFromPath(active.id, path);
       if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
@@ -754,7 +755,7 @@ export function createCombatSlice(get: Get, set: Set) {
         approachPath = plan.path;
         active.pos = { ...plan.dest };
         if (geom !== active) geom.pos = { ...plan.dest }; // la monture charge sous le cavalier
-        displaceSmaller(get, geom); // charge d'un grand : idem dégage les plus petits (85 l.308-309)
+        displaceSmaller(get, geom); // charge d'un grand : idem dégage les plus petits (85 l.373-374)
         get().faceFromPath(active.id, approachPath);
         if (geom !== active) get().faceFromPath(geom.id, approachPath);
         bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });

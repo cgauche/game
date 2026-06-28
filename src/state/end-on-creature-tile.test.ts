@@ -6,7 +6,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
-import { attackPlan, computeMoveReach } from './combatFlow';
+import { attackPlan, computeMoveReach, computeRunReach } from './combatFlow';
 import { sizeFootprint } from './footprint';
 import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
@@ -123,5 +123,21 @@ describe('intégration store — un héros ne peut pas FINIR sur la case d\'un e
       expect(plan.dest).not.toEqual({ x: 8, y: 10 });
       expect(sizeFootprint(hero.size)).toBe(1); // garde-fou : le héros EST 1×1 (sinon le scénario ne teste rien)
     }
+  });
+
+  it('computeRunReach exclut AUSSI la case de l\'ennemi plus petit (même invariant moveEnv/noStop que la Marche)', () => {
+    const { H, enemies } = setup();
+    const E = enemies[0];
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    H.pos = { x: 6, y: 10 };
+    H.engagedWith = []; // non Engagé : garde de computeRunReach (la Course exige le Mouvement libre)
+    E.size = 'petite';
+    E.pos = { x: 8, y: 10 };
+    const b = useGame.getState().battle!;
+    useGame.setState({ battle: { ...b, turn: b.order.indexOf(H.id), action: null, movementUsed: 0, acted: false } });
+
+    const run = computeRunReach(useGame.getState);
+    expect(run.size).toBeGreaterThan(0); // la Course produit bien des cases (sinon l'assertion serait vacue)
+    expect(run.has('8,10')).toBe(false); // un futur producteur de portée qui oublie noStop/moveEnv est attrapé ici
   });
 });
