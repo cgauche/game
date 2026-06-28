@@ -119,6 +119,7 @@
               {
                 "op": "condition",
                 "name": "empetre",
+                "grapple": true,
                 "escapeStrength": {
                   "charOf": "F"
                 },
@@ -180,6 +181,7 @@
                   {
                     "op": "condition",
                     "name": "empetre",
+                    "grapple": true,
                     "escapeStrength": {
                       "charOf": "F"
                     }

@@ -379,6 +379,7 @@ export const fr = {
   'cs.grappleFree': '{name} se dégage : {n} État(s) Empêtré retiré(s).',
   'cs.grappleLose': '{name} perd la lutte ; {foe} gagne +1 Avantage.',
   'cs.grappleTie': '{name} et {foe} restent au corps à corps : l’Empoignade se poursuit.',
+  'cs.tonguePull': '{name} enroule sa langue autour de {foe} et l’entraîne à lui.',
   'cs.fleeBackstab': '{name} fuit — {foe} frappe dans le dos : {log}',
   'cs.panic': '{name} panique : {broken} État(s) Brisé.',
   'cs.teleport': '{name} se téléporte.',

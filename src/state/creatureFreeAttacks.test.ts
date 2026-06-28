@@ -5,7 +5,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { resetRule, setRule } from '../engine/policy';
-import { areGrappling } from '../engine/grapple';
+import { areGrappling, setGrapple } from '../engine/grapple';
 import type { Combatant } from '../engine/types';
 
 // Attaques GRATUITES de créature (Taille & traits) : Morsure / Attaque caudale / Piétinement,
@@ -232,5 +232,51 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.conditions.some((c) => c.name === 'empoisonne')).toBe(true);
+  });
+
+  // ── Tentacules / Langue préhensile : entame & résolution d'Empoignade (LDB 85 p.343/340) ──
+  it('Tentacules : une touche établit la PRISE d’Empoignade (grapple:true, « entame une Empoignade avec ce tentacule »)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = [{ id: 'tentacules', count: 1, value: 9 }]; E.advantage = 0; E.characteristics.CC = 95; // coût 0
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const st = useGame.getState();
+    const hLive = st.battle!.combatants.find((c) => c.id === H.id)!;
+    const eLive = st.battle!.combatants.find((c) => c.id === E.id)!;
+    expect(hLive.conditions.some((c) => c.name === 'empetre')).toBe(true);
+    expect(areGrappling(eLive, hLive)).toBe(true); // la touche entame l'Empoignade
+  });
+
+  it('Langue préhensile : touche une proie plus PETITE → Empêtré, PRISE établie, proie ENTRAÎNÉE vers la créature', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = [{ id: 'langue-prehensile', value: 9 }]; E.advantage = 2; E.characteristics.CT = 95; // 1 Av, touche
+    E.pos = { x: 10, y: 10 }; E.size = 'grande';
+    H.pos = { x: 14, y: 10 }; H.size = 'moyenne';
+    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive'); // ne peut esquiver
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const st = useGame.getState();
+    const hLive = st.battle!.combatants.find((c) => c.id === H.id)!;
+    const eLive = st.battle!.combatants.find((c) => c.id === E.id)!;
+    expect(hLive.conditions.some((c) => c.name === 'empetre')).toBe(true);
+    expect(areGrappling(eLive, hLive)).toBe(true); // « conserver la cible enroulée … démarrage d'une Empoignade »
+    expect(hLive.pos!.x).toBeLessThan(14); // « il est entraîné vers la créature » (Taille inférieure)
+  });
+
+  it('Empoignade tenue par un Tentacule : résolue en Attaque GRATUITE (Test opposé de Force), Action NON consommée', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = [{ id: 'tentacules', count: 1, value: 9 }]; E.advantage = 0;
+    E.characteristics.CC = 1; E.characteristics.F = 90; // le tentacule RATE (CC 1) → seuls les Dégâts d'Empoignade comptent ; Force écrasante
+    H.characteristics.F = 1; // la proie perd le Test opposé de Force
+    H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
+    setGrapple(E, H); // prise déjà établie (tour précédent)
+    const before = H.wounds.current;
+    const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(suspended).toBe(false);
+    const st = useGame.getState();
+    expect(st.battle!.acted).toBe(false); // résolution GRATUITE : la créature CONSERVE son Action (PAS verrouillée)
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before); // Dégâts d'Empoignade (BF+DR, PA ignorés)
+    expect(st.battle!.log.some((l) => l.text.includes('écrase'))).toBe(true); // ligne du Test opposé GAGNÉ
   });
 });

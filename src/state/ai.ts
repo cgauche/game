@@ -724,9 +724,16 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // gratuit) n'est BÉNÉFIQUE qu'à un tireur/lanceur (il veut sa distance) : un mêleeur GAGNE à rester Empoigné
   // (Dégâts BF+DR ignorant les PA + il fixe l'adversaire au sol). La décision break/test est PURE ; le
   // résolveur impur (`runEnemyAI`) exécute « break » par re-décision (comme `spendResource`) ou le Test opposé.
+  // EXCEPTION Tentacules (LDB 85 p.343) UNIQUEMENT : « Si un tentacule est en Empoignade, vous pouvez utiliser
+  // une Action d'Attaque GRATUITE pour résoudre l'Empoignade AU LIEU de l'Action de la créature » — le tentacule
+  // tient pendant que le CORPS garde son Action normale (résolution gratuite dans aiCreatureFreeAttacks). La
+  // Langue préhensile (p.340) n'a PAS cette dérogation : « le démarrage d'une Empoignade (voir page 163) » → règle
+  // GÉNÉRALE → la créature est VERROUILLÉE comme tout grappleur (LOT B ; un Langue tireur à Avantage supérieur y
+  // « laisse partir la cible » via le Break). Seule la VICTIME (sans trait de tentacule) reste toujours verrouillée.
+  const holdsViaLimb = creatureAttacks(enemy.traits ?? []).some((a) => a.kind === 'tentacules');
   {
     const partner = enemy.grapplingWith?.find((id) => heroes.some((h) => h.id === id));
-    if (partner) {
+    if (partner && !holdsViaLimb) {
       const foe = heroes.find((h) => h.id === partner)!;
       const resolution: 'break' | 'test' = enemy.advantage > foe.advantage && isShooterOrCaster ? 'break' : 'test';
       return forced({ kind: 'grapple', targetId: partner, resolution });
