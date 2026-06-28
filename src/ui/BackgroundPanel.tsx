@@ -1,11 +1,13 @@
 import { useGame } from '../state/store';
 import { Combatant } from '../engine/types';
 import { findStarById } from '../data';
+import { BackgroundFields } from './BackgroundFields';
 
 /** Onglet « Background » de la fiche : bio en LECTURE SEULE (détails physiques + astrologie, LDB 05
- *  étape 6 — cosmétique) et trois champs ÉDITABLES hors combat (Motivation + Ambitions court/long,
- *  LDB 05 l.710-717). L'édition passe par `setHeroBackground` → persistée en save + roster. En
- *  combat, l'édition est verrouillée (on ne mute que `store.party`, jamais la copie de bataille). */
+ *  étape 6 — cosmétique) et les champs ÉDITABLES hors combat (Motivation + Ambitions court/long,
+ *  LDB 05 l.710-717) — rendus par la primitive PARTAGÉE `BackgroundFields` (même markup/hints que le
+ *  créateur). L'édition passe par `setHeroBackground` → persistée en save + roster. En combat, c'est
+ *  verrouillé (on ne mute que `store.party`, jamais la copie de bataille). */
 export function BackgroundPanel({ hero }: { hero: Combatant }) {
   const setHeroBackground = useGame((s) => s.setHeroBackground);
   const inBattle = useGame((s) => !!s.battle);
@@ -42,38 +44,11 @@ export function BackgroundPanel({ hero }: { hero: Combatant }) {
       <div className="mini-title">
         Background <span className="bg-hint">✎ Modifiable hors combat</span>
       </div>
-      <div className="bg-edit">
-        <label className="bg-field">
-          <span className="bg-label">Motivation</span>
-          <input
-            type="text"
-            value={hero.motivation ?? ''}
-            disabled={inBattle}
-            placeholder="Aucune motivation notée"
-            onChange={(e) => setHeroBackground(hero.id, { motivation: e.target.value })}
-          />
-        </label>
-        <label className="bg-field">
-          <span className="bg-label">Ambition à court terme</span>
-          <textarea
-            rows={2}
-            value={d?.ambitionShort ?? ''}
-            disabled={inBattle}
-            placeholder="Aucune ambition notée"
-            onChange={(e) => setHeroBackground(hero.id, { ambitionShort: e.target.value })}
-          />
-        </label>
-        <label className="bg-field">
-          <span className="bg-label">Ambition à long terme</span>
-          <textarea
-            rows={2}
-            value={d?.ambitionLong ?? ''}
-            disabled={inBattle}
-            placeholder="Aucune ambition notée"
-            onChange={(e) => setHeroBackground(hero.id, { ambitionLong: e.target.value })}
-          />
-        </label>
-      </div>
+      <BackgroundFields
+        values={{ motivation: hero.motivation ?? '', ambitionShort: d?.ambitionShort ?? '', ambitionLong: d?.ambitionLong ?? '' }}
+        onChange={(patch) => setHeroBackground(hero.id, patch)}
+        disabled={inBattle}
+      />
     </div>
   );
 }

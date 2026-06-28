@@ -400,24 +400,14 @@
 .amazing-chip.amazing-success { color: var(--gold2); border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }
 .amazing-chip.amazing-failure { color: var(--danger-soft); border-color: var(--danger-soft); background: color-mix(in srgb, var(--danger-soft) 14%, transparent); }
 
-/* ── Onglet « Background » (bio + ambitions) ── */
+/* ── Onglet « Background » : bloc bio en LECTURE SEULE (les champs éditables = primitive `.bg-edit`
+   de components.css, partagée avec le créateur). ── */
 .bg-panel { display: flex; flex-direction: column; }
 .bg-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 8px;
 }
-.bg-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); }
-.bg-edit { display: flex; flex-direction: column; gap: 10px; }
-.bg-field { display: flex; flex-direction: column; gap: 4px; }
-.bg-field > .bg-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-.bg-field input,
-.bg-field textarea { width: 100%; resize: vertical; }
 
 .test-scenarios { max-width: 720px; }
 .ts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }

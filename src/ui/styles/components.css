@@ -98,6 +98,16 @@
   margin-bottom: 10px;
 }
 
+/* ── Bloc de champs « background » (Motivation + Ambitions) — primitive `BackgroundFields`, partagée
+   créateur ⇄ fiche : empilement + contrôles pleine largeur. Les champs sont des `div.field` (≠ label)
+   pour que la règle générique `.zone-section label:has(…)` du créateur ne s'applique pas → rendu
+   IDENTIQUE sur les deux surfaces, sans guerre de spécificité. */
+.bg-edit { display: flex; flex-direction: column; gap: 10px; }
+.bg-edit input,
+.bg-edit textarea { width: 100%; }
+.bg-edit textarea { resize: vertical; }
+.bg-hint { font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); }
+
 /* ── CARTOUCHE de stat (label + valeur) ── */
 .stat-chip {
   display: flex;
