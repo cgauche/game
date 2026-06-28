@@ -24778,6 +24778,9 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 0
+    },
+    "appearance": {
+      "species": "marcassins"
     }
   },
   {
@@ -25323,6 +25326,9 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 0
+    },
+    "appearance": {
+      "species": "rats"
     }
   },
   {
@@ -25948,6 +25954,9 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 0
+    },
+    "appearance": {
+      "species": "araignees"
     }
   },
   {
@@ -31925,6 +31934,9 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 299
+    },
+    "appearance": {
+      "species": "nurglings"
     }
   },
   {
@@ -41932,6 +41944,9 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 0
+    },
+    "appearance": {
+      "species": "snotlings"
     }
   },
   {
@@ -45011,6 +45026,9 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 504
+    },
+    "appearance": {
+      "species": "squigs"
     }
   },
   {
@@ -46910,6 +46928,9 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 532
+    },
+    "appearance": {
+      "species": "zombies"
     }
   },
   {
@@ -50155,7 +50176,10 @@
       "page": 30
     },
     "appearance": {
-      "species": "squig"
+      "species": "squigs",
+      "colors": {
+        "corps": "#5a2a7a"
+      }
     },
     "harvest": {
       "rarity": "Limitée",
@@ -52056,6 +52080,9 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Une fois réduits en poudre, le bec et les serres arrêtent tout saignement"
+    },
+    "appearance": {
+      "species": "noctecorbes"
     }
   },
   {

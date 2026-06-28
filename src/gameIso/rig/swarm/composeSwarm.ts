@@ -1,44 +1,45 @@
 /**
  * Gabarit NUÉE / ESSAIM (trait « Nuée », LDB 85) — une créature unique qui EST une masse grouillante
- * de petites bêtes (rats, araignées, marcassins, nurglings…). Rendu GÉNÉRIQUE piloté par le TRAIT,
- * pas par le nom : un amas bas de petits corps ovoïdes (pattes, œil luisant, queue) qui frémit.
- * La teinte vient de la palette du record (`appearance.colors.corps`) → un même gabarit sert toutes
- * les nuées (brun = rats, sombre = araignées, vert = nurglings…). Anim propre : frémissement au repos.
+ * de petites bêtes (rats, araignées, marcassins, nurglings, snotlings, squigs, noctecorbes, zombies…).
+ * Rendu DATA-DRIVEN par l'ESPÈCE : `appearance.species` désigne une FORME (`SWARM_FORMS`, cf. `forms.ts`)
+ * dont la silhouette d'UN constituant tapisse l'amas + une palette par défaut. Pas d'if-par-nom : la
+ * forme vient de la table, et `appearance.colors` la surcharge. Anim propre : frémissement au repos.
  */
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
-import type { Palette, StoredPalette } from '../palette';
+import type { Palette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
+import { bonesToSvg } from '../renderBones';
+import { SWARM_FORMS, swarmFormOf, DEFAULT_FORM, type SwarmForm } from './forms';
 
 type SwarmBoneId = 'corps';
 type SBone = FKBone & { z: number };
-export interface SwarmProps { sl: number; stored: StoredPalette; }
 
 const buildSkeleton = (): Record<SwarmBoneId, SBone> => ({
   corps: { parent: null, pivot: { x: 60, y: 92 }, angle: 0, z: 1 },
 });
 
-/** Une petite bête de l'amas : corps ovoïde + ventre, pattes, queue grêle, œil luisant. */
-function critter(cx: number, cy: number, s: number, flip: number): string {
-  return `<g transform="translate(${cx},${cy}) scale(${s * flip},${s})">`
-    + '<path d="M-2.6 4 l-1.6 3.4 M0 4.4 l0 3.4 M2.6 4 l1.6 3.4" stroke="@corpsO" stroke-width="0.7"/>'
-    + '<ellipse cx="0" cy="0" rx="5.6" ry="3.7" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>'
-    + '<ellipse cx="0" cy="1.3" rx="4" ry="1.7" fill="@corpsO" opacity="0.45"/>'
-    + '<path d="M-5.4 -0.6 q-3.2 -0.8 -5 -2.8" stroke="@corpsO" stroke-width="0.8" fill="none"/>'
-    + '<circle cx="4.2" cy="-1.1" r="1" fill="#160c06"/><circle cx="4.5" cy="-1.4" r="0.35" fill="#e8c84a"/>'
-    + '</g>';
-}
-
-// Amas : rangée arrière (petite, sombre, haute) → avant (grosse, basse). y croissant = vers le sol.
+// Amas TERRESTRE : carpette grouillante ANCRÉE AU SOL (la rangée avant atteint la ligne de pieds
+// d'une créature, y≈52 local → bas de la tuile) ; arrière petit/haut → avant gros/bas, chevauchant.
 const SPOTS: [number, number, number, number][] = [
-  [-13, 18, 0.78, 1], [3, 16, 0.76, -1], [16, 19, 0.8, 1],
-  [-21, 27, 0.96, -1], [-4, 26, 1.02, 1], [12, 28, 0.98, -1], [24, 25, 0.9, 1],
-  [-12, 36, 1.12, 1], [7, 37, 1.14, -1],
+  [-24, 27, 1.0, 1], [-8, 25, 0.96, -1], [9, 27, 1.02, 1], [25, 26, 0.96, -1],
+  [-30, 38, 1.18, -1], [-12, 37, 1.24, 1], [5, 39, 1.2, -1], [21, 38, 1.16, 1], [32, 36, 1.05, -1],
+  [-20, 49, 1.4, 1], [-2, 51, 1.44, -1], [15, 49, 1.4, 1], [30, 47, 1.22, -1],
 ];
-function heap(): string {
-  return `<g>${SPOTS.map(([x, y, s, f]) => critter(x, y, s, f)).join('')}</g>`;
+// Flock AÉRIEN (formes volantes) : dispersé en hauteur, sans amas au sol (pas d'ombre rampante).
+const SPOTS_AERIAL: [number, number, number, number][] = [
+  [-20, -2, 0.78, 1], [4, -6, 0.74, -1], [22, 2, 0.8, 1],
+  [-26, 12, 0.84, -1], [-6, 8, 0.92, 1], [14, 14, 0.88, -1], [26, 22, 0.8, 1],
+  [-16, 24, 0.96, 1], [6, 28, 0.94, -1],
+];
+/** Tapisse l'amas de constituants de la FORME donnée, terrestre ou aérien selon `form.aerial`. */
+function heap(form: SwarmForm, view: View): string {
+  const spots = form.aerial ? SPOTS_AERIAL : SPOTS;
+  // Ombre portée au sol pour les nuées TERRESTRES : ancre l'amas sur la tuile (sinon il « flotte »).
+  const shadow = form.aerial ? '' : '<ellipse cx="0" cy="55" rx="38" ry="7.5" fill="#0a0a0c" opacity="0.28"/>';
+  return `<g>${shadow}${spots.map(([x, y, s, f]) => form.critter(x, y, s, f < 0, view)).join('')}</g>`;
 }
 
 // --- poses (delta additif) : la masse frémit / ondule légèrement ---------------
@@ -48,23 +49,23 @@ const swarmScuttle = (phase: number): Record<string, number> => ({ corps: Math.s
 const swarmSurge = (phase: number): Record<string, number> => ({ corps: Math.sin(Math.min(1, phase) * Math.PI) * 7 });
 const SWARM_DEATH: Record<string, number> = { corps: 10 };
 
-const SWARM_DEFAULT: SwarmProps = {
-  sl: 1, stored: { corps: '#6a5a44', corpsO: '#3e3424', corpsH: '#8a7a5e' },
-};
+/** FORME d'une espèce : id de forme direct → repli par plan de la def créature → générique brun. */
+function formFor(species: string): SwarmForm {
+  return SWARM_FORMS[species] ?? swarmFormOf(species) ?? DEFAULT_FORM;
+}
 
-function resolveSwarm(_species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
-  void view; // un amas se lit pareil sous tous les angles
-  const p = SWARM_DEFAULT;
+function resolveSwarm(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+  const form = formFor(species);
   const sk = buildSkeleton();
   const world = worldTransformsG(sk, pose) as Record<SwarmBoneId, Matrix>;
-  const tmap = buildTokenMap(p.stored, colors ?? {});
-  return [{ id: 'corps', matrix: world.corps, scale: [1, 1], z: sk.corps.z, parts: [{ svg: applyTokenMap(heap(), tmap), layer: 0 }] }];
+  const tmap = buildTokenMap(form.stored, colors ?? {});
+  return [{ id: 'corps', matrix: world.corps, scale: [1, 1], z: sk.corps.z, parts: [{ svg: applyTokenMap(heap(form, view), tmap), layer: 0 }] }];
 }
 
 export const swarmPlan: BodyPlan = {
   id: 'swarm',
   resolve: (sp, view, pose, opts) => resolveSwarm(sp, view, pose, opts?.colors),
-  speciesNames: () => [],
+  speciesNames: () => Object.keys(SWARM_FORMS),
   restPose: () => SWARM_REST,
   idlePose: swarmSeethe,
   walkPose: swarmScuttle,
@@ -72,3 +73,9 @@ export const swarmPlan: BodyPlan = {
   deathPose: () => SWARM_DEATH,
   hasView: () => true,
 };
+
+/** Rend une nuée d'UNE forme en SVG plat (QC / galeries). */
+export function swarmSvg(species: string, view: View = 'front', opts: { dead?: boolean; idlePhase?: number; colors?: Palette } = {}): string {
+  const pose = opts.dead ? SWARM_DEATH : opts.idlePhase != null ? swarmSeethe(opts.idlePhase) : {};
+  return bonesToSvg(resolveSwarm(species, view, pose, opts.colors));
+}

@@ -104,7 +104,9 @@ export function resolveRender(species: string | undefined, traits: import('../..
   const veh = vehicles.find((v) => v.hull && (v.id === idOrName || v.label === idOrName));
   if (veh) return { kind: 'plan', plan: 'navire', species: veh.hull!.rig ?? 'mixte', scale: Math.max(0.7, Math.min(2.4, (veh.ship?.lengthM ?? 20) / 20)) };
   const rec = findCreatureById(idOrName);
-  const swarmSp = PLANS.swarm?.speciesNames()[0] ?? '';
+  // Nuée NON typée (aucune espèce de forme) → forme GÉNÉRIQUE (DEFAULT_FORM de composeSwarm via ''),
+  // jamais la 1re forme du registre (speciesNames() alimente le picker d'éditeur, pas ce défaut).
+  const swarmSp = '';
   if (isSwarm(traits)) {
     // Même résolution que la branche bipède : espèce explicite → espèce du RECORD → défaut Nuée.
     // (Sans ça, une Nuée au record typé — « Nuée de squigs » → Squig — perdait son espèce.)
