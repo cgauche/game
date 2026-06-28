@@ -1080,7 +1080,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const distTiles = ship.pos && target.pos ? chebyshev(ship.pos, target.pos) : 0;
       for (const s of volley.shots) {
         if (s.critical) // double sur le 1d100 → Critique de navire (ch.13 l.656)
-          applyCriticalToTarget(target, 'corps', true, 0, critLines, set, { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, undefined, false, get);
+          applyCriticalToTarget(target, 'corps', true, 0, critLines, set, { ctx: { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, get });
         // EXTENSIBILITÉ (point 4) : chaque touche de coque passe par le MÊME chemin onHit que le tir individuel
         // → tout Atout à effet `onHit` (États, Venin, Assommante…) se déclenche en bordée SANS code spécifique.
         if (s.wounds > 0) critLines.push(...fireTriggers(get, ship, 'onHit', { victim: target, weapon: s.weapon, woundsDealt: s.wounds, location: 'corps', attackType: 'ranged', rng: battleRng(), set }));

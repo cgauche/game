@@ -1059,11 +1059,14 @@ export function applyCriticalToTarget(
   overkill: number,
   log: string[],
   set: SetFn,
-  ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean }, // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
-  prerolled?: CriticalResolved, // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
-  suppressReveal?: boolean, // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
-  get?: Get, // navire : résout l'ÉQUIPAGE (`crewIds`) depuis la bataille pour répercuter Équipage/Éclats sur de vrais marins
+  opts?: {
+    ctx?: DeviationCtx; // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
+    prerolled?: CriticalResolved; // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
+    suppressReveal?: boolean; // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
+    get?: Get; // navire : résout l'ÉQUIPAGE (`crewIds`) depuis la bataille pour répercuter Équipage/Éclats sur de vrais marins
+  },
 ): boolean {
+  const { ctx, prerolled, suppressReveal, get } = opts ?? {};
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
     target.wounds.current = 0;
@@ -1076,7 +1079,7 @@ export function applyCriticalToTarget(
   // vs Équipage), effets en `GameOp` (Voie d'eau / En flammes) posés par `applyOps`. (Le `rollCritical` de
   // personnage indexerait des Traumatismes humains, hors-sujet pour une coque.)
   if (target.bodyShape === 'vehicule') {
-    return applyHullCriticalToTarget(target, log, set, ctx, suppressReveal, get);
+    return applyHullCriticalToTarget(target, log, set, { ctx, suppressReveal, get });
   }
   // La Localisation est RÉSOLUE par l'appelant (Coup Critique = 1d100 frais via `critWoundLocation`, qui
   // honore aussi la loc choisie « Je ne faillirai pas ! » / le Critique pré-montré ; overkill = loc de
@@ -1146,10 +1149,9 @@ function applyHullCriticalToTarget(
   target: Combatant,
   log: string[],
   set: SetFn,
-  ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean },
-  suppressReveal?: boolean,
-  get?: Get,
+  opts?: { ctx?: DeviationCtx; suppressReveal?: boolean; get?: Get },
 ): boolean {
+  const { ctx, suppressReveal, get } = opts ?? {};
   const rig: ShipRig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
   const crew = get && target.crewIds
     ? (target.crewIds.map((id) => actorIn(get(), id)).filter(Boolean) as Combatant[])
@@ -1208,7 +1210,7 @@ function applyCritAndFinalize(
   get: Get, set: SetFn, target: Combatant, location: HitLocation, isCoupCritique: boolean, overkill: number,
   log: string[], ctx: DeviationCtx, woundsBefore: number, crit?: CriticalResolved, suppressReveal?: boolean,
 ): boolean {
-  const lethal = applyCriticalToTarget(target, location, isCoupCritique, overkill, log, set, ctx, crit, suppressReveal, get);
+  const lethal = applyCriticalToTarget(target, location, isCoupCritique, overkill, log, set, { ctx, prerolled: crit, suppressReveal, get });
   if (lethal) finalizeHeroDeath(get, set, target, 'hit', woundsBefore);
   return lethal;
 }
