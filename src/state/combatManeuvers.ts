@@ -109,6 +109,9 @@ export interface AttackOption {
   cost: { action: boolean; advantage: number };
   weaponUid?: string;
   freeKind?: AttackKind;
+  /** Pièce d'artillerie SERVIE à TIR INDIRECT (mortier/catapulte, `Weapon.indirect`) : le tir vise une CASE
+   *  au sol (placeur de zone) au lieu d'un combattant. Absent/false = tir DIRECT (cible = combattant). */
+  indirect?: boolean;
   def?: ManeuverDef;
   advantageMode?: 'fixed' | 'variable' | 'all';
   /** Pertinence de BASE (poids éditable, depuis `ManeuverDef.priority`) — lue par le scoreur d'attaque
@@ -215,7 +218,9 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   //     place, comme l'option 'arme'). KIND-AGNOSTIQUE côté donnée (l'IA ennemie a son propre chemin).
   if (active.mannedPoste && !battle.acted && canTakeAction(active)) {
     const w = active.weapons.find((x) => x.uid === active.mannedPoste!.item.uid);
-    if (w) out.push({ id: 'poste', label: `Servir ${w.name}`, icon: '💥', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 } });
+    // Pièce INDIRECTE (mortier/catapulte, `w.indirect`) : vise une CASE (placeur de zone), pas un combattant
+    // (AA p.122-123). DIRECTE (canon/baliste) : ciblage de combattant classique. Flag DONNÉE, zéro liste en dur.
+    if (w) out.push({ id: 'poste', label: `Servir ${w.name}`, icon: '💥', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 }, ...(w.indirect ? { indirect: true } : {}) });
   }
   // (5) « Au Contact » (LDB 62 l.176, Option « Longueur d'arme », règle optionnelle `combat-weapon-reach`) :
   //     Test opposé de Corps à corps pour entrer dans la longueur d'arme. Dispo si la règle est ON, l'Action

@@ -2349,5 +2349,33 @@
       "book": "Middenheim",
       "page": 116
     }
+  },
+  {
+    "id": "resistant",
+    "label": "Résistant",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Les structures avec l'Atout Résistant ne peuvent pas être abîmées par une Arme à distance sans l'Atout Siège.",
+    "source": {
+      "book": "ADE II",
+      "page": 8
+    },
+    "capabilities": {
+      "structResistant": true
+    }
+  },
+  {
+    "id": "impenetrable-structure",
+    "label": "Impénétrable (structure)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Les structures avec l'Atout Impénétrable ne peuvent pas être abîmées par une Arme sans l'Atout Siège.",
+    "source": {
+      "book": "ADE II",
+      "page": 8
+    },
+    "capabilities": {
+      "structImpenetrable": true
+    }
   }
 ]

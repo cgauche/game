@@ -10,14 +10,25 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { bypassedAP } from './armourBypass';
 import { qualitySum } from './qualities/dispatch';
 import { talentDamageReduction } from './combatFeatures/dispatch';
+import { isStructure, structureImmune, siegeMultiplier } from './structures';
 
 /**
  * Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus
  * d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP` − Perforante,
  * puis ignorance de PA de l'arme `weapon.bypass`). `minWounds` = plancher (1 pour un PERSONNAGE — garantit
  * Robuste LDB 10 ; 0 pour un NAVIRE, MDG ch.13 l.605 : un coup trop faible peut ricocher sur la coque).
+ *
+ * STRUCTURE de siège (ADE II ch.08) : on greffe l'Atout Siège data-driven (cf. `engine/structures`). Une arme
+ * IMPARABLE (Résistant/Impénétrable/Bélier hors-porte) inflige 0 ; sinon le TOTAL de Dégâts est doublé par
+ * Siège AVANT le Bonus d'Endurance (RAW « le double des dégâts »), et le plancher passe à 0 (un coup trop
+ * faible ne raye pas la structure — comme une coque). Sans PA, l'`effectiveArmour` d'une structure vaut 0.
  */
 export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number, extraAP = 0, minWounds = 1): number {
+  if (isStructure(target)) {
+    if (structureImmune(weapon, target)) return 0;
+    totalDamage *= siegeMultiplier(weapon, target);
+    minWounds = 0;
+  }
   // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure ».
   totalDamage -= talentDamageReduction(target);
   const tb = bonus(effectiveChar(target, 'E'));

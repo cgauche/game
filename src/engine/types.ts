@@ -56,7 +56,7 @@ export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
  * changent (quadrupède : membres antérieurs/postérieurs ; oiseau : ailes) et les Tableaux de Critiques
  * sont les mêmes. Serpent & araignée utilisent les « Localisations Alternatives » (p.312).
  */
-export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule';
+export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule' | 'structure';
 
 /** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312).
  *  `vehicule` (véhicule/embarcation à coque — EDOC ch.4, MoR ch.5, MDG ch.13) : ses localisations
@@ -69,6 +69,7 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
   serpent: {}, // n'expose que Tête / Corps
   araignee: { jambeD: t('hitloc.araignee.jambeD'), corps: t('hitloc.araignee.corps') }, // n'expose que Tête / Pattes / Abdomen
   vehicule: {}, // localisations data-driven (coque/gréement/…)
+  structure: {}, // structure de siège (porte/mur/tour, ADE II ch.08) — pas de Tableau de Localisation propre
 };
 
 /** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
@@ -151,6 +152,30 @@ export interface VehicleData {
   /** Facette PONT (couche tactique, §1bis du modèle naval) : plan person-scale du pont, authoré une fois
    *  par TYPE et réutilisé dans tout scénario (jamais redessiné). Lu en tuiles/murs par `state/shipDeck.ts`. */
   deck?: ShipDeck;
+}
+
+/**
+ * Structure DESTRUCTIBLE de siège (ADE II ch.08 « Le théâtre de la guerre », table « Barricades et
+ * protections typiques ») — porte / mur / tour visé par les armes de siège. Même patron type-créature à
+ * PV que la facette `hull` de `VehicleData` : la structure devient un `Combatant` qui encaisse les Dégâts
+ * via la langue UNIQUE `GameOp`/`woundsFromHit` (cf. `engine/structures.ts`). RAW dit lui-même que
+ * Structure / Véhicule / Navire suivent le MÊME modèle Endurance/Blessures + table de Critiques (AA l.3690).
+ */
+export interface StructureData {
+  /** id STABLE (slug) — clé d'instance/lookup. */
+  id: string;
+  label: string;
+  /** Catégorie physique (ADE II ch.08) : `porte` est seule visable par un Bélier (`ram`) ; `mur` couvre
+   *  murs/tours. Découplée des Atouts (une porte peut être Résistante OU Impénétrable). */
+  kind: 'porte' | 'mur';
+  /** Profil à PV (calqué sur `VehicleData.hull.char`) — `BE` = Bonus d'Endurance VERBATIM de la table ADE II
+   *  (l'Endurance dérivée vaut `BE × 10`, posée par `structureCombatant`) ; `B` = Blessures (PV de la structure). */
+  char: { BE: number; B: number };
+  /** Atouts de structure (Résistant / Impénétrable) — réfs de Trait par id STABLE (JAMAIS le libellé). */
+  traits: { id: string; value?: number }[];
+  /** Provenance RAW (ADE II ch.08). */
+  source: { book: string; chapter: number };
+  desc?: string;
 }
 
 export interface SkillInstance {
@@ -241,6 +266,18 @@ export interface Weapon {
   /** `id` du Groupe d'arme/famille de munition (`WeaponGroupData.id`) — réf, ≠ libellé. Pilote la
    *  Spécialisation de combat (`combatValue`), la famille de munition (`ammoFamily`), le rendu (rig). */
   subType?: string;
+  /** Groupe de Projectiles qui OPÈRE une arme de siège (`WeaponGroupData.id` : arbalete/catapulte/ingenierie/
+   *  poudre-noire, AA p.122 l.3848-3863) quand `subType` porte la catégorie de catalogue (« armes-de-siege »).
+   *  Résolu par `acceptableSpecs` (`weaponGroup ?? subType`) → Spé de tir du chef ET décompte d'équipage
+   *  (servants à la bonne Projectiles, l.3900). Absent = `subType` EST le Groupe (armes normales). */
+  weaponGroup?: string;
+  /** Pièce d'artillerie « relativement simple » (la baliste, AA p.122 l.3818) : tirée par UN SEUL servant
+   *  valide → l'arme perd TOUS ses Atouts (conserve ses Défauts). Lu par `crewedFireWeapon`. Absent = non. */
+  soloSimple?: boolean;
+  /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA p.122-123) : peut viser une CASE au sol
+   *  (pas forcément un combattant) ; son Atout Explosion/Tir de zone frappe le rayon autour de la case. Lu
+   *  par `availableAttacks` (ciblage de case vs combattant). Absent = tir DIRECT (canon, baliste, pierrier). */
+  indirect?: boolean;
   /** Nombre de mains requises (1 ou 2). Dérivé de `(2M)` / arc / arbalète. */
   hands?: 1 | 2;
   /** Main qui tient l'arme dans le loadout actif ('off' → pénalité de main secondaire). */
@@ -575,6 +612,12 @@ export interface ItemInstance {
   /** `id` du Groupe/famille (`WeaponGroupData.id`) — munition : famille compatible (arc/arbalete/
    *  poudre-noire) ; armure : type (plate/mailles/cuir-souple…). Correspond à `Weapon.subType`. */
   subType?: string;
+  /** Groupe de Projectiles d'une arme de siège (cf. `Weapon.weaponGroup`) — propagé à l'arme dérivée. */
+  weaponGroup?: string;
+  /** Pièce « relativement simple » (baliste, cf. `Weapon.soloSimple`) — propagé à l'arme dérivée. */
+  soloSimple?: boolean;
+  /** Pièce à TIR INDIRECT (mortier/catapulte, cf. `Weapon.indirect`) — propagé à l'arme dérivée. */
+  indirect?: boolean;
   /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art (rig), ≠ libellé.
    *  Copié du catalogue (`TrappingData.shape`) par `itemFromTrappingById` ; propagé à `Weapon.shape`. */
   shape?: string;
@@ -707,6 +750,10 @@ export interface Combatant {
    *  `mountSide` (comme une morsure/un tentacule : dans `weapons`, HORS inventaire). Le canon reste la pièce
    *  du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE. */
   mannedPoste?: ShipPoste;
+  /** Commandant d'équipe (AA l.4373-4379) : `id` du commandant (Talent Commandant d'équipe) qui a RÉUSSI
+   *  à diriger CE chef de pièce. Tant que ce commandant reste vivant ET à portée de voix, l'équipe tire au
+   *  score de Projectiles du commandant (substitution re-validée à CHAQUE tir — `state/commandTeam`). */
+  teamCommanderId?: string;
   species?: string;
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */

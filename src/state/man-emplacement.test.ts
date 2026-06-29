@@ -107,7 +107,9 @@ describe('(B) Service — `serveAtPoste` rend chef tout combattant (mannedPoste,
     seedBattleRng(1);
     const poste = mkPoste('baliste', ['s1']);
     const gunner = mkActor('gunner', 'hero', { x: 5, y: 5 }, 80);
+    gunner.skills = [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never;
     const s1 = mkCrewman('s1');
+    s1.skills = [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée
     const cible = mkEnemyTarget('cible', 8, 5, 30, 60);
     const all = [mkEmplacement(poste), gunner, s1, cible];
     serveAtPoste(gunner, poste);

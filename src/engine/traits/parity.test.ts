@@ -133,6 +133,9 @@ const DISPATCH = new Set<string>([
   'Manifestation de Ghur',
   'Régénération', 'Résistance à la Magie', 'Rusé', 'Sang corrosif', 'Stupide', 'Taille', 'Territorial',
   'Toile', 'Vision nocturne', 'Vol',
+  // Atouts de STRUCTURE de siège (ADE II ch.08) : capabilities `structResistant`/`structImpenetrable`
+  // (donnée), lues par `hasCapability` dans `engine/structures` (`structureImmune`) — canal dispatch.
+  'Résistant', 'Impénétrable (structure)',
 ]);
 
 function allTraitLabels(): string[] {

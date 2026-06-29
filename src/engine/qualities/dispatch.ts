@@ -51,6 +51,12 @@ export function hasQuality(w: QualityCarrier | undefined, id: string): boolean {
   return resolveQualities(w).some((r) => r.id === id);
 }
 
+/** La qualité d'`id` est-elle un Atout (≠ Défaut) ? Lu dans la DONNÉE (`qualities.json` champ `type`). Sert au
+ *  « perd tous ses Atouts » d'une baliste tirée en solo (AA p.122 l.3818). Qualité inconnue → false (pas un Atout). */
+export function isAtoutQuality(id: string): boolean {
+  return qualityById.get(id)?.type === 'Atout';
+}
+
 /** Indice de la qualité d'`id` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */
 export function qualityIndice(w: QualityCarrier | undefined, id: string): number | undefined {
   return resolveQualities(w).find((r) => r.id === id)?.indice;

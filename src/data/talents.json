@@ -805,6 +805,9 @@
     "max": {
       "bonusOf": "I"
     },
+    "combat": {
+      "commandTeam": true
+    },
     "test": {
       "raw": "Projectiles pour les tirs avec une arme dotée du Défaut Arme d'équipe",
       "matches": [

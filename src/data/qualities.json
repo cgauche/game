@@ -132,6 +132,34 @@
     ]
   },
   {
+    "id": "siege",
+    "label": "Siège",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Une arme avec l'Atout Siège inflige le double des dégâts aux structures physiques telles que les murs, les tours et les portes.",
+    "source": {
+      "book": "ADE II",
+      "page": 8
+    },
+    "capabilities": {
+      "siege": true
+    }
+  },
+  {
+    "id": "belier",
+    "label": "Bélier",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les béliers n'infligent des dégâts qu'aux portes. Sinon, ils sont considérés comme une Arme improvisée.",
+    "source": {
+      "book": "ADE II",
+      "page": 8
+    },
+    "capabilities": {
+      "ram": true
+    }
+  },
+  {
     "id": "empaleuse",
     "label": "Empaleuse",
     "type": "Atout",

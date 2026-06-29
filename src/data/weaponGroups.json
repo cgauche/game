@@ -80,6 +80,11 @@
     "kind": "weapon"
   },
   {
+    "id": "catapulte",
+    "label": "Catapulte",
+    "kind": "weapon"
+  },
+  {
     "id": "poudre-noire-et-ingenierie",
     "label": "Poudre noire et ingénierie",
     "kind": "ammo"

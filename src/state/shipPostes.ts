@@ -7,6 +7,7 @@
  */
 import { inFireArc } from './fireArc';
 import { mannedPosteWeapon } from '../engine/items';
+import { hasWeaponGroupSkill } from '../engine/combat';
 import { exposedCrew } from '../engine/shipCritical';
 import { isOutOfAction } from '../engine/conditions';
 import { combatDistance } from './footprint';
@@ -66,16 +67,30 @@ export function isPassengerInBattle(c: Combatant, combatants: Combatant[], merSc
   return merScale && !!shipOfCrew(combatants, c.id);
 }
 
-/** Nombre de servants APTES (vivants + conscients, via `exposedCrew`) qui tiennent le poste que `chef` sert,
- *  parmi `combatants` — entrée de `crewedFireWeapon` (sous-effectif d'une Arme d'équipe, MDG ch.12). Le chef
- *  est lui-même un `crewIds` du poste, donc compté. `undefined` si `chef` ne sert aucun poste (tir normal). PUR. */
+/** Nombre de servants EFFECTIFS qui tiennent le poste que `chef` sert, parmi `combatants` — entrée de
+ *  `crewedFireWeapon` (sous-effectif d'une Arme d'équipe, AA p.122-124). Comptent les servants à la fois APTES
+ *  (vivants + conscients, via `exposedCrew`) ET possédant la Projectiles APPROPRIÉE au Groupe de l'engin
+ *  (l.3900 : « Compétence Projectiles appropriée » ; Ingénierie qualifie pour la Poudre noire, l.3816 ; un
+ *  servant à Arc ne compte PAS pour une baliste, Exemple 1 l.3921). Le Groupe est porté EN DONNÉE par la pièce
+ *  (`weaponGroup`) → réutilise `hasWeaponGroupSkill` (même source que la Spé de tir). Pièce SANS Groupe déclaré
+ *  (stub/générique) → aucune exigence de compétence (tous les aptes comptent). Le chef est lui-même un `crewIds`
+ *  du poste, donc compté s'il est qualifié. `undefined` si `chef` ne sert aucun poste (tir normal). PUR.
+ *
+ *  ⚠ La VALIDATION de compétence ne pèse QUE sur ce décompte d'équipage : l'ACTION « Servir cette pièce »
+ *  (`servablePostes`/`serveAtPoste`) reste, elle, kind- et compétence-AGNOSTIQUE (décision produit). */
 export function servingCrewPresent(chef: Combatant, combatants: Combatant[]): number | undefined {
   const poste = chef.mannedPoste;
   if (!poste) return undefined;
   const crew = (poste.crewIds ?? [])
     .map((id) => combatants.find((c) => c.id === id))
     .filter((c): c is Combatant => !!c);
-  return exposedCrew(crew).length;
+  const apt = exposedCrew(crew);
+  // Groupe de Projectiles requis lu DIRECTEMENT sur la pièce (champ, pas d'arme dérivée) : pièce sans Groupe
+  // déclaré (générique / stub de test) → aucune exigence (tous les aptes comptent), sans construire d'arme.
+  if (!poste.item.weaponGroup) return apt.length;
+  const engine = mannedPosteWeapon(chef, poste);
+  if (!engine) return apt.length;
+  return apt.filter((c) => hasWeaponGroupSkill(c, engine, 'ranged')).length;
 }
 
 /**

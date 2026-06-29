@@ -161,7 +161,7 @@ import {
 export * from './combatGeometry';
 // --- Résolveur d'aire des munitions/armes à effet de zone (Tir de zone / Explosion) extrait → combatArea.ts (baril) ---
 export * from './combatArea';
-import { resolveWeaponArea, areaTargets } from './combatArea';
+import { resolveWeaponArea, areaTargets, blastRadiusTiles, type AreaTargets } from './combatArea';
 // --- Garde de reprise unique (« une modale / une pause bloque l'IA ? ») extraite → combatGate.ts (baril) ---
 export * from './combatGate';
 import { combatAdvanceBlocked, aiDriven } from './combatGate';
@@ -180,6 +180,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
 import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog } from './combatEffects';
+import { teamCommandMod } from './commandTeam';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
 // --- Refonte par coutures : registre de hooks de cycle de vie + mise en place (barils, modules FEUILLES) ---
@@ -413,6 +414,10 @@ export function attackEnv(
       .map((c) => c.pos!);
     const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants, smokeOf(battle));
     if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
+    // Commandant d'équipe (AA l.4373-4379) : un chef de pièce dirigé tire au score de Projectiles de son
+    // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).
+    const tcMod = teamCommandMod(attacker, weapon, battle.combatants);
+    if (tcMod) env.push(tcMod);
     if (los.cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover: los.cover }), value: coverModifier(los.cover) });
     // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
     if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
@@ -1300,6 +1305,22 @@ export function applyOpposedCritical(
   applyCritAndFinalize(get, set, victim, loc, true, 0, log, c2, victim.wounds.current);
 }
 
+/** Fabrique de cibles d'aire pour le combat COURANT (terre = rayon métrique à l'échelle de la scène ;
+ *  navire = équipage exposé via `crewIds`) — SOURCE UNIQUE de la résolution `crewOf`, partagée par l'aire du
+ *  tir individuel (`applyAttackResult`) ET le PILONNAGE INDIRECT (`siegeAimCommit`). Évite la re-duplication. */
+export function battleAreaTargets(get: Get): (indice: number) => AreaTargets {
+  const battle = get().battle!;
+  return areaTargets(battle.combatants, sceneMetresPerTile(get().scene), (ship) => (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
+}
+
+/** Rayon (cases) de l'aire d'une pièce indirecte servie par `gunner` (munition CHARGÉE prise en compte —
+ *  l'Explosion vient de la bombe), à l'échelle de la scène. Sert à dimensionner le placeur de case. */
+export function siegeBlastRadiusTiles(gunner: Combatant, weapon: Weapon, scene: Scene | null): number {
+  const ammo = gunner.kind === 'hero' ? selectedAmmo(gunner, weapon) : undefined;
+  const eff = ammo ? weaponWithAmmo(weapon, ammo) : weapon;
+  return blastRadiusTiles(eff, sceneMetresPerTile(scene));
+}
+
 export function applyAttackResult(
   get: Get,
   set: SetFn,
@@ -1640,7 +1661,7 @@ export function applyAttackResult(
   if (res.hit && weapon.type === 'ranged' && res.damage != null && attacker.pos && target.pos && !isOutOfAction(target)) {
     const area = resolveWeaponArea(get, set, {
       attacker, primaryTarget: target, weapon, damage: res.damage, location: res.location ?? 'corps', distanceTiles: combatDistance(attacker, target),
-    }, areaTargets(battle.combatants, sceneMetresPerTile(get().scene), (ship) => (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)), battleRng());
+    }, battleAreaTargets(get), battleRng());
     log.push(...evLines(area.lines, 'shoot', attacker.id, target.id));
   }
   // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
@@ -2695,8 +2716,8 @@ export function openCastCascade(get: Get, set: SetFn, caster: Combatant): void {
  *  Le Souffle/Vomissement ne se posent PAS (LDB 85 : centre imposé — cible visible la plus
  *  proche, ou la cible du sort Souffle — cf. applyAreaAttack). Toute nouvelle source = une
  *  entrée ICI + un bras à `commitPlacedZone` ; l'UI (gabarit animé, survol, clic) est commune. */
-export type PlacingZone = { source: 'cast'; label: string; casterId: string; radius: number; rangeTiles: number | null };
-export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'battle'>): PlacingZone | null {
+export type PlacingZone = { source: 'cast' | 'siege'; label: string; casterId: string; radius: number; rangeTiles: number | null };
+export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'pendingSiegeAim' | 'battle'>): PlacingZone | null {
   const pc = s.pendingCast;
   if (pc?.zone?.placing && !pc.zone.center) {
     const caster = s.battle?.combatants.find((c) => c.id === pc.casterId);
@@ -2706,6 +2727,10 @@ export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'battle'>): Pla
       rangeTiles: spell && caster ? spellRangeTiles(spell.range, caster) : null,
     };
   }
+  // Pilonnage INDIRECT (« viser une case », AA p.122-123) : pièce indirecte servie en attente du point
+  // d'impact — MÊME gabarit/curseur/clic que les sorts de zone (l'ancre = le servant, `casterId`).
+  const sa = s.pendingSiegeAim;
+  if (sa) return { source: 'siege', label: 'Pilonnage', casterId: sa.gunnerId, radius: sa.radius, rangeTiles: sa.rangeTiles };
   return null;
 }
 
@@ -2723,6 +2748,7 @@ export function commitPlacedZone(get: Get, set: SetFn, pt: Pt): void {
   const pz = placingZoneOf(get());
   if (!pz) return;
   if (pz.source === 'cast') castCommitZone(get, set, pt);
+  else if (pz.source === 'siege') get().siegeAimCommit(pt); // pilonnage indirect → ouvre la modale de tir sur la case
 }
 
 /** POSE de la zone d'un SORT (après le jet et la Surincantation) : gates portée (LDB 47) + Ligne

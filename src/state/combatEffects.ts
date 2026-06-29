@@ -254,7 +254,7 @@ function effectTargets(get: Get, target: 'party' | 'hero', heroId?: string): Com
  *  passent). `onSuccess`/`onFailure` = branches (Flows) ; `after` = continuation reprise APRÈS la
  *  branche (suite d'un `seq`). Choix du meilleur PJ effectif (malus social compris), candidats,
  *  `easierIf`, outil. Retourne false si aucun héros vivant ne peut tenter (le flux continue sans Test). */
-export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: Flow, onFailure: Flow, after: Flow): boolean {
+export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: Flow, onFailure: Flow, after: Flow, opts?: { actorId?: string }): boolean {
   // Modulateurs sociaux PAR ACTEUR (un Test social vs un interlocuteur) : malus psy Animosité/Préjugé
   // (LDB 21) + mod de Statut Échelon/Standing (LDB 08). Le Statut compare l'acteur à la cible `vsStatus`.
   const isSocial = isSocialTest(spec.skill, spec.characteristic);
@@ -275,7 +275,12 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     if (sl) parts.push(sl);
     return parts.length ? parts.join(' · ') : undefined;
   };
-  const best = partyBest(get().party, spec.skill, spec.characteristic, socialMod, spec.spec);
+  // `opts.actorId` RESTREINT le Test à UN acteur précis (ex. le Personnage qui prend l'Action « Diriger
+  //  l'équipe » — le porteur du Talent, pas le meilleur du groupe) ; sinon le meilleur PJ (partyBest).
+  const restrictId = opts?.actorId;
+  const best = restrictId
+    ? (() => { const a = get().party.find((c) => c.id === restrictId && !c.dead); return a ? { actor: a } : null; })()
+    : partyBest(get().party, spec.skill, spec.characteristic, socialMod, spec.spec);
   if (!best) return false;
   const baseDifficulty = spec.difficulty ?? 'intermediaire';
   const eased = !!spec.easierIf && get().party.some((c) => !c.dead && (
@@ -283,7 +288,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     (!!spec.easierIf!.hasTalent && hasTalent(c, spec.easierIf!.hasTalent))
   ));
   const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
-  const living = get().party.filter((c) => !c.dead);
+  const living = get().party.filter((c) => !c.dead && (!restrictId || c.id === restrictId));
   const candidates = living.map((actor) => {
     // Soutien (LDB 12 l.214-225) : si CET acteur mène, les AUTRES membres capables l'assistent (+10, plafond
     // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance.

@@ -92,7 +92,11 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
  * fusionne parfois les deux Groupes sous « Poudre noire et ingénierie » (62 l.150/174-175).
  */
 function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
-  const gid = weapon.subType ?? ''; // id de Groupe d'arme (`WeaponGroupData.id`)
+  // `weaponGroup` PRIME sur `subType` : une arme de siège porte sa catégorie de catalogue (« armes-de-siege »)
+  // en `subType` mais son vrai Groupe de Projectiles (Arbalète/Catapulte/Ingénierie/Poudre noire, AA p.122
+  // l.3848-3863) en `weaponGroup` → c'est lui qui pilote la Spé de tir ET le décompte d'équipage. Pour toute
+  // arme normale, `weaponGroup` est absent → `subType` EST le Groupe (comportement inchangé).
+  const gid = weapon.weaponGroup ?? weapon.subType ?? ''; // id de Groupe d'arme (`WeaponGroupData.id`)
   if (!gid) return [];
   const g = weaponGroupLabel(gid).toLowerCase(); // libellé du Groupe (= forme de la Spécialisation, l.144)
   if (kind === 'melee') return gid === 'deux-mains' ? ['à deux mains'] : [g];

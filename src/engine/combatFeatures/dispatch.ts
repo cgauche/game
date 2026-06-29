@@ -272,3 +272,9 @@ export function talentCorruptionThreshold(c: Combatant): number {
 export function hasSurgery(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.surgery);
 }
+
+/** Commandant d'équipe (AA l.4373-4379) : le combattant porte le Talent qui l'autorise à diriger une
+ *  équipe d'artillerie (Arme d'équipe) à portée de voix. Lu par l'affordance + la substitution de score. */
+export function hasCommandTeam(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.commandTeam);
+}

@@ -587,6 +587,10 @@ export type GameOp =
    *  dans `ctx.crew`) la servait, il est démancipé (`mannedPoste` + arme dérivée retirés). GÉNÉRIQUE — remplace
    *  le flag ad hoc `losePoste`. Inerte si la coque n'a aucun poste. */
   | { op: 'removeShipPoste' }
+  /** Commandant d'équipe (AA l.4373-4379) : lie CE chef de pièce (`target`) au commandant `commanderId` qui
+   *  vient de le diriger (Test de Commandement réussi) → l'équipe tire ENSUITE au score de Projectiles du
+   *  commandant (substitution re-validée à chaque tir tant qu'il vit et reste à portée de voix). */
+  | { op: 'teamCommander'; commanderId: string }
   /** PASSIF d'ARME (Atout/Défaut, LDB 62-63) : modificateur de DR/plat à une PHASE de jet de combat —
    *  Précise (+10 `flatMod` en attaque), Imprécise (−1 DR en attaque), Défensive (+1 DR parade du défenseur),
    *  À Enroulement (−1 DR parade adverse), Lente (+1 DR à TOUTE défense adverse), Pratique/Peu Fiable (±1 DR à
@@ -1457,6 +1461,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.loseNextAction = true;
         target.loseNextMovement = true;
         lines.push(t('op.loseTurn', { name: target.name }));
+        break;
+      case 'teamCommander':
+        // Commandant d'équipe (AA) : pose le lien chef→commandant. La substitution effective du score est
+        // re-dérivée à chaque tir (vivant + à portée de voix), pas figée ici — cf. `state/commandTeam`.
+        target.teamCommanderId = o.commanderId;
         break;
       case 'weaponRollMod':
       case 'weaponDamageMod':

@@ -7665,6 +7665,8 @@
     "label": "Baliste",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "arbalete",
+    "soloSimple": true,
     "enc": 20,
     "availability": "Limitée",
     "reach": null,
@@ -7704,6 +7706,8 @@
     "label": "Catapulte (petite)",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "catapulte",
+    "indirect": true,
     "enc": 25,
     "availability": "Limitée",
     "reach": null,
@@ -7725,6 +7729,9 @@
       {
         "id": "arme-d-equipe",
         "value": 2
+      },
+      {
+        "id": "siege"
       }
     ],
     "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
@@ -7743,6 +7750,8 @@
     "label": "Catapulte (moyenne)",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "catapulte",
+    "indirect": true,
     "enc": 40,
     "availability": "Limitée",
     "reach": null,
@@ -7764,6 +7773,9 @@
       {
         "id": "arme-d-equipe",
         "value": 3
+      },
+      {
+        "id": "siege"
       }
     ],
     "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
@@ -7782,6 +7794,8 @@
     "label": "Catapulte (grande)",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "catapulte",
+    "indirect": true,
     "enc": 65,
     "availability": "Limitée",
     "reach": null,
@@ -7803,6 +7817,9 @@
       {
         "id": "arme-d-equipe",
         "value": 4
+      },
+      {
+        "id": "siege"
       }
     ],
     "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
@@ -7821,6 +7838,7 @@
     "label": "Batterie tonnerre de feu",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "ingenierie",
     "enc": 75,
     "availability": "Exotique",
     "reach": null,
@@ -7871,6 +7889,7 @@
     "label": "Canon à répétition",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "ingenierie",
     "enc": 5,
     "availability": "Exotique",
     "reach": null,
@@ -7910,6 +7929,7 @@
     "label": "Canon à répétition feu d'enfer",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "ingenierie",
     "enc": 85,
     "availability": "Exotique",
     "reach": null,
@@ -7953,6 +7973,7 @@
     "label": "Canon (petit)",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "poudre-noire",
     "enc": 30,
     "availability": "Limitée",
     "reach": null,
@@ -7974,6 +7995,9 @@
       {
         "id": "arme-d-equipe",
         "value": 2
+      },
+      {
+        "id": "siege"
       }
     ],
     "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
@@ -7992,6 +8016,7 @@
     "label": "Canon (moyen)",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "poudre-noire",
     "enc": 50,
     "availability": "Exotique",
     "reach": null,
@@ -8013,6 +8038,9 @@
       {
         "id": "arme-d-equipe",
         "value": 3
+      },
+      {
+        "id": "siege"
       }
     ],
     "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
@@ -8031,6 +8059,7 @@
     "label": "Canon (grand)",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "poudre-noire",
     "enc": 75,
     "availability": "Exotique",
     "reach": null,
@@ -8052,6 +8081,9 @@
       {
         "id": "arme-d-equipe",
         "value": 4
+      },
+      {
+        "id": "siege"
       }
     ],
     "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
@@ -8070,6 +8102,8 @@
     "label": "Mortier",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "poudre-noire",
+    "indirect": true,
     "enc": 50,
     "availability": "Exotique",
     "reach": null,
@@ -8085,6 +8119,9 @@
       {
         "id": "arme-d-equipe",
         "value": 3
+      },
+      {
+        "id": "siege"
       }
     ],
     "desc": "Un mortier est l'équivalent à Poudre noire d'une catapulte, qui tire un lourd boulet ou une bombe en suivant un arc élevé. Sur le champ de bataille, ils sont surtout utilisés lors des sièges pour projeter des explosifs par-dessus les murs d'un château.",
@@ -8103,6 +8140,7 @@
     "label": "Pierrier",
     "type": "ranged",
     "subType": "armes-de-siege",
+    "weaponGroup": "poudre-noire",
     "enc": 5,
     "availability": "Rare",
     "reach": null,

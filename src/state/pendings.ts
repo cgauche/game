@@ -260,6 +260,26 @@ export interface PendingAttack {
    *  qu'un héros active : mutation/polymorphie) : ne consomme pas l'Action ; effets onHit propres à la
    *  manœuvre appliqués à la confirmation (cf. attackConfirm). `tentacules` = limiteur 1/tour (mutation). */
   freeKind?: AttackKind;
+  /** PILONNAGE INDIRECT (« viser une case », AA p.122-123) : POINT D'IMPACT choisi au sol. Présent → la
+   *  touche DÉTONE sur cette case (Explosion/Tir de zone uniforme sur le rayon, RAW LDB p.298), AUCUNE touche
+   *  directe « primaire » ni Critique par victime ; `targetId` n'est que la cible-REPÈRE de la bande de
+   *  portée/du DR (l'ennemi le plus proche de l'impact). Absent → tir direct (STRICTEMENT inchangé). */
+  center?: Pt;
+  /** Marqueur de pilonnage indirect (cf. `center`) — `attackConfirm` résout l'aire au lieu d'une touche directe. */
+  siege?: boolean;
+}
+/** Pilonnage INDIRECT EN COURS (« viser une case », AA p.122-123) : une pièce indirecte SERVIE attend le
+ *  POINT D'IMPACT au sol — placeur de zone PARTAGÉ (`placingZoneOf` source 'siege', même gabarit que les
+ *  sorts de zone). Le clic-case → `siegeAimCommit` ouvre la modale de tir (`pendingAttack` siège). */
+export interface PendingSiegeAim {
+  gunnerId: string;
+  /** uid de l'arme de la pièce servie (canon ÉPINGLÉ) — re-dérivée par `firedWeapon` à la résolution. */
+  weaponUid: string;
+  /** Rayon de l'aire (Explosion/Tir de zone) en CASES — gabarit du placeur (`blastRadiusTiles`). */
+  radius: number;
+  /** Portée chiffrée (cases) du placeur depuis le servant — `null` = pas de cap dur (la bande de portée du
+   *  Test de tir gère l'éloignement) ; seule la Ligne de Vue au point est requise (`placedZoneValidAt`). */
+  rangeTiles: number | null;
 }
 /** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux

@@ -17,7 +17,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, aiWouldPrepareSpell } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
@@ -40,7 +40,8 @@ import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
-import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus } from '../engine/combatFeatures/dispatch';
+import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, hasCommandTeam } from '../engine/combatFeatures/dispatch';
+import { teamCommandTargets } from './commandTeam';
 import { isConsumable, useConsumable } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook } from '../engine/conditions';
@@ -846,7 +847,16 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || active.kind !== 'hero') return;
       // Arme une attaque pour le clic-ennemi (mode neutre : `action===null`). Re-sélectionner revient à l'Arme.
       const next = battle.selectedAttack === id ? 'arme' : id;
-      set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpellId: null, preview: null } });
+      set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpellId: null, preview: null }, pendingSiegeAim: null });
+      // Pièce INDIRECTE servie (mortier/catapulte, AA p.122-123) : ARMER l'option « Servir … » ouvre le PLACEUR
+      // DE CASE (le tir vise un point au sol, pas un combattant) ; le désarmer (retour à 'arme') le referme.
+      if (next === id) {
+        const opt = availableAttacks(active, battle).find((o) => o.id === id);
+        if (opt?.indirect && opt.weaponUid) {
+          const w = active.weapons.find((x) => x.uid === opt.weaponUid);
+          if (w?.uid) set({ pendingSiegeAim: { gunnerId: active.id, weaponUid: w.uid, radius: siegeBlastRadiusTiles(active, w, get().scene), rangeTiles: null } });
+        }
+      }
     },
     battleManeuverArea: (kind: AttackKind) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
@@ -1195,6 +1205,28 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t('cs.leavePoste', { name: active.name, weapon }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
+    // « Diriger l'équipe » (Commandant d'équipe, AA l.4373-4379) : le Personnage doté du Talent aide une équipe
+    // servant une Arme d'équipe à portée de voix — Test de Commandement Intermédiaire (+0) RÉUTILISÉ (openSkillTest/
+    // pendingTest, restreint à l'acteur actif). Sur réussite, chaque chef dirigé est lié au commandant (op
+    // `teamCommander`) → son équipe tire ensuite au score de Projectiles du commandant (substitution `attackEnv`).
+    battleAidTeam: () => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return;
+      const active = activeCombatant(battle);
+      if (!active || aiDriven(get(), active) || isOutOfAction(active) || !canTakeAction(active) || !hasCommandTeam(active)) return;
+      const chiefs = teamCommandTargets(active, battle.combatants);
+      if (!chiefs.length) return;
+      const onSuccess: Flow = {
+        kind: 'seq',
+        steps: chiefs.map((c) => ({ kind: 'do', effect: { type: 'ops', on: 'hero', heroId: c.id, ops: [{ op: 'teamCommander', commanderId: active.id }] } })),
+      };
+      set({ battle: { ...battle, acted: true, action: null } }); // le Test EST l'Action (réussite ou non)
+      openSkillTest(get, set,
+        { skill: 'commandement', difficulty: 'intermediaire', label: 'Commandant d’équipe' },
+        onSuccess, EMPTY_FLOW, EMPTY_FLOW, { actorId: active.id });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
 
     battleEndTurn: () => {
       if (combatBusy(get())) return; // finir le tour sous un flux différé corromprait l'état
@@ -1410,7 +1442,11 @@ export function createCombatSlice(get: Get, set: Set) {
       const servants = (poste.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
       const w0 = mannedPosteWeapon(chef, poste);
       if (!w0) return;
-      const w = crewedFireWeapon(w0, exposedCrew(servants).length); // ×2 recharge si sous-effectif ; arme-d-equipe retirée
+      // Effectif EFFECTIF = même décompte que le tir (servants aptes ET à la bonne Projectiles, AA l.3900) : la
+      // recharge ×2 du sous-effectif suit la MÊME source que `firedWeapon`. Repli `exposedCrew` si le chef ne
+      // « sert » pas formellement le poste (`mannedPoste` absent — état construit sans `applyShipPostes`).
+      const present = servingCrewPresent(chef, battle.combatants) ?? exposedCrew(servants).length;
+      const w = crewedFireWeapon(w0, present); // ×2 recharge si sous-effectif ; arme-d-equipe retirée
       // Soutien (LDB 12, primitive GÉNÉRIQUE) : +10 par AUTRE servant capable (Projectiles Poudre noire), plafonné.
       const soutien = soutienBonus(servants, chef, 'projectiles', undefined, 'Poudre noire');
       const skillValue = combatValue(chef, 'ranged', w) + soutien;
@@ -1714,6 +1750,23 @@ export function createCombatSlice(get: Get, set: Set) {
           ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
           : null;
         const weapon = freeNatural ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
+        // PILONNAGE INDIRECT (« viser une case », AA p.122-123) : la touche DÉTONE sur la CASE choisie
+        // (`pa.center`). L'Atout Explosion/Tir de zone frappe UNIFORMÉMENT le rayon (RAW LDB p.298) — AUCUNE
+        // touche directe « primaire » ni Critique par victime (l'aire ne re-teste pas) ; `target` (l'ennemi le
+        // plus proche de l'impact) n'a servi qu'à la BANDE DE PORTÉE/au DR. Réutilise le résolveur d'aire UNIQUE.
+        if (pa.siege && pa.center) {
+          const lines = pa.result.hit && pa.result.damage != null
+            ? [t('cf.siegeImpact', { name: attacker.name }), ...resolveWeaponArea(get, set,
+                { attacker, weapon, damage: pa.result.damage, location: pa.result.location ?? 'corps', distanceTiles: combatDistance(attacker, target), center: pa.center },
+                battleAreaTargets(get), battleRng()).lines]
+            : [t('cf.siegeMiss', { name: attacker.name })];
+          const b2 = get().battle!;
+          set({ battle: { ...b2, acted: true, action: null, preview: null, log: [...b2.log, ...evLines(lines, 'shoot', attacker.id)] } });
+          bus.emit(EVT.SCENE_DIRTY);
+          checkBattleOver(get, set);
+          advanceCombatJet(get);
+          return;
+        }
         const prevActed = battle.acted; // pour la Frénésie : la 1re attaque du Round est GRATUITE
         const isDualMain = !!pa.dualMode && !pa.dualSecond && attacker.kind === 'hero'; // main directrice d'un dual
         const isDualSecond = !!pa.dualSecond; // 2ᵉ frappe (off-hand)
@@ -1794,6 +1847,24 @@ export function createCombatSlice(get: Get, set: Set) {
       const seq = get().pendingCascade;
       const closeSeq = seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack';
       set({ pendingAttack: null, ...(closeSeq ? { pendingCascade: null } : {}) });
+    },
+    // PILONNAGE INDIRECT (« viser une case », AA p.122-123) : la case d'impact est déposée par le placeur
+    // ('siege', commitPlacedZone). Ouvre la modale de tir de la pièce indirecte servie (`pendingAttack` siège) :
+    // le JET de tir (DR) reste l'attaque NORMALE (Chance/Résilience par la cascade), mais la touche DÉTONE sur
+    // la case — l'Explosion frappe tout le rayon (résolution dans attackConfirm). Cible-repère = ennemi le plus
+    // proche de l'impact (bande de portée/DR) ; aucune dans le rayon → tir à vide annoncé, sans détonation.
+    siegeAimCommit: (pt: Pt) => {
+      const { battle, pendingSiegeAim: sa } = get();
+      if (!battle || battle.over || !sa) return;
+      const gunner = battle.combatants.find((c) => c.id === sa.gunnerId);
+      set({ pendingSiegeAim: null, battle: { ...battle, selectedAttack: undefined, preview: null } }); // referme le placeur
+      if (!gunner || isOutOfAction(gunner) || !canTakeAction(gunner) || battle.acted) return;
+      const aim = battle.combatants
+        .filter((c) => c.kind !== gunner.kind && !isOutOfAction(c) && c.pos && chebyshev(pt, c.pos) <= sa.radius)
+        .sort((a, b) => chebyshev(pt, a.pos!) - chebyshev(pt, b.pos!))[0];
+      if (!aim) { get().log(t('cf.siegeNoTarget', { name: gunner.name })); return; }
+      set({ pendingAttack: { attackerId: gunner.id, targetId: aim.id, location: null, result: null, weaponUid: sa.weaponUid, center: { ...pt }, siege: true } });
+      startCascade(get, set, { title: 'Pilonnage', icon: '💥', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: gunner.id }] });
     },
     cleaveAttack: (targetId: string) => {
       const { battle, pendingCleave: pc } = get();

@@ -21,7 +21,8 @@
  *           protection, regeneration, sang-corrosif, souffle, vol.
  *       • sort↔possession : un sort et l'objet homonyme (Bouclier le sort vs le bouclier) — bouclier,
  *           broyeur-d-os, carreau, flechette.
- *       • divers : effrayant (sort↔talent), pistolet (qualité↔possession), resistance (compétence↔talent).
+ *       • divers : effrayant (sort↔talent), pistolet (qualité↔possession), resistance (compétence↔talent),
+ *           belier (qualité de siège « Bélier » ADE II ch.08 ↔ sort homonyme « Bélier »).
  */
 import { describe, it, expect } from 'vitest';
 import { traits, talents, qualities, maneuvers, spells, trappings, skills } from './index';
@@ -30,7 +31,7 @@ const CATEGORIES: Record<string, { id: string }[]> = { traits, talents, qualitie
 
 /** Ensemble VOULU des ids partagés entre ≥ 2 catalogues (cf. familles documentées ci-dessus). */
 const KNOWN_CROSS = [
-  'arme', 'beni', 'bouclier', 'broyeur-d-os', 'carreau', 'cornes', 'effrayant', 'etreinte-glaciale',
+  'arme', 'belier', 'beni', 'bouclier', 'broyeur-d-os', 'carreau', 'cornes', 'effrayant', 'etreinte-glaciale',
   'flechette', 'frenesie', 'frisson-paralysant', 'haine', 'hurlement-de-la-bete-indomptable',
   'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique',
   'morsure', 'nuee', 'perturbant', 'pistolet', 'protection', 'rapide', 'regard-petrifiant', 'regeneration',

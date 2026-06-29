@@ -38,11 +38,16 @@ import { combatantsWithinRadius } from './combatGeometry';
 import { fireTriggers } from './triggeredEffects';
 import { t as tr, type MsgKey } from '../i18n';
 import { RNG, defaultRNG } from '../engine/dice';
+import type { Pt } from './path';
 
-/** Contexte d'une touche à résoudre en aire — commun au tir individuel et à la bordée. */
+/** Contexte d'une touche à résoudre en aire — commun au tir individuel, à la bordée ET au pilonnage
+ *  INDIRECT (« viser une case », AA p.122-123 : mortier/catapulte à arc élevé visent un POINT au sol). */
 export interface AreaHit {
   attacker: Combatant;
-  primaryTarget: Combatant;
+  /** Cible primaire — celle qui a encaissé la touche directe (tir individuel/bordée), EXCLUE de l'aire.
+   *  ABSENTE pour le tir INDIRECT visant une CASE : le centre n'est pas forcément un combattant, l'Explosion
+   *  frappe alors tout le rayon (aucune primaire à exclure). */
+  primaryTarget?: Combatant;
   /** Arme EFFECTIVE (munition + sous-effectif déjà bakés) — porteuse des Atouts d'aire et des effets `onHit`. */
   weapon: Weapon;
   /** Dégâts BRUTS du tir (DR + Dégâts d'arme + qualités) déjà subis par la cible primaire. */
@@ -51,6 +56,9 @@ export interface AreaHit {
   location: HitLocation;
   /** Distance attaquant→cible en CASES (pour la bande de portée). */
   distanceTiles: number;
+  /** Point d'impact CHOISI (pilonnage indirect) : l'aire se centre ICI. Absent → centre = `primaryTarget.pos`
+   *  (tir direct/bordée — STRICTEMENT inchangé). Présent : l'Explosion frappe tout le rayon autour de la case. */
+  center?: Pt;
 }
 
 /**
@@ -65,6 +73,21 @@ function metresToTiles(metres: number, metresPerTile: number): number {
   return Math.max(1, Math.ceil(metres / Math.max(1, metresPerTile)));
 }
 
+/** Indice d'AIRE d'une arme EFFECTIVE (le plus grand de Explosion / Tir de zone) — `0` si l'arme n'a aucun
+ *  Atout d'aire. Lu pour dimensionner le gabarit du placeur de case (pilonnage indirect). PUR. */
+export function weaponAreaIndice(weapon: Weapon): number {
+  let indice = 0;
+  for (const r of resolveQualities(weapon)) if (r.caps?.explosion || r.caps?.areaFire) indice = Math.max(indice, r.indice ?? 1);
+  return indice;
+}
+
+/** Rayon (en CASES) de l'aire d'une arme EFFECTIVE à l'échelle de la scène (Chebyshev) — `0` si pas d'aire.
+ *  SOURCE UNIQUE du dimensionnement de l'aire (gabarit du placeur ET cible-repère du pilonnage). PUR. */
+export function blastRadiusTiles(weapon: Weapon, metresPerTile: number): number {
+  const indice = weaponAreaIndice(weapon);
+  return indice > 0 ? metresToTiles(indice, metresPerTile) : 0;
+}
+
 /** Un porteur de navire (carène) — détecté par `bodyShape:'vehicule'` (≠ personnage). */
 const isShip = (c: Combatant): boolean => c.bodyShape === 'vehicule';
 
@@ -77,12 +100,14 @@ const isShip = (c: Combatant): boolean => c.bodyShape === 'vehicule';
  */
 export function areaTargets(combatants: Combatant[], metresPerTile: number, crewOf: (ship: Combatant) => Combatant[] = () => []): (indice: number) => AreaTargets {
   return (indice) => (hit) => {
-    if (isShip(hit.primaryTarget)) return exposedCrew(crewOf(hit.primaryTarget)); // mer : balaie le pont (Éclats-like)
-    const center = hit.primaryTarget.pos;
+    if (hit.primaryTarget && isShip(hit.primaryTarget)) return exposedCrew(crewOf(hit.primaryTarget)); // mer : balaie le pont (Éclats-like)
+    // Centre : le point d'impact CHOISI (pilonnage indirect) sinon la position de la primaire (tir direct/bordée).
+    const center = hit.center ?? hit.primaryTarget?.pos;
     if (!center) return [];
     // TERRE : ennemis vivants dans le rayon métrique (Chebyshev), via la primitive de géométrie d'aire PARTAGÉE.
+    // La primaire (si présente) est exclue ; viser une CASE n'a pas de primaire → l'Explosion frappe tout le rayon.
     return combatantsWithinRadius(center, metresToTiles(indice, metresPerTile), combatants,
-      (c) => c.kind !== hit.attacker.kind && c.id !== hit.primaryTarget.id && !isOutOfAction(c));
+      (c) => c.kind !== hit.attacker.kind && c.id !== hit.primaryTarget?.id && !isOutOfAction(c));
   };
 }
 
@@ -119,9 +144,11 @@ export function resolveWeaponArea(
     const indice = tz.indice ?? 1;
     const rangeM = effectiveWeaponRange(weapon, selectedAmmo(hit.attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(hit.attacker, 'F'))); // Portée résolue (BF) + modificateur de munition
     const band = rangeM != null ? rangeBandName(hit.distanceTiles, rangeM) : 'Bout portant';
-    if (band === 'Bout portant') {
+    if (band === 'Bout portant' && target) {
       // +Indice aux DÉGÂTS sur la cible seule (≠ +Indice Blessures brut). La cible a déjà encaissé `damage` ;
-      // on applique le SURCROÎT de Blessures dû à `damage + indice` (woundsFromHit est monotone).
+      // on applique le SURCROÎT de Blessures dû à `damage + indice` (woundsFromHit est monotone). Sans primaire
+      // (pilonnage indirect d'une case) il n'y a PAS de « cible seule » de Bout portant → on retombe sur la branche
+      // d'aire (les N plus proches autour de la case), via la condition `&& target`.
       const extra = woundsFromHit(weapon, target, hit.location, hit.damage + indice, 0, 0) - woundsFromHit(weapon, target, hit.location, hit.damage, 0, 0);
       if (extra > 0 && !isOutOfAction(target)) loseWounds(target, extra);
       lines.push(tr('cf.blastPointBlank', { name: target.name, indice }));

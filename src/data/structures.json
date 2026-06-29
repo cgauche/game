@@ -1,0 +1,92 @@
+[
+  {
+    "id": "porte",
+    "label": "Porte",
+    "kind": "porte",
+    "char": {
+      "BE": 2,
+      "B": 8
+    },
+    "traits": [
+      {
+        "id": "resistant"
+      }
+    ],
+    "source": {
+      "book": "ADE II",
+      "chapter": 8
+    }
+  },
+  {
+    "id": "porte-blindee",
+    "label": "Porte blindée",
+    "kind": "porte",
+    "char": {
+      "BE": 5,
+      "B": 15
+    },
+    "traits": [
+      {
+        "id": "resistant"
+      }
+    ],
+    "source": {
+      "book": "ADE II",
+      "chapter": 8
+    }
+  },
+  {
+    "id": "porte-de-ville",
+    "label": "Porte de ville",
+    "kind": "porte",
+    "char": {
+      "BE": 10,
+      "B": 30
+    },
+    "traits": [
+      {
+        "id": "impenetrable-structure"
+      }
+    ],
+    "source": {
+      "book": "ADE II",
+      "chapter": 8
+    }
+  },
+  {
+    "id": "mur-en-bois",
+    "label": "Mur en bois",
+    "kind": "mur",
+    "char": {
+      "BE": 6,
+      "B": 15
+    },
+    "traits": [
+      {
+        "id": "resistant"
+      }
+    ],
+    "source": {
+      "book": "ADE II",
+      "chapter": 8
+    }
+  },
+  {
+    "id": "mur-en-pierre",
+    "label": "Mur en pierre",
+    "kind": "mur",
+    "char": {
+      "BE": 12,
+      "B": 40
+    },
+    "traits": [
+      {
+        "id": "impenetrable-structure"
+      }
+    ],
+    "source": {
+      "book": "ADE II",
+      "chapter": 8
+    }
+  }
+]

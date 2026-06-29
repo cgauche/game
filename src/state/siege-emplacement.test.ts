@@ -91,7 +91,9 @@ describe('(B) Tir — le chef sert la pièce et touche la cible (resolveAttack, 
     seedBattleRng(1);
     const poste = mkPoste('baliste', ['gunner', 's1']);
     const gunner = mkGunner('gunner', 'hero', { x: 5, y: 5 }, 80);
+    gunner.skills = [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never;
     const s1 = mkCrewman('s1');
+    s1.skills = [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée (2/2)
     const cible = mkEnemy('cible', 8, 5, 30, 60);
     const all = [mkEmplacement(poste), gunner, s1, cible];
     applyShipPostes(all);
@@ -107,9 +109,14 @@ describe('(B) Tir — le chef sert la pièce et touche la cible (resolveAttack, 
 // (C) SOUS-EFFECTIF — équipage < Indice de `arme-d-equipe` → pénalité (recharge ×2 + Imprécise) via
 //     `crewedFireWeapon` (réutilisé par `firedWeapon`), PAS de réimplémentation.
 describe('(C) Sous-effectif — la pénalité d’Arme d’équipe s’applique au sol (crewedFireWeapon)', () => {
+  // Équipage CONFORME au RAW (AA l.3900) : les servants comptés possèdent la Projectiles du Groupe (baliste =
+  // Arbalète) — la seule variable testée ici est leur PRÉSENCE physique (vivant/à terre), pas la compétence.
+  const arb = () => [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never;
+
   it('baliste (Indice 2) servie en sous-effectif → recharge ×2 + Arme d’équipe retirée (firedWeapon ⊃ crewedFireWeapon)', () => {
     const poste = mkPoste('baliste', ['chef', 's1']); // baliste : arme-d-equipe Indice 2, Recharge 3, Dégâts 12
     const chef = mkGunner('chef', 'hero', { x: 5, y: 5 });
+    chef.skills = arb();
     const all = [mkEmplacement(poste), chef, mkCrewman('s1', false), mkEnemy('cible', 12, 5)]; // s1 à terre → présent 1, déficit 1
     applyShipPostes(all);
     const w = firedWeapon(chef, all[3], poste.item.uid, all);
@@ -120,7 +127,10 @@ describe('(C) Sous-effectif — la pénalité d’Arme d’équipe s’applique 
   it('effectif COMPLET (2/2) → arme nette : recharge normale, Arme d’équipe retirée (pas de double)', () => {
     const poste = mkPoste('baliste', ['chef', 's1']);
     const chef = mkGunner('chef', 'hero', { x: 5, y: 5 });
-    const all = [mkEmplacement(poste), chef, mkCrewman('s1'), mkEnemy('cible', 12, 5)];
+    chef.skills = arb();
+    const s1 = mkCrewman('s1');
+    s1.skills = arb();
+    const all = [mkEmplacement(poste), chef, s1, mkEnemy('cible', 12, 5)];
     applyShipPostes(all);
     const w = firedWeapon(chef, all[3], poste.item.uid, all);
     expect(w.reload).toBe(3); // effectif complet (présent 2 ≥ Indice 2) → pas de ×2

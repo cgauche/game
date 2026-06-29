@@ -21,6 +21,7 @@ import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
 import vehiclesJson from './vehicles.json';
+import structuresJson from './structures.json';
 import navalTraitsJson from './naval-traits.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
@@ -51,7 +52,7 @@ import oupsJson from './oups.json';
 import interludeEventsJson from './interludeEvents.json';
 import peripetiesJson from './peripeties.json';
 import grappleJson from './grapple.json';
-import { CharKey, Weapon, VehicleData, Availability } from '../engine/types';
+import { CharKey, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import { type DiceSpec, formatDice } from '../engine/dice';
@@ -231,6 +232,16 @@ export interface TrappingData {
   /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
    *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */
   subType: string | null;
+  /** Groupe de Projectiles qui OPÈRE une arme de siège (`WeaponGroupData.id` : arbalete/catapulte/ingenierie/
+   *  poudre-noire, AA p.122 l.3848-3863) quand `subType` = catégorie de catalogue (« armes-de-siege »). Pilote
+   *  la Spé de tir (`acceptableSpecs`) et le décompte d'équipage (Projectiles appropriée, l.3900). */
+  weaponGroup?: string;
+  /** Pièce d'artillerie « relativement simple » (la baliste, AA p.122 l.3818) : tirée par UN seul servant
+   *  valide → perd tous ses Atouts (garde ses Défauts). Lu par `crewedFireWeapon`. */
+  soloSimple?: boolean;
+  /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA p.122-123) : peut viser une CASE au sol.
+   *  Propagé Trapping → ItemInstance → Weapon (`indirect`) ; lu par `availableAttacks`. Canon/baliste = direct. */
+  indirect?: boolean;
   /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art d'arme/bouclier (rig),
    *  ≠ libellé. Posé à la migration par jointure `norm(label)` → forme. Absent pour munitions/armes de
    *  siège/Mains nues (aucune silhouette tenue). Propagé sur `ItemInstance.shape` puis `Weapon.shape`. */
@@ -558,6 +569,9 @@ export interface TraitCapabilities {
    *  propre Action à attaquer (une monture SANS ce drapeau est « un combattant à part entière »). Lu par
    *  l'IA de combat monté — drapeau de donnée, plus de test par-nom du trait. */
   skittishMount?: boolean;
+  // Structure de siège (ADE II ch.08) — Atouts de la table « Barricades et protections typiques »
+  structResistant?: boolean;    // Résistant : imparable par une Arme à DISTANCE sans l'Atout Siège (ADE II ch.08 l.296)
+  structImpenetrable?: boolean; // Impénétrable : imparable par TOUTE Arme sans l'Atout Siège (ADE II ch.08 l.300)
   // Déplacement / vision
   fly?: boolean;
   leap?: boolean;
@@ -639,6 +653,9 @@ export interface QualityCapabilities {
   critImmuneOdd?: boolean;      // Impénétrable : Critiques sur jet impair ignorés
   apIgnoredOnEven?: boolean;    // Partielle : PA ignorés sur jet pair ou Critique
   apIgnoredOnImpaleCrit?: boolean; // Points faibles : PA ignorés sur Critique Empaleuse
+  // Siège (ADE II ch.08)
+  siege?: boolean;              // Atout Siège : double les Dégâts aux structures, outrepasse Résistant/Impénétrable
+  ram?: boolean;                // Bélier : la pièce n'endommage QUE les portes (ADE II ch.08 l.249) — lu par engine/structures
   // Marqueurs
   unbreakable?: boolean;        // Incassable : insensible aux dégâts/destruction
   magic?: boolean;              // Magique : attaques magiques (blesse l'Éthéré)
@@ -918,6 +935,12 @@ export const trappings = trappingsJson as TrappingData[];
 export const vehicles = vehiclesJson as VehicleData[];
 export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) => [v.id, v]));
 export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
+
+/** Structures destructibles de siège (ADE II ch.08) — catalogue app-owned éditable au Codex. Modèle à PV
+ *  calqué sur la facette `hull` des véhicules ; lu par `engine/structures.ts` (`structureCombatant`). */
+export const structures = structuresJson as StructureData[];
+export const structureById: Map<string, StructureData> = new Map(structures.map((s) => [s.id, s]));
+export const findStructureById = (id: string): StructureData | undefined => structureById.get(id);
 
 /** Traits & Améliorations de navire (MDG ch.12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
  *  verbatim + effet) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur codée en dur).

@@ -49,6 +49,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   exposeDisease: '🦠 Exposer à une Maladie (Test post-combat)',
   contractDisease: '🦠 Contracter une Maladie (immédiat)',
   removeShipPoste: '⚓ Retirer un poste de navire (Canon perdu)',
+  teamCommander: '🎖️ Diriger l’équipe (score de Projectiles du commandant)', // posé par l'action « Diriger l'équipe » ; hors palette d'auteur (commanderId interne)
   attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
   mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',
   ignoreStatePenalties: '🚫 Ignore les pénalités d’État',
