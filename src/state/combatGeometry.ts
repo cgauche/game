@@ -10,7 +10,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { Scene, isWalkable } from './scene';
-import { Pt, MoveEnv } from './path';
+import { Pt, MoveEnv, tileKey } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
 import { sizeGap } from '../engine/size';
 import { isOutOfAction } from '../engine/conditions';
@@ -40,7 +40,9 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
     // qu'un point d'ancrage pour le CIBLAGE, pas une emprise au sol.
     if (c.id === exceptId || isOutOfAction(c) || !c.pos || isStructure(c)) continue;
     if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.373-374)
-    for (const t of footprintTiles(c.pos, footprintN(c))) s.add(`${t.x},${t.y}`);
+    // Clé z-aware (convention `path.ts:tileKey`) : un bloqueur n'occupe que SON étage. z=0 → « x,y »
+    // (byte-identique à l'ancien) ; un bloqueur z>0 produit « x,y,z », invisible au `footFits(...,0)` du sol.
+    for (const t of footprintTiles(c.pos, footprintN(c))) s.add(tileKey(t.x, t.y, c.pos.z ?? 0));
   }
   // BARRIÈRES (zones authorées/sorts) : leurs cases sont infranchissables pour le mover gaté — point
   // d'injection UNIQUE → tout déplacement (reachable joueur, IA, poussée, téléport) les respecte.
@@ -67,7 +69,7 @@ export function cannotStopOn(battle: BattleState, mover: Combatant): Set<string>
   for (const c of battle.combatants) {
     if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos || isStructure(c)) continue; // structure = arête, pas la case
     if (sizeGap(c.size, mover.size) >= 0) continue; // Taille ≥ → déjà dans `occupied` (transit-bloqué)
-    for (const t of footprintTiles(c.pos, footprintN(c))) s.add(`${t.x},${t.y}`);
+    for (const t of footprintTiles(c.pos, footprintN(c))) s.add(tileKey(t.x, t.y, c.pos.z ?? 0)); // par étage (cf. occupied)
   }
   return s;
 }
@@ -96,7 +98,8 @@ export function pushBackTiles(get: Get, attacker: Combatant, target: Combatant, 
   for (let i = 0; i < tiles; i++) {
     const next = { x: pos.x + dx, y: pos.y + dy };
     const foot = footprintTiles(next, footprintN(target));
-    if (!foot.every((t) => isWalkable(scene, t.x, t.y) && !blocked.has(`${t.x},${t.y}`))) break;
+    const tz = target.pos.z ?? 0; // la poussée glisse au même étage que la cible (clé z-aware ; z=0 → « x,y »)
+    if (!foot.every((t) => isWalkable(scene, t.x, t.y) && !blocked.has(tileKey(t.x, t.y, tz)))) break;
     pos = next;
     moved++;
   }
@@ -142,7 +145,7 @@ function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mov
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
         const x = c.pos!.x + dx, y = c.pos!.y + dy;
         if (occupiesTile(mover.pos!, footprintN(mover), x, y)) continue; // garder hors empreinte du mover
-        if (isWalkable(scene, x, y) && !blocked.has(`${x},${y}`)) return { x, y };
+        if (isWalkable(scene, x, y) && !blocked.has(tileKey(x, y, c.pos!.z ?? 0))) return { x, y }; // même étage que `c` (z=0 → « x,y »)
       }
   return undefined;
 }

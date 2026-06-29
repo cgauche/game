@@ -83,13 +83,24 @@ export function footprintsOverlap(aPos: Pt, an: number, bPos: Pt, bn: number): b
   return footprintChebyshev(aPos, an, bPos, bn) === 0;
 }
 
+/** Un niveau de hauteur (étage) en cases. DÉRIVÉ (jamais inventé) : `FALL_METRES_PER_LEVEL` (4 m,
+ *  `jumpMove.ts`) ÷ 2 m par case (canon LDB 15 « 1 case = 2 m ») = 2. Constante documentée plutôt
+ *  qu'import, pour garder `footprint.ts` PUR (pas de dépendance vers la couche Effet/Flow de `jumpMove`). */
+const TILES_PER_LEVEL = 2;
+
 /**
  * Distance de COMBAT (Chebyshev d'empreinte) entre deux combattants positionnés — `Infinity` si l'un
  * n'est pas posé. Un grand est « au contact » (distance 1) si UNE de ses tuiles touche la cible, et
  * la portée d'un tir se mesure du bord de l'empreinte. Remplace `chebyshev(a.pos, b.pos)` partout où
  * la Taille des deux combattants compte (mêlée, bandes de portée, sélection de cible).
+ *
+ * Z-AWARE : la séparation verticale (Δétage × `TILES_PER_LEVEL`) borne la distance par le bas — deux
+ * combattants à la même case mais à des étages différents NE sont pas superposés (muraille vs sol).
+ * Δz=0 (cas coplanaire) ⇒ le terme vaut 0 ⇒ résultat byte-identique à l'ancien.
  */
 export function combatDistance(a: Combatant, b: Combatant): number {
   if (!a.pos || !b.pos) return Infinity;
-  return footprintChebyshev(a.pos, footprintN(a), b.pos, footprintN(b));
+  const horizontal = footprintChebyshev(a.pos, footprintN(a), b.pos, footprintN(b));
+  const vertical = TILES_PER_LEVEL * Math.abs((a.pos.z ?? 0) - (b.pos.z ?? 0));
+  return Math.max(horizontal, vertical);
 }

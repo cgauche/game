@@ -2053,7 +2053,8 @@ export function createCombatSlice(get: Get, set: Set) {
         .map((m) => ({ m, ent: byEntity.get(m.entityId) }))
         .filter((r): r is { m: typeof r.m; ent: SceneEntity } => !!r.ent);
       const enemies = roster.map(({ ent }) =>
-        spawnEnemy(ent.ref, ent.statblock, ent.id, { ...ent.pos }, {
+        // z (étage) propagé depuis la SceneEntity → Combatant.pos.z (omis au sol pour rester byte-identique)
+        spawnEnemy(ent.ref, ent.statblock, ent.id, ent.z ? { ...ent.pos, z: ent.z } : { ...ent.pos }, {
           appearance: ent.appearance, weapon: ent.weapon,
           optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
           crewIds: ent.crewIds, // navire → équipage exposé (MDG ch.14)

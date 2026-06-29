@@ -999,7 +999,9 @@ export interface Combatant {
    *  PAR carrière (un changement de carrière rouvre les choix). Cf. engine/careerSlots.ts. */
   careerSlotChoices?: Record<string, Record<string, string>>;
   // Combat tactique (grille)
-  pos?: { x: number; y: number };
+  /** Case occupée. `z` = étage (cf. `SceneEntity.z` / `path.ts:Pt`) ; ABSENT = sol (z=0). Le combat
+   *  z-aware compte un défenseur de muraille (z=1) NON superposé aux assaillants au sol (combatDistance). */
+  pos?: { x: number; y: number; z?: number };
   initiative?: number;
   /** A gagné de l'Avantage durant le Round courant (upkeep de fin de Round, LDB Dépl. l.40). */
   gainedAdvThisRound?: boolean;

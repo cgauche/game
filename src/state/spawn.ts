@@ -163,7 +163,7 @@ function withTraitChars(chars: Characteristics, live: TraitList | undefined): Ch
   return out;
 }
 
-export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }, extras?: SpawnExtras): Combatant {
+export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number; z?: number }, extras?: SpawnExtras): Combatant {
   const optTraits = extras?.optionals ?? [];
   // Traits FACULTATIFS (LDB 76 l.49 : « Traits de créature courants que vous pouvez ajouter si vous
   // créez votre propre version ») : fusionnés AVANT toutes les dérivations (armes, armure, psy, nuée…).
@@ -229,7 +229,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   };
 }
 
-export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number }): Combatant {
+export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number; z?: number }): Combatant {
   // Traits du statbloc d'éditeur : déjà des `TraitInstance` structurés (édités par picker) — toutes
   // les dérivations en aval les lisent sans aucun parsing.
   const traits = sb.traits ?? [];
@@ -287,7 +287,7 @@ export function spawnEnemy(
   ref: string | undefined,
   statblock: CustomStatblock | undefined,
   id: string,
-  pos: { x: number; y: number },
+  pos: { x: number; y: number; z?: number }, // z (étage) conservé sur c.pos via les spreads/shorthands
   opts?: { appearance?: EntityAppearance; weapon?: string } & SpawnExtras,
 ): Combatant {
   let c: Combatant;

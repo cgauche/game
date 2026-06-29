@@ -18,6 +18,10 @@ const pt = (x: number, y: number, z = 0): Pt => (z ? { x, y, z } : { x, y });
  *  2D que bâtissent les appelants (occupied(), héros au sol) ; z>0 → « x,y,z » distinct. Une seule
  *  fonction de clé partout (pas de double schéma). */
 const key = (x: number, y: number, z = 0) => (z ? `${x},${y},${z}` : `${x},${y}`);
+/** SOURCE UNIQUE de la convention de clé de case (interne = `key`) — réexportée pour les bâtisseurs
+ *  d'ensembles `blocked` côté combat (`occupied`/`cannotStopOn`), qui doivent suivre EXACTEMENT ce
+ *  schéma (z=0 → « x,y », z>0 → « x,y,z ») pour rester comparables au `footFits` du BFS. */
+export { key as tileKey };
 const NEIGHBORS = [
   [1, 0],
   [-1, 0],
