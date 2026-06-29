@@ -128,6 +128,7 @@ export function IsoStage() {
   const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture du combat : cadrer tout le champ
   const pendingAttack = useGame((s) => s.pendingAttack);
   const pendingCast = useGame((s) => s.pendingCast);
+  const pendingSiegeAim = useGame((s) => s.pendingSiegeAim); // pilonnage indirect : placeur de CASE
   // Ciblage carte des flux différés (TargetPrompt) : surbrillances des cibles cliquables.
   const pendingCleave = useGame((s) => s.pendingCleave);
   const pendingDualStrike = useGame((s) => s.pendingDualStrike);
@@ -671,7 +672,7 @@ export function IsoStage() {
   const hoverTracking =
     mode === 'battle' && !!battle && !battle.over &&
     (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
-      !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, battle }));
+      !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
 
   // --- Surbrillances de combat : grilles LOURDES memoïsées + éléments DYNAMIQUES (suivent le
   //     token qui glisse : tether d'engagement, halo de l'actif) recalculés à la frame (peu coûteux). ---
@@ -1287,7 +1288,7 @@ export function IsoStage() {
         {battle && hover && (() => {
           // Source UNIQUE de pose (placingZoneOf — toute zone à poser librement) ; sinon aperçu
           // au rayon initial quand un sort de ZdE est sélectionné sans modale ouverte.
-          const pz = placingZoneOf({ pendingCast, battle });
+          const pz = placingZoneOf({ pendingCast, pendingSiegeAim, battle });
           let radius: number | null = null;
           let caster: Combatant | undefined;
           let ok: boolean | null = null;
