@@ -799,10 +799,14 @@ export function IsoStage() {
       // crénelé intact / brèche de gravats) et se cible via l'overlay d'arête à `data-cid` (ci-dessous).
       // Sans ce saut, `pickBackend`/`resolveRender` la classerait en bipède Humain (un bonhomme au pied du mur).
       if (isStructure(c)) continue;
+      // Levage par étage : un combattant se rend à SON niveau (`pos.z`), comme les entités multi-niveaux
+      // (cf. boucles entités/props) — masqué s'il est AU-DESSUS de l'étage actif, soulevé sinon.
+      const cz = c.pos.z ?? 0;
+      if (viewZ != null ? cz !== viewZ : cz > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
       const isHero = c.kind === 'hero';
       // Brouillard : un ennemi/PNJ que PERSONNE du groupe ne voit n'est pas dessiné (les alliés, qui
-      // SONT les viewers, restent toujours rendus). Les combattants n'ont pas de `z` → clé z=0.
-      if (!isHero && !visible.has(`${c.pos.x},${c.pos.y},0`)) continue;
+      // SONT les viewers, restent toujours rendus). Clé z-aware = l'étage du combattant.
+      if (!isHero && !visible.has(`${c.pos.x},${c.pos.y},${cz}`)) continue;
       // Combat monté (iso seulement) : un CAVALIER n'est pas dessiné au sol — il est rendu EN SELLE
       // sur sa monture (ci-dessous). En vue du dessus, cavalier et monture sont deux pions distincts.
       if (!top && isRider(c)) { if (isHero) hi++; continue; }
@@ -834,8 +838,8 @@ export function IsoStage() {
         ghost: ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
         highlight: c.id === hoveredId ? relationColor(c.kind) : undefined, // FOCUS (survol token/frise) → halo couleur de relation, indépendant du ciblage (hoverAim = réticule)
-      });
-      objs.push({ d: depth(cx, cy, dims) + 0.5, el });
+      }, cz);
+      objs.push({ d: depth(cx, cy, dims, cz) + 0.5, el });
     }
     // Combat monté (LDB 14) : le couple CAVALIER+MONTURE est dessiné comme UN corps composite
     // (MountedToken) trié au niveau de l'os → vraie profondeur (jambe lointaine derrière le
