@@ -85,10 +85,12 @@ const SAMPLES_PER_TILE = 4;
 
 /** La vue `from`→`to` est-elle OCCULTÉE (vision) ? RAPIDE : grille d'opacité O(1) + murs d'arête + fumée.
  *  Plus strict que le combat : TOUTE case opaque sur la ligne (même collée à la cible) cache — on ne
- *  voit pas à travers un mur. Les couverts PARTIELS (haie, tonneau…) ne sont pas opaques → laissent voir. */
-function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt): boolean {
+ *  voit pas à travers un mur. Les couverts PARTIELS (haie, tonneau…) ne sont pas opaques → laissent voir.
+ *  `ignoreEdges` : vue VERS LE BAS (viewer au-dessus, cf. `computeVisible`) — on regarde par-dessus les
+ *  arêtes fines (parapet/créneaux, comme la LdV de combat cross-z), donc seules les TUILES opaques coupent. */
+function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt, ignoreEdges = false): boolean {
   if (smoke.size && (smoke.has(`${from.x},${from.y}`) || smoke.has(`${to.x},${to.y}`))) return true;
-  if (occ.walls.size) {
+  if (!ignoreEdges && occ.walls.size) {
     const eb = (ax: number, ay: number, bx: number, by: number) => {
       const e = edgeOf(ax, ay, bx, by);
       return e ? occ.walls.has(`${e.x},${e.y},${e.side}`) : false;
@@ -231,15 +233,22 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
     const y0 = Math.max(0, v.pos.y - R), y1 = Math.min(h - 1, v.pos.y + R);
     for (let y = y0; y <= y1; y++)
       for (let x = x0; x <= x1; x++) {
-        const k = `${x},${y},${z}`;
-        if (vis.has(k)) continue;
         const d = chebyshev(v.pos, { x, y });
         if (d > R) continue;
         const inDark = d <= v.darkTiles;
-        const lit = d <= v.radiusTiles && light.at(x, y, z) >= LIT_THRESHOLD;
-        if (!inDark && !lit) continue;
-        if (d > 0 && rayBlocked(scene, occ, smokeSet, v.pos, { x, y })) continue;
-        vis.add(k);
+        // Visibilité VERS LE BAS : le viewer révèle SON étage `z` ET tous les étages INFÉRIEURS (on voit
+        // en contrebas depuis une hauteur, jamais à travers un plancher vers le haut). Mono-étage (z=0)
+        // → boucle réduite à zr=0 : byte-identique à l'ancien marquage du seul étage du viewer.
+        for (let zr = z; zr >= 0; zr--) {
+          const k = `${x},${y},${zr}`;
+          if (vis.has(k)) continue;
+          const lit = d <= v.radiusTiles && light.at(x, y, zr) >= LIT_THRESHOLD;
+          if (!inDark && !lit) continue;
+          // Même étage : LdV 2D pleine (murs d'arête compris). Étage inférieur (cross-z) : on regarde
+          // par-dessus les arêtes fines (cf. LdV de combat) → seules les tuiles opaques coupent (`ignoreEdges`).
+          if (d > 0 && rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, zr !== z)) continue;
+          vis.add(k);
+        }
       }
   }
   // Cases éclairées par une SOURCE (torche/brasero) : visibles dès qu'un viewer y a la Ligne de Vue,
@@ -250,8 +259,9 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
       const c = k.split(',');
       const x = +c[0], y = +c[1], z = +c[2];
       for (const v of viewers) {
-        if ((v.z ?? 0) !== z) continue;
-        if (chebyshev(v.pos, { x, y }) === 0 || !rayBlocked(scene, occ, smokeSet, v.pos, { x, y })) {
+        const vz = v.z ?? 0;
+        if (vz < z) continue; // pas de vision vers le haut : le viewer doit être au niveau de la source OU au-dessus
+        if (chebyshev(v.pos, { x, y }) === 0 || !rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, vz !== z)) {
           vis.add(k);
           break;
         }
