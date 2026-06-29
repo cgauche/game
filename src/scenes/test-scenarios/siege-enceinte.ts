@@ -61,6 +61,7 @@ const scene: Scene = {
   description: "Un mur d'enceinte percé d'une herse, un chemin de ronde sur le rempart, une cour ; les assaillants forcent la herse pendant que les défenseurs les pilonnent d'en haut.",
   dimensions: { w: map.w, h: map.h },
   ambiance: 'exterieur',
+  ambientLight: 'jour', // plein jour : on voit le champ et les assaillants qui approchent (un siège n'est pas une embuscade de nuit)
   levels: map.levels,
   stairs: map.stairs,
   // HERSE destructible sur l'arête Nord de la case ouverte (6,4) : bloque le passage champ→cour tant
