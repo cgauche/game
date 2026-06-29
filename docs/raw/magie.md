@@ -794,6 +794,9 @@ Ces sorts manipulent des objets de jeu « navals » (navire, Manœuvre, tourbill
 | Attributs de Domaine — Ombres (bypass tous PA non magiques) | LDB 48 l.582 | OK — `domainMissileMods` |
 | Attributs de Domaine — Vie (purge états + frappe Mort-vivants + +10 rural) | LDB 48 l.679 | Partiel — purge+frappe OK ; +10 rural non implémenté |
 | ZdE = diamètre | LDB 47 l.28 | OK |
+| Surincantation — Sort (×initial Portée/ZdE/Durée/Cible, +2 DR/pas) | LDB 47 l.13-17 | OK — `engine/overcast.ts` |
+| Surincantation — Bénédiction (+6 m / +1 Cible / +6 Rounds FIXE, pas de ZdE) | LDB 41 l.21-27 | OK — `engine/overcast.ts` |
+| Surincantation — Miracle (×initial Portée/Durée/Cible, pas de ZdE, « Vous » non augmentable) | LDB 42 l.7-13 | OK — `engine/overcast.ts` |
 | Magie Noire / Dhar | LDB 46 l.2-3 | OK |
 | Malepierre | LDB 46 l.3-4 | OK |
 | Sorcellerie (corruption + Hémorragique + Imparfaite systématique) | LDB 49 l.5-7 | OK |
@@ -807,7 +810,7 @@ Ces sorts manipulent des objets de jeu « navals » (navire, Manœuvre, tourbill
 
 ### Refs-code couvertes
 
-Toutes les refs `LDB 46 l.XXX` présentes dans `src/engine/magic.ts` et `src/engine/miscast.ts` sont couvertes par une entrée de ce document.
+Toutes les refs `LDB 46 l.XXX` présentes dans `src/engine/magic.ts` et `src/engine/miscast.ts` sont couvertes par une entrée de ce document. La Surincantation (LDB 47/41/42) est implémentée dans `src/engine/overcast.ts` (math source-aware pure) + `effectiveSpellRangeTiles`/`spellTargetCount` (`magic.ts`), alloué/résolu par `castAllocOvercast`/`applyCast`/`overcastTargetCandidates`.
 
 ### Écarts / points à vérifier
 

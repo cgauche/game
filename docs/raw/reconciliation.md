@@ -181,9 +181,9 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\magie.md** L599 — **Implémente :** `domainOnHitEffects()` — `DomainData.effects` (deux `TriggeredEffect` : purge états sur cibles vivantes ; frappe supplémentaire sur Mort-vivants). Le bonus `+10` en environnement rura
 - **docs\raw\magie.md** L790 — | Attributs de Domaine — Feu (Enflammé + bonus si états proches) | LDB 48 l.201 | Partiel — rider OK ; bonus +10 par état voisin non implémenté |
 - **docs\raw\magie.md** L795 — | Attributs de Domaine — Vie (purge états + frappe Mort-vivants + +10 rural) | LDB 48 l.679 | Partiel — purge+frappe OK ; +10 rural non implémenté |
-- **docs\raw\magie.md** L814 — 1. **Influences Malfaisantes (le « 8 »)** : non implémenté en runtime — la détection du chiffre 8 au dé des unités n'est pas branchée dans `resolveCasting` / `resolveFocus`. À brancher si cette règle 
-- **docs\raw\magie.md** L819 — 6. **Attribut Feu — bonus +10 par état Enflammé voisin** (LDB 48 l.201) : non implémenté — nécessiterait un scan de la scène à chaque incantation pour compter les états actifs à ≤ BFM mètres.
-- **docs\raw\magie.md** L820 — 7. **Attribut Vie — +10 en environnement rural/sauvage** (LDB 48 l.679) : non implémenté — pas de classification rurale/urbaine des scènes dans le moteur.
+- **docs\raw\magie.md** L817 — 1. **Influences Malfaisantes (le « 8 »)** : non implémenté en runtime — la détection du chiffre 8 au dé des unités n'est pas branchée dans `resolveCasting` / `resolveFocus`. À brancher si cette règle 
+- **docs\raw\magie.md** L822 — 6. **Attribut Feu — bonus +10 par état Enflammé voisin** (LDB 48 l.201) : non implémenté — nécessiterait un scan de la scène à chaque incantation pour compter les états actifs à ≤ BFM mètres.
+- **docs\raw\magie.md** L823 — 7. **Attribut Vie — +10 en environnement rural/sauvage** (LDB 48 l.679) : non implémenté — pas de classification rurale/urbaine des scènes dans le moteur.
 - **docs\raw\maladies.md** L503 — **Implémente** : non implémenté — parasite hors cycle maladie standard (progression en phases distinctes, pas de `tickDisease` générique applicable).
 - **docs\raw\maladies.md** L521 — **Implémente** : non implémenté dans `maladies.json`.
 - **docs\raw\maladies.md** L545 — **Implémente** : non implémenté dans `maladies.json`.

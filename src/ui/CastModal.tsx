@@ -214,7 +214,7 @@ export function CastModal() {
             };
             const cap = extraTargetCapacity(source, oc.targets, spellTargetCount(spell, caster));
             const designated = pc.extraTargetIds?.length ?? 0;
-            const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, undefined, source, oc.range);
+            const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, source, oc.range);
             return (
               <div className="rm-overcast rm-options">
                 <span className="mini-title">🌬️ Surincantation — {left} pas (+2 DR) restant(s)</span>

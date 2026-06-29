@@ -23,7 +23,7 @@
 | 09 | Compétences | ✅ | 146 (competences.md ×139) |
 | 10 | Talents | ✅ | 62 (tests.md ×36) |
 | 11 | *(artefact OCR)* | 🟡 | 4 (reconciliation.md ×2) |
-| 12 | Tests | ✅ | 45 (tests.md ×41) |
+| 12 | Tests | ✅ | 46 (tests.md ×41) |
 | 13 | Combat | ✅ | 146 (combat.md ×130) |
 | 14 | *(artefact OCR)* | ✅ | 140 (combat.md ×123) |
 | 15 | Déplacement | ✅ | 95 (combat.md ×77) |
@@ -32,7 +32,7 @@
 | 18 | Traumatisme | ✅ | 136 (traumatisme.md ×90) |
 | 19 | Corruption | ✅ | 32 (corruption.md ×27) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 60 (psychologie.md ×36) |
+| 21 | Psychologie | ✅ | 59 (psychologie.md ×36) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
 | 23 | Activités | ✅ | 36 (activites.md ×36) |
 | 24 | Les dieux | ✅ |  |
@@ -52,13 +52,13 @@
 | 38 | Les dieux halflings | ✅ |  |
 | 39 | Les dieux du Chaos | ✅ |  |
 | 40 | Les prières | ✅ | 45 (etats.md ×22) |
-| 41 | Bénédictions | ✅ | 10 (religion.md ×9) |
-| 42 | Miracles | ✅ | 2 (maladies.md ×1) |
+| 41 | Bénédictions | ✅ | 14 (religion.md ×9) |
+| 42 | Miracles | ✅ | 4 (magie.md ×2) |
 | 43 | Miracles de Rhya | ✅ |  |
 | 44 | L’Aethyr | 🟡 | 2 (magie.md ×2) |
 | 45 | *(artefact OCR)* | ➖ | |
-| 46 | Les règles magiques | ✅ | 97 (magie.md ×55) |
-| 47 | Listes des sorts | ✅ | 3 (magie.md ×3) |
+| 46 | Les règles magiques | ✅ | 107 (magie.md ×55) |
+| 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 24 (magie.md ×20) |
 | 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
 | 50 | Magie noire | ✅ |  |
@@ -73,7 +73,7 @@
 | 59 | Faire son marché | ✅ | 8 (economie.md ×8) |
 | 60 | Fabrication | ✅ | 27 (economie.md ×23) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 125 (combat.md ×106) |
+| 62 | Les armes | ✅ | 126 (combat.md ×106) |
 | 63 | Armures | ✅ | 44 (combat.md ×36) |
 | 64 | Sacs et contenants | ✅ |  |
 | 65 | Vêtements et accessoires | ✅ |  |
@@ -348,8 +348,8 @@
 | 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
 | 10 | Le culte de Manann | ✅ | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | ✅ | 1 (religion.md ×1) |
-| 12 | Navires et construction navale | ✅ | 138 (equipement.md ×60) |
-| 13 | Navigation maritime | ✅ | 125 (combat.md ×83) |
-| 14 | Navigation à bord de grands vaisseaux | ✅ | 36 (maladies.md ×19) |
+| 12 | Navires et construction navale | ✅ | 148 (equipement.md ×60) |
+| 13 | Navigation maritime | ✅ | 139 (combat.md ×83) |
+| 14 | Navigation à bord de grands vaisseaux | ✅ | 46 (maladies.md ×19) |
 | 15 | Longs voyages | ✅ | 44 (deplacement.md ×22) |
 | 16 | Bestiaire | ✅ | 66 (catalogue-creatures.md ×56) |

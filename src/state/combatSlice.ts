@@ -2281,7 +2281,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const pool = get().battle?.combatants ?? get().party;
       const caster = pool.find((c) => c.id === pc.casterId);
       const spell = findSpellById(pc.spellId);
-      if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, spellSightOf(get), overcastSourceOf(spell), pc.overcast?.range ?? 0).some((c) => c.id === id)) return;
+      if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, overcastSourceOf(spell), pc.overcast?.range ?? 0, spellSightOf(get)).some((c) => c.id === id)) return;
       // Capacité SOURCE-AWARE : pas × cible initiale (×initial arcane/miracle) ; pas × 1 (bénédiction).
       const cap = extraTargetCapacity(overcastSourceOf(spell), pc.overcast?.targets ?? 0, spellTargetCount(spell, caster));
       const cur = pc.extraTargetIds ?? [];

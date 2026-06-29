@@ -3042,11 +3042,12 @@ export function overcastTargetCandidates(
   targetId: string,
   spell: { range: SpellRange | null },
   missile: boolean,
+  // Surincantation (LDB 47/41/42) : SOURCE (×initial Sort/Miracle vs +6 m fixe Bénédiction) et pas de
+  // Portée alloués — EXPLICITES (aucun défaut caché qui pourrait mal-appliquer l'×initial à un sort divin).
+  // `rangeSteps` 0 = portée de base ; étendre la Portée élargit l'ensemble des cibles atteignables.
+  source: OvercastSource,
+  rangeSteps: number,
   sight?: SpellSight,
-  // Portée surincantée (LDB 47/41/42) : étendre l'axe Portée élargit l'ensemble des cibles atteignables.
-  // Défauts arcane/0 = portée de base (rétro-compat des appelants sans surincantation de Portée).
-  source: OvercastSource = 'arcane',
-  rangeSteps = 0,
 ): Combatant[] {
   const range = effectiveSpellRangeTiles(spell.range, caster, source, rangeSteps);
   return pool.filter((m) => {
