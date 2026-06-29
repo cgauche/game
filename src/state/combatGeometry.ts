@@ -14,6 +14,7 @@ import { Pt, MoveEnv } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
 import { sizeGap } from '../engine/size';
 import { isOutOfAction } from '../engine/conditions';
+import { isStructure } from '../engine/structures';
 import { traitSeesInDark } from '../engine/traits/dispatch';
 import { losBlockingTiles, crossZones, barrierTilesFor } from './zones';
 import { battleRng } from './battleRng';
@@ -33,7 +34,11 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
   const moverSize = typeof mover === 'string' ? undefined : mover.size;
   const s = new Set<string>();
   for (const c of battle.combatants) {
-    if (c.id === exceptId || isOutOfAction(c) || !c.pos) continue;
+    // Une STRUCTURE de siège occupe une ARÊTE (mur), pas l'intérieur de sa case d'ancrage : le blocage
+    // physique vit sur l'arête (`wallBetween`/`wallEdges`), pas dans `occupied`. On peut donc se tenir sur
+    // sa case (un défenseur au pied de la herse) et un mobile pré-placé peut co-occuper — sa `pos` n'est
+    // qu'un point d'ancrage pour le CIBLAGE, pas une emprise au sol.
+    if (c.id === exceptId || isOutOfAction(c) || !c.pos || isStructure(c)) continue;
     if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.373-374)
     for (const t of footprintTiles(c.pos, footprintN(c))) s.add(`${t.x},${t.y}`);
   }
@@ -60,7 +65,7 @@ export function cannotStopOn(battle: BattleState, mover: Combatant): Set<string>
   const s = new Set<string>();
   if (footprintN(mover) > 1) return s;
   for (const c of battle.combatants) {
-    if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos) continue;
+    if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos || isStructure(c)) continue; // structure = arête, pas la case
     if (sizeGap(c.size, mover.size) >= 0) continue; // Taille ≥ → déjà dans `occupied` (transit-bloqué)
     for (const t of footprintTiles(c.pos, footprintN(c))) s.add(`${t.x},${t.y}`);
   }

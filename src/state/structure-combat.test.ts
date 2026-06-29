@@ -4,6 +4,7 @@ import { applyAttackResult, applyStructureCriticalToTarget, collapseStructure } 
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
+import { occupied } from './combatGeometry';
 import { woundsFromHit } from '../engine/woundsCalc';
 import { structureIsDown, structureDownKey, wallBetween, type Scene } from './scene';
 import { testScene } from '../scenes/test-fixture';
@@ -198,5 +199,17 @@ describe('Structures de siège — CHEMIN DE CLIC joueur (overlay d’arête →
     expect(structureIsDown(after.scene!, seg)).toBe(true);                    // porte abattue par le clic
     expect(after.battle!.combatants.some((c) => c.id === S!.id)).toBe(false); // retirée du combat
     expect(wallBetween(after.scene!, 2, 2, 3, 2)).toBe(false);               // BRÈCHE : passage rouvert
+  });
+});
+
+describe('Structures de siège — OCCUPATION (arête ≠ case : on peut se tenir au pied de la herse)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it("la case d'ancrage de la structure n'est PAS une emprise au sol (déplacement libre), mais l'arête bloque le passage", () => {
+    const { S, H, b } = start('porte');
+    expect(S!.pos).toEqual({ x: 2, y: 2 });                       // pos conservée pour le CIBLAGE
+    expect(occupied(b, H).has('2,2')).toBe(false);               // case LIBRE : on s'y tient / on la traverse
+    expect(wallBetween(useGame.getState().scene!, 2, 2, 3, 2)).toBe(true); // l'ARÊTE bloque toujours le franchissement
   });
 });
