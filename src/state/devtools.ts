@@ -13,12 +13,11 @@ import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
 import { getViewZ, setViewZ } from '../gameIso/viewLevel';
-import { rule, setRule } from '../engine/policy';
+import { rule, setRule, resetRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
 import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
 import { willAutoResolve } from './combatAuto';
 import { aiDriven } from './combatGate';
 import type { Combatant } from '../engine/types';
-import type { Cadence } from '../engine/cadence';
 
 /**
  * Outils de recette navigateur (DEV uniquement) — exposés sur `window.__wfrp`.
@@ -664,26 +663,26 @@ export function buildApi() {
       return `🛏️ +${days} j → ${formatImperial(g().gameTime)}`;
     },
 
-    /** RECETTE : règle (ou lit) la Cadence de combat — manuel = défaut ; rapide = jets auto-lancés
-     *  sans dépense ; auto = l'IA joue aussi les héros + Destin auto. Surcharge runtime (non persistée). */
-    cadence: (mode?: Cadence) => {
-      if (!mode) return `cadence = ${rule('combat-cadence')} (manuel | rapide | auto)`;
-      setRule('combat-cadence', mode);
-      useGame.getState().resumeCadence(); // ré-entre la boucle si on bascule en Auto/Rapide en plein tour (sinon figé)
-      return `✅ Cadence de combat → ${mode}`;
-    },
-
-    /** RECETTE : force l'incantation OUVERTE (déjà lancée) en RÉUSSITE à fort DR → fait apparaître le
-     *  panneau de SURINCANTATION (steppers Portée/ZdE/Durée/Cible + désignation). Défaut DR 12 → budget
-     *  > 0 pour tout sort (NI ≤ 8). Le seul hack RNG non reproductible en jeu : poser `pendingCast` à la
-     *  main NE rend PAS la modale (gate de montage) — on ouvre l'incantation normalement (Incanter →
-     *  sort → cible → Lancer) puis `__wfrp.overcast(dr?)`. */
-    overcast: (dr = 12) => {
-      const pc = useGame.getState().pendingCast;
-      if (!pc) return '⚠️ aucune incantation ouverte — en jeu : Incanter → sort → cible';
-      if (!pc.result) return "⚠️ lance le dé d'abord (« Lancer »), puis __wfrp.overcast()";
-      useGame.setState({ pendingCast: { ...pc, result: { ...pc.result, cast: true, hit: true, sl: dr } } });
-      return `✨ DR forcé à ${dr} (RÉUSSITE) → panneau de Surincantation visible (budget affiché dans la modale).`;
+    /** RECETTE : RÈGLES OPTIONNELLES (policy.ts / « règles maison »). `rules()` liste toutes les règles
+     *  (id = valeur · forme) ; `rules(id)` détaille une règle ; `rules(id, value)` la règle (surcharge
+     *  runtime, NON persistée) ; `rules(id, null)` réinitialise au défaut. Inclut le MODE AUTO du combat :
+     *  `rules('combat-cadence', 'auto')` (auto = l'IA joue aussi les héros ; 'rapide' = jets auto sans
+     *  dépense ; 'manuel' = défaut). Valide la valeur selon le `kind` (flag/param/mode). */
+    rules: (id?: string, value?: RuleValue | null) => {
+      const shape = (r: { kind: string; options?: string[]; min?: number; max?: number }) =>
+        r.kind === 'mode' ? `{${r.options?.join('|')}}` : r.kind === 'param' ? `[${r.min}…${r.max}]` : '(true|false)';
+      if (id == null) return OPTIONAL_RULES.map((r) => `${r.group} · ${r.id} = ${JSON.stringify(rule(r.id))}  ${shape(r)}`);
+      const def = ruleDef(id);
+      if (!def) return `⚠️ règle inconnue : ${id} — voir __wfrp.rules()`;
+      if (value === undefined) return `${def.id} = ${JSON.stringify(rule(id))} · ${def.label} (défaut ${JSON.stringify(def.default)} · ${shape(def)}) — ${def.ref}`;
+      if (value === null) { resetRule(id); useGame.getState().resumeCadence(); return `↩️ ${id} → défaut ${JSON.stringify(def.default)}`; }
+      let v: RuleValue = value;
+      if (def.kind === 'flag') v = value === true || value === 'true' || value === 'on';
+      else if (def.kind === 'param') v = Number(value);
+      else if (def.kind === 'mode' && !def.options?.includes(String(value))) return `⚠️ ${id} : valeur invalide « ${value} » — options : ${def.options?.join(' | ')}`;
+      setRule(id, v);
+      useGame.getState().resumeCadence(); // cadence : ré-entre la boucle si on bascule auto/rapide en plein tour
+      return `✅ ${id} → ${JSON.stringify(v)}`;
     },
 
     /** RECETTE : diagnostic d'AUTO-CADENCE — « pourquoi ça avance / ça se fige ? ». Montre le mode, la
