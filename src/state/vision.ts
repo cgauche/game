@@ -11,7 +11,7 @@
  * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
  * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
  */
-import { Scene, tileAt, edgeOf, doorIsOpen } from './scene';
+import { Scene, tileAt, edgeOf, wallIsOpen } from './scene';
 import { wallOnSight } from './lineOfSight';
 import { buildingBlockedAt } from './buildings';
 import { TERRAINS } from './terrain';
@@ -68,12 +68,12 @@ function buildOpaque(scene: Scene): Occ {
       }
   }
   // Arêtes bloquantes (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
-  // sur l'Opéra à 999 murs). Mur non-porte OU porte FERMÉE ; N/E seulement (les diagonales n'occultent
-  // pas une LdV cardinale, cf. wallOnSight).
+  // sur l'Opéra à 999 murs). Toute arête NON ouverte occulte (mur plein, porte fermée, structure intacte ;
+  // `wallIsOpen` faux) ; N/E seulement (les diagonales n'occultent pas une LdV cardinale, cf. wallOnSight).
   const walls = new Set<string>();
   for (const seg of scene.walls ?? []) {
     if ((seg.z ?? 0) !== 0 || (seg.side !== 'N' && seg.side !== 'E')) continue;
-    if (seg.door && doorIsOpen(scene, seg)) continue;
+    if (wallIsOpen(scene, seg)) continue;
     walls.add(`${seg.x},${seg.y},${seg.side}`);
   }
   return { g, w, h, walls };

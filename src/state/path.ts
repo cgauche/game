@@ -1,5 +1,5 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
-import { Scene, isWalkable, edgeOf } from './scene';
+import { Scene, isWalkable, edgeOf, structureIsDown } from './scene';
 import { hasTrait } from '../engine/traits/dispatch';
 import type { Combatant } from '../engine/types';
 
@@ -39,10 +39,14 @@ function stairLinks(scene: Scene): Map<string, Pt[]> {
   return m;
 }
 
-/** Arêtes MURÉES (non-porte) prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`). */
+/** Arêtes BARRIÈRES prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`). DIFFÈRE
+ *  des lecteurs de vue/passage runtime : une PORTE n'est JAMAIS une barrière de planification (on planifie
+ *  un trajet à travers une porte qu'on ouvrira — son état fermé/ouvert ne bloque pas le BFS). Une STRUCTURE
+ *  INTACTE est en revanche un vrai obstacle (pas de plan à travers un mur debout) ; ABATTUE, elle laisse passer. */
 function wallEdges(scene: Scene): Set<string> {
   const s = new Set<string>();
-  for (const w of scene.walls ?? []) if (!w.door) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
+  for (const w of scene.walls ?? [])
+    if (!w.door && !(w.structure && structureIsDown(scene, w))) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
   return s;
 }
 /** Un mur sépare-t-il (ax,ay) de (bx,by) au même étage ? (cardinal seulement.) */

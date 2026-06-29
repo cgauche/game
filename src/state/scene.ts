@@ -539,6 +539,10 @@ export interface WallSeg {
   /** Porte FERMÉE par défaut à l'ouverture de la scène (bloque vue+passage tant qu'on ne l'ouvre pas).
    *  Absent = ouverte par défaut (comportement historique : une porte est une ouverture franchissable). */
   closed?: boolean;
+  /** Structure destructible posée SUR l'arête (id de `structures.json`, ex. `porte-de-ville`). Tant
+   *  qu'elle tient, l'arête bloque passage+vue comme un mur plein ; une fois ABATTUE (`structureIsDown`),
+   *  l'arête devient une BRÈCHE franchissable et transparente. */
+  structure?: string;
 }
 
 /** Clé de flag d'état d'une porte (`scene.flags`) — `true` = OUVERTE, `false` = FERMÉE (override runtime
@@ -573,6 +577,39 @@ export function toggleDoorIn<S extends Pick<Scene, 'walls' | 'flags'>>(scene: S,
   return setDoorOpen(scene, x, y, side, z, !doorIsOpen(scene, seg));
 }
 
+/** Clé de flag d'état d'une structure d'arête (`scene.flags`) — présent & `true` = ABATTUE (brèche).
+ *  Absent = défaut intact (une structure neuve tient ; pas de couche authored à inverser, à la différence
+ *  d'une porte qui peut être `closed` au départ). */
+export function structureDownKey(x: number, y: number, side: WallSide, z = 0): string {
+  return `__struct_down_${x}_${y}_${side}_${z}`;
+}
+
+/** La structure de cette arête est-elle ABATTUE ? Flag runtime override ; absent = intacte (false). Une
+ *  structure abattue ne bloque plus ni la vue ni le passage (la brèche est ouverte). */
+export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): boolean {
+  return scene.flags?.[structureDownKey(seg.x, seg.y, seg.side, seg.z ?? 0)] === true;
+}
+
+/** Le segment portant une STRUCTURE sur l'arête (x,y,side,z), ou undefined. */
+export function structureAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
+  return scene.walls?.find((w) => !!w.structure && w.x === x && w.y === y && w.side === side && (w.z ?? 0) === z);
+}
+
+/** Pose l'état ABATTU/INTACT d'une structure d'arête (flag runtime) — renvoie une NOUVELLE Scène. No-op
+ *  (même réf) si aucune structure n'est posée sur l'arête. PUR. */
+export function setStructureDown<S extends Pick<Scene, 'walls' | 'flags'>>(scene: S, x: number, y: number, side: WallSide, z: number, down: boolean): S {
+  if (!structureAt(scene, x, y, side, z)) return scene;
+  return { ...scene, flags: { ...scene.flags, [structureDownKey(x, y, side, z)]: down } };
+}
+
+/** Une arête est-elle OUVERTE (ne bloque NI passage NI vue) ? Prédicat CANONIQUE unique des deux modes
+ *  d'ouverture : porte ouverte OU structure abattue. Sinon l'arête bloque (mur plein, porte fermée,
+ *  structure intacte). Les lecteurs de franchissabilité/transparence (`wallBetween`, `buildOpaque`) s'y
+ *  branchent — pas de réimplémentation par site. */
+export function wallIsOpen(scene: Pick<Scene, 'flags'>, seg: WallSeg): boolean {
+  return (!!seg.door && doorIsOpen(scene, seg)) || (!!seg.structure && structureIsDown(scene, seg));
+}
+
 /** Arête CANONIQUE (cellule + side N/E) séparant deux cases ADJACENTES en cardinal — null si non
  *  adjacentes. L'arête entre (x,y) et (x,y+1) est le `N` de (x,y+1) ; entre (x,y) et (x+1,y) le `E` de (x,y). */
 export function edgeOf(ax: number, ay: number, bx: number, by: number): { x: number; y: number; side: 'N' | 'E' } | null {
@@ -584,13 +621,14 @@ export function edgeOf(ax: number, ay: number, bx: number, by: number): { x: num
 }
 
 /** Un mur sépare-t-il deux cases adjacentes du même étage ? (bloque le passage, pas la case). Un mur
- *  plein bloque toujours ; une PORTE bloque seulement si elle est FERMÉE (`doorIsOpen` faux). */
+ *  plein bloque toujours ; une PORTE bloque seulement si elle est FERMÉE, une STRUCTURE seulement tant
+ *  qu'elle TIENT — les deux modes d'ouverture sont réunis par `wallIsOpen`. */
 export function wallBetween(scene: Scene, ax: number, ay: number, bx: number, by: number, z = 0): boolean {
   if (!scene.walls?.length) return false;
   const e = edgeOf(ax, ay, bx, by);
   if (!e) return false;
   return scene.walls.some(
-    (w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && (!w.door || !doorIsOpen(scene, w)),
+    (w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && !wallIsOpen(scene, w),
   );
 }
 
