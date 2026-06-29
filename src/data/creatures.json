@@ -59189,5 +59189,482 @@
       "species": "humain",
       "tenue": "spadassin"
     }
+  },
+  {
+    "id": "gerdon-salzwed",
+    "label": "Gerdon Salzwed",
+    "title": "Receleur de Middenheim (Argent 2)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 31,
+      "CT": 23,
+      "F": 33,
+      "E": 31,
+      "I": 25,
+      "Ag": 29,
+      "Dex": 22,
+      "Int": 21,
+      "FM": 37,
+      "Soc": 33,
+      "B": 12
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "calme",
+        "value": 45
+      },
+      {
+        "id": "charme",
+        "value": 38
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 39,
+        "spec": "Base"
+      },
+      {
+        "id": "esquive",
+        "value": 32
+      },
+      {
+        "id": "evaluation",
+        "value": 29
+      },
+      {
+        "id": "marchandage",
+        "value": 36
+      },
+      {
+        "id": "pari",
+        "value": 31
+      },
+      {
+        "id": "ragot",
+        "value": 43
+      },
+      {
+        "id": "subornation",
+        "value": 38
+      }
+    ],
+    "talents": [
+      {
+        "id": "ambidextre"
+      },
+      {
+        "id": "ame-pure"
+      },
+      {
+        "id": "destinee",
+        "spec": "Ne t'attarde pas près de la bouche d'un canon chargé"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Criminels"
+      },
+      {
+        "id": "negociateur"
+      },
+      {
+        "id": "tireur-de-precision"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "arme-simple"
+      },
+      {
+        "id": "besace"
+      },
+      {
+        "id": "bougie"
+      },
+      {
+        "id": "allumette"
+      },
+      {
+        "id": "capuchon"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "vetements"
+      }
+    ],
+    "spells": [],
+    "desc": "Enfant, Gerdon vivait quelque part entre les immeubles chancelants qui s'empilent les uns sur les autres non loin de la porte sud de Middenheim. C'était un garçon démuni et maladif, en partie à cause d'une fièvre qui l'avait privé d'une grande part de sa dextérité et de ses capacités cognitives.\n\nLes Petits Rois sont toujours à la recherche d'enfants solitaires et persécutés. Ceux-ci ont souvent besoin d'une figure fraternelle pour les protéger, et ce rôle convient bien aux hommes de main des Petits Rois. Gerdon était un jeune homme peu imaginatif, mais il faisait toujours de son mieux pour accomplir ses tâches : il passait des messages à d'autres criminels et rejoignait les rançonneurs lorsque ceux-ci avaient besoin de bras supplémentaires pour intimider un marchand. Impressionné par son dévouement, l'un de ses supérieurs lui a ordonné de comptabiliser et d'écouler leurs objets volés. Malheureusement, cette tâche était particulièrement mal adaptée à ses compétences. Gerdon est très doué pour soutirer plus d'argent aux résidents, mais il est mal organisé et ne sait pas compter jusqu'à trois. Il cherche maintenant à s'échapper avant que ses supérieurs se rendent compte de l'état de leurs finances après son passage.",
+    "source": {
+      "book": "Middenheim",
+      "page": 151
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "receleur"
+    }
+  },
+  {
+    "id": "hasso-schroeter",
+    "label": "Hasso Schroeter",
+    "title": "Saltimbanque de Middenheim (Bronze 5)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 24,
+      "CT": 31,
+      "F": 34,
+      "E": 40,
+      "I": 34,
+      "Ag": 28,
+      "Dex": 33,
+      "Int": 25,
+      "FM": 34,
+      "Soc": 35,
+      "B": 14
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 45
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 37,
+        "spec": "Base"
+      },
+      {
+        "id": "divertissement",
+        "value": 45,
+        "spec": "Chant"
+      },
+      {
+        "id": "escamotage",
+        "value": 43
+      },
+      {
+        "id": "evaluation",
+        "value": 28
+      },
+      {
+        "id": "marchandage",
+        "value": 45
+      },
+      {
+        "id": "musicien",
+        "value": 43,
+        "spec": "Luth"
+      },
+      {
+        "id": "ragot",
+        "value": 38
+      }
+    ],
+    "talents": [
+      {
+        "id": "affable"
+      },
+      {
+        "id": "attirant"
+      },
+      {
+        "id": "chanceux"
+      },
+      {
+        "id": "destinee",
+        "spec": "Un dernier trou où te retrancher lorsque tu seras vieux et las"
+      },
+      {
+        "id": "fuite"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Guildes"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "cape"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "instrument"
+      },
+      {
+        "id": "sac-a-dos"
+      },
+      {
+        "id": "bol"
+      },
+      {
+        "id": "boite-a-amadou"
+      },
+      {
+        "id": "couverture"
+      },
+      {
+        "id": "ration"
+      },
+      {
+        "id": "vetements"
+      }
+    ],
+    "spells": [],
+    "desc": "Hasso est né dans une famille d'artisans, pauvre mais respectable du quartier de la Venelle. Chanteur de talent depuis sa plus tendre enfance, il a vite commencé à s'accompagner d'un vieux luth qui traînait dans la maison de sa famille. Une très bonne décision, puisqu'il était mauvais dans tout le reste à l'école.\n\nMiddenheim est une bonne cité pour un musicien de rues à peu près talentueux. Même si Hasso ne joue pas du luth à la perfection, l'accompagnement de sa voix suave lui a permis de se constituer un petit auditoire admiratif. Tous les jours, Hasso fait le trajet de sa maison dans la Venelle pour rejoindre le Freiburg, dans l'espoir de gagner quelques piécettes grâce aux amateurs d'art qui y vivent.\n\nSi la journée est bonne, Hasso peut empocher une poignée de sous, mais il aspire à quelque chose de plus grand. Dans ses rêves, il reproduit les hauts faits des héros et des nobles dont il chante les louanges.",
+    "source": {
+      "book": "Middenheim",
+      "page": 152
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "saltimbanque"
+    }
+  },
+  {
+    "id": "kat-sperber",
+    "label": "Kat Sperber",
+    "title": "Colporteur du Middenland (Bronze 4)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": 27,
+      "F": 38,
+      "E": 35,
+      "I": 32,
+      "Ag": 31,
+      "Dex": 29,
+      "Int": 30,
+      "FM": 40,
+      "Soc": 26,
+      "B": 13
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "charme",
+        "value": 36
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 38,
+        "spec": "Base"
+      },
+      {
+        "id": "evaluation",
+        "value": 35
+      },
+      {
+        "id": "intuition",
+        "value": 37
+      },
+      {
+        "id": "marchandage",
+        "value": 41
+      },
+      {
+        "id": "ragot",
+        "value": 31
+      },
+      {
+        "id": "resistance",
+        "value": 45
+      },
+      {
+        "id": "soin-aux-animaux",
+        "value": 33
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 33
+      }
+    ],
+    "talents": [
+      {
+        "id": "ambidextre"
+      },
+      {
+        "id": "attirant"
+      },
+      {
+        "id": "fuite"
+      },
+      {
+        "id": "guerrier-ne"
+      },
+      {
+        "id": "sens-de-l-orientation"
+      },
+      {
+        "id": "tres-fort"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "cape"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "sac-a-dos"
+      },
+      {
+        "id": "boite-a-amadou"
+      },
+      {
+        "id": "couverture"
+      },
+      {
+        "id": "ration"
+      },
+      {
+        "id": "tente"
+      },
+      {
+        "id": "vetements"
+      }
+    ],
+    "spells": [],
+    "desc": "Kat a passé de nombreuses années à arpenter les routes du Middenland pour vendre ses pinces à linge. Aucun autre colporteur n'est plus démuni qu'elle : elle n'a ni mule ni charrette. Elle voyage en compagnie d'inconnus, dans l'espoir qu'ils aient plus à gagner en l'accompagnant qu'en la dévalisant. Les salles communes des relais de poste de toute la province, aussi misérables et nauséabondes soient-elles, n'ont plus aucun secret pour elle. Il lui est même déjà arrivé d'être tellement sans le sou qu'elle a dû dormir à la belle étoile, au risque de devenir folle ou d'être découverte par des hommes-bêtes carnassiers.\n\nComme nombre de colporteurs itinérants avant elle, Kat a décidé de tenter sa chance à Middenheim : elle espérait que vendre ses marchandises dans les rues de l'Altmarkt serait plus rentable que dans les villages de sa province d'origine. Son pari, hélas, n'a pas payé le moins du monde. Heureusement pour elle, passer la nuit dans le Grunpark est bien moins dangereux que dormir dans la Drakwald.",
+    "source": {
+      "book": "Middenheim",
+      "page": 153
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "colporteur"
+    }
+  },
+  {
+    "id": "theresia-kleist",
+    "label": "Theresia Kleist",
+    "title": "Marin du Nordland (Argent 3)",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 27,
+      "CT": 34,
+      "F": 28,
+      "E": 36,
+      "I": 29,
+      "Ag": 37,
+      "Dex": 31,
+      "Int": 32,
+      "FM": 33,
+      "Soc": 27,
+      "B": 11
+    },
+    "traits": [],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "corps-a-corps",
+        "value": 32,
+        "spec": "Base"
+      },
+      {
+        "id": "escalade",
+        "value": 38
+      },
+      {
+        "id": "langue",
+        "value": 37,
+        "spec": "Norse"
+      },
+      {
+        "id": "natation",
+        "value": 41
+      },
+      {
+        "id": "projectiles",
+        "value": 37,
+        "spec": "Arc"
+      },
+      {
+        "id": "ragot",
+        "value": 32
+      },
+      {
+        "id": "ramer",
+        "value": 33
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 39
+      },
+      {
+        "id": "voile",
+        "value": 52
+      }
+    ],
+    "talents": [
+      {
+        "id": "bonnes-jambes"
+      },
+      {
+        "id": "doue-en-calcul"
+      },
+      {
+        "id": "nageur-endurant"
+      },
+      {
+        "id": "pecheur"
+      },
+      {
+        "id": "resistance",
+        "spec": "Maladie"
+      },
+      {
+        "id": "tres-resistant"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "besace"
+      },
+      {
+        "id": "flasque"
+      },
+      {
+        "id": "brosse-pour-le-sol"
+      },
+      {
+        "id": "cape"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "seau"
+      },
+      {
+        "id": "serpillere"
+      },
+      {
+        "id": "vetements"
+      }
+    ],
+    "spells": [],
+    "desc": "La famille de Theresia s'est mise à naviguer les eaux froides de la Mer des Griffes il y a de nombreuses générations. Ils ont fait du troc et du commerce avec les hommes sauvages de la Norsca, mais toujours en gardant une main libre pour se battre : ils savaient que le peuple des étendues glaciales et escarpées du Nord pouvait sombrer dans une rage traîtresse et sanguinaire à la moindre occasion. Ainsi, depuis son plus jeune âge, Theresia a appris les arts de la nage, de la voile, du commerce et du combat.\n\nMais un jour, une tragédie a frappé la famille de Theresia. Un monstre marin gigantesque a surgi des profondeurs de la mer et a avalé tout cru leur petit vaisseau. Seule Theresia en a réchappé : elle était descendue à terre pour réparer des paniers à crabes ce jour-là. Comme plus personne n'attendait son retour, elle a décidé de se rendre à Middenheim dans l'espoir d'y redresser sa fortune.",
+    "source": {
+      "book": "Middenheim",
+      "page": 154
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "marin"
+    }
   }
 ]
