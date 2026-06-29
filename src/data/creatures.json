@@ -55768,6 +55768,142 @@
     }
   },
   {
+    "id": "grain-d-achillee",
+    "label": "Grain d'achillée le lutin",
+    "title": "Lutin",
+    "named": true,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 6,
+      "CC": 55,
+      "CT": 56,
+      "F": 13,
+      "E": 20,
+      "I": 65,
+      "Ag": 45,
+      "Dex": 71,
+      "Int": 65,
+      "FM": 62,
+      "Soc": 55,
+      "B": 2
+    },
+    "traits": [
+      {
+        "id": "ethere"
+      },
+      {
+        "id": "prejuge",
+        "arg": "Créatures mortelles"
+      },
+      {
+        "id": "taille",
+        "arg": "Très petite"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 80
+      },
+      {
+        "id": "charme",
+        "value": 75
+      },
+      {
+        "id": "discretion",
+        "value": 60
+      },
+      {
+        "id": "emprise-sur-les-animaux",
+        "value": 77
+      },
+      {
+        "id": "focalisation",
+        "value": 87
+      },
+      {
+        "id": "intimidation",
+        "value": 43
+      },
+      {
+        "id": "intuition",
+        "value": 95
+      },
+      {
+        "id": "langue",
+        "value": 85,
+        "spec": "Magick"
+      },
+      {
+        "id": "perception",
+        "value": 95
+      }
+    ],
+    "talents": [
+      {
+        "id": "bon-marcheur",
+        "spec": "Régions boisées"
+      },
+      {
+        "id": "diction-instinctive"
+      },
+      {
+        "id": "harmonisation-aethyrique"
+      },
+      {
+        "id": "insignifiant"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "Bête, Magie naturelle, Vie, Sorcellerie"
+      },
+      {
+        "id": "magie-mineure"
+      },
+      {
+        "id": "menacant"
+      },
+      {
+        "id": "obstine",
+        "times": 2
+      },
+      {
+        "id": "perception-de-la-magie"
+      },
+      {
+        "id": "seconde-vue"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "Vue, Odorat, Ouïe"
+      },
+      {
+        "id": "sixieme-sens"
+      },
+      {
+        "id": "sorcier",
+        "times": 2
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Créature minuscule d'à peine une trentaine de centimètres de haut, recouverte de toiles d'araignée luminescentes qui sourdent de tout son corps. Grain d'achillée garde son existence secrète, mais il a causé plus de maux de tête à Middenheim que Grom la Panse ou Vlad von Carstein. Grain d'achillée est un lutin : bien que chétif, physiquement parlant, sa puissance magique et sa méfiance malveillante envers les mortels sont considérables.\n\nIl y a des siècles de cela, Grain d'achillée a trouvé un moyen de sortir de la clairière, et se retrouver propulsé au cœur de la vie trépidante et industrieuse de l'humanité éphémère l'a profondément dégoûté. Il est resté caché, inconnu, dans la Clairière aux Songes, et ne sortait de sa cachette pour voleter dans la cité que lors des nuits sans lune, afin d'en apprendre plus sur l'endroit misérable et révoltant qu'il avait découvert.\n\nSon ennui et ses caprices l'ont poussé à la malveillance, et Grain d'achillée s'est assigné la tâche de tourmenter les citoyens. Il a secrètement drainé la fertilité de plusieurs Middenheimers d'importance, ce qui les a condamnés, eux et leur poignée de descendants en déclin, à voir s'étioler leur lignée. De Boris Todbringer à « l'Homme », plusieurs des personnalités les plus puissantes de Middenheim ont été privées de leur appétit pour l'amour ou l'intimité à cause de la malédiction de Grain d'achillée.",
+    "source": {
+      "book": "Middenheim",
+      "page": 67
+    },
+    "appearance": {
+      "species": "lutin"
+    }
+  },
+  {
     "id": "gnawretch-skrray",
     "label": "Gnawretch Skrray",
     "title": "Châtelain-Chef de guerre",

@@ -8,6 +8,18 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "troll",
   },
+  "Agna Lottrisdottir": {
+    "def": "Nain",
+    "plan": "biped",
+    "scale": 1,
+    "species": "nain",
+  },
+  "Alfric « Demi-nez » Brisenclume": {
+    "def": "Nain",
+    "plan": "biped",
+    "scale": 1,
+    "species": "nain",
+  },
   "Amibe": {
     "def": "Amibe",
     "plan": "amorphous",
@@ -21,6 +33,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "serpent",
   },
   "Ancien": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Andrea Bruhn": {
     "def": null,
     "plan": "biped",
     "scale": 1,
@@ -104,11 +122,23 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "skaven",
   },
+  "Athlète": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Avocat": {
     "def": null,
     "plan": "biped",
     "scale": 1,
     "species": "humain",
+  },
+  "Babrakkos": {
+    "def": "Liche",
+    "plan": "biped",
+    "scale": 1,
+    "species": "liche",
   },
   "Banshee": {
     "def": "Banshee",
@@ -123,6 +153,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "basilic",
   },
   "Batelier": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Beate Moser": {
     "def": null,
     "plan": "biped",
     "scale": 1,
@@ -170,6 +206,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Brigitte Schleigel": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Brise-Krag": {
     "def": "Ours",
     "plan": "quadruped",
@@ -181,6 +223,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "fish",
     "scale": 1.05,
     "species": "brochet-du-stir",
+  },
+  "Brute": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Buveur de Sang Exalté de Khorne": {
     "def": "Démon",
@@ -590,6 +638,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "haut-elfe",
   },
+  "Emmille Münzstätter": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Enfant d'Ulric": {
     "def": null,
     "plan": "biped",
@@ -692,6 +746,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Frère Bengt": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Fr’hough Mournbreath": {
     "def": "Fr'hough Mournbreath",
     "plan": "jabberslythe",
@@ -733,6 +793,18 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "demon",
+  },
+  "Gerdon Salzwed": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Gnawretch Skrray": {
+    "def": "Skaven",
+    "plan": "biped",
+    "scale": 1,
+    "species": "skaven",
   },
   "Gobelin": {
     "def": "Gobelin",
@@ -799,6 +871,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "goule",
+  },
+  "Grain d'achillée le lutin": {
+    "def": "Lutin",
+    "plan": "biped",
+    "scale": 0.5,
+    "species": "lutin",
   },
   "Grand Aigle": {
     "def": "Grand Aigle",
@@ -890,6 +968,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "demon",
   },
+  "Grand vizir Bhar": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Grande Prêtresse de Rhya": {
     "def": null,
     "plan": "biped",
@@ -968,6 +1052,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "halfling",
   },
+  "Hasso Schroeter": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Haut Druide de la Foi Antique": {
     "def": null,
     "plan": "biped",
@@ -981,6 +1071,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "humain",
   },
   "Haut Prêtre-Rôdeur de Taal": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Helmut Beckenbauer": {
     "def": null,
     "plan": "biped",
     "scale": 1,
@@ -1039,6 +1135,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1.15,
     "species": "horreur-rose",
+  },
+  "Hugo Vallonvert": {
+    "def": "Halfling",
+    "plan": "biped",
+    "scale": 1,
+    "species": "halfling",
   },
   "Humain": {
     "def": null,
@@ -1135,6 +1237,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "jabberslythe",
     "scale": 1.15,
     "species": "jabberslythe",
+  },
+  "Jacopo Schmidt": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Jetsam - la Gelée Intelligente": {
     "def": "Amibe",
@@ -1316,17 +1424,35 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Johen": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Juge": {
     "def": null,
     "plan": "biped",
     "scale": 1,
     "species": "humain",
   },
+  "Kanker Flett": {
+    "def": "Skaven",
+    "plan": "biped",
+    "scale": 1,
+    "species": "skaven",
+  },
   "Kapo": {
     "def": "Skaven",
     "plan": "biped",
     "scale": 1,
     "species": "skaven",
+  },
+  "Kat Sperber": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "L'Ombre du Fleuve": {
     "def": "Cheval",
@@ -1357,6 +1483,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "quadruped",
     "scale": 0.82,
     "species": "sanglier",
+  },
+  "Le vieil Otto": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Lion de Guerre de Chrace": {
     "def": "Lion de Guerre de Chrace",
@@ -1490,6 +1622,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Marta Gerbenshreiber": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Maître Assassin": {
     "def": "Skaven",
     "plan": "biped",
@@ -1555,6 +1693,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "quadruped",
     "scale": 0.9,
     "species": "cheval",
+  },
+  "Moritz Valgeir": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Mutant": {
     "def": null,
@@ -1988,6 +2132,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.05,
     "species": "ours",
   },
+  "Ritta": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Riverain": {
     "def": null,
     "plan": "biped",
@@ -2126,6 +2276,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "skaven",
   },
+  "Skree": {
+    "def": "Skaven",
+    "plan": "biped",
+    "scale": 1,
+    "species": "skaven",
+  },
   "Slenderthigh Whiptongue": {
     "def": "Slenderthigh Whiptongue",
     "plan": "jabberslythe",
@@ -2234,6 +2390,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.85,
     "species": "squig",
   },
+  "Stefan Hochen": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Stégadon": {
     "def": "Stégadon",
     "plan": "quadruped",
@@ -2264,11 +2426,23 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.05,
     "species": "ours",
   },
+  "Theresia Kleist": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Traqueur Impitoyable": {
     "def": "Loup",
     "plan": "quadruped",
     "scale": 0.82,
     "species": "loup",
+  },
+  "Traudl Bauer": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Troll": {
     "def": "Troll",
@@ -2408,11 +2582,53 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Waldtraud Blass": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Walpurga Wurklich": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Wereburga Krotpreffer": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Wolfgard Hohmann": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Wulfric Tore": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Wulfrum Viert": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Wyrm des Mers": {
     "def": "Serpent",
     "plan": "serpentine",
     "scale": 1,
     "species": "serpent",
+  },
+  "Yanni Weber": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Zombie": {
     "def": "Zombie",
@@ -2814,6 +3030,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "quadruped",
     "scale": 0.82,
     "species": "loup",
+  },
+  "lutin": {
+    "def": "Lutin",
+    "plan": "biped",
+    "scale": 0.5,
+    "species": "lutin",
   },
   "macareux-a-bec-tranchant": {
     "def": "Macareux à Bec Tranchant",

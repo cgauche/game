@@ -23,7 +23,7 @@ describe('isNamed — source UNIQUE de la nommé-ité (jamais via `title`)', () 
   });
 });
 
-/** Garde de DONNÉE : les 54 individus nommés validés contre le RAW (desc verbatim singulier = individu)
+/** Garde de DONNÉE : les 55 individus nommés validés contre le RAW (desc verbatim singulier = individu)
  *  portent `named:true`, et rien d'autre. Les ex-« douteux » (sous-espèces/templates ZI décrits au
  *  PLURIEL) restent génériques — régression à garder si on retouche le backfill. */
 describe('creatures.json — backfill `named`', () => {
@@ -37,7 +37,7 @@ describe('creatures.json — backfill `named`', () => {
     'le-fantasma', 'prototype-du-clan-skryre', 'babrakkos',
     'gnawretch-skrray', 'kanker-flett', 'maitre-moulder-skree',
     'wolfgard-hohmann', 'wereburga-krotpreffer', 'moritz-valgeir',
-    'stefan-hochen', 'marta-gerbenshreiber',
+    'stefan-hochen', 'marta-gerbenshreiber', 'grain-d-achillee',
     'wulfric-tore', 'waldtraud-blass', 'ritta', 'wulfrum-viert', 'emmille-munzstatter',
     'yanni-weber', 'johen', 'frere-bengt', 'grand-vizir-bhar', 'hugo-vallonvert',
     'alfric-demi-nez-brisenclume', 'agna-lottrisdottir', 'helmut-beckenbauer',
@@ -50,12 +50,12 @@ describe('creatures.json — backfill `named`', () => {
     'experience-unique-du-clan-moulder', 'mangeuse-d-hommes-de-la-drakwald-araignee-geante',
   ];
 
-  it('les 54 nommés validés portent named:true (ids résolus)', () => {
+  it('les 55 nommés validés portent named:true (ids résolus)', () => {
     const bad = NAMED_IDS.filter((id) => { const c = findCreatureById(id); return !c || !isNamed(c); });
     expect(bad).toEqual([]);
   });
-  it('exactement 54 nommés dans la base (zéro générique flaggé)', () => {
-    expect(creatures.filter(isNamed).length).toBe(54);
+  it('exactement 55 nommés dans la base (zéro générique flaggé)', () => {
+    expect(creatures.filter(isNamed).length).toBe(55);
   });
   it('les ex-douteux (sous-espèces/templates au pluriel) restent génériques', () => {
     const bad = GENERIC_IDS.filter((id) => { const c = findCreatureById(id); return !c || isNamed(c); });
