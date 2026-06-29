@@ -7,7 +7,9 @@
 import { describe, it, expect } from 'vitest';
 import { lineOfSightCover } from './lineOfSight';
 import { computeVisible, type LightField } from './vision';
+import { computeStateVisible } from './visionState';
 import { Scene, SceneEntity, WallSeg } from './scene';
+import type { Combatant } from '../engine/types';
 
 function scene(w: number, h: number, tiles?: Record<string, string>, walls?: WallSeg[], entities: SceneEntity[] = []): Scene {
   const grid = new Array(w * h).fill('herbe');
@@ -83,5 +85,22 @@ describe('computeVisible — vision inter-niveau (vers le bas seulement)', () =>
     const v = computeVisible(scene(8, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 3, darkTiles: 0 }], BRIGHT);
     expect(v.has('3,0,0')).toBe(true);
     expect(v.has('4,0,0')).toBe(false); // hors rayon (Chebyshev 4 > 3)
+  });
+});
+
+describe('computeStateVisible — INTÉGRATION brouillard de combat : le viewer porte son ÉTAGE', () => {
+  it("un héros sur le rempart (z=1, au-dessus d'une tuile de MUR) révèle le contrebas (z=0)", () => {
+    const w = 6, h = 1;
+    const z0 = new Array(w * h).fill('sol'); z0[0] = 'mur'; // le mur, sous le rempart : un viewer calculé à z=0 y serait aveugle
+    const z1 = new Array(w * h).fill('vide'); z1[0] = 'plancher'; // chemin de ronde en (0,0)
+    const sc = {
+      id: 's', name: 's', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
+      levels: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
+      entities: [], buildings: [], dialogues: [], triggers: [], encounters: [], flags: {},
+    } as unknown as Scene;
+    const hero = { id: 'h', kind: 'hero', pos: { x: 0, y: 0, z: 1 }, conditions: [], traits: [], characteristics: {} } as unknown as Combatant;
+    const vis = computeStateVisible({ scene: sc, battle: { combatants: [hero] }, partyPos: { x: 0, y: 0 }, gameTime: 12 * 60, lightLevel: null });
+    expect(vis.has('0,0,1')).toBe(true); // son propre étage (rempart)
+    expect(vis.has('3,0,0')).toBe(true); // case au SOL en contrebas RÉVÉLÉE — la correction passe `z: c.pos.z` au viewer
   });
 });

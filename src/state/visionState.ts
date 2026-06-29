@@ -59,7 +59,9 @@ export function computeStateVisible(s: VisionInput): Set<string> {
   if (s.battle) {
     for (const c of s.battle.combatants) {
       if (c.kind !== 'hero' || isOutOfAction(c) || !c.pos) continue;
-      viewers.push({ pos: c.pos, radiusTiles: baseR, darkTiles: darkSightTiles(c) });
+      // `z` du viewer = ÉTAGE du combattant (vision cross-niveau : un défenseur sur le rempart z=1
+      // voit en contrebas z=0). Sans ce z, il serait calculé au sol — aveugle depuis la muraille.
+      viewers.push({ pos: c.pos, z: c.pos.z, radiusTiles: baseR, darkTiles: darkSightTiles(c) });
     }
   } else {
     const dark = (s.party ?? []).reduce((m, c) => Math.max(m, darkSightTiles(c)), 0);
