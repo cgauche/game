@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest';
 import { lineOfSightCover } from './lineOfSight';
 import { computeVisible, type LightField } from './vision';
 import { computeStateVisible } from './visionState';
-import { Scene, SceneEntity, WallSeg } from './scene';
+import { Scene, SceneEntity, WallSeg, rampartTilesAbove } from './scene';
 import type { Combatant } from '../engine/types';
 
 function scene(w: number, h: number, tiles?: Record<string, string>, walls?: WallSeg[], entities: SceneEntity[] = []): Scene {
@@ -85,6 +85,37 @@ describe('computeVisible — vision inter-niveau (vers le bas seulement)', () =>
     const v = computeVisible(scene(8, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 3, darkTiles: 0 }], BRIGHT);
     expect(v.has('3,0,0')).toBe(true);
     expect(v.has('4,0,0')).toBe(false); // hors rayon (Chebyshev 4 > 3)
+  });
+});
+
+describe('CHEMIN DE RONDE « bord oui, surplomb non » — regard vers le haut depuis le sol', () => {
+  // Scène 2 niveaux : mur d'enceinte (height:1) sur l'arête N de la rangée 1 → (x,1,z1) = chemin de ronde
+  // (porté par le mur) ; un plancher z=1 en (2,3) SANS mur dessous = surplomb (loge).
+  const w = 4, h = 4;
+  const z0 = new Array(w * h).fill('herbe');
+  const z1 = new Array(w * h).fill('vide');
+  for (let x = 0; x < w; x++) z1[1 * w + x] = 'plancher'; // chemin de ronde (rangée 1)
+  z1[3 * w + 2] = 'plancher'; // loge en surplomb (aucune arête-mur dessous)
+  const walls: WallSeg[] = [];
+  for (let x = 0; x < w; x++) walls.push({ x, y: 1, side: 'N', structure: 'mur-en-pierre', height: 1 });
+  const sc = {
+    id: 's', name: 's', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
+    levels: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
+    entities: [], buildings: [], dialogues: [], triggers: [], encounters: [], flags: {}, walls,
+  } as unknown as Scene;
+
+  it('rampartTilesAbove : le dessus du mur est un rempart, la loge (sans mur) non', () => {
+    const r = rampartTilesAbove(sc, 0);
+    expect(r.has('0,1,1')).toBe(true); // chemin de ronde porté par le mur
+    expect(r.has('2,3,1')).toBe(false); // loge en surplomb, rien dessous → pas un rempart
+  });
+
+  it('vision : depuis le sol on VOIT le chemin de ronde au-dessus, mais NI la loge en surplomb NI le champ derrière le mur', () => {
+    const v = computeVisible(sc, [{ pos: { x: 0, y: 2 }, z: 0, radiusTiles: 5, darkTiles: 0 }], BRIGHT);
+    expect(v.has('0,2,0')).toBe(true); // son propre sol
+    expect(v.has('0,1,1')).toBe(true); // lève les yeux sur le rempart (porté par le mur)
+    expect(v.has('2,3,1')).toBe(false); // pas de vision à travers un plancher en surplomb
+    expect(v.has('0,0,0')).toBe(false); // le mur d'enceinte coupe la LdV au sol vers le champ au-delà
   });
 });
 

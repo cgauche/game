@@ -670,6 +670,30 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
     .map((c) => ({ x: c.x, y: c.y, z }));
 }
 
+/** Ensemble des tuiles « CHEMIN DE RONDE » perçues/dessinées DEPUIS l'étage `fromZ` : tout sol MARCHABLE
+ *  d'un étage SUPÉRIEUR (à ciel ouvert) PORTÉ par une arête-mur qui s'élève de `fromZ` (ou moins) jusqu'à
+ *  ce niveau (mur `height` l'atteignant). C'est le « bord » d'un rempart — on lève les yeux dessus et on
+ *  le dessine d'en bas — par opposition à un plancher en SURPLOMB (loge), porté par rien, qui reste masqué.
+ *  SOURCE UNIQUE de la règle « bord oui, surplomb non », partagée par la VISION (regard vers le haut limité)
+ *  et le RENDU (étage du dessus vu depuis l'actif). Une passe O(murs) → lookups O(1) (`Set` "x,y,z"). */
+export function rampartTilesAbove(scene: Pick<Scene, 'walls' | 'levels' | 'dimensions'>, fromZ: number): Set<string> {
+  const set = new Set<string>();
+  const hasLevel = (z: number) => scene.levels.some((l) => l.z === z);
+  for (const w of scene.walls ?? []) {
+    const base = w.z ?? 0, top = base + (w.height ?? 0);
+    if (base > fromZ || top <= fromZ) continue; // l'arête ne s'élève PAS au-dessus de fromZ (pas un mur porteur de rempart d'ici)
+    // tuiles bordées par cette arête (ses DEUX faces) — calque `parapetTilesAbove`.
+    const cells = w.side === 'N' ? [[w.x, w.y], [w.x, w.y - 1]]
+      : w.side === 'E' ? [[w.x, w.y], [w.x + 1, w.y]] : [[w.x, w.y]];
+    for (let z = Math.max(fromZ + 1, base + 1); z <= top; z++) {
+      if (!hasLevel(z)) continue; // pas de niveau réel à cette hauteur (un mur `height:2` sans z=2 ne crée pas de rempart fantôme)
+      for (const [cx, cy] of cells)
+        if (terrainWalkable(tileAt(scene as Scene, cx, cy, z))) set.add(`${cx},${cy},${z}`);
+    }
+  }
+  return set;
+}
+
 export function emptyScene(w = 20, h = 15): Scene {
   return {
     id: `scene-${Date.now()}`,

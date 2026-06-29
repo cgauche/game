@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable, elevAt, doorIsOpen, toggleDoorIn, structureIsDown } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable, elevAt, doorIsOpen, toggleDoorIn, structureIsDown, rampartTilesAbove } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
 import { exploreMoveDest } from '../state/exploreNav';
@@ -258,20 +258,29 @@ export function IsoStage() {
     return activeZ;
   }, [scene, activeZ]);
 
+  // Tuiles « chemin de ronde » de l'étage du DESSUS visibles/dessinées depuis l'actif (dessus de mur porté,
+  // PAS un plancher en surplomb) → on rend le rempart + ses défenseurs vus de la cour. Vide hors multi-niveau.
+  const ramparts = useMemo(() => (scene ? rampartTilesAbove(scene, activeZ) : new Set<string>()), [scene, activeZ]);
+
   const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const out: { d: number; el: JSX.Element; x: number; y: number; z: number }[] = [];
-    for (const lvl of renderLevels) {
+    // Étages rendus : l'actif + ceux du DESSOUS (plein) ; + l'étage du DESSUS mais SEULEMENT ses tuiles de
+    // CHEMIN DE RONDE (`ramparts`) — on dessine le dessus d'un mur vu d'en bas, jamais un plancher en surplomb.
+    for (const lvl of scene.levels) {
+      if (viewZ != null ? lvl.z !== viewZ : lvl.z > activeZ + 1) continue; // isolate ; sinon actif + dessous + 1 au-dessus (gardé par `ramparts`)
+      const upperOnly = viewZ == null && lvl.z > activeZ;
       const fd = floorDepth(d, lvl.z);
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
+          if (upperOnly && !ramparts.has(`${x},${y},${lvl.z}`)) continue; // étage du dessus : rempart seulement
           const html = groundTile(scene, x, y, d, lvl.z);
           if (html) out.push({ d: fd, x, y, z: lvl.z, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
         }
     }
     return out;
-  }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
+  }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, ramparts]);
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
@@ -623,7 +632,7 @@ export function IsoStage() {
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
       if (inBattle && battle!.combatants.some((c) => c.id === ent.id)) continue; // enrôlé : c'est le combattant qui le rend (pas de figurant dupliqué)
       const ez = ent.z ?? 0;
-      if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
+      if (viewZ != null ? ez !== viewZ : ez > activeZ && !ramparts.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // isole ; sinon actif + dessous + CHEMIN DE RONDE du dessus (rempart)
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
       // Brouillard : une créature/PNJ hors-vue n'est PAS dessinée (le décor/prop, lui, reste « mémorisé »).
       if (!visible.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue;
@@ -766,7 +775,7 @@ export function IsoStage() {
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const ez = ent.z ?? 0;
-    if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
+    if (viewZ != null ? ez !== viewZ : ez > activeZ && !ramparts.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // isole ; sinon actif + dessous + CHEMIN DE RONDE du dessus (rempart)
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
     // Échelle = côté MAX de l'empreinte (`fg.scale`) : un prop multi-cases garde sa pleine taille à
@@ -826,7 +835,7 @@ export function IsoStage() {
       // Levage par étage : un combattant se rend à SON niveau (`pos.z`), comme les entités multi-niveaux
       // (cf. boucles entités/props) — masqué s'il est AU-DESSUS de l'étage actif, soulevé sinon.
       const cz = c.pos.z ?? 0;
-      if (viewZ != null ? cz !== viewZ : cz > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
+      if (viewZ != null ? cz !== viewZ : cz > activeZ && !ramparts.has(`${c.pos.x},${c.pos.y},${cz}`)) continue; // isole ; sinon actif + dessous + CHEMIN DE RONDE du dessus (rempart)
       const isHero = c.kind === 'hero';
       // Brouillard : un ennemi/PNJ que PERSONNE du groupe ne voit n'est pas dessiné (les alliés, qui
       // SONT les viewers, restent toujours rendus). Clé z-aware = l'étage du combattant.
