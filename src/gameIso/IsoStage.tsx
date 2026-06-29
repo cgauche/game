@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable, elevAt, doorIsOpen, toggleDoorIn } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable, elevAt, doorIsOpen, toggleDoorIn, structureIsDown } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
 import { exploreMoveDest } from '../state/exploreNav';
@@ -50,6 +50,7 @@ import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
 import { groundTile } from './ground';
 import { wallSeg } from './walls';
+import { isStructure } from '../engine/structures';
 import { stairSeg, stairLevels } from './stairs';
 import { getViewZ, subscribeViewZ } from './viewLevel';
 import { buildingObj } from './BuildingSprite';
@@ -261,8 +262,11 @@ export function IsoStage() {
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const zs = new Set(renderLevels.map((l) => l.z));
     // Cloisons des étages rendus (raised par leur z) → les murs des loges se dressent au-dessus du parterre.
+    // Une arête à STRUCTURE de siège se rend en fortification (intacte) ou brèche (abattue) — l'état
+    // `structureIsDown` est passé comme l'overlay porte passe `doorIsOpen` ; le memo dépend de `scene`,
+    // donc l'Effondrement (nouvelle réf de scène, `collapseStructure`) recalcule la brèche.
     return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
-      const seg = wallSeg(w, d);
+      const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false);
       return { d: seg.d, x: w.x, y: w.y, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
@@ -791,6 +795,10 @@ export function IsoStage() {
       // À l'échelle MER, l'ÉQUIPAGE d'un navire est ABSTRAIT — pas de jeton individuel sur la mer (la coque agit
       // en unité et le représente, MDG ch.14). MÊME prédicat « passager » que l'exclusion de l'ordre d'initiative.
       if (isPassengerInBattle(c, battle.combatants, isMerScene(scene))) continue;
+      // Structure de siège (AA p.120) : AUCUN jeton de case — elle se rend SUR son arête (wallSeg : rempart
+      // crénelé intact / brèche de gravats) et se cible via l'overlay d'arête à `data-cid` (ci-dessous).
+      // Sans ce saut, `pickBackend`/`resolveRender` la classerait en bipède Humain (un bonhomme au pied du mur).
+      if (isStructure(c)) continue;
       const isHero = c.kind === 'hero';
       // Brouillard : un ennemi/PNJ que PERSONNE du groupe ne voit n'est pas dessiné (les alliés, qui
       // SONT les viewers, restent toujours rendus). Les combattants n'ont pas de `z` → clé z=0.
@@ -1254,6 +1262,37 @@ export function IsoStage() {
               );
             });
         })()}
+        {/* Structures de siège (AA p.120) : la fortification d'arête est une CIBLE de combat. Hit-area
+            TRANSPARENTE posée sur l'arête, portant le `data-cid` du Combattant-structure → survol (réticule
+            de visée) + clic-attaque (`battleClickEntity`, comme un token ; `stopPropagation` court-circuite
+            le clic-sol du SVG, comme l'overlay porte). Présente tant que la structure TIENT (Combattant
+            présent) et qu'une de ses deux cases est visible — PAS de garde d'adjacence : on la pilonne à
+            distance. À la BRÈCHE, `collapseStructure` retire le Combattant et pose le flag → l'overlay
+            disparaît, l'arête reste en gravats (wallObjs). */}
+        {battle && (scene.walls ?? [])
+          .filter((w) => !!w.structure && (w.z ?? 0) === activeZ && (w.side === 'N' || w.side === 'E') && !structureIsDown(scene, w))
+          .map((w) => {
+            const z = w.z ?? 0;
+            const id = `structure-${w.x}-${w.y}-${w.side}-${z}`;
+            const sc = battle.combatants.find((c) => c.id === id);
+            if (!sc) return null; // abattue / pas (encore) enrôlée
+            const c1 = { x: w.x, y: w.y };
+            const c2 = w.side === 'E' ? { x: w.x + 1, y: w.y } : { x: w.x, y: w.y - 1 };
+            if (!visible.has(`${c1.x},${c1.y},${z}`) && !visible.has(`${c2.x},${c2.y},${z}`)) return null;
+            const [a, b] = tileEdge(w.x, w.y, w.side as 'N' | 'E', dims, z);
+            return (
+              <line key={`struct-${w.x}-${w.y}-${w.side}-${z}`} data-cid={id} x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy}
+                stroke="transparent" strokeWidth={16} strokeLinecap="round" style={{ pointerEvents: 'stroke', cursor: 'crosshair' }}
+                onPointerDown={(ev) => {
+                  ev.stopPropagation();
+                  const st = useGame.getState();
+                  if (controlsActive(st)) st.battleClickEntity(id, { confirm: hoverClickCommits() });
+                }}
+              >
+                <title>{sc.name}</title>
+              </line>
+            );
+          })}
         {/* Télégraphe de DÉPLACEMENT ENNEMI (actorMove) : chemin + destination en ROUGE, montré avant le
             glissé — même tracé que l'aperçu héros (movePreviewEls), teinté ennemi. */}
         {actorMove && actorMove.path.length > 0 &&

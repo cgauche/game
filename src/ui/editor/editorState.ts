@@ -4,7 +4,7 @@
  * le canvas (peindre, poser, déplacer, redimensionner, supprimer, coller, points d'entrée).
  * Fonctions PURES (Scene → Scene) testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
  */
-import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles, Effect, WallSeg } from '../../state/scene';
+import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles, Effect, WallSeg, WallSide } from '../../state/scene';
 import type { FireArc, ShipPoste } from '../../engine/types';
 import { EMPTY_FLOW, flowFromEffects, flowEffects } from '../../state/flow';
 export { flowEffects };
@@ -54,7 +54,10 @@ export type Sel =
   | null
   | { type: 'entity' | 'building' | 'trigger' | 'entry'; id: string }
   | { type: 'restZone'; idx: number }
-  | { type: 'effectZone'; idx: number };
+  | { type: 'effectZone'; idx: number }
+  // Arête de mur (cloison/porte) désignée par sa forme CANONIQUE (case + N|E + étage) — éditable dans
+  // l'inspecteur (type, structure destructible). Posée par l'outil murs, sélectionnée à l'outil ↖.
+  | { type: 'wall'; x: number; y: number; side: WallSide; z: number };
 
 /** Rect englobant l'aire d'une zone d'effet (disque → boîte). L'éditeur n'auteure que des rect. */
 export function effectZoneRect(area: import('../../state/scene').ZoneArea): Rect {
@@ -80,6 +83,7 @@ export function sameSel(a: Sel, b: Sel): boolean {
   if (!a || !b || a.type !== b.type) return a === b;
   if (a.type === 'restZone' && b.type === 'restZone') return a.idx === b.idx;
   if (a.type === 'effectZone' && b.type === 'effectZone') return a.idx === b.idx;
+  if (a.type === 'wall' && b.type === 'wall') return a.x === b.x && a.y === b.y && a.side === b.side && a.z === b.z;
   return (a as { id: string }).id === (b as { id: string }).id;
 }
 
@@ -200,6 +204,10 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
   if (sel?.type === 'building') return { ...scene, buildings: (scene.buildings ?? []).filter((b) => b.id !== sel.id) };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).filter((_, i) => i !== sel.idx) };
   if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).filter((_, i) => i !== sel.idx) };
+  if (sel?.type === 'wall') {
+    const others = (scene.walls ?? []).filter((w) => !(w.x === sel.x && w.y === sel.y && w.side === sel.side && (w.z ?? 0) === sel.z));
+    return { ...scene, walls: others.length ? others : undefined };
+  }
   if (sel?.type === 'entry') {
     const entries = { ...scene.entryPoints };
     delete entries[sel.id];
@@ -307,6 +315,45 @@ export function toggleDiagonalWall(scene: Scene, x: number, y: number, diag: '\\
 export function nearestEdge(ox: number, oy: number): Edge4 {
   const d: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
   return (['N', 'E', 'S', 'O'] as Edge4[]).reduce((a, b) => (d[b] < d[a] ? b : a));
+}
+
+/** Seuil de proximité (fraction de case) en deçà duquel l'outil ↖ SÉLECTIONNE une arête-mur plutôt que la
+ *  tuile sous le curseur (au-delà = clic « plein centre » → picking de tuile). */
+const EDGE_PICK = 0.33;
+
+/** Arête-mur SÉLECTIONNABLE sous le point FRACTIONNAIRE (fx,fy) au niveau z : l'arête cardinale la plus
+ *  proche du centre SI elle porte un segment ET que le pointeur en est assez près ; sinon null (l'appelant
+ *  retombe alors sur `hitAt`). Diagonales exclues (purement visuelles, non porteuses de structure). */
+export function pickWallEdge(scene: Scene, fx: number, fy: number, z: number): { x: number; y: number; side: 'N' | 'E' } | null {
+  const px = Math.round(fx), py = Math.round(fy);
+  const ox = fx - px, oy = fy - py;
+  const side = nearestEdge(ox, oy);
+  const dist: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
+  if (dist[side] > EDGE_PICK) return null;
+  const e = canonEdge(px, py, side);
+  return edgeWallState(scene, e.x, e.y, e.side, z) === 'none' ? null : e;
+}
+
+/** Forme CANONIQUE compacte d'un segment d'arête : on n'écrit que les champs significatifs (pas de z:0,
+ *  pas de door:false, closed sans porte, structure vide) — même convention que `setEdgeWall`. */
+function normWall(w: WallSeg): WallSeg {
+  const out: WallSeg = { x: w.x, y: w.y, side: w.side };
+  if (w.z) out.z = w.z;
+  if (w.door) out.door = true;
+  if (w.door && w.closed) out.closed = true;
+  if (w.structure) out.structure = w.structure;
+  return out;
+}
+
+/** Patche le segment-mur canonique (x,y,side,z) : applique `patch` puis re-normalise (drop des champs
+ *  vides). No-op (réf préservée par `map`) si aucun segment à cette arête. PUR — calqué sur `setEdgeWall`. */
+export function patchWall(scene: Scene, x: number, y: number, side: WallSide, z: number, patch: Partial<WallSeg>): Scene {
+  return {
+    ...scene,
+    walls: (scene.walls ?? []).map((w) =>
+      w.x === x && w.y === y && w.side === side && (w.z ?? 0) === z ? normWall({ ...w, ...patch }) : w,
+    ),
+  };
 }
 
 /** Outil ÉLÉVATION : peint la valeur d'élévation (unités d'étage : +0.45 scène, -0.4 fosse, 0 plat) sur

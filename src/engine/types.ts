@@ -58,6 +58,10 @@ export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
  */
 export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule' | 'structure';
 
+/** Côté d'arête de mur — REDÉCLARÉ depuis `state/scene` (`WallSide`, même union) pour ne pas faire dépendre
+ *  le moteur PUR de l'état (cf. `Combatant.structureEdge`). */
+export type WallEdgeSide = 'N' | 'E' | '\\' | '/';
+
 /** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312).
  *  `vehicule` (véhicule/embarcation à coque — EDOC ch.4, MoR ch.5, MDG ch.13) : ses localisations
  *  (coque/gréement/roues/avirons…) sont PILOTÉES PAR DONNÉES (table par véhicule, branchée plus tard),
@@ -764,6 +768,10 @@ export interface Combatant {
   footprint?: number;
   /** Forme du corps (LDB p.312) : choisit le Tableau de Localisation. Défaut `humanoide` au point de lecture. */
   bodyShape?: BodyShape;
+  /** Structure de siège (`bodyShape:'structure'`) : l'ARÊTE de mur que cette structure occupe (`scene.walls`).
+   *  Sert à poser la BRÈCHE (`setStructureDown`) à sa destruction. `side` redéclare `state/scene` WallSide ici
+   *  (même union) pour ne pas faire dépendre le moteur PUR de l'état. */
+  structureEdge?: { x: number; y: number; side: WallEdgeSide; z?: number };
   /** Psychologie (LDB 21) : Indice de Peur/Terreur INSPIRÉ (statbloc) ; Immunité Psychologie (85 l.143-144). */
   causesPeur?: number;
   causesTerreur?: number;

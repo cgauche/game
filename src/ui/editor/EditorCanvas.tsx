@@ -21,7 +21,7 @@ import type { useEditorView } from './useEditorView';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, addStair, eraseAt, sameSel,
-  toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge, canonEdge,
+  toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge, canonEdge, pickWallEdge,
 } from './editorState';
 
 export function EditorCanvas({
@@ -110,6 +110,11 @@ export function EditorCanvas({
     if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return;
     switch (tool.mode) {
       case 'select': {
+        // Une arête-mur proche du curseur prime sur la tuile (sélection de cloison/porte → fold structure).
+        const { x: lx, y: ly } = localXY(e);
+        const f = screenToTileF(lx, ly, dims, currentLevel);
+        const we = pickWallEdge(scene, f.x, f.y, currentLevel);
+        if (we) { onSelect({ type: 'wall', x: we.x, y: we.y, side: we.side, z: currentLevel }); return; }
         const hit = hitAt(scene, p, layers);
         onSelect(hit);
         if (hit) moveRef.current = { from: p, moved: false };
@@ -266,6 +271,8 @@ export function EditorCanvas({
   const selEnt = sel?.type === 'entity' ? scene.entities.find((en) => en.id === sel.id) ?? null : null;
   const selBuilding = sel?.type === 'building' ? (scene.buildings ?? []).find((b) => b.id === sel.id) ?? null : null;
   const zoneRect = sel?.type === 'trigger' || sel?.type === 'restZone' || sel?.type === 'effectZone' ? selRect(scene, sel) : null;
+  // Arête-mur sélectionnée (N/E uniquement) sur l'étage courant → segment doré (même tracé que hoverEdge).
+  const selWall = sel?.type === 'wall' && sel.z === currentLevel && (sel.side === 'N' || sel.side === 'E') ? sel : null;
 
   return (
     <main className="editor-canvas-wrap">
@@ -364,6 +371,11 @@ export function EditorCanvas({
             const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLevel);
             const [a, b] = hoverEdge.side === 'N' ? [gc(hoverEdge.x, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y)] : [gc(hoverEdge.x + 1, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y + 1)];
             return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke="#ffe066" strokeWidth={4} strokeLinecap="round" opacity={0.9} pointerEvents="none" />;
+          })()}
+          {selWall && (() => {
+            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLevel);
+            const [a, b] = selWall.side === 'N' ? [gc(selWall.x, selWall.y), gc(selWall.x + 1, selWall.y)] : [gc(selWall.x + 1, selWall.y), gc(selWall.x + 1, selWall.y + 1)];
+            return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke="#ffe066" strokeWidth={5} strokeLinecap="round" pointerEvents="none" />;
           })()}
           {layers.triggers && (
             <g pointerEvents="none">

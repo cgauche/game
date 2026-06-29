@@ -25,6 +25,11 @@
   --blood: #6e1a10;
   --copper: #c9905a; /* monnaie : sou de cuivre */
   --silver: #cdd6df; /* monnaie : pistole d'argent */
+  --struct-face: #6b6f76; /* siège : face PIERRE d'un rempart/porte renforcée (≠ bois des murs) */
+  --struct-band: #34373c; /* siège : ferrure / liseré sombre de la fortification */
+  --struct-cap: #888d95; /* siège : chemin de ronde + créneaux (pierre claire) */
+  --struct-rubble: #463f35; /* siège : base de gravats d'une BRÈCHE abattue */
+  --struct-rubble-hi: #6a6253; /* siège : éboulis éclairés (tas dentelé) */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
 }
 

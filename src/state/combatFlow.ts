@@ -103,6 +103,8 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
 import { applyHullCritical } from '../engine/shipCritical';
+import { isStructure } from '../engine/structures';
+import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
@@ -137,7 +139,7 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene } from './scene';
+import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown } from './scene';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
@@ -1075,6 +1077,13 @@ export function applyCriticalToTarget(
   },
 ): boolean {
   const { ctx, prerolled, suppressReveal, get } = opts ?? {};
+  // Structure de siège (AA p.121) : modèle de Critique DISTINCT du personnage — table propre (pas de Trauma
+  // humain) et pas de « Mort » de personnage. Filet de sécurité pour TOUT appelant (opposé/magie) ; le chemin
+  // d'attaque normal passe déjà par `applyStructureCriticalToTarget` (cf. `applyAttackResult`).
+  if (target.bodyShape === 'structure') {
+    applyStructureCriticalToTarget(set, target, { attackerId: ctx?.attackerId, attackerKind: ctx?.attackerKind, weapon: ctx?.weapon }, log);
+    return false; // une Structure ne « meurt » pas comme un personnage : la destruction = ses Blessures → BRÈCHE
+  }
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
     target.wounds.current = 0;
@@ -1176,6 +1185,51 @@ function applyHullCriticalToTarget(
     });
   }
   return false;
+}
+
+/**
+ * Critique de Structure (AA p.120-121) — calqué sur `applyHullCriticalToTarget`. Tire la table propre aux
+ * Structures (`rollStructureCritical`), applique les Blessures supplémentaires (langue `GameOp`, ignore BE/PA)
+ * et, sur un Effondrement (96+), met la Structure à 0 Blessure (la destruction se matérialise en BRÈCHE par
+ * `collapseStructure`, à la clôture de la résolution). Pousse la révélation « Critique de Structure » si un
+ * héros est concerné. `forcedRoll` fige le d100 (tests). PUR vis-à-vis de la grille (aucun retrait ici).
+ */
+export function applyStructureCriticalToTarget(
+  set: SetFn,
+  target: Combatant,
+  ctx: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string },
+  log: string[],
+  forcedRoll?: number,
+): StructureCriticalResolved {
+  const outcome = rollStructureCritical(battleRng(), forcedRoll);
+  target.criticalWounds = (target.criticalWounds ?? 0) + 1;
+  applyOps(target, outcome.ops, { rng: battleRng() }); // Blessures supplémentaires (GameOp `wounds`, ignore BE+PA)
+  if (outcome.destroyed) target.wounds.current = 0; // Effondrement → la Structure s'écroule (BRÈCHE à la clôture)
+  for (const l of outcome.log) log.push(l);
+  if (outcome.note) log.push(`  ↳ ${outcome.note}`); // effets verbatim sur les personnes (débris/Tests), non simulés
+  if (target.kind === 'hero' || ctx.attackerKind === 'hero') {
+    pushReveal(set, {
+      kind: 'critical', title: 'Critique de Structure', dice: outcome.roll, lines: [...outcome.log, outcome.note],
+      subjectId: target.id, severity: outcome.destroyed ? 'grave' : 'minor', actorId: ctx.attackerId, weapon: ctx.weapon, details: [],
+    });
+  }
+  return outcome;
+}
+
+/** Effondrement d'une STRUCTURE de siège tombée à 0 Blessure (AA p.121) → BRÈCHE franchissable : pose le flag
+ *  `structureDown` sur l'arête (`structureEdge`), RETIRE le Combattant inerte de la bataille et re-render
+ *  (SCENE_DIRTY). Appelée à la CLÔTURE de la résolution (APRÈS le `set` qui réécrit `battle` depuis sa capture)
+ *  → pas de clobber. No-op (réf inchangée pour la scène) si la cible n'a pas d'arête (structure hors scène). */
+export function collapseStructure(get: Get, set: SetFn, target: Combatant): void {
+  const e = target.structureEdge;
+  set((s: GameState) => ({
+    scene: e && s.scene ? setStructureDown(s.scene, e.x, e.y, e.side, e.z ?? 0, true) : s.scene,
+    battle: s.battle
+      ? { ...s.battle, combatants: s.battle.combatants.filter((c) => c.id !== target.id), log: [...s.battle.log, ev('death', structureCollapseLog(target.name), target.id)] }
+      : s.battle,
+  }));
+  clearEngagementOf(get().battle?.combatants ?? [], target.id); // l'attaquant n'est plus Engagé avec la brèche
+  bus.emit(EVT.SCENE_DIRTY);
 }
 
 /** Construit la révélation d'affichage d'un Coup Critique PRÉ-TIRÉ, SANS muter la cible (pour la modale
@@ -1427,7 +1481,17 @@ export function applyAttackResult(
     applyOps(target, GRAPPLE.init, { caster: attacker });
     critLog.push(tr('cf.grappleInit', { name: attacker.name, foe: target.name }));
   }
-  if (res.hit && res.woundsLost) {
+  if (res.hit && res.woundsLost && isStructure(target)) {
+    // STRUCTURE de siège (AA p.121) : modèle DISTINCT du personnage — pas de Localisation, d'À Terre, de
+    // Déviation d'armure ni de Trauma humain. Les Blessures sont déjà mitigées par `woundsFromHit` (Siège
+    // ×2 / Résistant-Impénétrable-Bélier → 0). Un double qui retire AUSSI ≥25 % des Blessures RESTANTES
+    // déclenche un Critique de Structure ; la chute à 0 Blessure devient une BRÈCHE (posée par
+    // `collapseStructure` à la clôture, hors clobber du `set` final).
+    const before = target.wounds.current;
+    target.wounds.current = Math.max(0, before - res.woundsLost);
+    if (res.critical && before > 0 && res.woundsLost >= before * 0.25 && target.wounds.current > 0)
+      applyStructureCriticalToTarget(set, target, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name }, critLog);
+  } else if (res.hit && res.woundsLost) {
     // LDB 18 l.53-55 : un Coup Critique RE-TIRE la localisation (1d100 frais, ou choix RAW-2 « Je ne
     // faillirai pas ! », ou Critique déjà pré-tiré pour la Déviation) ; TOUTE la résolution du coup — Dégâts
     // NON-critiques (+ PA), Déviation, armure Bâclée, table de Critiques — utilise CETTE localisation. On la
@@ -1667,7 +1731,7 @@ export function applyAttackResult(
   // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
   if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
-  if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
+  if (isOutOfAction(target) && !isStructure(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id)); // structure → ligne d'Effondrement (collapseStructure), pas « hors de combat »
   // Salve (Aux Armes p.126) : un héros qui tire une arme à Salve gardant des tirs (chambered > 0) ne
   // consomme PAS son Action — il peut tirer encore ce tour (chaque tir suivant à −10 cumulatif).
   const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, QUALITY_IDS.Salve) && (attacker.chambered ?? 0) > 0;
@@ -1675,6 +1739,9 @@ export function applyAttackResult(
   // haut dans cette résolution) → foldées dans le MÊME `log` réécrit, avant que ce `set` ne le clobbere.
   log.push(...drainPendingLog(get, set));
   set({ battle: { ...battle, acted: !salvoContinues, action: null, log } });
+  // Structure de siège tombée à 0 Blessure → BRÈCHE : retrait du Combattant inerte + flag d'arête abattue.
+  // APRÈS le `set` ci-dessus (qui réécrit `battle` depuis la capture STALE) pour ne pas re-réintroduire la structure.
+  if (isStructure(target) && target.wounds.current <= 0) collapseStructure(get, set, target);
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI attaquant → résolue instantanément

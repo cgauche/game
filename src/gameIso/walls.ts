@@ -51,10 +51,53 @@ function topWall(w: WallSeg, a: P, b: P, dims: Dims): { d: number; svg: string }
   return { d: wallDepth(w, dims) + 0.6, svg: `<g>${svg}</g>` }; // au-dessus des sols
 }
 
+/** Fortification de siège (AA p.120-121) dressée sur une arête : rempart de PIERRE crénelé et ferré
+ *  (intacte → distincte d'un mur de maison en bois) ou tas de GRAVATS bas laissant la BRÈCHE ouverte
+ *  au-dessus (abattue → on voit/passe au travers). Couleurs en tokens :root. `down` = `structureIsDown`. */
+function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: number; svg: string } {
+  const d = wallDepth(w, dims);
+  if (isSquareView(dims.view)) {
+    const line = (col: string, width: number, dash?: string) =>
+      `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
+    // Vue du dessus : barre pierre ÉPAISSE ferrée (intacte) ; brèche = pointillé clairsemé de gravats.
+    const svg = down ? line('var(--struct-rubble)', 6, '3 5') : line('var(--struct-band)', 11) + line('var(--struct-face)', 7);
+    return { d: d + 0.6, svg: `<g>${svg}</g>` };
+  }
+  const H = WALL_H;
+  if (down) {
+    // BRÈCHE : éboulis bas le long de l'arête (≈0.3 H), ouverture au-dessus laissée transparente. Tas
+    // DENTELÉ (≠ « mur court ») + moignons de jambage qui subsistent aux extrémités.
+    const hr = H * 0.32;
+    const m1 = lerpP(a, b, 0.34), m2 = lerpP(a, b, 0.62);
+    const svg = `<g><polygon points="${slab(a, b, 0, hr * 0.5)}" fill="var(--struct-rubble)"/>` +
+      `<polygon points="${a.cx},${a.cy} ${m1.cx},${m1.cy - hr} ${m2.cx},${m2.cy - hr * 0.7} ${b.cx},${b.cy}" fill="var(--struct-rubble-hi)" stroke="var(--struct-band)" stroke-width="0.6"/>` +
+      post(a, hr * 0.7) + post(b, hr * 0.55) + `</g>`;
+    return { d, svg };
+  }
+  // REMPART INTACT : face pierre pleine + bandes de fer + créneaux (merlons) en saillie au-dessus.
+  const band = (t: number) => `<polygon points="${slab(a, b, H * t, H * t + 2.4)}" fill="var(--struct-band)"/>`;
+  const N = 5, merlonH = 6; // créneaux : 1 merlon / 1 trou (i pair)
+  let merlons = '';
+  for (let i = 0; i < N; i += 2) {
+    const p0 = lerpP(a, b, i / N), p1 = lerpP(a, b, (i + 1) / N);
+    merlons += `<polygon points="${p0.cx},${p0.cy - H} ${p1.cx},${p1.cy - H} ${p1.cx},${p1.cy - H - merlonH} ${p0.cx},${p0.cy - H - merlonH}" fill="var(--struct-cap)"/>`;
+  }
+  const svg = `<g>${post(a, H)}` +
+    `<polygon points="${slab(a, b, 0, H)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // face pierre
+    band(0.28) + band(0.56) + band(0.82) + // ferrures
+    `<polygon points="${slab(a, b, H * 0.9, H)}" fill="var(--struct-cap)"/>` + // chemin de ronde
+    merlons +
+    `${post(b, H)}</g>`;
+  return { d, svg };
+}
+
 /** SVG d'un segment de mur TEXTURÉ (panneau encadré + moulures + plinthe + ombrage par côté) + sa
- *  profondeur, pour le tri global de IsoStage. Une PORTE est ajourée (ouverture basse + linteau). */
-export function wallSeg(w: WallSeg, dims: Dims): { d: number; svg: string } {
+ *  profondeur, pour le tri global de IsoStage. Une PORTE est ajourée (ouverture basse + linteau) ; une
+ *  arête portant une STRUCTURE de siège (`w.structure`) se rend en fortification/brèche (`structureSeg`,
+ *  `structDown` = état abattu fourni par l'appelant, comme l'overlay porte lit `doorIsOpen`). */
+export function wallSeg(w: WallSeg, dims: Dims, structDown = false): { d: number; svg: string } {
   const [a, b] = edgeEnds(w, dims);
+  if (w.structure) return structureSeg(w, a, b, dims, structDown);
   if (isSquareView(dims.view)) return topWall(w, a, b, dims); // grille carrée : trait sur l'arête, pas d'extrusion
   const H = WALL_H;
   // Palette par orientation (lumière en haut-gauche) : faces N (vers le bas-droit) plus sombres que E.

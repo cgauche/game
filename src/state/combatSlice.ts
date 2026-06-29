@@ -12,7 +12,7 @@ import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
 import type { CounterParticipant } from './pendings';
-import { SceneEntity } from './scene';
+import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
@@ -54,7 +54,8 @@ import { spawnEnemy } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, withCrewActed } from './shipCrew';
-import { findCrewTestTypeById, findCrewRoleById, findVehicleById } from '../data';
+import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById } from '../data';
+import { structureCombatant } from '../engine/structures';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
@@ -2074,7 +2075,22 @@ export function createCombatSlice(get: Get, set: Set) {
         mount.mountable = true;
         mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.215)
       });
-      const all = [...heroes, ...enemies];
+      // Structures destructibles de siège (AA p.120-121) : chaque arête portant une `structure` INTACTE devient
+      // un Combattant inerte à PV (kind 'npc' → ne fausse pas la fin de combat, cf. checkBattleOver qui ne
+      // compte que les 'enemy'). Son `structureEdge` mémorise l'arête à ABATTRE (BRÈCHE) à sa destruction ;
+      // une structure déjà abattue n'est pas ré-instanciée. Source = WallSeg (≠ SceneEntity) → enrôlée ICI.
+      const structures = (scene.walls ?? [])
+        .filter((w) => !!w.structure && !structureIsDown(scene, w))
+        .map((w) => {
+          const data = findStructureById(w.structure!);
+          if (!data) return null;
+          const c = structureCombatant(data, `structure-${w.x}-${w.y}-${w.side}-${w.z ?? 0}`);
+          c.pos = { x: w.x, y: w.y };
+          c.structureEdge = { x: w.x, y: w.y, side: w.side, z: w.z ?? 0 };
+          return c;
+        })
+        .filter((c): c is Combatant => !!c);
+      const all = [...heroes, ...enemies, ...structures];
       // Postes d'artillerie (MDG ch.12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
       // octroi du canon dérivé). Après le spawn, sur TOUS les combattants (héros/allié/ennemi indifférent).
       applyShipPostes(all);
@@ -2093,7 +2109,11 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       // Ordre d'initiative (arme « Lente » en dernier, LDB 63 l.25). À l'échelle MER, l'équipage est PASSAGER
       // (hors `order`) : seules les coques ont un tour (navire-unité, MDG ch.14). Au person-scale, ordre complet.
-      const order = combatOrder(all, isMerScene(scene), battleRng()); // départage RAW des égalités exactes par Test d'Ag (LDB 13 l.31)
+      // Une STRUCTURE inerte n'a PAS de tour (kind 'npc' → ni pilotée par l'IA ni par le joueur : la laisser
+      // dans `order` figerait la boucle de tour). Elle RESTE dans `combatants` (ciblable) ; seul son slot
+      // d'`order` est retiré — même traitement que les passagers de coque (MDG ch.14).
+      const structureIds = new Set(structures.map((s) => s.id));
+      const order = combatOrder(all, isMerScene(scene), battleRng()).filter((id) => !structureIds.has(id)); // départage RAW des égalités exactes par Test d'Ag (LDB 13 l.31)
       const battle: BattleState = {
         combatants: all,
         order,

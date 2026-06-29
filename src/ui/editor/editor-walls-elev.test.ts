@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene } from '../../state/scene';
+import { emptyScene, structureAt } from '../../state/scene';
 import { wallBetween } from '../../state/scene';
-import { canonEdge, edgeWallState, toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge } from './editorState';
+import { canonEdge, edgeWallState, toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge, pickWallEdge, patchWall, deleteSel } from './editorState';
 
 /**
  * Outils éditeur MURS (arêtes + portes + diagonales) et ÉLÉVATION (scène surélevée / fosse). Mutations
@@ -62,6 +62,38 @@ describe('editorState — outil MURS (diagonales)', () => {
     s = toggleDiagonalWall(s, 3, 3, '/', 0);
     expect(s.walls).toHaveLength(1);
     expect(s.walls![0].side).toBe('/');
+  });
+});
+
+describe('editorState — sélection + structure d’une arête-mur', () => {
+  /** Scène 5×5 avec une cloison pleine sur l’arête E de (2,2). */
+  const withWall = () => toggleEdgeWall(emptyScene(5, 5), 2, 2, 'E', 0, 'wall');
+
+  it('pickWallEdge : renvoie l’arête canonique quand le pointeur est près d’un segment posé', () => {
+    const s = withWall();
+    expect(pickWallEdge(s, 2.4, 2.0, 0)).toEqual({ x: 2, y: 2, side: 'E' }); // près de l’arête E
+    expect(pickWallEdge(s, 2.0, 2.0, 0)).toBeNull(); // plein centre → repli sur le picking de tuile
+    expect(pickWallEdge(emptyScene(5, 5), 2.4, 2.0, 0)).toBeNull(); // aucune cloison ici
+  });
+
+  it('patchWall : assigne une structure (id réel du catalogue), puis la retire', () => {
+    let s = patchWall(withWall(), 2, 2, 'E', 0, { structure: 'mur-en-pierre' });
+    expect(structureAt(s, 2, 2, 'E', 0)?.structure).toBe('mur-en-pierre');
+    s = patchWall(s, 2, 2, 'E', 0, { structure: undefined }); // « aucune »
+    expect(structureAt(s, 2, 2, 'E', 0)).toBeUndefined();
+    expect(s.walls![0]).toEqual({ x: 2, y: 2, side: 'E' }); // forme compacte restaurée (pas de structure vide)
+  });
+
+  it('patchWall : Cloison ↔ Porte + closed, forme canonique compacte (pas de door:false / closed sans porte)', () => {
+    let s = patchWall(withWall(), 2, 2, 'E', 0, { door: true, closed: true });
+    expect(s.walls![0]).toEqual({ x: 2, y: 2, side: 'E', door: true, closed: true });
+    s = patchWall(s, 2, 2, 'E', 0, { door: undefined, closed: undefined }); // retour cloison pleine
+    expect(s.walls![0]).toEqual({ x: 2, y: 2, side: 'E' });
+  });
+
+  it('deleteSel : retire l’arête-mur sélectionnée', () => {
+    const s = deleteSel(withWall(), { type: 'wall', x: 2, y: 2, side: 'E', z: 0 });
+    expect(s.walls ?? []).toHaveLength(0);
   });
 });
 

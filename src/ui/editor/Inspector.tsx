@@ -6,7 +6,7 @@
  * Composant de PRÉSENTATION : la scène et la sélection vivent dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import { Scene, SceneEntity, BuildingFeature, Trigger, SceneEffectZone } from '../../state/scene';
+import { Scene, SceneEntity, BuildingFeature, Trigger, SceneEffectZone, WallSeg } from '../../state/scene';
 import type { Settlement } from '../../engine/disponibilite';
 import { DEFS } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
@@ -28,9 +28,10 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine } from './editorState';
+import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall } from './editorState';
 import type { FireArc } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
+import { RefField } from '../compendium/RefField';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -105,6 +106,11 @@ export function Inspector({
     setScene({ ...scene, effectZones: (scene.effectZones ?? []).map((x, i) => (i === sel.idx ? z : x)) });
   };
   const entry = sel?.type === 'entry' ? scene.entryPoints?.[sel.id] ?? null : null;
+  const selW = sel?.type === 'wall' ? scene.walls?.find((w) => w.x === sel.x && w.y === sel.y && w.side === sel.side && (w.z ?? 0) === sel.z) ?? null : null;
+  const patchSelW = (patch: Partial<WallSeg>) => {
+    if (sel?.type !== 'wall') return;
+    setScene(patchWall(scene, sel.x, sel.y, sel.side, sel.z, patch));
+  };
 
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (ent && e.id === ent.id ? { ...e, ...patch } : e)) });
@@ -131,9 +137,11 @@ export function Inspector({
           ? '⛺ Zone de repos'
           : efz
             ? `⚠️ ${efz.label || 'Piège'}`
-            : entry
-              ? `⚑ ${sel?.type === 'entry' ? sel.id : ''}`
-              : null;
+            : selW
+              ? (selW.door ? '🚪 Porte' : '🧱 Cloison')
+              : entry
+                ? `⚑ ${sel?.type === 'entry' ? sel.id : ''}`
+                : null;
 
   return (
     <aside className="editor-inspector">
@@ -456,6 +464,44 @@ export function Inspector({
               </>
             );
           })()}
+
+          {selW && sel?.type === 'wall' && (
+            <>
+              <Fold title={selW.door ? '🚪 Porte' : '🧱 Cloison'} open>
+                <p className="hint">Arête @ ({sel.x},{sel.y}) {sel.side}{sel.z ? ` · étage ${sel.z}` : ''}.</p>
+                <div className="ed-field">
+                  <span>Type</span>
+                  <div className="row-flex">
+                    <button className={`btn small ${selW.door ? '' : 'btn-primary'}`} title="Cloison pleine (bloque vue et passage)" onClick={() => patchSelW({ door: undefined, closed: undefined })}>
+                      ▮ Cloison
+                    </button>
+                    <button className={`btn small ${selW.door ? 'btn-primary' : ''}`} title="Arête franchissable (porte)" onClick={() => patchSelW({ door: true })}>
+                      🚪 Porte
+                    </button>
+                  </div>
+                </div>
+                {selW.door && (
+                  <label className="ed-check">
+                    <input type="checkbox" checked={!!selW.closed} onChange={(e) => patchSelW({ closed: e.target.checked || undefined })} />
+                    🔒 Fermée au départ
+                  </label>
+                )}
+                <RefField
+                  cfg={{ ds: 'structures', single: true }}
+                  fieldKey="Structure destructible"
+                  value={selW.structure}
+                  onChange={(v) => patchSelW({ structure: (v as string | null) || undefined })}
+                  nullable
+                />
+                <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure.</p>
+              </Fold>
+              <div className="insp-actions">
+                <button className="btn small danger" onClick={removeSel}>
+                  Supprimer
+                </button>
+              </div>
+            </>
+          )}
 
           {entry && sel?.type === 'entry' && (
             <>

@@ -8,6 +8,7 @@ import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { resolveRender } from './rig/bodyPlan';
+import { isStructure } from '../engine/structures';
 import { findCreatureById, findCareerById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite, pnjSprite } from './sprites';
@@ -48,6 +49,21 @@ export interface PickedBackend {
 const FACE_BOX = '42 28 38 38';
 /** Cadre PORTRAIT d'une créature non-bipède : haut-avant du corps (générique, raffinable par gabarit). */
 const CREATURE_BOX = '22 14 80 80';
+/** Cadre PORTRAIT d'une structure de siège (centré sur le bloc crénelé ci-dessous). */
+const STRUCT_BOX = '26 38 68 68';
+/** Corps d'une STRUCTURE de siège (porte/rempart) : bloc de pierre crénelé ferré (tokens :root) — JAMAIS
+ *  un bipède. Sert au portrait d'inspection / VsHeader de la modale d'attaque (le jeton de CASE, lui, est
+ *  supprimé : la fortification se rend sur son arête, cf. IsoStage). */
+const STRUCT_BODY = (
+  <g>
+    <rect x={34} y={50} width={52} height={64} fill="var(--struct-face)" stroke="var(--struct-band)" strokeWidth={2} />
+    <rect x={34} y={66} width={52} height={5} fill="var(--struct-band)" />
+    <rect x={34} y={90} width={52} height={5} fill="var(--struct-band)" />
+    <rect x={34} y={44} width={12} height={8} fill="var(--struct-cap)" />
+    <rect x={54} y={44} width={12} height={8} fill="var(--struct-cap)" />
+    <rect x={74} y={44} width={12} height={8} fill="var(--struct-cap)" />
+  </g>
+);
 
 /**
  * Vue de face cadrée sur le VISAGE (top-mode). Résout le rig en vue `front` et cadre le viewBox sur
@@ -86,6 +102,9 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
 
   if (subject.kind === 'combatant') {
     const c = subject.combatant;
+    // Structure de siège (`bodyShape:'structure'`) : fortification inerte → bloc de pierre crénelé, JAMAIS
+    // un bipède Humain (`resolveRender` retomberait là-dessus, faute d'espèce). Invariant du classifieur.
+    if (isStructure(c)) return { backend: 'plan', id: c.id, speciesScale: 1, portraitBox: STRUCT_BOX, flat: top, body: STRUCT_BODY };
     // Résolution de rendu UNIQUE par la DONNÉE (espèce explicite + trait Nuée), repli nom : classe
     // (rig humanoïde vs gabarit créature), plan, espèce canonique, échelle. `kind==='hero'` est
     // surchargé (PJ bipède OU acteur allié — cheval libre compris) → on route par le PLAN CORPOREL.

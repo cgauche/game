@@ -194,6 +194,7 @@ export function Palette({
                 ? 'Cliquez PRÈS d’une arête de case : l’arête surlignée prend la cloison/porte. Re-cliquer l’efface.'
                 : 'Cliquez une case : la diagonale se pose en travers (éventail / paroi courbe). Re-cliquer l’efface.'}
             </p>
+            <p className="hint">↖ Sélectionnez une cloison/porte pour lui donner une structure destructible (porte de ville, mur de pierre…).</p>
           </>
         )}
 
