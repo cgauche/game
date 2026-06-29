@@ -1,5 +1,4 @@
 import type { Terrain, WallSeg } from './scene';
-import type { Pt } from './path';
 
 /**
  * Authoring de carte par ASCII (1 char = 1 tuile) — lisible et fidèle pour reproduire un plan. Une
@@ -9,10 +8,6 @@ import type { Pt } from './path';
 
 /** Légende commune : `.`/espace = `base`. Surchargeable par scène via `legend`. */
 const BASE_LEGEND: Record<string, Terrain> = { '#': 'mur', '~': 'eau', D: 'porte', _: 'fosse', '=': 'planches' };
-
-/** Construit une position en omettant `z` quand il vaut 0 (calque `path.ts` `pt()` : un résultat au sol
- *  reste byte-identique à l'ancien `{x,y}` 2D). */
-const pt = (x: number, y: number, z = 0): Pt => (z ? { x, y, z } : { x, y });
 
 /** Parse une carte ASCII → { w, h, tiles }. Lève si les lignes diffèrent en largeur ou sur un char
  *  inconnu (garde-fou d'authoring : un plan mal aligné ne passe pas en silence). */
@@ -69,7 +64,7 @@ export function parseLevels(
   w: number;
   h: number;
   levels: { z: number; tiles: Terrain[] }[];
-  stairs: { from: Pt; to: Pt }[];
+  stairs: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } }[];
   markers: Record<string, { x: number; y: number; z: number }[]>;
 } {
   const { legend = {}, markers: markerOpt = '', stair, stairBase } = opts;
@@ -94,11 +89,11 @@ export function parseLevels(
     }
     out.push({ z: lv.z, tiles: grid.tiles });
   }
-  const stairs: { from: Pt; to: Pt }[] = [];
+  const stairs: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } }[] = [];
   if (stair) for (const [z, cells] of stairCells) {
     const up = present.has(z + 1) ? stairCells.get(z + 1) : undefined;
     if (!up) continue;
-    for (const c of cells) if (up.has(c)) { const [x, y] = c.split(',').map(Number); stairs.push({ from: pt(x, y, z), to: pt(x, y, z + 1) }); }
+    for (const c of cells) if (up.has(c)) { const [x, y] = c.split(',').map(Number); stairs.push({ from: { x, y, z }, to: { x, y, z: z + 1 } }); } // z explicite : un escalier relie deux étages précis (≠ convention z=0-omis des positions)
   }
   return { w, h, levels: out, stairs, markers };
 }

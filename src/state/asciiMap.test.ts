@@ -117,10 +117,10 @@ describe('parseLevels (assemblage multi-étages)', () => {
     ]);
   });
 
-  it('auto-stairs : char d\'escalier commun z0↔z1 → lien MONTANT (z omis si 0)', () => {
+  it('auto-stairs : char d\'escalier commun z0↔z1 → lien MONTANT (z explicite, compatible Scene.stairs)', () => {
     // case (1,1) porte `E` sur z0 ET z1 → un escalier montant ; (1,2) seulement sur z0, (1,0) seulement
-    // sur z1 → pas de lien. Seul le sens montant est émis.
-    expect(out.stairs).toEqual([{ from: { x: 1, y: 1 }, to: { x: 1, y: 1, z: 1 } }]);
+    // sur z1 → pas de lien. Seul le sens montant est émis. Le z est EXPLICITE (un escalier relie deux étages précis).
+    expect(out.stairs).toEqual([{ from: { x: 1, y: 1, z: 0 }, to: { x: 1, y: 1, z: 1 } }]);
   });
 
   it('lève si un étage diffère en largeur (garde d\'authoring)', () => {
