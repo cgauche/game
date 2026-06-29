@@ -47,6 +47,11 @@ export interface BodyPlan {
   walkPose(phase: number): Record<string, number>;
   attackPose(phase: number): Record<string, number>;
   deathPose(): Record<string, number>;
+  /** viewBox du DISQUE-PORTRAIT (vue du dessus / inspection / VsHeader) cadrant ce gabarit, dans le
+   *  repère de corps 120×150. Absent → défaut générique créature (`CREATURE_BOX`, haut-avant). Un corps
+   *  STATIQUE ANCRÉ AU SOL (engin de siège) occupe le BAS de la boîte → il cadre son PROPRE bloc, sinon
+   *  le portrait est vide (l'art tombe sous le cadre haut-avant). */
+  portraitBox?: string;
   /** Anim de repos jouée EN CONTINU par AnimatedPlanToken (battement d'ailes, ondulation de
    *  serpent/pieuvre, dodelinement d'oiseau, frémissement d'araignée). Absente → idle figé. */
   idlePose?(phase: number): Record<string, number>;

@@ -1,8 +1,9 @@
 /**
  * Gabarit NAVIRE / VÉHICULE À COQUE (MDG ch.12) — rendu GÉNÉRIQUE piloté par la DONNÉE `hull.rig`
  * (avirons / voile / mixte), pas par le nom. RÉUTILISE entièrement le système de plans corporels
- * (registry `plans/defs/`, `worldTransformsG`, palette à jetons, overlays, facing, portrait, FX) —
- * comme le plan `swarm`, sans squelette anatomique : une coque qui roule au repos et gîte à la mort.
+ * (registry `plans/defs/`, fondation `staticBody`/`groundedBody`, palette à jetons, facing, portrait,
+ * FX) — comme le plan `swarm`, sans squelette anatomique : une coque ANCRÉE AU SOL (la quille repose
+ * sur l'eau/la case, cf. `groundedBody`) qui roule au repos et gîte à la mort.
  *
  * Le gréement (passé via `species`) choisit la superstructure : voiles (mât + voile), avirons (rames),
  * ou les deux. La teinte vient de la palette du record (`appearance.colors`) → un même gabarit sert
@@ -12,22 +13,18 @@ import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette, StoredPalette } from '../palette';
-import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
-import { buildTokenMap, applyTokenMap } from '../palette';
+import { groundedBody } from '../staticBody';
 
-type ShipBoneId = 'coque';
-type SBone = FKBone & { z: number };
 export type ShipRig = 'avirons' | 'voile' | 'mixte';
 
-// Un seul os « coque », pivot à la flottaison (x=60) → le roulis/la gîte tournent autour de l'eau.
-const buildSkeleton = (): Record<ShipBoneId, SBone> => ({
-  coque: { parent: null, pivot: { x: 60, y: 98 }, angle: 0, z: 1 },
-});
+// Coordonnée locale de la QUILLE (point de contact bas de la coque) : l'art a son origine à la
+// flottaison (y=0), la carène descend jusqu'à ~+11 → `groundedBody` pose CE point sur la ligne de sol
+// ⇒ la coque REPOSE sur l'eau/la case (pas de lévitation), et le roulis tourne autour de la quille.
+const KEEL_Y = 11;
 
-// Jetons = SLOTS de palette EXISTANTS (réutilisés, pas inventés) : `corps` = coque (bois), `vet1` =
-// voile (toile), `cuir` = mât/avirons, `accent` = flamme. Les nuances O/H se dérivent via la palette.
-// Coords PIVOT-LOCAL (origine = centre à la flottaison, comme `swarm`) : la matrice de l'os place la
-// coque dans la boîte, et le roulis/la gîte tournent proprement autour de l'eau.
+// Jetons NAVIRE propres au plan (réutilisés, pas inventés) : `coque` = bois de carène, `voile` = toile,
+// `mat` = mât/avirons, `pavillon` = flamme. Les nuances O/H se dérivent via la palette. Coords LOCALES
+// (origine = centre à la flottaison) : `groundedBody` place et ancre l'os, le roulis tourne à la quille.
 const hull = (): string =>
   '<path d="M-38 -2 Q0 24 38 -2 L30 -10 L-30 -10 Z" fill="@coque" stroke="@coqueO" stroke-width="1.6"/>'
   + '<path d="M-30 -10 L30 -10 L28 -6 L-28 -6 Z" fill="@coqueH" opacity="0.8"/>' // liston
@@ -66,10 +63,9 @@ const asRig = (species: string): ShipRig =>
 
 function resolveShip(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
   void view; // une coque se lit pareil sous tous les angles (profil)
-  const sk = buildSkeleton();
-  const world = worldTransformsG(sk, pose) as Record<ShipBoneId, Matrix>;
-  const tmap = buildTokenMap(SHIP_DEFAULT, colors ?? {});
-  return [{ id: 'coque', matrix: world.coque, scale: [1, 1], z: sk.coque.z, parts: [{ svg: applyTokenMap(buildShip(asRig(species)), tmap), layer: 0 }] }];
+  // `pose.coque` = angle de roulis/gîte (deg) ⇒ `tilt` autour de la quille (au sol), via la fondation
+  // PARTAGÉE des corps statiques `groundedBody` — la même qui ancre les engins de siège.
+  return groundedBody(buildShip(asRig(species)), SHIP_DEFAULT, colors, { id: 'coque', baseY: KEEL_Y, tilt: pose.coque ?? 0 });
 }
 
 export const shipPlan: BodyPlan = {

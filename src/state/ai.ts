@@ -26,7 +26,7 @@
 import { Combatant, Weapon } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
-import { footprintChebyshev, footprintN, combatDistance } from './footprint';
+import { footprintChebyshev, footprintN, combatDistance, TILES_PER_LEVEL } from './footprint';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
 import { rangeBandModifier, outnumberMod, type ModLine } from '../engine/combat';
 import { effectiveWeaponRange } from '../engine/weaponDamage';
@@ -482,9 +482,13 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
   const mr = meleeReachTiles(enemy.weapons);
-  const withinMelee = (a: Pt, b: Pt) => chebyshev(a, b) <= mr;
+  // Z-AWARE (combat-z) : la séparation verticale (Δétage × TILES_PER_LEVEL) borne la portée par le bas — un
+  // ennemi au sol ne frappe pas un héros sur la muraille même 2D-adjacent. `a` est une case que l'ennemi
+  // occuperait (sur SON étage `pos.z`) ; `b` la cible. Même décompte que `combatDistance` (résolution).
+  const withinMelee = (a: Pt, b: Pt) => Math.max(chebyshev(a, b), TILES_PER_LEVEL * Math.abs((pos.z ?? 0) - (b.z ?? 0))) <= mr;
   // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
-  const inMelee = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h)) <= mr;
+  // `combatDistance` plie empreinte ET Δz → s'aligne exactement sur la grille d'engagement de la résolution.
+  const inMelee = (h: Combatant) => combatDistance(enemy, h) <= mr;
 
   // Possède-t-il un sort OFFENSIF jouable (data-driven : Projectile ou op de dégât/contrôle hostile) ? Si
   // oui, il LANCE plutôt que de tirer (parité avec l'ancien `offensiveSpell == null` du gate de tir).

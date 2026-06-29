@@ -52,4 +52,21 @@ describe('Siège vertical — combat z-aware (siege-enceinte)', () => {
     // …et la LdV vers l'assaillant au pied du mur reste dégagée (on tire droit en bas).
     expect(lineOfSightCover(scene, hero.pos, below.pos!, []).blocked).toBe(false);
   });
+
+  it('emplacements de siège (baliste/canon) : INERTES → ciblables (combatants) mais SANS tour (hors order)', () => {
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('assaut');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const baliste = b.combatants.find((c) => c.id === 'empl-baliste');
+    const canon = b.combatants.find((c) => c.id === 'empl-canon');
+    expect(baliste?.inert).toBe(true);
+    expect(canon?.inert).toBe(true);
+    expect(baliste?.bodyShape).not.toBe('vehicule'); // PAS une coque-navire (rendu = engin via l'espèce)
+    expect(b.order).not.toContain('empl-baliste');   // inerte → aucun tour (l'arme se SERT, l'affût n'agit pas)
+    expect(b.order).not.toContain('empl-canon');
+    expect(b.combatants).toContain(baliste);          // mais RESTE dans le combat (ciblable / servable)
+  });
 });

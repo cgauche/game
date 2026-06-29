@@ -86,7 +86,7 @@ export function footprintsOverlap(aPos: Pt, an: number, bPos: Pt, bn: number): b
 /** Un niveau de hauteur (étage) en cases. DÉRIVÉ (jamais inventé) : `FALL_METRES_PER_LEVEL` (4 m,
  *  `jumpMove.ts`) ÷ 2 m par case (canon LDB 15 « 1 case = 2 m ») = 2. Constante documentée plutôt
  *  qu'import, pour garder `footprint.ts` PUR (pas de dépendance vers la couche Effet/Flow de `jumpMove`). */
-const TILES_PER_LEVEL = 2;
+export const TILES_PER_LEVEL = 2;
 
 /**
  * Distance de COMBAT (Chebyshev d'empreinte) entre deux combattants positionnés — `Infinity` si l'un

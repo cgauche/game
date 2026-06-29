@@ -32,6 +32,16 @@ export function isStructure(c: Pick<Combatant, 'bodyShape'>): boolean {
   return c.bodyShape === 'structure';
 }
 
+/** Cette cible est-elle un OBJET INANIMÉ (pas une créature) — STRUCTURE de siège (ADE II ch.08), VÉHICULE-coque
+ *  (navire/chariot/barge, MDG) ou pièce SERVIE explicitement inerte (`inert`, ex. un affût d'artillerie) ? Source
+ *  UNIQUE et NOMMÉE du « c'est un objet » : aucune réaction de combat (ni Parade/Esquive, ni Localisation, ni
+ *  Engagement). Le littéral `'vehicule'` est INLINÉ à dessein : importer `isVehicle` créerait un cycle
+ *  `structures → vehicle → ops → woundsCalc → structures`. La DESTRUCTION reste, elle, par-type (Siège ×2 propre
+ *  aux structures, Critiques navals propres aux véhicules) → garder `isStructure`/`isVehicle` à ces sites-là. */
+export function isInanimate(c: Pick<Combatant, 'bodyShape' | 'inert'>): boolean {
+  return isStructure(c) || c.bodyShape === 'vehicule' || !!c.inert;
+}
+
 /** L'arme porte-t-elle la capacité de qualité `cap` (`siege`/`ram`) ? Lue dans la DONNÉE (`qualities.json`)
  *  par le MÊME résolveur que tous les Atouts d'arme — aucun test par libellé. */
 function weaponHasCap(weapon: Pick<Weapon, 'qualities'> | undefined, cap: 'siege' | 'ram'): boolean {

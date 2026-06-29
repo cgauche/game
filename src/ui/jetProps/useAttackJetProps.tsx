@@ -4,6 +4,7 @@ import { FLOWS } from '../../state/rollFlows';
 import { HitLocation } from '../../engine/types';
 import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
+import { isInanimate } from '../../engine/structures';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatDistance } from '../../state/footprint';
@@ -86,7 +87,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
     ? undefined
     : weapon?.type === 'ranged'
       ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon) } : undefined)
-      : previewDefense(target);
+      : isInanimate(target) ? undefined : previewDefense(target); // OBJET INANIMÉ (structure/véhicule/affût) : aucune Parade/Esquive → pas de ligne de défense
   const forcedDie = FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
   return {
     title: 'Attaque',
@@ -133,21 +134,24 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
             </div>
           )}
           {/* Localisation visée = choix RARE (par défaut « Au hasard ») → menu déroulant compact.
-              Viser une localisation rend le Test Complexe (-10). */}
-          <div className="rm-loc-inline">
-            <span className="mini-title">Localisation</span>
-            <select
-              className="rm-loc-select"
-              value={pa.location ?? ''}
-              onChange={(e) => setLocation((e.target.value as HitLocation) || null)}
-              title="Où frapper ? « Au hasard » par défaut ; viser une localisation précise rend le Test Complexe (-10)."
-            >
-              <option value="">🎯 Au hasard</option>
-              {LOCS.map((l) => (
-                <option key={l} value={l}>{locationLabel(l, target.bodyShape)} (-10)</option>
-              ))}
-            </select>
-          </div>
+              Viser une localisation rend le Test Complexe (-10). MASQUÉ pour un OBJET INANIMÉ
+              (structure/véhicule/affût : pas de Tableau de Localisation — on ne « vise » pas un membre d'un mur). */}
+          {!isInanimate(target) && (
+            <div className="rm-loc-inline">
+              <span className="mini-title">Localisation</span>
+              <select
+                className="rm-loc-select"
+                value={pa.location ?? ''}
+                onChange={(e) => setLocation((e.target.value as HitLocation) || null)}
+                title="Où frapper ? « Au hasard » par défaut ; viser une localisation précise rend le Test Complexe (-10)."
+              >
+                <option value="">🎯 Au hasard</option>
+                {LOCS.map((l) => (
+                  <option key={l} value={l}>{locationLabel(l, target.bodyShape)} (-10)</option>
+                ))}
+              </select>
+            </div>
+          )}
           {cm && (
             <div className="rm-crowd">
               <button

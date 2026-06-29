@@ -1935,11 +1935,12 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       // Ordre d'initiative (arme « Lente » en dernier, LDB 63 l.25). À l'échelle MER, l'équipage est PASSAGER
       // (hors `order`) : seules les coques ont un tour (navire-unité, MDG ch.14). Au person-scale, ordre complet.
-      // Une STRUCTURE inerte n'a PAS de tour (kind 'npc' → ni pilotée par l'IA ni par le joueur : la laisser
-      // dans `order` figerait la boucle de tour). Elle RESTE dans `combatants` (ciblable) ; seul son slot
-      // d'`order` est retiré — même traitement que les passagers de coque (MDG ch.14).
-      const structureIds = new Set(structures.map((s) => s.id));
-      const order = combatOrder(all, isMerScene(scene), battleRng()).filter((id) => !structureIds.has(id)); // départage RAW des égalités exactes par Test d'Ag (LDB 13 l.31)
+      // Une STRUCTURE de siège ET un AFFÛT inerte servi (`inert`, ex. baliste/canon de rempart) n'ont PAS de
+      // tour (ni pilotés par l'IA ni par le joueur : les laisser dans `order` figerait la boucle de tour). Ils
+      // RESTENT dans `combatants` (ciblables / servables) ; seul leur slot d'`order` est retiré — même traitement
+      // que les passagers de coque (MDG ch.14). Les coques-VÉHICULES, elles, GARDENT leur tour (unité navire).
+      const turnlessIds = new Set([...structures.map((s) => s.id), ...all.filter((c) => c.inert).map((c) => c.id)]);
+      const order = combatOrder(all, isMerScene(scene), battleRng()).filter((id) => !turnlessIds.has(id)); // départage RAW des égalités exactes par Test d'Ag (LDB 13 l.31)
       const battle: BattleState = {
         combatants: all,
         order,

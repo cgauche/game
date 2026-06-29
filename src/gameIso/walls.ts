@@ -17,11 +17,17 @@ function edgeEnds(w: WallSeg, dims: Dims): [P, P] {
   return w.side === '\\' ? [gc(w.x, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x + 1, w.y), gc(w.x, w.y + 1)]; // '/' = NE→SO
 }
 
-/** Profondeur de tri d'un mur : du côté de la tuile la plus PROCHE de la caméra (occlusion correcte). */
+/** Profondeur de tri d'un mur : du côté de la tuile la plus PROCHE de la caméra (occlusion correcte).
+ *  On prend le MAX de profondeur sur les DEUX cases bordant l'arête → le mur reste devant son sol proche
+ *  aux 4 rotations (la case « proche » change avec la caméra). En rot 0, le MAX retombe sur l'ancienne
+ *  case unique (E → x+1, N/diagonale → la case) ⇒ résultat byte-identique. */
 function wallDepth(w: WallSeg, dims: Dims): number {
   const z = w.z ?? 0;
-  const t = w.side === 'E' ? { x: w.x + 1, y: w.y } : { x: w.x, y: w.y }; // diagonales : la case elle-même
-  return depth(t.x, t.y, dims, z) + 0.45;
+  const cells: [number, number][] =
+    w.side === 'E' ? [[w.x, w.y], [w.x + 1, w.y]]
+    : w.side === 'N' ? [[w.x, w.y], [w.x, w.y - 1]]
+    : [[w.x, w.y]]; // diagonales \ / : la case elle-même
+  return Math.max(...cells.map(([cx, cy]) => depth(cx, cy, dims, z))) + 0.45;
 }
 
 /** Poteau vertical (montant) à une extrémité d'arête : posé aux deux bouts de chaque mur → les poteaux

@@ -47,6 +47,9 @@ export interface CustomStatblock {
   talents?: import('../data').TalentRef[];
   /** Caractéristiques aléatoires au spawn (LDB 78 : « soustrayez -10 et ajoutez 2d10 »). */
   randomChars?: boolean;
+  /** Objet INERTE servi (affût d'artillerie d'un emplacement, AA/MDG ch.12) : ciblable mais sans réaction de
+   *  combat (`isInanimate`) ni tour propre — son arme se sert via `postes`. Se rend par son espèce (engin). */
+  inert?: boolean;
 }
 
 /** Parts monstrueuses par slot (mutant modulaire : tête/bras choisis comme un PJ).

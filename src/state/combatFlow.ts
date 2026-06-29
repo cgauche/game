@@ -104,7 +104,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
 import { applyHullCritical } from '../engine/shipCritical';
-import { isStructure } from '../engine/structures';
+import { isInanimate, isStructure } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
@@ -544,7 +544,7 @@ export function resolveDualSecond(
   const toHit = combatValue(attacker, 'melee', offWeapon) + combineMods(mods);
   const atkRoll = opts?.critValue != null ? opts.critValue : reverseRoll(mainRoll);
   const atk = evaluateTest(atkRoll, toHit); // { roll, target, success, sl, isDouble }
-  const mode = cannotDefend(target) ? 'none' : bestDefenseMode(target);
+  const mode = (cannotDefend(target) || isInanimate(target)) ? 'none' : bestDefenseMode(target); // OBJET INANIMÉ (structure/véhicule/affût) : jamais de défense
   if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env);
   const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.638)
   return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env);
@@ -1032,6 +1032,10 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
     return { kind: 'attack' };
   }
   // Mêlée hors d'Allonge :
+  // Une STRUCTURE (ADE II ch.08) est inanimée : pas de Charge ni d'approche-puis-frappe implicite (la
+  // frapper est une ACTION délibérée, sans +1 Avantage ni `fromCharge` qui bloquerait « Renoncer »).
+  // On refuse → le joueur s'approche par un clic-sol normal (undoable), puis frappe une fois au contact.
+  if (isInanimate(target)) return { kind: 'blocked', reason: 'Approche-toi pour la frapper.' };
   if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
   const env = moveEnv(battle, geom);
   if (battle.movementUsed === 0 && !hasCondition(active, COND.aTerre)) {
@@ -1443,7 +1447,7 @@ export function applyAttackResult(
   if (res.hit && res.autoKill) {
     const battle = get().battle!;
     attacker.aiming = false;
-    if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique (LDB 13 l.174-175)
+    if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique (LDB 13 l.174-175) — jamais avec un objet INANIMÉ
     const currentBefore = target.wounds.current;
     target.wounds.current = 0;
     finalizeHeroDeath(get, set, target, 'hit', currentBefore); // Destin possible (héros) ; sinon mort directe
@@ -1502,7 +1506,7 @@ export function applyAttackResult(
   attacker.aiming = false; // l'attaque consomme la visée (tir : +20 déjà appliqué ; mêlée : visée gâchée)
   if (attacker.nextActionPenalty) attacker.nextActionPenalty = undefined; // pénalité de Maladresse consommée par ce Test
 
-  if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175)
+  if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175) — jamais avec un objet INANIMÉ
   const critLog: string[] = [];
   // Empoignade (LDB 14 l.159) : « vous ET votre adversaire êtes Empoignés, et votre adversaire gagne
   // l'État *Empêtré* ». Pose APRÈS l'Engagement (les deux Empoignés) ; le bloc de Dégâts ci-dessous est

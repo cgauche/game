@@ -23,7 +23,8 @@ import type { FishProps } from '../fish/composeFish';
 
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
-  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish'; // nouveaux squelettes
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish' // nouveaux squelettes
+  | 'engin'; // corps STATIQUE (engin de siège) — pas une créature, mais routé par le même registre (pas de props)
 
 /** Surcharges d'apparence propres à CETTE créature (par-dessus les défauts de sa Race).
  *  Réservé aux espèces NON-canoniques qui se replient sur une race partagée via baseSpeciesOf

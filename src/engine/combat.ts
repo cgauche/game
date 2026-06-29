@@ -12,6 +12,7 @@ import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt, baseWithTraits } from './characteristics';
 import { bypassedAP } from './armourBypass';
 import { woundsFromHit } from './woundsCalc';
+import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { findTableEntry } from './tables';
@@ -669,7 +670,8 @@ export function resolveMelee(
   rng: RNG = defaultRNG,
   opts: AttackOptions = {},
 ): AttackResult {
-  const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
+  // Un OBJET INANIMÉ (structure de siège / véhicule-coque / affût inerte) n'a ni CC/Ag, ni Parade, ni Esquive → jamais de défense.
+  const defenseMode = (cannotDefend(defender) || isInanimate(defender)) ? 'none' : opts.defense ?? 'parade';
   let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
   // Cible Inconsciente (LDB 16 l.112) : auto-réussite + Critique (RAW). Règle optionnelle « mort-auto » :
   // en CORPS À CORPS la cible est tuée automatiquement → on marque `autoKill` (le store finalise la mort
@@ -902,7 +904,9 @@ function applyHit(
   // Taille »). Le Critique est ensuite suspendu sauf si la cible tombe à 0 Blessure (calculé plus bas).
   const withholding = withhold && weapon.type === 'melee' && !weaponInflictsFlames(weapon);
   if (withholding) weapon = { ...weapon, qualities: (weapon.qualities ?? []).filter((q) => !WITHHELD_QUALITY_IDS.has(q.id)) };
-  const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
+  // Un OBJET INANIMÉ (structure/véhicule/affût) n'a PAS de Tableau de Localisation → aucune localisation
+  // (l'affichage omet alors le membre, et le résolveur de Blessures l'ignore déjà : armure 0 partout).
+  const loc = isInanimate(defender) ? undefined : (forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape));
   // Éthéré (LDB 85 p.339) : « ne peut être blessée que par les Attaques magiques » — une attaque
   // non magique (créature non Magique/Démoniaque, arme non magique) passe au travers : 0 Blessure.
   if (incomingDamageNullified(defender, attacker, isMagicWeapon(weapon))) {
@@ -941,13 +945,13 @@ function applyHit(
   let isCritical = critical || empale;
   // Impénétrable (LDB 63) : « Toutes les Blessures Critiques causées par un nombre impair pour vous
   // toucher sont ignorées » — pièce Impénétrable à la localisation + jet de toucher impair.
-  if (isCritical && atkBd.roll % 2 === 1 && impenetrableAt(defender, loc)) isCritical = false;
+  if (isCritical && atkBd.roll % 2 === 1 && loc && impenetrableAt(defender, loc)) isCritical = false;
   // Retenir ses coups (l.2503) : le coup est non létal — pour le calcul d'armure, on le traite comme NON
   // critique (les Blessures normales sont infligées comme d'habitude). Le Critique n'est ré-autorisé que si
   // la cible tombe à 0 Blessure (juste après, sur `defeated`).
   const critForArmour = withholding ? false : isCritical;
   // Partielle / Points faibles (LDB 63) : PA des pièces concernées ignorés par CETTE touche.
-  const ignoredAP = ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: critForArmour, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) });
+  const ignoredAP = loc ? ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: critForArmour, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) }) : 0;
   // Tir sûr (LDB 10) : ignore niveau PA de la cible au tir.
   const sureShot = weapon.type === 'ranged' ? talentRangedAPIgnore(attacker) : 0;
   const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot);
@@ -969,7 +973,7 @@ function applyHit(
     advantageTo: 'attacker',
     defenderDefeated: defeated,
     log:
-      `${attacker.name} touche ${defender.name} (${locationLabel(loc, defender.bodyShape)}) : ` +
+      `${attacker.name} touche ${defender.name}${loc ? ` (${locationLabel(loc, defender.bodyShape)})` : ''} : ` +
       `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
       (isCritical ? ' — CRITIQUE !' : '') +
       '.',

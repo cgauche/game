@@ -2701,6 +2701,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "araignee",
   },
+  "baliste": {
+    "def": "Baliste",
+    "plan": "engin",
+    "scale": 1,
+    "species": "baliste",
+  },
   "banshee": {
     "def": "Banshee",
     "plan": "spectral",
@@ -2730,6 +2736,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "fish",
     "scale": 1.05,
     "species": "brochet-du-stir",
+  },
+  "canon-petit": {
+    "def": "Canon de siège",
+    "plan": "engin",
+    "scale": 1,
+    "species": "canon-petit",
   },
   "carnosaure": {
     "def": "Carnosaure",

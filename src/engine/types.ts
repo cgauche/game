@@ -772,6 +772,11 @@ export interface Combatant {
    *  Sert à poser la BRÈCHE (`setStructureDown`) à sa destruction. `side` redéclare `state/scene` WallSide ici
    *  (même union) pour ne pas faire dépendre le moteur PUR de l'état. */
   structureEdge?: { x: number; y: number; side: WallEdgeSide; z?: number };
+  /** Objet INERTE explicite (ni structure de siège, ni véhicule-coque) : une pièce SERVIE inanimée — affût
+   *  d'artillerie d'un emplacement (AA/MDG ch.12) — qui se REND par son espèce (engin) mais n'a NI réaction de
+   *  combat (Parade/Esquive/Localisation/Engagement, via `isInanimate`) NI tour propre (hors `order`). Son seul
+   *  rôle actif est d'être SERVIE (`postes`) par un équipage. */
+  inert?: boolean;
   /** Psychologie (LDB 21) : Indice de Peur/Terreur INSPIRÉ (statbloc) ; Immunité Psychologie (85 l.143-144). */
   causesPeur?: number;
   causesTerreur?: number;

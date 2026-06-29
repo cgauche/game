@@ -56,13 +56,15 @@ const stairs = [
 
 // PIÈCES de siège SERVIES (z=1, `crewIds` vide → un héros monté au chemin de ronde les SERT) + GUETTEUR.
 const emplPoste = (trappingId: string): ShipPoste => ({ item: itemFromTrappingById(trappingId)!, crewIds: [] });
-const affut = (name: string): CustomStatblock => ({ name, char: { B: 20 } }); // affût inerte, à servir
+const affut = (name: string): CustomStatblock => ({ name, char: { B: 20 }, inert: true }); // affût INERTE servi : ciblable, sans réaction de combat ni tour (rendu = engin via appearance.species)
 const guetteur: CustomStatblock = { name: 'Guetteur', char: { B: 11, CC: 35, CT: 40, F: 30, E: 35, Ag: 30 } };
 
 const allies: SceneEntity[] = [
   { id: 'empl-baliste', kind: 'personnage', z: 1, pos: { x: 6, y: 6 }, facing: 'N', label: 'Baliste de rempart',
+    appearance: { species: 'baliste' }, // rig : gabarit ENGIN (grande arbalète), pas un bipède
     statblock: affut('Baliste de rempart'), postes: [emplPoste('baliste')] },
   { id: 'empl-canon', kind: 'personnage', z: 1, pos: { x: 21, y: 6 }, facing: 'N', label: 'Canon de rempart',
+    appearance: { species: 'canon-petit' }, // rig : gabarit ENGIN (tube sur affût à roues)
     statblock: affut('Canon de rempart'), postes: [emplPoste('canon-petit')] }, // Atout Siège (peut brécher)
   // GUETTEUR sur la passerelle du corps de garde, JUSTE au-dessus de la porte (13,6) → chute quand elle cède.
   { id: 'garde-porte', kind: 'personnage', z: 1, pos: { x: 13, y: 6 }, facing: 'N', label: 'Guetteur du corps de garde', statblock: guetteur },

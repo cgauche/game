@@ -66,6 +66,35 @@ describe('résolution espèce/id → plan (resolveSpecies / bodyPlanById)', () =
       expect(planOfSpecies(id), id).toBe('jabberslythe');
     }
   });
+  it('engins de siège (baliste / canon) → engin (corps statique, pas un bipède)', () => {
+    for (const id of ['baliste', 'canon-petit']) expect(planOfSpecies(id), id).toBe('engin');
+  });
+});
+
+describe('planById(engin) — engin de siège statique, ANCRÉ au sol', () => {
+  it('enregistré (auto-découverte plans/defs/) et 3 vues distinctes par type', () => {
+    const p = planById('engin');
+    expect(p?.id).toBe('engin');
+    const baliste = (v: 'front' | 'profile' | 'back') => JSON.stringify(p.resolve('baliste', v, {}));
+    const canon = (v: 'front' | 'profile' | 'back') => JSON.stringify(p.resolve('canon-petit', v, {}));
+    // Les 3 vues d'un engin diffèrent entre elles…
+    expect(new Set([baliste('front'), baliste('profile'), baliste('back')]).size).toBe(3);
+    // …et la baliste ≠ le canon (silhouettes propres par espèce).
+    expect(baliste('profile')).not.toEqual(canon('profile'));
+  });
+  it('base ANCRÉE à la ligne de sol (y=150) — pas de lévitation', () => {
+    for (const v of ['front', 'profile', 'back'] as const) {
+      const bones = planById('engin').resolve('canon-petit', v, {});
+      expect(bones.length).toBe(1);
+      expect(bones[0].matrix[5]).toBe(150); // contact au sol exactement sur l'ancrage BodyToken
+    }
+  });
+  it('cadre son PROPRE portrait (le bloc est au BAS de la boîte → pas de disque vide)', () => {
+    // Sans `portraitBox`, le défaut haut-avant (`CREATURE_BOX`, y 14→94) raterait l'engin (y 84→150).
+    const box = planById('engin').portraitBox!.split(' ').map(Number);
+    expect(box).toHaveLength(4);
+    expect(box[1] + box[3]).toBeGreaterThan(120); // le cadre descend dans le BAS de la boîte (≈ sol)
+  });
 });
 
 describe('planById(winged)', () => {

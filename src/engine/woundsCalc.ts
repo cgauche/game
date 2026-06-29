@@ -23,7 +23,7 @@ import { isStructure, structureImmune, siegeMultiplier } from './structures';
  * Siège AVANT le Bonus d'Endurance (RAW « le double des dégâts »), et le plancher passe à 0 (un coup trop
  * faible ne raye pas la structure — comme une coque). Sans PA, l'`effectiveArmour` d'une structure vaut 0.
  */
-export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number, extraAP = 0, minWounds = 1): number {
+export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation | undefined, totalDamage: number, extraAP = 0, minWounds = 1): number {
   if (isStructure(target)) {
     if (structureImmune(weapon, target)) return 0;
     totalDamage *= siegeMultiplier(weapon, target);
@@ -33,9 +33,10 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   totalDamage -= talentDamageReduction(target);
   const tb = bonus(effectiveChar(target, 'E'));
   // PA effectifs = armure portée/naturelle + PA temporisés de sort + PA conférés par l'arme d'opposition
-  // (`extraAP`), Perforante déduite.
-  const baseAP = Math.max(0, effectiveArmourAt(target, location) + extraAP - qualitySum(weapon, 'armourReduction'));
+  // (`extraAP`), Perforante déduite. `location` ABSENTE (STRUCTURE inanimée, ADE II ch.08 : pas de
+  // Localisation) → aucune armure de pièce (une structure a 0 PA partout) : le terme d'armure vaut 0.
+  const baseAP = Math.max(0, (location ? effectiveArmourAt(target, location) : 0) + extraAP - qualitySum(weapon, 'armourReduction'));
   // Ignorance de PA de l'arme (Épée de justice → 'all', etc.) via le moteur GÉNÉRAL (engine/armourBypass).
-  const ap = Math.max(0, baseAP - bypassedAP(target, location, weapon.bypass, baseAP));
+  const ap = Math.max(0, baseAP - (location ? bypassedAP(target, location, weapon.bypass, baseAP) : 0));
   return Math.max(minWounds, totalDamage - (tb + ap));
 }

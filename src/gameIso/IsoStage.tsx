@@ -1338,9 +1338,20 @@ export function IsoStage() {
               <line key={`struct-${w.x}-${w.y}-${w.side}-${z}`} data-cid={id} x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy}
                 stroke="transparent" strokeWidth={16} strokeLinecap="round" style={{ pointerEvents: 'stroke', cursor: 'crosshair' }}
                 onPointerDown={(ev) => {
-                  ev.stopPropagation();
                   const st = useGame.getState();
-                  if (controlsActive(st)) st.battleClickEntity(id, { confirm: hoverClickCommits() });
+                  if (!controlsActive(st)) return;
+                  // Aperçu-puis-commit (parité token, targetingModes) : un 1er clic ARME seulement la
+                  // structure et LAISSE l'événement remonter → le clic-sol résout un MOVE (s'approcher,
+                  // passer le long du mur). Seul un 2e clic sur la structure DÉJÀ armée la frappe — frapper
+                  // une enceinte est une action DÉLIBÉRÉE, pas le réflexe d'un clic.
+                  const prev = st.battle?.preview;
+                  const armed = !!prev && 'targetId' in prev && prev.targetId === id;
+                  if (armed) {
+                    ev.stopPropagation();
+                    st.battleClickEntity(id, { confirm: hoverClickCommits() });
+                  } else {
+                    st.battleClickEntity(id, { confirm: false });
+                  }
                 }}
               >
                 <title>{sc.name}</title>

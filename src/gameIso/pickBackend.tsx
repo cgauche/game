@@ -7,7 +7,7 @@ import { AnimatedRigToken } from './AnimatedRigToken';
 import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
-import { resolveRender } from './rig/bodyPlan';
+import { resolveRender, planById } from './rig/bodyPlan';
 import { isStructure } from '../engine/structures';
 import { findCreatureById, findCareerById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
@@ -49,6 +49,9 @@ export interface PickedBackend {
 const FACE_BOX = '42 28 38 38';
 /** Cadre PORTRAIT d'une créature non-bipède : haut-avant du corps (générique, raffinable par gabarit). */
 const CREATURE_BOX = '22 14 80 80';
+/** Cadre PORTRAIT d'un gabarit : sa propre boîte (`plan.portraitBox`) ou le défaut créature haut-avant.
+ *  Un engin de siège (ancré au sol) cadre son bloc BAS, là où le défaut haut-avant ne montrerait que du vide. */
+const planPortraitBox = (planId: string): string => planById(planId)?.portraitBox ?? CREATURE_BOX;
 /** Cadre PORTRAIT d'une structure de siège (centré sur le bloc crénelé ci-dessous). */
 const STRUCT_BOX = '26 38 68 68';
 /** Corps d'une STRUCTURE de siège (porte/rempart) : bloc de pierre crénelé ferré (tokens :root) — JAMAIS
@@ -120,7 +123,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
       }
       return { backend: 'rig', id: c.id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
     }
-    return { backend: 'plan', id: c.id, speciesScale: r.scale, portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} planId={r.plan} species={r.species} colors={c.appearance?.colors} eyes={c.appearance?.eyes} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
+    return { backend: 'plan', id: c.id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={c.id} planId={r.plan} species={r.species} colors={c.appearance?.colors} eyes={c.appearance?.eyes} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
   }
 
   if (subject.kind === 'partyLeader') {
@@ -160,7 +163,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   if (r.kind === 'plan') {
     // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici
     // (les combattants passent par riggedAppearance au spawn, qui résout déjà).
-    return { backend: 'plan', id, speciesScale: r.scale, portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={id} planId={r.plan} species={r.species} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };
+    return { backend: 'plan', id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={id} planId={r.plan} species={r.species} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };
   }
   return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
 }
