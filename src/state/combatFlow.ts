@@ -139,7 +139,8 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown } from './scene';
+import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove } from './scene';
+import { FALL_METRES_PER_LEVEL } from './jumpMove';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
@@ -181,7 +182,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, applyFall } from './combatEffects';
 import { teamCommandMod } from './commandTeam';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
@@ -1222,12 +1223,29 @@ export function applyStructureCriticalToTarget(
  *  → pas de clobber. No-op (réf inchangée pour la scène) si la cible n'a pas d'arête (structure hors scène). */
 export function collapseStructure(get: Get, set: SetFn, target: Combatant): void {
   const e = target.structureEdge;
-  set((s: GameState) => ({
-    scene: e && s.scene ? setStructureDown(s.scene, e.x, e.y, e.side, e.z ?? 0, true) : s.scene,
-    battle: s.battle
-      ? { ...s.battle, combatants: s.battle.combatants.filter((c) => c.id !== target.id), log: [...s.battle.log, ev('death', structureCollapseLog(target.name), target.id)] }
-      : s.battle,
-  }));
+  set((s: GameState) => {
+    const log = [...(s.battle?.log ?? []), ev('death', structureCollapseLog(target.name), target.id)];
+    let combatants = s.battle?.combatants.filter((c) => c.id !== target.id) ?? [];
+    let scene = s.scene;
+    if (e && scene) {
+      // Brèche : pose le flag `structureDown` sur l'arête (le Combattant-structure inerte est déjà retiré).
+      scene = setStructureDown(scene, e.x, e.y, e.side, e.z ?? 0, true);
+      // Effondrement de la PASSERELLE (z=1) portée par la structure abattue : ses occupants CHUTENT au
+      // sol (dégâts de chute, LDB 15) et les tuiles deviennent infranchissables (`setTileCollapsed`).
+      for (const tl of parapetTilesAbove(scene, e)) {
+        combatants = combatants.map((c) => {
+          if (c.pos?.x !== tl.x || c.pos?.y !== tl.y || (c.pos?.z ?? 0) !== 1) return c;
+          const fallen = { ...c, wounds: { ...c.wounds }, conditions: c.conditions.map((x) => ({ ...x })) };
+          applyFall(fallen, FALL_METRES_PER_LEVEL, battleRng());
+          fallen.pos = { x: tl.x, y: tl.y }; // chute au sol (z=0, omis)
+          log.push(ev('damage', `${c.name} chute de la passerelle qui s'effondre.`, c.id));
+          return fallen;
+        });
+        scene = setTileCollapsed(scene, tl.x, tl.y, tl.z);
+      }
+    }
+    return { scene, battle: s.battle ? { ...s.battle, combatants, log } : s.battle };
+  });
   clearEngagementOf(get().battle?.combatants ?? [], target.id); // l'attaquant n'est plus Engagé avec la brèche
   bus.emit(EVT.SCENE_DIRTY);
 }

@@ -75,6 +75,7 @@ const JUSTIFIED: Record<string, string> = {
   battleManeuverArea: 'Hurlement : pas de jet d’attaquant — 1d10 + Test de Résistance des cibles (jets SUBIS) montrés au feed, pas de modale différable (LDB 85 l.135). Les autres manœuvres (Souffle/Vomi/Langue/Regard/Étreinte) OUVRENT pendingManeuver (modale du jet d’attaquant) — plus de résolution inline',
   // ── Moteur appelé par les points d'entrée (le jet aval est différé/révélé/IA) ──
   applyEffects: 'Effets d’AUTEUR (éditeur) : `test` OUVRE pendingTest ; inflictTrauma/inflictDisease/zoneBlast poussent une RÉVÉLATION témoin 📜 (souffle = dégâts SUBIS tirés, montrés au journal)',
+  applyFall: 'Chute (LDB 15) appliquée à un combattant : Dégâts + À Terre SUBIS (chute involontaire, aucun Test de héros influençable). Brique consommée par l’Effet `fall` (journal/révélation) et l’effondrement de passerelle en combat (feed) — le jet est montré là, pas une modale différable',
   applyZoneCrossings: 'traversée de zones (feu…) : jets SUBIS — feed de combat + flottants FX (L11)',
   advanceTurn: 'fin de tour : IA ennemie (instantanée par design) + entretien de fin de Round en file de révélation témoin',
   // ── Jets d’ENTRETIEN / monde — subis et RÉVÉLÉS (catégorie 2) ou ambiants (catégorie 3) ──

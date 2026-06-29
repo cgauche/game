@@ -3,7 +3,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
-import { d10, defaultRNG } from '../engine/dice';
+import { d10, defaultRNG, type RNG } from '../engine/dice';
 import { applyOps, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -35,7 +35,7 @@ import { Effect, setDoorOpen } from './scene';
 import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, EMPTY_FLOW } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { startCascade } from './cascade';
-import { loseWounds, addCondition } from '../engine/conditions';
+import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
 import { ev } from './combatLog';
 import { t } from '../i18n';
@@ -517,6 +517,20 @@ type EffectHandlerMap = {
 };
 
 /**
+ * Chute (LDB 15 l.117-122) appliquée à UN combattant : 3 Dégâts/mètre + 1d10, réduits par le Bonus
+ * d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre. MUTE `c`.
+ * Brique PURE partagée par l'Effet `fall` (repositionnement de groupe) et l'effondrement d'une
+ * passerelle en combat (`collapseStructure`) — zéro duplication de la formule.
+ */
+export function applyFall(c: Combatant, metres: number, rng: RNG): void {
+  const m = Math.max(0, metres);
+  const be = Math.floor(effectiveChar(c, 'E') / 10);
+  const lost = Math.max(0, 3 * m + d10(rng) - be);
+  loseWounds(c, lost);
+  if (lost > be) addCondition(c, 'a-terre');
+}
+
+/**
  * REGISTRE des effets — source unique data-driven (fin du god-switch `applyEffects`). Déclaré dans
  * l'ordre du picker (groupes de `EFFECT_GROUP_ORDER`, ordre intra-groupe = ordre de déclaration).
  */
@@ -704,11 +718,12 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const targets = env.targets(e.target, e.heroId);
       const m = Math.max(0, e.metres);
       const lines = targets.map((c) => {
-        const be = Math.floor(effectiveChar(c, 'E') / 10);
-        const lost = Math.max(0, 3 * m + d10(battleRng()) - be);
-        loseWounds(c, lost);
-        if (lost > be) addCondition(c, 'a-terre');
-        return t('eff.fallTarget', { name: c.name, lost, aterre: lost > be ? t('eff.fragATerre') : '' });
+        const before = c.wounds.current;
+        const wasDown = hasCondition(c, 'a-terre');
+        applyFall(c, m, battleRng());
+        const lost = before - c.wounds.current;
+        const knocked = !wasDown && hasCondition(c, 'a-terre');
+        return t('eff.fallTarget', { name: c.name, lost, aterre: knocked ? t('eff.fragATerre') : '' });
       });
       if (targets.length) {
         env.set({ ...touchActors(env.get()), ...(e.to && !env.get().battle ? { partyPos: e.to } : {}) });

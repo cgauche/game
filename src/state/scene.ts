@@ -521,6 +521,7 @@ export function elevAt(scene: Scene, x: number, y: number, z = 0): number {
 
 export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
   if (z === 0 && buildingBlockedAt(scene, x, y)) return false; // les bâtiments sont au sol
+  if (z > 0 && tileCollapsed(scene, x, y, z)) return false; // passerelle d'étage effondrée → plus marchable
   if (entityBlockedAt(scene, x, y)) return false; // empreinte multi-cases d'un décor (foot {w,h})
   return terrainWalkable(tileAt(scene, x, y, z));
 }
@@ -602,6 +603,24 @@ export function setStructureDown<S extends Pick<Scene, 'walls' | 'flags'>>(scene
   return { ...scene, flags: { ...scene.flags, [structureDownKey(x, y, side, z)]: down } };
 }
 
+/** Clé de flag d'effondrement d'une TUILE d'étage (`scene.flags`) — présent & `true` = la passerelle de
+ *  la case (x,y,z) s'est effondrée (z>0). Absent = intacte. Calque le patron flag des portes/structures. */
+export function collapsedTileKey(x: number, y: number, z: number): string {
+  return `__tile_down_${x}_${y}_${z}`;
+}
+
+/** La tuile (x,y,z) est-elle EFFONDRÉE ? (passerelle d'étage abattue après destruction de la structure
+ *  qui la portait). Flag runtime ; absent = intacte (false). */
+export function tileCollapsed(scene: Pick<Scene, 'flags'>, x: number, y: number, z: number): boolean {
+  return scene.flags?.[collapsedTileKey(x, y, z)] === true;
+}
+
+/** Marque la tuile (x,y,z) comme EFFONDRÉE (flag runtime) — renvoie une NOUVELLE Scène (réf changée →
+ *  recompute de la vue + re-rendu). PUR. */
+export function setTileCollapsed<S extends Pick<Scene, 'flags'>>(scene: S, x: number, y: number, z: number): S {
+  return { ...scene, flags: { ...scene.flags, [collapsedTileKey(x, y, z)]: true } };
+}
+
 /** Une arête est-elle OUVERTE (ne bloque NI passage NI vue) ? Prédicat CANONIQUE unique des deux modes
  *  d'ouverture : porte ouverte OU structure abattue. Sinon l'arête bloque (mur plein, porte fermée,
  *  structure intacte). Les lecteurs de franchissabilité/transparence (`wallBetween`, `buildOpaque`) s'y
@@ -630,6 +649,21 @@ export function wallBetween(scene: Scene, ax: number, ay: number, bx: number, by
   return scene.walls.some(
     (w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && !wallIsOpen(scene, w),
   );
+}
+
+/** Tuiles de PASSERELLE (z=1) marchables situées « au-dessus » d'une arête de structure de sol — la case
+ *  porteuse `(seg.x,seg.y)` et sa voisine à travers l'arête (`N` → (x,y-1), `E` → (x+1,y)), prises à z=1
+ *  et filtrées sur la marchabilité du terrain (`terrainWalkable`/`tileAt`). Quand la structure portant la
+ *  passerelle est abattue, ces tuiles s'effondrent (cf. `collapseStructure`). Ne renvoie QUE celles
+ *  réellement praticables (la passerelle réelle) ; les arêtes obliques (`\\`,`/`) n'ont pas de voisine. */
+export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; side: WallSide; z?: number }): { x: number; y: number; z: number }[] {
+  const z = 1; // une passerelle au-dessus d'une structure de sol est au 1ᵉʳ étage
+  const cells = [{ x: seg.x, y: seg.y }];
+  if (seg.side === 'N') cells.push({ x: seg.x, y: seg.y - 1 });
+  else if (seg.side === 'E') cells.push({ x: seg.x + 1, y: seg.y });
+  return cells
+    .filter((c) => terrainWalkable(tileAt(scene, c.x, c.y, z)))
+    .map((c) => ({ x: c.x, y: c.y, z }));
 }
 
 export function emptyScene(w = 20, h = 15): Scene {
