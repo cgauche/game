@@ -47,6 +47,13 @@ export function availableHealModes(target: Combatant): HealMode[] {
   return modes;
 }
 
+/** Modes de soin applicables EN COMBAT : Blessures + Hémorragie (allow-list explicite ; `trauma`
+ *  convalescence et `surgery` chirurgie sont hors-combat). SOURCE UNIQUE — consommée par le ciblage-carte
+ *  (mode par défaut) ET le sélecteur de la modale de soin. */
+export function combatHealModes(target: Combatant): HealMode[] {
+  return availableHealModes(target).filter((m) => m === 'wounds' || m === 'bleed');
+}
+
 /** Cibles soignables atteignables par `healer`. En combat : soi + adjacents (Chebyshev ≤ 1).
  *  Hors combat : tout le `pool`. */
 export function healableTargets(healer: Combatant, pool: Combatant[], opts: { adjacency: boolean }): Combatant[] {

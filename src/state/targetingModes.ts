@@ -21,7 +21,7 @@ import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzied } from '../engine/psychology';
-import { healableTargets, availableHealModes } from '../engine/healing';
+import { healableTargets, combatHealModes } from '../engine/healing';
 import { findSpellById } from '../data';
 import { overcastSourceOf } from '../engine/overcast';
 import type { Pt } from './path';
@@ -537,7 +537,7 @@ const HEAL_MODE: TargetingMode = {
   commitCombatant: (get, _set, _active, id) => {
     const target = get().battle?.combatants.find((c) => c.id === id);
     if (!target) return;
-    const mode = availableHealModes(target).filter((m) => m !== 'trauma' && m !== 'surgery')[0];
+    const mode = combatHealModes(target)[0]; // mode par défaut au ciblage-carte ; la modale permet de basculer
     if (mode) get().battleHeal(id, mode);
   },
 };

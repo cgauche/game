@@ -8,7 +8,7 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeHeal } from '../state/flowOutcomes';
 import { ModalSubject } from './ModalSubject';
-import { availableHealModes } from '../engine/healing';
+import { combatHealModes } from '../engine/healing';
 
 /**
  * Flux de jet d'un SOIN (Guérison, LDB 09-Compétences) : « Lancer » → Chance (relance / +1 DR) →
@@ -44,7 +44,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   // soins s'appliquent à lui (Blessures ET Hémorragie), on choisit ICI, avant le jet. L'infirmerie
   // (embedded) garde son propre choix d'acte → pas de seg.
   const combatModes = !embedded && !rolled && target
-    ? availableHealModes(target).filter((m) => m === 'wounds' || m === 'bleed')
+    ? combatHealModes(target)
     : [];
   const bleed = target?.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
   return (
