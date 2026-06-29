@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { applyAttackResult, applyStructureCriticalToTarget, collapseStructure } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
 import { woundsFromHit } from '../engine/woundsCalc';
 import { structureIsDown, structureDownKey, wallBetween, type Scene } from './scene';
 import { testScene } from '../scenes/test-fixture';
@@ -170,5 +171,32 @@ describe('Structures de siège — Critique de Structure (AA p.121)', () => {
     const live = s ?? S!;
     expect(live.criticalWounds).toBe(1);
     expect(live.wounds.current).toBeLessThanOrEqual(12); // au moins les 28 de base retirés
+  });
+});
+
+describe('Structures de siège — CHEMIN DE CLIC joueur (overlay d’arête → battleClickEntity → brèche)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it("cliquer la porte (battleClickEntity = le clic sur l'overlay d'arête) la martèle par le flux d'attaque NORMAL jusqu'à la BRÈCHE", () => {
+    const { S, H } = start('porte', { seed: 7 });
+    const seg = { x: 2, y: 2, side: 'E' as const, structure: 'porte' };
+    // Héros au CONTACT de l'ancrage (2,2), arme de mêlée, Combat/Force élevés → traverse les 8 Bl (BE 2).
+    const sword = itemFromTrappingById('arme-simple')!; sword.equipped = true;
+    H.items = [sword]; H.loadouts = undefined; H.activeLoadoutId = undefined; recomputeLoadout(H);
+    H.characteristics.CC = 80; H.characteristics.F = 60;
+    H.pos = { x: 1, y: 2 };
+    expect(wallBetween(useGame.getState().scene!, 2, 2, 3, 2)).toBe(true); // porte intacte : bloque
+    const giveTurn = () => { const b = useGame.getState().battle!; useGame.setState({ battle: { ...b, turn: b.order.indexOf(H.id), action: null, movementUsed: 99, acted: false } }); };
+    let guard = 0;
+    while (!structureIsDown(useGame.getState().scene!, seg) && guard++ < 12) {
+      giveTurn();
+      useGame.getState().battleClickEntity(S!.id, { confirm: true }); // = clic sur l'overlay d'arête de la structure
+      if (useGame.getState().pendingAttack) { useGame.getState().attackRoll(); useGame.getState().attackConfirm(); }
+    }
+    const after = useGame.getState();
+    expect(structureIsDown(after.scene!, seg)).toBe(true);                    // porte abattue par le clic
+    expect(after.battle!.combatants.some((c) => c.id === S!.id)).toBe(false); // retirée du combat
+    expect(wallBetween(after.scene!, 2, 2, 3, 2)).toBe(false);               // BRÈCHE : passage rouvert
   });
 });
