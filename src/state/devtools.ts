@@ -673,6 +673,19 @@ export function buildApi() {
       return `✅ Cadence de combat → ${mode}`;
     },
 
+    /** RECETTE : force l'incantation OUVERTE (déjà lancée) en RÉUSSITE à fort DR → fait apparaître le
+     *  panneau de SURINCANTATION (steppers Portée/ZdE/Durée/Cible + désignation). Défaut DR 12 → budget
+     *  > 0 pour tout sort (NI ≤ 8). Le seul hack RNG non reproductible en jeu : poser `pendingCast` à la
+     *  main NE rend PAS la modale (gate de montage) — on ouvre l'incantation normalement (Incanter →
+     *  sort → cible → Lancer) puis `__wfrp.overcast(dr?)`. */
+    overcast: (dr = 12) => {
+      const pc = useGame.getState().pendingCast;
+      if (!pc) return '⚠️ aucune incantation ouverte — en jeu : Incanter → sort → cible';
+      if (!pc.result) return "⚠️ lance le dé d'abord (« Lancer »), puis __wfrp.overcast()";
+      useGame.setState({ pendingCast: { ...pc, result: { ...pc.result, cast: true, hit: true, sl: dr } } });
+      return `✨ DR forcé à ${dr} (RÉUSSITE) → panneau de Surincantation visible (budget affiché dans la modale).`;
+    },
+
     /** RECETTE : diagnostic d'AUTO-CADENCE — « pourquoi ça avance / ça se fige ? ». Montre le mode, la
      *  modale active + sa politique, le verdict `willAutoResolve` (rendue ou masquée+auto-pilotée), tous
      *  les `pending*` ouverts, et l'acteur courant (aiDriven). Un `pending*` ouvert avec cadence ≠ manuel
