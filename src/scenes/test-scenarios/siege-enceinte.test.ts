@@ -12,13 +12,15 @@ describe('Siège vertical — combat z-aware (siege-enceinte)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
-  it('scène : 2 niveaux, escalier z0↔z1 auto, herse destructible', () => {
+  it('scène : 2 niveaux, escalier DANS LA COUR (z0↔z1), corps de garde (porte + tours)', () => {
     const s = scenario.scene;
     expect(s.levels.map((l) => l.z)).toEqual([0, 1]);
-    expect(s.stairs?.[0]).toMatchObject({ from: { x: 1, y: 4 }, to: { x: 1, y: 4, z: 1 } });
+    // Escalier = volée dans la cour (palier en saillie z=1), pas collé au mur.
+    expect(s.stairs?.[0]).toMatchObject({ from: { x: 3, y: 7, z: 0 }, to: { x: 3, y: 7, z: 1 } });
+    // Corps de garde : une PORTE de ville (height:1, monte au chemin de ronde) + des TOURS (height:2).
     expect(s.walls?.some((w) => w.structure === 'porte-de-ville')).toBe(true);
-    // Mur d'enceinte HAUT : les arêtes-structure montent jusqu'au chemin de ronde (`height:1`).
-    expect(s.walls?.every((w) => w.height === 1)).toBe(true);
+    expect(s.walls?.filter((w) => w.structure === 'porte-de-ville').every((w) => w.height === 1)).toBe(true);
+    expect(s.walls?.some((w) => w.height === 2)).toBe(true); // tours du corps de garde / d'angle
   });
 
   it('défenseur z=1 (chemin de ronde) ↔ assaillant z=0 : distance verticale, LdV dégagée, mêlée à travers le vide refusée', () => {
@@ -36,11 +38,11 @@ describe('Siège vertical — combat z-aware (siege-enceinte)', () => {
     expect(foes.length).toBeGreaterThan(0);
     expect(foes.every((f) => (f.pos!.z ?? 0) === 0)).toBe(true);
 
-    // Le héros monte sur le chemin de ronde (z=1), au-dessus de la tuile de mur (9,4).
-    hero.pos = { x: 9, y: 4, z: 1 };
+    // Le héros monte sur le chemin de ronde (z=1), au-dessus de la tuile de mur (9,6).
+    hero.pos = { x: 9, y: 6, z: 1 };
 
-    // (a) Un assaillant en contrebas, juste au pied du mur (9,3 au sol) : distance z-aware = 2 → PAS mêlée-adjacent.
-    const below = foes[0]; below.pos = { x: 9, y: 3 };
+    // (a) Un assaillant en contrebas, juste au pied du mur (9,5 au sol) : distance z-aware = 2 → PAS mêlée-adjacent.
+    const below = foes[0]; below.pos = { x: 9, y: 5 };
     expect(combatDistance(hero, below)).toBe(2); // max(horizontal 1, vertical 2)
 
     // (b) Un assaillant dans le champ : le défenseur le VOIT et peut le tirer (LdV cross-z dégagée par-dessus le parapet).

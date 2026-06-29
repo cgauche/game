@@ -494,6 +494,18 @@ export function Inspector({
                   nullable
                 />
                 <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure.</p>
+                {selW.structure && (
+                  <label className="ed-field">
+                    Hauteur de la fortification
+                    <select value={selW.height ?? ''} onChange={(e) => patchSelW({ height: e.target.value ? Number(e.target.value) : undefined })}>
+                      <option value="">— basse (défaut) —</option>
+                      <option value="1">1 étage — monte au chemin de ronde (z=1)</option>
+                      <option value="2">2 étages — tour / bastion</option>
+                      <option value="3">3 étages — donjon</option>
+                    </select>
+                  </label>
+                )}
+                {selW.structure && <p className="hint">Hauteur en ÉTAGES : un rempart « 1 étage » monte pile au chemin de ronde z=1 (créneaux au sommet) ; « 2 » = une tour qui domine la courtine. « basse » = hauteur d'un mur ordinaire.</p>}
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>

@@ -1,5 +1,6 @@
 import { tileCenter, tileEdge, depth, isSquareView, LEVEL_H, type Dims } from './iso';
 import type { Scene, WallSeg } from '../state/scene';
+import { structureById } from '../data';
 
 /** Hauteur écran (px) d'une cloison dressée sur une arête. */
 export const WALL_H = 54;
@@ -72,6 +73,23 @@ function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: n
     const svg = `<g><polygon points="${slab(a, b, 0, hr * 0.5)}" fill="var(--struct-rubble)"/>` +
       `<polygon points="${a.cx},${a.cy} ${m1.cx},${m1.cy - hr} ${m2.cx},${m2.cy - hr * 0.7} ${b.cx},${b.cy}" fill="var(--struct-rubble-hi)" stroke="var(--struct-band)" stroke-width="0.6"/>` +
       post(a, hr * 0.7) + post(b, hr * 0.55) + `</g>`;
+    return { d, svg };
+  }
+  // PORTE / CORPS DE GARDE (structure `kind:'porte'`) : ouverture SOMBRE (le passage) + HERSE de fer
+  // (barreaux verticaux + traverses) sous un LINTEAU de pierre + jambages massifs aux deux bouts — se LIT
+  // comme une porte, pas comme un pan de mur crénelé. Routé par l'id de structure (cf. `structures.json`).
+  if (structureById.get(w.structure ?? '')?.kind === 'porte') {
+    const arch = H * 0.74; // l'ouverture (passage) monte jusqu'ici ; au-dessus = le bloc du corps de garde
+    let herse = '';
+    for (let i = 1; i < 6; i++) { const p = lerpP(a, b, i / 6); herse += `<line x1="${p.cx}" y1="${p.cy}" x2="${p.cx}" y2="${p.cy - arch}" stroke="#4a4d54" stroke-width="1.5"/>`; }
+    herse += `<polygon points="${slab(a, b, arch * 0.42, arch * 0.42 + 1.8)}" fill="#4a4d54"/>` +
+      `<polygon points="${slab(a, b, arch * 0.74, arch * 0.74 + 1.8)}" fill="#4a4d54"/>`; // 2 traverses de fer
+    const svg = `<g>${post(a, H)}` +
+      `<polygon points="${slab(a, b, 0, arch)}" fill="#221a11"/>` + // passage sombre (on voit dans le recoin)
+      herse +
+      `<polygon points="${slab(a, b, arch, H)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // linteau + bloc supérieur
+      `<polygon points="${slab(a, b, H - 3, H)}" fill="var(--struct-cap)"/>` + // arase claire au sommet
+      `${post(b, H)}</g>`;
     return { d, svg };
   }
   // REMPART INTACT : face pierre pleine + bandes de fer + créneaux (merlons) en saillie au-dessus.
