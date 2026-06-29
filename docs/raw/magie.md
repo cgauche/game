@@ -156,6 +156,39 @@ Un **double raté** au Test d'incantation entraîne une **Incantation Imparfaite
 
 ---
 
+## Surincantation
+
+**Sources RAW :** `LDB 47 l.13-17` (Sorts) · `LDB 41 l.21-27` (Bénédictions) · `LDB 42 l.7-13` (Miracles)
+
+Dépenser le surplus de Degrés de Réussite pour amplifier un sort réussi. Budget = **un pas par +2 DR de
+surplus** — surplus = `DR − NI` pour un Sort (DR entier si Focalisé, NI déjà payé) ; **DR entier** pour une
+Prière (Bénédiction/Miracle : pas de NI). Le surplus se répartit librement entre les axes (même axe
+répétable). L'EFFET d'un pas **dépend de la source** :
+
+| Source (`spell.family`) | Axes | Effet d'UN pas |
+| --- | --- | --- |
+| **Sort** (`arcane`/`mineure`/`chaos`/domaines) | Portée · **ZdE** · Durée · Cible | **+valeur initiale** (×initial) |
+| **Miracle** (`invocation`) | Portée · Durée · Cible (**pas de ZdE**) | **+valeur initiale** (×initial) |
+| **Bénédiction** (`beni`) | Portée · Durée · Cible (**pas de ZdE**) | **+6 m** Portée / **+1** Cible / **+6 Rounds** Durée (FIXE) |
+
+Restrictions (RAW) : Portée/Cible « **Vous** » → seul le lanceur, non augmentables ; Portée « **Contact** »
+non extensible **pour un Sort/Miracle** (une **Bénédiction** étend même le Contact : `LDB 41 l.27`, Guérison
+touchée → 6 m / 12 m) ; sans Durée (Instantané) → pas de prolongation ; Cible « **Spécial** » → pas de
+cibles supplémentaires (`LDB 47 l.28`).
+
+> **Verbatim Sort** (`LDB 47 l.15`) : « Pour chaque +2 DR que vous obtenez à un Test d'Incantation, vous
+> pouvez ajouter une valeur de Portée, de Zone d'Effet, de Durée ou de Cible égale à la valeur initiale
+> indiquée dans la description du Sort. »
+> **Verbatim Bénédiction** (`LDB 41 l.23-25`) : « • Portée : +6 mètres • Cibles : +1 • Durée : +6 Rounds »
+
+**Implémente :** `src/engine/overcast.ts` (math source-aware PURE : `overcastSourceOf`/`overcastAxes`/
+`extraTargetCapacity`/`effectiveDurationRounds`/`effectiveRangeMetres`/`overcastDurationParts`), alloué par
+`castAllocOvercast(axis, delta)` (stepper +/−), résolu par `applyCast` (durée) + `effectiveSpellRangeTiles`
+(`magic.ts`, cibles supplémentaires atteignables) ; cibles désignées via `castToggleExtraTarget`. UI :
+steppers par axe dans `CastModal`. IA : `aiOvercastPlan`.
+
+---
+
 ## Influences Malfaisantes (le « 8 »)
 
 **Sources RAW :** `LDB 46 l.88-90`

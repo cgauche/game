@@ -15,3 +15,35 @@
 @import './styles/house-rules.css'; /* panneau des règles optionnelles (généré depuis le registre) */
 @import './styles/compendium.css'; /* Codex : écran de référence (browse + recherche) + popover CodexRef */
 @import './styles/codex-edit.css'; /* édition DEV des données dans le Compendium */
+
+/* ══════════════════ Couche MANETTE — affordances focus + curseur (transverse) ══════════════════
+   Ces règles servent la navigation manette/clavier (cf. src/ui/useGamepad.ts) : comme elles touchent
+   à la fois la barre d'action et les boutons globaux, elles vivent ici (transverse), après les @import
+   (seul emplacement légal pour des règles hors @import). Toutes les couleurs viennent des tokens :root. */
+
+/* Anneau de focus NET : la manette déplace le focus DOM réel (visibleFocusables) dans les menus/modales
+   → il faut voir l'élément focalisé. On réutilise l'accent or (--gold), comme l'anneau déjà posé sur les
+   cases à cocher / .char-head — aucune couleur en dur. */
+.ab-slot:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Curseur de combat (losange piloté clavier/manette) : trait d'accent or + pulsation douce (même
+   grammaire d'opacité que .lazy-pulse / af-pulse), neutralisée sous prefers-reduced-motion. La position
+   est posée par le rendu iso ; ici seulement l'aspect du trait. */
+.combat-cursor {
+  fill: none;
+  stroke: var(--gold2);
+  stroke-width: 3;
+  pointer-events: none;
+  animation: combat-cursor-pulse 1s ease-in-out infinite;
+}
+@keyframes combat-cursor-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combat-cursor { animation: none; opacity: 0.9; }
+}

@@ -27,6 +27,7 @@ import { deviatableArmourAt } from './items';
 import { Formula, resolveFormula, skillDRBonus } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
+import { type OvercastSource, effectiveRangeMetres } from './overcast';
 import { arcaneDomainIdOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
@@ -297,6 +298,24 @@ export function spellRangeTiles(range: SpellRange | null | undefined, caster: Co
     case 'distance': return Math.max(1, Math.floor((resolveFormula(range.value, caster) * (range.unit === 'km' ? 1000 : 1)) / 2));
     case 'special': return null;
   }
+}
+
+/** Portée EFFECTIVE en cases après `steps` pas de Surincantation de Portée. Étend une portée chiffrée
+ *  (×initial arcane/miracle, +6 m fixe bénédiction) et — RAW Bénédiction (LDB 41 l.27 : Guérison touchée
+ *  → 6 m / 12 m) — une portée Contact (0 m → +6 m/pas). « Vous »/« Spécial », et le Contact d'un Sort/
+ *  Miracle, ne s'étendent pas (LDB 47 « Contact ne peut pas être étendu » ; LDB 42 « Vous » non augmentable). */
+export function effectiveSpellRangeTiles(range: SpellRange | null | undefined, caster: Combatant, source: OvercastSource, steps: number): number | null {
+  if (!range || steps <= 0 || range.kind === 'self' || range.kind === 'special') return spellRangeTiles(range, caster);
+  if (range.kind === 'touch')
+    return source === 'blessing' ? Math.max(1, Math.floor(effectiveRangeMetres('blessing', 0, steps) / 2)) : 1;
+  const baseM = resolveFormula(range.value, caster) * (range.unit === 'km' ? 1000 : 1);
+  return Math.max(1, Math.floor(effectiveRangeMetres(source, baseM, steps) / 2));
+}
+
+/** Nombre de cibles INITIAL d'un sort (la valeur « Cible » résolue), 1 par défaut. Base de la capacité
+ *  de cibles supplémentaires en Surincantation (cf. `extraTargetCapacity`). */
+export function spellTargetCount(spell: { target?: SpellTarget | null }, caster: Combatant): number {
+  return spell.target?.kind === 'count' ? Math.max(1, resolveFormula(spell.target.n, caster)) : 1;
 }
 
 /**

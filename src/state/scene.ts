@@ -544,6 +544,10 @@ export interface WallSeg {
    *  qu'elle tient, l'arête bloque passage+vue comme un mur plein ; une fois ABATTUE (`structureIsDown`),
    *  l'arête devient une BRÈCHE franchissable et transparente. */
   structure?: string;
+  /** Hauteur du rempart en ÉTAGES (1 = un niveau = LEVEL_H px) — libère la hauteur fixe d'une structure
+   *  d'arête : un mur d'enceinte `height:1` monte pile au chemin de ronde z=1 (chapiteau + créneaux au
+   *  sommet). Absent/0 = hauteur par défaut (WALL_H). */
+  height?: number;
 }
 
 /** Clé de flag d'état d'une porte (`scene.flags`) — `true` = OUVERTE, `false` = FERMÉE (override runtime

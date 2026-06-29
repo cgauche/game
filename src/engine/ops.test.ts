@@ -236,3 +236,28 @@ describe('applyActiveEffect — non-cumul (LDB l.168)', () => {
     expect(c.wounds.max).toBeGreaterThan(12); // E 45→55 : BE 4→5 → +2 PB (2×BE)
   });
 });
+
+describe("op:'grantPsychTrait' / op:'removePsychTrait' — Traits psychologiques (c.psychTraits)", () => {
+  it("grantPsychTrait pose le Trait dans c.psychTraits (type + cible)", () => {
+    const c = hero({ psychTraits: [] });
+    applyOps(c, [{ op: 'grantPsychTrait', psychType: 'phobie', cible: 'Araignées' }]);
+    expect(c.psychTraits).toEqual([{ type: 'phobie', cible: 'Araignées' }]);
+  });
+  it("grantPsychTrait sans cible (Frénésie)", () => {
+    const c = hero({ psychTraits: [] });
+    applyOps(c, [{ op: 'grantPsychTrait', psychType: 'frenesie' }]);
+    expect(c.psychTraits).toEqual([{ type: 'frenesie' }]);
+  });
+  it("removePsychTrait { psychType } retire le Trait correspondant (laisse les autres)", () => {
+    const c = hero({ psychTraits: [{ type: 'phobie', cible: 'Araignées' }, { type: 'haine', cible: 'Skavens' }] });
+    applyOps(c, [{ op: 'removePsychTrait', psychType: 'phobie' }]);
+    expect(c.psychTraits).toEqual([{ type: 'haine', cible: 'Skavens' }]);
+  });
+  it("removePsychTrait sans type retire UN Trait au choix (le 1er) ; aucun → inerte", () => {
+    const c = hero({ psychTraits: [{ type: 'animosite', cible: 'Elfes' }] });
+    applyOps(c, [{ op: 'removePsychTrait' }]);
+    expect(c.psychTraits).toEqual([]);
+    expect(() => applyOps(c, [{ op: 'removePsychTrait' }])).not.toThrow();
+    expect(c.psychTraits).toEqual([]);
+  });
+});

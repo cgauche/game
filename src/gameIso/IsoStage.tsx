@@ -63,15 +63,16 @@ import { sizeTokenScale, footprintTokenScale } from './sizeScale';
 import { sizeFootprint, footprintN, footprintTiles, occupiesTile, decorFootGeometry } from '../state/footprint';
 import { isPassengerInBattle } from '../state/shipPostes';
 import { isMerScene } from '../state/scene';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack } from '../state/combatFlow';
 import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
+import { currentTargetingMode } from '../state/targetingModes';
 import { controlsActive } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
 import { hoverClickCommits } from '../ui/pointerCaps';
 import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
-import { isRider, isMount, riderOf } from '../state/mount';
+import { isRider, isMount, riderOf, mountOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape, relationColor } from './teamColors';
 import { summarizeEffects, combatantFlags } from './effectIcons';
 import { setVisibleTileBounds } from './viewport';
@@ -87,17 +88,20 @@ const VW = 1100;
 const VH = 720;
 const AMBIANCE_DEFS = `
   <radialGradient id="g_warm" cx="55%" cy="24%" r="78%"><stop offset="0%" stop-color="#ffce78" stop-opacity="0.10"/><stop offset="100%" stop-color="#ffce78" stop-opacity="0"/></radialGradient>
-  <radialGradient id="g_vig" cx="50%" cy="48%" r="60%"><stop offset="52%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#05040a" stop-opacity="0.58"/></radialGradient>`;
+  <radialGradient id="g_vig" cx="50%" cy="48%" r="60%"><stop offset="52%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#05040a" stop-opacity="0.58"/></radialGradient>
+  <filter id="lower-floor-dim" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix type="saturate" values="0.72"/><feComponentTransfer><feFuncR type="linear" slope="0.84"/><feFuncG type="linear" slope="0.84"/><feFuncB type="linear" slope="0.84"/></feComponentTransfer></filter>`;
 
 /** Tracé d'un DÉPLACEMENT (chemin + case d'arrivée + badge d'action) — source unique du rendu,
  *  partagée entre l'aperçu tap-1 (battle.preview, tactile) et l'aperçu au SURVOL (desktop). */
-function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: number } | null, label: string | null, d: Dims, keyPrefix: string, color = '#ffd75e'): JSX.Element[] {
+function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: number } | null, label: string | null, d: Dims, keyPrefix: string, color = '#ffd75e', footN = 1): JSX.Element[] {
   const els: JSX.Element[] = [];
   if (path.length > 1) {
     const pts = path.map((p) => tileCenter(p.x, p.y, d)).map((p) => `${p.cx},${p.cy}`).join(' ');
     els.push(<polyline key={`${keyPrefix}-path`} points={pts} fill="none" stroke={color} strokeWidth={3} opacity={0.9} pointerEvents="none" />);
   }
-  if (dest) els.push(<path key={`${keyPrefix}-dest`} d={diamondPath(dest.x, dest.y, d)} fill="none" stroke={color} strokeWidth={3} opacity={0.95} pointerEvents="none" />);
+  // Destination = TOUTE l'empreinte du mobile (un grand / un cavalier sur monture 2×2 → 4 cases), pas
+  // une seule (footN dérivé de la monture par l'appelant). footN=1 → un losange unique (iso-historique).
+  if (dest) for (const t of footprintTiles(dest, footN)) els.push(<path key={`${keyPrefix}-dest-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill="none" stroke={color} strokeWidth={3} opacity={0.95} pointerEvents="none" />);
   const at = dest ?? (path.length ? path[path.length - 1] : null);
   if (label && at) {
     const c0 = tileCenter(at.x, at.y, d);
@@ -156,6 +160,9 @@ export function IsoStage() {
   // Combattant survolé depuis un PORTRAIT (frise) : pilote le réticule sur la carte + le peek caméra,
   // à parité du survol d'un token. Read-only (jamais réseau).
   const hoverCombatantId = useGame((s) => s.hoverCombatantId);
+  // Curseur de combat clavier/manette : pilote le réticule/aperçu EXISTANT comme un survol souris
+  // (cf. combatCursor.ts) — prime sur la souris/frise (cf. effHover/effFocusId plus bas).
+  const combatCursor = useGame((s) => s.combatCursor);
   const setHovered = useGame((s) => s.setHovered);
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
   const [shownEdge, setShownEdge] = useState(camEdge);
@@ -240,16 +247,27 @@ export function IsoStage() {
   // `viewLevel(z)` isole un seul étage. Le tri de profondeur (z-aware) empile les étages correctement.
   const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.levels.filter((l) => l.z === viewZ) : scene.levels.filter((l) => l.z <= activeZ)) : []), [scene, viewZ, activeZ]);
 
-  const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
+  // Étage de SOL effectif sous (x,y) pour le BROUILLARD : à un trou (`vide`) de l'étage actif, on retombe
+  // sur le premier sol en dessous → le voile reflète la visibilité du CONTREBAS (vu par le trou) au lieu
+  // d'un noir « inconnu » qui masquerait l'étage inférieur. Mono-niveau (pas de trou) ⇒ rend `activeZ`
+  // (byte-identique). Stable (memo) → ne recalcule le voile que si la scène/l'étage actif change.
+  const fogFloorZAt = useMemo(() => (x: number, y: number): number => {
+    if (!scene) return activeZ;
+    for (let zz = activeZ; zz >= 0; zz--)
+      if (scene.levels.some((l) => l.z === zz) && tileAt(scene, x, y, zz) !== 'vide') return zz;
+    return activeZ;
+  }, [scene, activeZ]);
+
+  const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    const out: { d: number; el: JSX.Element; x: number; y: number }[] = [];
+    const out: { d: number; el: JSX.Element; x: number; y: number; z: number }[] = [];
     for (const lvl of renderLevels) {
       const fd = floorDepth(d, lvl.z);
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
           const html = groundTile(scene, x, y, d, lvl.z);
-          if (html) out.push({ d: fd, x, y, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
+          if (html) out.push({ d: fd, x, y, z: lvl.z, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
         }
     }
     return out;
@@ -257,7 +275,7 @@ export function IsoStage() {
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
-  const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
+  const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
     if (!scene?.walls?.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const zs = new Set(renderLevels.map((l) => l.z));
@@ -267,20 +285,25 @@ export function IsoStage() {
     // donc l'Effondrement (nouvelle réf de scène, `collapseStructure`) recalcule la brèche.
     return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
       const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false);
-      return { d: seg.d, x: w.x, y: w.y, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      // `z` d'atténuation = l'étage du SOMMET du mur (`base + height`) : un rempart d'enceinte qui MONTE
+      // jusqu'au chemin de ronde appartient visuellement à CET étage — il borde le sol actif, donc il
+      // reste PLEINE lumière au lieu d'être assombri comme « le dessous » (sinon le mur porteur de la
+      // passerelle paraît un vide noir sous elle). Mur plat (`height` absent) → `base` inchangé (byte-identique).
+      return { d: seg.d, x: w.x, y: w.y, z: (w.z ?? 0) + (w.height ?? 0), el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
   // ESCALIERS (Scene.stairs) — volées de marches STRUCTURELLES (comme les murs), pas des décors posés.
   // Pleine opacité si l'un des deux étages reliés est actif (l'escalier appartient aux deux).
-  const stairObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+  const stairObjs = useMemo<{ d: number; el: JSX.Element; z: number }[]>(() => {
     if (!scene?.stairs?.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const zs = new Set(renderLevels.map((l) => l.z));
-    // Volées dont un des deux étages reliés est rendu (l'escalier appartient aux deux).
+    // Volées dont un des deux étages reliés est rendu (l'escalier appartient aux deux). `z` = étage HAUT
+    // relié : une volée dont le sommet reste SOUS l'actif (hi < activeZ) est atténuée avec son étage.
     return scene.stairs.filter((s) => { const [lo, hi] = stairLevels(s); return zs.has(lo) || zs.has(hi); }).map((s, i) => {
       const seg = stairSeg(s, d);
-      return { d: seg.d, el: <g key={`stair-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      return { d: seg.d, z: stairLevels(s)[1], el: <g key={`stair-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
@@ -351,6 +374,13 @@ export function IsoStage() {
     if (visible.size) markExplored([...visible]);
   }, [visible, markExplored]);
 
+  // Signaux de survol EFFECTIFS : le curseur clavier/manette (combatCursor) PRIME sur la souris locale
+  // (hover) ET sur le survol de frise (hoverCombatantId) — un seul réticule/aperçu à la fois, partagé
+  // par les trois memos de survol ci-dessous (réticule, halo de focus, aperçu de déplacement). La
+  // souris reprend la main dès qu'elle bouge (onPointerMove appelle clearCursor()).
+  const effHover = combatCursor?.tile ?? hover;
+  const effFocusId = combatCursor?.snappedId ?? hoverCombatantId;
+
   // Ciblage du JOUEUR au survol — MEMOÏSÉ (previewAttack/LdV ne tournent pas à 60 Hz pendant les
   // glissements de token). Rejoue les MÊMES prédicats que le clic : réticule présent = clic valide.
   const hoverAim = useMemo<{
@@ -365,34 +395,25 @@ export function IsoStage() {
     preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
     reticle: boolean;
   } | null>(() => {
-    if (mode !== 'battle' || !battle || battle.over || (!hover && !hoverCombatantId) || !myTurn) return null;
+    if (mode !== 'battle' || !battle || battle.over || (!effHover && !effFocusId) || !myTurn) return null;
     // Un jet à cible est déjà en cours (modale) : le réticule PERSISTANT prend le relais au rendu.
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || (pendingCast && !pendingCast.pickingTargets)) return null;
-    // Source du survol : un PORTRAIT de la frise (hoverCombatantId) prime sur la tuile sous la souris
-    // (hover) → le réticule + l'infobulle se rendent à l'identique, qu'on survole le token ou son portrait.
-    const occ = hoverCombatantId
-      ? battle.combatants.find((c) => c.id === hoverCombatantId && c.pos && !isOutOfAction(c))
-      : hover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y)) : null;
+    // Source du survol EFFECTIF : la cible aimantée du curseur clavier/manette (effFocusId) ou un PORTRAIT
+    // de frise priment sur la tuile sous la souris (effHover) → réticule + infobulle identiques, qu'on
+    // survole le token, son portrait, ou qu'on navigue au pad.
+    const occ = effFocusId
+      ? battle.combatants.find((c) => c.id === effFocusId && c.pos && !isOutOfAction(c))
+      : effHover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), effHover.x, effHover.y)) : null;
     if (!occ) return null;
     const st = useGame.getState;
-    // Flux différés (bandeau TargetPrompt) : validité = appartenance aux ensembles candidats existants.
-    if (pendingCleave) {
-      const atk = battle.combatants.find((c) => c.id === pendingCleave.attackerId);
-      const ok = !!atk && cleaveTargets(battle, atk, pendingCleave.hitIds).some((t) => t.id === occ.id);
-      return ok ? { fromId: atk!.id, toId: occ.id, line: 'solid', tip: null, reticle: true } : null;
-    }
-    if (pendingDualStrike) {
-      const atk = battle.combatants.find((c) => c.id === pendingDualStrike.attackerId);
-      const off = atk?.weapons.find((w) => w.uid === pendingDualStrike.offWeaponUid);
-      const ok = !!atk && !!off && dualStrikeTargets(battle, atk, off).some((t) => t.id === occ.id);
-      return ok ? { fromId: atk!.id, toId: occ.id, line: 'solid', tip: null, reticle: true } : null;
-    }
-    if (pendingCast?.pickingTargets) {
-      const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
-      const spell = findSpellById(pendingCast.spellId);
-      const ok = !!caster && !!spell && !!scene &&
-        overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile, { scene, smoke: smokeOf(battle) }).some((t) => t.id === occ.id);
-      return ok ? { fromId: caster!.id, toId: occ.id, line: 'dashed', tip: null, reticle: true } : null;
+    // Flux différés (bandeau TargetPrompt — Frappe Mortelle / 2ᵉ frappe (Deux armes) / Surincantation
+    // +Cible) : le réticule vient du MODE courant (targetingModes via hoverTargeting), AVANT les verrous
+    // acted/Frénésie (ces ciblages surviennent APRÈS l'attaque-Action). Plus de logique de cibles dupliquée.
+    if (pendingCleave || pendingDualStrike || pendingCast?.pickingTargets) {
+      const actor = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+      if (!actor) return null;
+      const ht = hoverTargeting(st, actor, occ);
+      return ht.kind === 'ok' ? { fromId: actor.id, toId: occ.id, line: ht.line, tip: null, reticle: true } : null;
     }
     const activeH = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
     if (!activeH || activeH.kind !== 'hero' || !activeH.pos) return null;
@@ -419,30 +440,35 @@ export function IsoStage() {
       return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
     }
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
-  }, [hover, hoverCombatantId, mode, battle, scene, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+  }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Combattant SOUS le focus (tuile survolée OU portrait de frise/Tab) — INDÉPENDANT du ciblage
   // (hoverAim exige Mon Tour + cible valide). Pilote le halo de focus du token ET, synchronisé au
   // store (`hovered`), le miroir réciproque sur la frise. Source unique du « qui est mis en évidence ».
   const hoveredId = useMemo<string | null>(() => {
     if (mode !== 'battle' || !battle) return null;
-    const occ = hoverCombatantId
-      ? battle.combatants.find((c) => c.id === hoverCombatantId && c.pos && !isOutOfAction(c))
-      : hover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y)) : null;
+    const occ = effFocusId
+      ? battle.combatants.find((c) => c.id === effFocusId && c.pos && !isOutOfAction(c))
+      : effHover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), effHover.x, effHover.y)) : null;
     return occ?.id ?? null;
-  }, [mode, battle, hover, hoverCombatantId]);
+  }, [combatCursor, mode, battle, hover, hoverCombatantId]);
   useEffect(() => { setHovered(hoveredId); }, [hoveredId, setHovered]);
 
   // Aperçu de DÉPLACEMENT au SURVOL (desktop) : le chemin + le coût se matérialisent sous la
   // souris, le clic UNIQUE commet — le tap-1 (battle.preview) reste le flux tactile. Mêmes
   // sources que le clic (movePreviewAt) ; memoïsé : pathTo ne tourne pas à 60 Hz.
   const hoverMove = useMemo<{ kind: 'move' | 'run'; path: { x: number; y: number }[]; cost: number } | null>(() => {
-    if (mode !== 'battle' || !battle || battle.over || !hover || battle.preview || !myTurn) return null;
+    if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
-    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y));
+    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), effHover.x, effHover.y));
     if (occ) return null; // une cible a sa propre visée (hoverAim)
-    return movePreviewAt(useGame.getState, hover);
-  }, [hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+    return movePreviewAt(useGame.getState, effHover);
+  }, [combatCursor, hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+
+  // Empreinte du MOBILE actif (sa MONTURE si cavalier) → aperçu de déplacement à la BONNE taille (4 cases
+  // pour un cavalier sur monture 2×2). Mobile = combattant actif (héros au survol/curseur, ennemi au télégraphe).
+  const activeMover = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
+  const activeMoveN = activeMover ? footprintN(mountOf(battle!, activeMover) ?? activeMover) : 1;
 
   // Aperçu de DÉPLACEMENT au SURVOL hors combat : même calcul que le clic (moveAlong) — pathTo avec
   // la portée de saut du GROUPE. Memoïsé sur (hover, partyPos, scene) → le BFS ne tourne PAS à la frame
@@ -505,13 +531,14 @@ export function IsoStage() {
       const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
       const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
       const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'run' ? 'Courir' : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
-      hl.push(...movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv'));
+      hl.push(...movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv', '#ffd75e', pv.kind === 'attack' ? 1 : (activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1)));
       if (pvTgt?.pos) for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt))) hl.push(<path key={`pv-tgt-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />); // tout le bloc N×N d'un grand
     }
     // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
     for (const c of battle.combatants) {
       if (!c.pos || isOutOfAction(c)) continue;
-      const isActiveC = c.id === activeC?.id;
+      if (isRider(c)) continue; // le cavalier est REPRÉSENTÉ par l'empreinte de sa MONTURE — pas de pastille 1×1 séparée
+      const isActiveC = c.id === activeC?.id || c.riderId === activeC?.id; // une monture est « active » si SON cavalier l'est
       const fill = tileTint(c.kind === 'hero', isActiveC);
       const fp = footprintN(c);
       for (let dx = 0; dx < fp; dx++)
@@ -545,29 +572,18 @@ export function IsoStage() {
           hl.push(<path key={`crowd-${v.id}`} d={diamondPath(v.pos.x, v.pos.y, d)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" />);
         }
     }
-    // Ciblage CHAMP DE BATAILLE des flux différés (bandeau TargetPrompt) : anneau sur les cibles
-    // cliquables — Frappe Mortelle / 2ᵉ frappe (Deux armes) / Surincantation « +Cible ».
-    if (myTurn && !pendingAttack) {
-      const ring = (c: Combatant, key: string, color = '#ff5a4d') =>
-        hl.push(<path key={key} d={diamondPath(c.pos!.x, c.pos!.y, d)} fill="none" stroke={color} strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
-      if (pendingCleave) {
-        const atk = battle.combatants.find((c) => c.id === pendingCleave.attackerId);
-        if (atk) for (const t of cleaveTargets(battle, atk, pendingCleave.hitIds)) if (t.pos) ring(t, `clv-${t.id}`);
-      }
-      if (pendingDualStrike) {
-        const atk = battle.combatants.find((c) => c.id === pendingDualStrike.attackerId);
-        const off = atk?.weapons.find((w) => w.uid === pendingDualStrike.offWeaponUid);
-        if (atk && off) for (const t of dualStrikeTargets(battle, atk, off)) if (t.pos) ring(t, `dsk-${t.id}`);
-      }
-      if (pendingCast?.pickingTargets) {
-        const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
-        const spell = findSpellById(pendingCast.spellId);
-        if (caster && spell)
-          for (const t of overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile, { scene, smoke: smokeOf(battle) })) {
-            // Cibles déjà cochées en vert (re-cliquer décoche), candidates restantes en rouge.
-            if (t.pos) ring(t, `oct-${t.id}`, (pendingCast.extraTargetIds ?? []).includes(t.id) ? '#5db87a' : '#ff5a4d');
-          }
-      }
+    // Cibles cliquables du MODE de ciblage courant (targetingModes → MÊME source que réticule/curseur/clic) :
+    // Soin (alliés soignables → anneau AMI) ; flux différés Frappe Mortelle / 2ᵉ frappe / Surincantation
+    // « +Cible » (ennemis → anneau hostile). L'attaque a son propre bloc rouge (eligibleAttackTargetIds).
+    if (myTurn && !pendingAttack && (pendingCleave || pendingDualStrike || pendingCast?.pickingTargets || battle.action === 'heal')) {
+      const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+      const mode = currentTargetingMode(useGame.getState);
+      const cands = active ? mode.candidates?.(useGame.getState, active) ?? [] : [];
+      const friendly = mode.id === 'heal'; // soin = anneau ami (vert)
+      const checked = pendingCast?.pickingTargets ? new Set(pendingCast.extraTargetIds ?? []) : null; // surincantation : déjà coché en vert
+      for (const t of cands)
+        if (t.pos)
+          hl.push(<path key={`cand-${t.id}`} d={diamondPath(t.pos.x, t.pos.y, d)} fill="none" stroke={friendly || checked?.has(t.id) ? '#5db87a' : '#ff5a4d'} strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
     }
     return hl;
   }, [scene, shownRot, shownEdge, viewMode, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast]);
@@ -577,13 +593,13 @@ export function IsoStage() {
   // les ~180 modèles de la galerie à chaque frame EN PLUS de leur propre anim → saccade. Réfs d'éléments
   // stables → React saute ces sous-arbres ; chaque créature continue de s'auto-animer via SON rAF
   // (usePlanAnim/useRigClip), indépendamment du re-rendu d'IsoStage.
-  const entityObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+  const entityObjs = useMemo<{ d: number; el: JSX.Element; z: number }[]>(() => {
     if (!scene) return [];
     const inBattle = mode === 'battle' && !!battle;
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const isTop = viewMode === 'top';
     const discRfn = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
-    const out: { d: number; el: JSX.Element }[] = [];
+    const out: { d: number; el: JSX.Element; z: number }[] = [];
     // En combat, les FIGURANTS (PNJ d'ambiance : spectateurs, prisonnier en cage…) ne « dépop »
     // plus — ils restent visibles, estompés et NON interactifs ; on ne les dessine pas si un
     // combattant occupe leur case (pas d'empilement de corps).
@@ -615,6 +631,7 @@ export function IsoStage() {
       if (r.backend === 'sprite') {
         out.push({
           d: depth(ent.pos.x, ent.pos.y, d, ez),
+          z: ez,
           el: wrap(
             r.id,
             <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
@@ -629,6 +646,7 @@ export function IsoStage() {
         const ex = ent.pos.x + off, ey = ent.pos.y + off;
         out.push({
           d: depth(ex, ey, d, ez) + dBoost,
+          z: ez,
           el: wrap(
             r.id,
             <BodyToken key={r.id} x={ex} y={ey} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
@@ -697,17 +715,21 @@ export function IsoStage() {
       }
     }
     if (activeC?.pos) {
-      const ap = walkPosOf(activeC.id, activeC.pos.x, activeC.pos.y); // le halo SUIT le token qui glisse
-      highlights.push(
-        <path key="active" d={diamondPath(ap.x, ap.y, dims, liftAt(ap.x, ap.y, (activeC.pos as { z?: number }).z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={3} />,
-      );
+      const haloUnit = mountOf(battle, activeC) ?? activeC; // cavalier → halo sur l'empreinte de la MONTURE (2×2), pas sa case 1×1
+      const hz = (haloUnit.pos as { z?: number }).z ?? 0;
+      const ap = walkPosOf(haloUnit.id, haloUnit.pos!.x, haloUnit.pos!.y); // le halo SUIT le token qui glisse
+      for (const t of footprintTiles(ap, footprintN(haloUnit)))
+        highlights.push(<path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke="#ffe066" strokeWidth={3} />);
     }
   }
   if (mode === 'exploration' && !dialogue)
     highlights.push(<path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />);
 
   // --- Objets triés par profondeur (murs, arbres, entités, tokens) ---
-  type Obj = { d: number; el: JSX.Element; x?: number; y?: number };
+  // `z` = étage de l'objet (absent ⇒ non concerné) : un objet d'un étage SOUS l'actif (z < activeZ)
+  // est désaturé/assombri au rendu (filtre `lower-floor-dim`) → l'étage du dessous se distingue de
+  // l'actif. activeZ=0 (toute scène plate) ⇒ aucun z<0 ⇒ aucun changement (byte-identique).
+  type Obj = { d: number; el: JSX.Element; x?: number; y?: number; z?: number };
   const objs: Obj[] = [];
 
   // décor statique + bâtiments multi-tuiles : éléments memoïsés (cf. decorObjs/buildingObjs), juste
@@ -759,6 +781,7 @@ export function IsoStage() {
       const haloHovered = mode === 'exploration' && !!hover && hover.x === ent.pos.x && hover.y === ent.pos.y && (hover.z ?? 0) === ez;
       objs.push({
         d: pd - 0.02, // juste sous le sprite
+        z: ez,
         el: (
           <g key={`halo-${ent.id}`} pointerEvents="none">
             <g className={haloHovered ? 'interact-halo hovered' : 'interact-halo'}>
@@ -771,6 +794,7 @@ export function IsoStage() {
       });
       objs.push({
         d: pd + 0.02, // au-dessus du sprite : l'étincelle « il y a quelque chose ici »
+        z: ez,
         el: (
           <g key={`spark-${ent.id}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + 9 * fg.scale}, ${c.cy - 26 * fg.scale})`}>
             <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill="#ffd75e" stroke="#7a5b16" strokeWidth={0.7} />
@@ -778,7 +802,7 @@ export function IsoStage() {
         ),
       });
     }
-    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent, dims.rot), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
+    objs.push({ d: pd, z: ez, el: token(`e-${ent.id}`, px, py, entitySprite(ent, dims.rot), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —
@@ -839,7 +863,7 @@ export function IsoStage() {
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
         highlight: c.id === hoveredId ? relationColor(c.kind) : undefined, // FOCUS (survol token/frise) → halo couleur de relation, indépendant du ciblage (hoverAim = réticule)
       }, cz);
-      objs.push({ d: depth(cx, cy, dims, cz) + 0.5, el });
+      objs.push({ d: depth(cx, cy, dims, cz) + 0.5, z: cz, el });
     }
     // Combat monté (LDB 14) : le couple CAVALIER+MONTURE est dessiné comme UN corps composite
     // (MountedToken) trié au niveau de l'os → vraie profondeur (jambe lointaine derrière le
@@ -854,7 +878,7 @@ export function IsoStage() {
       const cx = wp.x + off, cy = wp.y + off;
       const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
       const el = tokenNode(`${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking);
-      objs.push({ d: depth(cx, cy, dims) + 0.5, el });
+      objs.push({ d: depth(cx, cy, dims) + 0.5, z: mount.pos.z ?? 0, el });
     }
   } else {
     // Entités de scène (créatures/PNJ d'ambiance) : tokens memoïsés (cf. entityObjs) — ré-insérés
@@ -868,6 +892,7 @@ export function IsoStage() {
       const doorHovered = mode === 'exploration' && !!hover && hover.x === b.door.x && hover.y === b.door.y;
       objs.push({
         d: depth(b.door.x, b.door.y, dims) + 0.6, // au-dessus du mur de façade (même tuile)
+        z: 0, // bâtiments au sol
         el: (
           <g key={`door-halo-${b.id}`} className={doorHovered ? 'interact-halo hovered' : 'interact-halo'} pointerEvents="none">
             <ellipse cx={c.cx} cy={c.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.16} />
@@ -886,6 +911,7 @@ export function IsoStage() {
       const cc = tileCenter(ent.pos.x, ent.pos.y, dims, feetZ(ent.pos.x, ent.pos.y, ent.z ?? 0));
       objs.push({
         d: depth(ent.pos.x, ent.pos.y, dims, ent.z ?? 0) + 0.55,
+        z: ent.z ?? 0,
         el: (
           <g key={`npc-halo-${ent.id}`} className="interact-halo hovered" pointerEvents="none">
             <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.2} />
@@ -902,7 +928,7 @@ export function IsoStage() {
       r.backend === 'sprite'
         ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0], false, undefined, false, false, pZ)
         : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(1) }, pZ);
-    objs.push({ d: depth(wp.x, wp.y, dims, pZ) + 0.5, el });
+    objs.push({ d: depth(wp.x, wp.y, dims, pZ) + 0.5, z: pZ, el });
   }
   objs.sort((a, b) => a.d - b.d);
 
@@ -1046,7 +1072,7 @@ export function IsoStage() {
       // s'attaque en mode neutre, tout combattant se cible en mode sort / choix de cibles ; sinon
       // (allié/soi non actionnable) on inspecte. Desktop (survol) : la visée a déjà tout montré → un
       // clic COMMET ; tactile : deux-taps (tap 1 = aperçu) — cf. pointerCaps.
-      if (occ && combatantClickActs(st.battle, st.pendingCast, occ)) st.battleClickEntity(occ.id, { confirm: hoverClickCommits() });
+      if (occ && combatantClickActs(useGame.getState, occ)) st.battleClickEntity(occ.id, { confirm: hoverClickCommits() });
       else if (occ) { if (st.inspectEnabled) st.setInspectId(occ.id); } // allié/soi non-actionnable → inspecter (parité frise : « inspection depuis le token »)
       else st.battleClickTile({ x, y }, { confirm: hoverClickCommits() });
       return;
@@ -1123,6 +1149,7 @@ export function IsoStage() {
       return;
     }
     if (!hover || hover.x !== t.x || hover.y !== t.y) {
+      if (useGame.getState().combatCursor) useGame.getState().clearCursor(); // la souris (nouvelle tuile) reprend la main sur le curseur clavier/manette — un seul réticule à la fois
       setHover(t);
       const st = useGame.getState();
       if (st.hoverCombatantId) st.setHoverCombatant(null); // la souris (nouvelle tuile) reprend la main sur le ciblage clavier (Tab) / frise
@@ -1230,11 +1257,25 @@ export function IsoStage() {
           };
           // .filter().map() (PAS map→null) : React ne réconcilie que les ~centaines d'éléments à l'écran,
           // pas les milliers de la scène entière.
-          return <g>{objs.filter(onScreen).map((o) => o.el)}</g>;
+          return (
+            <g>
+              {objs.filter(onScreen).map((o) =>
+                o.z !== undefined && o.z < activeZ ? (
+                  // Atténuer SANS opacité (sinon on verrait À TRAVERS les murs du dessous) : désaturation +
+                  // assombrissement seuls (filtre `lower-floor-dim`) → l'étage inférieur recule, reste OPAQUE.
+                  <g key={o.el.key} filter="url(#lower-floor-dim)">
+                    {o.el}
+                  </g>
+                ) : (
+                  o.el
+                ),
+              )}
+            </g>
+          );
         })()}
         {/* Brouillard de guerre : voile sombre sur l'inconnu / grisé sur l'exploré-hors-vue / clair en
             vue. Au-dessus du décor+tokens, SOUS les FX/réticules (les infos de combat restent lisibles). */}
-        <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} bounds={viewBounds} />
+        <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} bounds={viewBounds} floorZAt={fogFloorZAt} />
         {/* Portes dynamiques : cliquer une porte VISIBLE et ADJACENTE l'ouvre/ferme (exploration : le
             groupe ; combat : le héros actif, à son tour). Une porte fermée bloque vue ET passage. */}
         {(() => {
@@ -1300,7 +1341,7 @@ export function IsoStage() {
         {/* Télégraphe de DÉPLACEMENT ENNEMI (actorMove) : chemin + destination en ROUGE, montré avant le
             glissé — même tracé que l'aperçu héros (movePreviewEls), teinté ennemi. */}
         {actorMove && actorMove.path.length > 0 &&
-          movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', '#e0533a')}
+          movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', '#e0533a', activeMoveN)}
         {/* Télégraphe ENNEMI (actorAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
           <TargetReticle
@@ -1395,10 +1436,26 @@ export function IsoStage() {
             }
           return <g pointerEvents="none">{tiles}</g>;
         })()}
-        {/* Aperçu de DÉPLACEMENT au survol (desktop) : chemin + badge — le clic unique commet. */}
-        {mode === 'battle' && battle && hoverMove && hover && (
+        {/* Losange du CURSEUR clavier/manette : repère de case TOUJOURS visible tant qu'aucune modale de jet
+            à cible (pending*) n'est ouverte ET que hoverAim ne peint pas déjà un réticule (anti-doublon
+            quand le curseur est aimanté sur une cible). Même géométrie que les autres surbrillances
+            (diamondPath + liftAt) ; style délégué à la classe `combat-cursor`. */}
+        {mode === 'battle' && battle && combatCursor
+          && !pendingAttack && !pendingDefense && !pendingTrample && !pendingHeal && !pendingCast && !pendingCleave && !pendingDualStrike
+          && !hoverAim?.reticle && (
           <g pointerEvents="none">
-            {movePreviewEls(hoverMove.path, hover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv')}
+            {/* Curseur = TOUTE l'empreinte du mobile actif (4 cases pour un cavalier sur monture 2×2), ancrée
+                au coin NO de la case visée — c'est là que le bloc atterrira (battleClickTile). */}
+            {footprintTiles(combatCursor.tile, activeMoveN).map((t) => (
+              <path key={`cursor-${t.x}-${t.y}`} className="combat-cursor" d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, combatCursor.tile.z ?? 0))} fill="none" />
+            ))}
+          </g>
+        )}
+        {/* Aperçu de DÉPLACEMENT au survol (desktop) ET sous le curseur clavier/manette (effHover) :
+            chemin + badge de coût — le clic/A commet. Ancré sur la case EFFECTIVE (souris ou curseur). */}
+        {mode === 'battle' && battle && hoverMove && effHover && (
+          <g pointerEvents="none">
+            {movePreviewEls(hoverMove.path, effHover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv', '#ffd75e', activeMoveN)}
           </g>
         )}
         {/* Aperçu de DÉPLACEMENT au survol HORS combat : même tracé partagé (movePreviewEls), pas de badge. */}

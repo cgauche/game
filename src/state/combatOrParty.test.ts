@@ -1,10 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { actorIn, touchActors, combatantClickActs } from './combatOrParty';
+import { useGame } from './store';
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
+import { makePregens } from '../data/pregens';
+import { spawnEnemy } from './spawn';
 
 const c = (id: string): Combatant => ({ id, name: id } as unknown as Combatant);
 const state = (over: Partial<GameState>): GameState => ({ party: [], battle: null, ...over } as unknown as GameState);
+
+/** Arène d'herbe minimale (combatantClickActs dérive l'affordance d'attaque → besoin d'une scène). */
+const arena = () => {
+  const w = 16, h = 12;
+  return { id: 's', dimensions: { w, h }, levels: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+};
 
 describe('combatOrParty — base des actions joueur combat ⇄ hors combat', () => {
   describe('actorIn : résout l’acteur dans le bon ensemble', () => {
@@ -23,24 +32,42 @@ describe('combatOrParty — base des actions joueur combat ⇄ hors combat', () 
     });
   });
 
-  describe('combatantClickActs : décideur PARTAGÉ carte ⇄ frise (action vs inspection)', () => {
-    const enemy = { kind: 'enemy' } as Combatant;
-    const ally = { kind: 'hero' } as Combatant;
-    it('ennemi → action dans TOUS les modes (attaque/charge en neutre)', () => {
-      expect(combatantClickActs({ action: null }, null, enemy)).toBe(true);
-      expect(combatantClickActs({ action: 'attack' }, null, enemy)).toBe(true);
+  describe('combatantClickActs : décideur PARTAGÉ carte ⇄ frise/curseur — DÉRIVÉ du mode courant', () => {
+    beforeEach(() => { useGame.setState({ battle: null, party: [], inspectEnabled: true }); });
+    function combat(over: Record<string, unknown> = {}) {
+      const hero = makePregens()[0]; hero.id = 'h1'; hero.pos = { x: 6, y: 6 };
+      const ally = makePregens()[1]; ally.id = 'h2'; ally.pos = { x: 5, y: 6 };
+      const enemy = spawnEnemy('Bandit de Grand Chemin', undefined, 'e1', { x: 7, y: 6 }); // adjacent au héros
+      const battle = {
+        combatants: [hero, ally, enemy], order: ['h1', 'h2', 'e1'], baseOrder: ['h1', 'h2', 'e1'],
+        turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
+        movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null, ...over,
+      } as never;
+      useGame.setState({ battle, scene: arena(), party: [hero, ally] });
+      return { hero, ally, enemy };
+    }
+
+    it('ennemi en mode NEUTRE → action (attaque)', () => {
+      const { enemy } = combat();
+      expect(combatantClickActs(useGame.getState, enemy)).toBe(true);
     });
     it('allié en mode NEUTRE → pas d’action (→ inspection)', () => {
-      expect(combatantClickActs({ action: null }, null, ally)).toBe(false);
+      const { ally } = combat();
+      expect(combatantClickActs(useGame.getState, ally)).toBe(false);
     });
-    it('allié en mode SORT → action (buff/cast sur l’allié)', () => {
-      expect(combatantClickActs({ action: 'cast' }, null, ally)).toBe(true);
+    it('allié blessé en mode SOIN → action (le mode cible les alliés soignables)', () => {
+      const { ally } = combat({ action: 'heal' });
+      ally.wounds.current = Math.max(0, ally.wounds.max - 3); // soignable
+      useGame.setState({ battle: { ...useGame.getState().battle! } });
+      expect(combatantClickActs(useGame.getState, ally)).toBe(true);
     });
-    it('allié pendant le choix de cibles (Surincantation) → action', () => {
-      expect(combatantClickActs({ action: null }, { pickingTargets: true }, ally)).toBe(true);
+    it('allié sain en mode SOIN → pas d’action (rien à soigner)', () => {
+      const { ally } = combat({ action: 'heal' });
+      expect(combatantClickActs(useGame.getState, ally)).toBe(false);
     });
-    it('battle absent → pas d’action sur un allié', () => {
-      expect(combatantClickActs(null, null, ally)).toBe(false);
+    it('battle absent → pas d’action', () => {
+      useGame.setState({ battle: null });
+      expect(combatantClickActs(useGame.getState, c('z'))).toBe(false);
     });
   });
 

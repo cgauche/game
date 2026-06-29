@@ -14,23 +14,21 @@ import { isConsumable } from '../engine/consumables';
 import { compatibleAmmo, loadoutLabel } from '../engine/items';
 import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
-import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
+import { hasHealSkill, healableTargets } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import { shipOfCrew, servablePostes } from '../state/shipPostes';
+import { canAidTeam } from '../state/commandTeam';
 import { isVehicle } from '../engine/vehicle';
 import { ownsLocally } from '../state/netOwnership';
 import { aiDriven } from '../state/combatGate';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
-import { CharFrame } from './CharFrame';
 import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack } from '../state/combatFlow';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
 import { ItemIcon } from './ItemIcon';
-
-const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
 
 /** Descripteur d'une capacité de la barre : source du rendu ET du clavier (1-9 = n-ième slot). */
 type HotbarSlot = { id: string; icon: ReactNode; label: ReactNode; title: string; cls?: string; disabled?: boolean; run: () => void };
@@ -66,11 +64,11 @@ export function ActionBar() {
   const battleShipReload = useGame((s) => s.battleShipReload);
   const manPoste = useGame((s) => s.battleManPoste);
   const leavePoste = useGame((s) => s.battleLeavePoste);
+  const aidTeam = useGame((s) => s.battleAidTeam);
   const recoverState = useGame((s) => s.battleRecoverState);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const aim = useGame((s) => s.battleAim);
   const togglePushback = useGame((s) => s.battleTogglePushback);
-  const heal = useGame((s) => s.battleHeal);
   const dispelSpell = useGame((s) => s.battleDispelSpell);
   const selectAttack = useGame((s) => s.battleSelectAttack);
   const maneuverArea = useGame((s) => s.battleManeuverArea);
@@ -85,6 +83,7 @@ export function ActionBar() {
   const pendingCleave = useGame((s) => s.pendingCleave);
   const pendingDualStrike = useGame((s) => s.pendingDualStrike);
   const pendingCast = useGame((s) => s.pendingCast);
+  const pendingSiegeAim = useGame((s) => s.pendingSiegeAim); // pilonnage indirect : placeur de CASE
   const pendingAttack = useGame((s) => s.pendingAttack);
   const cleaveEnd = useGame((s) => s.cleaveEnd);
   const dualStrikeSkip = useGame((s) => s.dualStrikeSkip);
@@ -188,7 +187,7 @@ export function ActionBar() {
         exit: { label: 'Valider', onClick: () => pickTargets(false), primary: true },
       };
     }
-    const pz = placingZoneOf({ pendingCast, battle });
+    const pz = placingZoneOf({ pendingCast, pendingSiegeAim, battle });
     if (pz) {
       const d = pz.radius * 2 + 1;
       return {
@@ -337,6 +336,8 @@ export function ActionBar() {
   // « Servir cette pièce » (MDG ch.12) : emplacement/pièce de siège NON servi adjacent que le héros peut prendre
   // en main (KIND-AGNOSTIQUE — même source que l'IA). On n'offre « Servir » que s'il ne sert pas DÉJÀ une pièce.
   const canServePoste = isHero && !active.mannedPoste && servablePostes(active, battle.combatants).length > 0;
+  // « Diriger l'équipe » (Commandant d'équipe, AA) : le héros porte le Talent ET ≥ 1 équipe d'Arme d'équipe est à portée de voix.
+  const canAid = isHero && canAidTeam(active, battle.combatants);
   const slots: HotbarSlot[] = [];
   if (isHero) {
     if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: '↩️', label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
@@ -353,6 +354,7 @@ export function ActionBar() {
     if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
     if (canServePoste) slots.push({ id: 'man-poste', disabled: battle.acted || stunned || broken, icon: '💥', label: `Servir cette pièce${battle.acted ? ' ✓' : ''}`, title: "Prendre en main une pièce de siège adjacente non servie (l'arme vous est octroyée) — coûte l'Action", run: manPoste });
     if (active.mannedPoste) slots.push({ id: 'leave-poste', disabled: battle.acted || stunned || broken, icon: '🚪', label: `Quitter la pièce${battle.acted ? ' ✓' : ''}`, title: "Quitter la pièce servie (la libère pour un autre) — coûte l'Action", run: leavePoste });
+    if (canAid) slots.push({ id: 'aid-team', disabled: battle.acted || stunned || broken, icon: '🎖️', label: `Diriger l'équipe${battle.acted ? ' ✓' : ''}`, title: "Aider une équipe d'artillerie à portée de voix (Test de Commandement) : elle tire ensuite à votre score de Projectiles — coûte l'Action", run: aidTeam });
     if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: '🎯', label: active.aiming ? 'En joue ✓' : 'Viser', title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });
     if (canPush) slots.push({ id: 'pushback', icon: '↩️', label: active.pushbackMode ? 'Repousser ✓' : 'Repousser', title: "Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts", run: togglePushback });
     if (needsReload && !frenzied) slots.push({ id: 'reload', cls: `ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`, disabled: battle.acted || stunned || broken, icon: '🔄', label: `Recharger${active.reloadProgress ? ` (${active.reloadProgress}/${rangedW.reload})` : ''}`, title: "Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)", run: reload });
@@ -433,22 +435,6 @@ export function ActionBar() {
               </div>
             );
           })}
-        </div>
-      )}
-      {battle.action === 'heal' && (
-        <div className="ab-spells">
-          {healTargets.length === 0 && <div className="ab-hint">Aucune cible à portée.</div>}
-          {/* #20 : choisir QUI soigner par son PORTRAIT (puis le mode : Blessures / Hémorragie). */}
-          {healTargets.map((t) => (
-            <div key={t.id} className="ab-heal-pick">
-              <CharFrame c={t} variant="full" size="md" />
-              {availableHealModes(t).filter((m) => m !== 'trauma' && m !== 'surgery').map((m) => ( // convalescence/chirurgie = hors combat
-                <button key={m} className="btn btn-sm" onClick={() => heal(t.id, m)} title="Test de Guérison Intermédiaire (+0) — coûte l'Action">
-                  {m === 'wounds' ? '🩹 Blessures' : `🩸 Hémorragie ×${bleedStacks(t)}`}
-                </button>
-              ))}
-            </div>
-          ))}
         </div>
       )}
       {battle.action === 'ammo' && (

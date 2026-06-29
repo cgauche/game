@@ -129,20 +129,24 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
     useGame.setState({ party: [wiz, priest, ally] as Combatant[] });
     // Armure Aethyrique : NI 2 ; DR 6 → surplus 4 → budget 2 allocations.
     useGame.setState({ pendingCast: { casterId: wiz.id, targetId: wiz.id, spellId: 'armure-aethyrique', missile: false, focused: false, result: okRes(6) } });
-    useGame.getState().castAllocOvercast('duration');
-    useGame.getState().castAllocOvercast('duration');
-    useGame.getState().castAllocOvercast('duration'); // refusé : budget épuisé
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ duration: 2, targets: 0 });
+    useGame.getState().castAllocOvercast('duration', 1);
+    useGame.getState().castAllocOvercast('duration', 1);
+    useGame.getState().castAllocOvercast('duration', 1); // refusé : budget épuisé
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 2, targets: 0 });
+    useGame.getState().castAllocOvercast('duration', -1); // reset : rend un pas
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 1, targets: 0 });
   });
 
   it('les Bénédictions surincantent sur le DR ENTIER (LDB 41 « Degrés de Réussite ») : +4 DR → 2 allocations', () => {
     const { priest, ally } = pair();
     useGame.setState({ party: [priest, ally] as Combatant[] });
     useGame.setState({ pendingCast: { casterId: priest.id, targetId: ally.id, spellId: 'benediction-de-bataille', missile: false, focused: false, result: okRes(4) } });
-    useGame.getState().castAllocOvercast('duration');
-    useGame.getState().castAllocOvercast('targets');
-    useGame.getState().castAllocOvercast('targets'); // refusé : budget 2 épuisé
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ duration: 1, targets: 1 });
+    useGame.getState().castAllocOvercast('duration', 1);
+    useGame.getState().castAllocOvercast('targets', 1);
+    useGame.getState().castAllocOvercast('targets', 1); // refusé : budget 2 épuisé
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 1, targets: 1 });
+    useGame.getState().castAllocOvercast('zone', 1); // refusé : la ZdE n'existe pas pour une Bénédiction
+    expect(useGame.getState().pendingCast!.overcast!.zone).toBe(0);
   });
 
   it('durée ×(1+n) et cible supplémentaire appliquées par applyCast', () => {

@@ -151,5 +151,27 @@
     "difficulty": "intermediaire",
     "failExtenue": true,
     "stageOutcome": "campCare"
+  },
+  {
+    "id": "convalescence",
+    "label": "Convalescence",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "ADE2",
+      "page": 92
+    },
+    "skills": [
+      {
+        "skillId": "calme"
+      }
+    ],
+    "difficulty": "tresDifficile",
+    "onSuccess": [
+      {
+        "op": "removePsychTrait"
+      }
+    ]
   }
 ]

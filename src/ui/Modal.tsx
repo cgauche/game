@@ -14,14 +14,37 @@ import type { Combatant } from '../engine/types';
  */
 const FOCUSABLE = 'button, [href], input, select, textarea';
 
+/** Focusables VISIBLES d'un conteneur (non `disabled`, effectivement rendus) — source UNIQUE du
+ *  calcul partagé par le piège Tab et tout consommateur clavier. */
+export function visibleFocusables(container: HTMLElement): HTMLElement[] {
+  return [...container.querySelectorAll<HTMLElement>(FOCUSABLE)]
+    .filter((el) => !el.hasAttribute('disabled') && el.getClientRects().length > 0);
+}
+
 /** Comportement a11y des dialogues (pattern WAI-ARIA) : focus déplacé dans la boîte à l'ouverture,
  *  piège de focus (Tab/Shift+Tab bouclent), Échap = `onClose` quand il existe — seule la modale du
  *  DESSUS (dernier [role=dialog] du document) réagit. Pour les dialogues au markup spécifique
  *  (Fiche, Inspection…) qui ne passent pas par <Modal> : poser role="dialog" + appeler ce hook. */
+/** Options d'un GROUPE DE CHOIX de la modale (segmented `.seg`, grille `.rm-loc-grid`) — `<button>` qui
+ *  vivent HORS `.modal-actions`. Le clavier doit pouvoir les COCHER, sinon une étape « choix » (déviation
+ *  de Critique, Parade/Esquive…) est un cul-de-sac : son bouton de validation reste garrotté. */
+function choiceOptions(box: HTMLElement): HTMLButtonElement[] {
+  return [...box.querySelectorAll<HTMLButtonElement>('.seg button, .rm-loc-grid button')]
+    .filter((el) => !el.disabled && el.getClientRects().length > 0);
+}
+
 export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => void) {
+  // Focus initial UTILE : une option de choix NON tranchée d'abord (le 1er Entrée la coche, au lieu de
+  // taper un bouton de validation inerte) ; sinon le bouton primaire (jet : Lancer/Appliquer) ; sinon le
+  // 1er focusable. Évite que le focus atterrisse sur un bouton sans intérêt (« rien ne répond »).
   useEffect(() => {
-    const first = boxRef.current?.querySelector<HTMLElement>(FOCUSABLE);
-    first?.focus();
+    const box = boxRef.current;
+    if (!box) return;
+    const opts = choiceOptions(box);
+    const selected = opts.find((b) => b.classList.contains('on') || b.classList.contains('btn-primary'));
+    const primary = box.querySelector<HTMLElement>('.modal-actions .btn-primary:not([disabled])');
+    const target = (opts.length && !selected ? opts[0] : null) ?? (primary?.getClientRects().length ? primary : null) ?? visibleFocusables(box)[0] ?? null;
+    target?.focus();
   }, [boxRef]);
   const closeRef = useRef(onClose);
   closeRef.current = onClose; // Échap suit la visibilité COURANTE du bouton Annuler (pré/post-jet)
@@ -38,9 +61,30 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
         }
         return;
       }
+      const els = visibleFocusables(box);
+      if (e.key === 'Enter') {
+        // Un bouton de la boîte est focalisé → on laisse son activation NATIVE (cocher une option de choix,
+        // cliquer Lancer/Terminer…). Sinon (focus sur la boîte/aucun) → repli sur le bouton primaire.
+        const ae = document.activeElement;
+        if (ae instanceof HTMLButtonElement && box.contains(ae) && !ae.disabled) return;
+        const primary = box.querySelector<HTMLElement>('.modal-actions .btn-primary:not([disabled])');
+        if (primary && primary.getClientRects().length) { e.preventDefault(); primary.click(); }
+        return;
+      }
+      // Flèches = navigation de focus (roving) sur TOUS les contrôles visibles → options de choix, toggles
+      // segmentés (Parade/Esquive) et boutons d'action navigables au clavier seul, sans chasser le Tab.
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        // NE PAS voler les flèches d'un champ de formulaire (select/number/texte) → édition native préservée.
+        const ae = document.activeElement;
+        if (ae && /^(SELECT|INPUT|TEXTAREA)$/.test(ae.tagName)) return;
+        if (!els.length) return;
+        e.preventDefault();
+        const dir = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;
+        const i = els.indexOf(document.activeElement as HTMLElement);
+        els[i < 0 ? (dir === 1 ? 0 : els.length - 1) : (i + dir + els.length) % els.length].focus();
+        return;
+      }
       if (e.key !== 'Tab') return;
-      const els = [...box.querySelectorAll<HTMLElement>(FOCUSABLE)]
-        .filter((el) => !el.hasAttribute('disabled') && el.getClientRects().length > 0); // focusables VISIBLES seulement
       if (!els.length) return;
       const first = els[0];
       const last = els[els.length - 1];

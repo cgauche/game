@@ -1,14 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TestScenariosScreen } from './TestScenariosScreen';
+import { testScenarios } from '../scenes/test-scenarios';
+
+/** Échappement HTML identique à React (renderToStaticMarkup) — pour comparer les titres tels que rendus
+ *  (apostrophe → &#x27;, & → &amp;…). Le test DÉRIVE du registre `testScenarios` (source de vérité) au
+ *  lieu de figer des titres : tout ajout/fusion/renommage de scénario reste couvert sans le casser. */
+const esc = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
 
 describe('TestScenariosScreen (rendu)', () => {
-  it('liste chaque scénario (titre + bouton Lancer)', () => {
-    const html = renderToStaticMarkup(<TestScenariosScreen />);
-    expect(html).toContain('Tir &amp; Rechargement'); // 01 (& échappé en HTML)
-    expect(html).toContain('Embuscade'); // 02 (l'apostrophe est échappée &#x27; → on teste le radical)
-    expect(html).toContain('Magie');
-    expect(html).toContain('Lancer');
+  const html = renderToStaticMarkup(<TestScenariosScreen />);
+
+  it('liste CHAQUE scénario du registre (titre rendu)', () => {
+    expect(testScenarios.length).toBeGreaterThan(0);
+    for (const sc of testScenarios) expect(html).toContain(esc(sc.title));
+  });
+
+  it('un bouton « Lancer » par scénario', () => {
+    const launches = html.match(/>Lancer</g)?.length ?? 0;
+    expect(launches).toBe(testScenarios.length);
+  });
+
+  it('expose le bouton Retour', () => {
     expect(html).toContain('Retour');
   });
 });

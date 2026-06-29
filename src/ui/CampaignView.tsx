@@ -35,11 +35,13 @@ import { hoverClickCommits } from './pointerCaps';
 import { controlsActive } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
 import { useGameKeyboard } from './useGameKeyboard';
+import { useGamepad } from './useGamepad';
 import { OptionsModal } from './OptionsModal';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
   useGameKeyboard(); // raccourcis clavier de jeu (registre unique)
+  useGamepad(); // couche manette : dispatche les MÊMES intentions que le clavier (registre partagé)
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
   const journal = useGame((s) => s.journal);
@@ -115,7 +117,7 @@ export function CampaignView() {
     // MÊME comportement que cliquer le token sur la carte (IsoStage) : action de combat si la cible est
     // actionnable ET qu'on contrôle l'actif (coop : ton tour), sinon inspection (read-only, tout joueur).
     // `combatantClickActs` = condition PARTAGÉE carte ⇄ frise — elles ne peuvent plus diverger.
-    if (c && controls && combatantClickActs(battle, pendingCast, c)) {
+    if (c && controls && combatantClickActs(useGame.getState, c)) {
       battleClickEntity(id, { confirm: hoverClickCommits() }); // desktop : un clic commet (cf. pointerCaps)
       return;
     }

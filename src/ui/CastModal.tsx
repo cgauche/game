@@ -6,7 +6,8 @@ import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
-import { castingValue } from '../engine/magic';
+import { castingValue, spellTargetCount } from '../engine/magic';
+import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { CharFrame } from './CharFrame';
@@ -187,62 +188,62 @@ export function CastModal() {
       )}
       postRollExtra={res && (
         <>
-          {/* Surincantation : pour chaque +2 DR (au-delà du NI pour un Sort, LDB 47 l.28-31 ;
-              DR entier pour une Bénédiction/un Miracle, LDB 41/42), étendre la Durée
-              (+durée initiale) ou la Cible (+1) — jamais « Vous »/« Spécial »/Instantanée. */}
+          {/* Surincantation : un STEPPER +/− par axe (Portée/ZdE/Durée/Cible), borné au budget (+2 DR/pas ;
+              DR − NI pour un Sort, DR entier pour Prière). L'effet d'un pas est SOURCE-AWARE (engine/overcast) :
+              ×initial (Sort/Miracle) vs +6 m/+1/+6 R FIXE (Bénédiction), ZdE réservée à l'arcane. La désignation
+              des cibles supplémentaires est SÉPARÉE de l'allocation (en combat : sur la carte). */}
           {(() => {
             if (!res.cast || caster.kind !== 'hero' || (pc.zone && !zoneUnplaced)) return null;
+            const source = overcastSourceOf(spell);
             const budget = Math.floor(Math.max(0, res.sl - (isPrayer || pc.focused ? 0 : ni)) / 2);
             if (budget <= 0) return null;
-            const oc = pc.overcast ?? { duration: 0, targets: 0 };
-            const left = budget - oc.duration - oc.targets - (oc.zone ?? 0);
-            const canDuration = spell.duration?.kind === 'rounds';
-            const canTargets = !pc.zone && spell.target?.kind === 'count' && spell.range?.kind !== 'self';
-            // « +Zone d'Effet » (LDB 47 l.29) : chaque allocation ajoute le Ø initial — gabarit agrandi.
-            const canZone = zoneUnplaced;
-            if (!canDuration && !canTargets && !canZone) return null;
-            const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile);
+            const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
+            const left = budget - oc.range - oc.zone - oc.duration - oc.targets;
+            // Axes = ceux de la SOURCE (ZdE arcane seulement) ∩ ceux que CE sort porte (RAW : « Vous »/
+            // « Contact »/« Spécial »/Instantané non extensibles ; une Bénédiction étend même le Contact).
+            const can: Record<OvercastAxis, boolean> = {
+              range: spell.range?.kind === 'distance' || (spell.range?.kind === 'touch' && source === 'blessing'),
+              zone: zoneUnplaced,
+              duration: spell.duration?.kind === 'rounds',
+              targets: !pc.zone && spell.target?.kind === 'count' && spell.range?.kind !== 'self',
+            };
+            const rows = overcastAxes(source).filter((a) => can[a]);
+            if (!rows.length) return null;
+            const META: Record<OvercastAxis, [string, string]> = {
+              range: ['📏', 'Portée'], zone: ['🌀', 'Zone'], duration: ['⏳', 'Durée'], targets: ['🎯', 'Cibles'],
+            };
+            const cap = extraTargetCapacity(source, oc.targets, spellTargetCount(spell, caster));
+            const designated = pc.extraTargetIds?.length ?? 0;
+            const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, undefined, source, oc.range);
             return (
               <div className="rm-overcast rm-options">
-                <span className="mini-title">🌬️ Surincantation — surplus {left}×2 DR disponible</span>
-                <div className="rm-loc-grid">
-                  {canDuration && (
-                    <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast('duration')} title="Ajoute la durée initiale du sort (cumulable) — 2 DR">
-                      ⏳ +Durée{oc.duration ? ` ×${oc.duration + 1}` : ''}
-                    </button>
-                  )}
-                  {canTargets && (
-                    <button className="btn small" disabled={left <= 0 && oc.targets === 0} onClick={() => { if (left > 0) allocOvercast('targets'); if (battle) pickTargets(true); }} title="Cible supplémentaire (même jet) — 2 DR. En combat : choisis les cibles SUR le champ de bataille.">
-                      🎯 +Cible{oc.targets ? ` (+${oc.targets})` : ''}
-                    </button>
-                  )}
-                  {canZone && (
-                    <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast('zone')} title="Agrandit la Zone d'Effet du diamètre initial (cumulable) — 2 DR">
-                      🌀 +Zone{(oc.zone ?? 0) > 0 ? ` ×${(oc.zone ?? 0) + 1}` : ''} ({pc.zone!.radius * 2 + 1}×{pc.zone!.radius * 2 + 1})
-                    </button>
-                  )}
+                <span className="mini-title">🌬️ Surincantation — {left} pas (+2 DR) restant(s)</span>
+                <div className="rm-stepper-list">
+                  {rows.map((a) => (
+                    <div key={a} className="rm-stepper">
+                      <span className="rm-stepper-label">
+                        {META[a][0]} {META[a][1]}
+                        {a === 'zone' && pc.zone ? ` ${pc.zone.radius * 2 + 1}×${pc.zone.radius * 2 + 1}` : ''}
+                        {a === 'targets' && cap > 0 ? ` +${cap}` : ''}
+                      </span>
+                      <button className="btn small" disabled={oc[a] <= 0} onClick={() => allocOvercast(a, -1)} title="Rendre ce pas">−</button>
+                      <strong className="rm-stepper-val">{oc[a]}</strong>
+                      <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast(a, 1)} title="Allouer un pas (+2 DR)">+</button>
+                    </div>
+                  ))}
                 </div>
-                {/* Hors combat (pas de carte tactique) : repli boutons-portraits dans la modale. */}
-                {oc.targets > 0 && !battle && (
+                {/* Désignation des cibles supplémentaires — SÉPARÉE de l'allocation (plus de bouton carte redondant). */}
+                {can.targets && cap > 0 && (battle ? (
+                  <button className="btn small rm-overcast-pick" onClick={() => pickTargets(true)} title="Choisir les cibles supplémentaires sur le champ de bataille">
+                    🗺️ Désigner les cibles ({designated}/{cap})
+                  </button>
+                ) : (
                   <div className="rm-loc-grid">
                     {candidates.map((m) => (
-                      <CharFrame
-                        key={m.id}
-                        c={m}
-                        variant="vital"
-                        size="sm"
-                        selected={(pc.extraTargetIds ?? []).includes(m.id)}
-                        onClick={() => toggleExtraTarget(m.id)}
-                      />
+                      <CharFrame key={m.id} c={m} variant="vital" size="sm" selected={(pc.extraTargetIds ?? []).includes(m.id)} onClick={() => toggleExtraTarget(m.id)} />
                     ))}
                   </div>
-                )}
-                {oc.targets > 0 && battle && (
-                  <p className="rm-log">
-                    {(pc.extraTargetIds?.length ?? 0)}/{oc.targets} cible(s) supplémentaire(s) choisie(s) —{' '}
-                    <button className="btn small" onClick={() => pickTargets(true)}>🗺️ Choisir sur le champ de bataille</button>
-                  </p>
-                )}
+                ))}
               </div>
             );
           })()}

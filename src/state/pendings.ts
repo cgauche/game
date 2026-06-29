@@ -670,12 +670,12 @@ export interface PendingCast {
    *  `chooseForm`) — le lanceur sélectionne la Compétence de Corps à corps/profil d'arme. Défaut
    *  (absent) : sa meilleure Spé de Corps à corps. */
   conjureForm?: ConjureForm;
-  /** Surincantation (LDB 47 l.29) : « pour chaque +2 DR [au-delà du NI], ajouter une valeur
-   *  de Portée/Zone d'Effet/Durée/Cible égale à la valeur initiale », cumulable. Allocation
-   *  du surplus dans la modale — `duration` = ×(1+n) sur la durée ; `targets` = n cibles
-   *  SUPPLÉMENTAIRES (`extraTargetIds`) ; `zone` = n agrandissements du gabarit (+Ø initial
-   *  par allocation, sorts de ZdE). Sorts seulement. */
-  overcast?: { duration: number; targets: number; zone?: number };
+  /** Surincantation : nombre de PAS alloués à chaque axe (chaque pas = +2 DR du surplus). L'effet
+   *  d'UN pas est SOURCE-AWARE (`engine/overcast.ts`) — Sort/Miracle : +valeur initiale (×initial,
+   *  LDB 47 l.13-17 / 42 l.7-13) ; Bénédiction : +6 m Portée / +1 Cible / +6 Rounds (FIXE, LDB 41
+   *  l.21-27, pas de ZdE). `range`/`zone`/`duration` étendent Portée/gabarit/durée ; `targets` débloque
+   *  des cibles SUPPLÉMENTAIRES (`extraTargetIds`, capacité = `extraTargetCapacity`). */
+  overcast?: { range: number; zone: number; duration: number; targets: number };
   extraTargetIds?: string[];
   /** Choix des cibles supplémentaires EN COURS sur le champ de bataille : la modale s'efface
    *  (bandeau TargetPrompt + clic carte → castToggleExtraTarget), « Valider » la restaure. */

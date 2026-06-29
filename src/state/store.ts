@@ -13,8 +13,10 @@ import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward, DIR8_DELTA } from '../gameIso/rig/facing';
 import { rotateDir8, type Dir8 } from './dir8';
 import { footprintTiles, footprintN } from './footprint';
+import type { CombatCursor, ScreenDir } from './combatCursor';
 import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
+import type { OvercastAxis } from '../engine/overcast';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
@@ -237,6 +239,18 @@ export interface GameState extends RollFlowActionsMap {
    *  réseau), read-only : actif même hors de son tour. null = aucun survol de portrait. */
   hoverCombatantId: string | null;
   setHoverCombatant: (id: string | null) => void;
+  /** Curseur de combat CLAVIER/MANETTE : case visée (éventuellement aimantée à une cible). Il pilote le
+   *  réticule comme un survol souris et se commet via battleClickEntity/Tile. null = aucune navigation
+   *  clavier en cours (la souris a la main). Vidé à l'avance de tour / fin de combat. */
+  combatCursor: CombatCursor | null;
+  /** Déplace le curseur d'une case dans la direction ÉCRAN poussée (le curseur « suit les yeux »). */
+  moveCursor: (dir: ScreenDir) => void;
+  /** Aimante le curseur sur la cible valide suivante (+1) / précédente (-1) — Tab / gâchettes. */
+  snapCursorToTarget: (step: 1 | -1) => void;
+  /** Commet la case visée : attaque (ennemi), inspection (allié) ou déplacement (case libre). */
+  commitCursor: () => void;
+  /** Efface le curseur (la souris reprend la main, ou geste « annuler »). */
+  clearCursor: () => void;
   /** Combattant mis en évidence par le SURVOL (token carte OU portrait frise) — pilote le miroir
    *  réciproque sur la frise. Distinct de hoverCombatantId (frise/Tab → peek caméra). */
   hovered: string | null;
@@ -573,6 +587,8 @@ export interface GameState extends RollFlowActionsMap {
   battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
+  /** Pré-jet : bascule le mode de soin (Blessures ⇄ Hémorragie) dans la modale ouverte. */
+  healSetMode: (mode: HealMode) => void;
   /** INFIRMERIE (hors combat, state/medicFlow) : modale de soins persistante — patients, actes
    *  (Guérison/Hémorragie/Déchirure/Chirurgie), PNJ payant via l'effet `medicalAid`. */
   openMedic: (opts?: { patientId?: string; npc?: MedicNpc }) => void;
@@ -643,8 +659,9 @@ export interface GameState extends RollFlowActionsMap {
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
   /** Arme invoquée à forme libre (Arme aethyrique) : le lanceur choisit la forme/Spé de Corps à corps. */
   castSetConjureForm: (form: ConjureForm) => void;
-  /** Surincantation (LDB 47 l.29) : alloue +2 DR du surplus à un axe (Durée / Cible / Zone d'Effet). */
-  castAllocOvercast: (axis: 'duration' | 'targets' | 'zone') => void;
+  /** Surincantation : alloue (`delta` +1) ou rend (`delta` −1, reset) un pas de +2 DR à un axe
+   *  (Portée / Zone d'Effet / Durée / Cible) ; l'effet d'un pas est source-aware (`engine/overcast.ts`). */
+  castAllocOvercast: (axis: OvercastAxis, delta: number) => void;
   /** Surincantation : choisit/retire une cible SUPPLÉMENTAIRE (dans la limite allouée). */
   castToggleExtraTarget: (id: string) => void;
   /** Surincantation « +Cible » : bascule le choix SUR LE CHAMP DE BATAILLE (la modale s'efface,
@@ -1069,6 +1086,7 @@ export const useGame = create<GameState>((set, get) => ({
   setInspectId: (id) => set((s) => (s.inspectId === id ? {} : { inspectId: id })),
   hoverCombatantId: null,
   setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
+  combatCursor: null,
   hovered: null,
   setHovered: (id) => set((s) => (s.hovered === id ? {} : { hovered: id })),
   keyOverrides: loadKeyOverrides(),

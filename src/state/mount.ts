@@ -10,7 +10,8 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { sizeGap } from '../engine/size';
 import type { ModLine } from '../engine/combat';
 import { Scene, isWalkable } from './scene';
-import { occupiesTile, footprintN } from './footprint';
+import { occupiesTile, footprintN, combatDistance } from './footprint';
+import { hasTraitKey } from '../engine/traits/dispatch';
 import type { Pt } from './path';
 import type { BattleState } from './store';
 
@@ -19,9 +20,37 @@ export const isRider = (c: Combatant): boolean => !!c.mountId;
 /** Ce combattant porte-t-il un cavalier (= monture) ? */
 export const isMount = (c: Combatant): boolean => !!c.riderId;
 
+/** Monture CHEVAUCHÉE qui ne peut pas mener sa propre Action (Trait Nerveux, LDB 14 l.221 : « une monture
+ *  possédant le Trait Nerveux ne peut pas mener sa propre Action d'attaque ») → PAS de tour d'initiative
+ *  propre tant qu'elle est montée (exclue de `battle.order`). Un destrier (SANS Nerveux) est « un autre
+ *  combattant à part entière » et GARDE son tour ; une monture LIBRE (sans cavalier) aussi. */
+export function isControlledMount(c: Combatant): boolean {
+  return !!c.riderId && hasTraitKey(c.traits, 'nerveux'); // `nerveux` = trait de DONNÉE (profil créature), hors registre TRAITS
+}
+
+/** Réinsère `id` dans une liste d'ordre triée par Initiative DÉCROISSANTE (descente d'une monture Nerveux
+ *  qui retrouve son tour) — avant le premier combattant d'Initiative strictement inférieure. PUR. */
+export function insertByInitiative(orderIds: string[], combatants: Combatant[], id: string): string[] {
+  if (orderIds.includes(id)) return orderIds;
+  const init = (cid: string) => combatants.find((c) => c.id === cid)?.initiative ?? -Infinity;
+  const mi = init(id);
+  const at = orderIds.findIndex((cid) => init(cid) < mi);
+  const pos = at < 0 ? orderIds.length : at;
+  return [...orderIds.slice(0, pos), id, ...orderIds.slice(pos)];
+}
+
 /** La monture chevauchée par `rider` (ou undefined). */
 export const mountOf = (battle: BattleState, rider: Combatant): Combatant | undefined =>
   rider.mountId ? battle.combatants.find((c) => c.id === rider.mountId) : undefined;
+
+/** Géométrie de COMBAT d'un combattant : sa MONTURE s'il est cavalier (le couple partage pos+empreinte,
+ *  LDB 14), sinon lui-même. SOURCE UNIQUE pour mesurer reach/adjacence d'un couple monté. */
+export const combatGeomOf = (battle: BattleState, c: Combatant): Combatant => mountOf(battle, c) ?? c;
+
+/** Distance de COMBAT (Chebyshev d'empreinte) tenant compte des MONTURES : d'empreinte de monture à
+ *  empreinte de monture (le cavalier suit). Sans monture = `combatDistance` normal. */
+export const mountedCombatDistance = (battle: BattleState, a: Combatant, b: Combatant): number =>
+  combatDistance(combatGeomOf(battle, a), combatGeomOf(battle, b));
 /** Le cavalier porté par `mount` (ou undefined). */
 export const riderOf = (battle: BattleState, mount: Combatant): Combatant | undefined =>
   mount.riderId ? battle.combatants.find((c) => c.id === mount.riderId) : undefined;

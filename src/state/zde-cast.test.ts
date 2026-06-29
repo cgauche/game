@@ -86,7 +86,7 @@ describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
     useGame.getState().battleClickTile({ x: 9, y: 9 });
     let pc = useGame.getState().pendingCast!;
     useGame.setState({ pendingCast: { ...pc, result: okCast(ni + 2) as never } }); // surplus 2 → 1 allocation
-    useGame.getState().castAllocOvercast('zone');
+    useGame.getState().castAllocOvercast('zone', 1);
     pc = useGame.getState().pendingCast!;
     expect(pc.overcast?.zone).toBe(1);
     expect(pc.zone!.radius).toBe(2); // r0m 2 m → ×2 = 4 m → 2 cases

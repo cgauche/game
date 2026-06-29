@@ -17,26 +17,25 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell } from './combatFlow';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
-import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
+import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
 import { ev, evLines } from './combatLog';
-import { afterApproach } from './combatDirector';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive, attackWeapon } from '../engine/combat';
-import { disengageFrom, isEngaged, setContact, clearContact, reachRank, meleeReachTiles } from '../engine/engagement';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive } from '../engine/combat';
+import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
 import { gainAdvantage } from '../engine/advantage';
 import { rule } from '../engine/policy';
-import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, spellTargetCount } from '../engine/magic';
+import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts } from '../engine/overcast';
 import { resolveOpposed, evaluateTest, extendedTestStep, assistBonus } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
@@ -66,6 +65,9 @@ import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
+import { nextCursorTile, cursorCommitIntent, type ScreenDir } from './combatCursor';
+import { cycleTarget, cyclePrevTarget } from './targeting';
+import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
 import { FLOWS, rollFlowActions, rollFlowActionsMulti } from './rollFlows';
 import { resolveRenounce } from './corruptionFlow';
@@ -163,7 +165,16 @@ export function createCombatSlice(get: Get, set: Set) {
       const mount = mountableNear(battle, active);
       if (!mount) return;
       mountUp(active, mount);
-      set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, reachable: new Map(), log: [...battle.log, ev('move', t('cs.mount', { name: active.name, mount: mount.name }), active.id)] } });
+      // Monture Nerveux chevauchée : elle perd son tour propre (LDB 14 l.221) → la retirer de l'ordre
+      // (et décaler le pointeur si son slot précédait l'actif). Un destrier (sans Nerveux) garde son tour.
+      const orderPatch: Partial<BattleState> = {};
+      if (isControlledMount(mount)) {
+        const mIdx = battle.order.indexOf(mount.id);
+        orderPatch.order = battle.order.filter((id) => id !== mount.id);
+        orderPatch.baseOrder = (battle.baseOrder ?? battle.order).filter((id) => id !== mount.id);
+        if (mIdx >= 0 && mIdx < battle.turn) orderPatch.turn = battle.turn - 1;
+      }
+      set({ battle: { ...battle, ...orderPatch, movementUsed: mountMovement(battle, active), action: null, reachable: new Map(), log: [...battle.log, ev('move', t('cs.mount', { name: active.name, mount: mount.name }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     battleDismount: () => {
@@ -172,9 +183,18 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero' || !active.mountId) return;
-      const mountName = mountOf(battle, active)?.name ?? 'sa monture';
+      const mount = mountOf(battle, active);
+      const mountName = mount?.name ?? 'sa monture';
+      const wasControlled = !!mount && isControlledMount(mount); // monture Nerveux exclue de l'ordre tant que montée
       dismount(battle, scene, active);
-      set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, reachable: new Map(), log: [...battle.log, ev('move', t('cs.dismount', { name: active.name, mount: mountName }), active.id)] } });
+      // La monture Nerveux redevient un combattant indépendant → réintègre l'ordre à son rang d'Initiative.
+      const orderPatch: Partial<BattleState> = {};
+      if (wasControlled && mount) {
+        orderPatch.order = insertByInitiative(battle.order, battle.combatants, mount.id);
+        orderPatch.baseOrder = insertByInitiative(battle.baseOrder ?? battle.order, battle.combatants, mount.id);
+        orderPatch.turn = orderPatch.order.indexOf(active.id); // garder le pointeur sur le cavalier qui descend
+      }
+      set({ battle: { ...battle, ...orderPatch, movementUsed: mountMovement(battle, active), action: null, reachable: new Map(), log: [...battle.log, ev('move', t('cs.dismount', { name: active.name, mount: mountName }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     // Combat monté (LDB 14 l.219) : applique le choix de cible (cavalier OU monture) puis relance l'attaque/charge
@@ -463,37 +483,12 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !scene || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero') return;
-      // TÉLÉPORTATION (Jalon 2.6 — sort « Téléportation », LDB 47) : après l'Appliquer, le lanceur
-      // choisit sa case d'arrivée parmi les cases en surbrillance (survol des obstacles).
-      if (battle.action === 'teleport') {
-        const k = `${pt.x},${pt.y}`;
-        if (!battle.reachable.has(k)) return;
-        const from = { ...active.pos! };
-        const mount = mountOf(battle, active);
-        active.pos = { ...pt };
-        if (mount) mount.pos = { ...pt }; // couple cavalier↔monture solidaire (comme le déplacement)
-        displaceSmaller(get, mount ?? active); // un grand qui se téléporte dégage aussi les plus petits sous son empreinte (LDB 85 l.373-374)
-        get().faceFromPath(active.id, [from, pt]);
-        bus.emit(EVT.ANIM_MOVE, { id: active.id, path: [{ ...pt }] });
-        if (mount) bus.emit(EVT.ANIM_MOVE, { id: mount.id, path: [{ ...pt }] });
-        set({ battle: { ...battle, action: null, reachable: new Map(), preview: null, log: [...battle.log, ev('move', t('cs.teleport', { name: active.name }), active.id)] } });
-        bus.emit(EVT.SCENE_DIRTY);
-        return;
-      }
-      // POSE de zone en cours (source UNIQUE placingZoneOf — toute zone à poser librement) :
-      // le clic-case dépose le gabarit FINAL (gates portée/LdV chez le consommateur).
-      if (placingZoneOf(get())) {
-        commitPlacedZone(get, set, pt);
-        return;
-      }
-      // Sort de ZONE sélectionné : le clic-case (comme le clic-token) OUVRE la modale — le centre
-      // se choisit APRÈS le jet (flux ci-dessus). Sort non-zone : clic-sol sans effet en mode cast.
-      if (battle.action === 'cast' && battle.selectedSpellId && !battle.acted && !get().pendingCast) {
-        castZoneSpell(get, set, active, battle.selectedSpellId);
-        return;
-      }
-      // Mode NEUTRE = clic-sol implicite (les modes restants — heal/ammo/trample/resolve… — ne
-      // déplacent pas au clic-case ; le cas cast-zone est traité plus haut).
+      // Le MODE de ciblage courant peut posséder un commit-CASE (téléportation, pose de zone de sort
+      // après jet, pilonnage indirect de siège, ouverture d'un sort de ZdE) — source UNIQUE targetingModes.
+      const mode = currentTargetingMode(get);
+      if (mode.commitTile) { mode.commitTile(get, set, active, pt); return; }
+      // Mode NEUTRE = clic-sol implicite. Les modes restants sans commit-CASE (soin/munition/dissipation/
+      // Détermination) ne déplacent pas au clic-case → inertes ; seul le mode neutre (action null) marche.
       if (battle.action !== null) return;
       // Engagé : pas de déplacement libre (LDB 15 l.84) → le clic-sol route vers le Désengagement.
       if (isEngaged(active)) {
@@ -611,216 +606,45 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean }) => {
-      const { battle, scene } = get();
+    // ── Curseur de combat CLAVIER/MANETTE ───────────────────────────────────────────────────────
+    // Un seul curseur que clavier ET manette alimentent. Il pilote le réticule existant comme un survol
+    // (IsoStage) et se commet via battleClickEntity/Tile → parité souris exacte (cf. combatCursor.ts).
+    moveCursor: (dir: ScreenDir) => {
+      const { battle, scene, camRot, viewMode, camEdge } = get();
+      if (!battle || battle.over || !scene) return;
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || !active.pos) return;
+      const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
+      set({ combatCursor: { tile: nextCursorTile(get().combatCursor, dir, dims, active.pos) } });
+    },
+    snapCursorToTarget: (step: 1 | -1) => {
+      const cur = get().combatCursor?.snappedId ?? null;
+      const tgt = step === 1 ? cycleTarget(get, cur) : cyclePrevTarget(get, cur);
+      if (tgt?.pos) set({ combatCursor: { tile: { ...tgt.pos }, snappedId: tgt.id } });
+    },
+    commitCursor: () => {
+      const s = get();
+      const cur = s.combatCursor;
+      if (!cur) return;
+      const intent = cursorCommitIntent(get, cur);
+      if (!intent) return;
+      if (intent.kind === 'entity') s.battleClickEntity(intent.id, { confirm: true });
+      else if (intent.kind === 'inspect') s.setInspectId(intent.id);
+      else s.battleClickTile(intent.pt, { confirm: true });
+    },
+    clearCursor: () => {
+      if (get().combatCursor) set({ combatCursor: null });
+    },
+
+    battleClickEntity: (id: string, opts?: BattleClickOpts) => {
+      const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero') return;
-      // Ciblage CHAMP DE BATAILLE des flux différés (plus de boutons-noms en modale) — AVANT le
-      // verrou `battle.acted` (ces frappes surviennent après l'attaque-Action) :
-      // Frappe Mortelle / 2ᵉ frappe (Deux armes) / cibles supplémentaires de Surincantation.
-      if (get().pendingCleave && !get().pendingAttack) return get().cleaveAttack(id);
-      if (get().pendingDualStrike && !get().pendingAttack) return get().dualStrikeAttack(id);
-      if (get().pendingCast?.pickingTargets) return get().castToggleExtraTarget(id);
-      // Pose de zone en cours : cliquer un combattant = poser la zone sur SA case.
-      if (placingZoneOf(get())) {
-        const t = battle.combatants.find((c) => c.id === id);
-        if (t?.pos) get().battleClickTile({ ...t.pos });
-        return;
-      }
-      const target = battle.combatants.find((c) => c.id === id);
-      if (!target) return;
-      // Mode BORDÉE (navire) : le clic-ennemi lâche une bordée — le bord qui porte est dérivé de la cible
-      // (`targetArc`, dans battleShipBattery). « Un clic = une bordée » ; ne consomme pas le tour (multi-cibles).
-      if (battle.action === 'battery') { get().battleShipBattery(active.id, target.id); return; }
-      if (battle.action === 'cast' && battle.selectedSpellId) {
-        // Sort de ZONE : un token n'est pas une cible (la zone se pose après le jet) → modale.
-        if (castZoneSpell(get, set, active, battle.selectedSpellId)) return;
-        // L'incantation peut viser un allié, un ennemi ou soi-même.
-        castSpell(get, set, active, target, battle.selectedSpellId);
-        return;
-      }
-      // ATTAQUE unifiée : l'`AttackOption` armée (clic droit = première abordable via `forceAttackId` ; sinon
-      // `selectedAttack`, défaut 'arme' ; les anciens modes maneuver/tentacle/trample mappent sur leur option).
-      // `undefined` = mode non-attaque (cast/heal/…) ou aucune attaque abordable (Action dépensée sans gratuite).
-      const option = selectedAttackOption(active, battle, opts?.forceAttackId);
-      if (!option || !scene) return;
-      if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
-      if (!canTakeAction(active) || hasCondition(active, COND.brise)) return; // Sonné/Brisé : pas d'attaque (parité boutons)
-      // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
-      if (isFrenzied(active)) {
-        const ft = frenzyTarget(get, active);
-        if (ft && ft.id !== id) {
-          get().log(t('cs.frenzyMustAttack', { name: active.name, foe: ft.name }));
-          if (battle.preview) set({ battle: { ...battle, preview: null } });
-          return;
-        }
-      }
-      // Aiguillage par NATURE de l'attaque : Piétinement (Taille) → flux dédié ; zone ciblée (Souffle/Vomi/
-      // Langue/Regard/Étreinte) → `pendingManeuver` (jet d'ATTAQUANT influençable ;
-      // `targetId` = clic = victime/point d'impact ; Avantage variable de Regard → 1) ; la MÊLÉE (Arme +
-      // Morsure/Caudale/Tentacule) passe par l'approche-puis-frappe ci-dessous.
-      if (option.targeting === 'trample') return get().battleTrample(target.id);
-      // « Au Contact » (LDB 62 l.176) : action de Test opposé (pas une frappe) → flux dédié, jamais l'approche-puis-frappe.
-      if (option.targeting === 'aucontact') return get().battleAuContact(target.id);
-      // Empoignade (LDB 14 l.161) : action de Test opposé de Force entre deux Empoignés → flux dédié.
-      if (option.targeting === 'grapple') return get().battleGrapple(target.id);
-      if (option.targeting === 'zone') {
-        set({ pendingManeuver: { attackerId: active.id, kind: option.kind!, targetId: target.id, avantageSpent: option.advantageMode === 'variable' ? 1 : option.cost.advantage, result: null }, battle: { ...battle, action: null, selectedAttack: undefined } });
-        return;
-      }
-      // === MÊLÉE : approche-puis-frappe (le SEUL exécuteur charge/moveAttack du jeu) ===
-      const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee });
-      // L'Action dépensée interdit le DÉPLACEMENT combiné pour une attaque qui COÛTE l'Action (Arme hors
-      // Frénésie) → frappe directe seulement. Une attaque GRATUITE (Morsure/Caudale/Tentacule, ou l'Arme en
-      // attaque libre de Frénésie → `cost.action===false`) PEUT s'approcher (charge) même l'Action dépensée
-      // (LDB 21 l.34 : « se déplacer au maximum vers l'ennemi le plus proche pour l'attaquer »).
-      if (battle.acted && option.cost.action && plan.kind !== 'attack') return;
-      if (plan.kind === 'blocked') {
-        get().log(plan.reason);
-        if (battle.preview) set({ battle: { ...battle, preview: null } });
-        bus.emit(EVT.SCENE_DIRTY);
-        return;
-      }
-      // Tir refusé faute de RESSOURCE (arme à Recharge non chargée / plus de munition) : on coupe AVANT
-      // l'aperçu (tap-1) pour que l'affordance ne mente pas — même prédicat que le réticule au survol
-      // (firedAttackBlock). Concerne UNIQUEMENT l'attaque directe (plan 'attack') avec l'arme tenue : une
-      // Charge/rejoindre (mêlée) ou une attaque gratuite (freeKind) n'emploie jamais l'arme à distance.
-      if (plan.kind === 'attack' && !option.freeKind) {
-        const block = firedAttackBlock(get, active, target, option.weaponUid);
-        if (block) {
-          get().log(block.detail);
-          if (battle.preview) set({ battle: { ...battle, preview: null } });
-          bus.emit(EVT.SCENE_DIRTY);
-          return;
-        }
-      }
-      // Tap 1 : APERÇU — sauf confirmation (tests), ré-entrée du choix cavalier/monture,
-      // ou re-tap de la même cible avec le même plan.
-      const prev = battle.preview;
-      const samePreview = !!prev && 'targetId' in prev && prev.targetId === id && prev.kind === plan.kind;
-      if (!opts?.confirm && !opts?.skipMountChoice && !samePreview) {
-        set({ battle: { ...battle, preview: plan.kind === 'attack' ? { kind: 'attack', targetId: id } : { ...plan, targetId: id } } });
-        bus.emit(EVT.SCENE_DIRTY);
-        return;
-      }
-      // Tap 2 : COMMIT. Choix cavalier/monture (LDB 14 l.219) AVANT toute résolution — on n'ouvre la
-      // modale qu'une fois (skipMountChoice évite la ré-entrée après le choix).
-      if (!opts?.skipMountChoice) {
-        const rider = target.mountId ? target : battle.combatants.find((c) => c.id === target.riderId);
-        const mount = target.riderId ? target : battle.combatants.find((c) => c.id === target.mountId);
-        if (rider && mount && rider.kind !== 'hero' && mount.kind !== 'hero' && !isOutOfAction(rider) && !isOutOfAction(mount)) {
-          set({ pendingMountTarget: { riderId: rider.id, mountId: mount.id } });
-          return;
-        }
-      }
-      // Peur (LDB 21 l.29) : charger / rejoindre une source de Peur = s'en RAPPROCHER → même Test de
-      // Calme d'approche que le clic-sol (une tentative par Tour, battle.fearGate).
-      if (plan.kind === 'charge' || plan.kind === 'moveAttack') {
-        const feared = battle.fearGate === 'passed' ? null : fearedSourceTowards(battle, active, plan.dest);
-        if (feared) {
-          if (battle.fearGate === 'failed') {
-            get().log(t('cs.fearNoApproach', { name: active.name, feared: feared.name }));
-            return;
-          }
-          set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'entity', id }, result: null }, battle: { ...get().battle!, preview: null } });
-          bus.emit(EVT.SCENE_DIRTY);
-          return;
-        }
-      }
-      if (battle.preview) set({ battle: { ...get().battle!, preview: null } });
-      // Bénédiction de Protection (LDB 41 l.105) : la cible bénie impose un Test de FM Accessible (+20)
-      // AVANT d'engager quoi que ce soit (charge comprise). Le jet du HÉROS est INFLUENÇABLE (Chance/
-      // Résilience) → il DIFFÈRE la déclaration derrière `pendingWard` (comme l'approche d'une source de
-      // Peur juste au-dessus) ; `wardConfirm` relance l'attaque sur un succès (`wardCleared`), l'échec
-      // l'abandonne. `wardCleared` = ce gate a déjà été franchi pour CE clic (relance) → on le saute.
-      if (!opts?.wardCleared && hasActiveFlag(target, 'attackWardFM')) {
-        set({ pendingWard: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...get().battle!, preview: null } });
-        bus.emit(EVT.SCENE_DIRTY);
-        return;
-      }
-      // Avantage de la manœuvre dépensé UNE fois, à la frappe (après TOUS les portails — aperçu/monture/Peur/
-      // ward) : gratuites de mêlée (Morsure/Caudale… coût RAW). L'Arme (cost.advantage 0) ne dépense rien.
-      if (option.cost.advantage) active.advantage = Math.max(0, active.advantage - option.cost.advantage);
-      // === Approche-puis-frappe : DEUX beats explicites ===
-      //   (1) APPROCHE — appliquer le déplacement animé (charge / rejoindre) et calculer la charge utile
-      //       de frappe `pa` (PAS de modale ici).
-      //   (2) FRAPPE — ouvrir la SÉQUENCE de combat, mais SEULEMENT après le glissé d'approche (beat
-      //       `afterApproach` du Réalisateur, PARTAGÉ avec l'IA) : on VOIT le héros rejoindre la cible
-      //       avant la modale, au lieu de la modale par-dessus une téléportation.
-      let approachPath: { x: number; y: number }[] | null = null;
-      let pa: GameState['pendingAttack'];
-      if (plan.kind === 'charge') {
-        // Charge (LDB 15-Dépl l.74-77) : se ruer au contact (portée de Course) puis attaquer — manœuvre
-        // PLEINE (consomme tout le Mouvement). Combat monté : empreinte/Course de la MONTURE.
-        const geom = mountOf(battle, active) ?? active;
-        approachPath = plan.path;
-        active.pos = { ...plan.dest };
-        if (geom !== active) geom.pos = { ...plan.dest }; // la monture charge sous le cavalier
-        displaceSmaller(get, geom); // charge d'un grand : idem dégage les plus petits (85 l.373-374)
-        get().faceFromPath(active.id, approachPath);
-        if (geom !== active) get().faceFromPath(geom.id, approachPath);
-        bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
-        if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
-        applyZoneCrossings(get, active, approachPath); // Mur de feu & co (L11) : charger À TRAVERS coûte
-        gainAdvantage(active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
-        if (plan.adv > 0) active.gainedAdvThisRound = true;
-        active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
-        set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', t('cs.charge', { name: active.name, target: target.name, adv: plan.adv ? t('cs.fragChargeAdv', { adv: plan.adv }) : '' }), active.id, target.id)] } });
-        pa = { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind } : {}), ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
-      } else {
-        if (plan.kind === 'moveAttack') {
-          // Rejoindre la cible dans la Marche restante (pas une Charge → pas de bonus), puis attaquer.
-          // MÊMES mutations qu'un segment de battleClickTile (snapshot d'annulation compris).
-          const b = get().battle!;
-          const snapshot =
-            (b.movementUsed ?? 0) === 0
-              ? {
-                  pos: Object.fromEntries(b.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
-                  facing: { ...get().facing },
-                  movedPreAction: b.movedPreAction,
-                }
-              : b.moveSnapshot ?? null;
-          const geom = mountOf(b, active) ?? active;
-          approachPath = plan.path;
-          active.pos = { ...plan.dest };
-          if (geom !== active) geom.pos = { ...plan.dest };
-          displaceSmaller(get, geom);
-          get().faceFromPath(active.id, approachPath);
-          if (geom !== active) get().faceFromPath(geom.id, approachPath);
-          bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
-          if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
-          applyZoneCrossings(get, active, approachPath); // Mur de feu & co (L11)
-          set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
-          bus.emit(EVT.SCENE_DIRTY);
-        }
-        if (option.freeKind) {
-          // Frappe GRATUITE (Morsure/Caudale/Tentacule) — déjà à portée (Allonge 1) : résolveur = arme
-          // naturelle synthétique (freeAttackWeapon, via `pa.freeKind`) ; pas de gate Allonge/munitions.
-          pa = { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
-        } else {
-          // Arme effectivement employée : choix EXPLICITE (poste servi → `option.weaponUid` épingle le canon)
-          // sinon auto selon la distance — PAS weapons[0], sinon un héros mixte mêlée+distance ne pourrait
-          // jamais tirer une cible éloignée (LDB Armes l.297-298). Portée de mêlée = Allonge (RAW-3, LDB 62).
-          const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons);
-          const w = (option.weaponUid ? active.weapons.find((x) => x.uid === option.weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
-          if (!adj && w.type === 'melee') {
-            get().log(t('cs.meleeOutOfRange')); // aucune arme à distance dispo → mêlée hors de portée
-            return;
-          }
-          // Le gate de RESSOURCE (Recharge/munition) a déjà été appliqué plus haut (firedAttackBlock).
-          pa = { attackerId: active.id, targetId: target.id, location: null, result: null, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
-        }
-      }
-      // (2) FRAPPE — après le glissé d'approche : ouvre la SÉQUENCE de combat (jet d'attaque = ÉTAPE 0,
-      // CascadeModal via useAttackJetProps ; ses conséquences s'empilent APRÈS dans la MÊME fenêtre). Garde
-      // dans le différé : encore le tour de l'acteur et aucune autre cascade ouverte (anti double-ouverture).
-      afterApproach(get, approachPath, () => {
-        const b = get().battle;
-        if (!b || b.over || b.order[b.turn] !== active.id || get().pendingCascade) return;
-        set({ pendingAttack: pa });
-        startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
-      });
+      // Le MODE de ciblage courant possède le commit-COMBATTANT (attaque/cast/soin/bordée, ou flux
+      // différés : Surincantation +Cible / Frappe Mortelle / 2ᵉ frappe, ou pose de zone sur la case
+      // d'un combattant). Source UNIQUE : targetingModes (réticule au survol = ce même mode).
+      currentTargetingMode(get).commitCombatant?.(get, set, active, id, opts);
     },
 
     dismissReveal: () => {
@@ -1727,6 +1551,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!r) {
         get().log(firedWeapon(attacker, target, pa.weaponUid).type === 'ranged' ? t('cf.noLoSMasked') : t('cs.meleeOutOfRange'));
         set({ pendingAttack: null });
+        advanceCombatJet(get); // défense en profondeur : ne JAMAIS laisser la cascade d'attaque orpheline (sinon soft-lock de fin de tour)
         return;
       }
       set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id } });
@@ -2209,6 +2034,17 @@ export function createCombatSlice(get: Get, set: Set) {
       });
     },
 
+    /** Pré-jet : bascule le MODE de soin (Blessures ⇄ Hémorragie) dans la modale, tant que le dé n'a
+     *  pas été lancé. Le Test (Guérison Intermédiaire +0) est identique — seul l'effet appliqué au succès
+     *  change → on ne touche QUE `mode`. */
+    healSetMode: (mode: HealMode) => {
+      const ph = get().pendingHeal;
+      if (!ph || ph.roll != null) return;
+      const target = actorIn(get(), ph.targetId);
+      if (!target || !availableHealModes(target).includes(mode)) return;
+      set({ pendingHeal: { ...ph, mode } });
+    },
+
     // ── Infirmerie (hors combat) : modale de soins PERSISTANTE — cf. state/medicFlow ──
 
     ...rollFlowActions('heal', FLOWS.heal, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
@@ -2373,8 +2209,10 @@ export function createCombatSlice(get: Get, set: Set) {
         ? cascBefore.cursor : -1;
       set({ pendingCast: null }); // ferme le JET ; la cascade d'incantation reste active (cursor sur 'cast')
       if (caster && target && spell) {
+        const ocDur = overcastDurationParts(overcastSourceOf(spell), pc.overcast?.duration ?? 0);
         applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
-          durationMult: 1 + (pc.overcast?.duration ?? 0),
+          durationMult: ocDur.mult,
+          durationBonusRounds: ocDur.bonusRounds,
           extraTargets: extras,
           conjureForm: pc.conjureForm,
           opposedOutcome: pc.opposedOutcome,
@@ -2408,38 +2246,48 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!pc) return;
       set({ pendingCast: { ...pc, conjureForm: form } });
     },
-    /** Surincantation : chaque allocation consomme +2 DR du surplus — Sorts : DR − NI (LDB 47
-     *  l.28-31) ; Bénédictions/Miracles : DR entier (LDB 41/42 « Degrés de Réussite » — Durée
-     *  +durée initiale, Cibles +1). */
-    castAllocOvercast: (axis: 'duration' | 'targets' | 'zone') => {
+    /** Surincantation : un pas (`delta` +1/−1, stepper avec reset) coûte +2 DR du surplus — Sorts : DR − NI
+     *  (LDB 47) ; Bénédictions/Miracles : DR entier (pas de NI). L'EFFET d'un pas est SOURCE-AWARE
+     *  (`engine/overcast.ts`) ; l'axe doit être autorisé par la source (la ZdE n'existe qu'en arcane). */
+    castAllocOvercast: (axis: OvercastAxis, delta: number) => {
       const pc = get().pendingCast;
       const spell = pc && findSpellById(pc.spellId);
       if (!pc || !pc.result?.cast || !spell) return;
-      const oc = pc.overcast ?? { duration: 0, targets: 0 };
+      const source = overcastSourceOf(spell);
+      if (!overcastAxes(source).includes(axis)) return; // axe interdit par la source (ex. ZdE divine)
+      const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
       const ni = spell.cn == null ? 0 : pc.focused ? 0 : spell.cn; // Prière : pas de NI à dépasser
       const budget = Math.floor(Math.max(0, pc.result.sl - ni) / 2);
-      if (oc.duration + oc.targets + (oc.zone ?? 0) >= budget) return; // surplus épuisé
-      const next = { ...oc, [axis]: (oc[axis] ?? 0) + 1 };
-      // « +Zone » (LDB 47 l.29) : chaque allocation ajoute la valeur INITIALE de Zone d'Effet —
-      // le rayon du gabarit est recalculé (la pose et l'aperçu lisent `zone.radius`).
+      const spent = oc.range + oc.zone + oc.duration + oc.targets;
+      const v = oc[axis] + delta;
+      if (delta > 0 && spent >= budget) return; // surplus épuisé (incrément)
+      if (v < 0) return; // décrément borné à 0 (reset)
+      const next = { ...oc, [axis]: v };
+      // ZdE : chaque pas ajoute le Ø INITIAL — le rayon du gabarit suit (pose et aperçu lisent `zone.radius`).
       const zone = axis === 'zone' && pc.zone
-        ? { ...pc.zone, radius: zoneRadiusTilesAt(pc.zone.r0m ?? 0, next.zone ?? 0) }
+        ? { ...pc.zone, radius: zoneRadiusTilesAt(pc.zone.r0m ?? 0, next.zone) }
         : pc.zone;
-      set({ pendingCast: { ...pc, overcast: next, ...(zone ? { zone } : {}) } });
+      // Cible RÉDUITE : on élague les désignations au-delà de la nouvelle capacité (alloc ⊥ désignation).
+      const caster = (get().battle?.combatants ?? get().party).find((c) => c.id === pc.casterId);
+      const cap = caster ? extraTargetCapacity(source, next.targets, spellTargetCount(spell, caster)) : 0;
+      const extraTargetIds = (pc.extraTargetIds ?? []).length > cap ? (pc.extraTargetIds ?? []).slice(0, cap) : pc.extraTargetIds;
+      set({ pendingCast: { ...pc, overcast: next, ...(zone ? { zone } : {}), ...(extraTargetIds !== pc.extraTargetIds ? { extraTargetIds } : {}) } });
     },
     castToggleExtraTarget: (id: string) => {
       const pc = get().pendingCast;
       if (!pc || !pc.result?.cast) return;
-      // Garde : seules les cibles ÉLIGIBLES (portée/éveillées, LDB 47 l.28-31) sont togglables —
-      // indispensable depuis le clic carte (pickingTargets), inoffensif depuis le picker en modale.
+      // Garde : seules les cibles ÉLIGIBLES (portée surincantée comprise / éveillées, LDB 47) sont
+      // togglables — indispensable depuis le clic carte (pickingTargets), inoffensif depuis le picker.
       const pool = get().battle?.combatants ?? get().party;
       const caster = pool.find((c) => c.id === pc.casterId);
       const spell = findSpellById(pc.spellId);
-      if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, spellSightOf(get)).some((c) => c.id === id)) return;
+      if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, spellSightOf(get), overcastSourceOf(spell), pc.overcast?.range ?? 0).some((c) => c.id === id)) return;
+      // Capacité SOURCE-AWARE : pas × cible initiale (×initial arcane/miracle) ; pas × 1 (bénédiction).
+      const cap = extraTargetCapacity(overcastSourceOf(spell), pc.overcast?.targets ?? 0, spellTargetCount(spell, caster));
       const cur = pc.extraTargetIds ?? [];
       const next = cur.includes(id)
         ? cur.filter((x) => x !== id)
-        : cur.length < (pc.overcast?.targets ?? 0) && id !== pc.targetId
+        : cur.length < cap && id !== pc.targetId
           ? [...cur, id]
           : cur;
       set({ pendingCast: { ...pc, extraTargetIds: next } });

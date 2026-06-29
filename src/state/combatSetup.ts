@@ -11,6 +11,7 @@ import { rule } from '../engine/policy';
 import { initiativeOrder } from '../engine/combat';
 import { strikesLast } from '../engine/qualities/dispatch';
 import { isPassengerInBattle } from './shipPostes';
+import { isControlledMount } from './mount';
 
 /**
  * Initiative d'un combattant au début du combat — POINT NOMMÉ, seam de la règle optionnelle « méthode
@@ -43,6 +44,8 @@ export function rollInitiative(c: Combatant, rng: RNG): number {
  * l.31), propagé à `initiativeOrder`. Absent = tri stable déterministe (tests purs inchangés).
  */
 export function combatOrder(all: Combatant[], merScale: boolean, rng?: RNG): string[] {
-  const ordered = initiativeOrder(all, rng).filter((c) => !isPassengerInBattle(c, all, merScale));
+  // Exclus de l'ordre : PASSAGERS de coque (échelle MER) ET montures Nerveux CHEVAUCHÉES (LDB 14 l.221 —
+  // pas de tour propre tant qu'elles sont montées). Elles RESTENT dans `combatants` (ciblables, prennent des coups).
+  const ordered = initiativeOrder(all, rng).filter((c) => !isPassengerInBattle(c, all, merScale) && !isControlledMount(c));
   return [...ordered.filter((c) => !strikesLast(c.weapons)), ...ordered.filter((c) => strikesLast(c.weapons))].map((c) => c.id);
 }

@@ -12,7 +12,7 @@ import { useGame } from './store';
 import { controlsActive } from './netOwnership';
 import { pickActiveModalKey } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
-import { cycleTarget, validTargets } from './targeting';
+import { validTargets } from './targeting';
 
 export interface KeyBinding {
   id: string;
@@ -31,21 +31,59 @@ export interface KeyBinding {
 const inBattle = (s: GameState) => s.mode === 'battle' && !!s.battle && !s.battle.over;
 /** Aucune modale de combat ouverte (sinon Espace/Entrée doivent rester à la modale). */
 const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pickActiveModalKey>[0]) == null;
+/** Contexte de PILOTAGE du combat (carte) : en combat, c'est bien ton tour (coop), aucune modale ouverte. */
+const cur = (s: GameState) => inBattle(s) && controlsActive(s) && noModal(s);
 
 export const KEYBINDINGS: KeyBinding[] = [
   { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', when: () => true, run: (g) => g().rotateCam(-1) },
   { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', when: () => true, run: (g) => g().rotateCam(1) },
   { id: 'cam-recenter', codes: ['KeyC'], label: 'Caméra : recentrer sur l’actif', when: inBattle, run: (g) => g().resetCamPan() },
-  // Tab : cible la plus proche valide (comme un survol) puis CYCLE sur toutes les cibles valides et
-  // revient à la première. Gardé sur l'existence d'au moins une cible (sinon Tab garde sa nav normale).
+  // Pause d'initiative de début de Round (LDB ch.17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
+  // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes
+  // touches) : sa garde `pendingRoundStart` arbitre. notWhenControlFocused : si le bouton « Commencer » est
+  // focalisé, son activation native suffit (pas de double appel). Solo = confirmRoundStart ; coop = ready du siège.
+  {
+    id: 'round-start', codes: ['Space', 'Enter', 'NumpadEnter'], label: 'Commencer le round', notWhenControlFocused: true,
+    when: (s) => inBattle(s) && !!s.pendingRoundStart,
+    run: (g) => {
+      const s = g();
+      if (s.net.mode === 'local') { s.confirmRoundStart(); return; }
+      if (!s.pendingRoundStart?.readyBySeat?.[s.net.mySeat]) s.roundStartReady(s.net.mySeat);
+    },
+  },
+  // ── Curseur de combat (flèches) — la MANETTE réutilise ces mêmes ids via runBindingById. Le curseur
+  //    « suit les yeux » (direction écran). Le 1er appui le pose sur le combattant actif. ──
+  { id: 'cursor-up', codes: ['ArrowUp'], label: 'Curseur : haut', when: cur, run: (g) => g().moveCursor('up') },
+  { id: 'cursor-down', codes: ['ArrowDown'], label: 'Curseur : bas', when: cur, run: (g) => g().moveCursor('down') },
+  { id: 'cursor-left', codes: ['ArrowLeft'], label: 'Curseur : gauche', when: cur, run: (g) => g().moveCursor('left') },
+  { id: 'cursor-right', codes: ['ArrowRight'], label: 'Curseur : droite', when: cur, run: (g) => g().moveCursor('right') },
+  // Tab : aimante le curseur sur la cible valide suivante (cycle proche→loin) ; gardé sur ≥1 cible
+  // (sinon Tab garde sa nav normale). `²/~` = cible précédente (le registre ignore les modificateurs).
   {
     id: 'target-next', codes: ['Tab'], label: 'Cibler la cible valide suivante',
-    when: (s) => inBattle(s) && controlsActive(s) && noModal(s) && validTargets(() => s).length > 0,
-    run: (g) => { const t = cycleTarget(g, g().hoverCombatantId); if (t) g().setHoverCombatant(t.id); },
+    when: (s) => cur(s) && validTargets(() => s).length > 0,
+    run: (g) => g().snapCursorToTarget(1),
+  },
+  {
+    id: 'target-prev', codes: ['Backquote'], label: 'Cibler la cible valide précédente',
+    when: (s) => cur(s) && validTargets(() => s).length > 0,
+    run: (g) => g().snapCursorToTarget(-1),
+  },
+  // Valider/annuler le curseur — AVANT end-turn/clear-preview : avec un curseur posé, Entrée commet
+  // et Échap désélectionne ; sans curseur, Entrée finit le tour et Échap purge l'aperçu (1er match).
+  {
+    id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], label: 'Curseur : valider', notWhenControlFocused: true,
+    when: (s) => cur(s) && !!s.combatCursor,
+    run: (g) => g().commitCursor(),
+  },
+  {
+    id: 'cursor-cancel', codes: ['Escape'], label: 'Curseur : annuler',
+    when: (s) => !!s.combatCursor,
+    run: (g) => { g().clearCursor(); const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
   {
     id: 'end-turn', codes: ['Space', 'Enter', 'NumpadEnter'], label: 'Fin du tour', notWhenControlFocused: true,
-    when: (s) => inBattle(s) && controlsActive(s) && noModal(s), run: (g) => g().battleEndTurn(),
+    when: (s) => cur(s), run: (g) => g().battleEndTurn(),
   },
   {
     id: 'clear-preview', codes: ['Escape'], label: 'Annuler l’aperçu de déplacement',
@@ -64,6 +102,13 @@ export const KEYBINDINGS: KeyBinding[] = [
 /** Touche(s) EFFECTIVE(s) d'un raccourci : la surcharge utilisateur remplace les codes par défaut. */
 export function effectiveCodes(b: KeyBinding, overrides: Record<string, string>): string[] {
   return overrides[b.id] ? [overrides[b.id]] : b.codes;
+}
+
+/** Exécute un raccourci par son `id` (s'il s'applique au contexte courant) — table d'intentions PARTAGÉE
+ *  par le clavier ET la manette : un seul endroit porte la garde `when` + l'action `run`. */
+export function runBindingById(id: string, get: () => GameState): void {
+  const b = KEYBINDINGS.find((k) => k.id === id);
+  if (b && b.when(get())) b.run(get);
 }
 
 const NAMED_KEYS: Record<string, string> = {

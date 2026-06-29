@@ -2,11 +2,13 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
+import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeHeal } from '../state/flowOutcomes';
 import { ModalSubject } from './ModalSubject';
+import { availableHealModes } from '../engine/healing';
 
 /**
  * Flux de jet d'un SOIN (Guérison, LDB 09-Compétences) : « Lancer » → Chance (relance / +1 DR) →
@@ -28,6 +30,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   const force = useGame((s) => s.healForceSuccess);
   const confirm = useGame((s) => s.healConfirm);
   const cancel = useGame((s) => s.healCancel);
+  const setMode = useGame((s) => s.healSetMode);
   if (!ph) return null;
   const pool = battle?.combatants ?? party; // même flux en combat (file) et hors combat (groupe)
   const healer = pool.find((c) => c.id === ph.healerId); // absent (PNJ médecin) → Chance/Résilience à 0
@@ -37,6 +40,13 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
 
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
+  // Surface UNIQUE du soin en combat : on a ciblé l'allié sur la carte (mode par défaut) ; si plusieurs
+  // soins s'appliquent à lui (Blessures ET Hémorragie), on choisit ICI, avant le jet. L'infirmerie
+  // (embedded) garde son propre choix d'acte → pas de seg.
+  const combatModes = !embedded && !rolled && target
+    ? availableHealModes(target).filter((m) => m === 'wounds' || m === 'bleed')
+    : [];
+  const bleed = target?.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
   return (
     <RollFlowShell
       embedded={embedded}
@@ -48,6 +58,18 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
         </>
       }
       extra={!embedded && target ? <ModalSubject c={target} variant="full" /> : undefined}
+      setup={combatModes.length > 1 ? (
+        <OptionChooser
+          layout="seg"
+          groupLabel="Soin"
+          options={combatModes.map((m) => ({
+            key: m,
+            label: m === 'wounds' ? '🩹 Blessures' : `🩸 Hémorragie ×${bleed}`,
+            selected: ph.mode === m,
+            onSelect: () => setMode(m),
+          }))}
+        />
+      ) : undefined}
       rolled={rolled}
       onRoll={roll}
       onCancel={cancel}

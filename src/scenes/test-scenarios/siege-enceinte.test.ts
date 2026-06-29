@@ -15,8 +15,10 @@ describe('Siège vertical — combat z-aware (siege-enceinte)', () => {
   it('scène : 2 niveaux, escalier z0↔z1 auto, herse destructible', () => {
     const s = scenario.scene;
     expect(s.levels.map((l) => l.z)).toEqual([0, 1]);
-    expect(s.stairs?.[0]).toMatchObject({ from: { x: 2, y: 5 }, to: { x: 2, y: 5, z: 1 } });
+    expect(s.stairs?.[0]).toMatchObject({ from: { x: 1, y: 4 }, to: { x: 1, y: 4, z: 1 } });
     expect(s.walls?.some((w) => w.structure === 'porte-de-ville')).toBe(true);
+    // Mur d'enceinte HAUT : les arêtes-structure montent jusqu'au chemin de ronde (`height:1`).
+    expect(s.walls?.every((w) => w.height === 1)).toBe(true);
   });
 
   it('défenseur z=1 (chemin de ronde) ↔ assaillant z=0 : distance verticale, LdV dégagée, mêlée à travers le vide refusée', () => {

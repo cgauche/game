@@ -302,3 +302,18 @@ describe('rôle de marche persistant (travelRole) — « les mêmes au même pos
     expect(s1[a.id].activityId).toBe('approvisionnement');
   });
 });
+
+describe('Convalescence — Activité d’interlude (ADE II Annexe I « Les choses s’arrangent »)', () => {
+  it("existe en contexte interlude, Test de Calme Très Difficile, onSuccess = removePsychTrait", () => {
+    const conv = activityById('convalescence');
+    expect(conv).toBeTruthy();
+    expect(conv!.contexts).toContain('interlude');
+    expect(conv!.skills).toEqual([{ skillId: 'calme' }]);
+    expect(conv!.difficulty).toBe('tresDifficile'); // « Calme Très Difficile (–30) »
+    expect(conv!.onSuccess).toEqual([{ op: 'removePsychTrait' }]); // « éliminer un Trait Psychologique de votre choix »
+    expect(conv!.source.book).toBe('ADE2');
+  });
+  it("apparaît dans le catalogue des Activités d'interlude", () => {
+    expect(activitiesFor('interlude').some((a) => a.id === 'convalescence')).toBe(true);
+  });
+});

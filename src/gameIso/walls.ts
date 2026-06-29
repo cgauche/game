@@ -1,4 +1,4 @@
-import { tileCenter, tileEdge, depth, isSquareView, type Dims } from './iso';
+import { tileCenter, tileEdge, depth, isSquareView, LEVEL_H, type Dims } from './iso';
 import type { Scene, WallSeg } from '../state/scene';
 
 /** Hauteur écran (px) d'une cloison dressée sur une arête. */
@@ -63,7 +63,7 @@ function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: n
     const svg = down ? line('var(--struct-rubble)', 6, '3 5') : line('var(--struct-band)', 11) + line('var(--struct-face)', 7);
     return { d: d + 0.6, svg: `<g>${svg}</g>` };
   }
-  const H = WALL_H;
+  const H = w.height ? w.height * LEVEL_H : WALL_H; // rempart d'enceinte : `height` en étages (1 = LEVEL_H) → monte au chemin de ronde z=1 ; absent → WALL_H (byte-identique)
   if (down) {
     // BRÈCHE : éboulis bas le long de l'arête (≈0.3 H), ouverture au-dessus laissée transparente. Tas
     // DENTELÉ (≠ « mur court ») + moignons de jambage qui subsistent aux extrémités.

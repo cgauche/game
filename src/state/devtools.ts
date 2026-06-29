@@ -34,6 +34,8 @@ import type { Cadence } from '../engine/cadence';
  *                           initiative déterministe si seed) ; sans arg : liste les ids
  *   __wfrp.hover('id')    → survol PROGRAMMATIQUE (tooltip + réticule de visée, sans souris) ; null efface
  *   __wfrp.aim('id')      → vérité state du ciblage (ok/invalid + raison, compétence, dégâts)
+ *   __wfrp.pad('A'|'B'|…) → simule un BOUTON de manette (Playwright n'a pas l'API Gamepad) — MÊME chemin
+ *                           que le pad réel ; __wfrp.padDir('up'|'down'|'left'|'right') → croix/stick
  *   __wfrp.battle()       → snapshot combat (round, actif, modales, combattants en une ligne chacun)
  *   __wfrp.log(n)         → queue lisible des journaux (exploration + feed de combat)
  *   __wfrp.aiLog(n)       → DIAGNOSTIC IA : action choisie + classement des candidats (intention) par tour
@@ -237,6 +239,15 @@ export function buildApi() {
       hook({ ...pt });
       return `✅ survol (${pt.x},${pt.y})`;
     },
+
+    /** Simule un BOUTON de manette (combat) en passant par le shim DEV installé par `useGamepad`
+     *  (`window.__wfrpPad`) — MÊME chemin que la vraie manette, sans API Gamepad (Playwright). `name`
+     *  ∈ A|B|X|Y|LB|RB|LT|RT|Back. devtools n'importe RIEN de `src/ui` : il passe par window (layering). */
+    pad: (name: string) => (window as unknown as { __wfrpPad?: (n: string) => void }).__wfrpPad?.(name),
+
+    /** Simule une DIRECTION de manette (croix/stick) via `window.__wfrpPadDir` — `dir` ∈ up|down|left|right.
+     *  Carte = déplace le curseur de combat ; menu/modale = déplace le focus. */
+    padDir: (dir: string) => (window as unknown as { __wfrpPadDir?: (d: string) => void }).__wfrpPadDir?.(dir),
 
     /** Vérité STATE du ciblage au survol — ce que le clic ferait sur cette cible pour l'actif :
      *  {kind:'ok'|'invalid'|'none', line, title, skill, base, mod, dmg | reason}. */

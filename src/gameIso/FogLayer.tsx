@@ -27,6 +27,10 @@ interface FogLayerProps {
   visible: Set<string>;
   explored: Set<string>;
   bounds: Bounds;
+  /** Étage de SOL effectif sous (x,y) à l'étage actif : si l'actif est PERCÉ (tuile `vide` = trou), on
+   *  retombe sur le premier sol en dessous → le voile reflète CE qu'on voit par le trou (l'étage du
+   *  dessous), pas un « inconnu » opaque qui masquerait le contrebas. Mono-niveau ⇒ rend toujours `z`. */
+  floorZAt: (x: number, y: number) => number;
 }
 
 const MARGIN = 5; // tuiles autour du cadre : couvre le pan sous-tuile + l'étalement du flou
@@ -48,14 +52,16 @@ function blockPath(x0: number, y0: number, n: number, dims: Dims, view: ViewMode
   return `M${cx},${cy - hy} L${cx + hx},${cy} L${cx},${cy + hy} L${cx - hx},${cy}Z`;
 }
 
-export const FogLayer = React.memo(function FogLayer({ w, h, z, rot, view, edge, visible, explored, bounds }: FogLayerProps) {
+export const FogLayer = React.memo(function FogLayer({ w, h, z, rot, view, edge, visible, explored, bounds, floorZAt }: FogLayerProps) {
   const { minX, maxX, minY, maxY } = bounds;
   const { unknown, remembered } = useMemo(() => {
     const dims: Dims = { w, h, rot, view, edge };
     const x0 = Math.max(0, minX - MARGIN), x1 = Math.min(w - 1, maxX + MARGIN);
     const y0 = Math.max(0, minY - MARGIN), y1 = Math.min(h - 1, maxY + MARGIN);
-    // 0 = visible (pas de voile), 1 = exploré-mémorisé (semi), 2 = inconnu (opaque).
-    const stateAt = (x: number, y: number) => { const k = `${x},${y},${z}`; return visible.has(k) ? 0 : explored.has(k) ? 1 : 2; };
+    // 0 = visible (pas de voile), 1 = exploré-mémorisé (semi), 2 = inconnu (opaque). À un trou (`vide`)
+    // de l'étage actif, `floorZAt` retombe sur le sol du dessous → le voile suit la visibilité du contrebas
+    // (on regarde DANS le trou), au lieu de masquer l'étage inférieur d'un noir « inconnu ».
+    const stateAt = (x: number, y: number) => { const k = `${x},${y},${floorZAt(x, y)}`; return visible.has(k) ? 0 : explored.has(k) ? 1 : 2; };
     let unknownP = '';
     let rememberedP = '';
     for (let by = y0; by <= y1; by += BLOCK)
@@ -81,7 +87,7 @@ export const FogLayer = React.memo(function FogLayer({ w, h, z, rot, view, edge,
       }
     return { unknown: unknownP, remembered: rememberedP };
     // Deps sur les ENTIERS du cadre (pas l'objet `bounds`) → pas de rebuild tant que le cadre-tuile est stable.
-  }, [w, h, z, rot, view, edge, visible, explored, minX, maxX, minY, maxY]);
+  }, [w, h, z, rot, view, edge, visible, explored, minX, maxX, minY, maxY, floorZAt]);
 
   if (!unknown && !remembered) return null;
   return (

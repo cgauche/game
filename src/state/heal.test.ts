@@ -53,6 +53,28 @@ describe('Guérison — flux combat', () => {
     expect(useGame.getState().pendingHeal).toBeNull();
   });
 
+  it('healSetMode : surface unique — on cible sur la carte (mode défaut), on bascule Blessures ⇄ Hémorragie avant le jet, verrouillé après', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, conditions: [{ name: 'hemorragique', value: 2 }], pos: { x: 2, y: 1 } });
+    setBattle([doc, t], 'doc');
+    useGame.getState().battleHeal('al', 'wounds'); // ciblage carte → mode par défaut
+    expect(useGame.getState().pendingHeal!.mode).toBe('wounds');
+    useGame.getState().healSetMode('bleed'); // l'allié a les DEUX soins applicables → on bascule
+    expect(useGame.getState().pendingHeal!.mode).toBe('bleed');
+    useGame.getState().healRoll(); // dé lancé → choix verrouillé
+    useGame.getState().healSetMode('wounds');
+    expect(useGame.getState().pendingHeal!.mode).toBe('bleed'); // inchangé post-jet
+  });
+
+  it('healSetMode : refuse un mode non applicable à la cible', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, pos: { x: 2, y: 1 } }); // aucune Hémorragie
+    setBattle([doc, t], 'doc');
+    useGame.getState().battleHeal('al', 'wounds');
+    useGame.getState().healSetMode('bleed'); // indisponible (pas d'hémorragie) → ignoré
+    expect(useGame.getState().pendingHeal!.mode).toBe('wounds');
+  });
+
   it('limite 1/rencontre : 2e « wounds » indisponible, « bleed » reste possible', () => {
     const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
     const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, conditions: [{ name: 'hemorragique', value: 2 }], soinRencontreUtilise: true, pos: { x: 2, y: 1 } });

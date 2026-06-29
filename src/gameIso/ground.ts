@@ -1,5 +1,5 @@
 import { Scene, tileAt, elevAt } from '../state/scene';
-import { terrainPriority } from '../state/terrain';
+import { terrainPriority, terrainWalkable } from '../state/terrain';
 import { terrainGradient } from './catalog/terrain';
 import { Dims, diamondCorners, tileCenter, tileEdge } from './iso';
 
@@ -35,6 +35,7 @@ export interface Skirt {
   drop: number; // dénivelé en unités d'étage (>0)
   points: [number, number][];
   lit: boolean; // face avant (vers la caméra) → éclairée ; arrière → sombre (déduit du z écran)
+  tone: 'earth' | 'stone'; // 'earth' = talus/fosse de terrain ; 'stone' = FLANC d'une plateforme d'étage (rempart/loge) → pierre claire
 }
 
 /** Jupes de dénivelé de la case (x,y) : une paroi par arête où la case est PLUS HAUTE que sa voisine
@@ -45,14 +46,29 @@ export function elevSkirt(scene: Scene, x: number, y: number, dims: Dims, z = 0)
   const self = elevAt(scene, x, y, z);
   const out: Skirt[] = [];
   const ctr = tileCenter(x, y, dims, z + self); // centre case (sol haut) pour le test avant/arrière
+  // Paroi verticale sur l'arête `dir`, du lift HAUT au lift BAS (mêmes x écran, décalés en hauteur).
+  const push = (dir: EdgeDir, hiLift: number, loLift: number, tone: 'earth' | 'stone' = 'earth') => {
+    const [hiA, hiB] = tileEdge(x, y, dir, dims, hiLift);
+    const [loA, loB] = tileEdge(x, y, dir, dims, loLift);
+    const lit = (hiA.cy + hiB.cy) / 2 >= ctr.cy; // l'arête est DEVANT (plus bas à l'écran) → face avant
+    out.push({ dir, drop: hiLift - loLift, lit, tone, points: [[hiA.cx, hiA.cy], [hiB.cx, hiB.cy], [loB.cx, loB.cy], [loA.cx, loA.cy]] });
+  };
   for (const dir of ['N', 'E', 'S', 'O'] as EdgeDir[]) {
     const [dx, dy] = NEIGHBOURS[dir];
     const nb = elevAt(scene, x + dx, y + dy, z);
-    if (self <= nb) continue; // pas de chute de ce côté
-    const [hiA, hiB] = tileEdge(x, y, dir, dims, z + self); // arête au sol haut
-    const [loA, loB] = tileEdge(x, y, dir, dims, z + nb); // même arête, au sol bas
-    const lit = (hiA.cy + hiB.cy) / 2 >= ctr.cy; // l'arête est DEVANT (plus bas à l'écran) → face avant
-    out.push({ dir, drop: self - nb, lit, points: [[hiA.cx, hiA.cy], [hiB.cx, hiB.cy], [loB.cx, loB.cy], [loA.cx, loA.cy]] });
+    if (self > nb) push(dir, z + self, z + nb); // chute intra-niveau (talus/fosse) → terre
+  }
+  // Bord d'ÉTAGE : une plateforme MARCHABLE d'un niveau z>0 qui borde le vide → paroi descendant d'UN
+  // étage entier (le CÔTÉ du rempart sous le chemin de ronde) jusqu'au sol de z-1, là où un sol existe
+  // en dessous. Réutilise `push`/`renderSkirt` (face/ombre/arête) → la plateforme se lit SURÉLEVÉE.
+  // z=0 : aucun étage en dessous → aucune jupe d'étage (mono-niveau byte-identique).
+  if (z > 0 && scene.levels.some((l) => l.z === z - 1) && tileAt(scene, x, y, z - 1) !== 'vide' && terrainWalkable(tileAt(scene, x, y, z))) {
+    const below = z - 1 + elevAt(scene, x, y, z - 1); // surface du sol du dessous
+    for (const dir of ['N', 'E', 'S', 'O'] as EdgeDir[]) {
+      const [dx, dy] = NEIGHBOURS[dir];
+      if (terrainWalkable(tileAt(scene, x + dx, y + dy, z))) continue; // voisin marchable → pas un bord de vide
+      push(dir, z + self, below, 'stone'); // FLANC de plateforme d'étage (côté du rempart sous le chemin de ronde) → pierre claire et éclairée
+    }
   }
   return out;
 }
@@ -63,7 +79,11 @@ const lerpP = (a: [number, number], b: [number, number], t: number): [number, nu
 function renderSkirt(s: Skirt): string {
   const [tl, tr, br, bl] = s.points; // haut-gauche, haut-droit, bas-droit, bas-gauche
   const poly = (pts: [number, number][]) => pts.map((p) => `${p[0]},${p[1]}`).join(' ');
-  const fill = s.lit ? '#5a4a33' : '#33291c', foot = s.lit ? '#3e3322' : '#241c12';
+  // PIERRE (flanc de rempart/loge) = gris CLAIR et éclairé (lit comme le mur, ≠ talus de terre sombre) ;
+  // TERRE (talus/fosse) = bruns d'origine. Sans ce ton, le flanc du chemin de ronde virait au noir et
+  // masquait l'étage du dessous.
+  const fill = s.tone === 'stone' ? (s.lit ? '#6b6f76' : '#494d54') : (s.lit ? '#5a4a33' : '#33291c');
+  const foot = s.tone === 'stone' ? (s.lit ? '#4a4e54' : '#34373c') : (s.lit ? '#3e3322' : '#241c12');
   const fl = lerpP(tl, bl, 0.6), fr = lerpP(tr, br, 0.6); // bord haut de l'ombre de pied
   return (
     `<polygon class="elev-skirt" points="${poly([tl, tr, br, bl])}" fill="${fill}" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/>` +

@@ -69,7 +69,7 @@ import {
   castBlockedBy,
   hasTalent,
   evaluateMissile,
-  spellRangeTiles,
+  spellRangeTiles, effectiveSpellRangeTiles,
   durationClockMinutes,
   castInfo,
   castingValue,
@@ -90,6 +90,7 @@ import {
   type CounterspellOutcome,
   type SpellLike,
 } from '../engine/magic';
+import { type OvercastSource, overcastSourceOf, overcastDurationParts } from '../engine/overcast';
 import type { SpellRange } from '../engine/spellRange';
 import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx, type Formula } from '../engine/ops';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
@@ -142,7 +143,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove } from './scene';
 import { FALL_METRES_PER_LEVEL } from './jumpMove';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, isPosteManned } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
@@ -224,7 +225,10 @@ export function applyIncomingMeleeAdvantage(attacker: Combatant, target: Combata
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
 export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string, combatants?: Combatant[]): Weapon {
-  const adj = combatDistance(attacker, target) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
+  // Adjacence depuis la MONTURE (cavalier/cible monté) quand la liste est fournie — un cavalier au contact
+  // par sa monture doit choisir la mêlée, pas basculer en tir (LDB 14). Sans `combatants` → géométrie propre.
+  const geom = (c: Combatant) => (combatants && c.mountId ? combatants.find((x) => x.id === c.mountId) ?? c : c);
+  const adj = combatDistance(geom(attacker), geom(target)) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
   // Choix explicite du joueur : l'arme du loadout actif portant cet uid (si présente) ; sinon auto-choix.
   const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
   const base = chosen ?? attackWeapon(attacker.weapons, adj);
@@ -267,7 +271,8 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
 export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc'; detail: string } | null {
   if (active.kind !== 'hero') return null;
-  const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon
+  const b = get().battle;
+  const adj = (b ? mountedCombatDistance(b, active, target) : combatDistance(active, target)) <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon (géométrie monture)
   // Arme effectivement testée : choix EXPLICITE (poste servi → `weaponUid`) sinon auto selon la distance —
   // MÊME arbitrage que `firedWeapon` (le gate ne doit pas mentir sur une AUTRE arme que celle qui tirera).
   const w = (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
@@ -474,11 +479,14 @@ export function resolveAttack(
   weaponUid?: string,
   withhold?: boolean, // « Retenir ses coups » (Aux Armes l.2503-2505) — déclaré avant le jet, mêlée seule
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
-  const dist = combatDistance(attacker, target);
-  const weapon = firedWeapon(attacker, target, weaponUid, get().battle?.combatants); // arme choisie + munition + sous-effectif du poste servi
+  const battle = get().battle!;
+  // Distance de COMBAT depuis la géométrie de la MONTURE (cavalier/cible monté, LDB 14) : sinon une attaque
+  // de charge qui rapproche la MONTURE au contact serait jugée hors d'allonge sur le cavalier 1×1 → `null`,
+  // et la cascade d'attaque déjà ouverte resterait ORPHELINE (soft-lock de fin de tour).
+  const dist = mountedCombatDistance(battle, attacker, target);
+  const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants); // arme choisie + munition + sous-effectif du poste servi
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
-  const battle = get().battle!;
   const { env, blocked, inMelee, crowd, cm, sc } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
   if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13-Combat l.123)
   if (weapon.type === 'ranged') {
@@ -572,7 +580,10 @@ export function previewAttack(
   location?: HitLocation,
   opts?: { intoCrowd?: boolean; heldGround?: boolean; weaponUid?: string },
 ): AttackPreview {
-  const dist = combatDistance(attacker, target);
+  // Distance de COMBAT depuis la géométrie de la MONTURE pour un cavalier/cible monté (LDB 14) — le reach
+  // de mêlée et la bande de portée se mesurent du couple (empreinte de la monture), pas du cavalier 1×1.
+  const battle = get().battle;
+  const dist = combatDistance((battle && mountOf(battle, attacker)) || attacker, (battle && mountOf(battle, target)) || target);
   const weapon = firedWeapon(attacker, target, opts?.weaponUid, get().battle?.combatants);
   const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
   // Estimation de dégâts (R4) : dégâts d'arme (Force incluse) et encaissé de la cible. Le `soak` est dérivé
@@ -1001,10 +1012,14 @@ export type AttackPlan =
 export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?: { reach?: number; forceMelee?: boolean }): AttackPlan {
   const battle = get().battle!;
   const scene = get().scene!;
+  // Géométrie de COMBAT (LDB 14) : un cavalier mesure reach/adjacence depuis l'empreinte de sa MONTURE
+  // (le couple partage position+empreinte, souvent 2×2) ; idem si la CIBLE est montée. Sans monture = soi.
+  const geom = mountOf(battle, active) ?? active;
+  const tgtGeom = mountOf(battle, target) ?? target;
   // `opts` (attaque CHOISIE : arme tenue vs attaque naturelle gratuite) : `reach` impose l'Allonge (gratuites
   // de mêlée = 1), `forceMelee` ignore la branche distance même avec une arme à distance tenue. Sans opts =
   // comportement historique (arme du Set actif), byte-identique.
-  if (combatDistance(active, target) <= (opts?.reach ?? meleeReachTiles(active.weapons))) return { kind: 'attack' };
+  if (combatDistance(geom, tgtGeom) <= (opts?.reach ?? meleeReachTiles(active.weapons))) return { kind: 'attack' };
   // L'arme du SET ACTIF décide : une arme à distance présente → tir. Gate PRÉ-clic (parité sort) :
   // sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT la
   // modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la
@@ -1018,7 +1033,6 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   }
   // Mêlée hors d'Allonge :
   if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
-  const geom = mountOf(battle, active) ?? active;
   const env = moveEnv(battle, geom);
   if (battle.movementUsed === 0 && !hasCondition(active, COND.aTerre)) {
     // Charge (LDB 15 l.74-77) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
@@ -2878,8 +2892,10 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   const castStepIdx = cascBefore && cascBefore.purpose === 'combat' && cascBefore.participants[cascBefore.cursor]?.jet === 'cast'
     ? cascBefore.cursor : -1;
   set({ pendingCast: null }); // ferme le jet ; cascade d'incantation conservée
+  const ocDur = overcastDurationParts(overcastSourceOf(spell), pc.overcast?.duration ?? 0);
   applyCast(get, set, caster, first, spell, r1, pc.missile, pc.focused, pc.critChoice, {
-    durationMult: 1 + (pc.overcast?.duration ?? 0),
+    durationMult: ocDur.mult,
+    durationBonusRounds: ocDur.bonusRounds,
     extraTargets: inZone.slice(1),
   });
   // Avance au-delà de l'étape cast (résolue) : conséquences appendues → jouées ; aucune → ferme.
@@ -3000,7 +3016,7 @@ export function aiOvercastPlan(
   combatants: Combatant[],
   focusedNI0 = false,
   sight?: SpellSight,
-): { overcast?: { duration: number; targets: number }; extraTargetIds?: string[] } {
+): { overcast?: { range: number; zone: number; duration: number; targets: number }; extraTargetIds?: string[] } {
   if (!res.cast || !caster.pos) return {};
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const budget = Math.floor(Math.max(0, res.sl - ni) / 2);
@@ -3012,7 +3028,7 @@ export function aiOvercastPlan(
     .slice(0, budget)
     .map((t) => t.id);
   if (!extras.length) return {};
-  return { overcast: { duration: 0, targets: extras.length }, extraTargetIds: extras };
+  return { overcast: { range: 0, zone: 0, duration: 0, targets: extras.length }, extraTargetIds: extras };
 }
 
 /** Cibles SUPPLÉMENTAIRES proposables pour la Surincantation « Cible » (LDB 47 l.28-31), côté
@@ -3027,8 +3043,12 @@ export function overcastTargetCandidates(
   spell: { range: SpellRange | null },
   missile: boolean,
   sight?: SpellSight,
+  // Portée surincantée (LDB 47/41/42) : étendre l'axe Portée élargit l'ensemble des cibles atteignables.
+  // Défauts arcane/0 = portée de base (rétro-compat des appelants sans surincantation de Portée).
+  source: OvercastSource = 'arcane',
+  rangeSteps = 0,
 ): Combatant[] {
-  const range = spellRangeTiles(spell.range, caster);
+  const range = effectiveSpellRangeTiles(spell.range, caster, source, rangeSteps);
   return pool.filter((m) => {
     if (m.id === targetId) return false;
     if (missile ? m.kind === caster.kind || isOutOfAction(m) : m.kind !== caster.kind || m.dead || m.outOfRencontre) return false;
@@ -3145,10 +3165,14 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
   critChoice?: CastCritChoice,
-  extras?: { durationMult?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
+  extras?: { durationMult?: number; durationBonusRounds?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
+  // Durée surincantée DÉCOMPOSÉE (engine/overcast) : `rounds = base × mult + bonus`. Arcane/Miracle :
+  // mult = 1+pas, bonus = 0 (×initial, joue aussi sur une durée d'horloge). Bénédiction : mult = 1,
+  // bonus = 6 Rounds × pas (FIXE, rounds-only — pas de Bénédiction à durée d'horloge).
   const durationMult = Math.max(1, extras?.durationMult ?? 1);
+  const durationBonusRounds = Math.max(0, extras?.durationBonusRounds ?? 0);
   let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
 
@@ -3375,10 +3399,10 @@ export function applyCast(
       // Rounds — on n'en invente PAS. Surincantation « Durée » : ×(1+n) (LDB 47).
       const spec = spell;
       const baseRounds = spec.duration?.kind === 'rounds' ? resolveFormula(spec.duration.value, caster, battleRng()) : null;
-      const rounds = baseRounds != null ? baseRounds * durationMult : null;
+      const rounds = baseRounds != null ? baseRounds * durationMult + durationBonusRounds : null;
       const baseClockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       const clockMin = baseClockMin != null ? baseClockMin * durationMult : null;
-      if (durationMult > 1 && baseRounds != null) logLines.push(tr('cf.overcastDuration', { mult: durationMult, rounds: String(rounds) }));
+      if ((durationMult > 1 || durationBonusRounds > 0) && baseRounds != null) logLines.push(tr('cf.overcastDuration', { rounds: String(rounds) }));
       if (durationMult > 1 && baseClockMin != null) logLines.push(tr('cf.overcastDurationMin', { mult: durationMult }));
       for (const t of [target, ...extraTargets]) {
         if (t !== target) logLines.push(tr('cf.spellExtends', { spell: spell.label, name: t.name }));
@@ -3945,6 +3969,7 @@ export function finishVictory(get: Get, set: SetFn): void {
 export function finishCombatEnd(get: Get, set: SetFn): void {
   const battle = get().battle;
   if (!battle || battle.over) return;
+  if (get().combatCursor) set({ combatCursor: null }); // fin de combat : plus de navigation au curseur
   const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c));
   if (heroesAlive) { finishVictory(get, set); return; }
   // Cas-limite : la mutation/damnation a achevé le dernier héros pendant la cascade → défaite.
@@ -4086,6 +4111,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
   if (get().pendingRoundStart) return;
   if (combatAdvanceBlocked(get())) return;
+  if (get().combatCursor) set({ combatCursor: null }); // le curseur clavier/manette appartient au tour qui s'achève
   const battle = get().battle!; // non-null garanti par combatAdvanceBlocked ci-dessus
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
