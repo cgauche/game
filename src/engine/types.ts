@@ -124,8 +124,10 @@ export interface VehicleData {
   /** Facette ACHAT (marché / possession de carrière). `availability` absent pour les navires (MDG ne
    *  donne pas de Disponibilité). */
   purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
-  /** Facette VOYAGE (passage payant). `movement` = Déplacement du véhicule (km/h). */
-  travel?: { movement: number; classes: VehicleTravelClass[] };
+  /** Facette VOYAGE (passage payant). `movement` = Déplacement du véhicule (km/h). `draft` = ATTELAGE
+   *  (bêtes qui tirent, réf `montures.json`) — requis pour l'allure forcée EDOC 07 l.229 (« pas de
+   *  course ») ; `count` = nombre de bêtes (Tests de Résistance sur échec du conducteur). */
+  travel?: { movement: number; draft?: { montureId: string; count: number }; classes: VehicleTravelClass[] };
   /** Facette COQUE (entité à PV). `char.E` = Endurance, `char.B` = Blessures. `bodyShape` = 'vehicule'.
    *  `rig` = gréement (avirons/voile/mixte) → colonne de Localisation des Dégâts (MDG ch.13).
    *  `locationTable`/`criticalTable` = réfs de tables data-driven (branchées aux dalles fluvial/maritime). */
@@ -679,6 +681,9 @@ export interface ItemInstance {
   /** Rangé DANS un contenant (uid de l'ItemInstance porteur d'un `container`) : son Enc est absorbé par le
    *  contenant (LDB 64 l.5) → ne compte pas au total porté. Absent = en vrac / porté / tenu. */
   inside?: string;
+  /** ANIMAL possédé : Incident de monte persistant (EDOC 07 l.157-174 — sangle-cassee / perte-d-un-fer /
+   *  boiteux / patte-brisee), posé en voyage par `resolveMountedDay` et soigné/réparé à l'arrivée au relais. */
+  mountInjury?: import('./mountTravel').MountInjury;
 }
 
 /** Une pièce d'artillerie MONTÉE sur un navire (poste) — DONNÉE pure (item + côté + équipage). Authorée sur

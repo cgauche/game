@@ -186,7 +186,7 @@
 | 04 | *(artefact OCR)* | ➖ | |
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
-| 07 | Chapitre 4 - Montures et véhicules | ✅ | 15 (deplacement.md ×15) |
+| 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
 | 08 | CHAPITRE 5 - Voyager | ✅ | 7 (deplacement.md ×7) |
 | 09 | *(artefact OCR)* | ➖ | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |

@@ -10,9 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { serializeDataset } from './serialize';
 
 const DIR = join(fileURLToPath(new URL('.', import.meta.url)));
-// Seul exclu : `_index.json` (index généré du Codex, filtré par le préfixe `_`). `names.json` a été
-// normalisé en LF (E3b) et est désormais éditable au Codex → garde-fou de fidélité comme les autres.
-const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
 
 describe('serializeDataset — round-trip byte-fidèle des datasets app-owned', () => {
   for (const f of files) {

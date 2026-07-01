@@ -1,0 +1,87 @@
+{
+  "id": "montures-voyage",
+  "label": "Mouvement pour les montures",
+  "source": {
+    "book": "EDOC",
+    "page": 25
+  },
+  "entries": [
+    {
+      "id": "chien",
+      "label": "Chien",
+      "trappingIds": [
+        "chien"
+      ],
+      "m": 4,
+      "e": 20,
+      "trot": false
+    },
+    {
+      "id": "poney-ane-ou-mule",
+      "label": "Poney, âne ou mule",
+      "trappingIds": [
+        "poney",
+        "mule"
+      ],
+      "m": 4,
+      "e": 45,
+      "trot": false
+    },
+    {
+      "id": "cheval-de-trait",
+      "label": "Cheval de trait",
+      "trappingIds": [
+        "cheval-de-trait"
+      ],
+      "m": 5,
+      "e": 45,
+      "trot": false
+    },
+    {
+      "id": "cheval-de-trait-lourd",
+      "label": "Cheval de trait lourd",
+      "trappingIds": [],
+      "m": 4,
+      "e": 50,
+      "trot": false
+    },
+    {
+      "id": "boeuf",
+      "label": "Bœuf",
+      "trappingIds": [],
+      "m": 3,
+      "e": 55,
+      "trot": false
+    },
+    {
+      "id": "cheval-de-monte",
+      "label": "Cheval de monte (Palefroi)",
+      "trappingIds": [
+        "cheval-de-selle"
+      ],
+      "m": 7,
+      "e": 45,
+      "trot": true
+    },
+    {
+      "id": "cheval-de-guerre",
+      "label": "Cheval de guerre (Courant)",
+      "trappingIds": [
+        "cheval-de-guerre-leger"
+      ],
+      "m": 7,
+      "e": 35,
+      "trot": true
+    },
+    {
+      "id": "cheval-de-guerre-lourd",
+      "label": "Cheval de guerre lourd (Destrier)",
+      "trappingIds": [
+        "destrier"
+      ],
+      "m": 4,
+      "e": 50,
+      "trot": true
+    }
+  ]
+}

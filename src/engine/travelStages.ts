@@ -15,6 +15,7 @@
 import type { RNG } from './dice';
 import { d100 } from './dice';
 import type { Difficulty } from './types';
+import { rule } from './policy';
 import { weather } from '../data';
 
 /** Les quatre saisons du tableau de Météo (EDOC ch.5 l.44). */
@@ -95,9 +96,10 @@ export function rollStageWeather(rng: RNG, season: Season): { roll: number; weat
  * Le canon laisse le découpage « à la discrétion du MJ » (l.15) sans formule de distance ; on
  * dérive un nombre depuis la distance (paliers documentés, fidèles aux exemples : village proche =
  * 1, ville à ville = 2-4) PUIS on applique le « bonus d'Étapes » d'auteur (l.34 : « augmentez le
- * nombre d'Étapes de 2 ou plus », via la règle `travel-etapes-count-bonus`). Minimum 1 (l.19/22).
+ * nombre d'Étapes de 2 ou plus ») — lu PAR DÉFAUT sur la règle optionnelle `travel-etapes-count-bonus`
+ * (point de lecture UNIQUE ; les tests purs passent le paramètre). Minimum 1 (l.19/22).
  */
-export function stageCount(distanceKm: number, countBonus = 0): number {
+export function stageCount(distanceKm: number, countBonus = Number(rule('travel-etapes-count-bonus'))): number {
   const km = Math.max(0, distanceKm);
   // Paliers : ≤ ~25 km (village proche) = 1 ; jusqu'à ~150 km (ville à ville) = 2-4 ; au-delà, +1
   // par tranche de 50 km. Choix documenté — le canon ne chiffre pas la distance (l.32 « les cartes

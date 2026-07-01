@@ -416,6 +416,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: '« Si votre groupe apprécie une expérience de voyage plus complexe, augmentez le nombre d’Étapes de 2 ou plus. » +N Étapes par trajet. Sans effet si « Voyage par Étapes » est éteint.',
   },
   {
+    id: 'travel-allures',
+    label: 'Montures et attelages (allures)',
+    ref: 'EDOC ch.4 l.140-146',
+    group: 'Voyage',
+    kind: 'flag',
+    default: false,
+    hint: 'Règles de voyage du Compagnon T1 (ch.4) : voyage en selle sur les bêtes possédées (vitesse = Mouvement × 1,5/2,5/3 km/h au pas/trot/galop), endurance des allures (12 h au pas, Bonus d’Endurance en heures au trot, moitié au galop) avec Incidents de monte au-delà, et allure forcée d’un attelage (Test de Conduite d’attelage par km ; Échec Stupéfiant → Problème de véhicule). Indépendant du « Voyage par Étapes ».',
+  },
+  {
     id: 'travel-attraper-froid',
     label: 'Attraper froid',
     ref: 'EDOC ch.5 l.73',

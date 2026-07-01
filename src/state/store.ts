@@ -945,7 +945,7 @@ export interface GameState extends RollFlowActionsMap {
   travelRecap: import('./travelFlow').TravelRecap | null;
   dismissTravelRecap: () => void;
   /** Démarre un voyage depuis le lieu courant le long d'une route (mode + classe + allure). */
-  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number }) => void;
+  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure }) => void;
   /** Reprend un voyage interrompu par une péripétie. */
   resumeTravel: () => void;
   /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.5),

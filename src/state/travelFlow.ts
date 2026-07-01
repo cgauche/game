@@ -29,8 +29,15 @@ import { runDailyUpkeep } from './upkeep';
 import { placeById, placeOfScene, otherEnd, type MapRoute, type WorldMap } from './worldMap';
 import {
   TravelMode, TRAVEL_DEFAULTS, TRAVEL_MODE_LABEL, travelSpeed, transportCost, forcedMarchTest, applyTravelFatigue,
+  vehicleTravel,
 } from '../engine/travel';
-import { vehicleCombatant } from '../engine/vehicle';
+import {
+  type Allure, ALLURE_KMH_PER_M, ALLURE_LABEL, mountProfileById, partyMounts, partyFullyMounted, resolveMountedDay,
+} from '../engine/mountTravel';
+import { vehicleCombatant, applyVehicleProblem } from '../engine/vehicle';
+import { rollVehicleProblem } from '../engine/travelTables';
+import { applyOps } from '../engine/ops';
+import { applyFall } from './combatEffects';
 import { findVehicleById } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
@@ -98,6 +105,11 @@ export interface TravelPlan {
   classKey?: string;
   /** Allure choisie (heures de route par jour ; > heures RAW = marche forcée). */
   hoursPerDay: number;
+  /** Allure EDOC (règle `travel-allures`) : en selle = pas/trot/galop (EDOC 07 l.140-144) ; sur un
+   *  attelage, `'galop'` = allure forcée (EDOC 07 l.229). Absent = cadence de base. */
+  allure?: Allure;
+  /** Attelage « Endommagé » (Problème de véhicule) : au pas jusqu'à réparation (EDOC 07 l.272-280). */
+  vehicleLame?: boolean;
   km: number;
   kmDone: number;
   /** Interrompu par une péripétie (combat/transition) — reprise via `resumeTravel`. */
@@ -131,19 +143,22 @@ export function startTravel(
   get: Get, set: Set,
   routeId: string,
   mode: TravelMode,
-  opts: { classKey?: string; hoursPerDay?: number } = {},
+  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure } = {},
 ): void {
   const { worldMap, scene, battle, party } = get();
   if (battle || !worldMap || !scene) return;
   const from = placeOfScene(worldMap, scene.id);
   const route = worldMap.routes.find((r) => r.id === routeId);
   if (!from || !route || (route.a !== from.id && route.b !== from.id)) return;
-  if (!route.modes.includes(mode)) return;
+  // « En selle » suit les mêmes chemins qu'à pied (mode IMPLICITE des routes `pied`) — règle
+  // `travel-allures` (EDOC ch.4) et chaque héros vivant en selle (EDOC 07 l.140).
+  if (mode === 'monture' && (!rule('travel-allures') || !partyFullyMounted(party))) return;
+  if (!route.modes.includes(mode === 'monture' ? 'pied' : mode)) return;
   const to = placeById(worldMap, otherEnd(route, from.id));
   if (!to) return;
 
   // Transport payant : prix par km PAR PASSAGER (l.207), débité au départ — refus si bourse insuffisante.
-  if (mode !== 'pied') {
+  if (mode !== 'pied' && mode !== 'monture') {
     const passengers = party.filter((h) => !h.dead && !h.outOfRencontre).length;
     const cost = transportCost(route.km, mode, opts.classKey ?? '', passengers, route.prices?.[mode]);
     const purse = get().money;
@@ -155,28 +170,35 @@ export function startTravel(
     log(get, set, [`Le groupe paie son passage : ${formatMoney(cost)} (${TRAVEL_MODE_LABEL[mode].toLowerCase()}).`]);
   }
 
+  // Allure EDOC (règle `travel-allures`) : en selle, pas/trot/galop (EDOC 07 l.140) ; sur un attelage,
+  // « pas de course » forcé (EDOC 07 l.229) — seulement si le véhicule a un attelage (`travel.draft`).
+  const allure: Allure | undefined = mode === 'monture'
+    ? (opts.allure ?? 'pas')
+    : opts.allure === 'galop' && rule('travel-allures') && vehicleTravel(mode)?.draft ? 'galop' : undefined;
+
   const base = baseHoursPerDay(worldMap);
   const hours = mode === 'pied'
     ? Math.min(Math.max(opts.hoursPerDay ?? base, 1), maxHoursPerDay(worldMap))
-    : base; // transport : cadence du véhicule (RAW muet) = heures de route standard
+    : mode === 'monture'
+      ? Math.min(Math.max(opts.hoursPerDay ?? base, 1), 12) // « au pas jusqu'à 12 heures sans repos » (EDOC 07 l.142)
+      : base; // transport : cadence du véhicule (RAW muet) = heures de route standard
   // Coque transitoire du véhicule du trajet (`Combatant` à PV depuis `vehicles.json` hull) — encaisse les
-  // incidents (`vehicleWounds`) via `applyVehicleProblem` (engine/vehicle). Présente seulement sous les
-  // Étapes EDOC et si le véhicule a un profil de coque. NB : le DÉCLENCHEUR RAW (Échec Stupéfiant à un Test
-  // de Conduite d'attelage en allure forcée) n'est pas encore modélisé — la cadence d'un transport est fixée
-  // (l.159). L'entité + l'application des Dégâts (le keystone) sont prêtes et testées ; le câblage du
-  // déclencheur attend le mécanisme d'allure forcée en véhicule (dalle fluviale/maritime).
-  const vehicle = mode !== 'pied' && rule('travel-etapes')
+  // Dégâts des Problèmes de véhicule (`applyVehicleProblem`). Créée sous les Étapes EDOC, ou dès que
+  // l'allure est FORCÉE (EDOC 07 l.253 : Échec Stupéfiant de Conduite d'attelage → Problème de véhicule).
+  const vehicle = mode !== 'pied' && mode !== 'monture' && (rule('travel-etapes') || allure === 'galop')
     ? (() => { const v = findVehicleById(mode); return v ? vehicleCombatant(v) : undefined; })()
     : undefined;
   const plan: TravelPlan = {
     routeId, fromPlaceId: from.id, toPlaceId: to.id, mode,
     classKey: opts.classKey, hoursPerDay: hours, km: route.km, kmDone: 0, interrupted: false,
+    ...(allure ? { allure } : {}),
     // Postes initialisés depuis les rôles PERSISTANTS (`travelRole`) — réutilisés chaque Étape (EDOC ch.5).
     postes: rule('travel-etapes') ? stageAssignmentFromRoles(party) : undefined,
     ...(vehicle ? { vehicle } : {}),
   };
   set({ travelPlan: plan, worldMapOpen: false, travelRecap: null });
-  log(get, set, [`— En route vers ${to.label} (${route.km} km, ${TRAVEL_MODE_LABEL[mode].toLowerCase()}) —`]);
+  const allureLabel = allure ? `, ${ALLURE_LABEL[allure].toLowerCase()}` : '';
+  log(get, set, [`— En route vers ${to.label} (${route.km} km, ${TRAVEL_MODE_LABEL[mode].toLowerCase()}${allureLabel}) —`]);
   runTravelDays(get, set);
 }
 
@@ -219,8 +241,9 @@ function runTravelDays(get: Get, set: Set): void {
     if (!route || !to) { set({ travelPlan: null }); return; }
     const party = get().party;
 
-    // Vitesse du jour (à pied, l'Encombrement/les États du moment comptent — recalculée chaque jour).
-    const kmh = travelSpeed(party, plan.mode, route.speed?.[plan.mode]);
+    // Vitesse du jour (à pied, l'Encombrement/les États du moment comptent ; en selle, l'allure et les
+    // Incidents de monte de la veille — recalculée chaque jour). Attelage Endommagé → cadence de base.
+    const kmh = travelSpeed(party, plan.mode, route.speed?.[plan.mode], plan.vehicleLame ? undefined : plan.allure);
     if (kmh <= 0) {
       set({ travelPlan: { ...plan, interrupted: true } });
       log(get, set, ['Le groupe est trop chargé pour avancer — le voyage s’arrête là (alléger les sacs, puis reprendre).']);
@@ -232,24 +255,43 @@ function runTravelDays(get: Get, set: Set): void {
     // sans rejouer une journée (ni fatigue ni péripéties — elles ont déjà été tirées ce jour-là).
     if (plan.km - plan.kmDone < 1e-9) {
       set({ travelPlan: null });
-      log(get, set, [`— Arrivée à ${to.label} —`]);
+      log(get, set, [`— Arrivée à ${to.label} —`, ...travelArrivalCare(get, set)]);
       finishRecap('arrived');
       get().transitionTo(to.scene, to.entry);
       return;
     }
 
     // Marche du jour : on avance l'horloge d'un bloc (PAS minute par minute, cf. en-tête).
-    const hoursLeft = (plan.km - plan.kmDone) / kmh;
-    const hoursToday = Math.min(plan.hoursPerDay, hoursLeft);
+    // Attelage FORCÉ au pas de course (EDOC 07 l.229) : la progression du jour se joue km par km
+    // (Tests de Conduite d'attelage) — sinon, progression linéaire à la vitesse du mode.
+    const kmLeft = plan.km - plan.kmDone;
+    const forced = plan.allure === 'galop' && plan.mode !== 'monture' && !plan.vehicleLame && vehicleTravel(plan.mode)?.draft
+      ? forcedPaceDay(get, set, kmLeft)
+      : null;
+    const hoursToday = forced ? forced.hours : Math.min(plan.hoursPerDay, kmLeft / kmh);
     set({ gameTime: get().gameTime + Math.round(hoursToday * 60) });
     bus.emit(EVT.TIME_ADVANCED, { minutes: Math.round(hoursToday * 60) });
     const upkeepLines = runDailyUpkeep(get, set); // au cas où la marche franchit minuit
-    const kmDone = Math.min(plan.km, plan.kmDone + hoursToday * kmh);
+    const kmDone = Math.min(plan.km, plan.kmDone + (forced ? forced.km : hoursToday * kmh));
     set({ travelPlan: { ...get().travelPlan!, kmDone } });
     const arrived = plan.km - kmDone < 1e-9;
     // L'entretien quotidien (rations/faim, maladies, convalescence) fait partie du RÉCIT du jour.
-    const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday, lines: [...upkeepLines], entries: [] };
+    const recapDay: TravelRecapDay = {
+      kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday,
+      lines: [...(forced?.lines ?? []), ...upkeepLines], entries: [...(forced?.entries ?? [])],
+    };
     recap?.days.push(recapDay);
+    if (forced) {
+      log(get, set, forced.lines);
+      // Conséquences d'attelage : Endommagé → au pas jusqu'à réparation (l.272-280) ; Cassé/Accident ou
+      // coque à 0 Blessure → véhicule hors d'usage, la route continue à pied.
+      if (forced.vehicleLame) set({ travelPlan: { ...get().travelPlan!, vehicleLame: true } });
+      if (forced.vehicleOut) {
+        set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
+        log(get, set, ['Le véhicule est hors d’usage — la route continue à pied.']);
+        recapDay.lines.push('Le véhicule est hors d’usage — la route continue à pied.');
+      }
+    }
 
     // Fin de journée de route À PIED : fatigue d'Encombrement (p.295, non-jetée) + recensement des
     // héros en MARCHE FORCÉE (l.224). Le JET de marche forcée est DIFFÉRÉ : s'il y a une halte de
@@ -268,6 +310,11 @@ function runTravelDays(get: Get, set: Set): void {
       if (dayLines.length) set({ party: [...party] });
     }
     log(get, set, dayLines);
+
+    // Journée EN SELLE (EDOC 07 l.142-146) : endurance de l'allure des bêtes, Incidents de monte
+    // (EDOC 07 l.148-174), chute du cavalier, bête perdue — puis dégradation à pied si le groupe
+    // n'est plus monté au complet (les cavaliers ne marchent pas : ni fatigue ni marche forcée).
+    if (plan.mode === 'monture') resolveMountedTravelDay(get, set, hoursToday, plan.allure ?? 'pas', recapDay);
     const rollMarchEager = () => {
       if (!marchHeroes.length) return;
       const lines: string[] = [];
@@ -297,7 +344,9 @@ function runTravelDays(get: Get, set: Set): void {
     if (arrived) {
       rollMarchEager();
       set({ travelPlan: null });
-      log(get, set, [`— Arrivée à ${to.label} —`]);
+      const care = travelArrivalCare(get, set);
+      recapDay.lines.push(...care);
+      log(get, set, [`— Arrivée à ${to.label} —`, ...care]);
       finishRecap('arrived');
       get().transitionTo(to.scene, to.entry);
       return;
@@ -470,6 +519,180 @@ function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
     }
     if (anyExposed) { set({ party: [...get().party] }); tell(lines); }
   }
+}
+
+/**
+ * Applique la journée EN SELLE (EDOC 07 l.142-146) : le moteur PUR `resolveMountedDay` rend la fatigue
+ * des bêtes et les Incidents de monte ; ici on APPLIQUE — chute du cavalier (Dégâts de Chute, brique
+ * `applyFall`), état persistant sur l'instance (`mountInjury`), bête morte/condamnée retirée de
+ * l'inventaire — et on dégrade la route à pied si le groupe n'est plus monté au complet.
+ */
+function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure: Allure, day: TravelRecapDay): void {
+  const outcomes = resolveMountedDay(partyMounts(get().party), hoursToday, allure, battleRng());
+  const lines: string[] = [];
+  for (const o of outcomes) {
+    lines.push(...o.lines);
+    for (const t of o.tests) {
+      day.entries!.push({ actorId: o.mount.hero.id, icon: '🐎', label: t.label, d: t, text: t.success ? 'tient l’allure' : 'flanche', tone: t.success ? 'ok' : 'bad' });
+    }
+    for (const inc of o.incidents) {
+      if (inc.riderTest) {
+        day.entries!.push({
+          actorId: o.mount.hero.id, icon: '🐎', label: `${inc.entry.label} — Chevaucher`, d: inc.riderTest,
+          text: inc.riderTest.success ? 'se maintient en selle' : 'chute (2 m)', tone: inc.riderTest.success ? 'ok' : 'bad',
+        });
+      }
+      // Chute de selle (2 mètres, EDOC 07 l.166/l.171) — Dégâts de Chute (LDB 15) via la brique partagée.
+      if (inc.riderFallM) applyFall(o.mount.hero, inc.riderFallM, battleRng());
+      if (inc.injury) o.mount.item.mountInjury = inc.injury;
+    }
+    // Bête morte (poussée jusqu'à la mort, l.146) ou Patte brisée (« peu d'espoir qu'elle y survive »,
+    // l.163) : retirée de l'inventaire du propriétaire.
+    if (o.dead || o.mount.item.mountInjury === 'patte-brisee') {
+      const h = o.mount.hero;
+      h.items = (h.items ?? []).filter((i) => i.uid !== o.mount.item.uid);
+      lines.push(`${h.name} abandonne ${o.mount.item.name} sur la route.`);
+    }
+  }
+  set({ party: [...get().party] });
+  log(get, set, lines);
+  day.lines.push(...lines);
+  if (!partyFullyMounted(get().party)) {
+    set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
+    const l = 'Le groupe n’est plus monté au complet — la route continue à pied.';
+    log(get, set, [l]);
+    day.lines.push(l);
+  }
+}
+
+/** Issue d'une journée d'attelage FORCÉ (collectée puis journalisée par l'appelant). */
+interface ForcedPaceDayResult {
+  km: number;
+  hours: number;
+  lines: string[];
+  entries: NonNullable<TravelRecapDay['entries']>;
+  /** Cassé/Accident ou coque à 0 Blessure : véhicule hors d'usage. */
+  vehicleOut: boolean;
+  /** Endommagé : au pas jusqu'à réparation (EDOC 07 l.272-280). */
+  vehicleLame: boolean;
+}
+
+/**
+ * Journée d'attelage FORCÉ au pas de course (EDOC 07 l.229) : « Le conducteur doit effectuer un Test de
+ * Conduite d'attelage Intermédiaire (+0) tous les kilomètres, avec une pénalité de -10 par kilomètre déjà
+ * parcouru au pas de course. En cas d'échec, les animaux repasseront au pas, et chacun doit réussir un
+ * Test de Résistance Intermédiaire (+0) ou acquérir un État Exténué. » Un Échec Stupéfiant (-6 DR) du
+ * conducteur exige un jet sur le Tableau des Problèmes de véhicule (EDOC 07 l.253). Le conducteur = le
+ * meilleur héros en Conduite d'attelage, soutenu (LDB 12). Après un échec, le reste de la journée se fait
+ * à la cadence de base du transport (les bêtes soufflent — le galop ne reprend pas le même jour).
+ */
+function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult {
+  const plan = get().travelPlan!;
+  const t = vehicleTravel(plan.mode)!;
+  const draft = mountProfileById(t.draft!.montureId)!;
+  const gallopKmh = draft.m * ALLURE_KMH_PER_M.galop; // vitesse au pas de course = M de l'attelage × 3 (l.140)
+  const walkKmh = t.movement;
+  const out: ForcedPaceDayResult = { km: 0, hours: 0, lines: [], entries: [], vehicleOut: false, vehicleLame: false };
+  const driver = partyAssisted(get().party, 'conduite-d-attelage');
+  let galloped = 0;
+  while (out.hours < plan.hoursPerDay - 1e-9 && out.km < kmLeft - 1e-9) {
+    const base = Math.max(0, (driver?.value ?? 0) - 10 * galloped); // -10 par km déjà au pas de course (l.229)
+    const roll = rollTest(base, 'intermediaire', battleRng());
+    if (roll.success) {
+      out.km += 1;
+      galloped += 1;
+      out.hours += 1 / gallopKmh;
+      continue;
+    }
+    const stupefiant = roll.sl <= -6; // Échec Stupéfiant (EDOC 07 l.253)
+    out.entries.push({
+      actorId: driver?.actor.id ?? '', icon: '🐎', label: 'Conduite d’attelage (allure forcée)',
+      d: testDetail('Conduite d’attelage', base, roll),
+      text: stupefiant ? 'Échec Stupéfiant — Problème de véhicule !' : 'les bêtes repassent au pas', tone: 'bad',
+    });
+    out.lines.push(`${driver?.actor.name ?? 'Le conducteur'} — Conduite d'attelage (allure forcée) : 🎲 ${roll.roll}/${roll.target} → ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`);
+    // « chacun doit réussir un Test de Résistance Intermédiaire (+0) ou acquérir un État Exténué » (l.229)
+    // — les bêtes de l'attelage (transport), leur fatigue est journalisée.
+    for (let i = 0; i < t.draft!.count; i++) {
+      const rt = rollTest(draft.e, 'intermediaire', battleRng());
+      if (!rt.success) out.lines.push(`Une bête de l'attelage est Exténuée (Résistance 🎲 ${rt.roll}/${rt.target}).`);
+    }
+    if (stupefiant) {
+      const pb = applyVehicleProblemToTravel(get, set, out);
+      out.vehicleOut = pb.vehicleOut;
+      out.vehicleLame = pb.vehicleLame;
+    }
+    // Reste de la journée à la cadence de base du transport (au pas si Endommagé — même vitesse LDB).
+    if (!out.vehicleOut) {
+      const remaining = Math.min(plan.hoursPerDay - out.hours, Math.max(0, kmLeft - out.km) / walkKmh);
+      out.km += remaining * walkKmh;
+      out.hours += remaining;
+    }
+    break; // plus de galop aujourd'hui
+  }
+  out.km = Math.min(out.km, kmLeft);
+  return out;
+}
+
+/**
+ * Tire et APPLIQUE un Problème de véhicule au trajet (déclenché AU PAS DE COURSE, EDOC 07 l.253) :
+ * `applyVehicleProblem` (Dégâts à la coque) + Dégâts aux OCCUPANTS en `GameOp` (`occupantOps`). Le
+ * véhicule allant plus vite que la marche : « Incontrôlable » non maîtrisé → Accident (l.284) et
+ * « Cassé » se traite comme un Accident (l.276) — le remap se fait AVANT d'appliquer les Dégâts.
+ */
+function applyVehicleProblemToTravel(get: Get, set: Set, out: Pick<ForcedPaceDayResult, 'lines' | 'entries'>): { vehicleOut: boolean; vehicleLame: boolean } {
+  const vehicle = get().travelPlan?.vehicle;
+  if (!vehicle) return { vehicleOut: false, vehicleLame: false }; // garde : coque toujours créée en allure forcée
+  const roll = d100(battleRng());
+  let entry = rollVehicleProblem(roll);
+  if (entry.id === 'incontrolable') {
+    // « S'il ne prend pas des mesures pour l'arrêter, le véhicule peut entrer en collision ! … S'il se
+    // déplaçait plus vite que la vitesse de marche, il subit un Accident à la place » (l.284) — la
+    // maîtrise = Test de Conduite d'attelage Intermédiaire (+0) du conducteur.
+    const driver = partyAssisted(get().party, 'conduite-d-attelage');
+    const rt = rollTest(driver?.value ?? 0, 'intermediaire', battleRng());
+    out.lines.push(`Problème de véhicule — ${entry.label}.`, `${driver?.actor.name ?? 'Le conducteur'} tente de reprendre le contrôle : 🎲 ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
+    if (rt.success) return { vehicleOut: false, vehicleLame: false };
+    entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
+  } else if (entry.id === 'casse') {
+    // « Si le véhicule se déplaçait plus vite que la marche, traitez ce résultat comme un Accident » (l.276).
+    out.lines.push(`Problème de véhicule — ${entry.label}, à pleine allure : ACCIDENT !`);
+    entry = rollVehicleProblem(96);
+  }
+  const r = applyVehicleProblem(vehicle, entry.min, battleRng());
+  out.lines.push(...r.lines);
+  // Dégâts aux occupants (Cassé : 1 Blessure ignorant BE et PA ; Accident : 2d10 − BE − PA, min 1) —
+  // langue unique GameOp, portée par la table (`occupantOps`).
+  if (r.entry.occupantOps?.length) {
+    const lines: string[] = [];
+    for (const h of get().party) {
+      if (h.dead || h.outOfRencontre) continue;
+      lines.push(...applyOps(h, r.entry.occupantOps, { rng: battleRng() }));
+    }
+    set({ party: [...get().party] });
+    out.lines.push(...lines);
+  }
+  if (r.entry.id === 'endommage') return { vehicleOut: false, vehicleLame: true };
+  return { vehicleOut: r.entry.id === 'accident' || vehicle.wounds.current <= 0, vehicleLame: false };
+}
+
+/**
+ * Soins de l'ARRIVÉE au relais : le maréchal-ferrant remplace le fer (EDOC 07 l.166), la sellerie est
+ * réparée (l.174), la bête boiteuse est laissée aux bons soins de l'étape. Choix documenté : le RAW ne
+ * chiffre ni coût ni durée pour ces remises en état — on les résout à l'arrivée (Patte brisée, elle,
+ * a coûté la bête en route).
+ */
+function travelArrivalCare(get: Get, set: Set): string[] {
+  const lines: string[] = [];
+  for (const h of get().party) {
+    for (const i of h.items ?? []) {
+      if (!i.mountInjury || i.mountInjury === 'patte-brisee') continue;
+      lines.push(`${i.name} (${h.name}) est ${i.mountInjury === 'boiteux' ? 'soignée' : 'remise en état'} à l'étape.`);
+      delete i.mountInjury;
+    }
+  }
+  if (lines.length) set({ party: [...get().party] });
+  return lines;
 }
 
 /** « Voyage éreintant » raté : +1 jour de retard (le groupe erre) et +1 Exténué chacun.

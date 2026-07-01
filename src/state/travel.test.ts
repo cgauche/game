@@ -476,3 +476,119 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     expect(useGame.getState().party[0].travelRole).toBeUndefined();
   });
 });
+
+/**
+ * Montures et attelages en voyage (EDOC ch.4, règle optionnelle `travel-allures`) : voyage en selle
+ * (vitesse par allure l.140, endurance l.142-146, Incidents de monte l.148-174) et allure forcée
+ * d'un attelage (l.229 + Problème de véhicule l.253).
+ */
+describe('Montures & attelages (EDOC ch.4, règle optionnelle travel-allures)', () => {
+  afterEach(() => {
+    resetRule('travel-allures');
+  });
+
+  const mountItem = (uid: string, trappingId = 'cheval-de-selle'): ItemInstance =>
+    ({ uid, name: trappingId, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false });
+
+  it('OFF (défaut) : le départ « en selle » est refusé', () => {
+    setup(map(), [hero({ items: [mountItem('m1')] })]);
+    useGame.getState().startTravel('r1', 'monture');
+    expect(useGame.getState().travelPlan).toBeNull();
+    expect(useGame.getState().scene?.id).toBe('lieu-a-scene');
+  });
+
+  it('ON sans monture pour chaque héros vivant : refusé', () => {
+    setRule('travel-allures', true);
+    setup(map(), [hero({ items: [mountItem('m1')] }), hero({ id: 'h2', name: 'Nain' })]);
+    useGame.getState().startTravel('r1', 'monture');
+    expect(useGame.getState().travelPlan).toBeNull();
+    expect(useGame.getState().scene?.id).toBe('lieu-a-scene');
+  });
+
+  it('ON, groupe monté : 12 km au trot (Palefroi M7 → 17,5 km/h, EDOC 07 l.140) = 41 min', () => {
+    setRule('travel-allures', true);
+    setup(map(), [hero({ items: [mountItem('m1')] })]);
+    const t0 = useGame.getState().gameTime;
+    useGame.getState().startTravel('r1', 'monture', { allure: 'trot' });
+    const st = useGame.getState();
+    expect(st.scene?.id).toBe('lieu-b-scene');
+    expect(st.gameTime - t0).toBe(Math.round((12 / 17.5) * 60)); // 41 min
+    expect(st.journal.some((l) => l.includes('en selle') && l.includes('trot'))).toBe(true);
+  });
+
+  it('sur-endurance au galop (Chien BE 2, 6 h) : la bête s’épuise — Incident de monte ou effondrement', () => {
+    setRule('travel-allures', true);
+    // Chien M4 : galop 12 km/h, endurance ½ BE = 1 h → une longue journée dépasse LARGEMENT.
+    setup(map({ km: 80 }), [hero({ items: [mountItem('m1', 'chien')] })]);
+    useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
+    const j = useGame.getState().journal;
+    expect(j.some((l) => l.includes('Incident de monte') || l.includes('s’effondre') || l.includes("s'effondre"))).toBe(true);
+  });
+
+  it('bête perdue en route (Boiteux/Patte brisée/morte) : la route continue à pied', () => {
+    setRule('travel-allures', true);
+    // La cascade du chien épuisé finit toujours par le rendre inutilisable ou mort sur 80 km au galop.
+    let degraded = false;
+    for (let seed = 1; seed <= 20 && !degraded; seed++) {
+      seedBattleRng(seed);
+      setup(map({ km: 80 }), [hero({ items: [mountItem('m1', 'chien')] })]);
+      useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
+      const st = useGame.getState();
+      if (st.journal.some((l) => l.includes('la route continue à pied'))) {
+        degraded = true;
+        // Le plan (s'il court encore) est repassé à pied.
+        if (st.travelPlan) expect(st.travelPlan.mode).toBe('pied');
+      }
+    }
+    expect(degraded).toBe(true);
+  });
+
+  it('fer/sangle/boiteux sont remis en état à l’ARRIVÉE (choix documenté — RAW sans coût ni durée)', () => {
+    setRule('travel-allures', true);
+    const h = hero({ items: [mountItem('m1')] });
+    h.items![0].mountInjury = 'perte-d-un-fer';
+    setup(map(), [h]);
+    useGame.getState().startTravel('r1', 'monture'); // au pas (le fer force déjà le pas)
+    const st = useGame.getState();
+    expect(st.scene?.id).toBe('lieu-b-scene');
+    expect(st.party[0].items![0].mountInjury).toBeUndefined();
+    expect(st.journal.some((l) => l.includes('remise en état'))).toBe(true);
+  });
+
+  it('attelage forcé (diligence, l.229) : Tests de Conduite d’attelage par km ; Échec Stupéfiant → Problème de véhicule', () => {
+    setRule('travel-allures', true);
+    // Conducteur sans Compétence (Ag 30 → cible basse) : échecs fréquents, Stupéfiants fréquents.
+    let problem = false;
+    for (let seed = 1; seed <= 30 && !problem; seed++) {
+      seedBattleRng(seed);
+      setup(map({ km: 30, modes: ['diligence'], prices: { diligence: 1 } }));
+      useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur', allure: 'galop' });
+      const st = useGame.getState();
+      // La coque est créée dès que l'allure est forcée (les Dégâts du Problème doivent porter).
+      expect(st.journal.some((l) => l.includes("Conduite d'attelage (allure forcée)"))).toBe(true);
+      if (st.journal.some((l) => l.includes('Problème de véhicule'))) problem = true;
+      // Fin de trajet propre : arrivé, ou dégradé à pied (véhicule hors d'usage), ou halte de nuit.
+      while (useGame.getState().pendingRest && useGame.getState().travelPlan) sleepThroughHalt();
+    }
+    expect(problem).toBe(true);
+  });
+
+  it('attelage « Endommagé » : le reste du trajet se fait à la cadence de base (vehicleLame)', () => {
+    setRule('travel-allures', true);
+    // On cherche une graine où le Problème tiré est « Endommagé » (01-50 Incontrôlable maîtrisé exclu).
+    let lame = false;
+    for (let seed = 1; seed <= 60 && !lame; seed++) {
+      seedBattleRng(seed);
+      setup(map({ km: 200, modes: ['diligence'], prices: { diligence: 1 } }), [hero({ items: [ration('r1'), ration('r2'), ration('r3')] })]);
+      useGame.setState({ money: { gold: 5, silver: 0, brass: 0 } });
+      useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur', allure: 'galop' });
+      if (useGame.getState().travelPlan?.vehicleLame) lame = true;
+      while (useGame.getState().pendingRest && useGame.getState().travelPlan && !lame) {
+        sleepThroughHalt();
+        if (useGame.getState().travelPlan?.vehicleLame) lame = true;
+      }
+    }
+    expect(lame).toBe(true);
+    expect(useGame.getState().journal.some((l) => l.includes('Endommagé'))).toBe(true);
+  });
+});

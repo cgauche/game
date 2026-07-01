@@ -545,12 +545,14 @@ Si un participant a un **M supérieur** aux autres, il gagne autant de **DR bonu
 
 | Module | Ce qu'il couvre |
 |---|---|
-| `src/engine/travel.ts` | Vitesse de groupe (`partyWalkSpeed`), `travelSpeed`, `travelPlanCalc`, `transportCost`, `forcedMarchTest`/`applyForcedMarch`, `applyTravelFatigue`. Transports payants lus depuis `src/data/transports.json`. |
-| `src/engine/travelStages.ts` | Système par Étapes EDOC : `stageCount`, météo (`WEATHER_TABLE`), `stageExposureDifficulty`, `forageYield`, `pleinAirModifier`, `forageWeatherModifier`, saisons (calendrier impérial). |
+| `src/engine/travel.ts` | Vitesse de groupe (`partyWalkSpeed`), `travelSpeed` (dont allures EDOC en selle / attelage forcé), `travelPlanCalc`, `transportCost`, `forcedMarchTest`/`applyForcedMarch`, `applyTravelFatigue`. Transports payants lus depuis `src/data/transports.json`. |
+| `src/engine/mountTravel.ts` | Montures en voyage (EDOC ch.4, règle optionnelle `travel-allures`) : profils/allures en donnée (`src/data/montures.json`), vitesse M × 1,5/2,5/3 km/h (l.140), endurance des allures 12 h / BE / ½ BE (l.142-144), cascade de sur-endurance (+Exténué, Test de Résistance, effondrement/mort, l.146) et Incidents de monte (l.148-174, `resolveMountIncident`/`resolveMountedDay`). |
+| `src/engine/travelStages.ts` | Système par Étapes EDOC : `stageCount` (bonus lu sur la règle `travel-etapes-count-bonus`), météo (`WEATHER_TABLE`), `stageExposureDifficulty`, `forageYield`, `pleinAirModifier`, `forageWeatherModifier`, saisons (calendrier impérial). |
 | `src/engine/provisions.ts` | Faim (LDB 18 l.337-343) : consommation/jour, Test Résistance, malus, Brouet. |
 | `src/engine/encumbrance.ts` | `effectiveMovement(c)` (M après pénalités Enc), `encumbrancePenalties()` (tiers + travelFatigue). |
-| `src/state/travelFlow.ts` | Voyage jour par jour, `TravelPlan` + reprise, `TravelRecap`, cascade influençable de marche forcée, sous-système Étapes optionnel. |
+| `src/state/travelFlow.ts` | Voyage jour par jour, `TravelPlan` + reprise, `TravelRecap`, cascade influençable de marche forcée, sous-système Étapes optionnel ; journée en selle (`resolveMountedTravelDay`) et attelage forcé au pas de course (`forcedPaceDay` : Test de Conduite d'attelage par km, Échec Stupéfiant → `applyVehicleProblem` + Dégâts occupants `occupantOps` en GameOp). |
 | `src/data/transports.json` | Table des transports payants RAW (Diligence/Barge/Fiacre/Ferry), éditable au Compendium. |
+| `src/data/montures.json` | Table « Mouvement pour les montures » + Endurance des profils (verbatim EDOC 07), liée aux trappings `animaux-et-vehicules`. |
 | `src/data/peripeties.ts` | Table des péripéties de voyage (1d10, verbatim LDB 51 l.212-222). |
 
 ### Écarts code ↔ RAW relevés
@@ -560,10 +562,10 @@ Si un participant a un **M supérieur** aux autres, il gagne autant de **DR bonu
 | Plafond marche forcée | Canon muet | 10 h/j par défaut (paramétrable) | Choix documenté dans `TRAVEL_DEFAULTS.forcedMaxHours`. |
 | Barges + courant | ±30 % | Implémenté via `route.speed[mode]` | Conforme. |
 | Péripétie seuil d10 | « événement sur un résultat de 8 » | `perilDie = 8` (0 = désactivé) | Conforme. |
-| Vitesse monture en km/h | M × 1,5 / 2,5 / 3 (EDOC) | Non dans `travel.ts` (montures traitées comme transport dont M = Mouvement de la monture) | Simplification acceptable ; la vitesse EDOC reste disponible pour authoring si besoin. |
-| Endurance monture (allures) | EDOC ch.4 : BE heures au trot, ½ BE au galop | Non implémenté (combat uniquement) | Hors périmètre actuel. |
-| Tableau Incidents de Monte | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |
-| Véhicules (Problèmes de Véhicule) | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |
+| Vitesse monture en km/h | M × 1,5 / 2,5 / 3 (EDOC 07 l.140) | `mountedSpeedKmh` (bête la plus lente, allure plafonnée par Perte d'un fer / non-trot) | Conforme (règle `travel-allures`). |
+| Endurance monture (allures) | EDOC 07 l.142-146 : 12 h au pas, BE h au trot, ½ BE au galop ; au-delà +Exténué/Tests/effondrement | `allureEnduranceHours` + `resolveMountedDay` (Exténué journalier des bêtes — la halte de nuit vaut repos) | Conforme. |
+| Tableau Incidents de Monte | EDOC 07 l.148-174 | `rollMountIncident` + `resolveMountIncident` (chute cavalier 2 m, -20 Chevaucher, fer→pas, Boiteux/Patte brisée) — fer/sangle/boiteux REMIS EN ÉTAT à l'arrivée (RAW sans coût ni durée) | Conforme ; remise en état à l'étape = choix documenté. |
+| Véhicules (Problèmes de Véhicule) | EDOC 07 l.229 (allure forcée : Test de Conduite d'attelage/km, -10/km au galop) + l.253 (Échec Stupéfiant → table) | `forcedPaceDay` (travelFlow) → `applyVehicleProblem` ; Incontrôlable non maîtrisé plus vite que le pas → Accident (l.286) ; Endommagé → cadence de base jusqu'à réparation | Conforme ; après un échec, le galop ne reprend pas le même jour (choix documenté, RAW muet). |
 
 ---
 

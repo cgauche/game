@@ -12,6 +12,7 @@ import {
   pleinAirModifier, forageWeatherModifier, forageYield,
   type Season,
 } from './travelStages';
+import { setRule, resetRule } from './policy';
 import { setDataset } from '../data/overrides';
 import { weather } from '../data';
 
@@ -127,6 +128,13 @@ describe('stageCount (EDOC ch.5 l.34) — distance → Étapes ± bonus', () => 
   });
   it('bonus négatif ignoré (jamais < base)', () => {
     expect(stageCount(75, -3)).toBe(3);
+  });
+  it('sans paramètre, le bonus est LU sur la règle optionnelle `travel-etapes-count-bonus`', () => {
+    expect(stageCount(10)).toBe(1); // défaut de la règle = 0
+    setRule('travel-etapes-count-bonus', 2);
+    expect(stageCount(10)).toBe(3); // 1 + 2 (EDOC ch.5 l.34 « augmentez le nombre d'Étapes de 2 ou plus »)
+    resetRule('travel-etapes-count-bonus');
+    expect(stageCount(10)).toBe(1);
   });
 });
 

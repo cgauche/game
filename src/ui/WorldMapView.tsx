@@ -5,6 +5,9 @@ import { baseHoursPerDay, maxHoursPerDay } from '../state/travelFlow';
 import {
   TravelMode, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon, travelSpeed, travelPlanCalc, transportCost,
 } from '../engine/travel';
+import {
+  type Allure, ALLURE_LABEL, availableAllures, partyFullyMounted, partyMounts,
+} from '../engine/mountTravel';
 import { rationCount } from '../engine/provisions';
 import { formatMoney, canAfford } from '../engine/money';
 import { rule } from '../engine/policy';
@@ -78,6 +81,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const [mode, setMode] = useState<TravelMode>('pied');
   const [classKey, setClassKey] = useState('');
   const [forced, setForced] = useState(false);
+  /** Allure en selle (EDOC 07 l.140) — règle optionnelle `travel-allures`. */
+  const [allure, setAllure] = useState<Allure>('pas');
+  /** Attelage forcé au pas de course (EDOC 07 l.229). */
+  const [forceGallop, setForceGallop] = useState(false);
   /** Lieu cliqué SANS route directe depuis ici → on l'explique au lieu de rester muet. */
   const [farId, setFarId] = useState<string | null>(null);
 
@@ -95,20 +102,34 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     setMode(m);
     setClassKey(vehicleTravel(m)?.classes[0].key ?? '');
     setForced(false);
+    setAllure('pas');
+    setForceGallop(false);
   };
   const pickMode = (m: TravelMode) => {
     setMode(m);
     setClassKey(vehicleTravel(m)?.classes[0].key ?? '');
+    setAllure('pas');
+    setForceGallop(false);
   };
+
+  // « En selle » (EDOC ch.4, règle `travel-allures`) : mode IMPLICITE des routes praticables à pied,
+  // quand chaque héros vivant a une monture utilisable.
+  const alluresOn = !!rule('travel-allures');
+  const mounted = alluresOn && partyFullyMounted(party);
+  const allures = mounted ? availableAllures(partyMounts(party)) : [];
+  const modeChoices: TravelMode[] = selRoute
+    ? [...selRoute.modes, ...(mounted && selRoute.modes.includes('pied') ? ['monture'] : [])]
+    : [];
 
   // Estimations du trajet sélectionné (mêmes formules que le flux — RAW l.207-224).
   const base = baseHoursPerDay(map);
   const maxH = maxHoursPerDay(map);
   const passengers = party.filter((h) => !h.dead && !h.outOfRencontre).length;
-  const kmh = selRoute ? travelSpeed(party, mode, selRoute.speed?.[mode]) : 0;
-  const hours = mode === 'pied' && forced ? maxH : base;
+  const effAllure: Allure | undefined = mode === 'monture' ? allure : forceGallop ? 'galop' : undefined;
+  const kmh = selRoute ? travelSpeed(party, mode, selRoute.speed?.[mode], effAllure) : 0;
+  const hours = mode === 'pied' && forced ? maxH : mode === 'monture' && forced ? 12 : base;
   const plan = selRoute && kmh > 0 ? travelPlanCalc(selRoute.km, kmh, hours) : null;
-  const cost = selRoute && mode !== 'pied'
+  const cost = selRoute && mode !== 'pied' && mode !== 'monture'
     ? transportCost(selRoute.km, mode, classKey, passengers, selRoute.prices?.[mode])
     : null;
   const affordable = !cost || canAfford(money, cost);
@@ -270,7 +291,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           <div className="wm-trip">
             <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{dest.label}</b> · {selRoute.km} km</span>
             <div className="wm-modes">
-              {selRoute.modes.map((m) => (
+              {modeChoices.map((m) => (
                 <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
                   {travelModeIcon(m)} {TRAVEL_MODE_LABEL[m]}
                 </button>
@@ -283,7 +304,23 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               <span>Marche forcée <span className="wm-opt-hint">({maxH} h/jour)</span></span>
             </label>
           )}
-          {mode !== 'pied' && (
+          {mode === 'monture' && (
+            <>
+              {/* Allure (EDOC 07 l.140-144) : vitesse ET endurance des bêtes en dépendent. */}
+              <div className="wm-modes">
+                {allures.map((a) => (
+                  <button key={a} type="button" className={`btn small ${allure === a ? 'btn-primary' : ''}`} onClick={() => setAllure(a)}>
+                    {ALLURE_LABEL[a]}
+                  </button>
+                ))}
+              </div>
+              <label className="wm-opt" title="Une monture voyage au pas jusqu'à 12 h sans repos ; au-delà de l'endurance de son allure (trot : Bonus d'Endurance en heures, galop : la moitié), la bête s'épuise — Incidents de monte.">
+                <input type="checkbox" checked={forced} onChange={(e) => setForced(e.target.checked)} />
+                <span>Longue journée <span className="wm-opt-hint">(12 h/jour)</span></span>
+              </label>
+            </>
+          )}
+          {vehicleTravel(mode) && (
             <label className="wm-opt">
               Classe{' '}
               <select value={classKey} onChange={(e) => setClassKey(e.target.value)}>
@@ -293,6 +330,12 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                   </option>
                 ))}
               </select>
+            </label>
+          )}
+          {alluresOn && vehicleTravel(mode)?.draft && (
+            <label className="wm-opt" title="Forcer l'attelage au pas de course : Test de Conduite d'attelage par kilomètre (-10 par km déjà au galop) — un Échec Stupéfiant provoque un Problème de véhicule.">
+              <input type="checkbox" checked={forceGallop} onChange={(e) => setForceGallop(e.target.checked)} />
+              <span>Forcer l’allure <span className="wm-opt-hint">(pas de course)</span></span>
             </label>
           )}
           <p className="wm-est">
@@ -319,7 +362,11 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 : kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
                 : !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`
                 : undefined}
-              onClick={() => startTravel(selRoute.id, mode, { classKey: classKey || undefined, hoursPerDay: mode === 'pied' && forced ? maxH : undefined })}
+              onClick={() => startTravel(selRoute.id, mode, {
+                classKey: classKey || undefined,
+                hoursPerDay: forced ? (mode === 'pied' ? maxH : mode === 'monture' ? 12 : undefined) : undefined,
+                allure: effAllure,
+              })}
             >
               🧭 Partir
             </button>

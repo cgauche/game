@@ -5,7 +5,7 @@
 > hors du code. Tolérance ligne = ±20.
 
 **Sens A — code → Atlas** : 0 chapitre(s) cités par le code & absents de l'Atlas · 4 chapitre(s) couverts avec des lignes non pinées.
-**Sens B — Atlas → code** : 167 marqueur(s) « (non implémenté) » · 31 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
+**Sens B — Atlas → code** : 164 marqueur(s) « (non implémenté) » · 31 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
 
 ## A1 — Chapitres appelés par le CODE, ABSENTS de l'Atlas (trous durs)
 
@@ -14,19 +14,19 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ## A2 — Lignes appelées par le CODE non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
 ### LDB 46 — 10/28 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
-- l.185 — `src/state/combatSlice.ts:2451` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
-- l.188 — `src/data/index.ts:310` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
-- l.193 — `src/state/combatFlow.ts:1763` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+- l.185 — `src/state/combatSlice.ts:2470` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+- l.188 — `src/data/index.ts:317` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+- l.193 — `src/state/combatFlow.ts:1776` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
 - l.194 — `src/engine/ops.ts:456` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
 - l.199 — `src/engine/magic.ts:144` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
 - l.202 — `src/engine/magic.ts:490` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
 - l.204 — `src/engine/conditions.ts:303` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-- l.205 — `src/state/combatSlice.ts:2512` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+- l.205 — `src/state/combatSlice.ts:2531` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
 - l.207 — `src/engine/tests.ts:183` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
 ### LDB 10 — 5/16 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.310 — `src/engine/types.ts:642` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+- l.310 — `src/engine/types.ts:650` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
 - l.365 — `src/state/medicFlow.ts:173` — *  (LDB 10 l.365) RÉVÉLÉ témoin (jet SUBI, pas influençable — comme toute contraction de maladie). Patient
 - l.569 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
 - l.859 — `src/engine/combatFeatures/dispatch.ts:53` — /** Sans peur (LDB 10 l.859) : `c` ignore la Peur/Terreur que `foe` inspire — talent possédé
@@ -34,7 +34,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ### LDB 11 — 2/2 ligne(s) code hors couverture (propriétaire : docs\raw\equipement.md)
 - l.143 — `src/state/vision.ts:11` — * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
-- l.147 — `src/data/index.ts:580` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
+- l.147 — `src/data/index.ts:587` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
 
 ### LDB 12 — 1/19 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
 - l.229 — `src/engine/tests.test.ts:64` — describe('evaluateCombinedTest — Test Combiné (LDB 12 l.229) : un jet vs DEUX valeurs', () => {
@@ -141,31 +141,28 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\corruption.md** L580 — | Mutations spécifiques EDO App.2 (Chair Nécrosée, Crétin, Écailles épineuses EDO, Pattes Chèvre, Tête Pointue EDO) | **Non implémenté** dans mutations.json — ces entrées ne sont pas présentes |
 - **docs\raw\corruption.md** L581 — | Sombres Murmures (perdre 1 PC en commettant un acte répréhensible MJ) | **(Non implémenté)** — pas de mécanique store pour cette perte narrative |
 - **docs\raw\corruption.md** L582 — | Absolution (perte narrative de PC) | **(Non implémenté)** — pas de `{ op: 'corruption', amount: -n }` ou équivalent |
-- **docs\raw\deplacement.md** L564 — | Endurance monture (allures) | EDOC ch.4 : BE heures au trot, ½ BE au galop | Non implémenté (combat uniquement) | Hors périmètre actuel. |
-- **docs\raw\deplacement.md** L565 — | Tableau Incidents de Monte | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |
-- **docs\raw\deplacement.md** L566 — | Véhicules (Problèmes de Véhicule) | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |
-- **docs\raw\deplacement.md** L586 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L612 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L632 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L656 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L678 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L696 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L721 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L745 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L763 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L779 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L797 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L819 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L833 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L851 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L867 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L885 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L899 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L915 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L933 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L951 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L963 — **Implémente :** (non implémenté)
-- **docs\raw\deplacement.md** L983 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L588 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L614 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L634 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L658 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L680 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L698 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L723 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L747 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L765 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L781 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L799 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L821 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L835 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L853 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L869 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L887 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L901 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L917 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L935 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L953 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L965 — **Implémente :** (non implémenté)
+- **docs\raw\deplacement.md** L985 — **Implémente :** (non implémenté)
 - **docs\raw\equipement.md** L578 — **Implémente :** (non implémenté) — schéma de navire (profil E/BE, B/BB, Contenance, Man, Voiles/Avirons) absent du moteur ; à modéliser comme entité combattante distincte si le combat naval est joué.
 - **docs\raw\equipement.md** L616 — **Implémente :** (non implémenté) — calcul de coût/profil par assemblage Taille→propulsion→Man→vitesse non modélisé.
 - **docs\raw\equipement.md** L638 — **Implémente :** (non implémenté) — modificateurs de Trait de navire (E, B, Contenance, DR aux Tests d'équipage) non modélisés.

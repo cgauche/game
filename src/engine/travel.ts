@@ -26,6 +26,10 @@ import { testValue } from './skills';
 import { addCondition } from './conditions';
 import { effectiveMovement, encumbrancePenalties } from './encumbrance';
 import { Money, fromBrass } from './money';
+import { rule } from './policy';
+import {
+  type Allure, ALLURE_KMH_PER_M, mountedSpeedKmh, partyMounts, mountProfileById, lameLedCapKmh,
+} from './mountTravel';
 import { VehicleData } from './types';
 import vehiclesJson from '../data/vehicles.json';
 
@@ -36,8 +40,9 @@ const VEHICLE_BY_ID: Map<string, VehicleData> = new Map(VEHICLES_LIST.map((v) =>
 /** Transports payants RAW (l.210-219) = véhicules dotés d'une facette `travel` (passage payant). */
 export const TRAVEL_VEHICLES: VehicleData[] = VEHICLES_LIST.filter((v) => v.travel);
 
-/** Mode de voyage : `'pied'` (Mouvement du groupe) OU l'`id` d'un véhicule à passage payant (`vehicles.json`). */
-export type TravelMode = 'pied' | string;
+/** Mode de voyage : `'pied'` (Mouvement du groupe), `'monture'` (bêtes possédées, EDOC ch.4 — règle
+ *  optionnelle `travel-allures`) OU l'`id` d'un véhicule à passage payant (`vehicles.json`). */
+export type TravelMode = 'pied' | 'monture' | string;
 
 /** Facette `travel` (passage payant) d'un mode ≠ `'pied'` — source UNIQUE des classes/Déplacement.
  *  Renvoie `undefined` si le mode n'est pas un véhicule à passage payant. */
@@ -47,12 +52,14 @@ export function vehicleTravel(mode: TravelMode): NonNullable<VehicleData['travel
 
 export const TRAVEL_MODE_LABEL: Record<string, string> = {
   pied: 'À pied',
+  monture: 'En selle',
   ...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),
 };
 
 /** Pictogramme d'un mode de voyage (donnée `vehicle.icon` ; `'pied'` → 🦶, défaut véhicule → 🚐). */
 export function travelModeIcon(mode: TravelMode): string {
   if (mode === 'pied') return '🦶';
+  if (mode === 'monture') return '🐎';
   return VEHICLE_BY_ID.get(mode)?.icon ?? '🚐';
 }
 
@@ -73,10 +80,24 @@ export function partyWalkSpeed(party: Combatant[]): number {
   return Math.max(0, Math.min(...alive.map((c) => effectiveMovement(c))));
 }
 
-/** Vitesse de voyage (km/h) selon le mode. `movementOverride` = modèle rapide/lent (M ±1, l.208). */
-export function travelSpeed(party: Combatant[], mode: TravelMode, movementOverride?: number): number {
-  if (mode === 'pied') return movementOverride ?? partyWalkSpeed(party);
-  return movementOverride ?? vehicleTravel(mode)!.movement;
+/** Vitesse de voyage (km/h) selon le mode. `movementOverride` = modèle rapide/lent (M ±1, l.208).
+ *  `allure` (règle `travel-allures`, EDOC 07 l.140) : en selle, M de la plus lente × 1,5/2,5/3 ; en
+ *  attelage forcé au galop, M de l'attelage × 3 ; à pied, une bête Boiteuse MENÉE plafonne le groupe
+ *  à la moitié de sa vitesse de marche (EDOC 07 l.157). */
+export function travelSpeed(party: Combatant[], mode: TravelMode, movementOverride?: number, allure?: Allure): number {
+  if (mode === 'pied') {
+    const walk = movementOverride ?? partyWalkSpeed(party);
+    const cap = rule('travel-allures') ? lameLedCapKmh(party) : null;
+    return cap == null ? walk : Math.min(walk, cap);
+  }
+  if (mode === 'monture') return movementOverride ?? mountedSpeedKmh(partyMounts(party), allure ?? 'pas');
+  const t = vehicleTravel(mode)!;
+  if (allure === 'galop' && t.draft) {
+    // Allure forcée d'un attelage (EDOC 07 l.229) : vitesse au pas de course = M de l'attelage × 3 (l.140).
+    const p = mountProfileById(t.draft.montureId);
+    if (p) return p.m * ALLURE_KMH_PER_M.galop;
+  }
+  return movementOverride ?? t.movement;
 }
 
 export interface TravelPlanCalc {

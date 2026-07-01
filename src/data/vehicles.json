@@ -19,6 +19,10 @@
     },
     "travel": {
       "movement": 6,
+      "draft": {
+        "montureId": "cheval-de-trait",
+        "count": 2
+      },
       "classes": [
         {
           "key": "interieur",

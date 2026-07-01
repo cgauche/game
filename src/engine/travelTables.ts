@@ -20,6 +20,9 @@ export interface TravelTableEntry {
   text: string;
   stageOutcome?: StageOutcome;
   vehicleWounds?: string | null;
+  /** Dégâts aux OCCUPANTS du véhicule, en langue unique `GameOp` (EDOC 07 : Cassé = 1 Blessure ignorant
+   *  BE et PA ; Accident = 2d10 Blessures modifiées par BE et PA, min 1). Appliqués par le flux de voyage. */
+  occupantOps?: import('./ops').GameOp[];
 }
 
 interface TravelTable { id: string; label: string; die: string; source: { book: string; page: number }; entries: TravelTableEntry[] }
