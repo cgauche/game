@@ -1,5 +1,5 @@
 import type { Dims } from '../iso';
-import type { RoofParams, Facing } from '../../state/scene';
+import type { Facing } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
 
 export type ParamField =
@@ -17,34 +17,17 @@ export interface RenderCtx {
   /** Scène nocturne → fenêtres éclairées. */
   night?: boolean;
 }
-export type Rect = { x: number; y: number; w: number; h: number };
-
-/** Preset de TOIT d'un bâtiment composé : la skin du `render` d'un def, dont le pipeline relief-unifié ne
- *  consomme que `roof` (rendu par `RoofSprite.roofObj`). Les murs réels sont des `WallSeg` (`wallObjs`) et
- *  le sol du terrain (`floorObjs`) → `walls`/`interior`, encore produits par les defs (skin historique du
- *  bâtiment), restent TOLÉRÉS mais inutilisés par le rendu : à retirer quand les defs seront réduits au
- *  toit seul. */
-export interface RoofStyle {
-  walls?: string;
-  interior?: string;
-  roof: string;
-}
-
-export interface BuildingViz {
-  id: string;
-  paramsSchema?: ParamField[];
-  render(foot: Rect, params: RoofParams, ctx: RenderCtx): RoofStyle;
-}
-
-/** Bâtiment composable UNIFIÉ (registre defs/) : méta sémantique (id/label/empreinte par défaut) +
- *  présentation (schéma de params + render du TOIT). `BUILDINGS` (viz) et `BUILDINGS_META` (méta) en
- *  dérivent. Un fichier `buildings/defs/<id>.ts` = un `export const building: BuildingDef`. */
+/** Bâtiment composable UNIFIÉ (registre defs/) : pure méta sémantique (id/label/empreinte par défaut +
+ *  matériau de toit). Un bâtiment réel = des murs d'arête (`WallSeg`) sur un sol de terrain ; sa nappe de
+ *  toit est rendue par `RoofSprite` via `roofFromCells` (le `roofMaterial` ci-dessous est le défaut).
+ *  `BUILDINGS_META` en dérive. Un fichier `buildings/defs/<id>.ts` = un `export const building: BuildingDef`. */
 export interface BuildingDef {
   id: string;
   label: string;
   defaultFoot: { w: number; h: number };
-  paramsSchema?: ParamField[];
-  render: BuildingViz['render'];
+  /** Matériau de couverture par DÉFAUT du toit (id `RoofMaterialDef` : 'tuile'/'chaume'/'ardoise') —
+   *  méta portée par la donnée du bâtiment, lue par `styleRoofMaterial` (fin de la table `STYLE_MATERIAL`). */
+  roofMaterial: string;
 }
 
 export interface PropViz {

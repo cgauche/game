@@ -167,12 +167,9 @@ export interface SceneEntity {
   };
 }
 
-/** Style de toit/façade d'un bâtiment composé (preset de catalogue). */
+/** Couverture d'un bâtiment composé (matériau du toit). */
 export interface RoofParams {
-  floors?: number;
   roofMaterial?: 'tuile' | 'chaume' | 'ardoise';
-  timberColor?: string;
-  wallColor?: string;
 }
 
 /** TOIT d'un bâtiment COMPOSÉ — la structure réelle est faite de murs d'arête (`WallSeg`, destructibles

@@ -6,6 +6,7 @@
 import { TW, TH, EDGE_W, EDGE_H, tileCenter, depth, diamondPath, isSquareView, Dims, type Rot } from './iso';
 import { propSvg } from './catalog/decor';
 import type { Dir8 } from '../state/dir8';
+import { TERRAIN_DEFS } from '../state/terrain';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -128,29 +129,23 @@ export function propSprite(ref?: string, facing?: Dir8, camRot: Rot = 0): string
 }
 
 // --- Définitions partagées (dégradés) -------------------------------------
-export const DEFS = `
-  <linearGradient id="g_grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4d7a38"/><stop offset="100%" stop-color="#2f4d20"/></linearGradient>
-  <linearGradient id="g_sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6b5d4f"/><stop offset="100%" stop-color="#52463a"/></linearGradient>
-  <linearGradient id="g_route" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9a8358"/><stop offset="100%" stop-color="#7d6a45"/></linearGradient>
-  <linearGradient id="g_plancher" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8a6638"/><stop offset="100%" stop-color="#6a4d28"/></linearGradient>
-  <linearGradient id="g_porte" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7a5a3a"/><stop offset="100%" stop-color="#5a3f24"/></linearGradient>
-  <linearGradient id="g_eau" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2f5a8a"/><stop offset="100%" stop-color="#234a74"/></linearGradient>
-  <linearGradient id="g_terre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7a5f3c"/><stop offset="100%" stop-color="#57452b"/></linearGradient>
-  <linearGradient id="g_dalle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a7a39d"/><stop offset="100%" stop-color="#7c7872"/></linearGradient>
-  <linearGradient id="g_pave" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8f8d96"/><stop offset="100%" stop-color="#63616b"/></linearGradient>
-  <linearGradient id="g_sable" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cdb37a"/><stop offset="100%" stop-color="#a88a4e"/></linearGradient>
-  <linearGradient id="g_ossuaire" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c4b896"/><stop offset="100%" stop-color="#9a8c66"/></linearGradient>
-  <linearGradient id="g_roche" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6e6a62"/><stop offset="100%" stop-color="#4a463e"/></linearGradient>
-  <linearGradient id="g_pierre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5c606a"/><stop offset="100%" stop-color="#3c4049"/></linearGradient>
-  <linearGradient id="g_marbre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cbc6bd"/><stop offset="100%" stop-color="#a49e92"/></linearGradient>
-  <linearGradient id="g_cendre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a3c34"/><stop offset="100%" stop-color="#241c18"/></linearGradient>
-  <linearGradient id="g_tourbe" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5b4a2c"/><stop offset="100%" stop-color="#332916"/></linearGradient>
-  <linearGradient id="g_sang" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6e1f1f"/><stop offset="100%" stop-color="#3a1010"/></linearGradient>
-  <linearGradient id="g_lave" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff7a1a"/><stop offset="45%" stop-color="#c4300a"/><stop offset="100%" stop-color="#4a0e04"/></linearGradient>
-  <linearGradient id="g_boue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5a4a32"/><stop offset="100%" stop-color="#332a1a"/></linearGradient>
-  <linearGradient id="g_neige" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#eef2f8"/><stop offset="100%" stop-color="#b8c2d2"/></linearGradient>
-  <linearGradient id="g_planches" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#96743f"/><stop offset="100%" stop-color="#6a4d28"/></linearGradient>
-  <linearGradient id="g_fosse" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#221e2a"/><stop offset="100%" stop-color="#0c0a10"/></linearGradient>
+/** Dégradés de TERRAIN assemblés depuis le registre (`TerrainDef.stops`) — source unique avec
+ *  chaque `defs/<id>.ts`. Plusieurs terrains peuvent partager un `gradient` id → on ne l'émet
+ *  qu'une fois (dédup). Tous verticaux (x1=0 y1=0 x2=0 y2=1). */
+const terrainGradients = (() => {
+  const seen = new Set<string>();
+  let out = '';
+  for (const t of TERRAIN_DEFS) {
+    if (seen.has(t.gradient)) continue;
+    seen.add(t.gradient);
+    const stops = t.stops.map((s) => `<stop offset="${s.off}" stop-color="${s.color}"/>`).join('');
+    out += `\n  <linearGradient id="${t.gradient}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient>`;
+  }
+  return out;
+})();
+
+/** Dégradés RIG/FX (armes, tenues, halos, chair…) — inline verbatim (hors registre de terrain). */
+const rigFxGradients = `
   <linearGradient id="g_steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8edf5"/><stop offset="45%" stop-color="#9aa6b8"/><stop offset="100%" stop-color="#5a6376"/></linearGradient>
   <linearGradient id="g_steelD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b94a6"/><stop offset="100%" stop-color="#444b5a"/></linearGradient>
   <linearGradient id="g_axe" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#dfe6ef"/><stop offset="100%" stop-color="#6a7384"/></linearGradient>
@@ -167,3 +162,5 @@ export const DEFS = `
   <linearGradient id="g_crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff7a1a"/><stop offset="100%" stop-color="#c43f0a"/></linearGradient>
   <radialGradient id="g_eye" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffe14a"/><stop offset="70%" stop-color="#d88a1a"/><stop offset="100%" stop-color="#7a3a08"/></radialGradient>
   <radialGradient id="g_blood" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#7e1212"/><stop offset="100%" stop-color="#360707"/></radialGradient>`;
+
+export const DEFS = terrainGradients + rigFxGradients;

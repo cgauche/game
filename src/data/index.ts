@@ -22,6 +22,9 @@ import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
 import vehiclesJson from './vehicles.json';
 import structuresJson from './structures.json';
+import structureAppearanceJson from './structureAppearance.json';
+import reliefMaterialsJson from './reliefMaterials.json';
+import roofMaterialsJson from './roofMaterials.json';
 import navalTraitsJson from './naval-traits.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
@@ -949,6 +952,14 @@ export const findVehicleById = (id: string): VehicleData | undefined => vehicleB
 export const structures = structuresJson as StructureData[];
 export const structureById: Map<string, StructureData> = new Map(structures.map((s) => [s.id, s]));
 export const findStructureById = (id: string): StructureData | undefined => structureById.get(id);
+/** Apparence de RENDU des structures (murs/portes) — donnée pure, découplée des règles ci-dessus. */
+export const structureAppearances = structureAppearanceJson as import('../gameIso/catalog/structures/types').StructureAppearanceDef[];
+
+/** Apparence de RENDU du relief (falaises/rampes/tabliers/piliers/POV) — donnée pure. */
+export const reliefMaterials = reliefMaterialsJson as import('../gameIso/catalog/relief/types').ReliefMaterialDef[];
+
+/** Apparence de RENDU des toits (matériaux de couverture + plan vu du dessus) — donnée pure. */
+export const roofMaterials = roofMaterialsJson as import('../gameIso/catalog/roofs/types').RoofMaterialDef[];
 
 /** Traits & Améliorations de navire (MDG ch.12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
  *  verbatim + effet) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur codée en dur).

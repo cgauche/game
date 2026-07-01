@@ -1,243 +1,193 @@
 import { tileCenter, tileEdge, depth, isSquareView, diamondPath, CELL, LEVEL_H, WALL_H, type Dims } from './iso';
-import { type Scene, type WallSeg } from '../state/scene';
-import { structureById } from '../data';
+import { heightAt, type Scene, type WallSeg } from '../state/scene';
+import { wallApp, type StructureAppearanceDef } from './catalog/structures';
+import { shade, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from './shade';
 
-/** Ré-export pour les anciens importeurs de `walls.ts` — la constante vit désormais dans `iso.ts`
- *  (module de projection, partagé sans cycle par le rendu du mur ET la base du toit). */
 export { WALL_H } from './iso';
 
 type P = { cx: number; cy: number };
 
-/** Les 2 extrémités-écran (au sol) de l'arête d'un mur. Arêtes CARDINALES N/E via la primitive PARTAGÉE
- *  `tileEdge` (même géométrie que les parois de relief → rotation cohérente). Diagonales `\`/`/` : tracées
- *  de coin à coin opposé de la case (coins de grille via tileCenter, rotation gérée). */
+// Facteurs d'ombrage des détails BOIS — dérivés de la couleur de face (JSON), jamais une couleur en dur.
+const OUTLINE = 0.4; // liseré d'arête sombre
+const EMBRASURE = 0.19; // fond d'embrasure de porte
+const JAMBCAP = 1.25; // chapiteau de jambage clair (repli)
+const DOOR_FRAC = 0.52; // ouverture d'une porte bois sans config
+// Forme de brèche (pas des couleurs) : hauteur du tas + dentelure + hauteur des moignons de poteau.
+const BREACH_H = 0.32, BREACH_M1 = 0.34, BREACH_M2 = 0.62, BREACH_POST_A = 0.7, BREACH_POST_B = 0.55;
+
+/** Les 2 extrémités-écran (au sol) de l'arête. Cardinales N/E via `tileEdge` (rotation cohérente) ;
+ *  diagonales `\`/`/` de coin à coin opposé. */
 function edgeEnds(w: WallSeg, dims: Dims): [P, P] {
   const z = w.z ?? 0;
   if (w.side === 'N' || w.side === 'E') return tileEdge(w.x, w.y, w.side, dims, z);
   const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, z);
-  return w.side === '\\' ? [gc(w.x, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x + 1, w.y), gc(w.x, w.y + 1)]; // '/' = NE→SO
+  return w.side === '\\' ? [gc(w.x, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x + 1, w.y), gc(w.x, w.y + 1)];
 }
 
-/** Profondeur de tri d'un mur : du côté de la tuile la plus PROCHE de la caméra (occlusion correcte).
- *  MAX de profondeur sur les DEUX cases bordant l'arête → le mur reste devant son sol proche aux 4
- *  rotations (la case « proche » change avec la caméra). Tri par l'INDEX DE COUCHE `z` (découplé du lift). */
+/** Profondeur de tri : MAX sur les deux cases bordant l'arête → le mur reste devant son sol proche aux 4 rotations. */
 function wallDepth(w: WallSeg, dims: Dims): number {
   const z = w.z ?? 0;
   const cells: [number, number][] =
     w.side === 'E' ? [[w.x, w.y], [w.x + 1, w.y]]
     : w.side === 'N' ? [[w.x, w.y], [w.x, w.y - 1]]
-    : [[w.x, w.y]]; // diagonales \ / : la case elle-même
+    : [[w.x, w.y]];
   return Math.max(...cells.map(([cx, cy]) => depth(cx, cy, dims, z))) + 0.45;
 }
 
-/** Poteau vertical (montant) à une extrémité d'arête : posé aux deux bouts de chaque mur → les poteaux
- *  des murs adjacents COÏNCIDENT (coins pleins + jambages de porte gratuits). Légère moulure en haut. */
-function post(p: P, h: number): string {
-  return `<rect x="${p.cx - 1.9}" y="${p.cy - h}" width="3.8" height="${h}" fill="#352b1f"/>` +
-    `<rect x="${p.cx - 1.9}" y="${p.cy - h}" width="3.8" height="2.4" fill="#5b4a35"/>` + // chapiteau
-    `<rect x="${p.cx - 1.9}" y="${p.cy - 3}" width="3.8" height="3" fill="#241c12"/>`; // socle
-}
-
-/** Quad « tranche » de la face entre deux hauteurs (h0 bas, h1 haut), suivant l'arête a→b. */
 const slab = (a: P, b: P, h0: number, h1: number) => `${a.cx},${a.cy - h0} ${b.cx},${b.cy - h0} ${b.cx},${b.cy - h1} ${a.cx},${a.cy - h1}`;
-
 const lerpP = (A: P, B: P, t: number): P => ({ cx: A.cx + (B.cx - A.cx) * t, cy: A.cy + (B.cy - A.cy) * t });
 
-// ── PORTE / CORPS DE GARDE : un VRAI passage de fort — une OUVERTURE BÉANTE sur toute la largeur de la
-//    porte (PAS d'arche maçonnée ni de recoin factice). Tant qu'elle TIENT, une HERSE barre le passage ;
-//    abattue, libre. Les segments contigus de la porte se rendent en bandes JOINTIVES (pas de montant
-//    intermédiaire) → herse + linteau + battlement CONTINUS sur toute la largeur.
-/** Herse (grille) sur l'ouverture a→b, du sol au linteau (≈H) : barreaux verticaux + 2 traverses de fer. */
-function portcullis(a: P, b: P, H: number): string {
-  const top = H * 0.9; // la herse pend du linteau
+/** Montant vertical aux extrémités d'arête (coins pleins + jambages gratuits). Chapiteau/socle ombrés. */
+function post(p: P, h: number, app: StructureAppearanceDef): string {
+  return `<rect x="${p.cx - 1.9}" y="${p.cy - h}" width="3.8" height="${h}" fill="${app.post}"/>` +
+    `<rect x="${p.cx - 1.9}" y="${p.cy - h}" width="3.8" height="2.4" fill="${shade(app.post, POST_CAP)}"/>` +
+    `<rect x="${p.cx - 1.9}" y="${p.cy - 3}" width="3.8" height="3" fill="${shade(app.post, POST_BASE)}"/>`;
+}
+
+/** Herse (grille) barrant l'ouverture a→b : barreaux verticaux + traverses de fer. */
+function portcullis(a: P, b: P, H: number, app: StructureAppearanceDef): string {
+  const h = app.door!.herse!;
+  const top = H * h.topFrac;
   let g = '';
-  for (let i = 0; i <= 5; i++) { const p = lerpP(a, b, i / 5); g += `<line x1="${p.cx}" y1="${p.cy}" x2="${p.cx}" y2="${p.cy - top}" stroke="var(--struct-band)" stroke-width="1.7"/>`; }
-  g += `<polygon points="${slab(a, b, top * 0.4, top * 0.4 + 2)}" fill="#4a4d54"/>` +
-    `<polygon points="${slab(a, b, top * 0.78, top * 0.78 + 2)}" fill="#4a4d54"/>`; // 2 traverses de fer
+  for (let i = 0; i <= h.bars; i++) { const p = lerpP(a, b, i / h.bars); g += `<line x1="${p.cx}" y1="${p.cy}" x2="${p.cx}" y2="${p.cy - top}" stroke="${app.band}" stroke-width="1.7"/>`; }
+  for (const f of h.traverseFracs) g += `<polygon points="${slab(a, b, top * f, top * f + 2)}" fill="${h.traverseColor}"/>`;
   return g;
 }
 
-/** Mur en VUE DU DESSUS : un trait ÉPAIS posé SUR l'arête (pas d'extrusion verticale — sinon le mur
- *  « flotte » comme un panneau au-dessus de la case). Une PORTE = ouverture au milieu (deux jambages). */
-function topWall(w: WallSeg, a: P, b: P, dims: Dims): { d: number; svg: string } {
+/** Mur ORDINAIRE (bois) en iso : panneau encadré + moulures + plinthe, ou porte ajourée. Ombré par orientation. */
+function houseWallIso(w: WallSeg, a: P, b: P, app: StructureAppearanceDef): string {
+  const H = WALL_H;
+  const wd = app.wood!;
+  const t = (base: string) => shade(base, w.side === 'N' ? SIDE_N : SIDE_LIT);
+  const face = t(app.face), inset = t(wd.inset), frame = t(wd.frame), cap = t(wd.cap), skirt = t(wd.skirt);
+  const outline = shade(app.face, OUTLINE);
+
+  if (w.door) {
+    const dc = app.door;
+    const op = H * (dc?.openingFrac ?? DOOR_FRAC);
+    const jambC = dc?.jamb ?? app.face;
+    const jambCapC = dc?.jambCap ?? shade(app.face, JAMBCAP);
+    const jamb = (p: P) =>
+      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="${op}" fill="${jambC}"/>` +
+      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="1.8" fill="${jambCapC}"/>`;
+    return `<g>${post(a, H, app)}` +
+      `<polygon points="${slab(a, b, 0, op)}" fill="${shade(app.face, EMBRASURE)}" opacity="0.42"/>` +
+      `<polygon points="${slab(a, b, op, H)}" fill="${face}" stroke="${outline}" stroke-width="0.7"/>` +
+      `<polygon points="${slab(a, b, op, op + 4)}" fill="${wd.frame}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` +
+      jamb(a) + jamb(b) +
+      `${post(b, H, app)}</g>`;
+  }
+
+  const pl = lerpP(a, b, 0.2), pr = lerpP(a, b, 0.8);
+  const yLo = 0.2, yHi = 0.78;
+  const panel = `${pl.cx},${pl.cy - H * yLo} ${pr.cx},${pr.cy - H * yLo} ${pr.cx},${pr.cy - H * yHi} ${pl.cx},${pl.cy - H * yHi}`;
+  return `<g>${post(a, H, app)}` +
+    `<polygon points="${slab(a, b, 0, H)}" fill="${face}" stroke="${outline}" stroke-width="0.7"/>` +
+    `<polygon points="${panel}" fill="${inset}"/>` +
+    `<path d="M${pl.cx},${pl.cy - H * yHi} L${pr.cx},${pr.cy - H * yHi}" stroke="${frame}" stroke-width="1.3" fill="none"/>` +
+    `<polygon points="${slab(a, b, 0, H * 0.11)}" fill="${skirt}"/>` +
+    `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` +
+    `<polygon points="${slab(a, b, H, H + 4)}" fill="${cap}"/>` +
+    `${post(b, H, app)}</g>`;
+}
+
+/** Mur de bois ABATTU : tas de gravats laissant la brèche ouverte + moignons de poteau. */
+function houseBreach(a: P, b: P, app: StructureAppearanceDef): string {
+  const H = WALL_H, hr = H * 0.3, wd = app.wood!;
+  const m1 = lerpP(a, b, 0.36), m2 = lerpP(a, b, 0.64);
+  return `<g><polygon points="${slab(a, b, 0, hr * 0.5)}" fill="${wd.rubble}"/>` +
+    `<polygon points="${a.cx},${a.cy} ${m1.cx},${m1.cy - hr} ${m2.cx},${m2.cy - hr * 0.7} ${b.cx},${b.cy}" fill="${wd.rubbleHi}" stroke="${shade(app.face, OUTLINE)}" stroke-width="0.6"/>` +
+    post(a, hr * BREACH_POST_A, app) + post(b, hr * 0.5, app) + `</g>`;
+}
+
+/** Vue du DESSUS d'un mur bois : trait épais sur l'arête ; porte = ouverture centrale (deux jambages). */
+function topWall(w: WallSeg, a: P, b: P, dims: Dims, app: StructureAppearanceDef): { d: number; svg: string } {
   const seg = (p: P, q: P, width: number, col: string) =>
     `<line x1="${p.cx}" y1="${p.cy}" x2="${q.cx}" y2="${q.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"/>`;
-  let svg: string;
-  if (w.door) {
-    // deux jambages, ouverture franchissable au centre
-    svg = seg(a, lerpP(a, b, 0.3), 7, '#5b4a35') + seg(lerpP(a, b, 0.7), b, 7, '#5b4a35');
-  } else {
-    svg = seg(a, b, 8, '#2c2419') + seg(a, b, 5, '#6e5940'); // liseré sombre + dessus bois
-  }
-  return { d: wallDepth(w, dims) + 0.6, svg: `<g>${svg}</g>` }; // au-dessus des sols
+  const svg = w.door
+    ? seg(a, lerpP(a, b, 0.3), 7, shade(app.post, POST_CAP)) + seg(lerpP(a, b, 0.7), b, 7, shade(app.post, POST_CAP))
+    : seg(a, b, 8, shade(app.face, OUTLINE)) + seg(a, b, 5, app.face);
+  return { d: wallDepth(w, dims) + 0.6, svg: `<g>${svg}</g>` };
 }
 
-/** Corps d'un MUR ORDINAIRE (maison) en iso : panneau encadré + moulures + plinthe, ou porte ajourée.
- *  SOURCE UNIQUE partagée par `wallSeg` (mur sans structure) ET `structureSeg` (structure NON fortifiée :
- *  `mur-en-bois` d'une maison). Hauteur FIXE `WALL_H`. */
-function houseWallIso(w: WallSeg, a: P, b: P): string {
-  const H = WALL_H;
-  // Palette par orientation (lumière en haut-gauche) : faces N (vers le bas-droit) plus sombres que E.
-  const N = w.side === 'N';
-  const face = N ? '#5d4c36' : '#6e5940';
-  const inset = N ? '#4b3d2b' : '#594732'; // fond de panneau (renfoncement)
-  const frame = N ? '#6b573e' : '#7c6647'; // liseré clair du cadre
-  const cap = N ? '#806b4b' : '#917a58'; // corniche / dessus
-  const skirt = N ? '#3c3022' : '#473829'; // plinthe
-
-  if (w.door) {
-    const op = H * 0.52; // hauteur de l'ouverture
-    // Jambage ENCADRÉ (montant sombre + chapiteau clair) → la porte se lit comme une ouverture cadrée,
-    // pas comme un simple trou (crucial en vue de FACE où l'embrasure n'est plus vue en biais).
-    const jamb = (p: P) =>
-      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="${op}" fill="#6e5940"/>` +
-      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="1.8" fill="#8a7048"/>`; // chapiteau clair
-    return `<g>${post(a, H)}` +
-      `<polygon points="${slab(a, b, 0, op)}" fill="#15100a" opacity="0.42"/>` + // embrasure ombrée
-      `<polygon points="${slab(a, b, op, H)}" fill="${face}" stroke="#2a2118" stroke-width="0.7"/>` + // mur au-dessus de la porte
-      `<polygon points="${slab(a, b, op, op + 4)}" fill="#7c6647" stroke="#2a2118" stroke-width="0.5"/>` + // poutre de linteau
-      `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
-      jamb(a) + jamb(b) +
-      `${post(b, H)}</g>`;
-  }
-
-  // Panneau encadré : un rectangle inset (renfoncé) au centre de la face.
-  const m = 0.2; // marge horizontale du panneau
-  const pl = lerpP(a, b, m), pr = lerpP(a, b, 1 - m);
-  const yLo = 0.2, yHi = 0.78; // bornes verticales du panneau
-  const panel = `${pl.cx},${pl.cy - H * yLo} ${pr.cx},${pr.cy - H * yLo} ${pr.cx},${pr.cy - H * yHi} ${pl.cx},${pl.cy - H * yHi}`;
-  const frameLine = `M${pl.cx},${pl.cy - H * yHi} L${pr.cx},${pr.cy - H * yHi}`; // arête haute du cadre (lumière)
-
-  return `<g>${post(a, H)}` +
-    `<polygon points="${slab(a, b, 0, H)}" fill="${face}" stroke="#2c2419" stroke-width="0.7"/>` + // face
-    `<polygon points="${panel}" fill="${inset}"/>` + // panneau renfoncé
-    `<path d="${frameLine}" stroke="${frame}" stroke-width="1.3" fill="none"/>` + // moulure haute du cadre
-    `<polygon points="${slab(a, b, 0, H * 0.11)}" fill="${skirt}"/>` + // plinthe
-    `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
-    `<polygon points="${slab(a, b, H, H + 4)}" fill="${cap}"/>` + // épaisseur dessus
-    `${post(b, H)}</g>`;
-}
-
-/** Éboulis d'un mur de maison ABATTU (structure NON fortifiée, `down`) : tas bas de gravats de bois/torchis
- *  laissant la BRÈCHE ouverte au-dessus + moignons de poteau aux extrémités. Iso ; en vue du dessus l'appelant
- *  rend un pointillé. Distinct du rempart de pierre (`--struct-rubble`) : bois brisé (teintes de la charpente). */
-function houseBreach(a: P, b: P): string {
-  const H = WALL_H;
-  const hr = H * 0.3;
-  const m1 = lerpP(a, b, 0.36), m2 = lerpP(a, b, 0.64);
-  return `<g><polygon points="${slab(a, b, 0, hr * 0.5)}" fill="#4b3d2b"/>` +
-    `<polygon points="${a.cx},${a.cy} ${m1.cx},${m1.cy - hr} ${m2.cx},${m2.cy - hr * 0.7} ${b.cx},${b.cy}" fill="#5d4c36" stroke="#2c2419" stroke-width="0.6"/>` +
-    post(a, hr * 0.7) + post(b, hr * 0.5) + `</g>`;
-}
-
-/** RENDU d'une arête portant une STRUCTURE destructible, routé par le champ DONNÉE `fortified` de la
- *  structure (jamais un id en dur) :
- *   - `fortified` (siège : `mur-en-pierre` courtine, `porte-de-ville` corps de garde) → fortification de
- *     PIERRE crénelée/ferrée (intacte) ou GRAVATS bas laissant la brèche ouverte (abattue). INCHANGÉ.
- *   - NON fortifié (maison : `mur-en-bois`) → MUR ORDINAIRE texturé (`houseWallIso`), sans créneaux —
- *     mais TOUJOURS destructible : abattu (`down`) → éboulis de bois (`houseBreach`), passage rouvert.
- *  Couleurs de siège en tokens :root. `down` = `structureIsDown`. */
-function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: number; svg: string } {
+/** Fortification de PIERRE (rempart crénelé / corps de garde à herse), intacte ou en brèche. */
+function stoneIso(w: WallSeg, a: P, b: P, dims: Dims, down: boolean, app: StructureAppearanceDef): { d: number; svg: string } {
   const d = wallDepth(w, dims);
-  const st = structureById.get(w.structure ?? '');
-  const isGate = st?.kind === 'porte';
-  // MUR DE MAISON (structure non fortifiée) : rendu de mur ORDINAIRE, brèche = éboulis de bois. Une PORTE
-  // ordinaire (`kind:'porte'` non fortifiée) reste une ouverture cadrée (via `houseWallIso` si `w.door`).
-  if (!st?.fortified) {
-    if (isSquareView(dims.view)) {
-      const line = (col: string, width: number, dash?: string) =>
-        `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
-      if (down) return { d: d + 0.6, svg: `<g>${line('#6e5940', 5, '3 5')}</g>` }; // brèche : pointillé bois
-      return topWall(w, a, b, dims); // intact : trait de mur ordinaire sur l'arête
+  const par = app.parapet!;
+  const H = WALL_H, P = LEVEL_H * par.heightLevelFrac;
+  const merlons = () => {
+    let m = '';
+    for (let i = 0; i < par.merlonCount; i += par.merlonStep) {
+      const p0 = lerpP(a, b, i / par.merlonCount), p1 = lerpP(a, b, (i + 1) / par.merlonCount);
+      const y = H + P, yh = y + par.merlonHeightPx;
+      m += `<polygon points="${p0.cx},${p0.cy - y} ${p1.cx},${p1.cy - y} ${p1.cx},${p1.cy - yh} ${p0.cx},${p0.cy - yh}" fill="${app.cap}"/>`;
     }
-    return { d, svg: down ? houseBreach(a, b) : houseWallIso(w, a, b) };
-  }
-  if (isSquareView(dims.view)) {
-    const line = (col: string, width: number, dash?: string) =>
-      `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
-    // BRÈCHE (abattue) : pointillé clairsemé de gravats sur l'arête.
-    if (down) return { d: d + 0.6, svg: `<g>${line('var(--struct-rubble)', 6, '3 5')}</g>` };
-    // PORTE INTACTE : bloc plein sur SA case (sinon le plancher laisse un trou) + glyphe de passage barré ;
-    // la COURTINE, elle, reste un simple TRAIT épais sur l'arête.
-    if (isGate) {
-      const { cx: px, cy: py } = tileCenter(w.x, w.y, dims);
-      const h = CELL / 2;
-      const block = `<path d="${diamondPath(w.x, w.y, dims)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="2.5"/>`;
-      // passage N-S sombre traversant la courtine + barreaux de herse (E-O) → corps de garde fermé identifiable.
-      let glyph = `<rect x="${px - h * 0.46}" y="${py - h}" width="${h * 0.92}" height="${2 * h}" fill="#241a10"/>`;
-      for (let i = 1; i <= 3; i++) { const ly = py - h + 2 * h * (i / 4); glyph += `<line x1="${px - h * 0.46}" y1="${ly}" x2="${px + h * 0.46}" y2="${ly}" stroke="var(--struct-cap)" stroke-width="1.6"/>`; }
-      return { d: d + 0.6, svg: `<g>${block}${glyph}</g>` };
-    }
-    // COURTINE : barre pierre ÉPAISSE ferrée sur l'arête (trait).
-    return { d: d + 0.6, svg: `<g>${line('var(--struct-band)', 11) + line('var(--struct-face)', 7)}</g>` };
-  }
-  const H = WALL_H; // hauteur FIXE (cloison d'arête)
-  const P = LEVEL_H * 0.32; // parapet / corps de garde : hauteur dressée au-dessus du plan H
-  // PORTE / CORPS DE GARDE fortifié (structure `kind:'porte'` + `fortified`) — routé AVANT la brèche
-  // générique. OUVERTURE BÉANTE sur toute la largeur : PAS de face de pierre ni d'arche — un vrai passage.
-  // INTACTE : la HERSE barre le passage. ABATTUE (`down`) : plus de herse, seuil d'éboulis → passage libre.
-  if (isGate) {
-    const lintel = `<polygon points="${slab(a, b, H - 4, H)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>`; // poutre du gatehouse d'où pend la herse
-    const bars = down
-      ? `<polygon points="${slab(a, b, 0, H * 0.12)}" fill="var(--struct-rubble)"/>` // BRÈCHE : seuil d'éboulis, passage dégagé
-      : portcullis(a, b, H); // HERSE continue barrant le passage
-    const N = 5, merlonH = 6;
-    let merlons = '';
-    for (let i = 0; i < N; i += 2) {
-      const p0 = lerpP(a, b, i / N), p1 = lerpP(a, b, (i + 1) / N);
-      merlons += `<polygon points="${p0.cx},${p0.cy - (H + P)} ${p1.cx},${p1.cy - (H + P)} ${p1.cx},${p1.cy - (H + P) - merlonH} ${p0.cx},${p0.cy - (H + P) - merlonH}" fill="var(--struct-cap)"/>`;
-    }
-    const parapet = `<polygon points="${slab(a, b, H, H + P)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // parapet
-      `<polygon points="${slab(a, b, H + P * 0.72, H + P * 0.72 + 2.4)}" fill="var(--struct-band)"/>` + // ferrure du parapet
-      `<polygon points="${slab(a, b, H + P - 3, H + P)}" fill="var(--struct-cap)"/>` + // arase (couronnement)
-      merlons;
+    return m;
+  };
+  const parapet =
+    `<polygon points="${slab(a, b, H, H + P)}" fill="${app.face}" stroke="${app.band}" stroke-width="0.8"/>` +
+    `<polygon points="${slab(a, b, H + P * par.parapetBandFrac, H + P * par.parapetBandFrac + par.bandThickPx)}" fill="${app.band}"/>` +
+    `<polygon points="${slab(a, b, H + P - par.arasePx, H + P)}" fill="${app.cap}"/>` +
+    merlons();
+
+  // CORPS DE GARDE (porte fortifiée) : ouverture béante barrée d'une herse (intacte) ou seuil d'éboulis (abattu).
+  if (app.door) {
+    const lintel = `<polygon points="${slab(a, b, H - app.door.lintelPx, H)}" fill="${app.face}" stroke="${app.band}" stroke-width="0.8"/>`;
+    const bars = down ? `<polygon points="${slab(a, b, 0, H * 0.12)}" fill="${app.rubble}"/>` : portcullis(a, b, H, app);
     return { d, svg: `<g>${bars}${lintel}${parapet}</g>` };
   }
   if (down) {
-    // BRÈCHE : éboulis bas le long de l'arête (≈0.3 H), ouverture au-dessus laissée transparente. Tas
-    // DENTELÉ (≠ « mur court ») + moignons de jambage qui subsistent aux extrémités.
-    const hr = H * 0.32;
-    const m1 = lerpP(a, b, 0.34), m2 = lerpP(a, b, 0.62);
-    const svg = `<g><polygon points="${slab(a, b, 0, hr * 0.5)}" fill="var(--struct-rubble)"/>` +
-      `<polygon points="${a.cx},${a.cy} ${m1.cx},${m1.cy - hr} ${m2.cx},${m2.cy - hr * 0.7} ${b.cx},${b.cy}" fill="var(--struct-rubble-hi)" stroke="var(--struct-band)" stroke-width="0.6"/>` +
-      post(a, hr * 0.7) + post(b, hr * 0.55) + `</g>`;
-    return { d, svg };
+    const hr = H * BREACH_H;
+    const m1 = lerpP(a, b, BREACH_M1), m2 = lerpP(a, b, BREACH_M2);
+    return {
+      d,
+      svg: `<g><polygon points="${slab(a, b, 0, hr * 0.5)}" fill="${app.rubble}"/>` +
+        `<polygon points="${a.cx},${a.cy} ${m1.cx},${m1.cy - hr} ${m2.cx},${m2.cy - hr * 0.7} ${b.cx},${b.cy}" fill="${app.rubbleHi}" stroke="${app.band}" stroke-width="0.6"/>` +
+        post(a, hr * BREACH_POST_A, app) + post(b, hr * BREACH_POST_B, app) + `</g>`,
+    };
   }
-  // REMPART INTACT : face pierre pleine + bandes de fer, surmontée d'un PARAPET crénelé dressé au-dessus
-  // du plan H → le rempart se lit en relief, pas en bande plate. Montants d'extrémité = coins/jambages.
-  const band = (t: number) => `<polygon points="${slab(a, b, H * t, H * t + 2.4)}" fill="var(--struct-band)"/>`;
-  const N = 5, merlonH = 6; // créneaux : 1 merlon / 1 trou (i pair) — montés au sommet du parapet (H+P)
-  let merlons = '';
-  for (let i = 0; i < N; i += 2) {
-    const p0 = lerpP(a, b, i / N), p1 = lerpP(a, b, (i + 1) / N);
-    merlons += `<polygon points="${p0.cx},${p0.cy - (H + P)} ${p1.cx},${p1.cy - (H + P)} ${p1.cx},${p1.cy - (H + P) - merlonH} ${p0.cx},${p0.cy - (H + P) - merlonH}" fill="var(--struct-cap)"/>`;
-  }
-  const svg = `<g>${post(a, H + P)}` +
-    `<polygon points="${slab(a, b, 0, H)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // face pierre
-    band(0.28) + band(0.56) + band(0.82) + // ferrures de la courtine
-    `<polygon points="${slab(a, b, H, H + P)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // parapet
-    `<polygon points="${slab(a, b, H + P * 0.72, H + P * 0.72 + 2.4)}" fill="var(--struct-band)"/>` + // ferrure du parapet
-    `<polygon points="${slab(a, b, H + P - 3, H + P)}" fill="var(--struct-cap)"/>` + // arase (couronnement)
-    merlons +
-    `${post(b, H + P)}</g>`;
-  return { d, svg };
+  // COURTINE INTACTE : face pierre ferrée + parapet crénelé.
+  const bands = par.bands.map((t) => `<polygon points="${slab(a, b, H * t, H * t + par.bandThickPx)}" fill="${app.band}"/>`).join('');
+  return {
+    d,
+    svg: `<g>${post(a, H + P, app)}` +
+      `<polygon points="${slab(a, b, 0, H)}" fill="${app.face}" stroke="${app.band}" stroke-width="0.8"/>` +
+      bands + parapet + `${post(b, H + P, app)}</g>`,
+  };
 }
 
-/** SVG d'un segment de mur + sa profondeur, pour le tri global de IsoStage :
- *   - MUR ORDINAIRE (sans structure) → `houseWallIso` (panneau texturé, porte ajourée) ;
- *   - arête portant une STRUCTURE (`w.structure`) → `structureSeg`, qui route par le champ DONNÉE
- *     `fortified` (siège crénelé vs mur de maison), `structDown` = état abattu fourni par l'appelant
- *     (comme l'overlay porte lit `doorIsOpen`).
- *  Hauteur FIXE `WALL_H` (le relief vit dans le sol, plus dans le mur). */
-export function wallSeg(w: WallSeg, dims: Dims, structDown = false): { d: number; svg: string } {
+/** Vue du DESSUS d'une fortification : trait de courtine, ou bloc de corps de garde barré. */
+function stoneSquare(w: WallSeg, a: P, b: P, dims: Dims, down: boolean, app: StructureAppearanceDef): { d: number; svg: string } {
+  const d = wallDepth(w, dims) + 0.6;
+  const line = (col: string, width: number, dash?: string) =>
+    `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
+  if (down) return { d, svg: `<g>${line(app.rubble!, 6, '3 5')}</g>` };
+  if (app.door) {
+    const { cx: px, cy: py } = tileCenter(w.x, w.y, dims);
+    const h = CELL / 2;
+    let glyph = `<rect x="${px - h * 0.46}" y="${py - h}" width="${h * 0.92}" height="${2 * h}" fill="${app.recess}"/>`;
+    for (let i = 1; i <= 3; i++) { const ly = py - h + 2 * h * (i / 4); glyph += `<line x1="${px - h * 0.46}" y1="${ly}" x2="${px + h * 0.46}" y2="${ly}" stroke="${app.cap}" stroke-width="1.6"/>`; }
+    return { d, svg: `<g><path d="${diamondPath(w.x, w.y, dims)}" fill="${app.face}" stroke="${app.band}" stroke-width="2.5"/>${glyph}</g>` };
+  }
+  return { d, svg: `<g>${line(app.band!, 11) + line(app.face, 7)}</g>` };
+}
+
+/** SVG d'un segment de mur + sa profondeur. Apparence 100 % DONNÉE (`wallApp` : structure, rempart si
+ *  surélevé, sinon mur nu) : parapet/porte/matériau routés par les CHAMPS de la def, jamais par un id/type. */
+export function wallSeg(w: WallSeg, dims: Dims, structDown: boolean, baseH: number): { d: number; svg: string } {
   const [a, b] = edgeEnds(w, dims);
-  if (w.structure) return structureSeg(w, a, b, dims, structDown);
-  if (isSquareView(dims.view)) return topWall(w, a, b, dims); // grille carrée : trait sur l'arête, pas d'extrusion
-  return { d: wallDepth(w, dims), svg: houseWallIso(w, a, b) };
+  const app = wallApp(w, baseH);
+  const square = isSquareView(dims.view);
+  if (app.parapet) return square ? stoneSquare(w, a, b, dims, structDown, app) : stoneIso(w, a, b, dims, structDown, app);
+  if (square) {
+    if (structDown) return { d: wallDepth(w, dims) + 0.6, svg: `<g><line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${app.face}" stroke-width="5" stroke-linecap="round" stroke-dasharray="3 5"/></g>` };
+    return topWall(w, a, b, dims, app);
+  }
+  return { d: wallDepth(w, dims), svg: structDown ? houseBreach(a, b, app) : houseWallIso(w, a, b, app) };
 }
 
-/** Tous les segments de mur de la scène, prêts à fusionner dans le tri de profondeur. Un mur = une pièce
- *  (plus de face cour séparée : le relief — et donc tout flanc maçonné — vit dans le sol). */
+/** Tous les segments de mur de la scène, prêts pour le tri de profondeur. */
 export function wallSegs(scene: Scene, dims: Dims): { d: number; svg: string }[] {
-  return (scene.walls ?? []).map((w) => wallSeg(w, dims, false));
+  return (scene.walls ?? []).map((w) => wallSeg(w, dims, false, heightAt(scene, w.x, w.y, w.z ?? 0)));
 }

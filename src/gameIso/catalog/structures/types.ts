@@ -1,30 +1,29 @@
-/** Apparence PARTAGÉE d'une structure d'arête (mur/porte) — couche RENDU, consommée par l'iso
- *  (walls.ts) ET le POV (geometry.ts). Découplée de `StructureData` (règles, src/data). Couleurs :
- *  hex OU var CSS (`var(--struct-*)`, définies dans src/ui/styles/base.css) pour la pierre. */
+/** Apparence PARTAGÉE d'une structure d'arête (mur/porte), consommée par l'iso (walls.ts) ET le POV
+ *  (geometry.ts). Donnée pure (`src/data/structureAppearance.json`), découplée de `StructureData` (règles).
+ *  Couleurs : hex ou var CSS (`var(--struct-*)`, base.css). L'iso dérive l'ombrage par orientation via
+ *  `shade()` à partir des couleurs de base ci-dessous ; le POV les teinte par la lumière. */
 export interface StructureAppearanceDef {
-  id: string;                 // = id de structure (StructureData.id) OU 'plain' (mur sans structure)
+  id: string;
   label: string;
   material: 'bois' | 'pierre';
-  /** Couleur de face pleine (POV + repli). */
+  /** Face principale (POV + base de la face iso, ombrée par orientation). */
   face: string;
-  /** PIERRE : bandes de fer / arase+merlons / gravats. */
-  band?: string; cap?: string; rubble?: string; rubbleHi?: string;
-  /** BOIS : palette iso par orientation (houseWallIso) + gravats. */
-  wood?: {
-    faceN: string; faceE: string; insetN: string; insetE: string;
-    frameN: string; frameE: string; capN: string; capE: string;
-    skirtN: string; skirtE: string; woodRubble: string; woodRubbleHi: string;
-  };
-  /** Fortification (rempart + corps de garde) : parapet crénelé. */
+  /** Montant d'extrémité — chapiteau/socle dérivés par ombrage. */
+  post: string;
+  /** PIERRE : ferrure / arase+merlons / gravats / renfoncement de passage. */
+  band?: string; cap?: string; rubble?: string; rubbleHi?: string; recess?: string;
+  /** BOIS : couleurs de base des autres parties (la face vient de `face`). */
+  wood?: { inset: string; frame: string; cap: string; skirt: string; rubble: string; rubbleHi: string };
+  /** Fortification : parapet crénelé. */
   parapet?: {
-    heightLevelFrac: number;  // P = LEVEL_H * heightLevelFrac
+    heightLevelFrac: number;
     merlonCount: number; merlonStep: number; merlonHeightPx: number;
     bands: number[]; bandThickPx: number; parapetBandFrac: number; arasePx: number;
   };
-  /** Ouverture (porte simple / corps de garde béant). */
+  /** Ouverture (porte bois ajourée / corps de garde béant `openingFrac ≥ 1`). */
   door?: {
     openingFrac: number; lintelPx: number;
-    jamb?: string; jambCap?: string;               // porte bois (jambages)
+    jamb?: string; jambCap?: string;
     herse?: { bars: number; topFrac: number; traverseFracs: number[]; traverseColor: string };
   };
 }

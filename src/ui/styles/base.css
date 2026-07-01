@@ -30,6 +30,16 @@
   --struct-cap: #888d95; /* siège : chemin de ronde + créneaux (pierre claire) */
   --struct-rubble: #463f35; /* siège : base de gravats d'une BRÈCHE abattue */
   --struct-rubble-hi: #6a6253; /* siège : éboulis éclairés (tas dentelé) */
+  --combat-walk: #4f8fe0; /* combat : portée de Marche */
+  --combat-run: #9b6be0; /* combat : portée de Course */
+  --combat-target: #ff5a4d; /* combat : anneau de cible d'attaque */
+  --combat-enemy: #e0533a; /* combat : réticule/indicateur ennemi (et delta négatif) */
+  --combat-crowd: #ff7a3c; /* combat : cibles éligibles à la Foule */
+  --combat-ally: #5db87a; /* combat : cible alliée / soin (et delta positif) */
+  --combat-gold: #ffd75e; /* combat : surbrillance or (trajet, réticule héros, infobulle) */
+  --combat-gold-dk: #7a5b16; /* combat : contour sombre du glyphe or */
+  --combat-halo: #ffe27a; /* combat : halo d'interaction (survol PNJ/objet) */
+  --tooltip-bg: #14141c; /* combat : fond d'infobulle */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
 }
 

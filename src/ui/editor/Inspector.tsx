@@ -250,7 +250,7 @@ export function Inspector({
                   </select>
                 </label>
               </Fold>
-              <Fold title="Matériau & couleurs" open>
+              <Fold title="Couverture" open>
                 <label className="ed-field">
                   Couverture
                   <select
@@ -261,23 +261,6 @@ export function Inspector({
                       <option key={m.id} value={m.id}>{m.label}</option>
                     ))}
                   </select>
-                </label>
-                <label className="ed-field">
-                  Étages (hauteur du bâtiment)
-                  <input
-                    type="number"
-                    min={1}
-                    value={selR.params?.floors ?? 1}
-                    onChange={(e) => updateSelR({ params: { ...selR.params, floors: Math.max(1, Number(e.target.value) || 1) } })}
-                  />
-                </label>
-                <label className="ed-field">
-                  Couleur des murs
-                  <input type="color" value={selR.params?.wallColor ?? '#c8b89a'} onChange={(e) => updateSelR({ params: { ...selR.params, wallColor: e.target.value } })} />
-                </label>
-                <label className="ed-field">
-                  Couleur des colombages
-                  <input type="color" value={selR.params?.timberColor ?? '#5a4632'} onChange={(e) => updateSelR({ params: { ...selR.params, timberColor: e.target.value } })} />
                 </label>
               </Fold>
               <div className="insp-actions">

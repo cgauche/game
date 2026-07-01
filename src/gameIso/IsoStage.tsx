@@ -103,7 +103,7 @@ const AMBIANCE_DEFS = `
 // plan-sol byte-identique pour tous les appelants mono-niveau (z absent ⇒ lift 0 ⇒ tileCenter/diamondPath
 // sans 4ᵉ argument). Un appelant de COMBAT passe `(p) => p.z ? liftAt(...) : 0` → chemin/destination posés
 // au bon étage (rempart) au lieu d'être écrasés sur la cour.
-function movePreviewEls(path: Pt[], dest: Pt | null, label: string | null, d: Dims, keyPrefix: string, color = '#ffd75e', footN = 1, lift: (p: Pt) => number = () => 0): JSX.Element[] {
+function movePreviewEls(path: Pt[], dest: Pt | null, label: string | null, d: Dims, keyPrefix: string, color = 'var(--combat-gold)', footN = 1, lift: (p: Pt) => number = () => 0): JSX.Element[] {
   const els: JSX.Element[] = [];
   if (path.length > 1) {
     const pts = path.map((p) => tileCenter(p.x, p.y, d, lift(p))).map((p) => `${p.cx},${p.cy}`).join(' ');
@@ -371,7 +371,7 @@ export function IsoStage() {
     // `structureIsDown` est passé comme l'overlay porte passe `doorIsOpen` ; le memo dépend de `scene`,
     // donc l'Effondrement (nouvelle réf de scène, `collapseStructure`) recalcule la brèche.
     return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
-      const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false);
+      const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false, heightAt(scene, w.x, w.y, w.z ?? 0));
       const wz = w.z ?? 0;
       const [nx, ny] = NB[w.side] ?? [0, 0];
       const vis = visible.has(`${w.x},${w.y},${wz}`) || visible.has(`${w.x + nx},${w.y + ny},${wz}`);
@@ -592,7 +592,7 @@ export function IsoStage() {
     const walkReach = myTurn ? displayedReach(useGame.getState) : new Map<string, number>();
     for (const k of walkReach.keys()) {
       const [x, y, z = 0] = k.split(',').map(Number); // clé z-aware : « x,y » (sol) ou « x,y,z » (étage)
-      hl.push({ d: depth(x, y, d, z) + 0.25, el: <path key={`h${k}`} d={dPath(x, y, z)} fill="#4f8fe0" opacity={0.32} /> });
+      hl.push({ d: depth(x, y, d, z) + 0.25, el: <path key={`h${k}`} d={dPath(x, y, z)} fill="var(--combat-walk)" opacity={0.32} /> });
     }
     // Zone de COURSE (LDB 15 l.79-82) au-delà de la Marche, dans une AUTRE couleur : y cliquer
     // demandera le Test d'Athlétisme, et le jet peut porter moins loin que la case visée.
@@ -600,7 +600,7 @@ export function IsoStage() {
       for (const k of computeRunReach(useGame.getState).keys()) {
         if (walkReach.has(k)) continue;
         const [x, y, z = 0] = k.split(',').map(Number);
-        hl.push({ d: depth(x, y, d, z) + 0.25, el: <path key={`r${k}`} d={dPath(x, y, z)} fill="#9b6be0" opacity={0.24} /> });
+        hl.push({ d: depth(x, y, d, z) + 0.25, el: <path key={`r${k}`} d={dPath(x, y, z)} fill="var(--combat-run)" opacity={0.24} /> });
       }
     // Aperçu tap-1 (tactile) : chemin + case d'arrivée + badge — MÊME rendu que le survol desktop
     // (movePreviewEls, source unique du tracé de déplacement).
@@ -613,8 +613,8 @@ export function IsoStage() {
       // Aperçu multi-cases (chemin + destination + badge) : une seule profondeur pragmatique à la case
       // d'ARRIVÉE (l'exactitude par-segment du tracé est secondaire ; on garde leur ordre relatif).
       const pvD = pvDest ? depth(pvDest.x, pvDest.y, d, pvZ) + 0.25 : 0;
-      for (const el of movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv', '#ffd75e', pv.kind === 'attack' ? 1 : (activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1), liftOf)) hl.push({ d: pvD, el });
-      if (pvTgt?.pos) { const tz = pvTgt.pos.z ?? 0; for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt))) hl.push({ d: depth(t.x, t.y, d, tz) + 0.25, el: <path key={`pv-tgt-${t.x}-${t.y}`} d={dPath(t.x, t.y, tz)} fill="#ffd75e" opacity={0.18} pointerEvents="none" /> }); } // tout le bloc N×N d'un grand
+      for (const el of movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv', 'var(--combat-gold)', pv.kind === 'attack' ? 1 : (activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1), liftOf)) hl.push({ d: pvD, el });
+      if (pvTgt?.pos) { const tz = pvTgt.pos.z ?? 0; for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt))) hl.push({ d: depth(t.x, t.y, d, tz) + 0.25, el: <path key={`pv-tgt-${t.x}-${t.y}`} d={dPath(t.x, t.y, tz)} fill="var(--combat-gold)" opacity={0.18} pointerEvents="none" /> }); } // tout le bloc N×N d'un grand
     }
     // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
     for (const c of battle.combatants) {
@@ -643,7 +643,7 @@ export function IsoStage() {
       for (const c of battle.combatants) {
         if (!c.pos || !eligible.has(c.id)) continue;
         const cz = c.pos.z ?? 0;
-        hl.push({ d: depth(c.pos.x, c.pos.y, d, cz) + 0.25, el: <path key={`tgt-${c.id}`} d={dPath(c.pos.x, c.pos.y, cz)} fill="none" stroke="#ff5a4d" strokeWidth={2.5} opacity={0.9} pointerEvents="none" /> });
+        hl.push({ d: depth(c.pos.x, c.pos.y, d, cz) + 0.25, el: <path key={`tgt-${c.id}`} d={dPath(c.pos.x, c.pos.y, cz)} fill="none" stroke="var(--combat-target)" strokeWidth={2.5} opacity={0.9} pointerEvents="none" /> });
       }
     }
     // « Tirer dans le tas » : cibles ÉLIGIBLES touchables au hasard.
@@ -654,7 +654,7 @@ export function IsoStage() {
         for (const v of crowdEligible(battle, atk, tgt)) {
           if (!v.pos) continue;
           const vz = v.pos.z ?? 0;
-          hl.push({ d: depth(v.pos.x, v.pos.y, d, vz) + 0.25, el: <path key={`crowd-${v.id}`} d={dPath(v.pos.x, v.pos.y, vz)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" /> });
+          hl.push({ d: depth(v.pos.x, v.pos.y, d, vz) + 0.25, el: <path key={`crowd-${v.id}`} d={dPath(v.pos.x, v.pos.y, vz)} fill="var(--combat-crowd)" opacity={0.34} stroke="var(--combat-crowd)" strokeWidth={2} pointerEvents="none" /> });
         }
     }
     // Cibles cliquables du MODE de ciblage courant (targetingModes → MÊME source que réticule/curseur/clic) :
@@ -669,7 +669,7 @@ export function IsoStage() {
       for (const t of cands)
         if (t.pos) {
           const tz = t.pos.z ?? 0;
-          hl.push({ d: depth(t.pos.x, t.pos.y, d, tz) + 0.25, el: <path key={`cand-${t.id}`} d={dPath(t.pos.x, t.pos.y, tz)} fill="none" stroke={friendly || checked?.has(t.id) ? '#5db87a' : '#ff5a4d'} strokeWidth={2.5} opacity={0.9} pointerEvents="none" /> });
+          hl.push({ d: depth(t.pos.x, t.pos.y, d, tz) + 0.25, el: <path key={`cand-${t.id}`} d={dPath(t.pos.x, t.pos.y, tz)} fill="none" stroke={friendly || checked?.has(t.id) ? 'var(--combat-ally)' : 'var(--combat-target)'} strokeWidth={2.5} opacity={0.9} pointerEvents="none" /> });
         }
     }
     return hl;
@@ -897,10 +897,10 @@ export function IsoStage() {
         el: (
           <g key={`halo-${ent.id}`} pointerEvents="none">
             <g className={haloHovered ? 'interact-halo hovered' : 'interact-halo'}>
-              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="#ffe27a" opacity={0.26} />
-              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="none" stroke="#ffd75e" strokeWidth={2} opacity={0.9} />
+              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="var(--combat-halo)" opacity={0.26} />
+              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="none" stroke="var(--combat-gold)" strokeWidth={2} opacity={0.9} />
             </g>
-            <ellipse className="halo-ping" cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="none" stroke="#ffd75e" strokeWidth={1.6} />
+            <ellipse className="halo-ping" cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="none" stroke="var(--combat-gold)" strokeWidth={1.6} />
           </g>
         ),
       });
@@ -910,7 +910,7 @@ export function IsoStage() {
         vis: pvis,
         el: (
           <g key={`spark-${ent.id}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + 9 * fg.scale}, ${c.cy - 26 * fg.scale})`}>
-            <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill="#ffd75e" stroke="#7a5b16" strokeWidth={0.7} />
+            <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill="var(--combat-gold)" stroke="var(--combat-gold-dk)" strokeWidth={0.7} />
           </g>
         ),
       });
@@ -1021,8 +1021,8 @@ export function IsoStage() {
         vis: true, // survol d'un PNJ interlocuteur (en vue) → halo au-dessus du voile
         el: (
           <g key={`npc-halo-${ent.id}`} className="interact-halo hovered" pointerEvents="none">
-            <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.2} />
-            <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="none" stroke="#ffd75e" strokeWidth={1.8} opacity={0.85} />
+            <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="var(--combat-halo)" opacity={0.2} />
+            <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="none" stroke="var(--combat-gold)" strokeWidth={1.8} opacity={0.85} />
           </g>
         ),
       });
@@ -1461,14 +1461,14 @@ export function IsoStage() {
         {/* Télégraphe de DÉPLACEMENT ENNEMI (actorMove) : chemin + destination en ROUGE, montré avant le
             glissé — même tracé que l'aperçu héros (movePreviewEls), teinté ennemi. */}
         {actorMove && actorMove.path.length > 0 &&
-          movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', '#e0533a', activeMoveN, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
+          movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', 'var(--combat-enemy)', activeMoveN, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
         {/* Télégraphe ENNEMI (actorAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
           <TargetReticle
             from={reticleAnchor(targeting.from)}
             to={reticleAnchor(targeting.to)}
             line={targeting.melee ? 'solid' : 'dashed'}
-            lineColor="#e0533a"
+            lineColor="var(--combat-enemy)"
           />
         )}
         {/* Mouches qui tournoient au-dessus de chaque cadavre (faune d'ambiance). */}
@@ -1511,7 +1511,7 @@ export function IsoStage() {
             }
           }
           if (radius == null || !caster?.pos || ok == null) return null;
-          const col = ok ? '#e0533a' : '#777';
+          const col = ok ? 'var(--combat-enemy)' : '#777';
           const tiles: JSX.Element[] = [];
           for (let dy = -radius; dy <= radius; dy++)
             for (let dx = -radius; dx <= radius; dx++) {
@@ -1575,7 +1575,7 @@ export function IsoStage() {
             chemin + badge de coût — le clic/A commet. Ancré sur la case EFFECTIVE (souris ou curseur). */}
         {mode === 'battle' && battle && hoverMove && effHover && (
           <g pointerEvents="none">
-            {movePreviewEls(hoverMove.path, effHover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv', '#ffd75e', activeMoveN, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
+            {movePreviewEls(hoverMove.path, effHover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv', 'var(--combat-gold)', activeMoveN, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
           </g>
         )}
         {/* Aperçu de DÉPLACEMENT au survol HORS combat : même tracé partagé (movePreviewEls), pas de badge. */}
@@ -1584,7 +1584,7 @@ export function IsoStage() {
             {/* Case d'arrivée = fin du chemin (case adjacente pour un objet/PNJ interactif), pas le survol.
                 Chaque point se rend à SON z et SA hauteur (lift) → le trait MONTE la rampe et court sur le
                 tablier au lieu de rester écrasé sur la cour (z0). */}
-            {movePreviewEls(explorePath, explorePath[explorePath.length - 1], null, dims, 'exp', '#ffd75e', 1, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
+            {movePreviewEls(explorePath, explorePath[explorePath.length - 1], null, dims, 'exp', 'var(--combat-gold)', 1, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
           </g>
         )}
         {/* Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon
@@ -1596,15 +1596,15 @@ export function IsoStage() {
             const a = byId(pendingAttack.attackerId), t = byId(pendingAttack.victimId ?? pendingAttack.targetId);
             if (!a || !t) return null;
             const ranged = firedWeapon(a, t, pendingAttack.weaponUid).type === 'ranged';
-            return <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line={ranged ? 'dashed' : 'solid'} lineColor={a.kind === 'hero' ? '#ffd75e' : '#e0533a'} />;
+            return <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line={ranged ? 'dashed' : 'solid'} lineColor={a.kind === 'hero' ? 'var(--combat-gold)' : 'var(--combat-enemy)'} />;
           }
           if (pendingDefense) {
             const a = byId(pendingDefense.attackerId), t = byId(pendingDefense.defenderId);
-            return a && t ? <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line={pendingDefense.weapon.type === 'ranged' ? 'dashed' : 'solid'} lineColor="#e0533a" /> : null;
+            return a && t ? <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line={pendingDefense.weapon.type === 'ranged' ? 'dashed' : 'solid'} lineColor="var(--combat-enemy)" /> : null;
           }
           if (pendingTrample) {
             const a = byId(pendingTrample.attackerId), t = byId(pendingTrample.targetId);
-            return a && t ? <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line="solid" lineColor={a.kind === 'hero' ? '#ffd75e' : '#e0533a'} /> : null;
+            return a && t ? <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line="solid" lineColor={a.kind === 'hero' ? 'var(--combat-gold)' : 'var(--combat-enemy)'} /> : null;
           }
           if (pendingCast && !pendingCast.pickingTargets) {
             const a = byId(pendingCast.casterId);
@@ -1615,7 +1615,7 @@ export function IsoStage() {
               : t ? reticleAnchor(t) : null;
             if (!a || !to) return null;
             const self = !pendingCast.zone && pendingCast.casterId === pendingCast.targetId; // sort sur SOI : réticule seul
-            return <TargetReticle from={self ? null : reticleAnchor(a)} to={to} line={self ? null : 'dashed'} lineColor={a.kind === 'hero' ? '#ffd75e' : '#e0533a'} />;
+            return <TargetReticle from={self ? null : reticleAnchor(a)} to={to} line={self ? null : 'dashed'} lineColor={a.kind === 'hero' ? 'var(--combat-gold)' : 'var(--combat-enemy)'} />;
           }
           if (pendingHeal) {
             const t = byId(pendingHeal.targetId);
@@ -1641,7 +1641,7 @@ export function IsoStage() {
                 const w = tip.text.length * 6.4 + 14;
                 return (
                   <g transform={`translate(${to.cx},${to.cy - 64})`}>
-                    <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke="#888" strokeWidth={1} />
+                    <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="var(--tooltip-bg)" opacity={0.94} stroke="#888" strokeWidth={1} />
                     <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
                       {tip.text}
                     </text>
@@ -1662,12 +1662,12 @@ export function IsoStage() {
                 let y = -h + 30; // la ligne 2 démarre sous le titre ; chaque ligne suivante descend de 14
                 return (
                   <g transform={`translate(${to.cx},${to.cy - 60})`}>
-                    <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="#14141c" fillOpacity={0.95} stroke="#ffd75e" strokeOpacity={0.75} strokeWidth={1} />
-                    <text x={x0} y={-h + 16} fill="#ffd75e" fontSize={11.5} fontWeight={700}>{tip.title}</text>
+                    <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke="var(--combat-gold)" strokeOpacity={0.75} strokeWidth={1} />
+                    <text x={x0} y={-h + 16} fill="var(--combat-gold)" fontSize={11.5} fontWeight={700}>{tip.title}</text>
                     <text x={x0} y={y} fontSize={10.5}>
                       <tspan fill="#b9b2a6">{tip.skill}</tspan>
                       <tspan fill="#f0f0f0" fontWeight={700}>{`  ${eff}`}</tspan>
-                      {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? '#5db87a' : '#e0533a'} fontWeight={700}>{modTxt}</tspan>}
+                      {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? 'var(--combat-ally)' : 'var(--combat-enemy)'} fontWeight={700}>{modTxt}</tspan>}
                     </text>
                     {l3 && (
                       <text x={x0} y={(y += 14)} fontSize={10.5}>
@@ -1709,17 +1709,17 @@ export function IsoStage() {
             const aideNames = aides.filter((c) => c.id !== chefId).map((c) => c.name);
             const present = chef ? servingCrewPresent(chef, battle.combatants) : undefined;
             const groupLabel = p.item.weaponGroup ? weaponGroupLabel(p.item.weaponGroup) : '';
-            lines.push({ text: indice > 0 ? `${p.item.name} · Arme d’équipe ${indice}` : p.item.name, color: '#ffd75e', bold: true });
+            lines.push({ text: indice > 0 ? `${p.item.name} · Arme d’équipe ${indice}` : p.item.name, color: 'var(--combat-gold)', bold: true });
             lines.push({ text: `Chef : ${manned ? chef?.name ?? 'aucun' : 'aucun'}`, color: '#f0f0f0' });
             if (renforts.length) lines.push({ text: `Renforts : ${renforts.join(', ')}`, color: '#b9b2a6' });
             if (aideNames.length) lines.push({ text: `Aides (non qual.) : ${aideNames.join(', ')}`, color: '#7f8893' });
-            if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' ⚠ sous-effectif' : ''}`, color: present < indice ? '#e0533a' : '#5db87a' });
+            if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' ⚠ sous-effectif' : ''}`, color: present < indice ? 'var(--combat-enemy)' : 'var(--combat-ally)' });
             // Carte d'ACTION du héros actif : SA qualification pour CETTE pièce (même check RAW que l'effectif),
             // affichée DÈS le survol (même non adjacent) → on sait d'un coup d'œil si ce héros peut l'armer.
             if (active && active.kind === 'hero' && myTurn) {
               const canServeNow = !!(servePoste && servePoste.item.uid === p.item.uid); // adjacent + servable maintenant
               if (isCrewQualified(active, p)) {
-                lines.push({ text: `✅ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: '#5db87a', bold: true });
+                lines.push({ text: `✅ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: 'var(--combat-ally)', bold: true });
                 lines.push({ text: !canServeNow ? '↳ approchez-vous pour servir' : manned ? '↳ compte pour l’effectif' : '↳ chef : peut tirer (pièce libre)', color: '#9fb8a6' });
               } else {
                 lines.push({ text: `⚠ NON qualifié (Projectiles ${groupLabel})`, color: '#e0a53a', bold: true });
@@ -1733,7 +1733,7 @@ export function IsoStage() {
           const x0 = -w / 2 + 10;
           return (
             <g pointerEvents="none" transform={`translate(${anchor.cx},${anchor.cy - 64})`}>
-              <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="#14141c" fillOpacity={0.95} stroke="#ffd75e" strokeOpacity={0.6} strokeWidth={1} />
+              <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke="var(--combat-gold)" strokeOpacity={0.6} strokeWidth={1} />
               {lines.map((l, i) => (
                 <text key={i} x={x0} y={-h + 15 + i * 14} fontSize={l.bold ? 11.5 : 10.5} fontWeight={l.bold ? 700 : 500} fill={l.color}>{l.text}</text>
               ))}

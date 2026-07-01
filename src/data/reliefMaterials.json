@@ -1,0 +1,32 @@
+[
+  {
+    "id": "terre",
+    "face": "#5a4a33",
+    "foot": "#3e3322",
+    "slopeTop": "#75603f",
+    "shadeDark": 0.56
+  },
+  {
+    "id": "pierre",
+    "face": "#6b6f76",
+    "foot": "#4a4e54",
+    "slopeTop": "#878c95",
+    "shadeDark": 0.7
+  },
+  {
+    "id": "pilier",
+    "face": "#565a61"
+  },
+  {
+    "id": "riser",
+    "face": "#57534c"
+  },
+  {
+    "id": "plafond",
+    "face": "#2c2a26"
+  },
+  {
+    "id": "sol-inconnu",
+    "face": "#6b6250"
+  }
+]

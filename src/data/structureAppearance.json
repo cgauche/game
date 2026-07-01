@@ -1,0 +1,138 @@
+[
+  {
+    "id": "plain",
+    "label": "Mur",
+    "material": "bois",
+    "face": "#6e5940",
+    "post": "#352b1f",
+    "wood": {
+      "inset": "#594732",
+      "frame": "#7c6647",
+      "cap": "#917a58",
+      "skirt": "#473829",
+      "rubble": "#4b3d2b",
+      "rubbleHi": "#5d4c36"
+    }
+  },
+  {
+    "id": "mur-en-bois",
+    "label": "Mur en bois",
+    "material": "bois",
+    "face": "#6e5940",
+    "post": "#352b1f",
+    "wood": {
+      "inset": "#594732",
+      "frame": "#7c6647",
+      "cap": "#917a58",
+      "skirt": "#473829",
+      "rubble": "#4b3d2b",
+      "rubbleHi": "#5d4c36"
+    }
+  },
+  {
+    "id": "porte",
+    "label": "Porte",
+    "material": "bois",
+    "face": "#6e5940",
+    "post": "#352b1f",
+    "wood": {
+      "inset": "#594732",
+      "frame": "#7c6647",
+      "cap": "#917a58",
+      "skirt": "#473829",
+      "rubble": "#4b3d2b",
+      "rubbleHi": "#5d4c36"
+    },
+    "door": {
+      "openingFrac": 0.52,
+      "lintelPx": 4,
+      "jamb": "#6e5940",
+      "jambCap": "#8a7048"
+    }
+  },
+  {
+    "id": "porte-blindee",
+    "label": "Porte blindée",
+    "material": "bois",
+    "face": "#6e5940",
+    "post": "#352b1f",
+    "wood": {
+      "inset": "#594732",
+      "frame": "#7c6647",
+      "cap": "#917a58",
+      "skirt": "#473829",
+      "rubble": "#4b3d2b",
+      "rubbleHi": "#5d4c36"
+    },
+    "door": {
+      "openingFrac": 0.52,
+      "lintelPx": 4,
+      "jamb": "#6e5940",
+      "jambCap": "#8a7048"
+    }
+  },
+  {
+    "id": "mur-en-pierre",
+    "label": "Mur en pierre",
+    "material": "pierre",
+    "face": "var(--struct-face)",
+    "post": "#352b1f",
+    "band": "var(--struct-band)",
+    "cap": "var(--struct-cap)",
+    "rubble": "var(--struct-rubble)",
+    "rubbleHi": "var(--struct-rubble-hi)",
+    "parapet": {
+      "heightLevelFrac": 0.32,
+      "merlonCount": 5,
+      "merlonStep": 2,
+      "merlonHeightPx": 6,
+      "bands": [
+        0.28,
+        0.56,
+        0.82
+      ],
+      "bandThickPx": 2.4,
+      "parapetBandFrac": 0.72,
+      "arasePx": 3
+    }
+  },
+  {
+    "id": "porte-de-ville",
+    "label": "Porte de ville",
+    "material": "pierre",
+    "face": "var(--struct-face)",
+    "post": "#352b1f",
+    "band": "var(--struct-band)",
+    "cap": "var(--struct-cap)",
+    "rubble": "var(--struct-rubble)",
+    "rubbleHi": "var(--struct-rubble-hi)",
+    "recess": "#241a10",
+    "parapet": {
+      "heightLevelFrac": 0.32,
+      "merlonCount": 5,
+      "merlonStep": 2,
+      "merlonHeightPx": 6,
+      "bands": [
+        0.28,
+        0.56,
+        0.82
+      ],
+      "bandThickPx": 2.4,
+      "parapetBandFrac": 0.72,
+      "arasePx": 3
+    },
+    "door": {
+      "openingFrac": 1,
+      "lintelPx": 4,
+      "herse": {
+        "bars": 6,
+        "topFrac": 0.9,
+        "traverseFracs": [
+          0.4,
+          0.78
+        ],
+        "traverseColor": "#4a4d54"
+      }
+    }
+  }
+]

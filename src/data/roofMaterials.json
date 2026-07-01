@@ -1,0 +1,39 @@
+[
+  {
+    "id": "tuile",
+    "N": "#a04836",
+    "E": "#732a20",
+    "S": "#531b13",
+    "O": "#8a3527",
+    "line": "#411409",
+    "course": "#5a1f17",
+    "courses": 3
+  },
+  {
+    "id": "chaume",
+    "N": "#b0904a",
+    "E": "#7d642a",
+    "S": "#59461a",
+    "O": "#997c3c",
+    "line": "#463714",
+    "course": "#6a531f",
+    "courses": 2
+  },
+  {
+    "id": "ardoise",
+    "N": "#63727f",
+    "E": "#3d4852",
+    "S": "#283037",
+    "O": "#4d5964",
+    "line": "#20272d",
+    "course": "#2a323a",
+    "courses": 3
+  },
+  {
+    "id": "plan",
+    "planBody": "#6e4f3a",
+    "planEdge": "#241a12",
+    "planInner": "#8a6a4a",
+    "planText": "#f2e6cc"
+  }
+]

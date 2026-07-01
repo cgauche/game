@@ -23,7 +23,8 @@ import {
 import { sceneMetresPerTile, tileAt, heightAt, isIndoor, doorIsOpen, structureIsDown, type Scene, type WallSeg } from '../../state/scene';
 import { TERRAIN_DEFS } from '../../state/terrain';
 import { WALL_H, LEVEL_H } from '../iso';
-import { structureAppearance, type StructureAppearanceDef } from '../catalog/structures';
+import { wallApp } from '../catalog/structures';
+import { reliefMaterial } from '../catalog/relief';
 
 /** Une pièce dessinable : polygone écran (points), couleur, profondeur de tri, clé stable, nature. */
 export type DrawItem = {
@@ -39,9 +40,9 @@ export type DrawItem = {
 // (`structureAppearance`, la même def que walls.ts consomme) : face/bandes/arase/merlons/herse viennent
 // TOUS de la def — plus AUCUNE couleur de mur en dur ni regex ici. Tout est ensuite teinté par la lumière
 // + la brume de distance.
-export const FLOOR_FALLBACK = '#6b6250'; // sol sans terrain connu
-export const CEIL_BASE = '#2c2a26'; // plafond (INTÉRIEUR uniquement)
-const RISER_ROCK = '#57534c'; // face verticale (falaise/marche/rampe/rempart) : roche/maçonnerie, PAS la couleur du sol
+export const FLOOR_FALLBACK = reliefMaterial('sol-inconnu').face; // sol sans terrain connu
+export const CEIL_BASE = reliefMaterial('plafond').face; // plafond (INTÉRIEUR uniquement)
+const RISER_ROCK = reliefMaterial('riser').face; // face verticale (falaise/marche/rampe/rempart) : roche/maçonnerie, PAS la couleur du sol
 export const FOG_OUTDOOR = '#9fb2c6'; // brume claire (ciel) en extérieur ; intérieur = FOG_COLOR sombre (PovStage cale l'horizon du ciel dessus)
 
 /** Couleur pleine d'un terrain (`TerrainDef.swatch`, donnée partagée iso ⇄ POV). */
@@ -73,12 +74,6 @@ function resolveCss(c: string): string {
 /** Convertit une hauteur ISO en px (def : `WALL_H`, `LEVEL_H`, merlonHeightPx…) en mètres MONDE. Une
  *  cloison d'arête vaut `WALL_H` px ⇔ `WALL_H_M` m → toute hauteur px suit le même facteur. PUR. */
 const pxToM = (px: number): number => (px / WALL_H) * WALL_H_M;
-
-/** Apparence d'un mur — DONNÉE, ZÉRO regex : un mur qui porte une `structure` prend sa def ; un mur SANS
- *  structure prend `mur-en-pierre` s'il est SURÉLEVÉ (base > 1 m : parapet de rempart, il faut créneaux)
- *  sinon `plain` (colombage du Bourg au sol). */
-const wallApp = (seg: WallSeg, baseH: number): StructureAppearanceDef =>
-  seg.structure ? structureAppearance(seg.structure) : structureAppearance(baseH > 1 ? 'mur-en-pierre' : 'plain');
 
 /** Biais de profondeur : donne aux sols un cran DERRIÈRE (plus loin) pour qu'ils ne z-fightent pas avec
  *  la base des murs à centroïde égal. */

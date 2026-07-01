@@ -2,10 +2,11 @@
  *  rendus par `wallObjs`) sur un sol de terrain (rendu par `floorObjs`) ; ce module ne rend que la pièce
  *  de TOIT couvrant l'empreinte. INTÉRIEUR TOUT-EN-SCÈNE (cutaway) : le toit se LÈVE (opacité 0 en iso,
  *  estompé en plan) quand un allié entre dans l'empreinte (`roofHidden(roof.foot, allies)`) — plus aucune
- *  scène-intérieur séparée. Réutilise les skins du registre `catalog/buildings` (`hipRoof`/colombage…). */
+ *  scène-intérieur séparée. La nappe de toit est rendue par `roofFromCells` (`catalog/buildings`). */
 import type { Roof } from '../state/scene';
 import { Dims, footprintDepth, tileCenter, CELL, isSquareView } from './iso';
-import { roofFromCells, STYLE_MATERIAL } from './catalog/buildings';
+import { roofFromCells, styleRoofMaterial } from './catalog/buildings';
+import { roofMaterial } from './catalog/roofs';
 
 /** Profondeur de tri d'un toit : MAX sur les 4 coins de l'empreinte à son INDEX DE COUCHE `z` (coin proche
  *  caméra, correct aux 4 rotations) — découplé du lift d'écran. */
@@ -32,13 +33,14 @@ export function roofObj(roof: Roof, dims: Dims, cutaway = false, night = false):
     const name = roof.label || roof.style || '?';
     const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
     const nameFont = Math.max(7, Math.min(16, (maxX - minX - 12) / Math.max(1, name.length * 0.58)));
+    const plan = roofMaterial('plan');
     return {
       d: roofDepth(roof, dims),
       el: (
         <g key={`roof-${roof.id}`} style={{ transition: 'opacity 0.25s' }} opacity={cutaway ? 0.5 : 1}>
-          <rect x={minX} y={minY} width={maxX - minX} height={maxY - minY} rx={3} fill="#6e4f3a" stroke="#241a12" strokeWidth={4} />
-          <rect x={minX + 5} y={minY + 5} width={maxX - minX - 10} height={maxY - minY - 10} rx={2} fill="none" stroke="#8a6a4a" strokeWidth={1.5} opacity={0.6} />
-          <text x={midX} y={midY} textAnchor="middle" dominantBaseline="central" fontSize={nameFont} fontWeight="bold" fill="#f2e6cc" stroke="#241a12" strokeWidth={0.5} pointerEvents="none">
+          <rect x={minX} y={minY} width={maxX - minX} height={maxY - minY} rx={3} fill={plan.planBody!} stroke={plan.planEdge!} strokeWidth={4} />
+          <rect x={minX + 5} y={minY + 5} width={maxX - minX - 10} height={maxY - minY - 10} rx={2} fill="none" stroke={plan.planInner!} strokeWidth={1.5} opacity={0.6} />
+          <text x={midX} y={midY} textAnchor="middle" dominantBaseline="central" fontSize={nameFont} fontWeight="bold" fill={plan.planText!} stroke={plan.planEdge!} strokeWidth={0.5} pointerEvents="none">
             {name}
           </text>
         </g>
@@ -51,7 +53,7 @@ export function roofObj(roof: Roof, dims: Dims, cutaway = false, night = false):
   const cells = new Set<string>();
   for (let dy = 0; dy < roof.foot.h; dy++)
     for (let dx = 0; dx < roof.foot.w; dx++) cells.add(`${roof.foot.x + dx},${roof.foot.y + dy}`);
-  const material = roof.params?.roofMaterial ?? STYLE_MATERIAL[roof.style] ?? 'tuile';
+  const material = roof.params?.roofMaterial ?? styleRoofMaterial(roof.style);
   return {
     d: roofDepth(roof, dims),
     el: (

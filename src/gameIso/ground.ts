@@ -2,7 +2,12 @@ import { Scene, tileAt, heightAt, isWalkable } from '../state/scene';
 import { gradeBetween, metricToLift, type Grade } from '../state/relief';
 import { terrainPriority } from '../state/terrain';
 import { terrainGradient } from './catalog/terrain';
+import { reliefMaterial } from './catalog/relief';
+import { shade, ao, warm, spec } from './shade';
 import { Dims, diamondCorners, tileCenter, tileEdge } from './iso';
+
+/** Pied de rampe = nez de pente × ce facteur (ombrage doux du haut vers le bas). */
+const SLOPE_BOT = 0.67;
 
 // ── TUNABLES de SURPLOMB (tablier de pont / loge) — ajustés à l'œil par l'orchestrateur ──────────────
 /** Épaisseur (mètres) de la DALLE ajourée d'un tablier : la face de bord d'un surplomb donnant sur le
@@ -106,13 +111,14 @@ const lerpP = (a: [number, number], b: [number, number], t: number): [number, nu
 function renderCliff(s: ReliefFace): string {
   const [tl, tr, br, bl] = s.points; // haut-gauche, haut-droit, bas-droit, bas-gauche
   const poly = (pts: [number, number][]) => pts.map((p) => `${p[0]},${p[1]}`).join(' ');
-  const fill = s.tone === 'stone' ? (s.lit ? '#6b6f76' : '#494d54') : (s.lit ? '#5a4a33' : '#33291c');
-  const foot = s.tone === 'stone' ? (s.lit ? '#4a4e54' : '#34373c') : (s.lit ? '#3e3322' : '#241c12');
+  const m = reliefMaterial(s.tone === 'stone' ? 'pierre' : 'terre');
+  const fill = s.lit ? m.face : shade(m.face, m.shadeDark!);
+  const foot = s.lit ? m.foot! : shade(m.foot!, m.shadeDark!);
   const fl = lerpP(tl, bl, 0.6), fr = lerpP(tr, br, 0.6); // bord haut de l'ombre de pied
   return (
-    `<polygon class="elev-cliff" points="${poly([tl, tr, br, bl])}" fill="${fill}" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/>` +
+    `<polygon class="elev-cliff" points="${poly([tl, tr, br, bl])}" fill="${fill}" stroke="${ao(0.3)}" stroke-width="0.6"/>` +
     `<polygon points="${poly([fl, fr, br, bl])}" fill="${foot}" opacity="0.85"/>` +
-    (s.lit ? `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="rgba(255,240,210,0.22)" stroke-width="1.1"/>` : '')
+    (s.lit ? `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="${warm(0.22)}" stroke-width="1.1"/>` : '')
   );
 }
 
@@ -123,13 +129,14 @@ function renderCliff(s: ReliefFace): string {
 function slopeFace(s: ReliefFace): string {
   const [tl, tr, br, bl] = s.points;
   const poly = (pts: [number, number][]) => pts.map((p) => `${p[0]},${p[1]}`).join(' ');
-  const top = s.tone === 'stone' ? '#878c95' : '#75603f'; // nez de pente éclairé
-  const bot = s.tone === 'stone' ? '#5b5f67' : '#4d3f2a'; // pied de pente dans l'ombre
+  const m = reliefMaterial(s.tone === 'stone' ? 'pierre' : 'terre');
+  const top = m.slopeTop!; // nez de pente éclairé
+  const bot = shade(m.slopeTop!, SLOPE_BOT); // pied de pente dans l'ombre
   const ml = lerpP(tl, bl, 0.5), mr = lerpP(tr, br, 0.5); // mi-pente (couture des deux bandes)
   return (
-    `<polygon points="${poly([tl, tr, mr, ml])}" fill="${top}" stroke="rgba(0,0,0,0.16)" stroke-width="0.4"/>` +
-    `<polygon points="${poly([ml, mr, br, bl])}" fill="${bot}" stroke="rgba(0,0,0,0.16)" stroke-width="0.4"/>` +
-    `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="rgba(255,240,210,0.28)" stroke-width="1.1"/>`
+    `<polygon points="${poly([tl, tr, mr, ml])}" fill="${top}" stroke="${ao(0.16)}" stroke-width="0.4"/>` +
+    `<polygon points="${poly([ml, mr, br, bl])}" fill="${bot}" stroke="${ao(0.16)}" stroke-width="0.4"/>` +
+    `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="${warm(0.28)}" stroke-width="1.1"/>`
   );
 }
 
@@ -138,10 +145,11 @@ function slopeFace(s: ReliefFace): string {
 function renderDeck(s: ReliefFace): string {
   const [tl, tr, br, bl] = s.points;
   const poly = (pts: [number, number][]) => pts.map((p) => `${p[0]},${p[1]}`).join(' ');
-  const fill = s.lit ? '#6b6f76' : '#494d54';
+  const m = reliefMaterial('pierre');
+  const fill = s.lit ? m.face : shade(m.face, m.shadeDark!);
   return (
-    `<polygon class="overhang-deck" points="${poly([tl, tr, br, bl])}" fill="${fill}" stroke="rgba(0,0,0,0.32)" stroke-width="0.6"/>` +
-    `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="rgba(255,240,210,0.22)" stroke-width="1"/>`
+    `<polygon class="overhang-deck" points="${poly([tl, tr, br, bl])}" fill="${fill}" stroke="${ao(0.32)}" stroke-width="0.6"/>` +
+    `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="${warm(0.22)}" stroke-width="1"/>`
   );
 }
 
@@ -150,8 +158,8 @@ function pillarSvg(top: { cx: number; cy: number }, bot: { cx: number; cy: numbe
   const w = PILLAR_W / 2;
   const pts = `${top.cx - w},${top.cy} ${top.cx + w},${top.cy} ${bot.cx + w},${bot.cy} ${bot.cx - w},${bot.cy}`;
   return (
-    `<polygon class="overhang-pillar" points="${pts}" fill="#565a61" stroke="rgba(0,0,0,0.38)" stroke-width="0.6"/>` +
-    `<line x1="${top.cx - w}" y1="${top.cy}" x2="${bot.cx - w}" y2="${bot.cy}" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>`
+    `<polygon class="overhang-pillar" points="${pts}" fill="${reliefMaterial('pilier').face}" stroke="${ao(0.38)}" stroke-width="0.6"/>` +
+    `<line x1="${top.cx - w}" y1="${top.cy}" x2="${bot.cx - w}" y2="${bot.cy}" stroke="${spec(0.12)}" stroke-width="0.8"/>`
   );
 }
 
@@ -194,7 +202,7 @@ export function groundTile(scene: Scene, x: number, y: number, dims: Dims, z = 0
   const { cx, cy, top, right, bot, left } = diamondCorners(x, y, dims, lift);
   const base = `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${terrainGradient(
     tileAt(scene, x, y, z),
-  )})" stroke="rgba(0,0,0,0.16)"/>`;
+  )})" stroke="${ao(0.16)}"/>`;
   const blends = edgeBlends(scene, x, y, z);
   if (!blends.length) return pillars + faces + base; // tuile sans voisin de plus haute précédence : pas de wedge
   // Le voisin est repéré en GRILLE (N/E/S/O), mais `diamondCorners` garde la tuile orientée-ÉCRAN (la rotation

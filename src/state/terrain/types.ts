@@ -18,4 +18,6 @@ export interface TerrainDef extends TerrainMeta {
   gradient: string;
   /** couleur d'aperçu (palette éditeur). */
   swatch: string;
+  /** Arrêts du dégradé (présentation) — source unique avec `swatch`. */
+  stops: { off: string; color: string }[];
 }
