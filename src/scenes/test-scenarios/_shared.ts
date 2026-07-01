@@ -2,6 +2,7 @@ import { Combatant } from '../../engine/types';
 import { Scene, Terrain } from '../../state/scene';
 import type { WorldMap } from '../../state/worldMap';
 import { buildEncounters, type AuthoredEncounter } from '../../state/encounterAuthoring';
+import { buildScene } from '../../state/mapSpec';
 
 /** Attache des rencontres authored (terse) à une scène : expanse chaque liste d'ennemis en
  *  entités 'personnage' + `members` canoniques, pousse les entités dans la scène et pose les
@@ -46,7 +47,8 @@ export interface TestScenario {
   rules?: Record<string, import('../../engine/policy').RuleValue>;
 }
 
-/** Arène dégagée + point de départ des héros (base des scénarios de combat direct). */
+/** Arène dégagée + point de départ des héros (base des scénarios de combat direct). Preset MINCE
+ *  au-dessus de `buildScene` (headless-editor) : mêmes défauts (16×10, 'herbe', départ à gauche-milieu). */
 export function arena(opts: {
   id: string;
   nom: string;
@@ -57,17 +59,13 @@ export function arena(opts: {
 }): Scene {
   const w = opts.w ?? 16;
   const h = opts.h ?? 10;
-  return {
+  const hs = opts.heroStart ?? { x: 2, y: Math.floor(h / 2) };
+  return buildScene({
     id: opts.id,
     nom: opts.nom,
     description: 'Arène de test.',
-    dimensions: { w, h },
-    ambiance: 'exterieur',
-    layers: [{ z: 0, tiles: new Array(w * h).fill(opts.terrain ?? 'herbe') as Terrain[] }],
-    entities: [{ id: 'start', kind: 'heroStart', pos: opts.heroStart ?? { x: 2, y: Math.floor(h / 2) } }],
-    dialogues: [],
-    triggers: [],
-    encounters: [],
-    flags: {},
-  };
+    size: [w, h],
+    terrain: opts.terrain ?? 'herbe',
+    heroStart: [hs.x, hs.y],
+  });
 }
