@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseAsciiRows, parseWalledAscii, scanMarkers, parseLevels } from './asciiMap';
+import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
 
 describe('parseAsciiRows', () => {
   it('mappe les chars → terrains, `.`/espace = base', () => {
@@ -81,52 +81,5 @@ describe('scanMarkers', () => {
   it('clé par marqueur même absent (→ [])', () => {
     const { positions } = scanMarkers(['...'], '@X');
     expect(positions).toEqual({ '@': [], X: [] });
-  });
-});
-
-describe('parseLevels (assemblage multi-étages)', () => {
-  // z0 : enceinte 4×3 avec un escalier `E` en (1,2) et une entité `@` ; z1 : chemin de ronde avec
-  // l'escalier `E` aligné en (1,2) + une sentinelle `S`.
-  const Z0 = ['####', '#E@#', '#E.#'];
-  const Z1 = ['.E..', '.E.S', '....'];
-  const out = parseLevels(
-    [
-      { z: 0, rows: Z0, base: 'mur' },
-      { z: 1, rows: Z1, base: 'vide' },
-    ],
-    { markers: '@S', stair: 'E', stairBase: 'plancher' },
-  );
-
-  it('même w×h, terrain parsé après nettoyage des marqueurs', () => {
-    expect({ w: out.w, h: out.h }).toEqual({ w: 4, h: 3 });
-    // (2,1) portait `@` (marqueur) → nettoyé en base 'mur' de z0.
-    expect(out.levels[0].tiles[1 * 4 + 2]).toBe('mur');
-    // escalier (1,2) z0 → case marchable stairBase.
-    expect(out.levels[0].tiles[2 * 4 + 1]).toBe('plancher');
-    // z1 base = 'vide', case d'escalier (1,0) → stairBase.
-    expect(out.levels[1].tiles[0 * 4 + 1]).toBe('plancher');
-  });
-
-  it('positions des marqueurs ressortent AVEC z (tous étages)', () => {
-    expect(out.markers['@']).toEqual([{ x: 2, y: 1, z: 0 }]);
-    expect(out.markers['S']).toEqual([{ x: 3, y: 1, z: 1 }]);
-    // l'escalier est un marqueur comme un autre → ses positions aussi indexées avec z.
-    expect(out.markers['E']).toEqual([
-      { x: 1, y: 1, z: 0 }, { x: 1, y: 2, z: 0 },
-      { x: 1, y: 0, z: 1 }, { x: 1, y: 1, z: 1 },
-    ]);
-  });
-
-  it('auto-stairs : char d\'escalier commun z0↔z1 → lien MONTANT (z explicite, compatible Scene.stairs)', () => {
-    // case (1,1) porte `E` sur z0 ET z1 → un escalier montant ; (1,2) seulement sur z0, (1,0) seulement
-    // sur z1 → pas de lien. Seul le sens montant est émis. Le z est EXPLICITE (un escalier relie deux étages précis).
-    expect(out.stairs).toEqual([{ from: { x: 1, y: 1, z: 0 }, to: { x: 1, y: 1, z: 1 } }]);
-  });
-
-  it('lève si un étage diffère en largeur (garde d\'authoring)', () => {
-    expect(() => parseLevels([
-      { z: 0, rows: ['####', '####'], base: 'mur' },
-      { z: 1, rows: ['###', '###'], base: 'vide' },
-    ])).toThrow(/niveaux|≠/);
   });
 });

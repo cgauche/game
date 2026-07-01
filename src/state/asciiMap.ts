@@ -51,56 +51,6 @@ export function scanMarkers(rows: string[], markerChars: string, fill: Record<st
 }
 
 /**
- * Assemblage MULTI-ÉTAGES en un appel : une grille ASCII par niveau (siège : enceinte z0 + chemin de
- * ronde z1 + escaliers). Les `markers` (entités, escaliers…) sont scannés PUIS nettoyés sur CHAQUE
- * étage avant le parse terrain ; leurs positions ressortent avec `z`. Le char `stair` (sous-ensemble
- * des marqueurs) pose une case marchable (`stairBase ?? base`) et génère les escaliers AUTO : présent
- * sur z ET z+1 (même case) → un lien MONTANT `{ from:z, to:z+1 }` (le sens descendant est ajouté par
- * `stairLinks` côté consommateur). Tous les étages DOIVENT avoir le même w×h (sinon throw, comme
- * `parseAsciiRows`).
- */
-export function parseLevels(
-  levels: { z: number; rows: string[]; base: Terrain }[],
-  opts: { legend?: Record<string, Terrain>; markers?: string; stair?: string; stairBase?: Terrain } = {},
-): {
-  w: number;
-  h: number;
-  levels: { z: number; tiles: Terrain[] }[];
-  stairs: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } }[];
-  markers: Record<string, { x: number; y: number; z: number }[]>;
-} {
-  const { legend = {}, markers: markerOpt = '', stair, stairBase } = opts;
-  // L'escalier est un marqueur comme les autres (scanné+nettoyé). Dédoublonné, ordre stable.
-  const allMarkers = [...new Set((markerOpt + (stair ?? '')).split(''))].join('');
-  const markers: Record<string, { x: number; y: number; z: number }[]> = {};
-  for (const ch of allMarkers) markers[ch] = [];
-  const stairCells = new Map<number, Set<string>>(); // z → cases « x,y » portant l'escalier
-  const present = new Set(levels.map((l) => l.z));
-  const out: { z: number; tiles: Terrain[] }[] = [];
-  let w = -1, h = -1;
-  for (const lv of levels) {
-    const { positions, cleaned } = scanMarkers(lv.rows, allMarkers);
-    const grid = parseAsciiRows(cleaned, lv.base, legend);
-    if (w < 0) { w = grid.w; h = grid.h; }
-    else if (grid.w !== w || grid.h !== h) throw new Error(`ascii niveaux : étage z=${lv.z} ${grid.w}×${grid.h} ≠ ${w}×${h}`);
-    for (const ch of allMarkers) for (const p of positions[ch]) markers[ch].push({ x: p.x, y: p.y, z: lv.z });
-    if (stair) {
-      const cells = new Set<string>();
-      for (const p of positions[stair] ?? []) { grid.tiles[p.y * grid.w + p.x] = stairBase ?? lv.base; cells.add(`${p.x},${p.y}`); }
-      stairCells.set(lv.z, cells);
-    }
-    out.push({ z: lv.z, tiles: grid.tiles });
-  }
-  const stairs: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } }[] = [];
-  if (stair) for (const [z, cells] of stairCells) {
-    const up = present.has(z + 1) ? stairCells.get(z + 1) : undefined;
-    if (!up) continue;
-    for (const c of cells) if (up.has(c)) { const [x, y] = c.split(',').map(Number); stairs.push({ from: { x, y, z }, to: { x, y, z: z + 1 } }); } // z explicite : un escalier relie deux étages précis (≠ convention z=0-omis des positions)
-  }
-  return { w, h, levels: out, stairs, markers };
-}
-
-/**
  * Carte BOÎTE (box-drawing) : tuiles ET murs sur arêtes en une grille lisible, comme un plan. Une carte
  * WxH s'écrit en (2H+1)×(2W+1) chars — les lignes/colonnes IMPAIRES portent les TUILES, les PAIRES les
  * ARÊTES :
