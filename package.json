@@ -16,7 +16,8 @@
     "relay:dev": "npm --prefix server run dev",
     "relay:deploy": "npm --prefix server run deploy",
     "galleries": "node scripts/gen-galleries.mjs",
-    "qc:sheets": "tsx scripts/_qc-sheets.mts"
+    "qc:sheets": "tsx scripts/_qc-sheets.mts",
+    "qc:env": "tsx scripts/qc/render-env.mts"
   },
   "dependencies": {
     "@fontsource/grenze-gotisch": "^5.2.8",
