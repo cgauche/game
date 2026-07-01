@@ -86,7 +86,7 @@ export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
-import { exploreStepDest, povStepDest } from './exploreNav';
+import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
@@ -988,7 +988,7 @@ export const useGame = create<GameState>((set, get) => ({
   scene: null,
   mode: 'exploration',
   camRot: 0,
-  camEdge: true, // défaut = vue de FACE (edge-on) ; la rotation 8 crans alterne face ↔ coin par 45°
+  camEdge: false, // défaut = vue de COIN (losange, la plus lisible) ; la rotation 8 crans alterne coin ↔ face par 45°
   // 8 crans (45°) : +1 fait coin→face (même rot) puis face→coin (rot+1) ; -1 l'inverse.
   rotateCam: (dir) =>
     set((s) => {
@@ -1263,6 +1263,9 @@ export const useGame = create<GameState>((set, get) => ({
       scene: JSON.parse(JSON.stringify(scene)),
       mode: 'exploration',
       partyPos: pos,
+      // Orientation d'ENTRÉE du meneur : authorée (facing du heroStart) sinon vers le CONTENU
+      // (spawnFacing — en POV, un spawn au bord sud ne doit pas contempler le vide hors-carte).
+      facing: party[0] ? { [party[0].id]: start?.facing ?? spawnFacing(pos, scene.dimensions) } : {},
       flags: { ...scene.flags },
       money: { gold: 0, silver: 5, brass: 0 },
       campaignSceneId: scene.id,
@@ -1294,15 +1297,17 @@ export const useGame = create<GameState>((set, get) => ({
       get().log(`(Scène « ${sceneId} » introuvable — transition ignorée.)`);
       return;
     }
-    const start =
-      pos ||
-      (entry && target.entryPoints?.[entry]) ||
-      target.entities.find((e) => e.kind === 'heroStart')?.pos ||
-      findFreeTile(target);
+    const heroStart = target.entities.find((e) => e.kind === 'heroStart');
+    const start = pos || (entry && target.entryPoints?.[entry]) || heroStart?.pos || findFreeTile(target);
+    // Orientation d'ENTRÉE : authorée SEULEMENT si on spawne réellement au heroStart (ni `pos` forcé
+    // ni point d'entrée nommé) ; sinon vers le CONTENU de la NOUVELLE carte (le cap hérité de
+    // l'ancienne scène n'a aucun sens ici — en POV il peut regarder le vide hors-carte).
+    const authored = !pos && !(entry && target.entryPoints?.[entry]) ? heroStart?.facing : undefined;
     set((s) => ({
       scene: JSON.parse(JSON.stringify(target)),
       mode: 'exploration',
       partyPos: { ...start },
+      facing: s.party[0] ? { ...s.facing, [s.party[0].id]: authored ?? spawnFacing(start, target.dimensions) } : s.facing,
       lightLevel: null, // nouvelle scène → lumière auto (un setLight ne se propage pas d'une scène à l'autre)
       // flags persistants : on conserve l'état narratif et on ajoute les
       // valeurs par défaut de la nouvelle scène pour les clés absentes.

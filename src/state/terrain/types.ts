@@ -1,3 +1,5 @@
+import type { DetailRecipe } from '../../gameIso/detail/types';
+
 /** Terrain UNIFIÉ (registre defs/) : méta sémantique (walkable/priority — PUR, lu par la
  *  walkability) + présentation (gradient/swatch — données, lues par le rendu). `TERRAINS`
  *  (côté state) et `TERRAIN_VIZ` (côté catalog gameIso) dérivent du même `TerrainDef`. */
@@ -14,6 +16,9 @@ export interface TerrainMeta {
 }
 
 export interface TerrainDef extends TerrainMeta {
+  /** Recette de détail de surface (dallage/mouchetis — Lot 0, consommée au Lot 4). Import TYPE-only :
+   *  la walkability (côté state) n'en lit rien, seul le rendu la consommera. */
+  detail?: DetailRecipe;
   /** id du <linearGradient> dans DEFS (présentation). */
   gradient: string;
   /** couleur d'aperçu (palette éditeur). */

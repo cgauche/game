@@ -2,7 +2,7 @@ import { type Scene, isWalkable } from './scene';
 import { pathTo, walkNeighbors, type Pt } from './path';
 import { screenStepDot, type ScreenDir } from './combatCursor';
 import { type Dims } from '../gameIso/iso';
-import { type Dir8 } from './dir8';
+import { DIR8_ORDER, type Dir8 } from './dir8';
 import { DIR8_DELTA } from '../gameIso/rig/facing';
 
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
@@ -78,4 +78,20 @@ export function povStepDest(scene: Scene, from: Pt, worldDir: Dir8): Pt | null {
     if (Math.sign(n.x - from.x) === Math.sign(d.gx) && Math.sign(n.y - from.y) === Math.sign(d.gy)) return n;
   }
   return null;
+}
+
+/** Orientation du MENEUR à l'ENTRÉE d'une scène (spawn / transition) : regarde vers le CONTENU —
+ *  le centroïde de la carte ((w−1)/2, (h−1)/2) quantifié en Dir8 par SECTEURS de 45° (atan2, PAS le
+ *  signe du delta : depuis le bord sud d'une carte large on regarde N, pas NE/NO au moindre décalage).
+ *  Sans cela, le défaut 'S' fait contempler le VIDE hors-carte en vue subjective (POV) au bord sud.
+ *  Entrée déjà au centre → 'S' (aucune direction « vers le contenu » ne domine). PUR.
+ *  Une orientation AUTHORÉE (`facing` du heroStart) prime sur ce calcul — arbitré au seam (store). */
+export function spawnFacing(pos: { x: number; y: number }, dims: { w: number; h: number }): Dir8 {
+  const dx = (dims.w - 1) / 2 - pos.x;
+  const dy = (dims.h - 1) / 2 - pos.y;
+  if (dx === 0 && dy === 0) return 'S';
+  // Cap horaire depuis le nord (grille : N = −y) : 0 = N, π/2 = E, ±π = S, −π/2 = O → cran de 45°
+  // le plus proche (l'ex-aequo de frontière de secteur arrondit au cran horaire suivant).
+  const step = Math.round(Math.atan2(dx, -dy) / (Math.PI / 4));
+  return DIR8_ORDER[((step % 8) + 8) % 8];
 }

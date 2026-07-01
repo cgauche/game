@@ -75,6 +75,21 @@
     "id": "mur-en-pierre",
     "label": "Mur en pierre",
     "material": "pierre",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.35,
+        "joint": "#2e2a24",
+        "jointW": 0.02,
+        "stagger": 0.5,
+        "blockWM": [
+          0.4,
+          0.9
+        ],
+        "edgeWobble": 0.02,
+        "paletteVar": 0.12
+      }
+    },
     "face": "var(--struct-face)",
     "post": "#352b1f",
     "band": "var(--struct-band)",

@@ -2,10 +2,14 @@
  *  (geometry.ts). Donnée pure (`src/data/structureAppearance.json`), découplée de `StructureData` (règles).
  *  Couleurs : hex ou var CSS (`var(--struct-*)`, base.css). L'iso dérive l'ombrage par orientation via
  *  `shade()` à partir des couleurs de base ci-dessous ; le POV les teinte par la lumière. */
+import type { DetailRecipe } from '../../detail/types';
+
 export interface StructureAppearanceDef {
   id: string;
   label: string;
   material: 'bois' | 'pierre';
+  /** Recette de détail de surface (appareillage/joints/mouchetis — Lot 0, consommée au Lot 4). */
+  detail?: DetailRecipe;
   /** Face principale (POV + base de la face iso, ombrée par orientation). */
   face: string;
   /** Montant d'extrémité — chapiteau/socle dérivés par ombrage. */

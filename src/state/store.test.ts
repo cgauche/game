@@ -2420,28 +2420,84 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
 });
 
 describe('camRot (rotation caméra — état de vue)', () => {
-  it('tourne par crans de 45° (face↔coin), boucle sur un tour complet (8 crans)', () => {
-    useGame.setState({ camRot: 0, camEdge: true });
-    // +1 depuis une vue de face (edge) : passe en vue de coin, même cran +1.
+  it('défaut de création : vue de COIN (losange, camEdge false)', () => {
+    const init = (useGame as unknown as { getInitialState: () => { camEdge: boolean; camRot: number } }).getInitialState();
+    expect(init.camEdge).toBe(false);
+    expect(init.camRot).toBe(0);
+  });
+
+  it('tourne par crans de 45° (coin↔face), boucle sur un tour complet (8 crans)', () => {
+    useGame.setState({ camRot: 0, camEdge: false }); // état par DÉFAUT : vue de coin
+    // +1 depuis la vue de coin : passe en vue de face SANS changer camRot.
+    useGame.getState().rotateCam(1);
+    expect(useGame.getState().camRot).toBe(0);
+    expect(useGame.getState().camEdge).toBe(true);
+    // demi-cran suivant : revient en vue de coin au cran +1.
     useGame.getState().rotateCam(1);
     expect(useGame.getState().camRot).toBe(1);
     expect(useGame.getState().camEdge).toBe(false);
-    // demi-cran suivant : revient en vue de face SANS changer camRot.
-    useGame.getState().rotateCam(1);
-    expect(useGame.getState().camRot).toBe(1);
-    expect(useGame.getState().camEdge).toBe(true);
-    // 8 crans (45°) = tour complet → retour à l'état initial (face, camRot 0).
+    // 8 crans (45°) = tour complet → retour à l'état initial (coin, camRot 0).
     for (let i = 0; i < 6; i++) useGame.getState().rotateCam(1);
     expect(useGame.getState().camRot).toBe(0);
-    expect(useGame.getState().camEdge).toBe(true);
-    // Anti-horaire : un cran depuis (0, face) bascule en vue de coin sans changer camRot…
-    useGame.getState().rotateCam(-1);
-    expect(useGame.getState().camRot).toBe(0);
     expect(useGame.getState().camEdge).toBe(false);
-    // …puis le cran suivant décrémente camRot en bouclant (0→3).
+    // Anti-horaire : un cran depuis (0, coin) passe en vue de face en décrémentant camRot (0→3)…
     useGame.getState().rotateCam(-1);
     expect(useGame.getState().camRot).toBe(3);
     expect(useGame.getState().camEdge).toBe(true);
+    // …puis le cran suivant revient en coin sans changer camRot.
+    useGame.getState().rotateCam(-1);
+    expect(useGame.getState().camRot).toBe(3);
+    expect(useGame.getState().camEdge).toBe(false);
+  });
+});
+
+describe("Orientation du meneur à l'entrée de scène (spawnFacing / heroStart authoré)", () => {
+  beforeEach(() => reset());
+
+  const lead = { id: 'lead', name: 'L', xp: 0 } as unknown as Combatant;
+
+  it('startScene : heroStart au bord sud SANS facing → le meneur regarde le contenu (N, pas le vide POV)', () => {
+    const sc = emptyScene(21, 20);
+    sc.id = 'sud';
+    sc.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 10, y: 19 } });
+    useGame.getState().setParty([lead]);
+    useGame.getState().startScene(sc);
+    expect(useGame.getState().facing).toEqual({ lead: 'N' });
+  });
+
+  it('startScene : heroStart AVEC facing authoré → respecté tel quel', () => {
+    const sc = emptyScene(21, 20);
+    sc.id = 'authore';
+    sc.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 10, y: 19 }, facing: 'O' });
+    useGame.getState().setParty([lead]);
+    useGame.getState().startScene(sc);
+    expect(useGame.getState().facing.lead).toBe('O');
+  });
+
+  it("transitionTo : par point d'entrée nommé → cap recalculé vers le contenu de la NOUVELLE carte (l'authoré du heroStart ne s'applique pas : on ne spawne pas dessus)", () => {
+    const a = emptyScene(5, 5);
+    a.id = 'a';
+    const b = emptyScene(7, 7);
+    b.id = 'b';
+    b.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 3, y: 3 }, facing: 'O' });
+    b.entryPoints = { porte: { x: 3, y: 6 } }; // bord sud de b
+    useGame.getState().setParty([lead]);
+    useGame.getState().loadProject([a, b], 'a');
+    useGame.getState().transitionTo('b', 'porte');
+    expect(useGame.getState().partyPos).toEqual({ x: 3, y: 6 });
+    expect(useGame.getState().facing.lead).toBe('N'); // vers le centroïde (3,3), PAS 'O'
+  });
+
+  it('transitionTo : sans entrée nommée → spawn au heroStart, facing authoré respecté', () => {
+    const a = emptyScene(5, 5);
+    a.id = 'a2';
+    const b = emptyScene(7, 7);
+    b.id = 'b2';
+    b.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 3, y: 6 }, facing: 'NE' });
+    useGame.getState().setParty([lead]);
+    useGame.getState().loadProject([a, b], 'a2');
+    useGame.getState().transitionTo('b2');
+    expect(useGame.getState().facing.lead).toBe('NE');
   });
 });
 
@@ -2521,6 +2577,7 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
   const PRESERVED_OR_DERIVED = new Set([
     'screen', 'party', 'camRot', 'zoom', 'inspectEnabled',        // navigation / vue / groupe / préférences
     'scene', 'partyPos', 'flags', 'campaignSceneId', 'journal', 'mode', 'money', 'inventory', // dérivés
+    'facing', // dérivé : orientation du meneur posée à l'entrée de scène (spawnFacing / heroStart)
   ]);
 
   it('startScene réinitialise TOUT champ d’état à son défaut de création (garde-fou anti-dérive)', () => {
@@ -2557,7 +2614,9 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
 
     // 4) Points névralgiques explicites (les 5 suspensions de combat + horloge + orientation + retour).
     expect(st.gameTime).toBe(CAMPAIGN_START);
-    expect(st.facing).toEqual({});
+    // Le fantôme de l'ancienne partie est purgé ; SEUL le meneur est ré-orienté vers le contenu
+    // (heroStart (0,0) sur une 6×6 → centroïde (2.5,2.5) = SE).
+    expect(st.facing).toEqual({ h: 'SE' });
     expect(st.previousScene).toBeNull();
     expect(st.pendingFateSave).toBeNull();
     expect(st.pendingCast).toBeNull();

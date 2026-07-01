@@ -36,7 +36,7 @@ const CSS_VARS: [string, string][] = [...readFileSync('src/ui/styles/base.css', 
 function resolveCssVars(svg: string): string {
   let out = svg;
   for (let pass = 0; pass < 2 && out.includes('var(--'); pass++)
-    for (const [name, val] of CSS_VARS) out = out.replaceAll(`var(--${name})`, val);
+    for (const [name, val] of CSS_VARS) out = out.split(`var(--${name})`).join(val); // pas de replaceAll : lib tsconfig < es2021
   return out;
 }
 
