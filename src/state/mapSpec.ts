@@ -83,10 +83,15 @@ export interface RoomSpec {
 
 /** Une liaison de marqueur ASCII → pose. `'heroStart'` (départ héros), `{entry}` (point d'entrée),
  *  `{emplacement}` (poste d'artillerie), ou un TEMPLATE partiel de `SceneEntity` (posé par `pasteEntity`). */
+/** Enrôle l'entité posée par un marqueur bind dans la rencontre `enc` (côté/IA/monture) — l'id étant
+ *  GÉNÉRÉ à la pose (positions venant de l'ASCII), c'est le SEUL moyen de l'ajouter au roster. */
+export type BindMember = { enc: string; side?: 'ally' | 'enemy'; ai?: boolean; mount?: boolean };
+
 export type BindSpec =
   | 'heroStart'
   | { entry: string }
-  | { emplacement: string; crew?: string; side?: FireArc }
+  | { emplacement: string; crew?: string; side?: FireArc; member?: BindMember }
+  | { entity: Partial<SceneEntity>; member?: BindMember }
   | Partial<SceneEntity>;
 
 /** Une rencontre DÉCLARATIVE. `enemies` (terse) → entités FRAÎCHES cachées + members (`buildEncounter`) ;
@@ -241,6 +246,14 @@ export function buildScene(spec: MapSpec): Scene {
     const z = (Array.isArray(spec.heroStart) ? undefined : spec.heroStart.z) ?? 0;
     s = pasteEntity(s, { id: '', kind: 'heroStart', pos: { x: hs.x, y: hs.y }, ...(z ? { z } : {}) }, { x: hs.x, y: hs.y }).scene;
   }
+  const boundMembers: { enc: string; member: EncounterMember }[] = [];
+  const mkMember = (entityId: string, m: BindMember): EncounterMember => {
+    const mem: EncounterMember = { entityId };
+    if (m.side) mem.side = m.side;
+    if (m.ai) mem.ai = m.ai;
+    if (m.mount) mem.mount = m.mount;
+    return mem;
+  };
   for (const { char, pos } of scanned) {
     const bind = spec.bind?.[char];
     if (!bind) continue;
@@ -250,13 +263,20 @@ export function buildScene(spec: MapSpec): Scene {
       const name = (bind as { entry: string }).entry;
       s = { ...s, entryPoints: { ...s.entryPoints, [name]: { x: pos.x, y: pos.y } } };
     } else if ('emplacement' in bind && typeof (bind as { emplacement: string }).emplacement === 'string') {
-      const b = bind as { emplacement: string; crew?: string; side?: FireArc };
+      const b = bind as { emplacement: string; crew?: string; side?: FireArc; member?: BindMember };
       const placed = placeEmplacement(s, b.emplacement, pos);
       if (placed) {
         s = placed.scene;
         if (b.crew) s = setPosteCrew(s, placed.id, [b.crew]);
         if (b.side) s = setPosteSide(s, placed.id, b.side);
+        if (b.member) boundMembers.push({ enc: b.member.enc, member: mkMember(placed.id, b.member) });
       }
+    } else if ('entity' in bind && (bind as { entity: Partial<SceneEntity> }).entity) {
+      const b = bind as { entity: Partial<SceneEntity>; member?: BindMember };
+      const z = b.entity.z ?? 0;
+      const placed = pasteEntity(s, { ...(b.entity as SceneEntity), id: '', kind: b.entity.kind ?? 'personnage', pos, ...(z ? { z } : {}) }, pos);
+      s = placed.scene;
+      if (b.member) boundMembers.push({ enc: b.member.enc, member: mkMember(placed.id, b.member) });
     } else {
       const tmpl = bind as Partial<SceneEntity>;
       const z = tmpl.z ?? 0;
@@ -286,14 +306,25 @@ export function buildScene(spec: MapSpec): Scene {
   if (spec.triggers?.length) s = { ...s, triggers: [...s.triggers, ...spec.triggers] };
   if (spec.dialogues?.length) s = { ...s, dialogues: [...s.dialogues, ...spec.dialogues] };
 
-  // 8. encounters : terse (`enemies` → entités fraîches cachées) FUSIONNÉ avec `members` (entités déjà posées)
+  // 8. encounters : terse (`enemies` → entités fraîches cachées) FUSIONNÉ avec `members` (entités déjà
+  //    posées) ET les membres enrôlés par bind (`boundMembers`, ids générés aux marqueurs ASCII).
   const encEntities: SceneEntity[] = [];
   const encDefs: EncounterDef[] = [];
   for (const e of spec.encounters ?? []) {
     const built = buildEncounter({ id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory });
     encEntities.push(...built.entities);
-    encDefs.push({ ...built.encounter, members: [...(built.encounter.members ?? []), ...(e.members ?? [])] });
+    const bound = boundMembers.filter((b) => b.enc === e.id).map((b) => b.member);
+    encDefs.push({ ...built.encounter, members: [...(built.encounter.members ?? []), ...(e.members ?? []), ...bound] });
   }
+  // Marqueurs bind vers une rencontre NON déclarée dans `encounters` → on la crée (roster = ces membres).
+  const declared = new Set(encDefs.map((e) => e.id));
+  const orphans = new Map<string, EncounterMember[]>();
+  for (const b of boundMembers) {
+    if (declared.has(b.enc)) continue;
+    if (!orphans.has(b.enc)) orphans.set(b.enc, []);
+    orphans.get(b.enc)!.push(b.member);
+  }
+  for (const [id, members] of orphans) encDefs.push({ id, members });
   s = { ...s, entities: [...s.entities, ...encEntities], encounters: encDefs };
 
   return s;

@@ -115,6 +115,31 @@ describe('buildScene — encounters (terse → entités + members)', () => {
   });
 });
 
+describe('buildScene — bind enrôle les entités posées dans une rencontre', () => {
+  const s = buildScene({
+    id: 'bm', nom: 'BM', size: [6, 2],
+    levels: { z0: 'k.A...\n......' },
+    bind: {
+      k: { emplacement: 'canon-petit', crew: 'crew-0', member: { enc: 'def', side: 'ally' } },
+      A: { entity: { kind: 'personnage', ref: 'garde-du-village' }, member: { enc: 'def', side: 'ally', ai: true } },
+    },
+    encounters: [{ id: 'def' }], // roster vide — rempli par les marqueurs bind
+  });
+  it('emplacement et entité-template posés aux marqueurs deviennent members (id généré → enrôlé)', () => {
+    const empl = s.entities.find((e) => e.postes?.length)!;
+    const garde = s.entities.find((e) => e.ref === 'garde-du-village')!;
+    expect(empl.pos).toEqual({ x: 0, y: 0 });
+    expect(garde.pos).toEqual({ x: 2, y: 0 });
+    const def = s.encounters.find((e) => e.id === 'def')!;
+    expect(def.members).toEqual(
+      expect.arrayContaining([
+        { entityId: empl.id, side: 'ally' },
+        { entityId: garde.id, side: 'ally', ai: true },
+      ]),
+    );
+  });
+});
+
 describe('buildScene — encounters à membres PRÉ-DÉCLARÉS (roster mixte)', () => {
   const s = buildScene({
     id: 'e2', nom: 'E2', size: [10, 6], terrain: 'herbe',
