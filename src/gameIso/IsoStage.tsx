@@ -271,6 +271,15 @@ export function IsoStage() {
     return activeZ;
   }, [scene, activeZ]);
 
+  // BROUILLARD DE GUERRE — cases actuellement visibles (union des alliés/groupe). Dérivé de l'état
+  // (positions LOGIQUES), pas du glissement → memo STABLE pendant la marche. Défini ICI (avant les couches)
+  // pour que murs/toits sachent s'ils sont VISIBLES → dessinés AU-DESSUS du voile (sinon leur volume HAUT,
+  // qui dépasse dans les cases derrière, se ferait manger par l'ombre). Les créatures hors-vue sont COUPÉES.
+  const visible = useMemo(
+    () => computeStateVisible({ scene, battle, party, partyPos, gameTime, lightLevel }),
+    [scene, battle, party, partyPos, gameTime, lightLevel],
+  );
+
   const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
@@ -352,21 +361,27 @@ export function IsoStage() {
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
-  const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
+  const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis: boolean }[]>(() => {
     if (!scene?.walls?.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const zs = new Set(renderLevels.map((l) => l.z));
+    // VISIBLE si l'une des DEUX cases bordant l'arête est en vue (on voit le mur depuis un côté ou l'autre)
+    // → dessiné AU-DESSUS du voile ; sinon (mur mémorisé/inconnu) SOUS le voile, qui le grise/masque.
+    const NB: Record<string, [number, number]> = { N: [0, -1], S: [0, 1], E: [1, 0], O: [-1, 0] };
     // Cloisons des étages rendus (raised par leur z) → les murs des loges se dressent au-dessus du parterre.
     // Une arête à STRUCTURE de siège se rend en fortification (intacte) ou brèche (abattue) — l'état
     // `structureIsDown` est passé comme l'overlay porte passe `doorIsOpen` ; le memo dépend de `scene`,
     // donc l'Effondrement (nouvelle réf de scène, `collapseStructure`) recalcule la brèche.
     return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
       const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false);
+      const wz = w.z ?? 0;
+      const [nx, ny] = NB[w.side] ?? [0, 0];
+      const vis = visible.has(`${w.x},${w.y},${wz}`) || visible.has(`${w.x + nx},${w.y + ny},${wz}`);
       // `z` d'atténuation = la couche du mur (son sommet est une cloison de hauteur FIXE, plus un rempart
       // porteur de passerelle) → il borde le sol de SA couche et reste à sa lumière.
-      return { d: seg.d, x: w.x, y: w.y, z: w.z ?? 0, el: <g key={`wall-${i}`} style={{ opacity: occludesActor(w.x, w.y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      return { d: seg.d, x: w.x, y: w.y, z: wz, vis, el: <g key={`wall-${i}`} style={{ opacity: occludesActor(w.x, w.y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
-  }, [scene, shownRot, shownEdge, viewMode, renderLevels, occludesActor]);
+  }, [scene, shownRot, shownEdge, viewMode, renderLevels, occludesActor, visible]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
     if (!scene) return [];
@@ -388,7 +403,7 @@ export function IsoStage() {
     return out;
   }, [scene, shownRot, shownEdge, viewMode, occludesActor]);
 
-  const roofObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+  const roofObjs = useMemo<{ d: number; el: JSX.Element; vis: boolean }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const allies =
@@ -400,12 +415,19 @@ export function IsoStage() {
     // le bâtiment (une case de l'empreinte `occludesActor` → sinon le toit cacherait le perso qui passe derrière).
     return (scene.roofs ?? []).map((roof) => {
       const f = roof.foot;
-      let behind = false;
-      for (let dy = 0; dy < f.h && !behind; dy++)
-        for (let dx = 0; dx < f.w && !behind; dx++) if (occludesActor(f.x + dx, f.y + dy)) behind = true;
-      return roofObj(roof, d, roofHidden(roof, allies) || behind, night);
+      const rz = roof.z ?? 0;
+      let behind = false, vis = false;
+      // VISIBLE si UNE case de l'empreinte ÉLARGIE d'1 est en vue : de l'extérieur on ne voit jamais l'intérieur
+      // (les murs coupent la vue), mais on voit le bâtiment dès qu'on est à son pied → toit AU-DESSUS du voile.
+      for (let dy = -1; dy <= f.h; dy++)
+        for (let dx = -1; dx <= f.w; dx++) {
+          const inside = dy >= 0 && dy < f.h && dx >= 0 && dx < f.w;
+          if (inside && !behind && occludesActor(f.x + dx, f.y + dy)) behind = true;
+          if (!vis && visible.has(`${f.x + dx},${f.y + dy},${rz}`)) vis = true;
+        }
+      return { ...roofObj(roof, d, roofHidden(roof, allies) || behind, night), vis };
     });
-  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos, gameTime, occludesActor]);
+  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos, gameTime, occludesActor, visible]);
 
   // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
   // (LDB 13 l.123) → pion fantomatique. Distingue « hors LdV » de « hors de portée » (aucun
@@ -419,14 +441,6 @@ export function IsoStage() {
     return outOfSightTargetIds(useGame.getState);
   }, [scene, mode, battle]);
 
-  // BROUILLARD DE GUERRE — cases actuellement visibles (union des alliés/groupe) et déjà explorées.
-  // Dérivé de l'état (positions LOGIQUES), pas du glissement → memo STABLE pendant la marche : les
-  // couches lourdes (sol/décor/FogLayer) ne se reconstruisent pas à 60 Hz. Les créatures hors-vue
-  // sont COUPÉES au rendu (ci-dessous) ; le décor/terrain est recouvert par le FogLayer.
-  const visible = useMemo(
-    () => computeStateVisible({ scene, battle, party, partyPos, gameTime, lightLevel }),
-    [scene, battle, party, partyPos, gameTime, lightLevel],
-  );
   const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
   // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu).
   useEffect(() => {
@@ -668,13 +682,15 @@ export function IsoStage() {
   // les ~180 modèles de la galerie à chaque frame EN PLUS de leur propre anim → saccade. Réfs d'éléments
   // stables → React saute ces sous-arbres ; chaque créature continue de s'auto-animer via SON rAF
   // (usePlanAnim/useRigClip), indépendamment du re-rendu d'IsoStage.
-  const entityObjs = useMemo<{ d: number; el: JSX.Element; z: number }[]>(() => {
+  const entityObjs = useMemo<{ d: number; el: JSX.Element; z: number; vis: true }[]>(() => {
     if (!scene) return [];
     const inBattle = mode === 'battle' && !!battle;
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const isTop = viewMode === 'top';
     const discRfn = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
-    const out: { d: number; el: JSX.Element; z: number }[] = [];
+    // vis:true — les figurants HORS-VUE sont déjà coupés (cf. `visible.has` ci-dessous) → tous les tokens
+    // émis ici sont VISIBLES et se dessinent AU-DESSUS du voile (leur tête ne se fait plus manger par l'ombre).
+    const out: { d: number; el: JSX.Element; z: number; vis: true }[] = [];
     // En combat, les FIGURANTS (PNJ d'ambiance : spectateurs, prisonnier en cage…) ne « dépop »
     // plus — ils restent visibles, estompés et NON interactifs ; on ne les dessine pas si un
     // combattant occupe leur case (pas d'empilement de corps).
@@ -707,6 +723,7 @@ export function IsoStage() {
         out.push({
           d: depth(ent.pos.x, ent.pos.y, d, ez),
           z: ez,
+          vis: true,
           el: wrap(
             r.id,
             <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={liftAt(ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
@@ -722,6 +739,7 @@ export function IsoStage() {
         out.push({
           d: depth(ex, ey, d, ez) + dBoost,
           z: ez,
+          vis: true,
           el: wrap(
             r.id,
             <BodyToken key={r.id} x={ex} y={ey} z={liftAt(ent.pos.x, ent.pos.y, ez)} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
@@ -816,7 +834,10 @@ export function IsoStage() {
   // `z` = étage de l'objet (absent ⇒ non concerné) : un objet d'un étage SOUS l'actif (z < activeZ)
   // est désaturé/assombri au rendu (filtre `lower-floor-dim`) → l'étage du dessous se distingue de
   // l'actif. activeZ=0 (toute scène plate) ⇒ aucun z<0 ⇒ aucun changement (byte-identique).
-  type Obj = { d: number; el: JSX.Element; x?: number; y?: number; z?: number };
+  // `vis` = cet objet représente une chose actuellement VISIBLE → dessiné AU-DESSUS du brouillard (son volume
+  // haut, qui déborde dans les cases derrière, n'est plus mangé par l'ombre). Absent/false = SOUS le voile
+  // (sol, décor de terrain, entité mémorisée/inconnue → correctement grisée/masquée par le brouillard).
+  type Obj = { d: number; el: JSX.Element; x?: number; y?: number; z?: number; vis?: boolean };
   const objs: Obj[] = [];
 
   // décor statique + toits multi-tuiles : éléments memoïsés (cf. decorObjs/roofObjs), juste
@@ -864,6 +885,7 @@ export function IsoStage() {
     // TOUS les crans (l'échelle « largeur projetée » l'écrasait en 1×1 quand l'empreinte pointait vers
     // la profondeur — cf. retour utilisateur). La projection edge est gérée par `billboardScale` (BodyToken).
     const pd = footprintDepth(ent.pos.x, ent.pos.y, ent.foot?.w ?? 1, ent.foot?.h ?? 1, dims, ez);
+    const pvis = visible.has(`${ent.pos.x},${ent.pos.y},${ez}`); // en vue → au-dessus du voile ; mémorisé → sous (grisé)
     if (ent.interact && !flags[`__fouille_${ent.id}`]) { // affordance « fouille » — masquée dès l'objet épuisé (B4)
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
@@ -873,6 +895,7 @@ export function IsoStage() {
       objs.push({
         d: pd - 0.02, // juste sous le sprite
         z: ez,
+        vis: pvis,
         el: (
           <g key={`halo-${ent.id}`} pointerEvents="none">
             <g className={haloHovered ? 'interact-halo hovered' : 'interact-halo'}>
@@ -886,6 +909,7 @@ export function IsoStage() {
       objs.push({
         d: pd + 0.02, // au-dessus du sprite : l'étincelle « il y a quelque chose ici »
         z: ez,
+        vis: pvis,
         el: (
           <g key={`spark-${ent.id}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + 9 * fg.scale}, ${c.cy - 26 * fg.scale})`}>
             <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill="#ffd75e" stroke="#7a5b16" strokeWidth={0.7} />
@@ -893,7 +917,7 @@ export function IsoStage() {
         ),
       });
     }
-    objs.push({ d: pd, z: ez, el: token(`e-${ent.id}`, px, py, entitySprite(ent, dims.rot), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
+    objs.push({ d: pd, z: ez, vis: pvis, el: token(`e-${ent.id}`, px, py, entitySprite(ent, dims.rot), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —
@@ -961,7 +985,7 @@ export function IsoStage() {
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
         highlight: c.id === hoveredId ? relationColor(c.kind) : undefined, // FOCUS (survol token/frise) → halo couleur de relation, indépendant du ciblage (hoverAim = réticule)
       }, cz);
-      objs.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, dims, cz) + 0.5, z: cz, el }); // tri constant sur le pas (sortPt) → le token reste DEVANT les 2 sols qu'il chevauche
+      objs.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, dims, cz) + 0.5, z: cz, vis: true, el }); // combattant en vue (les hors-vue sont coupés) → au-dessus du voile ; tri constant sur le pas (sortPt)
     }
     // Combat monté (LDB 14) : le couple CAVALIER+MONTURE est dessiné comme UN corps composite
     // (MountedToken) trié au niveau de l'os → vraie profondeur (jambe lointaine derrière le
@@ -977,7 +1001,7 @@ export function IsoStage() {
       const cx = wp.x + off, cy = wp.y + off;
       const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
       const el = tokenNode(`${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking);
-      objs.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, dims, mz) + 0.5, z: mz, el }); // tri constant sur le pas (sortPt)
+      objs.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, dims, mz) + 0.5, z: mz, vis: true, el }); // couple monté en vue → au-dessus du voile ; tri constant sur le pas (sortPt)
     }
   } else {
     // Entités de scène (créatures/PNJ d'ambiance) : tokens memoïsés (cf. entityObjs) — ré-insérés
@@ -996,6 +1020,7 @@ export function IsoStage() {
       objs.push({
         d: depth(ent.pos.x, ent.pos.y, dims, ent.z ?? 0) + 0.55,
         z: ent.z ?? 0,
+        vis: true, // survol d'un PNJ interlocuteur (en vue) → halo au-dessus du voile
         el: (
           <g key={`npc-halo-${ent.id}`} className="interact-halo hovered" pointerEvents="none">
             <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.2} />
@@ -1012,7 +1037,7 @@ export function IsoStage() {
       r.backend === 'sprite'
         ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0], false, undefined, false, false, pZ)
         : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(1) }, pZ);
-    objs.push({ d: depth(wp.sortPt.x, wp.sortPt.y, dims, pZ) + 0.5, z: pZ, el }); // tri constant sur le pas (sortPt) → le groupe reste DEVANT les 2 sols qu'il chevauche
+    objs.push({ d: depth(wp.sortPt.x, wp.sortPt.y, dims, pZ) + 0.5, z: pZ, vis: true, el }); // le groupe est toujours en vue → au-dessus du voile ; tri constant sur le pas (sortPt)
   }
   objs.sort((a, b) => a.d - b.d);
 
@@ -1340,27 +1365,28 @@ export function IsoStage() {
             const c = tileCenter(o.x, o.y!, dims);
             return c.cx >= cl && c.cx <= cr && c.cy >= ct && c.cy <= cb;
           };
-          // .filter().map() (PAS map→null) : React ne réconcilie que les ~centaines d'éléments à l'écran,
-          // pas les milliers de la scène entière.
+          // Atténuer SANS opacité (sinon on verrait À TRAVERS les murs du dessous) : désaturation +
+          // assombrissement seuls (filtre `lower-floor-dim`) → l'étage inférieur recule, reste OPAQUE.
+          const draw = (o: Obj) =>
+            o.z !== undefined && o.z < activeZ ? (
+              <g key={o.el.key} filter="url(#lower-floor-dim)">{o.el}</g>
+            ) : (
+              o.el
+            );
+          // BROUILLARD ENCADRÉ par le tri : le voile se glisse ENTRE le décor caché (sol, terrain, entités
+          // mémorisées/inconnues → `!vis`, DESSOUS, donc grisé/masqué) et le décor VISIBLE (murs/toits/tokens
+          // → `vis`, AU-DESSUS). Ainsi un bâtiment qu'on voit garde son VOLUME HAUT même là où il déborde dans
+          // les cases derrière (en ombre) : l'ombre ne mange plus son toit. `.filter().map()` (pas map→null) →
+          // React ne réconcilie que les ~centaines d'objets à l'écran, pas les milliers de la scène.
+          const shown = objs.filter(onScreen);
           return (
-            <g>
-              {objs.filter(onScreen).map((o) =>
-                o.z !== undefined && o.z < activeZ ? (
-                  // Atténuer SANS opacité (sinon on verrait À TRAVERS les murs du dessous) : désaturation +
-                  // assombrissement seuls (filtre `lower-floor-dim`) → l'étage inférieur recule, reste OPAQUE.
-                  <g key={o.el.key} filter="url(#lower-floor-dim)">
-                    {o.el}
-                  </g>
-                ) : (
-                  o.el
-                ),
-              )}
-            </g>
+            <>
+              <g>{shown.filter((o) => !o.vis).map(draw)}</g>
+              <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} bounds={viewBounds} floorZAt={fogFloorZAt} />
+              <g>{shown.filter((o) => o.vis).map(draw)}</g>
+            </>
           );
         })()}
-        {/* Brouillard de guerre : voile sombre sur l'inconnu / grisé sur l'exploré-hors-vue / clair en
-            vue. Au-dessus du décor+tokens, SOUS les FX/réticules (les infos de combat restent lisibles). */}
-        <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} bounds={viewBounds} floorZAt={fogFloorZAt} />
         {/* Portes dynamiques : cliquer une porte VISIBLE et ADJACENTE l'ouvre/ferme (exploration : le
             groupe ; combat : le héros actif, à son tour). Une porte fermée bloque vue ET passage. */}
         {(() => {
