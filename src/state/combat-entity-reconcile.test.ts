@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { checkBattleOver } from './combatFlow';
 import { removeEntities } from './combatGeometry';
 import { createHero } from '../engine/character';
+import { inanimateCombatant } from '../engine/inanimate';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { Scene, SceneEntity } from './scene';
@@ -111,11 +112,43 @@ describe('Identité unifiée SceneEntity ↔ Combatant (fix embuscade)', () => {
   });
 });
 
+describe('checkBattleOver — un engin INERTE ne compte ni pour la victoire ni pour la défaite (AA p.122-123)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  const mkInertEngine = (id: string, kind: 'enemy' | 'hero') => {
+    const c = inanimateCombatant({ id, name: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
+    c.kind = kind; c.pos = { x: 1, y: 1 };
+    return c;
+  };
+
+  it('victoire NON bloquée par un engin ENNEMI inerte (immune) — on tue l’équipage, pas la pièce', () => {
+    startFixtureCombat();
+    const b = useGame.getState().battle!;
+    for (const c of b.combatants) if (c.kind === 'enemy') c.dead = true; // ennemis/équipage vaincus
+    b.combatants.push(mkInertEngine('empl-enemy', 'enemy'));            // l'affût ennemi reste (immune, jamais tué)
+    useGame.setState({ battle: { ...b } });
+    checkBattleOver(useGame.getState, useGame.setState);
+    drainCombatEndCascade();
+    expect(useGame.getState().battle!.over).toBe('victory'); // l'engin inerte ne maintient PAS enemiesAlive
+  });
+
+  it('défaite NON bloquée par un engin ALLIÉ inerte (`kind:hero`)', () => {
+    startFixtureCombat();
+    const b = useGame.getState().battle!;
+    for (const c of b.combatants) if (c.kind === 'hero') c.dead = true; // groupe anéanti
+    b.combatants.push(mkInertEngine('empl-ally', 'hero'));             // l'affût allié reste
+    useGame.setState({ battle: { ...b } });
+    checkBattleOver(useGame.getState, useGame.setState);
+    expect(useGame.getState().battle!.over).toBe('defeat'); // l'engin inerte ne maintient PAS heroesAlive
+  });
+});
+
 describe('removeEntities — retrait par lot (brique partagée)', () => {
   it('retire les ids donnés en un seul passage, ignore les inconnus, conserve le reste', () => {
     const scene: Scene = {
       id: 's', nom: '', description: '', dimensions: { w: 4, h: 4 },
-      levels: [{ z: 0, tiles: new Array(16).fill('herbe') }],
+      layers: [{ z: 0, tiles: new Array(16).fill('herbe') }],
       entities: (['a', 'b', 'c'] as const).map((id): SceneEntity => ({ id, kind: 'personnage', pos: { x: 0, y: 0 } })),
       dialogues: [], triggers: [], encounters: [], flags: {},
     };

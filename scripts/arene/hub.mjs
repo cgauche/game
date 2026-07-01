@@ -254,11 +254,13 @@ export function makeHub() {
     rows: ROWS,
     base: 'terre',
     legend: { p: 'pave', h: 'herbe' },
+    // Bâtiments composés (toit + murs d'arête + sol planchéié), abattus par `buildingToComposite` du
+    // générateur. La porte (en CASE) devient l'unique arête franchissable du périmètre.
     buildings: [
-      { id: 'taverne', type: 'taverne', foot: { x: 3, y: 2, w: 4, h: 3 }, facing: 'S', reveal: 'door', door: { x: 5, y: 4 }, interiorScene: 'arene-int-taverne', entry: 'entree', label: 'Taverne « Au Trophée »' },
-      { id: 'chapelle', type: 'chapelle', foot: { x: 25, y: 2, w: 4, h: 5 }, facing: 'S', reveal: 'door', door: { x: 27, y: 6 }, interiorScene: 'arene-int-chapelle', entry: 'entree', label: 'Chapelle de Sigmar' },
-      { id: 'forge', type: 'forge', foot: { x: 3, y: 15, w: 3, h: 2 }, facing: 'S', reveal: 'cutaway', door: { x: 4, y: 16 }, label: 'Forge' },
-      { id: 'echoppe', type: 'echoppe', foot: { x: 25, y: 15, w: 2, h: 2 }, facing: 'S', reveal: 'cutaway', door: { x: 26, y: 16 }, label: 'Échoppe' },
+      { id: 'taverne', type: 'taverne', foot: { x: 3, y: 2, w: 4, h: 3 }, door: { x: 5, y: 4 }, label: 'Taverne « Au Trophée »' },
+      { id: 'chapelle', type: 'chapelle', foot: { x: 25, y: 2, w: 4, h: 5 }, door: { x: 27, y: 6 }, label: 'Chapelle de Sigmar' },
+      { id: 'forge', type: 'forge', foot: { x: 3, y: 15, w: 3, h: 2 }, door: { x: 4, y: 16 }, label: 'Forge' },
+      { id: 'echoppe', type: 'echoppe', foot: { x: 25, y: 15, w: 2, h: 2 }, door: { x: 26, y: 16 }, label: 'Échoppe' },
     ],
     entities: [
       hero(16, 12),
@@ -325,6 +327,12 @@ export function makeHub() {
     ],
     dialogues: [dlgHub, dlgMedecin, dlgForgeron, dlgGarde, dlgRumeurs],
     triggers: [
+      // Intérieurs du Bourg : marcher sur la CASE DE PORTE d'un bâtiment à intérieur (taverne/chapelle)
+      // transitionne vers sa scène ; la `sortie` de l'intérieur (transitionBack) ramène ici. C'est
+      // l'auteur qui pose la porte (l'auto-magie porte→intérieur a été retirée avec `buildings→roofs`) ;
+      // pas de `once` (ré-entrable), et transitionBack ne re-déclenche pas (transitionTo ≠ checkTriggers).
+      { id: 'entrer-taverne', rect: { x: 5, y: 4, w: 1, h: 1 }, flow: flowOf([{ type: 'transition', scene: 'arene-int-taverne', entry: 'entree' }]) },
+      { id: 'entrer-chapelle', rect: { x: 27, y: 6, w: 1, h: 1 }, flow: flowOf([{ type: 'transition', scene: 'arene-int-chapelle', entry: 'entree' }]) },
       // Porte EST (la route) : franchir la porte ouvre la carte du monde — la sortie du Bourg
       // EST le voyage (#T2). Posé sur les tuiles de porte (x31), pas sur l'entryPoint `route`
       // (30,10) → pas de réouverture intempestive au retour de voyage.

@@ -78,4 +78,16 @@ describe('brèche de structure sur arête de mur', () => {
     const opened = setDoorOpen(scene, 0, 0, 'E', 0, true);
     expect(wallBetween(opened, 0, 0, 1, 0)).toBe(false);
   });
+
+  it('INVARIANT planner : une PORTE portant une STRUCTURE INTACTE bloque le BFS (≠ porte pure plan-through) ; abattue, elle rouvre', () => {
+    // Une porte de ville brèchable est `door` + `structure` : tant qu'elle TIENT, c'est un mur (pas de plan
+    // à travers), CONTRAIREMENT à une porte PURE qu'on planifie de franchir (test ci-dessus). La brèche rouvre.
+    // `closed:true` aligne le runtime sur le planner (les deux bloquent intact → rouvrent à la brèche).
+    const intact = sceneWithEdge({ x: 0, y: 0, side: 'E', door: true, closed: true, structure: STRUCT_ID });
+    expect(bfsReaches(intact)).toBe(false); // structure intacte = barrière de PLANIFICATION, MALGRÉ `door` (cœur de FIX 3)
+    expect(wallBetween(intact, 0, 0, 1, 0)).toBe(true); // … et passage runtime bloqué (porte fermée + structure intacte)
+    const breached = setStructureDown(intact, 0, 0, 'E', 0, true);
+    expect(bfsReaches(breached)).toBe(true); // brèche → plan-through rouvert
+    expect(wallBetween(breached, 0, 0, 1, 0)).toBe(false); // … et passage runtime rouvert (structureIsDown)
+  });
 });

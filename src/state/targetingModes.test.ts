@@ -11,7 +11,7 @@ import { spawnEnemy } from './spawn';
 
 const arena = () => {
   const w = 16, h = 12;
-  return { id: 's', dimensions: { w, h }, levels: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+  return { id: 's', dimensions: { w, h }, layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
 };
 
 /** Combat 2 héros + 2 ennemis, héros actif au centre. `over` patche le `battle`. */

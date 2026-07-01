@@ -7,8 +7,9 @@ import {
   deleteSel,
   paintTiles,
   fillTerrainRect,
-  addLevel,
-  removeLevel,
+  addLayer,
+  removeLayer,
+  paintHeight,
   placeEntity,
   placeEntry,
   renameEntry,
@@ -16,7 +17,8 @@ import {
   addRestZone,
   addEffectZone,
   effectZoneRect,
-  addBuilding,
+  addRoof,
+  setEdgeWall,
   addMember,
   addEnemyMember,
   removeMember,
@@ -30,7 +32,6 @@ import {
   DEFAULT_LAYERS,
 } from './editorState';
 import { EMPTY_FLOW } from '../../state/flow';
-import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 
 function sceneWith(): Scene {
   const s = emptyScene(10, 10);
@@ -39,14 +40,15 @@ function sceneWith(): Scene {
     { id: 'enemy-0', kind: 'personnage', pos: { x: 1, y: 8 }, ref: 'Mutant', combat: { hiddenUntilCombat: true } },
   ];
   s.triggers = [{ id: 'trig-0', rect: { x: 4, y: 4, w: 2, h: 2 }, once: true, flow: EMPTY_FLOW }];
-  s.buildings = [{ id: 'b-0', type: 'maison', foot: { x: 6, y: 6, w: 3, h: 3 }, facing: 'S', reveal: 'cutaway', door: { x: 7, y: 8 }, params: {} }];
+  // Bâtiment COMPOSÉ = une pièce de toiture (`Roof`) couvrant l'empreinte ; ses MURS se tracent à l'outil d'arête.
+  s.roofs = [{ id: 'roof-0', foot: { x: 6, y: 6, w: 3, h: 3 }, style: 'maison' }];
   s.encounters = [{ id: 'enc-0', members: [{ entityId: 'enemy-0' }] }];
   s.restZones = [{ rect: { x: 0, y: 5, w: 2, h: 2 }, places: { camp: true } }];
   s.entryPoints = { entree: { x: 9, y: 0 } };
   return s;
 }
 
-describe('editorState — hitAt (priorité entité > entrée > trigger > repos > bâtiment)', () => {
+describe('editorState — hitAt (priorité entité > entrée > trigger > repos > toit)', () => {
   const s = sceneWith();
   it('touche chaque type au bon endroit', () => {
     expect(hitAt(s, { x: 1, y: 8 }, DEFAULT_LAYERS)).toEqual({ type: 'entity', id: 'enemy-0' }); // un ennemi EST une entité
@@ -54,12 +56,13 @@ describe('editorState — hitAt (priorité entité > entrée > trigger > repos >
     expect(hitAt(s, { x: 9, y: 0 }, DEFAULT_LAYERS)).toEqual({ type: 'entry', id: 'entree' });
     expect(hitAt(s, { x: 5, y: 5 }, DEFAULT_LAYERS)).toEqual({ type: 'trigger', id: 'trig-0' });
     expect(hitAt(s, { x: 0, y: 5 }, DEFAULT_LAYERS)).toEqual({ type: 'restZone', idx: 0 });
-    expect(hitAt(s, { x: 7, y: 7 }, DEFAULT_LAYERS)).toEqual({ type: 'building', id: 'b-0' });
+    expect(hitAt(s, { x: 7, y: 7 }, DEFAULT_LAYERS)).toEqual({ type: 'roof', id: 'roof-0' }); // sous l'empreinte de toit
     expect(hitAt(s, { x: 3, y: 0 }, DEFAULT_LAYERS)).toBeNull();
   });
   it('un calque masqué laisse cliquer à travers (le calque Ennemis masque les embusqueurs)', () => {
     expect(hitAt(s, { x: 5, y: 5 }, { ...DEFAULT_LAYERS, triggers: false })).toBeNull();
     expect(hitAt(s, { x: 1, y: 8 }, { ...DEFAULT_LAYERS, spawns: false })).toBeNull(); // ennemi caché masqué
+    expect(hitAt(s, { x: 7, y: 7 }, { ...DEFAULT_LAYERS, roofs: false })).toBeNull(); // toit masqué → clic à travers
   });
 });
 
@@ -72,6 +75,10 @@ describe('editorState — moveSel (clampé)', () => {
   it('déplace un trigger en gardant son rect dans la carte', () => {
     const out = moveSel(s, { type: 'trigger', id: 'trig-0' }, { x: 9, y: 9 });
     expect(out.triggers[0].rect).toEqual({ x: 8, y: 8, w: 2, h: 2 });
+  });
+  it('déplace un toit en gardant son empreinte dans la carte', () => {
+    const out = moveSel(s, { type: 'roof', id: 'roof-0' }, { x: 9, y: 9 });
+    expect(out.roofs![0].foot).toEqual({ x: 7, y: 7, w: 3, h: 3 }); // coin SE plaqué au bord
   });
   it('déplace un point d’entrée et un ennemi (entité)', () => {
     expect(moveSel(s, { type: 'entry', id: 'entree' }, { x: 3, y: 3 }).entryPoints!.entree).toEqual({ x: 3, y: 3 });
@@ -100,7 +107,7 @@ describe('editorState — deleteSel', () => {
   it('supprime chaque type', () => {
     expect(deleteSel(s, { type: 'entity', id: 'perso-0' }).entities.map((e) => e.id)).toEqual(['enemy-0']);
     expect(deleteSel(s, { type: 'trigger', id: 'trig-0' }).triggers).toHaveLength(0);
-    expect(deleteSel(s, { type: 'building', id: 'b-0' }).buildings).toHaveLength(0);
+    expect(deleteSel(s, { type: 'roof', id: 'roof-0' }).roofs).toHaveLength(0);
     expect(deleteSel(s, { type: 'restZone', idx: 0 }).restZones).toHaveLength(0);
     expect(deleteSel(s, { type: 'entry', id: 'entree' }).entryPoints).toBeUndefined();
     expect(deleteSel(s, null)).toBe(s);
@@ -110,33 +117,49 @@ describe('editorState — deleteSel', () => {
 describe('editorState — peinture', () => {
   it('paintTiles peint un carré 3×3 clampé', () => {
     const out = paintTiles(emptyScene(10, 10), { x: 0, y: 0 }, 'eau', 3);
-    expect(out.levels[0].tiles.filter((t) => t === 'eau')).toHaveLength(4); // coin : 2×2 visibles
+    expect(out.layers[0].tiles.filter((t) => t === 'eau')).toHaveLength(4); // coin : 2×2 visibles
   });
   it('fillTerrainRect remplit le rectangle', () => {
     const out = fillTerrainRect(emptyScene(10, 10), { x: 2, y: 2, w: 3, h: 2 }, 'eau');
-    expect(out.levels[0].tiles.filter((t) => t === 'eau')).toHaveLength(6);
+    expect(out.layers[0].tiles.filter((t) => t === 'eau')).toHaveLength(6);
   });
-  it('peint sur le NIVEAU demandé (z)', () => {
-    const s = addLevel(emptyScene(4, 4), 1);
+  it('peint sur la COUCHE demandée (z)', () => {
+    const s = addLayer(emptyScene(4, 4), 1);
     const out = fillTerrainRect(s, { x: 1, y: 1, w: 2, h: 2 }, 'plancher', 1);
-    expect(out.levels[1].tiles.filter((t) => t === 'plancher')).toHaveLength(4);
-    expect(out.levels[0].tiles.every((t) => t === 'herbe')).toBe(true); // sol intact
+    expect(out.layers[1].tiles.filter((t) => t === 'plancher')).toHaveLength(4);
+    expect(out.layers[0].tiles.every((t) => t === 'herbe')).toBe(true); // sol intact
   });
 });
 
-describe('editorState — étages (multi-niveaux)', () => {
-  it('addLevel ajoute un étage « vide », trié par z ; idempotent', () => {
-    const s1 = addLevel(emptyScene(4, 4), 1);
-    expect(s1.levels.map((l) => l.z)).toEqual([0, 1]);
-    expect(s1.levels[1].tiles.length).toBe(16);
-    expect(s1.levels[1].tiles.every((t) => t === 'vide')).toBe(true);
-    expect(addLevel(s1, 1)).toBe(s1); // no-op si déjà présent
+describe('editorState — couches (multi-niveaux)', () => {
+  it('addLayer ajoute une couche « vide », triée par z ; idempotent', () => {
+    const s1 = addLayer(emptyScene(4, 4), 1);
+    expect(s1.layers.map((l) => l.z)).toEqual([0, 1]);
+    expect(s1.layers[1].tiles.length).toBe(16);
+    expect(s1.layers[1].tiles.every((t) => t === 'vide')).toBe(true); // grille transparente à construire
+    expect(addLayer(s1, 1)).toBe(s1); // no-op si déjà présente
+    // insérée dans l'ordre des z même posée à l'envers
+    expect(addLayer(addLayer(emptyScene(4, 4), 2), 1).layers.map((l) => l.z)).toEqual([0, 1, 2]);
   });
-  it('removeLevel retire un étage mais protège le sol (z=0) et le dernier niveau', () => {
-    const s = addLevel(emptyScene(4, 4), 1);
-    expect(removeLevel(s, 1).levels.map((l) => l.z)).toEqual([0]);
-    expect(removeLevel(s, 0)).toBe(s); // sol protégé
-    expect(removeLevel(emptyScene(4, 4), 0).levels.length).toBe(1); // dernier protégé
+  it('removeLayer retire une couche mais protège le sol (z=0) et la dernière couche', () => {
+    const s = addLayer(emptyScene(4, 4), 1);
+    expect(removeLayer(s, 1).layers.map((l) => l.z)).toEqual([0]);
+    expect(removeLayer(s, 0)).toBe(s); // sol protégé (jamais de scène sans couche de base)
+    expect(removeLayer(emptyScene(4, 4), 0).layers.length).toBe(1); // dernière protégée
+  });
+});
+
+describe('editorState — hauteur métrique (paintHeight)', () => {
+  it('écrit layer.height en MÈTRES (crée le tableau, 0 ailleurs)', () => {
+    const s = paintHeight(emptyScene(4, 4), { x: 1, y: 1 }, 4, 1, 0);
+    expect(s.layers[0].height).toBeDefined();
+    expect(s.layers[0].height![1 * 4 + 1]).toBe(4); // +4 m (toit) sur la case peinte
+    expect(s.layers[0].height![0]).toBe(0); // 0 mètre ailleurs
+  });
+  it('peint la hauteur sur la COUCHE demandée (z), couche de base intacte', () => {
+    const s = paintHeight(addLayer(emptyScene(4, 4), 1), { x: 2, y: 2 }, 3, 1, 1);
+    expect(s.layers[1].height![2 * 4 + 2]).toBe(3);
+    expect(s.layers[0].height).toBeUndefined(); // sol jamais touché
   });
 });
 
@@ -190,41 +213,49 @@ describe('editorState — pose', () => {
     expect(out.entities.find((e) => e.id === 'enemy-0')).toBeUndefined();
     expect(out.encounters[0].members).toHaveLength(0);
   });
-  it('addBuilding : un drag pose l’empreinte dessinée telle quelle', () => {
-    const r = addBuilding(emptyScene(10, 10), 'taverne', { x: 1, y: 1, w: 5, h: 2 })!;
-    expect(r.scene.buildings![0].foot).toEqual({ x: 1, y: 1, w: 5, h: 2 });
+  it('addRoof : un drag pose une pièce de toiture sur l’empreinte glissée, SANS murs', () => {
+    const r = addRoof(emptyScene(10, 10), 'taverne', { x: 1, y: 1, w: 5, h: 2 });
+    expect(r.scene.roofs![0]).toEqual({ id: r.id, foot: { x: 1, y: 1, w: 5, h: 2 }, style: 'taverne' });
+    expect(r.scene.walls).toBeUndefined(); // le toit n'est QUE la couverture : aucune cloison posée
   });
-  it('addBuilding : un clic simple (1×1) pose l’empreinte par défaut du catalogue, clampée', () => {
-    const foot = BUILDINGS_META['taverne'].defaultFoot; // 4×3 — pas de bâtiment 1×1 dégénéré
-    const r = addBuilding(emptyScene(10, 10), 'taverne', { x: 2, y: 2, w: 1, h: 1 })!;
-    expect(r.scene.buildings![0].foot).toEqual({ x: 2, y: 2, w: foot.w, h: foot.h });
-    const edge = addBuilding(emptyScene(10, 10), 'taverne', { x: 9, y: 9, w: 1, h: 1 })!;
-    const f = edge.scene.buildings![0].foot;
-    expect(f.x + f.w).toBeLessThanOrEqual(10);
-    expect(f.y + f.h).toBeLessThanOrEqual(10);
+  it('addRoof + périmètre de murs d’arête : toit et cloisons coexistent (murs d’arête inchangés)', () => {
+    let { scene, id } = addRoof(emptyScene(8, 8), 'taverne', { x: 2, y: 2, w: 2, h: 2 });
+    expect(scene.roofs).toEqual([{ id, foot: { x: 2, y: 2, w: 2, h: 2 }, style: 'taverne' }]);
+    // périmètre 2×2 = 8 arêtes distinctes, tracées une à une à l’outil d’arête (comportement inchangé)
+    const perim = [
+      [2, 2, 'N'], [3, 2, 'N'], [2, 3, 'S'], [3, 3, 'S'],
+      [2, 2, 'O'], [2, 3, 'O'], [3, 2, 'E'], [3, 3, 'E'],
+    ] as const;
+    for (const [x, y, side] of perim) scene = setEdgeWall(scene, x, y, side, 0, 'wall');
+    expect(scene.walls).toHaveLength(8); // 8 cloisons (aucune arête partagée sur un périmètre)
+    expect(scene.roofs).toHaveLength(1); // le toit demeure — couverture + murs coexistent
   });
 });
 
 describe('editorState — emplacement de siège (postes authorés à l’éditeur)', () => {
-  it('SIEGE_ENGINES = catalogue armes-de-siege non vide (baliste présente)', () => {
+  it('SIEGE_ENGINES = engins posables non vide, tous avec art d’affût `siegeRig` (baliste présente)', () => {
     expect(SIEGE_ENGINES.length).toBeGreaterThan(0);
-    expect(SIEGE_ENGINES.every((t) => t.subType === 'armes-de-siege')).toBe(true);
+    expect(SIEGE_ENGINES.every((t) => !!t.siegeRig)).toBe(true); // posable ⇔ a un art d'affût
     expect(SIEGE_ENGINES.some((t) => t.id === 'baliste')).toBe(true);
   });
 
-  it('placeEmplacement : pose un personnage portant un poste (engin résolu, équipage vide)', () => {
+  it('placeEmplacement : pose un personnage COMPLET (ref source + poste équipage vide, apparence DÉRIVÉE)', () => {
     const out = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 3, y: 3 })!;
     const ent = out.scene.entities.find((e) => e.id === out.id)!;
     expect(ent.kind).toBe('personnage'); // seul kind enrôlable → spawn en Combattant
     expect(ent.label).toBe('Baliste');
+    expect(ent.ref).toBe('baliste'); // SOURCE de l'engin → spawn construit l'affût inerte ET le rig est dérivé de la ref
+    expect(ent.appearance).toBeUndefined(); // PLUS d'espèce forcée : le rig d'affût se dérive de `ref` (resolveRender)
     expect(ent.postes).toHaveLength(1);
     expect(ent.postes![0].item.trappingId).toBe('baliste');
     expect(ent.postes![0].crewIds).toEqual([]); // pas d'équipage tant que non assigné
     expect(ent.postes![0].side).toBeUndefined(); // par défaut tir omni
+    expect(ent.statblock).toBeUndefined(); // affût INERTE : pas de profil à PV (RAW-pur), le rig + spawn s'en chargent
   });
 
-  it('placeEmplacement : engin inconnu → null (pas d’entité fantôme)', () => {
-    expect(placeEmplacement(emptyScene(10, 10), 'engin-inexistant', { x: 1, y: 1 })).toBeNull();
+  it('placeEmplacement : trapping sans art d’affût (siegeRig) → null (pas d’entité fantôme)', () => {
+    expect(placeEmplacement(emptyScene(10, 10), 'dague', { x: 1, y: 1 })).toBeNull(); // arme normale, pas un engin
+    expect(placeEmplacement(emptyScene(10, 10), 'engin-inexistant', { x: 1, y: 1 })).toBeNull(); // id inconnu
   });
 
   it('placeEmplacement : pose sur l’étage courant (z), absent au sol', () => {
@@ -252,14 +283,18 @@ describe('editorState — emplacement de siège (postes authorés à l’éditeu
     expect('side' in s.entities[0].postes![0]).toBe(false); // retirée
   });
 
-  it('setPosteEngine : change l’engin (nouvelle ItemInstance + libellé), équipage conservé', () => {
+  it('setPosteEngine : change l’engin (item + libellé + ref), apparence DÉRIVÉE de la ref, équipage conservé', () => {
     let s = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 3, y: 3 })!.scene;
     const id = s.entities[0].id;
     s = setPosteCrew(s, id, ['g1']);
     s = setPosteEngine(s, id, 'mortier');
+    const mortier = SIEGE_ENGINES.find((t) => t.id === 'mortier')!;
     expect(s.entities[0].postes![0].item.trappingId).toBe('mortier');
-    expect(s.entities[0].label).toBe(SIEGE_ENGINES.find((t) => t.id === 'mortier')!.label);
+    expect(s.entities[0].label).toBe(mortier.label);
+    expect(s.entities[0].ref).toBe('mortier'); // ref restampée → spawn construit le BON affût ET le rig suit la ref
+    expect(s.entities[0].appearance).toBeUndefined(); // jamais d'`appearance.species` restampé : le rig dérive de `ref`
     expect(s.entities[0].postes![0].crewIds).toEqual(['g1']); // équipage inchangé
+    expect(setPosteEngine(s, id, 'dague')).toBe(s); // trapping sans siegeRig → no-op
     expect(setPosteEngine(s, id, 'engin-inexistant')).toBe(s); // engin inconnu → no-op
   });
 
@@ -289,10 +324,10 @@ describe('editorState — points d’entrée (manque du POC comblé)', () => {
 
 describe('editorState — selRect / sameSel', () => {
   const s = sceneWith();
-  it('selRect couvre trigger/restZone/bâtiment, null pour le ponctuel', () => {
+  it('selRect couvre trigger/restZone/toit, null pour le ponctuel', () => {
     expect(selRect(s, { type: 'trigger', id: 'trig-0' })).toEqual({ x: 4, y: 4, w: 2, h: 2 });
     expect(selRect(s, { type: 'restZone', idx: 0 })).toEqual({ x: 0, y: 5, w: 2, h: 2 });
-    expect(selRect(s, { type: 'building', id: 'b-0' })).toEqual({ x: 6, y: 6, w: 3, h: 3 });
+    expect(selRect(s, { type: 'roof', id: 'roof-0' })).toEqual({ x: 6, y: 6, w: 3, h: 3 });
     expect(selRect(s, { type: 'entity', id: 'perso-0' })).toBeNull();
   });
   it('sameSel compare par identité de cible', () => {

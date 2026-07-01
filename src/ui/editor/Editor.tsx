@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
-import { Scene, emptyScene, Terrain, tileAt } from '../../state/scene';
+import { Scene, emptyScene, Terrain, tileAt, heightAt } from '../../state/scene';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { testScene } from '../../scenes/test-fixture';
 import { creatures } from '../../data';
@@ -19,7 +19,7 @@ import { downloadText } from '../../state/fileIo';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import { WorldMap, parseProject } from '../../state/worldMap';
 import { nextEntityId } from '../../state/entityId';
-import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLevel, removeLevel } from './editorState';
+import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer } from './editorState';
 
 /**
  * Éditeur de niveau v2 — SHELL d'orchestration : toolbar (Fichier/scènes/Tester), Palette
@@ -38,7 +38,7 @@ export function Editor() {
   const [sel, setSel] = useState<Sel>(null);
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
-  const [currentLevel, setCurrentLevel] = useState(0); // étage (z) en cours d'édition (multi-niveaux)
+  const [currentLayer, setCurrentLayer] = useState(0); // couche (z) en cours d'édition (multi-niveaux)
   const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle
   const [encTarget, setEncTarget] = useState(''); // rencontre cible de l'outil ⚔️
   const [encRef, setEncRef] = useState(''); // créature à placer
@@ -190,7 +190,7 @@ export function Editor() {
     if (!w.refId) return;
     if (w.scope === 'entity') setSel({ type: 'entity', id: w.refId });
     else if (w.scope === 'trigger') selectFromCanvas({ type: 'trigger', id: w.refId });
-    else if (w.scope === 'building') setSel({ type: 'building', id: w.refId });
+    else if (w.scope === 'roof') setSel({ type: 'roof', id: w.refId });
   }
 
   // --- Fichier : import/export/bibliothèque/test ---
@@ -281,13 +281,21 @@ export function Editor() {
     }
   }
   function resize(w: number, h: number) {
-    const levels = scene.levels.map((lvl) => {
+    // Re-tisse chaque couche à la nouvelle taille : tuiles ET hauteurs métriques recopiées dans la zone
+    // commune (le reste = défaut). Le tableau `height` n'est conservé que s'il porte une valeur ≠ 0.
+    const layers = scene.layers.map((layer) => {
       const tiles: Terrain[] = new Array(w * h).fill('herbe');
+      const height: number[] = new Array(w * h).fill(0);
+      let hasHeight = false;
       for (let y = 0; y < Math.min(h, scene.dimensions.h); y++)
-        for (let x = 0; x < Math.min(w, scene.dimensions.w); x++) tiles[y * w + x] = tileAt(scene, x, y, lvl.z);
-      return { ...lvl, tiles };
+        for (let x = 0; x < Math.min(w, scene.dimensions.w); x++) {
+          tiles[y * w + x] = tileAt(scene, x, y, layer.z);
+          const hv = heightAt(scene, x, y, layer.z);
+          if (hv) { height[y * w + x] = hv; hasHeight = true; }
+        }
+      return { z: layer.z, tiles, ...(hasHeight ? { height } : {}) };
     });
-    setScene({ ...scene, dimensions: { w, h }, levels });
+    setScene({ ...scene, dimensions: { w, h }, layers });
   }
 
   const { w, h } = scene.dimensions;
@@ -351,45 +359,45 @@ export function Editor() {
           sel={sel}
           onSelect={selectFromCanvas}
           onHover={onHover}
-          currentLevel={currentLevel}
+          currentLayer={currentLayer}
         />
 
-        <div className="ed-level-bar" title="Étages (multi-niveaux) : z=0 = sol, z>0 = surplombs (loges/galeries)">
-          <span className="ed-level-z">Étage {currentLevel}</span>
+        <div className="ed-level-bar" title="Couches (multi-niveaux) : z=0 = base, z>0 = surplombs (loges/galeries/passerelles)">
+          <span className="ed-level-z">Couche {currentLayer}</span>
           <button
             className="btn small"
-            disabled={!scene.levels.some((l) => l.z < currentLevel)}
-            title="Étage inférieur"
-            onClick={() => setCurrentLevel(Math.max(...scene.levels.filter((l) => l.z < currentLevel).map((l) => l.z)))}
+            disabled={!scene.layers.some((l) => l.z < currentLayer)}
+            title="Couche inférieure"
+            onClick={() => setCurrentLayer(Math.max(...scene.layers.filter((l) => l.z < currentLayer).map((l) => l.z)))}
           >
             ▼
           </button>
           <button
             className="btn small"
-            disabled={!scene.levels.some((l) => l.z > currentLevel)}
-            title="Étage supérieur"
-            onClick={() => setCurrentLevel(Math.min(...scene.levels.filter((l) => l.z > currentLevel).map((l) => l.z)))}
+            disabled={!scene.layers.some((l) => l.z > currentLayer)}
+            title="Couche supérieure"
+            onClick={() => setCurrentLayer(Math.min(...scene.layers.filter((l) => l.z > currentLayer).map((l) => l.z)))}
           >
             ▲
           </button>
           <button
             className="btn small"
-            title="Ajouter un étage au-dessus"
+            title="Ajouter une couche au-dessus"
             onClick={() => {
-              const z = Math.max(...scene.levels.map((l) => l.z)) + 1;
-              setScene(addLevel(scene, z));
-              setCurrentLevel(z);
+              const z = Math.max(...scene.layers.map((l) => l.z)) + 1;
+              setScene(addLayer(scene, z));
+              setCurrentLayer(z);
             }}
           >
             ＋
           </button>
           <button
             className="btn small danger"
-            disabled={currentLevel === 0}
-            title="Supprimer cet étage"
+            disabled={currentLayer === 0}
+            title="Supprimer cette couche"
             onClick={() => {
-              setScene(removeLevel(scene, currentLevel));
-              setCurrentLevel(0);
+              setScene(removeLayer(scene, currentLayer));
+              setCurrentLayer(0);
             }}
           >
             －

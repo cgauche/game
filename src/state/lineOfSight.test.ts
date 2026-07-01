@@ -14,9 +14,9 @@ function scene(w: number, h: number, tiles?: Record<string, string>, entities: S
     name: 's',
     dimensions: { w, h },
     ambiance: 'jour',
-    levels: [{ z: 0, tiles: grid }],
+    layers: [{ z: 0, tiles: grid }],
     entities,
-    buildings: [],
+   
     dialogues: [],
     triggers: [],
     encounters: [],

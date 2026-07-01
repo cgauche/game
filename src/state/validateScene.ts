@@ -1,5 +1,4 @@
 import type { Scene, Effect } from './scene';
-import { isWalkable } from './scene';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, EMPTY_FLOW } from './flow';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
@@ -12,7 +11,7 @@ import { allMusicDefs } from '../audio/music';
 export interface Warning {
   level: 'error' | 'warn';
   sceneId: string;
-  scope: 'entity' | 'building' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap';
+  scope: 'entity' | 'roof' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap';
   /** Id du fautif (pour clic → sélection dans l'éditeur). */
   refId?: string;
   message: string;
@@ -69,30 +68,21 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (typeof v === 'string' && !musicIds.has(v)) add('warn', 'scene', undefined, `Musique (${slot === 'ambient' ? 'ambiance' : 'combat'}) inconnue au registre « ${v} »`);
 
     dup(s.entities.map((e) => e.id), 'entity');
-    dup((s.buildings ?? []).map((b) => b.id), 'building');
     dup(s.triggers.map((t) => t.id), 'trigger');
     dup(s.dialogues.map((d) => d.id), 'dialogue');
     dup(s.encounters.map((e) => e.id), 'encounter');
 
-    const levelZs = new Set(s.levels.map((l) => l.z));
+    // Couches (`Scene.layers`) : ids d'étage valides pour rattacher les entités posées en hauteur.
+    const layerZs = new Set(s.layers.map((l) => l.z));
     for (const e of s.entities) {
       if (e.dialogueId && !dlgIds.has(e.dialogueId)) add('error', 'entity', e.id, `${e.label ?? e.id} → dialogue inexistant « ${e.dialogueId} »`);
       if (!within(e.pos.x, e.pos.y)) add('warn', 'entity', e.id, `${e.label ?? e.id} hors carte (${e.pos.x},${e.pos.y})`);
-      if (e.z && !levelZs.has(e.z)) add('warn', 'entity', e.id, `${e.label ?? e.id} sur étage ${e.z} inexistant`);
+      if (e.z && !layerZs.has(e.z)) add('warn', 'entity', e.id, `${e.label ?? e.id} sur étage ${e.z} inexistant`);
     }
-    // Escaliers (franchissements verticaux) : chaque extrémité dans la carte, sur un niveau existant et
-    // une case marchable ; relier deux étages DIFFÉRENTS (sinon l'escalier ne sert à rien).
-    for (const st of s.stairs ?? []) {
-      for (const end of [st.from, st.to]) {
-        if (!within(end.x, end.y)) add('warn', 'scene', undefined, `Escalier hors carte (${end.x},${end.y},z${end.z})`);
-        else if (!levelZs.has(end.z)) add('warn', 'scene', undefined, `Escalier vers l'étage ${end.z} inexistant`);
-        else if (!isWalkable(s, end.x, end.y, end.z)) add('warn', 'scene', undefined, `Escalier sur une case non marchable (${end.x},${end.y},z${end.z})`);
-      }
-      if (st.from.z === st.to.z) add('warn', 'scene', undefined, `Escalier reliant le même étage (z${st.from.z})`);
-    }
-    for (const b of s.buildings ?? []) {
-      if (b.interiorScene && !sceneIds.has(b.interiorScene)) add('error', 'building', b.id, `${b.label ?? b.id} → scène intérieure inexistante « ${b.interiorScene} »`);
-    }
+    // Toits (`Scene.roofs`) : leur couche couverte doit exister (cohérence du cutaway de rendu). L'avertissement
+    // pointe le toit fautif (`scope: 'roof'`, refId) → clic = sélection dans l'éditeur (`selectWarning`).
+    for (const r of s.roofs ?? [])
+      if ((r.z ?? 0) !== 0 && !layerZs.has(r.z ?? 0)) add('warn', 'roof', r.id, `Toit « ${r.label ?? r.id} » sur étage ${r.z} inexistant`);
     /** Bornes des fenêtres horaires d'une Condition (trigger `when`, choix `when`, nœud `si`). */
     const checkCondTimes = (cond: Condition, refId: string, scope: Warning['scope']) =>
       walkConditionTimes(cond, (tc) => {

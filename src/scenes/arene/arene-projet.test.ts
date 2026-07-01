@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateScene } from '../../state/validateScene';
 import { parseProject } from '../../state/worldMap';
-import { isWalkable, type Scene } from '../../state/scene';
+import { isWalkable, wallBetween, type Scene, type WallSeg } from '../../state/scene';
 import { findCreatureById, trappings } from '../../data';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { MERCHANTS } from '../../state/merchants/index';
@@ -69,12 +69,20 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(wm.routes.some((r) => r.perilDie != null)).toBe(true); // seuil d10 surchargé par route
   });
 
-  it('le BOURG a des bâtiments dont ≥2 intérieurs (reveal door) + marchands taverniere/armurier/medecin', () => {
+  it('le BOURG a des BÂTIMENTS COMPOSÉS (toits + murs d’arête clôturant + porte franchissable) + marchands taverniere/armurier/medecin', () => {
+    // Relief unifié : plus de `buildings` monolithiques (périmètre implicite + `reveal`/`interiorScene`).
+    // Un bâtiment = un `Roof` de rendu posé sur des `WallSeg` d'arête (mur-en-bois/pierre) percés d'une porte.
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    const doors = (hub.buildings ?? []).filter((b) => b.reveal === 'door' && b.interiorScene);
-    expect(doors.length).toBeGreaterThanOrEqual(2);
-    const ids = new Set(project.map((s) => s.id));
-    for (const b of doors) expect(ids.has(b.interiorScene!), `intérieur ${b.interiorScene}`).toBe(true);
+    expect((hub.roofs ?? []).length).toBeGreaterThanOrEqual(2);
+    const walls = (hub.walls ?? []).filter((w): w is WallSeg & { side: 'N' | 'E' } => w.side === 'N' || w.side === 'E');
+    const solid = walls.filter((w) => w.structure);
+    const doors = walls.filter((w) => w.door);
+    expect(solid.length).toBeGreaterThan(0);          // les bâtiments sont CLÔTURÉS par des murs d'arête
+    expect(doors.length).toBeGreaterThanOrEqual(2);   // ≥2 intérieurs desservis par une porte
+    // un mur `structure` BLOQUE le passage ; une porte est FRANCHISSABLE (arête ouverte)
+    const across = (w: WallSeg & { side: 'N' | 'E' }) => (w.side === 'N' ? { x: w.x, y: w.y - 1 } : { x: w.x + 1, y: w.y });
+    expect(wallBetween(hub, solid[0].x, solid[0].y, across(solid[0]).x, across(solid[0]).y)).toBe(true);
+    expect(wallBetween(hub, doors[0].x, doors[0].y, across(doors[0]).x, across(doors[0]).y)).toBe(false);
     const archetypes = project.flatMap((s) => s.entities.map((e) => e.merchant?.archetype)).filter(Boolean);
     expect(archetypes).toEqual(expect.arrayContaining(['armurier', 'medecin', 'taverniere']));
   });
@@ -251,7 +259,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
 
   it('chaque zone est UNIQUE : terrains de base distincts (campagne démo)', () => {
     const zones = project.filter((s) => s.id.startsWith('arene-zone'));
-    const bases = zones.map((z) => baseTerrain(z.levels[0].tiles)); // sol dominant de la zone
+    const bases = zones.map((z) => baseTerrain(z.layers[0].tiles)); // sol dominant de la zone
     expect(new Set(bases).size).toBeGreaterThanOrEqual(10); // ≥10 sols différents sur 13 zones
   });
 
@@ -260,7 +268,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     // sous-bois/eau (marais). On exige une masse structurelle ≥ périmètre minimal — preuve d'une enceinte
     // (et de structure interne), pas un empilement d'objets sur un sol vide.
     for (const sc of project.filter((s) => s.id.startsWith('arene-zone'))) {
-      const structural = sc.levels[0].tiles.filter((t) => !terrainWalkable(t)).length;
+      const structural = sc.layers[0].tiles.filter((t) => !terrainWalkable(t)).length;
       const { w, h } = sc.dimensions;
       expect(structural, `${sc.id} doit être clôturé`).toBeGreaterThanOrEqual(w + h); // ~un demi-périmètre au moins
     }

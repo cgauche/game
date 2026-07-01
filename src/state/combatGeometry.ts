@@ -84,6 +84,18 @@ export function moveEnv(battle: BattleState, mover: Combatant): MoveEnv {
   return { blocked: occupied(battle, mover), foot: footprintN(mover), noStop: cannotStopOn(battle, mover) };
 }
 
+/**
+ * Combattant (hors d'action exclu) dont l'empreinte couvre la tuile (x,y) AU MÊME ÉTAGE `z`.
+ * Z-AWARE : une STRUCTURE de siège / un mur ancré à z0 (sa `pos` n'est qu'un point d'ANCRAGE de ciblage,
+ * cf. `occupied`) n'occupe PAS la case de CHEMIN DE RONDE z1 de mêmes (x,y). Sans ce filtre, survoler/
+ * cliquer le dessus d'un rempart viserait la muraille en contrebas → « hors de portée » fantôme et
+ * déplacement impossible. SOURCE UNIQUE de « qui est sous cette tuile » pour l'interaction
+ * (survol/clic/curseur/clic droit) — remplace les `find(occupiesTile(...))` z-aveugles dispersés.
+ */
+export function combatantAtTile(combatants: Combatant[], x: number, y: number, z = 0): Combatant | undefined {
+  return combatants.find((c) => c.pos && !isOutOfAction(c) && (c.pos.z ?? 0) === z && occupiesTile(c.pos, footprintN(c), x, y));
+}
+
 /** Perturbante (LDB 62 l.275-276) : repousse `target` d'au plus `tiles` cases dans la direction
  *  opposée à l'attaquant (cases praticables et libres seulement). Renvoie les cases reculées. */
 export function pushBackTiles(get: Get, attacker: Combatant, target: Combatant, tiles: number): number {

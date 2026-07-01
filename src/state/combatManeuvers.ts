@@ -215,8 +215,9 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   //     l'arme du poste (`weaponUid` → canon ÉPINGLÉ, même si le servant porte une arme perso de mêlée pour
   //     l'abordage). Arc + portée INTRINSÈQUES (firedAttackBlock garde déjà l'arc de `w.mountSide`). Coûte
   //     l'Action ; `targeting:'melee'` = chemin approche-puis-frappe commun (une arme à distance y tire en
-  //     place, comme l'option 'arme'). KIND-AGNOSTIQUE côté donnée (l'IA ennemie a son propre chemin).
-  if (active.mannedPoste && !battle.acted && canTakeAction(active)) {
+  //     place, comme l'option 'arme'). KIND-AGNOSTIQUE côté donnée (l'IA ennemie a son propre chemin). RÉSERVÉ
+  //     au CHEF (`crewIds[0]`) : les membres SUPPORT (Arme d'équipe) occupent la pièce mais ne tirent pas.
+  if (active.mannedPoste && active.mannedPoste.crewIds?.[0] === active.id && !battle.acted && canTakeAction(active)) {
     const w = active.weapons.find((x) => x.uid === active.mannedPoste!.item.uid);
     // Pièce INDIRECTE (mortier/catapulte, `w.indirect`) : vise une CASE (placeur de zone), pas un combattant
     // (AA p.122-123). DIRECTE (canon/baliste) : ciblage de combattant classique. Flag DONNÉE, zéro liste en dur.

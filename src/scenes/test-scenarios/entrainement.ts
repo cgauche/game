@@ -73,7 +73,7 @@ const W = 24, H = 14;
 const scene = arena({ id: 'terrain-entrainement', nom: "Terrain d'entraînement", w: W, h: H, terrain: 'sol', heroStart: { x: 3, y: 8 } });
 scene.ambientLight = 'nuit'; // brouillard de guerre : ~5 cases de vue de base ; lumière / vision nocturne révèlent
 // Muret de couvert (x=11, rangées y=3..6) : casse la ligne de vue vers le mannequin tapi derrière.
-const tiles = scene.levels[0].tiles as string[];
+const tiles = scene.layers[0].tiles as string[];
 for (let y = 3; y <= 6; y++) tiles[y * W + 11] = 'mur';
 
 // Braseros : îlots de lumière (la lice et le couloir sont éclairés ; le fond reste dans le noir).

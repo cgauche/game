@@ -24,6 +24,9 @@ import { isStructure, structureImmune, siegeMultiplier } from './structures';
  * faible ne raye pas la structure — comme une coque). Sans PA, l'`effectiveArmour` d'une structure vaut 0.
  */
 export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation | undefined, totalDamage: number, extraAP = 0, minWounds = 1): number {
+  // Engin de siège INERTE (AA p.122-123) : le RAW ne lui donne aucune Blessure → NON-DESTRUCTIBLE (immune).
+  // On le neutralise en tuant son équipage, jamais en le frappant. (≠ structure/véhicule, qui NE sont PAS `inert`.)
+  if (target.inert) return 0;
   if (isStructure(target)) {
     if (structureImmune(weapon, target)) return 0;
     totalDamage *= siegeMultiplier(weapon, target);

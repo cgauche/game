@@ -1,15 +1,16 @@
-import { tileCenter, tileEdge, depth, isSquareView, LEVEL_H, type Dims } from './iso';
-import type { Scene, WallSeg } from '../state/scene';
+import { tileCenter, tileEdge, depth, isSquareView, diamondPath, CELL, LEVEL_H, type Dims } from './iso';
+import { type Scene, type WallSeg } from '../state/scene';
 import { structureById } from '../data';
 
-/** Hauteur écran (px) d'une cloison dressée sur une arête. */
+/** Hauteur écran (px) d'une cloison dressée sur une arête — FIXE (la hauteur du relief est portée par le
+ *  sol, plus par les murs ; un mur est une cloison d'arête, pas une plateforme). */
 export const WALL_H = 54;
 
 type P = { cx: number; cy: number };
 
 /** Les 2 extrémités-écran (au sol) de l'arête d'un mur. Arêtes CARDINALES N/E via la primitive PARTAGÉE
- *  `tileEdge` (même géométrie que jupes/escaliers → rotation cohérente). Diagonales `\`/`/` : tracées de
- *  coin à coin opposé de la case (les coins de grille via tileCenter, rotation gérée). */
+ *  `tileEdge` (même géométrie que les parois de relief → rotation cohérente). Diagonales `\`/`/` : tracées
+ *  de coin à coin opposé de la case (coins de grille via tileCenter, rotation gérée). */
 function edgeEnds(w: WallSeg, dims: Dims): [P, P] {
   const z = w.z ?? 0;
   if (w.side === 'N' || w.side === 'E') return tileEdge(w.x, w.y, w.side, dims, z);
@@ -18,9 +19,8 @@ function edgeEnds(w: WallSeg, dims: Dims): [P, P] {
 }
 
 /** Profondeur de tri d'un mur : du côté de la tuile la plus PROCHE de la caméra (occlusion correcte).
- *  On prend le MAX de profondeur sur les DEUX cases bordant l'arête → le mur reste devant son sol proche
- *  aux 4 rotations (la case « proche » change avec la caméra). En rot 0, le MAX retombe sur l'ancienne
- *  case unique (E → x+1, N/diagonale → la case) ⇒ résultat byte-identique. */
+ *  MAX de profondeur sur les DEUX cases bordant l'arête → le mur reste devant son sol proche aux 4
+ *  rotations (la case « proche » change avec la caméra). Tri par l'INDEX DE COUCHE `z` (découplé du lift). */
 function wallDepth(w: WallSeg, dims: Dims): number {
   const z = w.z ?? 0;
   const cells: [number, number][] =
@@ -43,6 +43,20 @@ const slab = (a: P, b: P, h0: number, h1: number) => `${a.cx},${a.cy - h0} ${b.c
 
 const lerpP = (A: P, B: P, t: number): P => ({ cx: A.cx + (B.cx - A.cx) * t, cy: A.cy + (B.cy - A.cy) * t });
 
+// ── PORTE / CORPS DE GARDE : un VRAI passage de fort — une OUVERTURE BÉANTE sur toute la largeur de la
+//    porte (PAS d'arche maçonnée ni de recoin factice). Tant qu'elle TIENT, une HERSE barre le passage ;
+//    abattue, libre. Les segments contigus de la porte se rendent en bandes JOINTIVES (pas de montant
+//    intermédiaire) → herse + linteau + battlement CONTINUS sur toute la largeur.
+/** Herse (grille) sur l'ouverture a→b, du sol au linteau (≈H) : barreaux verticaux + 2 traverses de fer. */
+function portcullis(a: P, b: P, H: number): string {
+  const top = H * 0.9; // la herse pend du linteau
+  let g = '';
+  for (let i = 0; i <= 5; i++) { const p = lerpP(a, b, i / 5); g += `<line x1="${p.cx}" y1="${p.cy}" x2="${p.cx}" y2="${p.cy - top}" stroke="var(--struct-band)" stroke-width="1.7"/>`; }
+  g += `<polygon points="${slab(a, b, top * 0.4, top * 0.4 + 2)}" fill="#4a4d54"/>` +
+    `<polygon points="${slab(a, b, top * 0.78, top * 0.78 + 2)}" fill="#4a4d54"/>`; // 2 traverses de fer
+  return g;
+}
+
 /** Mur en VUE DU DESSUS : un trait ÉPAIS posé SUR l'arête (pas d'extrusion verticale — sinon le mur
  *  « flotte » comme un panneau au-dessus de la case). Une PORTE = ouverture au milieu (deux jambages). */
 function topWall(w: WallSeg, a: P, b: P, dims: Dims): { d: number; svg: string } {
@@ -63,14 +77,48 @@ function topWall(w: WallSeg, a: P, b: P, dims: Dims): { d: number; svg: string }
  *  au-dessus (abattue → on voit/passe au travers). Couleurs en tokens :root. `down` = `structureIsDown`. */
 function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: number; svg: string } {
   const d = wallDepth(w, dims);
+  const isGate = structureById.get(w.structure ?? '')?.kind === 'porte';
   if (isSquareView(dims.view)) {
     const line = (col: string, width: number, dash?: string) =>
       `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
-    // Vue du dessus : barre pierre ÉPAISSE ferrée (intacte) ; brèche = pointillé clairsemé de gravats.
-    const svg = down ? line('var(--struct-rubble)', 6, '3 5') : line('var(--struct-band)', 11) + line('var(--struct-face)', 7);
-    return { d: d + 0.6, svg: `<g>${svg}</g>` };
+    // BRÈCHE (abattue) : pointillé clairsemé de gravats sur l'arête.
+    if (down) return { d: d + 0.6, svg: `<g>${line('var(--struct-rubble)', 6, '3 5')}</g>` };
+    // PORTE INTACTE : bloc plein sur SA case (sinon le plancher laisse un trou) + glyphe de passage barré ;
+    // la COURTINE, elle, reste un simple TRAIT épais sur l'arête.
+    if (isGate) {
+      const { cx: px, cy: py } = tileCenter(w.x, w.y, dims);
+      const h = CELL / 2;
+      const block = `<path d="${diamondPath(w.x, w.y, dims)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="2.5"/>`;
+      // passage N-S sombre traversant la courtine + barreaux de herse (E-O) → corps de garde fermé identifiable.
+      let glyph = `<rect x="${px - h * 0.46}" y="${py - h}" width="${h * 0.92}" height="${2 * h}" fill="#241a10"/>`;
+      for (let i = 1; i <= 3; i++) { const ly = py - h + 2 * h * (i / 4); glyph += `<line x1="${px - h * 0.46}" y1="${ly}" x2="${px + h * 0.46}" y2="${ly}" stroke="var(--struct-cap)" stroke-width="1.6"/>`; }
+      return { d: d + 0.6, svg: `<g>${block}${glyph}</g>` };
+    }
+    // COURTINE : barre pierre ÉPAISSE ferrée sur l'arête (trait).
+    return { d: d + 0.6, svg: `<g>${line('var(--struct-band)', 11) + line('var(--struct-face)', 7)}</g>` };
   }
-  const H = w.height ? w.height * LEVEL_H : WALL_H; // rempart d'enceinte : `height` en étages (1 = LEVEL_H) → monte au chemin de ronde z=1 ; absent → WALL_H (byte-identique)
+  const H = WALL_H; // hauteur FIXE (cloison d'arête)
+  const P = LEVEL_H * 0.32; // parapet / corps de garde : hauteur dressée au-dessus du plan H
+  // PORTE / CORPS DE GARDE (structure `kind:'porte'`) — routé par l'id de structure AVANT la brèche
+  // générique. OUVERTURE BÉANTE sur toute la largeur : PAS de face de pierre ni d'arche — un vrai passage.
+  // INTACTE : la HERSE barre le passage. ABATTUE (`down`) : plus de herse, seuil d'éboulis → passage libre.
+  if (isGate) {
+    const lintel = `<polygon points="${slab(a, b, H - 4, H)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>`; // poutre du gatehouse d'où pend la herse
+    const bars = down
+      ? `<polygon points="${slab(a, b, 0, H * 0.12)}" fill="var(--struct-rubble)"/>` // BRÈCHE : seuil d'éboulis, passage dégagé
+      : portcullis(a, b, H); // HERSE continue barrant le passage
+    const N = 5, merlonH = 6;
+    let merlons = '';
+    for (let i = 0; i < N; i += 2) {
+      const p0 = lerpP(a, b, i / N), p1 = lerpP(a, b, (i + 1) / N);
+      merlons += `<polygon points="${p0.cx},${p0.cy - (H + P)} ${p1.cx},${p1.cy - (H + P)} ${p1.cx},${p1.cy - (H + P) - merlonH} ${p0.cx},${p0.cy - (H + P) - merlonH}" fill="var(--struct-cap)"/>`;
+    }
+    const parapet = `<polygon points="${slab(a, b, H, H + P)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // parapet
+      `<polygon points="${slab(a, b, H + P * 0.72, H + P * 0.72 + 2.4)}" fill="var(--struct-band)"/>` + // ferrure du parapet
+      `<polygon points="${slab(a, b, H + P - 3, H + P)}" fill="var(--struct-cap)"/>` + // arase (couronnement)
+      merlons;
+    return { d, svg: `<g>${bars}${lintel}${parapet}</g>` };
+  }
   if (down) {
     // BRÈCHE : éboulis bas le long de l'arête (≈0.3 H), ouverture au-dessus laissée transparente. Tas
     // DENTELÉ (≠ « mur court ») + moignons de jambage qui subsistent aux extrémités.
@@ -81,44 +129,31 @@ function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: n
       post(a, hr * 0.7) + post(b, hr * 0.55) + `</g>`;
     return { d, svg };
   }
-  // PORTE / CORPS DE GARDE (structure `kind:'porte'`) : ouverture SOMBRE (le passage) + HERSE de fer
-  // (barreaux verticaux + traverses) sous un LINTEAU de pierre + jambages massifs aux deux bouts — se LIT
-  // comme une porte, pas comme un pan de mur crénelé. Routé par l'id de structure (cf. `structures.json`).
-  if (structureById.get(w.structure ?? '')?.kind === 'porte') {
-    const arch = H * 0.74; // l'ouverture (passage) monte jusqu'ici ; au-dessus = le bloc du corps de garde
-    let herse = '';
-    for (let i = 1; i < 6; i++) { const p = lerpP(a, b, i / 6); herse += `<line x1="${p.cx}" y1="${p.cy}" x2="${p.cx}" y2="${p.cy - arch}" stroke="#4a4d54" stroke-width="1.5"/>`; }
-    herse += `<polygon points="${slab(a, b, arch * 0.42, arch * 0.42 + 1.8)}" fill="#4a4d54"/>` +
-      `<polygon points="${slab(a, b, arch * 0.74, arch * 0.74 + 1.8)}" fill="#4a4d54"/>`; // 2 traverses de fer
-    const svg = `<g>${post(a, H)}` +
-      `<polygon points="${slab(a, b, 0, arch)}" fill="#221a11"/>` + // passage sombre (on voit dans le recoin)
-      herse +
-      `<polygon points="${slab(a, b, arch, H)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // linteau + bloc supérieur
-      `<polygon points="${slab(a, b, H - 3, H)}" fill="var(--struct-cap)"/>` + // arase claire au sommet
-      `${post(b, H)}</g>`;
-    return { d, svg };
-  }
-  // REMPART INTACT : face pierre pleine + bandes de fer + créneaux (merlons) en saillie au-dessus.
+  // REMPART INTACT : face pierre pleine + bandes de fer, surmontée d'un PARAPET crénelé dressé au-dessus
+  // du plan H → le rempart se lit en relief, pas en bande plate. Montants d'extrémité = coins/jambages.
   const band = (t: number) => `<polygon points="${slab(a, b, H * t, H * t + 2.4)}" fill="var(--struct-band)"/>`;
-  const N = 5, merlonH = 6; // créneaux : 1 merlon / 1 trou (i pair)
+  const N = 5, merlonH = 6; // créneaux : 1 merlon / 1 trou (i pair) — montés au sommet du parapet (H+P)
   let merlons = '';
   for (let i = 0; i < N; i += 2) {
     const p0 = lerpP(a, b, i / N), p1 = lerpP(a, b, (i + 1) / N);
-    merlons += `<polygon points="${p0.cx},${p0.cy - H} ${p1.cx},${p1.cy - H} ${p1.cx},${p1.cy - H - merlonH} ${p0.cx},${p0.cy - H - merlonH}" fill="var(--struct-cap)"/>`;
+    merlons += `<polygon points="${p0.cx},${p0.cy - (H + P)} ${p1.cx},${p1.cy - (H + P)} ${p1.cx},${p1.cy - (H + P) - merlonH} ${p0.cx},${p0.cy - (H + P) - merlonH}" fill="var(--struct-cap)"/>`;
   }
-  const svg = `<g>${post(a, H)}` +
+  const svg = `<g>${post(a, H + P)}` +
     `<polygon points="${slab(a, b, 0, H)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // face pierre
-    band(0.28) + band(0.56) + band(0.82) + // ferrures
-    `<polygon points="${slab(a, b, H * 0.9, H)}" fill="var(--struct-cap)"/>` + // chemin de ronde
+    band(0.28) + band(0.56) + band(0.82) + // ferrures de la courtine
+    `<polygon points="${slab(a, b, H, H + P)}" fill="var(--struct-face)" stroke="var(--struct-band)" stroke-width="0.8"/>` + // parapet
+    `<polygon points="${slab(a, b, H + P * 0.72, H + P * 0.72 + 2.4)}" fill="var(--struct-band)"/>` + // ferrure du parapet
+    `<polygon points="${slab(a, b, H + P - 3, H + P)}" fill="var(--struct-cap)"/>` + // arase (couronnement)
     merlons +
-    `${post(b, H)}</g>`;
+    `${post(b, H + P)}</g>`;
   return { d, svg };
 }
 
 /** SVG d'un segment de mur TEXTURÉ (panneau encadré + moulures + plinthe + ombrage par côté) + sa
  *  profondeur, pour le tri global de IsoStage. Une PORTE est ajourée (ouverture basse + linteau) ; une
  *  arête portant une STRUCTURE de siège (`w.structure`) se rend en fortification/brèche (`structureSeg`,
- *  `structDown` = état abattu fourni par l'appelant, comme l'overlay porte lit `doorIsOpen`). */
+ *  `structDown` = état abattu fourni par l'appelant, comme l'overlay porte lit `doorIsOpen`). Hauteur
+ *  FIXE `WALL_H` (le relief vit dans le sol, plus dans le mur). */
 export function wallSeg(w: WallSeg, dims: Dims, structDown = false): { d: number; svg: string } {
   const [a, b] = edgeEnds(w, dims);
   if (w.structure) return structureSeg(w, a, b, dims, structDown);
@@ -140,9 +175,9 @@ export function wallSeg(w: WallSeg, dims: Dims, structDown = false): { d: number
       `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="${op}" fill="#6e5940"/>` +
       `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="1.8" fill="#8a7048"/>`; // chapiteau clair
     const svg = `<g>${post(a, H)}` +
-      `<polygon points="${slab(a, b, 0, op)}" fill="#15100a" opacity="0.42"/>` + // embrasure ombrée (marque l'ouverture, reste un peu translucide)
+      `<polygon points="${slab(a, b, 0, op)}" fill="#15100a" opacity="0.42"/>` + // embrasure ombrée
       `<polygon points="${slab(a, b, op, H)}" fill="${face}" stroke="#2a2118" stroke-width="0.7"/>` + // mur au-dessus de la porte
-      `<polygon points="${slab(a, b, op, op + 4)}" fill="#7c6647" stroke="#2a2118" stroke-width="0.5"/>` + // poutre de linteau (claire, contraste sur l'ouverture)
+      `<polygon points="${slab(a, b, op, op + 4)}" fill="#7c6647" stroke="#2a2118" stroke-width="0.5"/>` + // poutre de linteau
       `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
       jamb(a) + jamb(b) +
       `${post(b, H)}</g>`;
@@ -168,7 +203,8 @@ export function wallSeg(w: WallSeg, dims: Dims, structDown = false): { d: number
   return { d: wallDepth(w, dims), svg };
 }
 
-/** Tous les segments de mur de la scène, prêts à fusionner dans le tri de profondeur. */
+/** Tous les segments de mur de la scène, prêts à fusionner dans le tri de profondeur. Un mur = une pièce
+ *  (plus de face cour séparée : le relief — et donc tout flanc maçonné — vit dans le sol). */
 export function wallSegs(scene: Scene, dims: Dims): { d: number; svg: string }[] {
-  return (scene.walls ?? []).map((w) => wallSeg(w, dims));
+  return (scene.walls ?? []).map((w) => wallSeg(w, dims, false));
 }

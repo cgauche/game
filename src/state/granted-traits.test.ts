@@ -30,7 +30,7 @@ const scene = (w: number, h: number, walls: string[] = []): Scene => {
   }
   return {
     id: 's', name: 's', dimensions: { w, h }, ambiance: 'jour',
-    levels: [{ z: 0, tiles }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [],
+    layers: [{ z: 0, tiles }], entities: [], dialogues: [], triggers: [], encounters: [],
   } as unknown as Scene;
 };
 

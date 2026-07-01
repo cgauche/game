@@ -93,6 +93,36 @@ export function servingCrewPresent(chef: Combatant, combatants: Combatant[]): nu
   return apt.filter((c) => hasWeaponGroupSkill(c, engine, 'ranged')).length;
 }
 
+/** Un combattant qui SERVIRAIT `poste` (en deviendrait chef) possède-t-il la Compétence Projectiles APPROPRIÉE
+ *  au Groupe de l'engin (AA p.122 l.3900) — donc COMPTERAIT-il dans l'effectif (vs simple « aide » qui déplace/
+ *  compense les pertes, l.3902) ? Pièce SANS Groupe déclaré (générique/stub) ou arme non dérivable (ex. pièce à
+ *  2 mains qu'il ne peut tenir) → aucune exigence (true). MÊME prédicat que `servingCrewPresent`, mais l'arme est
+ *  dérivée de CE combattant (le futur chef qui la manie). Sert au FEEDBACK d'« Servir cette pièce ». PUR. */
+export function isCrewQualified(actor: Combatant, poste: ShipPoste): boolean {
+  if (!poste.item.weaponGroup) return true;
+  const engine = mannedPosteWeapon(actor, poste);
+  return !engine || hasWeaponGroupSkill(actor, engine, 'ranged');
+}
+
+/** Répartition de l'équipage APTE (vivant + conscient) d'un poste pour l'AFFICHAGE (tooltip d'équipe) :
+ *  `qualified` = membres possédant la Projectiles du Groupe → COMPTENT dans l'effectif (longueur identique à
+ *  `servingCrewPresent`) ; `aides` = présents mais non qualifiés → aident à déplacer/compenser les pertes
+ *  mais NE comptent PAS (AA p.122 l.3902). Pièce sans Groupe → tous qualifiés. L'arme est dérivée du CHEF
+ *  (`crewIds[0]`), exactement comme `servingCrewPresent`. PUR. */
+export function posteCrewSplit(poste: ShipPoste, combatants: Combatant[]): { qualified: Combatant[]; aides: Combatant[] } {
+  const crew = (poste.crewIds ?? [])
+    .map((id) => combatants.find((c) => c.id === id))
+    .filter((c): c is Combatant => !!c);
+  const apt = exposedCrew(crew);
+  if (!poste.item.weaponGroup) return { qualified: apt, aides: [] };
+  const chef = combatants.find((c) => c.id === poste.crewIds?.[0]);
+  const engine = chef ? mannedPosteWeapon(chef, poste) : undefined;
+  if (!engine) return { qualified: apt, aides: [] };
+  const qualified: Combatant[] = [], aides: Combatant[] = [];
+  for (const c of apt) (hasWeaponGroupSkill(c, engine, 'ranged') ? qualified : aides).push(c);
+  return { qualified, aides };
+}
+
 /**
  * Une pièce MONTÉE (`weapon.mountSide`) porte-t-elle sur `targetPos` ? `heading` = cap du support (coque), `supportPos`
  * = sa position. Aucune contrainte d'arc (→ true) si l'arme n'est PAS montée, ou si le cap/la position du support
@@ -115,21 +145,42 @@ export function serveChef(chef: Combatant, poste: ShipPoste): void {
   chef.mannedPoste = poste;
   const w = mannedPosteWeapon(chef, poste);
   if (w && !(chef.weapons ?? []).some((x) => x.uid === w.uid)) (chef.weapons ??= []).push(w);
+  chef.loaded = true; // une pièce que l'on PREND est AMORCÉE (chargée à la mise en batterie) : le 1er coup part, la Recharge ne joue qu'ENTRE les tirs
 }
 
-/** Le chef QUITTE la pièce (release, runtime « Quitter la pièce ») : retire le lien `mannedPoste`, se retire
- *  de l'équipage, retire l'arme dérivée — la pièce redevient servable. KIND-AGNOSTIQUE. Mute en place. */
-export function leaveChef(chef: Combatant, poste: ShipPoste): void {
-  delete chef.mannedPoste;
-  poste.crewIds = (poste.crewIds ?? []).filter((id) => id !== chef.id);
-  if (chef.weapons) chef.weapons = chef.weapons.filter((w) => w.uid !== poste.item.uid);
+/** Un servant QUITTE la pièce (release, runtime « Quitter la pièce ») : retire le lien `mannedPoste`, se retire
+ *  de l'équipage, retire l'arme dérivée (no-op pour un support, qui n'en a pas). KIND-AGNOSTIQUE — fonctionne
+ *  pour le CHEF comme pour un SUPPORT. SUCCESSION : si le chef (`crewIds[0]`) part et qu'il reste de l'équipage
+ *  en état, le servant le plus ancien encore apte devient chef (`serveChef` → arme + `crewIds[0]`), pour que
+ *  l'invariant « `crewIds[0]` = chef qui TIRE » tienne et que la pièce ne reste pas « occupée mais muette ».
+ *  Mute en place. */
+export function leaveChef(actor: Combatant, poste: ShipPoste, combatants: Combatant[]): void {
+  const wasChef = poste.crewIds?.[0] === actor.id;
+  delete actor.mannedPoste;
+  poste.crewIds = (poste.crewIds ?? []).filter((id) => id !== actor.id);
+  if (actor.weapons) actor.weapons = actor.weapons.filter((w) => w.uid !== poste.item.uid);
+  if (wasChef) {
+    const next = (poste.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).find((c): c is Combatant => !!c && !isOutOfAction(c));
+    if (next) {
+      poste.crewIds = [next.id, ...(poste.crewIds ?? []).filter((id) => id !== next.id)]; // promu en TÊTE
+      serveChef(next, poste);
+    }
+  }
 }
 
-/** Un combattant DEVIENT chef d'une pièce non servie (runtime « Servir cette pièce ») : il prend la TÊTE de
- *  l'équipage (`crewIds[0]`) et SERT la pièce (lien + arme, via `serveChef`). KIND-AGNOSTIQUE. Mute en place. */
-export function serveAtPoste(actor: Combatant, poste: ShipPoste): void {
-  poste.crewIds = [actor.id, ...(poste.crewIds ?? []).filter((id) => id !== actor.id)];
-  serveChef(actor, poste);
+/** Un combattant REJOINT l'équipage d'une pièce (runtime « Servir cette pièce »). Pièce NON servie → il en
+ *  devient le CHEF (`crewIds[0]`), seul à TIRER : lien + arme dérivée via `serveChef`. Pièce DÉJÀ servie (chef
+ *  vivant) → il REJOINT en SUPPORT (Arme d'équipe, AA p.124) — appendu en queue de `crewIds`, occupe la pièce
+ *  (`mannedPoste` posé, compte dans l'Indice pour compenser le sous-effectif) mais NE tire PAS (aucune arme).
+ *  KIND-AGNOSTIQUE. Mute en place. */
+export function serveAtPoste(actor: Combatant, poste: ShipPoste, combatants: Combatant[]): void {
+  if (isPosteManned(poste, combatants)) {
+    poste.crewIds = [...(poste.crewIds ?? []).filter((id) => id !== actor.id), actor.id];
+    actor.mannedPoste = poste;
+  } else {
+    poste.crewIds = [actor.id, ...(poste.crewIds ?? []).filter((id) => id !== actor.id)];
+    serveChef(actor, poste);
+  }
 }
 
 /** Un poste est-il ACTUELLEMENT servi ? = sa tête d'équipage (`crewIds[0]`) est un combattant encore en action
@@ -142,17 +193,28 @@ export function isPosteManned(poste: ShipPoste, combatants: Combatant[]): boolea
   return !!chef && !isOutOfAction(chef) && chef.mannedPoste?.item.uid === poste.item.uid;
 }
 
-/** Postes NON servis qu'un `actor` peut SERVIR maintenant : ceux d'un emplacement/coque ADJACENT (empreinte,
- *  ≤ 1 case) dont aucune tête d'équipage en état ne sert. KIND-AGNOSTIQUE (héros/PNJ/ennemi) — SOURCE UNIQUE
- *  de la disponibilité « Servir cette pièce », consommée par l'affordance JOUEUR ET l'énumération IA. PUR. */
+/** Postes qu'un `actor` peut REJOINDRE maintenant : ceux d'un emplacement/coque ADJACENT (empreinte, ≤ 1 case)
+ *  dont il ne fait PAS DÉJÀ partie de l'équipage. Une pièce déjà servie reste « rejoignable » en SUPPORT (Arme
+ *  d'équipe : on peut être plusieurs à servir) — `serveAtPoste` décide ensuite chef-vs-support. KIND-AGNOSTIQUE
+ *  (héros/PNJ/ennemi) — SOURCE UNIQUE de la disponibilité « Servir cette pièce », consommée par l'affordance
+ *  JOUEUR ET l'énumération IA. PUR. */
 export function servablePostes(actor: Combatant, combatants: Combatant[]): { hull: Combatant; poste: ShipPoste }[] {
   if (!actor.pos || isOutOfAction(actor)) return [];
   const out: { hull: Combatant; poste: ShipPoste }[] = [];
   for (const hull of combatants) {
     if (!hull.postes?.length || !hull.pos || combatDistance(actor, hull) > 1) continue;
-    for (const poste of hull.postes) if (!isPosteManned(poste, combatants)) out.push({ hull, poste });
+    for (const poste of hull.postes) if (!(poste.crewIds ?? []).includes(actor.id)) out.push({ hull, poste });
   }
   return out;
+}
+
+/** La pièce ADJACENTE qu'`actor` peut REJOINDRE sur la coque/emplacement `hull` (survol/clic du token) : le
+ *  1er poste servable de `hull` pour `actor`. `undefined` si `actor` sert déjà une pièce (parité hotbar
+ *  `!mannedPoste`) ou si `hull` n'offre aucun poste servable. SOURCE UNIQUE consommée par l'affordance de
+ *  survol, le commit de clic et le tooltip d'équipe. PUR. */
+export function serveTargetPoste(actor: Combatant, hull: Combatant, combatants: Combatant[]): ShipPoste | undefined {
+  if (actor.mannedPoste) return undefined;
+  return servablePostes(actor, combatants).find((sp) => sp.hull.id === hull.id)?.poste;
 }
 
 /**

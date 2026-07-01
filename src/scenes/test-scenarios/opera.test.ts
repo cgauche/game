@@ -24,7 +24,7 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
   });
 
   it('est bien multi-niveaux : parterre (z0) + galerie de loges (z1)', () => {
-    expect(scene.levels.map((l) => l.z).sort()).toEqual([0, 1]);
+    expect(scene.layers.map((l) => l.z).sort()).toEqual([0, 1]);
     // la loge royale (galerie, z1) est marchable
     expect(isWalkable(scene, 10, 13, 1)).toBe(true);
     // le parterre est marchable au sol
@@ -41,7 +41,7 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
     expect(comtesse.z).toBe(1);
     expect(comtesse.kind).toBe('personnage');
     // tout prop/PNJ d'étage référence un niveau existant
-    const zs = new Set(scene.levels.map((l) => l.z));
+    const zs = new Set(scene.layers.map((l) => l.z));
     for (const e of scene.entities) expect(zs.has(e.z ?? 0)).toBe(true);
   });
 

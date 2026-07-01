@@ -56,7 +56,7 @@ describe('ZdE ennemie — télégraphe visuel actorAoe (pose pendant le télégr
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     } as never;
     const scene = {
-      id: 's', dimensions: { w: 20, h: 20 }, levels: [{ z: 0, tiles: [] }],
+      id: 's', dimensions: { w: 20, h: 20 }, layers: [{ z: 0, tiles: [] }],
       entities: [], dialogues: [], triggers: [], encounters: [],
     } as never;
     useGame.setState({ battle, scene, party: [], partyPos: { x: 0, y: 0 }, actorAoe: null });

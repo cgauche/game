@@ -8,6 +8,67 @@
  * (`src/state/encounterAuthoring.ts`) — l'expansion enemies→entités+members n'est PAS dupliquée ici.
  */
 import { buildEncounter } from '../../src/state/encounterAuthoring.ts';
+import { findCreature, findCreatureById, findSkill, findSkillById, findSpellById, spells as SPELL_CATALOG } from '../../src/data/index.ts';
+import { parseTraitInstance } from '../../src/engine/traits/dispatch.ts';
+
+// ── Normalisation LIBELLÉ → id STABLE, à l'AUTHORING ────────────────────────────────────────
+// L'auteur écrit des LIBELLÉS lisibles (« Snotling », « Taille (Petite) », « Résistance ») ; le JSON
+// canonique, lui, ne porte QUE des ids stables (`snotling`, `{id:'taille',arg:'Petite'}`, `resistance`)
+// — un libellé qui se faufile fait un mannequin de repli / un trait mort / une compétence introuvable
+// au runtime. Chaque résolveur est IDEMPOTENT (un id déjà résolu passe tel quel) et FAIL-FAST (libellé
+// inconnu → throw, jamais un id deviné). Cf. [[game-ids-internes-libelles-display-multilangue]].
+
+/** Apostrophe typographique (U+2019/U+2018/U+02BC) → droite, pour matcher un libellé de catalogue. */
+const APOS = (s) => s.normalize('NFC').replace(/[‘’ʼ]/g, "'");
+
+/** `ref` créature : id stable (idempotent). Libellé de bestiaire → son id ; inconnu → throw. */
+function creatureId(ref) {
+  if (findCreatureById(ref)) return ref;
+  const c = findCreature(ref);
+  if (!c) throw new Error(`arène : créature introuvable « ${ref} » (ni id ni libellé de bestiaire)`);
+  return c.id;
+}
+/** Compétence : skillId stable (idempotent). Libellé → son id ; inconnu → throw. */
+function skillId(label) {
+  if (findSkillById(label)) return label;
+  const s = findSkill(label);
+  if (!s) throw new Error(`arène : compétence introuvable « ${label} »`);
+  return s.id;
+}
+/** Sort : id stable (idempotent). Libellé (apostrophe tolérante) → son id ; inconnu → throw. */
+function spellId(label) {
+  if (findSpellById(label)) return label;
+  const key = APOS(label);
+  const sp = SPELL_CATALOG.find((s) => APOS(s.label) === key);
+  if (!sp) throw new Error(`arène : sort introuvable « ${label} »`);
+  return sp.id;
+}
+/** Chaîne de statbloc/optionnel (« Souffle +15 (Ténèbres) ») → `TraitInstance` structuré ; objet déjà
+ *  structuré → inchangé. `parseTraitInstance` est le SEUL parseur libellé→trait (registre `traits.json`). */
+const traitInstance = (t) => (typeof t === 'string' ? parseTraitInstance(t) : t);
+
+/** Un ennemi authored terse : `ref`/`optionals`/`spells`/`statblock.traits` par libellé → ids stables.
+ *  PUR (renvoie une copie ; ne mute pas les statblocs-constantes partagés). */
+function normalizeEnemy(e) {
+  const out = { ...e };
+  if (out.ref) out.ref = creatureId(out.ref);
+  if (out.optionals) out.optionals = out.optionals.map(traitInstance);
+  if (out.spells) out.spells = out.spells.map(spellId);
+  if (out.statblock?.traits) out.statblock = { ...out.statblock, traits: out.statblock.traits.map(traitInstance) };
+  return out;
+}
+
+/** Normalise EN PLACE les réfs par libellé nichées dans les flows d'une scène : `FlowTest.skill`
+ *  (et l'`attackerSkill` d'un test opposé), `corruptionExposure.skill`, `learnSpell.spell`. Ne touche
+ *  QUE les valeurs STRING (un `medicalAid.skill: 55` numérique reste intact). Balayage récursif unique. */
+function normalizeFlowRefs(node) {
+  if (Array.isArray(node)) { node.forEach(normalizeFlowRefs); return; }
+  if (!node || typeof node !== 'object') return;
+  if (typeof node.skill === 'string') node.skill = skillId(node.skill);
+  if (typeof node.attackerSkill === 'string') node.attackerSkill = skillId(node.attackerSkill);
+  if (node.type === 'learnSpell' && typeof node.spell === 'string') node.spell = spellId(node.spell);
+  for (const v of Object.values(node)) normalizeFlowRefs(v);
+}
 
 /** Légende ASCII commune (complétée/surchargée par scène via `legend`). `.` = sol de base. */
 const BASE_LEGEND = {
@@ -42,7 +103,9 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
   const allEntities = [...entities];
   const outEncounters = encounters.map((enc) => {
     if (!enc.enemies) return enc; // déjà en members (ou rencontre vide)
-    const { entities: spawned, encounter } = buildEncounter(enc);
+    // Les ennemis authorés en LIBELLÉS (ref/optionals/spells/statblock.traits) sont résolus en ids
+    // AVANT l'expansion → les entités enrôlées ne portent QUE des ids stables.
+    const { entities: spawned, encounter } = buildEncounter({ ...enc, enemies: enc.enemies.map(normalizeEnemy) });
     allEntities.push(...spawned);
     return encounter;
   });
@@ -59,6 +122,7 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
   if (music) sc.music = music;
   if (startMessage) sc.startMessage = startMessage;
   if (entryPoints) sc.entryPoints = entryPoints;
+  normalizeFlowRefs(sc); // compétences/sorts des flows (tests, corruption, learnSpell) → ids stables
   return sc;
 }
 

@@ -17,13 +17,11 @@
  * Module FEUILLE : n'importe QUE `qualities/dispatch` (caps de l'arme) + `capabilities` (caps de la cible) +
  * la donnée/`items` (le BUILDER), JAMAIS `combat`/`ops` → aucun cycle (`woundsCalc` peut le greffer).
  */
-import type { Combatant, Weapon, StructureData, Characteristics } from './types';
+import type { Combatant, Weapon, StructureData } from './types';
 import { resolveQualities } from './qualities/dispatch';
 import { hasCapability } from './capabilities';
 import { findStructureById } from '../data';
-import { emptyArmour } from './items';
-
-const ZERO_CHARS: Characteristics = { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 };
+import { inanimateCombatant } from './inanimate';
 
 /** Cette cible est-elle une STRUCTURE de siège (`bodyShape:'structure'`) ? Prédicat NOMMÉ (source UNIQUE —
  *  plus de littéral `'structure'` dispersé) : une structure est inerte (Tableau de Localisation propre,
@@ -75,28 +73,39 @@ export function siegeMultiplier(weapon: Weapon | undefined, target: Combatant): 
   return isStructure(target) && weaponHasCap(weapon, 'siege') ? 2 : 1;
 }
 
-/** Construit le `Combatant` transitoire d'une structure depuis sa donnée (`structures.json`). Calqué sur
- *  `vehicleCombatant` : `kind:'npc'`, inerte (`psychImmune`, `movement:0`, pas d'arme). `E = BE × 10` (la
- *  table ADE II donne le Bonus d'Endurance ⇒ `bonus(E)` retrouve `BE`) ; `wounds = Blessures`. Les Atouts
- *  Résistant/Impénétrable sont posés en `traits` (lus par `hasCapability` dans `structureImmune`). */
+/** Les DEUX cases bordant l'arête d'une structure (ses deux FACES) — calque `parapetTilesAbove` au sol
+ *  (z de l'arête). Une arête N borde `(x,y)` (intérieur) ET `(x,y-1)` (extérieur) ; E borde `(x,y)` et
+ *  `(x+1,y)` ; une cloison diagonale n'a qu'une case. Vide si la structure ne porte pas d'arête. */
+export function structureFaceCells(c: Pick<Combatant, 'structureEdge'>): { x: number; y: number }[] {
+  const e = c.structureEdge;
+  if (!e) return [];
+  if (e.side === 'N') return [{ x: e.x, y: e.y }, { x: e.x, y: e.y - 1 }];
+  if (e.side === 'E') return [{ x: e.x, y: e.y }, { x: e.x + 1, y: e.y }];
+  return [{ x: e.x, y: e.y }];
+}
+
+/** Case de VISÉE d'une structure depuis `from` : sa FACE la plus proche de l'attaquant. C'est la seule
+ *  par laquelle la Ligne de Vue n'est PAS coupée par l'arête de la structure ELLE-MÊME (on voit/frappe la
+ *  face d'un mur depuis son côté ; on ne « voit pas à travers » jusqu'à la case derrière). Repli sur `pos`
+ *  (structure sans arête / fixture de test). Réutilisé par l'IA (cible la porte) ET la résolution (LdV de tir). */
+export function structureAimCell(from: { x: number; y: number }, target: Pick<Combatant, 'structureEdge' | 'pos'>): { x: number; y: number } {
+  const faces = structureFaceCells(target);
+  if (!faces.length) return target.pos ?? from;
+  const cheb = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - from.x), Math.abs(p.y - from.y));
+  return faces.reduce((best, f) => (cheb(f) < cheb(best) ? f : best));
+}
+
+/** Adaptateur de `inanimateCombatant` (builder UNIQUE des objets inanimés) pour une structure de siège
+ *  (`structures.json`). `E = BE × 10` (la table ADE II donne le Bonus d'Endurance ⇒ `bonus(E)` retrouve
+ *  `BE`) ; `wounds = Blessures`. Les Atouts Résistant/Impénétrable sont posés en `traits` (lus par
+ *  `hasCapability` dans `structureImmune`). */
 export function structureCombatant(struct: StructureData, id = `structure-${struct.id}`): Combatant {
-  const max = struct.char.B;
-  return {
+  return inanimateCombatant({
     id,
     name: struct.label,
-    kind: 'npc',
-    creatureId: struct.id, // clé du catalogue (porte/mur) — lue par `structureKind`
-    characteristics: { ...ZERO_CHARS, E: struct.char.BE * 10 },
-    wounds: { current: max, max, base: max },
-    advantage: 0,
-    conditions: [],
-    weapons: [],
-    armour: emptyArmour(),
-    skills: [],
-    talents: [],
-    traits: struct.traits.map((t) => (t.value != null ? { id: t.id, value: t.value } : { id: t.id })),
+    refId: struct.id, // clé du catalogue (porte/mur) — lue par `structureKind`
     bodyShape: 'structure',
-    psychImmune: true, // une structure inerte ignore la Psychologie
-    movement: 0,
-  };
+    hull: { e: struct.char.BE * 10, woundsB: struct.char.B }, // ADE II donne le Bonus d'Endurance ⇒ E = BE × 10 (verbatim)
+    traits: struct.traits.map((t) => (t.value != null ? { id: t.id, value: t.value } : { id: t.id })),
+  });
 }

@@ -48,17 +48,33 @@ function sceneLightField(s: VisionInput): { light: ReturnType<typeof computeLigh
   return { light: computeLightField(scene, ambient, sources, smoke), smoke };
 }
 
+/** Triche de recette (`__wfrp.fog`) : révèle TOUTE la carte (brouillard OFF) pour diagnostiquer le RENDU
+ *  sans la vision. Drapeau de module (hors state) basculé par le devtool, qui force un re-render. */
+let REVEAL_ALL = false;
+export const setRevealAll = (v: boolean): void => { REVEAL_ALL = v; };
+
 /** Ensemble des cases (`"x,y,z"`) actuellement visibles par le groupe : union des alliés vivants en
  *  combat, sinon depuis la position du groupe en exploration. PUR (dérivé de l'état). */
 export function computeStateVisible(s: VisionInput): Set<string> {
   const scene = s.scene;
   if (!scene) return new Set();
+  if (REVEAL_ALL) { // brouillard OFF (recette) : toutes les cases construites de tous les étages sont visibles
+    const all = new Set<string>();
+    const { w, h } = scene.dimensions;
+    for (const lvl of scene.layers) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) all.add(`${x},${y},${lvl.z}`);
+    return all;
+  }
   const baseR = baseSightTiles(scene, s.gameTime);
   const { light, smoke } = sceneLightField(s);
   const viewers = [];
   if (s.battle) {
     for (const c of s.battle.combatants) {
-      if (c.kind !== 'hero' || isOutOfAction(c) || !c.pos) continue;
+      // Brouillard PARTY-ONLY : seuls les héros du GROUPE (manuels, ou héros coop d'autres joueurs)
+      // révèlent la carte. Un PNJ allié piloté par l'IA (`aiControlled` : défenseur de siège, équipage
+      // d'une pièce) ne contribue PAS à la vue du groupe — sinon il dévoilerait tout le champ adverse.
+      // Une pièce INERTE (affût de baliste/canon, côté allié `kind:'hero'` mais SANS IA) n'a pas d'yeux :
+      // postée sur le rempart (z=1), elle dévoilerait sinon tout le champ d'en contrebas par-dessus le parapet.
+      if (c.kind !== 'hero' || c.aiControlled || c.inert || isOutOfAction(c) || !c.pos) continue;
       // `z` du viewer = ÉTAGE du combattant (vision cross-niveau : un défenseur sur le rempart z=1
       // voit en contrebas z=0). Sans ce z, il serait calculé au sol — aveugle depuis la muraille.
       viewers.push({ pos: c.pos, z: c.pos.z, radiusTiles: baseR, darkTiles: darkSightTiles(c) });

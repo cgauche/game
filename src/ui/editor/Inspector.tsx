@@ -6,21 +6,18 @@
  * Composant de PRÉSENTATION : la scène et la sélection vivent dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import { Scene, SceneEntity, BuildingFeature, Trigger, SceneEffectZone, WallSeg } from '../../state/scene';
+import { Scene, SceneEntity, Roof, RoofParams, Trigger, SceneEffectZone, WallSeg } from '../../state/scene';
 import type { Settlement } from '../../engine/disponibilite';
 import { DEFS } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { pickBackend } from '../../gameIso/pickBackend';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
-import { BUILDINGS, BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
-import { perimeterTiles, defaultDoor } from '../../state/buildings';
 import { MERCHANTS } from '../../state/merchants/index';
 import { allMusicDefs } from '../../audio/music';
 import { findCreatureById, creatureLabel } from '../../data';
 import { MonsterPartsFields } from './MonsterPartsFields';
-import { ParamFields } from './ParamFields';
 import { effectCtxOf } from './EffectList';
 import { GameOpEditor } from './GameOpEditor';
 import { FlowEditor } from './FlowEditor';
@@ -28,7 +25,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall } from './editorState';
+import { KIND_LABEL, Sel, ROOF_STYLES, ROOF_MATERIALS, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall } from './editorState';
 import type { FireArc } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
 import { RefField } from '../compendium/RefField';
@@ -97,7 +94,7 @@ export function Inspector({
   resizeScene: (w: number, h: number) => void;
 }) {
   const ent = sel?.type === 'entity' ? scene.entities.find((e) => e.id === sel.id) ?? null : null;
-  const selB = sel?.type === 'building' ? (scene.buildings ?? []).find((b) => b.id === sel.id) ?? null : null;
+  const selR = sel?.type === 'roof' ? (scene.roofs ?? []).find((r) => r.id === sel.id) ?? null : null;
   const selT = sel?.type === 'trigger' ? scene.triggers.find((t) => t.id === sel.id) ?? null : null;
   const zone = sel?.type === 'restZone' ? scene.restZones?.[sel.idx] ?? null : null;
   const efz = sel?.type === 'effectZone' ? scene.effectZones?.[sel.idx] ?? null : null;
@@ -114,8 +111,8 @@ export function Inspector({
 
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (ent && e.id === ent.id ? { ...e, ...patch } : e)) });
-  const updateSelB = (patch: Partial<BuildingFeature>) =>
-    setScene({ ...scene, buildings: (scene.buildings ?? []).map((b) => (selB && b.id === selB.id ? { ...b, ...patch } : b)) });
+  const updateSelR = (patch: Partial<Roof>) =>
+    setScene({ ...scene, roofs: (scene.roofs ?? []).map((r) => (selR && r.id === selR.id ? { ...r, ...patch } : r)) });
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (selT && t.id === selT.id ? { ...t, ...patch } : t)) });
   const updateZone = (patch: Partial<NonNullable<Scene['restZones']>[number]>) => {
@@ -129,8 +126,8 @@ export function Inspector({
 
   const title = ent
     ? `${entIcon(ent)} ${ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}`
-    : selB
-      ? `🏠 ${selB.label ?? BUILDINGS_META[selB.type]?.label ?? selB.type}`
+    : selR
+      ? `🏠 ${selR.label ?? selR.style}`
       : selT
         ? `🟦 ${selT.id}`
         : zone
@@ -233,97 +230,56 @@ export function Inspector({
 
           {ent && !!ent.postes?.length && <EmplacementFold ent={ent} scene={scene} setScene={setScene} />}
 
-          {selB && (
+          {selR && (
             <>
-              <Fold title="Identité & porte" open>
+              <Fold title="Toit (bâtiment composé)" open>
+                <p className="hint">Couverture d'un bâtiment composé. Ses MURS se tracent à l'outil 🧱 (cloison/porte/structure) : « bâtiment détruit » = ses murs abattus. L'intérieur est tout-en-scène (le toit se lève quand un allié entre dans l'empreinte).</p>
                 <label className="ed-field">
                   Libellé
-                  <input value={selB.label ?? ''} onChange={(e) => updateSelB({ label: e.target.value })} />
+                  <input value={selR.label ?? ''} onChange={(e) => updateSelR({ label: e.target.value || undefined })} />
                 </label>
                 <p className="hint">
-                  @ ({selB.foot.x}, {selB.foot.y}) · {selB.foot.w}×{selB.foot.h} — glisser sur la carte pour déplacer.
+                  @ ({selR.foot.x}, {selR.foot.y}) · {selR.foot.w}×{selR.foot.h} — glisser sur la carte pour déplacer, poignée SE pour redimensionner.
                 </p>
                 <label className="ed-field">
-                  Orientation (place la porte)
-                  <select
-                    value={selB.facing ?? 'S'}
-                    onChange={(e) => {
-                      const f = e.target.value as BuildingFeature['facing'];
-                      updateSelB({ facing: f, door: defaultDoor(selB.foot, f) });
-                    }}
-                  >
-                    <option value="N">Nord</option>
-                    <option value="E">Est</option>
-                    <option value="S">Sud</option>
-                    <option value="O">Ouest</option>
-                  </select>
-                </label>
-                <label className="ed-field">
-                  Tuile-porte
-                  <select
-                    value={selB.door ? `${selB.door.x},${selB.door.y}` : ''}
-                    onChange={(e) => {
-                      const [x, y] = e.target.value.split(',').map(Number);
-                      updateSelB({ door: { x, y } });
-                    }}
-                  >
-                    {perimeterTiles(selB).map((t) => (
-                      <option key={`${t.x},${t.y}`} value={`${t.x},${t.y}`}>
-                        ({t.x}, {t.y})
-                      </option>
+                  Style
+                  <select value={selR.style} onChange={(e) => updateSelR({ style: e.target.value })}>
+                    {ROOF_STYLES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 </label>
               </Fold>
-              <Fold title="Révélation & intérieur" open>
+              <Fold title="Matériau & couleurs" open>
                 <label className="ed-field">
-                  Révélation
-                  <select value={selB.reveal} onChange={(e) => updateSelB({ reveal: e.target.value as BuildingFeature['reveal'] })}>
-                    <option value="cutaway">Toit qui se lève (intérieur in-scene)</option>
-                    <option value="door">Façade pleine + porte → intérieur</option>
+                  Couverture
+                  <select
+                    value={selR.params?.roofMaterial ?? 'tuile'}
+                    onChange={(e) => updateSelR({ params: { ...selR.params, roofMaterial: e.target.value as RoofParams['roofMaterial'] } })}
+                  >
+                    {ROOF_MATERIALS.map((m) => (
+                      <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
                   </select>
                 </label>
-                {selB.reveal === 'door' && (
-                  <>
-                    <label className="ed-field">
-                      Scène d'intérieur
-                      <select value={selB.interiorScene ?? ''} onChange={(e) => updateSelB({ interiorScene: e.target.value || undefined })}>
-                        <option value="">— aucune —</option>
-                        {[scene, ...otherScenes].map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.nom || s.id} ({s.id})
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="ed-field">
-                      Point d'arrivée (entry de la scène d'intérieur)
-                      <select value={selB.entry ?? ''} onChange={(e) => updateSelB({ entry: e.target.value || undefined })}>
-                        <option value="">— départ par défaut —</option>
-                        {Object.keys([scene, ...otherScenes].find((s) => s.id === selB.interiorScene)?.entryPoints ?? {}).map((en) => (
-                          <option key={en} value={en}>
-                            {en}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </>
-                )}
-              </Fold>
-              {(BUILDINGS[selB.type]?.paramsSchema ?? []).length > 0 && (
-                <Fold title="Paramètres">
-                  <ParamFields
-                    schema={BUILDINGS[selB.type]?.paramsSchema ?? []}
-                    values={(selB.params ?? {}) as Record<string, unknown>}
-                    onChange={(key, value) =>
-                      setScene({
-                        ...scene,
-                        buildings: (scene.buildings ?? []).map((b) => (b.id === selB.id ? { ...b, params: { ...b.params, [key]: value } } : b)),
-                      })
-                    }
+                <label className="ed-field">
+                  Étages (hauteur du bâtiment)
+                  <input
+                    type="number"
+                    min={1}
+                    value={selR.params?.floors ?? 1}
+                    onChange={(e) => updateSelR({ params: { ...selR.params, floors: Math.max(1, Number(e.target.value) || 1) } })}
                   />
-                </Fold>
-              )}
+                </label>
+                <label className="ed-field">
+                  Couleur des murs
+                  <input type="color" value={selR.params?.wallColor ?? '#c8b89a'} onChange={(e) => updateSelR({ params: { ...selR.params, wallColor: e.target.value } })} />
+                </label>
+                <label className="ed-field">
+                  Couleur des colombages
+                  <input type="color" value={selR.params?.timberColor ?? '#5a4632'} onChange={(e) => updateSelR({ params: { ...selR.params, timberColor: e.target.value } })} />
+                </label>
+              </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>
                   Supprimer
@@ -493,19 +449,7 @@ export function Inspector({
                   onChange={(v) => patchSelW({ structure: (v as string | null) || undefined })}
                   nullable
                 />
-                <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure.</p>
-                {selW.structure && (
-                  <label className="ed-field">
-                    Hauteur de la fortification
-                    <select value={selW.height ?? ''} onChange={(e) => patchSelW({ height: e.target.value ? Number(e.target.value) : undefined })}>
-                      <option value="">— basse (défaut) —</option>
-                      <option value="1">1 étage — monte au chemin de ronde (z=1)</option>
-                      <option value="2">2 étages — tour / bastion</option>
-                      <option value="3">3 étages — donjon</option>
-                    </select>
-                  </label>
-                )}
-                {selW.structure && <p className="hint">Hauteur en ÉTAGES : un rempart « 1 étage » monte pile au chemin de ronde z=1 (créneaux au sommet) ; « 2 » = une tour qui domine la courtine. « basse » = hauteur d'un mur ordinaire.</p>}
+                <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure. La HAUTEUR d'un rempart se peint désormais à l'outil ⛰ (hauteur des cases qu'il borde), plus de réglage par segment.</p>
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>
@@ -632,12 +576,12 @@ function EntityPanel({
             <option value="NO">Nord-Ouest</option>
           </select>
         </label>
-        {scene.levels.length > 1 && (
+        {scene.layers.length > 1 && (
           <label className="ed-field">
-            Étage
+            Couche
             <select value={ent.z ?? 0} onChange={(e) => { const v = Number(e.target.value); updateSel({ z: v || undefined }); }}>
-              {[...scene.levels].sort((a, b) => a.z - b.z).map((l) => (
-                <option key={l.z} value={l.z}>{l.z === 0 ? 'Sol (0)' : `Étage ${l.z}`}</option>
+              {[...scene.layers].sort((a, b) => a.z - b.z).map((l) => (
+                <option key={l.z} value={l.z}>{l.z === 0 ? 'Base (0)' : `Couche ${l.z}`}</option>
               ))}
             </select>
           </label>
@@ -951,7 +895,7 @@ function SceneProps({
   const [filter, setFilter] = useState('');
   const f = filter.toLowerCase();
   const ents = scene.entities.filter((e) => `${e.label ?? ''} ${e.ref ?? ''} ${e.id}`.toLowerCase().includes(f));
-  const builds = (scene.buildings ?? []).filter((b) => `${b.label ?? ''} ${b.type} ${b.id}`.toLowerCase().includes(f));
+  const roofs = (scene.roofs ?? []).filter((r) => `${r.label ?? ''} ${r.style} ${r.id}`.toLowerCase().includes(f));
   const entries = Object.entries(scene.entryPoints ?? {}).filter(([name]) => name.toLowerCase().includes(f));
   return (
     <>
@@ -1066,14 +1010,14 @@ function SceneProps({
           ))}
         </div>
       </Fold>
-      <Fold title={`Contenu (${scene.entities.length + (scene.buildings ?? []).length})`}>
+      <Fold title={`Contenu (${scene.entities.length + (scene.roofs ?? []).length})`}>
         <input className="pal-search" placeholder="🔎 filtrer…" value={filter} onChange={(e) => setFilter(e.target.value)} />
         <div className="stack insp-content">
-          {builds.map((b) => (
-            <button key={b.id} className="listrow insp-row" onClick={() => setSel({ type: 'building', id: b.id })}>
-              <span className="lr-name">🏠 {b.label ?? BUILDINGS_META[b.type]?.label ?? b.type}</span>
+          {roofs.map((r) => (
+            <button key={r.id} className="listrow insp-row" onClick={() => setSel({ type: 'roof', id: r.id })}>
+              <span className="lr-name">🏠 {r.label ?? r.style}</span>
               <span className="chip">
-                ({b.foot.x},{b.foot.y})
+                ({r.foot.x},{r.foot.y})
               </span>
             </button>
           ))}

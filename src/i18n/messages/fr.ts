@@ -403,6 +403,7 @@ export const fr = {
   'cs.shameBlocked': '{name} ne peut se résoudre à frapper {foe} (Bénédiction de Protection) — il doit choisir une autre cible ou une autre Action.',
   'cs.standUp': '{name} se relève.',
   'cs.manPoste': '{name} prend en main {weapon}.',
+  'cs.joinPoste': '{name} rejoint l’équipe de {weapon}.',
   'cs.leavePoste': '{name} quitte {weapon}.',
   'cs.actFirst': "{name} choisit d'agir en premier ({reason}).",
   'cs.reasonFast': 'arme Rapide',

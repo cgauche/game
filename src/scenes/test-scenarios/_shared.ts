@@ -63,7 +63,7 @@ export function arena(opts: {
     description: 'Arène de test.',
     dimensions: { w, h },
     ambiance: 'exterieur',
-    levels: [{ z: 0, tiles: new Array(w * h).fill(opts.terrain ?? 'herbe') as Terrain[] }],
+    layers: [{ z: 0, tiles: new Array(w * h).fill(opts.terrain ?? 'herbe') as Terrain[] }],
     entities: [{ id: 'start', kind: 'heroStart', pos: opts.heroStart ?? { x: 2, y: Math.floor(h / 2) } }],
     dialogues: [],
     triggers: [],

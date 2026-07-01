@@ -1,28 +1,37 @@
 /**
- * Canvas SVG iso de l'éditeur v2 : rendu WYSIWYG (sol, bâtiments, entités, spawns) + calques
+ * Canvas SVG iso de l'éditeur v2 : rendu WYSIWYG (sol, toits, entités, spawns) + calques
  * d'auteur (triggers, zones de repos, points d'entrée) + interactions pointeur — peindre, poser,
  * drag-rectangle, sélection/déplacement et REDIMENSIONNEMENT par poignée (coin SE des zones).
  * Les overlays sont en `pointer-events: none` : tout le picking passe par `hitAt` (les calques
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
 import { useRef, useState } from 'react';
-import { Scene, tileAt } from '../../state/scene';
-import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
+import { Scene, tileAt, Roof } from '../../state/scene';
+import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, footprintDepth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { groundTile } from '../../gameIso/ground';
 import { wallSegs } from '../../gameIso/walls';
-import { buildingObj } from '../../gameIso/BuildingSprite';
-import { perimeterTiles } from '../../state/buildings';
 import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
-  Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, addStair, eraseAt, sameSel,
-  toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge, canonEdge, pickWallEdge,
+  Tool, Layers, Sel, Rect, Pt, Edge4, ROOF_MATERIALS, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
+  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addRoof, addEnemyMember, eraseAt, sameSel,
+  toggleEdgeWall, toggleDiagonalWall, paintHeight, nearestEdge, canonEdge, pickWallEdge,
 } from './editorState';
+
+/** Teinte d'aperçu d'un toit selon son matériau de couverture (défaut tuile). Source = `ROOF_MATERIALS`. */
+const roofFill = (params: Roof['params']): string =>
+  ROOF_MATERIALS.find((m) => m.id === params?.roofMaterial)?.swatch ?? ROOF_MATERIALS[0].swatch;
+
+/** Cases de l'empreinte d'un toit (footprint plat) — base du rendu et du surlignage de sélection. */
+const footCells = (foot: Roof['foot']): Pt[] => {
+  const out: Pt[] = [];
+  for (let y = foot.y; y < foot.y + foot.h; y++) for (let x = foot.x; x < foot.x + foot.w; x++) out.push({ x, y });
+  return out;
+};
 
 export function EditorCanvas({
   scene,
@@ -40,7 +49,7 @@ export function EditorCanvas({
   sel,
   onSelect,
   onHover,
-  currentLevel,
+  currentLayer,
 }: {
   scene: Scene;
   view: ReturnType<typeof useEditorView>;
@@ -58,8 +67,8 @@ export function EditorCanvas({
   sel: Sel;
   onSelect: (s: Sel) => void;
   onHover: (p: Pt) => void;
-  /** Étage en cours d'édition (z) : les outils de terrain peignent CE niveau, et le picking le vise. */
-  currentLevel: number;
+  /** Couche en cours d'édition (z) : les outils de terrain peignent CETTE couche, et le picking la vise. */
+  currentLayer: number;
 }) {
   const { rot, setRot, viewMode, setViewMode, view: vb, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = view;
   const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
@@ -86,13 +95,13 @@ export function EditorCanvas({
   /** Point écran → tuile (projection iso, comme le jeu). */
   function isoTile(ev: React.PointerEvent): Pt {
     const { x, y } = localXY(ev);
-    return screenToTileAtZ(x, y, dims, currentLevel); // picking vers l'étage en cours d'édition
+    return screenToTileAtZ(x, y, dims, currentLayer); // picking vers la couche en cours d'édition
   }
 
   /** Point écran → case + ARÊTE la plus proche (outil murs) : offset fractionnaire au centre → nearestEdge. */
   function wallHit(ev: React.PointerEvent): { p: Pt; side: Edge4 } {
     const { x, y } = localXY(ev);
-    const f = screenToTileF(x, y, dims, currentLevel);
+    const f = screenToTileF(x, y, dims, currentLayer);
     const px = Math.round(f.x), py = Math.round(f.y);
     return { p: { x: px, y: py }, side: nearestEdge(f.x - px, f.y - py) };
   }
@@ -112,9 +121,9 @@ export function EditorCanvas({
       case 'select': {
         // Une arête-mur proche du curseur prime sur la tuile (sélection de cloison/porte → fold structure).
         const { x: lx, y: ly } = localXY(e);
-        const f = screenToTileF(lx, ly, dims, currentLevel);
-        const we = pickWallEdge(scene, f.x, f.y, currentLevel);
-        if (we) { onSelect({ type: 'wall', x: we.x, y: we.y, side: we.side, z: currentLevel }); return; }
+        const f = screenToTileF(lx, ly, dims, currentLayer);
+        const we = pickWallEdge(scene, f.x, f.y, currentLayer);
+        if (we) { onSelect({ type: 'wall', x: we.x, y: we.y, side: we.side, z: currentLayer }); return; }
         const hit = hitAt(scene, p, layers);
         onSelect(hit);
         if (hit) moveRef.current = { from: p, moved: false };
@@ -127,18 +136,18 @@ export function EditorCanvas({
         } else {
           pushSnapshot(); // 1 cran d'undo pour tout le trait
           setPainting(true);
-          setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLevel));
+          setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLayer));
         }
         return;
       case 'entity': {
-        const existing = scene.entities.find((en) => en.pos.x === p.x && en.pos.y === p.y && (en.z ?? 0) === currentLevel);
+        const existing = scene.entities.find((en) => en.pos.x === p.x && en.pos.y === p.y && (en.z ?? 0) === currentLayer);
         if (existing) return onSelect({ type: 'entity', id: existing.id });
-        const out = placeEntity(scene, tool.kind, tool.ref, p, currentLevel);
+        const out = placeEntity(scene, tool.kind, tool.ref, p, currentLayer);
         setScene(out.scene);
         onSelect({ type: 'entity', id: out.id });
         return;
       }
-      case 'building':
+      case 'roof':
       case 'zone':
         dragStartRef.current = p;
         setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
@@ -150,9 +159,9 @@ export function EditorCanvas({
         return;
       }
       case 'emplacement': {
-        const existing = scene.entities.find((en) => en.pos.x === p.x && en.pos.y === p.y && (en.z ?? 0) === currentLevel);
+        const existing = scene.entities.find((en) => en.pos.x === p.x && en.pos.y === p.y && (en.z ?? 0) === currentLayer);
         if (existing) return onSelect({ type: 'entity', id: existing.id });
-        const out = placeEmplacement(scene, tool.trappingId, p, currentLevel);
+        const out = placeEmplacement(scene, tool.trappingId, p, currentLayer);
         if (out) {
           setScene(out.scene);
           onSelect({ type: 'entity', id: out.id }); // édition immédiate (engin / arc / équipage) dans l'inspecteur
@@ -166,21 +175,18 @@ export function EditorCanvas({
         onSelect({ type: 'entity', id: out.entityId }); // sélectionne l'ennemi posé (édition immédiate)
         return;
       }
-      case 'stair':
-        setScene(addStair(scene, p, currentLevel)); // relie cette case à la même case de l'étage au-dessus
-        return;
       case 'wall': {
         const wh = wallHit(e);
         if (wh.p.x < 0 || wh.p.y < 0 || wh.p.x >= w || wh.p.y >= h) return;
-        if (tool.paint === 'diagBack') setScene(toggleDiagonalWall(scene, wh.p.x, wh.p.y, '\\', currentLevel));
-        else if (tool.paint === 'diagFwd') setScene(toggleDiagonalWall(scene, wh.p.x, wh.p.y, '/', currentLevel));
-        else setScene(toggleEdgeWall(scene, wh.p.x, wh.p.y, wh.side, currentLevel, tool.paint === 'door' ? 'door' : 'wall'));
+        if (tool.paint === 'diagBack') setScene(toggleDiagonalWall(scene, wh.p.x, wh.p.y, '\\', currentLayer));
+        else if (tool.paint === 'diagFwd') setScene(toggleDiagonalWall(scene, wh.p.x, wh.p.y, '/', currentLayer));
+        else setScene(toggleEdgeWall(scene, wh.p.x, wh.p.y, wh.side, currentLayer, tool.paint === 'door' ? 'door' : 'wall'));
         return;
       }
-      case 'elev':
+      case 'height':
         pushSnapshot(); // 1 cran d'undo pour tout le trait
         setPainting(true);
-        setSceneNoHistory(paintElev(scene, p, tool.value, brush, currentLevel));
+        setSceneNoHistory(paintHeight(scene, p, tool.metres, brush, currentLayer));
         return;
       case 'erase':
         setPainting(true);
@@ -224,10 +230,10 @@ export function EditorCanvas({
       setSceneNoHistory(moveSel(scene, sel, p));
       return;
     }
-    if ((tool.mode === 'building' || tool.mode === 'zone' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
+    if ((tool.mode === 'roof' || tool.mode === 'zone' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
       setDragRect(rectFrom(dragStartRef.current, p));
-    else if (painting && tool.mode === 'tile') setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLevel));
-    else if (painting && tool.mode === 'elev') setSceneNoHistory(paintElev(scene, p, tool.value, brush, currentLevel));
+    else if (painting && tool.mode === 'tile') setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLayer));
+    else if (painting && tool.mode === 'height') setSceneNoHistory(paintHeight(scene, p, tool.metres, brush, currentLayer));
     else if (painting && tool.mode === 'erase') setScene(eraseAt(scene, p));
   }
 
@@ -250,14 +256,12 @@ export function EditorCanvas({
         const out = addEffectZone(scene, rect);
         setScene(out.scene);
         onSelect({ type: 'effectZone', idx: out.idx });
-      } else if (tool.mode === 'building') {
-        const out = addBuilding(scene, tool.type, rect);
-        if (out) {
-          setScene(out.scene);
-          onSelect({ type: 'building', id: out.id });
-        }
+      } else if (tool.mode === 'roof') {
+        const out = addRoof(scene, tool.style, rect);
+        setScene(out.scene);
+        onSelect({ type: 'roof', id: out.id });
       } else if (tool.mode === 'tile' && terrainRect) {
-        setScene(fillTerrainRect(scene, rect, tool.terrain, currentLevel));
+        setScene(fillTerrainRect(scene, rect, tool.terrain, currentLayer));
       }
     }
     dragStartRef.current = null;
@@ -267,12 +271,12 @@ export function EditorCanvas({
     resizeRef.current = null;
   }
 
-  // Surlignage de la sélection : empreinte (entité), périmètre (bâtiment), rect (zones).
+  // Surlignage de la sélection : empreinte (entité), empreinte du toit, rect (zones).
   const selEnt = sel?.type === 'entity' ? scene.entities.find((en) => en.id === sel.id) ?? null : null;
-  const selBuilding = sel?.type === 'building' ? (scene.buildings ?? []).find((b) => b.id === sel.id) ?? null : null;
+  const selRoof = sel?.type === 'roof' ? (scene.roofs ?? []).find((r) => r.id === sel.id) ?? null : null;
   const zoneRect = sel?.type === 'trigger' || sel?.type === 'restZone' || sel?.type === 'effectZone' ? selRect(scene, sel) : null;
-  // Arête-mur sélectionnée (N/E uniquement) sur l'étage courant → segment doré (même tracé que hoverEdge).
-  const selWall = sel?.type === 'wall' && sel.z === currentLevel && (sel.side === 'N' || sel.side === 'E') ? sel : null;
+  // Arête-mur sélectionnée (N/E uniquement) sur la couche courante → segment doré (même tracé que hoverEdge).
+  const selWall = sel?.type === 'wall' && sel.z === currentLayer && (sel.side === 'N' || sel.side === 'E') ? sel : null;
 
   return (
     <main className="editor-canvas-wrap">
@@ -314,7 +318,26 @@ export function EditorCanvas({
                   const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
                   if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
                 }
-              if (layers.buildings) for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, false)); // aperçu de jour ; le jour/nuit est runtime via l'horloge
+              // Toits des bâtiments COMPOSÉS : couverture semi-transparente (teintée par le matériau) +
+              // libellé, posée dans le tri global. Les MURS sont rendus par `wallSegs` (arêtes) ci-dessous —
+              // un toit n'est que la couverture, on voit/édite les murs au travers.
+              if (layers.roofs)
+                for (const rf of scene.roofs ?? []) {
+                  const { cx, cy } = tileCenter(rf.foot.x + (rf.foot.w - 1) / 2, rf.foot.y + (rf.foot.h - 1) / 2, dims);
+                  objs.push({
+                    d: footprintDepth(rf.foot.x, rf.foot.y, rf.foot.w, rf.foot.h, dims),
+                    el: (
+                      <g key={`roof-${rf.id}`} pointerEvents="none">
+                        {footCells(rf.foot).map((t) => (
+                          <path key={`${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill={roofFill(rf.params)} opacity={0.7} stroke="#241a12" strokeWidth={0.5} />
+                        ))}
+                        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="bold" fill="#f2e6cc" stroke="#241a12" strokeWidth={0.5}>
+                          {rf.label ?? rf.style}
+                        </text>
+                      </g>
+                    ),
+                  });
+                }
               // Entités de COMBAT : celles enrôlées dans une rencontre (teinte rouge + empreinte).
               const memberIds = new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
               for (const en of scene.entities) {
@@ -368,12 +391,12 @@ export function EditorCanvas({
           </g>
           {hoverEdge && (() => {
             // Arête candidate sous le curseur (outil murs) : segment doré entre les deux coins de grille.
-            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLevel);
+            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLayer);
             const [a, b] = hoverEdge.side === 'N' ? [gc(hoverEdge.x, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y)] : [gc(hoverEdge.x + 1, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y + 1)];
             return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke="#ffe066" strokeWidth={4} strokeLinecap="round" opacity={0.9} pointerEvents="none" />;
           })()}
           {selWall && (() => {
-            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLevel);
+            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLayer);
             const [a, b] = selWall.side === 'N' ? [gc(selWall.x, selWall.y), gc(selWall.x + 1, selWall.y)] : [gc(selWall.x + 1, selWall.y), gc(selWall.x + 1, selWall.y + 1)];
             return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke="#ffe066" strokeWidth={5} strokeLinecap="round" pointerEvents="none" />;
           })()}
@@ -485,10 +508,10 @@ export function EditorCanvas({
             footprintTiles(selEnt.pos, sizeFootprint(entitySize(selEnt))).map((t) => (
               <path key={`fp-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} pointerEvents="none" />
             ))}
-          {selBuilding && (
+          {selRoof && (
             <g pointerEvents="none">
-              {perimeterTiles(selBuilding).map((t) => (
-                <path key={`selb-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={2} opacity={0.8} />
+              {footCells(selRoof.foot).map((t) => (
+                <path key={`selr-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={2} opacity={0.8} />
               ))}
             </g>
           )}

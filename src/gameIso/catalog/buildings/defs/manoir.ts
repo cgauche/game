@@ -16,9 +16,7 @@ const manoir: BuildingDef['render'] = (foot, params, ctx) => {
 export const building: BuildingDef = {
   id: 'manoir',
   label: 'Manoir',
-  category: 'monument',
   defaultFoot: { w: 5, h: 4 },
-  defaultReveal: 'door',
   paramsSchema: HOUSE_SCHEMA,
   render: manoir,
 };

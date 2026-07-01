@@ -48,8 +48,10 @@ export interface PortraitTileProps {
 export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, hovered, team, maxStates = 4, onClick, title }: PortraitTileProps) {
   const px = CHAR_SIZE_PX[size];
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
-  const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'inconscient');
-  const showGauge = variant !== 'identity';
+  // Un engin INERTE (affût servi) n'a PAS de Blessures (immune) : ni jauge de PV, ni croix « hors de combat »
+  // (ses 0 PB ne sont pas une mort) — c'est un objet, pas un combattant blessable.
+  const ko = !c.inert && (c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'inconscient'));
+  const showGauge = variant !== 'identity' && !c.inert;
   const showPv = showGauge && c.kind === 'hero' && px >= CHAR_SIZE_PX.md;
   // R6 : l'unité active est plus grosse que les autres pour la mettre en évidence.
   const s = active ? Math.round(px * 1.28) : px;

@@ -11,9 +11,9 @@ function scene(w: number, h: number, walls?: WallSeg[]): Scene {
     name: 's',
     dimensions: { w, h },
     ambiance: 'exterieur',
-    levels: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
+    layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
     entities: [],
-    buildings: [],
+   
     dialogues: [],
     triggers: [],
     encounters: [],

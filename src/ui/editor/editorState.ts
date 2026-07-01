@@ -4,17 +4,16 @@
  * le canvas (peindre, poser, déplacer, redimensionner, supprimer, coller, points d'entrée).
  * Fonctions PURES (Scene → Scene) testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
  */
-import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles, Effect, WallSeg, WallSide } from '../../state/scene';
+import { Scene, SceneEntity, Terrain, EntityKind, EncounterMember, layerTiles, WallSeg, WallSide, Roof, RoofParams } from '../../state/scene';
 import type { FireArc, ShipPoste } from '../../engine/types';
-import { EMPTY_FLOW, flowFromEffects, flowEffects } from '../../state/flow';
+import { EMPTY_FLOW, flowEffects } from '../../state/flow';
 export { flowEffects };
 import { nextEntityId } from '../../state/entityId';
-import { defaultDoor } from '../../state/buildings';
-import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { itemFromTrappingById } from '../../engine/items';
-import { trappings, findTrappingById } from '../../data';
+import { siegeEngines, findTrappingById } from '../../data';
+import { siegeEmplacementEntity } from '../../state/siegeEmplacement';
 import { propRefPatch } from './propDefaults';
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -25,37 +24,52 @@ export type Tool =
   | { mode: 'select' }
   | { mode: 'tile'; terrain: Terrain }
   | { mode: 'entity'; kind: EntityKind; ref?: string }
-  | { mode: 'building'; type: string }
+  // Toit d'un bâtiment COMPOSÉ : pose une pièce de toiture (`style` = preset, cf. ROOF_STYLES) couvrant
+  // l'empreinte glissée. Les MURS du bâtiment se tracent à l'outil d'arête (cloison/porte/structure).
+  | { mode: 'roof'; style: string }
   | { mode: 'zone'; zone: 'trigger' | 'rest' | 'effect' }
   | { mode: 'entry' }
   | { mode: 'encounter' }
-  | { mode: 'stair' }
   | { mode: 'wall'; paint: WallPaint }
-  | { mode: 'elev'; value: number }
+  // Hauteur métrique d'une surface (porteuse : marchabilité/combat/chute, cf. `relief.ts`). On peint des
+  // MÈTRES ; la traversée verticale s'auto-dérive du delta de hauteur (`surfaceLink`), sans escalier.
+  | { mode: 'height'; metres: number }
   // Emplacement de siège : pose une SceneEntity portant un poste d'artillerie (`trappingId` = engin du
   // catalogue `armes-de-siege`). Le créneau (arc) et l'équipage s'éditent ensuite dans l'inspecteur.
   | { mode: 'emplacement'; trappingId: string }
   | { mode: 'erase' };
 
 /** Catalogue des pièces d'artillerie posables (engins de siège, AA/MDG) — SOURCE UNIQUE de l'outil
- *  Palette et du sélecteur d'engin de l'inspecteur. L'invariant `subType === 'armes-de-siege'` ne vit
- *  qu'ici (et non dupliqué dans chaque écran). */
-export const SIEGE_ENGINES = trappings.filter((t) => t.subType === 'armes-de-siege');
+ *  Palette et du sélecteur d'engin de l'inspecteur. Posable ⇔ l'engin a un art d'affût (`siegeRig`) : c'est
+ *  ce rig qui rend l'affût inerte en éditeur comme en combat. L'invariant ne vit qu'ici (pas dupliqué). */
+export const SIEGE_ENGINES = siegeEngines; // FOYER UNIQUE du filtre = `data/siegeEngines` (partagé avec le Codex)
+
+/** Presets de STYLE de toit (bâtiment composé) — SOURCE UNIQUE de l'outil Palette et du sélecteur de
+ *  l'inspecteur (en attendant un catalogue de toits dédié). Le style pilotera le rendu de la couverture. */
+export const ROOF_STYLES = ['maison', 'taverne', 'forge', 'echoppe', 'chapelle', 'tour', 'manoir'] as const;
+
+/** Matériaux de couverture (`RoofParams.roofMaterial`) → libellé + teinte d'aperçu éditeur (alignée sur
+ *  l'art du jeu, `catalog/buildings/render-helpers`). SOURCE UNIQUE partagée Inspecteur ⇄ Canvas. */
+export const ROOF_MATERIALS: { id: NonNullable<RoofParams['roofMaterial']>; label: string; swatch: string }[] = [
+  { id: 'tuile', label: 'Tuiles', swatch: '#8a3326' },
+  { id: 'chaume', label: 'Chaume', swatch: '#9a7b3a' },
+  { id: 'ardoise', label: 'Ardoise', swatch: '#4a5560' },
+];
 
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
 export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';
 
 /** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). */
-export type Layers = { triggers: boolean; spawns: boolean; buildings: boolean; entries: boolean; rest: boolean; effects: boolean };
-export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, buildings: true, entries: true, rest: true, effects: true };
+export type Layers = { triggers: boolean; spawns: boolean; roofs: boolean; entries: boolean; rest: boolean; effects: boolean };
+export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, roofs: true, entries: true, rest: true, effects: true };
 
 /** Sélection unifiée — une seule chose sélectionnée à la fois, sur la carte comme dans les panneaux. */
 export type Sel =
   | null
-  | { type: 'entity' | 'building' | 'trigger' | 'entry'; id: string }
+  | { type: 'entity' | 'roof' | 'trigger' | 'entry'; id: string }
   | { type: 'restZone'; idx: number }
   | { type: 'effectZone'; idx: number }
-  // Arête de mur (cloison/porte) désignée par sa forme CANONIQUE (case + N|E + étage) — éditable dans
+  // Arête de mur (cloison/porte) désignée par sa forme CANONIQUE (case + N|E + couche) — éditable dans
   // l'inspecteur (type, structure destructible). Posée par l'outil murs, sélectionnée à l'outil ↖.
   | { type: 'wall'; x: number; y: number; side: WallSide; z: number };
 
@@ -87,7 +101,7 @@ export function sameSel(a: Sel, b: Sel): boolean {
   return (a as { id: string }).id === (b as { id: string }).id;
 }
 
-/** Élément occupant la case p — priorité entité > entrée > trigger > zone repos > bâtiment.
+/** Élément occupant la case p — priorité entité > entrée > trigger > zone repos > toit.
  *  Les calques masqués sont ignorés (cliquer « à travers »). Le calque `spawns` masque les entités
  *  de COMBAT cachées (embusqueurs) : on ne peut alors cliquer que les PNJ visibles. */
 export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
@@ -110,9 +124,9 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
     const ei = (scene.effectZones ?? []).findIndex((z) => inRect(p, effectZoneRect(z.area)));
     if (ei >= 0) return { type: 'effectZone', idx: ei };
   }
-  if (layers.buildings) {
-    const b = (scene.buildings ?? []).find((b) => inRect(p, b.foot));
-    if (b) return { type: 'building', id: b.id };
+  if (layers.roofs) {
+    const r = (scene.roofs ?? []).find((r) => inRect(p, r.foot));
+    if (r) return { type: 'roof', id: r.id };
   }
   return null;
 }
@@ -122,7 +136,7 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
   if (sel?.type === 'trigger') return scene.triggers.find((t) => t.id === sel.id)?.rect ?? null;
   if (sel?.type === 'restZone') return scene.restZones?.[sel.idx]?.rect ?? null;
   if (sel?.type === 'effectZone') { const z = scene.effectZones?.[sel.idx]; return z ? effectZoneRect(z.area) : null; }
-  if (sel?.type === 'building') return (scene.buildings ?? []).find((b) => b.id === sel.id)?.foot ?? null;
+  if (sel?.type === 'roof') return (scene.roofs ?? []).find((r) => r.id === sel.id)?.foot ?? null;
   return null;
 }
 
@@ -167,11 +181,11 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
         return { ...z, area: { kind: 'rect', x: clamp(to.x, w - r.w + 1), y: clamp(to.y, h - r.h + 1), w: r.w, h: r.h } };
       }),
     };
-  if (sel?.type === 'building')
+  if (sel?.type === 'roof')
     return {
       ...scene,
-      buildings: (scene.buildings ?? []).map((b) =>
-        b.id === sel.id ? { ...b, foot: { ...b.foot, x: clamp(to.x, w - b.foot.w + 1), y: clamp(to.y, h - b.foot.h + 1) } } : b,
+      roofs: (scene.roofs ?? []).map((r) =>
+        r.id === sel.id ? { ...r, foot: { ...r.foot, x: clamp(to.x, w - r.foot.w + 1), y: clamp(to.y, h - r.foot.h + 1) } } : r,
       ),
     };
   return scene;
@@ -201,7 +215,7 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
     return { ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters };
   }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
-  if (sel?.type === 'building') return { ...scene, buildings: (scene.buildings ?? []).filter((b) => b.id !== sel.id) };
+  if (sel?.type === 'roof') return { ...scene, roofs: (scene.roofs ?? []).filter((r) => r.id !== sel.id) };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).filter((_, i) => i !== sel.idx) };
   if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).filter((_, i) => i !== sel.idx) };
   if (sel?.type === 'wall') {
@@ -216,16 +230,16 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
   return scene;
 }
 
-/** Réécrit les tuiles du niveau `z` (immuable) — base partagée des outils de terrain. */
-function withLevelTiles(scene: Scene, z: number, tiles: Terrain[]): Scene {
-  return { ...scene, levels: scene.levels.map((l) => (l.z === z ? { ...l, tiles } : l)) };
+/** Réécrit les tuiles de la couche `z` (immuable) — base partagée des outils de terrain. */
+function withLayerTiles(scene: Scene, z: number, tiles: Terrain[]): Scene {
+  return { ...scene, layers: scene.layers.map((l) => (l.z === z ? { ...l, tiles } : l)) };
 }
 
-/** Peint un carré de côté `brush` centré sur p (terrain), sur le niveau `z` (défaut sol). */
+/** Peint un carré de côté `brush` centré sur p (terrain), sur la couche `z` (défaut base). */
 export function paintTiles(scene: Scene, p: Pt, terrain: Terrain, brush: number, z = 0): Scene {
   const { w, h } = scene.dimensions;
   if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return scene;
-  const tiles = [...levelTiles(scene, z)];
+  const tiles = [...layerTiles(scene, z)];
   const r = Math.floor((brush - 1) / 2);
   for (let dy = -r; dy <= r; dy++)
     for (let dx = -r; dx <= r; dx++) {
@@ -233,39 +247,30 @@ export function paintTiles(scene: Scene, p: Pt, terrain: Terrain, brush: number,
         y = p.y + dy;
       if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = terrain;
     }
-  return withLevelTiles(scene, z, tiles);
+  return withLayerTiles(scene, z, tiles);
 }
 
-/** Remplit un rectangle de terrain (sous-mode Rectangle), sur le niveau `z` (défaut sol). */
+/** Remplit un rectangle de terrain (sous-mode Rectangle), sur la couche `z` (défaut base). */
 export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain, z = 0): Scene {
   const { w, h } = scene.dimensions;
-  const tiles = [...levelTiles(scene, z)];
+  const tiles = [...layerTiles(scene, z)];
   for (let y = rect.y; y < rect.y + rect.h; y++)
     for (let x = rect.x; x < rect.x + rect.w; x++) if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = terrain;
-  return withLevelTiles(scene, z, tiles);
+  return withLayerTiles(scene, z, tiles);
 }
 
-/** Ajoute un étage à la cote `z` (grille « vide » = transparente, à construire), trié par z. No-op si
- *  un étage `z` existe déjà. Source unique de l'ajout d'étage (éditeur multi-niveaux). */
-export function addLevel(scene: Scene, z: number): Scene {
-  if (scene.levels.some((l) => l.z === z)) return scene;
+/** Ajoute une couche à la cote `z` (grille « vide » = transparente, à construire), triée par z. No-op si
+ *  une couche `z` existe déjà. Source unique de l'ajout de couche (éditeur multi-niveaux). */
+export function addLayer(scene: Scene, z: number): Scene {
+  if (scene.layers.some((l) => l.z === z)) return scene;
   const tiles = new Array(scene.dimensions.w * scene.dimensions.h).fill('vide') as Terrain[];
-  return { ...scene, levels: [...scene.levels, { z, tiles }].sort((a, b) => a.z - b.z) };
+  return { ...scene, layers: [...scene.layers, { z, tiles }].sort((a, b) => a.z - b.z) };
 }
 
-/** Pose un escalier (franchissement vertical) reliant la case `p` de l'étage `z` à la même case de
- *  l'étage AU-DESSUS (z+1). No-op si ce niveau n'existe pas ou si l'escalier est déjà présent. */
-export function addStair(scene: Scene, p: Pt, z: number): Scene {
-  if (!scene.levels.some((l) => l.z === z + 1)) return scene;
-  const from = { x: p.x, y: p.y, z }, to = { x: p.x, y: p.y, z: z + 1 };
-  if ((scene.stairs ?? []).some((s) => s.from.x === from.x && s.from.y === from.y && s.from.z === z && s.to.z === to.z)) return scene;
-  return { ...scene, stairs: [...(scene.stairs ?? []), { from, to }] };
-}
-
-/** Retire l'étage `z`. Le SOL (z=0) et le dernier étage sont protégés (jamais de scène sans niveau). */
-export function removeLevel(scene: Scene, z: number): Scene {
-  if (z === 0 || scene.levels.length <= 1) return scene;
-  return { ...scene, levels: scene.levels.filter((l) => l.z !== z) };
+/** Retire la couche `z`. La base (z=0) et la dernière couche sont protégées (jamais de scène sans couche). */
+export function removeLayer(scene: Scene, z: number): Scene {
+  if (z === 0 || scene.layers.length <= 1) return scene;
+  return { ...scene, layers: scene.layers.filter((l) => l.z !== z) };
 }
 
 // ── Outil MURS (arêtes + portes + diagonales). Une cloison est stockée sous forme CANONIQUE N/E : le S
@@ -356,20 +361,21 @@ export function patchWall(scene: Scene, x: number, y: number, side: WallSide, z:
   };
 }
 
-/** Outil ÉLÉVATION : peint la valeur d'élévation (unités d'étage : +0.45 scène, -0.4 fosse, 0 plat) sur
- *  un carré de côté `brush` centré sur p, au niveau `z`. Crée le tableau `elev` (rempli de 0) au besoin. */
-export function paintElev(scene: Scene, p: Pt, value: number, brush: number, z = 0): Scene {
+/** Outil HAUTEUR : peint la hauteur métrique de la surface (`metres` : +1 estrade, +4 toit, −2 fosse,
+ *  0 plat) sur un carré de côté `brush` centré sur p, sur la couche `z`. Crée le tableau `height`
+ *  (rempli de 0) au besoin. Hauteur PORTEUSE (marchabilité/combat/chute, cf. `relief.ts`). */
+export function paintHeight(scene: Scene, p: Pt, metres: number, brush: number, z = 0): Scene {
   const { w, h } = scene.dimensions;
   if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return scene;
-  const lvl = scene.levels.find((l) => l.z === z) ?? scene.levels[0];
-  const elev = [...(lvl.elev ?? new Array(w * h).fill(0))];
+  const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];
+  const height = [...(layer.height ?? new Array(w * h).fill(0))];
   const r = Math.floor((brush - 1) / 2);
   for (let dy = -r; dy <= r; dy++)
     for (let dx = -r; dx <= r; dx++) {
       const x = p.x + dx, y = p.y + dy;
-      if (x >= 0 && y >= 0 && x < w && y < h) elev[y * w + x] = value;
+      if (x >= 0 && y >= 0 && x < w && y < h) height[y * w + x] = metres;
     }
-  return { ...scene, levels: scene.levels.map((l) => (l.z === lvl.z ? { ...l, elev } : l)) };
+  return { ...scene, layers: scene.layers.map((l) => (l.z === layer.z ? { ...l, height } : l)) };
 }
 
 /** Pose une entité à p (id frais) — `ref` = décor/espèce précise (pose directe depuis le catalogue).
@@ -384,18 +390,16 @@ export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefi
   return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
 }
 
-/** Pose un EMPLACEMENT DE SIÈGE à p : une SceneEntity-personnage portant un poste d'artillerie
- *  (`postes:[{ item, crewIds:[] }]`, engin résolu depuis le catalogue `armes-de-siege`). L'entité est un
- *  `personnage` car c'est le seul kind qui s'enrôle en rencontre (→ spawn en Combattant) et porte le profil
- *  du Combattant-affût ; au combat, `applyShipPostes` sert la pièce au chef (`crewIds[0]`). Engin inconnu →
- *  null (pas d'entité fantôme), comme `addBuilding`. */
+/** Pose un EMPLACEMENT DE SIÈGE à p via le builder PARTAGÉ `siegeEmplacementEntity` (même source que les
+ *  scénarios) : une SceneEntity-personnage portant `ref` (source de l'engin → la branche siège de
+ *  `spawnEnemy` construit l'affût inerte) et un poste d'artillerie (`postes:[{ item, crewIds:[] }]`).
+ *  AUCUN `appearance.species` : le rig d'engin est DÉRIVÉ de la `ref` au rendu (éditeur ↔ explo ↔ combat).
+ *  Au combat, `applyShipPostes` sert la pièce au chef (`crewIds[0]`). Posable ⇔ l'engin a un art d'affût
+ *  (`siegeRig`) ; sinon → null (pas d'entité fantôme). */
 export function placeEmplacement(scene: Scene, trappingId: string, p: Pt, z = 0): { scene: Scene; id: string } | null {
-  const item = itemFromTrappingById(trappingId);
-  if (!item) return null;
   const id = nextEntityId('personnage', scene.entities.map((e) => e.id));
-  const poste: ShipPoste = { item, crewIds: [] };
-  let ent: SceneEntity = { id, kind: 'personnage', pos: { ...p }, label: findTrappingById(trappingId)?.label ?? trappingId, postes: [poste] };
-  if (z) ent = { ...ent, z };
+  const ent = siegeEmplacementEntity(id, trappingId, p, z ? { z } : {});
+  if (!ent) return null; // posable ⇔ a un art d'affût (`siegeRig`)
   return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
 }
 
@@ -423,15 +427,19 @@ export function setPosteSide(scene: Scene, entityId: string, side: FireArc | und
   });
 }
 
-/** Change l'engin du poste (nouvelle ItemInstance résolue + libellé de l'entité), équipage conservé. No-op
- *  si l'engin est inconnu. */
+/** Change l'engin du poste : nouvelle ItemInstance + libellé, ET restampe la `ref` sur l'entité — le rig
+ *  d'affût étant DÉRIVÉ de la `ref`, le rendu suit l'engin servi sans `appearance.species` stocké. Équipage
+ *  conservé. No-op si l'engin est inconnu ou sans art d'affût (`siegeRig`). */
 export function setPosteEngine(scene: Scene, entityId: string, trappingId: string): Scene {
+  const t = findTrappingById(trappingId);
   const item = itemFromTrappingById(trappingId);
-  if (!item) return scene;
-  const label = findTrappingById(trappingId)?.label ?? trappingId;
+  if (!t?.siegeRig || !item) return scene;
   return {
     ...scene,
-    entities: scene.entities.map((e) => (e.id === entityId && e.postes?.length ? { ...e, label, postes: e.postes.map((p, i) => (i === 0 ? { ...p, item } : p)) } : e)),
+    entities: scene.entities.map((e) =>
+      e.id === entityId && e.postes?.length
+        ? { ...e, label: t.label, ref: trappingId, postes: e.postes.map((p, i) => (i === 0 ? { ...p, item } : p)) }
+        : e),
   };
 }
 
@@ -485,28 +493,13 @@ export function addEffectZone(scene: Scene, rect: Rect): { scene: Scene; idx: nu
   return { scene: { ...scene, effectZones: zones }, idx: zones.length - 1 };
 }
 
-/** Pose un bâtiment du catalogue sur `rect` (porte au Sud par défaut).
- *  Clic simple (rect 1×1) : empreinte par défaut du catalogue, ancrée sur la case, clampée. */
-export function addBuilding(scene: Scene, type: string, rect: Rect): { scene: Scene; id: string } | null {
-  const meta = BUILDINGS_META[type];
-  if (!meta) return null;
-  if (rect.w === 1 && rect.h === 1) {
-    const { w, h } = scene.dimensions;
-    const fw = Math.min(meta.defaultFoot.w, w);
-    const fh = Math.min(meta.defaultFoot.h, h);
-    rect = { x: clamp(rect.x, w - fw + 1), y: clamp(rect.y, h - fh + 1), w: fw, h: fh };
-  }
-  const b: BuildingFeature = {
-    id: nextEntityId('b', (scene.buildings ?? []).map((b) => b.id)),
-    type: meta.id,
-    foot: rect,
-    facing: 'S',
-    reveal: meta.defaultReveal,
-    door: defaultDoor(rect, 'S'),
-    params: {},
-    label: meta.label,
-  };
-  return { scene: { ...scene, buildings: [...(scene.buildings ?? []), b] }, id: b.id };
+/** Pose le TOIT d'un bâtiment COMPOSÉ sur `rect` (la couverture ; les MURS se tracent à l'outil d'arête,
+ *  cf. `setEdgeWall`/`patchWall`). `style` = preset de toiture (cf. `ROOF_STYLES`). L'empreinte vient du
+ *  glissé ; matériau/couleurs/étages s'éditent ensuite dans l'inspecteur. id frais pour le rendu/sélection. */
+export function addRoof(scene: Scene, style: string, rect: Rect): { scene: Scene; id: string } {
+  const id = nextEntityId('roof', (scene.roofs ?? []).map((r) => r.id));
+  const roof: Roof = { id, foot: rect, style };
+  return { scene: { ...scene, roofs: [...(scene.roofs ?? []), roof] }, id };
 }
 
 /** Rattache une entité existante à la rencontre `encId` (créée si absente). No-op si déjà membre. */

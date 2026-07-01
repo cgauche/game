@@ -13,6 +13,7 @@ import { controlsActive } from './netOwnership';
 import { pickActiveModalKey } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
 import { validTargets } from './targeting';
+import type { ScreenDir } from './combatCursor';
 
 export interface KeyBinding {
   id: string;
@@ -33,6 +34,15 @@ const inBattle = (s: GameState) => s.mode === 'battle' && !!s.battle && !s.battl
 const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pickActiveModalKey>[0]) == null;
 /** Contexte de PILOTAGE du combat (carte) : en combat, c'est bien ton tour (coop), aucune modale ouverte. */
 const cur = (s: GameState) => inBattle(s) && controlsActive(s) && noModal(s);
+/** Contexte d'EXPLORATION (carte hors combat) : écran de jeu, mode exploration, hors dialogue. */
+const exploring = (s: GameState) => s.screen === 'campaign' && s.mode === 'exploration' && !s.dialogue;
+/** Pas clavier d'exploration (flèches) : code physique → direction ÉCRAN. */
+const EXPLORE_STEP: { code: string; dir: ScreenDir; label: string }[] = [
+  { code: 'ArrowUp', dir: 'up', label: 'Exploration : pas vers le haut' },
+  { code: 'ArrowDown', dir: 'down', label: 'Exploration : pas vers le bas' },
+  { code: 'ArrowLeft', dir: 'left', label: 'Exploration : pas vers la gauche' },
+  { code: 'ArrowRight', dir: 'right', label: 'Exploration : pas vers la droite' },
+];
 
 export const KEYBINDINGS: KeyBinding[] = [
   { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', when: () => true, run: (g) => g().rotateCam(-1) },
@@ -96,6 +106,13 @@ export const KEYBINDINGS: KeyBinding[] = [
     id: `hotbar-${i + 1}`, codes: [`Digit${i + 1}`], label: `Capacité ${i + 1} de la barre d’action`,
     when: (s) => inBattle(s) && controlsActive(s) && noModal(s),
     run: () => { const sl = hotbar.slots[i]; if (sl && !sl.disabled) sl.run(); },
+  })),
+  // ── Pas clavier d'EXPLORATION (flèches) : un pas du groupe vers la surface voisine CONNECTÉE dans le
+  //    sens écran poussé (rampes/tabliers via exploreStepDest) → le multi-couche, injouable au clic
+  //    (l'emprise d'un pont vise la couche du dessous), devient jouable. Garde DISJOINTE du curseur de
+  //    combat (exploration ≠ inBattle), donc partage des codes ArrowX sans conflit (find = 1er `when` vrai).
+  ...EXPLORE_STEP.map(({ code, dir, label }): KeyBinding => ({
+    id: `explore-${dir}`, codes: [code], label, when: exploring, run: (g) => g().stepPartyDir(dir),
   })),
 ];
 

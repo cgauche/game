@@ -15,7 +15,7 @@ import { attackPlan, previewAttack, availableAttacks, type AttackOption } from '
  *  hors de portée même après approche). `priority ≤ 0` = jamais auto-choisie (reste manuelle). */
 export function scoreAttack(get: () => GameState, active: Combatant, option: AttackOption, target: Combatant, battle: BattleState | null = get().battle): number {
   const priority = option.priority ?? 1;
-  if (priority <= 0 || !battle || !active.pos || !target.pos) return -Infinity;
+  if (priority <= 0 || !battle || !active.pos || !target.pos || target.inert) return -Infinity; // engin inerte = immune → jamais une cible (on vise l'équipage)
   // ZONE (Souffle/Vomi/Hurlement…) : base + bonus par ennemi SUPPLÉMENTAIRE groupé autour du point d'impact
   // (le gros intérêt d'une zone = frapper un paquet) — détection auto, pondérée par le `priority` éditable.
   if (option.targeting === 'zone') {

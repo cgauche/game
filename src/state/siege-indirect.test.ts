@@ -50,7 +50,7 @@ const mkPoste = (engineId: string, crewIds: string[]): ShipPoste =>
 /** Scène terrestre minimale (40×40 d'herbe, 2 m/case). */
 const groundScene = (): Scene =>
   ({ id: 's', name: 's', dimensions: { w: 40, h: 40 }, ambiance: 'jour', metresPerTile: 2,
-    levels: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
+    layers: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
 /** Mortier + bombe Explosion 5 (Dégâts 12) = arme EFFECTIVE (qualité a-explosion fusionnée). */
 function mortarWithBomb(chef: Combatant): Weapon {

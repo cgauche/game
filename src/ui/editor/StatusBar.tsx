@@ -12,7 +12,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 const LAYER_LABEL: Record<keyof Layers, string> = {
   triggers: 'Zones',
   spawns: 'Ennemis',
-  buildings: 'Bâtiments',
+  roofs: 'Toits',
   entries: 'Entrées',
   rest: 'Repos',
   effects: 'Pièges',
@@ -27,14 +27,13 @@ export function toolLabel(tool: Tool): string {
       if (tool.kind === 'prop') return `🌳 ${PROPS[tool.ref ?? '']?.label ?? 'Décor'}`;
       if (tool.kind === 'personnage') return `🙂 ${tool.ref ?? 'Villageois'}`;
       return `🏁 ${KIND_LABEL[tool.kind]}`;
-    case 'building': return `🏠 ${BUILDINGS_META[tool.type]?.label ?? tool.type}`;
+    case 'roof': return `🏠 ${BUILDINGS_META[tool.style]?.label ?? tool.style}`;
     case 'zone': return tool.zone === 'trigger' ? '🟦 Zone trigger' : '⛺ Zone de repos';
     case 'entry': return '⚑ Point d’entrée';
     case 'encounter': return '⚔️ Placer des ennemis';
     case 'emplacement': return `💥 ${SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}`;
-    case 'stair': return '🪜 Escalier (vers l’étage au-dessus)';
     case 'wall': return tool.paint === 'door' ? '🧱 Porte' : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? '🧱 Diagonale' : '🧱 Cloison';
-    case 'elev': return `⛰ Élévation ${tool.value > 0 ? '+' : ''}${tool.value}`;
+    case 'height': return `⛰ Hauteur ${tool.metres} m`;
     case 'erase': return '🧽 Gomme';
   }
 }

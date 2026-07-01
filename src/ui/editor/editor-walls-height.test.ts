@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, structureAt } from '../../state/scene';
 import { wallBetween } from '../../state/scene';
-import { canonEdge, edgeWallState, toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge, pickWallEdge, patchWall, deleteSel } from './editorState';
+import { canonEdge, edgeWallState, toggleEdgeWall, toggleDiagonalWall, paintHeight, nearestEdge, pickWallEdge, patchWall, deleteSel } from './editorState';
 
 /**
- * Outils éditeur MURS (arêtes + portes + diagonales) et ÉLÉVATION (scène surélevée / fosse). Mutations
- * PURES — câblées au canvas par EditorCanvas. Les arêtes sont canonicalisées N/E (le S d'une case = le N
- * de la suivante) pour ne stocker chaque cloison qu'une fois.
+ * Outils éditeur MURS (arêtes + portes + diagonales) et HAUTEUR métrique (surface surélevée / fosse).
+ * Mutations PURES — câblées au canvas par EditorCanvas. Les arêtes sont canonicalisées N/E (le S d'une
+ * case = le N de la suivante) pour ne stocker chaque cloison qu'une fois. La HAUTEUR s'écrit en MÈTRES
+ * dans `Layer.height` (porteuse : marchabilité/combat/chute) — plus d'escalier ni d'« élévation » 0-1.
  */
 describe('editorState — outil MURS (arêtes)', () => {
   it('canonEdge : S→N de la case du dessous, O→E de la case de gauche, N/E inchangés', () => {
@@ -97,21 +98,21 @@ describe('editorState — sélection + structure d’une arête-mur', () => {
   });
 });
 
-describe('editorState — outil ÉLÉVATION (peindre)', () => {
-  it('peint une valeur d’élévation sur la case (crée le tableau elev au besoin)', () => {
-    const s = paintElev(emptyScene(4, 4), { x: 1, y: 1 }, 0.45, 1, 0);
-    expect(s.levels[0].elev).toBeDefined();
-    expect(s.levels[0].elev![1 * 4 + 1]).toBe(0.45);
-    expect(s.levels[0].elev![0]).toBe(0); // ailleurs = 0
+describe('editorState — outil HAUTEUR (paintHeight, métrique)', () => {
+  it('peint la hauteur métrique de la case (crée le tableau height au besoin)', () => {
+    const s = paintHeight(emptyScene(4, 4), { x: 1, y: 1 }, 1, 1, 0); // +1 m (estrade)
+    expect(s.layers[0].height).toBeDefined();
+    expect(s.layers[0].height![1 * 4 + 1]).toBe(1); // exactement les mètres peints
+    expect(s.layers[0].height![0]).toBe(0); // ailleurs = 0 m
   });
-  it('pinceau 3×3 peint un carré ; fosse = valeur négative', () => {
-    const s = paintElev(emptyScene(5, 5), { x: 2, y: 2 }, -0.4, 3, 0);
-    for (let y = 1; y <= 3; y++) for (let x = 1; x <= 3; x++) expect(s.levels[0].elev![y * 5 + x]).toBe(-0.4);
-    expect(s.levels[0].elev![0]).toBe(0);
+  it('pinceau 3×3 peint un carré ; fosse = mètres négatifs', () => {
+    const s = paintHeight(emptyScene(5, 5), { x: 2, y: 2 }, -2, 3, 0); // −2 m (fosse)
+    for (let y = 1; y <= 3; y++) for (let x = 1; x <= 3; x++) expect(s.layers[0].height![y * 5 + x]).toBe(-2);
+    expect(s.layers[0].height![0]).toBe(0);
   });
   it('hors-grille = no-op', () => {
     const s0 = emptyScene(4, 4);
-    expect(paintElev(s0, { x: -1, y: 0 }, 0.5, 1, 0)).toBe(s0);
+    expect(paintHeight(s0, { x: -1, y: 0 }, 1, 1, 0)).toBe(s0);
   });
 });
 

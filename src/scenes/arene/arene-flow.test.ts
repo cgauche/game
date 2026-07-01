@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { useGame } from '../../state/store';
 import { applyEffects, runFlow } from '../../state/combatFlow';
-import { type Scene } from '../../state/scene';
+import { wallBetween, type Scene, type WallSeg } from '../../state/scene';
 import { evalCondition, flowEffects, type Condition } from '../../state/flow';
 import { parseProject } from '../../state/worldMap';
 import { makeShowcaseParty } from '../../data/pregens';
@@ -87,17 +87,26 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     expect(condOk(champion.when!)).toBe(true);
   });
 
-  it('INTÉRIEURS : marcher sur la porte de la taverne ENTRE, la sortie revient au Bourg (transitionBack)', () => {
+  it('BÂTIMENTS COMPOSÉS : la taverne du Bourg est cernée de murs d’arête, franchissable par sa PORTE', () => {
+    // Relief unifié : plus de `building.reveal:'door'`+`interiorScene` ni de transition auto en marchant sur
+    // la porte. Un bâtiment est un TOIT (cutaway) posé sur des `WallSeg` d'arête. On prouve l'affordance
+    // « composé bloque / porte franchissable » sur la scène du Bourg (l'intérieur est tout-en-scène).
     useGame.getState().setParty(makeShowcaseParty());
     useGame.getState().loadProject(project, 'arene-hub');
-    // La porte de la taverne (bâtiment reveal:'door') est en (5,4) — on s'y rend pas à pas.
-    useGame.getState().moveParty({ x: 5, y: 5 });
-    useGame.getState().moveParty({ x: 5, y: 4 });
-    expect(useGame.getState().scene?.id).toBe('arene-int-taverne');
-    // Sortie : le trigger transitionBack en bas de la salle ramène au Bourg.
-    const sortie = useGame.getState().scene!.triggers.find((t) => t.id === 'sortie')!;
-    runFlow(useGame.getState, useGame.setState, sortie.flow);
-    expect(useGame.getState().scene?.id).toBe('arene-hub');
+    const hub = useGame.getState().scene!;
+    const taverne = (hub.roofs ?? []).find((r) => r.id === 'taverne')!;
+    expect(taverne, 'la taverne est un toit de bâtiment composé').toBeTruthy();
+    const isNorE = (w: WallSeg): w is WallSeg & { side: 'N' | 'E' } => w.side === 'N' || w.side === 'E';
+    const perim = (hub.walls ?? []).filter(isNorE).filter(
+      (w) => w.x >= taverne.foot.x - 1 && w.x <= taverne.foot.x + taverne.foot.w - 1 && w.y >= taverne.foot.y && w.y <= taverne.foot.y + taverne.foot.h,
+    );
+    const doors = perim.filter((w) => w.door);
+    const solid = perim.filter((w) => w.structure);
+    expect(doors.length, 'au moins une porte').toBeGreaterThanOrEqual(1);
+    expect(solid.length, 'clôturée par des murs').toBeGreaterThan(0);
+    const across = (w: WallSeg & { side: 'N' | 'E' }) => (w.side === 'N' ? { x: w.x, y: w.y - 1 } : { x: w.x + 1, y: w.y });
+    expect(wallBetween(hub, solid[0].x, solid[0].y, across(solid[0]).x, across(solid[0]).y)).toBe(true);  // mur = barrière
+    expect(wallBetween(hub, doors[0].x, doors[0].y, across(doors[0]).x, across(doors[0]).y)).toBe(false); // porte = passage
   });
 
   it('CONTRATS : la victoire au camp de Bella pose contrat_foret_fait → la prime du Maître se débloque', () => {

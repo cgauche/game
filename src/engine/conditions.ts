@@ -390,6 +390,9 @@ export function usesSuddenDeath(c: Combatant): boolean {
 /** Hors de combat : mort, ou Inconscient, ou figurant tombé à 0 PB (Mort Subite), ou COQUE à 0 PB
  *  (détruite / coulée). Un héros à 0 PB reste actif (À Terre) — pas hors de combat (LDB 18 l.28). */
 export function isOutOfAction(c: Combatant): boolean {
+  // Un OBJET INERTE servi (affût d'artillerie) n'est jamais une PERTE par Blessures (il en a 0, immune) :
+  // « hors de combat » seulement s'il est explicitement retiré (détruit hors-combat / éjecté de la rencontre).
+  if (c.inert) return c.dead === true || c.outOfRencontre === true;
   if (c.bodyShape === 'vehicule') return c.dead === true || c.outOfRencontre === true || c.wounds.current <= 0; // coque détruite à 0 PB (MDG ch.13)
   return c.dead === true || c.outOfRencontre === true || hasCondition(c, COND.inconscient) || (usesSuddenDeath(c) && c.wounds.current <= 0);
 }
@@ -408,6 +411,7 @@ export function inDeathCondition(c: Combatant): boolean {
 /** À 0 PB : gagne l'État À Terre (LDB 18 l.28). À appeler quand un coup non-critique amène à 0.
  *  (Une COQUE ne tombe pas « À Terre » : sa mise hors-jeu à 0 PB est gérée par `isOutOfAction`.) */
 export function applyZeroWounds(c: Combatant): void {
+  if (c.inert) return; // OBJET INERTE (affût d'artillerie) : en permanence à 0 PB, immune aux Blessures → jamais À Terre (cf. isOutOfAction)
   if (c.bodyShape === 'vehicule') return;
   if (c.wounds.current <= 0 && !hasCondition(c, COND.aTerre)) addCondition(c, COND.aTerre);
 }
@@ -436,7 +440,7 @@ export function loseWounds(c: Combatant, amount: number): number {
  */
 export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
-  if (c.dead || c.outOfRencontre || usesSuddenDeath(c) || c.bodyShape === 'vehicule') return log; // une coque ne « meurt » pas par la cascade Inconscient→mort : elle est détruite à 0 PB (isOutOfAction)
+  if (c.dead || c.outOfRencontre || c.inert || usesSuddenDeath(c) || c.bodyShape === 'vehicule') return log; // un OBJET INERTE (affût, 0 PB permanent) et une coque ne « meurent » pas par la cascade Inconscient→mort (cf. isOutOfAction)
   const be = bonus(effectiveChar(c, 'E'));
   if (c.wounds.current > 0) {
     c.roundsAtZero = 0;

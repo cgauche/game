@@ -1,14 +1,15 @@
 /**
- * LdV de combat & vision CROSS-Z (Phase 1) : un défenseur sur un rempart (z=1) voit et tire un
- * assaillant au sol (z=0), et réciproquement la vision révèle le contrebas — sans casser le
- * comportement même-étage (byte-identique). Modèle Phase 1 : les murs d'ARÊTE fins (créneaux/parapet)
- * ne coupent PAS un tir/une vue inter-niveau ; seules les TUILES opaques (bâtiment/terrain) coupent.
+ * LdV de combat & vision CROSS-Z (relief unifié) : un défenseur sur une couche haute (z=1) voit et tire
+ * un assaillant au sol (z=0), et réciproquement la vision révèle le contrebas — sans casser le
+ * comportement même-couche (byte-identique). Modèle : les murs d'ARÊTE fins (créneaux/parapet) ne coupent
+ * PAS un tir/une vue inter-couche ; seules les TUILES opaques (terrain/décor) coupent. La vision est
+ * z-DESCENDANTE (on voit en contrebas depuis une hauteur, jamais à travers un plancher vers le haut).
  */
 import { describe, it, expect } from 'vitest';
 import { lineOfSightCover } from './lineOfSight';
 import { computeVisible, type LightField } from './vision';
 import { computeStateVisible } from './visionState';
-import { Scene, SceneEntity, WallSeg, rampartTilesAbove } from './scene';
+import { Scene, SceneEntity, WallSeg, type Terrain } from './scene';
 import type { Combatant } from '../engine/types';
 
 function scene(w: number, h: number, tiles?: Record<string, string>, walls?: WallSeg[], entities: SceneEntity[] = []): Scene {
@@ -20,15 +21,17 @@ function scene(w: number, h: number, tiles?: Record<string, string>, walls?: Wal
     }
   return {
     id: 's',
-    name: 's',
+    nom: 's',
+    description: '',
     dimensions: { w, h },
-    ambiance: 'jour',
-    levels: [{ z: 0, tiles: grid }],
+    ambiance: 'exterieur',
+    ambientLight: 'jour',
+    layers: [{ z: 0, tiles: grid }],
     entities,
-    buildings: [],
     dialogues: [],
     triggers: [],
     encounters: [],
+    flags: {},
     walls,
   } as unknown as Scene;
 }
@@ -61,7 +64,7 @@ describe('lineOfSightCover — LdV de combat CROSS-Z', () => {
   });
 });
 
-describe('lineOfSightCover — TÉMOIN même étage (byte-identique)', () => {
+describe('lineOfSightCover — TÉMOIN même couche (byte-identique)', () => {
   it('mur d\'arête entre deux combattants z=0 → bloqué (inchangé)', () => {
     const s = scene(6, 1, {}, [{ x: 2, y: 0, side: 'E' }]);
     expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 4, y: 0 }, []).blocked).toBe(true);
@@ -71,67 +74,69 @@ describe('lineOfSightCover — TÉMOIN même étage (byte-identique)', () => {
   });
 });
 
-describe('computeVisible — vision inter-niveau (vers le bas seulement)', () => {
+describe('computeVisible — vision inter-couche (vers le bas seulement)', () => {
   it('un viewer z=1 révèle une case z=0 dans sa LdV (et sa propre case z=1)', () => {
     const v = computeVisible(scene(6, 1), [{ pos: { x: 0, y: 0 }, z: 1, radiusTiles: 5, darkTiles: 0 }], BRIGHT);
     expect(v.has('3,0,0')).toBe(true); // contrebas révélé
-    expect(v.has('3,0,1')).toBe(true); // son propre étage révélé
+    expect(v.has('3,0,1')).toBe(true); // sa propre couche révélée
   });
-  it('un viewer z=0 ne révèle PAS l\'étage z=1 (pas de vision vers le haut)', () => {
+  it('un viewer z=0 ne révèle PAS la couche z=1 (pas de vision vers le haut)', () => {
     const v = computeVisible(scene(6, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 5, darkTiles: 0 }], BRIGHT);
     expect(v.has('3,0,1')).toBe(false);
   });
-  it('mono-étage : viewer z=0 révèle z=0 dans son rayon, pas au-delà (inchangé)', () => {
+  it('mono-couche : viewer z=0 révèle z=0 dans son rayon, pas au-delà (inchangé)', () => {
     const v = computeVisible(scene(8, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 3, darkTiles: 0 }], BRIGHT);
     expect(v.has('3,0,0')).toBe(true);
     expect(v.has('4,0,0')).toBe(false); // hors rayon (Chebyshev 4 > 3)
   });
 });
 
-describe('CHEMIN DE RONDE « bord oui, surplomb non » — regard vers le haut depuis le sol', () => {
-  // Scène 2 niveaux : mur d'enceinte (height:1) sur l'arête N de la rangée 1 → (x,1,z1) = chemin de ronde
-  // (porté par le mur) ; un plancher z=1 en (2,3) SANS mur dessous = surplomb (loge).
-  const w = 4, h = 4;
-  const z0 = new Array(w * h).fill('herbe');
-  const z1 = new Array(w * h).fill('vide');
-  for (let x = 0; x < w; x++) z1[1 * w + x] = 'plancher'; // chemin de ronde (rangée 1)
-  z1[3 * w + 2] = 'plancher'; // loge en surplomb (aucune arête-mur dessous)
-  const walls: WallSeg[] = [];
-  for (let x = 0; x < w; x++) walls.push({ x, y: 1, side: 'N', structure: 'mur-en-pierre', height: 1 });
+describe('computeStateVisible — brouillard PARTY-ONLY : un PNJ allié-IA ne dévoile PAS la carte', () => {
+  // 1 rangée, un MUR opaque en (5,0) coupe la LdV → le héros de gauche ne voit pas au-delà ; le combattant
+  // de droite (derrière le mur) ne révèle SA case QUE s'il compte comme viewer. Décision : fog PARTY-ONLY →
+  // un PNJ allié piloté par l'IA (`aiControlled`) n'est PAS viewer ; un vrai héros (coop, sans drapeau) l'est.
+  const w = 12, h = 1;
+  const z0 = new Array(w * h).fill('herbe') as Terrain[]; z0[5] = 'mur';
   const sc = {
-    id: 's', name: 's', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
-    levels: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
-    entities: [], buildings: [], dialogues: [], triggers: [], encounters: [], flags: {}, walls,
+    id: 's', nom: 's', description: '', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
+    layers: [{ z: 0, tiles: z0 }],
+    entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
   } as unknown as Scene;
+  const mkHero = (id: string, x: number, extra: Partial<Combatant> = {}): Combatant =>
+    ({ id, kind: 'hero', pos: { x, y: 0 }, conditions: [], traits: [], characteristics: {}, ...extra }) as unknown as Combatant;
+  const visWith = (right: Combatant) =>
+    computeStateVisible({ scene: sc, battle: { combatants: [mkHero('manual', 0), right] }, partyPos: { x: 0, y: 0 }, gameTime: 12 * 60, lightLevel: null });
 
-  it('rampartTilesAbove : le dessus du mur est un rempart, la loge (sans mur) non', () => {
-    const r = rampartTilesAbove(sc, 0);
-    expect(r.has('0,1,1')).toBe(true); // chemin de ronde porté par le mur
-    expect(r.has('2,3,1')).toBe(false); // loge en surplomb, rien dessous → pas un rempart
+  it('le PNJ allié-IA (aiControlled) ne révèle PAS sa zone, derrière le mur ; le héros manuel voit la sienne', () => {
+    const vis = visWith(mkHero('ally', 10, { aiControlled: true }));
+    expect(vis.has('0,0,0')).toBe(true);   // le héros manuel voit sa propre case
+    expect(vis.has('10,0,0')).toBe(false); // la case du PNJ allié-IA reste dans le brouillard (au-delà du mur)
   });
 
-  it('vision : depuis le sol on VOIT le chemin de ronde au-dessus, mais NI la loge en surplomb NI le champ derrière le mur', () => {
-    const v = computeVisible(sc, [{ pos: { x: 0, y: 2 }, z: 0, radiusTiles: 5, darkTiles: 0 }], BRIGHT);
-    expect(v.has('0,2,0')).toBe(true); // son propre sol
-    expect(v.has('0,1,1')).toBe(true); // lève les yeux sur le rempart (porté par le mur)
-    expect(v.has('2,3,1')).toBe(false); // pas de vision à travers un plancher en surplomb
-    expect(v.has('0,0,0')).toBe(false); // le mur d'enceinte coupe la LdV au sol vers le champ au-delà
+  it('une PIÈCE INERTE alliée (affût baliste/canon, kind:hero mais inert) ne révèle PAS sa zone', () => {
+    const vis = visWith(mkHero('affut', 10, { inert: true })); // objet sans yeux → pas viewer
+    expect(vis.has('10,0,0')).toBe(false); // l'affût ne dévoile pas le champ derrière le mur
+  });
+
+  it('CONTRÔLE : le même combattant SANS aiControlled (héros coop) redevient viewer et révèle sa zone', () => {
+    const vis = visWith(mkHero('ally', 10)); // pas de drapeau → vrai héros = viewer
+    expect(vis.has('10,0,0')).toBe(true);
   });
 });
 
-describe('computeStateVisible — INTÉGRATION brouillard de combat : le viewer porte son ÉTAGE', () => {
+describe('computeStateVisible — INTÉGRATION : le viewer porte sa COUCHE (z-descendant)', () => {
   it("un héros sur le rempart (z=1, au-dessus d'une tuile de MUR) révèle le contrebas (z=0)", () => {
     const w = 6, h = 1;
-    const z0 = new Array(w * h).fill('sol'); z0[0] = 'mur'; // le mur, sous le rempart : un viewer calculé à z=0 y serait aveugle
-    const z1 = new Array(w * h).fill('vide'); z1[0] = 'plancher'; // chemin de ronde en (0,0)
+    const z0 = new Array(w * h).fill('sol') as Terrain[]; z0[0] = 'mur'; // le mur, sous le rempart : un viewer calculé à z=0 y serait aveugle
+    const z1 = new Array(w * h).fill('vide') as Terrain[]; z1[0] = 'plancher'; // chemin de ronde en (0,0)
     const sc = {
-      id: 's', name: 's', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
-      levels: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
-      entities: [], buildings: [], dialogues: [], triggers: [], encounters: [], flags: {},
+      id: 's', nom: 's', description: '', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
+      layers: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1, height: [4, 0, 0, 0, 0, 0] }],
+      entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
     } as unknown as Scene;
     const hero = { id: 'h', kind: 'hero', pos: { x: 0, y: 0, z: 1 }, conditions: [], traits: [], characteristics: {} } as unknown as Combatant;
     const vis = computeStateVisible({ scene: sc, battle: { combatants: [hero] }, partyPos: { x: 0, y: 0 }, gameTime: 12 * 60, lightLevel: null });
-    expect(vis.has('0,0,1')).toBe(true); // son propre étage (rempart)
-    expect(vis.has('3,0,0')).toBe(true); // case au SOL en contrebas RÉVÉLÉE — la correction passe `z: c.pos.z` au viewer
+    expect(vis.has('0,0,1')).toBe(true); // sa propre couche (rempart)
+    expect(vis.has('3,0,0')).toBe(true); // case au SOL en contrebas RÉVÉLÉE — le viewer porte z: c.pos.z
   });
 });

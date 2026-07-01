@@ -11,9 +11,8 @@
  * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
  * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
  */
-import { Scene, tileAt, edgeOf, wallIsOpen, rampartTilesAbove } from './scene';
+import { Scene, tileAt, edgeOf, wallIsOpen } from './scene';
 import { wallOnSight } from './lineOfSight';
-import { buildingBlockedAt } from './buildings';
 import { TERRAINS } from './terrain';
 import { sceneIsDark } from './sceneRules';
 import { Pt } from './path';
@@ -50,14 +49,15 @@ const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.a
 
 /** Grille d'opacité de la scène (1 = bloque la vue), précalculée UNE FOIS par recompute → lookups O(1)
  *  dans le rayon, au lieu d'un `.find` O(entités) par échantillon (la cause des 64 ms/recompute).
- *  Terrain opaque + empreintes de bâtiment + décor opaque (`props.json`). PUR. */
+ *  Terrain opaque + décor opaque (`props.json`). Les cloisons de bâtiment sont des `WallSeg` (arêtes),
+ *  prises en compte séparément ci-dessous. PUR. */
 interface Occ { g: Uint8Array; w: number; h: number; walls: Set<string> }
 function buildOpaque(scene: Scene): Occ {
   const { w, h } = scene.dimensions;
   const g = new Uint8Array(w * h);
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++)
-      if (TERRAINS[tileAt(scene, x, y)]?.opaque || buildingBlockedAt(scene, x, y)) g[y * w + x] = 1;
+      if (TERRAINS[tileAt(scene, x, y)]?.opaque) g[y * w + x] = 1;
   for (const e of scene.entities) {
     if (e.kind !== 'prop' || !e.ref || !findPropById(e.ref)?.opaque) continue;
     const fw = e.foot?.w ?? 1, fh = e.foot?.h ?? 1;
@@ -226,11 +226,8 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
   const occ = buildOpaque(scene);
   const smokeSet = new Set(smoke.map((s) => `${s.x},${s.y}`));
   const vis = new Set<string>();
-  const maxZ = scene.levels.reduce((m, l) => Math.max(m, l.z), 0);
   for (const v of viewers) {
     const z = v.z ?? 0;
-    // Tuiles « chemin de ronde » (dessus de mur) que CE viewer peut regarder vers le HAUT (cf. plus bas).
-    const ramparts = rampartTilesAbove(scene, z);
     const R = Math.max(v.radiusTiles, v.darkTiles);
     const x0 = Math.max(0, v.pos.x - R), x1 = Math.min(w - 1, v.pos.x + R);
     const y0 = Math.max(0, v.pos.y - R), y1 = Math.min(h - 1, v.pos.y + R);
@@ -250,17 +247,6 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
           // Même étage : LdV 2D pleine (murs d'arête compris). Étage inférieur (cross-z) : on regarde
           // par-dessus les arêtes fines (cf. LdV de combat) → seules les tuiles opaques coupent (`ignoreEdges`).
           if (d > 0 && rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, zr !== z)) continue;
-          vis.add(k);
-        }
-        // Regard vers le HAUT, LIMITÉ au CHEMIN DE RONDE : on lève les yeux sur le dessus d'un mur (rampart,
-        // à ciel ouvert), JAMAIS à travers un plancher fermé en surplomb (loge → `ramparts` ne le contient pas).
-        // Cross-z → on regarde par-dessus les arêtes fines (`ignoreEdges`). Sert le siège : voir ses défenseurs
-        // sur la muraille depuis la cour, sans pour autant voir l'ennemi au-delà (le mur coupe la LdV au sol).
-        for (let zr = z + 1; zr <= maxZ; zr++) {
-          const k = `${x},${y},${zr}`;
-          if (vis.has(k) || !ramparts.has(k)) continue;
-          if (!inDark && !(d <= v.radiusTiles && light.at(x, y, zr) >= LIT_THRESHOLD)) continue;
-          if (d > 0 && rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, true)) continue;
           vis.add(k);
         }
       }

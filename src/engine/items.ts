@@ -459,10 +459,11 @@ export function recomputeLoadout(c: Combatant): void {
     if (e.naturalWeapon) weapons.push({ ...e.naturalWeapon, hand: 'main' });
   }
 
-  // Pièce d'artillerie SERVIE (`mannedPoste`, MDG ch.12-13) : le chef de pièce DÉRIVE l'arme du poste comme
-  // arme active taguée `mountSide` — comme un Tentacule/une Morsure (dans `weapons`, HORS inventaire). Le canon
-  // reste la pièce du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE.
-  if (c.mannedPoste) {
+  // Pièce d'artillerie SERVIE (`mannedPoste`, MDG ch.12-13) : SEUL le CHEF (`crewIds[0]`) DÉRIVE l'arme du poste
+  // comme arme active taguée `mountSide` — comme un Tentacule/une Morsure (dans `weapons`, HORS inventaire). Les
+  // membres SUPPORT (`crewIds[1..]`, Arme d'équipe) occupent la pièce (lien `mannedPoste`, comptés dans l'Indice)
+  // mais ne TIRENT pas → pas d'arme. Le canon reste la pièce de la coque (vérité = la coque). KIND-AGNOSTIQUE.
+  if (c.mannedPoste && c.mannedPoste.crewIds?.[0] === c.id) {
     const w = mannedPosteWeapon(c, c.mannedPoste);
     if (w) weapons.push(w);
   }

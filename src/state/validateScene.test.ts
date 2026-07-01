@@ -44,46 +44,33 @@ describe('validateScene', () => {
     const s = base(); // 5×5
     const z1 = new Array(25).fill('vide') as string[];
     z1[1 * 5 + 1] = 'plancher'; // (1,1) marchable à l'étage
-    s.levels.push({ z: 1, tiles: z1 });
+    s.layers.push({ z: 1, tiles: z1 });
     return s;
   }
 
-  it('escalier valide (parterre→étage marchable, z différent) → 0 avertissement escalier', () => {
-    const s = twoLevel();
-    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 1, y: 1, z: 1 } }];
-    expect(msgs(validateScene([s])).some((m) => /escalier/i.test(m))).toBe(false);
+  it('toit (roof) sur la couche de base (z0) → aucun avertissement toit', () => {
+    const s = base();
+    s.roofs = [{ id: 'r0', foot: { x: 0, y: 0, w: 2, h: 2 }, style: 'maison' }];
+    expect(validateScene([s]).filter((w) => w.scope === 'roof')).toEqual([]);
   });
 
-  it('escalier vers un étage inexistant → avertissement', () => {
+  it('toit dont la couche couverte existe (twoLevel, z1) → aucun avertissement toit', () => {
     const s = twoLevel();
-    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 1, y: 1, z: 5 } }];
-    expect(msgs(validateScene([s])).some((m) => /escalier.*étage 5 inexistant/i.test(m))).toBe(true);
+    s.roofs = [{ id: 'r1', foot: { x: 0, y: 0, w: 2, h: 2 }, z: 1, style: 'maison' }];
+    expect(validateScene([s]).filter((w) => w.scope === 'roof')).toEqual([]);
   });
 
-  it('escalier sur une case non marchable (vide) → avertissement', () => {
-    const s = twoLevel();
-    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 2, y: 2, z: 1 } }]; // (2,2,1) = vide
-    expect(msgs(validateScene([s])).some((m) => /escalier.*non marchable/i.test(m))).toBe(true);
-  });
-
-  it('escalier reliant le même étage → avertissement', () => {
-    const s = twoLevel();
-    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 2, y: 1, z: 0 } }];
-    expect(msgs(validateScene([s])).some((m) => /escalier.*même étage/i.test(m))).toBe(true);
+  it('toit sur un étage INEXISTANT → avertissement (scope roof)', () => {
+    const s = base(); // un seul niveau z=0
+    s.roofs = [{ id: 'rX', foot: { x: 0, y: 0, w: 2, h: 2 }, z: 3, style: 'maison', label: 'Grenier' }];
+    const w = validateScene([s]);
+    expect(w.some((x) => x.scope === 'roof' && x.refId === 'rX' && /étage 3 inexistant/.test(x.message))).toBe(true);
   });
 
   it('ids dupliqués → erreur', () => {
     const s = base();
     s.entities.push({ id: 'dup', kind: 'prop', pos: { x: 0, y: 0 } }, { id: 'dup', kind: 'prop', pos: { x: 1, y: 1 } });
     expect(msgs(validateScene([s])).some((m) => /dupliqué/.test(m))).toBe(true);
-  });
-
-  it('building interiorScene vers une scène présente dans le projet = OK', () => {
-    const a = base();
-    a.buildings = [{ id: 'b', type: 'maison', foot: { x: 0, y: 0, w: 2, h: 2 }, reveal: 'door', interiorScene: 'B' }];
-    const b = emptyScene(3, 3);
-    b.id = 'B';
-    expect(validateScene([a, b]).filter((w) => w.scope === 'building')).toEqual([]);
   });
 
   it('effet imbriqué dans la branche RÉUSSITE d’un nœud Test est validé', () => {

@@ -271,12 +271,13 @@ export function makeVillage() {
     ],
     base: 'terre',
     legend: { p: 'pave', h: 'herbe' },
+    // Bâtiments composés (toit + murs d'arête + sol planchéié) — cf. `buildingToComposite` du générateur.
     buildings: [
-      { id: 'maison-1', type: 'maison', foot: { x: 3, y: 2, w: 3, h: 3 }, facing: 'S', reveal: 'cutaway', door: { x: 4, y: 4 }, label: 'Maison du charron' },
-      { id: 'maison-2', type: 'maison', foot: { x: 12, y: 2, w: 3, h: 3 }, facing: 'S', reveal: 'cutaway', door: { x: 13, y: 4 }, label: 'Maison morte' },
-      { id: 'maison-3', type: 'maison', foot: { x: 22, y: 3, w: 3, h: 3 }, facing: 'O', reveal: 'cutaway', door: { x: 22, y: 4 }, label: 'Maison aux volets clos' },
-      { id: 'maison-prevot', type: 'manoir', foot: { x: 25, y: 14, w: 5, h: 4 }, facing: 'O', reveal: 'cutaway', door: { x: 25, y: 16 }, label: 'Logis du prévôt' },
-      { id: 'maison-4', type: 'maison', foot: { x: 5, y: 14, w: 3, h: 3 }, facing: 'E', reveal: 'cutaway', door: { x: 7, y: 15 }, label: 'Ferme aux portes battantes' },
+      { id: 'maison-1', type: 'maison', foot: { x: 3, y: 2, w: 3, h: 3 }, door: { x: 4, y: 4 }, label: 'Maison du charron' },
+      { id: 'maison-2', type: 'maison', foot: { x: 12, y: 2, w: 3, h: 3 }, door: { x: 13, y: 4 }, label: 'Maison morte' },
+      { id: 'maison-3', type: 'maison', foot: { x: 22, y: 3, w: 3, h: 3 }, door: { x: 22, y: 4 }, label: 'Maison aux volets clos' },
+      { id: 'maison-prevot', type: 'manoir', foot: { x: 25, y: 14, w: 5, h: 4 }, door: { x: 25, y: 16 }, label: 'Logis du prévôt' },
+      { id: 'maison-4', type: 'maison', foot: { x: 5, y: 14, w: 3, h: 3 }, door: { x: 7, y: 15 }, label: 'Ferme aux portes battantes' },
     ],
     entities: [
       hero(2, 21),

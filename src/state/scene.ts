@@ -12,8 +12,8 @@ import type { Flow, Condition, EffectOp } from './flow';
 import { type DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
-import { buildingBlockedAt } from './buildings';
 import { entityBlockedAt } from './sceneRules';
+import { type Grade, gradeBetween } from './relief';
 
 /** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
 export type Terrain = string;
@@ -107,8 +107,8 @@ export interface SceneEntity {
   id: string;
   kind: EntityKind;
   pos: { x: number; y: number };
-  /** Étage (niveau de scène, cf. `levels`). 0 ou absent = sol ; >0 = posée sur un étage supérieur,
-   *  rendue soulevée de z·LEVEL_H px et triée par-dessus le niveau inférieur. */
+  /** Couche d'empilement (cf. `layers`). 0 ou absent = couche de base ; >0 = posée sur une couche
+   *  supérieure, rendue soulevée à la hauteur métrique de sa case, triée par-dessus la couche inférieure. */
   z?: number;
   /** Orientation MONDE (8 directions) — éditable, projetée au rendu (project + camRot). */
   facing?: Dir8;
@@ -158,32 +158,35 @@ export interface SceneEntity {
     spells?: string[];
     /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */
     randomChars?: boolean;
+    /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées par-dessus celles du bestiaire au spawn.
+     *  Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ à son engin (AA p.122 l.3900). */
+    skills?: import('../data').SkillRef[];
     /** Invisible en EXPLORATION (embuscade) : n'apparaît qu'au combat. `false`/absent = PNJ visible
      *  qui devient hostile au déclenchement. */
     hiddenUntilCombat?: boolean;
   };
 }
 
-export interface BuildingParams {
+/** Style de toit/façade d'un bâtiment composé (preset de catalogue). */
+export interface RoofParams {
   floors?: number;
   roofMaterial?: 'tuile' | 'chaume' | 'ardoise';
   timberColor?: string;
   wallColor?: string;
 }
 
-/** Bâtiment multi-tuiles (feature posée, façon « group » NWN). */
-export interface BuildingFeature {
+/** TOIT d'un bâtiment COMPOSÉ — la structure réelle est faite de murs d'arête (`WallSeg`, destructibles
+ *  via `structure`) sur un sol de terrain ; ce `Roof` n'est qu'une pièce de RENDU couvrant l'empreinte
+ *  enclose. PAS un combattant : « bâtiment détruit » = ses murs abattus. Intérieur TOUT-EN-SCÈNE (cutaway) :
+ *  le toit se lève quand un allié est dans l'empreinte (`roofHidden`) — plus aucune scène-intérieur séparée. */
+export interface Roof {
   id: string;
-  /** id de catalogue (cf. src/state/buildings.ts + src/gameIso/catalog/buildings.ts). */
-  type: string;
   foot: { x: number; y: number; w: number; h: number };
-  facing?: Facing;
-  /** cutaway = toit qui se lève (intérieur in-scene) ; door = façade pleine + porte → transition. */
-  reveal: 'cutaway' | 'door';
-  door?: { x: number; y: number };
-  interiorScene?: string;
-  entry?: string;
-  params?: BuildingParams;
+  /** Couche couverte (défaut 0). */
+  z?: number;
+  /** Preset de style (toit + façade), ex. 'maison' | 'taverne' | 'forge' — catalogue des presets de toit. */
+  style: string;
+  params?: RoofParams;
   label?: string;
 }
 
@@ -374,6 +377,9 @@ export interface EncounterMember {
   entityId: string;
   /** Camp au spawn : 'ally' pose un combattant du côté des héros (ex. monture prêtée). Défaut 'enemy'. */
   side?: 'enemy' | 'ally';
+  /** PNJ allié piloté par l'IA (`Combatant.aiControlled`) : un allié qui AGIT SEUL (défenseur de siège,
+   *  équipage d'une pièce…) au lieu d'être contrôlé par le joueur. Sans effet sur un membre 'enemy'. */
+  ai?: boolean;
   /** Combat monté (LDB 14) : cet acteur est une MONTURE rideable (peut être enfourché). */
   mount?: boolean;
   /** id d'entité de la monture chevauchée au spawn (pré-monté) — réf stable (≠ ancien index `rides`). */
@@ -396,15 +402,16 @@ export interface EncounterDef {
   surprise?: 'party' | 'enemies';
 }
 
-/** Un étage de la scène : sa cote `z` (0 = sol) et sa grille de tuiles (w×h aplatie). */
-export interface Level {
+/** Une COUCHE d'empilement de la scène : son index discret `z` (0 = couche de base) — identité
+ *  d'empilement, clé de pathfinding ET clé de tri de profondeur — et sa grille de tuiles (w×h aplatie).
+ *  `height[]` est PARALLÈLE à `tiles` (indexation y·w+x) : la hauteur RÉELLE de la surface, en MÈTRES
+ *  (échelle RAW 2 m/case, LDB 15 l.12). Absent = tout à 0 m. PORTEUSE (plus cosmétique) : pilote la
+ *  marchabilité (rampe/falaise via `surfaceLink`), la distance/−10 en combat et la chute. Le RENDU pose
+ *  la tuile au lift métrique (`metricToLift(height)`) ; le TRI garde `z` (occlusion dessus/dessous). */
+export interface Layer {
   z: number;
   tiles: Terrain[];
-  /** Élévation par case, PARALLÈLE à `tiles` (même indexation y·w+x), en unités d'étage : 1 = un
-   *  plancher entier, 0.4 = scène surélevée, -0.5 = fosse d'orchestre en contrebas. Absent = tout au
-   *  ras du niveau (0). Purement VISUEL/positionnel : ne change ni la profondeur (étage z) ni la
-   *  marchabilité — un dénivelé léger est un gradin franchissable (les vraies chutes = effet `fall`). */
-  elev?: number[];
+  height?: number[];
 }
 
 /** Aire d'une zone d'effet : rectangle (`rect`) ou disque de Chebyshev (`disc`, rayon en CASES). */
@@ -467,19 +474,18 @@ export interface Scene {
    *  = AUTOMATIQUE (intérieur/extérieur pour l'ambiance, piste de combat générique en combat) ;
    *  `null` = SILENCE forcé. Éditable dans l'éditeur (onglet Scène). */
   music?: { ambient?: string | null; combat?: string | null };
-  /** Étages de la scène (multi-niveaux). Au moins un niveau ; `z:0` = le sol. Chaque niveau a sa
-   *  propre grille aplatie de longueur w×h (ligne par ligne). Les niveaux z>0 sont des plateformes
-   *  en surplomb (loges, galeries) reliées par des escaliers (cf. `stairs`). */
-  levels: Level[];
-  /** Escaliers reliant deux cases de niveaux différents (seuls points de franchissement vertical). */
-  stairs?: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } }[];
+  /** Couches d'empilement de la scène. Au moins une ; `z:0` = couche de base. Chaque couche a sa propre
+   *  grille aplatie w×h + ses hauteurs métriques (`Layer.height`). Les couches z>0 sont des surfaces
+   *  superposées (ponts, passerelles, étages) : on marche DESSUS et DESSOUS. Le franchissement vertical
+   *  s'auto-dérive du delta de hauteur entre voisines (`surfaceLink`) — aucun escalier explicite. */
+  layers: Layer[];
   /** Murs sur ARÊTES de case (cloisons fines entre deux cases adjacentes) — bloquent le passage sans
    *  occuper de tuile, contrairement au terrain `mur`. Forme canonique : `side:'N'` = arête entre (x,y)
    *  et (x,y-1) ; `side:'E'` = arête entre (x,y) et (x+1,y). `door` = arête franchissable (porte). */
   walls?: WallSeg[];
   entities: SceneEntity[];
-  /** Bâtiments multi-tuiles posés sur la grille (optionnel → [] par défaut). */
-  buildings?: BuildingFeature[];
+  /** Toits des bâtiments COMPOSÉS (murs d'arête + sol terrain + ce toit). Optionnel → [] par défaut. */
+  roofs?: Roof[];
   dialogues: Dialogue[];
   triggers: Trigger[];
   encounters: EncounterDef[];
@@ -501,32 +507,48 @@ export function isMerScene(scene: { metresPerTile?: number } | null | undefined)
   return sceneMetresPerTile(scene) >= 4;
 }
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
-/** Grille de tuiles d'un niveau (défaut z=0 = sol). Repli sur le 1ᵉʳ niveau si `z` absent. */
-export function levelTiles(scene: Scene, z = 0): Terrain[] {
-  return (scene.levels.find((l) => l.z === z) ?? scene.levels[0]).tiles;
+/** Grille de tuiles d'une couche (défaut z=0 = base). Repli sur la 1ʳᵉ couche si `z` absent. */
+export function layerTiles(scene: Scene, z = 0): Terrain[] {
+  return (scene.layers.find((l) => l.z === z) ?? scene.layers[0]).tiles;
 }
 
 export function tileAt(scene: Scene, x: number, y: number, z = 0): Terrain {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 'mur';
-  return levelTiles(scene, z)[y * scene.dimensions.w + x] ?? 'sol';
+  return layerTiles(scene, z)[y * scene.dimensions.w + x] ?? 'sol';
 }
 
-/** Élévation (décalage vertical SUB-niveau, en unités d'étage : 1 = un plancher) de la case (x,y) du
- *  niveau `z` : >0 surélevé (scène), <0 en contrebas (fosse). Hors-grille ou sans tableau `elev` → 0.
- *  Repli sur le 1ᵉʳ niveau si `z` absent, comme `tileAt`. */
-export function elevAt(scene: Scene, x: number, y: number, z = 0): number {
+/** Hauteur RÉELLE (mètres) de la surface de la case (x,y) sur la couche `z` : >0 surélevée, <0 en
+ *  contrebas. Hors-grille ou sans tableau `height` → 0. Repli sur la 1ʳᵉ couche si `z` absent, comme
+ *  `tileAt`. PORTEUSE : pilote rampe/falaise (`surfaceLink`), distance verticale et chute. */
+export function heightAt(scene: Scene, x: number, y: number, z = 0): number {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 0;
-  const lvl = scene.levels.find((l) => l.z === z) ?? scene.levels[0];
-  return lvl.elev?.[y * scene.dimensions.w + x] ?? 0;
+  const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];
+  return layer.height?.[y * scene.dimensions.w + x] ?? 0;
 }
 
 export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
-  if (z === 0 && buildingBlockedAt(scene, x, y)) return false; // les bâtiments sont au sol
-  if (z > 0 && tileCollapsed(scene, x, y, z)) return false; // passerelle d'étage effondrée → plus marchable
+  if (z > 0 && tileCollapsed(scene, x, y, z)) return false; // passerelle effondrée → plus marchable
   if (entityBlockedAt(scene, x, y)) return false; // empreinte multi-cases d'un décor (foot {w,h})
   return terrainWalkable(tileAt(scene, x, y, z));
+}
+
+/** Lien vertical entre deux cases 4-VOISINES (couches possiblement différentes) : compare leurs hauteurs
+ *  métriques et classe le franchissement à pied — `flat`/`ramp` marchable, `cliff` infranchissable
+ *  horizontalement (on y descend en chutant, on y monte par Escalade). SOURCE UNIQUE de l'auto-connexion
+ *  du relief : remplace les escaliers explicites ET la machinerie de rempart. `drop` = hauteur de `b`
+ *  moins celle de `a` (>0 = `b` plus haut). Renvoie null si `a` et `b` ne sont pas 4-adjacentes en (x,y).
+ *  La marchabilité du terrain/des murs reste séparée (`isWalkable`/`wallBetween`) — ici, seule la hauteur. */
+export function surfaceLink(
+  scene: Scene,
+  a: { x: number; y: number; z?: number },
+  b: { x: number; y: number; z?: number },
+): { grade: Grade; drop: number } | null {
+  if (Math.abs(a.x - b.x) + Math.abs(a.y - b.y) !== 1) return null;
+  const ha = heightAt(scene, a.x, a.y, a.z ?? 0);
+  const hb = heightAt(scene, b.x, b.y, b.z ?? 0);
+  return { grade: gradeBetween(ha, hb), drop: hb - ha };
 }
 
 /** Mur sur ARÊTE de case. `side:'N'` = arête entre (x,y) et (x,y-1) ; `side:'E'` = arête entre (x,y)
@@ -547,10 +569,6 @@ export interface WallSeg {
    *  qu'elle tient, l'arête bloque passage+vue comme un mur plein ; une fois ABATTUE (`structureIsDown`),
    *  l'arête devient une BRÈCHE franchissable et transparente. */
   structure?: string;
-  /** Hauteur du rempart en ÉTAGES (1 = un niveau = LEVEL_H px) — libère la hauteur fixe d'une structure
-   *  d'arête : un mur d'enceinte `height:1` monte pile au chemin de ronde z=1 (chapiteau + créneaux au
-   *  sommet). Absent/0 = hauteur par défaut (WALL_H). */
-  height?: number;
 }
 
 /** Clé de flag d'état d'une porte (`scene.flags`) — `true` = OUVERTE, `false` = FERMÉE (override runtime
@@ -673,30 +691,6 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
     .map((c) => ({ x: c.x, y: c.y, z }));
 }
 
-/** Ensemble des tuiles « CHEMIN DE RONDE » perçues/dessinées DEPUIS l'étage `fromZ` : tout sol MARCHABLE
- *  d'un étage SUPÉRIEUR (à ciel ouvert) PORTÉ par une arête-mur qui s'élève de `fromZ` (ou moins) jusqu'à
- *  ce niveau (mur `height` l'atteignant). C'est le « bord » d'un rempart — on lève les yeux dessus et on
- *  le dessine d'en bas — par opposition à un plancher en SURPLOMB (loge), porté par rien, qui reste masqué.
- *  SOURCE UNIQUE de la règle « bord oui, surplomb non », partagée par la VISION (regard vers le haut limité)
- *  et le RENDU (étage du dessus vu depuis l'actif). Une passe O(murs) → lookups O(1) (`Set` "x,y,z"). */
-export function rampartTilesAbove(scene: Pick<Scene, 'walls' | 'levels' | 'dimensions'>, fromZ: number): Set<string> {
-  const set = new Set<string>();
-  const hasLevel = (z: number) => scene.levels.some((l) => l.z === z);
-  for (const w of scene.walls ?? []) {
-    const base = w.z ?? 0, top = base + (w.height ?? 0);
-    if (base > fromZ || top <= fromZ) continue; // l'arête ne s'élève PAS au-dessus de fromZ (pas un mur porteur de rempart d'ici)
-    // tuiles bordées par cette arête (ses DEUX faces) — calque `parapetTilesAbove`.
-    const cells = w.side === 'N' ? [[w.x, w.y], [w.x, w.y - 1]]
-      : w.side === 'E' ? [[w.x, w.y], [w.x + 1, w.y]] : [[w.x, w.y]];
-    for (let z = Math.max(fromZ + 1, base + 1); z <= top; z++) {
-      if (!hasLevel(z)) continue; // pas de niveau réel à cette hauteur (un mur `height:2` sans z=2 ne crée pas de rempart fantôme)
-      for (const [cx, cy] of cells)
-        if (terrainWalkable(tileAt(scene as Scene, cx, cy, z))) set.add(`${cx},${cy},${z}`);
-    }
-  }
-  return set;
-}
-
 export function emptyScene(w = 20, h = 15): Scene {
   return {
     id: `scene-${Date.now()}`,
@@ -704,9 +698,8 @@ export function emptyScene(w = 20, h = 15): Scene {
     description: '',
     dimensions: { w, h },
     ambiance: 'exterieur',
-    levels: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
+    layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
     entities: [],
-    buildings: [],
     dialogues: [],
     triggers: [],
     encounters: [],

@@ -57,7 +57,7 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
       turn: 0, round: 1, action: 'cast', selectedSpellId: spell.id, reachable: new Map(),
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     } as never;
-    const scene = { id: 's', dimensions: { w: 20, h: 20 }, levels: [{ z: 0, tiles: [] }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+    const scene = { id: 's', dimensions: { w: 20, h: 20 }, layers: [{ z: 0, tiles: [] }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
     useGame.setState({ battle, scene, party: [] });
     // Pose l'état figé : zone non posée + centre auto-choisi sur le paquet (8,8).
     useGame.setState({
@@ -125,7 +125,7 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
       turn: 0, round: 1, action: 'cast', selectedSpellId: spell.id, reachable: new Map(),
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     } as never;
-    const scene = { id: 's', dimensions: { w: 20, h: 20 }, levels: [{ z: 0, tiles: [] }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+    const scene = { id: 's', dimensions: { w: 20, h: 20 }, layers: [{ z: 0, tiles: [] }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
     useGame.setState({ battle, scene, party: [] });
     useGame.setState({
       pendingCast: {

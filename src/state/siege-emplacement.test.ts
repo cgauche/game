@@ -45,7 +45,7 @@ const mkEnemy = (id: string, x: number, y: number, E = 30, wounds = 40): Combata
  *  porteur (≠ coque) pour que `shipOfCrew(chef)` rate et que l'arc retombe sur l'orientation du chef. */
 const mkEmplacement = (poste: ShipPoste, pos = { x: 5, y: 7 }): Combatant =>
   ({ id: 'emplacement', name: 'Affût de baliste', kind: 'enemy', pos, conditions: [], weapons: [],
-    wounds: { current: 30, max: 30 }, advantage: 0, postes: [poste] }) as unknown as Combatant;
+    inert: true, wounds: { current: 0, max: 0 }, advantage: 0, postes: [poste] }) as unknown as Combatant; // affût RAW-pur (AA p.122-123) : 0 Blessure, immune
 
 const mkPoste = (engineId: string, crewIds: string[], side?: FireArc): ShipPoste =>
   ({ item: itemFromTrappingById(engineId)!, crewIds, ...(side ? { side } : {}) });
@@ -53,7 +53,7 @@ const mkPoste = (engineId: string, crewIds: string[], side?: FireArc): ShipPoste
 /** Scène terrestre minimale (40×40 d'herbe, 2 m/case) — PAS de merScale/metresPerTile « Mer ». */
 const groundScene = (): Scene =>
   ({ id: 's', name: 's', dimensions: { w: 40, h: 40 }, ambiance: 'jour', metresPerTile: 2,
-    levels: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
+    layers: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
 const mkGet = (sc: Scene, combatants: Combatant[], facing: Record<string, string> = {}, movementUsed = 0): (() => GameState) =>
   (() => ({ scene: sc, battle: { combatants, movementUsed }, facing, gameTime: 0, log: () => {} })) as unknown as () => GameState;

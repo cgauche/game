@@ -13,6 +13,7 @@ import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
 import { getViewZ, setViewZ } from '../gameIso/viewLevel';
+import { setRevealAll } from './visionState';
 import { rule, setRule, resetRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
 import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
 import { willAutoResolve } from './combatAuto';
@@ -138,9 +139,9 @@ export function buildApi() {
       return `✅ groupe → (${pt.x},${pt.y}${pt.z ? `,z${pt.z}` : ''})`;
     },
 
-    /** VISUALISER LE MULTI-NIVEAUX — décompose le rendu étage par étage (tuiles pleines/vides, murs,
-     *  élévation min/max) + l'étage actuellement mis en avant. Pour comprendre « ce qui est au-dessus
-     *  / en dessous / au même plan ». */
+    /** VISUALISER LE MULTI-NIVEAUX — décompose le rendu couche par couche (tuiles pleines/vides, murs,
+     *  hauteur MÉTRIQUE min/max en mètres) + l'étage actuellement mis en avant. Pour comprendre « ce qui
+     *  est au-dessus / en dessous / au même plan ». */
     levels: () => {
       const s = g();
       const sc = s.scene;
@@ -151,15 +152,15 @@ export function buildApi() {
         etageActif: getViewZ() ?? (s.partyPos.z ?? 0),
         override: getViewZ(),
         groupeZ: s.partyPos.z ?? 0,
-        etages: [...sc.levels].sort((a, b) => a.z - b.z).map((l) => {
+        couches: [...sc.layers].sort((a, b) => a.z - b.z).map((l) => {
           const pleines = l.tiles.filter((t) => t !== 'vide').length;
-          const elevs = (l.elev ?? []).filter((e) => e !== 0);
+          const hs = (l.height ?? []).filter((h) => h !== 0);
           return {
             z: l.z,
             tuilesPleines: pleines,
             vide: l.tiles.length - pleines,
             murs: wallsByZ[l.z] ?? 0,
-            elevation: elevs.length ? { cases: elevs.length, min: Math.min(...elevs), max: Math.max(...elevs) } : 'plat',
+            hauteur: hs.length ? { cases: hs.length, minM: Math.min(...hs), maxM: Math.max(...hs) } : 'plat',
           };
         }),
       };
@@ -174,30 +175,28 @@ export function buildApi() {
       return `✅ étage affiché : ${z === null ? 'auto (suit le groupe)' : z}`;
     },
 
-    /** PLAN ASCII de l'étage (défaut = l'étage AFFICHÉ) — la DONNÉE rendue en box-drawing, à comparer
+    /** PLAN ASCII de la couche (défaut = celle AFFICHÉE) — la DONNÉE rendue en box-drawing, à comparer
      *  ligne pour ligne avec ce qui est à l'écran (vue du dessus). Tuiles : `.` parquet · `,` dalle ·
-     *  `M` marbre · `S` surélevé · `s` contrebas · `#` escalier · espace=vide. Arêtes : `-`/`|` mur ·
-     *  `:` porte · `/ \` diagonale. `console.log(__wfrp.ascii())` pour l'alignement monospace. */
+     *  `M` marbre · `S` surélevé · `s` contrebas (hauteur métrique ≷ 0) · espace=vide. Arêtes : `-`/`|`
+     *  mur · `:` porte · `/ \` diagonale. `console.log(__wfrp.ascii())` pour l'alignement monospace. */
     ascii: (z?: number) => {
       const s = g();
       const sc = s.scene;
       if (!sc) return '❌ aucune scène';
       const zz = z ?? getViewZ() ?? (s.partyPos.z ?? 0);
       const W = sc.dimensions.w, H = sc.dimensions.h;
-      const lvl = sc.levels.find((l) => l.z === zz) ?? sc.levels[0];
-      const tiles = lvl.tiles, elev = lvl.elev ?? [];
-      const wall = new Map<string, boolean>(), diag = new Map<string, string>(), stair = new Set<string>();
+      const lvl = sc.layers.find((l) => l.z === zz) ?? sc.layers[0];
+      const tiles = lvl.tiles, height = lvl.height ?? [];
+      const wall = new Map<string, boolean>(), diag = new Map<string, string>();
       for (const w of sc.walls ?? []) {
         if ((w.z ?? 0) !== zz) continue;
         if (w.side === 'N' || w.side === 'E') wall.set(`${w.x},${w.y},${w.side}`, !!w.door);
         else diag.set(`${w.x},${w.y}`, w.side);
       }
-      for (const st of sc.stairs ?? []) if (st.from.z === zz || st.to.z === zz) stair.add(`${st.from.x},${st.from.y}`);
       const cell = (x: number, y: number) => {
-        if (stair.has(`${x},${y}`)) return '#';
         const d = diag.get(`${x},${y}`); if (d) return d;
-        const t = tiles[y * W + x], e = elev[y * W + x] ?? 0;
-        if (t === 'planches') return e > 0 ? 'S' : e < 0 ? 's' : 'P';
+        const t = tiles[y * W + x], h = height[y * W + x] ?? 0;
+        if (t === 'planches') return h > 0 ? 'S' : h < 0 ? 's' : 'P';
         return t === 'plancher' ? '.' : t === 'dalle' ? ',' : t === 'marbre' ? 'M' : t === 'vide' ? ' ' : '?';
       };
       const rows: string[] = [];
@@ -219,6 +218,26 @@ export function buildApi() {
     screen: (screen: string) => {
       g().setScreen(screen as never);
       return g().screen;
+    },
+
+    /** Brouillard ON/OFF (recette) : `fog(false)` ou `fog()` révèle TOUTE la carte pour diagnostiquer le
+     *  RENDU sans la vision ; `fog(true)` rétablit le brouillard normal. Bump `partyPos` (dep du useMemo
+     *  de visibilité d'IsoStage) → recalcul + re-render immédiat. */
+    fog: (on = false) => {
+      setRevealAll(!on);
+      useGame.setState((s) => ({ partyPos: { ...s.partyPos } }));
+      return on ? '🌫️ brouillard ON' : '👁️ brouillard OFF — toute la carte révélée';
+    },
+
+    /** DEBUG carte (recette) : overlay d'annotation partagé sur IsoStage — coordonnées `x,y` (+`z{n}`)
+     *  centrées par case, teinte par étage (z1 cyan / z2 violet), pastilles de rôle de structure
+     *  (courtine rouge / tour orange / porte jaune / escalier bleu) + légende. Pour pointer la MÊME case
+     *  que l'utilisateur sans chasser les pixels. Sans argument : BASCULE ; `labels(true)`/`labels(false)`
+     *  force. Zéro coût quand OFF (overlay non rendu). */
+    labels: (on?: boolean) => {
+      const v = on ?? !g().debugLabels;
+      useGame.setState({ debugLabels: v });
+      return v ? '🏷️ labels ON' : 'labels OFF';
     },
 
     /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée d'IsoStage comme si la souris y

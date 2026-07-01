@@ -19,9 +19,7 @@ const forge: BuildingDef['render'] = (foot, params, ctx) => {
 export const building: BuildingDef = {
   id: 'forge',
   label: 'Forge',
-  category: 'petit',
   defaultFoot: { w: 3, h: 2 },
-  defaultReveal: 'cutaway',
   paramsSchema: HOUSE_SCHEMA,
   render: forge,
 };

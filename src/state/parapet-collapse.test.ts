@@ -20,7 +20,7 @@ function sceneWithParapet(): Scene {
   const s = structuredClone(testScene);
   s.walls = [{ x: EDGE.x, y: EDGE.y, side: EDGE.side, structure: 'porte-de-ville' }];
   // Chemin de ronde au 1ᵉʳ étage : grille marchable surplombant le sol et la herse.
-  s.levels = [...s.levels, { z: 1, tiles: new Array(s.dimensions.w * s.dimensions.h).fill('herbe') as Terrain[] }];
+  s.layers = [...s.layers, { z: 1, tiles: new Array(s.dimensions.w * s.dimensions.h).fill('herbe') as Terrain[] }];
   return s;
 }
 

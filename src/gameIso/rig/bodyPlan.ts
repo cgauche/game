@@ -14,7 +14,7 @@ import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
 import { defById, speciesScale } from './creatures';
-import { findCreatureById, vehicles } from '../../data';
+import { findCreatureById, findTrappingById, vehicles } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
@@ -124,6 +124,17 @@ export function resolveRender(species: string | undefined, traits: import('../..
     const d = defById(resolved);
     if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: resolved, scale: speciesScale(resolved) };
     return { kind: 'rig', plan: 'biped', species: resolved, scale: speciesScale(resolved) };
+  }
+  // Engin de siège : `idOrName` n'est PAS une créature mais un TRAPPING à art d'affût (`siegeRig`, ex.
+  // 'baliste'/'canon-petit') → ce rig pilote la silhouette (plan 'engin'). L'apparence est DÉRIVÉE de la
+  // ref : un emplacement servi (éditeur/scène) ou un affût-combattant n'a plus besoin d'`appearance.species`.
+  if (!rec) {
+    const siegeRig = findTrappingById(idOrName)?.siegeRig;
+    if (siegeRig) {
+      const d = defById(siegeRig);
+      if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: siegeRig, scale: speciesScale(siegeRig) };
+      return { kind: 'rig', plan: 'biped', species: siegeRig, scale: speciesScale(siegeRig) };
+    }
   }
   // Record sans espèce mais trait Nuée (les records Nuée, si le caller n'a pas passé les traits).
   if (isSwarm(rec?.traits)) return { kind: 'plan', plan: 'swarm', species: swarmSp, scale: speciesScale(swarmSp) };

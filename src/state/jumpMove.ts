@@ -1,14 +1,7 @@
-import { Scene, Effect, isWalkable } from './scene';
+import { Scene, Effect, isWalkable, heightAt } from './scene';
 import { type Flow, EMPTY_FLOW, flowFromEffects, testFlow } from './flow';
 import type { Pt } from './path';
 import { jumpNeedsTest } from '../engine/movement';
-
-/**
- * Hauteur d'un étage pour les Dégâts d'un saut raté. Le livre source les DÉGÂTS de chute (3/m + 1d10,
- * LDB 15 l.118) ; la hauteur d'un niveau est une propriété de carte → ~4 m (une volée d'escalier),
- * surchargeable par l'Effet `fall` lui-même.
- */
-export const FALL_METRES_PER_LEVEL = 4;
 
 export type JumpPlan = { kind: 'free' } | { kind: 'test'; flow: Flow };
 
@@ -28,7 +21,9 @@ export function planJump(scene: Scene, takeoff: Pt, landing: Pt, movement: numbe
   const gap = { x: takeoff.x + dx, y: takeoff.y + dy }; // 1re case du gouffre franchi
   let belowZ = 0; // niveau d'atterrissage en cas d'échec : 1er niveau marchable SOUS le décollage, sinon le sol
   for (let z = tz - 1; z >= 0; z--) if (isWalkable(scene, gap.x, gap.y, z)) { belowZ = z; break; }
-  const metres = Math.max(FALL_METRES_PER_LEVEL, (tz - belowZ) * FALL_METRES_PER_LEVEL);
+  // Chute = vraie hauteur métrique (relief) entre la surface de décollage et celle d'atterrissage en
+  // contrebas (LDB 15 l.117-122 : 3 Dégâts/m) — plus de forfait par niveau, la hauteur du décor fait foi.
+  const metres = Math.abs(heightAt(scene, takeoff.x, takeoff.y, tz) - heightAt(scene, gap.x, gap.y, belowZ));
   const difficulty = runUpCases >= Math.ceil(movement / 2) ? 'accessible' : 'intermediaire';
   const fall: Effect = { type: 'fall', target: 'party', metres, to: { x: gap.x, y: gap.y, z: belowZ } };
   // Test d'Athlétisme « Saut » : la réussite ne fait rien (on a déjà franchi, optimiste) ; l'échec

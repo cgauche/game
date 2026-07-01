@@ -13,6 +13,7 @@ import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, 
 import type { Flow } from './flow';
 import type { TraitInstance } from '../engine/statEntry';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
+import type { SkillRef } from '../data';
 import type { Dir8 } from './dir8';
 
 export interface AuthoredEnemy {
@@ -28,6 +29,8 @@ export interface AuthoredEnemy {
   anim?: string;
   /** Camp au spawn (défaut 'enemy'). */
   side?: 'enemy' | 'ally';
+  /** PNJ allié piloté par l'IA (avec `side:'ally'`) : agit seul, le joueur ne le micro-gère pas. */
+  ai?: boolean;
   /** Monture rideable. */
   mount?: boolean;
   /** Index (dans `enemies`) de la monture chevauchée au spawn. */
@@ -35,6 +38,9 @@ export interface AuthoredEnemy {
   optionals?: TraitInstance[];
   spells?: string[];
   randomChars?: boolean;
+  /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées au spawn (servant de pièce : Projectiles
+   *  du Groupe de son engin, AA p.122-124). */
+  skills?: SkillRef[];
   /** Coque/navire (`ref` = id de `vehicles.json`) : `id`s d'entités d'ÉQUIPAGE exposées (MDG ch.14).
    *  Les ids des ennemis de la rencontre sont déterministes : `enemy-<idRencontre>-<index>`. */
   crewIds?: string[];
@@ -86,12 +92,14 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
     if (e.optionals) combat.optionals = e.optionals;
     if (e.spells) combat.spells = e.spells;
     if (e.randomChars) combat.randomChars = e.randomChars;
+    if (e.skills) combat.skills = e.skills;
     if (Object.keys(combat).length) ent.combat = combat;
     return ent;
   });
   const members: EncounterMember[] = a.enemies.map((e, i) => {
     const m: EncounterMember = { entityId: ids[i] };
     if (e.side) m.side = e.side;
+    if (e.ai) m.ai = e.ai;
     if (e.mount) m.mount = e.mount;
     if (e.rides != null && ids[e.rides]) m.ridesEntityId = ids[e.rides];
     return m;

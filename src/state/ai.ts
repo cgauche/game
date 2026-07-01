@@ -24,13 +24,15 @@
  * légère (ne pas s'isoler de l'escouade). Aucun nouveau MODIFICATEUR de combat n'est inventé.
  */
 import { Combatant, Weapon } from '../engine/types';
-import { Scene } from './scene';
+import { Scene, sceneMetresPerTile } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
-import { footprintChebyshev, footprintN, combatDistance, TILES_PER_LEVEL } from './footprint';
+import { footprintChebyshev, footprintN, combatDistance } from './footprint';
+import { verticalTiles } from './relief';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
 import { rangeBandModifier, outnumberMod, type ModLine } from '../engine/combat';
 import { effectiveWeaponRange } from '../engine/weaponDamage';
 import { selectedAmmo } from '../engine/items';
+import { structureImmune, structureAimCell } from '../engine/structures';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, spellTargetHarm } from './aiSpellValue';
 
@@ -137,6 +139,13 @@ export interface EnemyTurnInput {
    *  impur (`servablePostes`, qui a la liste COMPLÈTE des combattants). Donnent un candidat `manPoste`
    *  KIND-AGNOSTIQUE. ABSENT/vide (toute fixture sans emplacement) → aucun candidat (parité golden). */
   servablePostes?: { hullId: string; posteUid: string }[];
+  /** Structures destructibles encore debout (porte/mur, `isStructure`), surfacées par l'appelant impur.
+   *  Une arme de SIÈGE les cible (AA l.3808 : armes « conçues pour les formations et les grosses cibles
+   *  statiques, pas les cibles individuelles ») — l'Atout Siège (×2 aux structures, `woundsFromHit`) fait
+   *  que la valeur d'une telle attaque est NATURELLEMENT élevée → une pièce de siège PRIORISE la porte,
+   *  tandis qu'une arme ordinaire ne l'abîme pas (`structureImmune` → 0 Blessure → utilité ~0, non choisie).
+   *  ABSENT/vide (toute fixture sans structure) → aucun candidat (parité golden). */
+  structures?: Combatant[];
 }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -482,13 +491,16 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
   const mr = meleeReachTiles(enemy.weapons);
-  // Z-AWARE (combat-z) : la séparation verticale (Δétage × TILES_PER_LEVEL) borne la portée par le bas — un
-  // ennemi au sol ne frappe pas un héros sur la muraille même 2D-adjacent. `a` est une case que l'ennemi
-  // occuperait (sur SON étage `pos.z`) ; `b` la cible. Même décompte que `combatDistance` (résolution).
-  const withinMelee = (a: Pt, b: Pt) => Math.max(chebyshev(a, b), TILES_PER_LEVEL * Math.abs((pos.z ?? 0) - (b.z ?? 0))) <= mr;
+  const mpt = sceneMetresPerTile(scene); // m/case de la scène (échelle RAW, défaut 2) → convertit la hauteur en cases
+  // Z-AWARE (relief métrique) : la séparation VERTICALE réelle (Δhauteur ÷ m/case, `verticalTiles`) borne la
+  // portée par le bas — un ennemi au sol ne frappe pas un héros sur la muraille même 2D-adjacent. La hauteur de
+  // l'ennemi (`pos.h`) vaut pour la case candidate `a` (sur SA surface) ; `b` (une cible posée) porte la sienne.
+  // Même décompte vertical que `combatDistance`.
+  const withinMelee = (a: Pt, b: Pt & { h?: number }) =>
+    Math.max(chebyshev(a, b), verticalTiles(pos.h ?? 0, b.h ?? 0, mpt)) <= mr;
   // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
-  // `combatDistance` plie empreinte ET Δz → s'aligne exactement sur la grille d'engagement de la résolution.
-  const inMelee = (h: Combatant) => combatDistance(enemy, h) <= mr;
+  // `combatDistance` plie empreinte ET Δhauteur (même `mpt`) → s'aligne sur la grille d'engagement de la résolution.
+  const inMelee = (h: Combatant) => combatDistance(enemy, h, mpt) <= mr;
 
   // Possède-t-il un sort OFFENSIF jouable (data-driven : Projectile ou op de dégât/contrôle hostile) ? Si
   // oui, il LANCE plutôt que de tirer (parité avec l'ancien `offensiveSpell == null` du gate de tir).
@@ -955,6 +967,34 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       for (const { to, posV } of approachCandidates(t)) {
         const u = atk + posV - Weff.approachDist * manhattan(to, t.pos!);
         candidates.push({ action: { kind: 'move', to, thenTargetId: t.id }, kind: 'move', utility: u, targetId: t.id, coord: to });
+      }
+    }
+  }
+
+  // === SIÈGE : cibler les STRUCTURES destructibles (porte/mur) ======================================
+  // AA l.3808 : les armes de siège sont « conçues pour attaquer des formations ou de grosses cibles
+  // STATIQUES, et non des cibles individuelles ». L'IA prend donc la porte/le mur pour cible. L'Atout Siège
+  // (×2 aux structures, appliqué dans `woundsFromHit`) rend la valeur d'une telle attaque NATURELLEMENT
+  // élevée → une PIÈCE DE SIÈGE priorise la porte (son rôle), tandis qu'une arme ordinaire ne l'abîme PAS
+  // (`structureImmune` → 0 Blessure → utilité ~0, jamais choisie). Indépendant du vivier héros : une pièce
+  // peut n'avoir QUE la porte en vue (≠ `canShoot`, qui exige un héros tirable). Vide → aucun candidat.
+  const structureTargets = (input.structures ?? []).filter((st) => st.pos);
+  const canFireStruct = !frenzied && hasRanged && !!rangedW && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon);
+  for (const st of structureTargets) {
+    // On vise la FACE exposée de la structure (côté tireur) : c'est par là que la LdV n'est pas coupée par
+    // l'arête de la structure elle-même (un canon voit la face de la porte, pas la case derrière elle).
+    const stSeen = losClear(scene, pos, { ...structureAimCell(pos, st), z: pos.z }, smoke ?? []);
+    // TIR (pièce de siège qui brèche la porte) — face visible, en portée, et que l'arme peut ABÎMER.
+    if (canFireStruct && stSeen && !structureImmune(rangedW!, st)
+        && (maxWeaponRange <= 0 || rangeBandModifier(fpDist(st), maxWeaponRange) != null)) {
+      candidates.push({ action: { kind: 'shoot', targetId: st.id }, kind: 'shoot', utility: attackUtility(st, { kind: 'ranged', weapon: rangedW!, dist: fpDist(st) }), targetId: st.id, coord: st.pos! });
+    }
+    // MÊLÉE / APPROCHE (bélier ou arme abîmant une porte non-Impénétrable) — auto-touche, pas de défense.
+    if (hasMeleeWeapon && meleeWeapon && !structureImmune(meleeWeapon, st)) {
+      if (inMelee(st)) candidates.push({ action: { kind: 'melee', targetId: st.id }, kind: 'melee', utility: attackUtility(st, { kind: 'melee', weapon: meleeWeapon }), targetId: st.id, coord: st.pos! });
+      else if (!committingPrep) for (const { to, posV } of approachCandidates(st)) {
+        const u = attackUtility(st, { kind: 'melee', weapon: meleeWeapon }) + posV - Weff.approachDist * manhattan(to, st.pos!);
+        candidates.push({ action: { kind: 'move', to, thenTargetId: st.id }, kind: 'move', utility: u, targetId: st.id, coord: to });
       }
     }
   }

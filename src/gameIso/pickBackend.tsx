@@ -9,7 +9,7 @@ import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { resolveRender, planById } from './rig/bodyPlan';
 import { isStructure } from '../engine/structures';
-import { findCreatureById, findCareerById } from '../data';
+import { findCreatureById, findCareerById, findTrappingById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite, pnjSprite } from './sprites';
 import { hashSeed } from './appearance';
@@ -147,7 +147,8 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);
   // Garde DEV : un personnage dont la `ref` n'est PAS un id de créature valide ET sans espèce explicite
   // tombe silencieusement en bipède Humain (plus de devinette par le nom). Signale l'apparence perdue.
-  if (import.meta.env.DEV && ent.kind === 'personnage' && ent.ref && !ent.appearance?.species && !findCreatureById(ent.ref))
+  // Un engin de siège (ref = trapping à art d'affût `siegeRig`) est résolu via la ref → pas un défaut perdu.
+  if (import.meta.env.DEV && ent.kind === 'personnage' && ent.ref && !ent.appearance?.species && !findCreatureById(ent.ref) && !findTrappingById(ent.ref)?.siegeRig)
     console.warn(`[pickBackend] entité « ${ent.id} » : ref « ${ent.ref} » non résolue (pas un id de créature) et sans Espèce (rig) → bipède Humain par défaut. Choisis une Espèce (rig) ou une réf de créature valide.`);
   const prof =
     ent.kind === 'personnage'

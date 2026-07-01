@@ -18,9 +18,7 @@ const taverne: BuildingDef['render'] = (foot, params, ctx) => {
 export const building: BuildingDef = {
   id: 'taverne',
   label: 'Taverne',
-  category: 'petit',
   defaultFoot: { w: 4, h: 3 },
-  defaultReveal: 'cutaway',
   paramsSchema: HOUSE_SCHEMA,
   render: taverne,
 };

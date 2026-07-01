@@ -10,7 +10,7 @@ import { pathTo } from './path';
  */
 function chasm(width: number, gapCols: number[]): Scene {
   const s = emptyScene(width, 3); // tout « herbe » (marchable)
-  const t = s.levels[0].tiles as Terrain[];
+  const t = s.layers[0].tiles as Terrain[];
   for (const gx of gapCols) for (let y = 0; y < 3; y++) t[y * width + gx] = 'vide'; // colonne-gouffre infranchissable à pied
   return s;
 }

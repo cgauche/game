@@ -15,9 +15,7 @@ const echoppe: BuildingDef['render'] = (foot, params, ctx) => {
 export const building: BuildingDef = {
   id: 'echoppe',
   label: 'Échoppe',
-  category: 'petit',
   defaultFoot: { w: 2, h: 2 },
-  defaultReveal: 'cutaway',
   paramsSchema: HOUSE_SCHEMA,
   render: echoppe,
 };

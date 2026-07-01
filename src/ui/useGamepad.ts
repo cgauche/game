@@ -52,7 +52,10 @@ export type PadButton = 'A' | 'B' | 'X' | 'Y' | 'LB' | 'RB' | 'LT' | 'RT' | 'Bac
 export function padDir(dir: PadDir): void {
   const ctx = padContext();
   if (ctx === 'map') {
+    // Carte : combat → curseur de visée ; exploration → pas du groupe. Les deux `when` sont DISJOINTS
+    // (inBattle ⊥ exploration) → un seul raccourci agit ; même registre, aucun chemin parallèle.
     runBindingById('cursor-' + dir, useGame.getState);
+    runBindingById('explore-' + dir, useGame.getState);
     return;
   }
   const container = activeContainer(ctx);

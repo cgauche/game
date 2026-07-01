@@ -15,9 +15,7 @@ const chapelle: BuildingDef['render'] = (foot, params, ctx) => {
 export const building: BuildingDef = {
   id: 'chapelle',
   label: 'Chapelle',
-  category: 'monument',
   defaultFoot: { w: 4, h: 5 },
-  defaultReveal: 'door',
   paramsSchema: FLOORS_ONLY,
   render: chapelle,
 };

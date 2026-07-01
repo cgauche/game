@@ -75,7 +75,7 @@ describe('IA — Empoignade : agir quand on est Empoigné (LDB 14 l.161)', () =>
 });
 
 const arenaScene = () =>
-  ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, levels: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+  ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, layers: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 describe('IA Empoignade — dispatch (runEnemyAI) : l’Empoigné LUTTE, le tireur supérieur BRISE puis agit', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); clearAiTurnLog(); useGame.setState({ battle: null, party: [] }); seedBattleRng(1); });

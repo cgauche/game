@@ -1,5 +1,7 @@
 import { type Scene, isWalkable } from './scene';
-import { pathTo, type Pt } from './path';
+import { pathTo, walkNeighbors, type Pt } from './path';
+import { screenStepDot, type ScreenDir } from './combatCursor';
+import { type Dims } from '../gameIso/iso';
 
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
@@ -40,10 +42,25 @@ export function exploreMoveDest(sc: Scene, partyPos: Pt, tile: Pt): Pt | null {
     if (cheb(partyPos, ent.pos) <= 1) return null; // déjà à portée → interaction/échange/badaud sur place
     return adjacentWalkable(sc, ent.pos, partyPos);
   }
-  // ESCALIER : viser une marche envoie à l'AUTRE bout (seul franchissement vertical).
-  const stair = (sc.stairs ?? []).find(
-    (s) => (s.from.x === tile.x && s.from.y === tile.y && s.from.z === tz) || (s.to.x === tile.x && s.to.y === tile.y && s.to.z === tz),
-  );
-  if (stair) return stair.from.x === tile.x && stair.from.y === tile.y && stair.from.z === tz ? stair.to : stair.from;
-  return tile; // déplacement simple
+  // Déplacement simple : on renvoie la case cliquée telle quelle. Le franchissement vertical s'auto-dérive
+  // du relief le long du chemin (`pathTo` via `surfaceLink` — rampe/falaise), plus aucun escalier explicite.
+  return tile;
+}
+
+/** Case d'ARRIVÉE d'un PAS clavier en exploration : la surface voisine CONNECTÉE (`walkNeighbors` —
+ *  même connectivité que le BFS : `flat`/`ramp`, arête non murée, z auto-dérivé) dont le `tileCenter`
+ *  colle le mieux à la direction ÉCRAN poussée (`screenStepDot`, projection partagée avec le curseur de
+ *  combat). Gère rampes/tabliers sans aucune ambiguïté de z. `null` si aucune surface ne part dans ce
+ *  sens (bord de carte / mur). PUR. */
+export function exploreStepDest(scene: Scene, from: Pt, dir: ScreenDir, dims: Dims): Pt | null {
+  let best: Pt | null = null;
+  let bestDot = 0; // strictement positif : sinon aucune surface voisine ne part dans ce sens écran
+  for (const n of walkNeighbors(scene, from)) {
+    const dot = screenStepDot(scene, from, n, dir, dims);
+    if (dot > bestDot) {
+      bestDot = dot;
+      best = n;
+    }
+  }
+  return best;
 }

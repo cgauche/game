@@ -56,11 +56,12 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     expect(exploreMoveDest(sceneWith([fig]), { x: 4, y: 5 }, { x: 5, y: 5 })).toBeNull();
   });
 
-  it('escalier : viser une marche envoie à l’autre bout', () => {
+  it('case d’une couche haute (tablier z1) sans entité : renvoie la case telle quelle, avec son z', () => {
+    // Plus d'escaliers : le franchissement vertical s'auto-dérive du relief le long du chemin
+    // (`pathTo`/`moveAlong`). exploreMoveDest se contente de renvoyer la case cliquée (z compris).
     const sc = emptyScene(10, 10);
-    sc.levels.push({ z: 1, tiles: new Array(100).fill('plancher') });
-    sc.stairs = [{ from: { x: 2, y: 2, z: 0 }, to: { x: 3, y: 2, z: 1 } }];
-    expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 2, y: 2, z: 0 })).toEqual({ x: 3, y: 2, z: 1 });
-    expect(exploreMoveDest(sc, { x: 4, y: 4, z: 1 }, { x: 3, y: 2, z: 1 })).toEqual({ x: 2, y: 2, z: 0 });
+    sc.layers.push({ z: 1, tiles: new Array(100).fill('plancher'), height: new Array(100).fill(4) });
+    expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 3, y: 2, z: 1 })).toEqual({ x: 3, y: 2, z: 1 });
+    expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 })).toEqual({ x: 5, y: 5 }); // sol : sans z
   });
 });

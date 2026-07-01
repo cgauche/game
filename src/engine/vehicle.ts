@@ -10,13 +10,11 @@
  * tables de Localisation/Critiques de la coque (`hull.locationTable`/`criticalTable`) sont posées en
  * données et seront câblées aux dalles fluviale (MoR) et maritime (MDG) — ici, seul le total de PV joue.
  */
-import { Combatant, VehicleData, Characteristics } from './types';
+import { Combatant, VehicleData } from './types';
 import { RNG, defaultRNG, parseDice } from './dice';
 import { applyOps } from './ops';
-import { emptyArmour } from './items';
+import { inanimateCombatant } from './inanimate';
 import { rollVehicleProblem, type TravelTableEntry } from './travelTables';
-
-const ZERO_CHARS: Characteristics = { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 };
 
 /** Ce combattant est-il un VÉHICULE-coque (navire, chariot, barge) — `bodyShape:'vehicule'` ? Prédicat NOMMÉ
  *  (source UNIQUE — plus de littéral `'vehicule'` dispersé) : un véhicule agit en UNITÉ (Tests d'équipage) ; il
@@ -25,29 +23,19 @@ export function isVehicle(c: Pick<Combatant, 'bodyShape'>): boolean {
   return c.bodyShape === 'vehicule';
 }
 
-/** Construit la coque transitoire (`Combatant`) d'un véhicule depuis sa facette `hull` (Endurance +
- *  Blessures). `undefined` si le véhicule n'a pas de profil de coque (transports sans entité à PV). */
+/** Adaptateur de `inanimateCombatant` (builder UNIQUE des objets inanimés) pour une coque de véhicule
+ *  depuis sa facette `hull` (Endurance + Blessures). `undefined` si le véhicule n'a pas de profil de coque
+ *  (transports sans entité à PV). */
 export function vehicleCombatant(v: VehicleData, id = `vehicle-${v.id}`): Combatant | undefined {
   if (!v.hull) return undefined;
-  const max = v.hull.char.B;
-  return {
+  return inanimateCombatant({
     id,
     name: v.label,
-    kind: 'npc',
-    creatureId: v.id,
-    characteristics: { ...ZERO_CHARS, E: v.hull.char.E },
-    wounds: { current: max, max, base: max },
-    advantage: 0,
-    conditions: [],
-    weapons: [],
-    armour: emptyArmour(),
-    skills: [],
-    talents: [],
+    refId: v.id,
     bodyShape: v.hull.bodyShape, // 'vehicule' — Tableau de Localisation de coque (data-driven, dalle 2-3)
-    footprint: v.ship?.footprint, // EMPREINTE de grille (côté N×N) autorée — découplée de la Taille créature (pas de `size`)
-    psychImmune: true, // une coque inerte ignore la Psychologie
-    movement: 0,
-  };
+    hull: { e: v.hull.char.E, woundsB: v.hull.char.B },
+    footprint: v.ship?.footprint, // EMPREINTE de grille (côté N×N) autorée — découplée de la Taille créature
+  });
 }
 
 export interface VehicleProblemResult {

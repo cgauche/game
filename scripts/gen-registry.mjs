@@ -83,6 +83,16 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Arts d'engin de siège (silhouette statique 3 vues, plan 'engin') : 1 engin = 1 fichier defs/ —
+    // MÊME pattern que les armes/parts (routé par id d'espèce, JAMAIS de name-matcher ni de table à la main).
+    dir: 'src/gameIso/rig/engin/defs',
+    out: 'src/gameIso/rig/engin/_registry.generated.ts',
+    exportName: 'enginArt',
+    arrayName: 'ENGIN_ARTS',
+    type: 'EnginArtDef',
+    typeFrom: './artkit',
+  },
+  {
     // Gabarits (carrures réutilisables) : 1 carrure = 1 fichier defs/. Dissout PROPS.
     dir: 'src/gameIso/rig/gabarits/defs',
     out: 'src/gameIso/rig/gabarits/_registry.generated.ts',
@@ -168,7 +178,7 @@ function genOne(r) {
     return 0;
   }
   const files = entries
-    .filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts') && f !== 'index.ts')
+    .filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts') && !f.endsWith('.ascii.ts') && f !== 'index.ts')
     .sort();
   const imports = files.map((f, i) => `import { ${r.exportName} as e${i} } from '${importDir}/${f.replace(/\.ts$/, '')}';`);
   const arr = files.map((_, i) => `e${i}`);

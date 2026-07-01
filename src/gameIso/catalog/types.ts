@@ -1,7 +1,6 @@
 import type { Dims } from '../iso';
-import type { BuildingParams, Facing } from '../../state/scene';
+import type { RoofParams, Facing } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
-import type { BuildingMeta } from '../../state/buildings';
 
 export type ParamField =
   | { key: string; label: string; type: 'number'; min?: number; max?: number; step?: number }
@@ -20,23 +19,30 @@ export interface RenderCtx {
 }
 export type Rect = { x: number; y: number; w: number; h: number };
 
-/** 3 calques distincts → permet de masquer le toit seul (cutaway). */
-export interface BuildingLayers {
-  walls: string;
-  interior: string;
+/** Preset de TOIT d'un bâtiment composé : la skin du `render` d'un def, dont le pipeline relief-unifié ne
+ *  consomme que `roof` (rendu par `RoofSprite.roofObj`). Les murs réels sont des `WallSeg` (`wallObjs`) et
+ *  le sol du terrain (`floorObjs`) → `walls`/`interior`, encore produits par les defs (skin historique du
+ *  bâtiment), restent TOLÉRÉS mais inutilisés par le rendu : à retirer quand les defs seront réduits au
+ *  toit seul. */
+export interface RoofStyle {
+  walls?: string;
+  interior?: string;
   roof: string;
 }
 
 export interface BuildingViz {
   id: string;
   paramsSchema?: ParamField[];
-  render(foot: Rect, params: BuildingParams, ctx: RenderCtx): BuildingLayers;
+  render(foot: Rect, params: RoofParams, ctx: RenderCtx): RoofStyle;
 }
 
-/** Bâtiment UNIFIÉ (registre defs/) : méta sémantique (label/catégorie/empreinte/reveal, côté
- *  state) + présentation (schéma de params + render). `BUILDINGS` (viz) et `BUILDINGS_META` (pur)
- *  en dérivent. Un fichier `buildings/defs/<id>.ts` = un `export const building: BuildingDef`. */
-export interface BuildingDef extends BuildingMeta {
+/** Bâtiment composable UNIFIÉ (registre defs/) : méta sémantique (id/label/empreinte par défaut) +
+ *  présentation (schéma de params + render du TOIT). `BUILDINGS` (viz) et `BUILDINGS_META` (méta) en
+ *  dérivent. Un fichier `buildings/defs/<id>.ts` = un `export const building: BuildingDef`. */
+export interface BuildingDef {
+  id: string;
+  label: string;
+  defaultFoot: { w: number; h: number };
   paramsSchema?: ParamField[];
   render: BuildingViz['render'];
 }

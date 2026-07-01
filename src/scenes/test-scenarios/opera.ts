@@ -14,13 +14,14 @@ const ETUDIANT: CustomStatblock = {
  * « Une nuit à l'Opéra » — le Théâtre Staatsoper, reconstitué d'après le PLAN du scénario (NADJ ch.8,
  * source 08 l.28-41). Carte AUTHORÉE EN ASCII (une grille par étage, comme l'arène), 100 % en données.
  *
- *  Rez-de-chaussée (z0) : coulisses + coursive (mur arrière) → scène → PARTERRE (auditorium) → HALL
- *  (foyer) → vestibule d'entrée ; escaliers JUMEAUX de chaque côté du hall (surveillés) montant à l'étage.
- *  Étage supérieur (z1) : galerie moquettée desservant 8 LOGES (4 de chaque côté) + la LOGE ROYALE et son
- *  ANTICHAMBRE au fond-centre (où les agents de Dammenblatz posent la bombe, l.62/131).
+ *  Rez-de-chaussée (couche 0) : coulisses + coursive (mur arrière) → scène (SURÉLEVÉE +1 m) → PARTERRE
+ *  (auditorium) → HALL (foyer) → vestibule d'entrée ; deux RAMPES jumelles aux angles du hall montent à
+ *  l'étage (cases de hauteur croissante 0→1→2 m, AUCUN escalier : le moteur fabrique la pente).
+ *  Étage supérieur (couche 1, à 2 m) : galerie moquettée desservant les LOGES (de chaque côté) + la LOGE
+ *  ROYALE et son ANTICHAMBRE au fond-centre (où les agents de Dammenblatz posent la bombe, l.62/131).
  *
- *  Légende : # mur · = planches (coulisses/coursive) · S plancher (scène) · M marbre (parterre) ·
- *  H dalle (hall/vestibule) · E plancher (escalier) · L plancher (galerie/loges) · D porte.
+ *  Légende : # mur · = planches (coulisses/coursive) · S plancher (scène, +1 m) · M marbre (parterre) ·
+ *  H dalle (hall/vestibule) · E plancher (RAMPE vers l'étage) · L plancher (galerie/loges) · D porte.
  */
 const LEGEND: Record<string, string> = { M: 'marbre', S: 'plancher', H: 'dalle', E: 'plancher', L: 'plancher' };
 
@@ -58,8 +59,8 @@ const Z1 = [
   '.LLL.............LLL.',
   '.LLL.............LLL.',
   '.LLL.............LLL.',
-  '.LLLLLLLLLLLLLLLLLLL.', // galerie moquettée (relie les escaliers, les loges et la loge royale)
-  '.LLLLLLLLLLLLLLLLLLL.',
+  '...LLLLLLLLLLLLLLL...', // galerie moquettée (relie loges et loge royale) ; les RAMPES percent les angles (cols 1-2 / 18-19 → vide)
+  '...LLLLLLLLLLLLLLL...',
   '...LLLLLLLLLLLLLLL...', // ANTICHAMBRE de la loge royale (la plante piégée y est livrée)
   '.....................',
 ];
@@ -67,6 +68,16 @@ const Z1 = [
 const g0 = parseAsciiRows(Z0, 'mur', LEGEND);
 const g1 = parseAsciiRows(Z1, 'vide', LEGEND);
 const W = g0.w, H = g0.h;
+
+// HAUTEURS MÉTRIQUES (tableaux PARALLÈLES aux tuiles). Couche 0 : la SCÈNE est surélevée de 1 m (Δ1 ⇒
+// rampe douce depuis le parterre/les coulisses) ; les deux RAMPES d'angle (cases 'E') montent 0→1→2 m pour
+// rejoindre la galerie. Couche 1 : galerie/loges à 2 m (la rampe l'y rejoint à hauteur égale). Aucun escalier.
+const idx = (x: number, y: number) => y * W + x;
+const setH = (g: number[], x: number, y: number, h: number) => { g[idx(x, y)] = h; };
+const h0 = new Array(W * H).fill(0) as number[];
+for (let y = 2; y <= 4; y++) for (let x = 5; x <= 15; x++) setH(h0, x, y, 1); // scène surélevée +1 m
+for (const x of [1, 2, 18, 19]) { setH(h0, x, 13, 2); setH(h0, x, 14, 1); } // rampes jumelles (haut 2 m / bas 1 m) → galerie
+const h1 = new Array(W * H).fill(2) as number[]; // étage (galerie/loges) à 2 m
 
 const ents: SceneEntity[] = [
   { id: 'start', kind: 'heroStart', pos: { x: 10, y: 16 } }, // vestibule d'entrée
@@ -137,22 +148,21 @@ const ents: SceneEntity[] = [
     },
   },
 
-  // Escaliers JUMEAUX (props visuels) ; la traversée est portée en données par `Scene.stairs`.
-  { id: 'esc-gauche', kind: 'prop', ref: 'escalier-loge', pos: { x: 2, y: 14 }, facing: 'N' },
-  { id: 'esc-droite', kind: 'prop', ref: 'escalier-loge', pos: { x: 18, y: 14 }, facing: 'N' },
+  // Pas d'objet escalier : les deux RAMPES d'angle (cases 'E' de hauteur croissante) montent à la galerie ;
+  // la pente est rendue par le relief (parois douces de `groundTile`).
 ];
 
 const scene: Scene = {
   id: 'test-opera-theatre',
   nom: 'Opéra — Le théâtre',
-  description: 'Le Théâtre Staatsoper d\'après le plan du scénario : coulisses, scène, parterre, hall et escaliers jumeaux ; galerie de loges et loge royale à l\'étage.',
+  description: 'Le Théâtre Staatsoper d\'après le plan du scénario : coulisses, scène (surélevée), parterre, hall et rampes jumelles ; galerie de loges et loge royale à l\'étage (couche surélevée à 2 m).',
   dimensions: { w: W, h: H },
   ambiance: 'interieur',
-  levels: [{ z: 0, tiles: g0.tiles }, { z: 1, tiles: g1.tiles }],
-  // Escaliers JUMEAUX (source l.36/41) : de chaque côté du hall, montant à la galerie. Bidirectionnels.
-  stairs: [
-    { from: { x: 2, y: 13, z: 0 }, to: { x: 2, y: 13, z: 1 } }, // escalier gauche → galerie
-    { from: { x: 18, y: 13, z: 0 }, to: { x: 18, y: 13, z: 1 } }, // escalier droit → galerie
+  // Deux COUCHES d'empilement : parterre (z0, scène +1 m) + galerie/loges (z1, 2 m). Les rampes d'angle
+  // relient les deux par leur dénivelé (surfaceLink) — plus aucun escalier explicite.
+  layers: [
+    { z: 0, tiles: g0.tiles, height: h0 },
+    { z: 1, tiles: g1.tiles, height: h1 },
   ],
   entities: ents,
   dialogues: [
@@ -275,7 +285,7 @@ const scene: Scene = {
   ],
   flags: {},
   startMessage:
-    'Le Théâtre Staatsoper. Du vestibule, le hall s’ouvre sur le parterre face à la scène ; deux escaliers surveillés montent à la galerie des loges, où siège la Comtesse dans la loge royale.',
+    'Le Théâtre Staatsoper. Du vestibule, le hall s’ouvre sur le parterre face à la scène surélevée ; deux rampes d’angle montent à la galerie des loges, où siège la Comtesse dans la loge royale.',
 };
 
 export const scenario: TestScenario = {
@@ -285,8 +295,9 @@ export const scenario: TestScenario = {
   icon: '🎭',
   title: 'Opéra',
   tests:
-    'Théâtre Staatsoper multi-niveaux en ASCII (coulisses/scène/parterre/hall z0, escaliers jumeaux → ' +
-    'galerie/loges/loge royale z1). Intrigues authorées : BOMBE à minuterie de la loge royale (delayedEffect ' +
+    'Théâtre Staatsoper multi-couches en ASCII (coulisses/scène SURÉLEVÉE/parterre/hall couche 0, RAMPES ' +
+    'd\'angle → galerie/loges/loge royale couche 1 à 2 m). Intrigues authorées : BOMBE à minuterie de la loge ' +
+    'royale (delayedEffect ' +
     '→ zoneBlast, désamorçage facilité par la Poudre noire, cancelFlag), pétards + vol des clés par Glimbrin ' +
     '(Test caché à deux issues), étudiants saboteurs (combat optionnel), dialogue gaté de la Comtesse, PX canoniques.',
   partyNote: 'Pré-tirés',

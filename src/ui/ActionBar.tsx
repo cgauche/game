@@ -16,6 +16,7 @@ import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets } from '../engine/healing';
 import { mountableNear } from '../state/mount';
+import { combatDistance } from '../state/footprint';
 import { shipOfCrew, servablePostes } from '../state/shipPostes';
 import { canAidTeam } from '../state/commandTeam';
 import { isVehicle } from '../engine/vehicle';
@@ -277,8 +278,10 @@ export function ActionBar() {
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   // « Assailli ×N » : ennemis (en vie) au contact du héros actif — indice visuel, pas un modificateur.
+  // `combatDistance` (Z-AWARE + empreinte) : un ennemi en contrebas (z différent) ou non adjacent n'est PAS
+  // « au contact » — sur le chemin de ronde (z=1), les assaillants au sol (z=0) ne comptent plus (Δz → distance ≥ 2).
   const assailliN = isHero && active.pos
-    ? battle.combatants.filter((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && Math.max(Math.abs(c.pos.x - active.pos!.x), Math.abs(c.pos.y - active.pos!.y)) <= 1).length
+    ? battle.combatants.filter((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && combatDistance(active, c) <= 1).length
     : 0;
 
   // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
@@ -333,8 +336,8 @@ export function ActionBar() {
   // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
   // Manœuvre navale (MDG ch.13) : un héros membre de l'équipage d'un navire peut prendre la barre (Test de Navigation).
   const shipSupport = isHero ? shipOfCrew(battle.combatants, active.id) : undefined;
-  // « Servir cette pièce » (MDG ch.12) : emplacement/pièce de siège NON servi adjacent que le héros peut prendre
-  // en main (KIND-AGNOSTIQUE — même source que l'IA). On n'offre « Servir » que s'il ne sert pas DÉJÀ une pièce.
+  // « Servir cette pièce » (MDG ch.12) : pièce de siège adjacente que le héros peut REJOINDRE — chef si non servie,
+  // sinon support d'équipe (KIND-AGNOSTIQUE — même source que l'IA). On n'offre « Servir » que s'il ne sert pas DÉJÀ.
   const canServePoste = isHero && !active.mannedPoste && servablePostes(active, battle.combatants).length > 0;
   // « Diriger l'équipe » (Commandant d'équipe, AA) : le héros porte le Talent ET ≥ 1 équipe d'Arme d'équipe est à portée de voix.
   const canAid = isHero && canAidTeam(active, battle.combatants);
@@ -352,7 +355,7 @@ export function ActionBar() {
     if (mountCandidate) slots.push({ id: 'mount', disabled: moveStarted || broken, icon: '🐎', label: 'Monter', title: `Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`, run: mountUp });
     if (mounted) slots.push({ id: 'dismount', disabled: moveStarted || broken, icon: '🥾', label: 'Descendre', title: 'Descendre de sa monture — coûte le Mouvement', run: dismount });
     if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
-    if (canServePoste) slots.push({ id: 'man-poste', disabled: battle.acted || stunned || broken, icon: '💥', label: `Servir cette pièce${battle.acted ? ' ✓' : ''}`, title: "Prendre en main une pièce de siège adjacente non servie (l'arme vous est octroyée) — coûte l'Action", run: manPoste });
+    if (canServePoste) slots.push({ id: 'man-poste', disabled: battle.acted || stunned || broken, icon: '💥', label: `Servir cette pièce${battle.acted ? ' ✓' : ''}`, title: "Rejoindre une pièce de siège adjacente : chef si elle n'est pas servie (l'arme vous est octroyée), sinon renfort d'équipe — coûte l'Action", run: () => manPoste() });
     if (active.mannedPoste) slots.push({ id: 'leave-poste', disabled: battle.acted || stunned || broken, icon: '🚪', label: `Quitter la pièce${battle.acted ? ' ✓' : ''}`, title: "Quitter la pièce servie (la libère pour un autre) — coûte l'Action", run: leavePoste });
     if (canAid) slots.push({ id: 'aid-team', disabled: battle.acted || stunned || broken, icon: '🎖️', label: `Diriger l'équipe${battle.acted ? ' ✓' : ''}`, title: "Aider une équipe d'artillerie à portée de voix (Test de Commandement) : elle tire ensuite à votre score de Projectiles — coûte l'Action", run: aidTeam });
     if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: '🎯', label: active.aiming ? 'En joue ✓' : 'Viser', title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });

@@ -16,44 +16,48 @@ import type { Dims } from '../gameIso/iso';
 /** Arène d'herbe minimale (cursorCommitIntent dérive l'affordance d'attaque → besoin d'une scène). */
 const arena = () => {
   const w = 22, h = 16;
-  return { id: 's', dimensions: { w, h }, levels: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+  return { id: 's', dimensions: { w, h }, layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
 };
 
 const dims = (over: Partial<Dims> = {}): Dims => ({ w: 22, h: 16, ...over });
 
+/** Scène PLATE (couche unique, hauteur 0 partout) : `screenStepDot` projette au lift métrique réel —
+ *  sans relief, le lift vaut 0 → projection identique à l'ancienne (résultats inchangés). */
+const flat = () => ({ dimensions: { w: 22, h: 16 }, layers: [{ z: 0, tiles: new Array(22 * 16).fill('herbe') }], entities: [] }) as never;
+
 describe('nextCursorTile — curseur écran-relatif', () => {
   it('curseur null → apparaît sur le combattant actif (pas de pas)', () => {
-    expect(nextCursorTile(null, 'right', dims(), { x: 6, y: 10 })).toEqual({ x: 6, y: 10 });
+    expect(nextCursorTile(flat(), null, 'right', dims(), { x: 6, y: 10 })).toEqual({ x: 6, y: 10 });
   });
 
   it('iso rot0 : « droite » écran = voisin diagonal de grille (x+1, y-1)', () => {
-    expect(nextCursorTile({ tile: { x: 6, y: 10 } }, 'right', dims(), { x: 6, y: 10 })).toEqual({ x: 7, y: 9 });
+    expect(nextCursorTile(flat(), { tile: { x: 6, y: 10 } }, 'right', dims(), { x: 6, y: 10 })).toEqual({ x: 7, y: 9 });
   });
 
   it('iso rot0 : « haut » écran = (x-1, y-1)', () => {
-    expect(nextCursorTile({ tile: { x: 6, y: 10 } }, 'up', dims(), { x: 6, y: 10 })).toEqual({ x: 5, y: 9 });
+    expect(nextCursorTile(flat(), { tile: { x: 6, y: 10 } }, 'up', dims(), { x: 6, y: 10 })).toEqual({ x: 5, y: 9 });
   });
 
   it('iso rot0 : « gauche » = (x-1, y+1) ; « bas » = (x+1, y+1)', () => {
-    expect(nextCursorTile({ tile: { x: 6, y: 10 } }, 'left', dims(), { x: 6, y: 10 })).toEqual({ x: 5, y: 11 });
-    expect(nextCursorTile({ tile: { x: 6, y: 10 } }, 'down', dims(), { x: 6, y: 10 })).toEqual({ x: 7, y: 11 });
+    expect(nextCursorTile(flat(), { tile: { x: 6, y: 10 } }, 'left', dims(), { x: 6, y: 10 })).toEqual({ x: 5, y: 11 });
+    expect(nextCursorTile(flat(), { tile: { x: 6, y: 10 } }, 'down', dims(), { x: 6, y: 10 })).toEqual({ x: 7, y: 11 });
   });
 
   it('vue du dessus : « droite » = pas cardinal de grille (x+1, y)', () => {
-    expect(nextCursorTile({ tile: { x: 6, y: 10 } }, 'right', dims({ view: 'top' }), { x: 6, y: 10 })).toEqual({ x: 7, y: 10 });
+    expect(nextCursorTile(flat(), { tile: { x: 6, y: 10 } }, 'right', dims({ view: 'top' }), { x: 6, y: 10 })).toEqual({ x: 7, y: 10 });
   });
 
   it('rotation caméra (rot=1) : « droite » reste à droite à l’écran (autre delta de grille)', () => {
     // rot impair → la grille tourne ; le pas écran-droite cible un autre couple (dx,dy). On vérifie
     // seulement qu’il bouge ET reste dans la carte (la projection arbitre, pas un delta codé en dur).
-    const r = nextCursorTile({ tile: { x: 6, y: 10 } }, 'right', dims({ rot: 1 }), { x: 6, y: 10 });
+    const r = nextCursorTile(flat(), { tile: { x: 6, y: 10 } }, 'right', dims({ rot: 1 }), { x: 6, y: 10 });
     expect(r).not.toEqual({ x: 6, y: 10 });
     expect(r.x).toBeGreaterThanOrEqual(0); expect(r.x).toBeLessThan(22);
     expect(r.y).toBeGreaterThanOrEqual(0); expect(r.y).toBeLessThan(16);
   });
 
   it('ne sort jamais de la grille : au coin, reste sur place', () => {
-    expect(nextCursorTile({ tile: { x: 21, y: 0 } }, 'right', dims(), { x: 21, y: 0 })).toEqual({ x: 21, y: 0 });
+    expect(nextCursorTile(flat(), { tile: { x: 21, y: 0 } }, 'right', dims(), { x: 21, y: 0 })).toEqual({ x: 21, y: 0 });
   });
 });
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, isWalkable, tileAt, elevAt, normalizeAmbiance, isIndoor } from './scene';
+import { emptyScene, isWalkable, tileAt, heightAt, surfaceLink, layerTiles, normalizeAmbiance, isIndoor } from './scene';
 import { evalCondition } from './flow';
-import type { Scene } from './scene';
+import type { Scene, Terrain } from './scene';
 
 describe('evalCondition flag — conditions de flag (triggers + dialogues, source unique)', () => {
   const ok = (expr: string, flags: Record<string, boolean>) => evalCondition({ kind: 'flag', expr }, { flags, gameTime: 0 });
@@ -22,8 +22,8 @@ describe('evalCondition flag — conditions de flag (triggers + dialogues, sourc
 describe('scene + terrain registre', () => {
   it('isWalkable suit le registre terrain', () => {
     const s = emptyScene(3, 3); // rempli d'herbe
-    s.levels[0].tiles[0] = 'pave';
-    s.levels[0].tiles[1] = 'eau';
+    s.layers[0].tiles[0] = 'pave';
+    s.layers[0].tiles[1] = 'eau';
     expect(isWalkable(s, 0, 0)).toBe(true); // pave
     expect(isWalkable(s, 1, 0)).toBe(false); // eau
   });
@@ -32,33 +32,53 @@ describe('scene + terrain registre', () => {
     expect(tileAt(s, -1, 0)).toBe('mur');
     expect(isWalkable(s, -1, 0)).toBe(false);
   });
+  it('layerTiles rend la grille de la couche z (repli 1ʳᵉ couche si z absent)', () => {
+    const s = emptyScene(2, 1);
+    s.layers.push({ z: 1, tiles: ['plancher', 'vide'] as Terrain[] });
+    expect(layerTiles(s, 1)[0]).toBe('plancher');
+    expect(layerTiles(s, 9)[0]).toBe('herbe'); // couche inexistante → repli 1ʳᵉ couche (comme tileAt)
+    expect(tileAt(s, 1, 0, 1)).toBe('vide');
+    expect(isWalkable(s, 0, 0, 1)).toBe(true); // plancher marchable à l'étage
+    expect(isWalkable(s, 1, 0, 1)).toBe(false); // « vide » d'étage : rien à fouler
+  });
 });
 
-describe('élévation — décalage vertical sub-niveau par case (scène surélevée / fosse)', () => {
-  it('elevAt = 0 par défaut (pas de tableau elev)', () => {
+describe('relief — heightAt (hauteur métrique par case, ex-élévation)', () => {
+  it('heightAt = 0 par défaut (pas de tableau height)', () => {
     const s = emptyScene(3, 3);
-    expect(elevAt(s, 1, 1)).toBe(0);
+    expect(heightAt(s, 1, 1)).toBe(0);
   });
-  it('elevAt lit Level.elev[y*w+x] (surélévation + contrebas)', () => {
+  it('heightAt lit Layer.height[y*w+x] (surélévation + contrebas, en MÈTRES)', () => {
     const s = emptyScene(3, 3);
-    s.levels[0].elev = new Array(9).fill(0);
-    s.levels[0].elev[1 * 3 + 1] = 0.4; // scène surélevée
-    s.levels[0].elev[2 * 3 + 0] = -0.5; // fosse
-    expect(elevAt(s, 1, 1)).toBe(0.4);
-    expect(elevAt(s, 0, 2)).toBe(-0.5);
-    expect(elevAt(s, 0, 0)).toBe(0);
+    s.layers[0].height = new Array(9).fill(0);
+    s.layers[0].height![1 * 3 + 1] = 4; // muret / surface surélevée à 4 m
+    s.layers[0].height![2 * 3 + 0] = -1.5; // fosse à −1,5 m
+    expect(heightAt(s, 1, 1)).toBe(4);
+    expect(heightAt(s, 0, 2)).toBe(-1.5);
+    expect(heightAt(s, 0, 0)).toBe(0);
   });
-  it('elevAt hors-grille → 0 (pas de débordement)', () => {
+  it('heightAt hors-grille → 0 (pas de débordement)', () => {
     const s = emptyScene(3, 3);
-    s.levels[0].elev = new Array(9).fill(0.3);
-    expect(elevAt(s, -1, 0)).toBe(0);
-    expect(elevAt(s, 3, 0)).toBe(0);
+    s.layers[0].height = new Array(9).fill(3);
+    expect(heightAt(s, -1, 0)).toBe(0);
+    expect(heightAt(s, 3, 0)).toBe(0);
   });
-  it('elevAt respecte le niveau z (étage manquant → 0)', () => {
+  it('heightAt respecte la couche z (couche manquante → repli 1ʳᵉ couche, comme tileAt)', () => {
     const s = emptyScene(3, 3);
-    s.levels[0].elev = new Array(9).fill(0.2);
-    expect(elevAt(s, 1, 1, 0)).toBe(0.2);
-    expect(elevAt(s, 1, 1, 5)).toBe(0.2); // repli 1er niveau (comme tileAt)
+    s.layers[0].height = new Array(9).fill(2);
+    expect(heightAt(s, 1, 1, 0)).toBe(2);
+    expect(heightAt(s, 1, 1, 5)).toBe(2); // repli 1ʳᵉ couche
+  });
+});
+
+describe('surfaceLink — auto-connexion des surfaces voisines (flat/ramp/cliff)', () => {
+  it('classe le lien 4-voisin selon |Δhauteur| vs STEP_MAX (1 m) ; drop = hauteur de b − a', () => {
+    const s = emptyScene(4, 1);
+    s.layers[0].height = [0, 1, 2.5, 2.5];
+    expect(surfaceLink(s, { x: 2, y: 0 }, { x: 3, y: 0 })).toEqual({ grade: 'flat', drop: 0 }); // 2,5 → 2,5
+    expect(surfaceLink(s, { x: 0, y: 0 }, { x: 1, y: 0 })).toEqual({ grade: 'ramp', drop: 1 }); // 0 → 1 (= STEP_MAX)
+    expect(surfaceLink(s, { x: 1, y: 0 }, { x: 2, y: 0 })).toEqual({ grade: 'cliff', drop: 1.5 }); // 1 → 2,5
+    expect(surfaceLink(s, { x: 0, y: 0 }, { x: 2, y: 0 })).toBeNull(); // non 4-adjacentes
   });
 });
 

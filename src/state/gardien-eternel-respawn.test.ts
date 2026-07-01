@@ -27,7 +27,7 @@ const guardian = (over: Partial<Combatant> = {}): Combatant => ({
   ...over,
 }) as unknown as Combatant;
 
-const scene = (): Scene => ({ id: 's', name: 's', dimensions: { w: 16, h: 16 }, ambiance: 'exterieur', levels: [{ z: 0, tiles: new Array(16 * 16).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
+const scene = (): Scene => ({ id: 's', name: 's', dimensions: { w: 16, h: 16 }, ambiance: 'exterieur', layers: [{ z: 0, tiles: new Array(16 * 16).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
 const battle = (cs: Combatant[]): any => ({ combatants: cs, order: cs.map((c) => c.id), baseOrder: cs.map((c) => c.id), turn: 0, round: 1, log: [], zones: [], over: false });
 
 function harness(over: Record<string, unknown> = {}) {

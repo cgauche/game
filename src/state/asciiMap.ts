@@ -28,11 +28,13 @@ export function parseAsciiRows(rows: string[], base: Terrain, legend: Record<str
 
 /**
  * Scanne les `markerChars` dans la grille → leurs positions ET les lignes NETTOYÉES (chaque marqueur
- * remplacé par `'.'`). Brique de base du motif « poser un marqueur, le nettoyer, scanner sa position »
- * (cf. authoring d'entités dans l'ASCII). N'altère AUCUN char non-marqueur. Une clé par char marqueur
- * (même absent → `[]`), positions en ordre de balayage (haut→bas, gauche→droite).
+ * remplacé par le char de remplissage = `fill[ch]` sinon `'.'`). Brique de base du motif « poser un
+ * marqueur, le nettoyer, scanner sa position » (cf. authoring d'entités dans l'ASCII). `fill` RESTAURE la
+ * tuile SOUS le marqueur (ex. une unité au sol pavé : `{ '@': 'P' }`) — sans quoi un marqueur effacerait
+ * son terrain (retombe sur la `base`). N'altère AUCUN char non-marqueur. Une clé par char marqueur (même
+ * absent → `[]`), positions en ordre de balayage (haut→bas, gauche→droite).
  */
-export function scanMarkers(rows: string[], markerChars: string): { positions: Record<string, { x: number; y: number }[]>; cleaned: string[] } {
+export function scanMarkers(rows: string[], markerChars: string, fill: Record<string, string> = {}): { positions: Record<string, { x: number; y: number }[]>; cleaned: string[] } {
   const marks = new Set(markerChars.split(''));
   const positions: Record<string, { x: number; y: number }[]> = {};
   for (const ch of marks) positions[ch] = [];
@@ -40,7 +42,7 @@ export function scanMarkers(rows: string[], markerChars: string): { positions: R
     let out = '';
     for (let x = 0; x < row.length; x++) {
       const ch = row[x];
-      if (marks.has(ch)) { positions[ch].push({ x, y }); out += '.'; }
+      if (marks.has(ch)) { positions[ch].push({ x, y }); out += fill[ch] ?? '.'; }
       else out += ch;
     }
     return out;

@@ -22,7 +22,7 @@ const combatant = (over: Partial<Combatant>): Combatant =>
   }) as unknown as Combatant;
 
 const scene = (): Scene =>
-  ({ id: 's', name: 's', dimensions: { w: 8, h: 8 }, ambiance: 'jour', levels: [{ z: 0, tiles: new Array(64).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
+  ({ id: 's', name: 's', dimensions: { w: 8, h: 8 }, ambiance: 'jour', layers: [{ z: 0, tiles: new Array(64).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
 const mkGet = (combatants: Combatant[]): (() => GameState) =>
   (() => ({ scene: scene(), battle: { combatants, movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
@@ -97,14 +97,14 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     const a = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 6, y: 0 } });
     const s = scene();
-    (s.levels[0].tiles as string[])[3] = 'mur'; // mur intercalé sur la ligne (x=3,y=0)
+    (s.layers[0].tiles as string[])[3] = 'mur'; // mur intercalé sur la ligne (x=3,y=0)
     const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
     expect(previewAttack(get, a, b).blocked).toBe(true);
   });
 
   it('outOfSightTargetIds (grisage hors-LdV) : ennemi derrière un mur grisé au tir, pas en mêlée, pas les morts', () => {
     const s = scene();
-    (s.levels[0].tiles as string[])[3] = 'mur'; // mur sur la ligne y=0 entre x=0 et x=6
+    (s.layers[0].tiles as string[])[3] = 'mur'; // mur sur la ligne y=0 entre x=0 et x=6
     const archer = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never });
     const hidden = combatant({ id: 'E1', kind: 'enemy', pos: { x: 6, y: 0 } }); // derrière le mur
     const seen = combatant({ id: 'E2', kind: 'enemy', pos: { x: 0, y: 5 } }); // ligne dégagée
@@ -138,7 +138,7 @@ describe('attackPlan — gate PRÉ-clic du tir (parité avec le refus de sort)',
     const a = archer();
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 6, y: 0 } });
     const s = scene();
-    (s.levels[0].tiles as string[])[3] = 'mur';
+    (s.layers[0].tiles as string[])[3] = 'mur';
     const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
     const plan = attackPlan(get, a, b);
     expect(plan.kind).toBe('blocked');

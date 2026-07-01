@@ -6,7 +6,8 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable, elevAt, doorIsOpen, toggleDoorIn, structureIsDown, rampartTilesAbove } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable, heightAt, doorIsOpen, toggleDoorIn, structureIsDown, type WallSeg } from '../state/scene';
+import { metricToLift } from '../state/relief';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
 import { exploreMoveDest } from '../state/exploreNav';
@@ -17,7 +18,7 @@ import { maxJumpTiles } from '../engine/movement';
 import { effectiveMovement } from '../engine/encumbrance';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { resolveFormula } from '../engine/ops';
-import { findSpellById } from '../data';
+import { findSpellById, structureById, weaponGroupLabel } from '../data';
 import { bus, EVT } from '../state/bus';
 import { isOutOfAction, canTakeAction, hasCondition } from '../engine/conditions';
 import { isFrenzied } from '../engine/psychology';
@@ -25,6 +26,7 @@ import { Combatant } from '../engine/types';
 import {
   TW,
   TH,
+  EDGE_H,
   CELL,
   Dims,
   tileCenter,
@@ -35,7 +37,7 @@ import {
   screenToTile,
   screenToTileAtZ,
   depth,
-  floorDepth,
+  footprintDepth,
 } from './iso';
 import {
   DEFS,
@@ -48,27 +50,27 @@ import { BodyToken } from './BodyToken';
 import { FogLayer } from './FogLayer';
 import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
-import { groundTile } from './ground';
+import { groundTile, isOverhang } from './ground';
 import { wallSeg } from './walls';
 import { isStructure } from '../engine/structures';
-import { stairSeg, stairLevels } from './stairs';
 import { getViewZ, subscribeViewZ } from './viewLevel';
-import { buildingObj } from './BuildingSprite';
+import { roofObj } from './RoofSprite';
 import { roofHidden } from '../state/buildings';
 import { walkXY, STEP_MS } from './walkPath';
 import { useCombatFx } from './fx/useCombatFx';
 import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale, footprintTokenScale } from './sizeScale';
-import { sizeFootprint, footprintN, footprintTiles, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { isPassengerInBattle } from '../state/shipPostes';
+import { sizeFootprint, footprintN, footprintTiles, decorFootGeometry } from '../state/footprint';
+import { isPassengerInBattle, serveTargetPoste, isPosteManned, servingCrewPresent, posteCrewSplit, isCrewQualified } from '../state/shipPostes';
 import { isMerScene } from '../state/scene';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack, combatantAtTile } from '../state/combatFlow';
 import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
 import { currentTargetingMode } from '../state/targetingModes';
 import { controlsActive } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
+import { resolveCursorZ } from '../state/combatCursor';
 import { hoverClickCommits } from '../ui/pointerCaps';
 import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
@@ -81,6 +83,9 @@ const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.
 const ZOOM_MIN = 0.4; // dézoom tactique large (cf. store.setZoom)
 const ZOOM_MAX = 2.6;
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
+/** Opacité d'un tablier de SURPLOMB rendu AU-DESSUS de la zone active (FANTÔME) : on voit la silhouette
+ *  du pont/de la loge sans qu'il masque le sol où l'on se tient. TUNABLE (ajusté à l'œil). */
+const OVERHANG_GHOST_OPACITY = 0.35;
 
 // Viewport virtuel : le SVG remplit tout l'espace dispo (preserveAspectRatio
 // slice) et la caméra recadre autour du point focal (groupe / combattant actif).
@@ -93,18 +98,23 @@ const AMBIANCE_DEFS = `
 
 /** Tracé d'un DÉPLACEMENT (chemin + case d'arrivée + badge d'action) — source unique du rendu,
  *  partagée entre l'aperçu tap-1 (battle.preview, tactile) et l'aperçu au SURVOL (desktop). */
-function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: number } | null, label: string | null, d: Dims, keyPrefix: string, color = '#ffd75e', footN = 1): JSX.Element[] {
+// `lift` = élévation-écran (px) d'un point selon son étage z (multi-niveau) ; défaut `() => 0` ⇒ tracé
+// plan-sol byte-identique pour tous les appelants mono-niveau (z absent ⇒ lift 0 ⇒ tileCenter/diamondPath
+// sans 4ᵉ argument). Un appelant de COMBAT passe `(p) => p.z ? liftAt(...) : 0` → chemin/destination posés
+// au bon étage (rempart) au lieu d'être écrasés sur la cour.
+function movePreviewEls(path: Pt[], dest: Pt | null, label: string | null, d: Dims, keyPrefix: string, color = '#ffd75e', footN = 1, lift: (p: Pt) => number = () => 0): JSX.Element[] {
   const els: JSX.Element[] = [];
   if (path.length > 1) {
-    const pts = path.map((p) => tileCenter(p.x, p.y, d)).map((p) => `${p.cx},${p.cy}`).join(' ');
+    const pts = path.map((p) => tileCenter(p.x, p.y, d, lift(p))).map((p) => `${p.cx},${p.cy}`).join(' ');
     els.push(<polyline key={`${keyPrefix}-path`} points={pts} fill="none" stroke={color} strokeWidth={3} opacity={0.9} pointerEvents="none" />);
   }
   // Destination = TOUTE l'empreinte du mobile (un grand / un cavalier sur monture 2×2 → 4 cases), pas
   // une seule (footN dérivé de la monture par l'appelant). footN=1 → un losange unique (iso-historique).
-  if (dest) for (const t of footprintTiles(dest, footN)) els.push(<path key={`${keyPrefix}-dest-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill="none" stroke={color} strokeWidth={3} opacity={0.95} pointerEvents="none" />);
+  const dz = dest ? lift(dest) : 0; // toute l'empreinte est au même étage que la destination
+  if (dest) for (const t of footprintTiles(dest, footN)) els.push(<path key={`${keyPrefix}-dest-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d, dz)} fill="none" stroke={color} strokeWidth={3} opacity={0.95} pointerEvents="none" />);
   const at = dest ?? (path.length ? path[path.length - 1] : null);
   if (label && at) {
-    const c0 = tileCenter(at.x, at.y, d);
+    const c0 = tileCenter(at.x, at.y, d, lift(at));
     els.push(<text key={`${keyPrefix}-lbl`} x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{label}</text>);
   }
   return els;
@@ -154,6 +164,7 @@ export function IsoStage() {
   const camRot = useGame((s) => s.camRot);
   const camEdge = useGame((s) => s.camEdge); // cran impair : vue « de face » (edge-on) — grille axis-alignée 3D
   const viewMode = useGame((s) => s.viewMode);
+  const debugLabels = useGame((s) => s.debugLabels); // overlay d'annotation de carte (recette __wfrp.labels)
   const camPan = useGame((s) => s.camPan);
   const panCamBy = useGame((s) => s.panCamBy);
   const resetCamPan = useGame((s) => s.resetCamPan);
@@ -225,9 +236,9 @@ export function IsoStage() {
   // du budget de frame. On les fige tant que leurs vraies entrées (scène/rotation/vue/combat) n'ont
   // pas changé. Un pas de marche (setWalkTick) ne crée NI nouveau `battle` NI nouveau `partyPos` →
   // les memos tiennent ; un vrai déplacement (set({battle:{...}})/moveParty) en crée un → recalcul 1×.
-  // Planchers fusionnés dans le tri de profondeur GLOBAL (objs) : chaque étage porte une profondeur de
-  // bande unique (floorDepth) le plaçant sous SES objets et au-dessus de tout le niveau inférieur — un
-  // sol haut SURPLOMBE ainsi les tokens du sol. Tuiles « vide » non rendues (on voit le dessous).
+  // Planchers fusionnés dans le tri de profondeur GLOBAL (objs) : chaque tuile de sol porte sa propre
+  // profondeur de case (depth(x,y,z)−0.5), sous SES objets et, pour la même case, au-dessus du jeton de
+  // l'étage inférieur — un sol haut SURPLOMBE localement le bas. Tuiles « vide » non rendues (on voit le dessous).
   // Étages rendus = l'ACTIF + ceux du DESSOUS (cf. renderLevels), JAMAIS au-dessus. Asymétrie voulue : d'en
   // HAUT (loges) on voit le parterre EN CONTREBAS par le puits (utile, sans occlusion) ; d'en BAS, dessiner
   // les loges en surplomb OCCULTERAIT le parterre et rendrait la navigation aveugle. Cohérent avec le
@@ -236,16 +247,17 @@ export function IsoStage() {
   const activePos = mode === 'battle' && battle ? (battle.combatants.find((c) => c.id === battle.order[battle.turn])?.pos as { z?: number } | undefined) : undefined;
   const activeZ = viewZ ?? (activePos?.z ?? partyPos.z ?? 0);
 
-  // LIFT vertical d'une case : son étage z + son ÉLÉVATION locale (scène surélevée / fosse). Sert au
-  // JETON (qui monte/descend avec son sol) ET aux SURLIGNAGES de case → le halo SUIT le jeton (sinon le
-  // jeton paraît hors de sa case sur un sol surélevé/en contrebas). `diamondPath(x,y,dims,liftAt(...))`.
-  const liftAt = (x: number, y: number, z = 0) => z + (scene ? elevAt(scene, Math.round(x), Math.round(y), z) : 0);
+  // LIFT vertical d'une case = sa HAUTEUR MÉTRIQUE convertie en unités de niveau (`metricToLift(heightAt)`),
+  // DÉCOUPLÉ de l'index de couche `z` (qui ne sert qu'au TRI de profondeur). Sert au JETON (qui monte/descend
+  // avec son sol) ET aux SURLIGNAGES de case → le halo SUIT le jeton. `diamondPath(x,y,dims,liftAt(...))` :
+  // tileCenter/diamondPath multiplient ce lift par LEVEL_H (cf. iso.ts).
+  const liftAt = (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0);
 
   // Étages à RENDRE : l'ACTIF + ceux du DESSOUS (z <= activeZ) — d'en haut on voit l'auditorium par le
   // puits ; d'en bas on ne dessine PAS les loges en surplomb (elles cacheraient le parterre). Les tuiles
   // « vide » d'un étage haut ne dessinent rien → on voit l'étage du dessous au travers. Override debug
   // `viewLevel(z)` isole un seul étage. Le tri de profondeur (z-aware) empile les étages correctement.
-  const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.levels.filter((l) => l.z === viewZ) : scene.levels.filter((l) => l.z <= activeZ)) : []), [scene, viewZ, activeZ]);
+  const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.layers.filter((l) => l.z === viewZ) : scene.layers.filter((l) => l.z <= activeZ)) : []), [scene, viewZ, activeZ]);
 
   // Étage de SOL effectif sous (x,y) pour le BROUILLARD : à un trou (`vide`) de l'étage actif, on retombe
   // sur le premier sol en dessous → le voile reflète la visibilité du CONTREBAS (vu par le trou) au lieu
@@ -254,33 +266,62 @@ export function IsoStage() {
   const fogFloorZAt = useMemo(() => (x: number, y: number): number => {
     if (!scene) return activeZ;
     for (let zz = activeZ; zz >= 0; zz--)
-      if (scene.levels.some((l) => l.z === zz) && tileAt(scene, x, y, zz) !== 'vide') return zz;
+      if (scene.layers.some((l) => l.z === zz) && tileAt(scene, x, y, zz) !== 'vide') return zz;
     return activeZ;
   }, [scene, activeZ]);
-
-  // Tuiles « chemin de ronde » de l'étage du DESSUS visibles/dessinées depuis l'actif (dessus de mur porté,
-  // PAS un plancher en surplomb) → on rend le rempart + ses défenseurs vus de la cour. Vide hors multi-niveau.
-  const ramparts = useMemo(() => (scene ? rampartTilesAbove(scene, activeZ) : new Set<string>()), [scene, activeZ]);
 
   const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const out: { d: number; el: JSX.Element; x: number; y: number; z: number }[] = [];
-    // Étages rendus : l'actif + ceux du DESSOUS (plein) ; + l'étage du DESSUS mais SEULEMENT ses tuiles de
-    // CHEMIN DE RONDE (`ramparts`) — on dessine le dessus d'un mur vu d'en bas, jamais un plancher en surplomb.
-    for (const lvl of scene.levels) {
-      if (viewZ != null ? lvl.z !== viewZ : lvl.z > activeZ + 1) continue; // isolate ; sinon actif + dessous + 1 au-dessus (gardé par `ramparts`)
-      const upperOnly = viewZ == null && lvl.z > activeZ;
-      const fd = floorDepth(d, lvl.z);
+    // « ALLER SOUS LE CHEMIN DE RONDE » : un sol d'étage SUPÉRIEUR (la passerelle) se rend SEMI-TRANSPARENT au-
+    // dessus de tout combattant qui se tient EN DESSOUS (z inférieur) → on le voit, et la PORTE qu'il franchit,
+    // sans rien hacker (même esprit que l'estompage `occludesActor` du décor, mais Z-aware). Critère : le sol
+    // se dessine APRÈS l'acteur (depth) ET le recouvre à l'écran (tileCenter) — robuste aux 4 rotations.
+    const actors: { x: number; y: number; z: number }[] = [];
+    if (mode === 'battle' && battle) { for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actors.push({ x: c.pos.x, y: c.pos.y, z: c.pos.z ?? 0 }); }
+    else { actors.push({ x: partyPos.x, y: partyPos.y, z: partyPos.z ?? 0 }); for (const ent of scene.entities) if (ent.kind === 'personnage' && !ent.combat?.hiddenUntilCombat) actors.push({ x: ent.pos.x, y: ent.pos.y, z: ent.z ?? 0 }); }
+    const HALF_H = (shownEdge && viewMode !== 'top' ? EDGE_H : TH) / 2, TOKEN_H = 92, TOKEN_HW = TW * 0.45;
+    // « ALLER SOUS LE PONT » : une tuile de sol d'une COUCHE supérieure (passerelle) se rend semi-transparente
+    // au-dessus d'un acteur qui se tient EN DESSOUS. Le TRI garde l'index de couche `z` (depth) ; la position
+    // ÉCRAN et la comparaison « qui est plus haut » passent par la HAUTEUR MÉTRIQUE (`heightAt`/`liftAt`).
+    const coversActorBelow = (tx: number, ty: number, tz: number): boolean => {
+      if (tz <= 0 || !actors.length) return false;
+      const hTile = heightAt(scene, tx, ty, tz);
+      const fd = depth(tx, ty, d, tz) - 0.5, T = tileCenter(tx, ty, d, metricToLift(hTile));
+      for (const a of actors) {
+        if (heightAt(scene, a.x, a.y, a.z) >= hTile || fd <= depth(a.x, a.y, d, a.z) + 0.5) continue; // acteur au moins aussi haut, ou sol dessiné AVANT lui
+        const A = tileCenter(a.x, a.y, d, metricToLift(heightAt(scene, a.x, a.y, a.z)));
+        if (Math.abs(T.cx - A.cx) <= TW / 2 + TOKEN_HW && T.cy - HALF_H < A.cy && T.cy + HALF_H > A.cy - TOKEN_H) return true; // recouvrement écran
+      }
+      return false;
+    };
+    // Couches rendues : l'active + celles du DESSOUS (z <= activeZ). Le franchissement vertical s'auto-dérive
+    // du relief (parois de `groundTile`) ; plus de « chemin de ronde » d'une couche du dessus à dessiner.
+    // AU-DESSUS de la zone active (z > activeZ), on dessine en plus les SURPLOMBS (tablier de pont / loge)
+    // en FANTÔME (OVERHANG_GHOST_OPACITY) → on voit la silhouette du pont au-dessus de soi sans qu'il masque
+    // le sol. Borné aux scènes MULTI-COUCHES (mono-niveau : aucune couche au-dessus à fantômer).
+    const multiLayer = scene.layers.length > 1;
+    for (const lvl of scene.layers) {
+      if (viewZ != null && lvl.z !== viewZ) continue; // isolate : seule la couche isolée
+      const ghost = viewZ == null && lvl.z > activeZ; // tablier au-dessus de la zone active → fantôme
+      if (ghost && !multiLayer) continue;
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
-          if (upperOnly && !ramparts.has(`${x},${y},${lvl.z}`)) continue; // étage du dessus : rempart seulement
+          if (ghost && !isOverhang(scene, x, y, lvl.z)) continue; // au-dessus : SEULEMENT les surplombs
           const html = groundTile(scene, x, y, d, lvl.z);
-          if (html) out.push({ d: fd, x, y, z: lvl.z, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
+          // Profondeur PAR TUILE : depth(x,y,z) − 0.5 → le sol passe juste SOUS les objets de SA case
+          // (prop +0, jeton +0.5) tout en s'interclassant avec les voisins par sa vraie position écran
+          // (base ≫ z) : un sol haut surplombe les cases plus ARRIÈRE du bas sans recouvrir la cour devant.
+          if (html) {
+            const reveal = !ghost && coversActorBelow(x, y, lvl.z); // passerelle au-dessus d'un combattant → transparente
+            const op = ghost ? OVERHANG_GHOST_OPACITY : reveal ? 0.22 : 1;
+            out.push({ d: depth(x, y, d, lvl.z) - 0.5, x, y, z: lvl.z, el: <g key={`f${lvl.z}-${x}-${y}`} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: html }} /> });
+          }
         }
     }
     return out;
-  }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, ramparts]);
+  }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, mode, battle, partyPos]);
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
@@ -294,25 +335,9 @@ export function IsoStage() {
     // donc l'Effondrement (nouvelle réf de scène, `collapseStructure`) recalcule la brèche.
     return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
       const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false);
-      // `z` d'atténuation = l'étage du SOMMET du mur (`base + height`) : un rempart d'enceinte qui MONTE
-      // jusqu'au chemin de ronde appartient visuellement à CET étage — il borde le sol actif, donc il
-      // reste PLEINE lumière au lieu d'être assombri comme « le dessous » (sinon le mur porteur de la
-      // passerelle paraît un vide noir sous elle). Mur plat (`height` absent) → `base` inchangé (byte-identique).
-      return { d: seg.d, x: w.x, y: w.y, z: (w.z ?? 0) + (w.height ?? 0), el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
-    });
-  }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
-
-  // ESCALIERS (Scene.stairs) — volées de marches STRUCTURELLES (comme les murs), pas des décors posés.
-  // Pleine opacité si l'un des deux étages reliés est actif (l'escalier appartient aux deux).
-  const stairObjs = useMemo<{ d: number; el: JSX.Element; z: number }[]>(() => {
-    if (!scene?.stairs?.length) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    const zs = new Set(renderLevels.map((l) => l.z));
-    // Volées dont un des deux étages reliés est rendu (l'escalier appartient aux deux). `z` = étage HAUT
-    // relié : une volée dont le sommet reste SOUS l'actif (hi < activeZ) est atténuée avec son étage.
-    return scene.stairs.filter((s) => { const [lo, hi] = stairLevels(s); return zs.has(lo) || zs.has(hi); }).map((s, i) => {
-      const seg = stairSeg(s, d);
-      return { d: seg.d, z: stairLevels(s)[1], el: <g key={`stair-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      // `z` d'atténuation = la couche du mur (son sommet est une cloison de hauteur FIXE, plus un rempart
+      // porteur de passerelle) → il borde le sol de SA couche et reste à sa lumière.
+      return { d: seg.d, x: w.x, y: w.y, z: w.z ?? 0, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
@@ -346,7 +371,7 @@ export function IsoStage() {
     return out;
   }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos]);
 
-  const buildingObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+  const roofObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const allies =
@@ -354,7 +379,8 @@ export function IsoStage() {
         ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
         : [partyPos];
     const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
-    return (scene.buildings ?? []).map((b) => buildingObj(b, d, roofHidden(b, allies), night));
+    // Cutaway TOUT-EN-SCÈNE : le toit se lève dès qu'un allié est dans l'empreinte (`roofHidden`).
+    return (scene.roofs ?? []).map((roof) => roofObj(roof, d, roofHidden(roof, allies), night));
   }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos, gameTime]);
 
   // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
@@ -412,7 +438,7 @@ export function IsoStage() {
     // survole le token, son portrait, ou qu'on navigue au pad.
     const occ = effFocusId
       ? battle.combatants.find((c) => c.id === effFocusId && c.pos && !isOutOfAction(c))
-      : effHover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), effHover.x, effHover.y)) : null;
+      : effHover ? combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0) : null;
     if (!occ) return null;
     const st = useGame.getState;
     // Flux différés (bandeau TargetPrompt — Frappe Mortelle / 2ᵉ frappe (Deux armes) / Surincantation
@@ -458,7 +484,7 @@ export function IsoStage() {
     if (mode !== 'battle' || !battle) return null;
     const occ = effFocusId
       ? battle.combatants.find((c) => c.id === effFocusId && c.pos && !isOutOfAction(c))
-      : effHover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), effHover.x, effHover.y)) : null;
+      : effHover ? combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0) : null;
     return occ?.id ?? null;
   }, [combatCursor, mode, battle, hover, hoverCombatantId]);
   useEffect(() => { setHovered(hoveredId); }, [hoveredId, setHovered]);
@@ -469,7 +495,7 @@ export function IsoStage() {
   const hoverMove = useMemo<{ kind: 'move' | 'run'; path: { x: number; y: number }[]; cost: number } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
-    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), effHover.x, effHover.y));
+    const occ = combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0);
     if (occ) return null; // une cible a sa propre visée (hoverAim)
     return movePreviewAt(useGame.getState, effHover);
   }, [combatCursor, hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
@@ -482,7 +508,7 @@ export function IsoStage() {
   // Aperçu de DÉPLACEMENT au SURVOL hors combat : même calcul que le clic (moveAlong) — pathTo avec
   // la portée de saut du GROUPE. Memoïsé sur (hover, partyPos, scene) → le BFS ne tourne PAS à la frame
   // (le hover ne change qu'au changement de tuile). null sur tuile de départ / non marchable / pas de chemin.
-  const explorePath = useMemo<{ x: number; y: number }[] | null>(() => {
+  const explorePath = useMemo<Pt[] | null>(() => {
     if (mode !== 'exploration' || dialogue || !scene || !hover) return null;
     if (hover.x === partyPos.x && hover.y === partyPos.y && (hover.z ?? 0) === (partyPos.z ?? 0)) return null;
     // Même cible que le clic : un objet/PNJ interactif route vers une case adjacente (sa case est souvent
@@ -509,10 +535,17 @@ export function IsoStage() {
   // Surbrillances de combat LOURDES (grilles W×H) — figées hors changement d'état de combat. Les
   // éléments qui SUIVENT le token qui glisse (tether d'engagement, halo de l'actif) restent calculés
   // à la frame (peu coûteux) plus bas.
-  const staticHighlights = useMemo<JSX.Element[]>(() => {
+  const staticHighlights = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene || mode !== 'battle' || !battle) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    const hl: JSX.Element[] = [];
+    // Chaque surbrillance porte sa PROFONDEUR de case `depth(x,y,z)+0.25` : elle se trie à SA position
+    // écran (juste au-dessus du sol −0.5, sous les jetons +0.5), pas en bande par étage — sinon un
+    // overlay z>0 à constante unique serait enterré par les sols à (x+y) élevé. Helpers : `dPath`
+    // losange soulevé de son lift (z=0 ⇒ sans 4ᵉ arg, byte-identique mono-niveau) ; `liftOf` lift-écran
+    // d'un point pour movePreviewEls.
+    const hl: { d: number; el: JSX.Element }[] = [];
+    const dPath = (x: number, y: number, z = 0) => diamondPath(x, y, d, z ? liftAt(x, y, z) : 0);
+    const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
     const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
     // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — aucune affordance
     // (ni grille de déplacement, ni anneaux de cible, ni aperçu) ; teintes d'équipe/zones restent.
@@ -522,16 +555,16 @@ export function IsoStage() {
     // budget spécial stocké (post-Désengagement) prioritaire, sinon Marche restante dérivée.
     const walkReach = myTurn ? displayedReach(useGame.getState) : new Map<string, number>();
     for (const k of walkReach.keys()) {
-      const [x, y] = k.split(',').map(Number);
-      hl.push(<path key={`h${k}`} d={diamondPath(x, y, d)} fill="#4f8fe0" opacity={0.32} />);
+      const [x, y, z = 0] = k.split(',').map(Number); // clé z-aware : « x,y » (sol) ou « x,y,z » (étage)
+      hl.push({ d: depth(x, y, d, z) + 0.25, el: <path key={`h${k}`} d={dPath(x, y, z)} fill="#4f8fe0" opacity={0.32} /> });
     }
     // Zone de COURSE (LDB 15 l.79-82) au-delà de la Marche, dans une AUTRE couleur : y cliquer
     // demandera le Test d'Athlétisme, et le jet peut porter moins loin que la case visée.
     if (myTurn)
       for (const k of computeRunReach(useGame.getState).keys()) {
         if (walkReach.has(k)) continue;
-        const [x, y] = k.split(',').map(Number);
-        hl.push(<path key={`r${k}`} d={diamondPath(x, y, d)} fill="#9b6be0" opacity={0.24} />);
+        const [x, y, z = 0] = k.split(',').map(Number);
+        hl.push({ d: depth(x, y, d, z) + 0.25, el: <path key={`r${k}`} d={dPath(x, y, z)} fill="#9b6be0" opacity={0.24} /> });
       }
     // Aperçu tap-1 (tactile) : chemin + case d'arrivée + badge — MÊME rendu que le survol desktop
     // (movePreviewEls, source unique du tracé de déplacement).
@@ -540,8 +573,12 @@ export function IsoStage() {
       const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
       const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
       const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'run' ? 'Courir' : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
-      hl.push(...movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv', '#ffd75e', pv.kind === 'attack' ? 1 : (activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1)));
-      if (pvTgt?.pos) for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt))) hl.push(<path key={`pv-tgt-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />); // tout le bloc N×N d'un grand
+      const pvZ = (pvDest?.z) ?? 0;
+      // Aperçu multi-cases (chemin + destination + badge) : une seule profondeur pragmatique à la case
+      // d'ARRIVÉE (l'exactitude par-segment du tracé est secondaire ; on garde leur ordre relatif).
+      const pvD = pvDest ? depth(pvDest.x, pvDest.y, d, pvZ) + 0.25 : 0;
+      for (const el of movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv', '#ffd75e', pv.kind === 'attack' ? 1 : (activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1), liftOf)) hl.push({ d: pvD, el });
+      if (pvTgt?.pos) { const tz = pvTgt.pos.z ?? 0; for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt))) hl.push({ d: depth(t.x, t.y, d, tz) + 0.25, el: <path key={`pv-tgt-${t.x}-${t.y}`} d={dPath(t.x, t.y, tz)} fill="#ffd75e" opacity={0.18} pointerEvents="none" /> }); } // tout le bloc N×N d'un grand
     }
     // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
     for (const c of battle.combatants) {
@@ -550,16 +587,17 @@ export function IsoStage() {
       const isActiveC = c.id === activeC?.id || c.riderId === activeC?.id; // une monture est « active » si SON cavalier l'est
       const fill = tileTint(c.kind === 'hero', isActiveC);
       const fp = footprintN(c);
+      const cz = c.pos.z ?? 0;
       for (let dx = 0; dx < fp; dx++)
         for (let dy = 0; dy < fp; dy++)
-          hl.push(<path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, d)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />);
+          hl.push({ d: depth(c.pos.x + dx, c.pos.y + dy, d, cz) + 0.25, el: <path key={`tt${c.id}-${dx}-${dy}`} d={dPath(c.pos.x + dx, c.pos.y + dy, cz)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" /> });
     }
     // Zones persistantes (L11) : fumée opaque en gris ; zones de feu/effet (Mur de feu,
     // Grands feux) en orange translucide — l'occupant voit le danger.
-    for (const z of battle.zones ?? []) {
-      const fill = z.blocksLoS ? '#9aa0a6' : '#e2641e';
-      for (const t of z.tiles) {
-        hl.push(<path key={`zone-${z.label}-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill={fill} opacity={z.blocksLoS ? 0.5 : 0.35} pointerEvents="none" />);
+    for (const zone of battle.zones ?? []) {
+      const fill = zone.blocksLoS ? '#9aa0a6' : '#e2641e';
+      for (const t of zone.tiles) {
+        hl.push({ d: depth(t.x, t.y, d, 0) + 0.25, el: <path key={`zone-${zone.label}-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill={fill} opacity={zone.blocksLoS ? 0.5 : 0.35} pointerEvents="none" /> });
       }
     }
     // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » — en mode neutre
@@ -568,7 +606,8 @@ export function IsoStage() {
       const eligible = eligibleAttackTargetIds(useGame.getState);
       for (const c of battle.combatants) {
         if (!c.pos || !eligible.has(c.id)) continue;
-        hl.push(<path key={`tgt-${c.id}`} d={diamondPath(c.pos.x, c.pos.y, d)} fill="none" stroke="#ff5a4d" strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
+        const cz = c.pos.z ?? 0;
+        hl.push({ d: depth(c.pos.x, c.pos.y, d, cz) + 0.25, el: <path key={`tgt-${c.id}`} d={dPath(c.pos.x, c.pos.y, cz)} fill="none" stroke="#ff5a4d" strokeWidth={2.5} opacity={0.9} pointerEvents="none" /> });
       }
     }
     // « Tirer dans le tas » : cibles ÉLIGIBLES touchables au hasard.
@@ -578,7 +617,8 @@ export function IsoStage() {
       if (atk && tgt)
         for (const v of crowdEligible(battle, atk, tgt)) {
           if (!v.pos) continue;
-          hl.push(<path key={`crowd-${v.id}`} d={diamondPath(v.pos.x, v.pos.y, d)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" />);
+          const vz = v.pos.z ?? 0;
+          hl.push({ d: depth(v.pos.x, v.pos.y, d, vz) + 0.25, el: <path key={`crowd-${v.id}`} d={dPath(v.pos.x, v.pos.y, vz)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" /> });
         }
     }
     // Cibles cliquables du MODE de ciblage courant (targetingModes → MÊME source que réticule/curseur/clic) :
@@ -591,8 +631,10 @@ export function IsoStage() {
       const friendly = mode.id === 'heal'; // soin = anneau ami (vert)
       const checked = pendingCast?.pickingTargets ? new Set(pendingCast.extraTargetIds ?? []) : null; // surincantation : déjà coché en vert
       for (const t of cands)
-        if (t.pos)
-          hl.push(<path key={`cand-${t.id}`} d={diamondPath(t.pos.x, t.pos.y, d)} fill="none" stroke={friendly || checked?.has(t.id) ? '#5db87a' : '#ff5a4d'} strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
+        if (t.pos) {
+          const tz = t.pos.z ?? 0;
+          hl.push({ d: depth(t.pos.x, t.pos.y, d, tz) + 0.25, el: <path key={`cand-${t.id}`} d={dPath(t.pos.x, t.pos.y, tz)} fill="none" stroke={friendly || checked?.has(t.id) ? '#5db87a' : '#ff5a4d'} strokeWidth={2.5} opacity={0.9} pointerEvents="none" /> });
+        }
     }
     return hl;
   }, [scene, shownRot, shownEdge, viewMode, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast]);
@@ -613,7 +655,7 @@ export function IsoStage() {
     // plus — ils restent visibles, estompés et NON interactifs ; on ne les dessine pas si un
     // combattant occupe leur case (pas d'empilement de corps).
     const covered = (x: number, y: number) =>
-      inBattle && battle!.combatants.some((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), x, y));
+      inBattle && !!combatantAtTile(battle!.combatants, x, y, 0); // figurants de décor = sol (z0) uniquement
     // Figurant en combat : estompé + non interactif (inchangé). L'étage est géré par le filtre ci-dessous.
     const wrap = (key: string, el: JSX.Element) =>
       inBattle ? (
@@ -632,7 +674,7 @@ export function IsoStage() {
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
       if (inBattle && battle!.combatants.some((c) => c.id === ent.id)) continue; // enrôlé : c'est le combattant qui le rend (pas de figurant dupliqué)
       const ez = ent.z ?? 0;
-      if (viewZ != null ? ez !== viewZ : ez > activeZ && !ramparts.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // isole ; sinon actif + dessous + CHEMIN DE RONDE du dessus (rempart)
+      if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // isole ; sinon couche active + dessous
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
       // Brouillard : une créature/PNJ hors-vue n'est PAS dessinée (le décor/prop, lui, reste « mémorisé »).
       if (!visible.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue;
@@ -643,7 +685,7 @@ export function IsoStage() {
           z: ez,
           el: wrap(
             r.id,
-            <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
+            <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={liftAt(ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
               <g dangerouslySetInnerHTML={{ __html: entitySprite(ent, d.rot) }} />
             </BodyToken>,
           ),
@@ -658,7 +700,7 @@ export function IsoStage() {
           z: ez,
           el: wrap(
             r.id,
-            <BodyToken key={r.id} x={ex} y={ey} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
+            <BodyToken key={r.id} x={ex} y={ey} z={liftAt(ent.pos.x, ent.pos.y, ez)} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
               {r.body}
             </BodyToken>,
           ),
@@ -679,11 +721,21 @@ export function IsoStage() {
   // (anti-téléportation), sinon la position logique. Défini TÔT pour que les surbrillances (halo
   // d'actif) ET la caméra suivent le token qui GLISSE — et non sa destination logique déjà écrite.
   const wnow = performance.now();
-  const walkPosOf = (id: string, x: number, y: number) => {
+  const walkPosOf = (id: string, x: number, y: number, z = 0) => {
     const w = walksRef.current[id];
-    if (!w) return { x, y, walking: false };
-    const p = walkXY(w.path, wnow - w.start, STEP_MS);
-    return { x: p.x, y: p.y, walking: true };
+    if (!w) return { x, y, walking: false, sortPt: { x, y } };
+    const elapsed = wnow - w.start;
+    const p = walkXY(w.path, elapsed, STEP_MS);
+    // PROFONDEUR DE TRI (≠ position visuelle) : la case de plus grande BASE (anti-diagonale écran) parmi
+    // les 2 extrémités du SEGMENT courant — le token chevauche ces 2 cases pendant le pas, donc il doit se
+    // trier DEVANT leurs DEUX sols. Sans ça, le sol de la case d'arrivée (base plus grande) passait DEVANT
+    // le perso (le +0.5 ne compense pas un cran de base ≈ BASE_SCALE). La BASE seule arbitre (z constant) ;
+    // la position VISUELLE `p` reste interpolée → le token GLISSE. `sortPt` (sans offset d'empreinte) est
+    // re-décalée par l'appelant (depth(sortPt + off)) comme la case logique l'était (invariant à l'offset).
+    const seg = w.path.length < 2 ? 0 : Math.min(w.path.length - 2, Math.max(0, Math.floor(elapsed / STEP_MS)));
+    const a = w.path[seg], b = w.path[seg + 1] ?? a;
+    const sortPt = depth(b.x, b.y, dims, z) >= depth(a.x, a.y, dims, z) ? { x: b.x, y: b.y } : { x: a.x, y: a.y };
+    return { x: p.x, y: p.y, walking: true, sortPt };
   };
   // Une marche est-elle en cours ? Si oui, la caméra suit le token image par image : on COUPE la
   // transition CSS du transform (sinon elle « chasse » une cible mobile et traîne ~0,3 s derrière).
@@ -707,7 +759,7 @@ export function IsoStage() {
 
   // --- Surbrillances de combat : grilles LOURDES memoïsées + éléments DYNAMIQUES (suivent le
   //     token qui glisse : tether d'engagement, halo de l'actif) recalculés à la frame (peu coûteux). ---
-  const highlights: JSX.Element[] = [...staticHighlights];
+  const highlights: { d: number; el: JSX.Element }[] = [...staticHighlights];
   if (mode === 'battle' && battle) {
     // État ENGAGÉ (R7) : tether de mêlée entre paires Engagées (zone de contrôle). Dédupliqué (id < otherId).
     for (const c of battle.combatants) {
@@ -716,11 +768,13 @@ export function IsoStage() {
         if (c.id >= oid) continue; // une seule ligne par paire
         const o = battle.combatants.find((x) => x.id === oid);
         if (!o?.pos || isOutOfAction(o)) continue;
+        const za = c.pos.z ?? 0, zb = o.pos.z ?? 0; // chaque extrémité posée à l'étage de SON combattant
         const pa = walkPosOf(c.id, c.pos.x, c.pos.y);
         const pb = walkPosOf(o.id, o.pos.x, o.pos.y);
-        const ca = tileCenter(pa.x, pa.y, dims);
-        const cb = tileCenter(pb.x, pb.y, dims);
-        highlights.push(<line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke="#d98a3a" strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" />);
+        const ca = tileCenter(pa.x, pa.y, dims, za ? liftAt(pa.x, pa.y, za) : 0);
+        const cb = tileCenter(pb.x, pb.y, dims, zb ? liftAt(pb.x, pb.y, zb) : 0);
+        // tether posé à la profondeur de l'extrémité la plus PROCHE caméra (+0.25 ⇒ sous les jetons)
+        highlights.push({ d: Math.max(depth(pa.x, pa.y, dims, za), depth(pb.x, pb.y, dims, zb)) + 0.25, el: <line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke="#d98a3a" strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" /> });
       }
     }
     if (activeC?.pos) {
@@ -728,11 +782,11 @@ export function IsoStage() {
       const hz = (haloUnit.pos as { z?: number }).z ?? 0;
       const ap = walkPosOf(haloUnit.id, haloUnit.pos!.x, haloUnit.pos!.y); // le halo SUIT le token qui glisse
       for (const t of footprintTiles(ap, footprintN(haloUnit)))
-        highlights.push(<path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke="#ffe066" strokeWidth={3} />);
+        highlights.push({ d: depth(t.x, t.y, dims, hz) + 0.25, el: <path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke="#ffe066" strokeWidth={3} /> });
     }
   }
   if (mode === 'exploration' && !dialogue)
-    highlights.push(<path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />);
+    highlights.push({ d: depth(partyPos.x, partyPos.y, dims, partyPos.z ?? 0) + 0.25, el: <path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} /> });
 
   // --- Objets triés par profondeur (murs, arbres, entités, tokens) ---
   // `z` = étage de l'objet (absent ⇒ non concerné) : un objet d'un étage SOUS l'actif (z < activeZ)
@@ -741,12 +795,16 @@ export function IsoStage() {
   type Obj = { d: number; el: JSX.Element; x?: number; y?: number; z?: number };
   const objs: Obj[] = [];
 
-  // décor statique + bâtiments multi-tuiles : éléments memoïsés (cf. decorObjs/buildingObjs), juste
+  // décor statique + toits multi-tuiles : éléments memoïsés (cf. decorObjs/roofObjs), juste
   // ré-insérés dans le tri de profondeur (leurs `el` gardent une réf stable → React saute le sous-arbre).
   // Planchers (floorObjs) et surbrillances au sol participent au MÊME tri : un sol haut surplombe les
   // tokens du bas, et les surbrillances (z=0) restent au-dessus du sol mais sous tout le reste.
-  objs.push(...floorObjs, ...wallObjs, ...stairObjs, ...decorObjs, ...buildingObjs);
-  objs.push({ d: floorDepth(dims, 0) + 0.25, el: <g key="ground-overlays">{highlights}</g> });
+  objs.push(...floorObjs, ...wallObjs, ...decorObjs, ...roofObjs);
+  // Surbrillances : chaque surlignage porte DÉJÀ sa profondeur de case (depth(x,y,z)+0.25) → réinséré
+  // tel quel dans le tri global, il se peint juste au-dessus de SON sol (−0.5) et sous les jetons (+0.5),
+  // en s'interclassant avec les voisins par sa vraie position écran (les cases z>0 du rempart restent
+  // sur le chemin de ronde sans recouvrir la cour). Plus de regroupement par bande d'étage.
+  objs.push(...highlights);
 
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
   // unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
@@ -775,13 +833,13 @@ export function IsoStage() {
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const ez = ent.z ?? 0;
-    if (viewZ != null ? ez !== viewZ : ez > activeZ && !ramparts.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // isole ; sinon actif + dessous + CHEMIN DE RONDE du dessus (rempart)
+    if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // isole ; sinon couche active + dessous
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
     // Échelle = côté MAX de l'empreinte (`fg.scale`) : un prop multi-cases garde sa pleine taille à
     // TOUS les crans (l'échelle « largeur projetée » l'écrasait en 1×1 quand l'empreinte pointait vers
     // la profondeur — cf. retour utilisateur). La projection edge est gérée par `billboardScale` (BodyToken).
-    const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
+    const pd = footprintDepth(ent.pos.x, ent.pos.y, ent.foot?.w ?? 1, ent.foot?.h ?? 1, dims, ez);
     if (ent.interact && !flags[`__fouille_${ent.id}`]) { // affordance « fouille » — masquée dès l'objet épuisé (B4)
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
@@ -833,9 +891,16 @@ export function IsoStage() {
       // Sans ce saut, `pickBackend`/`resolveRender` la classerait en bipède Humain (un bonhomme au pied du mur).
       if (isStructure(c)) continue;
       // Levage par étage : un combattant se rend à SON niveau (`pos.z`), comme les entités multi-niveaux
-      // (cf. boucles entités/props) — masqué s'il est AU-DESSUS de l'étage actif, soulevé sinon.
+      // (cf. boucles entités/props) — soulevé à sa hauteur métrique. On rend la couche active + celles du
+      // DESSOUS, PLUS les combattants posés sur un SURPLOMB au-dessus (chemin de ronde au-dessus de la cour) :
+      // sinon, depuis la cour (activeZ=0), défenseurs et pièces de la muraille seraient INVISIBLES et donc
+      // inciblables à la souris — or un siège se DOIT de les montrer/cibler d'en bas (parité avec le picking
+      // cross-couche). Le SOL de surplomb reste FANTÔME (cf. floorObjs) ; seuls les JETONS sont nets, triés
+      // z-correctement (depth + lift). `isOverhang` borne au multi-couche (z>0 + surface marchable dessous) →
+      // mono-niveau inchangé. En mode ISOLÉ (viewZ), on garde la seule couche isolée.
       const cz = c.pos.z ?? 0;
-      if (viewZ != null ? cz !== viewZ : cz > activeZ && !ramparts.has(`${c.pos.x},${c.pos.y},${cz}`)) continue; // isole ; sinon actif + dessous + CHEMIN DE RONDE du dessus (rempart)
+      const overhang = viewZ == null && cz > activeZ && isOverhang(scene, c.pos.x, c.pos.y, cz); // jeton de muraille vu d'en bas
+      if (viewZ != null ? cz !== viewZ : (cz > activeZ && !overhang)) continue; // isole ; sinon couche active + dessous (+ surplomb)
       const isHero = c.kind === 'hero';
       // Brouillard : un ennemi/PNJ que PERSONNE du groupe ne voit n'est pas dessiné (les alliés, qui
       // SONT les viewers, restent toujours rendus). Clé z-aware = l'étage du combattant.
@@ -859,7 +924,7 @@ export function IsoStage() {
       const cx = wp.x + off, cy = wp.y + off;
       const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, combatantFlags(c));
       const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * (c.footprint ? footprintTokenScale(c.footprint) : sizeTokenScale(c.size)), ring, isOutOfAction(c), wp.walking, {
-        hp: c.wounds,
+        hp: c.inert ? undefined : c.wounds, // engin INERTE (Blessures {0,0,0}, immune) = pas de jauge de PV (un objet n'a pas de santé)
         icons: fxSum.visible.map((v) => v.icon),
         iconsMore: fxSum.moreCount,
         veil: veilTint(isHero),
@@ -872,7 +937,7 @@ export function IsoStage() {
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
         highlight: c.id === hoveredId ? relationColor(c.kind) : undefined, // FOCUS (survol token/frise) → halo couleur de relation, indépendant du ciblage (hoverAim = réticule)
       }, cz);
-      objs.push({ d: depth(cx, cy, dims, cz) + 0.5, z: cz, el });
+      objs.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, dims, cz) + 0.5, z: cz, el }); // tri constant sur le pas (sortPt) → le token reste DEVANT les 2 sols qu'il chevauche
     }
     // Combat monté (LDB 14) : le couple CAVALIER+MONTURE est dessiné comme UN corps composite
     // (MountedToken) trié au niveau de l'os → vraie profondeur (jambe lointaine derrière le
@@ -883,33 +948,19 @@ export function IsoStage() {
       const rider = riderOf(battle, mount);
       if (!rider) continue;
       const off = (footprintN(mount) - 1) / 2;
-      const wp = walkPosOf(mount.id, mount.pos.x, mount.pos.y); // suit l'animation de marche de la monture
+      const mz = mount.pos.z ?? 0;
+      const wp = walkPosOf(mount.id, mount.pos.x, mount.pos.y, mz); // suit l'animation de marche de la monture
       const cx = wp.x + off, cy = wp.y + off;
       const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
       const el = tokenNode(`${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking);
-      objs.push({ d: depth(cx, cy, dims) + 0.5, z: mount.pos.z ?? 0, el });
+      objs.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, dims, mz) + 0.5, z: mz, el }); // tri constant sur le pas (sortPt)
     }
   } else {
     // Entités de scène (créatures/PNJ d'ambiance) : tokens memoïsés (cf. entityObjs) — ré-insérés
     // dans le tri de profondeur, réfs stables → React saute leur re-rendu pendant la marche.
     objs.push(...entityObjs);
-    // Affordance d'ENTRÉE des bâtiments : halo pulsé sur la tuile de PORTE (mêmes codes que la
-    // fouille) — on voit d'un coup d'œil où l'on peut entrer (intérieur `door` comme cutaway).
-    for (const b of scene.buildings ?? []) {
-      if (!b.door) continue;
-      const c = tileCenter(b.door.x, b.door.y, dims);
-      const doorHovered = mode === 'exploration' && !!hover && hover.x === b.door.x && hover.y === b.door.y;
-      objs.push({
-        d: depth(b.door.x, b.door.y, dims) + 0.6, // au-dessus du mur de façade (même tuile)
-        z: 0, // bâtiments au sol
-        el: (
-          <g key={`door-halo-${b.id}`} className={doorHovered ? 'interact-halo hovered' : 'interact-halo'} pointerEvents="none">
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.16} />
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={15} ry={7.5} fill="none" stroke="#ffe27a" strokeWidth={1.5} opacity={0.65} />
-          </g>
-        ),
-      });
-    }
+    // (Plus de halo de PORTE de bâtiment : un toit composé n'a plus de porte propre — on entre par les
+    //  portes de mur (`WallSeg.door`, overlay cliquable) et l'intérieur se révèle au cutaway du toit.)
     // PNJ / marchand (interlocuteurs) : PAS de halo permanent (ils ne « réclament » pas comme une
     // fouille/porte) — halo révélé au SURVOL seul, cohérent avec le curseur main. Rendu HORS du memo
     // entityObjs (qui ignore `hover` pour rester stable) → 1 seule tuile à la fois, peu coûteux.
@@ -930,14 +981,14 @@ export function IsoStage() {
       });
     }
     // groupe — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
-    const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
+    const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y, partyPos.z ?? 0) : { x: partyPos.x, y: partyPos.y, walking: false, sortPt: { x: partyPos.x, y: partyPos.y } };
     const pZ = partyPos.z ?? 0; // le groupe se rend à son étage (loge) — token soulevé + trié au bon niveau
     const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, viewMode);
     const el =
       r.backend === 'sprite'
         ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0], false, undefined, false, false, pZ)
         : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(1) }, pZ);
-    objs.push({ d: depth(wp.x, wp.y, dims, pZ) + 0.5, z: pZ, el });
+    objs.push({ d: depth(wp.sortPt.x, wp.sortPt.y, dims, pZ) + 0.5, z: pZ, el }); // tri constant sur le pas (sortPt) → le groupe reste DEVANT les 2 sols qu'il chevauche
   }
   objs.sort((a, b) => a.d - b.d);
 
@@ -1025,15 +1076,17 @@ export function IsoStage() {
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
     const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
     const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
-    // Picking au niveau CONTRÔLÉ : on vise l'étage ACTIF (celui du groupe) en PREMIER, puis les étages
-    // INFÉRIEURS seulement à travers un VIDE (on regarde dans le puits). On ne vise JAMAIS un étage au-
-    // dessus : les loges en surplomb sont VISIBLES (co-visible) mais non ciblables tant qu'on n'y monte
-    // pas → le clic porte sur le plan qu'on contrôle, pas sur le plancher en surplomb.
-    for (const z of scene.levels.map((l) => l.z).filter((z) => z <= activeZ).sort((a, b) => b - a)) {
+    // Picking CROSS-COUCHE aligné sur le curseur clavier (PARITÉ souris↔clavier) : SANS borne d'étage
+    // `≤ activeZ`, on vise la couche RÉELLE LA PLUS HAUTE de la case écran sous le curseur — ainsi survoler/
+    // cliquer le chemin de ronde z1 depuis la cour z0 cible z1 (là où se tiennent défenseurs et pièces). On
+    // itère du HAUT vers le bas : chaque couche est inversée À SON lift (`screenToTileAtZ`), et `resolveCursorZ`
+    // (SOURCE UNIQUE de « la couche réelle la plus haute d'une case », partagée avec `nextCursorTile`) tranche
+    // — la 1ʳᵉ couche dont la case résout à ELLE-MÊME gagne (un surplomb dessiné lifté capte le clic ; sinon on
+    // tombe dans le puits jusqu'au sol). Sol plat mono-couche : `resolveCursorZ`→0 ⇒ comportement byte-identique.
+    for (const z of scene.layers.map((l) => l.z).sort((a, b) => b - a)) {
       const { x, y } = screenToTileAtZ(gx, gy, dims, z);
       if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-      const ter = tileAt(scene, x, y, z);
-      if (!ter || ter === 'vide') continue; // pas de case réelle ici à cet étage → tenter celui du dessous
+      if (resolveCursorZ(scene, x, y) !== z) continue; // la surface réelle la plus haute ici n'est pas cette couche
       return z ? { x, y, z } : { x, y };
     }
     return null;
@@ -1049,7 +1102,7 @@ export function IsoStage() {
     if (st.mode === 'battle' && st.battle) {
       const cid = (document.elementFromPoint(ev.clientX, ev.clientY) as Element | null)?.closest('[data-cid]')?.getAttribute('data-cid');
       const c = cid ? st.battle.combatants.find((x) => x.id === cid) : undefined;
-      if (c?.pos) return { x: c.pos.x, y: c.pos.y };
+      if (c?.pos) return c.pos.z ? { x: c.pos.x, y: c.pos.y, z: c.pos.z } : { x: c.pos.x, y: c.pos.y };
     }
     return tileFromEvent(ev);
   };
@@ -1076,14 +1129,14 @@ export function IsoStage() {
     const tz = t.z ?? 0;
     if (st.mode === 'battle') {
       if (!controlsActive(st)) return; // coop : tour du héros d'un AUTRE joueur — clics inertes
-      const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, footprintN(c), x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
+      const occ = st.battle ? combatantAtTile(st.battle.combatants, x, y, tz) : undefined; // clic sur N'IMPORTE quelle tuile de l'empreinte, au bon étage
       // Décision PARTAGÉE avec le clic d'un portrait de frise (`combatantClickActs`) : un ennemi
       // s'attaque en mode neutre, tout combattant se cible en mode sort / choix de cibles ; sinon
       // (allié/soi non actionnable) on inspecte. Desktop (survol) : la visée a déjà tout montré → un
       // clic COMMET ; tactile : deux-taps (tap 1 = aperçu) — cf. pointerCaps.
       if (occ && combatantClickActs(useGame.getState, occ)) st.battleClickEntity(occ.id, { confirm: hoverClickCommits() });
       else if (occ) { if (st.inspectEnabled) st.setInspectId(occ.id); } // allié/soi non-actionnable → inspecter (parité frise : « inspection depuis le token »)
-      else st.battleClickTile({ x, y }, { confirm: hoverClickCommits() });
+      else st.battleClickTile(tz ? { x, y, z: tz } : { x, y }, { confirm: hoverClickCommits() }); // z-aware : escalier / case de rempart
       return;
     }
     const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y && (e.z ?? 0) === tz);
@@ -1144,8 +1197,7 @@ export function IsoStage() {
     const sc = useGame.getState().scene;
     const overInteractive =
       !!sc && !!t && useGame.getState().mode === 'exploration' &&
-      (sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0) && (e.dialogueId || !!e.interact || !!e.merchant))
-        || (sc.buildings ?? []).some((b) => b.door && b.door.x === t.x && b.door.y === t.y));
+      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0) && (e.dialogueId || !!e.interact || !!e.merchant));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile (cf. garde plus bas), donc peu de re-rendus.
@@ -1157,7 +1209,7 @@ export function IsoStage() {
       if (hover) setHover(null);
       return;
     }
-    if (!hover || hover.x !== t.x || hover.y !== t.y) {
+    if (!hover || hover.x !== t.x || hover.y !== t.y || (hover.z ?? 0) !== (t.z ?? 0)) {
       if (useGame.getState().combatCursor) useGame.getState().clearCursor(); // la souris (nouvelle tuile) reprend la main sur le curseur clavier/manette — un seul réticule à la fois
       setHover(t);
       const st = useGame.getState();
@@ -1243,7 +1295,7 @@ export function IsoStage() {
         if (st.mode !== 'battle' || !b || b.over || !controlsActive(st) || !hover) return;
         const active = b.combatants.find((c) => c.id === b.order[b.turn]);
         if (!active || active.kind !== 'hero') return;
-        const occ = b.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, footprintN(c), hover.x, hover.y));
+        const occ = combatantAtTile(b.combatants, hover.x, hover.y, hover.z ?? 0);
         if (!occ || occ.kind !== 'enemy') return;
         const best = bestAttack(useGame.getState, active, b, occ);
         if (best) st.battleClickEntity(occ.id, { forceAttackId: best.id, confirm: true });
@@ -1361,7 +1413,7 @@ export function IsoStage() {
         {/* Télégraphe de DÉPLACEMENT ENNEMI (actorMove) : chemin + destination en ROUGE, montré avant le
             glissé — même tracé que l'aperçu héros (movePreviewEls), teinté ennemi. */}
         {actorMove && actorMove.path.length > 0 &&
-          movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', '#e0533a', activeMoveN)}
+          movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', '#e0533a', activeMoveN, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
         {/* Télégraphe ENNEMI (actorAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
           <TargetReticle
@@ -1475,14 +1527,16 @@ export function IsoStage() {
             chemin + badge de coût — le clic/A commet. Ancré sur la case EFFECTIVE (souris ou curseur). */}
         {mode === 'battle' && battle && hoverMove && effHover && (
           <g pointerEvents="none">
-            {movePreviewEls(hoverMove.path, effHover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv', '#ffd75e', activeMoveN)}
+            {movePreviewEls(hoverMove.path, effHover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv', '#ffd75e', activeMoveN, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
           </g>
         )}
         {/* Aperçu de DÉPLACEMENT au survol HORS combat : même tracé partagé (movePreviewEls), pas de badge. */}
         {mode === 'exploration' && explorePath && hover && (
           <g pointerEvents="none">
-            {/* Case d'arrivée = fin du chemin (case adjacente pour un objet/PNJ interactif), pas le survol. */}
-            {movePreviewEls(explorePath, explorePath[explorePath.length - 1], null, dims, 'exp')}
+            {/* Case d'arrivée = fin du chemin (case adjacente pour un objet/PNJ interactif), pas le survol.
+                Chaque point se rend à SON z et SA hauteur (lift) → le trait MONTE la rampe et court sur le
+                tablier au lieu de rester écrasé sur la cour (z0). */}
+            {movePreviewEls(explorePath, explorePath[explorePath.length - 1], null, dims, 'exp', '#ffd75e', 1, (p) => (p.z ? liftAt(p.x, p.y, p.z) : 0))}
           </g>
         )}
         {/* Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon
@@ -1546,7 +1600,7 @@ export function IsoStage() {
                   </g>
                 );
               })()}
-              {tip?.kind === 'info' && (() => {
+              {tip?.kind === 'info' && !t.postes?.length && (() => {
                 // Carte compacte : nom (or) / compétence + valeur EFFECTIVE (mod entre parenthèses) /
                 // dégâts « +N » / manœuvre (Charge…) — une info par ligne.
                 const eff = tip.base + tip.mod;
@@ -1584,7 +1638,133 @@ export function IsoStage() {
             </g>
           );
         })()}
+        {mode === 'battle' && battle && (() => {
+          // Tooltip ÉQUIPE d'une pièce de siège/artillerie SURVOLÉE (turn-INDÉPENDANT, via hoveredId) : chef +
+          // renforts + Indice d'Arme d'équipe + effectif (sous-effectif en rouge), et l'invite « Clic : rejoindre »
+          // si le héros actif peut la servir. Données pures (poste.crewIds / qualité arme-d-equipe) — zéro mécanique.
+          const occ = hoveredId ? battle.combatants.find((c) => c.id === hoveredId) : null;
+          if (!occ?.postes?.length || !occ.pos) return null;
+          const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+          // Pièce que le héros ACTIF pourrait REJOINDRE (affordance « Servir cette pièce ») → carte d'ACTION
+          // (qualifié/aide), à l'image de la carte d'attaque quand on cible un ennemi.
+          const servePoste = active && active.kind === 'hero' && myTurn ? serveTargetPoste(active, occ, battle.combatants) : undefined;
+          const lines: { text: string; color: string; bold?: boolean }[] = [];
+          for (const p of occ.postes) {
+            const indice = p.item.qualities?.find((q) => q.id === 'arme-d-equipe')?.value ?? 0;
+            const manned = isPosteManned(p, battle.combatants);
+            const chefId = p.crewIds?.[0];
+            const chef = manned ? battle.combatants.find((c) => c.id === chefId) : undefined;
+            // Équipage réparti par QUALIFICATION (AA p.122 l.3900-3902) : qualifiés = comptent dans l'effectif ;
+            // aides = présents mais non qualifiés (déplacent/compensent, ne comptent pas). Chef listé à part.
+            const { qualified, aides } = posteCrewSplit(p, battle.combatants);
+            const renforts = qualified.filter((c) => c.id !== chefId).map((c) => c.name);
+            const aideNames = aides.filter((c) => c.id !== chefId).map((c) => c.name);
+            const present = chef ? servingCrewPresent(chef, battle.combatants) : undefined;
+            const groupLabel = p.item.weaponGroup ? weaponGroupLabel(p.item.weaponGroup) : '';
+            lines.push({ text: indice > 0 ? `${p.item.name} · Arme d’équipe ${indice}` : p.item.name, color: '#ffd75e', bold: true });
+            lines.push({ text: `Chef : ${manned ? chef?.name ?? 'aucun' : 'aucun'}`, color: '#f0f0f0' });
+            if (renforts.length) lines.push({ text: `Renforts : ${renforts.join(', ')}`, color: '#b9b2a6' });
+            if (aideNames.length) lines.push({ text: `Aides (non qual.) : ${aideNames.join(', ')}`, color: '#7f8893' });
+            if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' ⚠ sous-effectif' : ''}`, color: present < indice ? '#e0533a' : '#5db87a' });
+            // Carte d'ACTION du héros actif : SA qualification pour CETTE pièce (même check RAW que l'effectif),
+            // affichée DÈS le survol (même non adjacent) → on sait d'un coup d'œil si ce héros peut l'armer.
+            if (active && active.kind === 'hero' && myTurn) {
+              const canServeNow = !!(servePoste && servePoste.item.uid === p.item.uid); // adjacent + servable maintenant
+              if (isCrewQualified(active, p)) {
+                lines.push({ text: `✅ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: '#5db87a', bold: true });
+                lines.push({ text: !canServeNow ? '↳ approchez-vous pour servir' : manned ? '↳ compte pour l’effectif' : '↳ chef : peut tirer (pièce libre)', color: '#9fb8a6' });
+              } else {
+                lines.push({ text: `⚠ NON qualifié (Projectiles ${groupLabel})`, color: '#e0a53a', bold: true });
+                lines.push({ text: '↳ AIDE : ne compte pas, ne tire pas', color: '#b9926a' });
+              }
+            }
+          }
+          const anchor = reticleAnchor(occ);
+          const w = Math.max(...lines.map((l) => l.text.length)) * 6.1 + 20;
+          const h = lines.length * 14 + 12;
+          const x0 = -w / 2 + 10;
+          return (
+            <g pointerEvents="none" transform={`translate(${anchor.cx},${anchor.cy - 64})`}>
+              <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="#14141c" fillOpacity={0.95} stroke="#ffd75e" strokeOpacity={0.6} strokeWidth={1} />
+              {lines.map((l, i) => (
+                <text key={i} x={x0} y={-h + 15 + i * 14} fontSize={l.bold ? 11.5 : 10.5} fontWeight={l.bold ? 700 : 500} fill={l.color}>{l.text}</text>
+              ))}
+            </g>
+          );
+        })()}
+        {/* OVERLAY DEBUG (recette `__wfrp.labels`) — annotation PARTAGÉE de la carte, rendue EN DERNIER
+            dans le groupe caméra (au-dessus de TOUTE la scène) et UNIQUEMENT quand le flag est ON (zéro
+            coût off). Pour chaque case non 'vide' de CHAQUE couche : coordonnées `x,y` (+`z{n}`) en blanc
+            cerné de noir + teinte par couche (z1 cyan / z2 violet). Pastilles de rôle de structure sur les
+            arêtes (porte jaune / courtine rouge). Purement additif : n'altère NI le rendu NI le tri. */}
+        {debugLabels && (() => {
+          const W = scene.dimensions.w, H = scene.dimensions.h;
+          const els: JSX.Element[] = [];
+          // 1) Teinte par couche + coordonnées centrées (lift = HAUTEUR MÉTRIQUE → posé sur le sol réel).
+          for (const lvl of scene.layers) {
+            const z = lvl.z;
+            const tint = z >= 2 ? '#9a5cff' : z === 1 ? '#13c4d6' : null; // z0 : aucune teinte
+            for (let y = 0; y < H; y++)
+              for (let x = 0; x < W; x++) {
+                if (lvl.tiles[y * W + x] === 'vide') continue;
+                const lift = liftAt(x, y, z);
+                if (tint) els.push(<path key={`dbgtint-${z}-${x}-${y}`} d={diamondPath(x, y, dims, lift)} fill={tint} opacity={0.18} pointerEvents="none" />);
+                // Coord UNIQUEMENT sur la couche la plus HAUTE de la case → un seul label par colonne (plus de z0/z1 superposés).
+                const isTop = !scene.layers.some((l) => l.z > z && l.tiles[y * W + x] !== 'vide');
+                if (isTop) {
+                  const { cx, cy } = tileCenter(x, y, dims, lift);
+                  els.push(
+                    <text key={`dbgxy-${z}-${x}-${y}`} x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
+                      fontSize={10} fontWeight={700} fill="#fff" stroke="#0a0a12" strokeWidth={3}
+                      style={{ paintOrder: 'stroke' }} pointerEvents="none">
+                      {z > 0 ? `${x},${y}z${z}` : `${x},${y}`}
+                    </text>,
+                  );
+                }
+              }
+          }
+          // 2) Rôle des MURS/structures : porte jaune / courtine rouge ; marqueur dressé sur l'arête à sa couche.
+          const edgePts = (w: WallSeg, z: number): [{ cx: number; cy: number }, { cx: number; cy: number }] => {
+            if (w.side === 'N' || w.side === 'E') return tileEdge(w.x, w.y, w.side, dims, z);
+            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, z);
+            return w.side === '\\' ? [gc(w.x, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x + 1, w.y), gc(w.x, w.y + 1)];
+          };
+          for (const w of scene.walls ?? []) {
+            const role = structureById.get(w.structure ?? '')?.kind === 'porte' ? '#f4d020' : '#e03a3a';
+            const z = w.z ?? 0;
+            const [a, b] = edgePts(w, z);
+            const key = `${w.x}-${w.y}-${w.side}-${w.z ?? 0}`;
+            els.push(<line key={`dbgwall-${key}`} x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke={role} strokeWidth={4} strokeLinecap="round" opacity={0.92} pointerEvents="none" />);
+            els.push(<circle key={`dbgwalldot-${key}`} cx={(a.cx + b.cx) / 2} cy={(a.cy + b.cy) / 2} r={3.2} fill={role} stroke="#0a0a12" strokeWidth={0.8} pointerEvents="none" />);
+          }
+          return <g pointerEvents="none">{els}</g>;
+        })()}
       </g>
+      {/* Légende DEBUG (recette `__wfrp.labels`) — FIXE dans un coin (hors groupe caméra : ne pan/zoome pas). */}
+      {debugLabels && (() => {
+        const items: [string, string][] = [
+          ['couche z1 (teinte cyan)', '#13c4d6'],
+          ['couche z2 (teinte violet)', '#9a5cff'],
+          ['courtine (mur)', '#e03a3a'],
+          ['porte', '#f4d020'],
+        ];
+        const x0 = 12, y0 = 12, rowH = 18, w = 200, h = 30 + items.length * rowH;
+        return (
+          <g pointerEvents="none">
+            <rect x={x0} y={y0} width={w} height={h} rx={6} fill="#0a0a12" opacity={0.82} stroke="#444" strokeWidth={1} />
+            <text x={x0 + 10} y={y0 + 18} fill="#fff" fontSize={11} fontWeight={700}>🏷️ Debug carte (labels)</text>
+            {items.map(([label, col], i) => {
+              const ly = y0 + 28 + i * rowH;
+              return (
+                <g key={`dbgleg-${i}`}>
+                  <rect x={x0 + 10} y={ly} width={14} height={12} fill={col} stroke="#000" strokeWidth={0.8} />
+                  <text x={x0 + 30} y={ly + 10} fill="#e8e8e8" fontSize={10.5}>{label}</text>
+                </g>
+              );
+            })}
+          </g>
+        );
+      })()}
       {/* Ambiance : fixe par-dessus la scène (ne suit pas la caméra) */}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />
       {/* Corbeau qui traverse le ciel (extérieurs) — vie d'ambiance. */}

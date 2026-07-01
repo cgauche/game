@@ -25,7 +25,7 @@ const combatant = (over: Partial<Combatant>): Combatant =>
 const scene = (mur?: number): Scene => {
   const tiles = new Array(64).fill('herbe');
   if (mur != null) tiles[mur] = 'mur'; // sur la ligne y=0
-  return { id: 's', name: 's', dimensions: { w: 8, h: 8 }, ambiance: 'jour', levels: [{ z: 0, tiles }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
+  return { id: 's', name: 's', dimensions: { w: 8, h: 8 }, ambiance: 'jour', layers: [{ z: 0, tiles }], entities: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
 };
 
 const mkGet = (combatants: Combatant[], battleOver: Partial<Record<string, unknown>> = {}, sc = scene()): (() => GameState) =>

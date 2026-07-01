@@ -40,7 +40,7 @@ const scene = emptyScene(16, 16);
 function walledScene(w: number, walls: Record<string, string> = {}): Scene {
   const grid = new Array(w).fill('herbe');
   for (const [k, v] of Object.entries(walls)) grid[Number(k.split(',')[0])] = v;
-  return { id: 's', name: 's', dimensions: { w, h: 1 }, ambiance: 'jour', levels: [{ z: 0, tiles: grid }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
+  return { id: 's', name: 's', dimensions: { w, h: 1 }, ambiance: 'jour', layers: [{ z: 0, tiles: grid }], entities: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
 }
 
 function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {

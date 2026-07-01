@@ -13,9 +13,16 @@ export const CELL = 56; // côté d'une case carrée (vue du dessus)
 export const EDGE_W = TW * Math.SQRT1_2; // ≈ 45.25
 export const EDGE_H = TH * Math.SQRT1_2; // ≈ 22.63
 export const LEVEL_H = 96; // hauteur écran (px) d'un étage : un niveau z>0 est dessiné soulevé d'autant
-/** Poids de profondeur d'un étage : un niveau z+1 se dessine TOUJOURS après (au-dessus de) tout
- *  le niveau z (les scènes font au plus quelques dizaines de cases → base ≪ LEVEL_DEPTH). */
-const LEVEL_DEPTH = 1_000_000;
+/** Profondeur de tri : la base (anti-diagonale ÉCRAN) PRIME (× BASE_SCALE) ; l'étage `z` n'est qu'un
+ *  cran SECONDAIRE (Z_STEP) de départage, lui-même au-dessus des offsets de COUCHE ajoutés par les
+ *  appelants (sol −0.5, prop 0, overlay +0.25, jeton +0.5, mur +0.45, escalier +0.42 / haut d'escalier
+ *  +0.7, halos +0.55/+0.6). Hiérarchie STRICTE : base ≫ z ≫ couche → murs/escaliers verticaux
+ *  s'interclassent par leur vraie position écran (plus de « bande z » dominante qui enterrait un mur
+ *  sous le sol du dessus). Invariants tenus par ces valeurs :
+ *    BASE_SCALE > maxLevels*Z_STEP + 1   (un cran d'anti-diagonale domine toute la pile d'étages)
+ *    Z_STEP     > max|layerOffset| (≈ 0.7)  (le cran d'étage domine tout offset de couche) */
+export const Z_STEP = 2;
+export const BASE_SCALE = 64;
 
 /** Marge à gauche pour que la tuile la plus à gauche reste visible (dimensions effectives). */
 export function originX(dims: Dims) {
@@ -216,21 +223,24 @@ export function diamondPath(x: number, y: number, dims: Dims, z = 0): string {
 }
 
 /** Profondeur de tri (plus grand = devant), dans l'orientation courante, niveau `z` compris.
- *  iso : diagonale écran (r.x+r.y) ; top/edge : par rangée écran (r.y prime, r.x départage). Un
- *  niveau z+1 ajoute LEVEL_DEPTH → il se dessine TOUJOURS après tout le niveau z (ordre
- *  intra-niveau préservé). z=0 (défaut) = comportement plan-sol historique. */
+ *  iso : diagonale écran (r.x+r.y) ; top/edge : par rangée écran (r.y prime, r.x départage). La base
+ *  (anti-diagonale écran) est mise à l'échelle BASE_SCALE et l'étage `z` n'ajoute qu'un cran SECONDAIRE
+ *  (Z_STEP) : à position écran ÉGALE, l'étage haut passe devant, mais un élément plus AVANT (base plus
+ *  grande) à un étage bas reste devant un élément plus arrière d'un étage haut → murs/escaliers
+ *  verticaux s'interclassent par leur vraie position écran. z=0 (défaut) = base × BASE_SCALE
+ *  (plan-sol historique, à l'échelle près — le tri relatif est inchangé). */
 export function depth(x: number, y: number, dims: Dims, z = 0) {
   const r = rotTile(x, y, dims);
   const st = axisStep(dims); // null en iso losange — la branche r.x+r.y est VIVANTE
   const base = st ? r.y * (dims.w + dims.h) + r.x : r.x + r.y;
-  return base + z * LEVEL_DEPTH;
+  return base * BASE_SCALE + z * Z_STEP;
 }
 
-/** Profondeur de tri du PLANCHER d'un étage z : une seule valeur pour tout le sol du niveau, juste
- *  SOUS le plus bas de ses objets (base 0) et bien AU-DESSUS de tout le niveau inférieur (≤ base+0.5,
- *  ≪ LEVEL_DEPTH). Le sol z dessine ainsi par-dessus les tokens de z−1 (surplomb) sans jamais occulter
- *  les tokens de son propre niveau (tri global unique ; les tuiles d'un même sol gardent l'ordre
- *  arrière→avant par tri stable). z·LEVEL_DEPTH obtenu sans exposer LEVEL_DEPTH (la base se simplifie). */
-export function floorDepth(dims: Dims, z: number) {
-  return depth(0, 0, dims, z) - depth(0, 0, dims, 0) - 0.5;
+/** Profondeur de tri d'un élément à EMPREINTE (w×h, ancre NO) à l'étage z : MAX de `depth` sur les 4 coins
+ *  → la case « proche caméra » est correcte aux 4 rotations (généralise le MAX-2-cases de wallDepth). */
+export function footprintDepth(x: number, y: number, w: number, h: number, dims: Dims, z = 0): number {
+  const xs = [x, x + Math.max(1, w) - 1], ys = [y, y + Math.max(1, h) - 1];
+  let d = -Infinity;
+  for (const cx of xs) for (const cy of ys) d = Math.max(d, depth(cx, cy, dims, z));
+  return d;
 }

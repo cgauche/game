@@ -23,11 +23,13 @@ import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzied } from '../engine/psychology';
 import { healableTargets, combatHealModes } from '../engine/healing';
 import { findSpellById } from '../data';
+import { isStructure, structureImmune } from '../engine/structures';
 import { overcastSourceOf } from '../engine/overcast';
 import type { Pt } from './path';
 import { combatDistance } from './footprint';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
+import { serveTargetPoste, isPosteManned } from './shipPostes';
 import { spellOps } from './flow';
 import { mountOf, mountMovement, mountedCombatDistance } from './mount';
 import { afterApproach } from './combatDirector';
@@ -190,9 +192,23 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
 /** Mode ATTAQUE : l'`AttackOption` armée (selectedAttack / ancien mode maneuver/tentacle/trample). */
 function attackAffordance(get: Get, active: Combatant, target: Combatant): HoverTargeting {
   const battle = get().battle!;
+  // Pièce de siège SERVABLE (poste, MDG ch.12 / AA p.124) : un poste-porteur qu'on peut REJOINDRE (chef si non
+  // servi, renfort sinon) → réticule « Servir » ; le clic rejoint l'équipe (jamais une attaque futile sur l'engin
+  // inerte). Prioritaire. SOURCE `serveTargetPoste` (= hotbar/IA). Le tooltip d'ÉQUIPE (IsoStage) montre le détail.
+  if (target.postes?.length) {
+    const p = serveTargetPoste(active, target, battle.combatants);
+    if (!p) return { kind: 'none' };
+    const join = isPosteManned(p, battle.combatants);
+    return { kind: 'ok', line: 'solid', title: `${join ? 'Renfort' : 'Servir'} : ${p.item.name}`, skill: join ? "Renfort d'équipe" : 'Chef de pièce', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  }
   const option = selectedAttackOption(active, battle);
   if (!option) return { kind: 'none' }; // mode non-attaque (cast/heal/…) ou aucune attaque abordable
   if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
+  // Structure (mur/porte) : cible RÉSERVÉE aux armes de siège — « attaquer un rempart à l'épée » n'a pas de
+  // sens (RAW : Impénétrable imparable sans l'Atout Siège, ADE II ch.08 ; même gate que l'IA, ai.ts). Si
+  // AUCUNE arme du porteur ne peut l'abîmer → pas de réticule (none) : le survol retombe sur le déplacement
+  // (monter au rempart) au lieu d'un « hors de portée » absurde. Une pièce de siège SERVIE la rend ciblable.
+  if (isStructure(target) && active.weapons.every((w) => structureImmune(w, target))) return { kind: 'none' };
   if (option.targeting === 'trample')
     return (active.advantage ?? 0) >= 1 && !!trampleTarget(battle, active, target.id)
       ? { kind: 'ok', line: 'solid', title: 'Piétinement', skill: 'Capacité de Combat', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
@@ -293,6 +309,12 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   if (!battle) return;
   const target = battle.combatants.find((c) => c.id === id);
   if (!target) return;
+  // Pièce de siège : un clic REJOINT l'équipe (chef/renfort) au lieu d'attaquer l'engin inerte — MÊME chemin que le
+  // bouton hotbar (`battleManPoste`) et l'IA (`serveAtPoste`). `serveTargetPoste` = source unique de la cible.
+  if (target.postes?.length) {
+    const p = serveTargetPoste(active, target, battle.combatants);
+    if (p) { get().battleManPoste({ hullId: target.id, posteUid: p.item.uid }); return; }
+  }
   // ATTAQUE unifiée : l'`AttackOption` armée (clic droit = première abordable via `forceAttackId` ; sinon
   // `selectedAttack`, défaut 'arme' ; les anciens modes maneuver/tentacle/trample mappent sur leur option).
   const option = selectedAttackOption(active, battle, opts?.forceAttackId);

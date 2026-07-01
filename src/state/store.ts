@@ -84,8 +84,9 @@ import * as restFlow from './restFlow';
 import type { PendingRest, RestPlaces, RestLodging, RestFood } from './restFlow';
 export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
-import { doorAt } from './buildings';
+import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
+import { exploreStepDest } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
@@ -222,6 +223,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Projection de la carte (bascule) : 'iso' losange ou 'top' grille carrée — préférence de vue. */
   viewMode: 'iso' | 'top';
   toggleViewMode: () => void;
+  /** DEBUG (recette `__wfrp.labels`) : overlay d'annotation de la carte sur IsoStage — coordonnées par
+   *  case (+`z{n}`), teinte par étage et pastilles de rôle de structure. false par défaut (zéro coût off). */
+  debugLabels: boolean;
   /** Décalage manuel de la caméra (caméra libre tactique) ; remis à zéro au refocus (changement de tour). */
   camPan: { x: number; y: number };
   panCamBy: (dx: number, dy: number) => void;
@@ -523,6 +527,9 @@ export interface GameState extends RollFlowActionsMap {
   loadProject: (scenes: Scene[], entryId: string, worldMap?: import('./worldMap').WorldMap | null) => void;
   transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
+  /** Pas clavier d'exploration : déplace le groupe d'UNE surface voisine connectée dans la direction
+   *  ÉCRAN poussée (flèches) — rampes/tabliers gérés par `exploreStepDest` (zéro ambiguïté de z). */
+  stepPartyDir: (dir: ScreenDir) => void;
   interactEntity: (entityId: string) => void;
   setPendingInteract: (id: string | null) => void;
   chooseDialogue: (choiceIndex: number) => void;
@@ -828,7 +835,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
   battleStandUp: () => void;
   /** « Servir cette pièce » (MDG ch.12) : le héros actif devient chef d'un poste de siège NON servi adjacent (arme octroyée) — coûte l'Action. KIND-AGNOSTIQUE. */
-  battleManPoste: () => void;
+  battleManPoste: (target?: { hullId: string; posteUid: string }) => void;
   /** « Quitter la pièce » (release) : libère le poste servi pour un autre — coûte l'Action. */
   battleLeavePoste: () => void;
   /** « Diriger l'équipe » (Commandant d'équipe, AA) : Test de Commandement (+0) pour aider une équipe d'Arme
@@ -1057,7 +1064,7 @@ export const useGame = create<GameState>((set, get) => ({
         .filter((c): c is Combatant => !!c?.pos)];
       for (const m of movers) {
         const from = { ...m.pos! };
-        m.pos = { x: from.x + delta.x, y: from.y + delta.y };
+        placeCombatant(m, scene, { x: from.x + delta.x, y: from.y + delta.y });
         bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
       }
       get().log(`${hull.name} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
@@ -1077,6 +1084,7 @@ export const useGame = create<GameState>((set, get) => ({
   setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(0.4, z)) }), // floor 0.4 : dézoom tactique large
   viewMode: 'iso',
   toggleViewMode: () => set((s) => ({ viewMode: s.viewMode === 'iso' ? 'top' : 'iso' })),
+  debugLabels: false,
   camPan: { x: 0, y: 0 },
   panCamBy: (dx, dy) => set((s) => ({ camPan: { x: s.camPan.x + dx, y: s.camPan.y + dy } })),
   resetCamPan: () => set((s) => (s.camPan.x === 0 && s.camPan.y === 0 ? {} : { camPan: { x: 0, y: 0 } })),
@@ -1307,18 +1315,11 @@ export const useGame = create<GameState>((set, get) => ({
     const { scene, mode, partyPos } = get();
     if (!scene || mode !== 'exploration') return;
     if (!isWalkable(scene, pt.x, pt.y, pt.z ?? 0)) return; // case de l'ÉTAGE visé (z) — une case « vide » se refuse
-    const from = partyPos; // case quittée (sert de retour hors du bâtiment)
+    const from = partyPos; // case quittée → oriente le meneur le long du pas
     set({ partyPos: pt });
     const leadId = get().party[0]?.id;
     if (leadId) get().faceFromPath(leadId, [from, pt]);
     bus.emit(EVT.SCENE_DIRTY);
-    // Portes/intérieurs : au sol seulement (les bâtiments vivent au niveau 0).
-    const door = (pt.z ?? 0) === 0 ? doorAt(scene, pt.x, pt.y) : undefined;
-    if (door && door.reveal === 'door' && door.interiorScene) {
-      set({ previousScene: { id: scene.id, pos: from } });
-      get().transitionTo(door.interiorScene, door.entry);
-      return;
-    }
     checkTriggers(get, set);
     // P5 (déplacement-puis-fouille) : à l'arrivée adjacente au décor visé, déclenche l'interaction.
     const pi = get().pendingInteract;
@@ -1330,6 +1331,19 @@ export const useGame = create<GameState>((set, get) => ({
         get().interactEntity(pi);
       }
     }
+  },
+
+  stepPartyDir: (dir) => {
+    const { scene, mode, partyPos, dialogue, camRot, viewMode, camEdge, party } = get();
+    if (!scene || mode !== 'exploration' || dialogue) return;
+    const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
+    const dest = exploreStepDest(scene, partyPos, dir, dims);
+    if (!dest) return;
+    // Glisse d'1 case via l'anim de marche EXISTANTE (ANIM_MOVE → walkPosOf), puis `moveParty` (z-aware :
+    // facing, triggers, déplacement-puis-fouille) — le leader VISIBLE est le même qu'IsoStage.
+    const leader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
+    if (leader) bus.emit(EVT.ANIM_MOVE, { id: leader.id, path: [partyPos, dest] });
+    get().moveParty(dest);
   },
 
   interactEntity: (entityId) => {

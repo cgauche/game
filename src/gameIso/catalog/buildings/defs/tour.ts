@@ -27,9 +27,7 @@ const tour: BuildingDef['render'] = (foot, params, ctx) => {
 export const building: BuildingDef = {
   id: 'tour',
   label: 'Tour',
-  category: 'monument',
   defaultFoot: { w: 2, h: 2 },
-  defaultReveal: 'door',
   paramsSchema: FLOORS_ONLY,
   render: tour,
 };

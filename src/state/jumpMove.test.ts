@@ -10,10 +10,11 @@ import { planJump } from './jumpMove';
  * `test` + `fall` (déjà livrés) → zéro modale dédiée.
  */
 function platformGap(): Scene {
-  const s = emptyScene(5, 3); // niveau 0 : herbe marchable PARTOUT (le parterre sous le gouffre)
+  const s = emptyScene(5, 3); // couche 0 : herbe marchable PARTOUT (le parterre sous le gouffre), 0 m
   const z1 = new Array(15).fill('vide') as Terrain[];
-  for (const x of [0, 1, 3, 4]) for (let y = 0; y < 3; y++) z1[y * 5 + x] = 'plancher'; // 2 plateformes, gouffre en x=2
-  s.levels.push({ z: 1, tiles: z1 });
+  const h1 = new Array(15).fill(0) as number[];
+  for (const x of [0, 1, 3, 4]) for (let y = 0; y < 3; y++) { z1[y * 5 + x] = 'plancher'; h1[y * 5 + x] = 4; } // 2 plateformes à 4 m, gouffre en x=2
+  s.layers.push({ z: 1, tiles: z1, height: h1 });
   return s;
 }
 

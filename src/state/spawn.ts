@@ -5,10 +5,11 @@
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type ShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
-import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
+import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus } from '../engine/navalTraits';
-import { CustomStatblock, EntityAppearance } from './scene';
+import { CustomStatblock, EntityAppearance, type Scene, heightAt } from './scene';
 import { emptyArmour, buildWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
@@ -28,6 +29,19 @@ import { bodyPlanById } from '../gameIso/rig/bodyPlan';
  * tableau humanoïde (même mécanique). Les gabarits sans table canon (céphalopode/amorphe/squig/
  * spectral/jabberslythe) retombent sur `humanoide` (table par défaut, p.312 — pas d'invention).
  */
+/**
+ * Pose la position d'un combattant en RAFRAÎCHISSANT sa hauteur métrique (`pos.h`) depuis le relief de
+ * la scène — SOURCE UNIQUE de la cohérence position↔hauteur. À appeler au SPAWN et à CHAQUE déplacement
+ * (combat, poussée/traction, course, téléport, chute, avance navale) : sans ce rafraîchissement, la
+ * distance de combat verticale et le −10 « en contrebas » resteraient faux après le mouvement.
+ * `z` omis quand nul et `h` omis quand la surface est à 0 m → byte-identique au plan sur une scène plate.
+ */
+export function placeCombatant(c: { pos?: { x: number; y: number; z?: number; h?: number } }, scene: Scene | null | undefined, p: { x: number; y: number; z?: number }): void {
+  const z = p.z ?? 0;
+  const h = scene ? heightAt(scene, p.x, p.y, z) : 0;
+  c.pos = { x: p.x, y: p.y, ...(z ? { z } : {}), ...(h ? { h } : {}) };
+}
+
 export function bodyShapeOf(id: string): BodyShape {
   switch (bodyPlanById(id)) {
     case 'quadruped': return 'quadrupede';
@@ -153,6 +167,10 @@ export interface SpawnExtras {
   /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, réfs par id) — posées sur le Combattant ;
    *  Blindage est appliqué ici même (PA de coque). */
   upgrades?: NavalTraitRef[];
+  /** Compétences d'AUTEUR ajoutées (réfs `SkillRef` : id + valeur de Test imprimée) — FUSIONNÉES par-dessus
+   *  celles du bestiaire au spawn. Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ
+   *  à son engin (AA p.122 l.3900 : sans cette Compétence, il n'est « pas un membre de l'équipe », l.3923). */
+  skills?: SkillRef[];
 }
 
 /** Profil + modificateurs de PROFIL des traits `live` (Élite/Coriace/Brutal…) — pour les valeurs DÉRIVÉES
@@ -173,7 +191,9 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // auto-réussite via isMindless ; CT nulle = pas d'arme à distance dans la donnée). Pas de 30 inventé.
   let chars = charsFrom(creature.char, 0);
   // Compétences/talents de la donnée (PNJ nommés : Eusapia, Horreurs…) — avances dérivées du profil IMPRIMÉ.
-  const skills = skillsFromBook(creature.skills, chars);
+  // + compétences d'AUTEUR ajoutées (extras.skills : qualifier un servant de pièce pour le Groupe de
+  // Projectiles de son engin, AA p.122-124) — dérivées sur les MÊMES caractéristiques imprimées.
+  const skills = [...skillsFromBook(creature.skills, chars), ...skillsFromBook(extras?.skills, chars)];
   const talents = talentsFromBook(creature.talents);
   if (extras?.randomChars) chars = randomizeChars(chars, id); // LDB 78 : −10 + 2d10 sur le profil rond
   // Traits facultatifs à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : le profil
@@ -300,6 +320,15 @@ export function spawnEnemy(
     c = vehicleCombatant(findVehicleById(ref)!, id)!;
     c.kind = 'enemy';
     c.pos = { ...pos };
+  } else if (ref && findTrappingById(ref)?.siegeRig) {
+    // Engin de siège (AA p.122-123) : affût INERTE non-destructible (RAW : pas de Blessures), servi par son
+    // équipage. Neutralisé en tuant l'équipage, pas en le détruisant. Son espèce de rendu est DÉRIVÉE de la
+    // `ref` (l'art d'affût `siegeRig` du trapping) → plus aucun `appearance.species` forcé à l'authoring.
+    const t = findTrappingById(ref)!;
+    c = inanimateCombatant({ id, name: t.label, refId: ref, bodyShape: 'engin', inert: true });
+    c.kind = 'enemy';
+    c.pos = { ...pos };
+    c.species = t.siegeRig; // espèce DÉRIVÉE de la ref → rig engin au combat (parité avec l'explo/éditeur)
   } else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
   if (opts?.crewIds) c.crewIds = opts.crewIds;
   if (opts?.postes) c.postes = opts.postes;

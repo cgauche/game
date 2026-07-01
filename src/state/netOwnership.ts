@@ -35,6 +35,9 @@ export function ownsLocally(state: GameState, combatantId: string | undefined): 
  */
 export function aiDriven(s: GameState, c: Combatant): boolean {
   if (c.kind === 'enemy') return true;
+  // PNJ allié IA (`Combatant.aiControlled`, ex. défenseur de siège) : agit SEUL même en jeu MANUEL — sans
+  // attendre l'Auto-combat global. On ne pilote jamais le combattant d'un AUTRE siège (`ownsLocally`).
+  if (c.kind === 'hero' && c.aiControlled) return ownsLocally(s, c.id);
   return c.kind === 'hero' && cadenceAutoCombat() && ownsLocally(s, c.id);
 }
 

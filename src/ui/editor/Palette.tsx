@@ -8,30 +8,28 @@ import { useState } from 'react';
 import type { Scene, Terrain } from '../../state/scene';
 import { TERRAINS } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
-import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import type { Tool } from './editorState';
-import { SIEGE_ENGINES } from './editorState';
+import { SIEGE_ENGINES, ROOF_STYLES } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
-type Family = 'select' | 'tile' | 'wall' | 'elev' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'stair' | 'erase';
+type Family = 'select' | 'tile' | 'wall' | 'height' | 'personnage' | 'prop' | 'heroStart' | 'roof' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
 
 const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
   { key: 'tile', icon: '🖌', label: 'Peindre le terrain' },
   { key: 'wall', icon: '🧱', label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
-  { key: 'elev', icon: '⛰', label: 'Élévation — scène surélevée / fosse (peindre une hauteur)' },
+  { key: 'height', icon: '⛰', label: 'Hauteur — surface surélevée / fosse (peindre une hauteur en mètres ; la traversée verticale s’auto-dérive)' },
   { key: 'personnage', icon: '🙂', label: 'Poser un personnage' },
   { key: 'prop', icon: '🌳', label: 'Poser un décor' },
   { key: 'heroStart', icon: '🏁', label: 'Départ des héros (case d’arrivée du groupe)' },
-  { key: 'building', icon: '🏠', label: 'Poser un bâtiment — glisser pour définir l’empreinte' },
+  { key: 'roof', icon: '🏠', label: 'Toit — bâtiment composé : glisser pour couvrir l’empreinte (les murs se tracent à l’outil 🧱)' },
   { key: 'zone', icon: '🟦', label: 'Dessiner une zone — trigger ou zone de repos' },
   { key: 'entry', icon: '⚑', label: 'Poser un point d’entrée (cible des transitions)' },
   { key: 'encounter', icon: '⚔️', label: 'Placer des ennemis (rencontre de combat)' },
   { key: 'emplacement', icon: '💥', label: 'Emplacement de siège — poser une pièce d’artillerie (baliste, catapulte, canon…) servie par un équipage' },
-  { key: 'stair', icon: '🪜', label: 'Escalier — relie cette case à l’étage au-dessus (traversée multi-niveaux)' },
   { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },
 ];
 
@@ -43,14 +41,13 @@ const WALL_PAINTS: { paint: import('./editorState').WallPaint; icon: string; lab
   { paint: 'diagFwd', icon: '◢', label: 'Diagonale ／' },
 ];
 
-/** Presets d'élévation (unités d'étage). Plat efface l'élévation locale. */
-const ELEV_PRESETS: { value: number; label: string }[] = [
-  { value: 0, label: 'Plat' },
-  { value: 0.25, label: 'Estrade' },
-  { value: 0.45, label: 'Scène' },
-  { value: 0.7, label: 'Haute' },
-  { value: -0.4, label: 'Fosse' },
-  { value: -0.8, label: 'Cave' },
+/** Presets de HAUTEUR en MÈTRES (échelle RAW, cf. `relief.ts`). « Plat » remet la surface à 0. */
+const HEIGHT_PRESETS: { metres: number; label: string }[] = [
+  { metres: 0, label: 'Plat' },
+  { metres: 1, label: 'Estrade' },
+  { metres: 2, label: 'Surface' },
+  { metres: 4, label: 'Haute' },
+  { metres: -2, label: 'Fosse' },
 ];
 
 /** Famille du rail correspondant à l'outil actif. */
@@ -91,7 +88,7 @@ export function Palette({
   // Derniers choix par famille → re-cliquer l'icône retrouve l'outil précis.
   const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
   const [lastProp, setLastProp] = useState('tonneau');
-  const [lastBuilding, setLastBuilding] = useState(Object.keys(BUILDINGS_META)[0] ?? 'maison');
+  const [lastStyle, setLastStyle] = useState<string>(ROOF_STYLES[0]);
   const [lastEngine, setLastEngine] = useState(SIEGE_ENGINES[0]?.id ?? 'baliste');
 
   const pick = (f: Family) => {
@@ -100,16 +97,15 @@ export function Palette({
       case 'select': return setTool({ mode: 'select' });
       case 'tile': return setTool({ mode: 'tile', terrain: lastTerrain });
       case 'wall': return setTool({ mode: 'wall', paint: 'wall' });
-      case 'elev': return setTool({ mode: 'elev', value: 0.45 });
+      case 'height': return setTool({ mode: 'height', metres: 2 });
       case 'personnage': return setTool({ mode: 'entity', kind: 'personnage' });
       case 'prop': return setTool({ mode: 'entity', kind: 'prop', ref: lastProp });
       case 'heroStart': return setTool({ mode: 'entity', kind: 'heroStart' });
-      case 'building': return setTool({ mode: 'building', type: lastBuilding });
+      case 'roof': return setTool({ mode: 'roof', style: lastStyle });
       case 'zone': return setTool({ mode: 'zone', zone: 'trigger' });
       case 'entry': return setTool({ mode: 'entry' });
       case 'encounter': return setTool({ mode: 'encounter' });
       case 'emplacement': return setTool({ mode: 'emplacement', trappingId: lastEngine });
-      case 'stair': return setTool({ mode: 'stair' });
       case 'erase': return setTool({ mode: 'erase' });
     }
   };
@@ -198,7 +194,7 @@ export function Palette({
           </>
         )}
 
-        {family === 'elev' && tool.mode === 'elev' && (
+        {family === 'height' && tool.mode === 'height' && (
           <>
             <div className="mini-title">Pinceau</div>
             <div className="row-flex">
@@ -208,19 +204,19 @@ export function Palette({
                 </button>
               ))}
             </div>
-            <div className="mini-title">Hauteur</div>
+            <div className="mini-title">Hauteur (mètres)</div>
             <div className="row-flex">
-              {ELEV_PRESETS.map((p) => (
-                <button key={p.label} className={`btn small ${tool.value === p.value ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'elev', value: p.value })}>
-                  {p.label} <span className="chip">{p.value > 0 ? '+' : ''}{p.value}</span>
+              {HEIGHT_PRESETS.map((p) => (
+                <button key={p.label} className={`btn small ${tool.metres === p.metres ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'height', metres: p.metres })}>
+                  {p.label} <span className="chip">{p.metres > 0 ? '+' : ''}{p.metres} m</span>
                 </button>
               ))}
             </div>
             <label className="mini-title" style={{ display: 'block' }}>
               Sur mesure
-              <input type="number" step={0.05} value={tool.value} onChange={(e) => setTool({ mode: 'elev', value: Number(e.target.value) })} style={{ width: '5rem', marginLeft: '0.5rem' }} />
+              <input type="number" step={0.5} value={tool.metres} onChange={(e) => setTool({ mode: 'height', metres: Number(e.target.value) })} style={{ width: '5rem', marginLeft: '0.5rem' }} />
             </label>
-            <p className="hint">Peignez une hauteur sur les cases (scène surélevée, fosse d’orchestre). « Plat » remet à 0.</p>
+            <p className="hint">Peignez la hauteur RÉELLE des cases en mètres (surface surélevée, fosse d’orchestre). « Plat » remet à 0 ; la traversée à pied / en chute s’en déduit (cf. relief).</p>
           </>
         )}
 
@@ -269,34 +265,25 @@ export function Palette({
           <p className="hint">Cliquez la carte pour poser la case de DÉPART du groupe (une seule utile — la première trouvée est utilisée).</p>
         )}
 
-        {family === 'building' && tool.mode === 'building' && (
+        {family === 'roof' && tool.mode === 'roof' && (
           <>
-            {(['petit', 'monument'] as const).map((cat) => {
-              const list = Object.values(BUILDINGS_META).filter((b) => b.category === cat);
-              if (!list.length) return null;
-              return (
-                <div key={cat}>
-                  <div className="mini-title">{cat === 'petit' ? 'Bâtiments' : 'Monuments'}</div>
-                  <div className="pal-list">
-                    {list.map((b) => (
-                      <button
-                        key={b.id}
-                        className={`pal-item${tool.type === b.id ? ' active' : ''}`}
-                        title={`${b.label} — glisser sur la carte pour définir l'empreinte`}
-                        onClick={() => {
-                          setLastBuilding(b.id);
-                          setTool({ mode: 'building', type: b.id });
-                        }}
-                      >
-                        {b.label}
-                        <span className="chip">{b.defaultFoot.w}×{b.defaultFoot.h}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-            <p className="hint">Glissez sur la carte pour poser (l'empreinte suit le geste). Porte, orientation et intérieur s'éditent dans l'inspecteur.</p>
+            <div className="mini-title">Style de toit</div>
+            <div className="pal-list">
+              {ROOF_STYLES.map((s) => (
+                <button
+                  key={s}
+                  className={`pal-item${tool.style === s ? ' active' : ''}`}
+                  title={`${s} — glisser sur la carte pour couvrir l'empreinte`}
+                  onClick={() => {
+                    setLastStyle(s);
+                    setTool({ mode: 'roof', style: s });
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <p className="hint">Glissez sur la carte pour couvrir l'empreinte (le toit suit le geste). Tracez les MURS du bâtiment à l'outil 🧱 ; matériau, étages et couleurs s'éditent dans l'inspecteur.</p>
           </>
         )}
 

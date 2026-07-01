@@ -49,8 +49,8 @@ import { treatTrauma } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
 import { rollOups } from '../engine/oups';
-import { spawnEnemy } from './spawn';
-import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef } from './shipPostes';
+import { spawnEnemy, placeCombatant } from './spawn';
+import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, withCrewActed } from './shipCrew';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById } from '../data';
@@ -76,7 +76,7 @@ import type {
   ConjureForm,
 } from '../engine/conjuredWeapons';
 import { findSpellById } from '../data/index';
-import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, tileKey, Pt } from './path';
 import { sizeFootprint, combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
@@ -496,8 +496,11 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       if (!canMove(battle, active)) return;
+      // La case cliquée EST la destination : le franchissement vertical s'auto-dérive du relief le long
+      // du chemin (`pathTo` via `surfaceLink` — rampe/falaise), plus aucun escalier explicite à router.
+      const dest = pt;
       const reach = displayedReach(get);
-      const k = `${pt.x},${pt.y}`;
+      const k = tileKey(dest.x, dest.y, dest.z ?? 0); // clé z-aware (« x,y » au sol, « x,y,z » à l'étage)
       const inWalk = reach.has(k);
       // Au-delà de la Marche : zone de COURSE (LDB 15 l.79-82) — le commit demande le Test d'Athlétisme,
       // et le déplacement réel s'arrêtera là où le jet porte (runConfirm).
@@ -516,12 +519,15 @@ export function createCombatSlice(get: Get, set: Set) {
       // succès → approches libres ce Tour ; échec → aucune approche ce Tour.
       const fearGateBlocks = (): boolean => {
         if (battle.fearGate === 'passed') return false;
-        const feared = fearedSourceTowards(battle, active, pt);
+        const feared = fearedSourceTowards(battle, active, dest);
         if (!feared) return false;
         if (battle.fearGate === 'failed') {
           get().log(t('cs.fearNoApproach', { name: active.name, feared: feared.name }));
           return true;
         }
+        // On rejoue le clic BRUT (`pt`) après le Test (l.962) → `battleClickTile` re-résout l'escalier
+        // (sinon, stocker `dest` le re-traduirait une 2ᵉ fois et renverrait au pied). Le check de Peur, lui,
+        // porte bien sur la destination réelle (`dest` ci-dessus).
         set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'tile', pt: { ...pt } }, result: null }, battle: { ...battle, preview: null } });
         bus.emit(EVT.SCENE_DIRTY);
         return true;
@@ -531,7 +537,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const frenzyBlocks = (): boolean => {
         if (!isFrenzied(active)) return false;
         const ft = frenzyTarget(get, active);
-        if (!ft?.pos || chebyshev(pt, ft.pos) < chebyshev(active.pos!, ft.pos)) return false;
+        if (!ft?.pos || chebyshev(dest, ft.pos) < chebyshev(active.pos!, ft.pos)) return false;
         get().log(t('cs.frenzyMustCharge', { name: active.name, foe: ft.name }));
         return true;
       };
@@ -541,20 +547,20 @@ export function createCombatSlice(get: Get, set: Set) {
       const prev = battle.preview;
       if (!inWalk) {
         // Zone de Course : tap 1 = aperçu « Courir » ; tap 2 = Test d'Athlétisme (pendingRun + destination).
-        if (!opts?.confirm && !(prev?.kind === 'run' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
-          const path = pathTo(scene, active.pos!, pt, env) ?? [];
-          set({ battle: { ...battle, preview: { kind: 'run', tile: { ...pt }, path, cost: stepCost } } });
+        if (!opts?.confirm && !(prev?.kind === 'run' && prev.tile.x === dest.x && prev.tile.y === dest.y)) {
+          const path = pathTo(scene, active.pos!, dest, env) ?? [];
+          set({ battle: { ...battle, preview: { kind: 'run', tile: { ...dest }, path, cost: stepCost } } });
           bus.emit(EVT.SCENE_DIRTY);
           return;
         }
         if (fearGateBlocks() || frenzyBlocks()) return;
-        get().battleRun({ ...pt }); // ouvre la modale de Course ; le déplacement suivra le jet (runConfirm)
+        get().battleRun({ ...dest }); // ouvre la modale de Course ; le déplacement suivra le jet (runConfirm)
         return;
       }
       // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
-      if (!opts?.confirm && !(prev?.kind === 'move' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
-        const path = pathTo(scene, active.pos!, pt, env) ?? [];
-        set({ battle: { ...battle, preview: { kind: 'move', tile: { ...pt }, path, cost: stepCost } } });
+      if (!opts?.confirm && !(prev?.kind === 'move' && prev.tile.x === dest.x && prev.tile.y === dest.y)) {
+        const path = pathTo(scene, active.pos!, dest, env) ?? [];
+        set({ battle: { ...battle, preview: { kind: 'move', tile: { ...dest }, path, cost: stepCost } } });
         bus.emit(EVT.SCENE_DIRTY);
         return;
       }
@@ -570,15 +576,15 @@ export function createCombatSlice(get: Get, set: Set) {
               movedPreAction: battle.movedPreAction,
             }
           : battle.moveSnapshot ?? null;
-      const path = pathTo(scene, active.pos!, pt, env);
-      active.pos = { ...pt };
-      if (geom !== active) geom.pos = { ...pt }; // déplace la monture sous le cavalier (couple solidaire)
+      const path = pathTo(scene, active.pos!, dest, env);
+      placeCombatant(active, scene, dest);
+      if (geom !== active) placeCombatant(geom, scene, dest); // déplace la monture sous le cavalier (couple solidaire)
       displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.373-374)
       get().faceFromPath(active.id, path);
       if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-      applyZoneCrossings(get, active, path ?? [{ ...pt }]); // Mur de feu & co (L11) : traverser coûte
+      applyZoneCrossings(get, active, path ?? [{ ...dest }]); // Mur de feu & co (L11) : traverser coûte
       // Mouvement décomposable : cumule le coût du segment ; reste en mode neutre → le joueur peut
       // re-cliquer une case (s'il reste du Mouvement) OU enchaîner une Action. Si ce segment précède
       // l'Action, on marque `movedPreAction` (verrouille tout Mouvement post-Action).
@@ -615,7 +621,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero' || !active.pos) return;
       const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
-      set({ combatCursor: { tile: nextCursorTile(get().combatCursor, dir, dims, active.pos) } });
+      set({ combatCursor: { tile: nextCursorTile(scene, get().combatCursor, dir, dims, active.pos) } });
     },
     snapCursorToTarget: (step: 1 | -1) => {
       const cur = get().combatCursor?.snappedId ?? null;
@@ -792,8 +798,8 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       const sub = path.slice(0, stopIdx + 1);
       const cost = reach.get(`${stop.x},${stop.y}`) ?? sub.length;
-      c.pos = { ...stop };
-      if (geom !== c) geom.pos = { ...stop }; // la monture court sous le cavalier
+      placeCombatant(c, scene, stop);
+      if (geom !== c) placeCombatant(geom, scene, stop); // la monture court sous le cavalier
       displaceSmaller(get, geom);
       get().faceFromPath(c.id, sub);
       if (geom !== c) get().faceFromPath(geom.id, sub);
@@ -997,21 +1003,27 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // « Servir cette pièce » (MDG ch.12-13) : le héros ACTIF devient chef d'un poste de siège NON servi adjacent
-    // (l'arme de siège lui est octroyée, taguée mountSide ; elle tirera au tour suivant via l'option 'poste').
-    // MÊME mutation KIND-AGNOSTIQUE (`serveAtPoste`) que l'IA et l'author-time ; `recomputeLoadout` canonicalise
-    // l'arme dérivée côté héros. Coûte l'Action. « Tout le monde peut servir une arme de siège » (cf. l'IA `manPoste`).
-    battleManPoste: () => {
+    // « Servir cette pièce » (MDG ch.12-13) : le héros ACTIF REJOINT un poste de siège adjacent — CHEF s'il est
+    // non servi (arme octroyée, taguée mountSide ; tire au tour suivant via l'option 'poste'), sinon SUPPORT (Arme
+    // d'équipe : occupe la pièce, compte dans l'Indice contre le sous-effectif, mais ne tire pas). MÊME mutation
+    // KIND-AGNOSTIQUE (`serveAtPoste`) que l'IA et l'author-time ; `recomputeLoadout` canonicalise l'arme du chef.
+    // Coûte l'Action. « Tout le monde peut servir une arme de siège » (cf. l'IA `manPoste`).
+    battleManPoste: (target?: { hullId: string; posteUid: string }) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
       if (!active || aiDriven(get(), active) || isOutOfAction(active) || !canTakeAction(active)) return;
-      const [first] = servablePostes(active, battle.combatants);
-      if (!first) return;
-      serveAtPoste(active, first.poste);
+      const servable = servablePostes(active, battle.combatants);
+      // Cible EXPLICITE (clic sur la pièce) → CE poste précis ; sinon (bouton hotbar) → le 1er servable.
+      const chosen = target && typeof target === 'object' && 'hullId' in target
+        ? servable.find((sp) => sp.hull.id === target.hullId && sp.poste.item.uid === target.posteUid)
+        : servable[0];
+      if (!chosen) return;
+      const joining = isPosteManned(chosen.poste, battle.combatants); // pièce déjà servie → on REJOINT en renfort
+      serveAtPoste(active, chosen.poste, battle.combatants);
       recomputeLoadout(active);
-      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t('cs.manPoste', { name: active.name, weapon: first.poste.item.name }), active.id)] } });
+      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t(joining ? 'cs.joinPoste' : 'cs.manPoste', { name: active.name, weapon: chosen.poste.item.name }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     // « Quitter la pièce » (release) : le héros actif lâche le poste qu'il sert → il redevient servable par un autre.
@@ -1025,7 +1037,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const poste = active.mannedPoste;
       if (!poste) return;
       const weapon = poste.item.name;
-      leaveChef(active, poste);
+      leaveChef(active, poste, battle.combatants);
       recomputeLoadout(active);
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t('cs.leavePoste', { name: active.name, weapon }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -1882,6 +1894,7 @@ export function createCombatSlice(get: Get, set: Set) {
         spawnEnemy(ent.ref, ent.statblock, ent.id, ent.z ? { ...ent.pos, z: ent.z } : { ...ent.pos }, {
           appearance: ent.appearance, weapon: ent.weapon,
           optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
+          skills: ent.combat?.skills, // compétences d'auteur (servant de pièce : Projectiles du Groupe de l'engin, AA p.122-124)
           crewIds: ent.crewIds, // navire → équipage exposé (MDG ch.14)
           postes: ent.postes, // navire → pièces d'artillerie montées (MDG ch.12-13)
           upgrades: ent.upgrades, // navire → Améliorations d'instance (MDG ch.12 : Blindage, Lissage…)
@@ -1891,6 +1904,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const idxByEntity = new Map(roster.map((r, i) => [r.ent.id, i]));
       roster.forEach(({ m }, i) => {
         if (m.side === 'ally') enemies[i].kind = 'hero';
+        if (m.ai) enemies[i].aiControlled = true; // PNJ allié IA (défenseur de siège) : agit seul (aiDriven)
         if (m.mount) enemies[i].mountable = true;
       });
       roster.forEach(({ m }, i) => {
@@ -1917,6 +1931,10 @@ export function createCombatSlice(get: Get, set: Set) {
         })
         .filter((c): c is Combatant => !!c);
       const all = [...heroes, ...enemies, ...structures];
+      // Hauteur métrique au SPAWN : stampe `pos.h` (relief de la scène) sur TOUS les combattants posés —
+      // héros, ennemis, structures et montures — pour que la distance verticale et le −10 « en contrebas »
+      // partent justes (RAFRAÎCHIE ensuite à chaque déplacement via `placeCombatant`).
+      for (const c of all) if (c.pos) placeCombatant(c, scene, c.pos);
       // Postes d'artillerie (MDG ch.12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
       // octroi du canon dérivé). Après le spawn, sur TOUS les combattants (héros/allié/ennemi indifférent).
       applyShipPostes(all);

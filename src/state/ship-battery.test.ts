@@ -127,7 +127,7 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
 /** Scène minimale valide (LoS de `fireTriggers`). */
 const navScene = () =>
   ({ id: 's', name: 's', dimensions: { w: 20, h: 20 }, ambiance: 'jour', metresPerTile: 10,
-    levels: [{ z: 0, tiles: new Array(400).fill('eau') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] });
+    layers: [{ z: 0, tiles: new Array(400).fill('eau') }], entities: [], dialogues: [], triggers: [], encounters: [] });
 /** Marin exposé de la coque cible (pour être balayé par l'aire). */
 const sailor = (id: string): Combatant =>
   ({ id, name: id, kind: 'enemy', pos: { x: 9, y: 5 }, wounds: { current: 6, max: 6 }, advantage: 0,

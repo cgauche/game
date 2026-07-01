@@ -9,7 +9,7 @@ import type { Scene, Trigger } from './scene';
  *  question du flag) et on pilote `gameTime` au cran près. */
 const sceneWith = (trigger: Trigger): Scene => ({
   id: 't', nom: 't', description: '', dimensions: { w: 5, h: 5 }, ambiance: 'interieur',
-  levels: [{ z: 0, tiles: new Array(25).fill('sol') }], entities: [], buildings: [], dialogues: [], triggers: [trigger], encounters: [], flags: {},
+  layers: [{ z: 0, tiles: new Array(25).fill('sol') }], entities: [], dialogues: [], triggers: [trigger], encounters: [], flags: {},
 });
 
 const spotTrigger: Trigger = {

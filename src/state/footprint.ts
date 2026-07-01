@@ -13,6 +13,7 @@
 import { effectiveSize, type SizeCategory } from '../engine/size';
 import type { Combatant } from '../engine/types';
 import type { Pt } from './path';
+import { verticalTiles } from './relief';
 
 /** Côté N de l'empreinte carrée N×N par catégorie de Taille (LDB 15 l.55, ancré « 2/4/+ cases »). */
 const FOOTPRINT_SIDE: Record<SizeCategory, number> = {
@@ -83,24 +84,21 @@ export function footprintsOverlap(aPos: Pt, an: number, bPos: Pt, bn: number): b
   return footprintChebyshev(aPos, an, bPos, bn) === 0;
 }
 
-/** Un niveau de hauteur (étage) en cases. DÉRIVÉ (jamais inventé) : `FALL_METRES_PER_LEVEL` (4 m,
- *  `jumpMove.ts`) ÷ 2 m par case (canon LDB 15 « 1 case = 2 m ») = 2. Constante documentée plutôt
- *  qu'import, pour garder `footprint.ts` PUR (pas de dépendance vers la couche Effet/Flow de `jumpMove`). */
-export const TILES_PER_LEVEL = 2;
-
 /**
  * Distance de COMBAT (Chebyshev d'empreinte) entre deux combattants positionnés — `Infinity` si l'un
  * n'est pas posé. Un grand est « au contact » (distance 1) si UNE de ses tuiles touche la cible, et
  * la portée d'un tir se mesure du bord de l'empreinte. Remplace `chebyshev(a.pos, b.pos)` partout où
  * la Taille des deux combattants compte (mêlée, bandes de portée, sélection de cible).
  *
- * Z-AWARE : la séparation verticale (Δétage × `TILES_PER_LEVEL`) borne la distance par le bas — deux
- * combattants à la même case mais à des étages différents NE sont pas superposés (muraille vs sol).
- * Δz=0 (cas coplanaire) ⇒ le terme vaut 0 ⇒ résultat byte-identique à l'ancien.
+ * RELIEF : la séparation VERTICALE est la vraie hauteur métrique entre les deux surfaces, convertie en
+ * cases (`verticalTiles`, Δhauteur ÷ échelle métrique) — un défenseur de muraille (h élevée) n'est PAS
+ * superposé aux assaillants au sol. `mpt` = m/case de la scène (défaut 2 person-scale ; les appelants
+ * qui ont la scène passent `sceneMetresPerTile(scene)`). Δhauteur=0 (même altitude) ⇒ terme nul ⇒
+ * résultat byte-identique au plan. `pos.h` est stampé/rafraîchi à chaque mouvement (`placeCombatant`).
  */
-export function combatDistance(a: Combatant, b: Combatant): number {
+export function combatDistance(a: Combatant, b: Combatant, mpt = 2): number {
   if (!a.pos || !b.pos) return Infinity;
   const horizontal = footprintChebyshev(a.pos, footprintN(a), b.pos, footprintN(b));
-  const vertical = TILES_PER_LEVEL * Math.abs((a.pos.z ?? 0) - (b.pos.z ?? 0));
+  const vertical = verticalTiles(a.pos.h ?? 0, b.pos.h ?? 0, mpt);
   return Math.max(horizontal, vertical);
 }

@@ -71,6 +71,33 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
   });
 });
 
+describe("OBJET INERTE (affût d'artillerie) — immune à la cascade de Blessures (0 PB permanent)", () => {
+  const engin = (over: Partial<Combatant> = {}): Combatant =>
+    mk({ inert: true, bodyShape: 'engin', wounds: { current: 0, max: 0 },
+      characteristics: { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 }, ...over } as unknown as Partial<Combatant>);
+  it("inert allié (kind:'hero') à 0 PB : applyZeroWounds ne pose PAS À Terre", () => {
+    const e = engin({ kind: 'hero' });
+    applyZeroWounds(e);
+    expect(hasCondition(e, 'a-terre')).toBe(false);
+  });
+  it("inert allié : tickDeath ne pose PAS Inconscient même après plusieurs rounds (BE=0)", () => {
+    const e = engin({ kind: 'hero', roundsAtZero: 5 } as Partial<Combatant>);
+    tickDeath(e, makeRNG(1));
+    expect(hasCondition(e, 'inconscient')).toBe(false);
+  });
+  it("inert ennemi (kind:'enemy') : ni À Terre ni Inconscient", () => {
+    const e = engin({ kind: 'enemy', roundsAtZero: 5 } as Partial<Combatant>);
+    applyZeroWounds(e); tickDeath(e, makeRNG(1));
+    expect(hasCondition(e, 'a-terre')).toBe(false);
+    expect(hasCondition(e, 'inconscient')).toBe(false);
+  });
+  it('inert : hors de combat SEULEMENT si détruit/éjecté, jamais par 0 PB', () => {
+    expect(isOutOfAction(engin())).toBe(false);
+    expect(isOutOfAction(engin({ dead: true }))).toBe(true);
+    expect(isOutOfAction(engin({ outOfRencontre: true }))).toBe(true);
+  });
+});
+
 describe('Destin — états dérivés', () => {
   const dying = (over: Partial<Combatant> = {}): Combatant =>
     mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4, ...over }); // BE=3

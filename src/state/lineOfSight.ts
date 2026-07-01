@@ -6,7 +6,6 @@
  * comme guide ») — la classification des décors/créatures est une extrapolation des exemplaires canon.
  */
 import { Scene, SceneEntity, tileAt, wallBetween } from './scene';
-import { buildingBlockedAt } from './buildings';
 import { TERRAINS } from './terrain';
 import { findPropById } from '../data';
 import { Pt } from './path';
@@ -108,12 +107,12 @@ const decorAt = (scene: Scene, x: number, y: number): SceneEntity | undefined =>
     (e) => e.kind === 'prop' && entityTiles(e).some((p) => p.x === x && p.y === y),
   );
 
-/** Une CASE bloque-t-elle la vue ? (terrain opaque `mur/porte`, empreinte de bâtiment, décor opaque
- *  `statue`). Prédicat UNIQUE d'opacité de tuile — utilisé par le couvert (`lineOfSightCover`) ET la
- *  vision (échantillonnage anti-fuite). N'inclut PAS les murs d'arête (cf. `wallBetween`). */
+/** Une CASE bloque-t-elle la vue ? (terrain opaque `mur/porte`, décor opaque `statue`). Prédicat UNIQUE
+ *  d'opacité de tuile — utilisé par le couvert (`lineOfSightCover`) ET la vision (échantillonnage
+ *  anti-fuite). N'inclut PAS les murs d'arête (cf. `wallBetween`) : une cloison fine de bâtiment est un
+ *  `WallSeg`, pas une tuile opaque. */
 export function tileBlocksSight(scene: Scene, x: number, y: number): boolean {
   if (TERRAINS[tileAt(scene, x, y)]?.opaque) return true;
-  if (buildingBlockedAt(scene, x, y)) return true;
   const dc = decorAt(scene, x, y);
   return !!dc && !!findPropById(dc.ref ?? '')?.opaque;
 }

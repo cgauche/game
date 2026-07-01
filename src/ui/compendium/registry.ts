@@ -9,7 +9,7 @@
  */
 import {
   species, careers, characteristics, classes, skills, talents,
-  qualities, trappings, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
+  qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
@@ -401,6 +401,27 @@ export const CODEX: CodexCategory[] = [
         ),
       };
     }),
+  },
+  {
+    key: 'siegeEngines', label: 'Engins de siège', group: 'Équipement',
+    // Engins de siège = Possessions portant l'art d'affût `siegeRig` (les 12 mêmes que la Palette de
+    // l'éditeur, `SIEGE_ENGINES`). Miroir de « Créatures » pour l'aperçu rig (l'affût est rendu par le
+    // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
+    // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
+    items: siegeEngines.map((t) => ({
+      label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+      // Aperçu rig de l'affût, résolu comme une créature (par id + apparence species).
+      appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
+      meta: facts(
+        fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability),
+        fact('Dégâts', t.damage ? damageString(t.damage) : null), fact('PA', t.pa),
+        fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod)),
+      ),
+      sections: sections(
+        chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)),
+        ...reverseSections('trappings', t.id),
+      ),
+    })),
   },
   {
     key: 'weaponGroups', label: 'Groupes d’objet', group: 'Équipement',

@@ -24,10 +24,10 @@ const shooter = (id = 'tireur', x = 0, y = 0): Combatant =>
 const rangedWeapon = (qualities: { id: string; value?: number }[], range = 60, flat = 12, onHitEffects?: TriggeredEffect[]): Weapon =>
   ({ name: 'Arme', type: 'ranged', range, damage: { flat, plusBF: false }, qualities, ...(onHitEffects ? { onHitEffects } : {}) }) as unknown as Weapon;
 
-/** Scène minimale VALIDE (grille 40×40 d'herbe) — `losClear`/LoS lus par `fireTriggers` exigent `dimensions`+`levels`. */
+/** Scène minimale VALIDE (grille 40×40 d'herbe) — `losClear`/LoS lus par `fireTriggers` exigent `dimensions`+`layers`. */
 const miniScene = (metresPerTile: number) =>
   ({ id: 's', name: 's', dimensions: { w: 40, h: 40 }, metresPerTile, ambiance: 'jour',
-    levels: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] });
+    layers: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] });
 
 /** Monte un battle minimal dans le store et renvoie un `(get, set)` pointant dessus. */
 function mountBattle(combatants: Combatant[], metresPerTile = 2) {

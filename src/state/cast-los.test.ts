@@ -27,7 +27,7 @@ function wallScene() {
   const w = 20, h = 8;
   const tiles: string[] = new Array(w * h).fill('herbe');
   for (let y = 1; y < h; y++) tiles[y * w + 10] = 'mur';
-  return { id: 's', dimensions: { w, h }, levels: [{ z: 0, tiles }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+  return { id: 's', dimensions: { w, h }, layers: [{ z: 0, tiles }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
 }
 
 /** Lanceuse en (2,0) ; e-vu en (16,0) — brèche — ; e-cache en (16,4) — derrière le mur. */

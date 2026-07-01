@@ -16,7 +16,7 @@ const charnier = (over: Partial<Combatant> = {}): Combatant => ({
   traits: [{ id: 'charnier' }], weapons: [], armour: { corps: 0 }, pos: { x: 5, y: 5 }, dead: true,
   ...over,
 }) as unknown as Combatant;
-const scene = (): Scene => ({ id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur', levels: [{ z: 0, tiles: new Array(14 * 14).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
+const scene = (): Scene => ({ id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur', layers: [{ z: 0, tiles: new Array(14 * 14).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
 const battle = (cs: Combatant[]): any => ({ combatants: cs, order: cs.map((c) => c.id), baseOrder: cs.map((c) => c.id), turn: 0, round: 1, log: [], zones: [], over: false });
 function harness(b: any) { let s: any = { battle: b, scene: scene() }; return { get: () => s, set: (p: any) => { s = { ...s, ...p }; }, state: () => s }; }
 

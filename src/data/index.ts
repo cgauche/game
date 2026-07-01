@@ -242,6 +242,10 @@ export interface TrappingData {
   /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA p.122-123) : peut viser une CASE au sol.
    *  Propagé Trapping → ItemInstance → Weapon (`indirect`) ; lu par `availableAttacks`. Canon/baliste = direct. */
   indirect?: boolean;
+  /** Engin de siège POSABLE : id de la def rig `creatures/defs/<Engin>.ts` (plan 'engin') dessinant
+   *  l'affût rendu en emplacement. Pur ROUTAGE D'APPARENCE (≠ règle), comme `shape` route l'art d'arme.
+   *  Absent ⇒ l'arme n'est pas posable comme emplacement (pas d'art d'affût). */
+  siegeRig?: string;
   /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art d'arme/bouclier (rig),
    *  ≠ libellé. Posé à la migration par jointure `norm(label)` → forme. Absent pour munitions/armes de
    *  siège/Mains nues (aucune silhouette tenue). Propagé sur `ItemInstance.shape` puis `Weapon.shape`. */
@@ -929,6 +933,10 @@ export const symptomLabel = (id: string): string => symptomById.get(id)?.label ?
 export const mutations = mutationsJson as MutationData[];
 export const mutationTables = mutationTablesJson as MutationTable[];
 export const trappings = trappingsJson as TrappingData[];
+/** Engins de siège POSABLES = trappings portant un art d'affût (`siegeRig`). FOYER UNIQUE du filtre,
+ *  partagé par l'outil emplacement de l'éditeur (`SIEGE_ENGINES`) ET la catégorie Codex « Engins de siège »
+ *  — plus de `trappings.filter(siegeRig)` dupliqué à deux endroits. */
+export const siegeEngines = trappings.filter((t) => !!t.siegeRig);
 /** Véhicules / embarcations à coque — FOYER UNIQUE app-owned (data-driven). Trois facettes par
  *  enregistrement (achat / voyage / coque) ; cf. `VehicleData`. La facette `travel` est lue par
  *  `engine/travel` ; les facettes `purchase`/`hull` par le marché et les incidents/combat. */

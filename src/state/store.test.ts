@@ -7,8 +7,6 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { emptyScene } from './scene';
-import { makeInteriorScene } from '../scenes/interiors';
-import type { BuildingFeature } from './scene';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { applyAttackResult, applyEffects, applyEffectsLoot, runFlow, computeMoveReach } from './combatFlow';
@@ -575,29 +573,6 @@ describe('Boucle de jeu (store)', () => {
     expect(h2.items!.find((i) => i.name === witem.name)!.damageTaken).toBe(1);
   });
 
-  it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
-    const interior = emptyScene(5, 5);
-    interior.id = 'interieur-test';
-    interior.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 1, y: 1 } });
-    const exterior = emptyScene(8, 8);
-    exterior.id = 'exterieur-test';
-    exterior.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    exterior.buildings = [
-      {
-        id: 'chap',
-        type: 'chapelle',
-        foot: { x: 2, y: 2, w: 3, h: 3 },
-        reveal: 'door',
-        door: { x: 3, y: 4 },
-        interiorScene: 'interieur-test',
-      },
-    ];
-    useGame.getState().startScene(interior); // enregistre l'intérieur
-    useGame.getState().startScene(exterior); // charge l'extérieur (départ 0,0)
-    useGame.getState().moveParty({ x: 3, y: 4 }); // sur la porte
-    expect(useGame.getState().scene?.id).toBe('interieur-test');
-  });
-
   it('incanter un Projectile magique résout l’incantation et consomme l’action', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.characteristics.Int = 90; // assurer le lancement (NI 0)
@@ -648,33 +623,6 @@ describe('Boucle de jeu (store)', () => {
       expect(after.activeEffects?.some((e) => e.char === 'CC' && e.bonus === 10)).toBe(true);
     }
     expect(st.battle!.acted).toBe(true);
-  });
-
-  it('porte → intérieur → retour (transitionBack) : aller-retour complet', () => {
-    const interior = makeInteriorScene({ id: 'int-test', nom: 'Intérieur test', w: 6, h: 6 });
-    const exterior = emptyScene(8, 8);
-    exterior.id = 'ext-test';
-    exterior.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    const chapel: BuildingFeature = {
-      id: 'chap',
-      type: 'chapelle',
-      foot: { x: 2, y: 2, w: 3, h: 3 },
-      reveal: 'door',
-      facing: 'S',
-      door: { x: 3, y: 4 },
-      interiorScene: 'int-test',
-    };
-    exterior.buildings = [chapel];
-    useGame.getState().startScene(interior); // enregistre l'intérieur
-    useGame.getState().startScene(exterior); // charge l'extérieur
-    // on se place SOUS la porte puis on entre (pour mémoriser un retour hors du bâtiment)
-    useGame.setState({ partyPos: { x: 3, y: 5 } });
-    useGame.getState().moveParty({ x: 3, y: 4 }); // sur la porte → intérieur
-    expect(useGame.getState().scene?.id).toBe('int-test');
-    // sortie : la porte de l'intérieur est en bas-centre (3,5) ; y marcher → retour
-    useGame.getState().moveParty({ x: 3, y: 5 });
-    expect(useGame.getState().scene?.id).toBe('ext-test');
-    expect(useGame.getState().partyPos).toEqual({ x: 3, y: 5 }); // retour à la case d'entrée
   });
 
   it('une attaque de héros adjacent retire des Blessures', () => {

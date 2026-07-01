@@ -12,7 +12,7 @@ import { wallSegs } from '../../src/gameIso/walls';
 import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { DEFS } from '../../src/gameIso/sprites';
-import { stageSize, floorDepth, tileCenter, depth, type Dims } from '../../src/gameIso/iso';
+import { stageSize, tileCenter, depth, type Dims } from '../../src/gameIso/iso';
 import { decorFootGeometry } from '../../src/state/footprint';
 import { scenarioEntities } from '../../src/scenes/opera/furnished';
 import type { SceneEntity } from '../../src/state/scene';
@@ -36,7 +36,7 @@ function placeProp(e: SceneEntity, d: Dims): { d: number; svg: string } {
 function renderLevel(z: number, file: string, rot: 0 | 2 = 0, zoom = 1.6) {
   const d: Dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot };
   const objs: { d: number; svg: string }[] = [];
-  for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) { const h = groundTile(scene, x, y, d, z); if (h) objs.push({ d: floorDepth(d, z), svg: h }); }
+  for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) { const h = groundTile(scene, x, y, d, z); if (h) objs.push({ d: depth(x, y, d, z) - 0.5, svg: h }); }
   for (const w of scene.walls ?? []) if ((w.z ?? 0) === z) { const seg = wallSegs({ ...scene, walls: [w] } as typeof scene, d)[0]; if (seg) objs.push(seg); }
   for (const e of ents) if (e.kind === 'prop' && e.ref && (e.z ?? 0) === z) objs.push(placeProp(e, d));
   objs.sort((a, b) => a.d - b.d);
@@ -55,7 +55,7 @@ function renderCrop(z: number, tx: number, ty: number, file: string, half = 170,
   const objs: { d: number; svg: string }[] = [];
   for (let y = Math.max(0, ty - span); y <= Math.min(d.h - 1, ty + span); y++)
     for (let x = Math.max(0, tx - span); x <= Math.min(d.w - 1, tx + span); x++) {
-      const h = groundTile(scene, x, y, d, z); if (h) objs.push({ d: floorDepth(d, z), svg: h });
+      const h = groundTile(scene, x, y, d, z); if (h) objs.push({ d: depth(x, y, d, z) - 0.5, svg: h });
     }
   for (const e of ents) {
     if (e.kind !== 'prop' || !e.ref || (e.z ?? 0) !== z) continue;

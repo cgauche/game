@@ -1,12 +1,13 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
-import { Scene, isWalkable, edgeOf, structureIsDown } from './scene';
+import { Scene, isWalkable, edgeOf, structureIsDown, surfaceLink } from './scene';
 import { hasTrait } from '../engine/traits/dispatch';
 import type { Combatant } from '../engine/types';
 
 export interface Pt {
   x: number;
   y: number;
-  /** Étage (niveau de scène). Absent = sol (z=0). La traversée verticale passe par les escaliers. */
+  /** Couche d'empilement (cf. `Scene.layers`). Absent = base (z=0). La traversée verticale s'auto-dérive
+   *  du delta de hauteur entre cases voisines (`surfaceLink`) — plus aucun escalier explicite. */
   z?: number;
 }
 
@@ -29,28 +30,16 @@ const NEIGHBORS = [
   [0, -1],
 ];
 
-/** Index des escaliers : clé de case → cases reliées (bidirectionnel). Seuls points de franchissement
- *  vertical ; vide si la scène n'a pas de `stairs` (toutes les scènes mono-niveau). */
-function stairLinks(scene: Scene): Map<string, Pt[]> {
-  const m = new Map<string, Pt[]>();
-  const add = (a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }) => {
-    const k = key(a.x, a.y, a.z);
-    const arr = m.get(k) ?? [];
-    arr.push({ x: b.x, y: b.y, z: b.z });
-    m.set(k, arr);
-  };
-  for (const s of scene.stairs ?? []) { add(s.from, s.to); add(s.to, s.from); }
-  return m;
-}
-
 /** Arêtes BARRIÈRES prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`). DIFFÈRE
- *  des lecteurs de vue/passage runtime : une PORTE n'est JAMAIS une barrière de planification (on planifie
- *  un trajet à travers une porte qu'on ouvrira — son état fermé/ouvert ne bloque pas le BFS). Une STRUCTURE
- *  INTACTE est en revanche un vrai obstacle (pas de plan à travers un mur debout) ; ABATTUE, elle laisse passer. */
+ *  des lecteurs de vue/passage runtime : une PORTE PURE (sans structure) n'est JAMAIS une barrière de
+ *  planification (on planifie un trajet à travers une porte qu'on ouvrira — son état fermé/ouvert ne bloque
+ *  pas le BFS). Une STRUCTURE INTACTE est en revanche un vrai obstacle (pas de plan à travers un mur debout),
+ *  MÊME si l'arête porte aussi `door` (une porte de ville brèchable bloque tant qu'elle tient) ; ABATTUE,
+ *  elle laisse passer. INVARIANT : seule une porte SANS structure est plan-through. */
 function wallEdges(scene: Scene): Set<string> {
   const s = new Set<string>();
   for (const w of scene.walls ?? [])
-    if (!w.door && !(w.structure && structureIsDown(scene, w))) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
+    if (!(w.door && !w.structure) && !(w.structure && structureIsDown(scene, w))) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
   return s;
 }
 /** Un mur sépare-t-il (ax,ay) de (bx,by) au même étage ? (cardinal seulement.) */
@@ -60,18 +49,33 @@ function walled(edges: Set<string>, ax: number, ay: number, bx: number, by: numb
   return e ? edges.has(`${e.x},${e.y},${e.side},${z}`) : false;
 }
 
-/** Voisins marchables d'une case : 4-adjacence du MÊME étage (sauf si une arête murée bloque) +
- *  transitions d'escalier vers z±1 (les escaliers IGNORENT les murs — passage explicite). */
-function neighborsOf(p: Pt, links: Map<string, Pt[]>, edges: Set<string>): Pt[] {
+/** Voisins MARCHABLES d'une case : pour chacune des 4 cases adjacentes, la/les couche(s) où elle forme
+ *  une SURFACE réelle reliée à pied — `surfaceLink` flat/ramp (|Δhauteur| ≤ STEP_MAX), une arête murée
+ *  (à la couche de départ OU d'arrivée) coupant le passage. C'est l'auto-connexion du relief : un même
+ *  pas peut changer de couche là où une rampe rejoint un tablier (hauteurs coïncidentes) — plus aucun
+ *  escalier explicite. Une falaise (Δhauteur > STEP_MAX) n'est PAS un voisin à pied (chute/Escalade). */
+function neighborsOf(scene: Scene, p: Pt, edges: Set<string>): Pt[] {
   const z = pz(p);
   const out: Pt[] = [];
   for (const [dx, dy] of NEIGHBORS) {
     const nx = p.x + dx, ny = p.y + dy;
-    if (!walled(edges, p.x, p.y, nx, ny, z)) out.push({ x: nx, y: ny, z });
+    for (const layer of scene.layers) {
+      const nz = layer.z;
+      if (!isWalkable(scene, nx, ny, nz)) continue; // pas de surface réelle sur cette couche ici
+      if (walled(edges, p.x, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y, nx, ny, nz))) continue;
+      const link = surfaceLink(scene, p, { x: nx, y: ny, z: nz });
+      if (link && link.grade !== 'cliff') out.push(pt(nx, ny, nz));
+    }
   }
-  const stairs = links.get(key(p.x, p.y, z));
-  if (stairs) out.push(...stairs);
   return out;
+}
+
+/** Voisins 4-cardinaux MARCHABLES d'une case (toutes couches reliées à pied : surface `flat`/`ramp`,
+ *  arête non murée) — wrapper PUBLIC de `neighborsOf` qui bâtit l'ensemble d'arêtes barrières. SOURCE
+ *  UNIQUE de connectivité réutilisée par le pas clavier d'exploration (`exploreStepDest`) : strictement
+ *  la même que celle du BFS (`pathTo`), zéro ambiguïté de z. */
+export function walkNeighbors(scene: Scene, p: Pt): Pt[] {
+  return neighborsOf(scene, p, wallEdges(scene));
 }
 
 /** Sauts (Saut, LDB 15 l.114-115) : atterrissages possibles en franchissant un GOUFFRE — des cases
@@ -137,7 +141,6 @@ export interface MoveEnv {
  */
 export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv): Map<string, number> {
   const { blocked, foot = 1, noStop } = env;
-  const links = stairLinks(scene);
   const edges = wallEdges(scene);
   const dist = new Map<string, number>();
   const sz = pz(start);
@@ -146,7 +149,7 @@ export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv):
   for (let step = 0; step < range; step++) {
     const next: Pt[] = [];
     for (const p of frontier) {
-      for (const n of neighborsOf(p, links, edges)) {
+      for (const n of neighborsOf(scene, p, edges)) {
         const nz = pz(n);
         const k = key(n.x, n.y, nz);
         if (dist.has(k)) continue;
@@ -261,7 +264,6 @@ export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, en
 /** Plus court chemin (BFS) de `start` à `goal`, ou null. (`env.noStop` ignoré : le but est validé en amont.) */
 export function pathTo(scene: Scene, start: Pt, goal: Pt, env: MoveEnv): Pt[] | null {
   const { blocked, foot = 1, jump = 0 } = env;
-  const links = stairLinks(scene);
   const edges = wallEdges(scene);
   const gz = pz(goal);
   const came = new Map<string, string | null>();
@@ -279,7 +281,7 @@ export function pathTo(scene: Scene, start: Pt, goal: Pt, env: MoveEnv): Pt[] | 
       }
       return path;
     }
-    for (const n of neighborsOf(p, links, edges)) {
+    for (const n of neighborsOf(scene, p, edges)) {
       const nz = pz(n);
       const k = key(n.x, n.y, nz);
       if (came.has(k)) continue;

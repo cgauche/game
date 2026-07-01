@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, floorDepth, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, footprintDepth, Z_STEP, BASE_SCALE, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type Dims } from './iso';
 
 describe('screenToTileF — picking FRACTIONNAIRE (arêtes éditeur)', () => {
   for (const rot of [0, 1, 2, 3] as const) {
@@ -125,6 +125,52 @@ describe('depth rot-aware', () => {
   });
 });
 
+describe('footprintDepth — MAX sur les 4 coins (coin proche caméra aux 4 rotations)', () => {
+  const corners = (x: number, y: number, w: number, h: number): [number, number][] =>
+    [[x, y], [x + w - 1, y], [x, y + h - 1], [x + w - 1, y + h - 1]];
+
+  it('= MAX de depth sur les 4 coins de l’empreinte (3×2)', () => {
+    const dims: Dims = { w: 8, h: 8 };
+    const [x, y, w, h] = [2, 3, 3, 2];
+    const expected = Math.max(...corners(x, y, w, h).map(([cx, cy]) => depth(cx, cy, dims)));
+    expect(footprintDepth(x, y, w, h, dims)).toBe(expected);
+  });
+
+  it('empreinte 1×1 = depth de la case (généralise depth)', () => {
+    const dims: Dims = { w: 6, h: 6 };
+    for (let x = 0; x < dims.w; x++)
+      for (let y = 0; y < dims.h; y++)
+        expect(footprintDepth(x, y, 1, 1, dims)).toBe(depth(x, y, dims));
+  });
+
+  it('aux 4 rotations : = depth du coin le PLUS PROCHE caméra (cy max à l’écran)', () => {
+    const [x, y, w, h] = [1, 2, 4, 3];
+    for (const rot of [0, 1, 2, 3] as const) {
+      const dims: Dims = { w: 9, h: 7, rot };
+      const cs = corners(x, y, w, h);
+      const nearest = cs.reduce((best, c) =>
+        tileCenter(c[0], c[1], dims).cy > tileCenter(best[0], best[1], dims).cy ? c : best, cs[0]);
+      // le coin proche caméra (cy max) porte aussi la depth max → footprintDepth s'y ancre
+      expect(footprintDepth(x, y, w, h, dims)).toBe(depth(nearest[0], nearest[1], dims));
+      expect(footprintDepth(x, y, w, h, dims)).toBe(Math.max(...cs.map((c) => depth(c[0], c[1], dims))));
+    }
+  });
+
+  it('porte l’élévation z comme cran SECONDAIRE (même empreinte : haut > bas ; base prime sur z)', () => {
+    const dims: Dims = { w: 6, h: 6 };
+    // même empreinte, z plus haut → profondeur plus grande (z = départage secondaire)
+    expect(footprintDepth(1, 1, 2, 2, dims, 1)).toBeGreaterThan(footprintDepth(1, 1, 2, 2, dims, 0));
+    // mais la BASE (position écran) domine z : une empreinte AVANT au sol passe devant une empreinte
+    // ARRIÈRE d'un étage haut (≠ ancien modèle de bande z où le haut écrasait tout le bas)
+    expect(footprintDepth(5, 5, 1, 1, dims, 0)).toBeGreaterThan(footprintDepth(0, 0, 1, 1, dims, 1));
+  });
+
+  it('w/h ≤ 0 traités comme 1 case (robustesse)', () => {
+    const dims: Dims = { w: 5, h: 5 };
+    expect(footprintDepth(2, 2, 0, 0, dims)).toBe(depth(2, 2, dims));
+  });
+});
+
 describe('projection multi-niveaux (élévation z)', () => {
   const ROTS = [0, 1, 2, 3] as const;
   const VIEWS = ['iso', 'top'] as const;
@@ -148,31 +194,44 @@ describe('projection multi-niveaux (élévation z)', () => {
     }
   });
 
-  it('depth : tout étage haut se dessine APRÈS tout étage bas', () => {
+  it('depth : z est un cran SECONDAIRE — interclassement par position écran (base ≫ z)', () => {
+    // à position écran ÉGALE, l'étage haut passe DEVANT (départage par z) — vaut pour TOUTES les vues/rots
     for (const view of VIEWS)
       for (const rot of ROTS) {
         const dims: Dims = { w: 5, h: 5, rot, view };
-        let maxLow = -Infinity;
-        let minHigh = Infinity;
         for (let x = 0; x < dims.w; x++)
-          for (let y = 0; y < dims.h; y++) {
-            maxLow = Math.max(maxLow, depth(x, y, dims, 0));
-            minHigh = Math.min(minHigh, depth(x, y, dims, 1));
-          }
-        expect(minHigh).toBeGreaterThan(maxLow);
+          for (let y = 0; y < dims.h; y++)
+            expect(depth(x, y, dims, 1)).toBeGreaterThan(depth(x, y, dims, 0));
       }
+    // mais la BASE (anti-diagonale écran) DOMINE z : une case plus AVANT au sol passe devant une case
+    // plus ARRIÈRE d'un étage HAUT (≠ ancien modèle de bande z qui enterrait tout le bas). Orientation
+    // par défaut (base = x+y) pour contrôler l'ordre écran.
+    const dims: Dims = { w: 5, h: 5 };
+    expect(depth(3, 1, dims, 0)).toBeGreaterThan(depth(1, 1, dims, 1)); // base 4 vs base 2 (+ z=1)
   });
 
-  it('floorDepth : le sol d’un étage passe sous ses objets et au-dessus de tout le niveau inférieur', () => {
+  it('hiérarchie base ≫ z : un cran d’anti-diagonale domine toute la pile d’étages (maxLevels=8)', () => {
+    // un pas d'anti-diagonale (base +1, orientation par défaut) doit dépasser l'écart total de z sur 8
+    // étages → un objet plus AVANT reste devant quel que soit l'étage de l'objet derrière.
+    const maxLevels = 8;
+    const dims: Dims = { w: 5, h: 5 };
+    expect(depth(1, 0, dims, 0) - depth(0, 0, dims, 0)).toBeGreaterThan(maxLevels * Z_STEP);
+    // invariants nominaux : un cran d'étage domine tout offset de couche (≈0.7) ; BASE_SCALE dépasse
+    // la pile d'étages + 1.
+    expect(Z_STEP).toBeGreaterThan(0.7);
+    expect(BASE_SCALE).toBeGreaterThan(maxLevels * Z_STEP + 1);
+  });
+
+  it('sol/jeton : un sol (depth−0.5) passe sous son jeton (+0.5) et au-dessus du jeton du dessous', () => {
     for (const view of VIEWS)
       for (const rot of ROTS) {
         const dims: Dims = { w: 6, h: 6, rot, view };
         for (let x = 0; x < dims.w; x++)
           for (let y = 0; y < dims.h; y++) {
-            // sous tous les objets du MÊME niveau (tokens portent +0.5, props +0)
-            expect(floorDepth(dims, 1)).toBeLessThan(depth(x, y, dims, 1));
-            // au-dessus de TOUT le niveau inférieur, tokens (+0.5) compris
-            expect(floorDepth(dims, 1)).toBeGreaterThan(depth(x, y, dims, 0) + 0.5);
+            // sous le jeton de SA propre case (jeton à +0.5)
+            expect(depth(x, y, dims, 1) - 0.5).toBeLessThan(depth(x, y, dims, 1) + 0.5);
+            // au-dessus du jeton de la MÊME case à l'étage inférieur (z=0, +0.5) — surplomb local correct
+            expect(depth(x, y, dims, 1) - 0.5).toBeGreaterThan(depth(x, y, dims, 0) + 0.5);
           }
       }
   });

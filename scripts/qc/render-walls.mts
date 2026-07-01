@@ -7,7 +7,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { groundTile } from '../../src/gameIso/ground';
 import { wallSegs } from '../../src/gameIso/walls';
 import { DEFS } from '../../src/gameIso/sprites';
-import { stageSize, depth, floorDepth, type Dims } from '../../src/gameIso/iso';
+import { stageSize, depth, type Dims } from '../../src/gameIso/iso';
 import type { Scene, Terrain, WallSeg } from '../../src/state/scene';
 
 const W = 7, H = 7;
@@ -25,7 +25,7 @@ const scene = {
 
 const d: Dims = { w: W, h: H };
 const objs: { d: number; svg: string }[] = [];
-for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const h = groundTile(scene, x, y, d, 0); if (h) objs.push({ d: floorDepth(d, 0), svg: h }); }
+for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const h = groundTile(scene, x, y, d, 0); if (h) objs.push({ d: depth(x, y, d, 0) - 0.5, svg: h }); }
 objs.push(...wallSegs(scene, d));
 // un jeton DANS la salle pour juger l'occlusion (le mur du fond passe derrière lui, le mur avant devant)
 const { cx, cy } = (await import('../../src/gameIso/iso')).tileCenter(2, 2, d);

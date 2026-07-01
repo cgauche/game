@@ -13,6 +13,54 @@ import { makeZone1, makeZone2, makeZone3, makeZone4, makeZone5, makeZone6, makeZ
 import { makeZone8, makeZone9, makeZone10, makeZone11, makeZone12, makeZone13 } from './zones8-13.mjs';
 import { makeForet, makeMarais, makeVillage, makeEmbuscade } from './expeditions.mjs';
 
+// ── Bâtiment COMPOSÉ : un BuildingFeature d'authoring (foot + type + porte) → toit de rendu (Roof) +
+//    périmètre de murs d'arête destructibles ('mur-en-bois') + sol de terrain peint sur l'empreinte. ─
+
+/** Terrains déjà « finis » qu'on ne repeint pas, et terrains non-planchéiables (mur/eau). */
+const FINISHED_FLOORS = new Set(['sol', 'planches', 'dalle', 'plancher']);
+const NON_FLOORABLE = new Set(['mur', 'eau']);
+
+/** Terrain de sol d'un bâtiment selon son type (sanctuaire de pierre → dalle, sinon plancher de bois). */
+function buildingFloor(type) {
+  return type === 'chapelle' ? 'dalle' : 'planches';
+}
+
+/** Arête CANONIQUE (cellule + side N/E) de la porte donnée par sa CASE, sur le périmètre du `foot`. La
+ *  case de porte est sur un bord FRANC (jamais un coin) : son bord extérieur est N (haut/bas) ou E (gauche/droite). */
+function doorEdge(foot, door) {
+  const { x, y, w, h } = foot;
+  if (door.y === y) return { x: door.x, y, side: 'N' };                    // bord haut
+  if (door.y === y + h - 1) return { x: door.x, y: y + h, side: 'N' };     // bord bas
+  if (door.x === x) return { x: x - 1, y: door.y, side: 'E' };             // bord gauche
+  if (door.x === x + w - 1) return { x: x + w - 1, y: door.y, side: 'E' }; // bord droit
+  return null;
+}
+
+/**
+ * Convertit un bâtiment d'authoring (empreinte `{x,y,w,h}` + `type` + `door` en CASE + `params`) en pièces
+ * du schéma « relief unifié » : un `Roof` de RENDU + le PÉRIMÈTRE de `WallSeg{structure:'mur-en-bois'}`, la
+ * case de `door` rendue franchissable (`door:true`). `floor` = terrain à peindre sur l'empreinte (appliqué
+ * par l'appelant, qui tient la grille). PUR / réutilisable. Périmètre canonique : bord HAUT = N de (cx, y) ;
+ * BAS = N de (cx, y+h) ; GAUCHE = E de (x-1, cy) ; DROIT = E de (x+w-1, cy).
+ */
+export function buildingToComposite(foot, type, door, params) {
+  const { x, y, w, h } = foot;
+  const edge = door ? doorEdge(foot, door) : null;
+  const isDoor = (e) => edge && e.x === edge.x && e.y === edge.y && e.side === edge.side;
+  const walls = [];
+  const add = (e) => walls.push(isDoor(e) ? { ...e, door: true } : { ...e, structure: 'mur-en-bois' });
+  for (let cx = x; cx < x + w; cx++) {
+    add({ x: cx, y, side: 'N' });          // bord haut
+    add({ x: cx, y: y + h, side: 'N' });   // bord bas
+  }
+  for (let cy = y; cy < y + h; cy++) {
+    add({ x: x - 1, y: cy, side: 'E' });    // bord gauche
+    add({ x: x + w - 1, y: cy, side: 'E' });// bord droit
+  }
+  const roof = { foot, style: type, ...(params ? { params } : {}) };
+  return { roof, walls, floor: buildingFloor(type) };
+}
+
 // L'ordre compte : scenes[0] = arene-zone1 (départ de « Nouvelle partie »).
 const scenes = [
   makeZone1(),
@@ -129,11 +177,35 @@ for (const s of scenes) {
   else if (/^arene-zone/.test(s.id)) s.rest = {}; // on ne bivouaque pas dans l'arène
 }
 
-// Multi-niveaux : le format Scene empile des étages (z=0 = sol). Les générateurs produisent une
-// grille `tiles` → on l'enveloppe dans `levels: [{ z:0, tiles }]`. `buildings` reste au sol.
+// Bâtiments composés + empilement. Chaque BuildingFeature d'authoring devient un toit (`scene.roofs`) +
+// un périmètre de murs d'arête destructibles (`scene.walls`) + un sol planchéié sur l'empreinte ; les
+// champs cutaway-only (interiorScene/entry/reveal/facing) sont ignorés (vrais intérieurs in-scène = polish
+// ultérieur). Puis la grille plate `tiles` est enveloppée dans `layers: [{ z:0, tiles }]` (z=0 = sol).
 for (const s of scenes) {
-  if (s.tiles && !s.levels) {
-    s.levels = [{ z: 0, tiles: s.tiles }];
+  if (s.buildings?.length) {
+    const roofs = [];
+    const wallByEdge = new Map(); // dédup par arête (x,y,side) — une porte l'emporte sur un mur plein
+    for (const b of s.buildings) {
+      const { roof, walls, floor } = buildingToComposite(b.foot, b.type, b.door, b.params);
+      roofs.push({ id: b.id, ...roof, ...(b.label ? { label: b.label } : {}) });
+      for (const seg of walls) {
+        const key = `${seg.x},${seg.y},${seg.side}`;
+        if (!wallByEdge.has(key) || seg.door) wallByEdge.set(key, seg);
+      }
+      // (c) sol du bâtiment peint sur l'empreinte (sauf sol déjà fini / mur / eau).
+      for (let cy = b.foot.y; cy < b.foot.y + b.foot.h; cy++)
+        for (let cx = b.foot.x; cx < b.foot.x + b.foot.w; cx++) {
+          const idx = cy * s.dimensions.w + cx;
+          const cur = s.tiles[idx];
+          if (!FINISHED_FLOORS.has(cur) && !NON_FLOORABLE.has(cur)) s.tiles[idx] = floor;
+        }
+    }
+    s.roofs = roofs;
+    s.walls = [...(s.walls ?? []), ...wallByEdge.values()];
+  }
+  delete s.buildings;
+  if (s.tiles && !s.layers) {
+    s.layers = [{ z: 0, tiles: s.tiles }];
     delete s.tiles;
   }
 }

@@ -21,7 +21,7 @@ scene.startMessage =
   'Un caveau humide. Au fond, une herse close protège un coffre. Un levier rouillé, une dalle suspecte au sol… et quelque part, une clé.';
 
 // Murs périmétriques + un renfoncement (le « trésor ») fermé par la herse à droite.
-const tiles = scene.levels[0].tiles as Terrain[];
+const tiles = scene.layers[0].tiles as Terrain[];
 const set = (x: number, y: number, t: Terrain) => { if (x >= 0 && y >= 0 && x < W && y < H) tiles[y * W + x] = t; };
 for (let x = 0; x < W; x++) { set(x, 0, 'mur'); set(x, H - 1, 'mur'); }
 for (let y = 0; y < H; y++) { set(0, y, 'mur'); set(W - 1, y, 'mur'); }

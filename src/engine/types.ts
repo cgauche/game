@@ -56,7 +56,7 @@ export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
  * changent (quadrupède : membres antérieurs/postérieurs ; oiseau : ailes) et les Tableaux de Critiques
  * sont les mêmes. Serpent & araignée utilisent les « Localisations Alternatives » (p.312).
  */
-export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule' | 'structure';
+export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule' | 'structure' | 'engin';
 
 /** Côté d'arête de mur — REDÉCLARÉ depuis `state/scene` (`WallSide`, même union) pour ne pas faire dépendre
  *  le moteur PUR de l'état (cf. `Combatant.structureEdge`). */
@@ -74,6 +74,7 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
   araignee: { jambeD: t('hitloc.araignee.jambeD'), corps: t('hitloc.araignee.corps') }, // n'expose que Tête / Pattes / Abdomen
   vehicule: {}, // localisations data-driven (coque/gréement/…)
   structure: {}, // structure de siège (porte/mur/tour, ADE II ch.08) — pas de Tableau de Localisation propre
+  engin: {}, // engin de siège (affût servi, AA p.122-123) — INERTE, jamais de Localisation (isInanimate)
 };
 
 /** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
@@ -777,6 +778,10 @@ export interface Combatant {
    *  combat (Parade/Esquive/Localisation/Engagement, via `isInanimate`) NI tour propre (hors `order`). Son seul
    *  rôle actif est d'être SERVIE (`postes`) par un équipage. */
   inert?: boolean;
+  /** PNJ allié piloté par l'IA (≠ héros du groupe, manuel). Un combattant du camp des héros (`kind:'hero'`)
+   *  qui AGIT SEUL via la machinerie d'IA (`aiDriven`), sans affordance joueur — pour les défenseurs PNJ
+   *  (archers, équipage d'une pièce de rempart) que le joueur ne doit pas micro-gérer. */
+  aiControlled?: boolean;
   /** Psychologie (LDB 21) : Indice de Peur/Terreur INSPIRÉ (statbloc) ; Immunité Psychologie (85 l.143-144). */
   causesPeur?: number;
   causesTerreur?: number;
@@ -1004,9 +1009,11 @@ export interface Combatant {
    *  PAR carrière (un changement de carrière rouvre les choix). Cf. engine/careerSlots.ts. */
   careerSlotChoices?: Record<string, Record<string, string>>;
   // Combat tactique (grille)
-  /** Case occupée. `z` = étage (cf. `SceneEntity.z` / `path.ts:Pt`) ; ABSENT = sol (z=0). Le combat
-   *  z-aware compte un défenseur de muraille (z=1) NON superposé aux assaillants au sol (combatDistance). */
-  pos?: { x: number; y: number; z?: number };
+  /** Case occupée. `z` = étage (cf. `SceneEntity.z` / `path.ts:Pt`) ; ABSENT = sol (z=0). `h` = hauteur
+   *  RÉELLE de la surface sous le combattant, en MÈTRES (relief, `scene.heightAt`) — STAMPÉE au spawn et
+   *  RAFRAÎCHIE à chaque déplacement (`placeCombatant`), pour que la distance de combat (composante
+   *  verticale métrique) et le −10 « en contrebas » restent justes après tout mouvement. Absent = 0 m. */
+  pos?: { x: number; y: number; z?: number; h?: number };
   initiative?: number;
   /** A gagné de l'Avantage durant le Round courant (upkeep de fin de Round, LDB Dépl. l.40). */
   gainedAdvThisRound?: boolean;

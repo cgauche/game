@@ -104,7 +104,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
 import { applyHullCritical } from '../engine/shipCritical';
-import { isInanimate, isStructure } from '../engine/structures';
+import { isInanimate, isStructure, structureAimCell } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
@@ -140,17 +140,18 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove } from './scene';
-import { FALL_METRES_PER_LEVEL } from './jumpMove';
+import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove, heightAt } from './scene';
+import { STEP_MAX_M } from './relief';
+import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
-import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, isPosteManned } from './shipPostes';
+import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
-import { reachable, moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
@@ -420,7 +421,10 @@ export function attackEnv(
     const occupants = battle.combatants
       .filter((c) => c.id !== attacker.id && c.id !== target.id && !isOutOfAction(c) && c.pos)
       .map((c) => c.pos!);
-    const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants, smokeOf(battle));
+    // Tir sur une STRUCTURE : on vise sa FACE exposée (la case côté tireur) — sinon l'arête de la structure
+    // elle-même coupe la LdV vers la case DERRIÈRE elle (un canon ne « voit pas à travers » la porte qu'il vise).
+    const losTo = isStructure(target) ? structureAimCell(attacker.pos!, target) : target.pos!;
+    const los = lineOfSightCover(scene, attacker.pos!, losTo, occupants, smokeOf(battle));
     if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
     // Commandant d'équipe (AA l.4373-4379) : un chef de pièce dirigé tire au score de Projectiles de son
     // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).
@@ -461,6 +465,9 @@ export function attackEnv(
   const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
   if (tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)))
     env.push({ label: 'Flanc/dos', value: 20 });
+  // En contrebas (Difficultés de Combat) : l'attaquant le PLUS BAS subit −10 (la hauteur ne donne AUCUN
+  // bonus « high-ground » — RAW : seul ce malus existe). Comparaison de la hauteur métrique des surfaces.
+  if ((target.pos?.h ?? 0) - (attacker.pos?.h ?? 0) > STEP_MAX_M) env.push({ label: 'En contrebas de la cible', value: -10 });
   // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
   const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
   if (onm) env.push(onm);
@@ -722,7 +729,7 @@ export function movePreviewAt(get: Get, pt: Pt): { kind: 'move' | 'run'; path: P
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'hero' || !active.pos) return null;
   if (isEngaged(active) || !canMove(battle, active)) return null; // Engagé : le clic route vers le Désengagement
-  const k = `${pt.x},${pt.y}`;
+  const k = tileKey(pt.x, pt.y, pt.z ?? 0); // z-aware : une case de rempart (z1) ne matche plus la clé « x,y » du sol
   const reach = displayedReach(get);
   const inWalk = reach.has(k);
   const runReach = inWalk ? null : computeRunReach(get);
@@ -1251,11 +1258,13 @@ export function collapseStructure(get: Get, set: SetFn, target: Combatant): void
       // Effondrement de la PASSERELLE (z=1) portée par la structure abattue : ses occupants CHUTENT au
       // sol (dégâts de chute, LDB 15) et les tuiles deviennent infranchissables (`setTileCollapsed`).
       for (const tl of parapetTilesAbove(scene, e)) {
+        const sc = scene; // réf non-null capturée pour les closures (scene est un `let` réassigné plus bas)
         combatants = combatants.map((c) => {
           if (c.pos?.x !== tl.x || c.pos?.y !== tl.y || (c.pos?.z ?? 0) !== 1) return c;
           const fallen = { ...c, wounds: { ...c.wounds }, conditions: c.conditions.map((x) => ({ ...x })) };
-          applyFall(fallen, FALL_METRES_PER_LEVEL, battleRng());
-          fallen.pos = { x: tl.x, y: tl.y }; // chute au sol (z=0, omis)
+          // Hauteur de chute = vraie hauteur métrique (relief) de la passerelle (z=tl.z) au-dessus du sol (z=0).
+          applyFall(fallen, Math.abs(heightAt(sc, tl.x, tl.y, tl.z) - heightAt(sc, tl.x, tl.y, 0)), battleRng());
+          placeCombatant(fallen, sc, { x: tl.x, y: tl.y }); // chute au sol (z=0, omis) + hauteur rafraîchie
           log.push(ev('damage', `${c.name} chute de la passerelle qui s'effondre.`, c.id));
           return fallen;
         });
@@ -2086,7 +2095,7 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
   const hitIds = [primaryTarget.id];
   // Cible primaire tuée → l'attaquant se déplace sur sa case avant d'enchaîner (l.10).
   if (isOutOfAction(primaryTarget) && primaryTarget.pos) {
-    attacker.pos = { ...primaryTarget.pos };
+    placeCombatant(attacker, get().scene, primaryTarget.pos);
     displaceSmaller(get, attacker); // en se recalant, un grand dégage les plus petits sous son empreinte (85 l.373-374)
   }
   for (let n = 0; n < bcc; n++) {
@@ -2100,7 +2109,7 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
     applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false); // enchaînement : résolution instantanée (pas de modale de déviation imbriquée)
     const killed = isOutOfAction(next);
     if (killed && next.pos) {
-      attacker.pos = { ...next.pos }; // se déplace sur la case libérée
+      placeCombatant(attacker, get().scene, next.pos); // se déplace sur la case libérée
       displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.373-374)
     }
     if (fm && !killed) break; // Frappe Mortelle : on ne poursuit qu'en TUANT (LDB 14 l.9)
@@ -2125,7 +2134,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
   const count = wasChain ? (pc?.count ?? 0) + 1 : pc?.count ?? 0; // un enchaînement résolu consomme une attaque
   const hitIds = pc ? [...new Set([...pc.hitIds, target.id])] : [target.id];
   if (isOutOfAction(target) && target.pos) {
-    attacker.pos = { ...target.pos }; // case libérée (l.10)
+    placeCombatant(attacker, get().scene, target.pos); // case libérée (l.10)
     displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.373-374)
   }
   const battle = get().battle!;
@@ -2352,7 +2361,7 @@ export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: Creatu
       const r = pullToward(get().scene!, attacker.pos, target.pos, chebyshev(attacker.pos, target.pos), { blocked: occupied(b, target) });
       if (r.pulled > 0) {
         const from = { ...target.pos };
-        target.pos = { ...r.dest };
+        placeCombatant(target, get().scene, r.dest);
         bus.emit(EVT.ANIM_MOVE, { id: target.id, path: [{ ...r.dest }] });
         applyZoneCrossings(get, target, [...tilesBetween(from, r.dest), { ...r.dest }]); // une traction TRAVERSE (Mur de feu, L11)
         set({ battle: { ...b, log: [...b.log, ev('move', tr('cs.tonguePull', { name: attacker.name, foe: target.name }), attacker.id, target.id)] } });
@@ -2988,12 +2997,19 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
       active: isSpellActive(data, enemy, battle),
     });
   }
+  // Structures destructibles (porte/mur) ciblables par les ARMES DE SIÈGE de l'ASSAILLANT (AA l.3808). Réservé
+  // aux ENNEMIS (les assaillants brèchent l'enceinte) : un défenseur allié-IA n'attaque pas sa propre porte —
+  // `structureImmune` n'y suffirait pas (une pièce de siège alliée la pourrait). Absent côté allié → aucun candidat.
+  const structures = enemy.kind === 'enemy'
+    ? battle.combatants.filter((c) => isStructure(c) && !isOutOfAction(c) && c.pos)
+    : undefined;
   return {
     enemy, heroes, scene, blocked, noStop: cannotStopOn(battle, geom), movement, spells,
     smoke: smokeOf(battle), flying: flyM != null, perceived, facing: get().facing, squad,
     // « Servir cette pièce » (MDG ch.12) : postes de siège NON servis adjacents — KIND-AGNOSTIQUE (l'appelant
     // impur a la liste complète des combattants). Vide en scène sans emplacement → aucun candidat (parité golden).
     servablePostes: servablePostes(enemy, battle.combatants).map(({ hull, poste }) => ({ hullId: hull.id, posteUid: poste.item.uid })),
+    structures,
   };
 }
 
@@ -3450,7 +3466,7 @@ export function applyCast(
           const r = pushAway(get().scene!, caster.pos, t.pos, pushTiles, { blocked: occupied(battle, t) });
           if (r.pushed > 0) {
             const fromPos = { ...t.pos };
-            t.pos = { ...r.dest };
+            placeCombatant(t, get().scene, r.dest);
             bus.emit(EVT.ANIM_MOVE, { id: t.id, path: [{ ...r.dest }] });
             logLines.push(tr('cf.pushed', { name: t.name, m: r.pushed * 2 }));
             applyZoneCrossings(get, t, [...tilesBetween(fromPos, r.dest), { ...r.dest }]); // une poussée TRAVERSE (Mur de feu, L11)
@@ -3897,8 +3913,10 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
       bus.emit(EVT.SCENE_DIRTY);
     }
   }
-  const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c));
-  const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
+  // Un engin INERTE (affût servi, immune) ne compte JAMAIS comme un combattant vivant — ni côté allié
+  // (`kind:'hero'`) ni côté ennemi : la victoire/défaite se joue sur les créatures (l'équipage), pas l'objet.
+  const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !c.inert && !isOutOfAction(c));
+  const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !c.inert && !isOutOfAction(c));
   if (!enemiesAlive) {
     // Tests de fin de combat des héros survivants (maladie/Corruption) AVANT l'écran de victoire (décision
     // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
@@ -4892,14 +4910,14 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       return;
     }
     case 'manPoste': {
-      // « Servir cette pièce » (MDG ch.12) : devenir chef d'un poste de siège NON servi adjacent — MÊME mutation
-      // KIND-AGNOSTIQUE (`serveAtPoste`) que l'action joueur et l'author-time. Coûte l'Action. Re-garde l'occupation
-      // (un autre a pu prendre la pièce pendant la décision) ; pris/disparu entre-temps → passe la main.
+      // « Servir cette pièce » (MDG ch.12) : rejoindre un poste de siège adjacent (chef si non servi, sinon support) —
+      // MÊME mutation KIND-AGNOSTIQUE (`serveAtPoste`) que l'action joueur et l'author-time. Coûte l'Action. Re-garde
+      // la staleness : disparu, ou déjà rejoint pendant la décision → passe la main (pas de double-ajout).
       if (!canAct) return advanceTurn(get, set);
       const hull = battle.combatants.find((c) => c.id === action.hullId);
       const poste = hull?.postes?.find((p) => p.item.uid === action.posteUid);
-      if (!poste || isPosteManned(poste, battle.combatants)) return advanceTurn(get, set);
-      serveAtPoste(enemy, poste);
+      if (!poste || (poste.crewIds ?? []).includes(enemy.id)) return advanceTurn(get, set);
+      serveAtPoste(enemy, poste, battle.combatants);
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', tr('cs.manPoste', { name: enemy.name, weapon: poste.item.name }), enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
@@ -4929,8 +4947,8 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // Tour caduc (combat fini OU combat/scène relancé pendant le télégraphe → `enemy` n'appartient
         // plus au combat courant) : abandonner SANS muter, sinon on réécrirait l'ancien combat.
         if (!b || b.over || !b.combatants.includes(enemy)) return;
-        enemy.pos = mv.to;
-        if (geom !== enemy) geom.pos = { ...mv.to }; // Combat monté : la monture suit le cavalier (couple solidaire)
+        placeCombatant(enemy, get().scene, mv.to);
+        if (geom !== enemy) placeCombatant(geom, get().scene, mv.to); // Combat monté : la monture suit le cavalier (couple solidaire)
         displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.373-374)
         get().faceFromPath(enemy.id, path);
         if (geom !== enemy) get().faceFromPath(geom.id, path);

@@ -66,7 +66,7 @@ describe('entityBlockedAt — empreinte multi-cases des décors', () => {
 
 describe('isWalkable — intègre l’empreinte des décors', () => {
   const cart: SceneEntity = { id: 'c', kind: 'prop', pos: { x: 1, y: 0 }, ref: 'charrette', foot: { w: 2, h: 1 } } as SceneEntity;
-  const scene = { dimensions: { w: 4, h: 1 }, levels: [{ z: 0, tiles: ['herbe', 'herbe', 'herbe', 'herbe'] }], entities: [cart], buildings: [] } as unknown as Scene;
+  const scene = { dimensions: { w: 4, h: 1 }, layers: [{ z: 0, tiles: ['herbe', 'herbe', 'herbe', 'herbe'] }], entities: [cart] } as unknown as Scene;
   it('une case d’empreinte (charrette 2×1) est non-walkable', () => {
     expect(isWalkable(scene, 1, 0)).toBe(false);
     expect(isWalkable(scene, 2, 0)).toBe(false);
