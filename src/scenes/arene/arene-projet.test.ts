@@ -45,13 +45,13 @@ function enemiesOf(scene: Scene, enc: Scene['encounters'][number]) {
 const ALL_ENEMIES = project.flatMap((s) => s.encounters.flatMap((e) => enemiesOf(s, e)));
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
-  it('20 scènes : entrée zone1, Bourg + 2 intérieurs, 13 zones, 3 expéditions, 1 embuscade de route', () => {
-    expect(project).toHaveLength(20);
+  it('22 scènes : entrée zone1, Bourg + 4 intérieurs, 13 zones, 3 expéditions, 1 embuscade de route', () => {
+    expect(project).toHaveLength(22);
     expect(project[0].id).toBe('arene-zone1');
     const ids = project.map((s) => s.id);
     expect(ids).toContain('arene-hub');
     expect(ids).toContain('arene-zone13'); // L'Antre du Dragon (finale)
-    expect(ids).toEqual(expect.arrayContaining(['arene-int-taverne', 'arene-int-chapelle'])); // intérieurs du Bourg
+    expect(ids).toEqual(expect.arrayContaining(['arene-int-taverne', 'arene-int-chapelle', 'arene-int-forge', 'arene-int-echoppe'])); // intérieurs du Bourg (4 bâtiments)
     expect(ids).toEqual(expect.arrayContaining(['arene-exp-foret', 'arene-exp-marais', 'arene-exp-village'])); // expéditions (#T2)
     expect(ids).toContain('arene-route-embuscade'); // cible du « Attaqués ! »
     const zones = ids.filter((id) => /^arene-zone\d+$/.test(id));

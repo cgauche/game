@@ -9,7 +9,7 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { makeHub, makeTaverne, makeChapelle } from './hub.mjs';
+import { makeHub, makeTaverne, makeChapelle, makeForge, makeEchoppe } from './hub.mjs';
 import { makeZone1, makeZone2, makeZone3, makeZone4, makeZone5, makeZone6, makeZone7 } from './zones1-7.mjs';
 import { makeZone8, makeZone9, makeZone10, makeZone11, makeZone12, makeZone13 } from './zones8-13.mjs';
 import { makeForet, makeMarais, makeVillage, makeEmbuscade } from './expeditions.mjs';
@@ -20,6 +20,8 @@ const scenes = [
   makeHub(),
   makeTaverne(),
   makeChapelle(),
+  makeForge(),
+  makeEchoppe(),
   makeZone2(),
   makeZone3(),
   makeZone4(),
@@ -124,6 +126,8 @@ const REST_OFFERS = {
   'arene-hub': { auberge: true },
   'arene-int-taverne': { auberge: true },
   'arene-int-chapelle': {},
+  'arene-int-forge': {},
+  'arene-int-echoppe': {},
 };
 for (const s of scenes) {
   if (REST_OFFERS[s.id] !== undefined) s.rest = REST_OFFERS[s.id];
