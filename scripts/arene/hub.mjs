@@ -1,5 +1,12 @@
-/** Le Bourg de l'Arène (hub refondu, id conservé `arene-hub`) + ses deux intérieurs. */
-import { scene, P, NPC, hero, resetIds, fouille, flowOf, flagWhen, testNode } from './lib.mjs';
+/** Le Bourg de l'Arène (hub refondu, id conservé `arene-hub`) — TOUT-EN-SCÈNE, une seule scène. */
+import { scene, P, NPC, hero, resetIds, flowOf, flagWhen, testNode } from './lib.mjs';
+
+// ── Modèle TOUT-EN-SCÈNE ────────────────────────────────────────────────────────────────────
+// Un bâtiment n'est PLUS une scène-intérieur séparée : c'est une GRANDE empreinte SUR la carte du
+// Bourg (toit `Roof` + murs d'arête `mur-en-bois` + porte, posés par `addBuilding`). Son intérieur —
+// sol, PNJ, marchand, props — vit DANS l'empreinte ; le toit se lève en CUTAWAY (`roofHidden`, IsoStage)
+// dès qu'un allié entre. Le SOL de chaque intérieur est PEINT dans la grille ASCII (`noFloor` sur le
+// bâtiment) pour que le détail (plancher, nef de marbre) survive à `addBuilding`.
 
 // ── Dialogues du Bourg ──────────────────────────────────────────────────────────────────────
 
@@ -180,210 +187,6 @@ const dlgEchoppier = {
   ],
 };
 
-const dlgGarde = {
-  id: 'dlg-garde',
-  start: 'accueil',
-  nodes: [
-    {
-      id: 'accueil',
-      speaker: 'Garde du Bourg',
-      text: 'L’arène est au sud, derrière la porte. La route de l’est mène à la Futaie, à la Tourbière et à Felsbach — si tu tiens à tes jambes, voyage de jour et le ventre plein.',
-      choices: [
-        { text: '« Rien à signaler ? »', next: 'signalements' },
-        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
-      ],
-    },
-    {
-      id: 'signalements',
-      speaker: 'Garde du Bourg',
-      text: 'Il hausse les épaules. « Des hurlements dans la Futaie, la nuit. Et plus une lumière à Felsbach depuis un mois. Si tu veux mon avis : reste du bon côté de la palissade. »',
-      choices: [
-        { text: '« Merci du conseil. »', flow: flowOf([{ type: 'journal', text: 'Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois.' }, { type: 'endDialogue' }]) },
-        { text: '↩ Autre chose.', next: 'accueil' },
-      ],
-    },
-  ],
-};
-
-const dlgRumeurs = {
-  id: 'dlg-rumeurs',
-  start: 'accueil',
-  nodes: [
-    {
-      id: 'accueil',
-      speaker: 'Villageoise',
-      text: 'Vous êtes les nouveaux gladiateurs ? On parie sur vous au lavoir. Enfin… certains.',
-      choices: [
-        { text: '« Qu’est-ce qui se raconte ? »', next: 'lavoir' },
-        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
-      ],
-    },
-    {
-      id: 'lavoir',
-      speaker: 'Villageoise',
-      text: 'Elle baisse la voix. « Le Maître garde un vieux coffre dont il a perdu la clef — il dit que c’est sans valeur, mais il dort dessus. Et passez voir Frère Anselm à la chapelle : il bénit ceux qui descendent sur le sable. »',
-      choices: [
-        { text: '« Intéressant… »', flow: flowOf([{ type: 'journal', text: 'Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat.' }, { type: 'endDialogue' }]) },
-        { text: '↩ Autre chose.', next: 'accueil' },
-      ],
-    },
-  ],
-};
-
-// ── La carte du Bourg (36×26, extérieur) ────────────────────────────────────────────────────
-// REDESIGN : une PLACE PAVÉE centrale (x11-24, y9-16) d'où partent des rues vers les 4 bâtiments
-// (coins), la porte SUD (arène) et la porte EST (route/monde). Les bâtiments sont GÉNÉREUX et
-// lisibles — chacun a son intérieur (scène dédiée) desservi par une porte d'arête sur la place.
-//   taverne  6×5 (NO)  porte S    chapelle 6×6 (NE)  porte S
-//   forge    6×4 (SO)  porte N    échoppe  6×4 (SE)  porte N
-const ROWS = [
-  '####################################',
-  '#..................................#',
-  '#..................................#',
-  '#........h................h........#',
-  '#........h................h........#',
-  '#........h.........................#',
-  '#..................................#',
-  '#...p..............................#',
-  '#...p.........................p....#',
-  '#..........pppppppppppppp..........#',
-  '#..........pppppppppppppp..........#',
-  '#..........pppppppppppppp..........#',
-  '#..........ppppppppppppppppppppppppD',
-  '#..........ppppppppppppppppppppppppD',
-  '#..........pppppppppppppp..........#',
-  '#..........pppppppppppppp..........#',
-  '#..........pppppppppppppp..........#',
-  '#...p............pp...........p....#',
-  '#................pp................#',
-  '#................pp................#',
-  '#........h.......pp.......h........#',
-  '#........h.......pp.......h........#',
-  '#................pp................#',
-  '#................pp................#',
-  '#................pp................#',
-  '#################DD#################',
-];
-
-export function makeHub() {
-  resetIds();
-  return scene({
-    id: 'arene-hub',
-    nom: 'Le Bourg de l’Arène',
-    description: 'Le bourg fortifié qui vit de son arène : taverne, chapelle, forge, échoppe — autour d’une place, et treize portes vers le sable.',
-    ambiance: 'exterieur',
-    music: { ambient: 'musique-ville' },
-    startMessage:
-      'LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Taverne (repos, repas, rations), chapelle (soins, bénédiction), forge (armes, réparations), échoppe (herbes, fournitures). La route de l’est part vers le monde (🗺️).',
-    rows: ROWS,
-    base: 'terre',
-    legend: { p: 'pave', h: 'herbe' },
-    // Bâtiments composés (toit + murs d'arête + porte + sol planchéié), abattus par `addBuilding`.
-    // Empreintes GÉNÉREUSES, implantées aux quatre coins autour de la place ; la porte (en CASE) est
-    // l'unique arête franchissable du périmètre, orientée VERS la place. Les 4 ont un INTÉRIEUR.
-    buildings: [
-      { id: 'taverne', type: 'taverne', foot: { x: 2, y: 2, w: 6, h: 5 }, door: { x: 4, y: 6 }, label: 'Taverne « Au Trophée »' },
-      { id: 'chapelle', type: 'chapelle', foot: { x: 28, y: 2, w: 6, h: 6 }, door: { x: 30, y: 7 }, label: 'Chapelle de Sigmar' },
-      { id: 'forge', type: 'forge', foot: { x: 2, y: 18, w: 6, h: 4 }, door: { x: 4, y: 18 }, label: 'Forge du Bourg' },
-      { id: 'echoppe', type: 'echoppe', foot: { x: 28, y: 18, w: 6, h: 4 }, door: { x: 30, y: 18 }, label: 'Échoppe « Le Bric-à-Broc »' },
-    ],
-    entities: [
-      hero(18, 15),
-      NPC('maitre', 17, 11, 'Maître d’arène', {
-        facing: 'S',
-        dialogueId: 'dlg-hub',
-        appearance: { species: 'Humains (Reiklander)', career: 'Répurgateur', sex: 'M', build: 0.62 },
-        weapon: 'Épée bâtarde',
-      }),
-      // Médecin : reste au BOURG, sous sa tente d'infirmerie (nord de la place) — soins & prothèses.
-      NPC('medecin', 22, 8, 'Médecin', {
-        facing: 'S',
-        dialogueId: 'dlg-medecin',
-        merchant: { archetype: 'medecin' },
-        appearance: { species: 'Humains (Reiklander)', career: 'Apothicaire', sex: 'M', build: 0.46 },
-      }),
-      NPC('garde', 18, 19, 'Garde du Bourg', {
-        facing: 'S',
-        dialogueId: 'dlg-garde',
-        appearance: { species: 'Humains (Reiklander)', career: 'Soldat', sex: 'M', build: 0.58 },
-        weapon: 'Hallebarde',
-      }),
-      NPC('villageoise', 14, 10, 'Villageoise', { facing: 'S', dialogueId: 'dlg-rumeurs', anim: 'standing', appearance: { career: 'Mendiant', sex: 'F' } }),
-      NPC('villageois-1', 21, 15, 'Villageois', { anim: 'standing', appearance: { career: 'Mendiant' } }),
-      NPC('villageois-2', 13, 15, 'Badaud', { anim: 'cowering', facing: 'E', appearance: { career: 'Bourgeois' } }),
-      // Place centrale : puits, coffre du maître, lampadaires
-      P(15, 13, 'puits'),
-      P(19, 10, 'coffre', { label: 'Le coffre du maître' }),
-      P(12, 9, 'lampadaire'),
-      P(23, 16, 'lampadaire'),
-      // Marché de la place (étals)
-      P(13, 12, 'etal-marche'),
-      P(22, 12, 'etal-marche'),
-      // Médecin : tente d'infirmerie (nord de la place)
-      P(21, 7, 'tente', { foot: { w: 2, h: 2 }, label: 'Infirmerie' }),
-      // Devant la taverne (NO) : cour à tonneaux + charrette
-      P(9, 3, 'tonneaux-pile'),
-      P(9, 5, 'charrette', { foot: { w: 2, h: 1 } }),
-      // Coin entraînement (ouest, hors place)
-      P(4, 10, 'mannequin'),
-      P(4, 12, 'rack-lances'),
-      P(2, 8, 'arbre'),
-      // Justice du Bourg (est de la place)
-      P(24, 10, 'gibet'),
-      P(20, 16, 'pilori'),
-      P(33, 10, 'arbre'),
-      // Devant la forge (SO)
-      P(9, 18, 'rack-armes'),
-      P(9, 20, 'abreuvoir', { foot: { w: 2, h: 1 } }),
-      // Devant l'échoppe (SE) : étals & bric-à-brac
-      P(25, 19, 'etal-marche'),
-      P(27, 20, 'buisson'),
-      // Porte sud (vers l'arène)
-      P(15, 24, 'palissade'),
-      P(20, 24, 'palissade'),
-      P(16, 22, 'panneau', { label: '« L’ARÈNE — treize portes, une gloire »' }),
-    ],
-    dialogues: [dlgHub, dlgMedecin, dlgGarde, dlgRumeurs],
-    triggers: [
-      // Intérieurs du Bourg : marcher sur la CASE DE PORTE d'un bâtiment transitionne vers sa scène ;
-      // la `sortie` de l'intérieur (transitionBack) ramène ici. L'auteur pose la porte (pas d'auto-magie) ;
-      // pas de `once` (ré-entrable), et transitionBack ne re-déclenche pas (transitionTo ≠ checkTriggers).
-      { id: 'entrer-taverne', rect: { x: 4, y: 6, w: 1, h: 1 }, flow: flowOf([{ type: 'transition', scene: 'arene-int-taverne', entry: 'entree' }]) },
-      { id: 'entrer-chapelle', rect: { x: 30, y: 7, w: 1, h: 1 }, flow: flowOf([{ type: 'transition', scene: 'arene-int-chapelle', entry: 'entree' }]) },
-      { id: 'entrer-forge', rect: { x: 4, y: 18, w: 1, h: 1 }, flow: flowOf([{ type: 'transition', scene: 'arene-int-forge', entry: 'entree' }]) },
-      { id: 'entrer-echoppe', rect: { x: 30, y: 18, w: 1, h: 1 }, flow: flowOf([{ type: 'transition', scene: 'arene-int-echoppe', entry: 'entree' }]) },
-      // Porte EST (la route) : franchir la porte ouvre la carte du monde — la sortie du Bourg EST le
-      // voyage (#T2). Posé sur les tuiles de porte (x35), pas sur l'entryPoint `route` (34,12) → pas de
-      // réouverture intempestive au retour de voyage.
-      { id: 'porte-route', rect: { x: 35, y: 12, w: 1, h: 2 }, flow: flowOf([{ type: 'openWorldMap' }]) },
-      // Porte SUD (l'arène) : on n'y entre que sur ordre du Maître — rappel in-world.
-      {
-        id: 'porte-arene-rappel',
-        rect: { x: 17, y: 24, w: 2, h: 1 },
-        flow: flowOf([{ type: 'journal', text: 'Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale).' }],),
-      },
-    ],
-    encounters: [],
-    entryPoints: { 'porte-arene': { x: 17, y: 24 }, route: { x: 34, y: 12 }, entree: { x: 18, y: 15 } },
-    flags: {},
-  });
-}
-
-// ── Intérieur : taverne « Au Trophée » ──────────────────────────────────────────────────────
-
-const TAVERNE_ROWS = [
-  '###############',
-  '#.............#',
-  '#.............#',
-  '#.............#',
-  '#.............#',
-  '#.............#',
-  '#.............#',
-  '#.............#',
-  '#.............#',
-  '#######D#######',
-];
-
 const dlgTaverne = {
   id: 'dlg-taverne',
   start: 'accueil',
@@ -441,67 +244,6 @@ const dlgTaverne = {
   ],
 };
 
-export function makeTaverne() {
-  resetIds();
-  return scene({
-    id: 'arene-int-taverne',
-    nom: 'Taverne « Au Trophée »',
-    description: 'La salle commune de la taverne du Bourg.',
-    ambiance: 'interieur',
-    music: { ambient: 'musique-taverne' },
-    startMessage: 'La salle du Trophée : feu, ragoût, rumeurs. La Tavernière vend des RATIONS pour la route.',
-    rows: TAVERNE_ROWS,
-    base: 'plancher',
-    entities: [
-      hero(7, 8),
-      NPC('taverniere', 7, 2, 'Tavernière', {
-        facing: 'S',
-        dialogueId: 'dlg-taverne',
-        merchant: { archetype: 'taverniere' },
-        appearance: { career: 'Bourgeois', sex: 'F', build: 0.55 },
-      }),
-      NPC('client-1', 3, 5, 'Client', { anim: 'feeding', facing: 'E', appearance: { species: 'Nains', career: 'Batelier' } }),
-      NPC('client-2', 11, 6, 'Habitué', { anim: 'standing', facing: 'O', appearance: { career: 'Mendiant' } }),
-      NPC('client-3', 4, 7, 'Buveur', { anim: 'standing', facing: 'E', appearance: { career: 'Soldat', sex: 'M' } }),
-      // Comptoir & âtre (nord)
-      P(2, 1, 'feu-camp', { label: 'Âtre' }),
-      P(9, 1, 'etagere'),
-      P(10, 1, 'tonneau'),
-      P(11, 1, 'tonneau'),
-      P(12, 1, 'crane-monstre', { label: 'LE Trophée' }),
-      // Salle : tables & tabourets
-      P(4, 4, 'tonneau', { label: 'Table' }),
-      P(10, 4, 'tonneau', { label: 'Table' }),
-      P(7, 6, 'tonneau', { label: 'Table' }),
-      // Réserve (coins)
-      P(2, 8, 'caisse'),
-      P(12, 8, 'tas-foin'),
-      P(2, 4, 'tas-foin'),
-    ],
-    dialogues: [dlgTaverne],
-    triggers: [{ id: 'sortie', rect: { x: 7, y: 9, w: 1, h: 1 }, flow: flowOf([{ type: 'transitionBack' }]) }],
-    encounters: [],
-    entryPoints: { entree: { x: 7, y: 8 } },
-    flags: {},
-  });
-}
-
-// ── Intérieur : chapelle de Sigmar ──────────────────────────────────────────────────────────
-
-const CHAPELLE_ROWS = [
-  '#############',
-  '#...........#',
-  '#...........#',
-  '#..mmmmmmm..#',
-  '#..mmmmmmm..#',
-  '#..mmmmmmm..#',
-  '#..mmmmmmm..#',
-  '#..mmmmmmm..#',
-  '#...........#',
-  '#...........#',
-  '######D######',
-];
-
 const dlgFrere = {
   id: 'dlg-frere',
   start: 'accueil',
@@ -552,145 +294,269 @@ const dlgFrere = {
   ],
 };
 
-export function makeChapelle() {
+const dlgGarde = {
+  id: 'dlg-garde',
+  start: 'accueil',
+  nodes: [
+    {
+      id: 'accueil',
+      speaker: 'Garde du Bourg',
+      text: 'L’arène est au sud, derrière la porte. La route de l’est mène à la Futaie, à la Tourbière et à Felsbach — si tu tiens à tes jambes, voyage de jour et le ventre plein.',
+      choices: [
+        { text: '« Rien à signaler ? »', next: 'signalements' },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
+      ],
+    },
+    {
+      id: 'signalements',
+      speaker: 'Garde du Bourg',
+      text: 'Il hausse les épaules. « Des hurlements dans la Futaie, la nuit. Et plus une lumière à Felsbach depuis un mois. Si tu veux mon avis : reste du bon côté de la palissade. »',
+      choices: [
+        { text: '« Merci du conseil. »', flow: flowOf([{ type: 'journal', text: 'Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois.' }, { type: 'endDialogue' }]) },
+        { text: '↩ Autre chose.', next: 'accueil' },
+      ],
+    },
+  ],
+};
+
+const dlgRumeurs = {
+  id: 'dlg-rumeurs',
+  start: 'accueil',
+  nodes: [
+    {
+      id: 'accueil',
+      speaker: 'Villageoise',
+      text: 'Vous êtes les nouveaux gladiateurs ? On parie sur vous au lavoir. Enfin… certains.',
+      choices: [
+        { text: '« Qu’est-ce qui se raconte ? »', next: 'lavoir' },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
+      ],
+    },
+    {
+      id: 'lavoir',
+      speaker: 'Villageoise',
+      text: 'Elle baisse la voix. « Le Maître garde un vieux coffre dont il a perdu la clef — il dit que c’est sans valeur, mais il dort dessus. Et passez voir Frère Anselm à la chapelle : il bénit ceux qui descendent sur le sable. »',
+      choices: [
+        { text: '« Intéressant… »', flow: flowOf([{ type: 'journal', text: 'Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat.' }, { type: 'endDialogue' }]) },
+        { text: '↩ Autre chose.', next: 'accueil' },
+      ],
+    },
+  ],
+};
+
+// ── La carte du Bourg (50×40, extérieur, TOUT-EN-SCÈNE) ──────────────────────────────────────
+// Une PLACE PAVÉE centrale (maître d'arène, puits, étals, tente du médecin) d'où RAYONNENT des rues
+// pavées vers les 4 bâtiments (aux 4 coins), la porte SUD (arène) et la porte EST (route/monde). Chaque
+// bâtiment est une GRANDE empreinte dont l'intérieur (sol peint ci-dessous + PNJ/marchand/props) tient
+// DEDANS ; le toit se lève en cutaway quand on entre. Les 4 empreintes (posées par `addBuilding`) :
+//   taverne  x3..17  y3..12  (15×10, NO) — porte S (10,12)
+//   chapelle x34..46 y3..13  (13×11, NE) — porte S (40,13)
+//   forge    x3..13  y27..35 (11×9,  SO) — porte N (8,27)
+//   échoppe  x36..46 y27..35 (11×9,  SE) — porte N (41,27)
+// La grille peint le SOL des intérieurs (`b`=plancher, `m`=marbre, `d`=dalle) — les bâtiments sont posés
+// avec `noFloor` pour préserver ce détail. Le reste : `p`=pavé (place+rues), `h`=herbe, base=terre.
+
+const W = 50;
+const H = 40;
+
+/** Rect inclusif [x0,x1]×[y0,y1] rempli d'un char (dans la grille). */
+function fillRect(grid, x0, y0, x1, y1, ch) {
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) grid[y][x] = ch;
+}
+
+function buildRows() {
+  // Base = terre ('.'), bordée d'une palissade '#'.
+  const grid = Array.from({ length: H }, () => new Array(W).fill('.'));
+  for (let x = 0; x < W; x++) { grid[0][x] = '#'; grid[H - 1][x] = '#'; }
+  for (let y = 0; y < H; y++) { grid[y][0] = '#'; grid[y][W - 1] = '#'; }
+
+  // Ceinture d'herbe autour de la place et aux abords des bâtiments (verdure de bourg).
+  fillRect(grid, 1, 1, W - 2, H - 2, 'h');
+
+  // Place pavée centrale.
+  fillRect(grid, 18, 14, 33, 26, 'p');
+  // Rues pavées reliant la place aux 4 portes de bâtiment + aux 2 portes de rempart.
+  fillRect(grid, 10, 12, 11, 15, 'p'); // vers la porte de la TAVERNE (10,12) — remonte à la place
+  fillRect(grid, 10, 14, 18, 15, 'p'); // rue NO → place
+  fillRect(grid, 40, 13, 41, 16, 'p'); // vers la porte de la CHAPELLE (40,13)
+  fillRect(grid, 33, 15, 41, 16, 'p'); // rue NE → place
+  fillRect(grid, 8, 24, 9, 27, 'p');   // vers la porte de la FORGE (8,27)
+  fillRect(grid, 8, 24, 18, 25, 'p');  // rue SO → place
+  fillRect(grid, 41, 24, 42, 27, 'p'); // vers la porte de l'ÉCHOPPE (41,27)
+  fillRect(grid, 33, 24, 42, 25, 'p'); // rue SE → place
+  fillRect(grid, 24, 26, 25, 38, 'p'); // rue SUD → porte de l'arène
+  fillRect(grid, 33, 19, 48, 20, 'p'); // rue EST → porte de la route
+
+  // Intérieurs : sol PEINT (le toit + les murs d'arête sont posés par addBuilding avec `noFloor`).
+  fillRect(grid, 3, 3, 17, 12, 'b');   // taverne : plancher
+  fillRect(grid, 3, 27, 13, 35, 'b');  // forge : plancher
+  fillRect(grid, 36, 27, 46, 35, 'b'); // échoppe : plancher
+  // Chapelle : nef de marbre centrale bordée de dalle.
+  fillRect(grid, 34, 3, 46, 13, 'd');  // dallage
+  fillRect(grid, 37, 5, 43, 11, 'm');  // nef de marbre
+
+  // Portes de rempart (tuiles `porte`).
+  grid[H - 1][24] = 'D'; grid[H - 1][25] = 'D'; // porte SUD (arène)
+  grid[19][W - 1] = 'D'; grid[20][W - 1] = 'D'; // porte EST (route)
+
+  return grid.map((r) => r.join(''));
+}
+
+const ROWS = buildRows();
+
+export function makeHub() {
   resetIds();
   return scene({
-    id: 'arene-int-chapelle',
-    nom: 'Chapelle de Sigmar',
-    description: 'La petite chapelle du Bourg — nef de marbre, autel à la comète.',
-    ambiance: 'interieur',
-    startMessage: 'La chapelle de Sigmar. Frère Anselm soigne les corps, bénit les âmes — et surveille son tronc.',
-    rows: CHAPELLE_ROWS,
-    base: 'dalle',
-    legend: { m: 'marbre' },
+    id: 'arene-hub',
+    nom: 'Le Bourg de l’Arène',
+    description: 'Le bourg fortifié qui vit de son arène : taverne, chapelle, forge, échoppe — quatre bâtiments GRANDS ouverts sur une place, et treize portes vers le sable.',
+    ambiance: 'exterieur',
+    music: { ambient: 'musique-ville' },
+    startMessage:
+      'LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Entrez dans la Taverne (repos, repas, rations), la Chapelle (soins, bénédiction), la Forge (armes, réparations) ou l’Échoppe (herbes, fournitures) — le toit se lève quand vous y pénétrez. La route de l’est part vers le monde (🗺️).',
+    rows: ROWS,
+    base: 'terre',
+    legend: { p: 'pave', h: 'herbe', b: 'plancher', m: 'marbre', d: 'dalle' },
+    // Bâtiments TOUT-EN-SCÈNE : toit (cutaway) + murs d'arête `mur-en-bois` + porte, posés par
+    // `addBuilding`. `noFloor` : le sol des intérieurs est déjà PEINT dans l'ASCII (préservé). La porte
+    // (en CASE) est l'unique arête franchissable, orientée VERS la place.
+    buildings: [
+      { id: 'taverne', type: 'taverne', foot: { x: 3, y: 3, w: 15, h: 10 }, door: { x: 10, y: 12 }, label: 'Taverne « Au Trophée »', noFloor: true },
+      { id: 'chapelle', type: 'chapelle', foot: { x: 34, y: 3, w: 13, h: 11 }, door: { x: 40, y: 13 }, label: 'Chapelle de Sigmar', noFloor: true },
+      { id: 'forge', type: 'forge', foot: { x: 3, y: 27, w: 11, h: 9 }, door: { x: 8, y: 27 }, label: 'Forge du Bourg', noFloor: true },
+      { id: 'echoppe', type: 'echoppe', foot: { x: 36, y: 27, w: 11, h: 9 }, door: { x: 41, y: 27 }, label: 'Échoppe « Le Bric-à-Broc »', noFloor: true },
+    ],
     entities: [
-      hero(6, 9),
-      NPC('frere', 6, 4, 'Frère Anselm', {
+      hero(24, 24),
+      // ── Place centrale ──────────────────────────────────────────────────────────────────────
+      NPC('maitre', 25, 20, 'Maître d’arène', {
+        facing: 'S',
+        dialogueId: 'dlg-hub',
+        appearance: { species: 'Humains (Reiklander)', career: 'Répurgateur', sex: 'M', build: 0.62 },
+        weapon: 'Épée bâtarde',
+      }),
+      NPC('garde', 25, 34, 'Garde du Bourg', {
+        facing: 'S',
+        dialogueId: 'dlg-garde',
+        appearance: { species: 'Humains (Reiklander)', career: 'Soldat', sex: 'M', build: 0.58 },
+        weapon: 'Hallebarde',
+      }),
+      NPC('villageoise', 21, 22, 'Villageoise', { facing: 'S', dialogueId: 'dlg-rumeurs', anim: 'standing', appearance: { career: 'Mendiant', sex: 'F' } }),
+      NPC('villageois-1', 30, 22, 'Villageois', { anim: 'standing', appearance: { career: 'Mendiant' } }),
+      NPC('villageois-2', 29, 17, 'Badaud', { anim: 'cowering', facing: 'E', appearance: { career: 'Bourgeois' } }),
+      P(20, 18, 'puits'),
+      P(28, 16, 'coffre', { label: 'Le coffre du maître' }),
+      P(19, 15, 'lampadaire'),
+      P(32, 25, 'lampadaire'),
+      P(22, 24, 'etal-marche'),
+      P(31, 19, 'etal-marche'),
+      P(22, 16, 'gibet'),
+      P(30, 24, 'pilori'),
+      // Médecin : sous sa tente d'infirmerie, au nord de la place (extérieur) — soins & prothèses.
+      NPC('medecin', 26, 15, 'Médecin', {
+        facing: 'S',
+        dialogueId: 'dlg-medecin',
+        merchant: { archetype: 'medecin' },
+        appearance: { species: 'Humains (Reiklander)', career: 'Apothicaire', sex: 'M', build: 0.46 },
+      }),
+      P(27, 14, 'tente', { foot: { w: 2, h: 2 }, label: 'Infirmerie' }),
+      // Coin entraînement (herbe, ouest de la place)
+      P(15, 20, 'mannequin'),
+      P(15, 22, 'rack-lances'),
+      // Panneau vers la porte de l'arène (sud)
+      P(23, 30, 'panneau', { label: '« L’ARÈNE — treize portes, une gloire »' }),
+      P(22, 38, 'palissade'),
+      P(27, 38, 'palissade'),
+
+      // ── Intérieur : TAVERNE « Au Trophée » (empreinte x3..17 y3..12) ──────────────────────────
+      NPC('taverniere', 9, 5, 'Tavernière', {
+        facing: 'S',
+        dialogueId: 'dlg-taverne',
+        merchant: { archetype: 'taverniere' },
+        appearance: { career: 'Bourgeois', sex: 'F', build: 0.55 },
+      }),
+      NPC('client-1', 5, 8, 'Client', { anim: 'feeding', facing: 'E', appearance: { species: 'Nains', career: 'Batelier' } }),
+      NPC('client-2', 14, 9, 'Habitué', { anim: 'standing', facing: 'O', appearance: { career: 'Mendiant' } }),
+      NPC('client-3', 6, 10, 'Buveur', { anim: 'standing', facing: 'E', appearance: { career: 'Soldat', sex: 'M' } }),
+      P(4, 4, 'feu-camp', { label: 'Âtre' }),
+      P(12, 4, 'etagere'),
+      P(13, 4, 'tonneau'),
+      P(14, 4, 'tonneau'),
+      P(15, 4, 'crane-monstre', { label: 'LE Trophée' }),
+      P(6, 7, 'tonneau', { label: 'Table' }),
+      P(12, 7, 'tonneau', { label: 'Table' }),
+      P(9, 9, 'tonneau', { label: 'Table' }),
+      P(4, 11, 'caisse'),
+      P(16, 11, 'tas-foin'),
+      P(4, 6, 'tas-foin'),
+
+      // ── Intérieur : CHAPELLE de Sigmar (empreinte x34..46 y3..13, nef de marbre) ──────────────
+      NPC('frere', 40, 5, 'Frère Anselm', {
         facing: 'S',
         dialogueId: 'dlg-frere',
         appearance: { species: 'Humains (Reiklander)', career: 'Prêtre', sex: 'M', build: 0.5 },
       }),
-      NPC('fidele', 4, 7, 'Fidèle en prière', { anim: 'cowering', facing: 'N', appearance: { career: 'Mendiant', sex: 'F' } }),
-      // Chœur (nord) : autel & chandeliers
-      P(6, 2, 'autel'),
-      P(4, 2, 'chandelier'),
-      P(8, 2, 'chandelier'),
-      // Nef : statue de Sigmar, urnes, braseros bordant l'allée
-      P(2, 5, 'statue', { label: 'Sigmar Heldenhammer' }),
-      P(10, 5, 'statue', { label: 'La Comète à deux queues' }),
-      P(2, 8, 'brasero'),
-      P(10, 8, 'brasero'),
-      P(3, 3, 'urne'),
-      P(9, 3, 'urne'),
-      // Tronc des offrandes (près de la sortie)
-      P(10, 9, 'coffre', { label: 'Tronc des offrandes' }),
-    ],
-    dialogues: [dlgFrere],
-    triggers: [{ id: 'sortie', rect: { x: 6, y: 10, w: 1, h: 1 }, flow: flowOf([{ type: 'transitionBack' }]) }],
-    encounters: [],
-    entryPoints: { entree: { x: 6, y: 9 } },
-    flags: {},
-  });
-}
+      NPC('fidele', 38, 10, 'Fidèle en prière', { anim: 'cowering', facing: 'N', appearance: { career: 'Mendiant', sex: 'F' } }),
+      P(40, 4, 'autel'),
+      P(38, 4, 'chandelier'),
+      P(42, 4, 'chandelier'),
+      P(35, 7, 'statue', { label: 'Sigmar Heldenhammer' }),
+      P(45, 7, 'statue', { label: 'La Comète à deux queues' }),
+      P(35, 11, 'brasero'),
+      P(45, 11, 'brasero'),
+      P(36, 5, 'urne'),
+      P(44, 5, 'urne'),
+      P(44, 12, 'coffre', { label: 'Tronc des offrandes' }),
 
-// ── Intérieur : forge du Bourg ────────────────────────────────────────────────────────────────
-
-export function makeForge() {
-  resetIds();
-  return scene({
-    id: 'arene-int-forge',
-    nom: 'Forge du Bourg',
-    description: 'L’atelier du forgeron nain — enclume, foyer rougeoyant, râteliers d’acier.',
-    ambiance: 'interieur',
-    music: { ambient: 'musique-ville' },
-    startMessage: 'LA FORGE. Le foyer ronfle, l’enclume sonne. Le Forgeron vend armes et armures, rachète et RÉPARE l’acier émoussé par le sable.',
-    rows: [
-      '###########',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#####D#####',
-    ],
-    base: 'plancher',
-    entities: [
-      hero(5, 7),
-      NPC('forgeron', 5, 2, 'Forgeron', {
-        facing: 'S',
+      // ── Intérieur : FORGE du Bourg (empreinte x3..13 y27..35) ─────────────────────────────────
+      NPC('forgeron', 8, 33, 'Forgeron', {
+        facing: 'N',
         dialogueId: 'dlg-forgeron',
         merchant: { archetype: 'armurier' },
         appearance: { species: 'Nains', career: 'Artisan', sex: 'M', build: 0.7 },
         weapon: 'Marteau de guerre',
       }),
-      NPC('apprenti', 8, 5, 'Apprenti', { anim: 'standing', facing: 'O', appearance: { career: 'Artisan', sex: 'M', build: 0.4 } }),
-      // Le foyer & l'établi (cœur de l'atelier)
-      P(2, 1, 'feu-camp', { label: 'Le foyer' }),
-      P(3, 3, 'etabli', { label: 'Établi & enclume' }),
-      P(2, 5, 'tonneau', { label: 'Cuve à trempe' }),
-      // Râteliers & réserve
-      P(8, 1, 'rack-armes'),
-      P(8, 2, 'rack-lances'),
-      P(8, 7, 'caisse'),
-      P(2, 7, 'tonneaux-pile'),
-    ],
-    dialogues: [dlgForgeron],
-    triggers: [{ id: 'sortie', rect: { x: 5, y: 8, w: 1, h: 1 }, flow: flowOf([{ type: 'transitionBack' }]) }],
-    encounters: [],
-    entryPoints: { entree: { x: 5, y: 7 } },
-    flags: {},
-  });
-}
+      NPC('apprenti', 11, 31, 'Apprenti', { anim: 'standing', facing: 'O', appearance: { career: 'Artisan', sex: 'M', build: 0.4 } }),
+      P(4, 28, 'feu-camp', { label: 'Le foyer' }),
+      P(6, 30, 'etabli', { label: 'Établi & enclume' }),
+      P(4, 32, 'tonneau', { label: 'Cuve à trempe' }),
+      P(12, 28, 'rack-armes'),
+      P(12, 29, 'rack-lances'),
+      P(12, 34, 'caisse'),
+      P(4, 34, 'tonneaux-pile'),
 
-// ── Intérieur : échoppe « Le Bric-à-Broc » ────────────────────────────────────────────────────
-
-export function makeEchoppe() {
-  resetIds();
-  return scene({
-    id: 'arene-int-echoppe',
-    nom: 'Échoppe « Le Bric-à-Broc »',
-    description: 'La boutique fourre-tout du Bourg — herbes, potions, cordages, torches et curiosités.',
-    ambiance: 'interieur',
-    music: { ambient: 'musique-ville' },
-    startMessage: 'L’ÉCHOPPE. Bocaux, fagots d’herbes et cordages du sol au plafond. L’Échoppière vend herbes, potions et fournitures pour la route.',
-    rows: [
-      '###########',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#.........#',
-      '#####D#####',
-    ],
-    base: 'plancher',
-    entities: [
-      hero(5, 7),
-      NPC('echoppiere', 5, 2, 'Échoppière', {
-        facing: 'S',
+      // ── Intérieur : ÉCHOPPE « Le Bric-à-Broc » (empreinte x36..46 y27..35) ────────────────────
+      NPC('echoppiere', 41, 33, 'Échoppière', {
+        facing: 'N',
         dialogueId: 'dlg-echoppier',
         merchant: { archetype: 'herboriste' },
         appearance: { career: 'Bourgeois', sex: 'F', build: 0.48 },
       }),
-      NPC('chaland', 8, 6, 'Chaland', { anim: 'standing', facing: 'O', appearance: { career: 'Mendiant' } }),
-      // Comptoir & étagères (nord)
-      P(2, 1, 'etal-marche', { label: 'Comptoir' }),
-      P(8, 1, 'etagere'),
-      P(3, 3, 'etagere'),
-      P(8, 3, 'etagere'),
-      // Marchandises : tonneaux, caisses, bric-à-brac
-      P(2, 5, 'tonneau'),
-      P(8, 5, 'caisse'),
-      P(2, 7, 'caisse'),
-      P(8, 7, 'tonneaux-pile'),
+      NPC('chaland', 44, 32, 'Chaland', { anim: 'standing', facing: 'O', appearance: { career: 'Mendiant' } }),
+      P(37, 28, 'etal-marche', { label: 'Comptoir' }),
+      P(45, 28, 'etagere'),
+      P(38, 30, 'etagere'),
+      P(45, 30, 'etagere'),
+      P(37, 32, 'tonneau'),
+      P(45, 34, 'caisse'),
+      P(37, 34, 'caisse'),
+      P(45, 32, 'tonneaux-pile'),
     ],
-    dialogues: [dlgEchoppier],
-    triggers: [{ id: 'sortie', rect: { x: 5, y: 8, w: 1, h: 1 }, flow: flowOf([{ type: 'transitionBack' }]) }],
+    dialogues: [dlgHub, dlgMedecin, dlgGarde, dlgRumeurs, dlgTaverne, dlgFrere, dlgForgeron, dlgEchoppier],
+    triggers: [
+      // Porte EST (la route) : franchir la porte ouvre la carte du monde — la sortie du Bourg EST le
+      // voyage (#T2). Posé sur les tuiles de porte (x49), pas sur l'entryPoint `route` → pas de
+      // réouverture intempestive au retour de voyage.
+      { id: 'porte-route', rect: { x: 49, y: 19, w: 1, h: 2 }, flow: flowOf([{ type: 'openWorldMap' }]) },
+      // Porte SUD (l'arène) : on n'y entre que sur ordre du Maître — rappel in-world.
+      {
+        id: 'porte-arene-rappel',
+        rect: { x: 24, y: 38, w: 2, h: 1 },
+        flow: flowOf([{ type: 'journal', text: 'Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale).' }]),
+      },
+    ],
     encounters: [],
-    entryPoints: { entree: { x: 5, y: 7 } },
+    entryPoints: { 'porte-arene': { x: 24, y: 37 }, route: { x: 48, y: 20 }, entree: { x: 24, y: 24 } },
     flags: {},
   });
 }

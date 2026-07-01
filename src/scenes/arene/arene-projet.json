@@ -688,10 +688,10 @@
   {
    "id": "arene-hub",
    "nom": "Le Bourg de l’Arène",
-   "description": "Le bourg fortifié qui vit de son arène : taverne, chapelle, forge, échoppe — autour d’une place, et treize portes vers le sable.",
+   "description": "Le bourg fortifié qui vit de son arène : taverne, chapelle, forge, échoppe — quatre bâtiments GRANDS ouverts sur une place, et treize portes vers le sable.",
    "dimensions": {
-    "w": 36,
-    "h": 26
+    "w": 50,
+    "h": 40
    },
    "ambiance": "exterieur",
    "layers": [
@@ -735,412 +735,944 @@
       "mur",
       "mur",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "mur",
       "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "terre",
       "mur",
       "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "herbe",
-      "terre",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
       "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "herbe",
-      "terre",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
       "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "terre",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
       "mur",
       "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
-      "terre",
+      "dalle",
+      "herbe",
+      "herbe",
       "mur",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
       "mur",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
       "mur",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
       "mur",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
       "mur",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
       "pave",
       "pave",
       "pave",
@@ -1167,16 +1699,30 @@
       "pave",
       "porte",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
       "pave",
       "pave",
       "pave",
@@ -1203,400 +1749,911 @@
       "pave",
       "porte",
       "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
       "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "herbe",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
       "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "herbe",
-      "terre",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
       "pave",
       "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "pave",
       "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "mur",
-      "mur",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "pave",
       "pave",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "plancher",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "pave",
+      "pave",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "mur",
       "mur",
       "mur",
@@ -1617,6 +2674,13 @@
       "mur",
       "porte",
       "porte",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "mur",
       "mur",
       "mur",
@@ -1642,16 +2706,16 @@
      "id": "start",
      "kind": "heroStart",
      "pos": {
-      "x": 18,
-      "y": 15
+      "x": 24,
+      "y": 24
      }
     },
     {
      "id": "maitre",
      "kind": "personnage",
      "pos": {
-      "x": 17,
-      "y": 11
+      "x": 25,
+      "y": 20
      },
      "label": "Maître d’arène",
      "facing": "S",
@@ -1665,31 +2729,11 @@
      "weapon": "Épée bâtarde"
     },
     {
-     "id": "medecin",
-     "kind": "personnage",
-     "pos": {
-      "x": 22,
-      "y": 8
-     },
-     "label": "Médecin",
-     "facing": "S",
-     "dialogueId": "dlg-medecin",
-     "merchant": {
-      "archetype": "medecin"
-     },
-     "appearance": {
-      "species": "Humains (Reiklander)",
-      "career": "Apothicaire",
-      "sex": "M",
-      "build": 0.46
-     }
-    },
-    {
      "id": "garde",
      "kind": "personnage",
      "pos": {
-      "x": 18,
-      "y": 19
+      "x": 25,
+      "y": 34
      },
      "label": "Garde du Bourg",
      "facing": "S",
@@ -1706,8 +2750,8 @@
      "id": "villageoise",
      "kind": "personnage",
      "pos": {
-      "x": 14,
-      "y": 10
+      "x": 21,
+      "y": 22
      },
      "label": "Villageoise",
      "facing": "S",
@@ -1722,8 +2766,8 @@
      "id": "villageois-1",
      "kind": "personnage",
      "pos": {
-      "x": 21,
-      "y": 15
+      "x": 30,
+      "y": 22
      },
      "label": "Villageois",
      "anim": "standing",
@@ -1735,8 +2779,8 @@
      "id": "villageois-2",
      "kind": "personnage",
      "pos": {
-      "x": 13,
-      "y": 15
+      "x": 29,
+      "y": 17
      },
      "label": "Badaud",
      "anim": "cowering",
@@ -1749,8 +2793,8 @@
      "id": "p0",
      "kind": "prop",
      "pos": {
-      "x": 15,
-      "y": 13
+      "x": 20,
+      "y": 18
      },
      "ref": "puits"
     },
@@ -1758,8 +2802,8 @@
      "id": "p1",
      "kind": "prop",
      "pos": {
-      "x": 19,
-      "y": 10
+      "x": 28,
+      "y": 16
      },
      "ref": "coffre",
      "label": "Le coffre du maître"
@@ -1768,8 +2812,8 @@
      "id": "p2",
      "kind": "prop",
      "pos": {
-      "x": 12,
-      "y": 9
+      "x": 19,
+      "y": 15
      },
      "ref": "lampadaire"
     },
@@ -1777,8 +2821,8 @@
      "id": "p3",
      "kind": "prop",
      "pos": {
-      "x": 23,
-      "y": 16
+      "x": 32,
+      "y": 25
      },
      "ref": "lampadaire"
     },
@@ -1786,8 +2830,8 @@
      "id": "p4",
      "kind": "prop",
      "pos": {
-      "x": 13,
-      "y": 12
+      "x": 22,
+      "y": 24
      },
      "ref": "etal-marche"
     },
@@ -1795,8 +2839,8 @@
      "id": "p5",
      "kind": "prop",
      "pos": {
-      "x": 22,
-      "y": 12
+      "x": 31,
+      "y": 19
      },
      "ref": "etal-marche"
     },
@@ -1804,8 +2848,46 @@
      "id": "p6",
      "kind": "prop",
      "pos": {
-      "x": 21,
-      "y": 7
+      "x": 22,
+      "y": 16
+     },
+     "ref": "gibet"
+    },
+    {
+     "id": "p7",
+     "kind": "prop",
+     "pos": {
+      "x": 30,
+      "y": 24
+     },
+     "ref": "pilori"
+    },
+    {
+     "id": "medecin",
+     "kind": "personnage",
+     "pos": {
+      "x": 26,
+      "y": 15
+     },
+     "label": "Médecin",
+     "facing": "S",
+     "dialogueId": "dlg-medecin",
+     "merchant": {
+      "archetype": "medecin"
+     },
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Apothicaire",
+      "sex": "M",
+      "build": 0.46
+     }
+    },
+    {
+     "id": "p8",
+     "kind": "prop",
+     "pos": {
+      "x": 27,
+      "y": 14
      },
      "ref": "tente",
      "foot": {
@@ -1815,33 +2897,11 @@
      "label": "Infirmerie"
     },
     {
-     "id": "p7",
-     "kind": "prop",
-     "pos": {
-      "x": 9,
-      "y": 3
-     },
-     "ref": "tonneaux-pile"
-    },
-    {
-     "id": "p8",
-     "kind": "prop",
-     "pos": {
-      "x": 9,
-      "y": 5
-     },
-     "ref": "charrette",
-     "foot": {
-      "w": 2,
-      "h": 1
-     }
-    },
-    {
      "id": "p9",
      "kind": "prop",
      "pos": {
-      "x": 4,
-      "y": 10
+      "x": 15,
+      "y": 20
      },
      "ref": "mannequin"
     },
@@ -1849,8 +2909,8 @@
      "id": "p10",
      "kind": "prop",
      "pos": {
-      "x": 4,
-      "y": 12
+      "x": 15,
+      "y": 22
      },
      "ref": "rack-lances"
     },
@@ -1858,105 +2918,530 @@
      "id": "p11",
      "kind": "prop",
      "pos": {
-      "x": 2,
-      "y": 8
+      "x": 23,
+      "y": 30
      },
-     "ref": "arbre"
+     "ref": "panneau",
+     "label": "« L’ARÈNE — treize portes, une gloire »"
     },
     {
      "id": "p12",
      "kind": "prop",
      "pos": {
-      "x": 24,
-      "y": 10
+      "x": 22,
+      "y": 38
      },
-     "ref": "gibet"
+     "ref": "palissade"
     },
     {
      "id": "p13",
      "kind": "prop",
      "pos": {
-      "x": 20,
-      "y": 16
+      "x": 27,
+      "y": 38
      },
-     "ref": "pilori"
+     "ref": "palissade"
+    },
+    {
+     "id": "taverniere",
+     "kind": "personnage",
+     "pos": {
+      "x": 9,
+      "y": 5
+     },
+     "label": "Tavernière",
+     "facing": "S",
+     "dialogueId": "dlg-taverne",
+     "merchant": {
+      "archetype": "taverniere"
+     },
+     "appearance": {
+      "career": "Bourgeois",
+      "sex": "F",
+      "build": 0.55
+     }
+    },
+    {
+     "id": "client-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 5,
+      "y": 8
+     },
+     "label": "Client",
+     "anim": "feeding",
+     "facing": "E",
+     "appearance": {
+      "species": "Nains",
+      "career": "Batelier"
+     }
+    },
+    {
+     "id": "client-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 9
+     },
+     "label": "Habitué",
+     "anim": "standing",
+     "facing": "O",
+     "appearance": {
+      "career": "Mendiant"
+     }
+    },
+    {
+     "id": "client-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 6,
+      "y": 10
+     },
+     "label": "Buveur",
+     "anim": "standing",
+     "facing": "E",
+     "appearance": {
+      "career": "Soldat",
+      "sex": "M"
+     }
     },
     {
      "id": "p14",
      "kind": "prop",
      "pos": {
-      "x": 33,
-      "y": 10
+      "x": 4,
+      "y": 4
      },
-     "ref": "arbre"
+     "ref": "feu-camp",
+     "label": "Âtre"
     },
     {
      "id": "p15",
      "kind": "prop",
      "pos": {
-      "x": 9,
-      "y": 18
+      "x": 12,
+      "y": 4
      },
-     "ref": "rack-armes"
+     "ref": "etagere"
     },
     {
      "id": "p16",
      "kind": "prop",
      "pos": {
-      "x": 9,
-      "y": 20
+      "x": 13,
+      "y": 4
      },
-     "ref": "abreuvoir",
-     "foot": {
-      "w": 2,
-      "h": 1
-     }
+     "ref": "tonneau"
     },
     {
      "id": "p17",
      "kind": "prop",
      "pos": {
-      "x": 25,
-      "y": 19
+      "x": 14,
+      "y": 4
      },
-     "ref": "etal-marche"
+     "ref": "tonneau"
     },
     {
      "id": "p18",
      "kind": "prop",
      "pos": {
-      "x": 27,
-      "y": 20
+      "x": 15,
+      "y": 4
      },
-     "ref": "buisson"
+     "ref": "crane-monstre",
+     "label": "LE Trophée"
     },
     {
      "id": "p19",
      "kind": "prop",
      "pos": {
-      "x": 15,
-      "y": 24
+      "x": 6,
+      "y": 7
      },
-     "ref": "palissade"
+     "ref": "tonneau",
+     "label": "Table"
     },
     {
      "id": "p20",
      "kind": "prop",
      "pos": {
-      "x": 20,
-      "y": 24
+      "x": 12,
+      "y": 7
      },
-     "ref": "palissade"
+     "ref": "tonneau",
+     "label": "Table"
     },
     {
      "id": "p21",
      "kind": "prop",
      "pos": {
-      "x": 16,
-      "y": 22
+      "x": 9,
+      "y": 9
      },
-     "ref": "panneau",
-     "label": "« L’ARÈNE — treize portes, une gloire »"
+     "ref": "tonneau",
+     "label": "Table"
+    },
+    {
+     "id": "p22",
+     "kind": "prop",
+     "pos": {
+      "x": 4,
+      "y": 11
+     },
+     "ref": "caisse"
+    },
+    {
+     "id": "p23",
+     "kind": "prop",
+     "pos": {
+      "x": 16,
+      "y": 11
+     },
+     "ref": "tas-foin"
+    },
+    {
+     "id": "p24",
+     "kind": "prop",
+     "pos": {
+      "x": 4,
+      "y": 6
+     },
+     "ref": "tas-foin"
+    },
+    {
+     "id": "frere",
+     "kind": "personnage",
+     "pos": {
+      "x": 40,
+      "y": 5
+     },
+     "label": "Frère Anselm",
+     "facing": "S",
+     "dialogueId": "dlg-frere",
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Prêtre",
+      "sex": "M",
+      "build": 0.5
+     }
+    },
+    {
+     "id": "fidele",
+     "kind": "personnage",
+     "pos": {
+      "x": 38,
+      "y": 10
+     },
+     "label": "Fidèle en prière",
+     "anim": "cowering",
+     "facing": "N",
+     "appearance": {
+      "career": "Mendiant",
+      "sex": "F"
+     }
+    },
+    {
+     "id": "p25",
+     "kind": "prop",
+     "pos": {
+      "x": 40,
+      "y": 4
+     },
+     "ref": "autel"
+    },
+    {
+     "id": "p26",
+     "kind": "prop",
+     "pos": {
+      "x": 38,
+      "y": 4
+     },
+     "ref": "chandelier"
+    },
+    {
+     "id": "p27",
+     "kind": "prop",
+     "pos": {
+      "x": 42,
+      "y": 4
+     },
+     "ref": "chandelier"
+    },
+    {
+     "id": "p28",
+     "kind": "prop",
+     "pos": {
+      "x": 35,
+      "y": 7
+     },
+     "ref": "statue",
+     "label": "Sigmar Heldenhammer"
+    },
+    {
+     "id": "p29",
+     "kind": "prop",
+     "pos": {
+      "x": 45,
+      "y": 7
+     },
+     "ref": "statue",
+     "label": "La Comète à deux queues"
+    },
+    {
+     "id": "p30",
+     "kind": "prop",
+     "pos": {
+      "x": 35,
+      "y": 11
+     },
+     "ref": "brasero"
+    },
+    {
+     "id": "p31",
+     "kind": "prop",
+     "pos": {
+      "x": 45,
+      "y": 11
+     },
+     "ref": "brasero"
+    },
+    {
+     "id": "p32",
+     "kind": "prop",
+     "pos": {
+      "x": 36,
+      "y": 5
+     },
+     "ref": "urne"
+    },
+    {
+     "id": "p33",
+     "kind": "prop",
+     "pos": {
+      "x": 44,
+      "y": 5
+     },
+     "ref": "urne"
+    },
+    {
+     "id": "p34",
+     "kind": "prop",
+     "pos": {
+      "x": 44,
+      "y": 12
+     },
+     "ref": "coffre",
+     "label": "Tronc des offrandes"
+    },
+    {
+     "id": "forgeron",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 33
+     },
+     "label": "Forgeron",
+     "facing": "N",
+     "dialogueId": "dlg-forgeron",
+     "merchant": {
+      "archetype": "armurier"
+     },
+     "appearance": {
+      "species": "Nains",
+      "career": "Artisan",
+      "sex": "M",
+      "build": 0.7
+     },
+     "weapon": "Marteau de guerre"
+    },
+    {
+     "id": "apprenti",
+     "kind": "personnage",
+     "pos": {
+      "x": 11,
+      "y": 31
+     },
+     "label": "Apprenti",
+     "anim": "standing",
+     "facing": "O",
+     "appearance": {
+      "career": "Artisan",
+      "sex": "M",
+      "build": 0.4
+     }
+    },
+    {
+     "id": "p35",
+     "kind": "prop",
+     "pos": {
+      "x": 4,
+      "y": 28
+     },
+     "ref": "feu-camp",
+     "label": "Le foyer"
+    },
+    {
+     "id": "p36",
+     "kind": "prop",
+     "pos": {
+      "x": 6,
+      "y": 30
+     },
+     "ref": "etabli",
+     "label": "Établi & enclume"
+    },
+    {
+     "id": "p37",
+     "kind": "prop",
+     "pos": {
+      "x": 4,
+      "y": 32
+     },
+     "ref": "tonneau",
+     "label": "Cuve à trempe"
+    },
+    {
+     "id": "p38",
+     "kind": "prop",
+     "pos": {
+      "x": 12,
+      "y": 28
+     },
+     "ref": "rack-armes"
+    },
+    {
+     "id": "p39",
+     "kind": "prop",
+     "pos": {
+      "x": 12,
+      "y": 29
+     },
+     "ref": "rack-lances"
+    },
+    {
+     "id": "p40",
+     "kind": "prop",
+     "pos": {
+      "x": 12,
+      "y": 34
+     },
+     "ref": "caisse"
+    },
+    {
+     "id": "p41",
+     "kind": "prop",
+     "pos": {
+      "x": 4,
+      "y": 34
+     },
+     "ref": "tonneaux-pile"
+    },
+    {
+     "id": "echoppiere",
+     "kind": "personnage",
+     "pos": {
+      "x": 41,
+      "y": 33
+     },
+     "label": "Échoppière",
+     "facing": "N",
+     "dialogueId": "dlg-echoppier",
+     "merchant": {
+      "archetype": "herboriste"
+     },
+     "appearance": {
+      "career": "Bourgeois",
+      "sex": "F",
+      "build": 0.48
+     }
+    },
+    {
+     "id": "chaland",
+     "kind": "personnage",
+     "pos": {
+      "x": 44,
+      "y": 32
+     },
+     "label": "Chaland",
+     "anim": "standing",
+     "facing": "O",
+     "appearance": {
+      "career": "Mendiant"
+     }
+    },
+    {
+     "id": "p42",
+     "kind": "prop",
+     "pos": {
+      "x": 37,
+      "y": 28
+     },
+     "ref": "etal-marche",
+     "label": "Comptoir"
+    },
+    {
+     "id": "p43",
+     "kind": "prop",
+     "pos": {
+      "x": 45,
+      "y": 28
+     },
+     "ref": "etagere"
+    },
+    {
+     "id": "p44",
+     "kind": "prop",
+     "pos": {
+      "x": 38,
+      "y": 30
+     },
+     "ref": "etagere"
+    },
+    {
+     "id": "p45",
+     "kind": "prop",
+     "pos": {
+      "x": 45,
+      "y": 30
+     },
+     "ref": "etagere"
+    },
+    {
+     "id": "p46",
+     "kind": "prop",
+     "pos": {
+      "x": 37,
+      "y": 32
+     },
+     "ref": "tonneau"
+    },
+    {
+     "id": "p47",
+     "kind": "prop",
+     "pos": {
+      "x": 45,
+      "y": 34
+     },
+     "ref": "caisse"
+    },
+    {
+     "id": "p48",
+     "kind": "prop",
+     "pos": {
+      "x": 37,
+      "y": 34
+     },
+     "ref": "caisse"
+    },
+    {
+     "id": "p49",
+     "kind": "prop",
+     "pos": {
+      "x": 45,
+      "y": 32
+     },
+     "ref": "tonneaux-pile"
     }
    ],
    "dialogues": [
@@ -2804,1071 +4289,7 @@
        ]
       }
      ]
-    }
-   ],
-   "triggers": [
-    {
-     "id": "entrer-taverne",
-     "rect": {
-      "x": 4,
-      "y": 6,
-      "w": 1,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transition",
-         "scene": "arene-int-taverne",
-         "entry": "entree"
-        }
-       }
-      ]
-     }
     },
-    {
-     "id": "entrer-chapelle",
-     "rect": {
-      "x": 30,
-      "y": 7,
-      "w": 1,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transition",
-         "scene": "arene-int-chapelle",
-         "entry": "entree"
-        }
-       }
-      ]
-     }
-    },
-    {
-     "id": "entrer-forge",
-     "rect": {
-      "x": 4,
-      "y": 18,
-      "w": 1,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transition",
-         "scene": "arene-int-forge",
-         "entry": "entree"
-        }
-       }
-      ]
-     }
-    },
-    {
-     "id": "entrer-echoppe",
-     "rect": {
-      "x": 30,
-      "y": 18,
-      "w": 1,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transition",
-         "scene": "arene-int-echoppe",
-         "entry": "entree"
-        }
-       }
-      ]
-     }
-    },
-    {
-     "id": "porte-route",
-     "rect": {
-      "x": 35,
-      "y": 12,
-      "w": 1,
-      "h": 2
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "openWorldMap"
-        }
-       }
-      ]
-     }
-    },
-    {
-     "id": "porte-arene-rappel",
-     "rect": {
-      "x": 17,
-      "y": 24,
-      "w": 2,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "journal",
-         "text": "Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale)."
-        }
-       }
-      ]
-     }
-    }
-   ],
-   "encounters": [],
-   "flags": {},
-   "music": {
-    "ambient": "musique-ville"
-   },
-   "startMessage": "LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Taverne (repos, repas, rations), chapelle (soins, bénédiction), forge (armes, réparations), échoppe (herbes, fournitures). La route de l’est part vers le monde (🗺️).",
-   "roofs": [
-    {
-     "id": "taverne",
-     "foot": {
-      "x": 2,
-      "y": 2,
-      "w": 6,
-      "h": 5
-     },
-     "style": "taverne",
-     "label": "Taverne « Au Trophée »"
-    },
-    {
-     "id": "chapelle",
-     "foot": {
-      "x": 28,
-      "y": 2,
-      "w": 6,
-      "h": 6
-     },
-     "style": "chapelle",
-     "label": "Chapelle de Sigmar"
-    },
-    {
-     "id": "forge",
-     "foot": {
-      "x": 2,
-      "y": 18,
-      "w": 6,
-      "h": 4
-     },
-     "style": "forge",
-     "label": "Forge du Bourg"
-    },
-    {
-     "id": "echoppe",
-     "foot": {
-      "x": 28,
-      "y": 18,
-      "w": 6,
-      "h": 4
-     },
-     "style": "echoppe",
-     "label": "Échoppe « Le Bric-à-Broc »"
-    }
-   ],
-   "walls": [
-    {
-     "x": 2,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 2,
-     "y": 7,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 3,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 3,
-     "y": 7,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 4,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 4,
-     "y": 7,
-     "side": "N",
-     "door": true
-    },
-    {
-     "x": 5,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 5,
-     "y": 7,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 6,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 6,
-     "y": 7,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 7,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 2,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 2,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 4,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 4,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 5,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 5,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 6,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 6,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 28,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 28,
-     "y": 8,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 29,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 29,
-     "y": 8,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 30,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 30,
-     "y": 8,
-     "side": "N",
-     "door": true
-    },
-    {
-     "x": 31,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 31,
-     "y": 8,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 32,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 32,
-     "y": 8,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 8,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 2,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 2,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 4,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 4,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 5,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 5,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 6,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 6,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 7,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 7,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 2,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 2,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 3,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 3,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 4,
-     "y": 18,
-     "side": "N",
-     "door": true
-    },
-    {
-     "x": 4,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 5,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 5,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 6,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 6,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 18,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 18,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 19,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 19,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 20,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 20,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 1,
-     "y": 21,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 21,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 28,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 28,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 29,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 29,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 30,
-     "y": 18,
-     "side": "N",
-     "door": true
-    },
-    {
-     "x": 30,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 31,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 31,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 32,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 32,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 22,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 18,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 18,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 19,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 19,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 20,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 20,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 21,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 33,
-     "y": 21,
-     "side": "E",
-     "structure": "mur-en-bois"
-    }
-   ],
-   "entryPoints": {
-    "porte-arene": {
-     "x": 17,
-     "y": 24
-    },
-    "route": {
-     "x": 34,
-     "y": 12
-    },
-    "entree": {
-     "x": 18,
-     "y": 15
-    }
-   },
-   "rest": {
-    "auberge": true
-   }
-  },
-  {
-   "id": "arene-int-taverne",
-   "nom": "Taverne « Au Trophée »",
-   "description": "La salle commune de la taverne du Bourg.",
-   "dimensions": {
-    "w": 15,
-    "h": 10
-   },
-   "ambiance": "interieur",
-   "layers": [
-    {
-     "z": 0,
-     "tiles": [
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "porte",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur"
-     ]
-    }
-   ],
-   "entities": [
-    {
-     "id": "start",
-     "kind": "heroStart",
-     "pos": {
-      "x": 7,
-      "y": 8
-     }
-    },
-    {
-     "id": "taverniere",
-     "kind": "personnage",
-     "pos": {
-      "x": 7,
-      "y": 2
-     },
-     "label": "Tavernière",
-     "facing": "S",
-     "dialogueId": "dlg-taverne",
-     "merchant": {
-      "archetype": "taverniere"
-     },
-     "appearance": {
-      "career": "Bourgeois",
-      "sex": "F",
-      "build": 0.55
-     }
-    },
-    {
-     "id": "client-1",
-     "kind": "personnage",
-     "pos": {
-      "x": 3,
-      "y": 5
-     },
-     "label": "Client",
-     "anim": "feeding",
-     "facing": "E",
-     "appearance": {
-      "species": "Nains",
-      "career": "Batelier"
-     }
-    },
-    {
-     "id": "client-2",
-     "kind": "personnage",
-     "pos": {
-      "x": 11,
-      "y": 6
-     },
-     "label": "Habitué",
-     "anim": "standing",
-     "facing": "O",
-     "appearance": {
-      "career": "Mendiant"
-     }
-    },
-    {
-     "id": "client-3",
-     "kind": "personnage",
-     "pos": {
-      "x": 4,
-      "y": 7
-     },
-     "label": "Buveur",
-     "anim": "standing",
-     "facing": "E",
-     "appearance": {
-      "career": "Soldat",
-      "sex": "M"
-     }
-    },
-    {
-     "id": "p0",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 1
-     },
-     "ref": "feu-camp",
-     "label": "Âtre"
-    },
-    {
-     "id": "p1",
-     "kind": "prop",
-     "pos": {
-      "x": 9,
-      "y": 1
-     },
-     "ref": "etagere"
-    },
-    {
-     "id": "p2",
-     "kind": "prop",
-     "pos": {
-      "x": 10,
-      "y": 1
-     },
-     "ref": "tonneau"
-    },
-    {
-     "id": "p3",
-     "kind": "prop",
-     "pos": {
-      "x": 11,
-      "y": 1
-     },
-     "ref": "tonneau"
-    },
-    {
-     "id": "p4",
-     "kind": "prop",
-     "pos": {
-      "x": 12,
-      "y": 1
-     },
-     "ref": "crane-monstre",
-     "label": "LE Trophée"
-    },
-    {
-     "id": "p5",
-     "kind": "prop",
-     "pos": {
-      "x": 4,
-      "y": 4
-     },
-     "ref": "tonneau",
-     "label": "Table"
-    },
-    {
-     "id": "p6",
-     "kind": "prop",
-     "pos": {
-      "x": 10,
-      "y": 4
-     },
-     "ref": "tonneau",
-     "label": "Table"
-    },
-    {
-     "id": "p7",
-     "kind": "prop",
-     "pos": {
-      "x": 7,
-      "y": 6
-     },
-     "ref": "tonneau",
-     "label": "Table"
-    },
-    {
-     "id": "p8",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 8
-     },
-     "ref": "caisse"
-    },
-    {
-     "id": "p9",
-     "kind": "prop",
-     "pos": {
-      "x": 12,
-      "y": 8
-     },
-     "ref": "tas-foin"
-    },
-    {
-     "id": "p10",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 4
-     },
-     "ref": "tas-foin"
-    }
-   ],
-   "dialogues": [
     {
      "id": "dlg-taverne",
      "start": "accueil",
@@ -4036,341 +4457,7 @@
        ]
       }
      ]
-    }
-   ],
-   "triggers": [
-    {
-     "id": "sortie",
-     "rect": {
-      "x": 7,
-      "y": 9,
-      "w": 1,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transitionBack"
-        }
-       }
-      ]
-     }
-    }
-   ],
-   "encounters": [],
-   "flags": {},
-   "music": {
-    "ambient": "musique-taverne"
-   },
-   "startMessage": "La salle du Trophée : feu, ragoût, rumeurs. La Tavernière vend des RATIONS pour la route.",
-   "entryPoints": {
-    "entree": {
-     "x": 7,
-     "y": 8
-    }
-   },
-   "rest": {
-    "auberge": true
-   }
-  },
-  {
-   "id": "arene-int-chapelle",
-   "nom": "Chapelle de Sigmar",
-   "description": "La petite chapelle du Bourg — nef de marbre, autel à la comète.",
-   "dimensions": {
-    "w": 13,
-    "h": 11
-   },
-   "ambiance": "interieur",
-   "layers": [
-    {
-     "z": 0,
-     "tiles": [
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "porte",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur"
-     ]
-    }
-   ],
-   "entities": [
-    {
-     "id": "start",
-     "kind": "heroStart",
-     "pos": {
-      "x": 6,
-      "y": 9
-     }
     },
-    {
-     "id": "frere",
-     "kind": "personnage",
-     "pos": {
-      "x": 6,
-      "y": 4
-     },
-     "label": "Frère Anselm",
-     "facing": "S",
-     "dialogueId": "dlg-frere",
-     "appearance": {
-      "species": "Humains (Reiklander)",
-      "career": "Prêtre",
-      "sex": "M",
-      "build": 0.5
-     }
-    },
-    {
-     "id": "fidele",
-     "kind": "personnage",
-     "pos": {
-      "x": 4,
-      "y": 7
-     },
-     "label": "Fidèle en prière",
-     "anim": "cowering",
-     "facing": "N",
-     "appearance": {
-      "career": "Mendiant",
-      "sex": "F"
-     }
-    },
-    {
-     "id": "p0",
-     "kind": "prop",
-     "pos": {
-      "x": 6,
-      "y": 2
-     },
-     "ref": "autel"
-    },
-    {
-     "id": "p1",
-     "kind": "prop",
-     "pos": {
-      "x": 4,
-      "y": 2
-     },
-     "ref": "chandelier"
-    },
-    {
-     "id": "p2",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 2
-     },
-     "ref": "chandelier"
-    },
-    {
-     "id": "p3",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 5
-     },
-     "ref": "statue",
-     "label": "Sigmar Heldenhammer"
-    },
-    {
-     "id": "p4",
-     "kind": "prop",
-     "pos": {
-      "x": 10,
-      "y": 5
-     },
-     "ref": "statue",
-     "label": "La Comète à deux queues"
-    },
-    {
-     "id": "p5",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 8
-     },
-     "ref": "brasero"
-    },
-    {
-     "id": "p6",
-     "kind": "prop",
-     "pos": {
-      "x": 10,
-      "y": 8
-     },
-     "ref": "brasero"
-    },
-    {
-     "id": "p7",
-     "kind": "prop",
-     "pos": {
-      "x": 3,
-      "y": 3
-     },
-     "ref": "urne"
-    },
-    {
-     "id": "p8",
-     "kind": "prop",
-     "pos": {
-      "x": 9,
-      "y": 3
-     },
-     "ref": "urne"
-    },
-    {
-     "id": "p9",
-     "kind": "prop",
-     "pos": {
-      "x": 10,
-      "y": 9
-     },
-     "ref": "coffre",
-     "label": "Tronc des offrandes"
-    }
-   ],
-   "dialogues": [
     {
      "id": "dlg-frere",
      "start": "accueil",
@@ -4545,270 +4632,7 @@
        ]
       }
      ]
-    }
-   ],
-   "triggers": [
-    {
-     "id": "sortie",
-     "rect": {
-      "x": 6,
-      "y": 10,
-      "w": 1,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transitionBack"
-        }
-       }
-      ]
-     }
-    }
-   ],
-   "encounters": [],
-   "flags": {},
-   "startMessage": "La chapelle de Sigmar. Frère Anselm soigne les corps, bénit les âmes — et surveille son tronc.",
-   "entryPoints": {
-    "entree": {
-     "x": 6,
-     "y": 9
-    }
-   },
-   "rest": {}
-  },
-  {
-   "id": "arene-int-forge",
-   "nom": "Forge du Bourg",
-   "description": "L’atelier du forgeron nain — enclume, foyer rougeoyant, râteliers d’acier.",
-   "dimensions": {
-    "w": 11,
-    "h": 9
-   },
-   "ambiance": "interieur",
-   "layers": [
-    {
-     "z": 0,
-     "tiles": [
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "porte",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur"
-     ]
-    }
-   ],
-   "entities": [
-    {
-     "id": "start",
-     "kind": "heroStart",
-     "pos": {
-      "x": 5,
-      "y": 7
-     }
     },
-    {
-     "id": "forgeron",
-     "kind": "personnage",
-     "pos": {
-      "x": 5,
-      "y": 2
-     },
-     "label": "Forgeron",
-     "facing": "S",
-     "dialogueId": "dlg-forgeron",
-     "merchant": {
-      "archetype": "armurier"
-     },
-     "appearance": {
-      "species": "Nains",
-      "career": "Artisan",
-      "sex": "M",
-      "build": 0.7
-     },
-     "weapon": "Marteau de guerre"
-    },
-    {
-     "id": "apprenti",
-     "kind": "personnage",
-     "pos": {
-      "x": 8,
-      "y": 5
-     },
-     "label": "Apprenti",
-     "anim": "standing",
-     "facing": "O",
-     "appearance": {
-      "career": "Artisan",
-      "sex": "M",
-      "build": 0.4
-     }
-    },
-    {
-     "id": "p0",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 1
-     },
-     "ref": "feu-camp",
-     "label": "Le foyer"
-    },
-    {
-     "id": "p1",
-     "kind": "prop",
-     "pos": {
-      "x": 3,
-      "y": 3
-     },
-     "ref": "etabli",
-     "label": "Établi & enclume"
-    },
-    {
-     "id": "p2",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 5
-     },
-     "ref": "tonneau",
-     "label": "Cuve à trempe"
-    },
-    {
-     "id": "p3",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 1
-     },
-     "ref": "rack-armes"
-    },
-    {
-     "id": "p4",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 2
-     },
-     "ref": "rack-lances"
-    },
-    {
-     "id": "p5",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 7
-     },
-     "ref": "caisse"
-    },
-    {
-     "id": "p6",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 7
-     },
-     "ref": "tonneaux-pile"
-    }
-   ],
-   "dialogues": [
     {
      "id": "dlg-forgeron",
      "start": "accueil",
@@ -4850,276 +4674,7 @@
        ]
       }
      ]
-    }
-   ],
-   "triggers": [
-    {
-     "id": "sortie",
-     "rect": {
-      "x": 5,
-      "y": 8,
-      "w": 1,
-      "h": 1
-     },
-     "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transitionBack"
-        }
-       }
-      ]
-     }
-    }
-   ],
-   "encounters": [],
-   "flags": {},
-   "music": {
-    "ambient": "musique-ville"
-   },
-   "startMessage": "LA FORGE. Le foyer ronfle, l’enclume sonne. Le Forgeron vend armes et armures, rachète et RÉPARE l’acier émoussé par le sable.",
-   "entryPoints": {
-    "entree": {
-     "x": 5,
-     "y": 7
-    }
-   },
-   "rest": {}
-  },
-  {
-   "id": "arene-int-echoppe",
-   "nom": "Échoppe « Le Bric-à-Broc »",
-   "description": "La boutique fourre-tout du Bourg — herbes, potions, cordages, torches et curiosités.",
-   "dimensions": {
-    "w": 11,
-    "h": 9
-   },
-   "ambiance": "interieur",
-   "layers": [
-    {
-     "z": 0,
-     "tiles": [
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "porte",
-      "mur",
-      "mur",
-      "mur",
-      "mur",
-      "mur"
-     ]
-    }
-   ],
-   "entities": [
-    {
-     "id": "start",
-     "kind": "heroStart",
-     "pos": {
-      "x": 5,
-      "y": 7
-     }
     },
-    {
-     "id": "echoppiere",
-     "kind": "personnage",
-     "pos": {
-      "x": 5,
-      "y": 2
-     },
-     "label": "Échoppière",
-     "facing": "S",
-     "dialogueId": "dlg-echoppier",
-     "merchant": {
-      "archetype": "herboriste"
-     },
-     "appearance": {
-      "career": "Bourgeois",
-      "sex": "F",
-      "build": 0.48
-     }
-    },
-    {
-     "id": "chaland",
-     "kind": "personnage",
-     "pos": {
-      "x": 8,
-      "y": 6
-     },
-     "label": "Chaland",
-     "anim": "standing",
-     "facing": "O",
-     "appearance": {
-      "career": "Mendiant"
-     }
-    },
-    {
-     "id": "p0",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 1
-     },
-     "ref": "etal-marche",
-     "label": "Comptoir"
-    },
-    {
-     "id": "p1",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 1
-     },
-     "ref": "etagere"
-    },
-    {
-     "id": "p2",
-     "kind": "prop",
-     "pos": {
-      "x": 3,
-      "y": 3
-     },
-     "ref": "etagere"
-    },
-    {
-     "id": "p3",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 3
-     },
-     "ref": "etagere"
-    },
-    {
-     "id": "p4",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 5
-     },
-     "ref": "tonneau"
-    },
-    {
-     "id": "p5",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 5
-     },
-     "ref": "caisse"
-    },
-    {
-     "id": "p6",
-     "kind": "prop",
-     "pos": {
-      "x": 2,
-      "y": 7
-     },
-     "ref": "caisse"
-    },
-    {
-     "id": "p7",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 7
-     },
-     "ref": "tonneaux-pile"
-    }
-   ],
-   "dialogues": [
     {
      "id": "dlg-echoppier",
      "start": "accueil",
@@ -5165,11 +4720,31 @@
    ],
    "triggers": [
     {
-     "id": "sortie",
+     "id": "porte-route",
      "rect": {
-      "x": 5,
-      "y": 8,
+      "x": 49,
+      "y": 19,
       "w": 1,
+      "h": 2
+     },
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "openWorldMap"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "id": "porte-arene-rappel",
+     "rect": {
+      "x": 24,
+      "y": 38,
+      "w": 2,
       "h": 1
      },
      "flow": {
@@ -5178,7 +4753,8 @@
        {
         "kind": "do",
         "effect": {
-         "type": "transitionBack"
+         "type": "journal",
+         "text": "Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale)."
         }
        }
       ]
@@ -5190,14 +4766,1140 @@
    "music": {
     "ambient": "musique-ville"
    },
-   "startMessage": "L’ÉCHOPPE. Bocaux, fagots d’herbes et cordages du sol au plafond. L’Échoppière vend herbes, potions et fournitures pour la route.",
-   "entryPoints": {
-    "entree": {
+   "startMessage": "LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Entrez dans la Taverne (repos, repas, rations), la Chapelle (soins, bénédiction), la Forge (armes, réparations) ou l’Échoppe (herbes, fournitures) — le toit se lève quand vous y pénétrez. La route de l’est part vers le monde (🗺️).",
+   "roofs": [
+    {
+     "id": "taverne",
+     "foot": {
+      "x": 3,
+      "y": 3,
+      "w": 15,
+      "h": 10
+     },
+     "style": "taverne",
+     "label": "Taverne « Au Trophée »"
+    },
+    {
+     "id": "chapelle",
+     "foot": {
+      "x": 34,
+      "y": 3,
+      "w": 13,
+      "h": 11
+     },
+     "style": "chapelle",
+     "label": "Chapelle de Sigmar"
+    },
+    {
+     "id": "forge",
+     "foot": {
+      "x": 3,
+      "y": 27,
+      "w": 11,
+      "h": 9
+     },
+     "style": "forge",
+     "label": "Forge du Bourg"
+    },
+    {
+     "id": "echoppe",
+     "foot": {
+      "x": 36,
+      "y": 27,
+      "w": 11,
+      "h": 9
+     },
+     "style": "echoppe",
+     "label": "Échoppe « Le Bric-à-Broc »"
+    }
+   ],
+   "walls": [
+    {
+     "x": 3,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 3,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 4,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 4,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 5,
-     "y": 7
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 5,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 6,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 6,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 7,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 7,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 8,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 8,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 9,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 9,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 10,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 10,
+     "y": 13,
+     "side": "N",
+     "door": true
+    },
+    {
+     "x": 11,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 11,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 12,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 12,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 14,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 14,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 15,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 15,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 16,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 16,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 13,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 4,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 4,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 5,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 5,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 6,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 6,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 7,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 7,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 8,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 8,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 9,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 9,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 10,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 10,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 11,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 11,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 12,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 12,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 34,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 34,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 36,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 36,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 37,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 37,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 38,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 38,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 39,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 39,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 40,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 40,
+     "y": 14,
+     "side": "N",
+     "door": true
+    },
+    {
+     "x": 41,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 41,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 42,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 42,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 43,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 43,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 44,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 44,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 45,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 45,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 4,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 4,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 5,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 5,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 6,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 6,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 7,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 7,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 8,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 8,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 9,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 9,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 10,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 10,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 11,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 11,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 12,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 12,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 33,
+     "y": 13,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 13,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 3,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 3,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 4,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 4,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 5,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 5,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 6,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 6,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 7,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 7,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 8,
+     "y": 27,
+     "side": "N",
+     "door": true
+    },
+    {
+     "x": 8,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 9,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 9,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 10,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 10,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 11,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 11,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 12,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 12,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 27,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 27,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 28,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 28,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 29,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 29,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 30,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 30,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 31,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 31,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 32,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 32,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 33,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 33,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 34,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 34,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 2,
+     "y": 35,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 35,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 36,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 36,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 37,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 37,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 38,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 38,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 39,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 39,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 40,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 40,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 41,
+     "y": 27,
+     "side": "N",
+     "door": true
+    },
+    {
+     "x": 41,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 42,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 42,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 43,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 43,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 44,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 44,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 45,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 45,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 27,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 27,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 28,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 28,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 29,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 29,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 30,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 30,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 31,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 31,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 32,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 32,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 33,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 33,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 34,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 34,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 35,
+     "y": 35,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 35,
+     "side": "E",
+     "structure": "mur-en-bois"
+    }
+   ],
+   "entryPoints": {
+    "porte-arene": {
+     "x": 24,
+     "y": 37
+    },
+    "route": {
+     "x": 48,
+     "y": 20
+    },
+    "entree": {
+     "x": 24,
+     "y": 24
     }
    },
-   "rest": {}
+   "rest": {
+    "auberge": true
+   }
   },
   {
    "id": "arene-zone2",

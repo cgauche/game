@@ -45,13 +45,15 @@ function enemiesOf(scene: Scene, enc: Scene['encounters'][number]) {
 const ALL_ENEMIES = project.flatMap((s) => s.encounters.flatMap((e) => enemiesOf(s, e)));
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
-  it('22 scènes : entrée zone1, Bourg + 4 intérieurs, 13 zones, 3 expéditions, 1 embuscade de route', () => {
-    expect(project).toHaveLength(22);
+  it('18 scènes : entrée zone1, Bourg TOUT-EN-SCÈNE (0 intérieur séparé), 13 zones, 3 expéditions, 1 embuscade de route', () => {
+    expect(project).toHaveLength(18);
     expect(project[0].id).toBe('arene-zone1');
     const ids = project.map((s) => s.id);
     expect(ids).toContain('arene-hub');
     expect(ids).toContain('arene-zone13'); // L'Antre du Dragon (finale)
-    expect(ids).toEqual(expect.arrayContaining(['arene-int-taverne', 'arene-int-chapelle', 'arene-int-forge', 'arene-int-echoppe'])); // intérieurs du Bourg (4 bâtiments)
+    // TOUT-EN-SCÈNE : les 4 bâtiments (taverne/chapelle/forge/échoppe) sont des empreintes DANS `arene-hub`,
+    // plus AUCUNE scène-intérieur `arene-int-*` séparée.
+    expect(ids.some((id) => /^arene-int-/.test(id))).toBe(false);
     expect(ids).toEqual(expect.arrayContaining(['arene-exp-foret', 'arene-exp-marais', 'arene-exp-village'])); // expéditions (#T2)
     expect(ids).toContain('arene-route-embuscade'); // cible du « Attaqués ! »
     const zones = ids.filter((id) => /^arene-zone\d+$/.test(id));
@@ -69,22 +71,25 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(wm.routes.some((r) => r.perilDie != null)).toBe(true); // seuil d10 surchargé par route
   });
 
-  it('le BOURG a des BÂTIMENTS COMPOSÉS (toits + murs d’arête clôturant + porte franchissable) + marchands taverniere/armurier/medecin', () => {
-    // Relief unifié : plus de `buildings` monolithiques (périmètre implicite + `reveal`/`interiorScene`).
-    // Un bâtiment = un `Roof` de rendu posé sur des `WallSeg` d'arête (mur-en-bois/pierre) percés d'une porte.
+  it('le BOURG est TOUT-EN-SCÈNE : 4 GRANDS bâtiments (toits + murs d’arête + porte) + les 4 marchands DEDANS + médecin sur la place', () => {
+    // Modèle unique : un bâtiment = un `Roof` (cutaway `roofHidden`) posé sur des `WallSeg` d'arête
+    // (mur-en-bois) percés d'une porte, son INTÉRIEUR (PNJ/marchand/props) DANS l'empreinte. Plus aucune
+    // scène-intérieur séparée ni transition — le cutaway révèle l'intérieur quand un allié entre.
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    expect((hub.roofs ?? []).length).toBeGreaterThanOrEqual(2);
+    expect((hub.roofs ?? []).length).toBeGreaterThanOrEqual(4); // taverne, chapelle, forge, échoppe
     const walls = (hub.walls ?? []).filter((w): w is WallSeg & { side: 'N' | 'E' } => w.side === 'N' || w.side === 'E');
     const solid = walls.filter((w) => w.structure);
     const doors = walls.filter((w) => w.door);
     expect(solid.length).toBeGreaterThan(0);          // les bâtiments sont CLÔTURÉS par des murs d'arête
-    expect(doors.length).toBeGreaterThanOrEqual(2);   // ≥2 intérieurs desservis par une porte
+    expect(doors.length).toBeGreaterThanOrEqual(4);   // 4 bâtiments desservis par une porte vers la place
     // un mur `structure` BLOQUE le passage ; une porte est FRANCHISSABLE (arête ouverte)
     const across = (w: WallSeg & { side: 'N' | 'E' }) => (w.side === 'N' ? { x: w.x, y: w.y - 1 } : { x: w.x + 1, y: w.y });
     expect(wallBetween(hub, solid[0].x, solid[0].y, across(solid[0]).x, across(solid[0]).y)).toBe(true);
     expect(wallBetween(hub, doors[0].x, doors[0].y, across(doors[0]).x, across(doors[0]).y)).toBe(false);
-    const archetypes = project.flatMap((s) => s.entities.map((e) => e.merchant?.archetype)).filter(Boolean);
-    expect(archetypes).toEqual(expect.arrayContaining(['armurier', 'medecin', 'taverniere']));
+    // Les 4 archétypes marchands vivent DANS le Bourg (tavernière/armurier/herboriste dans leur bâtiment,
+    // médecin sous sa tente sur la place) — plus AUCUN marchand dans une scène séparée.
+    const hubArchetypes = hub.entities.map((e) => e.merchant?.archetype).filter(Boolean);
+    expect(hubArchetypes).toEqual(expect.arrayContaining(['taverniere', 'armurier', 'herboriste', 'medecin']));
   });
 
   it('BÂTIMENTS : id d’auteur ET libellé de toit préservés (RoomSpec.id/label → roof), pas d’id frais anonyme', () => {
@@ -124,8 +129,11 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) if (c.flow) walk(c.flow);
     }
     expect(hasTestNode, 'un nœud Test (jet → branches) mis en scène').toBe(true);
+    // `transitionBack` a disparu du projet : le Bourg est TOUT-EN-SCÈNE (plus de scène-intérieur ni de
+    // `sortie` qui y ramenait). Les zones/expéditions reviennent au Bourg par `transition` (destination
+    // explicite), pas `transitionBack`.
     for (const type of [
-      'giveTrapping', 'giveMoney', 'giveXp', 'startCombat', 'transition', 'transitionBack',
+      'giveTrapping', 'giveMoney', 'giveXp', 'startCombat', 'transition',
       'startDialogue', 'journal', 'document', 'setTime', 'openMerchant', 'medicalAid', 'restoreFortune',
       'rest', 'mealParty', 'inflictNightmares', 'inflictDisease', 'giveSin', 'corruptionExposure',
       'learnSpell', 'interlude', 'setFlag', 'endDialogue',
@@ -140,12 +148,15 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(all.some((e) => e.side === 'ally' && !e.mount)).toBe(true); // allié de scène à PIED
   });
 
-  it('VITRINE météo/ambiance : ≥3 météos, intérieurs ET extérieurs, musiques de scène', () => {
+  it('VITRINE météo/ambiance : ≥3 météos, musiques de scène, et des INTÉRIEURS tout-en-scène (toits→cutaway)', () => {
     const weathers = new Set(project.map((s) => s.weather ?? 'clair'));
     expect(weathers.size).toBeGreaterThanOrEqual(3); // clair + pluie + brouillard
-    const ambiances = new Set(project.map((s) => (s.ambiance === 'interieur' ? 'interieur' : 'exterieur')));
-    expect(ambiances).toEqual(new Set(['interieur', 'exterieur']));
     expect(project.some((s) => s.music?.ambient)).toBe(true);
+    // TOUT-EN-SCÈNE : les intérieurs ne sont plus des scènes `ambiance:'interieur'` séparées mais des
+    // empreintes de bâtiment (toit `Roof` → cutaway `roofHidden`) DANS une scène extérieure. On vérifie
+    // que le Bourg porte bien ces intérieurs et que le projet reste cohérent en ambiance (extérieur).
+    expect((project.find((s) => s.id === 'arene-hub')!.roofs ?? []).length).toBeGreaterThanOrEqual(4);
+    expect(project.every((s) => s.ambiance !== 'interieur'), 'plus de scène-intérieur séparée').toBe(true);
   });
 
   it('GRANDES cartes tactiques : chaque zone de l’échelle fait ≥ 24×16 (8× l’ancienne surface au max)', () => {
@@ -197,18 +208,18 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(ladder).toBeGreaterThanOrEqual(2500);
   });
 
-  it('AUBERGE : dormir au Trophée ouvre la modale de Repos en contexte auberge (chambres/repas PAR HÉROS, prix RAW dans la modale)', () => {
-    const taverne = project.find((s) => s.id === 'arene-int-taverne')!;
-    const choices = taverne.dialogues.flatMap((d) => d.nodes.flatMap((n) => n.choices));
+  it('AUBERGE : dormir au Trophée (dialogue tavernière DANS le Bourg) ouvre la modale de Repos en contexte auberge (chambres/repas PAR HÉROS, prix RAW dans la modale)', () => {
+    // TOUT-EN-SCÈNE : le dialogue de la Tavernière (`dlg-taverne`) vit désormais dans `arene-hub`.
+    const hub = project.find((s) => s.id === 'arene-hub')!;
+    const choices = hub.dialogues.find((d) => d.id === 'dlg-taverne')!.nodes.flatMap((n) => n.choices);
     const sleeps = choices.filter((c) => c.flow && flowEffects(c.flow).some((e) => e.type === 'rest'));
     expect(sleeps.length).toBeGreaterThanOrEqual(1);
     for (const c of sleeps) {
       expect(c.cost, 'plus de forfait sur le choix — les prix vivent dans la modale').toBeUndefined();
       expect(flowEffects(c.flow!).some((e) => e.type === 'rest' && (e as { lodging?: string }).lodging === 'auberge'), 'contexte auberge').toBe(true);
     }
-    // L'offre de repos (bouton 🌙) : Bourg/taverne = auberge ; zones d'arène = repos interdit.
-    expect(taverne.rest?.auberge).toBe(true);
-    expect(project.find((s) => s.id === 'arene-hub')!.rest?.auberge).toBe(true);
+    // L'offre de repos (bouton 🌙) : le Bourg (dont la taverne, tout-en-scène) = auberge ; zones = repos interdit.
+    expect(hub.rest?.auberge).toBe(true);
     const zone1 = project.find((s) => s.id === 'arene-zone1')!;
     expect(!!zone1.rest && !zone1.rest.auberge && !zone1.rest.maison && !zone1.rest.camp, 'pas de bivouac dans l’arène').toBe(true);
     // La grand-route de Felsbach a des relais : la halte de nuit du voyage propose l'auberge.

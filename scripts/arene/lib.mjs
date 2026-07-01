@@ -110,7 +110,10 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
       id: b.id, // id d'auteur (`taverne`, `maison-prevot`…) préservé sur le toit
       style: b.type,
       foot: [b.foot.x, b.foot.y, b.foot.w, b.foot.h],
-      floor: buildingFloor(b.type),
+      // `noFloor` : l'auteur PEINT lui-même le sol de l'intérieur dans la grille ASCII (bâtiment
+      // tout-en-scène où l'intérieur détaillé — nef de marbre, plancher — doit survivre à `addBuilding`,
+      // dont le `floor` écraserait le rect entier). Sinon sol par défaut selon le type.
+      ...(b.noFloor ? {} : { floor: buildingFloor(b.type) }),
       wallStructure: 'mur-en-bois',
       ...(b.door ? { door: { x: b.door.x, y: b.door.y, side: doorSide(b.foot, b.door) } } : {}),
       ...(b.label ? { label: b.label } : {}),

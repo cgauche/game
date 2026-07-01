@@ -147,8 +147,8 @@ const hub = project.find((s) => s.id === 'arene-hub')!;
 
 describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => {
   it('les 4 actes payants (Guérison/hémorragie/déchirure/Chirurgie) sont tarifés 4-6 pa ; le Médecin (Bourg) les offre TOUS', () => {
-    const chapelle = project.find((s) => s.id === 'arene-int-chapelle')!;
-    const dlgs = [hub.dialogues.find((d) => d.id === 'dlg-medecin')!, chapelle.dialogues.find((d) => d.id === 'dlg-frere')!];
+    // TOUT-EN-SCÈNE : le médecin (place) ET Frère Anselm (chapelle) vivent tous deux dans `arene-hub`.
+    const dlgs = [hub.dialogues.find((d) => d.id === 'dlg-medecin')!, hub.dialogues.find((d) => d.id === 'dlg-frere')!];
     const aids = dlgs.flatMap((d) => d.nodes.flatMap((n) => n.choices.flatMap((c) => (c.flow ? flowEffects(c.flow) : []).filter((e) => e.type === 'medicalAid'))));
     const acts = aids.flatMap((e: any) => e.acts as { act: string; cost?: { silver?: number } }[]);
     expect(acts.every((a) => (a.cost?.silver ?? 0) >= 4 && (a.cost?.silver ?? 0) <= 6)).toBe(true); // 4-6 pistoles RAW
