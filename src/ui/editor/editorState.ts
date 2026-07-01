@@ -558,3 +558,81 @@ export function eraseAt(scene: Scene, p: Pt): Scene {
   const ent = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
   return ent ? { ...scene, entities: scene.entities.filter((e) => e !== ent) } : scene;
 }
+
+// ── Scalaires de scène (headless-editor) : champs sans widget SceneProps, posés par `buildScene`. Chacun
+//    comble un gap identifié (échelle mer, lumière ambiante, flags initiaux). `undefined` retire le champ. ──
+
+/** Échelle métrique d'une case (m/case). `undefined` = défaut (2 m). Pilote l'échelle MER (naval, MDG). */
+export function setMetresPerTile(scene: Scene, m: number | undefined): Scene {
+  const next = { ...scene };
+  if (m === undefined) delete next.metresPerTile;
+  else next.metresPerTile = m;
+  return next;
+}
+
+/** Niveau de lumière ambiante par défaut (id). `undefined` = auto (horloge/ambiance). */
+export function setAmbientLight(scene: Scene, id: string | undefined): Scene {
+  const next = { ...scene };
+  if (id === undefined) delete next.ambientLight;
+  else next.ambientLight = id;
+  return next;
+}
+
+/** Fusionne des flags initiaux dans `scene.flags` (état de départ : porte ouverte, jalon posé…). */
+export function setSceneFlags(scene: Scene, patch: Record<string, boolean>): Scene {
+  return { ...scene, flags: { ...scene.flags, ...patch } };
+}
+
+/** Patche les champs de HAUT NIVEAU d'une entité (facing/label/crewIds/upgrades/light/statblock/foot…) —
+ *  fusion superficielle. No-op si l'entité est absente. Source unique du câblage de données d'entité par
+ *  `buildScene` (coque-navire : équipage/upgrades exposés, MDG ch.14 — sans widget d'inspecteur). */
+export function patchEntity(scene: Scene, id: string, patch: Partial<SceneEntity>): Scene {
+  return { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, ...patch } : e)) };
+}
+
+/** Patche le sous-objet `combat` d'une entité SANS écraser l'existant (fusionne skills/spells/optionals/
+ *  hiddenUntilCombat). Qualifie p.ex. un servant-ref au bon Groupe de Projectiles (AA p.122). No-op si absente. */
+export function patchEntityCombat(scene: Scene, id: string, patch: Partial<NonNullable<SceneEntity['combat']>>): Scene {
+  return { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, combat: { ...e.combat, ...patch } } : e)) };
+}
+
+/** Pose (ou REMPLACE) la couche `z` avec des tuiles complètes + hauteurs optionnelles, triée par z. Brique
+ *  d'import d'une grille ASCII entière (`buildScene`) — là où `paintTiles`/`paintHeight` posent case par case. */
+export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: number[]): Scene {
+  const layer = { z, tiles, ...(height ? { height } : {}) };
+  const others = scene.layers.filter((l) => l.z !== z);
+  return { ...scene, layers: [...others, layer].sort((a, b) => a.z - b.z) };
+}
+
+/** BÂTIMENT COMPOSÉ = `Roof` (couverture cutaway) + périmètre de murs d'ARÊTE + une arête-porte franchissable
+ *  + sol repeint. Source UNIQUE de la composition (partagée éditeur ⇄ `buildScene`), généralisant l'ancien
+ *  `buildingToComposite` de l'arène : la structure réelle est faite de `WallSeg`, le toit n'est que du rendu.
+ *  `wallStructure` (ex. `mur-en-bois`) rend les murs pleins DESTRUCTIBLES ; la porte n'en porte pas. */
+export function addBuilding(
+  scene: Scene,
+  style: string,
+  foot: Rect,
+  opts: { door?: { x: number; y: number; side: Edge4 }; floor?: Terrain; wallStructure?: string; z?: number } = {},
+): { scene: Scene; id: string } {
+  const { door, floor, wallStructure, z = 0 } = opts;
+  const roof = addRoof(scene, style, foot);
+  let s = roof.scene;
+  const edges: { x: number; y: number; side: Edge4 }[] = [];
+  for (let cx = foot.x; cx < foot.x + foot.w; cx++) {
+    edges.push({ x: cx, y: foot.y, side: 'N' }); // arête haute
+    edges.push({ x: cx, y: foot.y + foot.h - 1, side: 'S' }); // arête basse
+  }
+  for (let cy = foot.y; cy < foot.y + foot.h; cy++) {
+    edges.push({ x: foot.x, y: cy, side: 'O' }); // arête gauche
+    edges.push({ x: foot.x + foot.w - 1, y: cy, side: 'E' }); // arête droite
+  }
+  const doorCanon = door ? canonEdge(door.x, door.y, door.side) : null;
+  for (const e of edges) {
+    const c = canonEdge(e.x, e.y, e.side);
+    const isDoor = !!doorCanon && c.x === doorCanon.x && c.y === doorCanon.y && c.side === doorCanon.side;
+    s = setEdgeWall(s, e.x, e.y, e.side, z, isDoor ? 'door' : 'wall');
+    if (!isDoor && wallStructure) s = patchWall(s, c.x, c.y, c.side, z, { structure: wallStructure });
+  }
+  if (floor) s = fillTerrainRect(s, foot, floor, z);
+  return { scene: s, id: roof.id };
+}
