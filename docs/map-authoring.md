@@ -29,6 +29,7 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 | `terrain?` | remplissage plat (z0), défaut `'herbe'` |
 | `legend?: {char→Terrain}` | légende ASCII (`.`/espace = base ; base z0 = `terrain`, z>0 = `'vide'`) |
 | `levels?: {z0, z1, …}` | UNE grille ASCII par étage (terrain **+ marqueurs** de `bind`) |
+| `walled?: {z0, z1, …}` | UNE grille **box-drawing** par étage (arêtes DANS l'ASCII, `parseWalledAscii` (2W+1)×(2H+1)) → tuiles **+ murs d'arête/portes**. Coexiste avec `levels` (étages ≠) ; `wallStructures?: {char→id}` pose une structure brèchable sur une arête |
 | `markerFill?: {char→char}` | char de LÉGENDE laissé SOUS un marqueur nettoyé (ex. `{B:'W'}` : poser une pièce SUR le chemin de ronde sans y percer un trou) |
 | `relief?` | hauteurs **métriques** : `{rect:[x0,y0,x1,y1],height,z?}` / `{cell:[x,y],height,z?}` / `{ramp:[x0,y0,x1,y1],from,to,z?}` |
 | `walls?: WallSpec[]` | murs d'**arête** : `{x,y,side:'N'|'E'|'S'|'O'|'\\'|'/', z?, door?, structure?}` |
@@ -67,6 +68,7 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 | Cas trivial + encounters | `src/scenes/test-scenarios/bestiaire.ts`, `magie.ts` |
 | Relief pur (2 couches, rampes, falaise) | `src/scenes/test-scenarios/pont-vitrine.ts` |
 | Multi-niveaux + logique (triggers/delayedEffect/dialogues gatés) | `src/scenes/test-scenarios/opera.ts` |
+| Box-drawing multi-étages (`walled`) + relief (grande carte détaillée) | `src/scenes/opera/floorplan.ts` |
 | Siège complet : relief + enceinte/porte brèchable + parapet + bind emplacement/équipage/membre | `src/scenes/test-scenarios/siege-enceinte.ts` |
 | Naval (coque/postes/équipage via `AuthoredEnemy`) | `src/scenes/test-scenarios/combat-naval.ts` |
 | Murs-en-tuiles + Condition (herse) | `src/scenes/test-scenarios/piege-caveau.ts` |

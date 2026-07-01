@@ -208,14 +208,14 @@ const ents: SceneEntity[] = [
   { id: 'salon-d-ft', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 5, y: 49 }, z: 1 },
   { id: 'salon-d-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 3, y: 50 }, z: 1 },
   { id: 'bar-g-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 9, y: 47 }, z: 1 },
-  { id: 'bar-g-etag', kind: 'prop', ref: 'etagere', pos: { x: 7, y: 46 }, z: 1 },
+  { id: 'bar-g-etag', kind: 'prop', ref: 'etagere', pos: { x: 5, y: 46 }, z: 1 },
   { id: 'bar-g-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 11, y: 46 }, z: 1 },
   { id: 'salon-s-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 39, y: 48 }, z: 1 },
   { id: 'salon-s-table', kind: 'prop', ref: 'table', pos: { x: 37, y: 50 }, z: 1 },
   { id: 'salon-s-canape', kind: 'prop', ref: 'canape', pos: { x: 38, y: 49 }, facing: 'N', z: 1 },
   { id: 'salon-s-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 40, y: 50 }, z: 1 },
   { id: 'bar-d-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 34, y: 47 }, z: 1 },
-  { id: 'bar-d-etag', kind: 'prop', ref: 'etagere', pos: { x: 36, y: 46 }, z: 1 },
+  { id: 'bar-d-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 46 }, z: 1 },
   { id: 'bar-d-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 32, y: 46 }, z: 1 },
 
   // Deux lustres du foyer (z=1, flottant au-dessus du foyer du rez).

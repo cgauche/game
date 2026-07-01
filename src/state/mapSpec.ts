@@ -9,7 +9,8 @@
  *   1. base       : `emptyScene(w,h)` + scalaires directs (id/nom/… comme les SceneProps de l'éditeur),
  *                   `metresPerTile`/`ambientLight`/`flags` via leurs primitives.
  *   2. terrain    : scan des marqueurs (`scanMarkers`) puis parse ASCII (`parseAsciiRows`) par étage,
- *                   posé via `putLayer`. Marqueurs nettoyés → base propre.
+ *                   posé via `putLayer`. Marqueurs nettoyés → base propre. Les grilles `walled` (box-drawing)
+ *                   parsent tuiles + murs d'arête (`parseWalledAscii`) — les murs sont posés à l'étape 4.
  *   3. relief     : hauteurs métriques (`paintHeight`) par cellule — rect / cell / ramp (interpolation).
  *   4. walls      : murs d'arête (`setEdgeWall` + `patchWall` structure) / diagonales (`toggleDiagonalWall`).
  *   5. rooms      : bâtiments composés (`addBuilding` : toit + périmètre + porte + sol).
@@ -31,7 +32,7 @@ import { emptyScene } from './scene';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
 import type { Dir8 } from './dir8';
-import { parseAsciiRows, scanMarkers } from './asciiMap';
+import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
 import {
   type Pt,
@@ -139,6 +140,12 @@ export interface MapSpec {
   markerFill?: Record<string, string>;
   /** Grilles ASCII par étage (`z0`/`z1`/…). Sinon une couche pleine de `terrain`. */
   levels?: Record<string, string>;
+  /** Grilles BOX-DRAWING par étage (`z0`/`z1`/…) : arêtes DANS l'ASCII (`parseWalledAscii`, (2W+1)×(2H+1)).
+   *  Chaque étage → `putLayer(z, tiles)` + les murs d'arête/portes RETOURNÉS (avec `z`). Coexiste avec `levels`
+   *  (étages différents) ; MÊME base que `levels` (z0 = `terrain`, z>0 = `'vide'`). Traité à l'étape 2 (terrain). */
+  walled?: Record<string, string>;
+  /** Char d'arête → id de `structures.json` (structure destructible sur l'arête d'un étage `walled`, ex. herse). */
+  wallStructures?: Record<string, string>;
   walls?: WallSpec[];
   relief?: ReliefSpec[];
   rooms?: RoomSpec[];
@@ -162,6 +169,17 @@ function rowsOf(str: string): string[] {
   const rows = str.split('\n');
   while (rows.length && rows[0].trim() === '') rows.shift();
   while (rows.length && rows[rows.length - 1].trim() === '') rows.pop();
+  return rows;
+}
+
+/** Découpe une grille BOX-DRAWING (`walled`) en lignes, en ne retirant QUE l'ARTEFACT de littéral de gabarit
+ *  (une seule ligne vide de tête + une seule de queue autour du `String.raw`). Contrairement à `rowsOf`, les
+ *  lignes vides INTERNES (bord `vide` inséré d'un bâti, cf. l'opéra) sont des rangées de grille SIGNIFICATIVES
+ *  et PRÉSERVÉES : une grille (2H+1)×(2W+1) ne doit jamais perdre de rangée. */
+function walledRowsOf(str: string): string[] {
+  const rows = str.split('\n');
+  if (rows.length && rows[0].trim() === '') rows.shift();
+  if (rows.length && rows[rows.length - 1].trim() === '') rows.pop();
   return rows;
 }
 
@@ -213,6 +231,7 @@ export function buildScene(spec: MapSpec): Scene {
   // 2. terrain + scan des marqueurs
   const bindChars = Object.keys(spec.bind ?? {}).join('');
   const scanned: { char: string; pos: Pt; z: number }[] = [];
+  const walledWalls: WallSpec[] = [];
   if (spec.levels) {
     for (const [key, rows] of Object.entries(spec.levels)) {
       const z = parseInt(key.replace('z', ''), 10);
@@ -222,15 +241,28 @@ export function buildScene(spec: MapSpec): Scene {
       const tiles = parseAsciiRows(cleaned, base, spec.legend).tiles;
       s = putLayer(s, z, tiles);
     }
-  } else {
+  }
+  if (spec.walled) {
+    // Grille BOX-DRAWING par étage : `parseWalledAscii` extrait tuiles + murs d'arête/portes. Chaque rangée est
+    // recomplétée à 2W+1 (les ASCII éditables retirent les espaces de fin) ; les murs héritent du `z` de l'étage.
+    for (const [key, rows] of Object.entries(spec.walled)) {
+      const z = parseInt(key.replace('z', ''), 10);
+      const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
+      const padded = walledRowsOf(rows).map((r) => r.padEnd(2 * w + 1, ' '));
+      const parsed = parseWalledAscii(padded, base, spec.legend, { structures: spec.wallStructures });
+      s = putLayer(s, z, parsed.tiles);
+      for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.structure ? { structure: seg.structure } : {}) });
+    }
+  }
+  if (!spec.levels && !spec.walled) {
     s = putLayer(s, 0, new Array(w * h).fill(spec.terrain ?? 'herbe') as Terrain[]);
   }
 
   // 3. relief
   for (const r of spec.relief ?? []) s = applyRelief(s, r);
 
-  // 4. walls
-  for (const wall of spec.walls ?? []) {
+  // 4. walls : ceux extraits des grilles `walled` (arêtes DANS l'ASCII) PUIS les `walls` déclaratifs.
+  for (const wall of [...walledWalls, ...(spec.walls ?? [])]) {
     const z = wall.z ?? 0;
     if (wall.side === '\\' || wall.side === '/') {
       s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);

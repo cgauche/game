@@ -4,11 +4,12 @@ import { tileAt, heightAt, isWalkable, wallBetween } from '../../state/scene';
 import { reachable, type Pt } from '../../state/path';
 
 /**
- * Le plan de l'Opéra (Théâtre Staatsoper) est de la DONNÉE de géométrie produite par un générateur
- * (précédent de l'arène), reconstruite sur le RELIEF MÉTRIQUE : deux COUCHES (`layers`), scène surélevée
- * (+1 m) et fosse en contrebas (−1 m) portées par `Layer.height`, parterre en ÉVENTAIL bloquant, salles
- * latérales desservies par des portes, puits central OVALE vide à l'étage, loges en anneau + loge royale
- * dans l'axe. L'étage (loges à 4 m) se rejoint par DEUX RAMPES d'angle (cases de hauteur croissante) —
+ * Le plan de l'Opéra (Théâtre Staatsoper) est COMPILÉ par `buildScene(MapSpec)` depuis l'ASCII box-drawing
+ * (`floorplan.ascii.ts`) via `MapSpec.walled` (2 grilles = rez z0 + étage z1) + `MapSpec.relief` (l'ÉLÉVATION
+ * MÉTRIQUE, seule donnée non portée par l'ASCII) : deux COUCHES (`layers`), scène surélevée (+1 m) et fosse
+ * en contrebas (−1 m) portées par `Layer.height`, parterre en ÉVENTAIL bloquant, salles latérales desservies
+ * par des portes, puits central OVALE vide à l'étage, loges en anneau + loge royale dans l'axe. L'étage (loges
+ * à 4 m) se rejoint par DEUX RAMPES d'angle (cases de hauteur croissante, puits TROUÉ dans l'ASCII même) —
  * AUCUN escalier explicite : la connectivité verticale s'auto-dérive du dénivelé (`surfaceLink`).
  */
 describe('plan de l’Opéra — géométrie (relief unifié)', () => {

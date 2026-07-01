@@ -47,6 +47,53 @@ describe('buildScene — multi-niveaux + relief métrique', () => {
   });
 });
 
+describe('buildScene — grille `walled` (box-drawing : tuiles + murs d’arête + porte)', () => {
+  // Grille 2×2 en box-drawing (2W+1 × 2H+1 = 5×5) : cases 'P' cloisonnées, arête E de (0,0) = PORTE `:`.
+  // Convention `parseWalledAscii` : les `-` sont aux colonnes IMPAIRES (au-dessus des cases), les `|`/`:` aux paires.
+  const s = buildScene({
+    id: 'wl', nom: 'WL', size: [2, 2],
+    walled: {
+      z0: [
+        ' - - ',
+        '|P:P|',
+        ' - - ',
+        '|P|P|',
+        ' - - ',
+      ].join('\n'),
+    },
+    legend: { P: 'planches' },
+  });
+  it('parse les tuiles de l’ASCII box-drawing', () => {
+    expect(s.layers).toHaveLength(1);
+    expect(layerTiles(s, 0)).toEqual(['planches', 'planches', 'planches', 'planches']);
+  });
+  it('pose les murs d’arête intérieurs et le périmètre', () => {
+    expect(edgeWallState(s, 0, 1, 'E')).toBe('wall'); // cloison intérieure (rangée du bas)
+    expect(edgeWallState(s, 0, 0, 'N')).toBe('wall'); // bord haut du bâti
+    expect(edgeWallState(s, 0, 0, 'O')).toBe('wall'); // bord gauche du bâti
+  });
+  it('reconnaît la PORTE `:` comme arête franchissable', () => {
+    expect(edgeWallState(s, 0, 0, 'E')).toBe('door');
+  });
+});
+
+describe('buildScene — `walled` multi-étages + relief (l’étage porté à 4 m)', () => {
+  const s = buildScene({
+    id: 'wl2', nom: 'WL2', size: [2, 1],
+    walled: { z0: [' - - ', '|P|P|', ' - - '].join('\n'), z1: [' - - ', '|M|M|', ' - - '].join('\n') },
+    legend: { P: 'planches', M: 'marbre' },
+    relief: [{ rect: [0, 0, 1, 0], height: 4, z: 1 }],
+  });
+  it('crée deux couches (z0 sol + z1 vide), la base z>0 = vide, relief posé', () => {
+    expect(s.layers.map((l) => l.z)).toEqual([0, 1]);
+    expect(layerTiles(s, 0)).toEqual(['planches', 'planches']);
+    expect(layerTiles(s, 1)[0]).toBe('marbre');
+    expect(s.layers.find((l) => l.z === 1)!.height![0]).toBe(4);
+    // murs du z1 héritent du z de l'étage
+    expect(edgeWallState(s, 0, 0, 'N', 1)).toBe('wall');
+  });
+});
+
 describe('buildScene — murs d’arête explicites', () => {
   const s = buildScene({
     id: 'w', nom: 'W', size: [3, 3], terrain: 'pave',
