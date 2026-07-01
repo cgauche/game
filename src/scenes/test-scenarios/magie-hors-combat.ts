@@ -1,5 +1,5 @@
 import { pregenParty, PREGEN } from '../../data/pregens';
-import { arena } from './_shared';
+import { buildScene } from '../../state/mapSpec';
 import { findSkill } from '../../data';
 import { slugId } from '../../data/slug';
 import type { TestScenario } from './_shared';
@@ -14,11 +14,17 @@ function ensureSkill(h: Combatant, name: string, characteristic: CharKey, spec?:
   else h.skills.push({ skillId, spec, characteristic, advances: 5 });
 }
 
-const scene = arena({ id: 'test-magie-hors-combat', nom: 'Magie — incantation hors combat', w: 14, h: 9, heroStart: { x: 2, y: 4 } });
-scene.startMessage =
-  'Exploration (aucun combat). Cliquez une fiche de lanceur → section « Sorts » : soignez/bénissez ' +
-  'l’allié blessé (Prêtre), puis « ✨ Focaliser » et « 🎲 Lancer » un Sort d’Arcane (Sorcier). ' +
-  'Les Projectiles magiques restent marqués « en combat ».';
+const scene = buildScene({
+  id: 'test-magie-hors-combat',
+  nom: 'Magie — incantation hors combat',
+  description: 'Arène de test.',
+  size: [14, 9],
+  heroStart: [2, 4],
+  startMessage:
+    'Exploration (aucun combat). Cliquez une fiche de lanceur → section « Sorts » : soignez/bénissez ' +
+    'l’allié blessé (Prêtre), puis « ✨ Focaliser » et « 🎲 Lancer » un Sort d’Arcane (Sorcier). ' +
+    'Les Projectiles magiques restent marqués « en combat ».',
+});
 
 export const scenario: TestScenario = {
   id: 'magie-hors-combat',

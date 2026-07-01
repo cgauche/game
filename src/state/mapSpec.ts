@@ -24,11 +24,14 @@ import type {
   SceneEffectZone,
   Trigger,
   Dialogue,
+  EncounterMember,
+  EncounterDef,
 } from './scene';
 import { emptyScene } from './scene';
+import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
 import { parseAsciiRows, scanMarkers } from './asciiMap';
-import { buildEncounters, type AuthoredEncounter } from './encounterAuthoring';
+import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
 import {
   type Pt,
   type Edge4,
@@ -86,6 +89,17 @@ export type BindSpec =
   | { emplacement: string; crew?: string; side?: FireArc }
   | Partial<SceneEntity>;
 
+/** Une rencontre DÉCLARATIVE. `enemies` (terse) → entités FRAÎCHES cachées + members (`buildEncounter`) ;
+ *  `members` → enrôle des entités DÉJÀ posées (via `entities`/`bind`) par leur id (PNJ visibles, alliés-IA,
+ *  affûts inertes). Les deux fusionnent dans un même roster — plus besoin de `scene.encounters.push` impératif. */
+export interface EncounterSpec {
+  id: string;
+  enemies?: AuthoredEnemy[];
+  members?: EncounterMember[];
+  surprise?: 'party' | 'enemies';
+  onVictory?: Flow;
+}
+
 export interface MapSpec {
   size: [number, number];
   id: string;
@@ -119,7 +133,7 @@ export interface MapSpec {
   effectZones?: SceneEffectZone[];
   triggers?: Trigger[];
   dialogues?: Dialogue[];
-  encounters?: AuthoredEncounter[];
+  encounters?: EncounterSpec[];
 }
 
 /** Découpe une chaîne ASCII en lignes, en ne retirant QUE les lignes vides de tête/queue (une chaîne
@@ -272,9 +286,15 @@ export function buildScene(spec: MapSpec): Scene {
   if (spec.triggers?.length) s = { ...s, triggers: [...s.triggers, ...spec.triggers] };
   if (spec.dialogues?.length) s = { ...s, dialogues: [...s.dialogues, ...spec.dialogues] };
 
-  // 8. encounters (terse → entités cachées + members)
-  const built = buildEncounters(spec.encounters ?? []);
-  s = { ...s, entities: [...s.entities, ...built.entities], encounters: built.encounters };
+  // 8. encounters : terse (`enemies` → entités fraîches cachées) FUSIONNÉ avec `members` (entités déjà posées)
+  const encEntities: SceneEntity[] = [];
+  const encDefs: EncounterDef[] = [];
+  for (const e of spec.encounters ?? []) {
+    const built = buildEncounter({ id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory });
+    encEntities.push(...built.entities);
+    encDefs.push({ ...built.encounter, members: [...(built.encounter.members ?? []), ...(e.members ?? [])] });
+  }
+  s = { ...s, entities: [...s.entities, ...encEntities], encounters: encDefs };
 
   return s;
 }

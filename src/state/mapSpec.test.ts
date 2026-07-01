@@ -114,3 +114,24 @@ describe('buildScene — encounters (terse → entités + members)', () => {
     expect(gob?.pos).toEqual({ x: 8, y: 3 });
   });
 });
+
+describe('buildScene — encounters à membres PRÉ-DÉCLARÉS (roster mixte)', () => {
+  const s = buildScene({
+    id: 'e2', nom: 'E2', size: [10, 6], terrain: 'herbe',
+    entities: [{ id: 'pnj-1', kind: 'personnage', pos: { x: 5, y: 3 }, ref: 'garde-du-village', label: 'Garde' }],
+    encounters: [
+      // terse (entité fraîche cachée) + membre référençant une entité DÉJÀ posée (visible, dialogue…)
+      { id: 'mix', enemies: [{ ref: 'gobelin', pos: { x: 8, y: 3 } }], members: [{ entityId: 'pnj-1', side: 'ally', ai: true }] },
+    ],
+  });
+  it('fusionne les members terse et les members pré-déclarés, sans dupliquer l’entité existante', () => {
+    expect(s.encounters[0].members).toEqual([
+      { entityId: 'enemy-mix-0' },
+      { entityId: 'pnj-1', side: 'ally', ai: true },
+    ]);
+    expect(s.entities.find((e) => e.id === 'enemy-mix-0')?.ref).toBe('gobelin');
+    const pnj = s.entities.filter((e) => e.id === 'pnj-1');
+    expect(pnj).toHaveLength(1); // pas de doublon fantôme
+    expect(pnj[0].ref).toBe('garde-du-village');
+  });
+});

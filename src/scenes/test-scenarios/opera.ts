@@ -1,6 +1,7 @@
 import { makePregens } from '../../data/pregens';
-import { parseAsciiRows } from '../../state/asciiMap';
-import type { Scene, SceneEntity, CustomStatblock } from '../../state/scene';
+import type { SceneEntity, CustomStatblock } from '../../state/scene';
+import type { MapSpec } from '../../state/mapSpec';
+import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 import { flowFromEffects, testFlow, type Flow } from '../../state/flow';
 
@@ -12,7 +13,9 @@ const ETUDIANT: CustomStatblock = {
 
 /**
  * « Une nuit à l'Opéra » — le Théâtre Staatsoper, reconstitué d'après le PLAN du scénario (NADJ ch.8,
- * source 08 l.28-41). Carte AUTHORÉE EN ASCII (une grille par étage, comme l'arène), 100 % en données.
+ * source 08 l.28-41). Carte DÉCLARÉE en `MapSpec` → compilée par `buildScene` (100 % en données, éditable) :
+ * la grille reste authorée en ASCII (une par étage, comme l'arène), la logique d'intrigue vit dans les
+ * champs `triggers`/`dialogues`/`encounters` du spec.
  *
  *  Rez-de-chaussée (couche 0) : coulisses + coursive (mur arrière) → scène (SURÉLEVÉE +1 m) → PARTERRE
  *  (auditorium) → HALL (foyer) → vestibule d'entrée ; deux RAMPES jumelles aux angles du hall montent à
@@ -20,10 +23,14 @@ const ETUDIANT: CustomStatblock = {
  *  Étage supérieur (couche 1, à 2 m) : galerie moquettée desservant les LOGES (de chaque côté) + la LOGE
  *  ROYALE et son ANTICHAMBRE au fond-centre (où les agents de Dammenblatz posent la bombe, l.62/131).
  *
- *  Légende : # mur · = planches (coulisses/coursive) · S plancher (scène, +1 m) · M marbre (parterre) ·
- *  H dalle (hall/vestibule) · E plancher (RAMPE vers l'étage) · L plancher (galerie/loges) · D porte.
+ *  Légende : # mur (tuile pleine) · = planches (coulisses/coursive) · S plancher (scène, +1 m) · M marbre
+ *  (parterre) · H dalle (hall/vestibule) · E plancher (RAMPE vers l'étage) · L plancher (galerie/loges) ·
+ *  D porte. Le `.`/l'espace = terrain de base (mur en tuile pleine au z0, vide au z1).
  */
-const LEGEND: Record<string, string> = { M: 'marbre', S: 'plancher', H: 'dalle', E: 'plancher', L: 'plancher' };
+const LEGEND: Record<string, string> = {
+  '#': 'mur', D: 'porte', '=': 'planches',
+  M: 'marbre', S: 'plancher', H: 'dalle', E: 'plancher', L: 'plancher',
+};
 
 const Z0 = [
   '#####################',
@@ -43,7 +50,7 @@ const Z0 = [
   '#EEHHHHHHHHHHHHHHHEE#',
   '#..HHHHHHHHHHHHHHH..#',
   '#......HHHHHHH......#', // vestibule (Porte des Dames / des Seigneurs, entrée du groupe)
-];
+].join('\n');
 
 const Z1 = [
   '.....................',
@@ -63,25 +70,11 @@ const Z1 = [
   '...LLLLLLLLLLLLLLL...',
   '...LLLLLLLLLLLLLLL...', // ANTICHAMBRE de la loge royale (la plante piégée y est livrée)
   '.....................',
-];
+].join('\n');
 
-const g0 = parseAsciiRows(Z0, 'mur', LEGEND);
-const g1 = parseAsciiRows(Z1, 'vide', LEGEND);
-const W = g0.w, H = g0.h;
-
-// HAUTEURS MÉTRIQUES (tableaux PARALLÈLES aux tuiles). Couche 0 : la SCÈNE est surélevée de 1 m (Δ1 ⇒
-// rampe douce depuis le parterre/les coulisses) ; les deux RAMPES d'angle (cases 'E') montent 0→1→2 m pour
-// rejoindre la galerie. Couche 1 : galerie/loges à 2 m (la rampe l'y rejoint à hauteur égale). Aucun escalier.
-const idx = (x: number, y: number) => y * W + x;
-const setH = (g: number[], x: number, y: number, h: number) => { g[idx(x, y)] = h; };
-const h0 = new Array(W * H).fill(0) as number[];
-for (let y = 2; y <= 4; y++) for (let x = 5; x <= 15; x++) setH(h0, x, y, 1); // scène surélevée +1 m
-for (const x of [1, 2, 18, 19]) { setH(h0, x, 13, 2); setH(h0, x, 14, 1); } // rampes jumelles (haut 2 m / bas 1 m) → galerie
-const h1 = new Array(W * H).fill(2) as number[]; // étage (galerie/loges) à 2 m
+const W = 21, H = 17;
 
 const ents: SceneEntity[] = [
-  { id: 'start', kind: 'heroStart', pos: { x: 10, y: 16 } }, // vestibule d'entrée
-
   // Scène (z0) : rideau au fond, pupitre du chef devant.
   { id: 'rideau-g', kind: 'prop', ref: 'rideau-scene', pos: { x: 7, y: 2 } },
   { id: 'rideau-c', kind: 'prop', ref: 'rideau-scene', pos: { x: 10, y: 2 } },
@@ -152,19 +145,30 @@ const ents: SceneEntity[] = [
   // la pente est rendue par le relief (parois douces de `groundTile`).
 ];
 
-const scene: Scene = {
+const spec: MapSpec = {
   id: 'test-opera-theatre',
   nom: 'Opéra — Le théâtre',
   description: 'Le Théâtre Staatsoper d\'après le plan du scénario : coulisses, scène (surélevée), parterre, hall et rampes jumelles ; galerie de loges et loge royale à l\'étage (couche surélevée à 2 m).',
-  dimensions: { w: W, h: H },
+  size: [W, H],
   ambiance: 'interieur',
+  // Couche 0 = mur en tuile pleine par défaut (le `.`/l'espace y valent 'mur', comme le char '#') ; couche 1 = vide.
+  terrain: 'mur',
+  legend: LEGEND,
   // Deux COUCHES d'empilement : parterre (z0, scène +1 m) + galerie/loges (z1, 2 m). Les rampes d'angle
   // relient les deux par leur dénivelé (surfaceLink) — plus aucun escalier explicite.
-  layers: [
-    { z: 0, tiles: g0.tiles, height: h0 },
-    { z: 1, tiles: g1.tiles, height: h1 },
+  levels: { z0: Z0, z1: Z1 },
+  // HAUTEURS MÉTRIQUES. Couche 0 : la SCÈNE est surélevée de 1 m (Δ1 ⇒ rampe douce depuis le parterre/les
+  // coulisses) ; les deux RAMPES d'angle (cases 'E') montent 0→1→2 m pour rejoindre la galerie. Couche 1 :
+  // galerie/loges à 2 m (la rampe l'y rejoint à hauteur égale). Aucun escalier.
+  relief: [
+    { rect: [5, 2, 15, 4], height: 1, z: 0 }, // scène surélevée +1 m
+    // rampes jumelles (haut 2 m en y=13 / bas 1 m en y=14) → galerie
+    { cell: [1, 13], height: 2, z: 0 }, { cell: [2, 13], height: 2, z: 0 }, { cell: [18, 13], height: 2, z: 0 }, { cell: [19, 13], height: 2, z: 0 },
+    { cell: [1, 14], height: 1, z: 0 }, { cell: [2, 14], height: 1, z: 0 }, { cell: [18, 14], height: 1, z: 0 }, { cell: [19, 14], height: 1, z: 0 },
+    { rect: [0, 0, W - 1, H - 1], height: 2, z: 1 }, // étage (galerie/loges) à 2 m
   ],
   entities: ents,
+  heroStart: { x: 10, y: 16 }, // vestibule d'entrée
   dialogues: [
     {
       id: 'dlg-comtesse',
@@ -272,6 +276,9 @@ const scene: Scene = {
       ]),
     },
   ],
+  // La rencontre « enc-etudiants » enrôle les DEUX étudiants DÉJÀ posés dans `entities` (visibles, avec
+  // dialogue/statblock) via `members` : `MapSpec.encounters` fusionne les `members` pré-déclarés avec les
+  // `enemies` terses — plus de `scene.encounters.push` impératif.
   encounters: [
     {
       id: 'enc-etudiants',
@@ -287,6 +294,8 @@ const scene: Scene = {
   startMessage:
     'Le Théâtre Staatsoper. Du vestibule, le hall s’ouvre sur le parterre face à la scène surélevée ; deux rampes d’angle montent à la galerie des loges, où siège la Comtesse dans la loge royale.',
 };
+
+const scene = buildScene(spec);
 
 export const scenario: TestScenario = {
   id: 'opera',

@@ -1,7 +1,7 @@
 import { flowEffects, EMPTY_FLOW, type Flow } from '../../state/flow';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { validateScene } from '../../state/validateScene';
-import { isWalkable, type Effect } from '../../state/scene';
+import { isWalkable, layerTiles, type Effect } from '../../state/scene';
 import { pathTo } from '../../state/path';
 import { useGame } from '../../state/store';
 import { applyEffects } from '../../state/combatEffects';
@@ -10,13 +10,69 @@ import { makeRNG } from '../../engine/dice';
 import { scenario } from './opera';
 
 /**
- * Le théâtre multi-niveaux est du CONTENU pur (données éditeur). Ce gate vérifie qu'il est
- * structurellement cohérent et passe `validateScene` sans erreur — pas de loge orpheline, pas de
- * prop hors carte, pas d'entité sur un étage inexistant. C'est la preuve « zéro hardcode » : la
- * salle est assemblée avec `levels`/`SceneEntity.z`/props et reste éditable + valide.
+ * La salle est désormais COMPILÉE depuis un `MapSpec` par `buildScene` (headless-editor) : la grille
+ * reste authorée en ASCII (une par étage), la logique d'intrigue vit dans `triggers`/`dialogues`, et le
+ * roster de la rencontre optionnelle est attaché à la scène produite. Ce bloc verrouille l'ÉQUIVALENCE
+ * de la Scene produite : dimensions/couches/tuiles/hauteurs/entités attendues, comme l'ancienne plomberie
+ * impérative les posait (mêmes choix : '#'/'D' en tuiles pleines, scène +1 m, rampes 0→1→2 m, étage à 2 m).
  */
-describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', () => {
+describe('Scénario « Opéra — Théâtre » : Scene produite par buildScene(MapSpec)', () => {
   const scene = scenario.scene;
+  const idx = (x: number, y: number) => y * scene.dimensions.w + x;
+
+  it('a l’id/nom/dimensions/ambiance attendus (scalaires du spec)', () => {
+    expect(scene.id).toBe('test-opera-theatre');
+    expect(scene.nom).toBe('Opéra — Le théâtre');
+    expect(scene.dimensions).toEqual({ w: 21, h: 17 });
+    expect(scene.ambiance).toBe('interieur');
+  });
+
+  it('pose le mur/porte en TUILE PLEINE (choix conservé : # → mur, D → porte, base z0 = mur)', () => {
+    const t0 = layerTiles(scene, 0);
+    expect(t0[idx(0, 0)]).toBe('mur'); // char '#' → mur
+    expect(t0[idx(4, 4)]).toBe('porte'); // char 'D' (porte de scène gauche)
+    expect(t0[idx(1, 5)]).toBe('mur'); // '.' du bord parterre → base 'mur'
+    expect(t0[idx(5, 5)]).toBe('marbre'); // parterre
+    expect(t0[idx(6, 2)]).toBe('plancher'); // scène
+    // aucune arête de mur : la géométrie de jeu reste des tuiles pleines, pas des murs d'arête
+    expect(scene.walls ?? []).toHaveLength(0);
+  });
+
+  it('reproduit les hauteurs métriques : scène +1 m, rampes d’angle 0→1→2 m, étage z1 à 2 m', () => {
+    const h0 = scene.layers.find((l) => l.z === 0)!.height!;
+    const h1 = scene.layers.find((l) => l.z === 1)!.height!;
+    // scène surélevée (rect x5..15, y2..4)
+    expect(h0[idx(5, 2)]).toBe(1);
+    expect(h0[idx(15, 4)]).toBe(1);
+    expect(h0[idx(4, 2)]).toBe(0); // coulisse voisine au sol
+    // rampes jumelles : haut 2 m (y13), bas 1 m (y14), plat ailleurs
+    for (const x of [1, 2, 18, 19]) {
+      expect(h0[idx(x, 13)]).toBe(2);
+      expect(h0[idx(x, 14)]).toBe(1);
+    }
+    expect(h0[idx(10, 8)]).toBe(0); // parterre au sol
+    // étage entier à 2 m
+    expect(h1.every((v) => v === 2)).toBe(true);
+  });
+
+  it('porte l’intrigue dans les champs du spec : trigger d’armement, dialogue gaté, rencontre roster', () => {
+    // le trigger d'intrigue (recopié tel quel) est présent avec sa zone et son once
+    const arm = scene.triggers.find((t) => t.id === 'armer-bombe')!;
+    expect(arm).toBeDefined();
+    expect(arm.rect).toEqual({ x: 4, y: 5, w: 13, h: 8 });
+    expect(arm.once).toBe(true);
+    // la plante piégée (interact avec test) est bien une entité posée sur z1
+    const plante = scene.entities.find((e) => e.id === 'plante-bombe')!;
+    expect(plante.z).toBe(1);
+    expect(plante.interact?.flow.kind).toBe('test');
+    // le dialogue gaté de la Comtesse est présent (branche `when: flag bombeDesamorcee`)
+    const dlg = scene.dialogues.find((d) => d.id === 'dlg-comtesse')!;
+    expect(dlg.nodes[0].choices.some((c) => c.when?.kind === 'flag' && c.when.expr === 'bombeDesamorcee')).toBe(true);
+    // la rencontre optionnelle enrôle les DEUX étudiants pré-posés (members → entités existantes)
+    const enc = scene.encounters.find((e) => e.id === 'enc-etudiants')!;
+    expect(enc.members?.map((m) => m.entityId)).toEqual(['etudiant-1', 'etudiant-2']);
+    for (const id of ['etudiant-1', 'etudiant-2']) expect(scene.entities.some((e) => e.id === id)).toBe(true);
+  });
 
   it('passe validateScene sans erreur (avertissements tolérés)', () => {
     const errors = validateScene([scene]).filter((w) => w.level === 'error');

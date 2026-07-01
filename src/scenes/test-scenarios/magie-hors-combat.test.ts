@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { scenario } from './magie-hors-combat';
 import { findSpell } from '../../data';
+import { layerTiles } from '../../state/scene';
 import { knowsCastingSkill, isArcaneSpell, isMagicMissile, castInfo } from '../../engine/magic';
 
 /** Le scénario doit être JOUABLE hors combat : les lanceurs maîtrisent réellement leur Compétence
@@ -14,6 +15,17 @@ describe('Scénario Magie hors combat', () => {
   it('est un scénario d’EXPLORATION (pas d’autoCombat)', () => {
     expect(scenario.autoCombat).toBeUndefined();
     expect(party.every((h) => h.kind === 'hero')).toBe(true);
+  });
+
+  it('la scène compilée (buildScene) est une arène 14×9 plate, départ héros en (2,4), sans combat', () => {
+    const scene = scenario.scene;
+    expect(scene.id).toBe('test-magie-hors-combat');
+    expect(scene.dimensions).toEqual({ w: 14, h: 9 });
+    expect(scene.layers).toHaveLength(1);
+    expect(layerTiles(scene, 0).every((t) => t === 'herbe')).toBe(true); // remplissage plat par défaut
+    expect(scene.entities.find((e) => e.kind === 'heroStart')?.pos).toEqual({ x: 2, y: 4 });
+    expect(scene.encounters).toHaveLength(0); // pas de rencontre : exploration pure
+    expect(scene.startMessage).toContain('Exploration');
   });
 
   it('le Sorcier maîtrise l’incantation et la Focalisation, et connaît un Sort d’Arcane focalisable', () => {

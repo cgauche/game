@@ -4,7 +4,7 @@ import { attachMutation } from '../../engine/corruption';
 import { recomputeLoadout } from '../../engine/items';
 import { makePriest } from './_casters';
 import type { Combatant } from '../../engine/types';
-import { arena, setEncounters } from './_shared';
+import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
 /**
@@ -29,44 +29,50 @@ function mutate(c: Combatant, rolls: number[]): Combatant {
   return c;
 }
 
-const scene = arena({ id: 'test-bestiaire', nom: 'Bestiaire, traits & états', w: 26, h: 20, heroStart: { x: 3, y: 10 } });
-scene.startMessage =
-  'Grande ménagerie. Le groupe porte à lui seul les 19 mutations physiques (vérifiez les calques/morpho sur ' +
-  'les pions et les portraits du HUD) ; Sœur Greta de Shallya peut purger les états. Le Fantôme est Éthéré ' +
-  '(frappez-le avec un sort !) et Instable ; la Démonette sauvegarde (Démoniaque), riposte (Champion), perturbe ' +
-  '(−20 à 4 m) et expose à la Corruption en fin de combat ; le Troll régénère (Stupide) ; l’Araignée emmaillote ' +
-  '(Toile→Empêtré, Venin) ; la Cockatrice pétrifie du regard (Redoutable) ; le Griffon est Énorme (Piétinement) ; ' +
-  'la Pieuvre frappe de ses 8 tentacules (gratuites, Empêtré) ; le Sorcier mutant lance Fléchette ; le Squelette ' +
-  'est un facultatif « Élite » aux Caractéristiques aléatoires ; l’Envoûteuse débuffe (⚠ Peur 2 + Terreur 2).';
-setEncounters(scene, [
-  {
-    id: 'enc-bestiaire',
-    enemies: [
-      // Traits de créature (LDB 85).
-      { ref: 'fantome', pos: { x: 14, y: 4 } }, // Éthéré + Instable + Peur
-      { ref: 'demonette-de-slaanesh', pos: { x: 16, y: 7 } }, // Démoniaque/Champion/Perturbant/Corruption
-      { ref: 'troll', pos: { x: 15, y: 12 } }, // Régénération/Stupide/Infecté
-      // Infligeurs d'états + Énorme.
-      { ref: 'araignee-geante', pos: { x: 18, y: 15 } }, // Toile→Empêtré, Bestial, Venin
-      { ref: 'cockatrice', pos: { x: 20, y: 5 } }, // regard pétrifiant + Redoutable
-      { ref: 'griffon', pos: { x: 22, y: 10 } }, // Énorme → Piétinement (l'arène 26×20 lui laisse la place)
-      { ref: 'envouteuse', pos: { x: 24, y: 12 } }, // 12 sorts → débuffs + Peur/Terreur
-      // Statblocs d'auteur (LDB 76/78/85).
-      { ref: 'pieuvre-des-tourbieres', pos: { x: 18, y: 18 } }, // « 8 Tentacules +9 » gratuites, Empêtré
-      {
-        statblock: {
-          name: 'Sorcier mutant',
-          char: { M: 4, CC: 30, CT: 30, F: 30, E: 30, I: 40, Ag: 30, Dex: 30, Int: 40, FM: 45, Soc: 30 },
-          traits: [{ id: 'arme', value: 4, arg: 'Dague' }, { id: 'lanceur-de-sorts', arg: 'Sorcellerie' }, { id: 'corruption', arg: 'Mineure' }],
-          spells: ['flechette'], // id de sort (CustomStatblock.spells = string[] d'ids)
+const scene = buildScene({
+  id: 'test-bestiaire',
+  nom: 'Bestiaire, traits & états',
+  description: 'Arène de test.',
+  size: [26, 20],
+  heroStart: [3, 10],
+  startMessage:
+    'Grande ménagerie. Le groupe porte à lui seul les 19 mutations physiques (vérifiez les calques/morpho sur ' +
+    'les pions et les portraits du HUD) ; Sœur Greta de Shallya peut purger les états. Le Fantôme est Éthéré ' +
+    '(frappez-le avec un sort !) et Instable ; la Démonette sauvegarde (Démoniaque), riposte (Champion), perturbe ' +
+    '(−20 à 4 m) et expose à la Corruption en fin de combat ; le Troll régénère (Stupide) ; l’Araignée emmaillote ' +
+    '(Toile→Empêtré, Venin) ; la Cockatrice pétrifie du regard (Redoutable) ; le Griffon est Énorme (Piétinement) ; ' +
+    'la Pieuvre frappe de ses 8 tentacules (gratuites, Empêtré) ; le Sorcier mutant lance Fléchette ; le Squelette ' +
+    'est un facultatif « Élite » aux Caractéristiques aléatoires ; l’Envoûteuse débuffe (⚠ Peur 2 + Terreur 2).',
+  encounters: [
+    {
+      id: 'enc-bestiaire',
+      enemies: [
+        // Traits de créature (LDB 85).
+        { ref: 'fantome', pos: { x: 14, y: 4 } }, // Éthéré + Instable + Peur
+        { ref: 'demonette-de-slaanesh', pos: { x: 16, y: 7 } }, // Démoniaque/Champion/Perturbant/Corruption
+        { ref: 'troll', pos: { x: 15, y: 12 } }, // Régénération/Stupide/Infecté
+        // Infligeurs d'états + Énorme.
+        { ref: 'araignee-geante', pos: { x: 18, y: 15 } }, // Toile→Empêtré, Bestial, Venin
+        { ref: 'cockatrice', pos: { x: 20, y: 5 } }, // regard pétrifiant + Redoutable
+        { ref: 'griffon', pos: { x: 22, y: 10 } }, // Énorme → Piétinement (l'arène 26×20 lui laisse la place)
+        { ref: 'envouteuse', pos: { x: 24, y: 12 } }, // 12 sorts → débuffs + Peur/Terreur
+        // Statblocs d'auteur (LDB 76/78/85).
+        { ref: 'pieuvre-des-tourbieres', pos: { x: 18, y: 18 } }, // « 8 Tentacules +9 » gratuites, Empêtré
+        {
+          statblock: {
+            name: 'Sorcier mutant',
+            char: { M: 4, CC: 30, CT: 30, F: 30, E: 30, I: 40, Ag: 30, Dex: 30, Int: 40, FM: 45, Soc: 30 },
+            traits: [{ id: 'arme', value: 4, arg: 'Dague' }, { id: 'lanceur-de-sorts', arg: 'Sorcellerie' }, { id: 'corruption', arg: 'Mineure' }],
+            spells: ['flechette'], // id de sort (CustomStatblock.spells = string[] d'ids)
+          },
+          pos: { x: 23, y: 6 },
         },
-        pos: { x: 23, y: 6 },
-      },
-      { ref: 'squelette', pos: { x: 20, y: 15 }, optionals: [{ id: 'elite' }], randomChars: true }, // facultatif Élite + caracs aléatoires
-      { ref: 'mutant', pos: { x: 16, y: 17 } }, // Mutant ennemi → visuels de mutation tirés au hasard du même registre
-    ],
-  },
-]);
+        { ref: 'squelette', pos: { x: 20, y: 15 }, optionals: [{ id: 'elite' }], randomChars: true }, // facultatif Élite + caracs aléatoires
+        { ref: 'mutant', pos: { x: 16, y: 17 } }, // Mutant ennemi → visuels de mutation tirés au hasard du même registre
+      ],
+    },
+  ],
+});
 
 export const scenario: TestScenario = {
   id: 'bestiaire',

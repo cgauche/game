@@ -1,5 +1,5 @@
 import { pregenParty, PREGEN } from '../../data/pregens';
-import { arena, setEncounters } from './_shared';
+import { buildScene } from '../../state/mapSpec';
 import { flowFromEffects } from '../../state/flow';
 import { clone, makePriest, makeSorceress, makeFlagellant } from './_casters';
 import type { TestScenario } from './_shared';
@@ -12,62 +12,67 @@ import type { Combatant } from '../../engine/types';
  * la fiche d'Aelindra (PX), traverser l'Influence corruptrice (exposition → mutation possible), puis
  * franchir la ligne pour engager le combat.
  */
-const scene = arena({ id: 'test-magie', nom: 'Magie en combat', w: 30, h: 22, heroStart: { x: 3, y: 11 } });
-scene.startMessage =
-  'Concile de prêtres (un par dieu à miracles de combat) + Haute Sorcière + flagellant + Tueur, face à une ' +
-  'warband ET un trio de casters ennemis (Eusapia, Envoûteuse, Sorcière). EXPLORATION d’abord : fiche ' +
-  'd’Aelindra → Avancement (mémoriser un sort aux PX) ; traversez la zone de Malepierre (Influence ' +
-  'corruptrice → mutation possible, Aelindra est proche du seuil) ; PUIS franchissez la ligne à l’est pour ' +
-  'engager. En combat : enchantez/bénissez/invoquez/drainez, Explosion au clic-case (ZdE), surincantez, ' +
-  'Contre-sort & dissipation des deux camps ; le Prêtre a 3 Péchés (Colère possible même sur Prière réussie) ; ' +
-  '⚠ l’Envoûteuse cause Peur 2 + Terreur 2 à l’ouverture (Test de Psychologie).';
-
-// Influence corruptrice (LDB 19) puis ligne d'engagement : deux bandes verticales que le groupe traverse
-// en avançant vers l'est (réfs ennemies par ID STABLE — un libellé retomberait sur un mannequin B:10).
-scene.triggers = [
-  {
-    id: 'trg-corruption',
-    rect: { x: 10, y: 1, w: 1, h: 20 },
-    once: true,
-    flow: flowFromEffects([
-      { type: 'journal', text: 'Une veine de malepierre suinte entre les dalles — l’air poisse (Influence corruptrice modérée).' },
-      { type: 'corruptionExposure', level: 'moderee', skill: 'resistance' },
-    ]),
-  },
-  {
-    id: 'engager-le-combat',
-    rect: { x: 16, y: 1, w: 1, h: 20 },
-    once: true,
-    flow: flowFromEffects([
-      { type: 'journal', text: 'La warband vous a repérés — les casters ennemis lèvent déjà les mains. À l’assaut !' },
-      { type: 'startCombat', encounter: 'enc-magie' },
-    ]),
-  },
-];
-setEncounters(scene, [
-  {
-    id: 'enc-magie',
-    enemies: [
-      // Meute de bêtes (rapides, chargent) — flanc haut.
-      { ref: 'loup', pos: { x: 20, y: 7 } },
-      { ref: 'loup', pos: { x: 21, y: 8 } },
-      { ref: 'sanglier', pos: { x: 22, y: 6 } },
-      // Mob peau-verte — centre groupé (cible de choix pour une ZdE bien posée).
-      { ref: 'orc', pos: { x: 25, y: 11 } },
-      { ref: 'orc', pos: { x: 26, y: 12 } },
-      { ref: 'gobelin', pos: { x: 24, y: 13 } },
-      { ref: 'gobelin', pos: { x: 25, y: 14 } },
-      // Hors-la-loi + bestiaux — flanc bas.
-      { ref: 'seigneur-brigand', pos: { x: 23, y: 16 } },
-      { ref: 'brigand', pos: { x: 24, y: 17 } },
-      { ref: 'ungor', pos: { x: 27, y: 9 } },
-      // TRIO de casters ennemis au fond (l'IA adverse joue son arsenal + Contre-sort/dissipation).
-      { ref: 'eusapia-balacanon', pos: { x: 28, y: 9 } },
-      { ref: 'envouteuse', pos: { x: 28, y: 11 } },
-      { ref: 'sorciere', pos: { x: 28, y: 13 } },
-    ],
-  },
-]);
+const scene = buildScene({
+  id: 'test-magie',
+  nom: 'Magie en combat',
+  description: 'Arène de test.',
+  size: [30, 22],
+  heroStart: [3, 11],
+  startMessage:
+    'Concile de prêtres (un par dieu à miracles de combat) + Haute Sorcière + flagellant + Tueur, face à une ' +
+    'warband ET un trio de casters ennemis (Eusapia, Envoûteuse, Sorcière). EXPLORATION d’abord : fiche ' +
+    'd’Aelindra → Avancement (mémoriser un sort aux PX) ; traversez la zone de Malepierre (Influence ' +
+    'corruptrice → mutation possible, Aelindra est proche du seuil) ; PUIS franchissez la ligne à l’est pour ' +
+    'engager. En combat : enchantez/bénissez/invoquez/drainez, Explosion au clic-case (ZdE), surincantez, ' +
+    'Contre-sort & dissipation des deux camps ; le Prêtre a 3 Péchés (Colère possible même sur Prière réussie) ; ' +
+    '⚠ l’Envoûteuse cause Peur 2 + Terreur 2 à l’ouverture (Test de Psychologie).',
+  // Influence corruptrice (LDB 19) puis ligne d'engagement : deux bandes verticales que le groupe traverse
+  // en avançant vers l'est (réfs ennemies par ID STABLE — un libellé retomberait sur un mannequin B:10).
+  triggers: [
+    {
+      id: 'trg-corruption',
+      rect: { x: 10, y: 1, w: 1, h: 20 },
+      once: true,
+      flow: flowFromEffects([
+        { type: 'journal', text: 'Une veine de malepierre suinte entre les dalles — l’air poisse (Influence corruptrice modérée).' },
+        { type: 'corruptionExposure', level: 'moderee', skill: 'resistance' },
+      ]),
+    },
+    {
+      id: 'engager-le-combat',
+      rect: { x: 16, y: 1, w: 1, h: 20 },
+      once: true,
+      flow: flowFromEffects([
+        { type: 'journal', text: 'La warband vous a repérés — les casters ennemis lèvent déjà les mains. À l’assaut !' },
+        { type: 'startCombat', encounter: 'enc-magie' },
+      ]),
+    },
+  ],
+  encounters: [
+    {
+      id: 'enc-magie',
+      enemies: [
+        // Meute de bêtes (rapides, chargent) — flanc haut.
+        { ref: 'loup', pos: { x: 20, y: 7 } },
+        { ref: 'loup', pos: { x: 21, y: 8 } },
+        { ref: 'sanglier', pos: { x: 22, y: 6 } },
+        // Mob peau-verte — centre groupé (cible de choix pour une ZdE bien posée).
+        { ref: 'orc', pos: { x: 25, y: 11 } },
+        { ref: 'orc', pos: { x: 26, y: 12 } },
+        { ref: 'gobelin', pos: { x: 24, y: 13 } },
+        { ref: 'gobelin', pos: { x: 25, y: 14 } },
+        // Hors-la-loi + bestiaux — flanc bas.
+        { ref: 'seigneur-brigand', pos: { x: 23, y: 16 } },
+        { ref: 'brigand', pos: { x: 24, y: 17 } },
+        { ref: 'ungor', pos: { x: 27, y: 9 } },
+        // TRIO de casters ennemis au fond (l'IA adverse joue son arsenal + Contre-sort/dissipation).
+        { ref: 'eusapia-balacanon', pos: { x: 28, y: 9 } },
+        { ref: 'envouteuse', pos: { x: 28, y: 11 } },
+        { ref: 'sorciere', pos: { x: 28, y: 13 } },
+      ],
+    },
+  ],
+});
 
 /** Un dieu à miracles de combat → un Prêtre COMPLET (toutes Bénédictions + Miracles, talents de culte). */
 const PRIESTS: { id: string; name: string; cult: string; chars: Record<string, number>; pos: { x: number; y: number } }[] = [
