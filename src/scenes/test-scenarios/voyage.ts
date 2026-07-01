@@ -5,7 +5,7 @@ import { contractDisease } from '../../engine/disease';
 import { itemFromTrappingById } from '../../engine/items';
 import { Combatant, SkillInstance } from '../../engine/types';
 import { WorldMap } from '../../state/worldMap';
-import { arena, setEncounters } from './_shared';
+import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
 /**
@@ -58,69 +58,108 @@ function groupe(): Combatant[] {
 }
 
 // ── Scènes : village de départ (auberge), hameau, bourg, cité d'arrivée (interlude), embuscade ──
-const village = arena({ id: 'test-voyage-village', nom: 'Village de Weiler', w: 14, h: 9, heroStart: { x: 3, y: 4 } });
-village.weather = 'pluie'; // nuit dehors = Exposition (la météo de la scène de départ suit le voyage)
-village.startMessage =
-  'Ouvrez la carte (🗺️) pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
-  'et depuis le hameau, la LONGUE route d’Eichenfeld (96 km, 3 nuits). Chacun tient son POSTE (Bjorn au plein air, ' +
-  'Mira aux aguets, Aldric cartographie, Greta fourrage) — le mode Étapes (EDOC) est activé, coupable au panneau ' +
-  'Règles maison. Le groupe part blessé : chaque nuit, le bilan montre récupération, faim, Vérole et cauchemars. ' +
-  'À Eichenfeld, marchez sur le cercle : l’interlude d’Activités s’ouvre.';
-village.rest = { auberge: true };
-village.entities.push({ id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 8, y: 3 }, dialogueId: 'dlg-auberge' });
-village.dialogues = [
-  {
-    id: 'dlg-auberge',
-    start: 'accueil',
-    nodes: [
-      {
-        id: 'accueil',
-        speaker: 'Aubergiste',
-        text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
-        choices: [
-          { text: '🛏️ Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
-          { text: '🍲 Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
-          { text: 'Une autre fois. (Partir)' },
-        ],
-      },
-    ],
-  },
-];
+const village = buildScene({
+  id: 'test-voyage-village',
+  nom: 'Village de Weiler',
+  description: 'Arène de test.',
+  size: [14, 9],
+  terrain: 'herbe',
+  heroStart: [3, 4],
+  weather: 'pluie', // nuit dehors = Exposition (la météo de la scène de départ suit le voyage)
+  rest: { auberge: true },
+  startMessage:
+    'Ouvrez la carte (🗺️) pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
+    'et depuis le hameau, la LONGUE route d’Eichenfeld (96 km, 3 nuits). Chacun tient son POSTE (Bjorn au plein air, ' +
+    'Mira aux aguets, Aldric cartographie, Greta fourrage) — le mode Étapes (EDOC) est activé, coupable au panneau ' +
+    'Règles maison. Le groupe part blessé : chaque nuit, le bilan montre récupération, faim, Vérole et cauchemars. ' +
+    'À Eichenfeld, marchez sur le cercle : l’interlude d’Activités s’ouvre.',
+  entities: [
+    { id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 8, y: 3 }, dialogueId: 'dlg-auberge' },
+  ],
+  dialogues: [
+    {
+      id: 'dlg-auberge',
+      start: 'accueil',
+      nodes: [
+        {
+          id: 'accueil',
+          speaker: 'Aubergiste',
+          text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
+          choices: [
+            { text: '🛏️ Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
+            { text: '🍲 Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
+            { text: 'Une autre fois. (Partir)' },
+          ],
+        },
+      ],
+    },
+  ],
+});
 
-const hameau = arena({ id: 'test-voyage-hameau', nom: 'Hameau de Federholz', w: 12, h: 8, heroStart: { x: 3, y: 4 } });
-hameau.weather = 'pluie'; // la longue route part d'ici : camper sous la pluie expose
-hameau.startMessage = 'Vous voilà à Federholz. (Reprenez la carte pour repartir — la LONGUE route d’Eichenfeld part d’ici.)';
+const hameau = buildScene({
+  id: 'test-voyage-hameau',
+  nom: 'Hameau de Federholz',
+  description: 'Arène de test.',
+  size: [12, 8],
+  terrain: 'herbe',
+  heroStart: [3, 4],
+  weather: 'pluie', // la longue route part d'ici : camper sous la pluie expose
+  startMessage: 'Vous voilà à Federholz. (Reprenez la carte pour repartir — la LONGUE route d’Eichenfeld part d’ici.)',
+});
 
-const bourg = arena({ id: 'test-voyage-bourg', nom: 'Bourg de Steinbruck', w: 12, h: 8, heroStart: { x: 3, y: 4 } });
-bourg.startMessage = 'Steinbruck, ses quais et sa halle. (Reprenez la carte pour repartir.)';
+const bourg = buildScene({
+  id: 'test-voyage-bourg',
+  nom: 'Bourg de Steinbruck',
+  description: 'Arène de test.',
+  size: [12, 8],
+  terrain: 'herbe',
+  heroStart: [3, 4],
+  startMessage: 'Steinbruck, ses quais et sa halle. (Reprenez la carte pour repartir.)',
+});
 
 // Cité d'arrivée + INTERLUDE (Entre deux aventures) : marcher sur le cercle ouvre les Activités.
-const cite = arena({ id: 'test-voyage-cite', nom: 'Eichenfeld, la cité aux chênes', w: 12, h: 8, heroStart: { x: 3, y: 4 } });
-cite.startMessage = 'Eichenfeld, au bout de la longue route. Marchez sur le cercle runique pour l’entre-deux-aventures (Activités).';
-cite.entities.push({ id: 'cercle', kind: 'prop', ref: 'cercle-runique', pos: { x: 6, y: 4 } });
-cite.triggers = [
-  {
-    id: 'interlude',
-    rect: { x: 5, y: 3, w: 3, h: 3 },
-    once: true,
-    flow: flowFromEffects([
-      { type: 'giveMoney', gold: 30 },
-      { type: 'journal', text: 'Au bout de la route, vous touchez votre dû — 30 couronnes pour cet entre-deux. Le reste s’évaporera.' },
-      { type: 'interlude', weeks: 3 },
-    ]),
-  },
-];
-
-const embuscade = arena({ id: 'test-voyage-embuscade', nom: 'Sous-bois — embuscade', w: 14, h: 9, terrain: 'herbe', heroStart: { x: 2, y: 4 } });
-setEncounters(embuscade, [{
-  id: 'enc-vembuscade',
-  hidden: true, // embuscade de route : invisibles jusqu'au combat
-  enemies: [
-    { ref: 'gobelin', pos: { x: 9, y: 3 } },
-    { ref: 'gobelin', pos: { x: 10, y: 5 } },
+const cite = buildScene({
+  id: 'test-voyage-cite',
+  nom: 'Eichenfeld, la cité aux chênes',
+  description: 'Arène de test.',
+  size: [12, 8],
+  terrain: 'herbe',
+  heroStart: [3, 4],
+  startMessage: 'Eichenfeld, au bout de la longue route. Marchez sur le cercle runique pour l’entre-deux-aventures (Activités).',
+  entities: [
+    { id: 'cercle', kind: 'prop', ref: 'cercle-runique', pos: { x: 6, y: 4 } },
   ],
-  surprise: 'party', // annulée si la Perception du voyage est réussie (« le groupe les voit venir »)
-}]);
+  triggers: [
+    {
+      id: 'interlude',
+      rect: { x: 5, y: 3, w: 3, h: 3 },
+      once: true,
+      flow: flowFromEffects([
+        { type: 'giveMoney', gold: 30 },
+        { type: 'journal', text: 'Au bout de la route, vous touchez votre dû — 30 couronnes pour cet entre-deux. Le reste s’évaporera.' },
+        { type: 'interlude', weeks: 3 },
+      ]),
+    },
+  ],
+});
+
+const embuscade = buildScene({
+  id: 'test-voyage-embuscade',
+  nom: 'Sous-bois — embuscade',
+  description: 'Arène de test.',
+  size: [14, 9],
+  terrain: 'herbe',
+  heroStart: [2, 4],
+  encounters: [{
+    id: 'enc-vembuscade',
+    // embuscade de route : invisibles jusqu'au combat (hidden par ennemi, l'EncounterSpec n'a pas de hidden global)
+    enemies: [
+      { ref: 'gobelin', pos: { x: 9, y: 3 }, hidden: true },
+      { ref: 'gobelin', pos: { x: 10, y: 5 }, hidden: true },
+    ],
+    surprise: 'party', // annulée si la Perception du voyage est réussie (« le groupe les voit venir »)
+  }],
+});
 
 // ── Carte du monde : Weiler ↔ Federholz (piste dangereuse), Weiler ↔ Steinbruck (diligence), longue route ──
 const carte: WorldMap = {

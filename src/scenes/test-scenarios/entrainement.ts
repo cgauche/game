@@ -3,9 +3,9 @@ import { makeRNG } from '../../engine/dice';
 import { itemFromTrappingById, loadoutCreate, loadoutSetSlot, recomputeLoadout } from '../../engine/items';
 import type { Combatant, ItemInstance } from '../../engine/types';
 import { CustomStatblock } from '../../state/scene';
+import { buildScene } from '../../state/mapSpec';
 import { flowFromEffects } from '../../state/flow';
 import { pregen, PREGEN } from '../../data/pregens';
-import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 /**
@@ -70,51 +70,78 @@ function bretteur(): Combatant {
 }
 
 const W = 24, H = 14;
-const scene = arena({ id: 'terrain-entrainement', nom: "Terrain d'entraînement", w: W, h: H, terrain: 'sol', heroStart: { x: 3, y: 8 } });
-scene.ambientLight = 'nuit'; // brouillard de guerre : ~5 cases de vue de base ; lumière / vision nocturne révèlent
-// Muret de couvert (x=11, rangées y=3..6) : casse la ligne de vue vers le mannequin tapi derrière.
-const tiles = scene.layers[0].tiles as string[];
-for (let y = 3; y <= 6; y++) tiles[y * W + 11] = 'mur';
 
-// Braseros : îlots de lumière (la lice et le couloir sont éclairés ; le fond reste dans le noir).
-scene.entities.push(
-  { id: 'brasero-lice', kind: 'prop', ref: 'brasero', pos: { x: 14, y: 8 } },
-  { id: 'brasero-couloir', kind: 'prop', ref: 'brasero', pos: { x: 8, y: 11 } },
-);
-
-setEncounters(scene, [
-  {
-    id: 'enc-entrainement',
-    enemies: [
-      { statblock: MANNEQUIN, pos: { x: 13, y: 10 } }, // cible proche, éclairée → tir + rechargement
-      { statblock: MANNEQUIN, pos: { x: 13, y: 5 } }, //  derrière le muret → hors LdV (clic refusé)
-      { statblock: MANNEQUIN, pos: { x: 21, y: 2 } }, //  au loin dans le brouillard → invisible tant qu'on n'éclaire/approche pas
-      { ref: 'gobelin', pos: { x: 15, y: 7 } }, //         sparring : charge / Engagé / désengagement / deux armes
-      { ref: 'gobelin', pos: { x: 16, y: 9 } }, //         + cible plus petite que le Cheval → charge montée +20
-      { ref: 'cheval', pos: { x: 5, y: 10 }, mount: true, side: 'ally' }, // monture libre à enfourcher
-    ],
+/**
+ * Cour d'entraînement de NUIT, migrée sur `buildScene(MapSpec)`. Terrain 'sol' plein ; muret de couvert
+ * (colonne x=11, rangées 3-6) posé en tuiles 'mur' (`#`) via la grille `z0` — casse la ligne de vue vers
+ * le mannequin tapi derrière. Braséros = props (halos de lumière). La lice (bande x=7) lance l'exercice.
+ */
+const scene = buildScene({
+  id: 'terrain-entrainement',
+  nom: "Terrain d'entraînement",
+  description: 'Arène de test.',
+  size: [W, H],
+  terrain: 'sol',
+  ambientLight: 'nuit', // brouillard de guerre : ~5 cases de vue de base ; lumière / vision nocturne révèlent
+  heroStart: [3, 8],
+  // Muret de couvert (x=11, rangées y=3..6) : casse la ligne de vue vers le mannequin tapi derrière (`#` = mur).
+  levels: {
+    z0: [
+      '........................',
+      '........................',
+      '........................',
+      '...........#............',
+      '...........#............',
+      '...........#............',
+      '...........#............',
+      '........................',
+      '........................',
+      '........................',
+      '........................',
+      '........................',
+      '........................',
+      '........................',
+    ].join('\n'),
   },
-]);
-
-// La lice : franchir la bande (x=7) lance l'exercice au contact (on garde l'exploration AVANT pour le
-// brouillard et la forme d'arme dans la fiche).
-scene.triggers.push({
-  id: 'entrer-en-lice',
-  rect: { x: 7, y: 1, w: 1, h: 12 },
-  once: true,
-  flow: flowFromEffects([
-    { type: 'journal', text: "Vous entrez dans la lice ; l'instructeur lance l'exercice. En garde !" },
-    { type: 'startCombat', encounter: 'enc-entrainement' },
-  ]),
+  // Braseros : îlots de lumière (la lice et le couloir sont éclairés ; le fond reste dans le noir).
+  entities: [
+    { id: 'brasero-lice', kind: 'prop', ref: 'brasero', pos: { x: 14, y: 8 } },
+    { id: 'brasero-couloir', kind: 'prop', ref: 'brasero', pos: { x: 8, y: 11 } },
+  ],
+  // La lice : franchir la bande (x=7) lance l'exercice au contact (on garde l'exploration AVANT pour le
+  // brouillard et la forme d'arme dans la fiche).
+  triggers: [
+    {
+      id: 'entrer-en-lice',
+      rect: { x: 7, y: 1, w: 1, h: 12 },
+      once: true,
+      flow: flowFromEffects([
+        { type: 'journal', text: "Vous entrez dans la lice ; l'instructeur lance l'exercice. En garde !" },
+        { type: 'startCombat', encounter: 'enc-entrainement' },
+      ]),
+    },
+  ],
+  encounters: [
+    {
+      id: 'enc-entrainement',
+      enemies: [
+        { statblock: MANNEQUIN, pos: { x: 13, y: 10 } }, // cible proche, éclairée → tir + rechargement
+        { statblock: MANNEQUIN, pos: { x: 13, y: 5 } }, //  derrière le muret → hors LdV (clic refusé)
+        { statblock: MANNEQUIN, pos: { x: 21, y: 2 } }, //  au loin dans le brouillard → invisible tant qu'on n'éclaire/approche pas
+        { ref: 'gobelin', pos: { x: 15, y: 7 } }, //         sparring : charge / Engagé / désengagement / deux armes
+        { ref: 'gobelin', pos: { x: 16, y: 9 } }, //         + cible plus petite que le Cheval → charge montée +20
+        { ref: 'cheval', pos: { x: 5, y: 10 }, mount: true, side: 'ally' }, // monture libre à enfourcher
+      ],
+    },
+  ],
+  startMessage:
+    "Cour d'entraînement, de nuit (brouillard de guerre : ~5 cases de vue). Le Tireur porte une lanterne, le " +
+    "Tueur nain voit dans le noir, la Sorcière connaît Lumière. Ouvrez la fiche du Bretteur (onglet Sac) pour " +
+    "changer la FORME de son Arme simple (épée → hache…), puis avancez vers l'EST : franchir la lice lance " +
+    "l'exercice. Cibles à tirer/recharger (une derrière un muret = hors LdV, une au loin dans le brouillard), " +
+    "deux sparring-partners (charge / Engagé / désengagement / deux armes), une monture libre à enfourcher, " +
+    "l'Explosion de la Sorcière en zone.",
 });
-
-scene.startMessage =
-  "Cour d'entraînement, de nuit (brouillard de guerre : ~5 cases de vue). Le Tireur porte une lanterne, le " +
-  "Tueur nain voit dans le noir, la Sorcière connaît Lumière. Ouvrez la fiche du Bretteur (onglet Sac) pour " +
-  "changer la FORME de son Arme simple (épée → hache…), puis avancez vers l'EST : franchir la lice lance " +
-  "l'exercice. Cibles à tirer/recharger (une derrière un muret = hors LdV, une au loin dans le brouillard), " +
-  "deux sparring-partners (charge / Engagé / désengagement / deux armes), une monture libre à enfourcher, " +
-  "l'Explosion de la Sorcière en zone.";
 
 export const scenario: TestScenario = {
   id: 'entrainement',

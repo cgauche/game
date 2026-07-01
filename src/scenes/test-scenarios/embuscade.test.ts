@@ -1,0 +1,118 @@
+import { describe, it, expect } from 'vitest';
+import { scenario } from './embuscade';
+import { layerTiles } from '../../state/scene';
+
+/**
+ * Verrouille la Scene PRODUITE par `buildScene` dans `embuscade.ts` : dimensions, terrain case-à-case
+ * (route/bois recalculés indépendamment comme l'ancienne construction impérative), props de carnage,
+ * dialogue à 2 nœuds, trigger d'approche, et la rencontre des 5 mutants (visibles, ids/positions/statblocs).
+ */
+
+const W = 20, H = 14;
+
+/** Recalcule le terrain attendu par la MÊME logique que l'ancien `ambush-test.ts` (référence indépendante). */
+function expectedTiles(): string[] {
+  const t: string[] = new Array(W * H).fill('herbe');
+  const set = (x: number, y: number, v: string) => {
+    if (x >= 0 && y >= 0 && x < W && y < H) t[y * W + x] = v;
+  };
+  for (let x = 0; x < W; x++) {
+    set(x, 6, 'route');
+    set(x, 7, 'route');
+  }
+  for (let x = 0; x < W; x++) {
+    set(x, 0, 'bois');
+    set(x, 1, 'bois');
+    set(x, 13, 'bois');
+    set(x, 12, 'bois');
+    if (x % 2 === 0) set(x, 2, 'bois');
+    if (x % 3 === 0) set(x, 11, 'bois');
+  }
+  for (const [x, y] of [[4, 3], [9, 3], [14, 3], [18, 2], [3, 10], [8, 10], [13, 9], [18, 10]] as const) set(x, y, 'bois');
+  return t;
+}
+
+describe('embuscade — Scene produite par buildScene', () => {
+  const s = scenario.scene;
+
+  it('dimensions et une seule couche z0', () => {
+    expect(s.dimensions).toEqual({ w: W, h: H });
+    expect(s.layers.map((l) => l.z)).toEqual([0]);
+    expect(s.ambiance).toBe('exterieur');
+    expect(s.id).toBe('ambush-test');
+  });
+
+  it('terrain case-à-case identique à la construction impérative de référence', () => {
+    expect(layerTiles(s, 0)).toEqual(expectedTiles());
+  });
+
+  it('départ héros à (2,7)', () => {
+    const hero = s.entities.find((e) => e.kind === 'heroStart');
+    expect(hero?.pos).toEqual({ x: 2, y: 7 });
+  });
+
+  it('props de carnage (épave, attelage, corps, sang) posés', () => {
+    const prop = (id: string) => s.entities.find((e) => e.id === id);
+    expect(prop('epave')).toMatchObject({ kind: 'prop', ref: 'epave-carrosse', pos: { x: 15, y: 6 } });
+    expect(prop('cheval')).toMatchObject({ kind: 'prop', ref: 'cheval-mort', pos: { x: 12, y: 6 } });
+    expect(prop('corps1')).toMatchObject({ ref: 'cadavre', pos: { x: 11, y: 7 } });
+    expect(prop('corps2')?.pos).toEqual({ x: 14, y: 8 });
+    expect(prop('corps3')?.pos).toEqual({ x: 17, y: 7 });
+    expect(prop('sang1')).toMatchObject({ ref: 'mare-sang', anim: 'gush' });
+    expect(prop('sang2')?.anim).toBe('gush');
+    expect(prop('sang3')?.pos).toEqual({ x: 16, y: 8 });
+    expect(prop('sang4')?.pos).toEqual({ x: 12, y: 8 });
+  });
+
+  it('dialogue à 2 nœuds, flow inchangé', () => {
+    expect(s.dialogues).toHaveLength(1);
+    const dlg = s.dialogues[0];
+    expect(dlg.id).toBe('dlg-ambush');
+    expect(dlg.start).toBe('a1');
+    expect(dlg.nodes.map((n) => n.id)).toEqual(['a1', 'a2']);
+    expect(dlg.nodes[0].choices).toHaveLength(2);
+    expect(dlg.nodes[0].choices[1].next).toBe('a2');
+    expect(dlg.nodes[1].choices).toHaveLength(1);
+  });
+
+  it('trigger d’approche (rect → dialogue)', () => {
+    expect(s.triggers).toHaveLength(1);
+    expect(s.triggers[0]).toMatchObject({ id: 'approche', rect: { x: 8, y: 6, w: 3, h: 2 }, once: true });
+  });
+
+  it('rencontre des 5 mutants — visibles, ids/positions/statblocs', () => {
+    expect(s.encounters).toHaveLength(1);
+    const enc = s.encounters[0];
+    expect(enc.id).toBe('enc-mutants');
+    expect(enc.members).toEqual([
+      { entityId: 'enemy-enc-mutants-0' },
+      { entityId: 'enemy-enc-mutants-1' },
+      { entityId: 'enemy-enc-mutants-2' },
+      { entityId: 'enemy-enc-mutants-3' },
+      { entityId: 'enemy-enc-mutants-4' },
+    ]);
+    expect(enc.onVictory).toBeDefined();
+
+    const chef = s.entities.find((e) => e.id === 'enemy-enc-mutants-0');
+    expect(chef).toMatchObject({ ref: 'mutant', weapon: 'Arbalète', anim: 'standing', pos: { x: 17, y: 6 } });
+    expect(chef?.statblock?.name).toBe('Knud Cratinx');
+    expect(chef?.statblock?.char.CT).toBe(43);
+    expect(chef?.appearance).toEqual({ monster: { tete: 'lezard' } });
+    // VISIBLE : hidden par défaut → pas de hiddenUntilCombat sur les mutants qu'on voit se repaître.
+    expect(chef?.combat?.hiddenUntilCombat).toBeUndefined();
+
+    const positions = ['enemy-enc-mutants-0', 'enemy-enc-mutants-1', 'enemy-enc-mutants-2', 'enemy-enc-mutants-3', 'enemy-enc-mutants-4'].map(
+      (id) => s.entities.find((e) => e.id === id)?.pos,
+    );
+    expect(positions).toEqual([
+      { x: 17, y: 6 },
+      { x: 16, y: 7 },
+      { x: 14, y: 8 },
+      { x: 15, y: 7 },
+      { x: 12, y: 7 },
+    ]);
+    const terenz = s.entities.find((e) => e.id === 'enemy-enc-mutants-4');
+    expect(terenz?.weapon).toBe('Grande hache');
+    expect(terenz?.statblock?.name).toBe('Terenz');
+  });
+});

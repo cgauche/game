@@ -4,7 +4,7 @@ import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
 import { trappings } from '../../data';
 import { Combatant } from '../../engine/types';
 import { flowFromEffects } from '../../state/flow';
-import { arena } from './_shared';
+import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
 /**
@@ -65,39 +65,46 @@ function maitreArmes(): Combatant {
   return h;
 }
 
-const scene = arena({ id: 'test-marchand', nom: 'Marché & équipement', w: 16, h: 9, heroStart: { x: 2, y: 4 } });
-scene.startMessage =
-  'Deux échoppes : un armurier (parlez-lui directement) et une herboriste (engagez la conversation puis demandez ' +
-  'à voir ses marchandises). Faites évaluer l’épée mystérieuse du Négociant, marchandez, réparez sa maille, vendez ' +
-  'sa dague. Ouvrez la fiche du Maître d’armes (onglet Combat) pour l’écran d’emplacements (couches d’armure, ' +
-  'cape, bascule Set I/Set II).';
-scene.entities.push(
-  // Armurier : interaction directe → la boutique s'ouvre tout de suite.
-  { id: 'armurier', kind: 'personnage', label: 'Armurier', pos: { x: 7, y: 2 }, merchant: { archetype: 'armurier' } },
-  // Herboriste : DIALOGUE d'abord, puis un choix ouvre sa boutique via openMerchant (vend +25 % : village isolé).
-  { id: 'herboriste', kind: 'personnage', label: 'Herboriste', pos: { x: 12, y: 6 }, dialogueId: 'dlg-herbo', merchant: { archetype: 'herboriste', buyMarkup: 1.25 } },
-);
-scene.dialogues = [
-  {
-    id: 'dlg-herbo',
-    start: 'accueil',
-    nodes: [
-      {
-        id: 'accueil',
-        speaker: 'Herboriste',
-        text: 'Bonjour, voyageur. Cherchez-vous des remèdes… ou seulement à bavarder ?',
-        choices: [
-          { text: 'Montrez-moi vos marchandises.', flow: flowFromEffects([{ type: 'openMerchant', entityId: 'herboriste' }]) },
-          { text: 'Une autre fois. (Partir)' },
-        ],
-      },
-    ],
-  },
-];
-scene.triggers = [
-  // Bourse de départ (la nouvelle partie réinitialise l'argent à 0) — versée en s'avançant vers les échoppes.
-  { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', gold: 60 }, { type: 'journal', text: 'Vous disposez de 60 couronnes.' }]) },
-];
+const scene = buildScene({
+  id: 'test-marchand',
+  nom: 'Marché & équipement',
+  description: 'Arène de test.',
+  size: [16, 9],
+  terrain: 'herbe',
+  heroStart: [2, 4],
+  startMessage:
+    'Deux échoppes : un armurier (parlez-lui directement) et une herboriste (engagez la conversation puis demandez ' +
+    'à voir ses marchandises). Faites évaluer l’épée mystérieuse du Négociant, marchandez, réparez sa maille, vendez ' +
+    'sa dague. Ouvrez la fiche du Maître d’armes (onglet Combat) pour l’écran d’emplacements (couches d’armure, ' +
+    'cape, bascule Set I/Set II).',
+  entities: [
+    // Armurier : interaction directe → la boutique s'ouvre tout de suite.
+    { id: 'armurier', kind: 'personnage', label: 'Armurier', pos: { x: 7, y: 2 }, merchant: { archetype: 'armurier' } },
+    // Herboriste : DIALOGUE d'abord, puis un choix ouvre sa boutique via openMerchant (vend +25 % : village isolé).
+    { id: 'herboriste', kind: 'personnage', label: 'Herboriste', pos: { x: 12, y: 6 }, dialogueId: 'dlg-herbo', merchant: { archetype: 'herboriste', buyMarkup: 1.25 } },
+  ],
+  dialogues: [
+    {
+      id: 'dlg-herbo',
+      start: 'accueil',
+      nodes: [
+        {
+          id: 'accueil',
+          speaker: 'Herboriste',
+          text: 'Bonjour, voyageur. Cherchez-vous des remèdes… ou seulement à bavarder ?',
+          choices: [
+            { text: 'Montrez-moi vos marchandises.', flow: flowFromEffects([{ type: 'openMerchant', entityId: 'herboriste' }]) },
+            { text: 'Une autre fois. (Partir)' },
+          ],
+        },
+      ],
+    },
+  ],
+  triggers: [
+    // Bourse de départ (la nouvelle partie réinitialise l'argent à 0) — versée en s'avançant vers les échoppes.
+    { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', gold: 60 }, { type: 'journal', text: 'Vous disposez de 60 couronnes.' }]) },
+  ],
+});
 
 export const scenario: TestScenario = {
   id: 'marche-equipement',

@@ -3,12 +3,15 @@ import { evalCondition, flowHasTest, flowEffects } from '../../state/flow';
 import { validateScene } from '../../state/validateScene';
 import { useGame } from '../../state/store';
 import { runFlow } from '../../state/combatEffects';
+import { layerTiles } from '../../state/scene';
 import { scenario } from './piege-caveau';
 
 /**
- * « Le Caveau piégé » est du CONTENU pur (données éditeur). Ce gate prouve que la VITRINE Flow+Condition
- * est cohérente et tourne sur le vrai moteur : la condition composée de la herse (clé OU levier, ET NON
- * alarme) évalue correctement, et la dalle piégée est bien un Test à branches.
+ * « Le Caveau piégé » est du CONTENU pur (données éditeur), désormais produit par `buildScene(MapSpec)`
+ * (grille ASCII z0 pour les murs 'mur', entités/triggers déclaratifs). Ce gate prouve que la Scene PRODUITE
+ * garde la géométrie attendue (périmètre + cloison + trouée de herse) et que la VITRINE Flow+Condition est
+ * cohérente sur le vrai moteur : la condition composée de la herse (clé OU levier, ET NON alarme) évalue
+ * correctement, et la dalle piégée est bien un Test à branches.
  */
 describe('Scénario « Le Caveau piégé » : vitrine Flow + Condition', () => {
   const scene = scenario.scene;
@@ -17,6 +20,17 @@ describe('Scénario « Le Caveau piégé » : vitrine Flow + Condition', () => {
   const withKey = [{ items: [{ name: 'Clé en fer' }] }];
   const at = (flags: Record<string, boolean>, party: { items: { name: string }[] }[] = []) =>
     evalCondition(herse.when!, { flags, gameTime: 0, party });
+
+  it('la Scene produite garde ses dimensions, base pierre et murs (périmètre + cloison, trouée en (10,5))', () => {
+    expect(scene.dimensions).toEqual({ w: 14, h: 10 });
+    const tiles = layerTiles(scene, 0);
+    const at0 = (x: number, y: number) => tiles[y * 14 + x];
+    expect(at0(2, 5)).toBe('pierre'); // sol intérieur (départ héros)
+    expect(at0(0, 0)).toBe('mur'); // coin de périmètre
+    expect(at0(7, 0)).toBe('mur'); // bord haut
+    expect(at0(10, 3)).toBe('mur'); // cloison du trésor
+    expect(at0(10, 5)).toBe('pierre'); // la trouée = la herse (pas un mur)
+  });
 
   it('passe validateScene sans erreur', () => {
     expect(validateScene([scene]).filter((w) => w.level === 'error')).toEqual([]);
