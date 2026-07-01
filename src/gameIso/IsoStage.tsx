@@ -280,10 +280,10 @@ export function IsoStage() {
     [scene, battle, party, partyPos, gameTime, lightLevel],
   );
 
-  const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
+  const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis?: boolean }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    const out: { d: number; el: JSX.Element; x: number; y: number; z: number }[] = [];
+    const out: { d: number; el: JSX.Element; x: number; y: number; z: number; vis?: boolean }[] = [];
     // « ALLER SOUS LE CHEMIN DE RONDE » : un sol d'étage SUPÉRIEUR (la passerelle) se rend SEMI-TRANSPARENT au-
     // dessus de tout combattant qui se tient EN DESSOUS (z inférieur) → on le voit, et la PORTE qu'il franchit,
     // sans rien hacker (même esprit que l'estompage `occludesActor` du décor, mais Z-aware). Critère : le sol
@@ -324,14 +324,21 @@ export function IsoStage() {
           // (prop +0, jeton +0.5) tout en s'interclassant avec les voisins par sa vraie position écran
           // (base ≫ z) : un sol haut surplombe les cases plus ARRIÈRE du bas sans recouvrir la cour devant.
           if (html) {
+            // RÈGLE GÉNÉRALE du surplomb (étage AU-DESSUS de l'actif) : il ne s'efface (fantôme translucide)
+            // que pour ne pas masquer une SURFACE VISIBLE en dessous (pont/loge au-dessus du parterre où l'on
+            // joue). Là où l'étage du dessous n'est PAS visible (occulté/brouillard), rien à protéger → on le
+            // dessine PLEIN comme la structure surélevée qu'on perçoit (un rempart au bord de carte), et on le
+            // tague `vis` pour qu'il passe AU-DESSUS du voile (comme un mur), au lieu d'être mangé par l'ombre.
+            const belowVisible = visible.has(`${x},${y},${fogFloorZAt(x, y)}`);
+            const solidOverhang = ghost && !belowVisible;
             const reveal = !ghost && coversActorBelow(x, y, lvl.z); // passerelle au-dessus d'un combattant → transparente
-            const op = ghost ? OVERHANG_GHOST_OPACITY : reveal ? 0.22 : 1;
-            out.push({ d: depth(x, y, d, lvl.z) - 0.5, x, y, z: lvl.z, el: <g key={`f${lvl.z}-${x}-${y}`} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: html }} /> });
+            const op = ghost ? (solidOverhang ? 1 : OVERHANG_GHOST_OPACITY) : reveal ? 0.22 : 1;
+            out.push({ d: depth(x, y, d, lvl.z) - 0.5, x, y, z: lvl.z, ...(solidOverhang ? { vis: true } : {}), el: <g key={`f${lvl.z}-${x}-${y}`} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: html }} /> });
           }
         }
     }
     return out;
-  }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, mode, battle, partyPos]);
+  }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, mode, battle, partyPos, visible, fogFloorZAt]);
 
   // Un MUR/DÉCOR/TOIT devant un acteur À SUIVRE (même colonne écran, camera-near, proche) s'ESTOMPE pour ne
   // pas le cacher — côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs` via la
