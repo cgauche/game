@@ -61,7 +61,7 @@ const gunner = (
 
 const prop = (id: string, ref: string, x: number, y: number): SceneEntity => ({ id, kind: 'prop', ref, pos: { x, y } });
 
-const spec: MapSpec = {
+export const spec: MapSpec = {
   id: 'siege-enceinte',
   nom: 'Siège — défendre la muraille',
   description:
