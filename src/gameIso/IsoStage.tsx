@@ -333,8 +333,11 @@ export function IsoStage() {
     return out;
   }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, mode, battle, partyPos]);
 
-  // Un MUR/DÉCOR/TOIT devant un acteur (même colonne écran, camera-near, proche) s'ESTOMPE pour ne pas
-  // cacher le personnage — pendant, côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs`.
+  // Un MUR/DÉCOR/TOIT devant un acteur À SUIVRE (même colonne écran, camera-near, proche) s'ESTOMPE pour ne
+  // pas le cacher — côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs`.
+  // ACTEURS PRIS EN COMPTE = ce que le JOUEUR doit voir : en combat TOUS les combattants (tactique) ; en
+  // exploration le SEUL groupe — surtout PAS les PNJ d'ambiance (sinon un PNJ occupant/derrière un bâtiment
+  // ferait disparaître son toit et estomperait ses murs → les bâtiments PEUPLÉS perdaient leur toit).
   // ROTATION-AWARE : on projette par `rotTile` dans l'espace écran-aligné et on prend la colonne/profondeur
   // de la projection COURANTE (losange : anti-diag/diag ; edge-on ou dessus : x/y de rangée) — même base que
   // `depth()`/`tileCenter()`, donc l'estompe suit la caméra aux 4 crans et dans les deux projections.
@@ -342,9 +345,8 @@ export function IsoStage() {
     const actorTiles: { x: number; y: number }[] = [];
     if (mode === 'battle' && battle) {
       for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);
-    } else if (scene) {
+    } else {
       actorTiles.push(partyPos);
-      for (const ent of scene.entities) if (ent.kind === 'personnage' && !ent.combat?.hiddenUntilCombat) actorTiles.push(ent.pos);
     }
     const d: Dims = { ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: shownRot, view: viewMode, edge: shownEdge };
     const axisAligned = viewMode === 'top' || shownEdge; // edge-on / dessus : profondeur par rangée (r.y)
