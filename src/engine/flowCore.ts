@@ -24,7 +24,7 @@
  */
 import { toDate } from './clock';
 import type { CharKey, Difficulty, HitLocation } from './types';
-import type { Camp, Relation } from './relations';
+import { relationBetween, type Camp, type Relation } from './relations';
 import { groupMatch } from './groups';
 import type { GameOp } from './ops';
 
@@ -263,10 +263,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       if (!a) return false;
       if (cond.is === 'party' || cond.is === 'neutral' || cond.is === 'hostile') return a.camp === cond.is; // camp ABSOLU
       const other = cond.who === 'caster' ? ctx.target : ctx.caster; // RELATIF à l'autre acteur
-      if (!other) return false;
-      if (cond.is === 'self') return a.id === other.id;
-      if (cond.is === 'ally') return a.camp === other.camp && a.id !== other.id; // même camp, pas soi-même
-      return a.camp !== other.camp; // 'opponent'
+      return !!other && relationBetween(a, other) === cond.is;
     }
     case 'has': {
       const a = cond.who === 'caster' ? ctx.caster : ctx.target;

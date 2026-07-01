@@ -11,7 +11,9 @@ export type Camp = 'party' | 'neutral' | 'hostile';
 export const campOf = (c: Pick<Combatant, 'kind'>): Camp =>
   c.kind === 'hero' ? 'party' : c.kind === 'npc' ? 'neutral' : 'hostile';
 
-/** Relation RELATIVE de `self` envers `other` : soi-même, allié (même camp) ou adversaire (camp différent). */
+/** Relation RELATIVE de `a` envers `b` : soi-même, allié (même camp) ou adversaire (camp différent).
+ *  Structurel (id + camp) pour être consommable par les vues d'acteur (`ActorView`) comme par les
+ *  `Combatant` (via `campOf`). */
 export type Relation = 'self' | 'ally' | 'opponent';
-export const relationOf = (self: Combatant, other: Combatant): Relation =>
-  self.id === other.id ? 'self' : campOf(self) === campOf(other) ? 'ally' : 'opponent';
+export const relationBetween = (a: { id: string; camp: Camp }, b: { id: string; camp: Camp }): Relation =>
+  a.id === b.id ? 'self' : a.camp === b.camp ? 'ally' : 'opponent';
