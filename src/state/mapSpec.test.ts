@@ -115,6 +115,24 @@ describe('buildScene — encounters (terse → entités + members)', () => {
   });
 });
 
+describe('buildScene — markerFill + emplacement hérite du z du marqueur', () => {
+  const s = buildScene({
+    id: 'mz', nom: 'MZ', size: [4, 2],
+    levels: { z0: '....\n....', z1: 'B...\n....' }, // B (pièce) sur le chemin de ronde z1
+    legend: { W: 'pierre' },
+    markerFill: { B: 'W' }, // sous B : laisser 'W' (pierre marchable) au lieu d'un trou 'vide'
+    relief: [{ rect: [0, 0, 3, 1], height: 4, z: 1 }],
+    bind: { B: { emplacement: 'baliste', facing: 'N', member: { enc: 'def', side: 'ally' } } },
+  });
+  it('l’affût est posé sur l’étage du marqueur (z1), orienté, et sa case reste marchable', () => {
+    const empl = s.entities.find((e) => e.postes?.length)!;
+    expect(empl.z).toBe(1); // sur le rempart, pas au sol
+    expect(empl.facing).toBe('N');
+    expect(layerTiles(s, 1)[0]).toBe('pierre'); // case sous B = pierre (pas 'vide')
+    expect(s.encounters.find((e) => e.id === 'def')!.members).toContainEqual({ entityId: empl.id, side: 'ally' });
+  });
+});
+
 describe('buildScene — bind enrôle les entités posées dans une rencontre', () => {
   const s = buildScene({
     id: 'bm', nom: 'BM', size: [6, 2],

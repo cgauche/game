@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../../state/store';
 import { scenario } from './siege-enceinte';
-import { WALL_ROW } from './siege-enceinte.ascii';
 import { combatDistance } from '../../state/footprint';
 import { lineOfSightCover } from '../../state/lineOfSight';
 import { isWalkable, wallBetween, setStructureDown, heightAt } from '../../state/scene';
@@ -12,13 +11,21 @@ import { servingCrewPresent } from '../../state/shipPostes';
 import { chooseEnemyAction } from '../../state/ai';
 import { isStructure } from '../../engine/structures';
 import { woundsFromHit } from '../../engine/woundsCalc';
+import type { SceneEntity } from '../../state/scene';
 import type { Weapon } from '../../engine/types';
 
 /**
- * Siège à grande échelle (siege-enceinte) — vérif LOGIQUE headless : champ profond, rivière+pont, enceinte à
- * corps de garde, chemin de ronde épais, batterie qui brèche la porte (IA cible la structure), défenseurs
- * PNJ alliés-IA, combat vertical.
+ * Siège à grande échelle (siege-enceinte) — vérif LOGIQUE headless de la Scene PRODUITE par le `MapSpec` :
+ * champ profond, rivière+pont, enceinte à corps de garde, chemin de ronde épais (z1, 4 m), RAMPE au FLANC
+ * GAUCHE (déportée de la porte → cour dégagée derrière la porte), batterie qui brèche la porte (IA cible la
+ * structure), défenseurs PNJ alliés-IA, combat vertical.
  */
+const WALL_ROW = 38;
+
+/** Trouve l'emplacement (SceneEntity à poste) dont l'équipage inclut `crewId` (ids d'affûts auto-générés). */
+const emplWithCrew = (crewId: string): SceneEntity =>
+  scenario.scene.entities.find((e) => e.postes?.[0]?.crewIds?.includes(crewId))!;
+
 describe('Siège — défendre la muraille (siege-enceinte)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
@@ -32,34 +39,59 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(s.dimensions.h - WALL_ROW).toBeLessThan(WALL_ROW); // cour ≪ champ
   });
 
-  it('enceinte : PORTE flush dans la ligne du mur + courtine en pierre ; chemin de ronde rejoint par une RAMPE (plus d’escalier ni de hauteur de mur)', () => {
+  it('enceinte : PORTE flush dans la ligne du mur (cols 14-15) + courtine en pierre ; parapet z1 ; aucune hauteur de mur', () => {
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
-    expect(gate.length).toBeGreaterThan(0);
+    expect(gate.length).toBe(2);
+    expect(gate.map((w) => w.x).sort((a, b) => a - b)).toEqual([14, 15]); // porte aux cols 14-15
     expect(gate.every((w) => w.y === WALL_ROW && w.side === 'N')).toBe(true); // ouverture DANS la ligne d'enceinte
+    // Courtine `mur-en-pierre` sur toutes les AUTRES colonnes (0-13, 16-29 = 28 arêtes).
+    const courtine = s.walls!.filter((w) => w.structure === 'mur-en-pierre' && w.y === WALL_ROW);
+    expect(courtine.length).toBe(28);
+    // PARAPET z1 sur l'arête EXTÉRIEURE (arête N de y37), TOUTES colonnes.
+    const parapet = s.walls!.filter((w) => w.z === 1 && w.y === WALL_ROW - 1 && w.side === 'N' && !w.structure);
+    expect(parapet.length).toBe(30);
     // La verticalité du rempart est sa COUCHE z1 (4 m), pas un champ `WallSeg.height` (retiré du contrat).
     expect(s.walls!.every((w) => !('height' in w))).toBe(true);
-    expect(s.walls!.some((w) => w.structure === 'mur-en-pierre')).toBe(true); // courtine en pierre
-    // Plus AUCUN escalier explicite : on gagne le chemin de ronde (z1, 4 m) par une RAMPE de la cour —
-    // une bande de hauteurs croissantes ≤ 1 m/case sur la couche 0, franchie par le pathfinding (surfaceLink).
-    expect((s as { stairs?: unknown }).stairs).toBeUndefined();
+  });
+
+  it('RAMPE au FLANC GAUCHE (cols 3-4) rejoint le chemin de ronde z1 (4 m) ; la PORTE (cols 14-15) n’a AUCUNE rampe derrière (zone de mort)', () => {
+    const s = scenario.scene;
+    expect((s as { stairs?: unknown }).stairs).toBeUndefined(); // plus AUCUN escalier explicite
     const h0 = s.layers.find((l) => l.z === 0)!.height!;
+    const h1 = s.layers.find((l) => l.z === 1)!.height!;
     const idx = (x: number, y: number) => y * s.dimensions.w + x;
-    expect(h0[idx(14, 42)]).toBe(1); // pied de la rampe (cour)
-    expect(h0[idx(14, 39)]).toBe(4); // sommet de la rampe (rejoint le chemin de ronde à 4 m)
-    // Connexité : depuis la cour (z0) on atteint le CHEMIN DE RONDE (z1) — par la rampe, en changeant de couche.
-    const path = pathTo(s, { x: 14, y: 43, z: 0 }, { x: 8, y: WALL_ROW, z: 1 }, { blocked: new Set() });
+    // Rampe FLANC GAUCHE (cols 3-4) : 39=4 m, 40=3 m, 41=2 m, 42=1 m, 43=0 m (raccord plat).
+    for (const x of [3, 4]) {
+      expect(h0[idx(x, 39)]).toBe(4); // sommet (rejoint le chemin de ronde)
+      expect(h0[idx(x, 40)]).toBe(3);
+      expect(h0[idx(x, 41)]).toBe(2);
+      expect(h0[idx(x, 42)]).toBe(1);
+      expect(h0[idx(x, 43)]).toBe(0);
+    }
+    // Chemin de ronde z1 (y37 + y38) à 4 m sur TOUTES les colonnes.
+    for (const x of [0, 8, 15, 21, 29]) {
+      expect(h1[idx(x, 37)]).toBe(4);
+      expect(h1[idx(x, 38)]).toBe(4);
+    }
+    // La PORTE est aux cols 14-15 : DERRIÈRE elle (cols 14-15, rangées 39-43 = la cour) NE contient AUCUNE
+    // case de rampe → hauteur 0 partout (la rampe ne bloque plus la porte, cour = zone de mort dégagée).
+    for (const x of [14, 15])
+      for (let y = 39; y <= 43; y++)
+        expect(h0[idx(x, y)]).toBe(0);
+    // Connexité : depuis la cour (z0) on atteint le CHEMIN DE RONDE (z1) par la RAMPE du flanc gauche.
+    const path = pathTo(s, { x: 3, y: 43, z: 0 }, { x: 8, y: WALL_ROW, z: 1 }, { blocked: new Set() });
     expect(path).not.toBeNull();
     expect(path!.some((p) => (p.z ?? 0) === 1)).toBe(true); // le trajet passe bien sur la couche 1
+    // … et il grimpe bien par la rampe du flanc gauche (case surélevée en cols 3/4).
+    expect(path!.some((p) => (p.x === 3 || p.x === 4) && (p.z ?? 0) === 0 && (h0[idx(p.x, p.y)] ?? 0) > 0)).toBe(true);
   });
 
   it('PORTE = STRUCTURE brèchable, PAS une porte ouvrable : intacte elle bloque passage+BFS cour↔champ ; abattue, la BRÈCHE rouvre', () => {
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
-    expect(gate.length).toBeGreaterThan(0);
-    expect(gate.every((w) => !w.door)).toBe(true); // PAS de door:true → wallIsOpen = structureIsDown SEUL (pas d'ouverture par défaut)
+    expect(gate.every((w) => !w.door)).toBe(true); // PAS de door:true → wallIsOpen = structureIsDown SEUL
     const g = gate[0]; // arête N de (g.x, WALL_ROW) : sépare la cour (y=WALL_ROW) du champ (y=WALL_ROW-1)
-    // Intacte : passage runtime bloqué ET le BFS ne traverse pas (structure debout = barrière de planification).
     expect(wallBetween(s, g.x, WALL_ROW, g.x, WALL_ROW - 1)).toBe(true);
     expect(reachable(s, { x: g.x, y: WALL_ROW, z: 0 }, 1, { blocked: new Set() }).has(`${g.x},${WALL_ROW - 1}`)).toBe(false);
     // Abattue (brèche) : passage ET BFS rouverts.
@@ -69,15 +101,11 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
   });
 
   it('TUNNEL franchissable : un chemin z0 CHAMP→COUR par la porte est BLOQUÉ intact, OUVERT à la brèche', () => {
-    // Le corps de garde est un tunnel de 2 cases au z0 SOUS le chemin de ronde (y37 = bouche champ, y38 = bouche
-    // cour, toutes deux marchables) ; l'arête de porte (N de y38) le coupe au milieu tant qu'elle TIENT. Un
-    // combattant marche du CHAMP (y36) jusque sous l'arche, mais ne FRANCHIT vers la COUR (y39) qu'une fois abattue.
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
     const gx = gate[0].x; // colonne de porte (x14)
     const field = { x: gx, y: WALL_ROW - 2, z: 0 }; // (14,36) côté CHAMP
     const cour = { x: gx, y: WALL_ROW + 1, z: 0 };   // (14,39) côté COUR
-    // Les deux bouches du tunnel (z0 sous le rempart) ET les seuils sont des cases STANDABLES.
     for (const t of [field, { x: gx, y: WALL_ROW - 1, z: 0 }, { x: gx, y: WALL_ROW, z: 0 }, cour])
       expect(isWalkable(s, t.x, t.y, 0)).toBe(true);
     // INTACTE : aucun chemin champ→cour (toute la ligne d'enceinte est murée, la porte coupe le tunnel).
@@ -106,9 +134,8 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const scene = useGame.getState().scene!;
-    const hero = b.combatants.find((c) => c.kind === 'hero' && !c.inert)!;
-    // Placement PRODUCTION : `placeCombatant` stampe la hauteur métrique `pos.h` (= 4 m, chemin de ronde z1)
-    // depuis le relief de la scène — c'est ce `h` (pas le z discret) que lit `combatDistance`.
+    const hero = b.combatants.find((c) => c.kind === 'hero' && !c.aiControlled && !c.inert)!;
+    // Placement PRODUCTION : `placeCombatant` stampe la hauteur métrique `pos.h` (= 4 m, chemin de ronde z1).
     hero.pos = { x: 8, y: WALL_ROW, z: 1 };         // sur le chemin de ronde, au-dessus de la courtine
     placeCombatant(hero, scene, hero.pos);           // RAFRAÎCHIT pos.h depuis le relief (4 m) — comme en production
     const foot = { x: 8, y: WALL_ROW - 1, h: heightAt(scene, 8, WALL_ROW - 1, 0) }; // assaillant au pied du mur (z=0, 0 m)
@@ -124,19 +151,19 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
-    const canon = b.combatants.find((c) => c.id === 'enemy-assaut-0')!; // canonnier (index 0) qui SERT le canon
-    expect(canon.weapons.some((w) => w.type === 'ranged')).toBe(true); // pièce servie au spawn (poste de l'affût)
-    // L'ARTILLERIE assaillante est un AFFÛT inerte rendu comme un ENGIN (pas un brigand) : espèce DÉRIVÉE de
-    // la ref (canon-petit), aucune apparence forcée, servi par le brigand → neutralisé en tuant l'équipage.
-    const affut = b.combatants.find((c) => c.id === 'empl-assaut-canon')!;
+    const canonnier = b.combatants.find((c) => c.id === 'brg-canon')!; // brigand qui SERT le canon assaillant
+    expect(canonnier.weapons.some((w) => w.type === 'ranged')).toBe(true); // pièce servie au spawn (poste de l'affût)
+    // L'ARTILLERIE assaillante est un AFFÛT inerte rendu comme un ENGIN : espèce DÉRIVÉE de la ref (canon-petit),
+    // servi par le brigand → neutralisé en tuant l'équipage, pas en frappant l'affût.
+    const affutEnt = emplWithCrew('brg-canon'); // l'emplacement dont l'équipage est le brigand-canonnier
+    const affut = b.combatants.find((c) => c.id === affutEnt.id)!;
     expect(affut.inert).toBe(true);
     expect(affut.bodyShape).toBe('engin');
     expect(affut.species).toBe('canon-petit'); // rig engin dérivé de la ref (plus d'appearance.species forcé)
-    expect(b.order).not.toContain('empl-assaut-canon'); // affût inerte → aucun tour propre
-    const entCanon = scenario.scene.entities.find((e) => e.id === 'empl-assaut-canon')!;
-    expect(entCanon.ref).toBe('canon-petit');
-    expect(entCanon.appearance).toBeUndefined(); // l'apparence d'engin se dérive de `ref`, rien n'est stocké
-    const input = buildAiInput(canon, useGame.getState);
+    expect(b.order).not.toContain(affutEnt.id); // affût inerte → aucun tour propre
+    expect(affutEnt.ref).toBe('canon-petit');
+    expect(affutEnt.appearance).toBeUndefined(); // l'apparence d'engin se dérive de `ref`, rien n'est stocké
+    const input = buildAiInput(canonnier, useGame.getState);
     expect(input.structures?.some((st) => st.creatureId === 'porte-de-ville')).toBe(true); // la porte est une cible
     const action = chooseEnemyAction(input);
     expect(action.kind).toBe('shoot');
@@ -151,18 +178,25 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
-    const archer = b.combatants.find((c) => c.id === 'def-archer-0')!;
-    expect(archer.kind).toBe('hero');         // côté héros
-    expect(archer.aiControlled).toBe(true);    // … mais piloté par l'IA (le joueur ne le micro-gère pas)
-    expect(archer.weapons.some((w) => w.type === 'ranged')).toBe(true); // armé d'un arc
-    const baliste = b.combatants.find((c) => c.id === 'empl-baliste')!;
+    // Archers défenseurs = héros pilotés par l'IA, armés d'un arc, sur le chemin de ronde (z1).
+    const archers = b.combatants.filter((c) => c.aiControlled && c.kind === 'hero' && !c.inert && !c.mannedPoste);
+    expect(archers.length).toBe(5); // 4 archers 'A' + 1 guetteur 'G'
+    for (const archer of archers) {
+      expect(archer.kind).toBe('hero');         // côté héros
+      expect(archer.aiControlled).toBe(true);    // … mais piloté par l'IA (le joueur ne le micro-gère pas)
+      expect(archer.weapons.some((w) => w.type === 'ranged')).toBe(true); // armé d'un arc
+      expect(b.order).toContain(archer.id);      // … et l'archer allié-IA A un tour
+      expect(archer.pos?.z).toBe(1);             // sur le chemin de ronde
+    }
+    // Pièce de rempart INERTE, servie par son équipage PNJ (alliée-IA).
+    const balisteEnt = emplWithCrew('crew-baliste');
+    const baliste = b.combatants.find((c) => c.id === balisteEnt.id)!;
     expect(baliste.inert).toBe(true);
     // RAW-pur (AA p.122-123) : un engin de siège n'a AUCUNE Blessure → NON-destructible. Un coup ÉNORME (999)
     // inflige 0 (immune via le garde `target.inert`) — on le neutralise en tuant l'équipage, pas en le frappant.
     const coup: Weapon = { name: 'Canon', type: 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'siege' }] };
     expect(woundsFromHit(coup, baliste, 'corps', 999)).toBe(0);
-    expect(b.order).not.toContain('empl-baliste'); // affût inerte → aucun tour
-    expect(b.order).toContain('def-archer-0');     // … mais l'archer allié-IA A un tour (joué par l'IA)
+    expect(b.order).not.toContain(balisteEnt.id); // affût inerte → aucun tour
     // La pièce est SERVIE d'office par son équipage PNJ (alliée-IA) qui TIRE la pièce (pas un arc).
     const crew = b.combatants.find((c) => c.id === 'crew-baliste')!;
     expect(crew.aiControlled).toBe(true);
@@ -177,7 +211,7 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
-    // Servant de baliste (rempart) : Groupe Arbalète → qualifié → effectif ≥ 1 (plus de « Chef présent, 0 effectif »).
+    // Servant de baliste (rempart) : Groupe Arbalète → qualifié → effectif ≥ 1.
     const crewBal = b.combatants.find((c) => c.id === 'crew-baliste')!;
     expect(crewBal.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'Arbalète')).toBe(true);
     expect(servingCrewPresent(crewBal, b.combatants)).toBeGreaterThanOrEqual(1);
@@ -185,13 +219,35 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const crewCan = b.combatants.find((c) => c.id === 'crew-canon')!;
     expect(crewCan.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'Poudre noire')).toBe(true);
     expect(servingCrewPresent(crewCan, b.combatants)).toBeGreaterThanOrEqual(1);
-    // Canonnier de siège assaillant (enemy-assaut-0, brigand) : Groupe Poudre noire → la batterie tire qualifiée.
-    const canonnier = b.combatants.find((c) => c.id === 'enemy-assaut-0')!;
+    // Canonnier de siège assaillant (brg-canon) : Groupe Poudre noire → la batterie tire qualifiée.
+    const canonnier = b.combatants.find((c) => c.id === 'brg-canon')!;
     expect(canonnier.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'Poudre noire')).toBe(true);
     expect(servingCrewPresent(canonnier, b.combatants)).toBeGreaterThanOrEqual(1);
-    // Servant de catapulte assaillant (enemy-assaut-1) : Groupe Catapulte.
-    const cataCrew = b.combatants.find((c) => c.id === 'enemy-assaut-1')!;
+    // Servant de catapulte assaillant (brg-cata) : Groupe Catapulte.
+    const cataCrew = b.combatants.find((c) => c.id === 'brg-cata')!;
     expect(cataCrew.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'Catapulte')).toBe(true);
     expect(servingCrewPresent(cataCrew, b.combatants)).toBeGreaterThanOrEqual(1);
+  });
+
+  it('ROSTER « assaut » : servants alliés-IA au rempart, emplacements INERTES, brigands + gobelins ennemis', () => {
+    const enc = scenario.scene.encounters.find((e) => e.id === 'assaut')!;
+    const members = enc.members!;
+    const by = (id: string) => members.find((m) => m.entityId === id);
+    // Servants de REMPART : alliés pilotés par l'IA.
+    for (const id of ['crew-baliste', 'crew-canon']) expect(by(id)).toEqual({ entityId: id, side: 'ally', ai: true });
+    // Servants de la BATTERIE assaillante : ennemis (pas d'IA-flag → agissent comme ennemis normaux).
+    for (const id of ['brg-canon', 'brg-cata']) expect(by(id)).toEqual({ entityId: id, side: 'enemy' });
+    // Emplacements (rempart alliés / batterie ennemis) : INERTES, enrôlés SANS `ai`.
+    const empls = scenario.scene.entities.filter((e) => e.postes?.length);
+    expect(empls.length).toBe(4);
+    for (const e of empls) {
+      const m = by(e.id)!;
+      expect(m).toBeDefined();
+      expect(m.ai).toBeUndefined(); // affût inerte : aucun tour propre
+    }
+    // Gobelins fantassins : 6 ennemis (marqueurs 'o').
+    const gobs = scenario.scene.entities.filter((e) => e.ref === 'gobelin');
+    expect(gobs.length).toBe(6);
+    for (const g of gobs) expect(by(g.id)).toEqual({ entityId: g.id, side: 'enemy' });
   });
 });

@@ -8,6 +8,7 @@
  */
 import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, WallSeg, WallSide, Roof } from './scene';
 import type { FireArc, ShipPoste } from '../engine/types';
+import type { Dir8 } from './dir8';
 import { EMPTY_FLOW } from './flow';
 import { nextEntityId } from './entityId';
 import { itemFromTrappingById } from '../engine/items';
@@ -153,9 +154,9 @@ export function paintHeight(scene: Scene, p: Pt, metres: number, brush: number, 
  *  AUCUN `appearance.species` : le rig d'engin est DÉRIVÉ de la `ref` au rendu (éditeur ↔ explo ↔ combat).
  *  Au combat, `applyShipPostes` sert la pièce au chef (`crewIds[0]`). Posable ⇔ l'engin a un art d'affût
  *  (`siegeRig`) ; sinon → null (pas d'entité fantôme). */
-export function placeEmplacement(scene: Scene, trappingId: string, p: Pt, z = 0): { scene: Scene; id: string } | null {
+export function placeEmplacement(scene: Scene, trappingId: string, p: Pt, z = 0, facing?: Dir8): { scene: Scene; id: string } | null {
   const id = nextEntityId('personnage', scene.entities.map((e) => e.id));
-  const ent = siegeEmplacementEntity(id, trappingId, p, z ? { z } : {});
+  const ent = siegeEmplacementEntity(id, trappingId, p, { ...(z ? { z } : {}), ...(facing ? { facing } : {}) });
   if (!ent) return null; // posable ⇔ a un art d'affût (`siegeRig`)
   return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
 }

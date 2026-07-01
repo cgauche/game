@@ -1,74 +1,34 @@
 import { pregenParty, PREGEN } from '../../data/pregens';
-import { scanMarkers, parseAsciiRows } from '../../state/asciiMap';
-import { siegeEmplacementEntity } from '../../state/siegeEmplacement';
 import { findTrappingById, weaponGroupLabel, type SkillRef } from '../../data';
-import type { Scene, SceneEntity, WallSeg, Terrain, EncounterMember } from '../../state/scene';
-import { setEncounters, type TestScenario } from './_shared';
-import { Z0_ASCII, Z1_ASCII, WALL, WALL_ROW } from './siege-enceinte.ascii';
+import type { SceneEntity } from '../../state/scene';
+import { buildScene, type MapSpec } from '../../state/mapSpec';
+import type { TestScenario } from './_shared';
 
 /**
- * SIÈGE COMPLET — défendre l'enceinte, reconstruit sur le RELIEF MÉTRIQUE. Carte PROFONDE (30×46, 2 couches)
- * à l'échelle d'un vrai siège :
+ * SIÈGE COMPLET — défendre l'enceinte, entièrement DÉCLARÉ en UN `MapSpec` (plus aucune plomberie bespoke :
+ * `buildScene` rejoue les primitives de l'éditeur). Carte PROFONDE (30×46, 2 couches) à l'échelle d'un vrai siège :
  *  - au NORD, le CAMP assaillant (tentes, braséros, bannières) et sa BATTERIE braquée sur la PORTE : une
  *    CATAPULTE pilonne de TRÈS LOIN en tir indirect (~71 m), un CANON de siège AVANCÉ tire en direct (~46 m) —
  *    l'IA cible la structure (Atout Siège), le canon BRÈCHE la porte tout seul ;
  *  - des FANTASSINS qui traversent le glacis, FRANCHISSENT la RIVIÈRE par le PONT (seul passage) et s'amassent
  *    à la porte tant qu'elle tient ;
- *  - le MUR D'ENCEINTE = des `WallSeg` (courtine `mur-en-pierre` + une `porte-de-ville` brèchable), SANS aucune
+ *  - le MUR D'ENCEINTE = des `WallSpec` (courtine `mur-en-pierre` + une `porte-de-ville` brèchable), SANS aucune
  *    hauteur de mur : la 3ᵉ dimension du rempart est sa COUCHE z1 ;
  *  - le CHEMIN DE RONDE = couche 1 'pierre' à 4 m (épais de 2 cases, y37 côté champ + y38 côté cour) garni de
- *    PIÈCES servies (baliste/canon) et d'ARCHERS PNJ alliés-IA, surmonté d'un PARAPET (`WallSeg` z1 sur l'arête
- *    EXTÉRIEURE) ; on le rejoint par UNE RAMPE de la cour (cases montant ≤1 m/case sur 5 cases — le moteur en
- *    fait une pente, plus aucun escalier) ;
- *  - au SUD, une COUR pavée MODESTE où démarre le groupe, au pied de la rampe.
+ *    PIÈCES servies (baliste/canon) et d'ARCHERS PNJ alliés-IA, surmonté d'un PARAPET (`WallSpec` z1 sur l'arête
+ *    EXTÉRIEURE) ; on le rejoint par UNE RAMPE au FLANC GAUCHE (cols 3-4, montant ≤1 m/case sur 5 cases — le moteur
+ *    en fait une pente, plus aucun escalier), DÉPORTÉE de la porte pour dégager la cour DERRIÈRE la porte (zone de mort) ;
+ *  - au SUD, une COUR pavée MODESTE où démarre le groupe.
  * Combat VERTICAL : les défenseurs (couche 1, 4 m) pilonnent en contrebas et la mêlée est refusée à travers le
  * vide (`combatDistance` ajoute la séparation métrique) ; le parapet ne coupe PAS la LdV plongeante (cross-niveau).
  *
- * Carte = `siege-enceinte.ascii.ts` (ÉDITABLE). Ici : on parse les 2 grilles + l'enceinte, on POSE les hauteurs
- * métriques (rampe + chemin de ronde) en tableaux parallèles, et on pose les entités/rencontre depuis les
- * MARQUEURS scannés (aucune coordonnée d'unité en dur).
+ * TOUT est dans le `MapSpec` ci-dessous (grilles ASCII des 2 étages, relief, murs, binds de marqueurs, entités à
+ * ids FIXES, rencontre). Les seules parts de code restantes = le `projForPiece` (Projectiles dérivée de la pièce)
+ * et le `makeParty` (le SOLDAT reçoit les Spé de service). AUCUN push/setEncounters résiduel.
  */
 
-const W = 30, H = 46;
-const rowsOf = (s: string) => s.split('\n').slice(1, -1);
+const WALL_ROW = 38;
 
-// ── Couches : marqueurs scannés PUIS nettoyés (fill = terrain SOUS le marqueur), terrain parsé ───────────
-const z0 = scanMarkers(rowsOf(Z0_ASCII), '@kpo', { '@': 'P' }); // cour pavée sous @ ; champ sous k/p/o (défaut '.')
-const z1 = scanMarkers(rowsOf(Z1_ASCII), 'BKAG', { B: 'W', K: 'W', A: 'W', G: 'W' }); // passerelle de pierre sous chaque marqueur
-const g0 = parseAsciiRows(z0.cleaned, 'herbe', { P: 'pave', '~': 'eau', '=': 'planches' });
-const g1 = parseAsciiRows(z1.cleaned, 'vide', { W: 'pierre' });
-
-// ── HAUTEURS MÉTRIQUES (tableaux PARALLÈLES, indexation y·W+x) ────────────────────────────────────────────
-const idx = (x: number, y: number) => y * W + x;
-function fillRect(g: number[], x0: number, y0: number, x1: number, y1: number, h: number) {
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[idx(x, y)] = h;
-}
-// Couche 0 : la RAMPE d'accès (cols 14-15, derrière la porte) monte de la cour (0 m) au rempart (4 m) sur
-// 5 cases, ≤1 m/case → pente continue jusqu'à rejoindre la couche 1 à hauteur ÉGALE (4 m) en y39.
-const h0 = new Array(W * H).fill(0) as number[];
-fillRect(h0, 14, 39, 15, 39, 4); // pied du tablier (rejoint le chemin de ronde y38 à 4 m)
-fillRect(h0, 14, 40, 15, 40, 3);
-fillRect(h0, 14, 41, 15, 41, 2);
-fillRect(h0, 14, 42, 15, 42, 1); // (y43 reste à 0 : raccord plat avec la cour)
-// Couche 1 : le chemin de ronde (y37-38) est à 4 m — la rampe l'y rejoint, le sol/champ est 4 m plus bas.
-const h1 = new Array(W * H).fill(0) as number[];
-fillRect(h1, 0, WALL_ROW - 1, W - 1, WALL_ROW, 4);
-
-// ── Enceinte : 1 char/colonne sur l'arête N de WALL_ROW (porte brèchable, courtine/tours en pierre) ────────
-// La porte de ville est une STRUCTURE brèchable, PAS une porte ouvrable : tant qu'elle tient, l'arête bloque
-// passage+vue comme un mur plein ; elle ne s'ouvre QU'une fois ABATTUE (`structureIsDown` → BRÈCHE). Donc
-// PAS de `door:true`. PLUS de champ `height` sur le mur (le contrat retire `WallSeg.height`).
-const enceinte: WallSeg[] = [...WALL].flatMap((ch, x) =>
-  ch === '.' ? [] : [{ x, y: WALL_ROW, side: 'N' as const, structure: ch === 'G' ? 'porte-de-ville' : 'mur-en-pierre' }]);
-// PARAPET : `WallSeg` z1 sur l'arête EXTÉRIEURE (côté champ) du chemin de ronde (arête N de y37). Bloque la
-// marche hors du rempart au même niveau, MAIS la LdV plongeante z1→z0 l'ignore (lineOfSightCover cross-niveau)
-// → les défenseurs tirent par-dessus les créneaux sur le champ en contrebas.
-const parapet: WallSeg[] = Array.from({ length: W }, (_, x) => ({ x, y: WALL_ROW - 1, side: 'N' as const, z: 1 }));
-const walls: WallSeg[] = [...enceinte, ...parapet];
-
-// ── DÉFENSEURS (couche 1) : archers PNJ alliés-IA + guetteur + pièces de rempart SERVIES par leur équipage ──
-const archer = (id: string, p: { x: number; y: number }, label = 'Archer du guet'): SceneEntity =>
-  ({ id, kind: 'personnage', z: 1, pos: { x: p.x, y: p.y }, facing: 'N', label, ref: 'garde-du-village', weapon: 'Arc' });
 // Compétence Projectiles APPROPRIÉE au Groupe de l'engin (AA p.122 l.3900) : un servant ne compte dans l'équipe
 // QUE s'il la possède (sinon « n'est pas considéré comme un membre de l'équipe », l.3923). Dérivée de la pièce
 // (`weaponGroup` du trapping) → la Spé = libellé du Groupe (Arbalète/Poudre noire/Catapulte). Test ~40.
@@ -76,106 +36,235 @@ const projForPiece = (trappingId: string): SkillRef[] => {
   const g = findTrappingById(trappingId)?.weaponGroup;
   return g ? [{ id: 'projectiles', spec: weaponGroupLabel(g), value: 40 }] : [];
 };
-// Servant de pièce : une VRAIE créature du bestiaire (garde, a une CT pour viser), SANS arme propre → sa seule
-// arme à distance est la PIÈCE servie (l'IA tire donc la baliste/le canon, pas un arc). Posté à CÔTÉ de l'affût.
-// On lui DONNE la Projectiles du Groupe de SA pièce → il compte comme membre d'équipe qualifié (sinon effectif 0).
-const gunner = (id: string, p: { x: number; y: number }, label: string, trappingId: string): SceneEntity =>
-  ({ id, kind: 'personnage', z: 1, pos: { x: p.x, y: p.y }, facing: 'N', label, ref: 'garde-du-village',
-     combat: { skills: projForPiece(trappingId) } });
-// Affût servi via le builder PARTAGÉ : `ref` = engin (rig DÉRIVÉ, affût inerte RAW-pur AA p.122-123). Libellé surchargé.
-const piece = (id: string, p: { x: number; y: number }, trappingId: string, label: string, crewId: string): SceneEntity =>
-  ({ ...siegeEmplacementEntity(id, trappingId, p, { z: 1, facing: 'N', crewIds: [crewId] })!, label });
 
-const archers = z1.positions['A'].map((p, i) => archer(`def-archer-${i}`, p));
-const guetteur = archer('garde-porte', z1.positions['G'][0], 'Guetteur du corps de garde'); // au-dessus de la porte → chute à la brèche
-const Bpos = z1.positions['B'][0], Kpos = z1.positions['K'][0];
-const baliste = piece('empl-baliste', Bpos, 'baliste', 'Baliste de rempart', 'crew-baliste');
-const balisteCrew = gunner('crew-baliste', { x: Bpos.x - 1, y: Bpos.y }, 'Servant de baliste', 'baliste');
-const canon = piece('empl-canon', Kpos, 'canon-petit', 'Canon de rempart', 'crew-canon');
-const canonCrew = gunner('crew-canon', { x: Kpos.x - 1, y: Kpos.y }, 'Servant de canon', 'canon-petit');
-const defenders = [...archers, guetteur, balisteCrew, canonCrew]; // PNJ alliés-IA (arcs + servants de pièce)
-const pieces = [baliste, canon];                                   // affûts INERTES servis par leur équipage
+// Servant de pièce (entité à id FIXE, référencé par le `crew` de l'emplacement) : une VRAIE créature du
+// bestiaire (a une CT pour viser), SANS arme propre → sa seule arme à distance est la PIÈCE servie (l'IA tire
+// donc la baliste/le canon, pas un arc). Posté à CÔTÉ de l'affût (x-1). On lui DONNE la Projectiles du Groupe de
+// SA pièce → il compte comme membre d'équipe qualifié (sinon effectif 0). `ref` garde-du-village (défenseur) /
+// brigand (assaillant).
+const gunner = (
+  id: string,
+  pos: { x: number; y: number },
+  trappingId: string,
+  label: string,
+  opts: { z?: number; facing?: SceneEntity['facing']; ref?: string } = {},
+): SceneEntity => ({
+  id,
+  kind: 'personnage',
+  pos,
+  label,
+  ref: opts.ref ?? 'garde-du-village',
+  ...(opts.z ? { z: opts.z } : {}),
+  ...(opts.facing ? { facing: opts.facing } : {}),
+  combat: { skills: projForPiece(trappingId) },
+});
 
-// ── CAMP assaillant (décor, nord) ───────────────────────────────────────────────────────────────────────
 const prop = (id: string, ref: string, x: number, y: number): SceneEntity => ({ id, kind: 'prop', ref, pos: { x, y } });
-const camp: SceneEntity[] = [
-  prop('camp-tente-0', 'tente', 3, 0), prop('camp-tente-1', 'tente', 14, 0), prop('camp-tente-2', 'tente', 26, 0),
-  prop('camp-brasero-0', 'brasero', 8, 0), prop('camp-brasero-1', 'brasero', 21, 0),
-  prop('camp-etendard-0', 'etendard', 12, 1), prop('camp-etendard-1', 'etendard', 17, 1),
-];
 
-const tiles0: Terrain[] = g0.tiles, tiles1: Terrain[] = g1.tiles;
-
-const entities: SceneEntity[] = [
-  { id: 'start', kind: 'heroStart', pos: { ...z0.positions['@'][0] } }, // cour pavée, au pied de la rampe (couche 0)
-  ...defenders, ...pieces, ...camp,
-];
-
-const scene: Scene = {
+const spec: MapSpec = {
   id: 'siege-enceinte',
   nom: 'Siège — défendre la muraille',
   description:
     "Un siège à grande échelle : au nord, le camp assaillant et sa batterie (canon + catapulte) qui pilonne la " +
     "porte de très loin ; des fantassins franchissent la rivière par le pont et s'amassent à la porte ; au sud, " +
     "l'enceinte à porte brèchable, son chemin de ronde (couche surélevée à 4 m) garni de pièces et d'archers, " +
-    "rejoint par une rampe, et une cour pavée.",
-  dimensions: { w: W, h: H },
+    "rejoint par une rampe au flanc gauche, et une cour pavée.",
+  size: [30, 46],
   metresPerTile: 2, // person-scale (LDB) : 1 case = 2 m → bandes de portée (canon 50 m / catapulte 75 m)
   ambiance: 'exterieur',
   ambientLight: 'jour', // plein jour : on voit l'assaut approcher sur tout le glacis
-  layers: [
-    { z: 0, tiles: tiles0, height: h0 },
-    { z: 1, tiles: tiles1, height: h1 },
-  ],
-  walls,
-  entities,
-  dialogues: [],
-  triggers: [],
-  flags: {},
-  encounters: [],
   startMessage:
-    "Défendez l'enceinte. Gagnez le CHEMIN DE RONDE par la RAMPE de la cour, SERVEZ une pièce et pilonnez " +
+    "Défendez l'enceinte. Gagnez le CHEMIN DE RONDE par la RAMPE du flanc gauche, SERVEZ une pièce et pilonnez " +
     "l'assaut en contrebas. La batterie ennemie brèche la porte de très loin — quand elle cède, qui se tient " +
     "sur la passerelle au-dessus chute. Les assaillants ne peuvent forcer le passage qu'une fois la porte abattue.",
+
+  // ── Légende partagée (base z0='herbe', z1='vide') ──────────────────────────────────────────────────────────
+  legend: { '~': 'eau', '=': 'planches', P: 'pave', W: 'pierre' },
+  // Terrain laissé sous un marqueur nettoyé : '@' garde la cour pavée ; A/G/B/K gardent la passerelle 'W'
+  // (sinon le chemin de ronde aurait un TROU sous chaque pièce/archer). k/p/o (champ) → '.' par défaut (herbe).
+  markerFill: { '@': 'P', A: 'W', G: 'W', B: 'W', K: 'W' },
+
+  // ── Grilles ASCII des 2 étages (RECOPIÉES telles quelles, marqueurs inclus). La RAMPE n'est PAS un marqueur :
+  //    ce sont des cases de cour dont la HAUTEUR monte (posée en `relief`). Marqueurs z0 : '@'=départ · 'k'=canon
+  //    de siège ennemi · 'p'=catapulte ennemie · 'o'=fantassin ennemi. Marqueurs z1 : 'B'=baliste · 'K'=canon ·
+  //    'A'=archer défenseur · 'G'=guetteur (au-dessus de la porte → chute quand la porte cède). ────────────────
+  levels: {
+    z0: [
+      '..............................',
+      '..............................',
+      '........p.....................',
+      '..............................',
+      '..............................',
+      '...............o..............',
+      '....o....................o....',
+      '..........o........o..........',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '.....................k........',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '~~~~~~~~~~~~~====~~~~~~~~~~~~~',
+      '~~~~~~~~~~~~~====~~~~~~~~~~~~~',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............o...............',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPP@PPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+    ].join('\n'),
+    z1: [
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      'WWWWAWWWWWAWWWGWWWWAWWWWWAWWWW',
+      'WWWWWWWWBWWWWWWWWWWWWKWWWWWWWW',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+      '..............................',
+    ].join('\n'),
+  },
+
+  // ── HAUTEURS MÉTRIQUES ─────────────────────────────────────────────────────────────────────────────────────
+  //  RAMPE au FLANC GAUCHE (cols 3-4), DÉPORTÉE de la porte (cols 14-15) → la cour derrière la porte reste plate
+  //  (zone de mort). Elle monte de la cour (0 m) au rempart (4 m) sur 5 rangées, ≤1 m/case → pente continue qui
+  //  rejoint la couche 1 à hauteur ÉGALE (4 m) en y39 : son sommet (y39, 4 m) jouxte le chemin de ronde (y38, 4 m).
+  //  Le chemin de ronde (y37-38, z1) est à 4 m sur TOUTES les colonnes — le sol/champ reste 4 m plus bas.
+  relief: [
+    { cell: [3, 39], height: 4 }, { cell: [4, 39], height: 4 }, // sommet (jouxte le chemin de ronde y38 à 4 m)
+    { cell: [3, 40], height: 3 }, { cell: [4, 40], height: 3 },
+    { cell: [3, 41], height: 2 }, { cell: [4, 41], height: 2 },
+    { cell: [3, 42], height: 1 }, { cell: [4, 42], height: 1 }, // (y43 reste à 0 : raccord plat avec la cour)
+    { rect: [0, 37, 29, 38], height: 4, z: 1 },                 // chemin de ronde entier à 4 m
+  ],
+
+  // ── ENCEINTE (arête N de WALL_ROW=38) : PORTE brèchable aux cols 14-15 ; courtine `mur-en-pierre` partout ailleurs.
+  //    PARAPET z1 sur l'arête EXTÉRIEURE (arête N de y37), toutes colonnes. La porte est une STRUCTURE brèchable,
+  //    PAS une porte ouvrable (pas de `door`) : tant qu'elle tient, l'arête bloque passage+vue ; abattue → BRÈCHE. ─
+  walls: [
+    ...Array.from({ length: 30 }, (_, x) =>
+      x === 14 || x === 15
+        ? ({ x, y: WALL_ROW, side: 'N' as const, structure: 'porte-de-ville' })
+        : ({ x, y: WALL_ROW, side: 'N' as const, structure: 'mur-en-pierre' })),
+    ...Array.from({ length: 30 }, (_, x) => ({ x, y: WALL_ROW - 1, side: 'N' as const, z: 1 })), // parapet
+  ],
+
+  // ── ENTITÉS à ids FIXES (référencées par les `crew` des emplacements) + décor du CAMP ────────────────────────
+  entities: [
+    // Servants de pièce DE REMPART (z1, côté défenseur) — postés à x-1 de leur affût (B(8,38)→(7,38), K(21,38)→(20,38)).
+    gunner('crew-baliste', { x: 7, y: 38 }, 'baliste', 'Servant de baliste', { z: 1 }),
+    gunner('crew-canon', { x: 20, y: 38 }, 'canon-petit', 'Servant de canon', { z: 1 }),
+    // Servants de la BATTERIE assaillante (z0, côté assaut, facing S) — à x-1 de leur affût (k(21,15)→(20,15), p(8,2)→(7,2)).
+    gunner('brg-canon', { x: 20, y: 15 }, 'canon-petit', 'Canonnier de siège', { facing: 'S', ref: 'brigand' }),
+    gunner('brg-cata', { x: 7, y: 2 }, 'catapulte-petite', 'Servant de catapulte', { facing: 'S', ref: 'brigand' }),
+    // CAMP assaillant (décor, nord).
+    prop('camp-tente-0', 'tente', 3, 0), prop('camp-tente-1', 'tente', 14, 0), prop('camp-tente-2', 'tente', 26, 0),
+    prop('camp-brasero-0', 'brasero', 8, 0), prop('camp-brasero-1', 'brasero', 21, 0),
+    prop('camp-etendard-0', 'etendard', 12, 1), prop('camp-etendard-1', 'etendard', 17, 1),
+  ],
+
+  // ── BINDS des marqueurs → poses. Archers/guetteur = PNJ alliés-IA (arcs). Emplacements = affûts INERTES servis
+  //    par leur équipage (crew ci-dessus), enrôlés SANS `ai` (aucun tour propre). Gobelins = fantassins ennemis. ─
+  bind: {
+    '@': 'heroStart',
+    // Archers défenseurs (z1, arcs) : PNJ alliés-IA (agissent seuls).
+    A: {
+      entity: { kind: 'personnage', ref: 'garde-du-village', weapon: 'Arc', facing: 'N', z: 1, label: 'Archer du guet' },
+      member: { enc: 'assaut', side: 'ally', ai: true },
+    },
+    // Guetteur au-dessus de la porte (chute à la brèche).
+    G: {
+      entity: { kind: 'personnage', ref: 'garde-du-village', weapon: 'Arc', facing: 'N', z: 1, label: 'Guetteur du corps de garde' },
+      member: { enc: 'assaut', side: 'ally', ai: true },
+    },
+    // Pièces de REMPART : affûts INERTES (pas d'`ai`), servis par leur équipage QUALIFIÉ (crew), sur le chemin de ronde (z1).
+    B: { emplacement: 'baliste', crew: 'crew-baliste', facing: 'N', member: { enc: 'assaut', side: 'ally' } },
+    K: { emplacement: 'canon-petit', crew: 'crew-canon', facing: 'N', member: { enc: 'assaut', side: 'ally' } },
+    // BATTERIE assaillante (z0) : affûts INERTES servis par les brigands-équipage, camp ennemi.
+    k: { emplacement: 'canon-petit', crew: 'brg-canon', facing: 'S', member: { enc: 'assaut', side: 'enemy' } },
+    p: { emplacement: 'catapulte-petite', crew: 'brg-cata', facing: 'S', member: { enc: 'assaut', side: 'enemy' } },
+    // Fantassins gobelins (z0) : assaut ennemi qui traverse le pont et s'amasse à la porte.
+    o: { entity: { kind: 'personnage', ref: 'gobelin', facing: 'S' }, member: { enc: 'assaut', side: 'enemy' } },
+  },
+
+  // ── RENCONTRE : le roster des servants (alliés-IA au rempart ; brigands ennemis à la batterie) — le RESTE
+  //    (emplacements inertes, archers, guetteur, gobelins) arrive par bind→member ci-dessus. ────────────────────
+  encounters: [
+    {
+      id: 'assaut',
+      members: [
+        { entityId: 'crew-baliste', side: 'ally', ai: true },
+        { entityId: 'crew-canon', side: 'ally', ai: true },
+        { entityId: 'brg-canon', side: 'enemy' },
+        { entityId: 'brg-cata', side: 'enemy' },
+      ],
+    },
+  ],
 };
 
-// ── ASSAILLANTS (couche 0) : la BATTERIE est faite d'AFFÛTS INERTES rendus comme des ENGINS (canon + catapulte),
-//    chacun SERVI par un brigand-équipage adjacent — exactement comme les pièces de rempart : on neutralise la
-//    pièce en tuant le brigand, pas en frappant l'affût. Les brigands (terse, index 0/1) reçoivent l'engin via le
-//    poste de leur affût (`applyShipPostes`) → ils tirent dès le 1er tour ; puis les FANTASSINS gobelins. ─
-const k = z0.positions['k'][0]; // affût canon de siège (avancé, à portée directe de la porte)
-const cat = z0.positions['p'][0]; // affût catapulte (arrière, tir indirect)
-setEncounters(scene, [
-  {
-    id: 'assaut',
-    enemies: [
-      // Brigands-équipage (ids déterministes enemy-assaut-0 = canon, enemy-assaut-1 = catapulte), SANS arme de
-      // siège propre : leur seule arme à distance est la pièce servie via l'affût ci-dessous. Postés à CÔTÉ.
-      // Chacun reçoit la Projectiles du Groupe de SA pièce → équipage qualifié (sinon l'assaut tire à vide).
-      { ref: 'brigand', pos: { x: k.x - 1, y: k.y }, facing: 'S', label: 'Canonnier de siège', skills: projForPiece('canon-petit') },
-      { ref: 'brigand', pos: { x: cat.x - 1, y: cat.y }, facing: 'S', label: 'Servant de catapulte', skills: projForPiece('catapulte-petite') },
-      ...z0.positions['o'].map((p) => ({ ref: 'gobelin', pos: { ...p }, facing: 'S' as const })),
-    ],
-  },
-]);
-
-// Affûts assaillants = ENGINS inertes (builder PARTAGÉ, rig DÉRIVÉ de la ref) servis par les brigands ci-dessus.
-const assautCanon = siegeEmplacementEntity('empl-assaut-canon', 'canon-petit', k, { facing: 'S', crewIds: ['enemy-assaut-0'] })!;
-const assautCata = siegeEmplacementEntity('empl-assaut-catapulte', 'catapulte-petite', cat, { facing: 'S', crewIds: ['enemy-assaut-1'] })!;
-scene.entities.push(assautCanon, assautCata);
-
-// Défenseurs = membres ALLIÉS de l'assaut. Les ARCHERS/guetteur/servants agissent SEULS (`ai:true` → aiControlled) ;
-// les AFFÛTS (rempart ET assaillants) sont INERTES (pas de tour, servis par leur équipage). Une SceneEntity à
-// `z`/`postes` n'est enrôlée QUE si un `EncounterMember` la référence (roster = `members`).
-const allyMembers: EncounterMember[] = [
-  ...defenders.map((e) => ({ entityId: e.id, side: 'ally' as const, ai: true })),
-  ...pieces.map((e) => ({ entityId: e.id, side: 'ally' as const })),
-];
-scene.encounters[0].members!.push(
-  ...allyMembers,
-  { entityId: assautCanon.id, side: 'enemy' as const }, // affût assaillant : camp ennemi, inerte (hors tour)
-  { entityId: assautCata.id, side: 'enemy' as const },
-);
+const scene = buildScene(spec);
 
 export const scenario: TestScenario = {
   id: 'siege-enceinte',
@@ -186,10 +275,10 @@ export const scenario: TestScenario = {
   tests:
     'Siège à grande échelle (30×46, 2 couches) : champ d\'approche profond (~76 m) + camp & BATTERIE assaillante ' +
     '(canon direct + catapulte indirecte) qui BRÈCHE la porte de loin (IA cible la structure, Atout Siège) ; rivière ' +
-    '+ pont qui canalise l\'assaut ; enceinte à porte brèchable (WallSeg sans hauteur) ; chemin de ronde = couche 1 ' +
-    'à 4 m, rejoint par UNE RAMPE (hauteurs croissantes, plus d\'escalier), parapet z1 sur l\'arête extérieure ; ' +
+    '+ pont qui canalise l\'assaut ; enceinte à porte brèchable (WallSpec sans hauteur) ; chemin de ronde = couche 1 ' +
+    'à 4 m, rejoint par UNE RAMPE au FLANC GAUCHE (déportée de la porte), parapet z1 sur l\'arête extérieure ; ' +
     'pièces servies + ARCHERS PNJ alliés-IA ; combat VERTICAL (LdV plongeante, mêlée refusée à travers le vide).',
-  partyNote: 'Groupe pré-tiré (Soldat / Chasseur / Sorcier / Tueur) : montez au rempart par la rampe ; le SOLDAT sait servir les pièces (Baliste/Canon).',
+  partyNote: 'Groupe pré-tiré (Soldat / Chasseur / Sorcier / Tueur) : montez au rempart par la rampe du flanc gauche ; le SOLDAT sait servir les pièces (Baliste/Canon).',
   makeParty: () => {
     const party = pregenParty(PREGEN.soldat, PREGEN.chasseur, PREGEN.sorcier, PREGEN.tueur);
     // Le SOLDAT sait SERVIR les pièces de rempart : on lui octroie la Projectiles du Groupe de CHAQUE pièce

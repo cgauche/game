@@ -30,6 +30,7 @@ import type {
 import { emptyScene } from './scene';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
+import type { Dir8 } from './dir8';
 import { parseAsciiRows, scanMarkers } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
 import {
@@ -90,7 +91,10 @@ export type BindMember = { enc: string; side?: 'ally' | 'enemy'; ai?: boolean; m
 export type BindSpec =
   | 'heroStart'
   | { entry: string }
-  | { emplacement: string; crew?: string; side?: FireArc; member?: BindMember }
+  /** `emplacement` (id d'engin) posé au marqueur : `crew` = id d'équipage servant, `side` = arc de tir naval
+   *  (FireArc, absent = pivot libre), `facing` = orientation-monde de l'affût (Dir8), `z` HÉRITÉ de l'étage du
+   *  marqueur (grille z1 → affût sur le chemin de ronde). `member` = enrôlement dans la rencontre. */
+  | { emplacement: string; crew?: string; side?: FireArc; facing?: Dir8; member?: BindMember }
   | { entity: Partial<SceneEntity>; member?: BindMember }
   | Partial<SceneEntity>;
 
@@ -122,6 +126,10 @@ export interface MapSpec {
   terrain?: Terrain;
   /** Légende ASCII (char → terrain) partagée par tous les étages. */
   legend?: Record<string, Terrain>;
+  /** Char LAISSÉ sous un marqueur nettoyé (marqueur → char de LÉGENDE, ex. `{ B:'W' }` pour poser une pièce
+   *  SUR le chemin de ronde 'W' sans y percer un trou). Le char résout ensuite via `legend`. Défaut : `'.'`
+   *  → base de l'étage (herbe z0 / vide z1). */
+  markerFill?: Record<string, string>;
   /** Grilles ASCII par étage (`z0`/`z1`/…). Sinon une couche pleine de `terrain`. */
   levels?: Record<string, string>;
   walls?: WallSpec[];
@@ -201,7 +209,7 @@ export function buildScene(spec: MapSpec): Scene {
   if (spec.levels) {
     for (const [key, rows] of Object.entries(spec.levels)) {
       const z = parseInt(key.replace('z', ''), 10);
-      const { positions, cleaned } = scanMarkers(rowsOf(rows), bindChars);
+      const { positions, cleaned } = scanMarkers(rowsOf(rows), bindChars, spec.markerFill);
       for (const [ch, list] of Object.entries(positions)) for (const p of list) scanned.push({ char: ch, pos: p, z });
       const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
       const tiles = parseAsciiRows(cleaned, base, spec.legend).tiles;
@@ -254,7 +262,7 @@ export function buildScene(spec: MapSpec): Scene {
     if (m.mount) mem.mount = m.mount;
     return mem;
   };
-  for (const { char, pos } of scanned) {
+  for (const { char, pos, z: markerZ } of scanned) {
     const bind = spec.bind?.[char];
     if (!bind) continue;
     if (bind === 'heroStart') {
@@ -263,8 +271,9 @@ export function buildScene(spec: MapSpec): Scene {
       const name = (bind as { entry: string }).entry;
       s = { ...s, entryPoints: { ...s.entryPoints, [name]: { x: pos.x, y: pos.y } } };
     } else if ('emplacement' in bind && typeof (bind as { emplacement: string }).emplacement === 'string') {
-      const b = bind as { emplacement: string; crew?: string; side?: FireArc; member?: BindMember };
-      const placed = placeEmplacement(s, b.emplacement, pos);
+      const b = bind as { emplacement: string; crew?: string; side?: FireArc; facing?: Dir8; member?: BindMember };
+      // z HÉRITÉ de l'étage du marqueur (grille z1 → affût sur le chemin de ronde) ; `facing` = orientation-monde.
+      const placed = placeEmplacement(s, b.emplacement, pos, markerZ, b.facing);
       if (placed) {
         s = placed.scene;
         if (b.crew) s = setPosteCrew(s, placed.id, [b.crew]);
