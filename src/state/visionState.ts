@@ -25,7 +25,7 @@ export interface VisionInput {
 /** Champ de lumière + fumée de la scène (SOURCE UNIQUE pour la vue du groupe ET la perception ennemie) :
  *  ambiant + lumières posées (carte) + lumières portées (les deux camps en combat, le groupe en
  *  exploration — une torche révèle son porteur). */
-function sceneLightField(s: VisionInput): { light: ReturnType<typeof computeLightField>; smoke: Pt[] } {
+export function sceneLightField(s: VisionInput): { light: ReturnType<typeof computeLightField>; smoke: Pt[] } {
   const scene = s.scene!;
   const ambient = ambientScalar(scene, s.gameTime, s.lightLevel);
   const sources = mapLights(scene);

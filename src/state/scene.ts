@@ -534,18 +534,19 @@ export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
   return terrainWalkable(tileAt(scene, x, y, z));
 }
 
-/** Lien vertical entre deux cases 4-VOISINES (couches possiblement différentes) : compare leurs hauteurs
- *  métriques et classe le franchissement à pied — `flat`/`ramp` marchable, `cliff` infranchissable
- *  horizontalement (on y descend en chutant, on y monte par Escalade). SOURCE UNIQUE de l'auto-connexion
- *  du relief : remplace les escaliers explicites ET la machinerie de rempart. `drop` = hauteur de `b`
- *  moins celle de `a` (>0 = `b` plus haut). Renvoie null si `a` et `b` ne sont pas 4-adjacentes en (x,y).
- *  La marchabilité du terrain/des murs reste séparée (`isWalkable`/`wallBetween`) — ici, seule la hauteur. */
+/** Lien vertical entre deux cases ADJACENTES (Chebyshev : cardinale OU diagonale, grille 8-connexe cf.
+ *  `path.ts` NEIGHBORS ; couches possiblement différentes) : compare leurs hauteurs métriques et classe
+ *  le franchissement à pied — `flat`/`ramp` marchable, `cliff` infranchissable horizontalement (on y
+ *  descend en chutant, on y monte par Escalade). SOURCE UNIQUE de l'auto-connexion du relief : remplace
+ *  les escaliers explicites ET la machinerie de rempart. `drop` = hauteur de `b` moins celle de `a`
+ *  (>0 = `b` plus haut). Renvoie null si `a` et `b` ne sont pas adjacentes en (x,y) (distance Chebyshev ≠ 1
+ *  → même case ou ≥ 2). La marchabilité du terrain/des murs reste séparée (`isWalkable`/`wallBetween`). */
 export function surfaceLink(
   scene: Scene,
   a: { x: number; y: number; z?: number },
   b: { x: number; y: number; z?: number },
 ): { grade: Grade; drop: number } | null {
-  if (Math.abs(a.x - b.x) + Math.abs(a.y - b.y) !== 1) return null;
+  if (Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) !== 1) return null; // adjacent (cardinal ou diagonal)
   const ha = heightAt(scene, a.x, a.y, a.z ?? 0);
   const hb = heightAt(scene, b.x, b.y, b.z ?? 0);
   return { grade: gradeBetween(ha, hb), drop: hb - ha };

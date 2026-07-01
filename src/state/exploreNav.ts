@@ -2,6 +2,8 @@ import { type Scene, isWalkable } from './scene';
 import { pathTo, walkNeighbors, type Pt } from './path';
 import { screenStepDot, type ScreenDir } from './combatCursor';
 import { type Dims } from '../gameIso/iso';
+import { type Dir8 } from './dir8';
+import { DIR8_DELTA } from '../gameIso/rig/facing';
 
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
@@ -63,4 +65,17 @@ export function exploreStepDest(scene: Scene, from: Pt, dir: ScreenDir, dims: Di
     }
   }
   return best;
+}
+
+/** Case d'ARRIVÉE d'un pas en vue SUBJECTIVE (POV) dans une direction MONDE `worldDir` (Dir8, ≠ écran :
+ *  le POV raisonne en cap réel, indépendant de la caméra). La surface voisine CONNECTÉE (`walkNeighbors` —
+ *  même connectivité que le BFS : rampes/tabliers/arête non murée, z auto-dérivé) dont le delta grille a le
+ *  MÊME signe (x ET y) que le delta unitaire de `worldDir` (`DIR8_DELTA`). `null` si aucune (bord/mur/vide).
+ *  PUR — réutilise `walkNeighbors` (zéro géométrie ré-implémentée). */
+export function povStepDest(scene: Scene, from: Pt, worldDir: Dir8): Pt | null {
+  const d = DIR8_DELTA[worldDir];
+  for (const n of walkNeighbors(scene, from)) {
+    if (Math.sign(n.x - from.x) === Math.sign(d.gx) && Math.sign(n.y - from.y) === Math.sign(d.gy)) return n;
+  }
+  return null;
 }

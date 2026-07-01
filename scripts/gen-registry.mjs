@@ -149,6 +149,15 @@ export const REGISTRIES = [
     typeFrom: '../types',
   },
   {
+    // Structures d'arête (mur/porte) — apparence PARTAGÉE iso (walls.ts) + POV (geometry.ts) : 1 structure = 1 fichier defs/.
+    dir: 'src/gameIso/catalog/structures/defs',
+    out: 'src/gameIso/catalog/structures/_registry.generated.ts',
+    exportName: 'structureAppearance',
+    arrayName: 'STRUCTURE_APPEARANCE_DEFS',
+    type: 'StructureAppearanceDef',
+    typeFrom: './types',
+  },
+  {
     // Terrains / sols : 1 terrain = 1 fichier defs/ (méta PURE + viz gradient/swatch unifiés).
     dir: 'src/state/terrain/defs',
     out: 'src/state/terrain/_registry.generated.ts',

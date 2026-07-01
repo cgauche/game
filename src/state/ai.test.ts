@@ -167,7 +167,7 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
   it('encerclé et cible non adjacente → passe la main (pas de mouvement possible)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
     const h = mk('h', 'hero', { x: 1, y: 1 });
-    const blocked = new Set(['4,5', '6,5', '5,4', '5,6']); // 4 voisins bloqués
+    const blocked = new Set(['4,5', '6,5', '5,4', '5,6', '4,4', '6,4', '4,6', '6,6']); // 8 voisins bloqués (encerclement complet, grille 8-connexe)
     expect(chooseEnemyAction(input(e, [h], { blocked })).kind).toBe('end');
   });
 });
@@ -198,7 +198,7 @@ describe('IA — vision réciproque (perceived)', () => {
   it('aucun héros perçu ET encerclé (aucun mouvement) → passe la main', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
     const h = mk('h', 'hero', { x: 1, y: 1 });
-    const blocked = new Set(['4,5', '6,5', '5,4', '5,6']); // 4 voisins bloqués
+    const blocked = new Set(['4,5', '6,5', '5,4', '5,6', '4,4', '6,4', '4,6', '6,6']); // 8 voisins bloqués (encerclement complet, grille 8-connexe)
     expect(chooseEnemyAction(input(e, [h], { perceived: new Set(), blocked })).kind).toBe('end');
   });
   it('perçoit une cible au tir → la vise', () => {

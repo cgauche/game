@@ -23,11 +23,23 @@ const key = (x: number, y: number, z = 0) => (z ? `${x},${y},${z}` : `${x},${y}`
  *  d'ensembles `blocked` côté combat (`occupied`/`cannotStopOn`), qui doivent suivre EXACTEMENT ce
  *  schéma (z=0 → « x,y », z>0 → « x,y,z ») pour rester comparables au `footFits` du BFS. */
 export { key as tileKey };
-const NEIGHBORS = [
+/** 4-cardinaux — SAUTS en ligne droite (Saut LDB 15 : on franchit un gouffre tout droit). */
+const CARDINALS = [
   [1, 0],
   [-1, 0],
   [0, 1],
   [0, -1],
+];
+/** 8-voisins — DÉPLACEMENT à pied. La diagonale est RAW-légale (LDB 15 « Déplacement » l.10-16 : la grille
+ *  optionnelle « compte les cases », aucune règle de diagonale) et coûte 1 pas (Chebyshev), cohérent avec
+ *  `chebyshev()` (portée de combat). Garde anti coupe-de-coin dans `neighborsOf`. SOURCE UNIQUE de
+ *  connectivité : explo + clic + POV + combat + IA (aucune divergence). */
+const NEIGHBORS = [
+  ...CARDINALS,
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
 ];
 
 /** Arêtes BARRIÈRES prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`). DIFFÈRE
@@ -59,6 +71,14 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>): Pt[] {
   const out: Pt[] = [];
   for (const [dx, dy] of NEIGHBORS) {
     const nx = p.x + dx, ny = p.y + dy;
+    // Pas DIAGONAL : garde anti coupe-de-coin — les DEUX cases orthogonales flanquantes doivent être
+    // franchissables depuis (p) au même étage (marchables ET non séparées par un mur). Empêche de se
+    // faufiler en diagonale à travers un coin de mur ou entre deux obstacles.
+    if (dx !== 0 && dy !== 0) {
+      const okA = isWalkable(scene, p.x + dx, p.y, z) && !walled(edges, p.x, p.y, p.x + dx, p.y, z);
+      const okB = isWalkable(scene, p.x, p.y + dy, z) && !walled(edges, p.x, p.y, p.x, p.y + dy, z);
+      if (!okA || !okB) continue;
+    }
     for (const layer of scene.layers) {
       const nz = layer.z;
       if (!isWalkable(scene, nx, ny, nz)) continue; // pas de surface réelle sur cette couche ici
@@ -88,7 +108,7 @@ function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, 
   if (jump < 2 || foot > 1) return [];
   const z = pz(p);
   const out: Pt[] = [];
-  for (const [dx, dy] of NEIGHBORS) {
+  for (const [dx, dy] of CARDINALS) {
     if (walled(edges, p.x, p.y, p.x + dx, p.y + dy, z)) continue; // un mur au décollage interdit le saut
     for (let d = 2; d <= jump; d++) {
       let overGap = true; // les cases 1..d-1 doivent toutes être un gouffre (non-marchables)
@@ -311,7 +331,8 @@ export function manhattan(a: Pt, b: Pt): number {
 
 /** Distance « roi d'échecs » (Chebyshev) sur la grille carrée : la diagonale vaut 1.
  *  C'est la distance de COMBAT (portée de mêlée, bandes de tir) — un ennemi en diagonale
- *  est à portée de contact. Le déplacement, lui, reste 4-connexe (cf. NEIGHBORS). */
+ *  est à portée de contact. Le DÉPLACEMENT suit désormais la MÊME métrique (grille 8-connexe,
+ *  cf. NEIGHBORS) : une diagonale = 1 pas → portée et déplacement s'accordent enfin. */
 export function chebyshev(a: Pt, b: Pt): number {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 }

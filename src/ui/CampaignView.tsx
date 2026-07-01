@@ -3,6 +3,8 @@ import { useGame } from '../state/store';
 import { formatImperial, toDate, dayPhase } from '../engine/clock';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { IsoStage } from '../gameIso/IsoStage';
+import { PovStage } from '../gameIso/pov/PovStage';
+import { PovControls } from './PovControls';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
@@ -67,6 +69,8 @@ export function CampaignView() {
   const rotateCam = useGame((s) => s.rotateCam);
   const viewMode = useGame((s) => s.viewMode);
   const toggleViewMode = useGame((s) => s.toggleViewMode);
+  const povActive = useGame((s) => s.povActive);
+  const togglePov = useGame((s) => s.togglePov);
   const battleClickEntity = useGame((s) => s.battleClickEntity);
   const netMode = useGame((s) => s.net.mode);
   const openRest = useGame((s) => s.openRest);
@@ -131,7 +135,7 @@ export function CampaignView() {
   return (
     <div className="screen campaign-view">
       <main className="stage">
-        <IsoStage />
+        {mode === 'exploration' && povActive ? <PovStage /> : <IsoStage />}
         {/* ── Overlays HUD plein-champ (façon BG3, mobile-first) ── */}
         {mode === 'battle' && battle && (
           <>
@@ -196,7 +200,10 @@ export function CampaignView() {
           onRotateRight={() => rotateCam(1)}
           view={viewMode}
           onToggleView={toggleViewMode}
+          pov={povActive}
+          onTogglePov={mode === 'exploration' ? togglePov : undefined}
         />
+        {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
         {worldMapOpen && mode === 'exploration' && <WorldMapView />}

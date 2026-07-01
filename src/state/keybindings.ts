@@ -36,15 +36,29 @@ const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pick
 const cur = (s: GameState) => inBattle(s) && controlsActive(s) && noModal(s);
 /** Contexte d'EXPLORATION (carte hors combat) : écran de jeu, mode exploration, hors dialogue. */
 const exploring = (s: GameState) => s.screen === 'campaign' && s.mode === 'exploration' && !s.dialogue;
-/** Pas clavier d'exploration (flèches) : code physique → direction ÉCRAN. */
+/** Contexte d'exploration en vue SUBJECTIVE (POV) : les ZQSD deviennent cap-relatifs et A/E pivotent le
+ *  regard → shadow des raccourcis caméra/pas-iso (mêmes touches) tant que le POV est actif. */
+const exploringPov = (s: GameState) => exploring(s) && s.povActive;
+/** Pas clavier d'exploration ISO (ZQSD) : code physique → direction ÉCRAN. Réservé à la vue iso (hors POV,
+ *  où ces mêmes touches sont cap-relatives — cf. `exploringPov` ci-dessus, résolu AVANT par ordre de tableau). */
 const EXPLORE_STEP: { code: string; dir: ScreenDir; label: string }[] = [
-  { code: 'ArrowUp', dir: 'up', label: 'Exploration : pas vers le haut' },
-  { code: 'ArrowDown', dir: 'down', label: 'Exploration : pas vers le bas' },
-  { code: 'ArrowLeft', dir: 'left', label: 'Exploration : pas vers la gauche' },
-  { code: 'ArrowRight', dir: 'right', label: 'Exploration : pas vers la droite' },
+  { code: 'KeyW', dir: 'up', label: 'Exploration : pas vers le haut' },
+  { code: 'KeyS', dir: 'down', label: 'Exploration : pas vers le bas' },
+  { code: 'KeyA', dir: 'left', label: 'Exploration : pas vers la gauche' },
+  { code: 'KeyD', dir: 'right', label: 'Exploration : pas vers la droite' },
 ];
 
 export const KEYBINDINGS: KeyBinding[] = [
+  // ── Vue SUBJECTIVE (POV) — AVANT les cam-*/pas-iso (mêmes codes physiques) : find = 1er `when` vrai, donc
+  //    tant que `povActive`, ces raccourcis GAGNENT (ZQSD cap-relatif, A/E pivotent le regard) ; hors POV
+  //    `exploringPov` est faux → cam-* et pas-iso reprennent la main. `toggle-pov` (F) commute la vue. ──
+  { id: 'pov-forward', codes: ['KeyW'], label: 'POV : avancer', when: exploringPov, run: (g) => g().stepPartyRelative('forward') },
+  { id: 'pov-back', codes: ['KeyS'], label: 'POV : reculer', when: exploringPov, run: (g) => g().stepPartyRelative('back') },
+  { id: 'pov-strafe-l', codes: ['KeyA'], label: 'POV : pas de côté à gauche', when: exploringPov, run: (g) => g().stepPartyRelative('left') },
+  { id: 'pov-strafe-r', codes: ['KeyD'], label: 'POV : pas de côté à droite', when: exploringPov, run: (g) => g().stepPartyRelative('right') },
+  { id: 'pov-turn-l', codes: ['KeyQ'], label: 'POV : pivoter le regard à gauche', when: exploringPov, run: (g) => g().pivotParty(-1) },
+  { id: 'pov-turn-r', codes: ['KeyE'], label: 'POV : pivoter le regard à droite', when: exploringPov, run: (g) => g().pivotParty(1) },
+  { id: 'toggle-pov', codes: ['KeyF'], label: 'Basculer la vue subjective (POV)', when: exploring, run: (g) => g().togglePov() },
   { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', when: () => true, run: (g) => g().rotateCam(-1) },
   { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', when: () => true, run: (g) => g().rotateCam(1) },
   { id: 'cam-recenter', codes: ['KeyC'], label: 'Caméra : recentrer sur l’actif', when: inBattle, run: (g) => g().resetCamPan() },
@@ -107,12 +121,13 @@ export const KEYBINDINGS: KeyBinding[] = [
     when: (s) => inBattle(s) && controlsActive(s) && noModal(s),
     run: () => { const sl = hotbar.slots[i]; if (sl && !sl.disabled) sl.run(); },
   })),
-  // ── Pas clavier d'EXPLORATION (flèches) : un pas du groupe vers la surface voisine CONNECTÉE dans le
+  // ── Pas clavier d'EXPLORATION ISO (ZQSD) : un pas du groupe vers la surface voisine CONNECTÉE dans le
   //    sens écran poussé (rampes/tabliers via exploreStepDest) → le multi-couche, injouable au clic
-  //    (l'emprise d'un pont vise la couche du dessous), devient jouable. Garde DISJOINTE du curseur de
-  //    combat (exploration ≠ inBattle), donc partage des codes ArrowX sans conflit (find = 1er `when` vrai).
+  //    (l'emprise d'un pont vise la couche du dessous), devient jouable. Garde `!povActive` : en POV, les
+  //    mêmes ZQSD sont cap-relatifs (bindings pov-* ci-dessus, résolus AVANT). Les flèches restent au SEUL
+  //    curseur de combat (garde `cur`) — plus de partage de codes avec l'exploration.
   ...EXPLORE_STEP.map(({ code, dir, label }): KeyBinding => ({
-    id: `explore-${dir}`, codes: [code], label, when: exploring, run: (g) => g().stepPartyDir(dir),
+    id: `explore-${dir}`, codes: [code], label, when: (s) => exploring(s) && !s.povActive, run: (g) => g().stepPartyDir(dir),
   })),
 ];
 

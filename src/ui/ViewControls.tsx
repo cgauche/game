@@ -14,6 +14,9 @@ interface ViewControlsProps {
   /** Projection courante (iso losange / top grille carrée) + bascule. */
   view: 'iso' | 'top';
   onToggleView: () => void;
+  /** Vue subjective (POV) : état + bascule. Optionnels — absents chez l'éditeur (jeu seulement). */
+  pov?: boolean;
+  onTogglePov?: () => void;
 }
 
 const BTN: React.CSSProperties = {
@@ -35,7 +38,7 @@ const BTN: React.CSSProperties = {
   opacity: 0.92,
 };
 
-export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView }: ViewControlsProps) {
+export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov }: ViewControlsProps) {
   const stop = (fn: () => void) => (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -55,10 +58,9 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
           ⟳
         </button>
       </div>
+      {/* Grille 2 colonnes : GAUCHE = vue (projection ▦/◇, puis subjective 👁) ; DROITE = zoom (+, −).
+          → le toggle POV est SOUS la vue du dessus et À GAUCHE du −. */}
       <div style={{ display: 'flex', gap: 8 }}>
-        <button type="button" title="Zoom avant" style={{ ...BTN, fontSize: 26 }} onPointerDown={stop(onZoomIn)}>
-          +
-        </button>
         <button
           type="button"
           title={view === 'top' ? 'Vue isométrique' : 'Vue du dessus'}
@@ -67,10 +69,25 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
         >
           {view === 'top' ? '◇' : '▦'}
         </button>
+        <button type="button" title="Zoom avant" style={{ ...BTN, fontSize: 26 }} onPointerDown={stop(onZoomIn)}>
+          +
+        </button>
       </div>
-      <button type="button" title="Zoom arrière" style={{ ...BTN, fontSize: 30 }} onPointerDown={stop(onZoomOut)}>
-        −
-      </button>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {onTogglePov && (
+          <button
+            type="button"
+            title={pov ? 'Vue normale (au-dessus)' : 'Vue subjective (première personne)'}
+            style={{ ...BTN, fontSize: 20, borderColor: pov ? 'var(--gold)' : 'var(--border)' }}
+            onPointerDown={stop(onTogglePov)}
+          >
+            {pov ? '🗺' : '👁'}
+          </button>
+        )}
+        <button type="button" title="Zoom arrière" style={{ ...BTN, fontSize: 30 }} onPointerDown={stop(onZoomOut)}>
+          −
+        </button>
+      </div>
       {Math.abs(zoom - 1) > 0.001 && (
         <button type="button" title="Réinitialiser le zoom" style={{ ...BTN, height: 26, fontSize: 12 }} onPointerDown={stop(onZoomReset)}>
           1×

@@ -46,16 +46,22 @@ function focusStep(container: HTMLElement, dir: -1 | 1): void {
 export type PadDir = 'up' | 'down' | 'left' | 'right';
 export type PadButton = 'A' | 'B' | 'X' | 'Y' | 'LB' | 'RB' | 'LT' | 'RT' | 'Back';
 
+/** POV : croix/stick → intention CAP-RELATIVE (haut/bas = avance/recul, gauche/droite = pivot du regard).
+ *  Le pas latéral (strafe) vit sur les gâchettes LB/RB (cf. `padButton`). */
+const POV_DIR: Record<PadDir, string> = { up: 'pov-forward', down: 'pov-back', left: 'pov-turn-l', right: 'pov-turn-r' };
+
 /** Direction (croix/stick) : sur la CARTE elle pilote le curseur de combat via le MÊME id de raccourci
  *  que les flèches (`cursor-<dir>`) ; en menu/modale elle déplace le focus DOM (haut/gauche = arrière,
  *  bas/droite = avant). Framework-agnostique (appelée par le hook ET le shim DEV). */
 export function padDir(dir: PadDir): void {
   const ctx = padContext();
   if (ctx === 'map') {
-    // Carte : combat → curseur de visée ; exploration → pas du groupe. Les deux `when` sont DISJOINTS
-    // (inBattle ⊥ exploration) → un seul raccourci agit ; même registre, aucun chemin parallèle.
+    // Carte : combat → curseur de visée ; exploration iso → pas du groupe ; POV → avance/recul + pivot.
+    // Les trois `when` sont DISJOINTS (inBattle ⊥ exploration!povActive ⊥ exploringPov) → un seul agit ;
+    // même registre, aucun chemin parallèle.
     runBindingById('cursor-' + dir, useGame.getState);
     runBindingById('explore-' + dir, useGame.getState);
+    runBindingById(POV_DIR[dir], useGame.getState);
     return;
   }
   const container = activeContainer(ctx);
@@ -79,20 +85,21 @@ export function padButton(name: PadButton): void {
       else if (ctx === 'menu') ae?.blur();
       else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       break;
-    case 'X': // basculer carte ⇄ menu : carte = focus le 1er bouton de la barre ; menu = revenir carte
+    case 'X': // carte : combat = focus la barre d'action ; exploration (pas de barre) = bascule le POV. menu = revenir carte.
       if (ctx === 'map') {
         const bar = document.querySelector<HTMLElement>('.action-bar');
         if (bar) visibleFocusables(bar)[0]?.focus();
+        else runBindingById('toggle-pov', get); // exploration : X commute la vue subjective
       } else if (ctx === 'menu') ae?.blur();
       break;
     case 'Y': // fin du tour (carte et menu ; inerte en modale)
       if (ctx !== 'modal') runBindingById('end-turn', get);
       break;
-    case 'LB': // cible précédente (carte uniquement)
-      if (ctx === 'map') runBindingById('target-prev', get);
+    case 'LB': // carte : cible précédente (combat) / pas latéral gauche (POV) — gardes `when` disjointes
+      if (ctx === 'map') { runBindingById('target-prev', get); runBindingById('pov-strafe-l', get); }
       break;
-    case 'RB': // cible suivante (carte uniquement)
-      if (ctx === 'map') runBindingById('target-next', get);
+    case 'RB': // carte : cible suivante (combat) / pas latéral droit (POV)
+      if (ctx === 'map') { runBindingById('target-next', get); runBindingById('pov-strafe-r', get); }
       break;
     case 'LT': // caméra : tourner à gauche (carte et menu)
       if (ctx !== 'modal') runBindingById('cam-left', get);

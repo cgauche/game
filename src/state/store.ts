@@ -86,7 +86,7 @@ export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
-import { exploreStepDest } from './exploreNav';
+import { exploreStepDest, povStepDest } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
@@ -223,6 +223,10 @@ export interface GameState extends RollFlowActionsMap {
   /** Projection de la carte (bascule) : 'iso' losange ou 'top' grille carrée — préférence de vue. */
   viewMode: 'iso' | 'top';
   toggleViewMode: () => void;
+  /** Vue SUBJECTIVE (POV) active : l'exploration passe en cap-relatif (ZQSD = avance/recul/pas latéral,
+   *  A/E = pivote le regard) au lieu du pas iso écran. Préférence de vue, préservée au reset de scène. */
+  povActive: boolean;
+  togglePov: () => void;
   /** DEBUG (recette `__wfrp.labels`) : overlay d'annotation de la carte sur IsoStage — coordonnées par
    *  case (+`z{n}`), teinte par étage et pastilles de rôle de structure. false par défaut (zéro coût off). */
   debugLabels: boolean;
@@ -530,6 +534,13 @@ export interface GameState extends RollFlowActionsMap {
   /** Pas clavier d'exploration : déplace le groupe d'UNE surface voisine connectée dans la direction
    *  ÉCRAN poussée (flèches) — rampes/tabliers gérés par `exploreStepDest` (zéro ambiguïté de z). */
   stepPartyDir: (dir: ScreenDir) => void;
+  /** POV : pivote le REGARD du meneur d'un cran de 45° (+1 = horaire/droite, -1 = anti-horaire/gauche) —
+   *  aucun déplacement (donc pas de réorientation par `faceFromPath`). */
+  pivotParty: (turn: 1 | -1) => void;
+  /** POV : un pas RELATIF au cap du meneur (avance/recul/pas latéral) — cap monde = regard tourné de
+   *  0/2/4/6 crans (90° par cadran), case d'arrivée via `povStepDest`. Le regard est préservé pour tout
+   *  pas ≠ avant (un pas latéral/arrière ne réoriente pas le meneur). */
+  stepPartyRelative: (rel: 'forward' | 'back' | 'left' | 'right') => void;
   interactEntity: (entityId: string) => void;
   setPendingInteract: (id: string | null) => void;
   chooseDialogue: (choiceIndex: number) => void;
@@ -1084,6 +1095,8 @@ export const useGame = create<GameState>((set, get) => ({
   setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(0.4, z)) }), // floor 0.4 : dézoom tactique large
   viewMode: 'iso',
   toggleViewMode: () => set((s) => ({ viewMode: s.viewMode === 'iso' ? 'top' : 'iso' })),
+  povActive: false,
+  togglePov: () => set((s) => ({ povActive: !s.povActive })),
   debugLabels: false,
   camPan: { x: 0, y: 0 },
   panCamBy: (dx, dy) => set((s) => ({ camPan: { x: s.camPan.x + dx, y: s.camPan.y + dy } })),
@@ -1243,10 +1256,10 @@ export const useGame = create<GameState>((set, get) => ({
     // plat) ; `set()` (fusion superficielle) préserve les actions. On ne conserve QUE la
     // navigation/vue (screen, caméra, zoom), le groupe (posé par `setParty`) et la SESSION COOP
     // (net : héberger une partie PUIS la lancer ne doit pas dissoudre le salon — Jalon 7).
-    const { screen, party, camRot, zoom, viewMode, inspectEnabled, net } = get();
+    const { screen, party, camRot, zoom, viewMode, povActive, inspectEnabled, net } = get();
     set({
       ...(JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>),
-      screen, party, camRot, zoom, viewMode, inspectEnabled, net,
+      screen, party, camRot, zoom, viewMode, povActive, inspectEnabled, net,
       scene: JSON.parse(JSON.stringify(scene)),
       mode: 'exploration',
       partyPos: pos,
@@ -1344,6 +1357,33 @@ export const useGame = create<GameState>((set, get) => ({
     const leader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
     if (leader) bus.emit(EVT.ANIM_MOVE, { id: leader.id, path: [partyPos, dest] });
     get().moveParty(dest);
+  },
+
+  pivotParty: (turn) => {
+    const lead = get().party[0]?.id;
+    if (!lead) return;
+    // Pivot du regard SEUL (aucun déplacement → pas de réorientation par `faceFromPath`). ±1 cran = 45°.
+    get().setFacing(lead, rotateDir8(get().facing[lead] ?? 'S', turn));
+  },
+
+  stepPartyRelative: (rel) => {
+    const s = get();
+    if (s.mode !== 'exploration') return;
+    const scene = s.scene;
+    const lead = s.party[0]?.id;
+    if (!scene || !lead) return;
+    const cur = s.facing[lead] ?? 'S';
+    // Cap MONDE du pas = regard tourné de 0/2/4/6 crans (2 crans = 90° par cadran relatif).
+    const worldDir = rotateDir8(cur, { forward: 0, right: 2, back: 4, left: 6 }[rel]);
+    const dest = povStepDest(scene, s.partyPos, worldDir);
+    if (!dest) return;
+    // Glisse d'1 case via l'anim de marche EXISTANTE (même forme d'émission que stepPartyDir).
+    const leader = s.party.find((h) => !h.dead && h.wounds.current > 0) ?? s.party[0];
+    if (leader) bus.emit(EVT.ANIM_MOVE, { id: leader.id, path: [s.partyPos, dest] });
+    s.moveParty(dest);
+    // Un pas ≠ avant ne doit pas tourner le regard : `moveParty`→`faceFromPath` l'a réorienté le long du
+    // pas → on restaure le cap d'origine (l'avance, elle, aligne naturellement regard et déplacement).
+    if (rel !== 'forward') get().setFacing(lead, cur);
   },
 
   interactEntity: (entityId) => {

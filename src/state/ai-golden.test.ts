@@ -234,7 +234,7 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
   it('encerclé, cible non adjacente → end (aucun mouvement)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
     const h = mk('h', 'hero', { x: 1, y: 1 });
-    const blocked = new Set(['4,5', '6,5', '5,4', '5,6']);
+    const blocked = new Set(['4,5', '6,5', '5,4', '5,6', '4,4', '6,4', '4,6', '6,6']); // encerclement complet (8 voisins, grille 8-connexe)
     expect(chooseEnemyAction(input(e, [h], { blocked })).kind).toBe('end');
   });
 });
