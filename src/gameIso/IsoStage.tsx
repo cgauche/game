@@ -38,7 +38,7 @@ import {
   screenToTileAtZ,
   depth,
   footprintDepth,
-  rotTile,
+  makeOccludes,
 } from './iso';
 import {
   DEFS,
@@ -334,13 +334,11 @@ export function IsoStage() {
   }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, mode, battle, partyPos]);
 
   // Un MUR/DÉCOR/TOIT devant un acteur À SUIVRE (même colonne écran, camera-near, proche) s'ESTOMPE pour ne
-  // pas le cacher — côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs`.
+  // pas le cacher — côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs` via la
+  // primitive PURE et testée `makeOccludes` (rotation/projection-aware, cf. iso.ts).
   // ACTEURS PRIS EN COMPTE = ce que le JOUEUR doit voir : en combat TOUS les combattants (tactique) ; en
   // exploration le SEUL groupe — surtout PAS les PNJ d'ambiance (sinon un PNJ occupant/derrière un bâtiment
   // ferait disparaître son toit et estomperait ses murs → les bâtiments PEUPLÉS perdaient leur toit).
-  // ROTATION-AWARE : on projette par `rotTile` dans l'espace écran-aligné et on prend la colonne/profondeur
-  // de la projection COURANTE (losange : anti-diag/diag ; edge-on ou dessus : x/y de rangée) — même base que
-  // `depth()`/`tileCenter()`, donc l'estompe suit la caméra aux 4 crans et dans les deux projections.
   const occludesActor = useMemo(() => {
     const actorTiles: { x: number; y: number }[] = [];
     if (mode === 'battle' && battle) {
@@ -349,16 +347,7 @@ export function IsoStage() {
       actorTiles.push(partyPos);
     }
     const d: Dims = { ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: shownRot, view: viewMode, edge: shownEdge };
-    const axisAligned = viewMode === 'top' || shownEdge; // edge-on / dessus : profondeur par rangée (r.y)
-    const proj = (x: number, y: number) => {
-      const r = rotTile(x, y, d);
-      return axisAligned ? { col: r.x, dep: r.y } : { col: r.x - r.y, dep: r.x + r.y };
-    };
-    const actors = actorTiles.map((a) => proj(a.x, a.y));
-    return (tx: number, ty: number) => {
-      const t = proj(tx, ty);
-      return actors.some((a) => a.dep < t.dep && Math.abs(a.col - t.col) <= 1 && t.dep - a.dep <= 7);
-    };
+    return makeOccludes(d, actorTiles);
   }, [scene, mode, battle, partyPos, shownRot, viewMode, shownEdge]);
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans

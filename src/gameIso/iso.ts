@@ -249,3 +249,22 @@ export function footprintDepth(x: number, y: number, w: number, h: number, dims:
   for (const cx of xs) for (const cy of ys) d = Math.max(d, depth(cx, cy, dims, z));
   return d;
 }
+
+/** Base ÉCRAN (colonne, profondeur) d'une case dans la projection COURANTE — même repère que `depth`/
+ *  `tileCenter` : losange = anti-diagonale (col) / diagonale (dep) ; edge-on ou dessus = colonne x / rangée y. */
+function screenBasis(x: number, y: number, dims: Dims): { col: number; dep: number } {
+  const r = rotTile(x, y, dims);
+  return dims.view === 'top' || dims.edge ? { col: r.x, dep: r.y } : { col: r.x - r.y, dep: r.x + r.y };
+}
+
+/** Prédicat d'OCCLUSION écran : une case (tx,ty) occulte un `actorTiles` si elle est DEVANT lui (camera-near),
+ *  sur la MÊME colonne écran (± 1) et à ≤ `reach` cases de profondeur. Base = `screenBasis` → suit la caméra
+ *  aux 4 crans et dans les deux projections. PUR (testable) : partagé par l'estompe des murs/décor et le
+ *  cutaway des toits (un décor HAUT devant un acteur s'efface pour ne pas le cacher). */
+export function makeOccludes(dims: Dims, actorTiles: { x: number; y: number }[], reach = 7): (tx: number, ty: number) => boolean {
+  const actors = actorTiles.map((a) => screenBasis(a.x, a.y, dims));
+  return (tx, ty) => {
+    const t = screenBasis(tx, ty, dims);
+    return actors.some((a) => a.dep < t.dep && Math.abs(a.col - t.col) <= 1 && t.dep - a.dep <= reach);
+  };
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, footprintDepth, Z_STEP, BASE_SCALE, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, footprintDepth, makeOccludes, Z_STEP, BASE_SCALE, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type Dims } from './iso';
 
 describe('screenToTileF — picking FRACTIONNAIRE (arêtes éditeur)', () => {
   for (const rot of [0, 1, 2, 3] as const) {
@@ -122,6 +122,48 @@ describe('depth rot-aware', () => {
       const byDepth = [...tiles].sort((a, b) => a.d - b.d).map((t) => t.cy);
       for (let i = 1; i < byDepth.length; i++) expect(byDepth[i]).toBeGreaterThanOrEqual(byDepth[i - 1]);
     }
+  });
+});
+
+describe('makeOccludes — occlusion écran (devant + même colonne + à portée), rotation/projection-aware', () => {
+  const A = { x: 5, y: 5 }; // acteur au centre d'une grille 11×11
+
+  it('losange (cran 0) : occulte DEVANT sur la même colonne, pas sur le côté ni derrière', () => {
+    const occ = makeOccludes({ w: 11, h: 11 }, [A]);
+    expect(occ(6, 6)).toBe(true);   // droit devant (même colonne écran), dist 1
+    expect(occ(7, 7)).toBe(true);   // plus loin devant, dist 2 ≤ portée
+    expect(occ(4, 4)).toBe(false);  // DERRIÈRE (plus proche caméra ? non : cy plus petit) → n'occulte pas
+    expect(occ(7, 5)).toBe(false);  // colonne écran décalée (côté)
+    expect(occ(5, 7)).toBe(false);  // autre côté
+    expect(occ(12, 12)).toBe(false); // devant même colonne mais au-delà de la portée (7)
+  });
+
+  it('la rotation FAIT PIVOTER la direction d’occlusion (cran 2 = opposé du cran 0)', () => {
+    const occ2 = makeOccludes({ w: 11, h: 11, rot: 2 }, [A]);
+    expect(occ2(4, 4)).toBe(true);  // au cran 2, (4,4) passe DEVANT l’acteur
+    expect(occ2(6, 6)).toBe(false); // et (6,6) passe derrière
+  });
+
+  it('cohérent avec la projection réelle (tileCenter cy = profondeur écran) aux 4 crans', () => {
+    // Oracle indépendant : une case adjacente occulte ⟺ elle est plus BAS à l’écran (cy>) ET quasi sur la
+    // même colonne écran (|Δcx| < demi-losange). Vrai dans les DEUX bases car cy/cx = tileCenter.
+    for (const rot of [0, 1, 2, 3] as const) {
+      const dims: Dims = { w: 11, h: 11, rot };
+      const occ = makeOccludes(dims, [A]);
+      const a = tileCenter(A.x, A.y, dims);
+      for (const [dx, dy] of [[1, 1], [-1, -1], [1, -1], [-1, 1]] as const) {
+        const t = tileCenter(A.x + dx, A.y + dy, dims);
+        const expected = t.cy > a.cy && Math.abs(t.cx - a.cx) < CELL / 2;
+        expect(occ(A.x + dx, A.y + dy)).toBe(expected);
+      }
+    }
+  });
+
+  it('vue du dessus (axis-aligné) : occulte la rangée DEVANT (r.y+1), pas la même rangée', () => {
+    const occ = makeOccludes({ w: 11, h: 11, view: 'top' }, [A]);
+    expect(occ(5, 6)).toBe(true);  // rangée devant, même colonne
+    expect(occ(6, 5)).toBe(false); // même rangée (côte à côte) → n’occulte pas
+    expect(occ(5, 4)).toBe(false); // rangée derrière
   });
 });
 
