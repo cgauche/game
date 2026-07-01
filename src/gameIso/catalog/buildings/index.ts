@@ -10,7 +10,7 @@ import type { RoofParams } from '../../../state/scene';
 import { BUILDING_DEFS } from './_registry.generated';
 import { colombage, footCorners, rotateFacing } from './render-helpers';
 
-export { footCorners, rotateFacing } from './render-helpers';
+export { footCorners, rotateFacing, roofFromCells, STYLE_MATERIAL } from './render-helpers';
 
 export const BUILDINGS: Record<string, BuildingViz> = Object.fromEntries(
   BUILDING_DEFS.map((b) => [b.id, { id: b.id, paramsSchema: b.paramsSchema, render: b.render }]),

@@ -5,7 +5,7 @@
  *  scène-intérieur séparée. Réutilise les skins du registre `catalog/buildings` (`hipRoof`/colombage…). */
 import type { Roof } from '../state/scene';
 import { Dims, footprintDepth, tileCenter, CELL, isSquareView } from './iso';
-import { buildingLayers } from './catalog/buildings';
+import { roofFromCells, STYLE_MATERIAL } from './catalog/buildings';
 
 /** Profondeur de tri d'un toit : MAX sur les 4 coins de l'empreinte à son INDEX DE COUCHE `z` (coin proche
  *  caméra, correct aux 4 rotations) — découplé du lift d'écran. */
@@ -45,12 +45,17 @@ export function roofObj(roof: Roof, dims: Dims, cutaway = false, night = false):
       ),
     };
   }
-  // Iso : on ne garde que le calque TOIT de la skin (les murs sont des WallSeg, le sol du terrain).
-  const L = buildingLayers(roof.style, roof.foot, roof.params ?? {}, { dims, night });
+  // Iso : TOIT AUTO-CONSTRUIT depuis l'ENSEMBLE DE CELLULES de l'empreinte (forme quelconque). Les murs
+  // sont des WallSeg, le sol du terrain — on ne dessine QUE la nappe de toit, calée sur `WALL_H`.
+  void night;
+  const cells = new Set<string>();
+  for (let dy = 0; dy < roof.foot.h; dy++)
+    for (let dx = 0; dx < roof.foot.w; dx++) cells.add(`${roof.foot.x + dx},${roof.foot.y + dy}`);
+  const material = roof.params?.roofMaterial ?? STYLE_MATERIAL[roof.style] ?? 'tuile';
   return {
     d: roofDepth(roof, dims),
     el: (
-      <g key={`roof-${roof.id}`} style={{ transition: 'opacity 0.25s' }} opacity={cutaway ? 0 : 1} dangerouslySetInnerHTML={{ __html: L.roof }} />
+      <g key={`roof-${roof.id}`} style={{ transition: 'opacity 0.25s' }} opacity={cutaway ? 0 : 1} dangerouslySetInnerHTML={{ __html: roofFromCells(cells, dims, material) }} />
     ),
   };
 }

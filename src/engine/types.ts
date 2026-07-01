@@ -173,6 +173,11 @@ export interface StructureData {
   /** Catégorie physique (ADE II ch.08) : `porte` est seule visable par un Bélier (`ram`) ; `mur` couvre
    *  murs/tours. Découplée des Atouts (une porte peut être Résistante OU Impénétrable). */
   kind: 'porte' | 'mur';
+  /** RENDU (pas règle) : `true` = fortification de siège (rempart de PIERRE crénelé + ferré, brèche =
+   *  gravats). `false`/absent = cloison ORDINAIRE (mur de maison texturé, sans créneaux). Découplé de
+   *  `kind` : une `porte` fortifiée = corps de garde à herse ; un `mur` fortifié = courtine. Route le
+   *  rendu du `WallSeg` porteur (`gameIso/walls.ts::structureSeg`) — TOUJOURS destructible/brèchable. */
+  fortified?: boolean;
   /** Profil à PV (calqué sur `VehicleData.hull.char`) — `BE` = Bonus d'Endurance VERBATIM de la table ADE II
    *  (l'Endurance dérivée vaut `BE × 10`, posée par `structureCombatant`) ; `B` = Blessures (PV de la structure). */
   char: { BE: number; B: number };

@@ -1,10 +1,10 @@
 import type { BuildingDef } from '../../types';
-import { footCorners, colombage, mid, HOUSE_SCHEMA } from '../render-helpers';
+import { footCorners, colombage, mid, ROOF_BASE, HOUSE_SCHEMA } from '../render-helpers';
 
 const taverne: BuildingDef['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
-  const H = 40 * (params.floors ?? 2);
-  const base = colombage(foot, params, ctx); // colombage applique déjà floors ?? 2
+  const H = ROOF_BASE;
+  const base = colombage(foot, params, ctx); // colombage compose murs + toit
   // enseigne suspendue qui se balance (à mi-hauteur du mur droit)
   const m = mid(c.S, c.E);
   const sign =

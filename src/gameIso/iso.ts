@@ -13,6 +13,11 @@ export const CELL = 56; // côté d'une case carrée (vue du dessus)
 export const EDGE_W = TW * Math.SQRT1_2; // ≈ 45.25
 export const EDGE_H = TH * Math.SQRT1_2; // ≈ 22.63
 export const LEVEL_H = 96; // hauteur écran (px) d'un étage : un niveau z>0 est dessiné soulevé d'autant
+/** Hauteur écran (px) d'une cloison dressée sur une arête (mur `WallSeg`) — FIXE : le relief est porté par
+ *  le sol, pas par les murs (un mur = cloison d'arête, pas une plateforme). Vit ici (module de projection,
+ *  sans cycle) → partagé par `walls.ts` (rendu du mur) ET `catalog/buildings` (base du toit qui REPOSE
+ *  dessus). `walls.ts` la ré-exporte pour ses anciens importeurs. */
+export const WALL_H = 54;
 /** Profondeur de tri : la base (anti-diagonale ÉCRAN) PRIME (× BASE_SCALE) ; l'étage `z` n'est qu'un
  *  cran SECONDAIRE (Z_STEP) de départage, lui-même au-dessus des offsets de COUCHE ajoutés par les
  *  appelants (sol −0.5, prop 0, overlay +0.25, jeton +0.5, mur +0.45, escalier +0.42 / haut d'escalier

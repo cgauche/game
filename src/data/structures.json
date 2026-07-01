@@ -39,6 +39,7 @@
     "id": "porte-de-ville",
     "label": "Porte de ville",
     "kind": "porte",
+    "fortified": true,
     "char": {
       "BE": 10,
       "B": 30
@@ -75,6 +76,7 @@
     "id": "mur-en-pierre",
     "label": "Mur en pierre",
     "kind": "mur",
+    "fortified": true,
     "char": {
       "BE": 12,
       "B": 40

@@ -1,9 +1,11 @@
 /** Primitives de rendu PARTAGÉES des bâtiments (calques sol/murs/toit, colombage de base,
  *  schémas de paramètres). Chaque `defs/<id>.ts` compose ces primitives pour son `render`.
  *  Déplacé verbatim de l'ancien `catalog/buildings.ts` (registre Jalon 0.10). */
-import { tileCenter, TW, TH } from '../../iso';
+import { tileCenter, TW, TH, WALL_H, depth, type Dims } from '../../iso';
 import type { BuildingViz, RenderCtx, Rect, ParamField } from '../types';
 import type { Facing } from '../../../state/scene';
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 /** Coins écran (sol) de l'empreinte, labellisés par POSITION ÉCRAN (rot-aware) :
  *  le coin projeté le plus bas = S (face avant), le plus haut = N, etc. → murs/porte
@@ -105,6 +107,19 @@ const ROOF: Record<string, [string, string, string, string]> = {
 };
 const COURSE: Record<string, string> = { tuile: '#5a1f17', chaume: '#6a531f', ardoise: '#2a323a' };
 
+/** Élévation (px) d'un toit en croupe AU-DESSUS des avant-toits, calée sur l'EMPREINTE : un petit
+ *  bâtiment (4×3) reste ~35 (pente douce, rétro-compatible avec l'ancien `roofH` fixe de 34) ; un grand
+ *  (15×10) monte ~125 → pente NETTE et crédible au lieu d'un toit plat surdimensionné. Plafonné à 220.
+ *  `steep` = multiplicateur pour les toits volontairement plus raides (chapelle/manoir en ardoise). */
+export function roofRise(foot: Rect, steep = 1): number {
+  return clamp((foot.w + foot.h) * 5 * steep, 34 * steep, 220);
+}
+
+/** Base (px) sur laquelle REPOSE le toit d'un bâtiment tout-en-scène = la hauteur des murs `WallSeg`
+ *  (`WALL_H`). Le toit d'un `Roof` ne rend QUE le calque `.roof` (les murs sont des `WallSeg`, le sol du
+ *  terrain), donc son avant-toit doit s'aligner sur le sommet des cloisons d'arête, sinon il flotte. */
+export const ROOF_BASE = WALL_H;
+
 export function hipRoof(c: Corners, H: number, roofH: number, material: string): string {
   const col = ROOF[material] ?? ROOF.tuile;
   const apex = [(c.N[0] + c.S[0]) / 2, (c.N[1] + c.S[1]) / 2 - (H + roofH)];
@@ -136,14 +151,81 @@ export function floorInterior(c: Corners): string {
   return `<path d="M${pt(c.N)} L${pt(c.E)} L${pt(c.S)} L${pt(c.O)} Z" fill="#3a2c1e" opacity="0.9"/>`;
 }
 
+/** Toit en croupe d'un bâtiment tout-en-scène : REPOSE sur les murs (`ROOF_BASE = WALL_H`) et sa pente
+ *  s'adapte à l'EMPREINTE (`roofRise`). SOURCE UNIQUE pour tous les `defs/` (plus de `H`/`roofH` à la
+ *  main → plus de toit flottant ni plat). `steep` pour les toits volontairement raides. */
+export function buildingRoof(c: Corners, foot: Rect, material: string, steep = 1): string {
+  return hipRoof(c, ROOF_BASE, roofRise(foot, steep), material);
+}
+
+/** Teintes de toit par matériau ET orientation de PENTE (face descendant vers l'avant-toit). Lumière en
+ *  haut-gauche (comme les murs) : la pente qui regarde le Nord/haut est claire, le Sud/bas sombre. */
+const ROOF_FACE: Record<string, { N: string; E: string; S: string; O: string; line: string }> = {
+  tuile: { N: '#a04836', E: '#732a20', S: '#531b13', O: '#8a3527', line: '#411409' },
+  chaume: { N: '#b0904a', E: '#7d642a', S: '#59461a', O: '#997c3c', line: '#463714' },
+  ardoise: { N: '#63727f', E: '#3d4852', S: '#283037', O: '#4d5964', line: '#20272d' },
+};
+
+/** Matériau de toit par style de bâtiment (défaut tuile). */
+export const STYLE_MATERIAL: Record<string, string> = {
+  taverne: 'tuile', maison: 'tuile', echoppe: 'chaume',
+  chapelle: 'ardoise', forge: 'ardoise', tour: 'ardoise', manoir: 'ardoise',
+};
+
+/** TOIT AUTO-CONSTRUIT à partir de l'ENSEMBLE DE CELLULES du bâtiment (forme QUELCONQUE : rectangle, U, L…).
+ *  Chaque SOMMET de grille reçoit une hauteur = `WALL_H` + (distance-à-l'avant-toit)·pente → bas aux bords,
+ *  haut au faîte (une LIGNE de faîte pour un rectangle, qui suit la forme sinon). Rendu cellule par cellule
+ *  (quads iso triés arrière→avant, peintre), ombré selon l'orientation de la pente. Repose sur les murs
+ *  `WallSeg` (base `WALL_H`) → aucun toit plat/flottant, aucune hypothèse de rectangle. */
+export function roofFromCells(cells: Set<string>, dims: Dims, material: string): string {
+  const SLOPE = 17; // px de montée par cran de profondeur
+  const sh = ROOF_FACE[material] ?? ROOF_FACE.tuile;
+  const has = (x: number, y: number) => cells.has(`${x},${y}`);
+  // sommets de grille touchés par au moins une cellule
+  const verts = new Set<string>();
+  for (const k of cells) {
+    const [x, y] = k.split(',').map(Number);
+    verts.add(`${x},${y}`); verts.add(`${x + 1},${y}`); verts.add(`${x},${y + 1}`); verts.add(`${x + 1},${y + 1}`);
+  }
+  // profondeur BFS : sommet INTÉRIEUR = ses 4 cellules sont du toit ; sinon avant-toit (0)
+  const inner = (vx: number, vy: number) => has(vx - 1, vy - 1) && has(vx, vy - 1) && has(vx - 1, vy) && has(vx, vy);
+  const dep = new Map<string, number>();
+  const q: [number, number][] = [];
+  for (const k of verts) { const [vx, vy] = k.split(',').map(Number); if (!inner(vx, vy)) { dep.set(k, 0); q.push([vx, vy]); } }
+  for (let i = 0; i < q.length; i++) {
+    const [vx, vy] = q[i]; const d = dep.get(`${vx},${vy}`)!;
+    for (const [nx, ny] of [[vx + 1, vy], [vx - 1, vy], [vx, vy + 1], [vx, vy - 1]] as [number, number][]) {
+      const nk = `${nx},${ny}`;
+      if (verts.has(nk) && !dep.has(nk)) { dep.set(nk, d + 1); q.push([nx, ny]); }
+    }
+  }
+  const hgt = (vx: number, vy: number) => WALL_H + (dep.get(`${vx},${vy}`) ?? 0) * SLOPE;
+  const scr = (vx: number, vy: number): [number, number] => { const { cx, cy } = tileCenter(vx - 0.5, vy - 0.5, dims); return [cx, cy - hgt(vx, vy)]; };
+  // cellules triées arrière→avant (peintre iso : la pente avant recouvre l'arrière)
+  const arr = [...cells].map((k) => k.split(',').map(Number) as [number, number]).sort((a, b) => depth(a[0], a[1], dims) - depth(b[0], b[1], dims));
+  let s = '';
+  for (const [x, y] of arr) {
+    const TL = scr(x, y), TR = scr(x + 1, y), BR = scr(x + 1, y + 1), BL = scr(x, y + 1);
+    const hTL = hgt(x, y), hTR = hgt(x + 1, y), hBR = hgt(x + 1, y + 1), hBL = hgt(x, y + 1);
+    const dhx = hTR + hBR - hTL - hBL; // montée vers +x (grille)
+    const dhy = hBL + hBR - hTL - hTR; // montée vers +y (grille)
+    // teinte = pente DESCENDANTE (vers l'avant-toit) : dhx>0 descend vers -x (O), etc.
+    const col = Math.abs(dhx) >= Math.abs(dhy) ? (dhx > 0 ? sh.O : dhx < 0 ? sh.E : sh.N) : dhy > 0 ? sh.N : dhy < 0 ? sh.S : sh.N;
+    // GRILLE de tuiles VISIBLE (liseré sombre par cellule) : c'est elle qui donne la PROFONDEUR / le relief
+    // du toit (rangs de tuiles) — préférée au rendu lisse qui aplatit la lecture.
+    s += `<path d="M${TL[0]},${TL[1]} L${TR[0]},${TR[1]} L${BR[0]},${BR[1]} L${BL[0]},${BL[1]} Z" fill="${col}" stroke="${sh.line}" stroke-width="0.6" stroke-linejoin="round"/>`;
+  }
+  return s;
+}
+
 /** Maison à colombages générique — base réutilisée par maison/taverne et le fallback. */
 export const colombage: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
-  const H = 40 * (params.floors ?? 2);
+  const H = ROOF_BASE;
   const timber = params.timberColor ?? '#4a3220';
   const wallC = params.wallColor ?? '#d8c9a8';
   const walls = groundShadow(c) + wallFaces(c, H, wallC, timber) + timberBraces(c, H, timber) + openings(c, H, ctx.facing, ctx.night);
-  return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 34, params.roofMaterial ?? 'tuile') };
+  return { walls, interior: floorInterior(c), roof: buildingRoof(c, foot, params.roofMaterial ?? 'tuile') };
 };
 
 export const HOUSE_SCHEMA: ParamField[] = [

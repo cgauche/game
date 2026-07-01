@@ -1,10 +1,10 @@
-import { tileCenter, tileEdge, depth, isSquareView, diamondPath, CELL, LEVEL_H, type Dims } from './iso';
+import { tileCenter, tileEdge, depth, isSquareView, diamondPath, CELL, LEVEL_H, WALL_H, type Dims } from './iso';
 import { type Scene, type WallSeg } from '../state/scene';
 import { structureById } from '../data';
 
-/** Hauteur écran (px) d'une cloison dressée sur une arête — FIXE (la hauteur du relief est portée par le
- *  sol, plus par les murs ; un mur est une cloison d'arête, pas une plateforme). */
-export const WALL_H = 54;
+/** Ré-export pour les anciens importeurs de `walls.ts` — la constante vit désormais dans `iso.ts`
+ *  (module de projection, partagé sans cycle par le rendu du mur ET la base du toit). */
+export { WALL_H } from './iso';
 
 type P = { cx: number; cy: number };
 
@@ -72,12 +72,86 @@ function topWall(w: WallSeg, a: P, b: P, dims: Dims): { d: number; svg: string }
   return { d: wallDepth(w, dims) + 0.6, svg: `<g>${svg}</g>` }; // au-dessus des sols
 }
 
-/** Fortification de siège (AA p.120-121) dressée sur une arête : rempart de PIERRE crénelé et ferré
- *  (intacte → distincte d'un mur de maison en bois) ou tas de GRAVATS bas laissant la BRÈCHE ouverte
- *  au-dessus (abattue → on voit/passe au travers). Couleurs en tokens :root. `down` = `structureIsDown`. */
+/** Corps d'un MUR ORDINAIRE (maison) en iso : panneau encadré + moulures + plinthe, ou porte ajourée.
+ *  SOURCE UNIQUE partagée par `wallSeg` (mur sans structure) ET `structureSeg` (structure NON fortifiée :
+ *  `mur-en-bois` d'une maison). Hauteur FIXE `WALL_H`. */
+function houseWallIso(w: WallSeg, a: P, b: P): string {
+  const H = WALL_H;
+  // Palette par orientation (lumière en haut-gauche) : faces N (vers le bas-droit) plus sombres que E.
+  const N = w.side === 'N';
+  const face = N ? '#5d4c36' : '#6e5940';
+  const inset = N ? '#4b3d2b' : '#594732'; // fond de panneau (renfoncement)
+  const frame = N ? '#6b573e' : '#7c6647'; // liseré clair du cadre
+  const cap = N ? '#806b4b' : '#917a58'; // corniche / dessus
+  const skirt = N ? '#3c3022' : '#473829'; // plinthe
+
+  if (w.door) {
+    const op = H * 0.52; // hauteur de l'ouverture
+    // Jambage ENCADRÉ (montant sombre + chapiteau clair) → la porte se lit comme une ouverture cadrée,
+    // pas comme un simple trou (crucial en vue de FACE où l'embrasure n'est plus vue en biais).
+    const jamb = (p: P) =>
+      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="${op}" fill="#6e5940"/>` +
+      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="1.8" fill="#8a7048"/>`; // chapiteau clair
+    return `<g>${post(a, H)}` +
+      `<polygon points="${slab(a, b, 0, op)}" fill="#15100a" opacity="0.42"/>` + // embrasure ombrée
+      `<polygon points="${slab(a, b, op, H)}" fill="${face}" stroke="#2a2118" stroke-width="0.7"/>` + // mur au-dessus de la porte
+      `<polygon points="${slab(a, b, op, op + 4)}" fill="#7c6647" stroke="#2a2118" stroke-width="0.5"/>` + // poutre de linteau
+      `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
+      jamb(a) + jamb(b) +
+      `${post(b, H)}</g>`;
+  }
+
+  // Panneau encadré : un rectangle inset (renfoncé) au centre de la face.
+  const m = 0.2; // marge horizontale du panneau
+  const pl = lerpP(a, b, m), pr = lerpP(a, b, 1 - m);
+  const yLo = 0.2, yHi = 0.78; // bornes verticales du panneau
+  const panel = `${pl.cx},${pl.cy - H * yLo} ${pr.cx},${pr.cy - H * yLo} ${pr.cx},${pr.cy - H * yHi} ${pl.cx},${pl.cy - H * yHi}`;
+  const frameLine = `M${pl.cx},${pl.cy - H * yHi} L${pr.cx},${pr.cy - H * yHi}`; // arête haute du cadre (lumière)
+
+  return `<g>${post(a, H)}` +
+    `<polygon points="${slab(a, b, 0, H)}" fill="${face}" stroke="#2c2419" stroke-width="0.7"/>` + // face
+    `<polygon points="${panel}" fill="${inset}"/>` + // panneau renfoncé
+    `<path d="${frameLine}" stroke="${frame}" stroke-width="1.3" fill="none"/>` + // moulure haute du cadre
+    `<polygon points="${slab(a, b, 0, H * 0.11)}" fill="${skirt}"/>` + // plinthe
+    `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
+    `<polygon points="${slab(a, b, H, H + 4)}" fill="${cap}"/>` + // épaisseur dessus
+    `${post(b, H)}</g>`;
+}
+
+/** Éboulis d'un mur de maison ABATTU (structure NON fortifiée, `down`) : tas bas de gravats de bois/torchis
+ *  laissant la BRÈCHE ouverte au-dessus + moignons de poteau aux extrémités. Iso ; en vue du dessus l'appelant
+ *  rend un pointillé. Distinct du rempart de pierre (`--struct-rubble`) : bois brisé (teintes de la charpente). */
+function houseBreach(a: P, b: P): string {
+  const H = WALL_H;
+  const hr = H * 0.3;
+  const m1 = lerpP(a, b, 0.36), m2 = lerpP(a, b, 0.64);
+  return `<g><polygon points="${slab(a, b, 0, hr * 0.5)}" fill="#4b3d2b"/>` +
+    `<polygon points="${a.cx},${a.cy} ${m1.cx},${m1.cy - hr} ${m2.cx},${m2.cy - hr * 0.7} ${b.cx},${b.cy}" fill="#5d4c36" stroke="#2c2419" stroke-width="0.6"/>` +
+    post(a, hr * 0.7) + post(b, hr * 0.5) + `</g>`;
+}
+
+/** RENDU d'une arête portant une STRUCTURE destructible, routé par le champ DONNÉE `fortified` de la
+ *  structure (jamais un id en dur) :
+ *   - `fortified` (siège : `mur-en-pierre` courtine, `porte-de-ville` corps de garde) → fortification de
+ *     PIERRE crénelée/ferrée (intacte) ou GRAVATS bas laissant la brèche ouverte (abattue). INCHANGÉ.
+ *   - NON fortifié (maison : `mur-en-bois`) → MUR ORDINAIRE texturé (`houseWallIso`), sans créneaux —
+ *     mais TOUJOURS destructible : abattu (`down`) → éboulis de bois (`houseBreach`), passage rouvert.
+ *  Couleurs de siège en tokens :root. `down` = `structureIsDown`. */
 function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: number; svg: string } {
   const d = wallDepth(w, dims);
-  const isGate = structureById.get(w.structure ?? '')?.kind === 'porte';
+  const st = structureById.get(w.structure ?? '');
+  const isGate = st?.kind === 'porte';
+  // MUR DE MAISON (structure non fortifiée) : rendu de mur ORDINAIRE, brèche = éboulis de bois. Une PORTE
+  // ordinaire (`kind:'porte'` non fortifiée) reste une ouverture cadrée (via `houseWallIso` si `w.door`).
+  if (!st?.fortified) {
+    if (isSquareView(dims.view)) {
+      const line = (col: string, width: number, dash?: string) =>
+        `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
+      if (down) return { d: d + 0.6, svg: `<g>${line('#6e5940', 5, '3 5')}</g>` }; // brèche : pointillé bois
+      return topWall(w, a, b, dims); // intact : trait de mur ordinaire sur l'arête
+    }
+    return { d, svg: down ? houseBreach(a, b) : houseWallIso(w, a, b) };
+  }
   if (isSquareView(dims.view)) {
     const line = (col: string, width: number, dash?: string) =>
       `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
@@ -99,7 +173,7 @@ function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: n
   }
   const H = WALL_H; // hauteur FIXE (cloison d'arête)
   const P = LEVEL_H * 0.32; // parapet / corps de garde : hauteur dressée au-dessus du plan H
-  // PORTE / CORPS DE GARDE (structure `kind:'porte'`) — routé par l'id de structure AVANT la brèche
+  // PORTE / CORPS DE GARDE fortifié (structure `kind:'porte'` + `fortified`) — routé AVANT la brèche
   // générique. OUVERTURE BÉANTE sur toute la largeur : PAS de face de pierre ni d'arche — un vrai passage.
   // INTACTE : la HERSE barre le passage. ABATTUE (`down`) : plus de herse, seuil d'éboulis → passage libre.
   if (isGate) {
@@ -149,58 +223,17 @@ function structureSeg(w: WallSeg, a: P, b: P, dims: Dims, down: boolean): { d: n
   return { d, svg };
 }
 
-/** SVG d'un segment de mur TEXTURÉ (panneau encadré + moulures + plinthe + ombrage par côté) + sa
- *  profondeur, pour le tri global de IsoStage. Une PORTE est ajourée (ouverture basse + linteau) ; une
- *  arête portant une STRUCTURE de siège (`w.structure`) se rend en fortification/brèche (`structureSeg`,
- *  `structDown` = état abattu fourni par l'appelant, comme l'overlay porte lit `doorIsOpen`). Hauteur
- *  FIXE `WALL_H` (le relief vit dans le sol, plus dans le mur). */
+/** SVG d'un segment de mur + sa profondeur, pour le tri global de IsoStage :
+ *   - MUR ORDINAIRE (sans structure) → `houseWallIso` (panneau texturé, porte ajourée) ;
+ *   - arête portant une STRUCTURE (`w.structure`) → `structureSeg`, qui route par le champ DONNÉE
+ *     `fortified` (siège crénelé vs mur de maison), `structDown` = état abattu fourni par l'appelant
+ *     (comme l'overlay porte lit `doorIsOpen`).
+ *  Hauteur FIXE `WALL_H` (le relief vit dans le sol, plus dans le mur). */
 export function wallSeg(w: WallSeg, dims: Dims, structDown = false): { d: number; svg: string } {
   const [a, b] = edgeEnds(w, dims);
   if (w.structure) return structureSeg(w, a, b, dims, structDown);
   if (isSquareView(dims.view)) return topWall(w, a, b, dims); // grille carrée : trait sur l'arête, pas d'extrusion
-  const H = WALL_H;
-  // Palette par orientation (lumière en haut-gauche) : faces N (vers le bas-droit) plus sombres que E.
-  const N = w.side === 'N';
-  const face = N ? '#5d4c36' : '#6e5940';
-  const inset = N ? '#4b3d2b' : '#594732'; // fond de panneau (renfoncement)
-  const frame = N ? '#6b573e' : '#7c6647'; // liseré clair du cadre
-  const cap = N ? '#806b4b' : '#917a58'; // corniche / dessus
-  const skirt = N ? '#3c3022' : '#473829'; // plinthe
-
-  if (w.door) {
-    const op = H * 0.52; // hauteur de l'ouverture
-    // Jambage ENCADRÉ (montant sombre + chapiteau clair) → la porte se lit comme une ouverture cadrée,
-    // pas comme un simple trou (crucial en vue de FACE où l'embrasure n'est plus vue en biais).
-    const jamb = (p: P) =>
-      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="${op}" fill="#6e5940"/>` +
-      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="1.8" fill="#8a7048"/>`; // chapiteau clair
-    const svg = `<g>${post(a, H)}` +
-      `<polygon points="${slab(a, b, 0, op)}" fill="#15100a" opacity="0.42"/>` + // embrasure ombrée
-      `<polygon points="${slab(a, b, op, H)}" fill="${face}" stroke="#2a2118" stroke-width="0.7"/>` + // mur au-dessus de la porte
-      `<polygon points="${slab(a, b, op, op + 4)}" fill="#7c6647" stroke="#2a2118" stroke-width="0.5"/>` + // poutre de linteau
-      `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
-      jamb(a) + jamb(b) +
-      `${post(b, H)}</g>`;
-    return { d: wallDepth(w, dims), svg };
-  }
-
-  // Panneau encadré : un rectangle inset (renfoncé) au centre de la face.
-  const lerp = (A: P, B: P, t: number): P => ({ cx: A.cx + (B.cx - A.cx) * t, cy: A.cy + (B.cy - A.cy) * t });
-  const m = 0.2; // marge horizontale du panneau
-  const pl = lerp(a, b, m), pr = lerp(a, b, 1 - m);
-  const yLo = 0.2, yHi = 0.78; // bornes verticales du panneau
-  const panel = `${pl.cx},${pl.cy - H * yLo} ${pr.cx},${pr.cy - H * yLo} ${pr.cx},${pr.cy - H * yHi} ${pl.cx},${pl.cy - H * yHi}`;
-  const frameLine = `M${pl.cx},${pl.cy - H * yHi} L${pr.cx},${pr.cy - H * yHi}`; // arête haute du cadre (lumière)
-
-  const svg = `<g>${post(a, H)}` +
-    `<polygon points="${slab(a, b, 0, H)}" fill="${face}" stroke="#2c2419" stroke-width="0.7"/>` + // face
-    `<polygon points="${panel}" fill="${inset}"/>` + // panneau renfoncé
-    `<path d="${frameLine}" stroke="${frame}" stroke-width="1.3" fill="none"/>` + // moulure haute du cadre
-    `<polygon points="${slab(a, b, 0, H * 0.11)}" fill="${skirt}"/>` + // plinthe
-    `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
-    `<polygon points="${slab(a, b, H, H + 4)}" fill="${cap}"/>` + // épaisseur dessus
-    `${post(b, H)}</g>`;
-  return { d: wallDepth(w, dims), svg };
+  return { d: wallDepth(w, dims), svg: houseWallIso(w, a, b) };
 }
 
 /** Tous les segments de mur de la scène, prêts à fusionner dans le tri de profondeur. Un mur = une pièce
