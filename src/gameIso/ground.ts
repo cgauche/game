@@ -197,16 +197,16 @@ export function groundTile(scene: Scene, x: number, y: number, dims: Dims, z = 0
   )})" stroke="rgba(0,0,0,0.16)"/>`;
   const blends = edgeBlends(scene, x, y, z);
   if (!blends.length) return pillars + faces + base; // tuile sans voisin de plus haute précédence : pas de wedge
-  // arête partagée par direction (paire de sommets), repliée vers le centre à 40 %
-  const EDGE: Record<EdgeDir, [number, number][]> = {
-    N: [top, right],
-    E: [right, bot],
-    S: [bot, left],
-    O: [left, top],
-  };
+  // Le voisin est repéré en GRILLE (N/E/S/O), mais `diamondCorners` garde la tuile orientée-ÉCRAN (la rotation
+  // ne bouge que le centre) → l'arête ÉCRAN portant le wedge de raccord TOURNE avec la caméra. On projette la
+  // direction-grille sur l'arête-écran en la décalant de `rot` crans (arêtes dans l'ordre horaire depuis le
+  // haut-droit) — sinon le trapèze reste sur l'arête du cran 0 et « ne suit pas » la rotation.
+  const SCREEN_EDGES: [number, number][][] = [[top, right], [right, bot], [bot, left], [left, top]];
+  const DIR_IDX: Record<EdgeDir, number> = { N: 0, E: 1, S: 2, O: 3 };
+  const rot = dims.rot ?? 0;
   const wedges = blends
     .map(({ dir, terrain }) => {
-      const [a, b] = EDGE[dir];
+      const [a, b] = SCREEN_EDGES[(DIR_IDX[dir] - rot + 4) % 4];
       const ia = [a[0] + (cx - a[0]) * 0.4, a[1] + (cy - a[1]) * 0.4];
       const ib = [b[0] + (cx - b[0]) * 0.4, b[1] + (cy - b[1]) * 0.4];
       const d = `M${a[0]},${a[1]} L${b[0]},${b[1]} L${ib[0]},${ib[1]} L${ia[0]},${ia[1]} Z`;

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { edgeBlends, isOverhang, reliefFaces, groundTile } from './ground';
 import { emptyScene, type Scene } from '../state/scene';
 import { gradeBetween, STEP_MAX_M } from '../state/relief';
-import type { Dims } from './iso';
+import { tileCenter, type Dims } from './iso';
 
 /**
  * Relief unifié : le franchissement vertical S'AUTO-DÉRIVE du delta de hauteur MÉTRIQUE entre cases
@@ -117,4 +117,33 @@ describe('groundTile — intègre les parois dans le SVG de la tuile', () => {
     expect(raised.length).toBeGreaterThan(flat.length);
     expect(raised).toContain('elev-cliff');
   });
+});
+
+describe('groundTile — le wedge de raccord SUIT la rotation caméra', () => {
+  // (1,1) herbe (basse priorité), un unique voisin pavé (haute) : le trapèze de raccord doit se dessiner sur
+  // l'arête ÉCRAN qui FAIT FACE au voisin, aux 4 crans. Bug corrigé : l'arête restait figée au cran 0.
+  const outerEdgeMid = (svg: string): [number, number] => {
+    const m = svg.match(/<path d="M([\d.-]+),([\d.-]+) L([\d.-]+),([\d.-]+)[^"]*" fill="url\(#[^)]*\)" opacity="0\.7"/);
+    if (!m) throw new Error('wedge introuvable dans le SVG');
+    const ax = Number(m[1]), ay = Number(m[2]), bx = Number(m[3]), by = Number(m[4]);
+    return [(ax + bx) / 2, (ay + by) / 2];
+  };
+  for (const nb of [
+    { dir: 'E', dx: 1, dy: 0 },
+    { dir: 'N', dx: 0, dy: -1 },
+    { dir: 'S', dx: 0, dy: 1 },
+    { dir: 'O', dx: -1, dy: 0 },
+  ] as const)
+    for (const rot of [0, 1, 2, 3] as const)
+      it(`voisin ${nb.dir}, cran ${rot} : l'arête du wedge pointe vers le voisin`, () => {
+        const s = emptyScene(3, 3); // tout herbe
+        s.layers[0].tiles[(1 + nb.dy) * 3 + (1 + nb.dx)] = 'pave'; // un seul voisin de plus haute priorité
+        const d: Dims = { w: 3, h: 3, rot };
+        const mid = outerEdgeMid(groundTile(s, 1, 1, d));
+        const self = tileCenter(1, 1, d);
+        const nbc = tileCenter(1 + nb.dx, 1 + nb.dy, d);
+        // centre→arête et centre→voisin dans le même demi-plan écran ⟺ produit scalaire > 0
+        const dot = (mid[0] - self.cx) * (nbc.cx - self.cx) + (mid[1] - self.cy) * (nbc.cy - self.cy);
+        expect(dot).toBeGreaterThan(0);
+      });
 });

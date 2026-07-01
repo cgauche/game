@@ -38,6 +38,7 @@ import {
   screenToTileAtZ,
   depth,
   footprintDepth,
+  rotTile,
 } from './iso';
 import {
   DEFS,
@@ -323,6 +324,32 @@ export function IsoStage() {
     return out;
   }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, mode, battle, partyPos]);
 
+  // Un MUR/DÉCOR/TOIT devant un acteur (même colonne écran, camera-near, proche) s'ESTOMPE pour ne pas
+  // cacher le personnage — pendant, côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs`.
+  // ROTATION-AWARE : on projette par `rotTile` dans l'espace écran-aligné et on prend la colonne/profondeur
+  // de la projection COURANTE (losange : anti-diag/diag ; edge-on ou dessus : x/y de rangée) — même base que
+  // `depth()`/`tileCenter()`, donc l'estompe suit la caméra aux 4 crans et dans les deux projections.
+  const occludesActor = useMemo(() => {
+    const actorTiles: { x: number; y: number }[] = [];
+    if (mode === 'battle' && battle) {
+      for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);
+    } else if (scene) {
+      actorTiles.push(partyPos);
+      for (const ent of scene.entities) if (ent.kind === 'personnage' && !ent.combat?.hiddenUntilCombat) actorTiles.push(ent.pos);
+    }
+    const d: Dims = { ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: shownRot, view: viewMode, edge: shownEdge };
+    const axisAligned = viewMode === 'top' || shownEdge; // edge-on / dessus : profondeur par rangée (r.y)
+    const proj = (x: number, y: number) => {
+      const r = rotTile(x, y, d);
+      return axisAligned ? { col: r.x, dep: r.y } : { col: r.x - r.y, dep: r.x + r.y };
+    };
+    const actors = actorTiles.map((a) => proj(a.x, a.y));
+    return (tx: number, ty: number) => {
+      const t = proj(tx, ty);
+      return actors.some((a) => a.dep < t.dep && Math.abs(a.col - t.col) <= 1 && t.dep - a.dep <= 7);
+    };
+  }, [scene, mode, battle, partyPos, shownRot, viewMode, shownEdge]);
+
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
   const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number }[]>(() => {
@@ -337,23 +364,13 @@ export function IsoStage() {
       const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false);
       // `z` d'atténuation = la couche du mur (son sommet est une cloison de hauteur FIXE, plus un rempart
       // porteur de passerelle) → il borde le sol de SA couche et reste à sa lumière.
-      return { d: seg.d, x: w.x, y: w.y, z: w.z ?? 0, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      return { d: seg.d, x: w.x, y: w.y, z: w.z ?? 0, el: <g key={`wall-${i}`} style={{ opacity: occludesActor(w.x, w.y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
-  }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
+  }, [scene, shownRot, shownEdge, viewMode, renderLevels, occludesActor]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    // Tuiles occupées par un ACTEUR — pour estomper l'arbre/mur qui masquerait un personnage derrière.
-    const actorTiles: { x: number; y: number }[] = [];
-    if (mode === 'battle' && battle) {
-      for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);
-    } else {
-      actorTiles.push(partyPos);
-      for (const ent of scene.entities) if (ent.kind === 'personnage' && !ent.combat?.hiddenUntilCombat) actorTiles.push(ent.pos);
-    }
-    const occludesActor = (tx: number, ty: number) =>
-      actorTiles.some((a) => a.x + a.y < tx + ty && Math.abs(a.x - a.y - (tx - ty)) <= 1 && tx + ty - (a.x + a.y) <= 7);
     const out: { d: number; el: JSX.Element; x: number; y: number }[] = [];
     for (let y = 0; y < d.h; y++)
       for (let x = 0; x < d.w; x++) {
@@ -369,7 +386,7 @@ export function IsoStage() {
           });
       }
     return out;
-  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos]);
+  }, [scene, shownRot, shownEdge, viewMode, occludesActor]);
 
   const roofObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
@@ -379,9 +396,16 @@ export function IsoStage() {
         ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
         : [partyPos];
     const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
-    // Cutaway TOUT-EN-SCÈNE : le toit se lève dès qu'un allié est dans l'empreinte (`roofHidden`).
-    return (scene.roofs ?? []).map((roof) => roofObj(roof, d, roofHidden(roof, allies), night));
-  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos, gameTime]);
+    // Cutaway TOUT-EN-SCÈNE : le toit se lève quand un allié est DANS l'empreinte (`roofHidden`) OU DERRIÈRE
+    // le bâtiment (une case de l'empreinte `occludesActor` → sinon le toit cacherait le perso qui passe derrière).
+    return (scene.roofs ?? []).map((roof) => {
+      const f = roof.foot;
+      let behind = false;
+      for (let dy = 0; dy < f.h && !behind; dy++)
+        for (let dx = 0; dx < f.w && !behind; dx++) if (occludesActor(f.x + dx, f.y + dy)) behind = true;
+      return roofObj(roof, d, roofHidden(roof, allies) || behind, night);
+    });
+  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos, gameTime, occludesActor]);
 
   // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
   // (LDB 13 l.123) → pion fantomatique. Distingue « hors LdV » de « hors de portée » (aucun
