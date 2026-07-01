@@ -1,13 +1,16 @@
 /**
- * Outillage d'AUTHORING de l'Arène — helpers purs pour composer le projet (cartes ASCII → tiles,
- * fabriques d'entités/rencontres/triggers). Le JSON commité (`src/scenes/arene/arene-projet.json`)
- * reste la SOURCE CANONIQUE, 100 % éditable dans l'éditeur : ce script n'est qu'un outil d'auteur
- * (itération de layout), PAS un build — ne pas le brancher dans package.json.
+ * Outillage d'AUTHORING de l'Arène — helpers purs pour composer le projet (fabriques
+ * d'entités/rencontres/triggers). Le JSON commité (`src/scenes/arene/arene-projet.json`) reste la
+ * SOURCE CANONIQUE, 100 % éditable dans l'éditeur : ce script n'est qu'un outil d'auteur (itération de
+ * layout), PAS un build — ne pas le brancher dans package.json.
  *
- * Lancé via tsx (`tsx scripts/arene/generate.mjs`) pour importer le SEUL `buildEncounter` du moteur
- * (`src/state/encounterAuthoring.ts`) — l'expansion enemies→entités+members n'est PAS dupliquée ici.
+ * Lancé via tsx (`tsx scripts/arene/generate.mjs`) : `scene()` construit un `MapSpec` (format déclaratif)
+ * puis appelle `buildScene` (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que les scénarios
+ * `src/scenes/…`. Plus de fabrique de scène divergente : l'ASCII est parsé par `buildScene`, les bâtiments
+ * composés par `addBuilding`, les rencontres terse par `buildEncounter`. Ce fichier ne garde QUE la couche
+ * de normalisation LIBELLÉ→id (l'auteur écrit des libellés lisibles ; le JSON canonique ne porte que des ids).
  */
-import { buildEncounter } from '../../src/state/encounterAuthoring.ts';
+import { buildScene } from '../../src/state/mapSpec.ts';
 import { findCreature, findCreatureById, findSkill, findSkillById, findSpellById, spells as SPELL_CATALOG } from '../../src/data/index.ts';
 import { parseTraitInstance } from '../../src/engine/traits/dispatch.ts';
 
@@ -70,60 +73,68 @@ function normalizeFlowRefs(node) {
   for (const v of Object.values(node)) normalizeFlowRefs(v);
 }
 
-/** Légende ASCII commune (complétée/surchargée par scène via `legend`). `.` = sol de base. */
-const BASE_LEGEND = {
-  '#': 'mur',
-  '~': 'eau',
-  D: 'porte',
-  _: 'fosse',
-  '=': 'planches',
-};
-
-/** Parse une carte ASCII (1 char = 1 tuile) → { w, h, tiles }. `base` = terrain du '.' (et de l'espace). */
-export function parseRows(rows, base, legend = {}) {
-  const w = rows[0].length;
-  const lg = { ...BASE_LEGEND, ...legend };
-  const tiles = [];
-  for (const [y, row] of rows.entries()) {
-    if (row.length !== w) throw new Error(`ligne ${y} : largeur ${row.length} ≠ ${w}`);
-    for (const ch of row) {
-      if (ch === '.' || ch === ' ') tiles.push(base);
-      else if (lg[ch]) tiles.push(lg[ch]);
-      else throw new Error(`char inconnu « ${ch} » (ligne ${y})`);
-    }
-  }
-  return { w, h: rows.length, tiles };
+/** Terrain de sol d'un bâtiment selon son type (sanctuaire de pierre → dalle, sinon plancher de bois). */
+function buildingFloor(type) {
+  return type === 'chapelle' ? 'dalle' : 'planches';
 }
 
-/** Fabrique de scène : carte ASCII + le reste, avec défauts sûrs et ids vérifiés uniques. Les
- *  rencontres authored terse (`enemies[]`) sont expansées en entités + members par `buildEncounter`
- *  (moteur), à l'AUTHORING — plus aucune migration au chargement. `hidden` (défaut false = VISIBLE,
- *  RAW : le groupe voit ses adversaires) pose `combat.hiddenUntilCombat`. */
+/** Côté CARDINAL (N/S/O/E) du périmètre du `foot` que touche la CASE-porte. La case de porte est sur un
+ *  bord FRANC (jamais un coin). `addBuilding` canonise ensuite (S→N du dessous, O→E de gauche). */
+function doorSide(foot, door) {
+  const { x, y, w, h } = foot;
+  if (door.y === y) return 'N'; // bord haut
+  if (door.y === y + h - 1) return 'S'; // bord bas
+  if (door.x === x) return 'O'; // bord gauche
+  if (door.x === x + w - 1) return 'E'; // bord droit
+  throw new Error(`porte (${door.x},${door.y}) hors du périmètre de ${JSON.stringify(foot)}`);
+}
+
+/** Fabrique de scène : construit un `MapSpec` déclaratif (ASCII → étage z0, bâtiments → `rooms`,
+ *  rencontres terse → `encounters`) puis délègue à `buildScene` (compilateur headless-editor). Les
+ *  réfs par LIBELLÉ (créatures/compétences/sorts/traits des rencontres et des flows) sont normalisées
+ *  en ids stables SUR LE SPEC avant compilation. `hidden` (défaut false = VISIBLE, RAW : le groupe voit
+ *  ses adversaires) pose `combat.hiddenUntilCombat` sur les entités enrôlées. */
 export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, entities = [], buildings = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
-  const allEntities = [...entities];
-  const outEncounters = encounters.map((enc) => {
-    if (!enc.enemies) return enc; // déjà en members (ou rencontre vide)
-    // Les ennemis authorés en LIBELLÉS (ref/optionals/spells/statblock.traits) sont résolus en ids
-    // AVANT l'expansion → les entités enrôlées ne portent QUE des ids stables.
-    const { entities: spawned, encounter } = buildEncounter({ ...enc, enemies: enc.enemies.map(normalizeEnemy) });
-    allEntities.push(...spawned);
-    return encounter;
-  });
-  const { w, h, tiles } = parseRows(rows, base, legend);
-  for (const list of [allEntities, buildings, triggers, dialogues, outEncounters]) {
-    const seen = new Set();
-    for (const it of list) {
-      if (seen.has(it.id)) throw new Error(`${id} : id dupliqué « ${it.id} »`);
-      seen.add(it.id);
-    }
-  }
-  const sc = { id, nom, description, dimensions: { w, h }, ambiance, tiles, entities: allEntities, buildings, dialogues, triggers, encounters: outEncounters, flags };
-  if (weather) sc.weather = weather;
-  if (music) sc.music = music;
-  if (startMessage) sc.startMessage = startMessage;
-  if (entryPoints) sc.entryPoints = entryPoints;
-  normalizeFlowRefs(sc); // compétences/sorts des flows (tests, corruption, learnSpell) → ids stables
-  return sc;
+  const spec = {
+    id,
+    nom,
+    description,
+    ambiance,
+    size: [rows[0].length, rows.length],
+    terrain: base,
+    levels: { z0: rows.join('\n') },
+    entities, // BRUTS : ids CONSERVÉS (dont `id:'start'` du héros — pas de passage par heroStart).
+    // Bâtiments composés : `addBuilding` (toit + périmètre de murs `mur-en-bois` + porte + sol) — même
+    // primitive que l'éditeur. La CASE-porte devient le côté cardinal du périmètre (canonisé par addBuilding).
+    rooms: buildings.map((b) => ({
+      id: b.id, // id d'auteur (`taverne`, `maison-prevot`…) préservé sur le toit
+      style: b.type,
+      foot: [b.foot.x, b.foot.y, b.foot.w, b.foot.h],
+      floor: buildingFloor(b.type),
+      wallStructure: 'mur-en-bois',
+      ...(b.door ? { door: { x: b.door.x, y: b.door.y, side: doorSide(b.foot, b.door) } } : {}),
+      ...(b.label ? { label: b.label } : {}),
+    })),
+    dialogues,
+    triggers,
+    // Rencontres terse (`enemies[]`) : les libellés (ref/optionals/spells/statblock.traits) → ids AVANT
+    // que `buildScene` n'expanse (via `buildEncounter`) — les entités enrôlées ne portent que des ids.
+    encounters: encounters.map((enc) => ({
+      ...enc,
+      ...(enc.enemies ? { enemies: enc.enemies.map(normalizeEnemy) } : {}),
+    })),
+    flags,
+  };
+  if (legend) spec.legend = legend;
+  if (weather) spec.weather = weather;
+  if (music) spec.music = music;
+  if (startMessage) spec.startMessage = startMessage;
+  // entryPoints d'auteur `{name:{x,y}}` → `{name:[x,y]}` (forme MapSpec).
+  if (entryPoints) spec.entryPoints = Object.fromEntries(Object.entries(entryPoints).map(([k, p]) => [k, [p.x, p.y]]));
+  // Compétences/sorts des flows (tests, corruption, learnSpell) → ids : dialogues, triggers, onVictory des
+  // rencontres, ET les flows de fouille nichés dans `entities[].interact` (testNode d'un décor piégé).
+  normalizeFlowRefs({ dialogues, triggers, entities, encounters: spec.encounters });
+  return buildScene(spec);
 }
 
 let propSeq = 0;

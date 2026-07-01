@@ -361,16 +361,20 @@ export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: num
 /** BÂTIMENT COMPOSÉ = `Roof` (couverture cutaway) + périmètre de murs d'ARÊTE + une arête-porte franchissable
  *  + sol repeint. Source UNIQUE de la composition (partagée éditeur ⇄ `buildScene`), généralisant l'ancien
  *  `buildingToComposite` de l'arène : la structure réelle est faite de `WallSeg`, le toit n'est que du rendu.
- *  `wallStructure` (ex. `mur-en-bois`) rend les murs pleins DESTRUCTIBLES ; la porte n'en porte pas. */
+ *  `wallStructure` (ex. `mur-en-bois`) rend les murs pleins DESTRUCTIBLES ; la porte n'en porte pas.
+ *  `id`/`label` (déclaratif) : id d'auteur préservé sur le toit (sinon frais) + libellé de survol. */
 export function addBuilding(
   scene: Scene,
   style: string,
   foot: Rect,
-  opts: { door?: { x: number; y: number; side: Edge4 }; floor?: Terrain; wallStructure?: string; z?: number } = {},
+  opts: { id?: string; door?: { x: number; y: number; side: Edge4 }; floor?: Terrain; wallStructure?: string; z?: number; label?: string } = {},
 ): { scene: Scene; id: string } {
-  const { door, floor, wallStructure, z = 0 } = opts;
+  const { id: wantId, door, floor, wallStructure, z = 0, label } = opts;
   const roof = addRoof(scene, style, foot);
-  let s = roof.scene;
+  const id = wantId ?? roof.id; // id d'auteur préservé (déclaratif) sinon frais (édition interactive)
+  let s = (wantId || label)
+    ? { ...roof.scene, roofs: (roof.scene.roofs ?? []).map((r) => (r.id === roof.id ? { ...r, id, ...(label ? { label } : {}) } : r)) }
+    : roof.scene;
   const edges: { x: number; y: number; side: Edge4 }[] = [];
   for (let cx = foot.x; cx < foot.x + foot.w; cx++) {
     edges.push({ x: cx, y: foot.y, side: 'N' }); // arête haute
@@ -388,5 +392,5 @@ export function addBuilding(
     if (!isDoor && wallStructure) s = patchWall(s, c.x, c.y, c.side, z, { structure: wallStructure });
   }
   if (floor) s = fillTerrainRect(s, foot, floor, z);
-  return { scene: s, id: roof.id };
+  return { scene: s, id };
 }

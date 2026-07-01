@@ -80,6 +80,10 @@ export interface RoomSpec {
   floor?: Terrain;
   wallStructure?: string;
   z?: number;
+  /** Id d'auteur préservé sur le toit (sinon frais `roof-N`) — stabilité des réfs (ex. `taverne`). */
+  id?: string;
+  /** Libellé du toit (affiché au survol/cutaway), posé sur `roof.label`. */
+  label?: string;
 }
 
 /** Une liaison de marqueur ASCII → pose. `'heroStart'` (départ héros), `{entry}` (point d'entrée),
@@ -107,6 +111,9 @@ export interface EncounterSpec {
   members?: EncounterMember[];
   surprise?: 'party' | 'enemies';
   onVictory?: Flow;
+  /** Rencontre invisible en exploration jusqu'au combat (embuscade visuelle) — pose `combat.hiddenUntilCombat`
+   *  sur les entités enrôlées via `enemies`. Défaut false (visibles, RAW). */
+  hidden?: boolean;
 }
 
 export interface MapSpec {
@@ -240,10 +247,12 @@ export function buildScene(spec: MapSpec): Scene {
   for (const room of spec.rooms ?? []) {
     const [x, y, rw, rh] = room.foot;
     s = addBuilding(s, room.style, { x, y, w: rw, h: rh }, {
+      id: room.id,
       door: room.door,
       floor: room.floor,
       wallStructure: room.wallStructure,
       z: room.z,
+      label: room.label,
     }).scene;
   }
 
@@ -320,7 +329,7 @@ export function buildScene(spec: MapSpec): Scene {
   const encEntities: SceneEntity[] = [];
   const encDefs: EncounterDef[] = [];
   for (const e of spec.encounters ?? []) {
-    const built = buildEncounter({ id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory });
+    const built = buildEncounter({ id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory, hidden: e.hidden });
     encEntities.push(...built.entities);
     const bound = boundMembers.filter((b) => b.enc === e.id).map((b) => b.member);
     encDefs.push({ ...built.encounter, members: [...(built.encounter.members ?? []), ...(e.members ?? []), ...bound] });

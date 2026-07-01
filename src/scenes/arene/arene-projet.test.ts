@@ -87,6 +87,27 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(archetypes).toEqual(expect.arrayContaining(['armurier', 'medecin', 'taverniere']));
   });
 
+  it('BÂTIMENTS : id d’auteur ET libellé de toit préservés (RoomSpec.id/label → roof), pas d’id frais anonyme', () => {
+    // La compilation (`buildScene`/`addBuilding`) préserve l'id d'auteur (`taverne`…) et pose le libellé de
+    // survol sur `roof.label` — sinon les toits deviendraient des `roof-N` anonymes sans nom lisible.
+    const hub = project.find((s) => s.id === 'arene-hub')!;
+    const taverne = (hub.roofs ?? []).find((r) => r.id === 'taverne');
+    expect(taverne, 'toit d’id d’auteur « taverne »').toBeTruthy();
+    expect(taverne!.label).toBe('Taverne « Au Trophée »');
+    const prevot = project.find((s) => s.id === 'arene-exp-village')!.roofs?.find((r) => r.id === 'maison-prevot');
+    expect(prevot?.label).toBe('Logis du prévôt'); // id ET label d'auteur survivent à la compilation
+  });
+
+  it('EMBUSCADE : une rencontre `hidden` enrôle des entités INVISIBLES jusqu’au combat (combat.hiddenUntilCombat)', () => {
+    // Régression du gap EncounterSpec.hidden : sans lui, les détrousseurs seraient visibles avant le combat.
+    const embuscade = project.find((s) => s.id === 'arene-route-embuscade')!;
+    const enc = embuscade.encounters.find((e) => e.id === 'enc-embuscade')!;
+    const byId = new Map(embuscade.entities.map((e) => [e.id, e] as const));
+    const spawned = (enc.members ?? []).map((m) => byId.get(m.entityId)!);
+    expect(spawned.length).toBeGreaterThan(0);
+    expect(spawned.every((e) => e.combat?.hiddenUntilCombat === true), 'tous cachés jusqu’au combat').toBe(true);
+  });
+
   it('VITRINE des systèmes : tous les Effets clés sont mis en scène quelque part dans le projet', () => {
     const used = new Set<string>();
     let hasTestNode = false;

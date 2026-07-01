@@ -66,11 +66,13 @@ describe('buildScene — murs d’arête explicites', () => {
 describe('buildScene — rooms (bâtiment composé)', () => {
   const s = buildScene({
     id: 'b', nom: 'B', size: [8, 8], terrain: 'herbe',
-    rooms: [{ foot: [2, 2, 3, 3], style: 'taverne', door: { x: 3, y: 4, side: 'S' }, floor: 'planches', wallStructure: 'mur-en-bois' }],
+    rooms: [{ id: 'taverne', label: 'Au Trophée', foot: [2, 2, 3, 3], style: 'taverne', door: { x: 3, y: 4, side: 'S' }, floor: 'planches', wallStructure: 'mur-en-bois' }],
   });
-  it('pose toit + périmètre + porte + sol', () => {
+  it('pose toit + périmètre + porte + sol, id/label d’auteur préservés sur le toit', () => {
     expect(s.roofs).toHaveLength(1);
     expect(s.roofs![0].style).toBe('taverne');
+    expect(s.roofs![0].id).toBe('taverne'); // id d'auteur (déclaratif) préservé, pas un `roof-N` frais
+    expect(s.roofs![0].label).toBe('Au Trophée');
     expect(edgeWallState(s, 2, 2, 'N')).toBe('wall');
     expect(edgeWallState(s, 3, 4, 'S')).toBe('door');
     expect(layerTiles(s, 0)[2 + 2 * 8]).toBe('planches');
@@ -105,13 +107,25 @@ describe('buildScene — encounters (terse → entités + members)', () => {
     id: 'e', nom: 'E', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
     encounters: [{ id: 'enc', enemies: [{ ref: 'gobelin', pos: { x: 8, y: 3 } }] }],
   });
-  it('expanse les ennemis en entités cachées + rencontre', () => {
+  it('expanse les ennemis en entités + rencontre (VISIBLES par défaut, RAW)', () => {
     expect(s.encounters).toHaveLength(1);
     expect(s.encounters[0].id).toBe('enc');
     expect(s.encounters[0].members).toEqual([{ entityId: 'enemy-enc-0' }]);
     const gob = s.entities.find((e) => e.id === 'enemy-enc-0');
     expect(gob?.ref).toBe('gobelin');
     expect(gob?.pos).toEqual({ x: 8, y: 3 });
+    expect(gob?.combat?.hiddenUntilCombat).toBeUndefined(); // défaut visible
+  });
+});
+
+describe('buildScene — encounters `hidden` (embuscade : entités invisibles jusqu’au combat)', () => {
+  const s = buildScene({
+    id: 'h', nom: 'H', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
+    encounters: [{ id: 'amb', hidden: true, surprise: 'party', enemies: [{ ref: 'gobelin', pos: { x: 8, y: 3 } }] }],
+  });
+  it('propage `hidden` sur les entités enrôlées (combat.hiddenUntilCombat)', () => {
+    expect(s.encounters[0].surprise).toBe('party');
+    expect(s.entities.find((e) => e.id === 'enemy-amb-0')?.combat?.hiddenUntilCombat).toBe(true);
   });
 });
 
