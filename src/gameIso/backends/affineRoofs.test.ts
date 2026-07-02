@@ -5,6 +5,7 @@ import { roofDepth, roofSvg } from './affineRoofs';
 import { footprintDepth, tileCenter, WALL_H, WALL_H_M, type Dims } from '../iso';
 import { metricToLift } from '../../state/relief';
 import { roofMaterial } from '../catalog/roofs';
+import { shade, mix } from '../shade';
 import { emptyScene, type Roof, type Scene } from '../../state/scene';
 
 /**
@@ -51,13 +52,44 @@ describe('roofSvg — pans : UNE teinte par pan, par ORIENTATION de la def, stab
   });
 });
 
-describe('roofSvg — lignes stylées par la def (liseré + rangs)', () => {
-  it('faîte/arêtiers/égouts au liseré `line`, rangs de tuiles au ton `course`', () => {
+describe('roofSvg — lignes stylées par la def (liseré + rangs de la recette)', () => {
+  it('faîte/arêtiers/égouts au liseré `line`, rangs de tuiles au ton `detail.courses.joint`', () => {
     const tuile = roofMaterial('tuile');
-    const svg = roofSvg(el({}), dims);
-    // 1 faîte + 4 arêtiers + 4 égouts = 9 lignes de structure ; 3 rangs × 4 pans = 12 rangs (courses=3).
+    const svg = roofSvg(el({}), dims, { zoom: 0.4 }); // LOD 0 : rendu historique, rangs droits seuls
+    // 1 faîte + 4 arêtiers + 4 égouts = 9 lignes de structure ; 3 rangs × 4 pans = 12 rangs
+    // (pas hM = 0.24 m → 3 rangs par cran de montée, source unique builder/backend).
     expect(count(svg, `stroke="${tuile.line}"`)).toBe(9);
-    expect(count(svg, `stroke="${tuile.course}"`)).toBe(12);
+    expect(count(svg, `stroke="${tuile.detail!.courses!.joint}"`)).toBe(12);
+    expect(svg).not.toContain('<clipPath'); // aucun détail de couverture en LOD 0
+  });
+});
+
+describe('roofSvg — détail de couverture (matériaux v2, LOD ≥ 1)', () => {
+  const tuile = roofMaterial('tuile');
+  const pv = tuile.detail!.courses!.paletteVar!;
+  const nuances = (['N', 'E', 'S', 'O'] as const).flatMap((p) => [shade(tuile[p]!, 1 + pv * 1.5), shade(tuile[p]!, 1 - pv * 1.5)]);
+  it('tuile : bardeaux + nuances par pan, CLIPPÉS au polygone du pan, déterministes', () => {
+    const svg = roofSvg(el({}), dims);
+    expect(svg).toBe(roofSvg(el({}), dims));
+    expect(count(svg, '<clipPath')).toBeGreaterThan(0);
+    expect(count(svg, 'clip-path="url(#rfc-0-')).toBe(count(svg, '<clipPath')); // 1 groupe par clip, id par projection
+    // Nuances de bardeau (LOD 2) : chemins clairs/sombres dérivés du fill du pan par `shade`.
+    expect(nuances.some((c) => svg.includes(`fill="${c}"`))).toBe(true);
+  });
+  it('LOD 1 : bardeaux (joints) sans nuances ; ids de clip étiquetés par rotation', () => {
+    const svg = roofSvg(el({}), { ...dims, rot: 2 }, { zoom: 0.6 });
+    expect(svg).toContain('clip-path="url(#rfc-2-');
+    for (const c of nuances) expect(svg).not.toContain(`fill="${c}"`);
+  });
+  it('chaume : rangs TREMBLÉS (plus aucune <line> de rang droite) + brins de paille ancrés au pan', () => {
+    const chaume = roofMaterial('chaume');
+    const svg = roofSvg(el({ params: { roofMaterial: 'chaume' } }), dims);
+    const droits = count(svg, `<line`) - 9; // 9 lignes de structure (faîte/arêtiers/égouts)
+    expect(droits).toBe(0);
+    expect(count(svg, `stroke="${chaume.detail!.courses!.joint}"`)).toBeGreaterThan(0); // polylignes organiques
+    // Paille : teinte de la recette MIXÉE au fill de son pan (jamais la couleur brute qui claque).
+    const straws = (['N', 'E', 'S', 'O'] as const).flatMap((p) => chaume.detail!.tufts!.colors.map((c) => mix(chaume[p]!, c, 0.55)));
+    expect(straws.some((c) => svg.includes(`stroke="${c}"`))).toBe(true);
   });
 });
 

@@ -10,7 +10,7 @@ import { CELL, WALL_H_M, depth, diamondPath, isoPxToM, isSquareView, tileCenter,
 import { metricToLift } from '../../state/relief';
 import { structureAppearance, wallPartColor, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
 import { shade, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';
-import { detailOf, coursesOverlaySvg, verticalAccentsSvg, type DetailOpts } from './affineDetail';
+import { detailOf, coursesOverlaySvg, timberOverlaySvg, verticalAccentsSvg, type DetailOpts } from './affineDetail';
 import { hash32 } from '../detail/hash';
 import type { Face, WallEl } from '../builders/types';
 import { projGP, type Pt2 } from './project';
@@ -113,12 +113,29 @@ function topSvg(el: WallEl, app: StructureAppearanceDef, dims: Dims): string {
 }
 
 /** SVG d'un élément de mur : iso/edge-on = faces dans l'ORDRE DE PEINTURE du builder, ombrées par
- *  l'orientation MONDE de l'arête ; vue du dessus = représentation symbolique. */
+ *  l'orientation MONDE de l'arête ; vue du dessus = représentation symbolique. COLOMBAGE (recette
+ *  `timber`, LOD ≥ 1) : pans de bois PAR-DESSUS la façade assemblée (poteaux + écharpes devant le
+ *  panneau) — jamais sur une travée de porte (l'ouverture couperait les écharpes) ni une brèche. */
 export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
   const app = structureAppearance(el.appearance);
   if (isSquareView(dims.view)) return topSvg(el, app, dims);
   const tintK = el.side === 'N' ? SIDE_N : SIDE_LIT;
-  return `<g>${el.faces.map((f) => faceSvg(f, el, app, tintK, dims, opts)).join('')}</g>`;
+  let svg = el.faces.map((f) => faceSvg(f, el, app, tintK, dims, opts)).join('');
+  const { lod, mpt } = detailOf(opts);
+  if (lod >= 1 && app.detail?.timber && !el.door && !el.states.down) {
+    const f = el.faces.find((x) => x.material.part === 'face');
+    if (f) {
+      const [A, B] = el.ends;
+      svg += timberOverlaySvg({
+        recipe: app.detail,
+        quad: f.poly.map((gp) => projGP(gp, dims)),
+        faceWM: Math.hypot(B.x - A.x, B.y - A.y) * mpt,
+        faceHM: f.poly[0].h - f.poly[3].h,
+        dims,
+      });
+    }
+  }
+  return `<g>${svg}</g>`;
 }
 
 /** COUCHE D'ACCENTS d'un mur (LOD 2) : blocs nuancés ALIGNÉS sur l'appareillage + mouchetis d'usure de
@@ -138,19 +155,25 @@ export function wallAccentsSvg(el: WallEl, dims: Dims, opts?: DetailOpts): strin
   let svg = '';
   for (const f of el.faces) {
     if (f.material.part !== 'face') continue;
+    const quad = f.poly.map((gp) => projGP(gp, dims));
+    const faceWM = Math.hypot(B.x - A.x, B.y - A.y) * mpt;
+    const faceHM = f.poly[0].h - f.poly[3].h;
     svg += verticalAccentsSvg({
       recipe: app.detail,
       side: el.side,
       cell: el.cell,
-      quad: f.poly.map((gp) => projGP(gp, dims)),
-      faceWM: Math.hypot(B.x - A.x, B.y - A.y) * mpt,
-      faceHM: f.poly[0].h - f.poly[3].h,
+      quad,
+      faceWM,
+      faceHM,
       base: shade(wallPartColor(app, 'face'), tintK),
       seed: hash32('wall', el.cell.x, el.cell.y, el.cell.z, el.side),
       dims,
       mpt,
       reservedV,
     });
+    // COLOMBAGE re-tracé PAR-DESSUS les nuances de planches : cette couche se peint APRÈS `wallSvg`,
+    // une planche nuancée recouvrirait sinon les pans de bois (le colombage vit DEVANT le bardage).
+    if (svg && app.detail.timber && !el.door) svg += timberOverlaySvg({ recipe: app.detail, quad, faceWM, faceHM, dims });
   }
   return svg;
 }

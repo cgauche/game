@@ -17,8 +17,16 @@ import { WALL_H_M, isoPxToM } from '../iso';
 import type { CellSide, Face, RoofEl, RoofLine, RoofLineKind } from './types';
 
 /** Montée de la nappe par CRAN de profondeur d'avant-toit (ex-SLOPE 17 px-iso), en mètres — une seule
- *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles (`courses` de la def) se comptent PAR cran. */
+ *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles se comptent PAR cran. */
 export const ROOF_SLOPE_M = isoPxToM(17);
+
+/** Rangs de tuiles PAR CRAN de montée, dérivés du PAS MÉTRIQUE de la recette du matériau
+ *  (`detail.courses.hM` — SOURCE UNIQUE de l'espacement, partagée builder ↔ backend toits) ; un
+ *  matériau sans recette d'assises ne porte aucun rang. */
+export function roofCoursesPerStep(det?: { courses?: { hM: number } }): number | undefined {
+  const hM = det?.courses?.hM;
+  return hM ? Math.max(1, Math.round(ROOF_SLOPE_M / hM)) : undefined;
+}
 
 const EPS = 1e-9;
 
@@ -272,7 +280,7 @@ export function buildRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: R
       }
     base += WALL_H_M;
     const material = roof.params?.roofMaterial ?? styleRoofMaterial(roof.style);
-    const { faces, lines } = roofPans(cells, base, material, roofMaterial(material).courses);
+    const { faces, lines } = roofPans(cells, base, material, roofCoursesPerStep(roofMaterial(material).detail));
     let vis = !visible;
     if (visible)
       for (let dy = -1; dy <= f.h && !vis; dy++)

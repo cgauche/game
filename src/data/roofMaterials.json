@@ -6,8 +6,20 @@
     "S": "#531b13",
     "O": "#8a3527",
     "line": "#411409",
-    "course": "#5a1f17",
-    "courses": 3
+    "detail": {
+      "seedScope": "instance",
+      "courses": {
+        "hM": 0.24,
+        "joint": "#5a1f17",
+        "jointW": 0.03,
+        "stagger": 0.5,
+        "blockWM": [
+          0.35,
+          0.6
+        ],
+        "paletteVar": 0.05
+      }
+    }
   },
   {
     "id": "chaume",
@@ -16,8 +28,26 @@
     "S": "#59461a",
     "O": "#997c3c",
     "line": "#463714",
-    "course": "#6a531f",
-    "courses": 2
+    "detail": {
+      "seedScope": "instance",
+      "courses": {
+        "hM": 0.35,
+        "joint": "#6a531f",
+        "jointW": 0.045,
+        "edgeWobble": 0.05
+      },
+      "tufts": {
+        "perM2": 0.7,
+        "hM": [
+          0.3,
+          0.5
+        ],
+        "colors": [
+          "#63501f",
+          "#c4a55e"
+        ]
+      }
+    }
   },
   {
     "id": "ardoise",
@@ -26,8 +56,20 @@
     "S": "#283037",
     "O": "#4d5964",
     "line": "#20272d",
-    "course": "#2a323a",
-    "courses": 3
+    "detail": {
+      "seedScope": "instance",
+      "courses": {
+        "hM": 0.24,
+        "joint": "#2a323a",
+        "jointW": 0.026,
+        "stagger": 0.5,
+        "blockWM": [
+          0.3,
+          0.5
+        ],
+        "paletteVar": 0.06
+      }
+    }
   },
   {
     "id": "plan",

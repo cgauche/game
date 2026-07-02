@@ -428,12 +428,12 @@ export function IsoStage() {
             key={el.key}
             style={{ transition: 'opacity 0.25s' }}
             opacity={cut ? (viewMode === 'top' ? 0.5 : 0) : 1}
-            dangerouslySetInnerHTML={{ __html: roofSvg(el, d) }}
+            dangerouslySetInnerHTML={{ __html: roofSvg(el, d, detailOpts) }}
           />
         ),
       };
     });
-  }, [scene, roofEls, shownRot, shownEdge, viewMode, occludesActor]);
+  }, [scene, roofEls, shownRot, shownEdge, viewMode, occludesActor, detailOpts]);
 
   // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
   // (LDB 13 l.123) → pion fantomatique. Distingue « hors LdV » de « hors de portée » (aucun

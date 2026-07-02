@@ -107,8 +107,23 @@ describe('wallAccentsSvg — couche d’accents seedés (LOD 2), séparée du me
     expect(wallAccentsSvg(w, { ...dims, view: 'top' })).toBe('');
     expect(wallAccentsSvg(el({ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }, (s) => setStructureDown(s, 2, 2, 'N', 0, true)), dims)).toBe('');
   });
-  it('bois (aucune recette) : aucune couche d’accents', () => {
-    expect(wallAccentsSvg(el({ x: 2, y: 2, side: 'N' }), dims)).toBe('');
+  it('bois : nuances de PLANCHES (rangs continus sans blocs, paletteVar) — pleine largeur de face', () => {
+    const a = wallAccentsSvg(el({ x: 2, y: 2, side: 'N' }), dims);
+    expect(a).toContain('<path'); // quelques planches plus claires/sombres
+    expect(a).toBe(wallAccentsSvg(el({ x: 2, y: 2, side: 'N' }), dims));
+  });
+});
+
+describe('wallSvg — colombage (recette `timber`, matériaux v2)', () => {
+  const timber = structureAppearance('mur-en-bois').detail!.timber!;
+  it('mur-en-bois : poteaux + écharpes en X à la couleur de la recette (LOD ≥ 1, pas en LOD 0)', () => {
+    const svg = wallSvg(el({ x: 2, y: 2, side: 'E', structure: 'mur-en-bois' }), dims);
+    expect(svg).toContain(`stroke="${timber.color}"`);
+    expect(wallSvg(el({ x: 2, y: 2, side: 'E', structure: 'mur-en-bois' }), dims, { zoom: 0.4 })).not.toContain(`stroke="${timber.color}"`);
+  });
+  it('jamais sur une travée de PORTE (l’ouverture couperait les écharpes) ni un mur nu `plain`', () => {
+    expect(wallSvg(el({ x: 2, y: 2, side: 'E', structure: 'mur-en-bois', door: true }), dims)).not.toContain(`stroke="${timber.color}"`);
+    expect(wallSvg(el({ x: 2, y: 2, side: 'E' }), dims)).not.toContain(`stroke="${timber.color}"`);
   });
 });
 

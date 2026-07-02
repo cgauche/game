@@ -3,6 +3,16 @@
     "id": "plain",
     "label": "Mur",
     "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.3,
+        "joint": "#54432e",
+        "jointW": 0.022,
+        "edgeWobble": 0.012,
+        "paletteVar": 0.05
+      }
+    },
     "face": "#6e5940",
     "post": "#352b1f",
     "wood": {
@@ -18,6 +28,22 @@
     "id": "mur-en-bois",
     "label": "Mur en bois",
     "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.3,
+        "joint": "#54432e",
+        "jointW": 0.022,
+        "edgeWobble": 0.012,
+        "paletteVar": 0.05
+      },
+      "timber": {
+        "postEveryM": 2,
+        "braces": "X",
+        "wM": 0.08,
+        "color": "#3b2e1f"
+      }
+    },
     "face": "#6e5940",
     "post": "#352b1f",
     "wood": {
@@ -33,6 +59,16 @@
     "id": "porte",
     "label": "Porte",
     "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.3,
+        "joint": "#54432e",
+        "jointW": 0.022,
+        "edgeWobble": 0.012,
+        "paletteVar": 0.05
+      }
+    },
     "face": "#6e5940",
     "post": "#352b1f",
     "wood": {
@@ -54,6 +90,16 @@
     "id": "porte-blindee",
     "label": "Porte blindée",
     "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.3,
+        "joint": "#54432e",
+        "jointW": 0.022,
+        "edgeWobble": 0.012,
+        "paletteVar": 0.05
+      }
+    },
     "face": "#6e5940",
     "post": "#352b1f",
     "wood": {

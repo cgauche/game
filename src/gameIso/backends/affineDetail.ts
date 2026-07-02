@@ -17,7 +17,7 @@
 import { hash32, seedStream } from '../detail/hash';
 import { expandRecipe } from '../detail/expand';
 import type { DetailRecipe } from '../detail/types';
-import { shade } from '../shade';
+import { shade, ao, spec } from '../shade';
 import { LEVEL_H, isSquareView, type Dims } from '../iso';
 import { METRES_PER_LEVEL } from '../../state/relief';
 import { TERRAIN_DEFS } from '../../state/terrain';
@@ -40,9 +40,10 @@ export const detailOf = (opts?: DetailOpts): { lod: Lod; mpt: number } => ({ lod
 
 // ── Constantes du motif ──────────────────────────────────────────────────────────────────────────────
 /** px écran par MÈTRE d'élévation (vérité partagée : LEVEL_H px ⇔ METRES_PER_LEVEL m). */
-const PX_PER_M_V = LEVEL_H / METRES_PER_LEVEL;
-/** Variantes pré-seedées par recette (anti-périodicité, choisies par hash du monde). */
-const N_VARIANTS = 3;
+export const PX_PER_M_V = LEVEL_H / METRES_PER_LEVEL;
+/** Variantes pré-seedées par recette (anti-périodicité, choisies par hash du monde) — partagé avec le
+ *  backend TOITS (variante de bardeaux par élément). */
+export const N_VARIANTS = 3;
 /** Variantes de dégradé de terrain (variance de teinte par tuile) : étalement des facteurs de shade. */
 const TINT_SPREAD = [-1, -0.4, 0.35, 1];
 /** Fraction des blocs recevant un accent clair / sombre (~2×18 % de l'appareillage). */
@@ -77,21 +78,23 @@ function axisMetreVec(axis: Axis, dims: Dims, mpt: number): Pt2 {
 const degenerate = (eu: Pt2): boolean => Math.abs(eu[0]) < 0.5;
 
 // ── Recettes d'appareillage disponibles (structure + relief), dédupliquées par CONTENU ───────────────
-type Courses = NonNullable<DetailRecipe['courses']>;
-/** Clé de contenu d'une recette d'assises — nomme les motifs partagés (`dt-<clé>-<proj>-<axe><variante>`). */
-const coursesKey = (c: Courses): string => hash32(JSON.stringify(c)).toString(36);
-/** Étiquette de PROJECTION dans l'id du motif : son `patternTransform` dépend de la rotation/vue —
+export type Courses = NonNullable<DetailRecipe['courses']>;
+/** Clé de contenu d'une recette d'assises — nomme les motifs partagés (`dt-<clé>-<proj>-<axe><variante>`).
+ *  Exportée : le backend TOITS aligne ses bardeaux sur les mêmes bornes seedées. */
+export const coursesKey = (c: Courses): string => hash32(JSON.stringify(c)).toString(36);
+/** Étiquette de PROJECTION dans l'id d'un motif/clip : son `patternTransform` dépend de la rotation/vue —
  *  une planche QC qui juxtapose plusieurs projections dans UN document SVG ne collisionne pas. */
-const projTag = (dims: Dims): string => (isSquareView(dims.view) ? 'top' : `${dims.rot ?? 0}${dims.edge ? 'e' : ''}`);
+export const projTag = (dims: Dims): string => (isSquareView(dims.view) ? 'top' : `${dims.rot ?? 0}${dims.edge ? 'e' : ''}`);
 const patternId = (key: string, axis: Axis, variant: number, dims: Dims): string => `dt-${key}-${projTag(dims)}-${axis}${variant}`;
 
 /** Largeur de PÉRIODE du motif (m) : ~4 blocs moyens (assez large pour casser la répétition à l'œil). */
-const patternWM = (c: Courses): number => (c.blockWM ? Math.max(1.6, 2 * (c.blockWM[0] + c.blockWM[1])) : 2);
+export const patternWM = (c: Courses): number => (c.blockWM ? Math.max(1.6, 2 * (c.blockWM[0] + c.blockWM[1])) : 2);
 
 /** Bornes des joints VERTICAUX d'un rang du motif périodique (positions en mètres dans ]0,W[), par
- *  PARITÉ de rang — PARTAGÉES par le motif (joints) et les accents (blocs nuancés ALIGNÉS dessus).
- *  Aucun joint au bord de période (0/W) : le bloc y chevauche la couture → périodicité invisible. */
-function rowBoundaries(c: Courses, key: string, variant: number, parity: 0 | 1): number[] {
+ *  PARITÉ de rang — PARTAGÉES par le motif (joints), les accents (blocs nuancés ALIGNÉS dessus) et les
+ *  bardeaux du backend TOITS. Aucun joint au bord de période (0/W) : le bloc y chevauche la couture →
+ *  périodicité invisible. */
+export function rowBoundaries(c: Courses, key: string, variant: number, parity: 0 | 1): number[] {
   if (!c.blockWM) return [];
   const [wMin, wMax] = c.blockWM;
   const mean = (wMin + wMax) / 2;
@@ -144,8 +147,91 @@ function coursesRecipes(): Map<string, Courses> {
   return out;
 }
 
+// ── Sol APPAREILLÉ (pavés/dalles/lattes) : motif CONTINU ancré au plan du sol ────────────────────────
+/** Rangs par période verticale du motif de SOL — plus qu'un mur (2) : une place pavée expose une grande
+ *  surface continue, la répétition doit boucler loin. */
+const GROUND_ROWS = 6;
+/** Alpha des nuances de pierre CUITES dans le motif de sol, par unité de `paletteVar`. */
+const GROUND_VAR_ALPHA = 1.7;
+
+/** Base ÉCRAN du plan du SOL : vecteurs d'1 m le long des axes de grille (x → u du motif, y → v).
+ *  null si le plan est dégénéré à l'écran (projection rasante). */
+function groundBasis(dims: Dims, mpt: number): [Pt2, Pt2] | null {
+  const ex = axisMetreVec('x', dims, mpt);
+  const ey = axisMetreVec('y', dims, mpt);
+  return Math.abs(ex[0] * ey[1] - ex[1] * ey[0]) < 0.05 ? null : [ex, ey];
+}
+const groundPatternId = (key: string, dims: Dims): string => `dt-${key}-${projTag(dims)}-g`;
+
+/** Motif de SOL appareillé, CONTINU à travers les tuiles (ancré au plan monde, `userSpaceOnUse`) :
+ *  joints en MÈTRES monde projetés par la base du plan. Contrairement aux faces verticales (variantes
+ *  par face), le sol est UNE surface continue → un seul motif, période élargie (2×patternWM ×
+ *  GROUND_ROWS rangs) ; la « variance par pierre » est CUITE dans le motif (voiles `ao`/`spec` sur des
+ *  blocs épars) : elle ne coûte AUCUN nœud par tuile et reste alignée d'une tuile à l'autre. */
+function groundCoursesPatternDef(c: Courses, key: string, [ex, ey]: [Pt2, Pt2], dims: Dims): string {
+  const W = 2 * patternWM(c);
+  const r = seedStream(hash32('dtground', key));
+  const wob = c.edgeWobble ?? 0;
+  let joints = '';
+  // Lignes de rang tremblées, extrémités EXACTES (0 et W) → la période boucle sans couture.
+  for (let row = 0; row < GROUND_ROWS; row++) {
+    const y0 = row * c.hM;
+    const SEG = 8;
+    joints += `M0,${n3(y0)}`;
+    for (let i = 1; i <= SEG; i++) joints += `L${n3((W * i) / SEG)},${n3(y0 + (i === SEG ? 0 : (r() * 2 - 1) * wob))}`;
+  }
+  // Joints verticaux + nuances par PIERRE (rangs décalés type appareillage) ; jamais de joint ni de
+  // nuance au bord de période (le bloc y chevauche la couture → périodicité invisible).
+  let light = '';
+  let dark = '';
+  if (c.blockWM) {
+    const [wMin, wMax] = c.blockWM;
+    const mean = (wMin + wMax) / 2;
+    for (let row = 0; row < GROUND_ROWS; row++) {
+      const y0 = row * c.hM;
+      const rr = seedStream(hash32('dtgrow', key, row));
+      let u = row % 2 === 1 ? -(c.stagger ?? 0) * mean : 0;
+      let prev = Math.max(0, u);
+      for (;;) {
+        u += wMin + rr() * (wMax - wMin);
+        if (u >= W - 0.05) break;
+        if (u > 0.05) {
+          joints += `M${n3(u)},${n3(y0)}L${n3(u)},${n3(y0 + c.hM)}`;
+          if (c.paletteVar) {
+            const rv = rr();
+            if (rv < ACCENT_FRAC || rv > 1 - ACCENT_FRAC) {
+              const sub =
+                `M${n3(prev + BLOCK_INSET_M)},${n3(y0 + BLOCK_INSET_M)}H${n3(u - BLOCK_INSET_M)}` +
+                `V${n3(y0 + c.hM - BLOCK_INSET_M)}H${n3(prev + BLOCK_INSET_M)}Z`;
+              if (rv < ACCENT_FRAC) light += sub;
+              else dark += sub;
+            }
+          }
+          prev = u;
+        }
+      }
+    }
+  }
+  const alpha = Math.min(0.2, (c.paletteVar ?? 0) * GROUND_VAR_ALPHA);
+  return (
+    `<pattern id="${groundPatternId(key, dims)}" patternUnits="userSpaceOnUse" width="${n3(W)}" height="${n3(GROUND_ROWS * c.hM)}"` +
+    ` patternTransform="matrix(${n3(ex[0])} ${n3(ex[1])} ${n3(ey[0])} ${n3(ey[1])} 0 0)">` +
+    `<path d="${joints}" fill="none" stroke="${c.joint}" stroke-width="${n3(c.jointW)}" stroke-linecap="round" opacity="0.8"/>` +
+    (light ? `<path d="${light}" fill="${spec(alpha)}"/>` : '') +
+    (dark ? `<path d="${dark}" fill="${ao(alpha)}"/>` : '') +
+    `</pattern>`
+  );
+}
+
+/** Id du motif de SOL appareillé d'un terrain (null : pas de recette d'assises, ou plan dégénéré). */
+export function terrainCoursesPattern(terrainId: string, dims: Dims, mpt: number): string | null {
+  const c = TERRAIN_BY_ID.get(terrainId)?.detail?.courses;
+  return c && groundBasis(dims, mpt) ? groundPatternId(coursesKey(c), dims) : null;
+}
+
 /** DEFS des matériaux v2 pour la projection courante : variantes de dégradé de terrain (variance de
- *  teinte par tuile) + motifs d'appareillage par (recette × orientation × variante). À joindre aux
+ *  teinte par tuile) + motifs de SOL appareillé (toutes projections, le sol reste affine en vue du
+ *  dessus) + motifs d'appareillage vertical par (recette × orientation × variante). À joindre aux
  *  `<defs>` de tout stage/panneau affine dès que le LOD ≥ 1. */
 export function detailPatternDefs(dims: Dims, mpt: number): string {
   let out = '';
@@ -159,7 +245,17 @@ export function detailPatternDefs(dims: Dims, mpt: number): string {
       out += `<linearGradient id="${t.gradient}-v${k}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient>`;
     }
   }
-  if (isSquareView(dims.view)) return out; // vue du dessus : aucune face verticale → pas de motifs
+  const gb = groundBasis(dims, mpt);
+  if (gb) {
+    const seenT = new Set<string>();
+    for (const t of TERRAIN_DEFS) {
+      const c = t.detail?.courses;
+      if (!c || seenT.has(coursesKey(c))) continue;
+      seenT.add(coursesKey(c));
+      out += groundCoursesPatternDef(c, coursesKey(c), gb, dims);
+    }
+  }
+  if (isSquareView(dims.view)) return out; // vue du dessus : aucune face verticale → pas de motifs muraux
   for (const [key, c] of coursesRecipes()) {
     for (const axis of AXES) {
       const eu = axisMetreVec(axis, dims, mpt);
@@ -242,7 +338,8 @@ const dotSub = (p: Pt2, r: number): string =>
 
 /** ACCENTS d'une face verticale (LOD 2) : blocs nuancés ALIGNÉS sur l'appareillage du motif (mêmes
  *  bornes de rangs/joints, énumérés en espace MOTIF via la base inverse) + mouchetis d'usure (UV de
- *  l'expansion, tassés au pied par `vBias`). Sortie : UN `<path>` par couleur. */
+ *  l'expansion, tassés au pied par `vBias`). Une recette SANS `blockWM` (rangs continus : planches)
+ *  nuance des rangs ENTIERS — quelques planches plus claires/sombres. Sortie : UN `<path>` par couleur. */
 export function verticalAccentsSvg(ctx: VerticalFaceCtx): string {
   const c = ctx.recipe.courses;
   const axis = AXIS_OF[ctx.side];
@@ -251,7 +348,7 @@ export function verticalAccentsSvg(ctx: VerticalFaceCtx): string {
   if (degenerate(eu)) return '';
   let out = '';
 
-  if (c?.blockWM && c.paletteVar) {
+  if (c?.paletteVar) {
     // Espace MOTIF (mètres) : p_motif = M⁻¹·p_écran avec M = [eu | (0, PX_PER_M_V)] (sans translation).
     const inv = (p: Pt2): Pt2 => [p[0] / eu[0], (p[1] - (eu[1] * p[0]) / eu[0]) / PX_PER_M_V];
     const fwd = (pu: number, pv: number): Pt2 => [eu[0] * pu, eu[1] * pu + PX_PER_M_V * pv];
@@ -310,6 +407,32 @@ export function verticalAccentsSvg(ctx: VerticalFaceCtx): string {
     for (const [color, d] of byColor) out += `<path d="${d}" fill="${color}" opacity="0.75"/>`;
   }
   return out;
+}
+
+// Bornes VERTICALES du colombage (fractions de la hauteur de face, depuis le HAUT) : les pans de bois
+// courent entre le couronnement (bande haute [0.86,1]·WALL_H du builder) et la plinthe (0.11 bas) —
+// des FORMES calées sur l'assemblage bois, pas des couleurs.
+const TIMBER_V0 = 0.13;
+const TIMBER_V1 = 0.88;
+
+/** COLOMBAGE d'une face verticale (recette `timber`, LOD ≥ 1) : poteaux + écharpes X/V par travée
+ *  (expansion déterministe, aucun aléa), bornés entre couronnement et plinthe, UN `<path>` stroké à la
+ *  couleur de la recette. Dessiné APRÈS toutes les parties du mur — les pans de bois passent DEVANT le
+ *  panneau, comme sur une façade à colombages. */
+export function timberOverlaySvg(ctx: Pick<VerticalFaceCtx, 'recipe' | 'quad' | 'faceWM' | 'faceHM' | 'dims'>): string {
+  const t = ctx.recipe.timber;
+  if (!t || isSquareView(ctx.dims.view)) return '';
+  const e = expandRecipe({ timber: t, seedScope: ctx.recipe.seedScope }, ctx.faceWM, ctx.faceHM, 0);
+  if (!e.timber) return '';
+  const v = (raw: number) => TIMBER_V0 + raw * (TIMBER_V1 - TIMBER_V0);
+  const pt = (u: number, vRaw: number) => {
+    const p = uvPoint(ctx.quad, u, v(vRaw));
+    return `${n2(p[0])},${n2(p[1])}`;
+  };
+  let d = '';
+  for (const u of e.timber.posts) d += `M${pt(u, 0)}L${pt(u, 1)}`;
+  for (const b of e.timber.braces) d += `M${pt(b.u0, b.v0)}L${pt(b.u1, b.v1)}`;
+  return `<path d="${d}" fill="none" stroke="${e.timber.color}" stroke-width="${n2(e.timber.wM * PX_PER_M_V)}" stroke-linecap="square"/>`;
 }
 
 // ── Sol : accents (touffes d'herbe, cailloux) ancrés MONDE — stables aux 4 rotations ─────────────────

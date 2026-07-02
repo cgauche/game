@@ -5,8 +5,10 @@ import {
   detailOf,
   detailPatternDefs,
   terrainFillGradient,
+  terrainCoursesPattern,
   coursesOverlaySvg,
   verticalAccentsSvg,
+  timberOverlaySvg,
   groundAccentsSvg,
   type VerticalFaceCtx,
 } from './affineDetail';
@@ -69,11 +71,28 @@ describe('detailPatternDefs — motifs partagés par (recette × orientation × 
     expect(d1).toContain('-1-x0'); // ids par projection : rot1 ne collisionne pas avec rot0 (planche QC multi-panneaux)
     expect(d1).not.toContain('-0-x0');
   });
-  it('vue du DESSUS : variantes de dégradé de terrain seulement (aucune face verticale)', () => {
+  it('vue du DESSUS : variantes de dégradé + motifs de SOL, mais aucun motif de face VERTICALE', () => {
     const top = detailPatternDefs({ ...dims, view: 'top' }, 2);
-    expect(top).not.toContain('<pattern');
     expect(top).toContain('g_grass-v0');
     expect(top).toContain('g_grass-v3');
+    expect(top).toContain('-top-g"'); // sol appareillé : le plan du sol reste affine vu du dessus
+    expect(top).not.toMatch(/dt-[a-z0-9]+-top-[xyda]\d/); // pas de face verticale en vue carrée
+  });
+
+  it('motif de SOL appareillé : UN motif par recette (surface continue), nuances de pierre CUITES dedans', () => {
+    const d0 = detailPatternDefs(dims, 2);
+    const grounds = d0.match(/dt-[a-z0-9]+-0-g"/g) ?? [];
+    expect(grounds.length).toBeGreaterThan(0);
+    expect(new Set(grounds).size).toBe(grounds.length); // pas de variantes : continuité entre tuiles
+    expect(d0).toContain('rgba(255,255,255'); // nuances claires (spec) cuites dans le motif
+    expect(d0).toContain('rgba(0,0,0'); // nuances sombres (ao)
+  });
+
+  it('terrainCoursesPattern : id du motif de sol pour un terrain appareillé, null sinon', () => {
+    expect(terrainCoursesPattern('pave', dims, 2)).toMatch(/^dt-[a-z0-9]+-0-g$/);
+    expect(terrainCoursesPattern('pave', { ...dims, rot: 3 }, 2)).toMatch(/-3-g$/);
+    expect(terrainCoursesPattern('herbe', dims, 2)).toBeNull();
+    expect(terrainCoursesPattern('???', dims, 2)).toBeNull();
   });
   it('edge-on : l’axe de CHANT (y, perpendiculaire à l’écran) est dégénéré → pas de motif y', () => {
     const edge = detailPatternDefs({ ...dims, rot: 0, edge: true }, 2);
@@ -88,7 +107,7 @@ describe('terrainFillGradient — variance de teinte par tuile', () => {
     expect(a).toMatch(/^g_grass-v[0-3]$/);
     expect(terrainFillGradient('herbe', { x: 3, y: 4, z: 0 }, 1)).toBe(a);
     expect(terrainFillGradient('herbe', { x: 3, y: 4, z: 0 }, 0)).toBe('g_grass');
-    expect(terrainFillGradient('plancher', { x: 3, y: 4, z: 0 }, 2)).toBe('g_plancher');
+    expect(terrainFillGradient('vide', { x: 3, y: 4, z: 0 }, 2)).toBe('g_sol'); // terrain sans `tintVar`
     expect(terrainFillGradient('???', { x: 3, y: 4, z: 0 }, 2)).toBeNull();
   });
 });
@@ -119,6 +138,23 @@ describe('verticalAccentsSvg — accents alignés sur l’appareillage', () => {
     const barre = verticalAccentsSvg(ctx({ reservedV: [[0, 2.25]] })); // TOUTE la face réservée
     expect(barre).not.toContain('fill="#'); // plus aucun bloc ni mouchetis opaque
     expect(libre.length).toBeGreaterThan(barre.length);
+  });
+  it('rangs CONTINUS (planches, sans blockWM) + paletteVar : nuances de rangs ENTIERS', () => {
+    const BOIS: DetailRecipe = { seedScope: 'edge', courses: { hM: 0.3, joint: '#54432e', jointW: 0.022, paletteVar: 0.05 } };
+    const a = verticalAccentsSvg(ctx({ recipe: BOIS }));
+    expect(a).toContain('<path'); // au moins une planche nuancée
+    expect((a.match(/<path /g) ?? []).length).toBeLessThanOrEqual(2); // 1 chemin clair + 1 sombre max
+  });
+});
+
+describe('timberOverlaySvg — colombage (poteaux + écharpes X/V)', () => {
+  const TIMBER: DetailRecipe = { seedScope: 'edge', timber: { postEveryM: 2, braces: 'X', wM: 0.08, color: '#3b2e1f' } };
+  it('UN <path> stroké à la couleur de la recette, déterministe ; rien sans recette / en vue du dessus', () => {
+    const t = timberOverlaySvg({ recipe: TIMBER, quad: QUAD, faceWM: 2, faceHM: 2.25, dims });
+    expect(t).toMatch(/^<path d="[^"]+" fill="none" stroke="#3b2e1f" stroke-width="[\d.]+" stroke-linecap="square"\/>$/);
+    expect((t.match(/M/g) ?? []).length).toBe(4); // 2 poteaux + 2 écharpes (X sur une travée)
+    expect(timberOverlaySvg({ recipe: { seedScope: 'edge' }, quad: QUAD, faceWM: 2, faceHM: 2.25, dims })).toBe('');
+    expect(timberOverlaySvg({ recipe: TIMBER, quad: QUAD, faceWM: 2, faceHM: 2.25, dims: { ...dims, view: 'top' } })).toBe('');
   });
 });
 

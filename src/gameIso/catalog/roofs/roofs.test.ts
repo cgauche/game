@@ -16,13 +16,19 @@ describe('apparence de toit (JSON pur iso/plan)', () => {
     expect(roofMaterial('ardoise').N).toBe('#63727f');
   });
 
-  it('les matériaux de couverture portent liseré + rangs de tuiles (consommés par le backend)', () => {
+  it('les matériaux de couverture portent liseré + recette de rangs (consommés par builder + backend)', () => {
     for (const id of ['tuile', 'chaume', 'ardoise']) {
       const m = roofMaterial(id);
       expect(m.line, id).toBeTruthy();
-      expect(m.course, id).toBeTruthy();
-      expect(m.courses ?? 0, id).toBeGreaterThan(0);
+      expect(m.detail?.courses?.hM ?? 0, id).toBeGreaterThan(0); // pas métrique des rangs (source unique)
+      expect(m.detail?.courses?.joint, id).toBeTruthy(); // couleur des rangs
     }
+    // Bardeaux (blocs décalés nuancés) sur les couvertures rigides ; rangs ORGANIQUES sur le chaume.
+    expect(roofMaterial('tuile').detail?.courses?.blockWM).toBeDefined();
+    expect(roofMaterial('ardoise').detail?.courses?.blockWM).toBeDefined();
+    expect(roofMaterial('chaume').detail?.courses?.blockWM).toBeUndefined();
+    expect(roofMaterial('chaume').detail?.courses?.edgeWobble ?? 0).toBeGreaterThan(0);
+    expect(roofMaterial('chaume').detail?.tufts).toBeDefined(); // balayage de paille
   });
 
   it('plan vu du dessus (vue carrée)', () => {

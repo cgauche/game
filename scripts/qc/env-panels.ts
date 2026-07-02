@@ -57,8 +57,9 @@ export function envPanel(scene: Scene, dims: Dims): Panel {
       svg: `${sh}<g transform="translate(${cx - 60 * scale},${cy + TH / 2 - 150 * scale}) scale(${scale})">${propSvg(ent.ref ?? 'tonneau', ent.facing, dims.rot ?? 0)}</g>`,
     });
   }
-  // Toits des bâtiments composés en PANS CONTINUS (jamais en cutaway : environnement pur).
-  for (const el of buildRoofs(scene)) objs.push({ d: roofDepth(el, dims), svg: roofSvg(el, dims) });
+  // Toits des bâtiments composés en PANS CONTINUS (jamais en cutaway : environnement pur), au plein
+  // détail matériaux v2 (bardeaux/chaume clippés par pan).
+  for (const el of buildRoofs(scene)) objs.push({ d: roofDepth(el, dims), svg: roofSvg(el, dims, opts) });
   objs.sort((a, b) => a.d - b.d);
   const st = stageSize(dims);
   // Defs des matériaux v2 DANS le panneau (le `patternTransform` dépend de la projection ; les ids

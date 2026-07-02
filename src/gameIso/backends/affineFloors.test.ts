@@ -47,6 +47,16 @@ describe('floorSvg — losange de base', () => {
       expect(floorSvg(elAt(s, 1, 1), d)).toContain(`d="${diamondPath(1, 1, d)}"`);
     }
   });
+
+  it('terrain APPAREILLÉ (pavés) : surcouche de joints CONTINUE du plan du sol en LOD ≥ 1, pas en LOD 0', () => {
+    const s = emptyScene(4, 4);
+    s.layers[0].tiles = new Array(16).fill('pave');
+    const svg = floorSvg(elAt(s, 1, 1), dims);
+    expect(svg).toMatch(/fill="url\(#dt-[a-z0-9]+-0-g\)"/); // motif de sol (axe 'g'), étiqueté par projection
+    expect((svg.match(/<path /g) ?? []).length).toBe(2); // base + surcouche : 2 nœuds par tuile
+    expect(floorSvg(elAt(s, 1, 1), dims, { zoom: 0.4 })).not.toContain('-g)');
+    expect(floorSvg(elAt(s, 1, 1), { ...dims, view: 'top' })).toContain('-g)'); // le sol reste affine vu du dessus
+  });
 });
 
 describe('floorSvg — parois de relief', () => {
@@ -81,10 +91,10 @@ describe('floorAccentsSvg — couche d’accents seedés (LOD 2), séparée du m
     const subCount = (svg: string) => (svg.match(/M/g) ?? []).length;
     for (const rot of [1, 2, 3] as const) expect(subCount(floorAccentsSvg(elAt(s, 1, 1), { ...dims, rot }))).toBe(subCount(a1));
   });
-  it('vide en LOD < 2 ; vide pour un terrain sans recette d’accents', () => {
+  it('vide en LOD < 2 ; vide pour un terrain sans section d’ACCENTS (plancher : appareillage seul)', () => {
     const s = emptyScene(4, 4);
     expect(floorAccentsSvg(elAt(s, 1, 1), dims, { zoom: 0.6 })).toBe('');
-    const dalle = withHeight(); // plancher : aucune recette
+    const dalle = withHeight(); // plancher : recette `courses`+`tintVar` (motif au fill), zéro accent seedé
     expect(floorAccentsSvg(elAt(dalle, 1, 1), dims)).toBe('');
   });
 });

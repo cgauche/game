@@ -6,17 +6,18 @@ import type { DetailRecipe } from '../../detail/types';
 
 export interface RoofMaterialDef {
   id: string;
-  /** Recette de détail de surface (rangs de tuiles/bardeaux, mouchetis — Lot 0, consommée au Lot 4). */
+  /** Recette de détail de COUVERTURE (matériaux v2) : `courses` = les rangs (le pas `hM` fixe leur
+   *  espacement — source unique builder/backend — `joint` leur couleur ; `blockWM`+`stagger`+
+   *  `paletteVar` = bardeaux décalés nuancés ; `edgeWobble` seul = rangs organiques type chaume) ;
+   *  `tufts` = balayage de brins le long de la pente (paille). */
   detail?: DetailRecipe;
-  /** Teintes de pente iso par orientation d'AVANT-TOIT (N/E/S/O) + liseré de rang (`line`) et couleur/
-   *  nombre de rangs de tuiles (`course`/`courses`). Présents pour les matériaux de couverture. */
+  /** Teintes de pente iso par orientation d'AVANT-TOIT (N/E/S/O) + liseré de STRUCTURE (`line` :
+   *  faîte/arêtiers/égouts). Présents pour les matériaux de couverture. */
   N?: string;
   E?: string;
   S?: string;
   O?: string;
   line?: string;
-  course?: string;
-  courses?: number;
   /** Plan du toit vu du dessus (vue carrée) : corps, liseré, cadre intérieur, texte du nom. */
   planBody?: string;
   planEdge?: string;

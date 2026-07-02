@@ -17,6 +17,7 @@ import { projGP, type Pt2 } from './project';
 import {
   detailOf,
   terrainFillGradient,
+  terrainCoursesPattern,
   terrainDetail,
   groundAccentsSvg,
   coursesOverlaySvg,
@@ -107,11 +108,20 @@ function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims, opts?: DetailOpts): str
 /** Losange de base. Coins recomputés par `diamondCorners` (ordre ÉCRAN top→right→bot→left, invariant
  *  par rotation — le poly GRILLE tournerait son point de départ avec la caméra) : parité flottante
  *  exacte avec la projection historique ; les backends non-affines projettent `poly` directement.
- *  LOD ≥ 1 : le dégradé prend sa VARIANTE de teinte par tuile (recette `tintVar`) — même coût. */
+ *  LOD ≥ 1 : le dégradé prend sa VARIANTE de teinte par tuile (recette `tintVar`) — même coût — et un
+ *  terrain APPAREILLÉ (recette `courses` : pavés/dalles/lattes) pose PAR-DESSUS le motif de joints
+ *  CONTINU du plan du sol (+1 nœud par tuile, les pierres coulent d'une tuile à l'autre). */
 function groundFaceSvg(f: Face, el: FloorEl, dims: Dims, opts?: DetailOpts): string {
   const { top, right, bot, left } = diamondCorners(el.cell.x, el.cell.y, dims, metricToLift(f.poly[0].h));
-  const grad = terrainFillGradient(f.material.id, el.cell, detailOf(opts).lod) ?? terrainGradient(f.material.id);
-  return `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${grad})" stroke="${ao(0.16)}"/>`;
+  const { lod, mpt } = detailOf(opts);
+  const grad = terrainFillGradient(f.material.id, el.cell, lod) ?? terrainGradient(f.material.id);
+  const d = `M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z`;
+  let svg = `<path d="${d}" fill="url(#${grad})" stroke="${ao(0.16)}"/>`;
+  if (lod >= 1) {
+    const pat = terrainCoursesPattern(f.material.id, dims, mpt);
+    if (pat) svg += `<path d="${d}" fill="url(#${pat})"/>`;
+  }
+  return svg;
 }
 
 const SCREEN_EDGE_IDX: Record<CellSide, number> = { N: 0, E: 1, S: 2, O: 3 };
