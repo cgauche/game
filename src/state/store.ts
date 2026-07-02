@@ -96,6 +96,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 import * as portFlow from './portFlow';
+import * as landMarketFlow from './landMarketFlow';
 import * as seaActivities from './seaActivities';
 import { startCascade } from './cascade';
 import { describeTest } from './flowOutcomes';
@@ -1030,6 +1031,21 @@ export interface GameState extends RollFlowActionsMap {
   portCareen: () => void;
   /** Installe une Amélioration navale (coût par bande de Taille, MDG 12). */
   portInstallUpgrade: (traitId: string, units?: number) => void;
+  /** Cargaison TERRESTRE/FLUVIALE transportée par le groupe (convoi/chariot — T2C ch.11). Persiste au
+   *  niveau GROUPE (pas de Contenance de coque, à la différence du navire). */
+  caravanCargo: import('../engine/cargo').CargoLot[];
+  /** Écran MARCHÉ TERRESTRE ouvert (commerce de cargaison à un Lieu `market` de la carte — T2C ch.11) :
+   *  offres d'achat générées à l'arrivée. `null` = fermé. */
+  landMarket: import('./landMarketFlow').LandMarketState | null;
+  /** Ouvre l'écran Marché si le groupe est à un Lieu de commerce terrestre de la carte (`MapPlace.market`). */
+  openLandMarket: () => void;
+  closeLandMarket: () => void;
+  /** Achète `enc` d'une cargaison de l'étape (disponibilité 2 temps/Marchandage/lot partiel, T2C l.129-131). */
+  landBuyCargo: (cargoId: string, enc: number) => void;
+  /** Vend un lot du convoi (Demande/Mise à prix/Marchandage, T2C l.133-160). */
+  landSellCargo: (cargoIndex: number) => void;
+  /** Brade un lot invendable (½ du prix de base dans un Lieu de Commerce, T2C l.160). */
+  landDumpCargo: (cargoIndex: number) => void;
   /** ACTIVITÉS EN MER en attente (semaine de 8 jours, MDG 15 l.266-306) — modale de choix par héros. */
   pendingSeaActivities: import('./seaActivities').PendingSeaActivities | null;
   /** Résout les Activités choisies puis rend la main à la halte de nuit. */
@@ -1079,6 +1095,8 @@ export const useGame = create<GameState>((set, get) => ({
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
   vessel: null,
+  caravanCargo: [],
+  landMarket: null,
   worldMap: campaignWorldMap,
   worldMapOpen: false,
   travelPlan: null,
@@ -1864,6 +1882,11 @@ export const useGame = create<GameState>((set, get) => ({
   portRepair: () => portFlow.portRepairVessel(get, set).forEach((l) => get().log(l)),
   portCareen: () => portFlow.portCareenVessel(get, set).forEach((l) => get().log(l)),
   portInstallUpgrade: (traitId, units) => portFlow.portInstallUpgrade(get, set, traitId, units).forEach((l) => get().log(l)),
+  openLandMarket: () => landMarketFlow.openLandMarket(get, set),
+  closeLandMarket: () => landMarketFlow.closeLandMarket(get, set),
+  landBuyCargo: (cargoId, enc) => landMarketFlow.landBuyCargo(get, set, cargoId, enc),
+  landSellCargo: (cargoIndex) => landMarketFlow.landSellCargo(get, set, cargoIndex),
+  landDumpCargo: (cargoIndex) => landMarketFlow.landDumpCargo(get, set, cargoIndex),
   seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
   setTravelRole: (heroId, role) => set({
     party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),

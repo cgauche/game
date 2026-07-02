@@ -33,6 +33,7 @@ import { CoopMenuSection } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
 import { PortView } from './PortView';
+import { LandMarketView } from './LandMarketView';
 import { SeaActivitiesModal } from './SeaActivitiesModal';
 import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
@@ -65,6 +66,8 @@ export function CampaignView() {
   const openWorldMap = useGame((s) => s.openWorldMap);
   const port = useGame((s) => s.port);
   const openPort = useGame((s) => s.openPort);
+  const landMarket = useGame((s) => s.landMarket);
+  const openLandMarket = useGame((s) => s.openLandMarket);
   const pendingSeaActivities = useGame((s) => s.pendingSeaActivities);
   const vessel = useGame((s) => s.vessel);
   const travelPlan = useGame((s) => s.travelPlan);
@@ -201,6 +204,18 @@ export function CampaignView() {
             <Icon id="scenario/port" size="lg" />
           </button>
         )}
+        {/* Marché terrestre — le groupe est à un Lieu de commerce de cargaison de la carte (T2C ch.11) :
+            acheter/vendre/brader la cargaison du convoi. */}
+        {mode === 'exploration' && !travelPlan && worldMap && placeOfScene(worldMap, scene?.id)?.market && (
+          <button
+            type="button"
+            className="worldmap-btn market-btn"
+            onClick={openLandMarket}
+            title="Marché — commerce de cargaison terrestre"
+          >
+            <Icon id="scenario/market" size="lg" />
+          </button>
+        )}
         {/* Dormir ici — l'offre (auberge/chez soi/dehors) vient de la ZONE où se tient le
             groupe, sinon de la scène (donnée d'auteur, restPlacesHere). */}
         {mode === 'exploration' && !travelPlan && restHere && (
@@ -233,6 +248,7 @@ export function CampaignView() {
         {merchant && <MerchantPanel />}
         {worldMapOpen && mode === 'exploration' && <WorldMapView />}
         {port && mode === 'exploration' && <PortView />}
+        {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}

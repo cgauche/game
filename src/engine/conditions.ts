@@ -19,6 +19,7 @@ import { dropExpiredGrantedWeapons } from './conjuredWeapons';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
 import { applyOps } from './ops'; // cycle runtime (ops→conditions) : applyOps n'est appelé qu'au tick, jamais à l'init du module
+import { aaDeathByCriticalCount } from './aaCritical'; // cycle runtime (aaCritical→combat→conditions) : appelé seulement dans inDeathCondition, jamais à l'init
 
 /** Les 12 États CANONIQUES (LDB 16) à comportement moteur, par `id` STABLE (slug d'etats.json). Le
  *  moteur (pénalités, fin de Round, récupération) les référence via ces constantes — JAMAIS de chaîne
@@ -464,6 +465,11 @@ export function inDeathCondition(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
   if (c.suffocationCountdown != null && c.suffocationCountdown <= 0) return true;
   const be = bonus(effectiveChar(c, 'E'));
+  // Variante Aux Armes (l.2517) : mort par accumulation de Blessures Critiques. Même formule et même clause
+  // « sauf s'il est soigné d'une Blessure Critique » que le LDB 18 l.34 (les Critiques « T » n'ont pas
+  // incrémenté le compteur, cf. applyCriticalToTarget) → on route la clause de compte par la primitive AA dédiée.
+  if (rule('combat-aa-blessures') === 'aa')
+    return aaDeathByCriticalCount(hasCondition(c, COND.inconscient), c.wounds.current, c.criticalWounds ?? 0, be);
   return hasCondition(c, COND.inconscient) && c.wounds.current <= 0 && (c.criticalWounds ?? 0) > be;
 }
 
