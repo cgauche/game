@@ -11,9 +11,10 @@
  * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
  * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
  */
-import { Scene, tileAt, edgeOf, wallIsOpen } from './scene';
+import { Scene, tileAt, heightAt, edgeOf, wallIsOpen } from './scene';
 import { wallOnSight } from './lineOfSight';
-import { TERRAINS } from './terrain';
+import { TERRAINS, terrainSolidHeightM } from './terrain';
+import { METRES_PER_LEVEL } from './relief';
 import { sceneIsDark } from './sceneRules';
 import { Pt } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
@@ -51,20 +52,27 @@ const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.a
  *  dans le rayon, au lieu d'un `.find` O(entités) par échantillon (la cause des 64 ms/recompute).
  *  Terrain opaque + décor opaque (`props.json`). Les cloisons de bâtiment sont des `WallSeg` (arêtes),
  *  prises en compte séparément ci-dessous. PUR. */
-interface Occ { g: Uint8Array; w: number; h: number; walls: Set<string> }
+interface Occ { g: Uint8Array; topH: Float32Array; w: number; h: number; walls: Set<string> }
 function buildOpaque(scene: Scene): Occ {
   const { w, h } = scene.dimensions;
   const g = new Uint8Array(w * h);
+  // Hauteur (m) du SOMMET de la masse opaque d'une colonne : un viewer PLUS HAUT voit PAR-DESSUS (un
+  // défenseur sur le chemin de ronde à 4 m voit au-delà du mur de 4 m ; l'ancien 2D coupait à ~3 cases).
+  // Masse pleine → `solidHeightM` ; opaque « pleine hauteur » sans bloc (porte) → 1 niveau par défaut.
+  const topH = new Float32Array(w * h);
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++)
-      if (TERRAINS[tileAt(scene, x, y)]?.opaque) g[y * w + x] = 1;
+      if (TERRAINS[tileAt(scene, x, y)]?.opaque) {
+        g[y * w + x] = 1;
+        topH[y * w + x] = heightAt(scene, x, y, 0) + (terrainSolidHeightM(tileAt(scene, x, y)) || METRES_PER_LEVEL);
+      }
   for (const e of scene.entities) {
     if (e.kind !== 'prop' || !e.ref || !findPropById(e.ref)?.opaque) continue;
     const fw = e.foot?.w ?? 1, fh = e.foot?.h ?? 1;
     for (let yy = 0; yy < fh; yy++)
       for (let xx = 0; xx < fw; xx++) {
         const x = e.pos.x + xx, y = e.pos.y + yy;
-        if (x >= 0 && y >= 0 && x < w && y < h) g[y * w + x] = 1;
+        if (x >= 0 && y >= 0 && x < w && y < h) { g[y * w + x] = 1; topH[y * w + x] = heightAt(scene, x, y, 0) + METRES_PER_LEVEL; }
       }
   }
   // Arêtes bloquantes (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
@@ -76,7 +84,7 @@ function buildOpaque(scene: Scene): Occ {
     if (wallIsOpen(scene, seg)) continue;
     walls.add(`${seg.x},${seg.y},${seg.side}`);
   }
-  return { g, w, h, walls };
+  return { g, topH, w, h, walls };
 }
 
 /** Échantillons par case du segment (anti-fuite au COIN d'un mur : un supercover entier rate une tuile
@@ -88,7 +96,7 @@ const SAMPLES_PER_TILE = 4;
  *  voit pas à travers un mur. Les couverts PARTIELS (haie, tonneau…) ne sont pas opaques → laissent voir.
  *  `ignoreEdges` : vue VERS LE BAS (viewer au-dessus, cf. `computeVisible`) — on regarde par-dessus les
  *  arêtes fines (parapet/créneaux, comme la LdV de combat cross-z), donc seules les TUILES opaques coupent. */
-function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt, ignoreEdges = false): boolean {
+function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt, ignoreEdges = false, viewerH = 0): boolean {
   if (smoke.size && (smoke.has(`${from.x},${from.y}`) || smoke.has(`${to.x},${to.y}`))) return true;
   if (!ignoreEdges && occ.walls.size) {
     const eb = (ax: number, ay: number, bx: number, by: number) => {
@@ -104,7 +112,10 @@ function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt
     const cx = Math.round(from.x + dx * t), cy = Math.round(from.y + dy * t);
     if ((cx === from.x && cy === from.y) || (cx === to.x && cy === to.y)) continue;
     if (cx < 0 || cy < 0 || cx >= occ.w || cy >= occ.h) continue;
-    if (occ.g[cy * occ.w + cx] || smoke.has(`${cx},${cy}`)) return true;
+    const oi = cy * occ.w + cx;
+    // TUILE OPAQUE : ne coupe QUE si le viewer est PLUS BAS que le sommet de la masse (sinon il voit
+    // par-dessus — défenseur sur le chemin de ronde). Fumée : coupe toujours.
+    if ((occ.g[oi] && viewerH < occ.topH[oi]) || smoke.has(`${cx},${cy}`)) return true;
   }
   return false;
 }
@@ -228,6 +239,7 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
   const vis = new Set<string>();
   for (const v of viewers) {
     const z = v.z ?? 0;
+    const viewerH = heightAt(scene, v.pos.x, v.pos.y, z); // hauteur du viewer → voit par-dessus les masses plus basses
     const R = Math.max(v.radiusTiles, v.darkTiles);
     const x0 = Math.max(0, v.pos.x - R), x1 = Math.min(w - 1, v.pos.x + R);
     const y0 = Math.max(0, v.pos.y - R), y1 = Math.min(h - 1, v.pos.y + R);
@@ -246,7 +258,7 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
           if (!inDark && !lit) continue;
           // Même étage : LdV 2D pleine (murs d'arête compris). Étage inférieur (cross-z) : on regarde
           // par-dessus les arêtes fines (cf. LdV de combat) → seules les tuiles opaques coupent (`ignoreEdges`).
-          if (d > 0 && rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, zr !== z)) continue;
+          if (d > 0 && rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, zr !== z, viewerH)) continue;
           vis.add(k);
         }
       }
@@ -261,7 +273,8 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
       for (const v of viewers) {
         const vz = v.z ?? 0;
         if (vz < z) continue; // pas de vision vers le haut : le viewer doit être au niveau de la source OU au-dessus
-        if (chebyshev(v.pos, { x, y }) === 0 || !rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, vz !== z)) {
+        const viewerH = heightAt(scene, v.pos.x, v.pos.y, vz);
+        if (chebyshev(v.pos, { x, y }) === 0 || !rayBlocked(scene, occ, smokeSet, v.pos, { x, y }, vz !== z, viewerH)) {
           vis.add(k);
           break;
         }
