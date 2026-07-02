@@ -86,13 +86,28 @@ describe('PovBillboards', () => {
     expect(h2).not.toContain('opacity=');
   });
 
-  it('une CRÉATURE non-humanoïde (gabarit) se rend en billboard statique (os du plan)', () => {
+  it('une CRÉATURE non-humanoïde SANS idlePose (quadrupède) se rend en pose de repos figée (os du plan)', () => {
     const scene = makeScene([
       { id: 'loup', kind: 'personnage', pos: { x: 5, y: 9 }, facing: 'N', ref: 'loup', appearance: { species: 'loup' } },
     ]);
     const html = renderToStaticMarkup(<PovBillboards scene={scene} cam={cam} visible={new Set(['5,9,0'])} />);
     expect(html).toContain('data-bone'); // os du gabarit (quadrupède)
     expect(html).not.toContain('class="rig"'); // PAS le rig bipède
+  });
+
+  it('une CRÉATURE ailée (idlePose) rend sa pose de repos INITIALE (phase 0) sous SSR — bones présents, rendu DÉTERMINISTE', () => {
+    // Le griffon est un gabarit ailé (`plan.idlePose` = frémissement d'ailes). En jeu son sous-arbre
+    // s'anime par frame (rAF isolé `usePovIdle`) ; sous `renderToStaticMarkup` l'horloge reste FIGÉE à 0
+    // → phase 0 (pose de repos), aucun rAF → deux rendus IDENTIQUES (ni non-déterminisme, ni statique cassé).
+    const scene = makeScene([
+      { id: 'grif', kind: 'personnage', pos: { x: 5, y: 9 }, facing: 'N', ref: 'griffon', appearance: { species: 'griffon' } },
+    ]);
+    const visible = new Set(['5,9,0']);
+    const h1 = renderToStaticMarkup(<PovBillboards scene={scene} cam={cam} visible={visible} />);
+    const h2 = renderToStaticMarkup(<PovBillboards scene={scene} cam={cam} visible={visible} />);
+    expect(h1).toContain('data-bone'); // os du gabarit ailé (rendu même à phase 0)
+    expect(h1).not.toContain('class="rig"'); // PAS le rig bipède
+    expect(h1).toBe(h2); // rAF gelé en SSR → phase 0 stable (pas de dérive entre deux rendus)
   });
 
   it('CULL de distance : une entité au-delà de la portée est droppée ; à 20 cases elle est PRÉSENTE (délavée)', () => {

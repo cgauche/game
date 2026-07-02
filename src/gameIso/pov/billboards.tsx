@@ -9,8 +9,9 @@
  *    (face/dos/profil + miroir) piloté par `povView(cam.fwd, cam.right, facing)` — surtout PAS par la
  *    rotation iso (`useRigAnim`/`RigToken` la dérivent du camRot iso : inutilisable ici) ; un idle bob
  *    (respiration `CLIPS.idle`) les anime via un rAF ISOLÉ (`PovPerson`), l'angle `povView` conservé ;
- *  - CRÉATURES non-humanoïdes : gabarit corporel en POSE DE REPOS, rendu STATIQUE PUR
- *    (`planById(...).resolve` + `bonesToSvg` — le moteur d'anim rAF `usePlanAnim` reste hors POV v1) ;
+ *  - CRÉATURES non-humanoïdes : gabarit corporel ANIMÉ de son anim de repos DATA-DRIVEN
+ *    (`plan.idlePose` : battement d'ailes/ondulation/dodelinement), même rAF isolé (`PovCreature`) ; un
+ *    plan sans `idlePose` (quadrupède…) reste figé en `restPose`, comme l'iso ;
  *  - PROPS (décor) : le MÊME SVG que l'iso (`buildPropBillboards`, noyau pur — aussi consommé par la QC).
  * Les trois familles fusionnent dans UN peintre (loin→près) : un tonneau devant un PNJ le recouvre.
  *
@@ -30,13 +31,20 @@ import {
 } from './billboardCore';
 import { entityRigProfile } from '../rig/enemyProfile';
 import { RigSprite } from '../rig/composeRig';
-import { useRigClip } from '../rig/anim/useRigClip';
-import { resolveRender, planById } from '../rig/bodyPlan';
+import { CLIPS, sampleClip } from '../rig/anim/clips';
+import { resolveRender, planById, type BodyPlan } from '../rig/bodyPlan';
 import { bonesToSvg } from '../rig/renderBones';
 import { eyesArtFromKeys } from '../rig/parts/eyes';
+import type { Palette } from '../rig/palette';
 import { hashSeed } from '../appearance';
 import { findCreatureById } from '../../data';
 import type { Scene } from '../../state/scene';
+import { usePovIdle } from './usePovIdle';
+
+/** Période de l'anim de repos d'un gabarit (battement d'ailes/ondulation/dodelinement) — miroir de
+ *  `usePlanAnim.IDLE_MS` (l'idle iso), gardé LOCAL pour ne pas coupler la couche POV pure au module
+ *  store/bus de l'iso. La POSE, elle, vient de `plan.idlePose` (donnée), jamais d'une valeur en dur. */
+const IDLE_MS = 1600;
 
 /** Un billboard prêt à trier/rendre : profondeur caméra (m) + son nœud SVG déjà positionné. */
 type Billboard = { id: string; depth: number; node: JSX.Element };
@@ -57,11 +65,12 @@ function mirrored(sprite: JSX.Element, mirror: boolean): JSX.Element {
   return mirror ? <g transform={`translate(${BB_W},0) scale(-1,1)`}>{sprite}</g> : sprite;
 }
 
-/** Billboard d'un PERSONNAGE humanoïde en POV, ANIMÉ d'un idle bob (respiration) : le moteur d'anim PUR
- *  (`useRigClip` → `CLIPS.idle`/`sampleClip`) échantillonne une pose par frame dans SON PROPRE rAF (comme
- *  un token iso), donc SEUL ce sous-arbre se re-rend — la géométrie POV mémoïsée (sols/murs) ne bouge pas.
- *  L'angle présenté (`view`/`mirror`, imposé par `povView`) est CONSERVÉ : la respiration n'ajoute que des
- *  deltas d'os (torse/tête), jamais un changement de vue. */
+/** Billboard d'un PERSONNAGE humanoïde en POV, ANIMÉ d'un idle bob (respiration) : l'horloge PURE
+ *  `usePovIdle` (rAF isolé) échantillonne `CLIPS.idle` par frame, donc SEUL ce sous-arbre se re-rend —
+ *  la géométrie POV mémoïsée (sols/murs) ne bouge pas. L'angle présenté (`view`/`mirror`, imposé par
+ *  `povView`) est CONSERVÉ : la respiration n'ajoute que des deltas d'os (torse/tête), jamais un
+ *  changement de vue. Sous `renderToStaticMarkup`, l'horloge reste à 0 → `sampleClip(CLIPS.idle, 0)`
+ *  = pose neutre `{}`, markup identique au rendu statique. */
 function PovPerson({ id, prof, view, mirror, a }: {
   id: string;
   prof: NonNullable<ReturnType<typeof entityRigProfile>>;
@@ -69,8 +78,30 @@ function PovPerson({ id, prof, view, mirror, a }: {
   mirror: boolean;
   a: { sx: number; sy: number; o: number; s: number };
 }): JSX.Element {
-  const { pose } = useRigClip(); // idle en boucle (respiration) — rAF isolé, sans culling iso
+  const { pose } = sampleClip(CLIPS.idle, usePovIdle()); // idle en boucle (respiration) — rAF isolé, sans culling iso
   const sprite = <RigSprite appearance={prof.appearance} equip={prof.equip} career={prof.tenue} view={view} mirror={mirror} pose={pose} />;
+  return anchored(id, a, a.s, mirrored(sprite, mirror));
+}
+
+/** Billboard d'une CRÉATURE non-humanoïde (gabarit quadrupède/ailé/serpentin/…) en POV, ANIMÉE de son
+ *  anim de repos DATA-DRIVEN (`plan.idlePose` : battement d'ailes/ondulation/dodelinement). MIROIR EXACT
+ *  de `PovPerson` : la même horloge PURE `usePovIdle` produit une phase 0→1 (période `IDLE_MS`) → SEUL ce
+ *  sous-arbre se re-rend. `plan.idlePose` absent (ex. quadrupède) → pose de repos figée (`restPose`),
+ *  exactement comme l'iso. L'angle `view`/`mirror` (imposé par `povView`) est CONSERVÉ, ailes repliées au
+ *  repos. Sous `renderToStaticMarkup`, l'horloge reste à 0 → pose INITIALE (phase 0). */
+function PovCreature({ id, plan, species, view, mirror, colors, eyes, a }: {
+  id: string;
+  plan: BodyPlan;
+  species: string;
+  view: 'front' | 'back' | 'profile';
+  mirror: boolean;
+  colors?: Palette;
+  eyes?: { G?: string; D?: string };
+  a: { sx: number; sy: number; o: number; s: number };
+}): JSX.Element {
+  const t = usePovIdle();
+  const pose = plan.idlePose ? plan.idlePose((t % IDLE_MS) / IDLE_MS) : plan.restPose();
+  const sprite = <g dangerouslySetInnerHTML={{ __html: bonesToSvg(plan.resolve(species, view, pose, { colors, eyes, wings: 'folded' })) }} />;
   return anchored(id, a, a.s, mirrored(sprite, mirror));
 }
 
@@ -80,9 +111,10 @@ function PovPerson({ id, prof, view, mirror, a }: {
  *  2. ancre PIEDS + cull distance/derrière/hors-cadre ET échelle ∝ profondeur × espèce
  *     (`footAnchor(…, ENT_H_M, r.scale)`, noyau partagé) ;
  *  4. VUE/MIROIR imposés par `povView` (l'entité regarde `facing`, vue depuis la caméra) ;
- *  5. corps : rig humanoïde ANIMÉ (`PovPerson` : idle bob) OU gabarit non-bipède en pose de repos
- *     (statique pur). Miroir = `translate(120,0) scale(-1,1)` AUTOUR de la boîte (comme `RigToken`,
- *     via `mirrored`) + `mirror` passé à `RigSprite` (profondeur de profil de l'arme/bouclier) ;
+ *  5. corps : rig humanoïde ANIMÉ (`PovPerson` : idle bob) OU gabarit non-bipède ANIMÉ (`PovCreature` :
+ *     `plan.idlePose`), tous deux via le même rAF isolé `usePovIdle`. Miroir = `translate(120,0)
+ *     scale(-1,1)` AUTOUR de la boîte (comme `RigToken`, via `mirrored`) + `mirror` passé à `RigSprite`
+ *     (profondeur de profil de l'arme/bouclier) ;
  *  6. TRI loin→près + BUDGET par famille (`keepClosest`) — puis fusion peintre avec les PROPS.
  */
 export function PovBillboards({ scene, cam, visible }: { scene: Scene; cam: CamPose; visible: Set<string> }): JSX.Element {
@@ -118,19 +150,11 @@ export function PovBillboards({ scene, cam, visible }: { scene: Scene; cam: CamP
       });
       if (prof) persons.push({ id: e.id, depth: a.depth, node: <PovPerson key={e.id} id={e.id} prof={prof} view={view} mirror={mirror} a={a} /> });
     } else {
-      // Gabarit corporel (quadrupède/ailé/serpentin/…) : POSE DE REPOS, ailes repliées — le rendu
-      // statique du plan est PUR (resolve + bonesToSvg), l'animation de plan reste au token iso.
+      // Gabarit corporel (quadrupède/ailé/serpentin/…) : billboard ANIMÉ de son anim de repos
+      // (`plan.idlePose`), rAF isolé — cf. `PovCreature` (miroir de `PovPerson`).
       const plan = planById(r.plan);
-      if (plan) {
-        const sprite = (
-          <g
-            dangerouslySetInnerHTML={{
-              __html: bonesToSvg(plan.resolve(r.species, view, plan.restPose(), { colors: e.appearance?.colors, eyes: eyesArtFromKeys(e.appearance?.eyes), wings: 'folded' })),
-            }}
-          />
-        );
-        persons.push({ id: e.id, depth: a.depth, node: anchored(e.id, a, a.s, mirrored(sprite, mirror)) });
-      }
+      if (plan)
+        persons.push({ id: e.id, depth: a.depth, node: <PovCreature key={e.id} id={e.id} plan={plan} species={r.species} view={view} mirror={mirror} colors={e.appearance?.colors} eyes={eyesArtFromKeys(e.appearance?.eyes)} a={a} /> });
     }
   }
 
