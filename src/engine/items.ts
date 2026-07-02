@@ -189,7 +189,8 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     equipped: false,
     ...(t.shape ? { shape: t.shape } : {}), // slug de FORME (routage de l'art rig) — absent pour munitions/siège/Mains nues
     desc: t.desc,
-    ...(t.consumable?.length ? { consumable: t.consumable } : {}), // effet de consommable (GameOp[]) copié du catalogue
+    ...(t.consumable ? { consumable: t.consumable } : {}), // effet de consommable (Flow) copié du catalogue
+    ...(t.consumableDuration ? { consumableDuration: t.consumableDuration } : {}), // durée d'horloge (LDB 71/72 « Durée : … »), résolue au boire
     subType: t.subType ?? undefined,
     ...(t.weaponGroup ? { weaponGroup: t.weaponGroup } : {}), // Groupe de Projectiles d'une arme de siège (AA p.122)
     ...(t.soloSimple ? { soloSimple: true } : {}), // baliste « relativement simple » : tir solo perd les Atouts (l.3818)

@@ -44,14 +44,28 @@ describe('cureDisease — Amère catharsis (LDB 42)', () => {
   });
 });
 
-describe('reduceDiseaseDays — Bénédiction de Convalescence (LDB 41)', () => {
-  it('−1 jour (min 1), UNE seule fois par maladie', () => {
+describe('reduceDiseaseDays — Bénédiction de Convalescence (LDB 41) + extensions #46 (dice/disease)', () => {
+  it('−1 jour (min 1), UNE seule fois par maladie (verrou `oncePerDisease` — porté par la donnée du Miracle)', () => {
     const c = dummy({ diseases: [sick('infection-mineure', 5)] });
-    blessDiseaseDuration(c, 1);
+    applyOps(c, [{ op: 'reduceDiseaseDays', days: 1, oncePerDisease: true }], {});
     expect(c.diseases![0].minutesLeft).toBe(4 * MINUTES_PER_DAY);
-    const log = blessDiseaseDuration(c, 1); // 2e tentative sur la même maladie → refus
+    const log = applyOps(c, [{ op: 'reduceDiseaseDays', days: 1, oncePerDisease: true }], {}); // 2e tentative → refus
     expect(c.diseases![0].minutesLeft).toBe(4 * MINUTES_PER_DAY);
     expect(log.join(' ')).toMatch(/aucune maladie/);
+  });
+  it('sans verrou (herbes « 1 dose/jour ») : reprise possible ; `disease` SCOPE la maladie ciblée', () => {
+    const c = dummy({ diseases: [sick('infection-mineure', 5), sick('verole-du-tanneur', 9)] });
+    blessDiseaseDuration(c, 1, { disease: 'verole-du-tanneur' });
+    blessDiseaseDuration(c, 1, { disease: 'verole-du-tanneur' });
+    expect(c.diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY); // non ciblée : intacte
+    expect(c.diseases![1].minutesLeft).toBe(7 * MINUTES_PER_DAY);
+  });
+  it("`dice` tire les jours à l'application (Rouille mouchetée : « 1d10 jours », T2C p.14)", () => {
+    const c = dummy({ diseases: [sick('verole-du-tanneur', 15)] });
+    applyOps(c, [{ op: 'reduceDiseaseDays', dice: { n: 1, sides: 10 }, disease: 'verole-du-tanneur' }], {});
+    const reduced = 15 - c.diseases![0].minutesLeft / MINUTES_PER_DAY;
+    expect(reduced).toBeGreaterThanOrEqual(1);
+    expect(reduced).toBeLessThanOrEqual(10);
   });
 });
 

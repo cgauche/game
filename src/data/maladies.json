@@ -502,7 +502,8 @@
         "severity": "grave"
       },
       {
-        "symptomId": "gonflement"
+        "symptomId": "gonflement",
+        "spec": "Visage et tête"
       },
       {
         "symptomId": "persistant",

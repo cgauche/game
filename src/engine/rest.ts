@@ -93,14 +93,18 @@ export function cureDiseases(c: Combatant, n: number): string[] {
 }
 
 /**
- * Bénédiction de Convalescence (LDB 41 : « réduire la durée d'une maladie dont elle est affligée
- * d'une journée. Cette Prière ne peut être tentée qu'une fois par maladie et par personne ») :
- * −`days` jour(s) (min 1) sur la première maladie ACTIVE non encore bénie. Mute `c`.
+ * Raccourcit la durée d'une maladie ACTIVE de `days` jour(s) (min 1 jour restant). Mute `c`.
+ *  - `opts.disease` : SCOPE par id (Gesundheit → une `blessure-purulente` seulement, T2C p.13 ;
+ *    Rouille mouchetée → `verole-du-tanneur`, T2C p.14) ; absent = la première maladie active.
+ *  - `opts.once` : verrou « une fois par maladie » (Bénédiction de Convalescence, LDB 41 : « ne peut
+ *    être tentée qu'une fois par maladie et par personne ») — les herbes (1 dose/jour) se reprennent.
  */
-export function blessDiseaseDuration(c: Combatant, days = 1): string[] {
-  const dz = (c.diseases ?? []).find((d) => d.phase === 'active' && !d.convalescenceBlessed);
-  if (!dz) return [`${c.name} : aucune maladie active à soulager (ou déjà bénie).`];
-  dz.convalescenceBlessed = true;
+export function blessDiseaseDuration(c: Combatant, days = 1, opts: { disease?: string; once?: boolean } = {}): string[] {
+  const dz = (c.diseases ?? []).find((d) => d.phase === 'active'
+    && (!opts.disease || d.name === opts.disease)
+    && (!opts.once || !d.convalescenceBlessed));
+  if (!dz) return [`${c.name} : aucune maladie active à soulager${opts.disease ? ' (ciblée)' : ''}${opts.once ? ' (ou déjà bénie)' : ''}.`];
+  if (opts.once) dz.convalescenceBlessed = true;
   dz.minutesLeft = Math.max(MINUTES_PER_DAY, dz.minutesLeft - days * MINUTES_PER_DAY); // −`days` jour(s), min 1 jour restant
   const resteJ = Math.round(dz.minutesLeft / MINUTES_PER_DAY);
   return [`${c.name} : la durée de « ${dz.name} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${resteJ} j).`];

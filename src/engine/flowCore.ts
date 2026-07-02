@@ -47,6 +47,26 @@ export interface EffectOp {
   ops: GameOp[];
   on?: 'party' | 'hero' | 'caster' | 'target';
   heroId?: string;
+  /** Échéance d'HORLOGE (minute `gameTime`) des effets DURABLES posés par ces ops — BAKÉE sur la feuille
+   *  (durée d'un consommable résolue AU BOIRE, `bakeConsumableFlow`) pour SURVIVRE aux suspensions (une
+   *  branche de `test` voyage sérialisée dans un pending/meta, jamais une closure). Lue par `leafOpsCtx`
+   *  à CHAQUE point d'application d'un EffectOp → `ctx.defaultUntilTime`. Absente = durée du contexte. */
+  untilTime?: number;
+  /** Libellé de SOURCE des ActiveEffect posés (nom du consommable) — baké avec `untilTime` (même raison). */
+  label?: string;
+}
+
+/** OpsCtx d'une FEUILLE EffectOp : le contexte de l'appelant SURCHARGÉ par les champs bakés de la feuille
+ *  (`untilTime` → durée d'horloge, `label` → source). SOURCE UNIQUE — tous les exécuteurs d'EffectOp
+ *  (handler de scène `ops`, `runCombatFlow`, `runSpellFlowLines`, runner de consommable) DOIVENT l'appliquer,
+ *  sinon une branche suspendue perdrait sa durée (charMod permanent au lieu de « 2d10 minutes »). */
+export function leafOpsCtx<C extends { defaultUntilTime?: number; label?: string }>(base: C, e: EffectOp): C {
+  if (e.untilTime == null && e.label == null) return base;
+  return {
+    ...base,
+    ...(e.untilTime != null ? { defaultUntilTime: e.untilTime } : {}),
+    ...(e.label != null ? { label: e.label } : {}),
+  };
 }
 
 /** Algèbre CLOSE de Conditions (sérialisation-stable). `flag`/`time` reprennent la sémantique des
@@ -553,11 +573,11 @@ export function flowHasTest<E = EffectOp>(flow: Flow<E>): boolean {
   }
 }
 
-/** Ops IMPURES adossées à un HOOK de `runCombatFlow` (`grantFreeAttack` → frappe gratuite ;
- *  `interruptFocus` → interruption de Focalisation) : `applyOps` les laisse inertes, seul le do-loop de
- *  `runCombatFlow` les résout (via le hook injecté). Source UNIQUE pour router une branche de `test`
- *  contenant l'une d'elles vers l'exécuteur IMPUR plutôt que `runSpellFlowLines` (qui les avalerait). */
-const HOOK_BACKED_OPS = new Set(['grantFreeAttack', 'interruptFocus', 'breakBlade']);
+/** Ops IMPURES résolues par le do-loop de `runCombatFlow` (`grantFreeAttack` → frappe gratuite ;
+ *  `interruptFocus` → interruption de Focalisation ; `breakBlade` ; `delayed` → file `scheduledEffects`
+ *  via `scheduleDelayedOps`) : `applyOps` les laisse inertes. Source UNIQUE pour router une branche de
+ *  `test` contenant l'une d'elles vers l'exécuteur IMPUR plutôt que `runSpellFlowLines` (qui les avalerait). */
+const HOOK_BACKED_OPS = new Set(['grantFreeAttack', 'interruptFocus', 'breakBlade', 'delayed']);
 
 /** Le Flow porte-t-il une op IMPURE adossée à un hook de `runCombatFlow` (cf. `HOOK_BACKED_OPS`) ? Si oui,
  *  son exécution doit passer par `runCombatFlow` (le hook y vit), jamais par `runSpellFlowLines`. */

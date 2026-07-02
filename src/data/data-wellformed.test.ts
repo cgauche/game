@@ -50,6 +50,8 @@ const FORMULA_FIELDS = [
   'amount', 'count', 'value', 'durationRounds', 'escapeStrength', 'radius', 'damage', 'meters',
   'maxBounces', 'hopMeters', 'delayDays', 'radiusMeters', 'lengthMeters', 'bonus', 'indice', 'mod',
   'rounds', 'minutes', 'hours', 'days',
+  // Extensions #50 : États à durée d'horloge (op `condition`) + ops différées (op `delayed`).
+  'durationMinutes', 'durationHours', 'afterMinutes', 'afterHours', 'afterDays', 'forMinutes', 'forHours', 'forDays',
 ];
 
 /** Template d'instance substitué au runtime par `withArg` (state/triggeredEffects) — légitime UNIQUEMENT

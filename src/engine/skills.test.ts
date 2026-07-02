@@ -45,19 +45,21 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
     expect(r.support).toEqual({ count: 2, bonus: 20 }); // 2 soutiens × 10 (plafond BSoc 6)
     expect(r.value).toBe(80); // 60 + 20
   });
+  // (escamotage : compétence avancée Dex SANS gate d'outil — le −10 « sans outils de crochetage »
+  //  de Crochetage (SkillData.tool, LDB 09 l.168) est testé à part dans item-skill-bonus.test.)
   it('partyAssisted — compétence : seuls les membres QUI LA POSSÈDENT soutiennent', () => {
-    const a = { ...mk({ Dex: 50 }, [{ skillId: 'crochetage', advances: 20 }]), id: 'a' }; // 70, possède
+    const a = { ...mk({ Dex: 50 }, [{ skillId: 'escamotage', advances: 20 }]), id: 'a' }; // 70, possède
     const b = { ...mk({ Dex: 30 }), id: 'b' }; // ne possède pas → ne soutient pas
-    const c = { ...mk({ Dex: 40 }, [{ skillId: 'crochetage', advances: 5 }]), id: 'c' }; // 45, possède
-    const r = partyAssisted([a, b, c], 'crochetage')!;
+    const c = { ...mk({ Dex: 40 }, [{ skillId: 'escamotage', advances: 5 }]), id: 'c' }; // 45, possède
+    const r = partyAssisted([a, b, c], 'escamotage')!;
     expect(r.actor.id).toBe('a');
     expect(r.support.count).toBe(1); // seul c soutient
     expect(r.value).toBe(80); // 70 + 10
   });
   it('partyAssisted — plafonne au Bonus de Caractéristique du meneur', () => {
-    const lead = { ...mk({ Dex: 20 }, [{ skillId: 'crochetage', advances: 30 }]), id: 'L' }; // 50, BDex 2
-    const helpers = [1, 2, 3, 4].map((n) => ({ ...mk({ Dex: 10 }, [{ skillId: 'crochetage', advances: 0 }]), id: 'h' + n }));
-    const r = partyAssisted([lead, ...helpers], 'crochetage')!;
+    const lead = { ...mk({ Dex: 20 }, [{ skillId: 'escamotage', advances: 30 }]), id: 'L' }; // 50, BDex 2
+    const helpers = [1, 2, 3, 4].map((n) => ({ ...mk({ Dex: 10 }, [{ skillId: 'escamotage', advances: 0 }]), id: 'h' + n }));
+    const r = partyAssisted([lead, ...helpers], 'escamotage')!;
     expect(r.support.count).toBe(2); // 4 aptes, plafond BDex 2
     expect(r.value).toBe(70); // 50 + 20
   });

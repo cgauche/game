@@ -559,7 +559,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
               </div>
             ))}
             {(hero.diseases ?? []).map((d, i) => (
-              <div key={`d${i}`} className="inv-row" title={d.symptoms.map((s) => symptomLabel(s.symptomId)).join(' · ')} style={{ alignItems: 'center' }}>
+              <div key={`d${i}`} className="inv-row" title={d.symptoms.map((s) => `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`).join(' · ')} style={{ alignItems: 'center' }}>
                 <span className="ir-name">🦠 {d.name}</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {d.phase === 'incubation' ? `incubation : ${formatRemaining(d.minutesLeft)}` : `${formatRemaining(d.minutesLeft)} restants`}

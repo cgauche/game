@@ -25,7 +25,7 @@
 import { rollTest, resolveOpposed, type TestResult } from '../../engine/tests';
 import { combatTestPenalty } from '../../engine/conditions';
 import { testValue, rawCombatTestBase } from '../../engine/skills';
-import { applyOps, describeTestRoll, type OpsCtx } from '../../engine/ops';
+import { describeTestRoll, type OpsCtx } from '../../engine/ops';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
 import { refLabel } from '../../data';
@@ -34,7 +34,7 @@ import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
 import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings';
 import { battleRng } from '../battleRng';
-import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest } from '../combatEffects';
+import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { fireTriggers, recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
 import { roundTestInteractive } from './cadenceGate';
@@ -251,7 +251,9 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             // alimente la marge nette (= victoire Stupéfiante → bris). Le hook EMPILE sa conséquence comme étape
             // d'affichage propre (mirroir du Coup Critique) → rien à journaliser ici.
             if (bladeTrapHook && ctx.bladeTrap) for (const op of node.effect.ops) if (op.op === 'breakBlade') bladeTrapHook(ctx.get, ctx.set, unit, ctx.bladeTrap, ctx.opsCtx?.sl ?? 0);
-            const lines = applyOps(unit, node.effect.ops, oc); syncCombatant(ctx.get, ctx.set); queueLines(ctx.get, ctx.set, lines, unit.id);
+            // `applyLeafOps` = SOURCE UNIQUE d'application d'une feuille : contexte de FEUILLE
+            // (untilTime/label bakés — consommable) + programmation des ops IMPURES `delayed`.
+            const lines = applyLeafOps(ctx.get, ctx.set, unit, node.effect, oc); syncCombatant(ctx.get, ctx.set); queueLines(ctx.get, ctx.set, lines, unit.id);
           }
         }
         break;

@@ -25,6 +25,7 @@ import structuresJson from './structures.json';
 import structureAppearanceJson from './structureAppearance.json';
 import reliefMaterialsJson from './reliefMaterials.json';
 import roofMaterialsJson from './roofMaterials.json';
+import ambianceJson from './ambiance.json';
 import navalTraitsJson from './naval-traits.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
@@ -55,6 +56,7 @@ import oupsJson from './oups.json';
 import interludeEventsJson from './interludeEvents.json';
 import peripetiesJson from './peripeties.json';
 import grappleJson from './grapple.json';
+import waterExposureJson from './water-exposure.json';
 import { CharKey, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
@@ -72,6 +74,44 @@ export interface GrappleRule {
   win: { damage: import('../engine/ops').GameOp[]; entangle: import('../engine/ops').GameOp[]; free: import('../engine/ops').GameOp[] };
 }
 export const GRAPPLE = grappleJson as GrappleRule;
+
+/** Mode d'exposition hydrique (T2C ch.14 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
+ *  la faire bouillir ») ou immersion (chute/nage — « uniquement à l'immersion » pour le tableau 2). */
+export type WaterExposureMode = 'ingestion' | 'immersion';
+/** Dérivation AUTOMATIQUE d'un modificateur d'exposition depuis le Combatant (tableau 2 « Blessures et
+ *  États », T2C p.91) : PB restants/perdus, PAR pion d'un État, présence d'un État. */
+export type WaterExposureAuto =
+  | { kind: 'woundsRemaining'; op: '<='; value: number }
+  | { kind: 'woundsLost'; op: '>='; value: number }
+  | { kind: 'woundsLost'; op: 'between'; min: number; max: number }
+  | { kind: 'perCondition'; condition: string }
+  | { kind: 'hasCondition'; condition: string };
+/** Un modificateur d'exposition hydrique : tableau 1 « Source d'eau » (choix d'AUTEUR de la zone d'eau)
+ *  ou tableau 2 « Blessures et États » (dérivé du Combatant via `auto`). « Tous les modificateurs
+ *  peuvent être cumulés » (T2C p.91). NB : « Par État Assommé » (T2C) → id LDB `sonne` (le LDB 16 n'a
+ *  pas d'État « Assommé » ; le même chapitre écrit « État *Sonné* » p.92 — glissement de traduction). */
+export interface WaterExposureModifier {
+  id: string;
+  label: string;
+  mod: number;
+  appliesTo: WaterExposureMode[];
+  table: 'source-d-eau' | 'blessures-et-etats';
+  auto?: WaterExposureAuto;
+}
+/** Tables d'exposition hydrique (T2C ch.14 p.91) : Test de Résistance Intermédiaire modifié ; raté →
+ *  d100 « +10 pour chaque DR négatif » → maladie CONTRACTÉE (le Test d'exposition EST le test — pas de
+ *  second Test de Contraction). `rerollUnlessWounded` : « Relancez si le Personnage n'est pas blessé ». */
+export interface WaterExposureData {
+  id: string;
+  label: string;
+  desc: string;
+  test: { skillId: string; difficulty: import('../engine/types').Difficulty };
+  rollModPerNegativeSL: number;
+  modifiers: WaterExposureModifier[];
+  diseases: { min: number; max: number; disease: string; rerollUnlessWounded?: boolean }[];
+  source: { book: string; page: number };
+}
+export const WATER_EXPOSURE = waterExposureJson as WaterExposureData;
 
 export interface SpeciesData {
   /** id STABLE (slug du libellé) — cible de `Combatant.species`, pregens, draft. Le `label` ne sert
@@ -149,6 +189,13 @@ export interface SkillData {
    *  Empêtré (`movementOnly`). Classification de COMPÉTENCE portée par la DONNÉE (éditable au Codex),
    *  lue par `engine/conditions.testStatePenalty` — plus de liste d'ids en dur. */
   movement?: boolean;
+  /** OUTIL requis par la Compétence (Crochetage → outils de crochetage, LDB 09 l.168 : « Les Niveaux de
+   *  Difficulté supposent l'utilisation d'outils de crochetage. Des crochets improvisés… peuvent être
+   *  utilisés avec une pénalité de -10 ») : `capability` = clé `ItemCapabilities` que doit porter un
+   *  objet POSSÉDÉ de l'acteur (lecture NON gatée sur le port, comme `isRations`) ; sans un tel objet,
+   *  `withoutMod` s'applique au Test (`testValue`). GÉNÉRIQUE — toute compétence-à-outil se déclare en
+   *  donnée (skills.json), zéro code par objet. */
+  tool?: { capability: keyof ItemCapabilities; withoutMod: number };
 }
 /** UN « matcher » de Test (recodage de la ligne « Tests : » du livre, cf. `TalentTest`) : à quel(s)
  *  Test(s) le talent se rapporte. `skill` (id de Compétence, XOR `char`) OU `char` (Caractéristique nue).
@@ -221,6 +268,10 @@ export interface ItemCapabilities {
   isRations?: boolean;
   /** Grimoire / livre de Sorts (LDB 47 l.34) — un Sort non mémorisé du Domaine peut y être lu (NON gaté). */
   isGrimoire?: boolean;
+  /** Outils de crochetage (LDB 67 l.66 : « nécessaire pour utiliser la Compétence Crochetage sans
+   *  pénalité ») — consommé par `SkillData.tool` (crochetage → −10 sans outil, LDB 09 l.168). NON gaté
+   *  sur le port : les posséder suffit (on les sort pour s'en servir, comme `isRations`). */
+  lockpicks?: boolean;
 }
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */
@@ -286,10 +337,15 @@ export interface TrappingData {
   /** Qualités d'arme/armure (`QualityRef` : id + Indice éventuel « Solide 3 » → value, spec = arg éventuel). */
   qualities: QualityRef[];
   desc: string | null;
-  /** Effet d'un CONSOMMABLE (potion/bandage, LDB 307) en `GameOp[]` — MÊME vocabulaire que sorts/passifs
-   *  (`heal`/`removeCondition`/`preventInfection`), exécuté par `applyOps`. Remplace le parsing du `desc`
-   *  au runtime ; édité au Codex via `GameOpEditor`. Copié sur `ItemInstance.consumable` à la construction. */
-  consumable?: import('../engine/ops').GameOp[];
+  /** Effet d'un CONSOMMABLE (potion/drogue/bandage — LDB 71/72/67) en **Flow** (noyau `engine/flowCore`) :
+   *  feuilles `do` d'ops (MÊME vocabulaire que sorts/passifs), branches `if` (Fleur de lune par race),
+   *  nœuds `test` pour les Tests « au boire » (Brise-cœur/Belladone/Nécessaire antipoison), résolus
+   *  cadence-aware par le runner state (`runConsumable`). Édité au Codex via `FlowEditor` (comme les
+   *  effets d'un sort). Copié sur `ItemInstance.consumable` à la construction. */
+  consumable?: import('../engine/flowCore').Flow;
+  /** Durée d'HORLOGE des effets durables du consommable (LDB 71/72 « Durée : … ») — résolue AU BOIRE
+   *  (dés tirés une fois), les ops durables du Flow expirent à l'échéance (`purgeClockEffects`). */
+  consumableDuration?: import('../engine/consumables').ConsumableDuration;
   /** Contenant (LDB 64) : capacité de rangement (« Contenu », en Enc). Sacs/sacoches/sac à dos. */
   container?: { capacity: number };
   price: { gold: number; silver: number; bronze: number };
@@ -964,6 +1020,9 @@ export const reliefMaterials = reliefMaterialsJson as import('../gameIso/catalog
 
 /** Apparence de RENDU des toits (matériaux de couverture + plan vu du dessus) — donnée pure. */
 export const roofMaterials = roofMaterialsJson as import('../gameIso/catalog/roofs/types').RoofMaterialDef[];
+
+/** AMBIANCE de rendu partagée iso ⇄ POV (ciel/brumes/vignette/voile chaud/filtre d'étage) — donnée pure. */
+export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').AmbianceDef;
 
 /** Traits & Améliorations de navire (MDG ch.12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
  *  verbatim + effet) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur codée en dur).

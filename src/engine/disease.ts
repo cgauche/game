@@ -65,6 +65,10 @@ export interface DiseaseSymptom {
   symptomId: string;
   severity?: 'moderee' | 'grave';
   difficulty?: Difficulty;
+  /** LOCALISATION/précision imprimée de l'instance (« Gonflement (Visage et tête) », Fièvre Cérébrale
+   *  Pourpre — EDO p.145) : affichage seul (convention `spec` des compétences/talents) — la mécanique
+   *  par-localisation du symptôme vit dans sa `desc`. */
+  spec?: string;
 }
 
 export interface DiseaseDef {
@@ -154,9 +158,27 @@ export function symptomPassive(inst: DiseaseSymptom): GameOp[] {
   if (!s) return [];
   return inst.severity && s.severePassive ? s.severePassive : (s.passive ?? []);
 }
-/** GameOp passifs de TOUTES les maladies ACTIVES (collecte unifiée, lue par `passiveMods` kind 'maladie'). */
+/** Le symptôme `symptomId` est-il SUSPENDU chez `c` par un effet actif (op `suppressSymptom` —
+ *  Racine de terre « annule les effets de bubons », LDB 72 l.28) ? Ses canaux `passive`/`onTick` sont
+ *  alors ignorés tant que l'effet dure ; restitués d'office à l'expiration (l'effet quitte la liste). */
+export function symptomSuppressed(c: Combatant, symptomId: string): boolean {
+  return (c.activeEffects ?? []).some((e) => e.suppressedSymptom === symptomId);
+}
+/** Σ des bonus/malus d'effets ACTIFS aux Tests liés à la maladie `diseaseName` (op `diseaseTestMod` —
+ *  Fleur de lune +30 vs Peste noire, Racine de terre +10, Tonique digestif +20) : appliqué aux Tests
+ *  de CONTRACTION (`rollContraction`) et de CYCLE/FIN (`tickDisease` — inline ET bases différées). */
+export function activeDiseaseTestMod(c: Combatant, diseaseName: string): number {
+  return (c.activeEffects ?? []).reduce((s, e) => {
+    const m = e.diseaseTestMod;
+    return s + (m && (!m.diseases || m.diseases.includes(diseaseName)) ? m.amount : 0);
+  }, 0);
+}
+/** GameOp passifs de TOUTES les maladies ACTIVES (collecte unifiée, lue par `passiveMods` kind 'maladie').
+ *  Un symptôme SUSPENDU (`suppressSymptom`) n'émet rien. */
 export function diseasePassiveOps(c: Combatant): GameOp[] {
-  return (c.diseases ?? []).filter((d) => d.phase === 'active').flatMap((d) => d.symptoms.flatMap(symptomPassive));
+  return (c.diseases ?? [])
+    .filter((d) => d.phase === 'active')
+    .flatMap((d) => d.symptoms.filter((s) => !symptomSuppressed(c, s.symptomId)).flatMap(symptomPassive));
 }
 /** Traits PSYCHOLOGIQUES conférés par les symptômes ACTIFS — op `grantPsychTrait` du MÊME canal `passive`
  *  que les pénalités continues (Rage meurtrière → Haine (toutes les choses vivantes) + Frénésie,
@@ -226,7 +248,8 @@ export function rollContraction(
   rng: RNG = defaultRNG,
 ): string[] {
   if (!contractionDue(c, diseaseName)) return [];
-  return applyContraction(c, diseaseName, rollTest(resistVal, difficulty, rng).success, rng);
+  // Bonus d'effets actifs aux Tests liés à CETTE maladie (Fleur de lune +30 vs Peste noire…).
+  return applyContraction(c, diseaseName, rollTest(resistVal + activeDiseaseTestMod(c, diseaseName), difficulty, rng).success, rng);
 }
 
 /** Maladies ACTIVES dont un symptôme a la capacité `stickyExtenue` (Malaise, l.188) — chacune impose un
@@ -333,6 +356,9 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
     const isFullDay = stepMin === MINUTES_PER_DAY; // Tests de cycle RAW « par jour » : journée pleine uniquement
     const survivors: Disease[] = [];
     for (const dz of c.diseases) {
+      // Résistance EFFECTIVE de CETTE maladie : base + bonus d'effets actifs scopés (op `diseaseTestMod`
+      // — Fleur de lune +30 vs Peste noire, Tonique digestif +20). Injectée inline ET dans les bases différées.
+      const rv = resistVal + activeDiseaseTestMod(c, dz.name);
       if (dz.phase === 'incubation') {
         dz.minutesLeft -= stepMin;
         if (dz.minutesLeft <= 0) {
@@ -350,16 +376,17 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       // uniquement sur une JOURNÉE PLEINE (une durée sous-journalière s'épuise sans Test « quotidien »).
       if (isFullDay) {
         for (const inst of dz.symptoms) {
+          if (symptomSuppressed(c, inst.symptomId)) continue; // symptôme suspendu (Racine de terre) : pas de Test de cycle
           const tick = symptomOnTick(inst);
           if (!tick) continue;
-          if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: resistVal, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
-          else if (!rollTest(resistVal, tick.difficulty, rng).success) for (const op of tick.onFail) if (op.op === 'contractDisease') contractOnce(op.disease);
+          if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
+          else if (!rollTest(rv, tick.difficulty, rng).success) for (const op of tick.onFail) if (op.op === 'contractDisease') contractOnce(op.disease);
         }
         // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
         // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
         if (diseaseHasCapability(dz, 'amputation') && !dz.gangreneLost) {
-          if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, be: beForGangrene } });
-          else if (!rollTest(resistVal, 'accessible', rng).success) {
+          if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: rv, difficulty: 'accessible', meta: { diseaseName: dz.name, be: beForGangrene } });
+          else if (!rollTest(rv, 'accessible', rng).success) {
             dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
             if (dz.gangreneFails > beForGangrene) {
               dz.gangreneLost = true;
@@ -377,10 +404,10 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       if (dz.persistDifficulty) {
         if (defer) {
           dz.endTestPending = true;
-          defer({ kind: 'diseasePersist', label: `Fin de « ${diseaseLabel(dz.name)} »`, base: resistVal, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.name } });
+          defer({ kind: 'diseasePersist', label: `Fin de « ${diseaseLabel(dz.name)} »`, base: rv, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.name } });
           survivors.push(dz);
         } else {
-          const res = rollTest(resistVal, dz.persistDifficulty, rng); // l.162
+          const res = rollTest(rv, dz.persistDifficulty, rng); // l.162
           if (res.success) {
             log.push(`${c.name} guérit de : ${diseaseLabel(dz.name)}.`);
             if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; // Vérole Urticante (l.97)

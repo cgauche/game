@@ -65,6 +65,7 @@ import { FLOWS, rollFlowActions, rollFlowActionsMulti, type RollFlowActionsMap }
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import * as partyFlow from './partyFlow';
+import { usePartyItem as usePartyConsumable } from './consumableFlow';
 import * as visionStateMod from './visionState';
 import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
@@ -1548,7 +1549,7 @@ export const useGame = create<GameState>((set, get) => ({
   restCancel: () => restFlow.restCancel(get, set),
   restContinue: () => restFlow.restContinue(get, set),
 
-  usePartyItem: (heroId, uid) => partyFlow.usePartyItem(get, set, heroId, uid),
+  usePartyItem: (heroId, uid) => usePartyConsumable(get, set, heroId, uid),
 
   startExtendedTest: (opts) => {
     set({ pendingExtendedTest: { ...opts, total: 0, rounds: [{ id: 'round-1', interactive: true, result: null }] } });

@@ -30,7 +30,6 @@ import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSk
 import { skillCharacteristicById } from '../engine/character';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
-import { isConsumable, useConsumable } from '../engine/consumables';
 import { add as moneyAdd, subtract as moneySub, canAfford, toMoney, Money, formatMoney } from '../engine/money';
 import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
@@ -572,17 +571,5 @@ export function partyReplaceHero(get: Get, set: Set, oldId: string, hero: Combat
 }
 
 
-/** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche — même effet
- *  qu'en combat (`useConsumable`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */
-export function usePartyItem(get: Get, set: Set, heroId: string, uid: string): void {
-  if (get().battle) return; // en combat → battleUseItem
-  const party = get().party;
-  const hero = party.find((h) => h.id === heroId);
-  const it = hero?.items?.find((i) => i.uid === uid);
-  if (!hero || !it) return;
-  if (!isConsumable(it)) return;
-  const log = [`${hero.name} utilise : ${it.name}.`, ...useConsumable(hero, it)];
-  hero.items = (hero.items ?? []).filter((i) => i.uid !== uid);
-  set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
-  bus.emit(EVT.SCENE_DIRTY);
-}
+// (usePartyItem — consommable hors combat — vit désormais dans `state/consumableFlow.ts` : le Flow du
+//  consommable peut porter un nœud `test` → modale restreinte au buveur, hors de portée de ce module.)

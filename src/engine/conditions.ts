@@ -87,6 +87,26 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
   }
 }
 
+/** Ajout d'un État à durée d'HORLOGE (`until` = minute `gameTime` d'échéance) — Belladone : « Un sommeil
+ *  induit par la belladone dure 1d10 + 4 heures » (LDB 72 l.18), Fleur de lune (LDB 71 l.29). Purgé par
+ *  `purgeClockEffects` (upkeep), même patron que `castPenalties.untilTime`. Sur un État déjà porté :
+ *  temporisé-horloge → échéance MAX conservée ; NON temporisé → inchangé (on n'écourte jamais un État
+ *  permanent au prétexte qu'une drogue expirait). */
+export function addClockCondition(c: Combatant, name: string, value: number, until: number, escapeStrength?: number): void {
+  const existing = c.conditions.find((x) => x.name === name);
+  if (existing) {
+    c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
+    existing.value += value;
+    if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
+    if (existing.untilTime != null) existing.untilTime = Math.max(existing.untilTime, until);
+    // sinon : instance non temporisée — elle le reste.
+    onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
+  } else {
+    addCondition(c, name, value, escapeStrength); // (déclenche déjà `onGainCondition`)
+    c.conditions.find((x) => x.name === name)!.untilTime = until;
+  }
+}
+
 export function removeCondition(c: Combatant, name: string, value = 1): void {
   const existing = c.conditions.find((x) => x.name === name);
   if (!existing) return;
@@ -106,9 +126,10 @@ export function hasCondition(c: Combatant, name: string): boolean {
  */
 /** Modificateur GLOBAL de Test porté par les effets actifs (Malédiction de malchance −10, etc.) —
  *  SOMMÉ (sources distinctes qui stackent), appliqué PAR-DESSUS la pénalité d'État (≠ État : ni
- *  non-cumul l.20, ni effacé par `ignoreStatePenalties`). */
+ *  non-cumul l.20, ni effacé par `ignoreStatePenalties`). EXCLUT les mods char-QUALIFIÉS
+ *  (`testModChar` — Mystracine ±10 par Caractéristique), lus par `testValue` pour la seule carac visée. */
 export function effectTestMod(c: Combatant): number {
-  return (c.activeEffects ?? []).reduce((s, e) => s + (e.testMod ?? 0), 0);
+  return (c.activeEffects ?? []).reduce((s, e) => s + (e.testModChar == null ? (e.testMod ?? 0) : 0), 0);
 }
 
 /** Les `testMod` portés par les États du combattant (kind `etat`), déjà ×pions (perStack) par le

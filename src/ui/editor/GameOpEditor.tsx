@@ -86,6 +86,10 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   reduceDiseaseDays: '🩹 Raccourcir une maladie',
   preventInfection: '🩹 Empêcher l’infection',
   cureCriticalWound: '🩹 Guérir une Blessure critique',
+  diseaseTestMod: '🩹 Modif. aux Tests d’une maladie',
+  suppressSymptom: '🩹 Suspendre un symptôme',
+  actGate: '🌿 Test par Round pour agir (drogue)',
+  delayed: '⏳ Ops différées (échéance d’horloge)',
   suppressPsych: '🌫️ Apaiser les Traits psychologiques',
   suffocate: '🌫️ Suffocation',
   noBreath: '🌫️ Plus besoin de respirer',
@@ -128,8 +132,8 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
   ['🪄 Projection & téléportation', ['push', 'teleport', 'chain']],
-  ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
-  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn', 'removeShipPoste', 'light']],
+  ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
+  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
@@ -141,9 +145,9 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
 // Formules
 // ---------------------------------------------------------------------------
 
-export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled';
+export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times';
 export const shapeOf = (f: Formula | undefined): FormulaShape =>
-  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'dice';
+  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'times' in f ? 'times' : 'dice';
 
 /** Formule par défaut d'une forme — utilisée au CHANGEMENT de forme. Préserve le littéral courant
  *  quand on bascule vers « Nombre » ; ne touche JAMAIS une formule dont la forme est déjà la bonne. */
@@ -153,6 +157,7 @@ export function formulaForShape(s: FormulaShape, current: Formula | undefined): 
   if (s === 'bonus') return { bonusOf: 'F' };
   if (s === 'char') return { charOf: 'F' };
   if (s === 'rolled') return { rolled: true };
+  if (s === 'times') return { times: { of: { dice: { n: 1, sides: 10 } }, factor: 10 } }; // « 1d10 × 10 » (LDB 71)
   return { dice: { n: 1, sides: 10 } };
 }
 
@@ -172,12 +177,14 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('engagedAdvantageGap' in f) return 'écart d’Avantage';
   if ('woundsDealt' in f) return 'PB infligés';
   if ('sum' in f) return f.sum.map(formulaSummary).join(' + ');
+  if ('times' in f) return `${formulaSummary(f.times.of)} × ${f.times.factor}`;
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
 }
 
 /** Éditeur RÉUTILISABLE d'une `Formula` : sélecteur de FORME + champs adaptés. AUCUNE forme
- *  existante n'est dégradée — un littéral reste littéral, un `{dice}`/`{charOf}` est édité tel quel. */
-function FormulaField({ label, value, onChange, min }: {
+ *  existante n'est dégradée — un littéral reste littéral, un `{dice}`/`{charOf}` est édité tel quel.
+ *  EXPORTÉ : réutilisé par les éditeurs de champs Formula hors-op (durée d'un consommable, CodexEdit). */
+export function FormulaField({ label, value, onChange, min }: {
   label: string;
   value: Formula | undefined;
   onChange: (f: Formula) => void;
@@ -194,6 +201,7 @@ function FormulaField({ label, value, onChange, min }: {
           <option value="bonus">Bonus de carac.</option>
           <option value="char">Valeur de carac.</option>
           <option value="dice">Dés</option>
+          <option value="times">Dés × facteur</option>
           <option value="rolled">Dé du jet (paliers)</option>
         </select>
         {shape === 'lit' && (
@@ -218,6 +226,22 @@ function FormulaField({ label, value, onChange, min }: {
               onChange={(e) => { const p = Number(e.target.value) || 0; onChange({ dice: { ...value.dice, plus: p || undefined } }); }} />
           </span>
         )}
+        {shape === 'times' && typeof value === 'object' && value != null && 'times' in value && (() => {
+          const inner = value.times.of;
+          const dice = typeof inner === 'object' && inner != null && 'dice' in inner ? inner.dice : { n: 1, sides: 10 };
+          return (
+            <span className="fml-dice">
+              <input type="number" min={1} title="nombre de dés" value={dice.n}
+                onChange={(e) => onChange({ times: { of: { dice: { ...dice, n: Math.max(1, Number(e.target.value) || 1) } }, factor: value.times.factor } })} />
+              d
+              <input type="number" min={1} title="faces" value={dice.sides}
+                onChange={(e) => onChange({ times: { of: { dice: { ...dice, sides: Math.max(1, Number(e.target.value) || 1) } }, factor: value.times.factor } })} />
+              ×
+              <input type="number" title="facteur" value={value.times.factor}
+                onChange={(e) => onChange({ times: { of: value.times.of, factor: Number(e.target.value) || 1 } })} />
+            </span>
+          );
+        })()}
       </span>
     </label>
   );
@@ -263,6 +287,10 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['magique'] };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
+    case 'diseaseTestMod': return { op: 'diseaseTestMod', amount: 10 };
+    case 'suppressSymptom': return { op: 'suppressSymptom', symptomId: 'bubons' };
+    case 'actGate': return { op: 'actGate', char: 'FM' };
+    case 'delayed': return { op: 'delayed', afterHours: 1, ops: [] };
     case 'preventInfection': return { op: 'preventInfection' };
     case 'cureCriticalWound': return { op: 'cureCriticalWound', count: 1 };
     case 'suppressPsych': return { op: 'suppressPsych' };
@@ -344,7 +372,11 @@ export function opSummary(o: GameOp): string {
     case 'grantCareerTalent': return `${L} ${refLabel('talents', { id: o.talentId, spec: o.spec })}`;
     case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
-    case 'reduceDiseaseDays': return `${L} −${o.days ?? 1} jour(s)`;
+    case 'reduceDiseaseDays': return `${L} −${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)${o.disease ? ` (${refLabel('maladies', { id: o.disease })})` : ''}`;
+    case 'diseaseTestMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ')})` : ''}`;
+    case 'suppressSymptom': return `${L} ${refLabel('symptoms', { id: o.symptomId })} suspendu`;
+    case 'actGate': return `${L} Test de ${CHAR_LABELS[o.char] ?? o.char} chaque Round pour agir`;
+    case 'delayed': return `${L} ${o.ops.length} op(s) différée(s)${o.afterDuration ? ' (à la dissipation)' : ''}`;
     case 'preventInfection': return `${L} pas d’infection`;
     case 'cureCriticalWound': return `${L} ${o.count ?? 1} critique(s)`;
     case 'suppressPsych': return `${L} Traits psy. apaisés`;

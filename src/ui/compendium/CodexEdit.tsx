@@ -15,8 +15,9 @@ import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
-import { GameOpEditor } from '../editor/GameOpEditor';
+import { GameOpEditor, FormulaField } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
+import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { CreaturePreview } from './CreaturePreview';
@@ -94,7 +95,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
-  if (categoryKey === 'trappings') add('consumable');
+  if (categoryKey === 'trappings') add('consumable', 'consumableDuration');
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat', 'test');
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
@@ -288,10 +289,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {hasDerivedWeapon && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
         {hasConsumable && (
           <div className="ed-field">
-            <span>effet d’un CONSOMMABLE (potion/bandage) — ops appliqués au buveur (heal / removeCondition / preventInfection)</span>
-            <GameOpEditor ops={(entry.consumable as GameOp[] | undefined) ?? []} onChange={(ops) => edit('consumable', ops.length ? ops : undefined)} />
+            <span>effet d’un CONSOMMABLE (potion/drogue/bandage) — Flow appliqué au buveur (ops, branches, Tests « au boire »)</span>
+            <FlowEditor flow={(entry.consumable as Flow | undefined) ?? EMPTY_FLOW} ctx={{ encounters: [], dialogues: [] }}
+              onChange={(f) => edit('consumable', f.kind === 'seq' && f.steps.length === 0 ? undefined : f)} />
           </div>
         )}
+        {hasConsumable && <ConsumableDurationField value={entry.consumableDuration as ConsumableDuration | undefined} onChange={(v) => edit('consumableDuration', v)} />}
         {isMutation && <PsychTraitsField value={entry.psychTraits as PsychTrait[] | undefined} onChange={(v) => edit('psychTraits', v)} />}
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
         {hasCombat && <TalentTestField value={entry.test as TalentTest | undefined} onChange={(v) => edit('test', v)} />}
@@ -361,6 +364,32 @@ function AppearanceField({ name, value, onChange }: { name: string; value: Entit
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}
         onFeatures={(f) => patch({ features: f.length ? f : undefined })}
       />
+    </div>
+  );
+}
+
+/** Éditeur de la DURÉE d'horloge d'un consommable (`TrappingData.consumableDuration` — LDB 71/72
+ *  « Durée : … ») : UNE unité (minutes/heures/jours) + une Formule (littéral, dés, « dés × facteur »
+ *  pour « 1d10 × 10 minutes »). Résolue AU BOIRE (`consumableUntilTime`). */
+function ConsumableDurationField({ value, onChange }: { value: ConsumableDuration | undefined; onChange: (v: ConsumableDuration | undefined) => void }) {
+  const unit: keyof ConsumableDuration = value?.days != null ? 'days' : value?.hours != null ? 'hours' : 'minutes';
+  const formula = value?.[unit];
+  return (
+    <div className="ed-field">
+      <span>durée d’horloge du consommable (« Durée : … », LDB 71/72) — vide = effets instantanés/permanents</span>
+      <div className="tf-row">
+        <label className="dr"><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { minutes: 10 } : undefined)} /> durée</label>
+        {value != null && (
+          <>
+            <select value={unit} onChange={(e) => onChange({ [e.target.value as keyof ConsumableDuration]: formula ?? 1 })}>
+              <option value="minutes">minutes</option>
+              <option value="hours">heures</option>
+              <option value="days">jours</option>
+            </select>
+            <FormulaField label="Durée" value={formula} min={1} onChange={(f) => onChange({ [unit]: f })} />
+          </>
+        )}
+      </div>
     </div>
   );
 }

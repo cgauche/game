@@ -27,10 +27,11 @@ import { tickShipMorale, moraleBand } from '../engine/crewMorale';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { dailyFoodUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
-import { effectiveChar, bonus } from '../engine/characteristics';
+import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { loseWounds } from '../engine/conditions';
 import { DIFFICULTY_MODIFIERS, type UpkeepDeferTest } from '../engine/types';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
+import { conditionLabel } from '../data';
 import { rule } from '../engine/policy';
 import { dropExpiredGrantedTraits } from '../engine/grantedTraits';
 import { dropExpiredGrantedResources } from '../engine/grantedResources';
@@ -69,6 +70,16 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
       dropExpiredGrantedResources(h, fx); // Chance/Destin accordés (gainResource) non dépensés
       dropExpiredGrantedWeapons(h, fx); // armes invoquées/naturelles accordées : loadout recomposé
       restoreSuppressedPsych(h, fx); // Traits psy suspendus (Baume, LDB 42) restitués
+      // Blessures max dérivées : un buff F/E/FM ou un `attrMod{wounds}` (Bonnet de fou) expiré recale
+      // max + courants (perte du +4 à la dissipation — « l'utilisateur perd 1d10 PB » est une op `delayed` à part).
+      if (fx.some((e) => e.attrMods?.wounds || e.char === 'F' || e.char === 'E' || e.char === 'FM')) refreshWounds(h);
+    }
+    // États à durée d'HORLOGE (op `condition.durationHours` — Belladone : sommeil « 1d10+4 heures ») :
+    // dissipés à l'échéance, même canal de purge que les effets actifs (LDB 72 l.18).
+    const conds = (h.conditions ?? []).filter((x) => x.untilTime != null && x.untilTime <= now);
+    if (conds.length) {
+      for (const x of conds) expiredLog.push(`${h.name} : l'État ${conditionLabel(x.name)} se dissipe.`);
+      h.conditions = h.conditions.filter((x) => !(x.untilTime != null && x.untilTime <= now));
     }
   }
   if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });

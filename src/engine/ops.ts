@@ -15,7 +15,7 @@
  */
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
+import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition } from './conditions';
 import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
@@ -84,7 +84,10 @@ export type Formula =
   | { woundsDealt: true }
   /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.77). Permet
    *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
-  | { sum: Formula[] };
+  | { sum: Formula[] }
+  /** FACTEUR multiplicatif (« 1d10 × 10 minutes » — Mystracine/Mandragore, LDB 71 l.33/35) : résout `of`
+   *  puis multiplie par `factor`. NB : `10d10` n'est PAS équivalent (distribution différente) — fidélité RAW. */
+  | { times: { of: Formula; factor: number } };
 
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
@@ -100,13 +103,14 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('engagedAdvantageGap' in f) return gap ?? 0;
   if ('woundsDealt' in f) return woundsDealt ?? 0;
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap, woundsDealt), 0);
+  if ('times' in f) return resolveFormula(f.times.of, ref, rng, rolled, indice, stacks, gap, woundsDealt) * f.times.factor;
   return rollDice(f.dice, rng);
 }
 
 /** Clés reconnues d'une `Formula` OBJET — SOURCE UNIQUE, alignée sur l'union `Formula` et sur les
  *  branches de `resolveFormula`. Réutilisée par le garde-fou d'intégrité des données
  *  (`src/data/data-wellformed.test.ts`) pour valider les champs Formula des `GameOp` sans re-coder la liste. */
-export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'sum'] as const;
+export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'sum', 'times'] as const;
 
 /** Une valeur est-elle une `Formula` VALIDE — résoluble par `resolveFormula` sans planter ? `number` FINI,
  *  ou objet portant exactement une clé connue (`sum` récursif). PUR. Rejette une string (un `'$indice'`
@@ -116,6 +120,10 @@ export function isValidFormula(f: unknown): f is Formula {
   if (typeof f !== 'object' || f === null) return false;
   const o = f as Record<string, unknown>;
   if ('sum' in o) return Array.isArray(o.sum) && o.sum.every(isValidFormula);
+  if ('times' in o) {
+    const t = o.times as Record<string, unknown> | null;
+    return !!t && typeof t === 'object' && isValidFormula(t.of) && typeof t.factor === 'number' && Number.isFinite(t.factor);
+  }
   return FORMULA_OBJECT_KEYS.some((k) => k in o);
 }
 
@@ -146,6 +154,7 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
   if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);
   if ('rolled' in f) return 5.5; // référence neutre (dé moyen d'un d10) — jamais tiré
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
+  if ('times' in f) return formulaExpectation(f.times.of, ref) * f.times.factor;
   return 0; // indiceOf / stacks / engagedAdvantageGap : hors contexte au planning
 }
 
@@ -254,7 +263,12 @@ export type GameOp =
        *  (`ctx.caster`, l'attaquant) et la cible — la SEULE voie data-driven de démarrage d'une Empoignade
        *  (Constricteur onHit, Tentacules/Langue, Absorption, et l'init JOUEUR migrée). L'État *Empêtré* est
        *  l'effet visible ; ce flag ajoute le lien de lutte (résolu ensuite par le flux/IA d'Empoignade). */
-      grapple?: boolean }
+      grapple?: boolean;
+      /** État à durée d'HORLOGE (minutes/heures depuis `ctx.now`) — Belladone « un sommeil… dure 1d10+4
+       *  heures » (LDB 72 l.18), Fleur de lune Inconscient « Durée : 1d10+5 heures » (LDB 71 l.29). Résolue
+       *  à l'application → `ConditionInstance.untilTime`, purgée par `purgeClockEffects` (même patron que
+       *  `castPenalty.minutes`). Exclusif de `durationRounds`/`perRound`. */
+      durationMinutes?: Formula; durationHours?: Formula }
   /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). `valuePerSL` : échelle
    *  « +1 par +N DR » ajoutée à `value` (Mâchoires d'acier : « chaque DR supprime un État Sonné
    *  supplémentaire », LDB 10) — inerte si absent (calque op `condition`). */
@@ -347,8 +361,12 @@ export type GameOp =
       onHitEffects?: TriggeredEffect[] }
   /** Purge de maladies (Amère catharsis, LDB 42) : retire `count` (+échelle DR) maladies. */
   | { op: 'cureDisease'; count?: number; countPerSL?: PerSL }
-  /** −N jours sur la durée d'une maladie active (B. de Convalescence, LDB 41 — 1×/maladie). */
-  | { op: 'reduceDiseaseDays'; days?: number }
+  /** −N jours sur la durée d'une maladie active. `days` plat (B. de Convalescence, LDB 41) OU `dice`
+   *  (Rouille mouchetée : « Chaque dose réduit la durée de la maladie de 1d10 jours », T2C p.14) ;
+   *  `disease` = SCOPE par id (Gesundheit → seulement une `blessure-purulente`, T2C p.13 — sans filtre,
+   *  n'importe quelle maladie active serait raccourcie) ; `oncePerDisease` = une seule fois par maladie
+   *  (« Cette Prière ne peut être tentée qu'une fois par maladie », LDB 41 — les herbes se reprennent). */
+  | { op: 'reduceDiseaseDays'; days?: number; dice?: DiceSpec; disease?: string; oncePerDisease?: boolean }
   /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.382). */
   | { op: 'preventInfection' }
   /** EXPOSE la cible à une Maladie (`disease` = id de `maladies.json`) → Test de Contraction au bilan de
@@ -592,9 +610,36 @@ export type GameOp =
   /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
    *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
   | { op: 'senseLoss'; sense: 'vue' | 'ouie' }
-  /** Perd sa prochaine Action ET son prochain Mouvement (Affamé : « festoie » ; généralisable à tout
-   *  effet qui fait sauter le tour). Pose les drapeaux lus au début du Round du porteur. */
-  | { op: 'loseTurn' }
+  /** Perd sa prochaine Action ET/OU son prochain Mouvement (Affamé : « festoie » ; échec du gate de la
+   *  Racine de mandragore : « une Action ou un Mouvement (un au choix) », LDB 71 l.35 → l'issue du choix
+   *  pose `what:'action'` ou `'movement'`). `what` absent = les deux (comportement historique). Pose les
+   *  drapeaux lus au début du Round du porteur. */
+  | { op: 'loseTurn'; what?: 'action' | 'movement' }
+  /** GATE d'action par Round (Racine de mandragore, LDB 71 l.35 : « Les utilisateurs doivent réussir un
+   *  Test de Force Mentale à chaque Round pour effectuer une Action ou un Mouvement (un au choix) ») —
+   *  `ActiveEffect.actGate` vérifié au DÉBUT du tour du porteur en combat (cadence-aware : héros manuel =
+   *  étape de cascade influençable + choix Action/Mouvement ; IA/auto = jet inline, l'Action est gardée).
+   *  Hors combat (pas de Rounds) : inerte. */
+  | { op: 'actGate'; char: CharKey }
+  /** Bonus/malus aux Tests LIÉS À UNE MALADIE (contraction, cycle quotidien, Test de fin) —
+   *  Fleur de lune « +30 à tous les Tests associés pour résister à la [Peste noire] » (LDB 71 l.26),
+   *  Racine de terre +10 (LDB 72 l.28), Tonique digestif +20 (l.32). `diseases` = ids ciblés (absent =
+   *  toutes). → `ActiveEffect.diseaseTestMod`, sommé par `activeDiseaseTestMod` (engine/disease) aux
+   *  call-sites qui calculent la Résistance d'un Test de maladie. */
+  | { op: 'diseaseTestMod'; diseases?: string[]; amount: number }
+  /** SUSPEND un symptôme de maladie par id (Racine de terre : « annuler les effets de bubons causés par
+   *  la Peste noire », LDB 72 l.28) — analogue de `suppressPsych` : les canaux `passive`/`onTick` du
+   *  symptôme sont ignorés tant que l'effet dure (`ActiveEffect.suppressedSymptom`, lu par
+   *  `symptomSuppressed` dans engine/disease), restitués à l'expiration. */
+  | { op: 'suppressSymptom'; symptomId: string }
+  /** Ops DIFFÉRÉES à échéance d'horloge (op IMPURE — file `scheduledEffects`, résolue couche state comme
+   *  `summon`/`zone` ; INERTE dans `applyOps`). Délai : `afterMinutes`/`afterHours`/`afterDays` depuis
+   *  maintenant, OU `afterDuration:true` = à l'échéance de la durée du contexte (`ctx.defaultUntilTime` —
+   *  Bonnet de fou « Quand l'effet se dissipe, l'utilisateur perd 1d10 PB », LDB 71 l.20). `forMinutes`/
+   *  `forHours`/`forDays` : durée d'horloge PROPRE des effets durables de `ops` à partir de l'échéance
+   *  (Délice de Ranald : pénalité pendant le reste du jour, LDB 71 l.24). */
+  | { op: 'delayed'; afterMinutes?: Formula; afterHours?: Formula; afterDays?: Formula; afterDuration?: true;
+      forMinutes?: Formula; forHours?: Formula; forDays?: Formula; ops: GameOp[] }
   /** Retire une pièce d'artillerie d'une COQUE (« Canon perdu », MDG ch.13 l.765 : la pièce passe par-dessus
    *  bord) : `target.postes` perd UN poste au hasard (`ctx.rng`) ; si son chef de pièce (`crewIds[0]`, résolu
    *  dans `ctx.crew`) la servait, il est démancipé (`mannedPoste` + arme dérivée retirés). GÉNÉRIQUE — remplace
@@ -871,6 +916,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round.
           pushPerRound(target, [{ op: 'condition', name: o.name, value: v, ...(escape != null ? { escapeStrength: escape } : {}) }], ctx);
           lines.push(t('op.condPerRound', { name: target.name, v, cond: conditionLabel(o.name), src: ctx.label ?? 'sort' }));
+        } else if (o.durationMinutes != null || o.durationHours != null) {
+          // État à durée d'HORLOGE (Belladone/Fleur de lune : sommeil « 1d10+4/5 heures ») — échéance
+          // résolue MAINTENANT depuis ctx.now, purgée par purgeClockEffects (patron castPenalty.minutes).
+          const min = Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60);
+          addClockCondition(target, o.name, v, (ctx.now ?? 0) + min, escape);
+          lines.push(t('op.condTimed', { name: target.name, v, cond: conditionLabel(o.name), roundsTxt: min >= 60 ? t('op.frag.hours', { n: Math.round(min / 60), s: min >= 120 ? 's' : '' }) : t('op.frag.min', { n: min }) }));
         } else if (o.durationRounds != null) {
           const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
           addTimedCondition(target, o.name, v, rounds, escape);
@@ -1095,7 +1146,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'reduceDiseaseDays': {
-        lines.push(...blessDiseaseDuration(target, o.days ?? 1));
+        // `dice` (Rouille mouchetée : 1d10 jours) tiré à l'application ; `disease` = filtre par id ;
+        // `oncePerDisease` = verrou « une fois par maladie » (Bénédiction de Convalescence, LDB 41).
+        const days = o.dice ? rollDice(o.dice, rng) : (o.days ?? 1);
+        lines.push(...blessDiseaseDuration(target, days, { disease: o.disease, once: o.oncePerDisease }));
         break;
       }
       case 'preventInfection': {
@@ -1243,13 +1297,71 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'testMod': {
+        // `char` présent = modificateur QUALIFIÉ (Mystracine « +10 aux Tests d'Endurance et de FM,
+        // −10 Ag/I/Int », LDB 71 l.33) → `testModChar`, lu par `testValue` pour les seuls Tests de cette
+        // Caractéristique ; absent = mod GLOBAL (lu par `effectTestMod`, qui EXCLUT les qualifiés).
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           duration: durationFromCtx(ctx),
           testMod: o.amount,
+          ...(o.char ? { testModChar: o.char } : {}),
         });
-        lines.push(t('op.testMod', { name: target.name, mod: `${o.amount >= 0 ? '+' : ''}${o.amount}`, src: ctx.label ?? 'sort' }));
+        lines.push(t('op.testMod', { name: target.name, mod: `${o.amount >= 0 ? '+' : ''}${o.amount}${o.char ? ` (${CHAR_LABELS[o.char]})` : ''}`, src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'attrMod': {
+        // EXÉCUTABLE (Bonnet de fou « +4 Blessures », LDB 71 l.20) : effet actif `attrMods`, lu par le
+        // calcul du max concerné (wounds → effectiveMaxWounds/refreshWounds ; fortune → fortuneMax ;
+        // resolve → resolveMax). `fate`/`resilience` restent PASSIFS-création uniquement (aucun maximum
+        // dérivé à moduler — un octroi temporaire de points passe par `gainResource`).
+        if (o.attr === 'fate' || o.attr === 'resilience') break;
+        const n = resolveFormula(o.mod, ref, rng);
+        if (!n) break;
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          duration: durationFromCtx(ctx),
+          attrMods: { [o.attr]: n },
+        });
+        if (o.attr === 'wounds') refreshWounds(target); // le max bouge → PB courants suivent le delta
+        lines.push(t('op.attrMod', { name: target.name, mod: `${n >= 0 ? '+' : ''}${n}`, attr: { wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination' }[o.attr], src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'diseaseTestMod': {
+        // Bonus aux Tests liés à une maladie (Fleur de lune/Racine de terre/Tonique digestif) — sommé par
+        // `activeDiseaseTestMod` (engine/disease) aux Tests de contraction/cycle/fin.
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          duration: durationFromCtx(ctx),
+          diseaseTestMod: { amount: o.amount, ...(o.diseases?.length ? { diseases: o.diseases } : {}) },
+        });
+        lines.push(t('op.diseaseTestMod', { name: target.name, mod: `${o.amount >= 0 ? '+' : ''}${o.amount}`, what: o.diseases?.length ? o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ') : t('op.frag.allDiseases'), src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'suppressSymptom': {
+        // Suspension d'un symptôme par id (Racine de terre → bubons) — les canaux passive/onTick du
+        // symptôme sont ignorés tant que l'effet dure (`symptomSuppressed`), restitués à l'expiration.
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          duration: durationFromCtx(ctx),
+          suppressedSymptom: o.symptomId,
+        });
+        lines.push(t('op.suppressSymptom', { name: target.name, symptom: refLabel('symptoms', { id: o.symptomId }), src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'actGate': {
+        // Gate d'action par Round (Racine de mandragore) : le drapeau est lu au début du tour du porteur
+        // en combat (`resolveActGates`, couche state) — cadence-aware, jamais un jet silencieux de héros.
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          duration: durationFromCtx(ctx),
+          actGate: { char: o.char },
+        });
+        lines.push(t('op.actGate', { name: target.name, char: CHAR_LABELS[o.char], src: ctx.label ?? 'sort' }));
         break;
       }
       case 'noBreath': {
@@ -1417,12 +1529,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'push':
       case 'teleport':
       case 'chain':
+      case 'delayed':
         // Effets IMPURS (grille + initiative / reconstitution programmée / zones de bataille / ouverture
         // d'une frappe / interruption de Focalisation / désarmement-bris de Piège-lame / poussée /
-        // téléportation / rebond de Projectile) — résolus par la couche state (combatFlow : applySummon /
-        // scheduleRespawn → file horloge / placeSpellZone ; les hooks `freeAttack`/`focusInterrupt`/
-        // `bladeTrap` appelés par `runCombatFlow` ; `applyCast` scanne push/teleport/chain), qui détient
-        // get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
+        // téléportation / rebond de Projectile / ops différées à échéance d'horloge) — résolus par la
+        // couche state (combatFlow : applySummon / scheduleRespawn → file horloge / placeSpellZone ; les
+        // hooks `freeAttack`/`focusInterrupt`/`bladeTrap` appelés par `runCombatFlow` ; `applyCast` scanne
+        // push/teleport/chain ; `delayed` → `scheduleDelayedOps` aux points d'application d'un EffectOp),
+        // qui détient get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
         break;
       case 'polymorph':
         // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure. + override
@@ -1498,9 +1612,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'loseTurn':
-        target.loseNextAction = true;
-        target.loseNextMovement = true;
-        lines.push(t('op.loseTurn', { name: target.name }));
+        // `what` cible UNE des deux ressources (issue du choix du gate de Mandragore) ; absent = les deux.
+        if (o.what !== 'movement') target.loseNextAction = true;
+        if (o.what !== 'action') target.loseNextMovement = true;
+        lines.push(t(o.what === 'action' ? 'op.loseAction' : o.what === 'movement' ? 'op.loseMovement' : 'op.loseTurn', { name: target.name }));
         break;
       case 'teamCommander':
         // Commandant d'équipe (AA) : pose le lien chef→commandant. La substitution effective du score est

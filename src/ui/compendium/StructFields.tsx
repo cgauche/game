@@ -48,6 +48,8 @@ export function SymptomsField({ value, onChange }: { value: DiseaseSymptom[] | u
             <option value="">— difficulté —</option>
             {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
           </select>
+          {/* Localisation/précision imprimée (« Gonflement (Visage et tête) », EDO p.145) — affichage seul. */}
+          <input placeholder="précision (ex. Visage et tête)" value={s.spec ?? ''} onChange={(e) => set(i, { spec: e.target.value || undefined })} />
           <button className="btn small danger" title="Retirer le symptôme" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}

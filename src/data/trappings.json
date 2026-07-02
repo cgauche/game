@@ -4304,13 +4304,30 @@
       "book": "LDB",
       "page": 303
     },
-    "consumable": [
-      {
-        "op": "removeCondition",
-        "name": "empoisonne",
-        "all": true
+    "consumable": {
+      "kind": "test",
+      "test": {
+        "skill": "guerison",
+        "label": "Nécessaire antipoison"
+      },
+      "success": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "removeCondition",
+              "name": "empoisonne",
+              "all": true
+            }
+          ]
+        }
+      },
+      "fail": {
+        "kind": "seq",
+        "steps": []
       }
-    ]
+    }
   },
   {
     "id": "necessaire-d-ecriture",
@@ -4379,6 +4396,9 @@
     "source": {
       "book": "LDB",
       "page": 303
+    },
+    "capabilities": {
+      "lockpicks": true
     }
   },
   {
@@ -5855,6 +5875,30 @@
     "source": {
       "book": "LDB",
       "page": 306
+    },
+    "consumable": {
+      "kind": "test",
+      "test": {
+        "characteristic": "E",
+        "difficulty": "tresDifficile",
+        "label": "Bave"
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "narrative",
+              "text": "perdu dans un fantasme très réaliste, que le MJ doit gérer. Durée : 1d10 minutes."
+            }
+          ]
+        }
+      }
     }
   },
   {
@@ -5878,6 +5922,83 @@
     "source": {
       "book": "LDB",
       "page": 306
+    },
+    "consumable": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "charMod",
+                "char": "F",
+                "mod": 10
+              },
+              {
+                "op": "attrMod",
+                "attr": "wounds",
+                "mod": 4
+              },
+              {
+                "op": "grantTalent",
+                "talentId": "frenesie"
+              },
+              {
+                "op": "delayed",
+                "afterDuration": true,
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "dice": {
+                        "n": 1,
+                        "sides": 10
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire",
+            "exceptGroups": [
+              "Peau-Verte"
+            ],
+            "label": "Bonnet de fou"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "contractDisease",
+                  "disease": "infection-mineure"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumableDuration": {
+      "minutes": {
+        "dice": {
+          "n": 2,
+          "sides": 10
+        }
+      }
     }
   },
   {
@@ -5902,13 +6023,34 @@
       "book": "LDB",
       "page": 306
     },
-    "consumable": [
-      {
-        "op": "condition",
-        "name": "empoisonne",
-        "value": 4
+    "consumable": {
+      "kind": "test",
+      "test": {
+        "characteristic": "E",
+        "skill": "resistance",
+        "difficulty": "complexe",
+        "unlessImmune": "poison",
+        "menace": "Poison",
+        "label": "Brise-cœur"
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "condition",
+              "name": "empoisonne",
+              "value": 4
+            }
+          ]
+        }
       }
-    ]
+    }
   },
   {
     "id": "delice-de-ranald",
@@ -5931,6 +6073,72 @@
     "source": {
       "book": "LDB",
       "page": 306
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "moveMod",
+            "mod": 1
+          },
+          {
+            "op": "charMod",
+            "char": "F",
+            "mod": 10
+          },
+          {
+            "op": "charMod",
+            "char": "E",
+            "mod": 10
+          },
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": 10
+          },
+          {
+            "op": "charMod",
+            "char": "CC",
+            "mod": 10
+          },
+          {
+            "op": "delayed",
+            "afterHours": 3,
+            "forHours": 21,
+            "ops": [
+              {
+                "op": "moveMod",
+                "mod": -2
+              },
+              {
+                "op": "charMod",
+                "char": "CC",
+                "mod": -20
+              },
+              {
+                "op": "charMod",
+                "char": "E",
+                "mod": -20
+              },
+              {
+                "op": "charMod",
+                "char": "F",
+                "mod": -20
+              },
+              {
+                "op": "charMod",
+                "char": "Ag",
+                "mod": -20
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "hours": 3
     }
   },
   {
@@ -5954,6 +6162,84 @@
     "source": {
       "book": "LDB",
       "page": 306
+    },
+    "consumable": {
+      "kind": "if",
+      "cond": {
+        "kind": "has",
+        "who": "target",
+        "what": "group",
+        "value": "Elfe"
+      },
+      "then": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "diseaseTestMod",
+              "diseases": [
+                "peste-noire"
+              ],
+              "amount": 30
+            }
+          ]
+        }
+      },
+      "else": {
+        "kind": "test",
+        "test": {
+          "characteristic": "FM",
+          "difficulty": "tresDifficile",
+          "label": "Fleur de lune"
+        },
+        "success": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "skillMod",
+                "skill": "calme",
+                "mod": 20
+              },
+              {
+                "op": "condition",
+                "name": "extenue",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "fail": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "inconscient",
+                "durationHours": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10,
+                    "plus": 5
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "consumableDuration": {
+      "hours": {
+        "dice": {
+          "n": 1,
+          "sides": 10,
+          "plus": 5
+        }
+      }
     }
   },
   {
@@ -5978,70 +6264,76 @@
       "book": "LDB",
       "page": 306
     },
-    "consumable": [
-      {
-        "op": "augmentWeapon",
-        "onHitEffects": [
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
           {
-            "trigger": "onHit",
-            "on": "victim",
-            "flow": {
-              "kind": "if",
-              "cond": {
-                "kind": "all",
-                "of": [
-                  {
-                    "kind": "woundsDealt",
-                    "op": ">",
-                    "value": 0
-                  },
-                  {
-                    "kind": "not",
-                    "of": {
-                      "kind": "compare",
-                      "subject": {
-                        "who": "target",
-                        "condition": "empoisonne"
-                      },
-                      "op": ">=",
-                      "value": 1
-                    }
-                  }
-                ]
-              },
-              "then": {
-                "kind": "test",
-                "test": {
-                  "characteristic": "E",
-                  "skill": "resistance",
-                  "difficulty": "complexe",
-                  "unlessImmune": "poison",
-                  "menace": "Poison"
-                },
-                "success": {
-                  "kind": "seq",
-                  "steps": []
-                },
-                "fail": {
-                  "kind": "do",
-                  "effect": {
-                    "type": "ops",
-                    "on": "victim",
-                    "ops": [
+            "op": "augmentWeapon",
+            "onHitEffects": [
+              {
+                "trigger": "onHit",
+                "on": "victim",
+                "flow": {
+                  "kind": "if",
+                  "cond": {
+                    "kind": "all",
+                    "of": [
                       {
-                        "op": "condition",
-                        "name": "empoisonne",
-                        "value": 2
+                        "kind": "woundsDealt",
+                        "op": ">",
+                        "value": 0
+                      },
+                      {
+                        "kind": "not",
+                        "of": {
+                          "kind": "compare",
+                          "subject": {
+                            "who": "target",
+                            "condition": "empoisonne"
+                          },
+                          "op": ">=",
+                          "value": 1
+                        }
                       }
                     ]
+                  },
+                  "then": {
+                    "kind": "test",
+                    "test": {
+                      "characteristic": "E",
+                      "skill": "resistance",
+                      "difficulty": "complexe",
+                      "unlessImmune": "poison",
+                      "menace": "Poison"
+                    },
+                    "success": {
+                      "kind": "seq",
+                      "steps": []
+                    },
+                    "fail": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "on": "victim",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "name": "empoisonne",
+                            "value": 2
+                          }
+                        ]
+                      }
+                    }
                   }
                 }
               }
-            }
+            ]
           }
         ]
       }
-    ]
+    }
   },
   {
     "id": "mystracine",
@@ -6064,6 +6356,52 @@
     "source": {
       "book": "LDB",
       "page": 306
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "testMod",
+            "amount": 10,
+            "char": "E"
+          },
+          {
+            "op": "testMod",
+            "amount": 10,
+            "char": "FM"
+          },
+          {
+            "op": "testMod",
+            "amount": -10,
+            "char": "Ag"
+          },
+          {
+            "op": "testMod",
+            "amount": -10,
+            "char": "I"
+          },
+          {
+            "op": "testMod",
+            "amount": -10,
+            "char": "Int"
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "minutes": {
+        "times": {
+          "of": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          },
+          "factor": 10
+        }
+      }
     }
   },
   {
@@ -6087,6 +6425,41 @@
     "source": {
       "book": "LDB",
       "page": 306
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "moveScale",
+            "num": 1,
+            "den": 2
+          },
+          {
+            "op": "skillMod",
+            "skill": "calme",
+            "mod": 20
+          },
+          {
+            "op": "actGate",
+            "char": "FM"
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "minutes": {
+        "times": {
+          "of": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          },
+          "factor": 10
+        }
+      }
     }
   },
   {
@@ -6110,6 +6483,42 @@
     "source": {
       "book": "LDB",
       "page": 307
+    },
+    "consumable": {
+      "kind": "test",
+      "test": {
+        "skill": "resistance",
+        "label": "Belladone"
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "delayed",
+              "afterMinutes": 150,
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "inconscient",
+                  "durationHours": {
+                    "dice": {
+                      "n": 1,
+                      "sides": 10,
+                      "plus": 4
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
     }
   },
   {
@@ -6134,11 +6543,17 @@
       "book": "LDB",
       "page": 307
     },
-    "consumable": [
-      {
-        "op": "preventInfection"
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "preventInfection"
+          }
+        ]
       }
-    ]
+    }
   },
   {
     "id": "faxtoryll",
@@ -6162,16 +6577,19 @@
       "book": "LDB",
       "page": 307
     },
-    "consumable": [
-      {
-        "op": "removeCondition",
-        "name": "hemorragique",
-        "all": true
-      },
-      {
-        "op": "preventInfection"
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "removeCondition",
+            "name": "hemorragique",
+            "all": true
+          }
+        ]
       }
-    ]
+    }
   },
   {
     "id": "potion-de-guerison",
@@ -6195,14 +6613,32 @@
       "book": "LDB",
       "page": 307
     },
-    "consumable": [
-      {
-        "op": "heal",
-        "amount": {
-          "bonusOf": "E"
+    "consumable": {
+      "kind": "if",
+      "cond": {
+        "kind": "compare",
+        "subject": {
+          "who": "target",
+          "field": "woundsCurrent"
+        },
+        "op": ">=",
+        "value": 1
+      },
+      "then": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "heal",
+              "amount": {
+                "bonusOf": "E"
+              }
+            }
+          ]
         }
       }
-    ]
+    }
   },
   {
     "id": "potion-de-vitalite",
@@ -6226,13 +6662,19 @@
       "book": "LDB",
       "page": 307
     },
-    "consumable": [
-      {
-        "op": "removeCondition",
-        "name": "extenue",
-        "all": true
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "removeCondition",
+            "name": "extenue",
+            "all": true
+          }
+        ]
       }
-    ]
+    }
   },
   {
     "id": "racine-de-terre",
@@ -6255,6 +6697,28 @@
     "source": {
       "book": "LDB",
       "page": 307
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "suppressSymptom",
+            "symptomId": "bubons"
+          },
+          {
+            "op": "diseaseTestMod",
+            "diseases": [
+              "peste-noire"
+            ],
+            "amount": 10
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "days": 1
     }
   },
   {
@@ -6279,13 +6743,19 @@
       "book": "LDB",
       "page": 307
     },
-    "consumable": [
-      {
-        "op": "removeCondition",
-        "name": "sonne",
-        "value": 1
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "removeCondition",
+            "name": "sonne",
+            "value": 1
+          }
+        ]
       }
-    ]
+    }
   },
   {
     "id": "tonique-digestif",
@@ -6308,6 +6778,25 @@
     "source": {
       "book": "LDB",
       "page": 307
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "diseaseTestMod",
+            "diseases": [
+              "courante-galopante",
+              "flux-sanglant"
+            ],
+            "amount": 20
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "days": 1
     }
   },
   {
@@ -6332,12 +6821,19 @@
       "book": "T2C",
       "page": 13
     },
-    "consumable": [
-      {
-        "op": "reduceDiseaseDays",
-        "days": 1
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "reduceDiseaseDays",
+            "days": 1,
+            "disease": "blessure-purulente"
+          }
+        ]
       }
-    ]
+    }
   },
   {
     "id": "racine-des-tombes",
@@ -6361,76 +6857,82 @@
       "book": "T2C",
       "page": 14
     },
-    "consumable": [
-      {
-        "op": "augmentWeapon",
-        "onHitEffects": [
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
           {
-            "trigger": "onHit",
-            "on": "victim",
-            "flow": {
-              "kind": "if",
-              "cond": {
-                "kind": "all",
-                "of": [
-                  {
-                    "kind": "woundsDealt",
-                    "op": ">",
-                    "value": 0
-                  },
-                  {
-                    "kind": "not",
-                    "of": {
-                      "kind": "compare",
-                      "subject": {
-                        "who": "target",
-                        "condition": "empoisonne"
-                      },
-                      "op": ">=",
-                      "value": 1
-                    }
-                  }
-                ]
-              },
-              "then": {
-                "kind": "test",
-                "test": {
-                  "characteristic": "E",
-                  "skill": "resistance",
-                  "difficulty": "complexe",
-                  "onlyGroups": [
-                    "Mort-vivant"
-                  ],
-                  "unlessImmune": "poison",
-                  "menace": "Poison"
-                },
-                "success": {
-                  "kind": "seq",
-                  "steps": []
-                },
-                "fail": {
-                  "kind": "do",
-                  "effect": {
-                    "type": "ops",
-                    "on": "victim",
-                    "ops": [
+            "op": "augmentWeapon",
+            "onHitEffects": [
+              {
+                "trigger": "onHit",
+                "on": "victim",
+                "flow": {
+                  "kind": "if",
+                  "cond": {
+                    "kind": "all",
+                    "of": [
                       {
-                        "op": "condition",
-                        "name": "empoisonne",
-                        "value": 1,
-                        "onlyGroups": [
-                          "Mort-vivant"
-                        ]
+                        "kind": "woundsDealt",
+                        "op": ">",
+                        "value": 0
+                      },
+                      {
+                        "kind": "not",
+                        "of": {
+                          "kind": "compare",
+                          "subject": {
+                            "who": "target",
+                            "condition": "empoisonne"
+                          },
+                          "op": ">=",
+                          "value": 1
+                        }
                       }
                     ]
+                  },
+                  "then": {
+                    "kind": "test",
+                    "test": {
+                      "characteristic": "E",
+                      "skill": "resistance",
+                      "difficulty": "complexe",
+                      "onlyGroups": [
+                        "Mort-vivant"
+                      ],
+                      "unlessImmune": "poison",
+                      "menace": "Poison"
+                    },
+                    "success": {
+                      "kind": "seq",
+                      "steps": []
+                    },
+                    "fail": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "on": "victim",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "name": "empoisonne",
+                            "value": 1,
+                            "onlyGroups": [
+                              "Mort-vivant"
+                            ]
+                          }
+                        ]
+                      }
+                    }
                   }
                 }
               }
-            }
+            ]
           }
         ]
       }
-    ]
+    }
   },
   {
     "id": "rouille-mouchetee",
@@ -6453,6 +6955,22 @@
     "source": {
       "book": "T2C",
       "page": 14
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "reduceDiseaseDays",
+            "dice": {
+              "n": 1,
+              "sides": 10
+            },
+            "disease": "verole-du-tanneur"
+          }
+        ]
+      }
     }
   },
   {
@@ -6765,16 +7283,22 @@
       "book": "LDB",
       "page": 308
     },
-    "consumable": [
-      {
-        "op": "removeCondition",
-        "name": "hemorragique",
-        "value": 1
-      },
-      {
-        "op": "preventInfection"
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "removeCondition",
+            "name": "hemorragique",
+            "value": 1
+          },
+          {
+            "op": "preventInfection"
+          }
+        ]
       }
-    ]
+    }
   },
   {
     "id": "batonnet-de-fusain",
@@ -7106,7 +7630,7 @@
   },
   {
     "id": "huile-de-lampe",
-    "label": "Huile de lampe",
+    "label": "Lampe à huile",
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -7125,7 +7649,13 @@
     "source": {
       "book": "LDB",
       "page": 308
-    }
+    },
+    "passive": [
+      {
+        "op": "light",
+        "radiusTiles": 5
+      }
+    ]
   },
   {
     "id": "lampe-tempete",
@@ -10793,6 +11323,402 @@
     "source": {
       "book": "MDG",
       "page": 106
+    }
+  },
+  {
+    "id": "massue-ogre",
+    "label": "Massue ogre",
+    "type": "melee",
+    "subType": "base",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [],
+    "desc": "Les ogres adorent les massues. Ce sont les armes les plus simples, ce qui convient parfaitement à leur mentalité. D'ailleurs, ils n'hésitent pas à parcourir les champs de bataille, les forêts et les cimetières pour trouver une bonne massue bien solide ainsi que les matériaux nécessaires pour l'adapter à leur goût. Si vous le souhaitez, vous pouvez personnaliser une massue ogre ou une grande massue en lui attribuant l'une des caractéristiques suivantes. Voir **WFJDR** p. 297 pour plus d'informations sur ces Atouts.\n\n**Plaques de métal :** l'arme gagne l'Atout Assommante. **Pointes rouillées :** l'arme gagne l'Atout Perforante. **Lames récupérées :** l'arme gagne l'Atout Taille.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "massue"
+  },
+  {
+    "id": "poing-de-fer",
+    "label": "Poing de fer",
+    "type": "melee",
+    "subType": "base",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": "Courte",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
+    "qualities": [
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "protectrice",
+        "value": 1
+      }
+    ],
+    "desc": "Hommage à l'art sacré du combat de fosse, le poing de fer est un énorme gantelet que les ogres utilisent pour écarter les coups et briser des nuques. Le poing de fer est solidement fixé à celui de l'ogre, de sorte qu'il ne pourra pas en être désarmé. La main équipée du poing de fer peut servir à tenir une arme ou à effectuer des actions simples.",
+    "price": {
+      "gold": 4,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "gantelet_pointes"
+  },
+  {
+    "id": "grande-massue-ogre",
+    "label": "Grande massue ogre",
+    "hands": 2,
+    "type": "melee",
+    "subType": "deux-mains",
+    "enc": 6,
+    "availability": "Commune",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
+    "qualities": [
+      {
+        "id": "devastatrice"
+      }
+    ],
+    "desc": "Les ogres adorent les massues. Ce sont les armes les plus simples, ce qui convient parfaitement à leur mentalité. D'ailleurs, ils n'hésitent pas à parcourir les champs de bataille, les forêts et les cimetières pour trouver une bonne massue bien solide ainsi que les matériaux nécessaires pour l'adapter à leur goût. Si vous le souhaitez, vous pouvez personnaliser une massue ogre ou une grande massue en lui attribuant l'une des caractéristiques suivantes. Voir **WFJDR** p. 297 pour plus d'informations sur ces Atouts.\n\n**Plaques de métal :** l'arme gagne l'Atout Assommante. **Pointes rouillées :** l'arme gagne l'Atout Perforante. **Lames récupérées :** l'arme gagne l'Atout Taille.",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "massue"
+  },
+  {
+    "id": "lance-harpon",
+    "label": "Lance-harpon",
+    "hands": 2,
+    "type": "ranged",
+    "subType": "entraves",
+    "enc": 5,
+    "availability": "Exotique",
+    "reach": null,
+    "range": 20,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
+    "qualities": [
+      {
+        "id": "immobilisante"
+      },
+      {
+        "id": "recharge",
+        "value": 2
+      }
+    ],
+    "desc": "Utilisé pour chasser des proies, le lance-harpon tire une énorme flèche de la taille d'une lance, attachée à une longue corde. Il n'est pas doté d'un mécanisme permettant de ramener la corde automatiquement, l'ogre doit donc saisir la corde et tirer sa proie à la main. Le lance-harpon peut être utilisé avec les Compétences Projectiles (Arbalète) ou Projectiles (Entraves) sans pénalité. Si la corde est séparée de la flèche, la portée passe à 60 et l'arme ne possède plus l'Atout Immobilisante.",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "arbalete_lourde"
+  },
+  {
+    "id": "piege-a-chaines",
+    "label": "Piège à chaînes",
+    "type": "ranged",
+    "subType": "entraves",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": null,
+    "range": {
+      "bf": 2
+    },
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
+    "qualities": [
+      {
+        "id": "immobilisante"
+      }
+    ],
+    "desc": "Cet ensemble de mâchoires métalliques à ressort reposant sur une longue chaîne robuste est un outil utilisé par les chasseurs ogres. À l'origine, cette arme était conçue pour être enchaînée à un rocher ou à un arbre, puis laissée en place dans l'espoir d'attraper une proie. Aujourd'hui, la plupart des ogres manquent de patience pour ce genre d'approche et trouvent plus pratique de lancer le piège sur une cible avant de le ramener pour se délecter de la chair fraîche.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "filet_leste"
+  },
+  {
+    "id": "grande-lance",
+    "label": "Grande lance",
+    "type": "ranged",
+    "subType": "lancer",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": null,
+    "range": {
+      "bf": 3
+    },
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "empaleuse"
+      }
+    ],
+    "desc": "Utilisés par les chasseurs ogres pourchassant les grandes bêtes des Montagnes des Larmes, ces javelots sont massifs, rudimentaires et terriblement efficaces.",
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "javelot"
+  },
+  {
+    "id": "canon-crache-plomb",
+    "label": "Canon crache-plomb",
+    "hands": 2,
+    "type": "ranged",
+    "subType": "poudre-noire",
+    "enc": 8,
+    "availability": "Exotique",
+    "reach": null,
+    "range": 50,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
+    "qualities": [
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 5
+      }
+    ],
+    "desc": "Ce canon est le summum de l'ingénierie ogre. Chargé par la culasse, extrêmement résistant et déclenché par l'allumage d'une simple mèche, le canon crache-plomb bombarde généralement tout ce que son porteur a sous la main : chaînes, briques, grenailles de plomb, pierres, clous rouillés, etc. Il arrive que ces armes soient chargées de véritables boulets de canon, que les ogres récupèrent généralement sur le champ de bataille après utilisation. Les boulets porte-bonheur sont souvent affublés d'un surnom et sont trimballés partout, à l'image d'un camarade de confiance.",
+    "price": {
+      "gold": 14,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "tromblon"
+  },
+  {
+    "id": "pistolet-ogre",
+    "label": "Pistolet ogre",
+    "type": "ranged",
+    "subType": "poudre-noire",
+    "enc": 3,
+    "availability": "Exotique",
+    "reach": null,
+    "range": 20,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
+    "qualities": [
+      {
+        "id": "pistolet"
+      },
+      {
+        "id": "recharge",
+        "value": 1
+      }
+    ],
+    "desc": "Un pistolet ogre est une version améliorée de son équivalent Impérial qui utilise les mêmes munitions et la même poudre qu'une arme typique à poudre noire (**WFJDR** p. 297). Toutefois, il est suffisamment solide pour servir d'arme simple et ne se brise qu'en cas de Maladresse.",
+    "price": {
+      "gold": 9,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    },
+    "shape": "pistolet"
+  },
+  {
+    "id": "harpon",
+    "label": "Harpon",
+    "packSize": 6,
+    "type": "ammunition",
+    "subType": "entraves",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "empaleuse"
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    }
+  },
+  {
+    "id": "balle-crache-plomb",
+    "label": "Balle crache-plomb",
+    "packSize": 12,
+    "type": "ammunition",
+    "subType": "poudre-noire",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "ammoRangeMod": {
+      "mult": 0.5
+    },
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "a-explosion",
+        "value": 3
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    }
+  },
+  {
+    "id": "boulet-crache-plomb",
+    "label": "Boulet crache-plomb",
+    "packSize": 1,
+    "type": "ammunition",
+    "subType": "poudre-noire",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "perforante"
+      }
+    ],
+    "desc": "Fondamentalement, il s'agit d'un boulet de canon. Le prix indiqué pour un boulet crache-plomb comprend 2/- pour la quantité de poudre suffisante pour tirer un seul coup. Le boulet peut souvent être récupéré. En le tirant à nouveau, vous dépensez uniquement le prix de la poudre.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
+    }
+  },
+  {
+    "id": "pansiere-ogre",
+    "label": "Pansière ogre",
+    "type": "armor",
+    "subType": "plate",
+    "enc": 4,
+    "availability": "Rare",
+    "reach": null,
+    "loc": "Corps",
+    "pa": 3,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "impenetrable"
+      }
+    ],
+    "desc": "Qu'elle soit faite de métal, de bois dur, d'os ou de cuir, la pansière d'un ogre a encore plus de valeur que la massue la mieux portée. Elle protège le ventre de l'ogre, où se trouvent la plupart de ses organes vitaux, et sert à la fois de source de protection et de support pour les symboles militaires ou religieux. De nombreuses pansières arborent la représentation de la Gueule, un anneau de dents déchiquetées qui symbolise à la fois le dieu affamé des ogres et leur propre appétit vorace.\n\nLes pansières des ogres sont particulièrement adaptées à leur anatomie. Même si elles étaient réduites, elles n'offriraient qu'une protection partielle aux races dont les organes vitaux ne se trouvent pas dans leur ventre.",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ADE2",
+      "page": 29
     }
   }
 ]

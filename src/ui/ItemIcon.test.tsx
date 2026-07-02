@@ -39,8 +39,8 @@ describe('ItemIcon', () => {
     expect(html(mk({ kind: 'misc', name: 'Cape', trappingId: 'cape' }))).toContain('🧥');
   });
 
-  it('consommable (effet structuré) → glyphe 🧪', () => {
-    const potion = mk({ kind: 'misc', name: 'Potion de guérison', consumable: [{ op: 'heal', amount: { bonusOf: 'E' } }] });
+  it('consommable (Flow structuré) → glyphe 🧪', () => {
+    const potion = mk({ kind: 'misc', name: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } } });
     expect(html(potion)).toContain('🧪');
   });
 

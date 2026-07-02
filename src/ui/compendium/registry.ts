@@ -454,7 +454,8 @@ export const CODEX: CodexCategory[] = [
       sections: sections({
         title: 'Symptômes', layout: 'list',
         rows: m.symptoms.map((s) => ({
-          t: 'kv', k: symptomLabel(s.symptomId),
+          // `spec` = localisation/précision imprimée de l'instance (« Gonflement (Visage et tête) », EDO p.145).
+          t: 'kv', k: `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`,
           v: [s.severity === 'grave' ? 'Grave' : s.severity === 'moderee' ? 'Modérée' : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
         } as CodexRow)),
       }),

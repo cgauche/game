@@ -15,10 +15,18 @@
  * plus leurs propres gardes `kind`/capacité internes (no-op pour un héros), comportement conservé.
  */
 import { registerCombatHook } from '../combatHooks';
+import { registerCascadeApplier } from '../cascade';
+import { pushCombatStep } from '../combatEffects';
 import { battleRng } from '../battleRng';
 import { ev, evLines } from '../combatLog';
 import { effectiveChar } from '../../engine/characteristics';
-import { isOutOfAction, addCondition } from '../../engine/conditions';
+import { isOutOfAction, addCondition, combatTestPenalty } from '../../engine/conditions';
+import { rawCombatTestBase } from '../../engine/skills';
+import { rollTest } from '../../engine/tests';
+import { describeTestRoll } from '../../engine/ops';
+import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
+import { roundTestInteractive } from './cadenceGate';
+import { mountMovement } from '../mount';
 import { losClear } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
@@ -56,6 +64,74 @@ function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, tr
   if (!battle) return;
   for (const line of fireTriggers(get, c, trigger, { rng: battleRng(), set })) battle.log.push(ev('detail', line, c.id));
 }
+
+// ============================================================================================
+// GATE D'ACTION PAR ROUND (op `actGate` — Racine de mandragore, LDB 71 l.35 : « Les utilisateurs
+// doivent réussir un Test de Force Mentale à chaque Round pour effectuer une Action ou un Mouvement
+// (un au choix) »). Résolu au DÉBUT du tour du porteur, cadence-aware :
+//  - héros MANUEL → étape de cascade `actGate` INFLUENÇABLE ; sur un échec, l'applier INSÈRE une étape
+//    de CHOIX `actGateChoice` (garder l'Action ou le Mouvement) dont l'issue est appliquée directement
+//    sur la battle COURANTE (le tour vient de commencer) ;
+//  - IA / cadence auto → jet inline ; échec = l'Action est GARDÉE (défaut rationnel), le Mouvement est
+//    perdu — FOLDÉ par l'appelant (advanceTurn/confirmRoundStart) dans le budget du tour.
+// ============================================================================================
+
+export interface ActGateOutcome { loseMovement: boolean; lines: string[] }
+
+/** Résout les gates d'action du combattant qui DEVIENT actif. UN Test par Caractéristique gatée et par
+ *  Round (deux doses de la même drogue ne re-testent pas — la « Dose » n'est pas modélisée). */
+export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutcome {
+  const out: ActGateOutcome = { loseMovement: false, lines: [] };
+  if (isOutOfAction(c) || !get().battle) return out;
+  const gates = (c.activeEffects ?? []).filter((e) => e.actGate);
+  const chars = [...new Set(gates.map((e) => e.actGate!.char))];
+  for (const char of chars) {
+    const label = gates.find((e) => e.actGate!.char === char)?.label ?? 'Effet';
+    if (roundTestInteractive(c)) {
+      const base = rawCombatTestBase(c, undefined, char);
+      pushCombatStep(set, {
+        id: `actGate-${c.id}-${char}`, kind: 'actGate', actorId: c.id, icon: '🌿', rollLabel: CHAR_LABELS[char],
+        base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
+        label: t('turn.actGate', { label }),
+      });
+      continue;
+    }
+    const res = rollTest(rawCombatTestBase(c, undefined, char), 'intermediaire', battleRng(), combatTestPenalty(c));
+    out.lines.push(describeTestRoll(c.name, `${CHAR_LABELS[char]} (${label})`, 'intermediaire', res));
+    if (!res.success) { out.loseMovement = true; out.lines.push(t('turn.actGateKeepAction', { name: c.name })); }
+  }
+  return out;
+}
+
+// Étape `actGate` (héros manuel) : succès → rien à restreindre ; échec → étape de CHOIX insérée.
+registerCascadeApplier('actGate', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  if (step.result.success) return { journal: [t('turn.actGateOk', { name: hero.name })] };
+  return {
+    journal: [t('turn.actGateFail', { name: hero.name })],
+    insert: [{
+      id: `actGateChoice-${hero.id}`, kind: 'actGateChoice', actorId: hero.id, icon: '🌿',
+      label: t('turn.actGateChoice'),
+      options: [
+        { key: 'action', label: t('turn.actGateOptAction') },
+        { key: 'move', label: t('turn.actGateOptMove') },
+      ],
+      defaultChoice: 'action', interactive: true,
+    }],
+  };
+});
+// Étape `actGateChoice` : applique l'issue sur la battle COURANTE (le tour du héros vient de démarrer).
+registerCascadeApplier('actGateChoice', (get, set, step, hero) => {
+  if (!hero) return;
+  const battle = get().battle;
+  if (!battle || battle.order[battle.turn] !== hero.id) return; // plus son tour → sans objet
+  if (step.chosen === 'move') {
+    set({ battle: { ...battle, acted: true } });
+    return { journal: [t('op.loseAction', { name: hero.name })] };
+  }
+  set({ battle: { ...battle, movementUsed: mountMovement(battle, hero) } });
+  return { journal: [t('op.loseMovement', { name: hero.name })] };
+});
 
 // ============================================================================================
 // Fonctions de cycle de tour ennemi, déplacées ISO-COMPORTEMENT depuis combatFlow (corps copiés tel

@@ -213,7 +213,8 @@
             "ops": [
               {
                 "op": "reduceDiseaseDays",
-                "days": 1
+                "days": 1,
+                "oncePerDisease": true
               }
             ]
           }

@@ -4,6 +4,7 @@
  */
 import { Combatant, CharKey, Difficulty } from './types';
 import { findSkillById } from '../data';
+import { itemCapability } from './capabilities';
 import { groupMatch } from './groups';
 import { effectiveChar, bonus } from './characteristics';
 import { assistBonus } from './tests';
@@ -77,7 +78,23 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   // (`passiveSkillSum` : Groin poilu +10 Pistage, −N% en X du port d'armure) + mods de Test char-qualifiés
   // (`passiveTestMod` : mutation Visage inversé −20 Soc, objet Laid −Soc).
   const passive = passiveSkillSum(c, skill) + passiveTestMod(c, ck);
-  return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive;
+  // Mods de Test char-QUALIFIÉS d'effets ACTIFS (op `testMod{char}` exécutée — Mystracine « +10 aux
+  // Tests d'E et de FM, −10 Ag/I/Int », LDB 71 l.33) : sommés pour la seule carac testée ; les mods
+  // GLOBAUX (sans char) sont déjà comptés via `testStatePenalty` (→ effectTestMod).
+  const fxChar = (c.activeEffects ?? []).reduce((s, e) => s + (e.testModChar === ck ? (e.testMod ?? 0) : 0), 0);
+  return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive + fxChar + skillToolMod(c, skill);
+}
+
+/** Malus « sans l'outil de la compétence » (LDB 09 l.168 : les Difficultés de Crochetage « supposent
+ *  l'utilisation d'outils de crochetage ; des crochets improvisés… peuvent être utilisés avec une
+ *  pénalité de -10 ») : si la donnée de la compétence déclare `tool` et que l'acteur ne POSSÈDE aucun
+ *  objet non détruit portant la capability requise, `withoutMod` s'applique. Possession NON gatée sur
+ *  le port (`itemCapability`) : avoir les outils dans le sac suffit — on les sort pour s'en servir. */
+export function skillToolMod(c: Combatant, skill?: string): number {
+  const tool = skill ? findSkillById(skill)?.tool : undefined;
+  if (!tool) return 0;
+  const has = (c.items ?? []).some((it) => !it.destroyed && itemCapability(it, tool.capability));
+  return has ? 0 : tool.withoutMod;
 }
 
 /** Valeur de Test « NUE » d'une compétence : Caractéristique EFFECTIVE (buffs magiques + Traumatisme via

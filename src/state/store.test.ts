@@ -1786,7 +1786,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Potion de guérison : soigne du Bonus d’Endurance, consomme l’objet, coûte l’Action', () => {
     const h = combatHero({
       wounds: { current: 5, max: 12 },
-      items: [potion('p1', 'Potion de guérison', [{ op: 'heal', amount: { bonusOf: 'E' } }])],
+      items: [potion('p1', 'Potion de guérison', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } })],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleUseItem('p1');
@@ -1799,7 +1799,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Potion de vitalité : retire l’État Exténué (toutes les piles)', () => {
     const h = combatHero({
       conditions: [{ name: 'extenue', value: 2 }],
-      items: [potion('p2', 'Potion de vitalité', [{ op: 'removeCondition', name: 'extenue', all: true }])],
+      items: [potion('p2', 'Potion de vitalité', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', name: 'extenue', all: true }] } })],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleUseItem('p2');
@@ -1811,7 +1811,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Action déjà consommée : aucune utilisation (objet conservé)', () => {
     const h = combatHero({
       wounds: { current: 5, max: 12 },
-      items: [potion('p3', 'Potion de guérison', [{ op: 'heal', amount: { bonusOf: 'E' } }])],
+      items: [potion('p3', 'Potion de guérison', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } })],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h, { acted: true }) });
     useGame.getState().battleUseItem('p3');

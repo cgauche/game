@@ -27,6 +27,7 @@ const FLOW_MODULES: Record<string, string> = {
   combatFlow: read('./combatFlow.ts'),
   combatGeometry: read('./combatGeometry.ts'), // helpers géométrie extraits de combatFlow
   combatEffects: read('./combatEffects.ts'), // effets de scène/campagne extraits de combatFlow
+  consumableFlow: read('./consumableFlow.ts'), // runner de consommable (#50 — Flow cadence-aware)
   combatManeuvers: read('./combatManeuvers.ts'), // résolveurs de manœuvres extraits de combatFlow
   medicFlow: read('./medicFlow.ts'),
   partyFlow: read('./partyFlow.ts'),
@@ -101,6 +102,10 @@ const JUSTIFIED: Record<string, string> = {
   confirmActivity: 'résolveur « Appliquer » de la modale d’Activité : le TEST a eu lieu en modale ; les dés de Statut (montant des Revenus, LDB 08) sont la conséquence affichée',
   bankDeposit: 'placement en interlude : l’Indice d’intérêts est tiré par le monde (ambiant) et AFFICHÉ (gains/risque de faillite)',
   openSkillTest: 'ouvre pendingTest (modale) ; le 1d10 « réaction au Statut » (option LDB 08 l.54/90, monde ambiant) est tiré UNE fois et appliqué comme MODIFICATEUR du Test révélé dans la modale',
+  scheduleDelayedOps: 'op `delayed` (#50) : le RNG ne résout que les FORMULES DE DÉLAI/DURÉE (« au bout de 2-3 h », « pendant 21 h » — horloge du monde, pas un Test de héros) ; les ops différées elles-mêmes sont RÉVÉLÉES à l’échéance (fireScheduledEffects → runFlow → journal), et tout Test qu’elles porteraient ouvre sa modale',
+  runConsumable: 'runner de consommable (#50) : le RNG ne résout que la DURÉE de l’objet (« 2d10 minutes », LDB 71 — horloge, pas un Test) ; un nœud `test` du Flow OUVRE pendingTest (scène, restreint au buveur — walker privé runSceneConsumableFlow → openSkillTest) ou une étape de cascade influençable (combat, runCombatFlow) ; les feuilles sont JOURNALISÉES (applyLeafOps → log)',
+  usePartyItem: 'consommation depuis la fiche : journalisée + délègue à runConsumable (les jets aval sont différés/révélés)',
+  battleConsumeItem: 'consommation en combat (une Action) : délègue à runConsumable (voie cadence-aware) ; le journal différé est déversé dans le log de bataille',
 };
 
 /** Extrait `nom: (args) => corps` des actions du store. */

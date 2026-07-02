@@ -16,9 +16,9 @@ function hero(p: Partial<Combatant>): Combatant {
   } as Combatant;
 }
 
-// Effets STRUCTURÉS (GameOp[]) — comme le catalogue migré (LDB 307).
-const BANDAGE = item({ uid: 'b1', name: 'Bandages', consumable: [{ op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' }] });
-const POTION = item({ uid: 'p1', name: 'Potion de guérison', consumable: [{ op: 'heal', amount: { bonusOf: 'E' } }] });
+// Effets STRUCTURÉS (Flow, feuilles EffectOp) — comme le catalogue migré (#50).
+const BANDAGE = item({ uid: 'b1', name: 'Bandages', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' }] } } });
+const POTION = item({ uid: 'p1', name: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } } });
 
 describe('usePartyItem — consommables hors combat (fiche)', () => {
   beforeEach(() => {

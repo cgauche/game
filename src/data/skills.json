@@ -134,6 +134,10 @@
     "source": {
       "book": "LDB",
       "page": 121
+    },
+    "tool": {
+      "capability": "lockpicks",
+      "withoutMod": -10
     }
   },
   {

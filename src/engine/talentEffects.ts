@@ -127,14 +127,20 @@ export function heroMaxWounds(hero: Combatant): number {
   return maxWounds(chars, hero.size ?? 'moyenne') + extraWounds(hero);
 }
 
-/** Maximum de Points de Chance : Destin + niveaux des talents « Chance » (Chanceux, LDB 10). */
-export function fortuneMax(hero: Combatant): number {
-  return (hero.fate ?? 0) + talentAttrSum(hero, 'fortune');
+/** Σ des `attrMods{attr}` d'effets ACTIFS (op `attrMod` exécutée — buff temporaire, ext. consommables) —
+ *  s'ajoute aux passifs de talent dans les maxima dérivés, expire avec l'effet porteur. */
+function activeAttrSum(hero: Combatant, attr: 'fortune' | 'resolve'): number {
+  return (hero.activeEffects ?? []).reduce((s, e) => s + (e.attrMods?.[attr] ?? 0), 0);
 }
 
-/** Maximum de Détermination : Résilience + niveaux des talents « Détermination » (Obstiné). */
+/** Maximum de Points de Chance : Destin + niveaux des talents « Chance » (Chanceux, LDB 10) + effets actifs. */
+export function fortuneMax(hero: Combatant): number {
+  return (hero.fate ?? 0) + talentAttrSum(hero, 'fortune') + activeAttrSum(hero, 'fortune');
+}
+
+/** Maximum de Détermination : Résilience + niveaux des talents « Détermination » (Obstiné) + effets actifs. */
 export function resolveMax(hero: Combatant): number {
-  return (hero.resilience ?? 0) + talentAttrSum(hero, 'resolve');
+  return (hero.resilience ?? 0) + talentAttrSum(hero, 'resolve') + activeAttrSum(hero, 'resolve');
 }
 
 /**

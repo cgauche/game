@@ -306,6 +306,13 @@ export type Effect =
   // `align` (Puissance du Chaos) facultatif : si la mutation survient, force la table EDOC alignée
   // (sinon la règle globale décide). C'est à l'éditeur de niveau de le poser quand la source est dédiée.
   | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'resistance' | 'calme'; align?: import('../engine/corruption').ChaosAlign; heroId?: string }
+  /** Exposition HYDRIQUE (T2C ch.14 p.91 — « Maladies transmises par l'eau ») : Test de **Résistance
+   *  Intermédiaire (+0)** modifié (tableau 1 « Source d'eau » = `source`, choix d'auteur de la zone
+   *  d'eau ; tableau 2 « Blessures et États » DÉRIVÉ du héros, immersion seule) ; raté → d100 « +10
+   *  pour chaque DR négatif » → maladie CONTRACTÉE directement (le Test d'exposition EST le test —
+   *  jamais un second Test de Contraction). `mode` : `ingestion` (boire de l'eau non bouillie, l.5) /
+   *  `immersion` (chute/nage, blessures ouvertes, l.7-9). Cible : `party` ou `hero` (+`heroId`). */
+  | { type: 'waterExposure'; mode: import('../data').WaterExposureMode; source?: string; target?: 'party' | 'hero'; heroId?: string }
   /** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…).
    *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
    *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */

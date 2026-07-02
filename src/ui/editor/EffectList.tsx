@@ -11,7 +11,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells, trappings as trappingsData, refLabel } from '../../data';
+import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE } from '../../data';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
@@ -102,6 +102,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'setDoor': return `${icon} Porte (${e.x ?? 0},${e.y ?? 0},${e.side ?? 'N'}) ${e.open ? 'ouverte' : 'fermée'}`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
+    case 'waterExposure': return `${icon} Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;
     case 'learnSpell': return `${icon} Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
     case 'rest': return `${icon} Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
     case 'mealParty': return `${icon} Repas du groupe`;
@@ -280,6 +281,30 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               ))}
             </select>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'waterExposure' && (
+          <>
+            {/* Mode RAW (T2C p.91) : ingestion (boire de l'eau non bouillie) / immersion (chute, nage —
+                le tableau « Blessures et États » ne s'applique qu'à l'immersion, dérivé du héros). */}
+            <select value={e.mode ?? 'ingestion'} onChange={(ev) => upd({ mode: ev.target.value })}>
+              <option value="ingestion">Ingestion (boire de l’eau non bouillie)</option>
+              <option value="immersion">Immersion (chute / nage)</option>
+            </select>
+            {/* Tableau 1 « Source d'eau » : le modificateur de la zone d'eau, choix d'AUTEUR. */}
+            <select value={e.source ?? ''} onChange={(ev) => upd({ source: ev.target.value || undefined })}>
+              <option value="">Source d’eau : Campagne (+0)</option>
+              {WATER_EXPOSURE.modifiers.filter((m) => m.table === 'source-d-eau').map((m) => (
+                <option key={m.id} value={m.id}>{m.label} ({m.mod > 0 ? '+' : ''}{m.mod})</option>
+              ))}
+            </select>
+            <select value={e.target ?? 'hero'} onChange={(ev) => upd({ target: ev.target.value })}>
+              <option value="hero">Un héros</option>
+              <option value="party">Tout le groupe</option>
+            </select>
+            {(e.target ?? 'hero') === 'hero' && (
+              <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+            )}
           </>
         )}
         {effect.type === 'learnSpell' && (

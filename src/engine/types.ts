@@ -383,6 +383,10 @@ export interface ConditionInstance {
    *  décrémenté en fin de Round, l'État se dissipe à 0. Un ajout NON temporisé du même État
    *  efface la durée (l'État redevient régi par ses règles normales — on n'écourte jamais). */
   roundsLeft?: number;
+  /** Échéance d'HORLOGE (minute `gameTime`) d'un État à durée en heures/minutes (Belladone : sommeil
+   *  « 1d10 + 4 heures », LDB 72 l.18) — posée par `addClockCondition` (op `condition.durationHours`),
+   *  purgée par `purgeClockEffects` (upkeep, à chaque avance d'horloge). Exclusif de `roundsLeft`. */
+  untilTime?: number;
 }
 
 /** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
@@ -502,6 +506,25 @@ export interface ActiveEffect {
    *  futures : +N) — STACKE par-dessus la pénalité d'État (≠ État, donc non soumis au non-cumul ni à
    *  `ignoreStatePenalties`). Lu par `combatTestPenalty`/`testStatePenalty` (engine/conditions). */
   testMod?: number;
+  /** QUALIFIE `testMod` par Caractéristique (op `testMod{char}` exécutée — Mystracine « +10 aux Tests
+   *  d'Endurance et de FM, −10 Ag/I/Int », LDB 71 l.33) : le mod ne s'applique qu'aux Tests de cette
+   *  carac, lu par `testValue` (engine/skills) ; EXCLU du global `effectTestMod`. */
+  testModChar?: CharKey;
+  /** Modif. d'ATTRIBUT SECONDAIRE posé par l'op `attrMod` exécutée (Bonnet de fou « +4 Blessures »,
+   *  LDB 71 l.20) — résolu numérique à l'application. `wounds` lu par `effectiveMaxWounds` ;
+   *  `fortune`/`resolve` par `fortuneMax`/`resolveMax` (talentEffects). */
+  attrMods?: Partial<Record<'wounds' | 'fortune' | 'resolve', number>>;
+  /** Bonus aux Tests LIÉS À UNE MALADIE (op `diseaseTestMod` — Fleur de lune +30 vs Peste noire,
+   *  Tonique digestif +20…) : sommé par `activeDiseaseTestMod` (engine/disease) aux Tests de
+   *  contraction/cycle quotidien/fin de maladie. `diseases` absent = toutes. */
+  diseaseTestMod?: { diseases?: string[]; amount: number };
+  /** Symptôme SUSPENDU par id (op `suppressSymptom` — Racine de terre « annule les effets de bubons »,
+   *  LDB 72 l.28) : ses canaux passive/onTick sont ignorés tant que l'effet dure (`symptomSuppressed`). */
+  suppressedSymptom?: string;
+  /** GATE d'action par Round (op `actGate` — Racine de mandragore, LDB 71 l.35) : au début du tour du
+   *  porteur en combat, un Test de `char` décide s'il garde Action ET Mouvement (réussite) ou UN seul
+   *  au choix (échec). Résolu cadence-aware par `resolveActGates` (state/combatFlow). */
+  actGate?: { char: CharKey };
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête — Peau de loup d'hiver d'Ulric,
    *  Protection contre la pluie) : `exposureNight` est sauté tant que l'effet dure. */
   weatherImmune?: boolean;
@@ -618,9 +641,14 @@ export interface ItemInstance {
   enc: number; // encombrement
   equipped: boolean;
   desc?: string | null;
-  /** Effet d'un CONSOMMABLE (potion/bandage) en `GameOp[]` — copié du trapping (`TrappingData.consumable`).
-   *  Exécuté par `applyOps` (`useConsumable`). `isConsumable` = présence d'au moins un op. */
-  consumable?: import('./ops').GameOp[];
+  /** Effet d'un CONSOMMABLE (potion/drogue/bandage) en **Flow** (noyau `engine/flowCore`, feuilles
+   *  EffectOp) — copié du trapping (`TrappingData.consumable`). Un Test « au boire » (Brise-cœur,
+   *  Belladone…) est un nœud `{kind:'test'}` du Flow, résolu cadence-aware par le runner state
+   *  (`runConsumable`) — jamais un jet silencieux. `isConsumable` = Flow non vide. */
+  consumable?: import('./flowCore').Flow;
+  /** Durée d'HORLOGE des effets durables du consommable (LDB 71/72 « Durée : … ») — copiée du trapping,
+   *  résolue AU BOIRE (`consumableUntilTime`) → `ctx.defaultUntilTime` des ops appliquées. */
+  consumableDuration?: import('./consumables').ConsumableDuration;
   /** `id` du Groupe/famille (`WeaponGroupData.id`) — munition : famille compatible (arc/arbalete/
    *  poudre-noire) ; armure : type (plate/mailles/cuir-souple…). Correspond à `Weapon.subType`. */
   subType?: string;

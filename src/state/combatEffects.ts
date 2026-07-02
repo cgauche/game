@@ -4,7 +4,7 @@ import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, defaultRNG, type RNG } from '../engine/dice';
-import { applyOps, type OpsCtx } from '../engine/ops';
+import { applyOps, resolveFormula, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
@@ -17,10 +17,10 @@ import { easeDifficulty } from '../engine/tests';
 import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
-import { findCreatureById, refLabel } from '../data';
+import { findCreatureById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { applySummon } from './summonFlow';
-import { contractDisease, DISEASE_DEFS } from '../engine/disease';
+import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
@@ -32,9 +32,10 @@ import { feedFromMeal } from '../engine/provisions';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, setDoorOpen } from './scene';
-import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, EMPTY_FLOW } from './flow';
+import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
-import { startCascade } from './cascade';
+import { startCascade, registerCascadeApplier } from './cascade';
+import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
 import { ev } from './combatLog';
@@ -238,6 +239,50 @@ export function fireScheduledEffects(get: Get, set: SetFn) {
   }
 }
 
+/** Programme les ops d'une op IMPURE `delayed` (ext. #50-D) dans la file `scheduledEffects` — même
+ *  mécanique que l'Effet de scène `delayedEffect` (Lot 0). Échéance : `afterMinutes/Hours/Days` résolus
+ *  MAINTENANT contre la cible, OU `afterDuration:true` = l'échéance du contexte (fin de la durée du
+ *  consommable — Bonnet de fou « Quand l'effet se dissipe… », LDB 71 l.20). `forMinutes/Hours/Days` :
+ *  durée d'horloge PROPRE des ops différées (bakée sur la feuille programmée — Délice de Ranald :
+ *  pénalité après les 3 h, LDB 71 l.24). Le Flow programmé cible le porteur par id (`on:'hero'`). */
+export function scheduleDelayedOps(
+  get: Get, set: SetFn, target: Combatant,
+  op: Extract<import('../engine/ops').GameOp, { op: 'delayed' }>,
+  base: { now: number; untilTime?: number; label?: string },
+): void {
+  const rng = battleRng();
+  const delayMin = op.afterDuration
+    ? Math.max(0, (base.untilTime ?? base.now) - base.now)
+    : resolveFormula(op.afterMinutes ?? 0, target, rng)
+      + resolveFormula(op.afterHours ?? 0, target, rng) * 60
+      + resolveFormula(op.afterDays ?? 0, target, rng) * 24 * 60;
+  const executeAt = base.now + Math.max(0, delayMin);
+  const forMin = resolveFormula(op.forMinutes ?? 0, target, rng)
+    + resolveFormula(op.forHours ?? 0, target, rng) * 60
+    + resolveFormula(op.forDays ?? 0, target, rng) * 24 * 60;
+  const flow: Flow = {
+    kind: 'do',
+    effect: {
+      type: 'ops', on: 'hero', heroId: target.id, ops: op.ops,
+      ...(base.label ? { label: base.label } : {}),
+      ...(forMin > 0 ? { untilTime: executeAt + forMin } : {}),
+    },
+  };
+  set({ scheduledEffects: [...get().scheduledEffects, { executeAt, flow }] });
+}
+
+/** Applique les ops d'UNE feuille EffectOp à `c` — SOURCE UNIQUE des exécuteurs d'EffectOp (handler de
+ *  scène `ops`, `runCombatFlow`, runner de consommable) : les `delayed` sont PROGRAMMÉES
+ *  (`scheduleDelayedOps`), le reste passe par `applyOps` avec le contexte de la FEUILLE (`leafOpsCtx` —
+ *  untilTime/label bakés priment, sinon le contexte appelant). Renvoie le journal. */
+export function applyLeafOps(get: Get, set: SetFn, c: Combatant, e: EffectOp, base: OpsCtx): string[] {
+  const now = base.now ?? get().gameTime;
+  const ctx = leafOpsCtx({ ...base, now }, e);
+  for (const o of e.ops) if (o.op === 'delayed') scheduleDelayedOps(get, set, c, o, { now, untilTime: ctx.defaultUntilTime, label: ctx.label });
+  const rest = e.ops.filter((o) => o.op !== 'delayed');
+  return rest.length ? applyOps(c, rest, ctx) : [];
+}
+
 /** Cibles d'un EffectOp de scène (`ops` on=party/hero) : les héros vivants concernés,
  *  dans le bon ensemble (file de combat si en combat, sinon le groupe). `hero` = celui désigné par
  *  `heroId` (défaut : 1er vivant) ; `party` = tous les héros vivants. SOURCE UNIQUE (pas de dup). */
@@ -384,7 +429,9 @@ export function runSpellFlowLines(target: Combatant, caster: Combatant | undefin
       case 'do':
         if (f.effect.type === 'ops') {
           const unit = f.effect.on === 'caster' ? caster : target;
-          if (unit) lines.push(...applyOps(unit, f.effect.ops, ctx));
+          // Contexte de FEUILLE (`leafOpsCtx`) : untilTime/label bakés (consommable) priment sur le ctx
+          // appelant. Les ops IMPURES (`delayed`…) sont routées en amont vers runCombatFlow (flowHasImpureOp).
+          if (unit) lines.push(...applyOps(unit, f.effect.ops, leafOpsCtx(ctx, f.effect)));
         }
         break;
       case 'if':
@@ -668,11 +715,13 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => {
       // EffectOp : applique les GameOps (vocabulaire mécanique des sorts) à la cible de SCÈNE
       // (`party`/`hero`). `caster`/`target` = contexte d'incantation, résolu par le flux de sort → ignoré ici.
+      // `applyLeafOps` = SOURCE UNIQUE : contexte de FEUILLE (untilTime/label bakés par un consommable —
+      // la branche d'un `test` suspendu garde sa durée) + programmation des ops `delayed`.
       const on = e.on ?? 'party';
       if (on !== 'party' && on !== 'hero') return;
       const targets = env.targets(on, e.heroId);
       if (!targets.length) return;
-      const lines = targets.flatMap((c) => applyOps(c, e.ops, { rng: defaultRNG, onCorruption: (n, align) => gainCorruption(env.get, env.set, c, n, align) }));
+      const lines = targets.flatMap((c) => applyLeafOps(env.get, env.set, c, e, { rng: defaultRNG, onCorruption: (n, align) => gainCorruption(env.get, env.set, c, n, align) }));
       env.set(touchActors(env.get()));
       lines.forEach((l) => env.log(l));
     },
@@ -828,6 +877,34 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (who) for (const l of lines) env.log(l);
     },
   },
+  waterExposure: {
+    group: '☠️ Afflictions', label: 'Exposition hydrique (eau souillée — T2C ch.14)', icon: '🌊',
+    make: () => ({ type: 'waterExposure', mode: 'ingestion', target: 'hero' }),
+    apply: (e, env) => {
+      // « Maladies transmises par l'eau » (T2C p.91) : UN Test de Résistance Intermédiaire (+0) modifié
+      // PAR HÉROS exposé — étape de cascade influençable (jamais de jet silencieux). Modificateurs
+      // cumulés : tableau 1 « Source d'eau » (choix d'auteur `e.source`, ingestion ET immersion) +
+      // tableau 2 « Blessures et États » (DÉRIVÉ du héros, immersion seule). La conséquence (d100
+      // « +10/DR négatif » → contraction DIRECTE) vit dans l'applier `waterExposure`.
+      const heroes = env.targets(e.target ?? 'hero', e.heroId);
+      if (!heroes.length) return;
+      const src = sourceExposureMod(e.source);
+      const steps: CascadeStep[] = heroes.map((h) => {
+        const auto = autoExposureMods(h, e.mode); // tableau 2 (gate `appliesTo` interne : immersion seule)
+        const parts = [...(src ? [src] : []), ...auto]; // tableau 1 : « à l'ingestion et à l'immersion »
+        const mods = parts.reduce((s, m) => s + m.mod, 0);
+        const base = testValue(h, WATER_EXPOSURE.test.skillId) + mods;
+        const detail = parts.map((m) => `${m.label} ${m.mod > 0 ? '+' : ''}${m.mod}`).join(' · ');
+        return {
+          id: `waterExposure-${h.id}`, kind: 'waterExposure', actorId: h.id, icon: '🌊',
+          rollLabel: refLabel('skills', { id: WATER_EXPOSURE.test.skillId }),
+          label: t('eff.waterExposure', { mode: e.mode === 'immersion' ? 'immersion' : 'ingestion', detail: detail ? ` (${detail})` : '' }),
+          base, target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[WATER_EXPOSURE.test.difficulty])),
+        };
+      });
+      startCascade(env.get, env.set, { title: t('eff.waterTitle'), icon: '🌊', purpose: 'test', steps });
+    },
+  },
 
   // ── 🕰 Temps & repos ──────────────────────────────────────────────────────
   rest: {
@@ -963,6 +1040,24 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
 };
+
+/** Étape de cascade `waterExposure` (T2C ch.14 p.91) : Test raté → d100 « avec un modificateur de +10
+ *  pour chaque DR négatif » → maladie CONTRACTÉE directement (`applyContraction`, incubation normale —
+ *  le Test d'exposition EST le test, jamais un second Test de Contraction). « Relancez si le Personnage
+ *  n'est pas blessé » honoré par `drawWaterDisease`. Déjà porteur → rien de neuf (dédoublonnée). */
+registerCascadeApplier('waterExposure', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  if (step.result.success) return { journal: [t('eff.waterSafe', { name: hero.name })] };
+  const draw = drawWaterDisease(Math.max(0, -step.result.sl), isWounded(hero), battleRng());
+  const lines = applyContraction(hero, draw.disease, false, battleRng());
+  const rollTxt = draw.modified !== draw.roll ? `${draw.roll} (+${draw.modified - draw.roll} → ${draw.modified})` : String(draw.roll);
+  return {
+    journal: [
+      t('eff.waterDraw', { roll: rollTxt, disease: diseaseLabel(draw.disease) }),
+      ...(lines.length ? lines : [t('eff.waterAlready', { name: hero.name })]),
+    ],
+  };
+}, (success, name) => (success ? t('eff.waterSafe', { name }) : t('eff.waterFail', { name })));
 
 /**
  * Applique une liste d'Effets via le REGISTRE `EFFECT_HANDLERS` (1 effet = 1 handler). Un handler qui
