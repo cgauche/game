@@ -4,7 +4,7 @@
  * roofMaterial }`) puis `npm run gen` (auto en dev via le plugin Vite). `BUILDINGS_META` (méta sémantique,
  * pour l'éditeur) en dérive — un seul fichier par bâtiment à tenir.
  */
-import type { BuildingDef } from '../types';
+import type { BuildingDef, BuildingFeature } from '../types';
 import { BUILDING_DEFS } from './_registry.generated';
 
 /** Méta sémantique d'un bâtiment pour l'éditeur (libellé d'outil, empreinte par défaut à la pose,
@@ -19,4 +19,12 @@ export const BUILDINGS_META: Record<string, BuildingMeta> = Object.fromEntries(
  *  l'ancienne table `STYLE_MATERIAL` (méta désormais portée par chaque `BuildingDef`). */
 export function styleRoofMaterial(style: string): string {
   return BUILDINGS_META[style]?.roofMaterial ?? 'tuile';
+}
+
+const BY_ID: Record<string, BuildingDef> = Object.fromEntries(BUILDING_DEFS.map((b) => [b.id, b]));
+
+/** Ornements d'identité d'un style de bâtiment (clocheton/cheminée/enseigne/étal), repli `[]` — lus par
+ *  `builders/props` pour émettre un billboard par ornement. SÉPARÉ de `BUILDINGS_META` (méta éditeur). */
+export function buildingFeatures(style: string): BuildingFeature[] {
+  return BY_ID[style]?.features ?? [];
 }

@@ -5,4 +5,5 @@ export const building: BuildingDef = {
   label: 'Taverne',
   defaultFoot: { w: 4, h: 3 },
   roofMaterial: 'tuile',
+  features: [{ prop: 'enseigne', anchor: 'facade' }],
 };

@@ -48,9 +48,11 @@ export function footAnchor(
   z: number,
   hM: number,
   scaleK = 1,
+  liftM = 0,
 ): { sx: number; sy: number; depth: number; s: number; o: number } | null {
   const indoor = isIndoor(scene);
-  const P = { x: gx * cam.mpt, y: gy * cam.mpt, z: heightAt(scene, Math.round(gx), Math.round(gy), z) };
+  // `liftM` = surélévation MÉTRIQUE additionnelle par-dessus la surface de la case (ornement de faîte/mur).
+  const P = { x: gx * cam.mpt, y: gy * cam.mpt, z: heightAt(scene, Math.round(gx), Math.round(gy), z) + liftM };
   const pr = project(cam, P);
   if (pr.behind || pr.depth > farTilesOf(indoor) * cam.mpt) return null;
   const o = 1 - fogAt(pr.depth / cam.mpt, fogCurveOf(indoor));
@@ -96,9 +98,12 @@ export interface PropBillboard {
  */
 export function buildPropBillboards(scene: Scene, cam: CamPose, visible: ReadonlySet<string>): PropBillboard[] {
   const out: PropBillboard[] = [];
-  for (const el of buildProps(scene, visible)) {
+  // Cutaway POV : l'œil sous une empreinte lève le toit (cf. `buildRoofs` allies:[œil]) → même vérité
+  // ici pour ne pas laisser flotter un faîteau. `allies` seul ne culle PAS les props d'étage (cf. buildProps).
+  const eyeCell = [{ x: Math.round(cam.eye.x), y: Math.round(cam.eye.y) }];
+  for (const el of buildProps(scene, visible, { allies: eyeCell })) {
     if (!el.states.visible) continue; // cull LdV/brouillard (décor de scène ET overlay de terrain bois→arbre)
-    const a = footAnchor(scene, cam, el.cell.x + el.foot.offX, el.cell.y + el.foot.offY, el.cell.z, PROP_H_M, el.foot.scale);
+    const a = footAnchor(scene, cam, el.cell.x + el.foot.offX, el.cell.y + el.foot.offY, el.cell.z, PROP_H_M, el.foot.scale, el.liftM ?? 0);
     if (!a) continue;
     const t = bbTransform(a, a.s);
     const op = a.o < 1 ? ` opacity="${a.o.toFixed(3)}"` : '';

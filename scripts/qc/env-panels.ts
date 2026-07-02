@@ -14,9 +14,10 @@ import { buildRoofs } from '../../src/gameIso/builders/roofs';
 import { roofDepth, roofSvg } from '../../src/gameIso/backends/affineRoofs';
 import { detailPatternDefs } from '../../src/gameIso/backends/affineDetail';
 import { buildProps } from '../../src/gameIso/builders/props';
+import { propDepth } from '../../src/gameIso/backends/affineProps';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { edgeDepthVeil } from '../../src/gameIso/catalog/ambiance';
-import { stageSize, depth, tileCenter, billboardScale, TH, type Dims } from '../../src/gameIso/iso';
+import { stageSize, tileCenter, billboardScale, TH, type Dims } from '../../src/gameIso/iso';
 import { makeCamera, VW, VH } from '../../src/gameIso/pov/camera';
 import { buildPovDrawList } from '../../src/gameIso/pov/geometry';
 import { buildPropBillboards } from '../../src/gameIso/pov/billboardCore';
@@ -39,24 +40,26 @@ export function envPanel(scene: Scene, dims: Dims): Panel {
     objs.push({ d: floorDepth(el, dims), svg: floorSvg(el, dims, opts) + floorAccentsSvg(el, dims, opts) });
   // Murs d'arête (portes/parapets/herses inclus — apparence 100 % donnée), toutes couches.
   for (const el of buildWalls(scene)) objs.push({ d: wallDepth(el, dims), svg: wallSvg(el, dims, opts) + wallAccentsSvg(el, dims, opts) });
-  // PROPS en billboards du MÊME SVG iso — décor de scène (tonneaux, tentes…) ET overlays de terrain
-  // (bois → arbre), tous via `buildProps` (source unique). Placement type placeSprite (boîte 120×150,
-  // pieds au bas de la tuile), soulevés au lift MÉTRIQUE de leur case, réduits en edge-on (billboardScale).
-  // Le mur PLEIN, lui, est déjà rendu par `buildFloors` (bloc de relief), pas ici.
+  // Toits des bâtiments composés en PANS CONTINUS (jamais en cutaway : environnement pur), au plein détail
+  // matériaux v2. ÉMIS AVANT les props → à profondeur ÉGALE un ornement de faîte (clocheton/cheminée) se
+  // peint PAR-DESSUS sa nappe (tri stable), comme le stage live où `propObjs` suit `roofObjs`.
+  for (const el of buildRoofs(scene)) objs.push({ d: roofDepth(el, dims), svg: roofSvg(el, dims, opts) });
+  // PROPS en billboards du MÊME SVG iso — décor de scène (tonneaux, tentes…), overlays de terrain
+  // (bois → arbre) ET ornements de bâtiment (clocheton/cheminée/enseigne/étal), tous via `buildProps`
+  // (source unique). Boîte 120×150 CENTRÉE sur l'empreinte (`foot.offX/offY`, `foot.scale`), soulevée au
+  // lift MÉTRIQUE de la case + `liftM` de l'ornement, profondeur au coin caméra-proche (`propDepth`),
+  // réduite en edge-on (billboardScale). Le mur PLEIN, lui, est déjà rendu par `buildFloors`, pas ici.
   for (const el of buildProps(scene)) {
-    const { x, y, z } = el.cell;
-    const lift = metricToLift(heightAt(scene, x, y, z));
-    const { cx, cy } = tileCenter(x, y, dims, lift);
-    const scale = 0.55 * billboardScale(dims);
+    const px = el.cell.x + el.foot.offX, py = el.cell.y + el.foot.offY;
+    const lift = metricToLift(heightAt(scene, el.cell.x, el.cell.y, el.cell.z) + (el.liftM ?? 0));
+    const { cx, cy } = tileCenter(px, py, dims, lift);
+    const scale = 0.55 * el.foot.scale * billboardScale(dims);
     const sh = `<ellipse cx="${cx}" cy="${cy + 3}" rx="${22 * scale + 4}" ry="${(22 * scale + 4) / 2}" fill="#000" opacity="0.33"/>`;
     objs.push({
-      d: depth(x, y, dims, z),
+      d: propDepth(el, dims),
       svg: `${sh}<g transform="translate(${cx - 60 * scale},${cy + TH / 2 - 150 * scale}) scale(${scale})">${propSvg(el.ref, el.facing, dims.rot ?? 0)}</g>`,
     });
   }
-  // Toits des bâtiments composés en PANS CONTINUS (jamais en cutaway : environnement pur), au plein
-  // détail matériaux v2 (bardeaux/chaume clippés par pan).
-  for (const el of buildRoofs(scene)) objs.push({ d: roofDepth(el, dims), svg: roofSvg(el, dims, opts) });
   objs.sort((a, b) => a.d - b.d);
   const st = stageSize(dims);
   // Defs des matériaux v2 DANS le panneau (le `patternTransform` dépend de la projection ; les ids

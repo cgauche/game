@@ -115,16 +115,22 @@ export interface RoofEl extends ElBase {
 }
 /** Élément BILLBOARD (zéro face) : les DEUX backends rendent son SVG catalogue (`propSvg`) ancré aux pieds.
  *  `source` = ORIGINE (le rendu est identique) : 'entity' = prop de scène (fouillable, empreinte, facing,
- *  anim) ; 'terrain' = décor dérivé d'un terrain (`overlayProp`, ex. bois → arbre — 1×1, jamais fouillable). */
+ *  anim) ; 'terrain' = décor dérivé d'un terrain (`overlayProp`, ex. bois → arbre — 1×1, jamais fouillable) ;
+ *  'ornament' = ornement d'IDENTITÉ d'un bâtiment (clocheton/cheminée/enseigne/étal — dérivé de `Roof.style`
+ *  via `buildingFeatures`, jamais fouillable), rendu à l'identique d'un décor. */
 export interface PropEl extends ElBase {
   kind: 'prop';
-  source: 'entity' | 'terrain';
+  source: 'entity' | 'terrain' | 'ornament';
   /** Id de dessin : ref de prop NORMALISÉE (défaut 'tonneau', la même partout — décor d'entité OU de terrain). */
   ref: string;
   /** Orientation MONDE d'auteur (props directionnels) — chaque backend la projette avec SA caméra. */
   facing?: Dir8;
   /** Géométrie d'empreinte du décor (décalage fractionnaire vers le centre + échelle au côté max). */
   foot: { offX: number; offY: number; scale: number };
+  /** Surélévation MÉTRIQUE additionnelle par-dessus la surface de la case (défaut 0 : ancré au sol) — un
+   *  ornement de FAÎTE (clocheton) ou de MUR (enseigne) se pose EN HAUTEUR. Honoré par les deux backends
+   *  (iso : lift additionnel du token ; POV : hauteur d'ancre du billboard). */
+  liftM?: number;
   /** Anim CSS d'ambiance (calque fx du token). */
   fx?: string;
   /** Prop fouillable : l'affordance (halo/étincelle) est décidée côté stage (flags de jeu). */

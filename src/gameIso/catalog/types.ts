@@ -28,6 +28,22 @@ export interface BuildingDef {
   /** Matériau de couverture par DÉFAUT du toit (id `RoofMaterialDef` : 'tuile'/'chaume'/'ardoise') —
    *  méta portée par la donnée du bâtiment, lue par `styleRoofMaterial` (fin de la table `STYLE_MATERIAL`). */
   roofMaterial: string;
+  /** Ornements d'IDENTITÉ VISUELLE du type (clocheton d'une chapelle, cheminée d'une forge, enseigne
+   *  d'une taverne, étal d'une échoppe) — posés en billboard sur/devant le bâtiment par `builders/props`,
+   *  dérivés 100 % de la donnée. Absent = bâtiment sobre (maison/manoir/tour). Lu via `buildingFeatures`
+   *  (accesseur SÉPARÉ — hors `BuildingMeta`, qui reste la méta éditeur). */
+  features?: BuildingFeature[];
+}
+
+/** Un ornement d'identité d'un bâtiment : un prop du catalogue décor posé à un ancrage du bâtiment. */
+export interface BuildingFeature {
+  /** Id de prop du catalogue décor posé comme ornement (clocheton, cheminee, enseigne, etal-marche…). */
+  prop: string;
+  /** Où sur le bâtiment : 'ridge' = faîte (surélevé au toit) ; 'facade' = au-dessus de la porte (mur,
+   *  orienté vers l'extérieur) ; 'front' = au sol juste DEVANT la porte (orienté vers l'extérieur). */
+  anchor: 'ridge' | 'facade' | 'front';
+  /** Classe d'anim CSS d'ambiance passée à PropEl.fx (ex. 'warm' pour la fumée de forge). */
+  fx?: string;
 }
 
 export interface PropViz {

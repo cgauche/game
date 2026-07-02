@@ -20,23 +20,27 @@ import { scenario as arene } from '../../src/scenes/test-scenarios/arene';
 import { scenario as opera } from '../../src/scenes/test-scenarios/opera';
 import { scenario as caveau } from '../../src/scenes/test-scenarios/piege-caveau';
 
-// VITRINE BÂTIMENTS : petit bourg construit par `addBuilding` (via `rooms`) — 3 bâtiments à murs bois
+// VITRINE BÂTIMENTS : petit bourg construit par `addBuilding` (via `rooms`) — 5 bâtiments à murs bois
 // avec PORTE et FENÊTRES décoratives (posées automatiquement par `addBuilding`). Prouve que les pans se
-// lisent comme des maisons (croisées + porte à vantail) en iso rot0-3, edge, top, POV jour ET nuit.
+// lisent comme des maisons (croisées + porte à vantail) ET que chaque TYPE se LIT par son ornement
+// (enseigne sur la taverne, cheminée+fumée sur la forge, clocheton sur la chapelle, étal devant l'échoppe)
+// en iso rot0-3, edge, top, POV jour ET nuit.
 const vitrine: Scene = buildScene({
   size: [30, 24],
   id: 'vitrine-batiments',
-  nom: 'Vitrine — bâtiments (fenêtres + portes)',
+  nom: 'Vitrine — bâtiments (ornements par type)',
   ambiance: 'exterieur',
   terrain: 'herbe',
-  heroStart: { x: 24, y: 22 }, // œil POV sous la maison → sa façade (porte fermée + fenêtres) plein cadre
+  heroStart: { x: 24, y: 22 }, // œil POV sous la chapelle/échoppe → leurs ornements plein cadre
   // Deux portes FERMÉES (vantail visible) : taverne (canon 10,13,N) + maison (canon 24,11,N). La forge
   // reste ouverte (embrasure) pour le contraste. Clés = `__door_<x>_<y>_<side>_<z>`.
   flags: { '__door_10_13_N_0': false, '__door_24_11_N_0': false },
   rooms: [
     { foot: [3, 3, 15, 10], style: 'taverne', door: { x: 10, y: 12, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Taverne', id: 'vit-taverne' },
     { foot: [21, 4, 7, 7], style: 'maison', door: { x: 24, y: 10, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', id: 'vit-maison' },
-    { foot: [5, 16, 10, 5], style: 'forge', door: { x: 9, y: 16, side: 'N' }, wallStructure: 'mur-en-bois', floor: 'plancher', id: 'vit-forge' },
+    { foot: [5, 16, 10, 5], style: 'forge', door: { x: 9, y: 16, side: 'N' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Forge', id: 'vit-forge' },
+    { foot: [20, 14, 4, 5], style: 'chapelle', door: { x: 21, y: 18, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Chapelle', id: 'vit-chapelle' },
+    { foot: [25, 16, 3, 3], style: 'echoppe', door: { x: 26, y: 18, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Échoppe', id: 'vit-echoppe' },
   ],
 });
 

@@ -12,6 +12,7 @@ import { Combatant } from '../../engine/types';
 import { isOutOfAction } from '../../engine/conditions';
 import type { BattleState } from '../../state/store';
 import { CELL, Dims, tileCenter, depth, diamondPath } from '../iso';
+import { metricToLift } from '../../state/relief';
 import { BodyToken } from '../BodyToken';
 import { MountedToken } from '../MountedToken';
 import { pickBackend } from '../pickBackend';
@@ -71,11 +72,14 @@ export function propLayerObjs(propEls: PropEl[], ctx: TokenCtx): StageObj[] {
   const out: StageObj[] = [];
   for (const el of propEls) {
     const px = el.cell.x + el.foot.offX, py = el.cell.y + el.foot.offY;
+    // Un ornement (clocheton/cheminée/enseigne) porte un lift MÉTRIQUE additionnel (posé sur le toit / en
+    // haut du mur) : on l'ajoute au lift de surface de la case — le token le place en hauteur (POV : footAnchor).
+    const lctx = el.liftM ? { ...ctx, liftAt: (x: number, y: number, z = 0) => ctx.liftAt(x, y, z) + metricToLift(el.liftM!) } : ctx;
     out.push({
       d: propDepth(el, ctx.dims),
       z: el.cell.z,
       vis: el.states.visible,
-      el: token(ctx, el.entId ? `e-${el.entId}` : el.key, px, py, propSprite(el.ref, el.facing, ctx.dims.rot ?? 0), 0.55 * el.foot.scale, undefined, false, el.fx, false, false, el.cell.z),
+      el: token(lctx, el.entId ? `e-${el.entId}` : el.key, px, py, propSprite(el.ref, el.facing, ctx.dims.rot ?? 0), 0.55 * el.foot.scale, undefined, false, el.fx, false, false, el.cell.z),
     });
   }
   return out;

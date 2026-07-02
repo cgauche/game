@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, type SceneEntity } from '../../state/scene';
+import { emptyScene, type SceneEntity, type Roof, type WallSeg } from '../../state/scene';
 import { buildProps } from './props';
 
 /** BUILDER de props : clés stables, overlays de terrain, géométrie d'empreinte, vérités de scène. */
@@ -66,5 +66,90 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(game.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']); // au-dessus → coupé
     const iso = buildProps(s, undefined, { activeZ: 0, viewZ: 1 });
     expect(iso.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p2']); // isolement debug
+  });
+});
+
+/** ORNEMENTS d'identité par TYPE de bâtiment : dérivés de `buildingFeatures(roof.style)`, posés en
+ *  billboard sur/devant le bâtiment (ancres ridge/facade/front). 100 % donnée, aucun cas en dur. */
+describe('buildProps — ornements de bâtiment (data-driven par Roof.style)', () => {
+  const withRoof = (style: string, foot: Roof['foot'], walls: WallSeg[] = []) => {
+    const s = emptyScene(10, 10);
+    s.roofs = [{ id: `r-${style}`, foot, style }];
+    s.walls = walls;
+    return s;
+  };
+  const orns = (s: ReturnType<typeof withRoof>, visible?: Set<string>) =>
+    buildProps(s, visible).filter((e) => e.source === 'ornament');
+
+  it("chapelle → clocheton au FAÎTE : partage l'empreinte/profondeur du toit, billboard centré, surélevé", () => {
+    const [o] = orns(withRoof('chapelle', { x: 1, y: 1, w: 4, h: 5 }));
+    expect(o.ref).toBe('clocheton');
+    expect(o.key).toBe('orn:r-chapelle:0');
+    expect(o.cell).toEqual({ x: 1, y: 1, z: 0 }); // origine → même coin caméra-proche que le toit
+    expect(o.span).toEqual({ w: 4, h: 5 }); // → propDepth == roofDepth (se peint PAR-DESSUS)
+    expect(o.foot).toEqual({ offX: 1.5, offY: 2, scale: 1 }); // recentré sur l'empreinte
+    expect(o.liftM!).toBeGreaterThan(2); // posé haut sur la pente (≈ égout + 0.6·flèche), pas au sol
+    expect(o.facing).toBeUndefined();
+    expect(o.interact).toBe(false);
+    expect(o.states.visible).toBe(true); // `visible` absent (éditeur/QC) → visible
+  });
+
+  it("forge → cheminée au faîte, fx 'warm' (lueur de forge) porté par la feature", () => {
+    const [o] = orns(withRoof('forge', { x: 0, y: 0, w: 3, h: 2 }));
+    expect(o.ref).toBe('cheminee');
+    expect(o.fx).toBe('warm');
+    expect(o.liftM!).toBeGreaterThan(0);
+  });
+
+  it("taverne → enseigne en FAÇADE : JUSTE devant la porte (hors mur), surélevée, tournée vers l'extérieur", () => {
+    // Porte côté S de la rangée basse (y=3) → arête canonisée (2,4,N) ; case sortante (2,4).
+    const s = withRoof('taverne', { x: 1, y: 1, w: 3, h: 3 }, [{ x: 2, y: 4, side: 'N', door: true }]);
+    const [o] = orns(s);
+    expect(o.ref).toBe('enseigne');
+    expect(o.cell).toEqual({ x: 2, y: 4, z: 0 }); // case JUSTE À L'EXTÉRIEUR (le mur plein masquerait l'intérieur)
+    expect(o.facing).toBe('S'); // normale sortante
+    expect(o.liftM!).toBeGreaterThan(0); // en haut du mur (potence saillante)
+    expect(o.span).toBeUndefined(); // billboard 1×1 (pas la profondeur du toit)
+    expect(o.foot).toEqual({ offX: 0, offY: 0.5, scale: 1 }); // saillie de ½ case vers l'extérieur (dégage la face du mur)
+  });
+
+  it("échoppe → étal au SOL DEVANT la porte (case sortante), non surélevé, tourné vers l'extérieur", () => {
+    const s = withRoof('echoppe', { x: 1, y: 1, w: 2, h: 2 }, [{ x: 1, y: 3, side: 'N', door: true }]);
+    const [o] = orns(s);
+    expect(o.ref).toBe('etal-marche');
+    expect(o.cell).toEqual({ x: 1, y: 3, z: 0 }); // case JUSTE À L'EXTÉRIEUR de la porte S
+    expect(o.facing).toBe('S');
+    expect(o.liftM ?? 0).toBe(0); // au sol
+  });
+
+  it('repli sans porte : façade SUD sous le centre bas de l’empreinte', () => {
+    const s = withRoof('taverne', { x: 2, y: 2, w: 4, h: 2 }); // aucun mur → repli
+    const [o] = orns(s);
+    expect(o.cell).toEqual({ x: 4, y: 4, z: 0 }); // x = 2+floor(4/2)=4, y = case sortante sous le bas (y1+1=4)
+    expect(o.facing).toBe('S');
+  });
+
+  it('maison/tour (sans features) : AUCUN ornement', () => {
+    expect(orns(withRoof('maison', { x: 1, y: 1, w: 3, h: 3 }))).toHaveLength(0);
+    expect(orns(withRoof('tour', { x: 1, y: 1, w: 2, h: 2 }))).toHaveLength(0);
+  });
+
+  it('visibilité IDENTIQUE au toit : visible dès qu’une case de l’empreinte élargie d’1 est en vue', () => {
+    const foot = { x: 3, y: 3, w: 2, h: 2 };
+    const seen = orns(withRoof('chapelle', foot), new Set(['2,3,0']))[0]; // (2,3) = bord élargi
+    expect(seen.states.visible).toBe(true);
+    const hidden = orns(withRoof('chapelle', foot), new Set(['0,0,0']))[0]; // loin de l'empreinte
+    expect(hidden.states.visible).toBe(false);
+  });
+
+  it("cutaway : un allié sous l’empreinte MASQUE le faîteau (toit levé), pas la façade/l’étal au sol", () => {
+    const foot = { x: 1, y: 1, w: 4, h: 4 }; // allié (2,2) DANS l'empreinte → roofHidden
+    const ally = [{ x: 2, y: 2 }];
+    // Faîte : sauté avec le toit en cutaway ; présent sans allié.
+    expect(buildProps(withRoof('chapelle', foot), undefined, { allies: ally }).filter((e) => e.source === 'ornament')).toHaveLength(0);
+    expect(orns(withRoof('chapelle', foot))).toHaveLength(1);
+    // Façade (au sol devant la porte) : le toit levé ne l'occulte pas → reste.
+    const tav = buildProps(withRoof('taverne', foot, [{ x: 2, y: 5, side: 'N', door: true }]), undefined, { allies: ally }).filter((e) => e.source === 'ornament');
+    expect(tav.map((e) => e.ref)).toEqual(['enseigne']);
   });
 });

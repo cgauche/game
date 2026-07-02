@@ -129,13 +129,14 @@ export function IsoStage() {
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
   const wallEls = useMemo(() => (scene?.walls?.length ? buildWalls(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
-  const roofEls = useMemo(() => {
-    if (!scene?.roofs?.length) return [];
-    // Cutaway : positions des ALLIÉS (vérité de jeu du builder, pas une caméra).
-    const allies = mode === 'battle' && battle ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!) : [partyPos];
-    return buildRoofs(scene, visible, { allies });
-  }, [scene, visible, mode, battle, partyPos]);
-  const propEls = useMemo(() => (scene ? buildProps(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
+  // Cutaway : positions des ALLIÉS (vérité de jeu du builder, pas une caméra) — partagée par les toits
+  // ET leurs ornements de faîte (masqués avec le toit levé).
+  const allies = useMemo(
+    () => (mode === 'battle' && battle ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!) : [partyPos]),
+    [mode, battle, partyPos],
+  );
+  const roofEls = useMemo(() => (scene?.roofs?.length ? buildRoofs(scene, visible, { allies }) : []), [scene, visible, allies]);
+  const propEls = useMemo(() => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies }) : []), [scene, visible, activeZ, viewZ, allies]);
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ, top: viewMode === 'top' }) : []),
     [scene, visible, mode, battle, activeZ, viewZ, viewMode],
