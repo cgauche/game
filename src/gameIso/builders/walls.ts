@@ -174,14 +174,18 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
     ];
   }
   if (seg.window) {
-    // FENÊTRE : face PLEINE (le mur reste plein — vitre sertie, aucune ouverture) + croisée encadrée dans
-    // la moitié haute. Cadre → vitre → meneau vertical + traverse (croisillon 4 carreaux).
+    // FENÊTRE : vraie OUVERTURE — le mur est un CADRE de `face` (trumeau bas + linteau haut + 2 jambages)
+    // autour du vide vitré, et la vitre est TRANSPARENTE → on VOIT l'intérieur derrière (le mur reste
+    // opaque à la MÉCANIQUE — vision/passage inchangés). Croisée : cadre → vitre → meneau + traverse.
     const winLo = b + wallHeightM * WIN_LO, winHi = b + wallHeightM * WIN_HI;
     const midT = (WIN_T0 + WIN_T1) / 2, midV = (winLo + winHi) / 2;
     const fpx = isoPxToM(WIN_FRAME_PX), mpx = isoPxToM(MULLION_HALF_PX);
     return [
       upright('poteau', 0, b, H1),
-      slab('face', b, H1),
+      slab('face', b, winLo), // trumeau sous la fenêtre
+      slab('face', winHi, H1), // linteau au-dessus
+      span('face', 0, WIN_T0, winLo, winHi), // jambage gauche
+      span('face', WIN_T1, 1, winLo, winHi), // jambage droit
       span('croisee-cadre', WIN_T0 - WIN_FRAME_T, WIN_T1 + WIN_FRAME_T, winLo - fpx, winHi + fpx),
       span('vitre', WIN_T0, WIN_T1, winLo, winHi),
       span('meneau', midT - MULLION_HALF_T, midT + MULLION_HALF_T, winLo, winHi), // meneau vertical

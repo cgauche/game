@@ -13,9 +13,9 @@ import type { DrawItem } from './geometry';
 /** Nœud SVG d'une pièce de géométrie (tracé LOD matériaux OU polygone plein) — sa clé stable = `d.key`. */
 function drawNode(d: DrawItem): JSX.Element {
   return d.path ? (
-    <path key={d.key} className={d.cls} d={d.path} fill={d.fill ?? 'none'} stroke={d.stroke} strokeWidth={d.strokeW} strokeLinecap="round" />
+    <path key={d.key} className={d.cls} d={d.path} fill={d.fill ?? 'none'} stroke={d.stroke} strokeWidth={d.strokeW} strokeLinecap="round" opacity={d.opacity} />
   ) : (
-    <polygon key={d.key} className={d.cls} points={d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
+    <polygon key={d.key} className={d.cls} points={d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} opacity={d.opacity} />
   );
 }
 

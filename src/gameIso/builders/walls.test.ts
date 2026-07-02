@@ -116,11 +116,11 @@ describe('buildWalls — porte FERMÉE = VANTAIL (se lit comme une porte, pas un
   });
 });
 
-describe('buildWalls — mur FENÊTRÉ (window décoratif serti dans la face pleine)', () => {
+describe('buildWalls — mur FENÊTRÉ (vraie OUVERTURE : verre transparent, on voit l’intérieur)', () => {
   const el = one(sceneWith([{ x: 2, y: 2, side: 'N', window: true }]));
-  it('face PLEINE + croisée (cadre + vitre + meneau vertical + traverse)', () => {
+  it('cadre de `face` (trumeau + linteau + jambages) + croisée (cadre + vitre + meneau vertical + traverse)', () => {
     const p = parts(el);
-    expect(p).toContain('face'); // la face pleine est CONSERVÉE (un mur fenêtré bloque comme un mur nu)
+    expect(p).toContain('face'); // le mur devient un CADRE de `face` autour du vide vitré (bloque encore la MÉCANIQUE)
     expect(p).toContain('croisee-cadre');
     expect(p).toContain('vitre');
     expect(p.filter((x) => x === 'meneau')).toHaveLength(2); // meneau vertical + traverse horizontale
@@ -133,10 +133,14 @@ describe('buildWalls — mur FENÊTRÉ (window décoratif serti dans la face ple
     expect(Math.min(...hs)).toBeCloseTo(WALL_H_M * 0.42, 6);
     expect(Math.max(...hs)).toBeCloseTo(WALL_H_M * 0.8, 6);
   });
-  it('la face pleine reste identique à celle d’un mur nu (aucune découpe)', () => {
-    const plain = facesOf(one(sceneWith([{ x: 2, y: 2, side: 'N' }])), 'face')[0];
-    const win = facesOf(el, 'face')[0];
-    expect(win.poly.map((p) => p.h)).toEqual(plain.poly.map((p) => p.h));
+  it('OUVERTURE : la `face` est un CADRE (trumeau + linteau + 2 jambages), PAS le slab plein d’un mur nu', () => {
+    const plainFaces = facesOf(one(sceneWith([{ x: 2, y: 2, side: 'N' }])), 'face');
+    const winFaces = facesOf(el, 'face');
+    expect(plainFaces).toHaveLength(1); // mur nu : UNE face pleine (b→H1, pleine largeur)
+    expect(winFaces.length).toBeGreaterThanOrEqual(4); // mur fenêtré : cadre en 4 morceaux → le carreau reste ajouré
+    // il existe un TRUMEAU BAS distinct (h max ≤ bas de la fenêtre) : la face ne recouvre pas le carreau.
+    const winLoM = WALL_H_M * 0.42;
+    expect(winFaces.some((f) => Math.max(...f.poly.map((p) => p.h)) <= winLoM + 1e-6)).toBe(true);
   });
 });
 

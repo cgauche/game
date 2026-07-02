@@ -84,11 +84,12 @@ export function povPanel(scene: Scene, eye: { x: number; y: number; z?: number }
   // Fond = ciel dégradé (extérieur) / sombre (intérieur), comme PovStage (`pov-sky` : defs d'ambiance).
   const bg = `<rect width="${VW}" height="${VH}" fill="${night ? '#0e1420' : isIndoor(scene) ? AMBIANCE.pov.fogIndoor : 'url(#pov-sky)'}"/>`;
   const cls = (d: { cls?: string }) => (d.cls ? ` class="${d.cls}"` : '');
+  const op = (d: { opacity?: number }) => (d.opacity != null ? ` opacity="${d.opacity}"` : '');
   const polys = draw
     .map((d) =>
       d.path
-        ? `<path d="${d.path}" fill="${d.fill ?? 'none'}" stroke="${d.stroke ?? 'none'}" stroke-width="${d.strokeW ?? 0}" stroke-linecap="round"${cls(d)}/>`
-        : `<polygon points="${d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="${d.fill}"${cls(d)}/>`,
+        ? `<path d="${d.path}" fill="${d.fill ?? 'none'}" stroke="${d.stroke ?? 'none'}" stroke-width="${d.strokeW ?? 0}" stroke-linecap="round"${cls(d)}${op(d)}/>`
+        : `<polygon points="${d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="${d.fill}"${cls(d)}${op(d)}/>`,
     )
     .join('');
   // Props en billboards du MÊME SVG iso (noyau pur partagé avec PovStage) — le décor peuple le POV.

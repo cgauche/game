@@ -81,6 +81,8 @@ export type DrawItem = {
   kind: 'floor' | 'wall' | 'ceiling' | 'riser' | 'roof' | 'detail';
   /** Classe CSS d'ambiance (ex. `warm` pour une vitre allumée la nuit) — appliquée au nœud SVG rendu. */
   cls?: string;
+  /** Opacité < 1 (ex. VITRE de jour : verre TRANSPARENT → l'intérieur se voit derrière l'ouverture). */
+  opacity?: number;
 };
 
 // Les SOLS suivent le `swatch` du terrain — donnée PARTAGÉE avec l'iso/l'éditeur : recolorer un terrain
@@ -674,6 +676,9 @@ export function buildPovDrawList(
       const it = makeItem(corners, cam, farMetres, lit ? Math.max(lv, 0.95) : lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve);
       if (!it) return;
       if (lit) it.cls = 'warm';
+      // VITRE de JOUR : verre TRANSPARENT (l'ouverture laisse voir l'intérieur derrière) ; la nuit la
+      // vitre allumée reste PLEINE (panneau ambre émissif).
+      if (part === 'vitre' && !lit) it.opacity = 0.18;
       items.push(it);
       if (!seen) return; // non vu : forme + matière, pas d'appareillage fin (réservé au vu)
       // APPAREILLAGE au LOD de distance en FONDU (parts maçonnées d'une def à recette — même aiguillage
