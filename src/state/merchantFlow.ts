@@ -6,7 +6,7 @@
 import type { GameState } from './store';
 import { Combatant, ItemInstance } from '../engine/types';
 import { recomputeLoadout, itemFromTrappingById, addItemToHero } from '../engine/items';
-import { repairCostBrass } from '../engine/repair';
+import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { SL_ASTOUNDING } from '../engine/tests';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
@@ -315,14 +315,16 @@ export function confirmSell(get: Get, set: Set): void {
   get().log(`Vente : ${names.join(', ')} (+${formatMoney(gain)}).`);
 }
 
-export function repairArmour(get: Get, set: Set, uid: string, heroId: string): void {
+/** Réparation d'un objet chez un artisan — armure (LDB 63 l.97-98) OU arme (LDB 62 l.135), coût unifié
+ *  par `itemRepairCostBrass`. Une arme réduite à l'état improvisé est irréparable (isRepairable). */
+export function repairItem(get: Get, set: Set, uid: string, heroId: string): void {
   const m = get().merchant; if (!m) return;
   const hero = get().party.find((h) => h.id === heroId);
   const item = hero?.items?.find((i) => i.uid === uid);
-  if (!item || item.kind !== 'armor' || (item.damageTaken ?? 0) <= 0) return;
+  if (!item || !isRepairable(item)) return;
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;
-  const cost = fromBrass(repairCostBrass(item, base));
+  const cost = fromBrass(itemRepairCostBrass(item, base));
   if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour réparer ${item.name}.`); return; }
   set((s) => ({
     money: moneySub(s.money, cost)!,

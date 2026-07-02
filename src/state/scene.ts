@@ -454,6 +454,10 @@ export interface Scene {
   /** Décor : 'interieur' (éclairé en permanence, l'horloge ne l'assombrit pas) vs 'exterieur'
    *  (jour/nuit = horloge). Absent = extérieur. */
   ambiance?: 'interieur' | 'exterieur';
+  /** Classification écologique de la Scène (éditable) — lue par les attributs de Domaine liés à
+   *  l'environnement (LDB 48 l.690 : la Vie/Ghyran gagne +10 à Incanter/Focaliser en zone rurale ou
+   *  sauvage). Absent = non spécifié (aucun bonus d'environnement). */
+  environment?: 'rural' | 'urbain' | 'sauvage';
   /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
    *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
   weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';

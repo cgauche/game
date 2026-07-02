@@ -1,5 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { toBrass, fromBrass, add, subtract, canAfford, formatMoney, priceToMoney } from './money';
+import { toBrass, fromBrass, add, subtract, canAfford, formatMoney, priceToMoney, statusBudgetBrass, withinStatusBudget, parseStatus } from './money';
+
+describe('« Tenir les comptes » — budget par Statut (LDB 59 l.9-11)', () => {
+  it('statusBudgetBrass : Bronze N = N sous, Argent N = N pistoles, Or N = N couronnes', () => {
+    expect(statusBudgetBrass('bronze', 2)).toBe(2); // 2 sous
+    expect(statusBudgetBrass('argent', 2)).toBe(24); // 2 pistoles = 24 sous
+    expect(statusBudgetBrass('or', 3)).toBe(720); // 3 couronnes = 720 sous
+  });
+  it('withinStatusBudget : « Statut Argent 2 » → un objet ≤ 2 pistoles est toujours abordable', () => {
+    expect(withinStatusBudget(24, 'argent', 2)).toBe(true); // pile 2 pistoles
+    expect(withinStatusBudget(25, 'argent', 2)).toBe(false); // au-delà
+  });
+  it('parseStatus : décompose « Argent 2 » / « Bronze 1 » / libellé inconnu', () => {
+    expect(parseStatus('Argent 2')).toEqual({ tier: 'argent', standing: 2 });
+    expect(parseStatus('Bronze 1')).toEqual({ tier: 'bronze', standing: 1 });
+    expect(parseStatus('—')).toBeNull();
+    expect(parseStatus(undefined)).toBeNull();
+  });
+});
 
 describe('money — monnaie impériale (LDB 57 : 1 CO=20 SC=240 PA, 1 SC=12 PA)', () => {
   it('toBrass : convertit en sous de cuivre', () => {

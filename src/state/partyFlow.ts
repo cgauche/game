@@ -14,7 +14,9 @@ import {
   changeCareer as engineChangeCareer,
   isCareerLevelComplete,
   inCareerChar,
+  mentorBlocks,
 } from '../engine/advancement';
+import { rule } from '../engine/policy';
 import {
   skillSlots,
   talentSlots,
@@ -27,6 +29,7 @@ import {
   splitLabel,
 } from '../engine/careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
+import { heroSessionXp, regainDetermination } from '../engine/session';
 import { skillCharacteristicById } from '../engine/character';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
@@ -241,6 +244,10 @@ export function buyCharAdvance(get: Get, set: Set, heroId: string, char: CharKey
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
       const inC = inCareerChar(careerCtx(clone).careerChars, char);
+      if (mentorBlocks(inC, rule('advancement-mentor') === true, !!get().flags['mentor'])) {
+        msg = `${clone.name} : ${CHAR_LABELS[char]} hors carrière — un mentor est requis (LDB 07 l.89).`;
+        return h;
+      }
       const r = engineBuyCharAdvance(clone, char, inC);
       if (!r.ok) {
         msg = `${clone.name} : ${CHAR_LABELS[char]} — ${r.reason}.`;
@@ -279,6 +286,10 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: s
         return p.name === skillName && (!p.spec || /au choix/i.test(p.spec) || (p.spec ?? '') === (spec ?? ''));
       });
       const inC = status != null || added;
+      if (known && mentorBlocks(inC, rule('advancement-mentor') === true, !!get().flags['mentor'])) {
+        msg = `${clone.name} : ${lbl(skillName, spec)} hors carrière — un mentor est requis (LDB 07 l.89).`;
+        return h;
+      }
       if (!known) {
         if (!inC) {
           msg = `${clone.name} : « ${lbl(skillName, spec)} » hors carrière, non acquérable.`;
@@ -460,6 +471,42 @@ export function setHeroBackground(get: Get, set: Set, heroId: string, patch: { m
   if (hero) rosterUpdate(hero);
 }
 
+/** Récompenses de fin de séance (écran de fin de séance) : Ambitions accomplies par héros (perso) et de
+ *  groupe, + héros ayant agi selon leur Motivation (regain de Détermination). */
+export interface SessionRewards {
+  heroes?: Record<string, { ambitionShort?: boolean; ambitionLong?: boolean; motivation?: boolean }>;
+  group?: { ambitionShort?: boolean; ambitionLong?: boolean };
+}
+
+/**
+ * Fin de séance de jeu (LDB 05 Ambitions l.793-841 + LDB 17 Détermination l.81) : octroie les PX
+ * d'Ambition accomplie (personnelle +50/+500, de groupe +50/+500 à chaque héros), regagne 1 Point de
+ * Détermination aux héros ayant agi selon leur Motivation (plafonné au max), puis restaure la Chance du
+ * groupe (couture de séance, `restoreFortune`). SOURCE UNIQUE derrière l'écran de fin de séance.
+ */
+export function endSession(get: Get, set: Set, rewards: SessionRewards): void {
+  const group = { short: rewards.group?.ambitionShort, long: rewards.group?.ambitionLong };
+  const lines: string[] = [];
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (h.kind !== 'hero') return h;
+      const f = rewards.heroes?.[h.id] ?? {};
+      const xp = heroSessionXp({ short: f.ambitionShort, long: f.ambitionLong }, group);
+      if (!xp && !f.motivation) return h;
+      const clone: Combatant = structuredClone(h);
+      if (xp) { clone.xp = (clone.xp ?? 0) + xp; lines.push(`${clone.name} : +${xp} PX (Ambition accomplie).`); }
+      if (f.motivation) {
+        const before = clone.resolve ?? 0;
+        clone.resolve = regainDetermination(clone, 1);
+        if (clone.resolve > before) lines.push(`${clone.name} : +1 Détermination (a agi selon sa Motivation).`);
+      }
+      return clone;
+    }),
+  }));
+  for (const l of lines) get().log(l);
+  get().restoreFortuneNow(); // Chance restaurée pour la prochaine séance (LDB 17 l.41)
+}
+
 /** Retire UN composant d'incantation possédé pour un Sort (sans remboursement). */
 export function removeSpellComponent(_get: Get, set: Set, heroId: string, spellId: string): void {
   set((s) => ({
@@ -510,7 +557,8 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
       const completed = isCompleted(clone);
       const sameClass = findCareerById(clone.career ?? '')?.class === findCareerById(newCareer)?.class;
       const targetLevelExists = levelsForCareer(newCareer).some((l) => l.level === newLevel);
-      const r = engineChangeCareer(clone, newCareer, newLevel, { completed, sameClass, targetLevelExists });
+      const gmJump = rule('advancement-career-jump') === true;
+      const r = engineChangeCareer(clone, newCareer, newLevel, { completed, sameClass, targetLevelExists, gmJump });
       if (!r.ok) {
         msg = `${clone.name} : changement de carrière refusé (${r.reason}).`;
         return h;

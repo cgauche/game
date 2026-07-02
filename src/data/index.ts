@@ -47,6 +47,7 @@ import weatherJson from './weather.json';
 import symptomsJson from './symptoms.json';
 import detailsJson from './details.json';
 import starsJson from './stars.json';
+import astrologyJson from './astrology.json';
 import locationsJson from './locations.json';
 import booksJson from './books.json';
 import namesJson from './names.json';
@@ -119,6 +120,11 @@ export interface SpeciesData {
    *  qu'à l'affichage (`speciesSingular`). */
   id: string;
   label: string;
+  /** Race (famille d'espèces) pour le groupage d'affichage : « Humains (Middenheim) » → « Humains ».
+   *  DONNÉE requise (garde-fou data-wellformed) — plus aucune dérivation regex du libellé. */
+  family: string;
+  /** Variante régionale/sous-espèce (« Middenheim », « Norse »…) — absent pour l'espèce nominale. */
+  variant?: string;
   refChar: string;
   refCareer: string;
   rand: number;
@@ -828,6 +834,14 @@ export interface DomainData {
    *  carac par défaut (ADE II l.653 : la Magie de la Gueule, réservée aux ogres, se lance sur l'Endurance).
    *  Lue par `castingValue` — porté par la DONNÉE du domaine, aucun sniff d'espèce dans le moteur. */
   castingChar?: import('../engine/types').CharKey;
+  /** Bonus d'incantation lié à l'ENVIRONNEMENT (LDB 48 l.690, Vie/Ghyran : +10 pour Incanter ou
+   *  Focaliser dans un environnement rural ou sauvage). `environments` = classifications de Scène
+   *  (`Scene.environment`) qui déclenchent le bonus ; `mod` = valeur. Lu par `domainEnvironmentBonus`. */
+  environmentBonus?: { environments: string[]; mod: number };
+  /** Domaine de la SORCELLERIE (LDB 49) : marqueur DONNÉE. Un Sort dont le `domainId` porte ce marqueur
+   *  active le mode Sorcellerie (composant obligatoire sinon Imparfaite Mineure systématique, +1 Corruption
+   *  par jet d'Imparfaite, État Hémorragique possible) — gated par la règle optionnelle `magic-sorcellerie`. */
+  sorcery?: boolean;
   /** Modificateur des Vents de Magie EN MER (MDG 02 l.178-186) — VERBATIM. Règle d'application (l.178) :
    *  « Les modificateurs suivants s'appliquent aux tentatives de Focalisation et d'Incantation en mer. »
    *  Seuls 4 Domaines en portent un (Bête/Feu/Cieux/Vie). Donnée descriptive : le contexte « en mer »
@@ -923,6 +937,16 @@ export interface StarData {
    *  partageant `rand:100`. Absent = pas de sous-tirage (signe simple). */
   sub?: [number, number];
   desc: string | null;
+  source: { book: string; page: number };
+}
+/** Demeure céleste (ADE2 ch.03 l.502-512) : section du ciel gouvernée par un signe — thème astral
+ *  facultatif de la création (flavor pur). `desc` = VERBATIM de la source ; `rand` = borne haute 1d10. */
+export interface CelestialHouseData {
+  /** id STABLE (slug du libellé) — `HeroDetails.dwellings[].house` stocke le LIBELLÉ (affichage pur). */
+  id: string;
+  label: string;
+  rand: number;
+  desc: string;
   source: { book: string; page: number };
 }
 /** Lieu (Glorieux Reikland, LDB) : hiérarchie par `parent` (label d'un autre lieu). */
@@ -1203,6 +1227,9 @@ export const calendarPhases = calendarPhasesJson as { key: string; start: number
 export const weather = weatherJson as { id: string; label: string; ranges: { max: number; weather: string }[] }[];
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
+/** Les 5 demeures célestes (ADE2 ch.03 l.502-512, « Déterminer les demeures célestes ») — ossature
+ *  narrative du thème astral (flavor pur, aucun effet mécanique). `rand` = borne haute du 1d10. */
+export const celestialHouses = astrologyJson as CelestialHouseData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */
 export const raceAppearance = raceAppearanceJson as RaceAppearanceData[];
 export const locations = locationsJson as LocationData[];

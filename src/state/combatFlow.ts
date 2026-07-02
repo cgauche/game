@@ -86,6 +86,8 @@ import {
   focusSkillFor,
   castLandProbability,
   magicDeviationEligible,
+  ruleOfEightSeverity,
+  sorceryMandatoryMiscast,
   type CastResult,
   type MissileResult,
   type CounterspellOutcome,
@@ -118,7 +120,7 @@ import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition,
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
-import { domainOnHitEffects, domainMissileMods, domainCasterOps, hasArcaneTalent } from '../engine/domainAttributes';
+import { domainOnHitEffects, domainMissileMods, domainCasterOps, hasArcaneTalent, isSorceryDomain } from '../engine/domainAttributes';
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, contractionDue, applyContraction, hasActiveCapability, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
@@ -2586,7 +2588,7 @@ export function useSpellComponent(caster: Combatant, spellId: string, lines: str
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean; componentDowngrade?: boolean }): string[] {
+export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean; componentDowngrade?: boolean; sorceryCorruption?: boolean }): string[] {
   // Composant d'incantation (LDB 46 l.161, règle optionnelle) : si un composant adapté a été
   // SACRIFIÉ pour ce Sort (consommation décidée et journalisée au point d'incantation — cf.
   // `useSpellComponent`), il absorbe les pires effets du contrecoup : « toute Incantation Imparfaite
@@ -2600,7 +2602,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     }
     return [
       tr('cf.componentDowngrade', { name: caster.name }),
-      ...applyMiscast(get, set, caster, downgraded, { suppressReveal: opts.suppressReveal }),
+      ...applyMiscast(get, set, caster, downgraded, { suppressReveal: opts.suppressReveal, sorceryCorruption: opts.sorceryCorruption }),
     ];
   }
   // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
@@ -2623,6 +2625,9 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     onCorruption: caster.kind === 'hero' ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
   };
   lines.push(...applyOps(caster, m.ops, opsCtx));
+  // Sorcellerie (LDB 49) : « À chaque fois qu'un pratiquant de la Sorcellerie fait un jet sur le Tableau
+  // des Incantations Imparfaites, il gagne 1 Point de Corruption. »
+  if (opts?.sorceryCorruption && caster.kind === 'hero') lines.push(...gainCorruption(get, set, caster, 1));
   // « Un jet = une modale » : le héros voit la conséquence (Colère/Imparfaite) INLINE dans la séquence
   // partagée (étape d'affichage) — plus de RevealModal séparée. `suppressReveal` : la Focalisation
   // interrompue (qui pousse déjà sa propre révélation « Calme » portant ces lignes) n'ouvre rien.
@@ -3260,6 +3265,20 @@ export function applyCast(
   // (l.161). `componentUsed` → toute Imparfaite de ce lancement est dégradée (Majeure→Mineure,
   // Mineure→annulée). N'a pas lieu pour une Prière (l.163 : composants = Sorts d'Arcane/Domaine).
   const componentUsed = isSort && useSpellComponent(caster, spell.id, logLines);
+  // Influences malfaisantes (Règle du 8, LDB 46 l.89) & Sorcellerie (LDB 49) — Sorts seulement, à résoudre
+  // APRÈS la résolution du Sort (bloc `applyExtraMiscast`). `nearCorruption` = source de Corruption à
+  // proximité (lieu ou créature) ; `sorcery` = Sort du Domaine de la Sorcellerie, règle optionnelle active.
+  const nearCorruption = isSort && castNearCorruption(get);
+  const sorcery = isSort && rule('magic-sorcellerie') === true && isSorceryDomain(spell);
+  // Sur un « 88 » près d'une Corruption, la Règle du 8 escalade l'Imparfaite du fumble en Majeure — on
+  // NEUTRALISE alors l'Imparfaite Mineure de fumble (elle est subsumée), sinon on l'appliquerait en double.
+  const ruleOfEightHandled = nearCorruption && res.roll % 10 === 8;
+  /** Imparfaite ADDITIONNELLE due à la Règle du 8 / à la Sorcellerie, appliquée UNE fois après le Sort. */
+  const applyExtraMiscast = (): void => {
+    const roe = ruleOfEightSeverity(res.roll, nearCorruption, res.isFumble);
+    if (roe) logLines.push(...applyMiscast(get, set, caster, roe, { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+    else if (sorceryMandatoryMiscast(sorcery, componentUsed) && !res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure', { sorceryCorruption: true }));
+  };
   if (crit) {
     logLines.push(
       choice === 'critique'
@@ -3268,7 +3287,7 @@ export function applyCast(
           ? tr('cf.overcastFullPower')
           : tr('cf.overcastIrresistible'),
     );
-    if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
+    if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
     else logLines.push(tr('cf.dictionInstinctive'));
   }
   // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
@@ -3436,8 +3455,9 @@ export function applyCast(
     if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, res.sl, durationMult, logLines);
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
-    if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
-    else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
+    if (res.isFumble && !ruleOfEightHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+    else if (focusedNI0 && !res.cast && !ruleOfEightHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+    applyExtraMiscast(); // Règle du 8 / Sorcellerie (LDB 46 l.89 / LDB 49)
     // Sort offensif : lanceur vers la cible, cible vers le lanceur.
     if (caster.pos && target.pos && caster.id !== target.id) {
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!), [target.id]: facingToward(target.pos!, caster.pos!) } }));
@@ -3547,12 +3567,14 @@ export function applyCast(
         }
       }
     } else if (res.isFumble) {
-      // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
-      logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell) ? 'colere' : 'mineure', { componentDowngrade: componentUsed }));
-    } else if (focusedNI0) {
+      // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure (subsumée par la Règle du 8 sur « 88 »).
+      if (castInfoIsPrayer(spell)) logLines.push(...applyMiscast(get, set, caster, 'colere', { componentDowngrade: componentUsed }));
+      else if (!ruleOfEightHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+    } else if (focusedNI0 && !ruleOfEightHandled) {
       // Sort focalisé dont l'incantation échoue (sans Maladresse) → Imparfaite Mineure.
-      logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
+      logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
     }
+    applyExtraMiscast(); // Règle du 8 / Sorcellerie (LDB 46 l.89 / LDB 49)
     // Sort de SOUTIEN (bénédiction/soin/buff) ou prière non-projectile : émet aussi l'event
     // d'incantation → geste de canalisation (RigToken) + halo/aura tinté à l'école (IsoStage).
     // Soutien : le lanceur se tourne vers la cible ; pas de réaction de la cible (ce n'est pas une frappe).
@@ -3730,6 +3752,16 @@ export function domainCastBonus(s: GameState, caster: Combatant, spell: { domain
     if (combatDistance(caster, c) <= radius) pions += stacks(c, cb.perCondition);
   }
   return cb.bonus * pions;
+}
+
+/** Le lanceur est-il « à proximité d'une Influence corruptrice » (LDB 46 l.89 / page 182) ? Data-driven :
+ *  soit le lieu est marqué corrompu (flag de scène/campagne `corruption`, posé par un Effet setFlag de
+ *  l'éditeur — décision D1), soit un combattant présent rayonne la Corruption (Trait `corruption`, réutilise
+ *  `worstCorruptionExposure`). Consommé par la Règle du 8 (`applyCast`). */
+export function castNearCorruption(get: Get): boolean {
+  if (get().flags['corruption']) return true;
+  const battle = get().battle;
+  return !!battle && !!worstCorruptionExposure(battle);
 }
 
 /** « N'écoutez point la Sorcière » (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou

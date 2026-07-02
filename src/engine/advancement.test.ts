@@ -12,6 +12,7 @@ import {
   changeCareer,
   validateCareerChange,
   inCareerChar,
+  mentorBlocks,
 } from './advancement';
 import { skillSlots, talentSlots, parseAdvancement } from './careerSlots';
 import { CareerLevelData } from '../data';
@@ -255,5 +256,32 @@ describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08
     const refused = changeCareer(poor, 'Soldat', 1, { completed: false, sameClass: true, targetLevelExists: true }); // 200 PX requis
     expect(refused.ok).toBe(false);
     expect(refused.reason).toBe('PX insuffisants');
+  });
+
+  it('gmJump : SAUT de Niveau supérieur non-adjacent — refusé sans accord MJ, permis avec (l.140)', () => {
+    const h = completedHero(500); // Test niv.1 complété
+    expect(validateCareerChange(h, 'Test', 3, { completed: true, sameClass: true, targetLevelExists: true })).toMatchObject({ ok: false });
+    expect(validateCareerChange(h, 'Test', 3, { completed: true, sameClass: true, targetLevelExists: true, gmJump: true })).toMatchObject({ ok: true, cost: 100 });
+  });
+  it('gmJump : MÊME Niveau d’une autre Carrière de la Classe — exige complétion + même Classe (l.148)', () => {
+    const h = completedHero(500); // niv.1
+    // Sans accord MJ : autre carrière → niveau 1 seulement (le niveau courant ≠ 1 refusé)
+    h.careerLevel = 2;
+    expect(validateCareerChange(h, 'Érudit', 2, { completed: true, sameClass: true, targetLevelExists: true })).toMatchObject({ ok: false });
+    // Avec accord MJ + complété + même Classe : accès au MÊME niveau (2) pour 100 PX
+    expect(validateCareerChange(h, 'Érudit', 2, { completed: true, sameClass: true, targetLevelExists: true, gmJump: true })).toMatchObject({ ok: true, cost: 100 });
+    // Classe différente : refusé même avec accord MJ (le même-niveau exige la MÊME Classe)
+    expect(validateCareerChange(h, 'Érudit', 2, { completed: true, sameClass: false, targetLevelExists: true, gmJump: true })).toMatchObject({ ok: false });
+    // Non complété : refusé
+    expect(validateCareerChange(h, 'Érudit', 2, { completed: false, sameClass: true, targetLevelExists: true, gmJump: true })).toMatchObject({ ok: false });
+  });
+});
+
+describe('mentorBlocks — Augmentation hors carrière + mentor (LDB 07 l.89)', () => {
+  it('bloque une Augmentation hors carrière quand la règle est active et sans mentor', () => {
+    expect(mentorBlocks(false, true, false)).toBe(true); // hors carrière, règle ON, pas de mentor
+    expect(mentorBlocks(false, true, true)).toBe(false); // mentor présent
+    expect(mentorBlocks(false, false, false)).toBe(false); // règle OFF
+    expect(mentorBlocks(true, true, false)).toBe(false); // in-carrière : jamais bloqué
   });
 });

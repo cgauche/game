@@ -87,6 +87,21 @@ export function domainOnHitEffects(spell: SpellDomainRef): TriggeredEffect[] {
   return (findDomainById(spell.domainId)?.effects ?? []) as TriggeredEffect[];
 }
 
+/** Bonus d'incantation lié à l'ENVIRONNEMENT (LDB 48 l.690 — Vie/Ghyran : « Recevez un bonus de +10 aux
+ *  lancers pour Incanter ou Focaliser dans un environnement rural ou sauvage »). Lu en DONNÉE
+ *  (`DomainData.environmentBonus`) ; `env` = classification de la Scène (`Scene.environment`). 0 si le
+ *  Domaine n'a pas d'attribut d'environnement ou si l'environnement courant n'y figure pas. */
+export function domainEnvironmentBonus(spell: SpellDomainRef, env: string | null | undefined): number {
+  const eb = findDomainById(spell.domainId)?.environmentBonus;
+  if (!eb || !env) return 0;
+  return eb.environments.includes(env) ? eb.mod : 0;
+}
+
+/** Le Sort relève-t-il du Domaine de la SORCELLERIE (LDB 49) ? Marqueur DONNÉE (`DomainData.sorcery`). */
+export function isSorceryDomain(spell: SpellDomainRef): boolean {
+  return findDomainById(spell.domainId)?.sorcery === true;
+}
+
 /** Ops post-incantation appliquées AU LANCEUR après un Sort de Domaine réussi — PARAMÈTRE en données
  *  (`DomainData.casterOps` : `GameOp[]`). Ex. Bête (Ghur) : `grantTrait` Peur 1 pendant 1d10 Rounds.
  *  Exécutées via `applyOps` — source unique, pas de réimplémentation de grantTrait ici. */

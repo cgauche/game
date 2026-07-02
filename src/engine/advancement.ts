@@ -171,14 +171,20 @@ export interface CareerChangeContext {
   sameClass: boolean;
   /** Le Niveau cible existe-t-il dans les données de la Carrière cible ? */
   targetLevelExists: boolean;
+  /** Option MJ (LDB 07 l.140 + l.148, « Avec l'accord du MJ ») : autoriser un SAUT de Niveau (même
+   *  Carrière, Niveau supérieur non-adjacent) ET l'accès au MÊME Niveau d'une autre Carrière de la
+   *  Classe. Piloté par la règle optionnelle `advancement-career-jump` côté state ; false = RAW strict. */
+  gmJump?: boolean;
 }
 
 /**
- * Valide et chiffre un changement de Carrière (LDB 07 l.137 + LDB 08 l.7-11) :
- *  - même Carrière : Niveau SUIVANT (exige la complétion) ou n'importe quel Niveau INFÉRIEUR ;
- *    pas de saut de Niveau (réservé au MJ) ;
- *  - autre Carrière : 1er Niveau uniquement ; +100 PX si la Classe diffère.
- *  Coût de base : 100 PX si complété, 200 sinon (l.120).
+ * Valide et chiffre un changement de Carrière (LDB 07 l.135-148) :
+ *  - même Carrière : Niveau SUIVANT (exige la complétion, l.137) ou n'importe quel Niveau INFÉRIEUR
+ *    (l.137) ; un SAUT vers un Niveau supérieur non-adjacent n'est permis qu'avec l'accord du MJ
+ *    (l.140, `gmJump`) ;
+ *  - autre Carrière : 1er Niveau (l.144 ; +100 PX si la Classe diffère) OU, avec l'accord du MJ et le
+ *    Niveau courant complété, le MÊME Niveau d'une autre Carrière de la MÊME Classe (l.148, `gmJump`).
+ *  Coût de base : 100 PX si complété, 200 sinon (l.118).
  */
 export function validateCareerChange(
   hero: Combatant,
@@ -188,18 +194,33 @@ export function validateCareerChange(
 ): { ok: boolean; cost: number; reason?: string } {
   const base = careerChangeCost(ctx.completed);
   if (!ctx.targetLevelExists) return { ok: false, cost: base, reason: 'niveau de carrière inconnu' };
+  const cur = hero.careerLevel ?? 1;
   if (newCareer === (hero.career ?? '')) {
-    const cur = hero.careerLevel ?? 1;
     if (newLevel === cur) return { ok: false, cost: base, reason: 'déjà à ce niveau' };
+    if (newLevel < cur) return { ok: true, cost: base };
     if (newLevel === cur + 1) {
       if (!ctx.completed) return { ok: false, cost: base, reason: 'niveau actuel non complété' };
       return { ok: true, cost: base };
     }
-    if (newLevel < cur) return { ok: true, cost: base };
-    return { ok: false, cost: base, reason: 'saut de niveau impossible' };
+    // Niveau supérieur non-adjacent : saut réservé au MJ (l.140), coût 100/200 comme un changement normal.
+    if (ctx.gmJump) return { ok: true, cost: base };
+    return { ok: false, cost: base, reason: 'saut de niveau impossible (option MJ requise)' };
   }
-  if (newLevel !== 1) return { ok: false, cost: base, reason: 'nouvelle carrière : 1er niveau uniquement' };
-  return { ok: true, cost: base + (ctx.sameClass ? 0 : 100) };
+  if (newLevel === 1) return { ok: true, cost: base + (ctx.sameClass ? 0 : 100) };
+  // MÊME Niveau d'une autre Carrière de la Classe (l.148) : exige l'accord du MJ, la complétion et la
+  // même Classe ; coût 100 PX (base complété).
+  if (ctx.gmJump && ctx.sameClass && ctx.completed && newLevel === cur) return { ok: true, cost: base };
+  return { ok: false, cost: base, reason: 'nouvelle carrière : 1er niveau uniquement' };
+}
+
+/**
+ * Mentor requis (LDB 07 l.89 : « le MJ peut exiger que vous trouviez un mentor qui puisse vous
+ * enseigner cette formation inhabituelle ») : une Augmentation HORS carrière (dont le coût est déjà
+ * DOUBLÉ) est BLOQUÉE tant qu'aucun mentor n'est disponible, quand la règle optionnelle est active.
+ * `policyOn` = règle `advancement-mentor` ; `hasMentor` = flag de groupe/scène. Renvoie vrai = bloqué.
+ */
+export function mentorBlocks(inCareer: boolean, policyOn: boolean, hasMentor: boolean): boolean {
+  return !inCareer && policyOn && !hasMentor;
 }
 
 /** Change de Carrière/Niveau si la cible est valide et les PX suffisent (mute le héros).

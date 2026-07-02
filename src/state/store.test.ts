@@ -2837,24 +2837,35 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     expect(toBrass(st.money)).toBeGreaterThan(0); // Hallebarde 2 CO × 10 %
   });
 
-  it('repairArmour : reset damageTaken contre 10 %/PA, débite la Bourse (#2d)', () => {
+  it('repairItem : reset damageTaken contre 10 %/PA, débite la Bourse (#2d)', () => {
     const h = hero(); h.items = [{ uid: 'a', trappingId: 'chemise-de-mailles', name: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 2, qualities: [], enc: 1, equipped: true } as any];
     useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
     useGame.getState().openMerchant('pnj');
     const before = toBrass(useGame.getState().money);
-    useGame.getState().repairArmour('a', 'h');
+    useGame.getState().repairItem('a', 'h');
     const st = useGame.getState();
     expect(st.party[0].items!.find((i) => i.uid === 'a')!.damageTaken).toBe(0); // réparé
     expect(toBrass(st.money)).toBeLessThan(before); // débité
   });
 
-  it('repairArmour : ignore une armure intacte (damageTaken 0) — pas de débit', () => {
+  it('repairItem : ignore une armure intacte (damageTaken 0) — pas de débit', () => {
     const h = hero(); h.items = [{ uid: 'b', name: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 0, qualities: [], enc: 1, equipped: true } as any];
     useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
     useGame.getState().openMerchant('pnj');
     const before = toBrass(useGame.getState().money);
-    useGame.getState().repairArmour('b', 'h');
+    useGame.getState().repairItem('b', 'h');
     expect(toBrass(useGame.getState().money)).toBe(before); // rien à réparer
+  });
+
+  it('repairItem : répare une ARME endommagée à 10 %/point (LDB 62 l.135)', () => {
+    const h = hero(); h.items = [{ uid: 'w', trappingId: 'dague', name: 'Dague', kind: 'melee', damage: { plusBF: true, flat: 2 }, damageTaken: 1, qualities: [], enc: 0, equipped: true } as any];
+    useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const before = toBrass(useGame.getState().money);
+    useGame.getState().repairItem('w', 'h');
+    const st = useGame.getState();
+    expect(st.party[0].items!.find((i) => i.uid === 'w')!.damageTaken).toBe(0); // réparée
+    expect(toBrass(st.money)).toBeLessThan(before); // débité
   });
 
   const negotiator = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { Soc: 40 }, skills: [], talents: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);

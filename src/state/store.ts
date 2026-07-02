@@ -531,6 +531,9 @@ export interface GameState extends RollFlowActionsMap {
   removeSpellComponent: (heroId: string, spellId: string) => void;
   /** Édite la bio mutable d'un héros hors combat (Motivation + Ambitions court/long, LDB 05) — persisté en save + roster. */
   setHeroBackground: (heroId: string, patch: { motivation?: string; ambitionShort?: string; ambitionLong?: string }) => void;
+  /** Fin de séance (LDB 05 Ambitions + LDB 17 Détermination) : octroie les PX d'Ambition, regagne la
+   *  Détermination selon la Motivation, puis restaure la Chance. Alimenté par l'écran de fin de séance. */
+  endSession: (rewards: import('./partyFlow').SessionRewards) => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
@@ -581,8 +584,9 @@ export interface GameState extends RollFlowActionsMap {
   removeFromSellCart: (uid: string) => void;
   clearSellCart: () => void;
   confirmSell: () => void;
-  /** Réparation d'armure chez le marchand : remet damageTaken à 0 contre 10 %/PA perdu (LDB 63 l.97-98). */
-  repairArmour: (uid: string, heroId: string) => void;
+  /** Réparation chez l'artisan : remet damageTaken à 0 contre le coût unifié — armure 10 %/PA (LDB 63
+   *  l.97-98) ou arme 10 %/point de Dégâts (LDB 62 l.135). Arme improvisée = irréparable. */
+  repairItem: (uid: string, heroId: string) => void;
   /** Marchandage (LDB 60 l.12) : ouvre un Test opposé (1/visite) ; réduit ensuite les prix de 10-20 %. */
   startBargain: (mode: 'buy' | 'sell') => void;
   // bargain{Roll,Reroll,BonusSL,DarkPact} : générés (RollFlowActionsMap).
@@ -1316,6 +1320,7 @@ export const useGame = create<GameState>((set, get) => ({
   buySpellComponent: (heroId, spellId) => partyFlow.buySpellComponent(get, set, heroId, spellId),
   removeSpellComponent: (heroId, spellId) => partyFlow.removeSpellComponent(get, set, heroId, spellId),
   setHeroBackground: (heroId, patch) => partyFlow.setHeroBackground(get, set, heroId, patch),
+  endSession: (rewards) => partyFlow.endSession(get, set, rewards),
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
   creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),
@@ -1548,7 +1553,7 @@ export const useGame = create<GameState>((set, get) => ({
   removeFromSellCart: (uid) => merchantFlow.removeFromSellCart(get, set, uid),
   clearSellCart: () => merchantFlow.clearSellCart(get, set),
   confirmSell: () => merchantFlow.confirmSell(get, set),
-  repairArmour: (uid, heroId) => merchantFlow.repairArmour(get, set, uid, heroId),
+  repairItem: (uid, heroId) => merchantFlow.repairItem(get, set, uid, heroId),
   startBargain: (mode) => merchantFlow.startBargain(get, set, mode),
   ...rollFlowActions('bargain', FLOWS.bargain, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   bargainConfirm: () => merchantFlow.bargainConfirm(get, set),

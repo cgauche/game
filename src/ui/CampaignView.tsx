@@ -28,6 +28,7 @@ import { Icon } from './Icon';
 import { GameMenu } from './GameMenu';
 import { SaveLoadModal } from './SaveLoadModal';
 import { HouseRulesModal } from './HouseRulesModal';
+import { SessionEndModal } from './SessionEndModal';
 import { CoopMenuSection } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
@@ -93,6 +94,7 @@ export function CampaignView() {
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
   const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
+  const [sessionOpen, setSessionOpen] = useState(false); // écran de fin de séance (Ambitions/Détermination)
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
   // `phase.icon` est désormais un id d'icône (`time/*`, registre src/ui/icons) — GameMenu peut le
@@ -170,8 +172,9 @@ export function CampaignView() {
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
             la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
         {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
-        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><AudioControls /></>} />
+        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><AudioControls /></>} />
         {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
+        {sessionOpen && <SessionEndModal onClose={() => setSessionOpen(false)} />}
         {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
         {optionsOpen && <OptionsModal onClose={() => setOptionsOpen(false)} />}
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou

@@ -31,6 +31,7 @@ import {
   wildcardSpecs,
 } from '../engine/careerSlots';
 import { careerSkillAdditions, careerTalentAdditions, baseWithTalents } from '../engine/talentEffects';
+import { rule } from '../engine/policy';
 import { levelsForCareer, findSkill, findSkillById, findCareerById, findClassById, careers, talentConcrete } from '../data';
 
 export interface CharAdvanceRow {
@@ -212,11 +213,13 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   const changeCost = careerChangeCost(completed);
 
   // Cibles de progression (LDB 07 l.137) : Niveau suivant (exige la complétion) + Niveaux inférieurs.
+  // Avec l'option MJ « Sauts de Niveau » (l.140), les Niveaux supérieurs non-adjacents apparaissent aussi.
+  const gmJump = rule('advancement-career-jump') === true;
   const targets: CareerTarget[] = [];
   for (const l of levels) {
     if (l.level === careerLevel) continue;
-    if (l.level > careerLevel + 1) continue; // pas de saut de niveau (réservé au MJ)
-    const v = validateCareerChange(hero, career, l.level, { completed, sameClass: true, targetLevelExists: true });
+    if (!gmJump && l.level > careerLevel + 1) continue; // pas de saut de niveau sans l'accord du MJ
+    const v = validateCareerChange(hero, career, l.level, { completed, sameClass: true, targetLevelExists: true, gmJump });
     targets.push({ career, level: l.level, label: l.label, cost: v.cost, ok: v.ok, reason: v.reason });
   }
 

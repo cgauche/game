@@ -40,6 +40,33 @@ export function priceToMoney(p: { gold?: number; silver?: number; bronze?: numbe
 export function toMoney(p: { gold?: number; silver?: number; brass?: number }): Money {
   return { gold: p.gold ?? 0, silver: p.silver ?? 0, brass: p.brass ?? 0 };
 }
+/**
+ * « Tenir les comptes » (LDB 59 l.9-11, règle optionnelle de simplification) : « Si un objet coûte moins
+ * que votre niveau de Statut — donc, si vous avez un Statut Argent 2, n'importe quel objet coûtant 2
+ * pistoles d'argent ou moins — on considère que vous pouvez acheter autant de fois que nécessaire cet
+ * objet. » Seuil (en sous de cuivre) en deçà duquel un objet est réputé toujours abordable : Bronze N =
+ * N sous, Argent N = N pistoles, Or N = N couronnes.
+ */
+export type StatusTier = 'bronze' | 'argent' | 'or';
+export function statusBudgetBrass(tier: StatusTier, standing: number): number {
+  const unit = tier === 'or' ? PA_PER_CO : tier === 'argent' ? PA_PER_SC : 1;
+  return Math.max(0, standing) * unit;
+}
+
+/** Un objet est-il « toujours abordable » sous « Tenir les comptes » : prix ≤ seuil de Statut (LDB 59) ? */
+export function withinStatusBudget(priceBrass: number, tier: StatusTier, standing: number): boolean {
+  return priceBrass <= statusBudgetBrass(tier, standing);
+}
+
+/** Décompose un libellé de Statut de carrière (« Argent 2 », « Bronze 1 », « Or 3 ») en Échelon + Standing.
+ *  null si le libellé n'est pas reconnu (Statut absent / « — »). Sert à « Tenir les comptes ». */
+export function parseStatus(status: string | undefined | null): { tier: StatusTier; standing: number } | null {
+  if (!status) return null;
+  const m = /^(bronze|argent|or)\s*(\d+)/i.exec(status.trim());
+  if (!m) return null;
+  return { tier: m[1].toLowerCase() as StatusTier, standing: Number(m[2]) };
+}
+
 /** Affichage canon de la monnaie (LDB 57 « La monnaie », l.25/31/33). Abréviations canon : couronne
  *  d'or = `CO`, sou de cuivre = `sc`, pistole d'argent = la notation `/` (PAS « pa »). Les pistoles
  *  et les sous se combinent en `S/C` — « 6/8 » = 6 pistoles 8 sous, « 20/– » = 20 pistoles sans sou

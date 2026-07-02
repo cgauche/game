@@ -30,6 +30,7 @@ import {
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
   rollManeuverAttacker, maneuverAttackerDifficulty,
 } from './combatFlow';
+import { domainEnvironmentBonus } from '../engine/domainAttributes';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
@@ -356,7 +357,9 @@ export const FLOWS = {
         return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, p.missile, p.focused, Math.max(1, ni - cur.sl)) };
       }
       // — Jet NORMAL (relance Chance/Pacte) : re-jet complet — wards recalculés (Sorcière LDB 42 + Aqshy LDB 48). —
-      const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell);
+      // Ward = pénalité « Sorcière » (LDB 42) + bonus conditionnel de Domaine (Aqshy près des flammes,
+      // LDB 48) + bonus d'ENVIRONNEMENT (Vie/Ghyran +10 en zone rurale/sauvage, LDB 48 l.690).
+      const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell) + domainEnvironmentBonus(spell, s.scene?.environment);
       const res = p.missile
         ? resolveMagicMissile(actor, target, spell, battleRng(), p.focused, ward)
         : resolveCasting(actor, spell, battleRng(), 'intermediaire', p.focused, ward);

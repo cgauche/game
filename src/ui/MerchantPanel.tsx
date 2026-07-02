@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import { findTrappingById, weaponGroupLabel, type QualityRef } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
-import { repairCostBrass } from '../engine/repair';
+import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
 import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/items';
@@ -72,11 +72,11 @@ function lineCost(id: string, factor: number): Money | null {
   return fromBrass(Math.round(brass));
 }
 
-/** Coût de réparation d'une armure endommagée (LDB 63 l.97-98). */
+/** Coût de réparation d'un objet endommagé — armure (LDB 63 l.97-98) ou arme (LDB 62 l.135). */
 function repairPrice(item: ItemInstance): string {
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;
-  return formatMoney(fromBrass(repairCostBrass(item, base)));
+  return formatMoney(fromBrass(itemRepairCostBrass(item, base)));
 }
 
 const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', same: '' };
@@ -117,7 +117,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   const [sellHero, setSellHero] = useState<string | null>(null); // onglet PJ actif côté Vente
   const toggleDetails = (label: string) => setDetails((d) => (d === label ? null : label));
 
-  const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => it.kind === 'armor' && (it.damageTaken ?? 0) > 0).map((it) => ({ h, it })));
+  const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => isRepairable(it)).map((it) => ({ h, it })));
   const sellable = party.flatMap((h) => (h.items ?? []).map((it) => ({ h, it })));
 
   // Marchandage (LDB 60 l.12) : achat (panier) et vente = négociations distinctes.
@@ -505,7 +505,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                   <button className="btn small" onClick={() => onRepair(it.uid, h.id)}>Réparer</button>
                 </div>
               ))}
-              {!damaged.length && <p className="empty">— aucune armure à réparer —</p>}
+              {!damaged.length && <p className="empty">— aucun objet à réparer —</p>}
             </div>
           )}
         </div>
@@ -532,7 +532,7 @@ export function MerchantPanel() {
   const removeFromSellCart = useGame((s) => s.removeFromSellCart);
   const clearSellCart = useGame((s) => s.clearSellCart);
   const confirmSell = useGame((s) => s.confirmSell);
-  const repairArmour = useGame((s) => s.repairArmour);
+  const repairItem = useGame((s) => s.repairItem);
   const startBargain = useGame((s) => s.startBargain);
   const appraiseItem = useGame((s) => s.appraiseItem);
   const closeMerchant = useGame((s) => s.closeMerchant);
@@ -543,7 +543,7 @@ export function MerchantPanel() {
       onAddToCart={addToCart} onDecCart={decFromCart} onRemoveCart={removeFromCart} onClearCart={clearCart} onRefuse={refuseBargain} onPay={payCart}
       onAssignDist={assignDistribution} onConfirmDist={confirmDistribution}
       onSell={sellItem} onAddToSellCart={addToSellCart} onRemoveSellCart={removeFromSellCart} onClearSellCart={clearSellCart} onConfirmSell={confirmSell}
-      onRepair={repairArmour} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
+      onRepair={repairItem} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
     />
   );
 }

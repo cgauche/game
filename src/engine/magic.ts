@@ -371,6 +371,32 @@ export function durationClockMinutes(duration: SpellDuration | null | undefined,
   return Math.max(1, resolveFormula(duration.value, caster)) * UNIT[duration.unit];
 }
 
+/**
+ * Influences malfaisantes — « Règle du 8 » (LDB 46 l.89) : « Quand vous effectuez un Test de Langue
+ * (Magick) ou de Focalisation à proximité d'une Influence corruptrice, tout lancer obtenant un 8
+ * (représentant le symbole du Chaos à huit pointes) sur le dé des unités entraîne une Incantation
+ * Imparfaite Mineure […]. Si vous avez déjà obtenu une Incantation Imparfaite Mineure au Test pour une
+ * autre raison, [elle] devient Majeure. » Renvoie la sévérité de la Maladresse déclenchée, ou `null`
+ * (dé des unités ≠ 8, ou pas à proximité d'une Corruption). `alreadyMinor` = une Imparfaite Mineure a
+ * DÉJÀ été obtenue au Test pour une autre raison (double-échec « 88 ») → escalade en Majeure.
+ */
+export function ruleOfEightSeverity(roll: number, nearCorruption: boolean, alreadyMinor: boolean): 'mineure' | 'majeure' | null {
+  if (!nearCorruption || roll % 10 !== 8) return null;
+  return alreadyMinor ? 'majeure' : 'mineure';
+}
+
+/**
+ * Sorcellerie (LDB 49) : « le fait de focaliser ou lancer des Sorts de ce Domaine nécessite
+ * systématiquement un lancer sur le Tableau des Incantations Imparfaites Mineures à moins d'être lancé
+ * avec un ingrédient ». Vrai = une Incantation Imparfaite Mineure SYSTÉMATIQUE est due (Sort de
+ * Sorcellerie lancé sans composant). Le composant, lui, « ne servira à rien » si une Imparfaite doit de
+ * toute façon être lancée pour une autre raison (fumble) — donc il n'y a PAS de dégradation en mode
+ * Sorcellerie : `componentUsed` prévient seulement le lancer systématique ci-dessus.
+ */
+export function sorceryMandatoryMiscast(sorcery: boolean, componentUsed: boolean): boolean {
+  return sorcery && !componentUsed;
+}
+
 export interface CastResult {
   /** Le sort est-il effectivement lancé ? */
   cast: boolean;
