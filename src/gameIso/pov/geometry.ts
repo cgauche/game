@@ -23,7 +23,10 @@
  * La brume ATMOSPHÉRIQUE (courbe smoothstep^gamma en donnée) délave le tout progressivement.
  * Les colonnes NON VISIBLES (brouillard de guerre / hors LdV) sont rendues en SILHOUETTES DE BRUME
  * PURE (fogT=1, zéro détail, zéro info de couleur) : le monde reste CONTINU — plus de trous de ciel.
- * `speckle`/`timber` restent hors POV v1.
+ * DÉTAIL DE TERRAIN au LOD PROCHE (mêmes recettes/seed que l'iso) : variance de teinte par tuile
+ * (`tintVar`, miroir du choix de variante iso), TOUFFES d'herbe (`tufts`, brins dressés en monde) et
+ * MOUCHETIS (`speckle`, galets/reflets) — fondus par la distance, éteints dès que la brume prend le
+ * relais. `timber` (colombage) reste hors POV.
  */
 import {
   project,
@@ -54,7 +57,8 @@ import { roofMaterial } from '../catalog/roofs';
 import { AMBIANCE } from '../catalog/ambiance';
 import { COURSED } from '../backends/affineWalls';
 import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, type DetailExpansion } from '../detail/expand';
-import { hash32 } from '../detail/hash';
+import { hash32, seedStream } from '../detail/hash';
+import { TINT_SPREAD } from '../backends/affineDetail';
 import { shade } from '../shade';
 import type { DetailRecipe } from '../detail/types';
 import type { CellSide } from '../builders/types';
@@ -90,6 +94,10 @@ const LOD = AMBIANCE.pov.depth.lod;
 const BLOCK_SHADE_K = 1.5;
 /** Seuil |shade| d'un bloc d'ACCENT : les 2×ACCENT_FRAC extrêmes de la nuance uniforme [−pv, pv]. */
 const accentThreshold = (paletteVar: number): number => paletteVar * (1 - 2 * ACCENT_FRAC);
+/** Éventail d'une touffe : décalage horizontal MONDE d'un brin latéral, en fraction de sa hauteur. */
+const TUFT_FAN = 0.3;
+/** Épaisseur métrique d'un brin d'herbe (m) — projetée en perspective comme un joint. */
+const TUFT_BLADE_WM = 0.01;
 
 /** Biais de profondeur : donne aux sols un cran DERRIÈRE (plus loin) pour qu'ils ne z-fightent pas avec
  *  la base des murs à centroïde égal. */
@@ -352,6 +360,78 @@ function courseDetailItems(
   return out;
 }
 
+/**
+ * ACCENTS de SOL d'une tuile au LOD PROCHE — touffes d'herbe (`tufts`) et mouchetis (`speckle`), le même
+ * cœur d'expansion PARTAGÉ (`expandRecipe`, seed = identité MONDE `hash32('floor', …)`, le même que les
+ * accents iso `groundAccentsSvg`). Les positions sont tirées en UV de TUILE puis ANCRÉES EN MONDE (via le
+ * `frame` de la tuile) → stables aux 4 rotations. Fondu par la distance comme l'appareillage : au-delà de
+ * la bande proche (`blocksT`+`fadeT`) les accents se dissolvent vers la teinte de sol (le maillage prend
+ * le relais). Budget : UN tracé par tuile et par section (brins concaténés / losanges concaténés).
+ */
+function groundAccentItems(
+  recipe: DetailRecipe,
+  frame: FaceFrame,
+  seed: number,
+  depth: number,
+  depthTiles: number,
+  cam: CamPose,
+  lightVal: number,
+  base: string,
+  cellKey: string,
+  fogColor: string,
+  curve: FogCurve,
+): DrawItem[] {
+  // Poids PROCHE ∈ [0,1] : plein ≤ blocksT, fondu sur fadeT (même bande que les blocs nuancés).
+  const wNear = 1 - Math.min(1, Math.max(0, (depthTiles - LOD.blocksT) / LOD.fadeT));
+  if (wNear <= 0) return [];
+  const e = expandRecipe({ tufts: recipe.tufts, speckle: recipe.speckle, seedScope: recipe.seedScope }, frame.wM, frame.hM, seed);
+  if (!e.tufts.length && !e.speckles.length) return [];
+  const out: DrawItem[] = [];
+  const fogT = fogAt(depthTiles, curve);
+
+  // TOUFFES : quelques brins dressés en MONDE depuis le pied (hauteur = z + hM), éventail dans une
+  // direction monde tirée au seed (per touffe) — le fondu vers la teinte de sol (`mixHex`) les éteint au
+  // loin, comme un joint. UN tracé stroké par tuile (couleur de tuile, dosage iso).
+  if (e.tufts.length && recipe.tufts) {
+    const r = seedStream(hash32(seed, 'blades'));
+    let d = '';
+    for (const t of e.tufts) {
+      const pied = frame.at(t.u, t.v);
+      const hp = t.hM * (0.8 + r() * 0.5); // hauteur monde du brin (m)
+      const ang = r() * Math.PI * 2;
+      const dx = Math.cos(ang) * TUFT_FAN * hp;
+      const dy = Math.sin(ang) * TUFT_FAN * hp;
+      d += segSub(pied, { x: pied.x, y: pied.y, z: pied.z + hp }, cam); // brin central
+      d += segSub(pied, { x: pied.x + dx, y: pied.y + dy, z: pied.z + hp * 0.9 }, cam); // brin gauche
+      d += segSub(pied, { x: pied.x - dx, y: pied.y - dy, z: pied.z + hp * 0.85 }, cam); // brin droit
+    }
+    if (d) {
+      const col = recipe.tufts.colors[hash32(seed, 'tuftcol') % recipe.tufts.colors.length];
+      const strokeW = Math.max(0.4, (TUFT_BLADE_WM * fx) / depth);
+      out.push({ path: d, stroke: tint(mixHex(base, col, wNear), lightVal, fogT, fogColor), strokeW, depth: depth - 0.006, key: `tuft:${cellKey}`, kind: 'detail' });
+    }
+  }
+
+  // MOUCHETIS : petits losanges au sol (galets/reflets), taille en PERSPECTIVE (rM·fx/depth), un tracé
+  // rempli par tuile. Losange écran centré sur le point de sol projeté (culé au viewport).
+  if (e.speckles.length && recipe.speckle) {
+    let d = '';
+    for (const s of e.speckles) {
+      const p = project(cam, frame.at(s.u, s.v));
+      if (p.behind || p.sx < CLIP_X0 || p.sx > CLIP_X1 || p.sy < CLIP_Y0 || p.sy > CLIP_Y1) continue;
+      const rad = Math.max(0.4, (s.rM * fx) / depth);
+      d +=
+        `M${p.sx.toFixed(1)},${(p.sy - rad).toFixed(1)}L${(p.sx + rad * 1.2).toFixed(1)},${p.sy.toFixed(1)}` +
+        `L${p.sx.toFixed(1)},${(p.sy + rad * 0.8).toFixed(1)}L${(p.sx - rad * 1.1).toFixed(1)},${p.sy.toFixed(1)}Z`;
+    }
+    if (d) {
+      const col = recipe.speckle.colors[hash32(seed, 'dotcol') % recipe.speckle.colors.length];
+      out.push({ path: d, fill: tint(mixHex(base, col, wNear), lightVal, fogT, fogColor), depth: depth - 0.007, key: `speckle:${cellKey}`, kind: 'detail' });
+    }
+  }
+  return out;
+}
+
 /** Colonnes (x,y) dont on voit le SOL (brouillard) : voir une case, c'est voir les structures qui s'y
  *  dressent (rempart/étage au-dessus compris). Dérivé du set « x,y,z » en retirant le z. */
 function visibleColumns(visible: Set<string>): Set<string> {
@@ -416,16 +496,29 @@ export function buildPovDrawList(
         const depthTiles = (it.depth - FLOOR_BIAS) / cam.mpt;
         const h = f.poly[0].h;
         const det = def?.detail;
-        // RANGS D'APPAREILLAGE du sol (pavé/dalle/planches) : expansion PARTAGÉE sur l'espace TUILE
-        // (mpt × mpt), seed = MÊME identité monde que les accents de sol iso ; le fondu par pas
-        // projeté (courseDetailItems) les éteint tout seul quand la tuile devient petite.
-        if (det?.courses) {
+        const seed = hash32('floor', x, y, z); // identité MONDE — le MÊME seed que les accents de sol iso
+        // VARIANCE DE TEINTE par tuile (`tintVar`) : miroir EXACT du choix de variante iso
+        // (`terrainFillGradient` : `hash32('tint',x,y,z) % TINT_SPREAD.length`, même amplitude `TINT_SPREAD`).
+        // Coût nul (une nuance du fill de base déjà posé) ; fondu au proche/moyen — au loin la brume
+        // écrase tout et le maillage prend le relais.
+        if (det?.tintVar) {
+          const wTint = 1 - Math.min(1, Math.max(0, (depthTiles - LOD.blocksT) / LOD.fadeT));
+          if (wTint > 0) {
+            const spread = TINT_SPREAD[hash32('tint', x, y, z) % TINT_SPREAD.length];
+            it.fill = tint(shade(base, 1 + det.tintVar * spread * wTint), lv, fogAt(depthTiles, curve), fog);
+          }
+        }
+        // DÉTAIL DE SURFACE sur l'espace TUILE (mpt × mpt) : RANGS d'appareillage (pavé/dalle/planches),
+        // TOUFFES d'herbe et MOUCHETIS — expansion PARTAGÉE, seed = MÊME identité monde que l'iso ; chaque
+        // section s'éteint toute seule au loin (pas projeté / bande proche).
+        if (det && (det.courses || det.tufts || det.speckle)) {
           const frame: FaceFrame = {
             at: (u, v) => ({ x: (x - 0.5 + u) * mpt, y: (y - 0.5 + v) * mpt, z: h }),
             wM: mpt,
             hM: mpt,
           };
-          items.push(...courseDetailItems(det, frame, hash32('floor', x, y, z), it.depth, depthTiles, cam, lv, base, el.key, fog, curve));
+          if (det.courses) items.push(...courseDetailItems(det, frame, seed, it.depth, depthTiles, cam, lv, base, el.key, fog, curve));
+          if (det.tufts || det.speckle) items.push(...groundAccentItems(det, frame, seed, it.depth, depthTiles, cam, lv, base, `${x},${y},${z}`, fog, curve));
         }
         // MAILLAGE DE TUILES — LE repère de profondeur au sol, jusqu'à la portée max. Terrain
         // appareillé → son joint (vraie ligne d'appareillage, dès la 1re case) ; terrain nu MARCHABLE

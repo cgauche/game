@@ -288,6 +288,47 @@ describe('buildPovDrawList', () => {
     for (const it of gmesh) expect(it.depth / cam.mpt).toBeGreaterThan(2);
   });
 
+  it('DÉTAIL SOL POV — herbe : variance de teinte par tuile (tintVar) + TOUFFES au premier plan', () => {
+    const s = scene();
+    s.layers = [{ z: 0, tiles: new Array(12 * 12).fill('herbe') }];
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>();
+    for (let y = 0; y <= 11; y++) for (let x = 3; x <= 9; x++) visible.add(`${x},${y},0`);
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    // tintVar : les tuiles PROCHES d'herbe ne partagent pas toutes le même aplat (variante par tuile).
+    const fills = new Set(list.filter((it) => it.kind === 'floor').map((it) => it.fill));
+    expect(fills.size).toBeGreaterThan(1);
+    // TOUFFES : au moins une tuile proche porte des brins (tracé stroké, teinté rgb, sans NaN) ; clé
+    // `tuft:` DISTINCTE de l'appareillage `floor:` (l'herbe n'a AUCUN détail `floor:`).
+    const tufts = list.filter((it) => it.kind === 'detail' && it.key.startsWith('tuft:'));
+    expect(tufts.length).toBeGreaterThan(0);
+    expect(list.some((it) => it.kind === 'detail' && it.key.startsWith('floor:'))).toBe(false);
+    for (const it of tufts) {
+      expect(it.path!.length).toBeGreaterThan(0);
+      expect(it.path).not.toContain('NaN');
+      expect(it.stroke).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
+    }
+    // …et ces touffes restent au PREMIER PLAN : aucune au-delà de la bande proche (blocksT+fadeT ≈ 5,5).
+    for (const it of tufts) expect(it.depth / cam.mpt).toBeLessThanOrEqual(6);
+  });
+
+  it('DÉTAIL SOL POV — terre : MOUCHETIS (galets) au premier plan (losanges remplis, clé `speckle:`)', () => {
+    const s = scene();
+    s.layers = [{ z: 0, tiles: new Array(12 * 12).fill('terre') }];
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>();
+    for (let y = 0; y <= 11; y++) for (let x = 3; x <= 9; x++) visible.add(`${x},${y},0`);
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    const speckle = list.filter((it) => it.kind === 'detail' && it.key.startsWith('speckle:'));
+    expect(speckle.length).toBeGreaterThan(0);
+    for (const it of speckle) {
+      expect(it.path!.length).toBeGreaterThan(0);
+      expect(it.path).not.toContain('NaN');
+      expect(it.fill).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
+      expect(it.depth / cam.mpt).toBeLessThanOrEqual(6); // fondu par distance : rien au fond
+    }
+  });
+
   it('multi-niveaux : rend TOUTES les couches d’une colonne visible (sol du groupe + étage/plateforme)', () => {
     const s = emptyScene(6, 6);
     s.layers = [

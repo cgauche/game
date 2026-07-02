@@ -44,8 +44,9 @@ export const PX_PER_M_V = LEVEL_H / METRES_PER_LEVEL;
 /** Variantes pré-seedées par recette (anti-périodicité, choisies par hash du monde) — partagé avec le
  *  backend TOITS (variante de bardeaux par élément). */
 export const N_VARIANTS = 3;
-/** Variantes de dégradé de terrain (variance de teinte par tuile) : étalement des facteurs de shade. */
-const TINT_SPREAD = [-1, -0.4, 0.35, 1];
+/** Variantes de dégradé de terrain (variance de teinte par tuile) : étalement des facteurs de shade.
+ *  PARTAGÉ avec le POV (`pov/geometry.ts` en tire la MÊME variante par tuile → même amplitude visuelle). */
+export const TINT_SPREAD = [-1, -0.4, 0.35, 1];
 
 const n2 = (v: number) => String(Math.round(v * 100) / 100);
 const n3 = (v: number) => String(Math.round(v * 1000) / 1000);
