@@ -57,16 +57,24 @@ describe('buildPovDrawList', () => {
     expect(walls.length).toBeGreaterThan(0);
   });
 
-  it('chaque item a ≥ 3 points et une couleur rgb(...)', () => {
+  it('chaque item plein a ≥ 3 points et une couleur rgb(...) ; chaque tracé a un chemin fini', () => {
     const s = scene();
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
     const visible = new Set<string>();
     for (let y = 4; y <= 8; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
     const list = buildPovDrawList(s, cam, visible, LIGHT);
     for (const it of list) {
-      expect(it.points.length).toBeGreaterThanOrEqual(3);
+      if (it.path) {
+        // Tracé du LOD matériaux : chemin non vide, stroke OU fill teinté, épaisseur finie.
+        expect(it.kind).toBe('detail');
+        expect(it.path.length).toBeGreaterThan(0);
+        expect(it.path).not.toContain('NaN');
+        expect(it.stroke ?? it.fill).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
+        continue;
+      }
+      expect(it.points!.length).toBeGreaterThanOrEqual(3);
       expect(it.fill).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
-      for (const [px, py] of it.points) {
+      for (const [px, py] of it.points!) {
         expect(Number.isFinite(px)).toBe(true);
         expect(Number.isFinite(py)).toBe(true);
       }
@@ -174,6 +182,87 @@ describe('buildPovDrawList', () => {
     for (let y = 1; y <= 5; y++) for (let x = 1; x <= 5; x++) visible.add(`${x},${y},0`);
     const list = buildPovDrawList(s, cam, visible, LIGHT);
     expect(list.some((it) => it.kind === 'riser')).toBe(true); // la face verticale du rempart est rendue
+  });
+
+  it('TOITS : pans continus du pivot rendus (kind roof), teinte par pan — un bâtiment se lit comme une maison', () => {
+    const s = scene();
+    s.roofs = [{ id: 'r1', style: 'maison', foot: { x: 5, y: 3, w: 3, h: 2 } }];
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>();
+    for (let y = 2; y <= 8; y++) for (let x = 3; x <= 8; x++) visible.add(`${x},${y},0`);
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    const roofs = list.filter((it) => it.kind === 'roof');
+    expect(roofs.length).toBeGreaterThan(0); // au moins un pan projeté
+    for (const it of roofs) expect(it.key.startsWith('roof:r1:')).toBe(true);
+  });
+
+  it('CUTAWAY toit : le groupe DANS l’empreinte → pas de pans, un PLAFOND intérieur sur l’empreinte', () => {
+    const s = scene();
+    s.roofs = [{ id: 'r1', style: 'maison', foot: { x: 5, y: 6, w: 3, h: 4 } }];
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N'); // le groupe est SOUS le toit (dans l'empreinte)
+    const visible = new Set<string>();
+    for (let y = 4; y <= 9; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    expect(list.some((it) => it.kind === 'roof')).toBe(false); // on est dessous : aucun pan
+    expect(list.some((it) => it.key.startsWith('roofceil:'))).toBe(true); // plafond de l'empreinte
+    // Une scène INTÉRIEURE garde son plafond tuile à tuile, sans doublon d'empreinte.
+    const si = scene();
+    si.ambiance = 'interieur';
+    si.roofs = [{ id: 'r1', style: 'maison', foot: { x: 5, y: 6, w: 3, h: 4 } }];
+    const inside = buildPovDrawList(si, makeCamera(si, { x: 6, y: 8 }, 'N'), visible, LIGHT);
+    expect(inside.some((it) => it.key.startsWith('roofceil:'))).toBe(false);
+    expect(inside.some((it) => it.key.startsWith('ceil:'))).toBe(true);
+  });
+
+  it('toit HORS des colonnes visibles (empreinte élargie) → pas dessiné', () => {
+    const s = scene();
+    s.roofs = [{ id: 'loin', style: 'maison', foot: { x: 0, y: 0, w: 2, h: 2 } }];
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>(['6,7,0', '6,6,0']); // le toit (0,0) n'est pas en vue
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    expect(list.some((it) => it.kind === 'roof')).toBe(false);
+  });
+
+  it('LOD murs : appareillage COMPLET (joints + blocs nuancés) ≤ 3 cases, joints seuls de 3 à 6, rien au-delà', () => {
+    const detailOf = (wallY: number, eyeY: number) => {
+      const s = scene();
+      s.walls = [{ x: 6, y: wallY, side: 'N', structure: 'mur-en-pierre' }];
+      const cam = makeCamera(s, { x: 6, y: eyeY }, 'N');
+      const visible = new Set<string>();
+      for (let y = 0; y <= 11; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
+      return buildPovDrawList(s, cam, visible, LIGHT).filter((it) => it.kind === 'detail' && it.key.startsWith('wall:'));
+    };
+    // ~2 cases : joints (stroke) ET blocs nuancés (fill) — trapèzes de l'appareillage.
+    const near = detailOf(6, 8);
+    expect(near.some((it) => it.stroke && it.key.endsWith(':joints'))).toBe(true);
+    expect(near.some((it) => it.fill && it.key.includes(':blocs'))).toBe(true);
+    // ~5 cases : lignes de rangs seules, plus de blocs.
+    const mid = detailOf(3, 8);
+    expect(mid.some((it) => it.stroke && it.key.endsWith(':joints'))).toBe(true);
+    expect(mid.some((it) => it.fill && it.key.includes(':blocs'))).toBe(false);
+    // ~8 cases : plus rien (la brume prend le relais).
+    const farAway = detailOf(0, 8);
+    expect(farAway.length).toBe(0);
+  });
+
+  it('LOD sols : joints d’appareillage ≤ 3 cases pour un terrain à motif (pavé), rien pour l’herbe ni au-delà', () => {
+    const s = scene();
+    s.layers = [{ z: 0, tiles: new Array(12 * 12).fill('pave') }];
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>();
+    for (let y = 0; y <= 11; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    const joints = list.filter((it) => it.kind === 'detail' && it.key.startsWith('floor:'));
+    expect(joints.length).toBeGreaterThan(0);
+    for (const it of joints) {
+      // Toutes les tuiles à joints sont DANS la bande proche (≤ 3 cases + demi-diagonale de tuile).
+      expect(it.depth / cam.mpt).toBeLessThanOrEqual(3.8);
+    }
+    // Herbe (aucune recette d'assises) → aucun joint de sol.
+    const sh = scene();
+    sh.layers = [{ z: 0, tiles: new Array(12 * 12).fill('herbe') }];
+    const grass = buildPovDrawList(sh, makeCamera(sh, { x: 6, y: 8 }, 'N'), visible, LIGHT);
+    expect(grass.some((it) => it.kind === 'detail' && it.key.startsWith('floor:'))).toBe(false);
   });
 
   it('multi-niveaux : rend TOUTES les couches d’une colonne visible (sol du groupe + étage/plateforme)', () => {

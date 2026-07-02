@@ -5,6 +5,7 @@ import { computeStateVisible, sceneLightField } from '../../state/visionState';
 import { makeCamera, VW, VH } from './camera';
 import { buildPovDrawList } from './geometry';
 import { AMBIANCE, povAmbianceDefs } from '../catalog/ambiance';
+import { DEFS } from '../sprites';
 import { PovBillboards } from './billboards';
 
 /**
@@ -41,13 +42,19 @@ export function PovStage() {
   return (
     <div className="pov-stage" style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: bg }}>
       <svg width="100%" height="100%" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice">
-        {/* Ciel d'extérieur (pov-sky : bleu → brume d'horizon) + vignette — defs d'ambiance PARTAGÉES. */}
-        <defs dangerouslySetInnerHTML={{ __html: povAmbianceDefs() }} />
+        {/* Ciel d'extérieur (pov-sky : bleu → brume d'horizon) + vignette — defs d'ambiance PARTAGÉES,
+            + gradients des sprites (les billboards de props les référencent). */}
+        <defs dangerouslySetInnerHTML={{ __html: povAmbianceDefs() + DEFS }} />
         {/* Fond : ciel dégradé dehors (plafond non dessiné), sombre en intérieur. */}
         <rect x={0} y={0} width={VW} height={VH} fill={indoor ? bg : 'url(#pov-sky)'} />
-        {view.draw.map((d) => (
-          <polygon key={d.key} points={d.points.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
-        ))}
+        {view.draw.map((d) =>
+          d.path ? (
+            // Tracé du LOD matériaux : joints strokés / trapèzes de blocs remplis.
+            <path key={d.key} d={d.path} fill={d.fill ?? 'none'} stroke={d.stroke} strokeWidth={d.strokeW} strokeLinecap="round" />
+          ) : (
+            <polygon key={d.key} points={d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
+          ),
+        )}
         <PovBillboards scene={scene} cam={view.cam} visible={view.visible} />
         <rect x={0} y={0} width={VW} height={VH} fill="url(#pov-vignette)" pointerEvents="none" />
       </svg>

@@ -35,6 +35,12 @@ export interface DetailExpansion {
   tufts: TuftUV[];
 }
 
+/** Fraction des blocs recevant un accent clair / sombre (~2×18 % de l'appareillage) — dosage PARTAGÉ
+ *  par les backends (accents iso, trapèzes nuancés POV). */
+export const ACCENT_FRAC = 0.18;
+/** Retrait (m) d'un bloc d'accent — laisse respirer les joints dessinés dessous. Partagé backends. */
+export const BLOCK_INSET_M = 0.05;
+
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 /** Déplie `recipe` pour une face de `faceWM`×`faceHM` mètres au `seed` donné. PUR. */

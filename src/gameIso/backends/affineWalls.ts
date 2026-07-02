@@ -28,8 +28,9 @@ const FRAME_W = 1.3, BAR_W = 1.7; // moulure bois / barreau de herse (lignes mé
  *  la lecture 3D « dessiné main » prime sur l'ancien aplat brut. */
 const TINTED: ReadonlySet<WallPart> = new Set(['face', 'panneau', 'moulure', 'plinthe', 'couronnement']);
 
-/** Parties MAÇONNÉES recevant le motif d'appareillage partagé quand la def porte une recette (LOD ≥ 1). */
-const COURSED: ReadonlySet<WallPart> = new Set(['face', 'parapet', 'linteau']);
+/** Parties MAÇONNÉES recevant le motif d'appareillage quand la def porte une recette — SOURCE UNIQUE
+ *  des deux backends (motif affine LOD ≥ 1, joints/trapèzes du LOD de distance POV). */
+export const COURSED: ReadonlySet<WallPart> = new Set(['face', 'parapet', 'linteau']);
 
 /** Profondeur de tri : MAX sur les deux cases bordant l'arête → le mur reste devant son sol proche aux
  *  4 rotations ; vue du dessus symbolique : +0.6 (au-dessus des overlays de sol), comme l'historique. */

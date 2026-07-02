@@ -95,6 +95,18 @@ function lerp3(a: Vec3, b: Vec3, t: number): Vec3 {
   return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t };
 }
 
+/** Clip d'un SEGMENT monde contre le plan Zc = NEAR (même règle que `clipNear`, pour les POLYLIGNES —
+ *  lignes de joints du LOD matériaux). Renvoie null si entièrement derrière. PUR. */
+export function clipSegNear(a: Vec3, b: Vec3, cam: CamPose): [Vec3, Vec3] | null {
+  const za = zc(cam, a);
+  const zb = zc(cam, b);
+  if (za < NEAR && zb < NEAR) return null;
+  if (za >= NEAR && zb >= NEAR) return [a, b];
+  const t = (NEAR - za) / (zb - za);
+  const p = lerp3(a, b, t);
+  return za >= NEAR ? [a, p] : [p, b];
+}
+
 /** Clip Sutherland-Hodgman d'un polygone CONVEXE (sommets monde en ordre) contre le plan Zc = NEAR.
  *  Les points de traversée sont interpolés EN MONDE (t = (NEAR − Zc_in)/(Zc_out − Zc_in)). Renvoie []
  *  si entièrement derrière. Garantit que tout sommet renvoyé a Zc ≥ NEAR (plus d'inversion de sx). PUR. */

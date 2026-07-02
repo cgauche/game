@@ -15,7 +15,7 @@
  * Toute couleur vient de la recette (donnée) ou dérive du fill par `shade` — aucun littéral ici.
  */
 import { hash32, seedStream } from '../detail/hash';
-import { expandRecipe } from '../detail/expand';
+import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M } from '../detail/expand';
 import type { DetailRecipe } from '../detail/types';
 import { shade, ao, spec } from '../shade';
 import { LEVEL_H, isSquareView, type Dims } from '../iso';
@@ -46,10 +46,6 @@ export const PX_PER_M_V = LEVEL_H / METRES_PER_LEVEL;
 export const N_VARIANTS = 3;
 /** Variantes de dégradé de terrain (variance de teinte par tuile) : étalement des facteurs de shade. */
 const TINT_SPREAD = [-1, -0.4, 0.35, 1];
-/** Fraction des blocs recevant un accent clair / sombre (~2×18 % de l'appareillage). */
-const ACCENT_FRAC = 0.18;
-/** Retrait (m) d'un bloc d'accent — laisse respirer les joints du motif dessiné PAR-DESSOUS. */
-const BLOCK_INSET_M = 0.05;
 
 const n2 = (v: number) => String(Math.round(v * 100) / 100);
 const n3 = (v: number) => String(Math.round(v * 1000) / 1000);

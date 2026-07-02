@@ -18,6 +18,7 @@ import { propSvg } from '../../src/gameIso/catalog/decor';
 import { stageSize, depth, tileCenter, billboardScale, TH, type Dims } from '../../src/gameIso/iso';
 import { makeCamera, VW, VH } from '../../src/gameIso/pov/camera';
 import { buildPovDrawList } from '../../src/gameIso/pov/geometry';
+import { buildPropBillboards } from '../../src/gameIso/pov/billboardCore';
 import { AMBIANCE } from '../../src/gameIso/catalog/ambiance';
 import { tileAt, heightAt, isIndoor, sceneMetresPerTile, type Scene } from '../../src/state/scene';
 import { metricToLift } from '../../src/state/relief';
@@ -78,13 +79,22 @@ export function allVisible(scene: Scene): Set<string> {
 
 export function povPanel(scene: Scene, eye: { x: number; y: number; z?: number }, cap: Dir8): Panel {
   const cam = makeCamera(scene, eye, cap);
-  const draw = buildPovDrawList(scene, cam, allVisible(scene), { at: () => 1 });
+  const visible = allVisible(scene);
+  const draw = buildPovDrawList(scene, cam, visible, { at: () => 1 });
   // Fond = ciel dégradé (extérieur) / sombre (intérieur), comme PovStage (`pov-sky` : defs d'ambiance).
   const bg = `<rect width="${VW}" height="${VH}" fill="${isIndoor(scene) ? AMBIANCE.pov.fogIndoor : 'url(#pov-sky)'}"/>`;
   const polys = draw
-    .map((d) => `<polygon points="${d.points.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="${d.fill}"/>`)
+    .map((d) =>
+      d.path
+        ? `<path d="${d.path}" fill="${d.fill ?? 'none'}" stroke="${d.stroke ?? 'none'}" stroke-width="${d.strokeW ?? 0}" stroke-linecap="round"/>`
+        : `<polygon points="${d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="${d.fill}"/>`,
+    )
     .join('');
-  return { w: VW, h: VH, svg: bg + polys };
+  // Props en billboards du MÊME SVG iso (noyau pur partagé avec PovStage) — le décor peuple le POV.
+  const props = buildPropBillboards(scene, cam, visible)
+    .map((b) => b.svg)
+    .join('');
+  return { w: VW, h: VH, svg: bg + polys + props };
 }
 
 /** Départ du groupe : entité `heroStart` de la scène, sinon premier point d'entrée, sinon le centre. */

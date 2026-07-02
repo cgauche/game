@@ -54,10 +54,31 @@ describe('PovBillboards', () => {
     expect(html).not.toContain('<path');
   });
 
-  it('ignore heroStart et prop (seuls les personnages sont la « vie »)', () => {
+  it('un PROP visible se rend en billboard du MÊME SVG iso (pas un rig) ; heroStart reste ignoré', () => {
     const scene = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 9 }, ref: 'tonneau' }]);
     const html = renderToStaticMarkup(<PovBillboards scene={scene} cam={cam} visible={new Set(['5,9,0', '5,5,0'])} />);
-    expect(html).not.toContain('data-bone');
+    expect(html).not.toContain('data-bone'); // pas un rig
+    expect(html).toContain('<g transform="translate('); // billboard ancré aux pieds
+    expect(html).toContain('scale('); // échelle ∝ profondeur
+    expect(html.length).toBeGreaterThan(200); // le tonneau (SVG iso) est bien là
+  });
+
+  it('un PROP hors de `visible` ou au-delà de la portée est droppé (même mécanisme que les personnages)', () => {
+    const hidden = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 9 }, ref: 'tonneau' }]);
+    const h1 = renderToStaticMarkup(<PovBillboards scene={hidden} cam={cam} visible={new Set()} />);
+    expect(h1).toBe('<g class="pov-billboards"></g>');
+    const far = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 25 }, ref: 'tonneau' }]);
+    const h2 = renderToStaticMarkup(<PovBillboards scene={far} cam={cam} visible={new Set(['5,25,0'])} />);
+    expect(h2).toBe('<g class="pov-billboards"></g>');
+  });
+
+  it('une CRÉATURE non-humanoïde (gabarit) se rend en billboard statique (os du plan)', () => {
+    const scene = makeScene([
+      { id: 'loup', kind: 'personnage', pos: { x: 5, y: 9 }, facing: 'N', ref: 'loup', appearance: { species: 'loup' } },
+    ]);
+    const html = renderToStaticMarkup(<PovBillboards scene={scene} cam={cam} visible={new Set(['5,9,0'])} />);
+    expect(html).toContain('data-bone'); // os du gabarit (quadrupède)
+    expect(html).not.toContain('class="rig"'); // PAS le rig bipède
   });
 
   it('CULL de distance : une entité au-delà de FAR est droppée', () => {
