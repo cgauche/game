@@ -1,7 +1,7 @@
 /**
  * QC — GALERIE D'ENVIRONNEMENT headless : instrument de NON-RÉGRESSION VISUELLE de la refonte du rendu.
  * Rend les 4 scènes de référence (siège, Bourg de l'arène, opéra, caveau) avec les MÊMES primitives
- * PURES que le jeu (groundTile / wallSegs / terrainOverlay / roofObj / propSvg / buildPovDrawList),
+ * PURES que le jeu (buildFloors+floorSvg / wallSegs / terrainOverlay / roofObj / propSvg / buildPovDrawList),
  * dans TOUTES les projections : iso losange rot 0..3, edge-on rot 0..3, vue du dessus, + 2 POV
  * (première personne, œil au départ du groupe). Environnement STATIQUE uniquement : ni brouillard,
  * ni tokens, ni FX.
@@ -11,7 +11,8 @@
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { groundTile } from '../../src/gameIso/ground';
+import { buildFloors } from '../../src/gameIso/builders/floors';
+import { floorSvg, floorDepth } from '../../src/gameIso/backends/affineFloors';
 import { wallSegs } from '../../src/gameIso/walls';
 import { roofObj } from '../../src/gameIso/RoofSprite';
 import { DEFS, terrainOverlay } from '../../src/gameIso/sprites';
@@ -44,13 +45,10 @@ function resolveCssVars(svg: string): string {
 // (sol −0.5 · prop 0 · overlay = biais du registre · mur = wallDepth interne · toit = roofDepth interne)
 function envPanel(scene: Scene, dims: Dims): { w: number; h: number; svg: string } {
   const objs: { d: number; svg: string }[] = [];
-  // Sols : TOUTES les couches (parois de relief auto-dérivées comprises).
-  for (const lvl of scene.layers)
-    for (let y = 0; y < dims.h; y++)
-      for (let x = 0; x < dims.w; x++) {
-        const g = groundTile(scene, x, y, dims, lvl.z);
-        if (g) objs.push({ d: depth(x, y, dims, lvl.z) - 0.5, svg: g });
-      }
+  // Sols : TOUTES les couches PLEINES (activeZ = couche max → aucun fantôme), tout visible ;
+  // parois de relief auto-dérivées comprises.
+  const maxZ = Math.max(...scene.layers.map((l) => l.z));
+  for (const el of buildFloors(scene, undefined, { activeZ: maxZ })) objs.push({ d: floorDepth(el, dims), svg: floorSvg(el, dims) });
   // Murs d'arête (portes/parapets/herses inclus — apparence 100 % donnée).
   objs.push(...wallSegs(scene, dims));
   // Overlays de terrain en relief (tuile 'mur' pleine, 'bois') — couche de base, comme IsoStage.

@@ -11,7 +11,8 @@ const HERE = fileURLToPath(new URL('.', import.meta.url));
 
 const COVERED: string[] = [
   'walls.ts',
-  'ground.ts', // Phase 2 (pov/geometry.ts a encore brouillard/struct-fallback hors phase)
+  'builders/floors.ts', // builder de sols (pivot) — ne porte que des IDS de matériau, jamais une couleur
+  'backends/affineFloors.ts', // backend affine des sols (pov/geometry.ts a encore brouillard/struct-fallback hors phase)
   'RoofSprite.tsx', // Phase 3a (chemin de toit LIVE)
   'catalog/buildings/render-helpers.ts', // Phase 3b (render() mort retiré → ne reste que roofFromCells)
   // Phase 4 → 'sprites.ts'

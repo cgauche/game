@@ -51,7 +51,8 @@ import { BodyToken } from './BodyToken';
 import { FogLayer } from './FogLayer';
 import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
-import { groundTile, isOverhang } from './ground';
+import { buildFloors, isOverhang, fogFloorZ } from './builders/floors';
+import { floorSvg, floorDepth } from './backends/affineFloors';
 import { wallSeg } from './walls';
 import { isStructure } from '../engine/structures';
 import { getViewZ, subscribeViewZ } from './viewLevel';
@@ -260,16 +261,10 @@ export function IsoStage() {
   // `viewLevel(z)` isole un seul étage. Le tri de profondeur (z-aware) empile les étages correctement.
   const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.layers.filter((l) => l.z === viewZ) : scene.layers.filter((l) => l.z <= activeZ)) : []), [scene, viewZ, activeZ]);
 
-  // Étage de SOL effectif sous (x,y) pour le BROUILLARD : à un trou (`vide`) de l'étage actif, on retombe
-  // sur le premier sol en dessous → le voile reflète la visibilité du CONTREBAS (vu par le trou) au lieu
-  // d'un noir « inconnu » qui masquerait l'étage inférieur. Mono-niveau (pas de trou) ⇒ rend `activeZ`
-  // (byte-identique). Stable (memo) → ne recalcule le voile que si la scène/l'étage actif change.
-  const fogFloorZAt = useMemo(() => (x: number, y: number): number => {
-    if (!scene) return activeZ;
-    for (let zz = activeZ; zz >= 0; zz--)
-      if (scene.layers.some((l) => l.z === zz) && tileAt(scene, x, y, zz) !== 'vide') return zz;
-    return activeZ;
-  }, [scene, activeZ]);
+  // Étage de SOL effectif sous (x,y) pour le BROUILLARD — `fogFloorZ` (builders/floors), la MÊME vérité
+  // que le surplomb PLEIN du builder → voile et sols pleins ne divergent jamais. Stable (memo) → ne
+  // recalcule le voile que si la scène/l'étage actif change.
+  const fogFloorZAt = useMemo(() => (x: number, y: number): number => (scene ? fogFloorZ(scene, x, y, activeZ) : activeZ), [scene, activeZ]);
 
   // BROUILLARD DE GUERRE — cases actuellement visibles (union des alliés/groupe). Dérivé de l'état
   // (positions LOGIQUES), pas du glissement → memo STABLE pendant la marche. Défini ICI (avant les couches)
@@ -280,14 +275,19 @@ export function IsoStage() {
     [scene, battle, party, partyPos, gameTime, lightLevel],
   );
 
+  // Éléments de SOL du pivot (`buildFloors`) : vérité de scène pure et CAMERA-FREE — couches rendues
+  // (active + dessous, surplombs fantômes au-dessus), relief, wedges, surplomb PLEIN. Ce memo survit
+  // aux rotations/projections ; il ne se recalcule que si la scène/la visibilité/l'étage actif changent.
+  const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
+
   const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis?: boolean }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    const out: { d: number; el: JSX.Element; x: number; y: number; z: number; vis?: boolean }[] = [];
     // « ALLER SOUS LE CHEMIN DE RONDE » : un sol d'étage SUPÉRIEUR (la passerelle) se rend SEMI-TRANSPARENT au-
     // dessus de tout combattant qui se tient EN DESSOUS (z inférieur) → on le voit, et la PORTE qu'il franchit,
     // sans rien hacker (même esprit que l'estompage `occludesActor` du décor, mais Z-aware). Critère : le sol
     // se dessine APRÈS l'acteur (depth) ET le recouvre à l'écran (tileCenter) — robuste aux 4 rotations.
+    // VÉRITÉ DE VUE (screen-space) → décoration au dessin, hors builder.
     const actors: { x: number; y: number; z: number }[] = [];
     if (mode === 'battle' && battle) { for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actors.push({ x: c.pos.x, y: c.pos.y, z: c.pos.z ?? 0 }); }
     else { actors.push({ x: partyPos.x, y: partyPos.y, z: partyPos.z ?? 0 }); for (const ent of scene.entities) if (ent.kind === 'personnage' && !ent.combat?.hiddenUntilCombat) actors.push({ x: ent.pos.x, y: ent.pos.y, z: ent.z ?? 0 }); }
@@ -306,39 +306,18 @@ export function IsoStage() {
       }
       return false;
     };
-    // Couches rendues : l'active + celles du DESSOUS (z <= activeZ). Le franchissement vertical s'auto-dérive
-    // du relief (parois de `groundTile`) ; plus de « chemin de ronde » d'une couche du dessus à dessiner.
-    // AU-DESSUS de la zone active (z > activeZ), on dessine en plus les SURPLOMBS (tablier de pont / loge)
-    // en FANTÔME (OVERHANG_GHOST_OPACITY) → on voit la silhouette du pont au-dessus de soi sans qu'il masque
-    // le sol. Borné aux scènes MULTI-COUCHES (mono-niveau : aucune couche au-dessus à fantômer).
-    const multiLayer = scene.layers.length > 1;
-    for (const lvl of scene.layers) {
-      if (viewZ != null && lvl.z !== viewZ) continue; // isolate : seule la couche isolée
-      const ghost = viewZ == null && lvl.z > activeZ; // tablier au-dessus de la zone active → fantôme
-      if (ghost && !multiLayer) continue;
-      for (let y = 0; y < d.h; y++)
-        for (let x = 0; x < d.w; x++) {
-          if (ghost && !isOverhang(scene, x, y, lvl.z)) continue; // au-dessus : SEULEMENT les surplombs
-          const html = groundTile(scene, x, y, d, lvl.z);
-          // Profondeur PAR TUILE : depth(x,y,z) − 0.5 → le sol passe juste SOUS les objets de SA case
-          // (prop +0, jeton +0.5) tout en s'interclassant avec les voisins par sa vraie position écran
-          // (base ≫ z) : un sol haut surplombe les cases plus ARRIÈRE du bas sans recouvrir la cour devant.
-          if (html) {
-            // RÈGLE GÉNÉRALE du surplomb (étage AU-DESSUS de l'actif) : il ne s'efface (fantôme translucide)
-            // que pour ne pas masquer une SURFACE VISIBLE en dessous (pont/loge au-dessus du parterre où l'on
-            // joue). Là où l'étage du dessous n'est PAS visible (occulté/brouillard), rien à protéger → on le
-            // dessine PLEIN comme la structure surélevée qu'on perçoit (un rempart au bord de carte), et on le
-            // tague `vis` pour qu'il passe AU-DESSUS du voile (comme un mur), au lieu d'être mangé par l'ombre.
-            const belowVisible = visible.has(`${x},${y},${fogFloorZAt(x, y)}`);
-            const solidOverhang = ghost && !belowVisible;
-            const reveal = !ghost && coversActorBelow(x, y, lvl.z); // passerelle au-dessus d'un combattant → transparente
-            const op = ghost ? (solidOverhang ? 1 : OVERHANG_GHOST_OPACITY) : reveal ? 0.22 : 1;
-            out.push({ d: depth(x, y, d, lvl.z) - 0.5, x, y, z: lvl.z, ...(solidOverhang ? { vis: true } : {}), el: <g key={`f${lvl.z}-${x}-${y}`} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: html }} /> });
-          }
-        }
-    }
-    return out;
-  }, [scene, shownRot, shownEdge, viewMode, activeZ, viewZ, mode, battle, partyPos, visible, fogFloorZAt]);
+    // Opacité : fantôme translucide (OVERHANG_GHOST_OPACITY) sauf surplomb PLEIN (opaque, tagué `vis` →
+    // au-dessus du voile — vérités de SCÈNE du builder) ; reveal au-dessus d'un acteur (vérité de VUE).
+    // `floorDepth` = depth(x,y,z) − 0.5 → le sol passe juste SOUS les objets de SA case (prop +0, jeton
+    // +0.5) tout en s'interclassant avec les voisins par sa vraie position écran (base ≫ z).
+    return floorEls.map((el) => {
+      const { x, y, z } = el.cell;
+      const ghost = !!el.states.ghost;
+      const reveal = !ghost && coversActorBelow(x, y, z); // passerelle au-dessus d'un combattant → transparente
+      const op = ghost ? (el.states.solidOverhang ? 1 : OVERHANG_GHOST_OPACITY) : reveal ? 0.22 : 1;
+      return { d: floorDepth(el, d), x, y, z, ...(el.states.visible ? { vis: true } : {}), el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d) }} /> };
+    });
+  }, [scene, floorEls, shownRot, shownEdge, viewMode, mode, battle, partyPos]);
 
   // Un MUR/DÉCOR/TOIT devant un acteur À SUIVRE (même colonne écran, camera-near, proche) s'ESTOMPE pour ne
   // pas le cacher — côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs` via la

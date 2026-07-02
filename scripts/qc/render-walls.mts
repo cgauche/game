@@ -4,7 +4,8 @@
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { groundTile } from '../../src/gameIso/ground';
+import { buildFloors } from '../../src/gameIso/builders/floors';
+import { floorSvg, floorDepth } from '../../src/gameIso/backends/affineFloors';
 import { wallSegs } from '../../src/gameIso/walls';
 import { DEFS } from '../../src/gameIso/sprites';
 import { stageSize, depth, type Dims } from '../../src/gameIso/iso';
@@ -20,12 +21,12 @@ for (let y = 1; y <= 3; y++) { walls.push({ x: 0, y, side: 'E' }); walls.push({ 
 walls.push({ x: 5, y: 2, side: '\\' }, { x: 5, y: 4, side: '/' });
 const scene = {
   id: 's', nom: '', description: '', dimensions: { w: W, h: H },
-  levels: [{ z: 0, tiles }], walls, entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
+  layers: [{ z: 0, tiles }], walls, entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
 } as unknown as Scene;
 
 const d: Dims = { w: W, h: H };
 const objs: { d: number; svg: string }[] = [];
-for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const h = groundTile(scene, x, y, d, 0); if (h) objs.push({ d: depth(x, y, d, 0) - 0.5, svg: h }); }
+for (const el of buildFloors(scene, undefined, { viewZ: 0 })) objs.push({ d: floorDepth(el, d), svg: floorSvg(el, d) });
 objs.push(...wallSegs(scene, d));
 // un jeton DANS la salle pour juger l'occlusion (le mur du fond passe derrière lui, le mur avant devant)
 const { cx, cy } = (await import('../../src/gameIso/iso')).tileCenter(2, 2, d);

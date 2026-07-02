@@ -5,14 +5,15 @@
  * Les overlays sont en `pointer-events: none` : tout le picking passe par `hitAt` (les calques
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Scene, tileAt, Roof } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, footprintDepth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
-import { groundTile } from '../../gameIso/ground';
+import { buildFloors } from '../../gameIso/builders/floors';
+import { floorSvg } from '../../gameIso/backends/affineFloors';
 import { wallSegs } from '../../gameIso/walls';
 import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
@@ -74,6 +75,26 @@ export function EditorCanvas({
   const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
   const stage = stageSize(dims);
   stageRef.current = stage; // le zoom centré (molette/boutons) lit la taille à jour
+
+  // SOLS par le pipeline pivot : bâtis 1× par SCÈNE (builder camera-free), dessinés 1× par CAMÉRA
+  // (backend affine) — un déplacement de pointeur (re-rendus fréquents de l'éditeur) ne rebâtit plus
+  // aucune chaîne SVG. L'éditeur voit TOUT (pas de brouillard) et dessine la couche de base (viewZ 0).
+  const floorEls = useMemo(() => buildFloors(scene, undefined, { viewZ: 0 }), [scene]);
+  const floorRows = useMemo(
+    () =>
+      floorEls.map((el) => {
+        const { cx, cy } = tileCenter(el.cell.x, el.cell.y, dims);
+        return { key: el.key, cx, cy, html: floorSvg(el, dims) };
+      }),
+    // `dims` dérive de (scene.dimensions, rot, viewMode) : dimensions couvertes par floorEls (⊂ scene).
+    [floorEls, rot, viewMode],
+  );
+  // CULLING au viewport : ne rend que les tuiles dont le centre écran tombe dans le viewBox courant
+  // (+ marge pour les parois de relief hautes/basses) — fini de rastériser TOUTE la carte à chaque frame.
+  const CULL_M = 220;
+  const cullW = stage.w / vb.zoom, cullH = stage.h / vb.zoom;
+  const inView = (r: { cx: number; cy: number }) =>
+    r.cx >= vb.x - CULL_M && r.cx <= vb.x + cullW + CULL_M && r.cy >= vb.y - CULL_M && r.cy <= vb.y + cullH + CULL_M;
 
   const dragStartRef = useRef<Pt | null>(null);
   const [dragRect, setDragRect] = useState<Rect | null>(null);
@@ -302,13 +323,9 @@ export function EditorCanvas({
         >
           <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
           <g>
-            {(() => {
-              const els: JSX.Element[] = [];
-              for (let y = 0; y < dims.h; y++)
-                for (let x = 0; x < dims.w; x++)
-                  els.push(<g key={`f${x}-${y}`} dangerouslySetInnerHTML={{ __html: groundTile(scene, x, y, dims) }} />);
-              return els;
-            })()}
+            {floorRows.filter(inView).map((r) => (
+              <g key={r.key} dangerouslySetInnerHTML={{ __html: r.html }} />
+            ))}
           </g>
           <g pointerEvents="none">
             {(() => {

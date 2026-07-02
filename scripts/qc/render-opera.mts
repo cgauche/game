@@ -4,18 +4,19 @@
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { groundTile } from '../../src/gameIso/ground';
+import { buildFloors } from '../../src/gameIso/builders/floors';
+import { floorSvg, floorDepth } from '../../src/gameIso/backends/affineFloors';
 import { wallSegs } from '../../src/gameIso/walls';
 import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
 import { DEFS } from '../../src/gameIso/sprites';
-import { stageSize, depth, type Dims } from '../../src/gameIso/iso';
+import { stageSize, type Dims } from '../../src/gameIso/iso';
 
 const scene = buildOperaFloorplan();
 
 function renderLevel(z: number, file: string, rot: 0 | 2 = 0) {
   const d: Dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot };
   const objs: { d: number; svg: string }[] = [];
-  for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) { const h = groundTile(scene, x, y, d, z); if (h) objs.push({ d: depth(x, y, d, z) - 0.5, svg: h }); }
+  for (const el of buildFloors(scene, undefined, { viewZ: z })) objs.push({ d: floorDepth(el, d), svg: floorSvg(el, d) });
   // murs de CE niveau seulement
   for (const w of scene.walls ?? []) if ((w.z ?? 0) === z) { const seg = wallSegs({ ...scene, walls: [w] } as typeof scene, d)[0]; if (seg) objs.push(seg); }
   objs.sort((a, b) => a.d - b.d);
