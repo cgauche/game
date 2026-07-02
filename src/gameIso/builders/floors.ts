@@ -110,7 +110,6 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
         seen.add(k);
         faces.push({
           poly: [{ ...c, h: topH }, { ...c, h: lowerH }],
-          plane: 'vertical',
           side,
           material: { domain: 'relief', id: 'pilier', part: 'pillar' },
         });
@@ -135,7 +134,6 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
     faces.push({
       // Quad haut-gauche → haut-droit → bas-droit → bas-gauche (l'ordre attendu par les renderers).
       poly: [{ ...A, h: self }, { ...B, h: self }, { ...B, h: loH }, { ...A, h: loH }],
-      plane: !deck && grade === 'ramp' ? 'slope' : 'vertical',
       side,
       // Ton : pierre (flanc d'une couche surélevée, ou dalle de tablier) / terre (talus/fosse de la base).
       material: { domain: 'relief', id: deck || z > 0 ? 'pierre' : 'terre', part: deck ? 'deck' : grade },
@@ -151,7 +149,6 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
       { x: x + 0.5, y: y + 0.5, h: self },
       { x: x - 0.5, y: y + 0.5, h: self },
     ],
-    plane: 'ground',
     material: { domain: 'terrain', id: terrain },
   });
 
@@ -162,7 +159,6 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
     const in40 = (p: { x: number; y: number }) => ({ x: p.x + (x - p.x) * 0.4, y: p.y + (y - p.y) * 0.4, h: self });
     faces.push({
       poly: [{ ...A, h: self }, { ...B, h: self }, in40(B), in40(A)],
-      plane: 'ground',
       side: dir,
       material: { domain: 'terrain', id: nt, part: 'wedge' },
     });
@@ -207,7 +203,6 @@ export function buildFloors(scene: Scene, visible?: ReadonlySet<string>, view?: 
           kind: 'floor',
           key: `floor:${x},${y},${lvl.z}`,
           cell: { x, y, z: lvl.z },
-          sortClass: 'floor',
           faces,
           states: { visible: solidOverhang, overhang, ghost, solidOverhang },
         });

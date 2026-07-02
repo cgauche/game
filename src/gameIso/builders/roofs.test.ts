@@ -47,7 +47,6 @@ describe('roofPans — rectangle 4×2 : 4 pans EXACTS + faîte', () => {
     expect(faces).toHaveLength(4);
     expect(partsOf(faces)).toEqual(['E', 'N', 'O', 'S']);
     for (const f of faces) {
-      expect(f.plane).toBe('slope');
       expect(f.material).toMatchObject({ domain: 'roof', id: 'tuile' });
       expect(isPlanar(f)).toBe(true);
     }

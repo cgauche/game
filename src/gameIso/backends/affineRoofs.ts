@@ -27,6 +27,7 @@ import {
   type DetailOpts,
 } from './affineDetail';
 import { hash32, seedStream } from '../detail/hash';
+import { ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
 import { shade, mix } from '../shade';
 import type { DetailRecipe } from '../detail/types';
 import { projGP, type Pt2 } from './project';
@@ -36,13 +37,14 @@ import type { GP, RoofEl } from '../builders/types';
 const SEAM_W = 0.6; // liseré au ton du pan : soude les coutures anti-aliasées entre pans
 const EGOUT_W = 0.8; // bord bas de la nappe
 const CREST_W = 1.1; // faîte / arêtier (crêtes nettes)
-// Formes du détail de couverture (mètres) : retraits des bardeaux, pas d'échantillonnage du tremblé.
+// Formes du détail de couverture (mètres). Le retrait et la fraction des nuances de bardeau réutilisent
+// le dosage PARTAGÉ de l'appareillage mural (`BLOCK_INSET_M` / `ACCENT_FRAC`, importés de detail/expand).
 const TICK_INSET_M = 0.03; // le joint vertical d'un bardeau laisse respirer les lignes de rang
-const SHINGLE_INSET_M = 0.05; // retrait d'une nuance de bardeau (les joints restent lisibles)
 const WOBBLE_STEP_M = 0.5; // échantillonnage du tremblé de rang (chaume)
-/** Fraction des bardeaux nuancés (clairs/sombres) — même dosage que l'appareillage mural. */
-const SHINGLE_FRAC = 0.18;
 
+// Contrat DATA (`roofMaterials.json`, cf. RoofMaterialDef) : un matériau de couverture définit ses pentes
+// N/E/S/O + `line` (rendu iso) et ses champs `plan*` (vue du dessus). Optionnels au TYPE, requis selon le
+// MODE de rendu → les `!` de ce fichier sont garantis par ce contrat, pas par le compilateur.
 /** Profondeur de tri d'un toit : MAX sur les 4 coins de l'empreinte à son INDEX DE COUCHE `z` (coin
  *  proche caméra, correct aux 4 rotations) — l'ex-`roofDepth` de RoofSprite. */
 export function roofDepth(el: RoofEl, dims: Dims): number {
@@ -154,13 +156,13 @@ function roofDetailSvg(el: RoofEl, pans: Pan[], det: DetailRecipe, dims: Dims, l
         for (let i = 1; i + 1 < edges.length; i++) ticks += `M${at(edges[i], TICK_INSET_M)}L${at(edges[i], step - TICK_INSET_M)}`;
         if (lod >= 2 && c.paletteVar) {
           for (let i = 0; i + 1 < edges.length; i++) {
-            const u0 = edges[i] + SHINGLE_INSET_M;
-            const u1 = edges[i + 1] - SHINGLE_INSET_M;
+            const u0 = edges[i] + BLOCK_INSET_M;
+            const u1 = edges[i + 1] - BLOCK_INSET_M;
             if (u1 - u0 < 0.08) continue;
             const rv = seedStream(hash32(seed, 'brd', k, Math.round(edges[i] * 20)))();
-            if (rv >= SHINGLE_FRAC && rv <= 1 - SHINGLE_FRAC) continue;
-            const sub = `M${at(u0, SHINGLE_INSET_M)}L${at(u1, SHINGLE_INSET_M)}L${at(u1, step - SHINGLE_INSET_M)}L${at(u0, step - SHINGLE_INSET_M)}Z`;
-            if (rv < SHINGLE_FRAC) light += sub;
+            if (rv >= ACCENT_FRAC && rv <= 1 - ACCENT_FRAC) continue;
+            const sub = `M${at(u0, BLOCK_INSET_M)}L${at(u1, BLOCK_INSET_M)}L${at(u1, step - BLOCK_INSET_M)}L${at(u0, step - BLOCK_INSET_M)}Z`;
+            if (rv < ACCENT_FRAC) light += sub;
             else dark += sub;
           }
         }
@@ -188,8 +190,8 @@ function roofDetailSvg(el: RoofEl, pans: Pan[], det: DetailRecipe, dims: Dims, l
     if (ticks) inner += `<path d="${ticks}" fill="none" stroke="${c.joint}" stroke-width="${n1(c.jointW * PX_PER_M_V)}"/>`;
     if (wobble)
       inner += `<path d="${wobble}" fill="none" stroke="${c.joint}" stroke-width="${n1(c.jointW * PX_PER_M_V)}" stroke-linejoin="round" opacity="0.85"/>`;
-    if (light) inner += `<path d="${light}" fill="${shade(pan.fill, 1 + (c.paletteVar ?? 0) * 1.5)}"/>`;
-    if (dark) inner += `<path d="${dark}" fill="${shade(pan.fill, 1 - (c.paletteVar ?? 0) * 1.5)}"/>`;
+    if (light) inner += `<path d="${light}" fill="${shade(pan.fill, 1 + (c.paletteVar ?? 0) * BLOCK_SHADE_K)}"/>`;
+    if (dark) inner += `<path d="${dark}" fill="${shade(pan.fill, 1 - (c.paletteVar ?? 0) * BLOCK_SHADE_K)}"/>`;
     if (straw) {
       // Teinte des brins ANCRÉE au fill du pan (mix vers la couleur de la recette) : la paille reste
       // de la paille sur le pan éclairé comme sur le pan dans l'ombre, sans rayures qui claquent.

@@ -210,7 +210,7 @@ export function roofPans(cells: ReadonlySet<string>, base: number, matId: string
       }
     }
     for (const loop of loops)
-      faces.push({ poly: loop.map(toGP), plane: 'slope', material: { domain: 'roof', id: matId, part } });
+      faces.push({ poly: loop.map(toGP), material: { domain: 'roof', id: matId, part } });
 
     // RANGS de tuiles : courbes de niveau du plan du pan, `courses` rangs par cran de montée, décalées
     // d'un demi-pas (jamais sur un sommet → intersections franches), clippées au(x) bord(s) du pan.
@@ -291,7 +291,6 @@ export function buildRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: R
       key: `roof:${roof.id}`,
       cell: { x: f.x, y: f.y, z },
       span: { w: f.w, h: f.h },
-      sortClass: 'roof',
       material,
       label: roof.label || roof.style || '?',
       faces,

@@ -62,19 +62,18 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
   /** Quad vertical [A@haut, B@haut, B@bas, A@bas] sur le tronçon [t0,t1] de l'arête. */
   const span = (part: WallPart, t0: number, t1: number, hLo: number, hHi: number): Face => {
     const P0 = at(t0), P1 = at(t1);
-    return { poly: [{ ...P0, h: hHi }, { ...P1, h: hHi }, { ...P1, h: hLo }, { ...P0, h: hLo }], plane: 'vertical', material: mat(part) };
+    return { poly: [{ ...P0, h: hHi }, { ...P1, h: hHi }, { ...P1, h: hLo }, { ...P0, h: hLo }], material: mat(part) };
   };
   const slab = (part: WallPart, hLo: number, hHi: number): Face => span(part, 0, 1, hLo, hHi);
   const upright = (part: WallPart, t: number, hLo: number, hHi: number): Face => {
     const P = at(t);
-    return { poly: [{ ...P, h: hHi }, { ...P, h: hLo }], plane: 'vertical', material: mat(part) };
+    return { poly: [{ ...P, h: hHi }, { ...P, h: hLo }], material: mat(part) };
   };
   /** BRÈCHE (structure abattue) : tas de gravats dentelé laissant le passage + moignons de poteau. */
   const breach = (): Face[] => {
     const hr = WALL_H_M * BREACH_H;
     const heap: Face = {
       poly: [{ ...A, h: b }, { ...at(BREACH_M1), h: b + hr }, { ...at(BREACH_M2), h: b + hr * 0.7 }, { ...B, h: b }],
-      plane: 'vertical',
       material: mat('gravats-tas'),
     };
     return [slab('gravats', b, b + hr * 0.5), heap, upright('poteau', 0, b, b + hr * BREACH_POST_A), upright('poteau', 1, b, b + hr * BREACH_POST_B)];
@@ -174,7 +173,6 @@ export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: F
       kind: 'wall',
       key: `wall:${w.x},${w.y},${w.side},${z}`,
       cell: { x: w.x, y: w.y, z },
-      sortClass: 'wall',
       side: w.side,
       door: !!w.door,
       appearance: app.id,

@@ -128,7 +128,7 @@ export function interactHaloObjs(propEls: PropEl[], ctx: TokenCtx, flags: Record
  *  En combat : estompés + non interactifs (wrap), plus de spectateurs qui « dépop » à l'Initiative. */
 export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[] {
   const isTop = ctx.view === 'top';
-  const discRfn = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
+  const discRfn = (sz: Combatant['size']) => discR(sizeFootprint(sz));
   const wrap = (key: string, el: JSX.Element, inBattle: boolean) =>
     inBattle ? (
       <g key={`fig-${key}`} opacity={0.7} pointerEvents="none">

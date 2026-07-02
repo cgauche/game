@@ -39,7 +39,6 @@ describe('buildWalls — mur BOIS nu (def sans parapet)', () => {
 
   it('la face est un quad [A@haut, B@haut, B@bas, A@bas] de WALL_H_M mètres sur l’arête wallEnds', () => {
     const face = facesOf(el, 'face')[0];
-    expect(face.plane).toBe('vertical');
     expect(face.poly.map((p) => p.h)).toEqual([WALL_H_M, WALL_H_M, 0, 0]);
     const [A, B] = wallEnds({ x: 2, y: 2, side: 'N' });
     expect(face.poly[0]).toMatchObject(A);

@@ -20,13 +20,12 @@ Les builders dérivent la scène en **éléments sémantiques en espace monde**.
 **grille** continues (coins de case à ±0.5), hauteur `h` en **mètres** (`GP = {x, y, h}`).
 
 - `SceneEl = FloorEl | WallEl | RoofEl | PropEl | TokenEl` — union discriminée par `kind`.
-- `Face { poly: GP[]; plane: 'ground'|'vertical'|'slope'; material: MaterialRef; side?; detail? }` —
-  la base UV n'est **pas** stockée : chaque backend la dérive de `poly[0]→poly[1]` + `plane`.
+- `Face { poly: GP[]; material: MaterialRef; side? }` — ni base UV ni « plane » stockés : chaque
+  backend dérive l'orientation (sol/paroi/pente) de `material.domain`+`part` (et `side`).
 - `MaterialRef { domain: 'terrain'|'relief'|'structure'|'roof'; id; part? }` — **référence** de
   matériau (jamais une couleur). `part` distingue les faces d'un même matériau (falaise/rampe/pilier…).
-- `DetailRef { id }` — recette de détail de surface (§4).
 - `ElBase` : `key` stable (identité monde, clé React/DOM), `cell {x,y,z}` (`z` = index de COUCHE,
-  découplé de la hauteur métrique), `span?` (empreinte multi-cases), `sortClass`, `states`.
+  découplé de la hauteur métrique), `span?` (empreinte multi-cases), `states`.
 - `ElStates` = vérités de SCÈNE camera-free (`visible`, `overhang`, `ghost`, `solidOverhang`, `open`,
   `down`, `roofOccupied`). La vérité de VUE (estompe d'occlusion, reveal, assombrissement de l'étage
   inférieur) reste une **décoration** du stage/backend (opacité/filtre), pas du pivot.
@@ -113,4 +112,5 @@ byte-identique.
 - **un prop / décor** : `src/gameIso/catalog/decor/defs/<id>.ts` (`PropViz.render`, SVG boîte 120×150,
   couleurs via `P.<ton>`) puis `npm run gen`.
 - **un TYPE d'élément** (au-delà de floor/wall/roof/prop/token) : ajouter le variant à `SceneEl`
-  (`builders/types.ts`) + un builder + le rendu dans CHAQUE backend (affine ET POV) + son `SortClass`.
+  (`builders/types.ts`, discriminé par `kind`) + un builder + le rendu dans CHAQUE backend (affine ET
+  POV) + sa profondeur de tri propre (chaque backend calcule la sienne, cf. `floorDepth`/`wallDepth`/…).

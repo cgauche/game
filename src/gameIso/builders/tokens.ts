@@ -51,7 +51,6 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: 
       key: `fig:${ent.id}`,
       id: ent.id,
       cell: { x: ent.pos.x, y: ent.pos.y, z: ez },
-      sortClass: 'token',
       subject: { kind: 'figurant', ent, enrolled: enrolledIds.has(ent.id), inBattle },
       states: { visible: true },
     });
@@ -88,7 +87,6 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: 
       key: `cbt:${c.id}`,
       id: c.id,
       cell: { x: c.pos.x, y: c.pos.y, z: cz },
-      sortClass: 'token',
       subject: { kind: 'combatant', c, ...(isHero ? { heroIndex: hi++ } : {}), overhang },
       states: { visible: true },
     });
@@ -105,7 +103,6 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: 
         key: `mtd:${mount.id}`,
         id: mount.id,
         cell: { x: mount.pos.x, y: mount.pos.y, z: mz },
-        sortClass: 'token',
         subject: { kind: 'mounted', mount, rider },
         states: { visible: true },
       });

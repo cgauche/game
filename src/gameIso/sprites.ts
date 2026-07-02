@@ -44,18 +44,15 @@ export interface EntityViz {
 }
 
 /**
- * Sprite d'une entité de scène pour le backend SPRITE (pickBackend l.78). Après le passage de
- * tout le bestiaire au rig, ce backend ne sert plus que le DÉCOR (props → propSprite) ; les
- * personnages/pnj sont routés vers le rig EN AMONT et n'arrivent pas ici — on retombe sur le
- * villageois par sécurité. Partagé par IsoStage (jeu) et l'éditeur (WYSIWYG) — source unique.
+ * Sprite d'une entité de scène pour le backend SPRITE (pickBackend). Après le passage de tout le
+ * bestiaire ET des PNJ au rig, ce backend ne sert plus que le DÉCOR (props → propSprite) ; tout autre
+ * kind est routé vers le rig EN AMONT et n'arrive jamais ici → chaîne vide. Partagé par IsoStage (jeu)
+ * et l'éditeur (WYSIWYG) — source unique.
  */
 export function entitySprite(ent: EntityViz, camRot: Rot = 0): string {
   switch (ent.kind) {
     case 'prop':
       return propSprite(ent.ref, ent.facing, camRot);
-    case 'personnage':
-    case 'pnj':
-      return pnjSprite();
     default:
       return '';
   }

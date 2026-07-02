@@ -10,10 +10,12 @@
  * tirées de la palette partagée) → exclu du balayage.
  *
  * HORS périmètre (couleur LÉGITIME, non balayés) : le rig (`rig/**` = bestiaire/équipement dessinés
- * « à la main »), les FX de combat (`fx/**`), les tokens & le brouillard (`BodyToken`/`FogLayer` =
- * chrome d'état, pas un matériau du monde), `shade.ts` (helpers de voile lumineux sanctionnés
- * `ao`/`spec`/`warm`), et les defs de terrain (`state/terrain/defs/**` = DONNÉE d'identité matériau,
- * gradient/swatch, au même titre qu'un JSON).
+ * « à la main »), les FX de combat (`fx/**`), le brouillard (`FogLayer` = chrome d'état, pas un matériau
+ * du monde), `shade.ts` (helpers de voile lumineux sanctionnés `ao`/`spec`/`warm`), et les defs de
+ * terrain (`state/terrain/defs/**` = DONNÉE d'identité matériau, gradient/swatch, au même titre qu'un
+ * JSON). Les TOKENS (`BodyToken`/`pickBackend`) sont couverts À PART (bloc « chrome » plus bas) : leur
+ * couleur d'identité vient de teamColors (`ACTIVE_RING`/`hpColor`) ou d'une donnée d'apparence, le reste
+ * est du chrome NEUTRE allowlisté ; tout AUTRE hex y est une fuite d'identité de matériau à attraper.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -93,6 +95,30 @@ describe('garde-fou — aucune couleur en dur dans un renderer d’environnement
   it.each(COVERED)('%s : zéro couleur en dur', (rel) => {
     const hits = colorHits(readFileSync(HERE + rel, 'utf8'));
     expect(hits, `Couleurs en dur dans ${rel} :\n${hits.join('\n')}`).toEqual([]);
+  });
+});
+
+// Chrome d'état des TOKENS : BodyToken (halo actif, PV, badges, ombres) et pickBackend (bloc de siège)
+// rendent l'ÉTAT de combat, pas un MATÉRIAU du monde. La couleur d'IDENTITÉ vient de teamColors
+// (`ACTIVE_RING`/`hpColor`) ou d'une donnée (apparence de structure) ; le RESTE est du chrome NEUTRE
+// allowlisté (ombres, fond de disque, tons de badge). Tout hex HORS allowlist = fuite d'identité à attraper.
+const CHROME_RENDERERS = ['BodyToken.tsx', 'pickBackend.tsx'];
+const CHROME_ALLOW = new Set(['#000', '#1b2030', '#f2eef8', '#cdb8d8']);
+// Extrait chaque littéral de couleur (hex, ou rgb/hsl à canaux LITTÉRAUX — `rgb(${…})` calculé exclu).
+const CHROME_TOKEN = /#[0-9a-fA-F]{3,8}\b|\brgba?\(\s*[\d.][^)]*\)|\bhsla?\(\s*[\d.][^)]*\)/g;
+/** Couleurs LITTÉRALES d'un fichier chrome, hors allowlist neutre (= identités de matériau interdites ici). */
+function chromeLeaks(src: string): string[] {
+  return (stripNoise(src).match(CHROME_TOKEN) ?? []).filter((tok) => !CHROME_ALLOW.has(tok));
+}
+
+describe('garde-fou — chrome des tokens : hex neutre allowlisté, tout autre = fuite', () => {
+  it('le filtre attrape un hex hors allowlist, laisse passer un neutre', () => {
+    expect(chromeLeaks('fill="#ff0000"')).toEqual(['#ff0000']);
+    expect(chromeLeaks('fill="#000"')).toEqual([]);
+  });
+  it.each(CHROME_RENDERERS)('%s : zéro couleur d’identité en dur', (rel) => {
+    const leaks = chromeLeaks(readFileSync(HERE + rel, 'utf8'));
+    expect(leaks, `Couleurs d’identité en dur dans ${rel} (à sourcer via teamColors/données) :\n${leaks.join('\n')}`).toEqual([]);
   });
 });
 

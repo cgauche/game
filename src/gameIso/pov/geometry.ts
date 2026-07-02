@@ -56,7 +56,7 @@ import { reliefMaterial } from '../catalog/relief';
 import { roofMaterial } from '../catalog/roofs';
 import { AMBIANCE } from '../catalog/ambiance';
 import { COURSED } from '../backends/affineWalls';
-import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, type DetailExpansion } from '../detail/expand';
+import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K, type DetailExpansion } from '../detail/expand';
 import { hash32, seedStream } from '../detail/hash';
 import { TINT_SPREAD } from '../backends/affineDetail';
 import { shade } from '../shade';
@@ -90,8 +90,6 @@ const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
 
 /** Bandes de LOD matériaux — DONNÉE partagée (`ambiance.json`), cf. en-tête de fichier. */
 const LOD = AMBIANCE.pov.depth.lod;
-/** Amplification des nuances de bloc (× paletteVar) — même dosage que les accents iso. */
-const BLOCK_SHADE_K = 1.5;
 /** Seuil |shade| d'un bloc d'ACCENT : les 2×ACCENT_FRAC extrêmes de la nuance uniforme [−pv, pv]. */
 const accentThreshold = (paletteVar: number): number => paletteVar * (1 - 2 * ACCENT_FRAC);
 /** Éventail d'une touffe : décalage horizontal MONDE d'un brin latéral, en fraction de sa hauteur. */

@@ -5,7 +5,7 @@ import type { DetailRecipe } from '../../detail/types';
 
 export interface ReliefMaterialDef {
   id: string;
-  /** Recette de détail de surface (strates/joints/mouchetis — Lot 0, consommée au Lot 4). */
+  /** Recette de détail de surface (strates/joints/mouchetis) — consommée par les backends (iso + POV). */
   detail?: DetailRecipe;
   /** Face principale (claire/éclairée). */
   face: string;

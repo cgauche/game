@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildFloors, edgeBlends, isOverhang, fogFloorZ } from './floors';
-import type { FloorEl } from './types';
+import type { Face, FloorEl } from './types';
 import { emptyScene, heightAt, type Scene } from '../../state/scene';
 import { gradeBetween, STEP_MAX_M } from '../../state/relief';
 
@@ -23,6 +23,9 @@ const setH = (s: Scene, x: number, y: number, h: number) => { s.layers[0].height
 const elAt = (els: FloorEl[], x: number, y: number, z = 0) => els.find((e) => e.key === `floor:${x},${y},${z}`);
 /** Faces de RELIEF (parois) d'un élément — exclut base, wedges et piliers. */
 const reliefParts = (el: FloorEl | undefined) => (el?.faces ?? []).filter((f) => f.material.domain === 'relief' && f.material.part !== 'pillar');
+/** Face de BASE (losange de sol) : domaine terrain, sans `part` (≠ wedge). L'orientation « sol » n'est
+ *  plus un champ (`plane` retiré) → les backends la dérivent de `domain`+`part`, les tests aussi. */
+const isBaseFace = (f: Face) => f.material.domain === 'terrain' && !f.material.part;
 
 describe('edgeBlends (raccord d’arêtes de terrain)', () => {
   it('un voisin de priorité plus haute déborde ; même priorité ne déborde pas', () => {
@@ -60,7 +63,7 @@ describe('buildFloors — parois de relief auto-dérivées du dénivelé métriq
     setH(s, 1, 1, 4);
     const faces = reliefParts(elAt(buildFloors(s), 1, 1));
     expect(faces).toHaveLength(4);
-    expect(faces.every((f) => f.material.part === 'cliff' && f.plane === 'vertical')).toBe(true);
+    expect(faces.every((f) => f.material.part === 'cliff')).toBe(true);
     expect(faces.every((f) => f.material.id === 'terre')).toBe(true); // talus de terrain (couche de base)
     // Quad d'arête [haut-A, haut-B, bas-B, bas-A] : haut à la hauteur de la case, bas à celle du voisin.
     const n = faces.find((f) => f.side === 'N')!;
@@ -73,13 +76,12 @@ describe('buildFloors — parois de relief auto-dérivées du dénivelé métriq
     setH(s, 1, 1, 0.5);
     const faces = reliefParts(elAt(buildFloors(s), 1, 1));
     expect(faces.length).toBeGreaterThan(0);
-    expect(faces.every((f) => f.material.part === 'ramp' && f.plane === 'slope')).toBe(true);
+    expect(faces.every((f) => f.material.part === 'ramp')).toBe(true);
   });
 
-  it('de niveau avec tous ses voisins → seule la face de BASE (plane ground, matériau = id du terrain)', () => {
+  it('de niveau avec tous ses voisins → seule la face de BASE (matériau = id du terrain)', () => {
     const el = elAt(buildFloors(withHeight()), 1, 1)!;
     expect(el.faces).toHaveLength(1);
-    expect(el.faces[0].plane).toBe('ground');
     expect(el.faces[0].material).toEqual({ domain: 'terrain', id: 'plancher' });
     expect(el.faces[0].poly.map((p) => ({ x: p.x, y: p.y }))).toEqual([
       { x: 0.5, y: 0.5 }, { x: 1.5, y: 0.5 }, { x: 1.5, y: 1.5 }, { x: 0.5, y: 1.5 }, // NO→NE→SE→SO
@@ -120,9 +122,9 @@ describe('buildFloors — bloc PLEIN d’un terrain (solidHeightM, ex. mur) : RE
     const el = elAt(buildFloors(s), 1, 1)!;
     const cliffs = reliefParts(el);
     expect(cliffs).toHaveLength(4); // le bloc domine ses 4 voisins herbe
-    expect(cliffs.every((f) => f.material.part === 'cliff' && f.plane === 'vertical')).toBe(true);
+    expect(cliffs.every((f) => f.material.part === 'cliff')).toBe(true);
     // Dessus (losange de base) à la hauteur d’AFFICHAGE (= solidHeightM du mur), matériau = swatch du mur.
-    const base = el.faces.find((f) => f.plane === 'ground' && !f.material.part)!;
+    const base = el.faces.find(isBaseFace)!;
     const H = base.poly[0].h;
     expect(H).toBeGreaterThan(STEP_MAX_M); // > pas franchissable → falaise (bloc plein), pas rampe
     expect(base.material).toEqual({ domain: 'terrain', id: 'mur' });
@@ -145,7 +147,7 @@ describe('buildFloors — bloc PLEIN d’un terrain (solidHeightM, ex. mur) : RE
     s.layers[0].height = new Array(9).fill(0);
     s.layers[0].tiles[1 * 3 + 1] = 'mur';
     s.layers[0].height[1 * 3 + 1] = 4; // étage surélevé de 4 m SOUS le mur
-    const base = buildFloors(s).find((e) => e.key === 'floor:1,1,0')!.faces.find((f) => f.plane === 'ground' && !f.material.part)!;
+    const base = buildFloors(s).find((e) => e.key === 'floor:1,1,0')!.faces.find(isBaseFace)!;
     expect(base.poly[0].h).toBeGreaterThan(4 + STEP_MAX_M); // dessus = 4 m (étage) + solidHeightM (bloc)
   });
 });
@@ -162,7 +164,7 @@ describe('buildFloors — wedges de raccord de terrain', () => {
     // Trapèze : arête E pleine (x=1.5) + points inset de 0.4 vers le centre (1,1) → x = 1.3.
     expect(wedges[0].poly.map((p) => p.x)).toEqual([1.5, 1.5, 1.3, 1.3]);
     // Le wedge se peint APRÈS la base (ordre de peinture du builder).
-    expect(el.faces.indexOf(wedges[0])).toBeGreaterThan(el.faces.findIndex((f) => f.plane === 'ground' && !f.material.part));
+    expect(el.faces.indexOf(wedges[0])).toBeGreaterThan(el.faces.findIndex(isBaseFace));
   });
 });
 
@@ -192,7 +194,7 @@ describe('buildFloors — surplomb (tablier au-dessus d’une surface marchable)
     expect(el.states.overhang).toBe(true);
     const decks = el.faces.filter((f) => f.material.part === 'deck');
     expect(decks).toHaveLength(4); // 4 arêtes sur le vide
-    expect(decks.every((f) => f.material.id === 'pierre' && f.plane === 'vertical')).toBe(true);
+    expect(decks.every((f) => f.material.id === 'pierre')).toBe(true);
     // Dalle fine : descend de l'épaisseur du tablier (0.3 m), pas jusqu'au sol.
     expect(decks[0].poly.map((p) => p.h)).toEqual([4, 4, 4 - 0.3, 4 - 0.3]);
     const pillars = el.faces.filter((f) => f.material.part === 'pillar');

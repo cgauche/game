@@ -28,6 +28,10 @@ import {
   toggleEdgeWall, toggleDiagonalWall, paintHeight, nearestEdge, canonEdge, pickWallEdge,
 } from './editorState';
 
+/** Jaune d'ACCENT de SÉLECTION de l'éditeur (arêtes/zones/toits/entités sélectionnés) — même teinte que
+ *  l'anneau d'unité active en combat, mais concept distinct (édition, pas tour de jeu). */
+const SELECT = '#ffe066';
+
 /** Cases de l'empreinte d'un toit (footprint plat) — base du surlignage de sélection. */
 const footCells = (foot: Roof['foot']): Pt[] => {
   const out: Pt[] = [];
@@ -412,7 +416,7 @@ export function EditorCanvas({
                             key={`fp-${t.x}-${t.y}`}
                             d={diamondPath(t.x, t.y, dims)}
                             fill="rgba(192,57,43,0.32)"
-                            stroke={isSel ? '#ffe066' : '#c0392b'}
+                            stroke={isSel ? SELECT : '#c0392b'}
                             strokeWidth={isSel ? 2.5 : 1.5}
                             strokeDasharray={hidden ? '4 3' : undefined}
                           />
@@ -448,12 +452,12 @@ export function EditorCanvas({
             // Arête candidate sous le curseur (outil murs) : segment doré entre les deux coins de grille.
             const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLayer);
             const [a, b] = hoverEdge.side === 'N' ? [gc(hoverEdge.x, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y)] : [gc(hoverEdge.x + 1, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y + 1)];
-            return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke="#ffe066" strokeWidth={4} strokeLinecap="round" opacity={0.9} pointerEvents="none" />;
+            return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke={SELECT} strokeWidth={4} strokeLinecap="round" opacity={0.9} pointerEvents="none" />;
           })()}
           {selWall && (() => {
             const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLayer);
             const [a, b] = selWall.side === 'N' ? [gc(selWall.x, selWall.y), gc(selWall.x + 1, selWall.y)] : [gc(selWall.x + 1, selWall.y), gc(selWall.x + 1, selWall.y + 1)];
-            return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke="#ffe066" strokeWidth={5} strokeLinecap="round" pointerEvents="none" />;
+            return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke={SELECT} strokeWidth={5} strokeLinecap="round" pointerEvents="none" />;
           })()}
           {layers.triggers && (
             <g pointerEvents="none">
@@ -469,7 +473,7 @@ export function EditorCanvas({
                           key={i}
                           d={diamondPath(x, y, dims)}
                           fill={isSel ? 'rgba(231,76,60,0.3)' : 'rgba(231,76,60,0.12)'}
-                          stroke={isSel ? '#ffe066' : 'rgba(231,76,60,0.9)'}
+                          stroke={isSel ? SELECT : 'rgba(231,76,60,0.9)'}
                           strokeWidth={isSel ? 2.5 : 1.5}
                           strokeDasharray="4 3"
                         />
@@ -495,7 +499,7 @@ export function EditorCanvas({
                           key={i}
                           d={diamondPath(x, y, dims)}
                           fill={isSel ? 'rgba(46,204,113,0.3)' : 'rgba(46,204,113,0.12)'}
-                          stroke={isSel ? '#ffe066' : 'rgba(46,204,113,0.9)'}
+                          stroke={isSel ? SELECT : 'rgba(46,204,113,0.9)'}
                           strokeWidth={isSel ? 2.5 : 1.5}
                           strokeDasharray="4 3"
                         />
@@ -526,7 +530,7 @@ export function EditorCanvas({
                           key={i}
                           d={diamondPath(x, y, dims)}
                           fill={isSel ? (bar ? 'rgba(120,140,200,0.4)' : 'rgba(226,100,30,0.35)') : (bar ? 'rgba(120,140,200,0.18)' : 'rgba(226,100,30,0.15)')}
-                          stroke={isSel ? '#ffe066' : bar ? 'rgba(120,140,200,0.95)' : 'rgba(226,100,30,0.9)'}
+                          stroke={isSel ? SELECT : bar ? 'rgba(120,140,200,0.95)' : 'rgba(226,100,30,0.9)'}
                           strokeWidth={isSel ? 2.5 : bar ? 2 : 1.5}
                           strokeDasharray={bar ? undefined : '3 2'}
                         />
@@ -547,7 +551,7 @@ export function EditorCanvas({
                 const { cx, cy } = tileCenter(pos.x, pos.y, dims);
                 return (
                   <g key={`en-${name}`}>
-                    <path d={diamondPath(pos.x, pos.y, dims)} fill="rgba(78,195,224,0.5)" stroke={isSel ? '#ffe066' : '#4ec3e0'} strokeWidth={isSel ? 2.5 : 1.5} />
+                    <path d={diamondPath(pos.x, pos.y, dims)} fill="rgba(78,195,224,0.5)" stroke={isSel ? SELECT : '#4ec3e0'} strokeWidth={isSel ? 2.5 : 1.5} />
                     {/* Icône du registre en contexte SVG (IconG, ancrée coin haut-gauche) — centrée sur la case, teinte sombre lisible sur le losange. */}
                     <g color="#06222b">
                       <IconG id="nav/entry-point" x={cx - 6.5} y={cy - 6.5} size={13} />
@@ -562,12 +566,12 @@ export function EditorCanvas({
           )}
           {selEnt &&
             footprintTiles(selEnt.pos, sizeFootprint(entitySize(selEnt))).map((t) => (
-              <path key={`fp-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} pointerEvents="none" />
+              <path key={`fp-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke={SELECT} strokeWidth={3} pointerEvents="none" />
             ))}
           {selRoof && (
             <g pointerEvents="none">
               {footCells(selRoof.foot).map((t) => (
-                <path key={`selr-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={2} opacity={0.8} />
+                <path key={`selr-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke={SELECT} strokeWidth={2} opacity={0.8} />
               ))}
             </g>
           )}
@@ -576,7 +580,7 @@ export function EditorCanvas({
             <path
               d={diamondPath(zoneRect.x + zoneRect.w - 1, zoneRect.y + zoneRect.h - 1, dims)}
               fill="rgba(255,224,102,0.45)"
-              stroke="#ffe066"
+              stroke={SELECT}
               strokeWidth={2}
               cursor="nwse-resize"
               onPointerDown={(e) => {

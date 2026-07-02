@@ -9,6 +9,7 @@
  * unités de GRILLE ; l'axe vertical monde `z` sert d'axe « haut » écran.
  */
 import { WALL_H_M } from '../iso';
+import { mix, parseHex } from '../shade';
 import { heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { DIR8_DELTA, type Dir8 } from '../rig/facing';
 import { AMBIANCE } from '../catalog/ambiance';
@@ -182,18 +183,13 @@ const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > 
 export function tint(baseHex: string, light: number, fogT: number, fogColor: string = FOG_COLOR): string {
   const l = clamp(light, AMBIENT_FLOOR, 1);
   const t = clamp(fogT, 0, 1);
-  const hex = baseHex.replace('#', '');
-  const br = parseInt(hex.slice(0, 2), 16);
-  const bg = parseInt(hex.slice(2, 4), 16);
-  const bb = parseInt(hex.slice(4, 6), 16);
-  const fr = parseInt(fogColor.slice(1, 3), 16);
-  const fg = parseInt(fogColor.slice(3, 5), 16);
-  const fb = parseInt(fogColor.slice(5, 7), 16);
-  const mix = (base: number, fog: number): number => {
-    const lit = base * l;
-    return Math.round(lit + (fog - lit) * t);
+  const base = parseHex(baseHex) ?? [0, 0, 0]; // parseur PARTAGÉ (shade.ts) — POV n'a que des couleurs hex résolues
+  const fog = parseHex(fogColor) ?? [0, 0, 0];
+  const ch = (b: number, f: number): number => {
+    const lit = b * l;
+    return Math.round(lit + (f - lit) * t);
   };
-  return `rgb(${mix(br, fr)},${mix(bg, fg)},${mix(bb, fb)})`;
+  return `rgb(${ch(base[0], fog[0])},${ch(base[1], fog[1])},${ch(base[2], fog[2])})`;
 }
 
 /** Facteur de brume [0..1] à une profondeur (cases) le long d'une `FogCurve` : 0 avant `start`,
@@ -205,14 +201,9 @@ export function fogAt(depthTiles: number, curve: FogCurve): number {
   return Math.pow(s, curve.gamma);
 }
 
-/** Mélange linéaire de deux couleurs `#rrggbb` (t = part de `b`). PUR — sert aux FONDUS de LOD
+/** Mélange linéaire de deux couleurs `#rrggbb` (t = part de `b`, clampé à [0,1] : les poids de LOD
+ *  frisent 1). Délègue au `mix` PARTAGÉ de shade.ts (parseur unique). PUR — sert aux FONDUS de LOD
  *  (un joint qui s'évanouit se mélange vers la teinte de sa face, pas d'alpha SVG). */
 export function mixHex(a: string, b: string, t: number): string {
-  const k = clamp(t, 0, 1);
-  const ch = (off: number): string => {
-    const va = parseInt(a.slice(off, off + 2), 16);
-    const vb = parseInt(b.slice(off, off + 2), 16);
-    return Math.round(va + (vb - va) * k).toString(16).padStart(2, '0');
-  };
-  return `#${ch(1)}${ch(3)}${ch(5)}`;
+  return mix(a, b, clamp(t, 0, 1));
 }

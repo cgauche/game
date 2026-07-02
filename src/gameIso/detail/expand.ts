@@ -1,6 +1,6 @@
 /**
- * Expansion PURE d'une `DetailRecipe` en primitives UV — le cœur que les futurs backends (iso affine,
- * POV perspective, Lot 4) consommeront chacun à sa résolution. Tout est en ESPACE DE FACE [0,1]²
+ * Expansion PURE d'une `DetailRecipe` en primitives UV — le cœur que les backends (iso affine,
+ * POV perspective) consomment chacun à sa résolution. Tout est en ESPACE DE FACE [0,1]²
  * (u gauche→droite, v haut→bas) ; seules les ÉPAISSEURS restent en mètres (`jointWM`, `wM`, `rM`) :
  * c'est au backend de les projeter (px/m à sa résolution).
  *
@@ -40,6 +40,9 @@ export interface DetailExpansion {
 export const ACCENT_FRAC = 0.18;
 /** Retrait (m) d'un bloc d'accent — laisse respirer les joints dessinés dessous. Partagé backends. */
 export const BLOCK_INSET_M = 0.05;
+/** Amplification des nuances d'un bloc d'accent (× `paletteVar`) — dosage PARTAGÉ (accents iso,
+ *  trapèzes nuancés POV, bardeaux de toit). */
+export const BLOCK_SHADE_K = 1.5;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 

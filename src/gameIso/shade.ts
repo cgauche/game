@@ -5,7 +5,9 @@
  * base par un facteur, clampé ; un `var(--x)` CSS (pierre) passe tel quel. Aucune lecture DOM.
  */
 
-function parseHex(hex: string): [number, number, number] | null {
+/** Parse `#rgb`/`#rrggbb` en canaux [r,g,b] (0–255) ; null si non-hex (`var(--x)`, `rgb(...)`).
+ *  Parseur UNIQUE partagé par `shade`/`mix` ici ET par les helpers de teinte POV (camera.ts). */
+export function parseHex(hex: string): [number, number, number] | null {
   const m = hex.trim().match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
   if (!m) return null;
   const h = m[1].length === 3 ? m[1].replace(/(.)/g, '$1$1') : m[1];

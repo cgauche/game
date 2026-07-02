@@ -115,7 +115,7 @@ export function BodyToken({
         // Pion iso : corps ancré aux pieds (centre de tuile), ombre + anneau en ellipse, bascule de mort.
         <>
           <ellipse cx={0} cy={0} rx={16 * s + 5} ry={(16 * s + 5) / 2} fill="#000" opacity={0.33} />
-          {active && <ellipse cx={0} cy={0} rx={20 * s} ry={10 * s} fill="#ffe066" opacity={0.2} />}
+          {active && <ellipse cx={0} cy={0} rx={20 * s} ry={10 * s} fill={ACTIVE_RING} opacity={0.2} />}
           {ring && <ellipse cx={0} cy={0} rx={18 * s} ry={9 * s} fill="none" stroke={ring} strokeWidth={2.5} strokeDasharray={ringDash} />}
           <g className={dim ? undefined : fx} transform={dim && !bakedDeath ? 'rotate(78)' : undefined}>
             <g transform={`translate(${-60 * s},${-150 * s}) scale(${s})`}>{children}</g>

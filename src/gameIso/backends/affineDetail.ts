@@ -15,7 +15,7 @@
  * Toute couleur vient de la recette (donnée) ou dérive du fill par `shade` — aucun littéral ici.
  */
 import { hash32, seedStream } from '../detail/hash';
-import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M } from '../detail/expand';
+import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
 import type { DetailRecipe } from '../detail/types';
 import { shade, ao, spec } from '../shade';
 import { LEVEL_H, isSquareView, type Dims } from '../iso';
@@ -388,8 +388,8 @@ export function verticalAccentsSvg(ctx: VerticalFaceCtx): string {
         }
       }
     }
-    if (light) out += `<path d="${light}" fill="${shade(ctx.base, 1 + c.paletteVar * 1.5)}"/>`;
-    if (dark) out += `<path d="${dark}" fill="${shade(ctx.base, 1 - c.paletteVar * 1.5)}"/>`;
+    if (light) out += `<path d="${light}" fill="${shade(ctx.base, 1 + c.paletteVar * BLOCK_SHADE_K)}"/>`;
+    if (dark) out += `<path d="${dark}" fill="${shade(ctx.base, 1 - c.paletteVar * BLOCK_SHADE_K)}"/>`;
   }
 
   if (ctx.recipe.speckle) {

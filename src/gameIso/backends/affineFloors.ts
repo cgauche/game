@@ -53,6 +53,9 @@ function pillarSvg(f: Face, dims: Dims): string {
   );
 }
 
+// Contrat DATA (`reliefMaterials.json`) : un matériau affecté à une FALAISE/tablier définit `foot`+`shadeDark`,
+// à une RAMPE `slopeTop`. Ces champs sont optionnels au TYPE (ils dépendent du RÔLE de la face — porté par
+// `material.part`, pas par la def) → les `!` ci-dessous sont garantis par ce contrat, pas par le compilateur.
 /** Fill d'une FALAISE : face claire si son arête HAUTE est devant (plus bas à l'écran) que le centre de
  *  la case — suit la rotation caméra. PARTAGÉ par le rendu de la paroi ET la couche d'accents (mêmes tons). */
 function cliffFill(f: Face, el: FloorEl, dims: Dims): { fill: string; lit: boolean } {

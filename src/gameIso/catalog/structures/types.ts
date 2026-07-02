@@ -8,7 +8,7 @@ export interface StructureAppearanceDef {
   id: string;
   label: string;
   material: 'bois' | 'pierre';
-  /** Recette de détail de surface (appareillage/joints/mouchetis — Lot 0, consommée au Lot 4). */
+  /** Recette de détail de surface (appareillage/joints/mouchetis) — consommée par les backends (iso + POV). */
   detail?: DetailRecipe;
   /** Face principale (POV + base de la face iso, ombrée par orientation). */
   face: string;
