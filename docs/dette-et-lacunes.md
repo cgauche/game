@@ -116,18 +116,29 @@ Source : audit adversarial par domaine (juillet 2026). Statut = jouable (scénar
 | Psychologie combat (Peur/Terreur/Frénésie) | Combat | Quasi-OK par design (hooks auto + Traits/États du Codex). Option : Effet `inflictPsychology` (source de peur scénique). |
 | Engagement/Désengagement, Empoignade | Combat | **OK par design** — actions de combat (choix modal). À DOCUMENTER, pas à coder. |
 
+### ⚠️ FAUX POSITIFS de l'audit — magie/religion DÉJÀ couvertes par `magie.ts`
+
+Le scénario `src/scenes/test-scenarios/magie.ts` (« Aelindra, Haute Sorcière multi-domaine + Nécromancie »
++ **10 Prêtres, un par dieu de combat** dont Manann, IA caster des DEUX camps) exerce déjà, EN JEU :
+**Imparfaites** (casters sous pression), **Contre-sort / Dissipation** (IA des deux camps), **Surincantation**
+(ZdE + augmentation au clic), **Colère des dieux** (Grand Prêtre à 3 Péchés), **Corruption/mutation** (zone de
+Malepierre). L'audit les a classés « SCÉNARIO-MANQUANT » sur preuve trop mince (il n'a pas vu le setup réel) —
+**faux positifs, aucun scénario à créer.** Reliquats éventuels, NARROW (à confirmer, ne PAS mass-créer) :
+- **Magie des Mers en contexte NAVAL** : Manann est présent dans `magie.ts` (terrestre) ; un lancer en mer
+  n'est pas spécifiquement exercé — mineur.
+- **Petites Prières** (non-Béni sur site sacré, Effet `petitePriere`) : distinct des Prêtres Bénis de `magie.ts` ;
+  narrow, un simple trigger sur un autel suffirait — pas un scénario dédié.
+- **Retrait de Péché** : op `sinMod` déjà là ; manque le contenu Miracle « Absolution » (LDB 42) si voulu.
+
+> **Leçon (cf. [[feedback-audit-nest-pas-ordre-de-travail]])** : une liste d'audit est des PISTES À VÉRIFIER,
+> pas un ordre de travail. Vérifier contre la réalité (scénarios existants) AVANT de créer — ne jamais
+> produire de contenu redondant.
+
 ### 🟡 Éditable/auto mais aucun scénario ne l'exerce (moteur déjà fait & testé en Vitest)
 
 | Système | Domaine | Ce qu'il manque |
 |---|---|---|
-| Imparfaites (miscast) | Magie | Scénario `magie-imparfaites` (caster à compétence basse → tables d100 en jeu). |
-| Contre-sort / Dissipation | Magie | Scénario `magie-counterspell` (IA caster paramétrée pour riposter). |
-| Surincantation (Overcast) | Magie | Scénario `magie-overcast` (ressource forçant le choix). |
-| Colère des dieux | Magie | Scénario `religion-colere` (Prêtre +3 Péchés, prière forcée + dé des unités ≤ 3 garanti). |
-| Magie des Mers (Manann/Stromfels) | Magie | Prêtre de Manann embarqué dans `14-voyage-maritime.ts`. Données présentes (14 sorts). |
-| Petites Prières (`petitePriere`) | Magie | Scénario `religion-petites-prieres`. Effet DÉJÀ éditable. |
-| Retrait de Péché (`sinMod`) | Magie | Contenu : Miracle « Absolution » (LDB 42) OU scénario `religion-absolution`. Op DÉJÀ là. |
-| Critiques & Traumatismes (`inflictTrauma`) | Santé | Trigger `inflictTrauma` dans un scénario (ex. `opera.ts`). Éditeur DÉJÀ là. |
+| Critiques & Traumatismes (`inflictTrauma`) | Santé | Trigger `inflictTrauma` dans un scénario (ex. `opera.ts`). Éditeur DÉJÀ là. **À CONFIRMER contre l'existant.** |
 | Soins & infirmerie (`medicalAid`) | Santé | Effet `medicalAid` dans un scénario (médecin). Éditeur DÉJÀ là. |
 | Exposition hydrique (`waterExposure`) | Santé | Scénario naval/port fluvial l'exerçant. Effet DÉJÀ éditable. |
 | Chute hors-combat (`fall`) | Voyage | Scénario (trappe/balcon effondré → `fall`). Effet DÉJÀ là. |
