@@ -1058,6 +1058,14 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => { env.get().startCombat(e.encounter); },
     refs: (e, ctx) => ctx.encounterIds.has(e.encounter) ? [] : [{ level: 'error', message: `Effet → rencontre inexistante « ${e.encounter} »` }],
   },
+  startMassBattle: {
+    group: '⚔️ Combat & social', label: 'Combat de masse (Puissance de Bataille)', icon: '🚩',
+    make: () => ({ type: 'startMassBattle', battle: { allyName: 'Armée des Personnages', enemyName: 'Armée ennemie', allyMight: 50, enemyMight: 50, plannedRounds: 3 } }),
+    apply: (e, env) => { env.get().startMassBattle(e.battle); }, // ouvre l'écran de bataille sur le spec authoré (ADE II 08)
+    // Les rencontres mappées aux Scènes de combat/menace doivent exister dans la scène courante.
+    refs: (e, ctx) => Object.entries(e.battle.sceneEncounters ?? {}).flatMap(([sceneId, encId]) =>
+      ctx.encounterIds.has(encId) ? [] : [{ level: 'error' as const, message: `Combat de masse → rencontre inexistante « ${encId} » (Scène ${sceneId})` }]),
+  },
   openMerchant: {
     group: '⚔️ Combat & social', label: 'Ouvrir une boutique (marchand)', icon: '🛒',
     make: () => ({ type: 'openMerchant', entityId: '' }),

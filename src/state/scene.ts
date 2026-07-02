@@ -204,6 +204,10 @@ export type Effect =
   /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). */
   | { type: 'giveXp'; amount: number }
   | { type: 'startCombat'; encounter: string }
+  /** Combat de masse / Puissance de Bataille (ADE II ch.8) : ouvre l'écran de bataille sur le
+   *  `MassBattleSpec` AUTHORÉ (armées, Rounds prévus, situations de Scènes par Round, rencontres des
+   *  Scènes de combat, modificateur permanent). Appliqué par le store `startMassBattle` (state/massBattleFlow). */
+  | { type: 'startMassBattle'; battle: import('./massBattleFlow').MassBattleSpec }
   | { type: 'transition'; scene: string; entry?: string }
   /** Retour à la scène précédente (sortie d'intérieur), à la case d'entrée. */
   | { type: 'transitionBack' }
@@ -565,6 +569,39 @@ export function isRampart(scene: Scene, x: number, y: number, z = 0): boolean {
   return rampartAt(scene, x, y, z) !== null;
 }
 
+/** La case (x,y,z) est-elle ENSEVELIE sous une zone rempart (une couche SUPÉRIEURE la couvre d'une masse
+ *  solide) ? → masse de mur : impassable au sol, sauf trouée de tunnel (`gateTunnelAt`). PUR. */
+export function buriedUnderRampart(scene: Scene, x: number, y: number, z: number): boolean {
+  return scene.layers.some((l) => l.z > z && isRampart(scene, x, y, l.z));
+}
+
+/** La case ENSEVELIE (x,y,z) est-elle un TUNNEL de porte (donc PASSABLE) ? Une structure-porte (WallSeg
+ *  `structure`) posée sur le PÉRIMÈTRE extérieur de la bande de rempart (arête séparant une case ensevelie
+ *  d'une case libre) PERCE la masse : depuis sa BOUCHE, le tunnel s'enfonce en ligne droite à travers
+ *  l'épaisseur de rempart CONTIGUË. GÉNÉRAL : direction de percée déduite de l'arête (toute orientation /
+ *  épaisseur, mur horizontal ou vertical) ; la structure INTACTE bloque encore la bouche via `wallBetween`
+ *  (le SOL du tunnel, lui, est toujours là). PUR. */
+export function gateTunnelAt(scene: Scene, x: number, y: number, z: number): boolean {
+  for (const w of scene.walls ?? []) {
+    if (!w.structure || (w.z ?? 0) !== z) continue;
+    if (w.side !== 'N' && w.side !== 'E') continue; // structure sur arête cardinale canonique
+    const a = { x: w.x, y: w.y };
+    const b = w.side === 'N' ? { x: w.x, y: w.y - 1 } : { x: w.x + 1, y: w.y };
+    const aBur = buriedUnderRampart(scene, a.x, a.y, z);
+    const bBur = buriedUnderRampart(scene, b.x, b.y, z);
+    if (aBur === bBur) continue; // pas une BOUCHE de périmètre (bande des deux côtés, ou d'aucun)
+    const mouth = aBur ? a : b; // case de bande adjacente à la bouche
+    const back = aBur ? b : a; // case LIBRE de l'autre côté (le champ)
+    const dx = mouth.x - back.x, dy = mouth.y - back.y; // sens d'enfoncement (champ → bande)
+    let cx = mouth.x, cy = mouth.y;
+    while (buriedUnderRampart(scene, cx, cy, z)) {
+      if (cx === x && cy === y) return true;
+      cx += dx; cy += dy;
+    }
+  }
+  return false;
+}
+
 /** À travers l'arête cardinale `side` de (x,y,z), existe-t-il une surface MARCHABLE reliée à ~la même
  *  hauteur (rampe/escalier atteignant une zone surélevée) sur UNE couche quelconque ? → l'arête est un
  *  ACCÈS ouvert (le rendu de zone rempart n'y pose ni falaise ni crête, sinon l'accès serait emmuré). PUR. */
@@ -578,6 +615,11 @@ export function rampAccessAcross(scene: Scene, x: number, y: number, z: number, 
 export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
   if (z > 0 && tileCollapsed(scene, x, y, z)) return false; // passerelle effondrée → plus marchable
   if (entityBlockedAt(scene, x, y)) return false; // empreinte multi-cases d'un décor (foot {w,h})
+  // MASSE DE MUR : une case ENSEVELIE sous une ZONE REMPART (à un étage supérieur) est IMPASSABLE — on ne
+  // traverse pas la courtine au sol, le chemin de ronde est son TOIT. Seule EXCEPTION : le TUNNEL d'une
+  // porte, qui perce la masse (`gateTunnelAt`) — son sol reste marchable (la herse INTACTE bloque encore la
+  // bouche via `wallBetween`). Le rempart lui-même (couche z1) reste marchable.
+  if (buriedUnderRampart(scene, x, y, z) && !gateTunnelAt(scene, x, y, z)) return false;
   return terrainWalkable(tileAt(scene, x, y, z));
 }
 

@@ -18,6 +18,8 @@ import { GameOpEditor, opSummary } from './GameOpEditor';
 import { RefField } from '../compendium/RefField';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
+import { BATTLE_SCENES, POWER_ESTIMATE, battleSceneById, clampMight } from '../../engine/massBattle';
+import type { MassBattleSpec } from '../../state/massBattleFlow';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -113,6 +115,12 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'mealParty': return `${icon} Repas du groupe`;
     case 'interlude': return `${icon} Interlude : ${e.weeks ?? 1} semaine(s)`;
     case 'startCombat': return `${icon} Combat : ${e.encounter || '?'}`;
+    case 'startMassBattle': {
+      const b: MassBattleSpec = e.battle ?? {};
+      const rounds = b.plannedRounds ?? 1;
+      const sit = b.situations?.length ? `, ${b.situations.length} situation(s)` : '';
+      return `${icon} Combat de masse : ${b.allyName || 'Alliés'} (${b.allyMight ?? 0}) vs ${b.enemyName || 'Ennemis'} (${b.enemyMight ?? 0}) — ${rounds} Round${rounds > 1 ? 's' : ''}${sit}`;
+    }
     case 'transition': {
       const sc = ctx?.scenes?.find((s) => s.id === e.scene);
       return `${icon} Vers ${sc?.nom ?? e.scene ?? '?'}${e.entry ? ` @ ${e.entry}` : ''}`;
@@ -462,6 +470,9 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             ))}
           </select>
         )}
+        {effect.type === 'startMassBattle' && (
+          <MassBattleFields battle={e.battle ?? {}} onChange={(battle) => upd({ battle })} ctx={ctx} />
+        )}
         {effect.type === 'transition' && (ctx.scenes ? (
           <>
             <select value={e.scene ?? ''} onChange={(ev) => upd({ scene: ev.target.value, entry: '' })}>
@@ -579,6 +590,114 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             <input placeholder="flag posé à la réussite (option)" value={e.flag ?? ''} onChange={(ev) => upd({ flag: ev.target.value || undefined })} />
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── Combat de masse / Puissance de Bataille (ADE II 08) — édition du `MassBattleSpec` authoré ──────
+const MB_KIND_LABEL: Record<string, string> = { test: 'Test', combat: 'Combat', threat: 'Menace' };
+
+/** Première Scène du catalogue non encore présente dans `used` (repli : la première). */
+function firstUnusedScene(used: string[]): string {
+  return (BATTLE_SCENES.find((s) => !used.includes(s.id)) ?? BATTLE_SCENES[0]).id;
+}
+
+/** Scènes de COMBAT/MENACE référencées (catalogue effectif ∪ situations ∪ enchaînements déterministes)
+ *  → celles pour lesquelles l'auteur peut mapper une rencontre de la scène courante. */
+function referencedCombatScenes(b: MassBattleSpec): string[] {
+  const pool = b.scenes && b.scenes.length ? b.scenes : BATTLE_SCENES.map((s) => s.id);
+  const ids = new Set<string>([...pool, ...((b.situations ?? []).flat())]);
+  for (const id of [...ids]) for (const c of battleSceneById(id)?.chains ?? []) ids.add(c.sceneId);
+  return [...ids].filter((id) => { const k = battleSceneById(id)?.kind; return k === 'combat' || k === 'threat'; });
+}
+
+/** Multi-sélection de Scènes de bataille (patron de `ListRefField` sur le catalogue `BATTLE_SCENES`) :
+ *  une rangée `<select>` par Scène choisie (id STABLE stocké, libellé affiché) + Ajouter / ✕. */
+function SceneMultiSelect({ value, onChange, placeholder }: { value: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
+  const list = value ?? [];
+  const set = (next: string[]) => onChange(next);
+  return (
+    <div>
+      {list.map((id, i) => (
+        <div key={i} className="de-reflrow">
+          <select value={id} onChange={(ev) => set(list.map((s, j) => (j === i ? ev.target.value : s)))}>
+            {!BATTLE_SCENES.some((o) => o.id === id) && <option value={id}>{id} (inconnu)</option>}
+            {BATTLE_SCENES.map((o) => <option key={o.id} value={o.id}>{o.label} · {MB_KIND_LABEL[o.kind]}</option>)}
+          </select>
+          <button className="btn small danger" title="Retirer la Scène" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, firstUnusedScene(list)])}>+ Scène</button>
+      {!list.length && placeholder && <span className="branch-label">{placeholder}</span>}
+    </div>
+  );
+}
+
+/** Éditeur complet du `MassBattleSpec` (armées, Rounds, situations par Round, rencontres de combat).
+ *  Réutilise les primitives d'effet (`.test-fields`/`.tf-row`/`.dr`, patron `ListRefField`, select de
+ *  rencontre de `startCombat`). Aucun id tapé : toute Scène/rencontre passe par un picker. */
+function MassBattleFields({ battle, onChange, ctx }: { battle: MassBattleSpec; onChange: (b: MassBattleSpec) => void; ctx: Ctx }) {
+  const b = battle ?? ({ allyMight: 50, enemyMight: 50 } as MassBattleSpec);
+  const set = (patch: Partial<MassBattleSpec>) => onChange({ ...b, ...patch });
+  const rounds = Math.max(1, Math.floor(b.plannedRounds ?? 1));
+  const situations = b.situations ?? [];
+  const setSituations = (next: string[][]) => set({ situations: next.length ? next : undefined });
+  const combatScenes = referencedCombatScenes(b);
+  return (
+    <div className="test-fields">
+      <div className="tf-row">
+        <label className="dr" style={{ flex: 1 }}>Alliés<input value={b.allyName ?? ''} placeholder="Armée des Personnages" onChange={(ev) => set({ allyName: ev.target.value || undefined })} /></label>
+        <label className="dr" style={{ flex: 1 }}>Ennemis<input value={b.enemyName ?? ''} placeholder="Armée ennemie" onChange={(ev) => set({ enemyName: ev.target.value || undefined })} /></label>
+      </div>
+      <div className="tf-row">
+        <label className="dr">Puissance alliée<input type="number" min={0} max={100} value={b.allyMight ?? 0} onChange={(ev) => set({ allyMight: clampMight(Number(ev.target.value) || 0) })} /></label>
+        <label className="dr">Puissance ennemie<input type="number" min={0} max={100} value={b.enemyMight ?? 0} onChange={(ev) => set({ enemyMight: clampMight(Number(ev.target.value) || 0) })} /></label>
+        <label className="dr">Estimer (force relative)
+          <select value="" onChange={(ev) => { const r = POWER_ESTIMATE.find((p) => p.id === ev.target.value); if (r) set({ allyMight: r.ally, enemyMight: r.enemy }); }}>
+            <option value="">— remplir les Puissances —</option>
+            {POWER_ESTIMATE.map((p) => <option key={p.id} value={p.id}>{p.label} ({p.ally}/{p.enemy})</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="tf-row">
+        <label className="dr">Rounds prévus<input type="number" min={1} value={rounds} onChange={(ev) => set({ plannedRounds: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+        <label className="dr">Taille de tirage<input type="number" min={1} value={b.situationSize ?? 3} onChange={(ev) => set({ situationSize: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+        <label className="dr">Modif. permanent (Planification)<input type="number" value={b.allyMod ?? 0} onChange={(ev) => set({ allyMod: Number(ev.target.value) || 0 })} /></label>
+      </div>
+      <label className="dr">Terrain (description)<input value={b.terrain ?? ''} placeholder="Configuration du terrain (narratif)" onChange={(ev) => set({ terrain: ev.target.value || undefined })} /></label>
+      <div className="branch">
+        <span className="branch-label">Catalogue de Scènes (pioche des situations) — vide = tout le catalogue.</span>
+        <SceneMultiSelect value={b.scenes ?? []} onChange={(scenes) => set({ scenes: scenes.length ? scenes : undefined })} placeholder="Aucune restriction : les 12 Scènes du catalogue sont disponibles." />
+      </div>
+      <div className="branch">
+        <span className="branch-label">Situations authorées (une par Round ; au-delà, la dernière se répète ; aucune = tirage aléatoire de « Taille de tirage »).</span>
+        {situations.map((sit, i) => (
+          <div key={i} className="branch">
+            <span className="branch-label">Round {i + 1} <button className="btn small danger" title="Retirer la situation" onClick={() => setSituations(situations.filter((_, j) => j !== i))}>✕</button></span>
+            <SceneMultiSelect value={sit} onChange={(next) => setSituations(situations.map((s, j) => (j === i ? next : s)))} placeholder="Situation vide (seuls imposés / menaces présentés)." />
+          </div>
+        ))}
+        <button className="btn small" onClick={() => setSituations([...situations, []])}>+ Situation (Round {situations.length + 1})</button>
+      </div>
+      <div className="branch">
+        <span className="branch-label">Rencontres des Scènes de combat / menace (rencontre de la scène courante ; vide = rencontre par défaut de la Scène).</span>
+        {combatScenes.length ? combatScenes.map((id) => (
+          <div key={id} className="de-reflrow">
+            <span className="dr" style={{ minWidth: 140 }}>{battleSceneById(id)?.label ?? id}</span>
+            <select
+              value={b.sceneEncounters?.[id] ?? ''}
+              onChange={(ev) => {
+                const next = { ...(b.sceneEncounters ?? {}) };
+                if (ev.target.value) next[id] = ev.target.value; else delete next[id];
+                set({ sceneEncounters: Object.keys(next).length ? next : undefined });
+              }}
+            >
+              <option value="">— rencontre par défaut —</option>
+              {ctx.encounters.map((en) => <option key={en.id} value={en.id}>{en.id}</option>)}
+            </select>
+          </div>
+        )) : <span className="branch-label">Aucune Scène de combat / menace dans le catalogue et les situations.</span>}
       </div>
     </div>
   );
