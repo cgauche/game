@@ -343,6 +343,9 @@ export function Editor() {
           enemyCreatures={enemyCreatures}
         />
 
+        {/* Colonne centrale de la grille (1 enfant par colonne, sinon la grille 3 colonnes déborde en
+            ligne implicite et s'effondre) : le canvas + la barre d'étages en OVERLAY ancré dessus. */}
+        <div className="editor-canvas-col">
         <EditorCanvas
           scene={scene}
           view={view}
@@ -402,6 +405,7 @@ export function Editor() {
           >
             －
           </button>
+        </div>
         </div>
 
         <Inspector
