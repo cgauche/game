@@ -293,6 +293,8 @@ export function buildApi() {
       s.setParty(sc.makeParty());
       if (sc.extraScenes?.length || sc.worldMap) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
       else s.startScene(sc.scene);
+      if (sc.money) useGame.setState({ money: sc.money }); // bourse du scénario (après le reset du lancement)
+      if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime)
       if (sc.autoCombat) g().startCombat(sc.autoCombat);
       if (g().pendingRoundStart) g().confirmRoundStart();
       if (sc.massBattle) { g().startMassBattle(sc.massBattle); return `✅ bataille de masse « ${sc.title} » lancée`; }

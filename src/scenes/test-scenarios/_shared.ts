@@ -53,6 +53,9 @@ export interface TestScenario {
   /** Bataille de masse (ADE II 08) : amorce le sous-système de Puissance de Bataille après le chargement
    *  de la scène (les Scènes de combat démarrent les rencontres de cette scène). */
   massBattle?: import('../../state/massBattleFlow').MassBattleSpec;
+  /** Navire de campagne (MDG ch.13-15) posé au lancement, APRÈS le reset de scène (comme `money`) — pour
+   *  un scénario de voyage/combat maritime (appareillage sur `state.vessel`). */
+  vessel?: import('../../state/store').CampaignVessel;
 }
 
 /** Arène dégagée + point de départ des héros (base des scénarios de combat direct). Preset MINCE

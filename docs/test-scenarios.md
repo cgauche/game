@@ -43,7 +43,7 @@ et les fichiers `_*` sont exclus.
   `M 0`, beaucoup de Blessures).
 - Le moteur reste couvert par Vitest ; les scénarios sont des fixtures de vérif manuelle/visuelle.
 
-## Catalogue actuel (12 scénarios, par section)
+## Catalogue actuel (par section)
 
 Chaque scénario est volontairement DENSE : il exerce une famille de systèmes liés plutôt qu'une seule
 mécanique (un terrain bien agencé, des mannequins bien placés).
@@ -60,7 +60,8 @@ mécanique (un terrain bien agencé, des mannequins bien placés).
 | 🗺️ Scénarios complets | 🎭 Opéra | théâtre Staatsoper multi-niveaux ; bombe à minuterie (désamorçage Poudre noire), pétards/Glimbrin, étudiants saboteurs, dialogue gaté de la Comtesse |
 | 🗺️ Scénarios complets | 🪤 Le Caveau piégé | vitrine Flow+Condition : interactions (levier/clé → flags), condition composée, dalle piégée (Test à branches) |
 | 🗺️ Scénarios complets | 🏟️ Arène — le Bourg | campagne vitrine complète (Bourg, 13 zones, contrats, carte du monde, marchands, fouilles) |
-| ⛵ Naval | ⛵ Combat naval | postes d'artillerie servis (MDG), navire-Combattant à PV + Blindage, Critiques de NAVIRE, équipage lié, abordage (échelle éditable pour la vue mer ouverte) |
+| ⛵ Naval | ⛵ Combat naval | postes d'artillerie servis (MDG), navire-Combattant à PV + Blindage, Critiques de NAVIRE, équipage lié ; VICTOIRE par NAUFRAGE (coque coulée → équipage par-dessus bord) **ou** par ABORDAGE (le Tueur + le Sorcier traversent, engagent et vainquent l'équipage → la cogue est prise) |
+| ⛵ Naval | ⚓ Voyage maritime | traversée en mer JOUABLE (MDG ch.13/15) : route maritime (milles) entre 2 ports, appareillage sur le navire de campagne (cogue), journée = météo/vent + Tests d'équipage (Progression/Orientation/Perception au phare) + entretien de coque, haltes de nuit, ACCOSTAGE au Grand Port (réparer/caréner/commerce) |
 | 🖼️ Rendu | 🖼️ Galerie de modèles | tous les modèles : créatures + toutes les carrières + toutes les armes + mutants (énumérés depuis la data), exploration sans combat |
 
 Un scénario peut embarquer **plusieurs scènes** (`extraScenes`) et une **carte du monde** (`worldMap`) :

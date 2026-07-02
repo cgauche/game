@@ -107,7 +107,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
-import { endShanty } from './shipCrew';
+import { endShanty, resolveShipUnits } from './shipCrew';
 import { isInanimate, isStructure, structureAimCell } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
@@ -4004,6 +4004,14 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
       set({ battle: { ...battle, log: [...battle.log, ...evLines(dismounted, 'detail')] } });
       bus.emit(EVT.SCENE_DIRTY);
     }
+  }
+  // Navires comme UNITÉS (MDG ch.13-14) : une coque COULÉE emporte son équipage par-dessus bord, une coque
+  // sans équipage en état est PRISE et sort du combat — les deux voies de victoire navale (naufrage OU
+  // abordage) convergent ici (kind-agnostique, sweep centralisé comme le désarçonnement ci-dessus).
+  const navalResolved = resolveShipUnits(battle.combatants);
+  if (navalResolved.length) {
+    set({ battle: { ...battle, log: [...battle.log, ...evLines(navalResolved, 'detail')] } });
+    bus.emit(EVT.SCENE_DIRTY);
   }
   // Un engin INERTE (affût servi, immune) ne compte JAMAIS comme un combattant vivant — ni côté allié
   // (`kind:'hero'`) ni côté ennemi : la victoire/défaite se joue sur les créatures (l'équipage), pas l'objet.

@@ -9,7 +9,7 @@ import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, type CrewAssi
 import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findSeaShantyById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
 import { applyOps } from '../engine/ops';
-import { removeActiveEffects } from '../engine/conditions';
+import { removeActiveEffects, isOutOfAction } from '../engine/conditions';
 import { battleRng } from './battleRng';
 import type { Get, Set as SetFn } from './flowTypes';
 
@@ -172,6 +172,47 @@ export function endShanty(get: Get, singer: Combatant): string[] {
   const combatants = get().battle?.combatants ?? get().party;
   for (const c of combatants) removeActiveEffects(c, (e) => e.label === song.label);
   return [`🎶 La chanson de ${singer.name} s'interrompt.`];
+}
+
+/**
+ * Résolution d'un NAVIRE comme UNITÉ DE COMBAT — abordage & naufrage (MDG ch.13-14). Un navire au combat =
+ * sa COQUE (`bodyShape:'vehicule'`, à PV) + son ÉQUIPAGE (`crewIds`, de vrais combattants exposés). L'unité
+ * sort du combat dès qu'UNE des deux issues RAW est atteinte — dans les DEUX sens, pour que la victoire
+ * navale soit gagnable par CHAQUE voie :
+ *  - **NAUFRAGE** — la coque tombe à 0 PB (« le navire coule », MDG ch.13 l.117). L'équipage encore en
+ *    état passe par-dessus bord : il QUITTE la rencontre (`outOfRencontre`). Sans ça, couler le navire ne
+ *    suffirait pas (l'équipage flotterait, or il est quasi inentamable en mêlée — table des Tailles ch.13
+ *    l.618-637), et la voie « naufrage » ne conclurait jamais.
+ *  - **PRISE À L'ABORDAGE** — tout l'équipage exposé est hors de combat (MDG ch.13 l.420 : « un abordage
+ *    déterminé »). Sans personne à bord pour la défendre ou la manœuvrer, la coque sort du combat
+ *    (`outOfRencontre`). Sans ça, vaincre l'équipage ne conclurait jamais (la coque, inentamable en mêlée,
+ *    resterait un ennemi « vivant »).
+ * KIND-AGNOSTIQUE (coque amie ou ennemie) mais ne s'active QUE sur une coque à équipage DÉCLARÉ
+ * (`crewIds.length`) : une coque-cible SANS équipage ne se résout que par le naufrage de ses propres PV
+ * (sinon elle serait « prise » d'emblée, l'ensemble vide étant vacuément vaincu). Mute EN PLACE, renvoie le
+ * journal ; idempotent (une unité déjà résolue reste `outOfRencontre`). Appelé par `checkBattleOver`.
+ */
+export function resolveShipUnits(combatants: Combatant[]): string[] {
+  const lines: string[] = [];
+  for (const hull of combatants) {
+    if (hull.bodyShape !== 'vehicule' || !hull.crewIds?.length || !hull.wounds) continue;
+    const crew = hull.crewIds
+      .map((id) => combatants.find((c) => c.id === id))
+      .filter((c): c is Combatant => !!c);
+    if (isOutOfAction(hull)) {
+      // Naufrage : l'équipage encore en état sombre avec le navire (sort de la rencontre).
+      const aboard = exposedCrew(crew).filter((c) => !isOutOfAction(c));
+      if (aboard.length) {
+        for (const c of aboard) c.outOfRencontre = true;
+        lines.push(`${hull.name} sombre — son équipage (${aboard.map((c) => c.name).join(', ')}) passe par-dessus bord.`);
+      }
+    } else if (crew.length && crew.every((c) => isOutOfAction(c))) {
+      // Plus personne à bord : la coque, sans équipage pour la défendre ni la manœuvrer, quitte le combat.
+      hull.outOfRencontre = true;
+      lines.push(`${hull.name} n'a plus d'équipage en état de le défendre : le navire est pris et sort du combat.`);
+    }
+  }
+  return lines;
 }
 
 /**

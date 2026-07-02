@@ -32,6 +32,7 @@ export function TestScenariosScreen() {
     if (sc.extraScenes?.length || sc.worldMap) loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
     else startScene(sc.scene);
     if (sc.money) useGame.setState({ money: sc.money }); // bourse du scénario (après le reset du lancement)
+    if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime) — après le reset
     if (sc.autoCombat) startCombat(sc.autoCombat);
     // Bataille de masse (ADE II 08) : startMassBattle bascule lui-même sur l'écran dédié.
     if (sc.massBattle) { useGame.getState().startMassBattle(sc.massBattle); return; }
