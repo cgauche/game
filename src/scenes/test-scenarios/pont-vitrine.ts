@@ -109,8 +109,8 @@ const scene = buildScene({
 export const scenario: TestScenario = {
   id: 'pont-vitrine',
   order: 50,
-  category: '🖼️ Rendu',
-  icon: '🌉',
+  category: 'rendu',
+  icon: 'scenario/bridge',
   title: 'Pont — vitrine',
   tests:
     'Relief métrique 100 % données (2 couches + hauteurs parallèles) : on marche SOUS le pont (couche 0, h=0) ' +

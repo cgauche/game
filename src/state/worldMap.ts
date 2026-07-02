@@ -23,7 +23,7 @@ export interface MapPlace {
   scene: string;
   /** Point d'arrivée nommé dans la scène (sinon heroStart). */
   entry?: string;
-  /** Pictogramme affiché (emoji), défaut 📍. */
+  /** Icône du médaillon (id du registre src/ui/icons), défaut `nav/entry-point`. */
   icon?: string;
   /** Profil COMMERCIAL de port (Index des ports, MDG ch.15 l.439-506) — présent = ce lieu est un port
    *  maritime (commerce, événements d'escale, chantier). `lighthouse` : un phare veille sur l'approche

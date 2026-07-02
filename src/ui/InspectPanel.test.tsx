@@ -33,7 +33,7 @@ describe('InspectPanel', () => {
     expect(html).toContain('Armes'); // arme dérivée du trait (Morsure)
   });
 
-  it('badge 🪄 + section Sorts si l’ennemi connaît des sorts', () => {
+  it('badge Lanceur de sorts + section Sorts si l’ennemi connaît des sorts', () => {
     const caster = creatureToCombatant(findCreature('Mutant')!, 'e1', { x: 0, y: 0 }, { spells: ['flechette'] });
     const html = render(caster);
     expect(html).toContain('Lanceur de sorts');

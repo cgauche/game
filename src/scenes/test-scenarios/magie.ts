@@ -125,8 +125,8 @@ function makeMagicParty(): Combatant[] {
 export const scenario: TestScenario = {
   id: 'magie',
   order: 3,
-  category: '✨ Magie',
-  icon: '✨',
+  category: 'magie',
+  icon: 'scenario/magic',
   title: 'Magie en combat',
   tests:
     'Grande bataille magique : toutes les familles curées (invocations, drains, enchantements, zones, soins), ' +

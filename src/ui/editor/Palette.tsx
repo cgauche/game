@@ -4,8 +4,9 @@
  * recherchables (décors `PROPS`, espèces du rig, bâtiments par catégorie, créatures du bestiaire).
  * Composant de PRÉSENTATION : l'état (outil, pinceau, rencontre cible) vit dans Editor.
  */
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Scene, Terrain } from '../../state/scene';
+import { Icon } from '../Icon';
 import { TERRAINS } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
@@ -17,7 +18,7 @@ const TERRAIN_IDS = Object.keys(TERRAINS);
 
 type Family = 'select' | 'tile' | 'wall' | 'height' | 'personnage' | 'prop' | 'heroStart' | 'roof' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
 
-const RAIL: { key: Family; icon: string; label: string }[] = [
+const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
   { key: 'tile', icon: '🖌', label: 'Peindre le terrain' },
   { key: 'wall', icon: '🧱', label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
@@ -27,7 +28,7 @@ const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'heroStart', icon: '🏁', label: 'Départ des héros (case d’arrivée du groupe)' },
   { key: 'roof', icon: '🏠', label: 'Toit — bâtiment composé : glisser pour couvrir l’empreinte (les murs se tracent à l’outil 🧱)' },
   { key: 'zone', icon: '🟦', label: 'Dessiner une zone — trigger ou zone de repos' },
-  { key: 'entry', icon: '⚑', label: 'Poser un point d’entrée (cible des transitions)' },
+  { key: 'entry', icon: <Icon id="nav/entry-point" />, label: 'Poser un point d’entrée (cible des transitions)' },
   { key: 'encounter', icon: '⚔️', label: 'Placer des ennemis (rencontre de combat)' },
   { key: 'emplacement', icon: '💥', label: 'Emplacement de siège — poser une pièce d’artillerie (baliste, catapulte, canon…) servie par un équipage' },
   { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },

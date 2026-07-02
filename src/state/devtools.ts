@@ -283,7 +283,7 @@ export function buildApi() {
      *  Sans argument : liste les ids. `seed` (optionnel) rend l'initiative DÉTERMINISTE. Le combat
      *  démarre PRÊT (la pause d'ouverture du Round 1 est acquittée). */
     scenario: (id?: string, seed?: number) => {
-      if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.icon} ${sc.title}`);
+      if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.title}`);
       const sc = testScenarios.find((t) => t.id === id);
       if (!sc) return `❌ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
       clearAiTurnLog(); // trace IA vierge pour ce scénario

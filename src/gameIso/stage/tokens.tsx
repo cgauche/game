@@ -50,7 +50,7 @@ function token(ctx: TokenCtx, id: string, x: number, y: number, inner: string, s
   );
 }
 
-type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string };
+type TokenExtras = { hp?: { current: number; max: number }; icons?: import('../../ui/icons').IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string };
 function tokenNode(ctx: TokenCtx, id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) {
   return (
     <BodyToken key={id} x={x} y={y} z={ctx.liftAt(x, y, z)} dims={ctx.dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath

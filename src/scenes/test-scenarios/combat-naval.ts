@@ -77,8 +77,8 @@ const scene = buildScene({
 export const scenario: TestScenario = {
   id: 'combat-naval',
   order: 11,
-  category: '⛵ Naval',
-  icon: '⛵',
+  category: 'naval',
+  icon: 'scenario/naval',
   title: 'Combat naval',
   tests:
     'Postes d’artillerie SERVIS (MDG ch.12-13) : 2 héros servent les pierriers de leur barge (« Servir un ' +

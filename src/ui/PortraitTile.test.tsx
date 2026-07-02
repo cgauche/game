@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PortraitTile } from './PortraitTile';
+import { iconSvg } from './Icon';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
@@ -65,9 +66,9 @@ describe('PortraitTile', () => {
       { name: 'empoisonne', value: 2 }, { name: 'hemorragique', value: 1 },
     ] as Combatant['conditions'];
     const html = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
-    expect(html).toContain('💫'); // Sonné (sévérité max → 1er)
+    expect(html).toContain(iconSvg('condition/stunned')); // Sonné (sévérité max → 1er)
     expect(html).toContain('▾'); // 5 états → 4 + débordement
-    expect(html).not.toContain('🩸'); // Hémorragique (sévérité min) débordé
+    expect(html).not.toContain(iconSvg('condition/bleeding')); // Hémorragique (sévérité min) débordé
     // 2 états → pas de chevron
     c.conditions = [{ name: 'sonne', value: 1 }, { name: 'a-terre', value: 1 }] as Combatant['conditions'];
     expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />)).not.toContain('▾');

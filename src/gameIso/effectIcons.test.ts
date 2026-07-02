@@ -22,11 +22,11 @@ describe('conditionMeta', () => {
 
 describe('combatantFlags — Peur (LDB 21 l.29)', () => {
   const C = (psychState: unknown) => ({ conditions: [], psychState }) as unknown as Combatant;
-  it('sous l’emprise (calmeDR < Indice) → drapeau fear avec l’Indice max, et chip 😨 visible', () => {
+  it('sous l’emprise (calmeDR < Indice) → drapeau fear avec l’Indice max, et chip flag/fear visible', () => {
     const f = combatantFlags(C([{ type: 'peur', sourceId: 'x', indice: 2, calmeDR: 0 }, { type: 'peur', sourceId: 'y', indice: 3, calmeDR: 1 }]));
     expect(f.fear).toBe(3);
     const r = summarizeEffects([], [], 5, f);
-    expect(r.visible.some((v) => v.icon === '😨')).toBe(true);
+    expect(r.visible.some((v) => v.icon === 'flag/fear')).toBe(true);
   });
   it('Peur vaincue (calmeDR ≥ Indice) ou absente → pas de drapeau', () => {
     expect(combatantFlags(C([{ type: 'peur', sourceId: 'x', indice: 2, calmeDR: 2 }])).fear).toBeUndefined();

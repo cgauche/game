@@ -24,6 +24,7 @@ import { InitiativeStrip } from './InitiativeStrip';
 import { CombatStartSplash } from './CombatStartSplash';
 import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
+import { Icon } from './Icon';
 import { GameMenu } from './GameMenu';
 import { SaveLoadModal } from './SaveLoadModal';
 import { HouseRulesModal } from './HouseRulesModal';
@@ -94,7 +95,9 @@ export function CampaignView() {
   const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
-  const dateLine = `${phase.icon} ${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
+  // `phase.icon` est désormais un id d'icône (`time/*`, registre src/ui/icons) — GameMenu peut le
+  // rendre via <Icon> ; la ligne de date reste du texte pur.
+  const dateLine = `${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
   const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
   // Dock : version « vivante » des héros en combat (PB/effets à jour), sinon la party.
   // Le dock (portraits du haut) liste les héros PUIS les navires alliés (couche Mer) : cliquer un navire ouvre SA
@@ -180,10 +183,10 @@ export function CampaignView() {
             onClick={openWorldMap}
             title={travelPlan?.interrupted ? 'Carte du monde — voyage interrompu (reprendre)' : 'Carte du monde — voyager'}
           >
-            🗺️
+            <Icon id="nav/campaign" size="lg" />
           </button>
         )}
-        {/* ⚓ Port — le groupe est à un lieu PORTUAIRE de la carte avec un navire de campagne :
+        {/* Port — le groupe est à un lieu PORTUAIRE de la carte avec un navire de campagne :
             services au chantier + commerce maritime (MDG 15). */}
         {mode === 'exploration' && !travelPlan && vessel && worldMap && placeOfScene(worldMap, scene?.id)?.port && (
           <button
@@ -192,10 +195,10 @@ export function CampaignView() {
             onClick={openPort}
             title="Port — chantier naval et commerce maritime"
           >
-            ⚓
+            <Icon id="scenario/port" size="lg" />
           </button>
         )}
-        {/* 🌙 Dormir ici — l'offre (auberge/chez soi/dehors) vient de la ZONE où se tient le
+        {/* Dormir ici — l'offre (auberge/chez soi/dehors) vient de la ZONE où se tient le
             groupe, sinon de la scène (donnée d'auteur, restPlacesHere). */}
         {mode === 'exploration' && !travelPlan && restHere && (
           <button
@@ -204,7 +207,8 @@ export function CampaignView() {
             onClick={() => openRest({ places: restHere.places, quality: restHere.quality })}
             title={restHere.places.auberge ? 'Dormir — auberge ou belle étoile' : restHere.places.maison ? 'Dormir — chez soi' : 'Camper — dormir sur place jusqu’à l’aube'}
           >
-            {restHere.places.auberge ? '🛏' : restHere.places.maison ? '🌙' : '⛺'}
+            {/* Une seule icône Repos (auberge/chez soi/camp) — le `title` porte la nuance. */}
+            <Icon id="nav/rest" size="lg" />
           </button>
         )}
         <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />

@@ -1,6 +1,7 @@
 import { Combatant } from '../../engine/types';
 import { Scene, Terrain } from '../../state/scene';
 import type { WorldMap } from '../../state/worldMap';
+import type { IconId } from '../../ui/icons';
 import { buildEncounters, type AuthoredEncounter } from '../../state/encounterAuthoring';
 import { buildScene } from '../../state/mapSpec';
 
@@ -13,23 +14,27 @@ export function setEncounters(scene: Scene, list: AuthoredEncounter[]): void {
   scene.encounters = built.encounters;
 }
 
-/** Sections du menu des scénarios de test (l'emoji fait partie du libellé affiché). */
-export type ScenarioCategory =
-  | '⚔️ Combat'
-  | '✨ Magie'
-  | '🐲 Créatures'
-  | '🧭 Survie'
-  | '🛒 Marché'
-  | '🗺️ Scénarios complets'
-  | '⛵ Naval'
-  | '🖼️ Rendu';
+/** Sections du menu des scénarios de test : clé (portée par la donnée) → libellé + icône
+ *  (id du registre src/ui/icons), dans l'ordre d'affichage. */
+export const SCENARIO_SECTIONS = [
+  { key: 'combat', label: 'Combat', icon: 'action/attack' },
+  { key: 'magie', label: 'Magie', icon: 'action/cast' },
+  { key: 'creatures', label: 'Créatures', icon: 'scenario/bestiary' },
+  { key: 'survie', label: 'Survie', icon: 'scenario/travel' },
+  { key: 'marche', label: 'Marché', icon: 'scenario/market' },
+  { key: 'scenarios', label: 'Scénarios complets', icon: 'nav/campaign' },
+  { key: 'naval', label: 'Naval', icon: 'scenario/naval' },
+  { key: 'rendu', label: 'Rendu', icon: 'scenario/gallery' },
+] as const satisfies readonly { key: string; label: string; icon: IconId }[];
+
+export type ScenarioCategory = (typeof SCENARIO_SECTIONS)[number]['key'];
 
 /** Un scénario de test = un groupe fixé + une scène adaptée (+ combat direct optionnel). */
 export interface TestScenario {
   id: string;
   order: number; // tri d'affichage dans la section
   category: ScenarioCategory; // section du menu
-  icon: string; // emoji de carte
+  icon: IconId; // icône de carte (registre src/ui/icons, famille scenario/*)
   title: string;
   tests: string; // une ligne : « ce que ça vérifie »
   partyNote: string; // ex. « Arbalétrier solo »

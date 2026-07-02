@@ -930,6 +930,25 @@ textarea:focus {
 .ab-ico {
   font-size: 18px;
 }
+.ab-ico .icon {
+  display: block;
+}
+/* Action déjà faite ce tour : le slot porte l'état (coche en coin + tuile éteinte),
+   plus jamais un « ✓ » dans le libellé. */
+.ab-slot.hotbar-done {
+  border-color: rgba(127, 207, 106, 0.45);
+}
+.ab-slot.hotbar-done .ab-ico,
+.ab-slot.hotbar-done .ab-lbl {
+  opacity: 0.75;
+}
+.ab-done {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  color: var(--ok-bright, #7fcf6a);
+  pointer-events: none;
+}
 /* Badge du raccourci clavier (1-9) en coin de capacité. */
 .ab-key {
   position: absolute; top: 2px; left: 4px;

@@ -4,6 +4,8 @@ import { Modal } from './Modal';
 import { TableRollLine } from './RollLine';
 import { VsHeader } from './VsHeader';
 import { conditionMeta } from '../gameIso/effectIcons';
+import { Icon } from './Icon';
+import type { IconId } from './icons';
 import type { Combatant } from '../engine/types';
 
 /** Auto-fermeture des révélations INFORMATIVES (arbitrage 2026-06-11) : délai court pour le
@@ -11,16 +13,16 @@ import type { Combatant } from '../engine/types';
  *  ferme toujours avant. */
 const AUTO_CLOSE_MS: Record<NonNullable<RevealEntry['severity']>, number> = { minor: 3500, grave: 9000 };
 
-const ICON: Record<RevealEntry['kind'], string> = {
-  miscast: '🌀',
-  critical: '💥',
-  assommante: '🌟',
-  backstab: '🗡️',
-  calme: '😱',
-  round: '⏳',
-  mutation: '🧬',
-  effet: '📜', // effet d'AUTEUR (scénario) : Blessure Critique / maladie infligée
-  sceneEntry: '📍', // entrée de zone : mise en contexte narrative (N1 — « le Journal n'est pas lu »)
+const ICON: Record<RevealEntry['kind'], IconId> = {
+  miscast: 'nav/dice', // tirage sur la Table des Imparfaites
+  critical: 'journal/critical',
+  assommante: 'condition/stunned',
+  backstab: 'action/attack',
+  calme: 'flag/fear',
+  round: 'journal/round',
+  mutation: 'nav/mutation',
+  effet: 'journal/info', // effet d'AUTEUR (scénario) : Blessure Critique / maladie infligée
+  sceneEntry: 'nav/entry-point', // entrée de zone : mise en contexte narrative (N1 — « le Journal n'est pas lu »)
 };
 
 /** Nom de la table tirée pour la rangée d100 (présentation canonique `TableRollLine`). */
@@ -45,11 +47,11 @@ export function CriticalBody({ entry, actor, subject }: { entry: RevealEntry; ac
       {entry.crit && (
         <div className="crit-stats">
           <span className="crit-stat" title="Blessures du Coup Critique : elles ignorent l'Endurance ET l'Armure.">
-            💥 {entry.crit.woundsLost} Blessure{entry.crit.woundsLost > 1 ? 's' : ''}
+            <Icon id="resource/wounds" size="sm" /> {entry.crit.woundsLost} Blessure{entry.crit.woundsLost > 1 ? 's' : ''}
           </span>
           {entry.crit.conditions?.map((c) => (
             <span key={c.name} className="crit-cond" title={`État ${c.name}`}>
-              {conditionMeta(c.name).icon} {c.name}
+              <Icon id={conditionMeta(c.name).icon} size="sm" /> {c.name}
               {c.value > 1 ? ` ×${c.value}` : ''}
             </span>
           ))}
@@ -100,7 +102,7 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
     // réarmé par ENTRÉE de la file (pas par re-render) — deps volontairement réduites
   }, [entry]); // eslint-disable-line
   return (
-    <Modal title={<>{ICON[entry.kind]} {entry.title}</>} subject={isCrit ? undefined : subject} variant="test">
+    <Modal title={<><Icon id={ICON[entry.kind]} /> {entry.title}</>} subject={isCrit ? undefined : subject} variant="test">
       {isCrit ? (
         <CriticalBody entry={entry} actor={actor} subject={subject} />
       ) : isScene ? (

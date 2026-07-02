@@ -10,6 +10,7 @@ import { Combatant } from '../engine/types';
 import { Money, formatMoney } from '../engine/money';
 import { CharCard } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
+import { Icon } from './Icon';
 import { t } from '../i18n';
 
 /**
@@ -17,7 +18,7 @@ import { t } from '../i18n';
  * à un siège (`net.slots`) ; chaque joueur remplit LES SIENS (créer / charger son roster local /
  * pré-tiré) via `partyAddHero` — enveloppé en intent côté invité, l'hôte reste autoritaire.
  *
- * C'est AUSSI ici que se choisit la campagne (cartouche 📜 + « Changer ») — solo comme coop
+ * C'est AUSSI ici que se choisit la campagne (cartouche Campagne + « Changer ») — solo comme coop
  * (hôte seul ; les invités voient le nom via le snapshot). Le choix par défaut est l'Arène.
  */
 
@@ -116,14 +117,14 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
         <h3 className="picker-title">{t('party.campaign.pick.title')}</h3>
         <div className="pregen-list">
           <div className="pregen-row">
-            <span className="campaign-row-name">⚔️ {BUILTIN_CAMPAIGN_NAME}</span>
+            <span className="campaign-row-name"><Icon id="scenario/arena" size="sm" /> {BUILTIN_CAMPAIGN_NAME}</span>
             <button className="btn small btn-primary" disabled={currentName == null} onClick={() => pick(null)}>
               {currentName == null ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
             </button>
           </div>
           {published.map((p) => (
             <div key={p.id} className="pregen-row">
-              <span className="campaign-row-name">📜 {p.name}</span>
+              <span className="campaign-row-name"><Icon id="nav/campaign" size="sm" /> {p.name}</span>
               <button
                 className="btn small btn-primary"
                 disabled={currentName === p.name}
@@ -165,7 +166,7 @@ export function PartyScreenView({
   party: Combatant[];
   net: NetState;
   title: string;
-  /** Campagne sélectionnée (cartouche 📜). Absent = cartouche masqué (vue partielle/tests). */
+  /** Campagne sélectionnée (cartouche Icon nav/campagne). Absent = cartouche masqué (vue partielle/tests). */
   campaignName?: string;
   /** Ouvre le choix de campagne — absent = lecture seule (invité coop, partie en cours). */
   onChangeCampaign?: () => void;
@@ -259,7 +260,7 @@ export function PartyScreenView({
         <h2>{title} ({party.length}/4)</h2>
         {campaignName && (
           <div className="campaign-pill">
-            <span aria-hidden>📜</span>
+            <span aria-hidden><Icon id="nav/campaign" /></span>
             <span className="campaign-pill-name">{campaignName}</span>
             {onChangeCampaign && (
               <button className="btn small" onClick={onChangeCampaign}>
@@ -287,12 +288,12 @@ export function PartyScreenView({
                     <span>{t('party.slot.player')}</span>
                     <select value={seat} onChange={(e) => onAssignSlot(i, Number(e.target.value))}>
                       {seats.map(({ seat: s, name: n }) => (
-                        <option key={s} value={s}>{s === 0 ? `👑 ${n}` : n}</option>
+                        <option key={s} value={s}>{s === 0 ? `${n} (hôte)` : n}</option>
                       ))}
                     </select>
                   </label>
                 ) : (
-                  <div className="slot-owner hint">👤 {seatName(seat)}{coop && seat === net.mySeat ? t('party.slot.you') : ''}</div>
+                  <div className="slot-owner hint"><Icon id="nav/seat-owner" size="sm" /> {seatName(seat)}{coop && seat === net.mySeat ? t('party.slot.you') : ''}</div>
                 )
               )}
               {h ? (

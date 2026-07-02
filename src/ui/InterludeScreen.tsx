@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
 import { formatMoney, fromBrass, toBrass, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
@@ -16,6 +16,7 @@ import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
+import { Icon } from './Icon';
 import { Prose, mdToText } from './Prose';
 import { t } from '../i18n';
 
@@ -208,8 +209,8 @@ type Pane = string | null;
 const activityOps = (def: ActivityDef): GameOp[] =>
   [...(def.onSuccess ?? []), ...(def.outcomes ?? []).flatMap((b) => b.ops ?? [])];
 
-/** Pictogramme d'une Activité du catalogue (par résolveur — pas par id). */
-const ACTIVITY_ICON: Record<string, string> = { masterWeapon: '⚔️', identifyByResearch: '🔍', memorizeDiscount: '📖' };
+/** Pictogramme d'une Activité du catalogue (par résolveur — pas par id) : id d'icône du registre. */
+const ACTIVITY_ICON: Record<string, string> = { masterWeapon: 'action/attack', identifyByResearch: 'nav/identify', memorizeDiscount: 'nav/memorize' };
 
 function HeroCard({ hero, st, weeks, money, catalog, mecenat, canDrive, ownerName }: {
   hero: Combatant; st: InterludeHeroState; weeks: number; money: Money;
@@ -235,7 +236,7 @@ function HeroCard({ hero, st, weeks, money, catalog, mecenat, canDrive, ownerNam
     : status.tier === 'argent'
       ? `${status.standing} × 1d10 pistole${status.standing > 1 ? 's' : ''}`
       : `${status.standing} couronne${status.standing > 1 ? 's' : ''} d'or`;
-  const paneBtn = (key: Pane, label: string, title: string) => (
+  const paneBtn = (key: Pane, label: ReactNode, title: string) => (
     <button
       className={`btn small${pane === key ? ' btn-primary' : ''}`}
       disabled={!canDrive || (none && pane !== key)}
@@ -277,7 +278,7 @@ function HeroCard({ hero, st, weeks, money, catalog, mecenat, canDrive, ownerNam
         {paneBtn('bank', '🏦 Banque…', 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)')}
         {paneBtn('identify', '🔮 Identifier…', 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)')}
         {catalog.filter((d) => d.resolver !== 'mecenat').map((d) => (
-          paneBtn(d.id, `${ACTIVITY_ICON[d.resolver ?? ''] ?? '📜'} ${d.label}…`, d.desc ? `${mdToText(d.desc).slice(0, 160)}…` : d.label)
+          paneBtn(d.id, <><Icon id={ACTIVITY_ICON[d.resolver ?? ''] ?? 'nav/activity'} size="sm" /> {d.label}…</>, d.desc ? `${mdToText(d.desc).slice(0, 160)}…` : d.label)
         ))}
       </div>
       {pane === 'craft' && !st.craft && <CraftPane hero={hero} disabled={none} money={money} />}
@@ -709,7 +710,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
             jour de la prochaine aventure (Activité échouée).
           </li>
         ))}
-        <li>🌙 Le temps passe : {interlude.weeks * 7} jours (récupération et convalescence comprises).</li>
+        <li><Icon id="time/night" size="sm" /> Le temps passe : {interlude.weeks * 7} jours (récupération et convalescence comprises).</li>
       </ul>
       <div className="modal-actions">
         <button className="btn" onClick={onCancel}>{t('interlude.recap.cancel')}</button>

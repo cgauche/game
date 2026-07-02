@@ -304,6 +304,15 @@
   cursor: pointer;
   white-space: nowrap;
 }
+.is-first .icon {
+  vertical-align: -2px;
+}
+/* Pré-emption GRATUITE (arme Rapide) : même badge, teinte éclair — l'icône seule, pas de coût. */
+.is-first.free {
+  color: #9fd8ff;
+  border-color: rgba(159, 216, 255, 0.55);
+  background: rgba(159, 216, 255, 0.12);
+}
 @media (max-width: 700px) {
   .initiative-strip { left: 4px; }
   .is-tiles { gap: 5px; padding: 5px 4px; }

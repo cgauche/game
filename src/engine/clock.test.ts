@@ -102,7 +102,7 @@ describe('clock — phases du jour & obscurité (#T1c)', () => {
     expect(isNight(at(21, 59))).toBe(false);
   });
   it('dayPhase expose label/icon et isNight', () => {
-    expect(dayPhase(at(12))).toMatchObject({ key: 'midi', icon: '☀️', isNight: false });
+    expect(dayPhase(at(12))).toMatchObject({ key: 'midi', icon: 'time/noon', isNight: false });
     expect(dayPhase(at(23))).toMatchObject({ key: 'nuit', isNight: true });
   });
   it('minutesUntilNext : plus tard / déjà passé → demain / pile = 0', () => {

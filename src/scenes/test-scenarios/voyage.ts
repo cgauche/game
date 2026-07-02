@@ -87,7 +87,7 @@ const village = buildScene({
           text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
           choices: [
             { text: '🛏️ Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
-            { text: '🍲 Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
+            { text: 'Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
             { text: 'Une autre fois. (Partir)' },
           ],
         },
@@ -166,10 +166,10 @@ const carte: WorldMap = {
   id: 'test-voyage-carte',
   nom: 'Marches de Weiler (test)',
   places: [
-    { id: 'p-village', label: 'Weiler', pos: { x: 24, y: 62 }, scene: 'test-voyage-village', icon: '🏠' },
-    { id: 'p-hameau', label: 'Federholz', pos: { x: 72, y: 30 }, scene: 'test-voyage-hameau', icon: '🌲' },
-    { id: 'p-bourg', label: 'Steinbruck', pos: { x: 70, y: 78 }, scene: 'test-voyage-bourg', icon: '⚓' },
-    { id: 'p-cite', label: 'Eichenfeld', pos: { x: 90, y: 20 }, scene: 'test-voyage-cite', icon: '🏰' },
+    { id: 'p-village', label: 'Weiler', pos: { x: 24, y: 62 }, scene: 'test-voyage-village', icon: 'scenario/village' },
+    { id: 'p-hameau', label: 'Federholz', pos: { x: 72, y: 30 }, scene: 'test-voyage-hameau', icon: 'scenario/hamlet' },
+    { id: 'p-bourg', label: 'Steinbruck', pos: { x: 70, y: 78 }, scene: 'test-voyage-bourg', icon: 'scenario/port' },
+    { id: 'p-cite', label: 'Eichenfeld', pos: { x: 90, y: 20 }, scene: 'test-voyage-cite', icon: 'scenario/siege' },
   ],
   routes: [
     {
@@ -211,8 +211,8 @@ const carte: WorldMap = {
 export const scenario: TestScenario = {
   id: 'voyage',
   order: 6,
-  category: '🧭 Survie',
-  icon: '🧭',
+  category: 'survie',
+  icon: 'scenario/travel',
   title: 'Voyage & temps long',
   tests:
     'Carte du monde, voyage à pied/diligence, postes d’Étapes PERSISTANTS par héros (Plein air/Aguets/Cartes/' +

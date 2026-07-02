@@ -3,42 +3,42 @@
     "key": "aube",
     "start": 300,
     "label": "Aube",
-    "icon": "🌅"
+    "icon": "time/dawn"
   },
   {
     "key": "matin",
     "start": 480,
     "label": "Matin",
-    "icon": "🌄"
+    "icon": "time/morning"
   },
   {
     "key": "midi",
     "start": 660,
     "label": "Midi",
-    "icon": "☀️"
+    "icon": "time/noon"
   },
   {
     "key": "apresmidi",
     "start": 840,
     "label": "Après-midi",
-    "icon": "🌤️"
+    "icon": "time/afternoon"
   },
   {
     "key": "crepuscule",
     "start": 1080,
     "label": "Crépuscule",
-    "icon": "🌇"
+    "icon": "time/dusk"
   },
   {
     "key": "soir",
     "start": 1200,
     "label": "Soir",
-    "icon": "🌆"
+    "icon": "time/evening"
   },
   {
     "key": "nuit",
     "start": 1320,
     "label": "Nuit",
-    "icon": "🌙"
+    "icon": "time/night"
   }
 ]

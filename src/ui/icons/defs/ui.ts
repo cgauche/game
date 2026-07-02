@@ -48,6 +48,14 @@ export const icons: IconFamily = [
       `<path ${KF} opacity="0.5" d="M6.9 11.6 C7.9 12.4 8.8 13.3 9.7 14.4"/>`,
   },
   {
+    id: 'ui/undo',
+    label: 'Annuler / revenir',
+    svg:
+      `<path ${K} d="M17.6 5.3 C18.8 7.9 18.6 10.9 17 13.1 C15.4 15.3 12.7 16.4 9 16.4"/>` +
+      `<path ${K} d="M9 16.4 L12.2 13.8 M9 16.4 L12.4 19.2"/>` +
+      `<path ${KF} opacity="0.5" d="M16.4 6.4 C17.2 8.4 17.1 10.5 16 12.2"/>`,
+  },
+  {
     id: 'ui/preempt',
     label: 'Interruption',
     svg: `<path ${F} d="M13.8 2.4 L5.8 13.4 L10.5 13.4 L8.9 21.6 L18.2 10.1 L13.4 10.1 Z"/>`,

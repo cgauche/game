@@ -269,8 +269,8 @@ const scene = buildScene(spec);
 export const scenario: TestScenario = {
   id: 'siege-enceinte',
   order: 41,
-  category: '⚔️ Combat',
-  icon: '🏰',
+  category: 'combat',
+  icon: 'scenario/siege',
   title: 'Siège — défendre la muraille',
   tests:
     'Siège à grande échelle (30×46, 2 couches) : champ d\'approche profond (~76 m) + camp & BATTERIE assaillante ' +

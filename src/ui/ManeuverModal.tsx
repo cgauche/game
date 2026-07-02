@@ -5,6 +5,7 @@ import { combatValue } from '../engine/combat';
 import { creatureAttacks, ATTACK_LABEL } from '../engine/creatureAttacks';
 import { MANEUVER_ICON } from '../state/combatFlow';
 import { RollFlowShell } from './RollFlowShell';
+import { Icon } from './Icon';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -50,7 +51,7 @@ export function ManeuverModal() {
 
   return (
     <RollFlowShell
-      title={`${MANEUVER_ICON[pm.kind]} ${ATTACK_LABEL[pm.kind]}`}
+      title={<><Icon id={MANEUVER_ICON[pm.kind]} /> {ATTACK_LABEL[pm.kind]}</>}
       subtitle={
         <>
           <strong>{attacker.name}</strong> déclenche {ATTACK_LABEL[pm.kind]}

@@ -22,22 +22,22 @@ const scene = buildScene({
   heroStart: [2, 4],
   startMessage:
     'Exploration (aucun combat). Cliquez une fiche de lanceur → section « Sorts » : soignez/bénissez ' +
-    'l’allié blessé (Prêtre), puis « ✨ Focaliser » et « 🎲 Lancer » un Sort d’Arcane (Sorcier). ' +
+    'l’allié blessé (Prêtre), puis « Focaliser » et « Lancer » un Sort d’Arcane (Sorcier). ' +
     'Les Projectiles magiques restent marqués « en combat ».',
 });
 
 export const scenario: TestScenario = {
   id: 'magie-hors-combat',
   order: 4,
-  category: '✨ Magie',
-  icon: '🔮',
+  category: 'magie',
+  icon: 'scenario/magic-field',
   title: 'Magie hors combat',
   tests: 'Incantation HORS COMBAT depuis la fiche : soin/bénédiction (Prêtre), Focalisation + Sort d’Arcane (Sorcier), refus des Projectiles magiques.',
   partyNote: 'Wilhelmina (Sorcier, +Armure Aethyrique, blessée) + Frère Anselm (Prêtre)',
   makeParty: () => {
     const [wiz, priest] = pregenParty(PREGEN.sorcier, PREGEN.pretre);
     // Sorcier : ajoute un Sort d'Arcane FOCALISABLE (les sorts pré-tirés Fléchette/Choc sont de la
-    // Magie mineure, NON focalisable) pour exercer le bouton « ✨ Focaliser » hors combat.
+    // Magie mineure, NON focalisable) pour exercer le bouton « Focaliser » hors combat.
     if (!wiz.spells?.includes('armure-aethyrique')) wiz.spells = ['armure-aethyrique', ...(wiz.spells ?? [])];
     ensureSkill(wiz, 'Langue', 'Int', 'Magick'); // incantation des Arcanes
     ensureSkill(wiz, 'Focalisation', 'FM'); // Test étendu de Focalisation

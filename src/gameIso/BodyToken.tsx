@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { tileCenter, billboardScale, type Dims } from './iso';
 import { hpColor, ACTIVE_RING } from './teamColors';
+import { IconG } from '../ui/Icon';
+import type { IconId } from '../ui/icons';
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
@@ -59,8 +61,8 @@ export function BodyToken({
   bakedDeath?: boolean;
   /** Barre de PV au-dessus de la tête (Lot 1). */
   hp?: { current: number; max: number };
-  /** Icônes d'états/buffs au-dessus de la barre (déjà tronquées, cf. summarizeEffects). */
-  icons?: string[];
+  /** Icônes d'états/buffs au-dessus de la barre (ids du registre src/ui/icons — déjà tronquées, cf. summarizeEffects). */
+  icons?: IconId[];
   /** Surplus d'icônes non affichées (« +N »). */
   iconsMore?: number;
   /** Voile léger d'équipe sur le modèle (allié vert / ennemi rouge). */
@@ -124,12 +126,12 @@ export function BodyToken({
       {(hpRatio != null || nIcons > 0) && (
         <g transform={`translate(0,${badgeY - 8})`} pointerEvents="none">
           {nIcons > 0 && (
-            <g>
+            <g style={{ color: '#f2eef8' }}>
               {iconList.map((ic, i) => (
-                <text key={i} x={iconStart + i * 11} y={-3} fontSize={11} textAnchor="middle">{ic}</text>
+                <IconG key={i} id={ic} x={iconStart + i * 11 - 5} y={-13} size={10} />
               ))}
               {iconsMore > 0 && (
-                <text x={iconStart + iconList.length * 11} y={-3} fontSize={8} fill="#cdb8d8" textAnchor="middle">+{iconsMore}</text>
+                <text x={iconStart + iconList.length * 11} y={-4} fontSize={8} fill="#cdb8d8" textAnchor="middle">+{iconsMore}</text>
               )}
             </g>
           )}

@@ -1,6 +1,7 @@
 import { summarizeEffects, type EffectChip, type EffectFlags } from '../gameIso/effectIcons';
 import type { ConditionInstance, ActiveEffect } from '../engine/types';
 import { CodexRef } from './compendium/CodexRef';
+import { Icon } from './Icon';
 
 /** Tooltip des chips NON-États (buffs temporisés, drapeaux d'état) — les États (malus) passent
  *  par CodexRef (desc + source du Codex). */
@@ -35,7 +36,7 @@ export function EffectChips({
       {visible.map((c) => {
         const inner = (
           <>
-            {c.icon}
+            <Icon id={c.icon} size="sm" />
             {c.count && c.count > 1 ? <b>{c.count}</b> : null}
             {c.rounds != null ? <em>{c.rounds}t</em> : null}
           </>

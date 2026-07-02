@@ -1,5 +1,6 @@
 import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
 import type { Combatant } from '../engine/types';
+import { Icon } from './Icon';
 
 /**
  * Pastilles d'États / effets actifs d'un combattant (la colonne `.ptile-states`) — EXTRAITE de
@@ -17,7 +18,7 @@ export function StateChips({ c, max = 4 }: { c: Combatant; max?: number }) {
     <span className="ptile-states">
       {shown.map((v) => (
         <span key={v.key} className="pt-state" title={v.count && v.count > 1 ? `${v.label} ×${v.count}` : v.label}>
-          {v.icon}
+          <Icon id={v.icon} size="sm" />
         </span>
       ))}
       {more.length > 0 && (

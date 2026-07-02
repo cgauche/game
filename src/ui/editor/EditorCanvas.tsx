@@ -6,10 +6,9 @@
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
 import { useMemo, useRef, useState } from 'react';
-import { Scene, sceneMetresPerTile, Roof } from '../../state/scene';
+import { Scene, sceneMetresPerTile, Roof, type SceneEntity } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
 import { buildProps } from '../../gameIso/builders/props';
-import { terrainOverlayOf } from '../../gameIso/backends/affineProps';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
@@ -21,6 +20,7 @@ import { buildRoofs } from '../../gameIso/builders/roofs';
 import { roofDepth, roofSvg } from '../../gameIso/backends/affineRoofs';
 import { detailPatternDefs, lodOf, LOD_ZOOM } from '../../gameIso/backends/affineDetail';
 import { ViewControls } from '../ViewControls';
+import { IconG } from '../Icon';
 import type { useEditorView } from './useEditorView';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
@@ -362,12 +362,13 @@ export function EditorCanvas({
           <g pointerEvents="none">
             {(() => {
               const objs: { d: number; el: JSX.Element }[] = [];
-              // Overlays de terrain en relief (mur plein, bois) — MÊME source que le jeu : les éléments
-              // `prop` du builder (source 'terrain'), dessinés par le backend affine.
+              // Overlays de terrain à DÉCOR (bois → arbre) — MÊME billboard que les props de scène : les
+              // éléments `prop` du builder (source 'terrain') rendus par `EntityToken` (source unique de
+              // rendu). Le mur PLEIN, lui, naît du relief de `buildFloors` (faces + dessus), pas ici.
               for (const p of buildProps(scene)) {
                 if (p.source !== 'terrain') continue;
-                const ov = terrainOverlayOf(p, dims);
-                if (ov) objs.push({ d: ov.d, el: <g key={`ov${p.cell.x}-${p.cell.y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
+                const ent = { id: p.key, kind: 'prop', pos: { x: p.cell.x, y: p.cell.y }, ref: p.ref } as SceneEntity;
+                objs.push({ d: depth(p.cell.x, p.cell.y, dims) + 0.4, el: <EntityToken key={p.key} ent={ent} dims={dims} /> });
               }
               // Toits des bâtiments COMPOSÉS : le pipeline pivot (`buildRoofs` + backend affine) en mode
               // PLAN étiqueté — couverture semi-transparente teintée par le matériau + libellé, posée
@@ -547,9 +548,10 @@ export function EditorCanvas({
                 return (
                   <g key={`en-${name}`}>
                     <path d={diamondPath(pos.x, pos.y, dims)} fill="rgba(78,195,224,0.5)" stroke={isSel ? '#ffe066' : '#4ec3e0'} strokeWidth={isSel ? 2.5 : 1.5} />
-                    <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" fontWeight="bold" fill="#06222b">
-                      ⚑
-                    </text>
+                    {/* Icône du registre en contexte SVG (IconG, ancrée coin haut-gauche) — centrée sur la case, teinte sombre lisible sur le losange. */}
+                    <g color="#06222b">
+                      <IconG id="nav/entry-point" x={cx - 6.5} y={cy - 6.5} size={13} />
+                    </g>
                     <text x={cx} y={cy - TH / 2} textAnchor="middle" fontSize="10" fill="#bfe9f5" stroke="#06222b" strokeWidth={0.4}>
                       {name}
                     </text>

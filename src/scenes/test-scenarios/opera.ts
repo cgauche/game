@@ -300,8 +300,8 @@ const scene = buildScene(spec);
 export const scenario: TestScenario = {
   id: 'opera',
   order: 9,
-  category: '🗺️ Scénarios complets',
-  icon: '🎭',
+  category: 'scenarios',
+  icon: 'scenario/opera',
   title: 'Opéra',
   tests:
     'Théâtre Staatsoper multi-couches en ASCII (coulisses/scène SURÉLEVÉE/parterre/hall couche 0, RAMPES ' +

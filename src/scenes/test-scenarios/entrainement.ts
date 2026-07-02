@@ -146,8 +146,8 @@ const scene = buildScene({
 export const scenario: TestScenario = {
   id: 'entrainement',
   order: 1,
-  category: '⚔️ Combat',
-  icon: '🎯',
+  category: 'combat',
+  icon: 'scenario/training',
   title: "Terrain d'entraînement",
   tests:
     'Sandbox : tir + rechargement & ciblage/LdV (cible derrière un muret, cible au loin dans le brouillard), ' +

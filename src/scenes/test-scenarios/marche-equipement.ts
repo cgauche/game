@@ -109,8 +109,8 @@ const scene = buildScene({
 export const scenario: TestScenario = {
   id: 'marche-equipement',
   order: 7,
-  category: '🛒 Marché',
-  icon: '🛒',
+  category: 'marche',
+  icon: 'scenario/market',
   title: 'Marché & équipement',
   tests:
     'Acheter/Vendre + Marchander (Test opposé −10/−20 %) + Évaluer (révèle la qualité cachée) + Réparer (10 %/PA) ; ' +

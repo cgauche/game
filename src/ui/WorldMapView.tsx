@@ -16,6 +16,7 @@ import { forcePaceDifficulty } from '../engine/seaNavigation';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
+import { Icon, IconG } from './Icon';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
 function hashStr(s: string): number {
@@ -241,8 +242,14 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 <g transform={`translate(${c.lx} ${c.ly})`}>
                   <rect x="-5.4" y="-2.2" width="10.8" height="3.2" rx="1.6" fill="#efe2bd" opacity="0.82" />
                   <text y="0.2" textAnchor="middle" fontSize="2.3" fill="#5d4520">
-                    {r.km} km{r.modes.some((m) => m !== 'pied') ? (water ? ' 🛶' : ' 🚌') : ''}
+                    {r.km} km
                   </text>
+                  {/* Badge de mode (véhicule possible) : barque (voie d'eau) / compas (route carrossable). */}
+                  {r.modes.some((m) => m !== 'pied') && (
+                    <g style={{ color: '#5d4520' }}>
+                      <IconG id={water ? 'scenario/naval' : 'scenario/travel'} x={5.8} y={-1.5} size={2.8} />
+                    </g>
+                  )}
                 </g>
               </g>
             );
@@ -274,7 +281,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                   <circle r="3.7" fill="none" stroke="var(--accent)" strokeWidth="0.4" strokeDasharray="0.9 0.7" opacity="0.85" />
                 )}
                 <circle r="2.9" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.35" filter="url(#wm-drop)" />
-                <text y="1.05" textAnchor="middle" fontSize="3.1">{p.icon ?? '📍'}</text>
+                {/* `p.icon` = id d'icône (registre src/ui/icons) ; sans icône, drapeau de lieu. */}
+                <g style={{ color: '#4a3517' }}>
+                  <IconG id={p.icon ?? 'nav/entry-point'} x={-1.8} y={-1.8} size={3.6} />
+                </g>
                 {/* cartouche de nom */}
                 <g transform="translate(0 6.2)">
                   <rect x={-w / 2} y="-2.3" width={w} height="3.6" rx="1.8" fill="#33240f" opacity={isHere ? 0.9 : 0.72} />
@@ -381,7 +391,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               vessel && seaM > 0 ? (
                 // 18 milles/jour par point de M (MDG ch.15 l.57-70) — le vent et les Tests d'équipage
                 // de Progression (±10 %/DR) modulent chaque journée.
-                <>⚓ {vesselLabel} · ≈ {18 * seaM} milles/jour (M {seaM}, hors vent{seaPace ? ` · ${18 * (seaM + seaPace)} si le rythme est tenu` : ''}) · ~{Math.max(1, Math.ceil(selRoute.km / (18 * seaM)))} jour(s)</>
+                <><Icon id="scenario/port" size="sm" /> {vesselLabel} · ≈ {18 * seaM} milles/jour (M {seaM}, hors vent{seaPace ? ` · ${18 * (seaM + seaPace)} si le rythme est tenu` : ''}) · ~{Math.max(1, Math.ceil(selRoute.km / (18 * seaM)))} jour(s)</>
               ) : (
                 <>Aucun navire de campagne en état de prendre la mer.</>
               )
@@ -416,7 +426,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 seaPace: mode === 'mer' && seaPace > 0 ? seaPace : undefined,
               })}
             >
-              🧭 Partir
+              <Icon id="scenario/travel" size="sm" /> Partir
             </button>
           </div>
         </div>

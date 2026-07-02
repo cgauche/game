@@ -5,6 +5,7 @@
  */
 import type { Dims } from '../iso';
 import { tileCenter, diamondPath } from '../iso';
+import { IconG } from '../../ui/Icon';
 import { FLOAT_COLOR, type Float, type Proj, type Aura, type AoeFlash } from './useCombatFx';
 
 export function FxLayer({ dims, floats, projs, auras, aoes }: { dims: Dims; floats: Float[]; projs: Proj[]; auras: Aura[]; aoes: AoeFlash[] }) {
@@ -12,20 +13,37 @@ export function FxLayer({ dims, floats, projs, auras, aoes }: { dims: Dims; floa
     <>
       {floats.map((f) => {
         const { cx, cy } = tileCenter(f.x, f.y, dims);
+        const color = f.crit ? '#ffd166' : FLOAT_COLOR[f.kind];
+        if (!f.icon) {
+          return (
+            <text
+              key={f.key}
+              className="dmg-float"
+              x={cx}
+              y={cy - 28}
+              textAnchor="middle"
+              fill={color}
+              stroke="#1a0606"
+              strokeWidth={0.6}
+            >
+              {f.text}
+              {f.crit ? ' ✸' : ''}
+            </text>
+          );
+        }
+        // Flottant AVEC icône (État gagné) : icône + texte centrés ensemble. La classe animée
+        // (`dmg-float` : transform CSS) vit sur un <g> SANS transform de position — la position
+        // est portée par le <g> parent (le transform CSS écraserait l'attribut).
+        const startX = -(18 + f.text.length * 8.2) / 2; // 16px d'icône + 2px d'espace + ~8.2px/caractère (font 18px)
         return (
-          <text
-            key={f.key}
-            className="dmg-float"
-            x={cx}
-            y={cy - 28}
-            textAnchor="middle"
-            fill={f.crit ? '#ffd166' : FLOAT_COLOR[f.kind]}
-            stroke="#1a0606"
-            strokeWidth={0.6}
-          >
-            {f.text}
-            {f.crit ? ' ✸' : ''}
-          </text>
+          <g key={f.key} transform={`translate(${cx},${cy - 28})`} pointerEvents="none">
+            <g className="dmg-float" style={{ color }}>
+              <IconG id={f.icon} x={startX} y={-13} size={16} />
+              <text x={startX + 18} y={0} textAnchor="start" fill={color} stroke="#1a0606" strokeWidth={0.6}>
+                {f.text}
+              </text>
+            </g>
+          </g>
         );
       })}
       {projs.map((p) => {

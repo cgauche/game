@@ -658,7 +658,8 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables',
     items: calendarPhases.map((p) => ({
-      label: `${p.icon} ${p.label}`,
+      label: p.label, // `p.icon` = id d'icône (time/*, registre src/ui/icons), plus un glyphe affichable en préfixe
+
       sub: `dès ${String(Math.floor(p.start / 60)).padStart(2, '0')}:${String(p.start % 60).padStart(2, '0')}`,
     })),
   },

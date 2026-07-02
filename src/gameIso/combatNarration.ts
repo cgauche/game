@@ -10,6 +10,7 @@
  */
 import { conditionMeta } from './effectIcons';
 import { etats } from '../data';
+import type { IconId } from '../ui/icons';
 import type { CombatEvent, CombatEventKind, ActorAim, ActorAimKind } from '../state/combatLog';
 
 export interface NarratedSegment {
@@ -23,7 +24,8 @@ export type CombatTone = 'normal' | 'strong' | 'grave';
 
 export interface NarratedLine {
   raw: string;
-  icon: string;
+  /** Id d'icône du registre `src/ui/icons/` — rendu par `<Icon>` (HTML) ou `<IconG>` (SVG). */
+  icon: IconId;
   important: boolean;
   tone: CombatTone;
   segments: NarratedSegment[];
@@ -36,11 +38,11 @@ interface ComLite {
 }
 
 /** Icône par type d'événement (source unique pour journal + bandeau + pastilles). */
-const KIND_ICON: Record<CombatEventKind, string> = {
-  charge: '✊', attack: '⚔️', shoot: '🏹', cast: '✨', item: '🧪', heal: '❤️‍🩹',
-  move: '👣', flee: '🏃', defensive: '🛡️', aim: '🎯', focus: '🔮', frenzy: '🐗',
-  reload: '🔁', parry: '🛡️', dodge: '🤸', damage: '💥', crit: '⭐',
-  condition: '🩸', fear: '😱', death: '☠️', round: '🔔', detail: '·', info: '•',
+const KIND_ICON: Record<CombatEventKind, IconId> = {
+  charge: 'journal/charge', attack: 'action/attack', shoot: 'action/shoot', cast: 'action/cast', item: 'item/consumable', heal: 'journal/heal',
+  move: 'journal/move', flee: 'journal/flee', defensive: 'flag/defensive', aim: 'action/aim', focus: 'flag/focus', frenzy: 'flag/frenzy',
+  reload: 'journal/reload', parry: 'action/defend', dodge: 'journal/dodge', damage: 'journal/damage', crit: 'journal/critical',
+  condition: 'condition/bleeding', fear: 'flag/fear', death: 'journal/death', round: 'journal/round', detail: 'journal/detail', info: 'journal/info',
 };
 
 /** Types d'événements affichés dans le bandeau haut (les temps forts/actions/postures). */
@@ -62,7 +64,7 @@ export function toneOf(k: CombatEventKind): CombatTone {
 // puis on mappe à l'`id` pour l'icône (conditionMeta keyé par id). Data-driven (zéro liste figée).
 const STATE_LABEL_TO_ID: [string, string][] = [...etats.map((e): [string, string] => [e.label, e.id]), ['Pétrifié', 'petrifie']];
 
-function stateMeta(text: string): { icon: string; important: boolean } | null {
+function stateMeta(text: string): { icon: IconId; important: boolean } | null {
   for (const [label, id] of STATE_LABEL_TO_ID) {
     if (text.includes(label)) {
       const m = conditionMeta(id);
@@ -72,7 +74,7 @@ function stateMeta(text: string): { icon: string; important: boolean } | null {
   return null;
 }
 
-function iconOf(e: CombatEvent): string {
+function iconOf(e: CombatEvent): IconId {
   if (e.kind === 'condition' || e.kind === 'detail') {
     const s = stateMeta(e.text);
     if (s) return s.icon;

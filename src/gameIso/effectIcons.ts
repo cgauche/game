@@ -4,12 +4,14 @@
  * Aucune règle ici : on lit `conditions[]` et `activeEffects[]` déjà gérés par le moteur.
  */
 import type { ConditionInstance, ActiveEffect, CharKey, Combatant } from '../engine/types';
+import type { IconId } from '../ui/icons';
 import { conditionLabel } from '../data';
 import { isFrenzied } from '../engine/psychology';
 
 export interface EffectChip {
   key: string;
-  icon: string;
+  /** Id d'icône du registre `src/ui/icons/` — rendu par `<Icon>` (HTML) ou `<IconG>` (SVG). */
+  icon: IconId;
   label: string;
   /** malus = État négatif ; buff = effet temporisé (activeEffects) ; state = état-drapeau (Frénésie…). */
   kind: 'malus' | 'buff' | 'state';
@@ -23,27 +25,27 @@ export interface EffectChip {
   char?: CharKey;
 }
 
-interface CondMeta { icon: string; severity: number; important: boolean; }
+interface CondMeta { icon: IconId; severity: number; important: boolean; }
 
 /** Table des États (LDB ch.16) → icône + sévérité. `important` = incapacitant/dangereux
  *  (affiché dans le créneau unique de l'ordre de bataille). Seuil : sévérité ≥ 50. */
 // Keyé par `id` d'État (slug etats.json) — `conditionMeta` reçoit `ConditionInstance.name` (un id).
-const CONDITION_TABLE: Record<string, { icon: string; severity: number }> = {
-  inconscient: { icon: '😵', severity: 100 },
-  petrifie: { icon: '🗿', severity: 95 },
-  sonne: { icon: '💫', severity: 80 },
-  'a-terre': { icon: '🔻', severity: 75 },
-  brise: { icon: '💔', severity: 70 },
-  aveugle: { icon: '🙈', severity: 65 },
-  empetre: { icon: '🕸️', severity: 60 },
-  'en-flammes': { icon: '🔥', severity: 58 },
-  empoisonne: { icon: '🤢', severity: 55 },
-  hemorragique: { icon: '🩸', severity: 52 },
-  surpris: { icon: '❗', severity: 40 },
-  assourdi: { icon: '🔇', severity: 30 },
-  extenue: { icon: '😫', severity: 20 },
+const CONDITION_TABLE: Record<string, { icon: IconId; severity: number }> = {
+  inconscient: { icon: 'condition/unconscious', severity: 100 },
+  petrifie: { icon: 'condition/petrified', severity: 95 },
+  sonne: { icon: 'condition/stunned', severity: 80 },
+  'a-terre': { icon: 'condition/prone', severity: 75 },
+  brise: { icon: 'condition/broken', severity: 70 },
+  aveugle: { icon: 'condition/blinded', severity: 65 },
+  empetre: { icon: 'condition/entangled', severity: 60 },
+  'en-flammes': { icon: 'condition/ablaze', severity: 58 },
+  empoisonne: { icon: 'condition/poisoned', severity: 55 },
+  hemorragique: { icon: 'condition/bleeding', severity: 52 },
+  surpris: { icon: 'condition/surprised', severity: 40 },
+  assourdi: { icon: 'condition/deafened', severity: 30 },
+  extenue: { icon: 'condition/fatigued', severity: 20 },
 };
-const UNKNOWN: CondMeta = { icon: '•', severity: 10, important: false };
+const UNKNOWN: CondMeta = { icon: 'journal/info', severity: 10, important: false };
 
 export function conditionMeta(name: string): CondMeta {
   const t = CONDITION_TABLE[name];
@@ -51,11 +53,11 @@ export function conditionMeta(name: string): CondMeta {
   return { icon: t.icon, severity: t.severity, important: t.severity >= 50 };
 }
 
-const BUFF_CHAR_ICON: Partial<Record<CharKey, string>> = {
-  CC: '⚔️', CT: '🏹', F: '💪', E: '❤️', Ag: '🤸', Int: '🧠', FM: '🛡️', Soc: '💬',
+const BUFF_CHAR_ICON: Partial<Record<CharKey, IconId>> = {
+  CC: 'char/cc', CT: 'char/ct', F: 'char/f', E: 'char/e', Ag: 'char/ag', Int: 'char/int', FM: 'char/fm', Soc: 'char/soc',
 };
-function buffIcon(e: ActiveEffect): string {
-  return (e.char && BUFF_CHAR_ICON[e.char]) || '✨';
+function buffIcon(e: ActiveEffect): IconId {
+  return (e.char && BUFF_CHAR_ICON[e.char]) || 'action/cast'; // buff sans carac = effet de sort/bénédiction
 }
 
 function malusChips(conditions: ConditionInstance[]): EffectChip[] {
@@ -106,20 +108,20 @@ export function combatantFlags(c: Combatant): EffectFlags {
 
 function flagChips(flags?: EffectFlags): EffectChip[] {
   const out: EffectChip[] = [];
-  if (flags?.frenzied) out.push({ key: 'f-frenzied', icon: '🐗', label: 'Frénésie', kind: 'state', severity: 68 });
-  if (flags?.defensiveStance) out.push({ key: 'f-def', icon: '🛡️', label: 'Sur la défensive (+20 en défense)', kind: 'state', severity: 60 });
-  if (flags?.aiming) out.push({ key: 'f-aim', icon: '🎯', label: 'En joue (+20 au prochain tir)', kind: 'state', severity: 55 });
-  if (flags?.focusDr != null) out.push({ key: 'f-focus', icon: '🔮', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr });
+  if (flags?.frenzied) out.push({ key: 'f-frenzied', icon: 'flag/frenzy', label: 'Frénésie', kind: 'state', severity: 68 });
+  if (flags?.defensiveStance) out.push({ key: 'f-def', icon: 'flag/defensive', label: 'Sur la défensive (+20 en défense)', kind: 'state', severity: 60 });
+  if (flags?.aiming) out.push({ key: 'f-aim', icon: 'action/aim', label: 'En joue (+20 au prochain tir)', kind: 'state', severity: 55 });
+  if (flags?.focusDr != null) out.push({ key: 'f-focus', icon: 'flag/focus', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr });
   if (flags?.hunger) {
     const h = flags.hunger;
     out.push({
-      key: 'f-hunger', icon: '🍽️', kind: 'state', severity: 62,
+      key: 'f-hunger', icon: 'flag/hungry', kind: 'state', severity: 62,
       label: `Affamé (${h.days} j sans manger${h.failures >= 2 ? ' — −10 à toutes les Caractéristiques' : h.failures === 1 ? ' — −10 Force/Endurance' : ''}) : pas de récupération naturelle`,
     });
   }
   if (flags?.fear != null) {
     out.push({
-      key: 'f-fear', icon: '😨', kind: 'state', severity: 66,
+      key: 'f-fear', icon: 'flag/fear', kind: 'state', severity: 66,
       label: `Peur (Indice ${flags.fear}) — −1 DR contre la source ; approcher exige un Test de Calme (+0) ; Test étendu de Calme en fin de Round pour la vaincre`,
     });
   }

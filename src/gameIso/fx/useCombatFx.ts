@@ -11,6 +11,7 @@ import { isSupportiveCast, spellFxForLabel } from '../rig/anim/spellClips';
 import { conditionMeta } from '../effectIcons';
 import { conditionLabel } from '../../data';
 import type { Combatant } from '../../engine/types';
+import type { IconId } from '../../ui/icons';
 
 /** Couleur du flash de zone d'effet selon l'élément (feu/froid/poison/foudre), défaut rouge. */
 const aoeColor = (type?: string): string => {
@@ -25,7 +26,8 @@ const aoeColor = (type?: string): string => {
 // Flottants TYPÉS (R8) — chaque échange se lit d'un coup d'œil : touche/raté/parade/soin/mort, pas
 // seulement les Blessures. Déclenchés sur ANIM_IMPACT (timing du clip) + canal ANIM_FLOAT (soin/État).
 export type FloatKind = 'damage' | 'soak' | 'miss' | 'defend' | 'death' | 'heal' | 'condition';
-export type Float = { key: number; x: number; y: number; text: string; kind: FloatKind; crit?: boolean };
+/** `icon` (id du registre src/ui/icons) : pictogramme optionnel rendu à gauche du texte (flottants d'État). */
+export type Float = { key: number; x: number; y: number; text: string; kind: FloatKind; crit?: boolean; icon?: IconId };
 export const FLOAT_COLOR: Record<FloatKind, string> = {
   damage: '#ff5a5a', soak: '#b8b8c0', miss: '#b8b8c0', defend: '#6fb6ff', death: '#ff3030', heal: '#6fce8e', condition: '#e0b050',
 };
@@ -50,15 +52,15 @@ export function condSignature(combatants: Combatant[]): CondSig {
 }
 
 /** États GAGNÉS entre deux instantanés (nouveaux ou empilés) — flottés sur le pion. Pure. */
-export function diffConditionGains(prev: CondSig, combatants: Combatant[]): { id: string; x: number; y: number; text: string }[] {
-  const out: { id: string; x: number; y: number; text: string }[] = [];
+export function diffConditionGains(prev: CondSig, combatants: Combatant[]): { id: string; x: number; y: number; text: string; icon: IconId }[] {
+  const out: { id: string; x: number; y: number; text: string; icon: IconId }[] = [];
   for (const c of combatants) {
     const old = prev.get(c.id);
     if (!old || !c.pos) continue; // pas d'instantané (entrée en scène) → pas de flottant rétroactif
     for (const cd of c.conditions ?? []) {
       const v = cd.value ?? 1;
       const before = old.get(cd.name) ?? 0;
-      if (v > before) out.push({ id: c.id, x: c.pos.x, y: c.pos.y, text: `${conditionMeta(cd.name).icon} ${conditionLabel(cd.name)}${v > 1 ? ` ${v}` : ''}` });
+      if (v > before) out.push({ id: c.id, x: c.pos.x, y: c.pos.y, icon: conditionMeta(cd.name).icon, text: `${conditionLabel(cd.name)}${v > 1 ? ` ${v}` : ''}` });
     }
   }
   return out;
@@ -67,9 +69,9 @@ export function diffConditionGains(prev: CondSig, combatants: Combatant[]): { id
 export function useCombatFx() {
   const [floats, setFloats] = useState<Float[]>([]);
   const floatId = useRef(0);
-  const push = useCallback((x: number, y: number, text: string, kind: FloatKind, crit = false) => {
+  const push = useCallback((x: number, y: number, text: string, kind: FloatKind, crit = false, icon?: IconId) => {
     const key = ++floatId.current;
-    setFloats((f) => [...f, { key, x, y, text, kind, crit }]);
+    setFloats((f) => [...f, { key, x, y, text, kind, crit, icon }]);
     setTimeout(() => setFloats((f) => f.filter((z) => z.key !== key)), kind === 'death' ? 1300 : 900);
   }, []);
   // Flottants d'ÉTAT par DIFF du store : tout État gagné (Sonné, Brisé, Hémorragique…) flotte sur le
@@ -80,7 +82,7 @@ export function useCombatFx() {
       useGame.subscribe((s) => {
         const b = s.battle;
         if (!b) { condSig.current = new Map(); return; }
-        for (const g of diffConditionGains(condSig.current, b.combatants)) push(g.x, g.y, g.text, 'condition');
+        for (const g of diffConditionGains(condSig.current, b.combatants)) push(g.x, g.y, g.text, 'condition', false, g.icon);
         condSig.current = condSignature(b.combatants);
       }),
     [push],

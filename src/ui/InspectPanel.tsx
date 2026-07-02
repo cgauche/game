@@ -7,6 +7,7 @@ import { CodexSections } from './compendium/CodexEntry';
 import { combatantSections } from './compendium/registry';
 import { EffectChips } from './EffectChips';
 import { isFrenzied } from '../engine/psychology';
+import { Icon } from './Icon';
 
 /**
  * Panneau d'INSPECTION d'un combattant (clic sur l'ordre de bataille) : tête VIVANTE (portrait,
@@ -35,13 +36,13 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
         {(c.causesTerreur || c.causesPeur || c.psychImmune || isFrenzied(c) || (c.spells?.length ?? 0) > 0) && (
           <div className="insp-badges">
             {c.causesTerreur ? (
-              <span className="insp-badge foe">😱 Terreur {c.causesTerreur}</span>
+              <span className="insp-badge foe"><Icon id="flag/fear" size="sm" /> Terreur {c.causesTerreur}</span>
             ) : c.causesPeur ? (
-              <span className="insp-badge foe">😨 Peur {c.causesPeur}</span>
+              <span className="insp-badge foe"><Icon id="flag/fear" size="sm" /> Peur {c.causesPeur}</span>
             ) : null}
-            {c.psychImmune && <span className="insp-badge">🧠 Immunité psy</span>}
-            {isFrenzied(c) && <span className="insp-badge foe">🐗 Frénésie</span>}
-            {(c.spells?.length ?? 0) > 0 && <span className="insp-badge foe">🪄 Lanceur de sorts</span>}
+            {c.psychImmune && <span className="insp-badge"><Icon id="char/int" size="sm" /> Immunité psy</span>}
+            {isFrenzied(c) && <span className="insp-badge foe"><Icon id="flag/frenzy" size="sm" /> Frénésie</span>}
+            {(c.spells?.length ?? 0) > 0 && <span className="insp-badge foe"><Icon id="action/cast" size="sm" /> Lanceur de sorts</span>}
           </div>
         )}
 

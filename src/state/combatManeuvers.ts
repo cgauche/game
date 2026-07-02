@@ -81,10 +81,11 @@ export function trampleTarget(battle: BattleState, c: Combatant, targetId?: stri
   );
 }
 
-/** Icône FR par type de manœuvre (cosmétique hotbar). */
+/** Icône par type de manœuvre (id du registre `src/ui/icons/` — la hotbar rend `<Icon id>`). */
 export const MANEUVER_ICON: Record<AttackKind, string> = {
-  arme: '⚔️', morsure: '🦷', caudale: '🦎', cornes: '🐏', souffle: '🐉', vomi: '🤮',
-  tentacules: '🐙', etreinte: '❄️', regard: '👁', langue: '👅', hurlement: '📢',
+  arme: 'action/attack', morsure: 'creature/bite', caudale: 'creature/tail', cornes: 'creature/horns',
+  souffle: 'creature/breath', vomi: 'creature/vomit', tentacules: 'creature/tentacles',
+  etreinte: 'creature/squeeze', regard: 'creature/gaze', langue: 'creature/tongue', hurlement: 'creature/scream',
 };
 
 /** Manœuvres de mêlée résolues comme un COUP D'ARME (via `pendingAttack` + `freeKind` →
@@ -102,6 +103,7 @@ export interface AttackOption {
   id: string;
   kind?: AttackKind;
   label: string;
+  /** Id d'icône du registre `src/ui/icons/` (la hotbar rend `<Icon id>`). */
   icon: string;
   targeting: 'melee' | 'zone' | 'trample' | 'aucontact' | 'grapple';
   reach?: number;
@@ -203,14 +205,14 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   }
   // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
   if (active.advantage >= 1 && trampleTarget(battle, active))
-    out.push({ id: 'pietinement', label: 'Piétiner', icon: '🐾', targeting: 'trample', cost: { action: false, advantage: 1 } });
+    out.push({ id: 'pietinement', label: 'Piétiner', icon: 'journal/charge', targeting: 'trample', cost: { action: false, advantage: 1 } });
   // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour (compteur partagé), 0 Avantage. Comme
   //     toute attaque de mêlée, elle s'APPROCHE (charge/rejoindre) → dispo dès qu'un ennemi existe (adjacence non requise).
   if (
     (active.freeAttacksThisTurn?.['tentacules'] ?? 0) < 1 && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
     battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos)
   )
-    out.push({ id: 'tentacule', kind: 'tentacules', label: 'Tentacule', icon: '🐙', targeting: 'melee', reach: 1, forceMelee: true, weaponUid: 'nat-tentacule', freeKind: 'tentacules', cost: { action: false, advantage: 0 } });
+    out.push({ id: 'tentacule', kind: 'tentacules', label: 'Tentacule', icon: 'creature/tentacles', targeting: 'melee', reach: 1, forceMelee: true, weaponUid: 'nat-tentacule', freeKind: 'tentacules', cost: { action: false, advantage: 0 } });
   // (4) Poste d'artillerie SERVI (`mannedPoste`, MDG ch.12-13) : « servir la pièce » = attaque DÉDIÉE portant
   //     l'arme du poste (`weaponUid` → canon ÉPINGLÉ, même si le servant porte une arme perso de mêlée pour
   //     l'abordage). Arc + portée INTRINSÈQUES (firedAttackBlock garde déjà l'arc de `w.mountSide`). Coûte
@@ -221,19 +223,19 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
     const w = active.weapons.find((x) => x.uid === active.mannedPoste!.item.uid);
     // Pièce INDIRECTE (mortier/catapulte, `w.indirect`) : vise une CASE (placeur de zone), pas un combattant
     // (AA p.122-123). DIRECTE (canon/baliste) : ciblage de combattant classique. Flag DONNÉE, zéro liste en dur.
-    if (w) out.push({ id: 'poste', label: `Servir ${w.name}`, icon: '💥', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 }, ...(w.indirect ? { indirect: true } : {}) });
+    if (w) out.push({ id: 'poste', label: `Servir ${w.name}`, icon: 'action/serve-engine', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 }, ...(w.indirect ? { indirect: true } : {}) });
   }
   // (5) « Au Contact » (LDB 62 l.176, Option « Longueur d'arme », règle optionnelle `combat-weapon-reach`) :
   //     Test opposé de Corps à corps pour entrer dans la longueur d'arme. Dispo si la règle est ON, l'Action
   //     dispo, et un adversaire Engagé présente une différence d'allonge pertinente. `priority:0` → jamais
   //     auto-choisie (clic droit/IA) : c'est un choix EXPLICITE de l'« Attaque ▾ », pas une frappe.
   if (rule('combat-weapon-reach') && !battle.acted && canTakeAction(active) && battle.combatants.some((c) => auContactEligible(active, c)))
-    out.push({ id: 'aucontact', label: 'Au contact', icon: '🤜', targeting: 'aucontact', cost: { action: true, advantage: 0 }, priority: 0 });
+    out.push({ id: 'aucontact', label: 'Au contact', icon: 'action/attack', targeting: 'aucontact', cost: { action: true, advantage: 0 }, priority: 0 });
   // (6) Empoignade EN COURS (LDB 14 l.161) : action à son tour entre deux Empoignés — Test opposé de Force
   //     (Dégâts / Empêtré) ou « Briser » (Avantage supérieur). Dispo si l'Action est dispo et un adversaire
   //     est Empoigné. `priority:0` → jamais auto-choisie (choix EXPLICITE de l'« Attaque ▾ »).
   if (!battle.acted && canTakeAction(active) && battle.combatants.some((c) => grappleActionEligible(active, c)))
-    out.push({ id: 'grapple', label: 'Empoignade', icon: '🤼', targeting: 'grapple', cost: { action: true, advantage: 0 }, priority: 0 });
+    out.push({ id: 'grapple', label: 'Empoignade', icon: 'creature/squeeze', targeting: 'grapple', cost: { action: true, advantage: 0 }, priority: 0 });
   // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
   return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
 }

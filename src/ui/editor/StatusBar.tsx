@@ -2,8 +2,9 @@
  * Barre de statut de l'éditeur (manque du POC) : case survolée + terrain, outil actif,
  * dimensions de la scène, et toggles de CALQUES (déplacés de la Palette — ils concernent la vue).
  */
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { TERRAINS } from '../../state/terrain';
+import { Icon } from '../Icon';
 import type { Layers, Pt, Tool } from './editorState';
 import { KIND_LABEL, SIEGE_ENGINES } from './editorState';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
@@ -19,7 +20,7 @@ const LAYER_LABEL: Record<keyof Layers, string> = {
 };
 
 /** Libellé humain de l'outil actif. */
-export function toolLabel(tool: Tool): string {
+export function toolLabel(tool: Tool): ReactNode {
   switch (tool.mode) {
     case 'select': return '↖ Sélection';
     case 'tile': return `🖌 ${TERRAINS[tool.terrain]?.label ?? tool.terrain}`;
@@ -29,7 +30,7 @@ export function toolLabel(tool: Tool): string {
       return `🏁 ${KIND_LABEL[tool.kind]}`;
     case 'roof': return `🏠 ${BUILDINGS_META[tool.style]?.label ?? tool.style}`;
     case 'zone': return tool.zone === 'trigger' ? '🟦 Zone trigger' : '⛺ Zone de repos';
-    case 'entry': return '⚑ Point d’entrée';
+    case 'entry': return <><Icon id="nav/entry-point" size="sm" /> Point d’entrée</>;
     case 'encounter': return '⚔️ Placer des ennemis';
     case 'emplacement': return `💥 ${SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}`;
     case 'wall': return tool.paint === 'door' ? '🧱 Porte' : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? '🧱 Diagonale' : '🧱 Cloison';

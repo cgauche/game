@@ -5,6 +5,7 @@ import { MainMenu } from './MainMenu';
 import { PartyScreen } from './PartyScreen';
 import { CharacterCreator } from './creator/CharacterCreator';
 import { GlobalSvgDefs } from './GlobalSvgDefs';
+import { Icon } from './Icon';
 
 // Le rendu de jeu (iso SVG + sprites du bestiaire) et l'éditeur d'authoring ne
 // sont pas nécessaires à l'écran menu : chunks async séparés (React.lazy) pour
@@ -21,14 +22,14 @@ const CodexOverlay = lazy(() => import('./compendium/CompendiumScreen').then((m)
 function CoopBanner() {
   const net = useGame((s) => s.net);
   if (net.mode === 'guest' && net.connection === 'reconnecting')
-    return <div className="coop-banner">🔌 Reconnexion en cours…</div>;
+    return <div className="coop-banner"><Icon id="ui/warning" size="sm" /> Reconnexion en cours…</div>;
   if (net.mode === 'guest' && net.hostAway)
-    return <div className="coop-banner">⏳ L'hôte est déconnecté — la partie reprendra à son retour.</div>;
+    return <div className="coop-banner"><Icon id="ui/wait" size="sm" /> L'hôte est déconnecté — la partie reprendra à son retour.</div>;
   if (net.mode === 'host') {
     const away = Object.entries(net.presence)
       .filter(([, p]) => p === 'away')
       .map(([s]) => net.seatNames[Number(s)] ?? `Joueur ${Number(s) + 1}`);
-    if (away.length) return <div className="coop-banner">🔌 {away.join(', ')} : reconnexion en cours…</div>;
+    if (away.length) return <div className="coop-banner"><Icon id="ui/warning" size="sm" /> {away.join(', ')} : reconnexion en cours…</div>;
   }
   return null;
 }
@@ -45,7 +46,7 @@ export function App() {
     <div className="app">
       <GlobalSvgDefs />
       <CoopBanner />
-      <Suspense fallback={<div className="lazy-fallback" role="status"><span aria-hidden>⚜</span> Chargement…</div>}>
+      <Suspense fallback={<div className="lazy-fallback" role="status">Chargement…</div>}>
         {screen === 'menu' && <MainMenu />}
         {screen === 'party' && <PartyScreen />}
         {screen === 'creator' && <CharacterCreator />}

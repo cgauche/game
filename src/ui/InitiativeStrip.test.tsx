@@ -37,23 +37,34 @@ describe('InitiativeStrip', () => {
     expect(html).toContain('31'); // initiative de l'ennemi
   });
 
-  it('pause de début de Round : badge ⏫ sur les héros éligibles', () => {
+  it('pause de début de Round : badge de pré-emption (is-first) sur les héros éligibles', () => {
     const { h, foe } = fixtures();
     h.fortune = 2;
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={0} combatants={[h, foe]} over={false}
         canFirstIds={['h1']} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
     );
-    expect(html).toContain('⏫'); // badge de pré-emption sur le héros éligible
+    expect(html).toContain('is-first'); // badge de pré-emption sur le héros éligible
+    expect(html).not.toContain('is-first free'); // payant (pas d'arme Rapide) → pas la variante gratuite
   });
 
-  it('toggle 🔍 présent (On si inspection activée)', () => {
+  it('badge gratuit (arme Rapide) : variante .free, sans coût en Chance affiché', () => {
+    const { h, foe } = fixtures();
+    h.fortune = 2;
+    const html = renderToStaticMarkup(
+      <InitiativeStrip order={['e1', 'h1']} turn={0} combatants={[h, foe]} over={false}
+        canFirstIds={['h1']} freeFirstIds={['h1']} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
+    );
+    expect(html).toContain('is-first free');
+  });
+
+  it('toggle d’inspection présent (On si inspection activée)', () => {
     const { h, foe } = fixtures();
     const off = renderToStaticMarkup(
       <InitiativeStrip order={['h1']} turn={0} combatants={[h, foe]} over={false}
         canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
     );
-    expect(off).toContain('🔍');
+    expect(off).toContain('inspect-toggle');
     const on = renderToStaticMarkup(
       <InitiativeStrip order={['h1']} turn={0} combatants={[h, foe]} over={false}
         canFirstIds={[]} inspectEnabled={true} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,

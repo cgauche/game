@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { combatFeed, narrateIntent } from '../gameIso/combatNarration';
+import { Icon } from './Icon';
 
 /**
  * Bandeau haut : annonce le beat de combat COURANT — projection de DEUX sources existantes (zéro état
@@ -20,7 +21,7 @@ export function CombatBanner() {
   return (
     <div className="combat-feed">
       <div key={key} className={`cb-ev cb-now cb-tone-${line.tone}`}>
-        <span className="cb-ic">{line.icon}</span>
+        <span className="cb-ic"><Icon id={line.icon} size={15} /></span>
         <span className="cb-tx">
           {line.segments.map((s, j) =>
             s.team ? (

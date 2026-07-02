@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ItemIcon } from './ItemIcon';
+import { iconSvg } from './Icon';
 import { itemFromTrappingById } from '../engine/items';
 import type { ItemInstance, Weapon } from '../engine/types';
 
@@ -31,21 +32,21 @@ describe('ItemIcon', () => {
     expect(h).not.toContain('rotate(-40)');
   });
 
-  it('munition → glyphe 🏹', () => {
-    expect(html(mk({ kind: 'ammo', name: 'Flèches' }))).toContain('🏹');
+  it('munition → icône item/ammo', () => {
+    expect(html(mk({ kind: 'ammo', name: 'Flèches' }))).toContain(iconSvg('item/ammo'));
   });
 
-  it('cape → glyphe 🧥', () => {
-    expect(html(mk({ kind: 'misc', name: 'Cape', trappingId: 'cape' }))).toContain('🧥');
+  it('cape → icône item/cloak', () => {
+    expect(html(mk({ kind: 'misc', name: 'Cape', trappingId: 'cape' }))).toContain(iconSvg('item/cloak'));
   });
 
-  it('consommable (Flow structuré) → glyphe 🧪', () => {
+  it('consommable (Flow structuré) → icône item/consumable', () => {
     const potion = mk({ kind: 'misc', name: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } } });
-    expect(html(potion)).toContain('🧪');
+    expect(html(potion)).toContain(iconSvg('item/consumable'));
   });
 
-  it('objet divers → glyphe 📦', () => {
-    expect(html(mk({ kind: 'misc', name: 'Corde', desc: 'Trois mètres de corde.' }))).toContain('📦');
+  it('objet divers → icône item/misc', () => {
+    expect(html(mk({ kind: 'misc', name: 'Corde', desc: 'Trois mètres de corde.' }))).toContain(iconSvg('item/misc'));
   });
 
   it('rend en SSR sans getBBox (repli viewBox, aucune exception)', () => {

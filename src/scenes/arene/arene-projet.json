@@ -24496,7 +24496,7 @@
     },
     "scene": "arene-hub",
     "entry": "route",
-    "icon": "🏰"
+    "icon": "scenario/village"
    },
    {
     "id": "foret",
@@ -24506,7 +24506,7 @@
      "y": 30
     },
     "scene": "arene-exp-foret",
-    "icon": "🌲"
+    "icon": "scenario/hamlet"
    },
    {
     "id": "marais",
@@ -24516,7 +24516,7 @@
      "y": 62
     },
     "scene": "arene-exp-marais",
-    "icon": "🐸"
+    "icon": "scenario/trap"
    },
    {
     "id": "village",
@@ -24526,7 +24526,7 @@
      "y": 80
     },
     "scene": "arene-exp-village",
-    "icon": "💀"
+    "icon": "journal/death"
    }
   ],
   "routes": [

@@ -28,6 +28,7 @@ import { KIND_LABEL, Sel, ROOF_STYLES, ROOF_MATERIALS, deleteSel, renameEntry, a
 import type { FireArc } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
 import { RefField } from '../compendium/RefField';
+import { Icon } from '../Icon';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -136,7 +137,7 @@ export function Inspector({
             : selW
               ? (selW.door ? '🚪 Porte' : '🧱 Cloison')
               : entry
-                ? `⚑ ${sel?.type === 'entry' ? sel.id : ''}`
+                ? <><Icon id="nav/entry-point" size="sm" /> {sel?.type === 'entry' ? sel.id : ''}</>
                 : null;
 
   return (
@@ -979,11 +980,11 @@ function SceneProps({
         )}
       </Fold>
       <Fold title={`Points d'entrée (${Object.keys(scene.entryPoints ?? {}).length})`}>
-        <p className="hint">Cibles nommées des transitions. Posez-en avec l'outil ⚑.</p>
+        <p className="hint">Cibles nommées des transitions. Posez-en avec l'outil <Icon id="nav/entry-point" size="sm" />.</p>
         <div className="stack">
           {Object.entries(scene.entryPoints ?? {}).map(([name, pos]) => (
             <button key={name} className="listrow insp-row" onClick={() => setSel({ type: 'entry', id: name })}>
-              <span className="lr-name">⚑ {name}</span>
+              <span className="lr-name"><Icon id="nav/entry-point" size="sm" /> {name}</span>
               <span className="chip">
                 ({pos.x},{pos.y})
               </span>
@@ -1014,7 +1015,7 @@ function SceneProps({
           ))}
           {entries.map(([name, pos]) => (
             <button key={name} className="listrow insp-row" onClick={() => setSel({ type: 'entry', id: name })}>
-              <span className="lr-name">⚑ {name}</span>
+              <span className="lr-name"><Icon id="nav/entry-point" size="sm" /> {name}</span>
               <span className="chip">
                 ({pos.x},{pos.y})
               </span>

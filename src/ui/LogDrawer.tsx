@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NarratedSegments } from './NarratedLine';
+import { Icon } from './Icon';
 import type { CombatEvent } from '../state/combatLog';
 
 /** Forme minimale acceptée pour les combattants (suffit à `narrateEvent` — id/name/kind). */
@@ -35,7 +36,7 @@ export function LogDrawer({ battle, journal, initialOpen = false }: {
         </div>
       )}
       <button type="button" className="ld-btn" onClick={() => setOpen(!open)} title={open ? 'Fermer le journal' : 'Ouvrir le journal'}>
-        📜
+        <Icon id="nav/compendium" size="lg" />
       </button>
     </div>
   );

@@ -6,6 +6,8 @@ import { weaponPart, armourPart, shieldPart, isShield } from '../gameIso/rig/par
 import { pickView } from '../gameIso/rig/parts/types';
 import type { Slot } from '../gameIso/rig/bones';
 import { DEFS } from '../gameIso/sprites';
+import { Icon } from './Icon';
+import type { IconId } from './icons';
 
 /**
  * Icône d'OBJET — primitive UNIQUE pour afficher une arme/armure/bouclier (silhouette SVG du rig,
@@ -19,7 +21,8 @@ import { DEFS } from '../gameIso/sprites';
  */
 
 type Geom = 'weapon' | 'shield' | 'armor';
-type Resolved = { art: string; geom: Geom } | { glyph: string };
+/** `glyph` = id d'icône de catégorie (registre src/ui/icons, famille item/*) quand l'objet n'a pas d'art rig. */
+type Resolved = { art: string; geom: Geom } | { glyph: IconId };
 
 /** Ordre de préférence des emplacements pour l'aperçu d'une pièce d'armure (le torse = plus lisible). */
 const ARMOUR_SLOTS: Slot[] = ['torse', 'tete', 'bras', 'jambes'];
@@ -38,22 +41,22 @@ function resolve(item: ItemInstance | Weapon): Resolved {
         const p = armourPart(item, slot); // null si l'item ne couvre pas ce slot → on essaie le suivant
         if (p) return { art: pickView(p, 'front'), geom: 'armor' };
       }
-      return { glyph: '🛡️' };
+      return { glyph: 'item/armour' };
     }
     if (item.kind === 'melee' || item.kind === 'ranged') {
-      if (isShield(item)) { const a = pickView(shieldPart(item), 'front'); return a ? { art: a, geom: 'shield' } : { glyph: '🛡️' }; }
+      if (isShield(item)) { const a = pickView(shieldPart(item), 'front'); return a ? { art: a, geom: 'shield' } : { glyph: 'item/armour' }; }
       const a = pickView(weaponPart(asWeapon(item)), 'front');
-      return a ? { art: a, geom: 'weapon' } : { glyph: '🤜' };
+      return a ? { art: a, geom: 'weapon' } : { glyph: 'item/weapon' };
     }
-    if (item.kind === 'ammo') return { glyph: '🏹' };
-    if (isCapeItem(item)) return { glyph: '🧥' };
-    if (isConsumable(item)) return { glyph: '🧪' };
-    return { glyph: '📦' };
+    if (item.kind === 'ammo') return { glyph: 'item/ammo' };
+    if (isCapeItem(item)) return { glyph: 'item/cloak' };
+    if (isConsumable(item)) return { glyph: 'item/consumable' };
+    return { glyph: 'item/misc' };
   }
   // `Weapon` (combat) : pas de champ `kind` — discriminant de l'union.
-  if (isShield(item)) { const a = pickView(shieldPart(item), 'front'); return a ? { art: a, geom: 'shield' } : { glyph: '🛡️' }; }
+  if (isShield(item)) { const a = pickView(shieldPart(item), 'front'); return a ? { art: a, geom: 'shield' } : { glyph: 'item/armour' }; }
   const a = pickView(weaponPart(item), 'front');
-  return a ? { art: a, geom: 'weapon' } : { glyph: '✋' };
+  return a ? { art: a, geom: 'weapon' } : { glyph: 'item/weapon' };
 }
 
 const SIZE_PX = { sm: 24, md: 40, lg: 64 } as const;
@@ -79,8 +82,8 @@ export function ItemIcon({ item, size = 'sm' }: { item: ItemInstance | Weapon; s
   const px = typeof size === 'number' ? size : SIZE_PX[size];
   if ('glyph' in r) {
     return (
-      <span className="item-icon item-icon-glyph" style={{ width: px, height: px, fontSize: Math.round(px * 0.62), lineHeight: `${px}px` }} aria-hidden>
-        {r.glyph}
+      <span className="item-icon item-icon-glyph" style={{ width: px, height: px, lineHeight: `${px}px` }} aria-hidden>
+        <Icon id={r.glyph} size={Math.round(px * 0.72)} />
       </span>
     );
   }

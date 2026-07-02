@@ -1,27 +1,20 @@
 import { useGame } from '../state/store';
 import { setRule } from '../engine/policy';
 import { testScenarios, type TestScenario, type ScenarioCategory } from '../scenes/test-scenarios';
+import { SCENARIO_SECTIONS } from '../scenes/test-scenarios/_shared';
+import { Icon } from './Icon';
 
-/** Ordre des sections du menu (un scénario non tagué tombe dans « Divers », en queue). */
-const SECTIONS: ScenarioCategory[] = [
-  '⚔️ Combat',
-  '✨ Magie',
-  '🐲 Créatures',
-  '🧭 Survie',
-  '🛒 Marché',
-  '🗺️ Scénarios complets',
-  '⛵ Naval',
-  '🖼️ Rendu',
-];
-/** Regroupe les scénarios (déjà triés par `order`) par section, dans l'ordre de `SECTIONS`. */
-function groupBySection(list: TestScenario[]): { label: ScenarioCategory; items: TestScenario[] }[] {
+type Section = (typeof SCENARIO_SECTIONS)[number];
+
+/** Regroupe les scénarios (déjà triés par `order`) par section, dans l'ordre de `SCENARIO_SECTIONS`. */
+function groupBySection(list: TestScenario[]): { section: Section; items: TestScenario[] }[] {
   const byCat = new Map<ScenarioCategory, TestScenario[]>();
   for (const sc of list) {
     const bucket = byCat.get(sc.category) ?? [];
     bucket.push(sc);
     byCat.set(sc.category, bucket);
   }
-  return SECTIONS.filter((c) => byCat.has(c)).map((c) => ({ label: c, items: byCat.get(c)! }));
+  return SCENARIO_SECTIONS.filter((s) => byCat.has(s.key)).map((s) => ({ section: s, items: byCat.get(s.key)! }));
 }
 
 /** Sous-écran « Scénarios de test » : chaque scénario fixe un groupe et une scène adaptée. */
@@ -52,17 +45,17 @@ export function TestScenariosScreen() {
         <h1 className="title">Scénarios de test</h1>
         <p className="subtitle">Chaque scénario fixe un groupe et une scène adaptée à ce qu'on vérifie.</p>
         {groupBySection(testScenarios).map((sec) => (
-          <section className="ts-section" key={sec.label}>
-            <h2 className="mini-title">{sec.label}</h2>
+          <section className="ts-section" key={sec.section.key}>
+            <h2 className="mini-title"><Icon id={sec.section.icon} size="sm" /> {sec.section.label}</h2>
             <div className="ts-grid">
               {sec.items.map((sc) => (
                 <div className="ts-card" key={sc.id}>
                   <div className="ts-head">
-                    <span className="ts-ico">{sc.icon}</span>
+                    <span className="ts-ico"><Icon id={sc.icon} size={20} /></span>
                     <strong>{sc.title}</strong>
                   </div>
                   <p className="ts-tests" title={sc.tests}>{sc.tests}</p>
-                  <p className="ts-party">👥 {sc.partyNote}</p>
+                  <p className="ts-party">{sc.partyNote}</p>
                   <button className="btn btn-primary" onClick={() => launch(sc)}>
                     Lancer
                   </button>

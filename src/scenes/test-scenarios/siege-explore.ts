@@ -15,8 +15,8 @@ const scene = buildScene({ ...spec, id: 'siege-explore', nom: 'Siège — explor
 export const scenario: TestScenario = {
   id: 'siege-explore',
   order: 13,
-  category: '🖼️ Rendu',
-  icon: '🏰',
+  category: 'rendu',
+  icon: 'scenario/siege',
   title: 'Siège — exploration (sans combat)',
   tests:
     'La carte du siège (30×46, 2 couches) chargée en EXPLORATION, SANS démarrer le combat : déplacement et ' +
