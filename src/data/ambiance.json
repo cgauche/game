@@ -25,6 +25,20 @@
     "skyTop": "#5b83ac",
     "fogIndoor": "#0a0a10",
     "fogOutdoor": "#9fb2c6",
+    "depth": {
+      "outdoor": { "farTiles": 32, "fogStartT": 5, "fogGamma": 1.5 },
+      "indoor": { "farTiles": 14, "fogStartT": 4, "fogGamma": 1.2 },
+      "lod": {
+        "blocksT": 4,
+        "fadeT": 1.5,
+        "minJointSpacingPx": 3.5,
+        "meshStartT": 2.5,
+        "meshFadeT": 3,
+        "meshShade": 0.95,
+        "meshJointWM": 0.025
+      },
+      "billboards": { "maxPersons": 12, "maxProps": 40 }
+    },
     "vignette": {
       "cx": "50%",
       "cy": "52%",

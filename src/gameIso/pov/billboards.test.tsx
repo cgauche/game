@@ -67,9 +67,23 @@ describe('PovBillboards', () => {
     const hidden = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 9 }, ref: 'tonneau' }]);
     const h1 = renderToStaticMarkup(<PovBillboards scene={hidden} cam={cam} visible={new Set()} />);
     expect(h1).toBe('<g class="pov-billboards"></g>');
-    const far = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 25 }, ref: 'tonneau' }]);
-    const h2 = renderToStaticMarkup(<PovBillboards scene={far} cam={cam} visible={new Set(['5,25,0'])} />);
+    // Portée = 32 cases × 2 m = 64 m ; prop à y=40 → depth = (40−5)·2 = 70 m > 64 → droppé.
+    const far = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 40 }, ref: 'tonneau' }]);
+    const h2 = renderToStaticMarkup(<PovBillboards scene={far} cam={cam} visible={new Set(['5,40,0'])} />);
     expect(h2).toBe('<g class="pov-billboards"></g>');
+  });
+
+  it('FONDU atmosphérique : un prop LOINTAIN (mais en portée) se rend délavé (opacity < 1), pas absent', () => {
+    const misty = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 25 }, ref: 'tonneau' }]); // 20 cases
+    const html = renderToStaticMarkup(<PovBillboards scene={misty} cam={cam} visible={new Set(['5,25,0'])} />);
+    const m = html.match(/opacity="(0\.\d+)"/);
+    expect(m).not.toBeNull(); // présent ET délavé
+    expect(Number(m![1])).toBeLessThan(1);
+    expect(Number(m![1])).toBeGreaterThan(0);
+    // Un prop PROCHE reste plein (pas d'attribut opacity).
+    const near = makeScene([{ id: 'crate', kind: 'prop', pos: { x: 5, y: 8 }, ref: 'tonneau' }]);
+    const h2 = renderToStaticMarkup(<PovBillboards scene={near} cam={cam} visible={new Set(['5,8,0'])} />);
+    expect(h2).not.toContain('opacity=');
   });
 
   it('une CRÉATURE non-humanoïde (gabarit) se rend en billboard statique (os du plan)', () => {
@@ -81,11 +95,16 @@ describe('PovBillboards', () => {
     expect(html).not.toContain('class="rig"'); // PAS le rig bipède
   });
 
-  it('CULL de distance : une entité au-delà de FAR est droppée', () => {
-    // FAR_TILES=14 cases × 2 m/case = 28 m ; entité à y=25 → depth = (25−5)·2 = 40 m > 28 → droppée.
-    const far = makeScene([npc('loin', 5, 25)]);
-    const html = renderToStaticMarkup(<PovBillboards scene={far} cam={cam} visible={new Set(['5,25,0'])} />);
+  it('CULL de distance : une entité au-delà de la portée est droppée ; à 20 cases elle est PRÉSENTE (délavée)', () => {
+    // Portée extérieure = 32 cases × 2 m/case = 64 m ; entité à y=40 → depth = (40−5)·2 = 70 m → droppée.
+    const far = makeScene([npc('loin', 5, 40)]);
+    const html = renderToStaticMarkup(<PovBillboards scene={far} cam={cam} visible={new Set(['5,40,0'])} />);
     expect(html).not.toContain('data-bone');
+    // À 20 cases (40 m) : petite silhouette délavée, PAS une absence — la profondeur se peuple.
+    const mid = makeScene([npc('brume', 5, 25)]);
+    const h2 = renderToStaticMarkup(<PovBillboards scene={mid} cam={cam} visible={new Set(['5,25,0'])} />);
+    expect(h2).toContain('data-bone');
+    expect(h2).toMatch(/opacity="0\.\d+"/);
   });
 
   it('CULL « derrière » : une entité DANS LE DOS de la caméra est droppée', () => {

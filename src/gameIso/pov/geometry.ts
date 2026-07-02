@@ -9,11 +9,20 @@
  * (brouillard de guerre) est fournie par l'appelant (Set de clés « x,y,z ») ; la lumière par un champ
  * structurel `{ at(x,y,z) → 0..1 }`.
  *
- * LOD MATÉRIAUX par bande de DISTANCE (contrat : les deux backends interprètent le même SCHÉMA de
- * données, chacun à sa résolution — pas de parité pixel) : ≤ `LOD_BLOCKS_T` cases, l'appareillage
- * COMPLET en trapèzes perspectives (rangs + joints de blocs + blocs nuancés, expansion PARTAGÉE
- * `expandRecipe`, seed = MÊME identité monde que les accents iso) ; de là à `LOD_JOINTS_T` cases, les
- * lignes de rangs SEULES ; au-delà, rien — la brume (dès `FOG_START_T`) fait le travail.
+ * LOD MATÉRIAUX en FONDU par la DISTANCE (contrat : les deux backends interprètent le même SCHÉMA de
+ * données, chacun à sa résolution — pas de parité pixel). Les bandes se CHEVAUCHENT, aucune coupure
+ * visible (paramètres en DONNÉE, `AMBIANCE.pov.depth.lod`) :
+ *  - ≤ `blocksT` cases : appareillage COMPLET en trapèzes perspectives (rangs + joints de blocs +
+ *    blocs nuancés, expansion PARTAGÉE `expandRecipe`, seed = MÊME identité monde que les accents
+ *    iso) ; blocs et joints verticaux s'évanouissent en fondu sur `fadeT` cases (mélange vers la face) ;
+ *  - au-delà et JUSQU'À LA PORTÉE MAX : lignes de rangs, qui se fondent vers la face quand leur pas
+ *    PROJETÉ passe sous `minJointSpacingPx` (anti-moiré) — la perspective des joints file à l'horizon ;
+ *  - MAILLAGE DE TUILES fusionné par ANNEAUX de distance : arêtes N/O de chaque tuile de sol (joint
+ *    réel des terrains appareillés, maille subtile fondue à l'entrée pour les autres) — LE repère de
+ *    profondeur au sol, jusqu'au bout de la portée, pour un coût d'items en O(anneaux), pas O(tuiles).
+ * La brume ATMOSPHÉRIQUE (courbe smoothstep^gamma en donnée) délave le tout progressivement.
+ * Les colonnes NON VISIBLES (brouillard de guerre / hors LdV) sont rendues en SILHOUETTES DE BRUME
+ * PURE (fogT=1, zéro détail, zéro info de couleur) : le monde reste CONTINU — plus de trous de ciel.
  * `speckle`/`timber` restent hors POV v1.
  */
 import {
@@ -23,12 +32,14 @@ import {
   tileCornersWorld,
   tint,
   fogAt,
-  FAR_TILES,
-  FOG_START_T,
+  fogCurveOf,
+  farTilesOf,
+  mixHex,
   fx,
   VW,
   VH,
   FOG_COLOR,
+  type FogCurve,
   type CamPose,
   type Vec3,
 } from './camera';
@@ -73,10 +84,8 @@ export const CEIL_BASE = reliefMaterial('plafond').face; // plafond (intérieur 
 /** Couleur pleine d'un terrain (`TerrainDef.swatch`, donnée partagée iso ⇄ POV) + sa recette de détail. */
 const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
 
-/** LOD matériaux : appareillage COMPLET (trapèzes) jusqu'ici (cases)… */
-export const LOD_BLOCKS_T = 3;
-/** …lignes de rangs seules jusqu'ici (= FOG_START_T : au-delà, la brume prend le relais). */
-export const LOD_JOINTS_T = FOG_START_T;
+/** Bandes de LOD matériaux — DONNÉE partagée (`ambiance.json`), cf. en-tête de fichier. */
+const LOD = AMBIANCE.pov.depth.lod;
 /** Amplification des nuances de bloc (× paletteVar) — même dosage que les accents iso. */
 const BLOCK_SHADE_K = 1.5;
 /** Seuil |shade| d'un bloc d'ACCENT : les 2×ACCENT_FRAC extrêmes de la nuance uniforme [−pv, pv]. */
@@ -178,7 +187,8 @@ function clipSegScreen(a: Pt, b: Pt): [Pt, Pt] | null {
  *  ÉCRAN (cull FOV + coordonnées bornées), teinte. Renvoie null si rien à dessiner.
  *  `nearRef` : portée/brume évaluées au point le plus PROCHE au lieu du centroïde — pour les GRANDES
  *  faces (pans de toit) dont le centroïde tombe dans la brume opaque alors que le bord proche est en
- *  pleine vue (sinon : « maison sans toit » au bord de la brume). Le tri peintre reste au centroïde. */
+ *  pleine vue (sinon : « maison sans toit » au bord de la brume). Le tri peintre reste au centroïde.
+ *  `fogOverride` : brume FORCÉE (silhouette de brume pure des colonnes non visibles : fogT=1). */
 function makeItem(
   cornersWorld: Vec3[],
   cam: CamPose,
@@ -189,7 +199,9 @@ function makeItem(
   key: string,
   depthBias: number,
   fogColor: string,
+  curve: FogCurve,
   nearRef = false,
+  fogOverride?: number,
 ): DrawItem | null {
   const clipped = clipNear(cornersWorld, cam);
   if (clipped.length < 3) return null; // entièrement derrière (ou dégénéré)
@@ -204,7 +216,7 @@ function makeItem(
     }),
   );
   if (points.length < 3) return null; // hors du champ
-  const fill = tint(base, lightVal, fogAt(refDepth / cam.mpt), fogColor);
+  const fill = tint(base, lightVal, fogOverride ?? fogAt(refDepth / cam.mpt, curve), fogColor);
   return { points, fill, depth: cp.depth + depthBias, key, kind };
 }
 
@@ -237,11 +249,14 @@ function quadSub(corners: Vec3[], cam: CamPose): string {
 type FaceFrame = { at(u: number, v: number): Vec3; wM: number; hM: number };
 
 /**
- * Items de DÉTAIL D'APPAREILLAGE d'une face (LOD par distance) — l'expansion est le CŒUR PARTAGÉ
- * `expandRecipe` (seed = identité MONDE, le même `hash32` que les accents iso). Émis :
- *  - lignes de RANGS (toujours, jusqu'à `LOD_JOINTS_T`) en UN tracé stroké au ton du joint ;
- *  - ≤ `LOD_BLOCKS_T` : joints de BLOCS verticaux (même tracé) + blocs d'ACCENT nuancés en trapèzes
- *    (UN tracé rempli clair + UN sombre, dérivés de la couleur de base par `shade` — dosage iso).
+ * Items de DÉTAIL D'APPAREILLAGE d'une face (LOD en FONDU par la distance) — l'expansion est le CŒUR
+ * PARTAGÉ `expandRecipe` (seed = identité MONDE, le même `hash32` que les accents iso). Émis :
+ *  - lignes de RANGS jusqu'à la PORTÉE MAX, fondues vers la teinte de face quand leur pas PROJETÉ
+ *    approche `minJointSpacingPx` (anti-moiré, fondu adaptatif à la résolution) — la perspective
+ *    des joints porte la profondeur jusqu'au bout ;
+ *  - joints de BLOCS verticaux (tracé séparé) + blocs d'ACCENT nuancés en trapèzes (UN tracé rempli
+ *    clair + UN sombre, `shade` — dosage iso), fondus sur `fadeT` cases après `blocksT` (chevauchement
+ *    de bandes : aucune ligne de coupure).
  */
 function courseDetailItems(
   recipe: DetailRecipe,
@@ -254,38 +269,65 @@ function courseDetailItems(
   base: string,
   key: string,
   fogColor: string,
+  curve: FogCurve,
 ): DrawItem[] {
   const c = recipe.courses;
-  if (!c || depthTiles > LOD_JOINTS_T || frame.wM < 0.05 || frame.hM < 0.05) return [];
+  if (!c || frame.wM < 0.05 || frame.hM < 0.05) return [];
+  const n = Math.max(1, Math.round(frame.hM / c.hM));
+  // Pas PROJETÉ d'un rang (px) : hauteur écran de la face ÷ nombre de rangs. Une face qui frôle le
+  // plan proche projette des px géants → traitée comme « très proche » (poids plein).
+  const pa = project(cam, frame.at(0.5, 0));
+  const pb = project(cam, frame.at(0.5, 1));
+  const spacingPx = pa.behind || pb.behind ? Number.POSITIVE_INFINITY : Math.hypot(pa.sx - pb.sx, pa.sy - pb.sy) / n;
+  // Poids des RANGS ∈ [0,1] : plein à 2× le pas minimal, nul en-dessous du pas minimal (fondu doux).
+  const wRows = Math.min(1, Math.max(0, spacingPx / LOD.minJointSpacingPx - 1));
+  if (wRows <= 0) return [];
   const e: DetailExpansion = expandRecipe({ courses: c, seedScope: recipe.seedScope }, frame.wM, frame.hM, seed);
   if (!e.courses) return [];
   const out: DrawItem[] = [];
-  const fogT = fogAt(depthTiles);
-  const near = depthTiles <= LOD_BLOCKS_T;
+  const fogT = fogAt(depthTiles, curve);
+  // Poids de la bande PROCHE (blocs nuancés + joints verticaux) : plein ≤ blocksT, fondu sur fadeT.
+  const wNear = 1 - Math.min(1, Math.max(0, (depthTiles - LOD.blocksT) / LOD.fadeT));
+  const strokeW = Math.max(0.3, (e.courses.jointWM * fx) / depth);
 
-  // Joints (rangs + blocs) : épaisseur PERSPECTIVE (m → px à la profondeur de la face), UN seul tracé.
+  // Lignes de RANGS : épaisseur PERSPECTIVE (m → px à la profondeur de la face), UN seul tracé,
+  // couleur fondue vers la face selon wRows (le fondu de LOD), puis délavée par la brume.
   let d = '';
   for (let r = 1; r < e.courses.rows.length; r++) {
     const v = e.courses.rows[r].v0;
     d += segSub(frame.at(0, v), frame.at(1, v), cam);
   }
-  if (near)
-    for (const b of e.courses.blocks) if (b.u1 < 0.999) d += segSub(frame.at(b.u1, b.v0), frame.at(b.u1, b.v1), cam);
   // Biais : joints juste DEVANT leur face, blocs devant les joints — plus serrés que le pas intra-mur
   // (0.002) pour que les ornements suivants (bandes/ferrures) se peignent PAR-DESSUS.
   if (d)
     out.push({
       path: d,
-      stroke: tint(e.courses.joint, lightVal, fogT, fogColor),
-      strokeW: Math.max(0.35, (e.courses.jointWM * fx) / depth),
+      stroke: tint(mixHex(base, e.courses.joint, wRows), lightVal, fogT, fogColor),
+      strokeW,
       depth: depth - 0.0005,
       key: `${key}:joints`,
       kind: 'detail',
     });
 
-  // Blocs d'ACCENT (≤ LOD_BLOCKS_T) : les 2×ACCENT_FRAC extrêmes, trapèzes insérés de BLOCK_INSET_M.
+  // Joints de BLOCS verticaux (bande proche, tracé SÉPARÉ pour un fondu indépendant des rangs).
+  if (wNear > 0) {
+    let dv = '';
+    for (const b of e.courses.blocks) if (b.u1 < 0.999) dv += segSub(frame.at(b.u1, b.v0), frame.at(b.u1, b.v1), cam);
+    if (dv)
+      out.push({
+        path: dv,
+        stroke: tint(mixHex(base, e.courses.joint, Math.min(wRows, wNear)), lightVal, fogT, fogColor),
+        strokeW,
+        depth: depth - 0.0006,
+        key: `${key}:jointsv`,
+        kind: 'detail',
+      });
+  }
+
+  // Blocs d'ACCENT (bande proche) : les 2×ACCENT_FRAC extrêmes, trapèzes insérés de BLOCK_INSET_M,
+  // amplitude de nuance × wNear (le fondu — les accents se dissolvent dans la face, jamais de coupure).
   const pv = c.paletteVar ?? 0;
-  if (near && pv > 0) {
+  if (wNear > 0 && pv > 0) {
     const thr = accentThreshold(pv);
     const iu = BLOCK_INSET_M / frame.wM;
     const iv = BLOCK_INSET_M / frame.hM;
@@ -303,9 +345,9 @@ function courseDetailItems(
       else dark += sub;
     }
     if (light)
-      out.push({ path: light, fill: tint(shade(base, 1 + pv * BLOCK_SHADE_K), lightVal, fogT, fogColor), depth: depth - 0.001, key: `${key}:blocs+`, kind: 'detail' });
+      out.push({ path: light, fill: tint(shade(base, 1 + pv * BLOCK_SHADE_K * wNear), lightVal, fogT, fogColor), depth: depth - 0.001, key: `${key}:blocs+`, kind: 'detail' });
     if (dark)
-      out.push({ path: dark, fill: tint(shade(base, 1 - pv * BLOCK_SHADE_K), lightVal, fogT, fogColor), depth: depth - 0.001, key: `${key}:blocs-`, kind: 'detail' });
+      out.push({ path: dark, fill: tint(shade(base, 1 - pv * BLOCK_SHADE_K * wNear), lightVal, fogT, fogColor), depth: depth - 0.001, key: `${key}:blocs-`, kind: 'detail' });
   }
   return out;
 }
@@ -336,19 +378,22 @@ export function buildPovDrawList(
   light: LightField,
 ): DrawItem[] {
   const mpt = sceneMetresPerTile(scene);
-  const farMetres = FAR_TILES * mpt;
-  const indoor = isIndoor(scene); // intérieur → plafond + brume sombre ; extérieur → ciel (fond) + brume claire
+  const indoor = isIndoor(scene); // intérieur → plafond + brume sombre COURTE ; extérieur → ciel + perspective atmosphérique LONGUE
+  const curve = fogCurveOf(indoor);
+  const farMetres = farTilesOf(indoor) * mpt;
   const fog = indoor ? FOG_COLOR : AMBIANCE.pov.fogOutdoor;
   const cols = visibleColumns(visible);
   const items: DrawItem[] = [];
 
   // TOUTES les couches PLEINES (activeZ = couche max → aucun fantôme de surplomb : le POV voit le monde
-  // entier, la visibilité est portée par `cols`).
+  // entier). Une colonne NON VISIBLE (brouillard de guerre / hors LdV) est rendue en SILHOUETTE DE
+  // BRUME PURE (fogT=1 : la couleur est exactement la brume — zéro info) : le monde reste continu.
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
   for (const el of buildFloors(scene, undefined, { activeZ: maxZ })) {
     const { x, y, z } = el.cell;
-    if (!cols.has(`${x},${y}`)) continue;
-    const lv = light.at(x, y, z);
+    const seen = cols.has(`${x},${y}`);
+    const fogOv = seen ? undefined : 1;
+    const lv = seen ? light.at(x, y, z) : 0;
     el.faces.forEach((f, i) => {
       if (f.poly.length < 3) return; // pilier (2 points) : hors POV
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
@@ -357,34 +402,94 @@ export function buildPovDrawList(
         // matériau du builder (rampe : dessus de pente si la def en a un).
         const m = reliefMaterial(f.material.id);
         const base = (f.material.part === 'ramp' ? m.slopeTop : undefined) ?? m.face;
-        const it = makeItem(corners, cam, farMetres, lv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog);
+        const it = makeItem(corners, cam, farMetres, lv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog, curve, false, fogOv);
         if (it) items.push(it);
       } else {
         // Losange de terrain (clé historique `floor:x,y,z`) + wedges de raccord (peints PAR-DESSUS leur base).
         const wedge = f.material.part === 'wedge';
         const def = TERRAIN_BY_ID.get(f.material.id);
         const base = def?.swatch ?? FLOOR_FALLBACK;
-        const it = makeItem(corners, cam, farMetres, lv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog);
+        const it = makeItem(corners, cam, farMetres, lv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog, curve, false, fogOv);
         if (!it) return;
         items.push(it);
-        // JOINTS D'APPAREILLAGE du sol (pavé/dalle/planches) ≤ LOD_BLOCKS_T cases : expansion PARTAGÉE
-        // sur l'espace TUILE (mpt × mpt), seed = MÊME identité monde que les accents de sol iso.
-        const det = def?.detail;
-        if (wedge || !det?.courses) return;
+        if (!seen || wedge) return; // silhouette de brume / wedge : aucun détail
         const depthTiles = (it.depth - FLOOR_BIAS) / cam.mpt;
-        if (depthTiles > LOD_BLOCKS_T) return;
         const h = f.poly[0].h;
-        const frame: FaceFrame = {
-          at: (u, v) => ({ x: (x - 0.5 + u) * mpt, y: (y - 0.5 + v) * mpt, z: h }),
-          wM: mpt,
-          hM: mpt,
-        };
-        items.push(...courseDetailItems(det, frame, hash32('floor', x, y, z), it.depth, depthTiles, cam, lv, base, el.key, fog));
+        const det = def?.detail;
+        // RANGS D'APPAREILLAGE du sol (pavé/dalle/planches) : expansion PARTAGÉE sur l'espace TUILE
+        // (mpt × mpt), seed = MÊME identité monde que les accents de sol iso ; le fondu par pas
+        // projeté (courseDetailItems) les éteint tout seul quand la tuile devient petite.
+        if (det?.courses) {
+          const frame: FaceFrame = {
+            at: (u, v) => ({ x: (x - 0.5 + u) * mpt, y: (y - 0.5 + v) * mpt, z: h }),
+            wM: mpt,
+            hM: mpt,
+          };
+          items.push(...courseDetailItems(det, frame, hash32('floor', x, y, z), it.depth, depthTiles, cam, lv, base, el.key, fog, curve));
+        }
+        // MAILLAGE DE TUILES — LE repère de profondeur au sol, jusqu'à la portée max. Terrain
+        // appareillé → son joint (vraie ligne d'appareillage, dès la 1re case) ; terrain nu MARCHABLE
+        // (un sol façonné/foulé — l'eau ou la lave n'ont pas de tuiles) → maille subtile (shade de la
+        // teinte) fondue à l'entrée [meshStartT, +meshFadeT], que la brume évanouit au loin.
+        // Les 4 arêtes de la tuile : les doublons d'arête partagée sont opaques (recouvrement
+        // invisible) et la copie de la tuile la plus PROCHE survit toujours au peintre — aucune arête
+        // mangée par le remplissage d'une voisine, quel que soit le cap. Chaque PAIRE d'arêtes opposées
+        // se fond quand son écrasement PROJETÉ passe sous le pas minimal (anti-empilement : au loin,
+        // les transversales s'éteignent, les CONVERGENTES filent seules vers le point de fuite).
+        let strokeBase: string | undefined;
+        let wMj = LOD.meshJointWM;
+        if (det?.courses) {
+          strokeBase = det.courses.joint;
+          wMj = det.courses.jointW;
+        } else if (def?.walkable) {
+          const wIn = Math.min(1, Math.max(0, (depthTiles - LOD.meshStartT) / LOD.meshFadeT));
+          if (wIn > 0) strokeBase = mixHex(base, shade(base, LOD.meshShade), wIn);
+        }
+        if (strokeBase) {
+          const NO = { x: (x - 0.5) * mpt, y: (y - 0.5) * mpt, z: h };
+          const NE = { x: (x + 0.5) * mpt, y: (y - 0.5) * mpt, z: h };
+          const SE = { x: (x + 0.5) * mpt, y: (y + 0.5) * mpt, z: h };
+          const SO = { x: (x - 0.5) * mpt, y: (y + 0.5) * mpt, z: h };
+          // Écrasement projeté de chaque paire : distance écran entre les MILIEUX des arêtes opposées.
+          const gap = (a: Vec3, b: Vec3): number => {
+            const pa = project(cam, a);
+            const pb = project(cam, b);
+            return pa.behind || pb.behind ? Number.POSITIVE_INFINITY : Math.hypot(pa.sx - pb.sx, pa.sy - pb.sy);
+          };
+          const midN = { x: x * mpt, y: (y - 0.5) * mpt, z: h };
+          const midS = { x: x * mpt, y: (y + 0.5) * mpt, z: h };
+          const midE = { x: (x + 0.5) * mpt, y: y * mpt, z: h };
+          const midO = { x: (x - 0.5) * mpt, y: y * mpt, z: h };
+          const wNS = Math.min(1, Math.max(0, gap(midN, midS) / LOD.minJointSpacingPx - 1));
+          const wEO = Math.min(1, Math.max(0, gap(midE, midO) / LOD.minJointSpacingPx - 1));
+          const fogT = fogAt(depthTiles, curve);
+          const strokeW = Math.max(0.3, (wMj * fx) / it.depth);
+          const meshDepth = it.depth - FLOOR_BIAS + 0.005; // entre SON remplissage (peint avant) et les rangs
+          const push = (d: string, w: number, suffix: string): void => {
+            if (!d || w <= 0) return;
+            items.push({
+              path: d,
+              stroke: tint(mixHex(base, strokeBase!, w), lv, fogT, fog),
+              strokeW,
+              depth: meshDepth,
+              key: `mesh:${x},${y},${z}${suffix}`,
+              kind: 'detail',
+            });
+          };
+          if (Math.abs(wNS - wEO) < 0.05) {
+            // Poids équivalents (cas proche) : UN seul tracé pour les 4 arêtes.
+            push(segSub(NO, NE, cam) + segSub(SE, SO, cam) + segSub(NE, SE, cam) + segSub(SO, NO, cam), wNS, '');
+          } else {
+            push(segSub(NO, NE, cam) + segSub(SE, SO, cam), wNS, ':ns'); // arêtes N + S
+            push(segSub(NE, SE, cam) + segSub(SO, NO, cam), wEO, ':eo'); // arêtes E + O
+          }
+        }
       }
     });
-    // PLAFOND : intérieur, couche du groupe seulement (spécifique POV).
-    if (indoor && z === cam.z) {
-      const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, lv, CEIL_BASE, 'ceiling', `ceil:${x},${y},${z}`, 0, fog);
+    // PLAFOND : intérieur, couche du groupe, colonne VUE seulement (une silhouette de plafond serait
+    // invisible sur le fond de brume intérieure — on économise l'item).
+    if (indoor && z === cam.z && seen) {
+      const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, lv, CEIL_BASE, 'ceiling', `ceil:${x},${y},${z}`, 0, fog, curve);
       if (ceil) items.push(ceil);
     }
   }
@@ -393,13 +498,15 @@ export function buildPovDrawList(
   // projette chaque face (GP grille+mètres → mètres monde par `mpt`) avec sa caméra + clip + teinte, la
   // couleur de base venant de `wallPartColor` (source unique avec l'affine). Le détail BOIS (panneau/
   // moulure/plinthe/embrasure) devient AUSSI visible en POV (ex-divergence : face/bandes/arase seulement).
-  // Colonne visible requise ; PORTE ouverte (state `open`) = passage béant ; structure ABATTUE = faces de
-  // brèche (tas de gravats). Les MONTANTS (poteau/jambage, 2 points) restent un ornement d'écran affine.
+  // Colonne NON VISIBLE = silhouette de brume pure (monde continu, un rempart lointain ne se troue
+  // plus) ; PORTE ouverte (state `open`) = passage béant ; structure ABATTUE = faces de brèche (tas de
+  // gravats). Les MONTANTS (poteau/jambage, 2 points) restent un ornement d'écran affine.
   for (const el of buildWalls(scene)) {
-    if (!cols.has(`${el.cell.x},${el.cell.y}`)) continue;
     if (el.states.open) continue;
+    const seen = cols.has(`${el.cell.x},${el.cell.y}`);
+    const fogOv = seen ? undefined : 1;
     const app = structureAppearance(el.appearance);
-    const lv = light.at(el.cell.x, el.cell.y, el.cell.z);
+    const lv = seen ? light.at(el.cell.x, el.cell.y, el.cell.z) : 0;
     el.faces.forEach((f, i) => {
       if (f.poly.length < 3) return; // montant 2 points : hors POV (LOD minimal)
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
@@ -407,11 +514,12 @@ export function buildPovDrawList(
       const base = wallPartColor(app, part);
       // Peintre INTRA-mur : les faces s'empilent dans l'ordre du builder (détail PAR-DESSUS le fond) —
       // biais NÉGATIF croissant (plus proche), trop petit pour déclasser deux murs distincts.
-      const it = makeItem(corners, cam, farMetres, lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog);
+      const it = makeItem(corners, cam, farMetres, lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve, false, fogOv);
       if (!it) return;
       items.push(it);
-      // APPAREILLAGE au LOD de distance (parts maçonnées d'une def à recette — même aiguillage COURSED
-      // que l'iso ; nuances de bloc sur la GRANDE face seulement, comme les accents iso).
+      if (!seen) return; // silhouette : aucun détail
+      // APPAREILLAGE au LOD de distance en FONDU (parts maçonnées d'une def à recette — même aiguillage
+      // COURSED que l'iso ; nuances de bloc sur la GRANDE face seulement, comme les accents iso).
       const det = app.detail;
       if (!det?.courses || !COURSED.has(part)) return;
       const depthTiles = it.depth / cam.mpt;
@@ -428,7 +536,7 @@ export function buildPovDrawList(
       // MÊME identité monde que le seed des accents iso (`wallAccentsSvg`) — le contrat matériaux v2.
       const seed = hash32('wall', el.cell.x, el.cell.y, el.cell.z, el.side);
       const recipe: DetailRecipe = part === 'face' ? det : { courses: { ...det.courses, paletteVar: 0 }, seedScope: det.seedScope };
-      items.push(...courseDetailItems(recipe, frame, seed, it.depth, depthTiles, cam, lv, base, `${el.key}:${i}:${part}`, fog));
+      items.push(...courseDetailItems(recipe, frame, seed, it.depth, depthTiles, cam, lv, base, `${el.key}:${i}:${part}`, fog, curve));
     });
   }
 
@@ -438,9 +546,14 @@ export function buildPovDrawList(
   // pas de pans, mais le PLAFOND intérieur de l'empreinte (même convention que l'indoor : surface +
   // WALL_H_M, ton `plafond`) — une scène `interieur` a déjà son plafond tuile à tuile, on ne double pas.
   const eyeCell = { x: Math.round(cam.eye.x / mpt), y: Math.round(cam.eye.y / mpt) };
-  for (const el of buildRoofs(scene, visible, { allies: [eyeCell] })) {
-    if (!el.states.visible) continue;
+  // TOUS les toits (pas de gate `visible` du builder) : un toit dont AUCUNE case de l'empreinte
+  // élargie d'1 n'est en colonne vue devient une SILHOUETTE de brume pure — même règle de visibilité
+  // que le builder, mais au lieu de disparaître (trou de ciel), le bâtiment se fond dans la brume.
+  for (const el of buildRoofs(scene, undefined, { allies: [eyeCell] })) {
     const z = el.cell.z;
+    let seen = false;
+    for (let dy = -1; dy <= el.span.h && !seen; dy++)
+      for (let dx = -1; dx <= el.span.w && !seen; dx++) if (cols.has(`${el.cell.x + dx},${el.cell.y + dy}`)) seen = true;
     if (el.states.roofOccupied) {
       if (indoor) continue;
       for (let dy = 0; dy < el.span.h; dy++)
@@ -448,18 +561,18 @@ export function buildPovDrawList(
           const x = el.cell.x + dx;
           const y = el.cell.y + dy;
           if (!cols.has(`${x},${y}`)) continue;
-          const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, light.at(x, y, z), CEIL_BASE, 'ceiling', `roofceil:${x},${y},${z}`, 0, fog);
+          const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, light.at(x, y, z), CEIL_BASE, 'ceiling', `roofceil:${x},${y},${z}`, 0, fog, curve);
           if (ceil) items.push(ceil);
         }
       continue;
     }
     const sh = roofMaterial(el.material);
-    const lv = light.at(el.cell.x, el.cell.y, z);
+    const lv = seen ? light.at(el.cell.x, el.cell.y, z) : 0;
     el.faces.forEach((f, i) => {
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
       const base = sh[f.material.part as CellSide] ?? sh.N ?? FLOOR_FALLBACK;
       // `nearRef` : un pan est GRAND (bâtiment entier) — portée/brume à son bord le plus proche.
-      const it = makeItem(corners, cam, farMetres, lv, base, 'roof', `${el.key}:${i}`, 0, fog, true);
+      const it = makeItem(corners, cam, farMetres, lv, base, 'roof', `${el.key}:${i}`, 0, fog, curve, true, seen ? undefined : 1);
       if (it) items.push(it);
     });
   }

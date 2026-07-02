@@ -30,21 +30,29 @@ describe('buildPovDrawList', () => {
     }
   });
 
-  it('une tuile HORS de `visible` ne produit aucun item', () => {
+  it('une tuile HORS de `visible` devient une SILHOUETTE DE BRUME PURE : monde continu, zéro info', () => {
     const s = scene();
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
     const visible = new Set<string>();
     for (let y = 4; y <= 8; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
-    // (2,2) n’est PAS dans `visible`.
+    // (6,2) n’est PAS dans `visible` (droit devant, dans la portée) → sol rendu, couleur = brume
+    // EXACTE (fogT forcé à 1 : ni terrain ni lumière ne fuient), et AUCUN détail d'appareillage.
     const list = buildPovDrawList(s, cam, visible, LIGHT);
-    expect(list.some((it) => it.key.includes('2,2,0'))).toBe(false);
-    // toutes les clés de sol/plafond référencent des tuiles visibles.
-    for (const it of list) {
-      if (it.kind === 'floor' || it.kind === 'ceiling') {
-        const m = it.key.match(/(\d+),(\d+),0$/)!;
-        expect(visible.has(`${m[1]},${m[2]},0`)).toBe(true);
-      }
+    const fogRgb = 'rgb(159,178,198)'; // AMBIANCE.pov.fogOutdoor #9fb2c6
+    const hidden = list.filter((it) => it.key.includes('6,2,0'));
+    expect(hidden.length).toBeGreaterThan(0); // plus de trou de ciel à travers le sol
+    for (const it of hidden) {
+      expect(it.kind).not.toBe('detail');
+      expect(it.fill).toBe(fogRgb);
     }
+    // Les murs d'une colonne non visible sont aussi des silhouettes de brume (pas de détail).
+    const sw = scene();
+    sw.walls = [{ x: 6, y: 2, side: 'N', structure: 'mur-en-pierre' }];
+    const lw = buildPovDrawList(sw, cam, visible, LIGHT);
+    const hiddenWalls = lw.filter((it) => it.kind === 'wall' && it.key.includes('6,2'));
+    expect(hiddenWalls.length).toBeGreaterThan(0);
+    for (const it of hiddenWalls) expect(it.fill).toBe(fogRgb);
+    expect(lw.some((it) => it.kind === 'detail' && it.key.startsWith('wall:6,2'))).toBe(false);
   });
 
   it('produit des items de mur (kind wall) pour les murs dont une case borde une tuile visible', () => {
@@ -214,16 +222,18 @@ describe('buildPovDrawList', () => {
     expect(inside.some((it) => it.key.startsWith('ceil:'))).toBe(true);
   });
 
-  it('toit HORS des colonnes visibles (empreinte élargie) → pas dessiné', () => {
+  it('toit HORS des colonnes visibles (empreinte élargie) → SILHOUETTE de brume pure (pas un trou)', () => {
     const s = scene();
-    s.roofs = [{ id: 'loin', style: 'maison', foot: { x: 0, y: 0, w: 2, h: 2 } }];
+    s.roofs = [{ id: 'loin', style: 'maison', foot: { x: 4, y: 2, w: 2, h: 2 } }];
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
-    const visible = new Set<string>(['6,7,0', '6,6,0']); // le toit (0,0) n'est pas en vue
+    const visible = new Set<string>(['6,7,0', '6,6,0']); // le toit n'est pas en vue
     const list = buildPovDrawList(s, cam, visible, LIGHT);
-    expect(list.some((it) => it.kind === 'roof')).toBe(false);
+    const roofs = list.filter((it) => it.kind === 'roof');
+    expect(roofs.length).toBeGreaterThan(0); // le bâtiment se fond dans la brume au lieu de disparaître
+    for (const it of roofs) expect(it.fill).toBe('rgb(159,178,198)'); // brume EXACTE (zéro info)
   });
 
-  it('LOD murs : appareillage COMPLET (joints + blocs nuancés) ≤ 3 cases, joints seuls de 3 à 6, rien au-delà', () => {
+  it('LOD murs en FONDU : appareillage complet près, blocs dissous après blocksT+fadeT, rangs JUSQU\'AU LOIN', () => {
     const detailOf = (wallY: number, eyeY: number) => {
       const s = scene();
       s.walls = [{ x: 6, y: wallY, side: 'N', structure: 'mur-en-pierre' }];
@@ -232,20 +242,22 @@ describe('buildPovDrawList', () => {
       for (let y = 0; y <= 11; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
       return buildPovDrawList(s, cam, visible, LIGHT).filter((it) => it.kind === 'detail' && it.key.startsWith('wall:'));
     };
-    // ~2 cases : joints (stroke) ET blocs nuancés (fill) — trapèzes de l'appareillage.
+    // ~2 cases : rangs (stroke), joints verticaux ET blocs nuancés (fill) — appareillage complet.
     const near = detailOf(6, 8);
     expect(near.some((it) => it.stroke && it.key.endsWith(':joints'))).toBe(true);
+    expect(near.some((it) => it.stroke && it.key.endsWith(':jointsv'))).toBe(true);
     expect(near.some((it) => it.fill && it.key.includes(':blocs'))).toBe(true);
-    // ~5 cases : lignes de rangs seules, plus de blocs.
-    const mid = detailOf(3, 8);
+    // ~8 cases (> blocksT+fadeT) : les rangs CONTINUENT (perspective jusqu'au loin), blocs/verticaux dissous.
+    const mid = detailOf(0, 8);
     expect(mid.some((it) => it.stroke && it.key.endsWith(':joints'))).toBe(true);
+    expect(mid.some((it) => it.key.endsWith(':jointsv'))).toBe(false);
     expect(mid.some((it) => it.fill && it.key.includes(':blocs'))).toBe(false);
-    // ~8 cases : plus rien (la brume prend le relais).
-    const farAway = detailOf(0, 8);
-    expect(farAway.length).toBe(0);
+    // ~11 cases : les rangs portent TOUJOURS la profondeur (plus de coupure sèche à 6 cases).
+    const farAway = detailOf(0, 11);
+    expect(farAway.some((it) => it.stroke && it.key.endsWith(':joints'))).toBe(true);
   });
 
-  it('LOD sols : joints d’appareillage ≤ 3 cases pour un terrain à motif (pavé), rien pour l’herbe ni au-delà', () => {
+  it('LOD sols : rangs de pavé en fondu adaptatif (pas projeté) + MAILLAGE de tuiles jusqu\'à la portée', () => {
     const s = scene();
     s.layers = [{ z: 0, tiles: new Array(12 * 12).fill('pave') }];
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
@@ -255,14 +267,25 @@ describe('buildPovDrawList', () => {
     const joints = list.filter((it) => it.kind === 'detail' && it.key.startsWith('floor:'));
     expect(joints.length).toBeGreaterThan(0);
     for (const it of joints) {
-      // Toutes les tuiles à joints sont DANS la bande proche (≤ 3 cases + demi-diagonale de tuile).
-      expect(it.depth / cam.mpt).toBeLessThanOrEqual(3.8);
+      // Les rangs intra-tuile s'éteignent quand leur pas PROJETÉ passe sous le minimum (~7-8 cases
+      // à 2 m/case) — pas de moiré subpixel au loin.
+      expect(it.depth / cam.mpt).toBeLessThanOrEqual(9);
     }
-    // Herbe (aucune recette d'assises) → aucun joint de sol.
+    // Le MAILLAGE (arêtes de tuiles = vrais joints du pavé) file LUI jusqu'au fond de la vue.
+    const mesh = list.filter((it) => it.kind === 'detail' && it.key.startsWith('mesh:'));
+    expect(mesh.length).toBeGreaterThan(0);
+    const maxMeshT = Math.max(...mesh.map((it) => it.depth / cam.mpt));
+    expect(maxMeshT).toBeGreaterThan(6); // bien au-delà de l'ancienne coupure des 3 cases
+    // Herbe (aucune recette d'assises) → pas de rangs, mais une maille SUBTILE qui entre en fondu
+    // après meshStartT (repère de profondeur des terrains nus).
     const sh = scene();
     sh.layers = [{ z: 0, tiles: new Array(12 * 12).fill('herbe') }];
     const grass = buildPovDrawList(sh, makeCamera(sh, { x: 6, y: 8 }, 'N'), visible, LIGHT);
     expect(grass.some((it) => it.kind === 'detail' && it.key.startsWith('floor:'))).toBe(false);
+    const gmesh = grass.filter((it) => it.kind === 'detail' && it.key.startsWith('mesh:'));
+    expect(gmesh.length).toBeGreaterThan(0);
+    // …et jamais dans la zone d'entrée (≤ meshStartT cases) : l'herbe aux pieds reste nue.
+    for (const it of gmesh) expect(it.depth / cam.mpt).toBeGreaterThan(2);
   });
 
   it('multi-niveaux : rend TOUTES les couches d’une colonne visible (sol du groupe + étage/plateforme)', () => {

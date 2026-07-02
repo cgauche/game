@@ -7,6 +7,9 @@ import {
   povView,
   tint,
   fogAt,
+  fogCurveOf,
+  farTilesOf,
+  mixHex,
   EYE_H,
   NEAR,
   VW,
@@ -227,15 +230,37 @@ describe('tint', () => {
   });
 });
 
-describe('fogAt', () => {
-  it('monotone 0 → 1', () => {
-    expect(fogAt(0)).toBe(0);
-    expect(fogAt(6)).toBe(0); // = FOG_START_T
-    expect(fogAt(14)).toBe(1); // = FOG_END_T
-    expect(fogAt(20)).toBe(1); // clampé
-    expect(fogAt(10)).toBeGreaterThan(0);
-    expect(fogAt(10)).toBeLessThan(1);
-    expect(fogAt(12)).toBeGreaterThan(fogAt(8)); // croissance
+describe('fogAt — courbes de brume en DONNÉE (ambiance.json)', () => {
+  const out = fogCurveOf(false);
+  const ind = fogCurveOf(true);
+  it('extérieur : 0 avant le début, 1 exactement à la portée max (coupure invisible), monotone', () => {
+    expect(fogAt(0, out)).toBe(0);
+    expect(fogAt(out.start, out)).toBe(0);
+    expect(fogAt(out.end, out)).toBe(1);
+    expect(fogAt(out.end + 10, out)).toBe(1); // clampé
+    const mid = (out.start + out.end) / 2;
+    expect(fogAt(mid, out)).toBeGreaterThan(0);
+    expect(fogAt(mid, out)).toBeLessThan(1);
+    expect(fogAt(mid + 4, out)).toBeGreaterThan(fogAt(mid, out)); // croissance
+  });
+  it('gamma > 1 : la brume démarre plus DOUX que la rampe linéaire (silhouettes lisibles au milieu)', () => {
+    const mid = (out.start + out.end) / 2;
+    expect(fogAt(mid, out)).toBeLessThan((mid - out.start) / (out.end - out.start));
+  });
+  it('intérieur = brume sombre COURTE : portée max < extérieur ; farTilesOf = fin de courbe', () => {
+    expect(ind.end).toBeLessThan(out.end);
+    expect(farTilesOf(true)).toBe(ind.end);
+    expect(farTilesOf(false)).toBe(out.end);
+    expect(farTilesOf(false)).toBeGreaterThanOrEqual(28); // profondeur : portée étendue
+  });
+});
+
+describe('mixHex', () => {
+  it('t=0 → a, t=1 → b, t=0.5 → moyenne', () => {
+    expect(mixHex('#000000', '#ffffff', 0)).toBe('#000000');
+    expect(mixHex('#000000', '#ffffff', 1)).toBe('#ffffff');
+    expect(mixHex('#204060', '#204060', 0.37)).toBe('#204060');
+    expect(mixHex('#000000', '#ffffff', 0.5)).toBe('#808080');
   });
 });
 

@@ -20,17 +20,27 @@ export const EYE_H = 1.7;
 export const FOV_X = (75 * Math.PI) / 180;
 /** Plan proche (mètres) — tout ce qui est plus près/derrière est clippé. > 0. */
 export const NEAR = 0.1;
-/** Portée maximale de rendu (cases). */
-export const FAR_TILES = 14;
 /** Viewport SVG (px). */
 export const VW = 1000;
 export const VH = 700;
 /** Distance focale px : demi-largeur ÷ tan(demi-FOV) → `fx = fy` (pixels carrés). */
 export const fx = VW / 2 / Math.tan(FOV_X / 2);
 export const fy = fx;
-/** Brouillard : plein clair jusqu'à `FOG_START_T` cases, opaque à `FOG_END_T`. */
-export const FOG_START_T = 6;
-export const FOG_END_T = FAR_TILES;
+
+// — Profondeur / brume : tout vient de la DONNÉE (`ambiance.json`, AMBIANCE.pov.depth) —
+/** Courbe de brume : claire avant `start` (cases), opaque à `end` (= portée max de rendu),
+ *  progression smoothstep^gamma (gamma > 1 = silhouettes lisibles plus loin). */
+export interface FogCurve { start: number; end: number; gamma: number }
+const DEPTH = AMBIANCE.pov.depth;
+/** Courbe de brume du milieu : intérieur = brume sombre COURTE, extérieur = perspective LONGUE. */
+export function fogCurveOf(indoor: boolean): FogCurve {
+  const d = indoor ? DEPTH.indoor : DEPTH.outdoor;
+  return { start: d.fogStartT, end: d.farTiles, gamma: d.fogGamma };
+}
+/** Portée maximale de rendu (cases) du milieu — la brume atteint 1 exactement là (coupure invisible). */
+export function farTilesOf(indoor: boolean): number {
+  return (indoor ? DEPTH.indoor : DEPTH.outdoor).farTiles;
+}
 /** Brume de distance INTÉRIEURE (sombre) — identité en DONNÉE (`ambiance.json`), partagée avec l'iso. */
 export const FOG_COLOR = AMBIANCE.pov.fogIndoor;
 /** Luminosité plancher (une surface éclairée à 0 n'est jamais totalement noire). */
@@ -186,7 +196,23 @@ export function tint(baseHex: string, light: number, fogT: number, fogColor: str
   return `rgb(${mix(br, fr)},${mix(bg, fg)},${mix(bb, fb)})`;
 }
 
-/** Facteur de brouillard [0..1] à une profondeur (cases) : 0 avant `FOG_START_T`, 1 à `FOG_END_T`. PUR. */
-export function fogAt(depthTiles: number): number {
-  return clamp((depthTiles - FOG_START_T) / (FOG_END_T - FOG_START_T), 0, 1);
+/** Facteur de brume [0..1] à une profondeur (cases) le long d'une `FogCurve` : 0 avant `start`,
+ *  1 à `end`, smoothstep élevée à `gamma` entre les deux (perspective ATMOSPHÉRIQUE progressive —
+ *  les silhouettes se délavent, pas de mur de brume). PUR. */
+export function fogAt(depthTiles: number, curve: FogCurve): number {
+  const u = clamp((depthTiles - curve.start) / (curve.end - curve.start), 0, 1);
+  const s = u * u * (3 - 2 * u);
+  return Math.pow(s, curve.gamma);
+}
+
+/** Mélange linéaire de deux couleurs `#rrggbb` (t = part de `b`). PUR — sert aux FONDUS de LOD
+ *  (un joint qui s'évanouit se mélange vers la teinte de sa face, pas d'alpha SVG). */
+export function mixHex(a: string, b: string, t: number): string {
+  const k = clamp(t, 0, 1);
+  const ch = (off: number): string => {
+    const va = parseInt(a.slice(off, off + 2), 16);
+    const vb = parseInt(b.slice(off, off + 2), 16);
+    return Math.round(va + (vb - va) * k).toString(16).padStart(2, '0');
+  };
+  return `#${ch(1)}${ch(3)}${ch(5)}`;
 }

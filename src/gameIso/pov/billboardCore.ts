@@ -9,10 +9,11 @@
  * (`env-panels`). Les personnages/créatures (rig/gabarit) restent dans la couche React (billboards.tsx),
  * sur CE noyau.
  */
-import { project, FAR_TILES, fy, VW, VH, type CamPose } from './camera';
+import { project, fogAt, fogCurveOf, farTilesOf, fy, VW, VH, type CamPose } from './camera';
 import { propSvg } from '../catalog/decor';
+import { AMBIANCE } from '../catalog/ambiance';
 import { decorFootGeometry } from '../../state/footprint';
-import { heightAt, type Scene } from '../../state/scene';
+import { heightAt, isIndoor, type Scene } from '../../state/scene';
 
 /** Boîte LOCALE d'un billboard (repère paper-doll ET prop : 120×150, pieds/base en (60,150)). */
 export const BB_W = 120;
@@ -24,9 +25,10 @@ export const ENT_H_M = 1.8;
 /** Hauteur métrique de la boîte d'un PROP (m) — même proportion prop/personnage que l'iso
  *  (échelles de boîte 0.55 prop vs 0.58 rig). */
 export const PROP_H_M = 1.7;
-/** Budgets de billboards PAR FAMILLE (les plus proches priment) — anti-surcharge d'une scène peuplée. */
-export const MAX_PERSON_BILLBOARDS = 10;
-export const MAX_PROP_BILLBOARDS = 24;
+/** Budgets de billboards PAR FAMILLE (les plus proches priment) — anti-surcharge d'une scène peuplée.
+ *  En DONNÉE (`ambiance.json`), dimensionnés avec la portée de profondeur. */
+export const MAX_PERSON_BILLBOARDS = AMBIANCE.pov.depth.billboards.maxPersons;
+export const MAX_PROP_BILLBOARDS = AMBIANCE.pov.depth.billboards.maxProps;
 
 /** Marge d'EMPRISE écran d'un billboard (fraction de sa boîte) — un rig déborde un peu de 120×150
  *  (arme tendue, miroir) : le cull hors-cadre reste conservateur. */
@@ -34,9 +36,10 @@ const BB_OVERFLOW = 0.35;
 
 /** Ancre PIEDS d'un billboard : centre de case (grille continue — empreinte multi-cases décalée par
  *  l'appelant), hauteur de surface de la case d'ANCRAGE, projetée en pixels, ÉCHELLE ∝ profondeur
- *  (hauteur écran = fy·hM/profondeur × `scaleK` d'espèce/empreinte). null = derrière le plan proche,
- *  au-delà de la portée, ou EMPRISE entièrement hors-cadre (cull FOV des billboards — un sprite à
- *  `opacity` totalement hors-canvas fait paniquer resvg sur un tampon vide). PUR. */
+ *  (hauteur écran = fy·hM/profondeur × `scaleK` d'espèce/empreinte) et FONDU atmosphérique `o`
+ *  (opacité = 1 − brume : une silhouette à 20 cases est petite ET délavée, pas absente). null =
+ *  derrière le plan proche, au-delà de la portée (brume pleine), ou EMPRISE entièrement hors-cadre
+ *  (cull FOV des billboards — un sprite à `opacity` totalement hors-canvas fait paniquer resvg). PUR. */
 export function footAnchor(
   scene: Scene,
   cam: CamPose,
@@ -45,17 +48,20 @@ export function footAnchor(
   z: number,
   hM: number,
   scaleK = 1,
-): { sx: number; sy: number; depth: number; s: number } | null {
+): { sx: number; sy: number; depth: number; s: number; o: number } | null {
+  const indoor = isIndoor(scene);
   const P = { x: gx * cam.mpt, y: gy * cam.mpt, z: heightAt(scene, Math.round(gx), Math.round(gy), z) };
   const pr = project(cam, P);
-  if (pr.behind || pr.depth > FAR_TILES * cam.mpt) return null;
+  if (pr.behind || pr.depth > farTilesOf(indoor) * cam.mpt) return null;
+  const o = 1 - fogAt(pr.depth / cam.mpt, fogCurveOf(indoor));
+  if (o <= 0.02) return null; // dissous dans la brume
   const s = ((fy * hM) / pr.depth / BB_H) * scaleK;
   // Emprise écran (boîte locale ancrée pieds + marge de débord) : entièrement hors-cadre → cull.
   const halfW = (0.5 + BB_OVERFLOW) * BB_W * s;
   const top = pr.sy - (1 + BB_OVERFLOW) * BB_FOOT_Y * s;
   const bottom = pr.sy + BB_OVERFLOW * BB_H * s;
   if (pr.sx + halfW < 0 || pr.sx - halfW > VW || bottom < 0 || top > VH) return null;
-  return { sx: pr.sx, sy: pr.sy, depth: pr.depth, s };
+  return { sx: pr.sx, sy: pr.sy, depth: pr.depth, s, o };
 }
 
 /** Tri PEINTRE (loin→près) + budget : garde les `cap` plus proches, dans l'ordre de peinture. PUR. */
@@ -97,10 +103,11 @@ export function buildPropBillboards(scene: Scene, cam: CamPose, visible: Readonl
     const a = footAnchor(scene, cam, e.pos.x + fg.offX, e.pos.y + fg.offY, z, PROP_H_M, fg.scale);
     if (!a) continue;
     const t = bbTransform(a, a.s);
+    const op = a.o < 1 ? ` opacity="${a.o.toFixed(3)}"` : '';
     out.push({
       key: `prop:${e.id}`,
       depth: a.depth,
-      svg: `<g transform="${t.outer}"><g transform="${t.inner}">${propSvg(e.ref ?? 'tonneau', e.facing, 0)}</g></g>`,
+      svg: `<g transform="${t.outer}"${op}><g transform="${t.inner}">${propSvg(e.ref ?? 'tonneau', e.facing, 0)}</g></g>`,
     });
   }
   return keepClosest(out, MAX_PROP_BILLBOARDS);

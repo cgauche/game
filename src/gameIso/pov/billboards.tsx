@@ -39,11 +39,12 @@ import type { Scene } from '../../state/scene';
 /** Un billboard prêt à trier/rendre : profondeur caméra (m) + son nœud SVG déjà positionné. */
 type Billboard = { id: string; depth: number; node: JSX.Element };
 
-/** Nœud ancré aux pieds : `translate(sx,sy)` puis recentrage/échelle de la boîte locale 120×150. */
-function anchored(id: string, a: { sx: number; sy: number }, s: number, child: JSX.Element): JSX.Element {
+/** Nœud ancré aux pieds : `translate(sx,sy)` puis recentrage/échelle de la boîte locale 120×150.
+ *  `o` = fondu atmosphérique (une silhouette lointaine se délave dans la brume). */
+function anchored(id: string, a: { sx: number; sy: number; o: number }, s: number, child: JSX.Element): JSX.Element {
   const t = bbTransform(a, s);
   return (
-    <g key={id} transform={t.outer}>
+    <g key={id} transform={t.outer} opacity={a.o < 1 ? a.o : undefined}>
       <g transform={t.inner}>{child}</g>
     </g>
   );
