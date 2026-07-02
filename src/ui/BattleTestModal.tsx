@@ -3,12 +3,15 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
-import { battleSceneById, sceneMightDelta, INSPIRE_BONUS } from '../engine/massBattle';
+import {
+  battleSceneById, battleActivityById, sceneDeltas, testResolution, activityOutcomes, INSPIRE_BONUS,
+} from '../engine/massBattle';
 
 /**
- * Jet de PJ d'une bataille de masse (ADE II 08) : Discours inspirant (Test de Commandement, l.71) ou
- * Scène cinématique de Compétence (Motivation/Duel/Ligne de mire…, l.149-225). Même coquille que les
- * autres modales de jet (Lancer -> Chance/Pacte/Résilience -> Appliquer).
+ * Jet de PJ d'une bataille de masse (ADE II 08) : Discours inspirant (l.71), Scène cinématique de
+ * Compétence (Motivation/Duel/Ligne de mire…, l.149-225), Activité pré-combat (Planification/Sabotage…,
+ * l.79-106) ou Rassemblement (Résistance, l.122). Même coquille que les autres modales de jet
+ * (Lancer -> Chance/Pacte/Résilience -> Appliquer).
  */
 export function BattleTestModal() {
   const pt = useGame((s) => s.pendingBattleTest);
@@ -54,15 +57,34 @@ export function BattleTestModal() {
 
 /** Issue lisible du jet, pré-application (le delta de Puissance est calculé à l'identique du flux). */
 function describeBattleTest(pt: NonNullable<ReturnType<typeof useGame.getState>['pendingBattleTest']>): string {
-  if (!pt.success) {
-    return pt.purpose === 'inspire'
-      ? 'Le discours tombe à plat — aucun bonus au premier Round.'
-      : 'La Scène échoue — aucun effet sur la Puissance.';
+  if (pt.purpose === 'inspire') {
+    return pt.success
+      ? `Troupes galvanisées : +${INSPIRE_BONUS} au Test de Puissance du premier Round.`
+      : 'Le discours tombe à plat — aucun bonus au premier Round.';
   }
-  if (pt.purpose === 'inspire') return `Troupes galvanisées : +${INSPIRE_BONUS} au Test de Puissance du premier Round.`;
+  if (pt.purpose === 'rally') {
+    return pt.success ? `Récupération : DR ${pt.sl} + Bonus d'Endurance de Blessures soignées.` : 'Aucune récupération.';
+  }
+  if (pt.purpose === 'activity' && pt.activityId) {
+    const def = battleActivityById(pt.activityId);
+    if (!def) return pt.success ? 'Succès.' : 'Échec.';
+    const outcomes = activityOutcomes(def, pt.success, pt.sl);
+    if (!outcomes.length) return pt.success ? 'Succès — sans effet chiffré.' : 'Échec — sans effet.';
+    return `${pt.success ? (pt.sl >= 6 ? 'Succès Stupéfiant' : 'Succès') : 'Échec Stupéfiant'} : ${outcomes.map(activityOutcomeText).join(' ; ')}.`;
+  }
+  // Scène cinématique.
+  if (!pt.success) return 'La Scène échoue — aucun effet sur la Puissance.';
   const scene = pt.sceneId ? battleSceneById(pt.sceneId) : undefined;
   if (!scene) return 'Succès.';
-  const delta = sceneMightDelta(scene.effect, pt.sl);
-  const target = scene.effect.side === 'ally' ? 'votre armée' : "l'armée ennemie";
-  return `Succès : Puissance de ${target} ${delta >= 0 ? '+' : ''}${delta}.`;
+  const deltas = sceneDeltas(scene, testResolution(pt.success, pt.sl));
+  if (!deltas.length) return 'Succès — aucun effet sur la Puissance.';
+  return `Succès : ${deltas.map((d) => `Puissance ${d.side === 'ally' ? 'alliée' : 'ennemie'} ${d.amount >= 0 ? '+' : ''}${d.amount}`).join(' ; ')}.`;
+}
+
+function activityOutcomeText(o: { target: string; amount: number }): string {
+  const label: Record<string, string> = {
+    allyTestMod: 'aux Tests de Puissance alliés', allyMight: 'Puissance alliée', enemyMight: 'Puissance ennemie',
+    firstRoundBonus: 'au premier Round', planningBonus: 'à la Planification',
+  };
+  return `${o.amount >= 0 ? '+' : ''}${o.amount} ${label[o.target] ?? o.target}`;
 }

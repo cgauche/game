@@ -474,12 +474,18 @@ export interface GameState extends RollFlowActionsMap {
   massBattleBegin: () => void;
   /** Ouvre le Test de Commandement du Discours inspirant (l.71). */
   massBattleInspire: () => void;
+  /** Ouvre le Test d'une Activité de bataille pré-combat (l.79-106). */
+  massBattleActivity: (activityId: string) => void;
   /** Choisit une Scène cinématique du Round (Test de Compétence ou combat tactique). */
   massBattleScene: (sceneId: string) => void;
+  /** Ouvre le Test de Résistance de guérison du Rassemblement (l.122). */
+  massBattleRally: () => void;
   /** Tire/choisit le facteur environnemental du Round (l.309, 1d10). */
   massBattleHazard: (roll?: number) => void;
-  /** Résout le Test spectaculaire de Puissance du Round puis fait avancer la bataille. */
+  /** Résout le Test spectaculaire de Puissance du Round (l.120). */
   massBattleClash: () => void;
+  /** Passe au Round suivant après le Rassemblement (l.124). */
+  massBattleAdvance: () => void;
   /** Ferme la bataille et revient au jeu. */
   endMassBattle: () => void;
   /** « Appliquer » d'un jet de bataille (Discours/Scène). */
@@ -1312,9 +1318,12 @@ export const useGame = create<GameState>((set, get) => ({
   startMassBattle: (spec) => massBattleFlow.startMassBattle(get, set, spec),
   massBattleBegin: () => massBattleFlow.massBattleBegin(get, set),
   massBattleInspire: () => massBattleFlow.openMassBattleInspire(get, set),
+  massBattleActivity: (activityId) => massBattleFlow.openMassBattleActivity(get, set, activityId),
   massBattleScene: (sceneId) => massBattleFlow.openMassBattleScene(get, set, sceneId),
+  massBattleRally: () => massBattleFlow.openMassBattleRally(get, set),
   massBattleHazard: (roll) => massBattleFlow.massBattleSetHazard(get, set, roll),
   massBattleClash: () => massBattleFlow.massBattleClash(get, set),
+  massBattleAdvance: () => massBattleFlow.massBattleAdvance(get, set),
   endMassBattle: () => massBattleFlow.endMassBattle(get, set),
   ...rollFlowActions('battleTest', FLOWS.battleTest, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
   battleTestConfirm: () => massBattleFlow.battleTestConfirm(get, set),

@@ -2,14 +2,18 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { Prose } from './Prose';
 import { BattleTestModal } from './BattleTestModal';
-import { massBattleScenes, type MassBattleState, type MassBattleArmy } from '../state/massBattleFlow';
-import { BATTLE_HAZARDS, inspireDifficulty, type BattleSceneDef } from '../engine/massBattle';
+import {
+  massBattleScenes, massBattleThreatPenalty, battleActivitiesAvailable, prepCount,
+  type MassBattleState, type MassBattleArmy,
+} from '../state/massBattleFlow';
+import { BATTLE_HAZARDS, inspireDifficulty, type BattleSceneDef, type BattleActivityDef } from '../engine/massBattle';
 import { DIFFICULTY_LABELS } from '../engine/types';
 
 /**
  * Écran de Combat de masse / Puissance de Bataille (ADE II 08). État des deux armées (Puissance
- * courante vs départ), phase de bataille, Discours inspirant pré-bataille, Scènes cinématiques du
- * Round choisies par les PJ, aléa environnemental, Test spectaculaire de Puissance, issue. Responsive.
+ * courante vs départ), phase de bataille, Activités pré-combat (Discours + Planification/Sabotage…),
+ * SITUATION du Round (sous-ensemble de Scènes du moment + menaces imposées), Scènes cinématiques (une
+ * par PJ), aléa environnemental, Test spectaculaire, Rassemblement, issue. Responsive.
  */
 export function MassBattleView() {
   const mb = useGame((s) => s.massBattle);
@@ -21,7 +25,9 @@ export function MassBattleView() {
         <p className="subtitle">
           {mb.phase === 'over'
             ? 'La bataille est terminée.'
-            : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
+            : mb.phase === 'inspire'
+              ? 'Préparatifs — Activités de bataille'
+              : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
         </p>
         <div className="rule-fleur" aria-hidden>⚜</div>
         <ArmyBars mb={mb} />
@@ -61,49 +67,100 @@ function ArmyBar({ army, side }: { army: MassBattleArmy; side: 'ally' | 'enemy' 
 
 function PreBattle({ mb }: { mb: MassBattleState }) {
   const inspire = useGame((s) => s.massBattleInspire);
+  const activity = useGame((s) => s.massBattleActivity);
   const begin = useGame((s) => s.massBattleBegin);
   const diff = inspireDifficulty(mb.ally.might, mb.enemy.might);
+  const activities = battleActivitiesAvailable(mb);
+  const count = prepCount(mb);
+  const full = count >= 3;
+  const [openAct, setOpenAct] = useState<string | null>(null);
   return (
     <section className="panel mb-phase">
       <h3>Avant la bataille</h3>
       <p className="mb-detail">
-        Un Personnage peut galvaniser les troupes avant l'affrontement (Discours inspirant). Difficulté
-        déterminée par l'écart de Puissance : <b>{DIFFICULTY_LABELS[diff]}</b>. En cas de succès :
-        +10 au Test de Puissance du premier Round.
+        Jusqu'à 3 Activités de bataille peuvent influer sur l'affrontement (Discours, Planification,
+        Repérage, Sabotage…). <b>{count} / 3</b> réalisée{count > 1 ? 's' : ''}.
       </p>
       {mb.allyMod !== 0 && (
-        <p className="mb-detail">Planification : <b>{mb.allyMod > 0 ? '+' : ''}{mb.allyMod}</b> à tous les Tests de Puissance alliés.</p>
+        <p className="mb-detail">Modificateur permanent aux Tests de Puissance alliés : <b>{mb.allyMod > 0 ? '+' : ''}{mb.allyMod}</b>.</p>
       )}
       {mb.firstRoundBonus > 0 && (
         <p className="mb-detail mb-good">Discours réussi : +{mb.firstRoundBonus} au premier Round.</p>
       )}
+      {(mb.planned || mb.scouted || mb.planningBonus > 0) && (
+        <p className="mb-detail">
+          {mb.scouted && <>Ennemi repéré (Puissance connue). </>}
+          {mb.planned && <>Plan de bataille établi. </>}
+          {mb.planningBonus > 0 && <>Bonus de Planification : +{mb.planningBonus}.</>}
+        </p>
+      )}
       <div className="bar mb-actions">
-        <button className="btn small" disabled={!!mb.inspired} onClick={inspire}>
-          {mb.inspired ? 'Discours prononcé' : 'Discours inspirant (Commandement)'}
+        <button className="btn small" disabled={!!mb.inspired || full} onClick={inspire}>
+          {mb.inspired ? 'Discours prononcé' : `Discours inspirant (Commandement — ${DIFFICULTY_LABELS[diff]})`}
         </button>
+      </div>
+      <div className="mb-scenes">
+        {activities.map((a) => (
+          <div key={a.id} className="mb-scene">
+            <div className="bar mb-scene-head">
+              <button className="btn small btn-primary" disabled={full} onClick={() => activity(a.id)}>{a.label}</button>
+              <span className="mb-scene-eff">{activityEffectLabel(a)}</span>
+              <button className="btn small ghost" onClick={() => setOpenAct(openAct === a.id ? null : a.id)}>
+                {openAct === a.id ? 'Masquer' : 'Détails'}
+              </button>
+            </div>
+            {openAct === a.id && <div className="mb-scene-desc"><Prose md={a.desc} /></div>}
+          </div>
+        ))}
+      </div>
+      <div className="bar mb-actions">
         <button className="btn btn-primary" onClick={begin}>Engager la bataille</button>
       </div>
     </section>
   );
 }
 
-/** Aperçu chiffré de l'effet d'une Scène (delta de Puissance). */
-function sceneEffectLabel(scene: BattleSceneDef): string {
-  const { side, scale, amount } = scene.effect;
-  const who = side === 'ally' ? 'Puissance alliée' : 'Puissance ennemie';
-  const sign = amount >= 0 ? '+' : '';
-  if (scale === 'perDR') return `${who} ${sign}${amount} par DR`;
-  if (scale === 'perKill') return `${who} ${sign}${amount} par ennemi vaincu`;
-  return `${who} ${sign}${amount}`;
+/** Aperçu chiffré des effets d'une Activité (Succès / Stupéfiant). */
+function activityEffectLabel(a: BattleActivityDef): string {
+  const fmt = (o: { target: string; amount: number }) => `${o.amount >= 0 ? '+' : ''}${o.amount} ${ACT_TARGET[o.target] ?? o.target}`;
+  const base = a.onSuccess.map(fmt).join(', ');
+  return a.onStunning ? `${base} (Stupéfiant : ${a.onStunning.map(fmt).join(', ')})` : base;
 }
+const ACT_TARGET: Record<string, string> = {
+  allyTestMod: 'Tests alliés', allyMight: 'Puiss. alliée', enemyMight: 'Puiss. ennemie',
+  firstRoundBonus: '1er Round', planningBonus: 'Planification',
+};
+
+/** Aperçu chiffré des effets d'une Scène (base + conditionnels). */
+function sceneEffectLabel(scene: BattleSceneDef): string {
+  if (!scene.effects.length) return scene.threat ? `Menace : ${scene.threat.penalty} aux autres Scènes` : 'Sans effet direct';
+  const fmt = (e: { side: 'ally' | 'enemy'; scale: string; amount: number; when?: string }) => {
+    const who = e.side === 'ally' ? 'Puiss. alliée' : 'Puiss. ennemie';
+    const per = e.scale === 'perDR' ? '/DR' : e.scale === 'perHit' ? '/touche' : e.scale === 'perKill' ? '/vaincu' : '';
+    const cond = e.when ? ` (si ${WHEN_LABEL[e.when] ?? e.when})` : '';
+    return `${who} ${e.amount >= 0 ? '+' : ''}${e.amount}${per}${cond}`;
+  };
+  return scene.effects.map(fmt).join(' ; ');
+}
+const WHEN_LABEL: Record<string, string> = {
+  generalDown: 'général tué', intervention: 'intervention', noIntervention: 'duel solo',
+  stunningSuccess: 'Stupéfiant', stunningFailure: 'échec Stupéfiant', success: 'succès', failure: 'échec',
+};
 
 function RoundPanel({ mb }: { mb: MassBattleState }) {
   const chooseScene = useGame((s) => s.massBattleScene);
   const rollHazard = useGame((s) => s.massBattleHazard);
   const clash = useGame((s) => s.massBattleClash);
+  const rally = useGame((s) => s.massBattleRally);
+  const advance = useGame((s) => s.massBattleAdvance);
+  const party = useGame((s) => s.party);
   const scenes = massBattleScenes(mb);
   const [openScene, setOpenScene] = useState<string | null>(null);
   const allyBonus = mb.allyMod + (mb.round === 1 ? mb.firstRoundBonus : 0);
+  const threatPen = massBattleThreatPenalty(mb);
+  const livingHeroes = party.filter((h) => !h.dead);
+  const remaining = livingHeroes.filter((h) => !mb.actedHeroes.includes(h.id)).length;
+  const woundedRally = mb.awaitingNext && livingHeroes.some((h) => !mb.ralliedHeroes.includes(h.id) && h.wounds.current < h.wounds.max);
   return (
     <section className="panel mb-phase">
       {mb.terrain && (
@@ -112,6 +169,11 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
           <Prose md={mb.terrain} />
         </div>
       )}
+      {threatPen !== 0 && (
+        <p className="mb-detail mb-clash">
+          Menace non vaincue : les Tests des autres Scènes subissent {threatPen} (vainquez-la pour la lever).
+        </p>
+      )}
       {mb.lastClash && (
         <p className="mb-detail mb-clash">
           Round précédent : les Personnages réduisent l'ennemi de {mb.lastClash.enemyLoss}, l'ennemi
@@ -119,24 +181,23 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
         </p>
       )}
 
-      <h3>Scènes cinématiques</h3>
-      {mb.sceneResolved ? (
-        <p className="mb-detail mb-good">
-          Scène résolue ce Round{mb.sceneDelta ? ` : ${mb.sceneDelta.label} — Puissance ${mb.sceneDelta.side === 'ally' ? 'alliée' : 'ennemie'} ${mb.sceneDelta.amount >= 0 ? '+' : ''}${mb.sceneDelta.amount}.` : '.'}
-        </p>
-      ) : (
-        <div className="mb-scenes">
-          {scenes.map((sc) => (
-            <div key={sc.id} className="mb-scene">
+      <h3>Scènes du moment {!mb.awaitingNext && <span className="mb-scene-kind">— {remaining} PJ disponible{remaining > 1 ? 's' : ''}</span>}</h3>
+      <div className="mb-scenes">
+        {scenes.map((sc) => {
+          const resolved = mb.resolvedScenes.includes(sc.id);
+          const kindLabel = sc.kind === 'combat' ? 'Combat' : sc.kind === 'threat' ? 'Menace' : 'Compétence';
+          return (
+            <div key={sc.id} className={`mb-scene${resolved ? ' mb-scene-done' : ''}`}>
               <div className="bar mb-scene-head">
                 <button
                   className="btn small btn-primary"
+                  disabled={resolved || mb.awaitingNext || (sc.kind === 'test' && remaining === 0)}
                   onClick={() => chooseScene(sc.id)}
-                  title={sc.kind === 'combat' ? 'Combat tactique — la victoire réduit la Puissance ennemie' : 'Test de Compétence'}
+                  title={sc.kind === 'test' ? 'Test de Compétence' : 'Combat tactique — la victoire modifie la Puissance'}
                 >
                   {sc.label}
                 </button>
-                <span className="mb-scene-kind">{sc.kind === 'combat' ? 'Combat' : 'Compétence'}</span>
+                <span className="mb-scene-kind">{resolved ? 'Résolue' : kindLabel}</span>
                 <span className="mb-scene-eff">{sceneEffectLabel(sc)}</span>
                 <button className="btn small ghost" onClick={() => setOpenScene(openScene === sc.id ? null : sc.id)}>
                   {openScene === sc.id ? 'Masquer' : 'Détails'}
@@ -144,8 +205,13 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
               </div>
               {openScene === sc.id && <div className="mb-scene-desc"><Prose md={sc.desc} /></div>}
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+      {mb.sceneDeltas.length > 0 && (
+        <p className="mb-detail mb-good">
+          Ce Round : {mb.sceneDeltas.map((d) => `${d.label} (${d.side === 'ally' ? 'alliée' : 'ennemie'} ${d.amount >= 0 ? '+' : ''}${d.amount})`).join(', ')}.
+        </p>
       )}
 
       <h3>Aléa de bataille</h3>
@@ -155,10 +221,11 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
         </div>
       ) : (
         <div className="bar mb-actions">
-          <button className="btn small" onClick={() => rollHazard()}>Tirer un facteur (1d10)</button>
+          <button className="btn small" disabled={mb.awaitingNext} onClick={() => rollHazard()}>Tirer un facteur (1d10)</button>
           <select
             className="mb-select"
             defaultValue=""
+            disabled={mb.awaitingNext}
             aria-label="Choisir un facteur environnemental"
             onChange={(e) => { if (e.target.value) rollHazard(Number(e.target.value)); }}
           >
@@ -168,12 +235,21 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
         </div>
       )}
 
-      <div className="bar mb-actions mb-clash-actions">
-        <button className="btn btn-primary" onClick={clash} title="Résoudre l'affrontement des deux armées (Test spectaculaire de Puissance)">
-          Test spectaculaire de Puissance
-        </button>
-        {allyBonus !== 0 && <span className="mb-detail">Bonus allié ce Round : {allyBonus > 0 ? '+' : ''}{allyBonus}</span>}
-      </div>
+      {mb.awaitingNext ? (
+        <div className="bar mb-actions mb-clash-actions">
+          {woundedRally && (
+            <button className="btn small" onClick={rally} title="Test de Résistance de guérison (l.122)">Rassemblement (Résistance)</button>
+          )}
+          <button className="btn btn-primary" onClick={advance}>Round suivant</button>
+        </div>
+      ) : (
+        <div className="bar mb-actions mb-clash-actions">
+          <button className="btn btn-primary" onClick={clash} title="Résoudre l'affrontement des deux armées (Test spectaculaire de Puissance)">
+            Test spectaculaire de Puissance
+          </button>
+          {allyBonus !== 0 && <span className="mb-detail">Bonus allié ce Round : {allyBonus > 0 ? '+' : ''}{allyBonus}</span>}
+        </div>
+      )}
     </section>
   );
 }

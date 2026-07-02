@@ -162,6 +162,7 @@ import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
 import { emitCombatEvent } from './combatEvents';
+import { massBattleTrackHit } from './massBattleFlow';
 // Géométrie de combat extraite (placement/déplacement/zones/flanc-dos/vision) — importée pour
 // l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
 import {
@@ -1776,6 +1777,9 @@ export function applyAttackResult(
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
   if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng(), set })) log.push(ev('condition', line, target.id));
+  // Combat de masse (ADE II 08 l.139/145) : une Scène de COMBAT compte les touches des PJ sur l'ennemi
+  // (−1/touche) ; no-op hors bataille de masse. Réduction PUIS résolue à la victoire (massBattleResumeCombat).
+  if (res.hit) massBattleTrackHit(get, set, attacker, target);
   // Munitions/armes à AIRE (Tir de zone / Explosion) — résolveur UNIQUE partagé avec la bordée navale
   // (`combatArea.resolveWeaponArea`). Bande de portée + rayon en mètres convertis à l'échelle de la scène ;
   // les États « infligés par l'arme » sont propagés par le chemin GÉNÉRIQUE onHit (cf. `hitSecondary`).

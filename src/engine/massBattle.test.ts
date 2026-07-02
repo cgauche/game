@@ -2,10 +2,12 @@ import { describe, it, expect } from 'vitest';
 import type { RNG } from './dice';
 import {
   mightFromRelation, estimateMightFromAspects, warMachineMight, normalizeMights,
-  mightReduction, rollMightTest, resolveClash, sceneMightDelta, applyMightDelta,
+  mightReduction, rollMightTest, resolveClash, applyMightDelta,
   battleOutcome, isDestroyed, inspireDifficulty, difficultyFromModifier, roundToTen,
-  battleHazard, battleSceneById, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
+  battleHazard, battleSceneById, battleActivityById, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
   WAR_MACHINES, STRUCTURES, BATTLE_HAZARDS,
+  sceneDeltas, sceneChains, effectAmount, condMet, testResolution, combatResolution,
+  rallyHealAmount, activityOutcomes,
 } from './massBattle';
 
 /** RNG déterministe : renvoie tour à tour les d100 fournis (bornés à [min,max]). */
@@ -110,28 +112,108 @@ describe('Discours inspirant (l.71)', () => {
 });
 
 describe('Scènes cinématiques (l.135-225)', () => {
-  it('delta signé : perDR × DR, perKill × ennemis, fixed plat', () => {
+  it('montant signé d\'un effet : perDR × DR, perHit × touches, perKill × kills, fixed plat', () => {
+    const win = combatResolution(5, 1, 1); // 5 touches, 1 kill
     // Motivation : ally +DR (l.151).
-    expect(sceneMightDelta({ side: 'ally', scale: 'perDR', amount: 1 }, 4)).toBe(4);
-    // Charge : enemy −2 par ennemi neutralisé (l.139).
-    expect(sceneMightDelta({ side: 'enemy', scale: 'perKill', amount: -2 }, 3)).toBe(-6);
+    expect(effectAmount({ side: 'ally', scale: 'perDR', amount: 1 }, testResolution(true, 4))).toBe(4);
+    // Charge (l.139) : −1 par touche, −2 par kill.
+    expect(effectAmount({ side: 'enemy', scale: 'perHit', amount: -1 }, win)).toBe(-5);
+    expect(effectAmount({ side: 'enemy', scale: 'perKill', amount: -2 }, win)).toBe(-2);
     // Duel : enemy −20 plat (l.225).
-    expect(sceneMightDelta({ side: 'enemy', scale: 'fixed', amount: -20 }, 0)).toBe(-20);
+    expect(effectAmount({ side: 'enemy', scale: 'fixed', amount: -20 }, win)).toBe(-20);
+  });
+
+  it('Charge (l.139) : deltas = −1/touche ET −2/kill (5 touches + 1 kill = −7)', () => {
+    const charge = battleSceneById('charge')!;
+    const deltas = sceneDeltas(charge, combatResolution(5, 1, 1));
+    const total = deltas.reduce((s, d) => s + d.amount, 0);
+    expect(total).toBe(-7); // 5×−1 + 1×−2 (l.139 : « touché » −1, « neutralisé » −2 de plus)
+  });
+
+  it('Ligne de mire (l.208) : −5 de base, −5 de PLUS si le général tombe (Succès Stupéfiant)', () => {
+    const ldm = battleSceneById('ligne-de-mire')!;
+    expect(sceneDeltas(ldm, testResolution(true, 2)).reduce((s, d) => s + d.amount, 0)).toBe(-5);
+    expect(sceneDeltas(ldm, testResolution(true, 6)).reduce((s, d) => s + d.amount, 0)).toBe(-10);
+  });
+
+  it('Survol (l.217) : −5, et −15 de PLUS si le général tombe ; Échec Stupéfiant → Charge', () => {
+    const survol = battleSceneById('survol')!;
+    expect(sceneDeltas(survol, testResolution(true, 2)).reduce((s, d) => s + d.amount, 0)).toBe(-5);
+    expect(sceneDeltas(survol, testResolution(true, 6)).reduce((s, d) => s + d.amount, 0)).toBe(-20);
+    // Échec Stupéfiant (DR ≤ −6) : chute + Charge imposée au Round suivant.
+    expect(sceneChains(survol, testResolution(false, -6))).toEqual(['charge']);
+    expect(sceneChains(survol, testResolution(false, -2))).toEqual([]);
+  });
+
+  it('Duel (l.225) : −20 en solo, −10 + Charge si intervention', () => {
+    const duel = battleSceneById('duel')!;
+    // Victoire solo (1 frappeur) → −20, pas de Charge.
+    expect(sceneDeltas(duel, combatResolution(3, 1, 1)).reduce((s, d) => s + d.amount, 0)).toBe(-20);
+    expect(sceneChains(duel, combatResolution(3, 1, 1))).toEqual([]);
+    // Intervention (2 frappeurs) → −10 + Charge enchaînée.
+    expect(sceneDeltas(duel, combatResolution(4, 1, 2)).reduce((s, d) => s + d.amount, 0)).toBe(-10);
+    expect(sceneChains(duel, combatResolution(4, 1, 2))).toEqual(['charge']);
+  });
+
+  it('condMet : un effet sans `when` s\'applique sur Succès ; les `when` gatent le reste', () => {
+    expect(condMet(undefined, testResolution(true, 0))).toBe(true);
+    expect(condMet(undefined, testResolution(false, 0))).toBe(false);
+    expect(condMet('failure', testResolution(false, -2))).toBe(true);
+    expect(condMet('stunningFailure', testResolution(false, -6))).toBe(true);
+    expect(condMet('stunningFailure', testResolution(false, -3))).toBe(false);
+    expect(condMet('generalDown', testResolution(true, 6))).toBe(true);
+    expect(condMet('generalDown', testResolution(true, 3))).toBe(false);
+  });
+
+  it('enchaînements sur échec : Compte à rebours → Motivation ; Percée → Charge', () => {
+    expect(sceneChains(battleSceneById('compte-a-rebours')!, testResolution(false, -2))).toEqual(['motivation']);
+    expect(sceneChains(battleSceneById('percee')!, testResolution(false, -2))).toEqual(['charge']);
+    expect(sceneChains(battleSceneById('percee')!, testResolution(true, 2))).toEqual([]);
   });
 
   it('les gains d\'une Scène sont plafonnés à la Puissance de départ (l.135)', () => {
-    // Départ 60, courant 55 → +DR 10 plafonné à 60.
     expect(applyMightDelta(55, 60, 10)).toBe(60);
-    // Une perte va jusqu'à 0.
     expect(applyMightDelta(6, 60, -10)).toBe(0);
-    // Un gain sous le plafond passe.
     expect(applyMightDelta(40, 60, 10)).toBe(50);
   });
 
-  it('catalogue de Scènes data-driven', () => {
+  it('catalogue de Scènes data-driven — 12 Scènes + menace Intrus', () => {
     expect(battleSceneById('motivation')?.kind).toBe('test');
     expect(battleSceneById('charge')?.kind).toBe('combat');
-    expect(battleSceneById('duel')?.effect).toEqual({ side: 'enemy', scale: 'fixed', amount: -20 });
+    expect(battleSceneById('intrus')?.kind).toBe('threat');
+    expect(battleSceneById('intrus')?.threat?.penalty).toBe(-20);
+    expect(battleSceneById('duel')?.effects).toEqual([
+      { side: 'enemy', scale: 'fixed', amount: -20, when: 'noIntervention' },
+      { side: 'enemy', scale: 'fixed', amount: -10, when: 'intervention' },
+    ]);
+  });
+});
+
+describe('Rassemblement (l.122) & Activités pré-combat (l.79-106)', () => {
+  it('Rassemblement : guérit DR + Bonus d\'Endurance', () => {
+    expect(rallyHealAmount(3, 4)).toBe(7);
+    expect(rallyHealAmount(0, 4)).toBe(4);
+    expect(rallyHealAmount(-2, 4)).toBe(4); // DR négatif borné à 0
+  });
+
+  it('Activités : Succès Stupéfiant remplace le Succès ; Échec Stupéfiant applique sa pénalité', () => {
+    const plan = battleActivityById('planification')!;
+    expect(activityOutcomes(plan, true, 2)).toEqual([{ target: 'allyTestMod', amount: 10 }]); // Succès +10 (l.81)
+    expect(activityOutcomes(plan, true, 6)).toEqual([{ target: 'allyTestMod', amount: 20 }]); // Stupéfiant +20
+    const rassembler = battleActivityById('rassembler-des-forces')!;
+    expect(activityOutcomes(rassembler, true, 6)).toEqual([{ target: 'allyMight', amount: 10 }]);
+    expect(activityOutcomes(rassembler, false, -6)).toEqual([{ target: 'allyMight', amount: -10 }]); // mutinerie (l.96)
+    expect(activityOutcomes(rassembler, false, -2)).toEqual([]);
+    // Sabotage : −5 / −10 sur la Puissance ennemie (l.106).
+    const sab = battleActivityById('sabotage')!;
+    expect(activityOutcomes(sab, true, 6)).toEqual([{ target: 'enemyMight', amount: -10 }]);
+  });
+
+  it('prérequis d\'Activités data-driven', () => {
+    expect(battleActivityById('infiltration')?.requires).toBe('planned');
+    expect(battleActivityById('sabotage')?.requires).toBe('scouted');
+    expect(battleActivityById('reperage')?.grantsFlag).toBe('scouted');
+    expect(battleActivityById('planification')?.grantsFlag).toBe('planned');
   });
 });
 
