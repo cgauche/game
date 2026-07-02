@@ -62,6 +62,17 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   à tel AUTRE port » (index géographique du Reikland) reste une feature de scénario future (nécessite
   un index géographique mappé à la carte + un board de rumeurs persistant).
 
+### Compagnon de Mort sur le Reik (T2C) — apports au-delà du commerce (repérés, non couverts)
+- **Navigation fluviale (T2C ch.5)** : la barge n'est qu'un transport payant dans `travelFlow` (on paie,
+  on arrive) — AUCUN Test de Navigation (Voile/Ramer), ni périls/météo de rivière. Le système de Test
+  d'équipage n'existe que pour les routes MARITIMES (`seaVoyageFlow`). Gap : navigation fluviale non
+  modélisée (pourrait réutiliser/adapter la machinerie navale).
+- **Améliorations de bateau (T2C ch.10 : Blindage, coque…)** : absent (ni éditable ni joué).
+- **Naufrageurs / contrebandiers / pirates (ch.12) & bestiaire fluvial (ch.13)** : contenu d'embuscade/
+  créatures — porté par `MapRoute.ambush` mais non peuplé dans le scénario de commerce (démo pure).
+- **Maladies transmises par l'eau (ch.14)** : `waterExposure` existe et est éditable, mais aucun scénario
+  ne l'exerce — le scénario fluvial `15-commerce-fluvial` serait le candidat naturel.
+
 ### Naval (MDG)
 - **Artilleur haut-elfe** : la substitution de compétence par espèce (MDG 09) n'a aucun siège moteur
   (les carrières sont sans dimension d'espèce) → règle laissée verbatim dans le `desc` de la carrière.
@@ -86,7 +97,7 @@ Source : audit adversarial par domaine (juillet 2026). Statut = jouable (scénar
 
 | Système | Domaine | Ce qu'il manque |
 |---|---|---|
-| Commerce terrestre T2C (`MapPlace.market`) | Économie | Accès au commerce (Effet/action) + section « Marché » dans WorldMapEditor + scénario. Moteur `landCargo.ts` FAIT. **Mutualiser avec « Marchés terrestres » (même trou).** |
+| ~~Commerce terrestre/fluvial T2C (`MapPlace.market`)~~ ✅ **RÉSOLU** (commit c77bc2cb) | Économie | Scénario `15-commerce-fluvial` (28 villes réelles du Reik, indices verbatim T2C ch.11) + section « Marché » éditable dans WorldMapEditor + boucle achat/barge/revente prouvée. |
 | Poursuites terrestres (`pursuit`) | Voyage | Flux de poursuite dans `travelFlow` (UI, sur le modèle `seaVoyageFlow`) + scénario + Effet `startPursuit`. `pursuit.ts` FAIT. |
 | Jeux de taverne | Économie | Effet `openTavernGames` + scénario + activer la règle `tavern-games`. Moteur (`tavernGame.ts`/`tavernFlow.ts`) FAIT. |
 | Troc (objet ↔ objet) | Économie | Brancher l'UI de troc au panneau marchand (action store `barterExchange` déjà là) + scénario. |
