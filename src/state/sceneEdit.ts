@@ -148,6 +148,24 @@ export function paintHeight(scene: Scene, p: Pt, metres: number, brush: number, 
   return { ...scene, layers: scene.layers.map((l) => (l.z === layer.z ? { ...l, height } : l)) };
 }
 
+/** Marque un carré de côté `brush` centré sur p comme « zone rempart » (surélevée solide, id de structure
+ *  crénelée = `structure`), sur la couche `z`. Miroir de `paintHeight` sur le tableau parallèle `rampart`.
+ *  `structure = null` efface le marquage. La HAUTEUR se pose à part (`paintHeight`) — une zone rempart est
+ *  une zone surélevée MARQUÉE, les deux sont orthogonaux. */
+export function paintRampart(scene: Scene, p: Pt, structure: string | null, brush: number, z = 0): Scene {
+  const { w, h } = scene.dimensions;
+  if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return scene;
+  const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];
+  const rampart = [...(layer.rampart ?? new Array(w * h).fill(null))] as (string | null)[];
+  const r = Math.floor((brush - 1) / 2);
+  for (let dy = -r; dy <= r; dy++)
+    for (let dx = -r; dx <= r; dx++) {
+      const x = p.x + dx, y = p.y + dy;
+      if (x >= 0 && y >= 0 && x < w && y < h) rampart[y * w + x] = structure;
+    }
+  return { ...scene, layers: scene.layers.map((l) => (l.z === layer.z ? { ...l, rampart } : l)) };
+}
+
 /** Pose un EMPLACEMENT DE SIÈGE à p via le builder PARTAGÉ `siegeEmplacementEntity` (même source que les
  *  scénarios) : une SceneEntity-personnage portant `ref` (source de l'engin → la branche siège de
  *  `spawnEnemy` construit l'affût inerte) et un poste d'artillerie (`postes:[{ item, crewIds:[] }]`).
@@ -353,7 +371,8 @@ export function patchEntityCombat(scene: Scene, id: string, patch: Partial<NonNu
 /** Pose (ou REMPLACE) la couche `z` avec des tuiles complètes + hauteurs optionnelles, triée par z. Brique
  *  d'import d'une grille ASCII entière (`buildScene`) — là où `paintTiles`/`paintHeight` posent case par case. */
 export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: number[]): Scene {
-  const layer = { z, tiles, ...(height ? { height } : {}) };
+  const prev = scene.layers.find((l) => l.z === z);
+  const layer = { z, tiles, ...(height ? { height } : {}), ...(prev?.rampart ? { rampart: prev.rampart } : {}) };
   const others = scene.layers.filter((l) => l.z !== z);
   return { ...scene, layers: [...others, layer].sort((a, b) => a.z - b.z) };
 }

@@ -563,7 +563,11 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // (lumière/Ligne de Vue) mais que des adversaires EXISTENT, l'ennemi avance d'un cran vers le plus
   // proche NON perçu — il ne tire/lance PAS dessus (pas de vue), il se RAPPROCHE seulement (mouvement
   // seul), au lieu de passer son tour planté. Pur : aucune cible non perçue n'est jamais visée.
-  if (heroes.length === 0) {
+  // EXCEPTION (AA l.3808) : une pièce de siège peut n'avoir QUE la STRUCTURE en vue (défenseurs cachés
+  // derrière le parapet) — elle a alors un vrai coup jouable (brécher la porte), on ne la fait pas errer.
+  const shootableStructureInView = hasRanged && !reloadNeeded
+    && (input.structures ?? []).some((st) => st.pos && losClear(scene, pos, { ...structureAimCell(pos, st), z: pos.z }, smoke ?? []));
+  if (heroes.length === 0 && !shootableStructureInView) {
     const closest = [...input.heroes].filter((h) => h.pos).sort((a, b) => manhattan(pos, a.pos!) - manhattan(pos, b.pos!))[0];
     if (!closest) return forced({ kind: 'end' });
     let to: Pt | null = null;

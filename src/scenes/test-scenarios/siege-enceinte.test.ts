@@ -39,7 +39,7 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(s.dimensions.h - WALL_ROW).toBeLessThan(WALL_ROW); // cour ≪ champ
   });
 
-  it('enceinte : PORTE flush dans la ligne du mur (cols 14-15) + courtine en pierre ; parapet z1 ; aucune hauteur de mur', () => {
+  it('enceinte : PORTE flush dans la ligne du mur (cols 14-15) + courtine en pierre ; chemin de ronde = ZONE REMPART', () => {
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
     expect(gate.length).toBe(2);
@@ -48,9 +48,15 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     // Courtine `mur-en-pierre` sur toutes les AUTRES colonnes (0-13, 16-29 = 28 arêtes).
     const courtine = s.walls!.filter((w) => w.structure === 'mur-en-pierre' && w.y === WALL_ROW);
     expect(courtine.length).toBe(28);
-    // PARAPET z1 sur l'arête EXTÉRIEURE (arête N de y37), TOUTES colonnes.
-    const parapet = s.walls!.filter((w) => w.z === 1 && w.y === WALL_ROW - 1 && w.side === 'N' && !w.structure);
-    expect(parapet.length).toBe(30);
+    // CHEMIN DE RONDE = ZONE REMPART solide (couche z1, rows 38-39) : marquée `layer.rampart='mur-en-pierre'`
+    // (le RENDU en dérive la face de maçonnerie + la crénelure de périmètre) — plus de WallSeg parapet authoré.
+    const z1 = s.layers.find((l) => l.z === 1)!;
+    expect(z1.rampart).toBeDefined();
+    const W = s.dimensions.w;
+    for (const x of [0, 8, 15, 21, 29])
+      for (const y of [38, 39]) expect(z1.rampart![y * W + x]).toBe('mur-en-pierre');
+    expect(z1.rampart![37 * W + 0]).toBeNull(); // rangée 37 HORS zone (chemin déporté à l'intérieur)
+    expect(s.walls!.some((w) => (w.z ?? 0) === 1)).toBe(false); // aucun WallSeg z1 (crénelure = rendu, pas donnée de scène)
     // La verticalité du rempart est sa COUCHE z1 (4 m), pas un champ `WallSeg.height` (retiré du contrat).
     expect(s.walls!.every((w) => !('height' in w))).toBe(true);
   });
@@ -61,26 +67,26 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const h0 = s.layers.find((l) => l.z === 0)!.height!;
     const h1 = s.layers.find((l) => l.z === 1)!.height!;
     const idx = (x: number, y: number) => y * s.dimensions.w + x;
-    // Rampe FLANC GAUCHE (cols 3-4) : 39=4 m, 40=3 m, 41=2 m, 42=1 m, 43=0 m (raccord plat).
+    // Rampe FLANC GAUCHE (cols 3-4) : 40=4 m, 41=3 m, 42=2 m, 43=1 m, 44=0 m (raccord plat).
     for (const x of [3, 4]) {
-      expect(h0[idx(x, 39)]).toBe(4); // sommet (rejoint le chemin de ronde)
-      expect(h0[idx(x, 40)]).toBe(3);
-      expect(h0[idx(x, 41)]).toBe(2);
-      expect(h0[idx(x, 42)]).toBe(1);
-      expect(h0[idx(x, 43)]).toBe(0);
+      expect(h0[idx(x, 40)]).toBe(4); // sommet (rejoint le chemin de ronde y39)
+      expect(h0[idx(x, 41)]).toBe(3);
+      expect(h0[idx(x, 42)]).toBe(2);
+      expect(h0[idx(x, 43)]).toBe(1);
+      expect(h0[idx(x, 44)]).toBe(0);
     }
-    // Chemin de ronde z1 (y37 + y38) à 4 m sur TOUTES les colonnes.
+    // Chemin de ronde z1 (y38 + y39) à 4 m sur TOUTES les colonnes (posé PAR L'ASCII via `ramparts`).
     for (const x of [0, 8, 15, 21, 29]) {
-      expect(h1[idx(x, 37)]).toBe(4);
       expect(h1[idx(x, 38)]).toBe(4);
+      expect(h1[idx(x, 39)]).toBe(4);
     }
-    // La PORTE est aux cols 14-15 : DERRIÈRE elle (cols 14-15, rangées 39-43 = la cour) NE contient AUCUNE
+    // La PORTE est aux cols 14-15 : DERRIÈRE elle (cols 14-15, rangées 40-44 = la cour) NE contient AUCUNE
     // case de rampe → hauteur 0 partout (la rampe ne bloque plus la porte, cour = zone de mort dégagée).
     for (const x of [14, 15])
-      for (let y = 39; y <= 43; y++)
+      for (let y = 40; y <= 44; y++)
         expect(h0[idx(x, y)]).toBe(0);
     // Connexité : depuis la cour (z0) on atteint le CHEMIN DE RONDE (z1) par la RAMPE du flanc gauche.
-    const path = pathTo(s, { x: 3, y: 43, z: 0 }, { x: 8, y: WALL_ROW, z: 1 }, { blocked: new Set() });
+    const path = pathTo(s, { x: 3, y: 44, z: 0 }, { x: 8, y: WALL_ROW + 1, z: 1 }, { blocked: new Set() });
     expect(path).not.toBeNull();
     expect(path!.some((p) => (p.z ?? 0) === 1)).toBe(true); // le trajet passe bien sur la couche 1
     // … et il grimpe bien par la rampe du flanc gauche (case surélevée en cols 3/4).

@@ -42,6 +42,7 @@ import {
   patchWall,
   toggleDiagonalWall,
   paintHeight,
+  paintRampart,
   putLayer,
   placeEmplacement,
   setPosteCrew,
@@ -67,7 +68,8 @@ export interface WallSpec {
   structure?: string;
 }
 
-/** Spec de relief : boîte inclusive `rect`, cellule unique `cell`, ou rampe interpolée `ramp`. */
+/** Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté par l'ASCII) : boîte
+ *  inclusive `rect`, cellule unique `cell` (UNE case [x,y]), ou rampe interpolée `ramp`. */
 export type ReliefSpec =
   | { rect: [number, number, number, number]; height: number; z?: number }
   | { cell: [number, number]; height: number; z?: number }
@@ -146,6 +148,16 @@ export interface MapSpec {
   walled?: Record<string, string>;
   /** Char d'arête → id de `structures.json` (structure destructible sur l'arête d'un étage `walled`, ex. herse). */
   wallStructures?: Record<string, string>;
+  /** HAUTEUR (relief) pilotée par l'ASCII (coordonnée-free) : char de LÉGENDE → hauteur métrique, `number` seul
+   *  (`{ '4': 4, '3': 3 }` pour une rampe), OU `{ height, parapet }` pour une ZONE REMPART solide crénelée
+   *  (`{ W: { height: 4, parapet: 'mur-en-pierre' } }` → face de maçonnerie + crénelure de périmètre au rendu).
+   *  Toute case portant le char (n'importe quel étage) prend cette hauteur — remplace les `relief` en coordonnées. */
+  elevate?: Record<string, number | { height: number; parapet: string }>;
+  /** MUR D'ARÊTE posé sur une case d'une grille `levels` (coordonnée-free, sans passer au `walled` box-drawing) :
+   *  char de LÉGENDE → arête d'une case. `side` = l'arête portée (N/E/S/O, canonicalisée). Ex.
+   *  `{ M: { side: 'N', structure: 'mur-en-pierre' }, D: { side: 'N', structure: 'porte-de-ville' } }` pose une
+   *  ligne d'enceinte + porte en marquant la rangée du mur. Pour un plan complet (arêtes tous côtés) → `walled`. */
+  edgeWalls?: Record<string, { side: Edge4; structure?: string; door?: boolean }>;
   walls?: WallSpec[];
   relief?: ReliefSpec[];
   rooms?: RoomSpec[];
@@ -232,6 +244,20 @@ export function buildScene(spec: MapSpec): Scene {
   const bindChars = Object.keys(spec.bind ?? {}).join('');
   const scanned: { char: string; pos: Pt; z: number }[] = [];
   const walledWalls: WallSpec[] = [];
+  // Cases repérées dans l'ASCII pour les char-maps coordonnée-free (`elevate` hauteur/rempart, `edgeWalls`
+  // mur d'arête) — le char est de LÉGENDE (marqueurs déjà nettoyés → markerFill). `elevate` est appliqué à
+  // l'étape 3bis (APRÈS le relief) ; `edgeWalls` génère des `WallSpec` posés à l'étape 4.
+  const elevateCells: { char: string; x: number; y: number; z: number }[] = [];
+  const edgeWallCells: { char: string; x: number; y: number; z: number }[] = [];
+  const scanChars = (rows: string[], z: number, colAt: (r: string, x: number) => string) => {
+    if (!spec.elevate && !spec.edgeWalls) return;
+    for (let y = 0; y < rows.length; y++)
+      for (let x = 0; x < w; x++) {
+        const ch = colAt(rows[y], x);
+        if (spec.elevate?.[ch] !== undefined) elevateCells.push({ char: ch, x, y, z });
+        if (spec.edgeWalls?.[ch]) edgeWallCells.push({ char: ch, x, y, z });
+      }
+  };
   if (spec.levels) {
     for (const [key, rows] of Object.entries(spec.levels)) {
       const z = parseInt(key.replace('z', ''), 10);
@@ -240,6 +266,7 @@ export function buildScene(spec: MapSpec): Scene {
       const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
       const tiles = parseAsciiRows(cleaned, base, spec.legend).tiles;
       s = putLayer(s, z, tiles);
+      scanChars(cleaned, z, (r, x) => r[x] ?? ' ');
     }
   }
   if (spec.walled) {
@@ -252,17 +279,30 @@ export function buildScene(spec: MapSpec): Scene {
       const parsed = parseWalledAscii(padded, base, spec.legend, { structures: spec.wallStructures });
       s = putLayer(s, z, parsed.tiles);
       for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.structure ? { structure: seg.structure } : {}) });
+      scanChars(padded.filter((_, i) => i % 2 === 1), z, (r, x) => r[2 * x + 1] ?? ' '); // tuiles aux slots impairs
     }
   }
   if (!spec.levels && !spec.walled) {
     s = putLayer(s, 0, new Array(w * h).fill(spec.terrain ?? 'herbe') as Terrain[]);
   }
 
-  // 3. relief
+  // 3. relief (coordonnées, repli) PUIS 3bis les hauteurs pilotées par l'ASCII (`elevate`) : nombre = pente/
+  //    palier ; objet `{height, parapet}` = ZONE REMPART (hauteur + marquage `rampart` pour le rendu crénelé).
   for (const r of spec.relief ?? []) s = applyRelief(s, r);
+  for (const c of elevateCells) {
+    const cfg = spec.elevate![c.char];
+    s = paintHeight(s, { x: c.x, y: c.y }, typeof cfg === 'number' ? cfg : cfg.height, 1, c.z);
+    if (typeof cfg === 'object') s = paintRampart(s, { x: c.x, y: c.y }, cfg.parapet, 1, c.z);
+  }
 
-  // 4. walls : ceux extraits des grilles `walled` (arêtes DANS l'ASCII) PUIS les `walls` déclaratifs.
-  for (const wall of [...walledWalls, ...(spec.walls ?? [])]) {
+  // 4. walls : arêtes extraites de `walled`, PUIS `edgeWalls` (chars posés dans une grille `levels`,
+  //    canonicalisés N/E), PUIS les `walls` déclaratifs en coordonnées.
+  const asciiWalls: WallSpec[] = edgeWallCells.map((c) => {
+    const cfg = spec.edgeWalls![c.char];
+    const e = canonEdge(c.x, c.y, cfg.side);
+    return { x: e.x, y: e.y, side: e.side, ...(c.z ? { z: c.z } : {}), ...(cfg.door ? { door: true } : {}), ...(cfg.structure ? { structure: cfg.structure } : {}) };
+  });
+  for (const wall of [...walledWalls, ...asciiWalls, ...(spec.walls ?? [])]) {
     const z = wall.z ?? 0;
     if (wall.side === '\\' || wall.side === '/') {
       s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);

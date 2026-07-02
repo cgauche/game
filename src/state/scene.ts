@@ -426,6 +426,11 @@ export interface Layer {
   z: number;
   tiles: Terrain[];
   height?: number[];
+  /** REMPART : parallèle à `tiles` (indexation `y·w+x`). `null` = tuile ordinaire ; une chaîne = id de
+   *  structure crénelée (`structureAppearance.json`) marquant la case comme « zone surélevée SOLIDE ». Le
+   *  rendu en dérive une face de maçonnerie pleine + une crête crénelée sur le PÉRIMÈTRE de la zone (toute
+   *  arête dont le voisin même-z n'est pas de la zone) — jamais à l'intérieur. Absent = aucune zone rempart. */
+  rampart?: (string | null)[];
 }
 
 /** Aire d'une zone d'effet : rectangle (`rect`) ou disque de Chebyshev (`disc`, rayon en CASES). */
@@ -544,6 +549,30 @@ export function heightAt(scene: Scene, x: number, y: number, z = 0): number {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 0;
   const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];
   return layer.height?.[y * scene.dimensions.w + x] ?? 0;
+}
+
+/** Id de structure crénelée d'une case de « zone rempart » (surélevée solide) sur la couche `z`, ou `null`
+ *  (case ordinaire / hors-grille / sans tableau `rampart`). SOURCE UNIQUE lue par les builders de rendu
+ *  (falaise pleine de périmètre + crête crénelée). PUR. */
+export function rampartAt(scene: Scene, x: number, y: number, z = 0): string | null {
+  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return null;
+  const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];
+  return layer.rampart?.[y * scene.dimensions.w + x] ?? null;
+}
+
+/** La case (x,y,z) appartient-elle à une zone rempart (surélevée solide) ? */
+export function isRampart(scene: Scene, x: number, y: number, z = 0): boolean {
+  return rampartAt(scene, x, y, z) !== null;
+}
+
+/** À travers l'arête cardinale `side` de (x,y,z), existe-t-il une surface MARCHABLE reliée à ~la même
+ *  hauteur (rampe/escalier atteignant une zone surélevée) sur UNE couche quelconque ? → l'arête est un
+ *  ACCÈS ouvert (le rendu de zone rempart n'y pose ni falaise ni crête, sinon l'accès serait emmuré). PUR. */
+export function rampAccessAcross(scene: Scene, x: number, y: number, z: number, side: 'N' | 'E' | 'S' | 'O'): boolean {
+  const [dx, dy] = side === 'N' ? [0, -1] : side === 'E' ? [1, 0] : side === 'S' ? [0, 1] : [-1, 0];
+  const nx = x + dx, ny = y + dy;
+  const sh = heightAt(scene, x, y, z);
+  return scene.layers.some((l) => isWalkable(scene, nx, ny, l.z) && gradeBetween(sh, heightAt(scene, nx, ny, l.z)) !== 'cliff');
 }
 
 export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
