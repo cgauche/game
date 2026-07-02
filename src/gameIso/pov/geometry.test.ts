@@ -329,6 +329,32 @@ describe('buildPovDrawList', () => {
     }
   });
 
+  it('BLOC SOLIDE (mur, opaque) : ses faces prennent le seen/light du VOISIN ouvert, PAS de la tuile-bloc', () => {
+    // Un mur est OPAQUE → jamais dans `visible` (ni éclairé, ni atteint par un rayon). Avant le fix, sa
+    // tuile-bloc (non vue) forçait TOUTES ses faces en silhouette de brume (fogT=1) ou en noir (lv≈0).
+    const s = emptyScene(12, 12);
+    s.layers = [{ z: 0, tiles: new Array(144).fill('sol') }];
+    s.layers[0].tiles[4 * 12 + 6] = 'mur'; // bloc plein à (6,4)
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N'); // au sol, face au mur (regarde Nord, y↓)
+    // Cases OUVERTES devant le mur EN VUE (y=5..8), mais PAS la tuile-bloc (6,4) ni au-delà (opaque).
+    const visible = new Set<string>();
+    for (let y = 5; y <= 8; y++) for (let x = 5; x <= 7; x++) visible.add(`${x},${y},0`);
+    // Lumière : 1 sur les cases ouvertes, 0 SUR la tuile-bloc → une face qui lirait la tuile-bloc serait noire.
+    const light = { at: (x: number, y: number) => (x === 6 && y === 4 ? 0 : 1) };
+    const list = buildPovDrawList(s, cam, visible, light);
+    const fogRgb = 'rgb(159,178,198)'; // brume pure (AMBIANCE.pov.fogOutdoor)
+    // La face S du bloc borde (6,5) — VISIBLE + éclairée → rendue ÉCLAIRÉE (ni brume pure, ni noir).
+    const murRisers = list.filter((it) => it.kind === 'riser' && it.key.startsWith('floor:6,4,0'));
+    expect(murRisers.length).toBeGreaterThan(0);
+    expect(murRisers.some((it) => it.fill !== fogRgb)).toBe(true); // ≥ la face vers le voisin ouvert vu
+    // Le DESSUS du bloc est VU (au moins un voisin ouvert vu) → pas une silhouette de brume pâle au sommet.
+    const murTop = list.find((it) => it.kind === 'floor' && it.key === 'floor:6,4,0');
+    expect(murTop).toBeTruthy();
+    expect(murTop!.fill).not.toBe(fogRgb);
+    // Flanc PIERRE (bloc solide → matériau `pierre`) → appareillage d'assises comme un vrai mur (pas un aplat).
+    expect(list.some((it) => it.kind === 'detail' && it.key.startsWith('floor:6,4,0'))).toBe(true);
+  });
+
   it('multi-niveaux : rend TOUTES les couches d’une colonne visible (sol du groupe + étage/plateforme)', () => {
     const s = emptyScene(6, 6);
     s.layers = [

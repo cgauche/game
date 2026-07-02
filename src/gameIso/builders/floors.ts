@@ -5,7 +5,7 @@
  * de terrain, et les VÉRITÉS DE SCÈNE (visible/surplomb/fantôme/surplomb plein). PUR et
  * projection-agnostique : géométrie en unités de GRILLE + MÈTRES (`GP`), aucune notion de caméra.
  */
-import { Scene, tileAt, heightAt, isWalkable } from '../../state/scene';
+import { Scene, tileAt, heightAt, isWalkable, isRampart, rampAccessAcross, structureAt, edgeOf } from '../../state/scene';
 import { gradeBetween } from '../../state/relief';
 import { terrainPriority, terrainSolidHeightM } from '../../state/terrain';
 import type { CellSide, Face, FloorEl } from './types';
@@ -23,8 +23,9 @@ function displayHeightAt(scene: Scene, x: number, y: number, z: number): number 
   return heightAt(scene, x, y, z) + terrainSolidHeightM(tileAt(scene, x, y, z));
 }
 
-const SIDES: CellSide[] = ['N', 'E', 'S', 'O'];
-const NEIGHBOURS: Record<CellSide, [number, number]> = {
+export const SIDES: CellSide[] = ['N', 'E', 'S', 'O'];
+/** Déplacement de la case VOISINE que borde chaque arête cardinale (source UNIQUE, partagée POV). */
+export const NEIGHBOURS: Record<CellSide, [number, number]> = {
   N: [0, -1],
   E: [1, 0],
   S: [0, 1],
@@ -53,7 +54,18 @@ export function edgeBlends(scene: Scene, x: number, y: number, z = 0): EdgeBlend
  *  ne descend PAS jusqu'au sol (dalle fine + piliers), la couche du dessous reste visible/passable. */
 export function isOverhang(scene: Scene, x: number, y: number, z: number): boolean {
   if (z <= 0) return false;
+  if (isRampart(scene, x, y, z)) return false; // zone rempart SOLIDE : falaise pleine de périmètre, jamais un tablier ajouré
   for (let zz = z - 1; zz >= 0; zz--) if (isWalkable(scene, x, y, zz)) return true;
+  return false;
+}
+
+/** Une STRUCTURE d'arête (porte/courtine/brèche) est-elle posée SOUS l'arête (ax,ay)–(bx,by), pour une
+ *  zone rempart de niveau `zoneZ` ? Le canal MUR (`rampartWallEls`) rend alors sa face/arche pleine hauteur
+ *  → `floorFaces` NE pose PAS sa falaise à cette arête (sinon l'arche serait murée). Scanne z < zoneZ. */
+function structureUnderEdge(scene: Scene, ax: number, ay: number, bx: number, by: number, zoneZ: number): boolean {
+  const e = edgeOf(ax, ay, bx, by);
+  if (!e) return false;
+  for (let zz = zoneZ - 1; zz >= 0; zz--) if (structureAt(scene, e.x, e.y, e.side, zz)) return true;
   return false;
 }
 
@@ -93,12 +105,15 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
   const terrain = tileAt(scene, x, y, z);
   if (terrain === 'vide') return null;
   const self = displayHeightAt(scene, x, y, z); // AFFICHAGE (bloc plein `solidHeightM` compris) — jamais lu par le combat
+  const solidBlock = terrainSolidHeightM(terrain) > 0; // mur (terrain à bloc plein) → flancs en PIERRE, pas en terre
   const faces: Face[] = [];
 
   // PILIERS de support d'un surplomb : pour chaque arête donnant sur le VIDE, deux montants verticaux
   // aux coins de l'arête, du DESSOUS de la dalle jusqu'à la surface inférieure. Coins partagés dédupliqués.
+  // Gaté sur `overhang` (≠ `lowerH != null`) : une ZONE REMPART solide (overhang forcé faux) descend en
+  // falaise PLEINE, sans pilotis (`overhangLowerHeight` verrait pourtant le sol marchable dessous).
   const lowerH = overhangLowerHeight(scene, x, y, z);
-  if (lowerH != null) {
+  if (overhang && lowerH != null) {
     const topH = self - DECK_THICKNESS_M; // dessous de la dalle
     const seen = new Set<string>();
     for (const side of SIDES) {
@@ -128,6 +143,10 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
     if (self <= nb) continue; // la case HAUTE porte la paroi (plateau surélevé ET rebord de fosse)
     const grade = gradeBetween(self, nb);
     if (grade === 'flat') continue; // de niveau → aucune paroi
+    // ZONE REMPART : à une arête de périmètre, ne PAS poser la falaise si (a) une STRUCTURE la porte (porte/
+    // courtine/brèche : sa face/arche vient du canal MUR `rampartWallEls`, sinon on murerait l'arche) ou
+    // (b) c'est un ACCÈS (rampe/escalier atteint la zone à même hauteur → l'entrée reste ouverte).
+    if (isRampart(scene, x, y, z) && (structureUnderEdge(scene, x, y, x + dx, y + dy, z) || rampAccessAcross(scene, x, y, z, side))) continue;
     const deck = overhang && tileAt(scene, x + dx, y + dy, z) === 'vide';
     const loH = deck ? self - DECK_THICKNESS_M : nb;
     const [A, B] = edgeCorners(x, y, side);
@@ -135,8 +154,10 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
       // Quad haut-gauche → haut-droit → bas-droit → bas-gauche (l'ordre attendu par les renderers).
       poly: [{ ...A, h: self }, { ...B, h: self }, { ...B, h: loH }, { ...A, h: loH }],
       side,
-      // Ton : pierre (flanc d'une couche surélevée, ou dalle de tablier) / terre (talus/fosse de la base).
-      material: { domain: 'relief', id: deck || z > 0 ? 'pierre' : 'terre', part: deck ? 'deck' : grade },
+      // Ton : PIERRE (flanc d'un BLOC PLEIN — mur —, d'une couche surélevée, ou dalle de tablier ; le
+      // matériau `pierre` porte sa propre recette d'assises → paroi maçonnée, pas un cube de terre) /
+      // terre (talus/fosse de la base).
+      material: { domain: 'relief', id: deck || z > 0 || solidBlock ? 'pierre' : 'terre', part: deck ? 'deck' : grade },
     });
   }
 
@@ -199,12 +220,21 @@ export function buildFloors(scene: Scene, visible?: ReadonlySet<string>, view?: 
         // rien à protéger → surplomb PLEIN : dessiné opaque comme la structure qu'on perçoit (un rempart
         // en bord de carte) et AU-DESSUS du voile (`visible`), au lieu d'être mangé par l'ombre.
         const solidOverhang = ghost && !isVis(x, y, fogFloorZ(scene, x, y, activeZ));
+        // BLOC SOLIDE (mur : terrain à `solidHeightM`) : OPAQUE → jamais « visible » lui-même (le rayon
+        // vers lui est bloqué par lui-même, son intérieur n'est pas éclairé). Comme un WallSeg (cf.
+        // `buildWalls`), on le dessine AU-DESSUS du voile — structure PERÇUE, opaque — dès qu'une case
+        // OUVERTE qu'il borde est en vue ; sinon il serait grisé sous la brume alors qu'on le voit se
+        // dresser devant soi. `!ghost` : au-dessus de la zone active, seul `solidOverhang` décide.
+        const perceivable =
+          !ghost &&
+          terrainSolidHeightM(tileAt(scene, x, y, lvl.z)) > 0 &&
+          SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; return isVis(x + dx, y + dy, lvl.z); });
         out.push({
           kind: 'floor',
           key: `floor:${x},${y},${lvl.z}`,
           cell: { x, y, z: lvl.z },
           faces,
-          states: { visible: solidOverhang, overhang, ghost, solidOverhang },
+          states: { visible: solidOverhang || perceivable, overhang, ghost, solidOverhang },
         });
       }
   }

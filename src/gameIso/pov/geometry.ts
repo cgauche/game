@@ -46,9 +46,9 @@ import {
   type CamPose,
   type Vec3,
 } from './camera';
-import { sceneMetresPerTile, isIndoor, type Scene } from '../../state/scene';
-import { TERRAIN_DEFS } from '../../state/terrain';
-import { buildFloors } from '../builders/floors';
+import { sceneMetresPerTile, isIndoor, tileAt, type Scene } from '../../state/scene';
+import { TERRAIN_DEFS, terrainSolidHeightM } from '../../state/terrain';
+import { buildFloors, SIDES, NEIGHBOURS } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
 import { structureAppearance, wallPartColor, type WallPart } from '../catalog/structures';
@@ -469,28 +469,73 @@ export function buildPovDrawList(
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
   for (const el of buildFloors(scene, undefined, { activeZ: maxZ })) {
     const { x, y, z } = el.cell;
+    // Un BLOC SOLIDE (mur : terrain à `solidHeightM`) est OPAQUE → `computeVisible` ne le marque JAMAIS
+    // « vu » (la lumière n'atteint pas l'intérieur d'un mur, le rayon vers lui est bloqué par lui-même).
+    // Comme un WallSeg (posé sur une arête bordant une tuile ouverte), chacune de ses faces s'éclaire et
+    // se voit depuis la tuile OUVERTE qu'elle borde, PAS depuis la tuile-bloc elle-même. Les valeurs par
+    // défaut (`seen`/`lv`/`fogOv`, de la tuile) restent celles de tout autre sol/relief ; on ne les
+    // SURCHARGE par face que pour un bloc solide (`fSeen`/`fLv`/`fFog`, ci-dessous).
+    const solid = terrainSolidHeightM(tileAt(scene, x, y, z)) > 0;
     const seen = cols.has(`${x},${y}`);
     const fogOv = seen ? undefined : 1;
     const lv = seen ? light.at(x, y, z) : 0;
     el.faces.forEach((f, i) => {
       if (f.poly.length < 3) return; // pilier (2 points) : hors POV
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
+      // Vue/lumière EFFECTIVES de CETTE face. Bloc solide : un FLANC (relief) prend celles du voisin
+      // ouvert que son arête borde ; le DESSUS (losange terrain) celles du MEILLEUR voisin ouvert vu
+      // (max sur les 4 — sinon il resterait une silhouette pâle au-dessus du mur). Sinon : la tuile.
+      let fSeen = seen;
+      let fLv = lv;
+      let fFog = fogOv;
+      if (solid) {
+        if (f.side && f.material.domain === 'relief') {
+          const [dx, dy] = NEIGHBOURS[f.side];
+          fSeen = cols.has(`${x + dx},${y + dy}`);
+          fLv = fSeen ? light.at(x + dx, y + dy, z) : 0;
+          fFog = fSeen ? undefined : 1;
+        } else if (f.material.domain === 'terrain' && !f.material.part) {
+          fSeen = false;
+          fLv = 0;
+          for (const s of SIDES) {
+            const [dx, dy] = NEIGHBOURS[s];
+            if (cols.has(`${x + dx},${y + dy}`)) { fSeen = true; fLv = Math.max(fLv, light.at(x + dx, y + dy, z)); }
+          }
+          fFog = fSeen ? undefined : 1;
+        }
+      }
       if (f.material.domain === 'relief') {
         // Paroi de relief (falaise/rampe/dalle de tablier) : ombrée comme l'ex-riser (×0.82), au ton du
         // matériau du builder (rampe : dessus de pente si la def en a un).
         const m = reliefMaterial(f.material.id);
         const base = (f.material.part === 'ramp' ? m.slopeTop : undefined) ?? m.face;
-        const it = makeItem(corners, cam, farMetres, lv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog, curve, false, fogOv);
-        if (it) items.push(it);
+        const it = makeItem(corners, cam, farMetres, fLv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog, curve, false, fFog);
+        if (!it) return;
+        items.push(it);
+        // APPAREILLAGE d'un FLANC de BLOC SOLIDE (mur) vu : la pierre porte ses assises (recette `pierre`,
+        // le MÊME `courseDetailItems` que les murs d'arête et l'appareillage iso) → une PAROI, pas un
+        // aplat nu. GATÉ au bloc solide : les vrais reliefs (falaise/rampe naturelle) gardent leur face
+        // nue en POV (parité avec leur rendu POV actuel, aucune régression).
+        if (solid && fSeen && f.side && f.material.part === 'cliff' && m.detail?.courses) {
+          const [P0, P1, , P3] = f.poly; // quad du builder : [A@haut, B@haut, B@bas, A@bas]
+          const frame: FaceFrame = {
+            at: (u, v) => ({ x: (P0.x + (P1.x - P0.x) * u) * mpt, y: (P0.y + (P1.y - P0.y) * u) * mpt, z: P0.h + (P3.h - P0.h) * v }),
+            wM: Math.hypot(P1.x - P0.x, P1.y - P0.y) * mpt,
+            hM: P0.h - P3.h,
+          };
+          const seed = hash32('floor', x, y, z, f.side); // MÊME identité monde que l'appareillage iso (`floorAccentsSvg`)
+          const depthTiles = it.depth / cam.mpt;
+          items.push(...courseDetailItems(m.detail, frame, seed, it.depth, depthTiles, cam, fLv * 0.82, base, `${el.key}:${i}:${f.material.part}`, fog, curve));
+        }
       } else {
         // Losange de terrain (clé historique `floor:x,y,z`) + wedges de raccord (peints PAR-DESSUS leur base).
         const wedge = f.material.part === 'wedge';
         const def = TERRAIN_BY_ID.get(f.material.id);
         const base = def?.swatch ?? FLOOR_FALLBACK;
-        const it = makeItem(corners, cam, farMetres, lv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog, curve, false, fogOv);
+        const it = makeItem(corners, cam, farMetres, fLv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog, curve, false, fFog);
         if (!it) return;
         items.push(it);
-        if (!seen || wedge) return; // silhouette de brume / wedge : aucun détail
+        if (!fSeen || wedge) return; // silhouette de brume / wedge : aucun détail
         const depthTiles = (it.depth - FLOOR_BIAS) / cam.mpt;
         const h = f.poly[0].h;
         const det = def?.detail;
@@ -503,7 +548,7 @@ export function buildPovDrawList(
           const wTint = 1 - Math.min(1, Math.max(0, (depthTiles - LOD.blocksT) / LOD.fadeT));
           if (wTint > 0) {
             const spread = TINT_SPREAD[hash32('tint', x, y, z) % TINT_SPREAD.length];
-            it.fill = tint(shade(base, 1 + det.tintVar * spread * wTint), lv, fogAt(depthTiles, curve), fog);
+            it.fill = tint(shade(base, 1 + det.tintVar * spread * wTint), fLv, fogAt(depthTiles, curve), fog);
           }
         }
         // DÉTAIL DE SURFACE sur l'espace TUILE (mpt × mpt) : RANGS d'appareillage (pavé/dalle/planches),
@@ -515,8 +560,8 @@ export function buildPovDrawList(
             wM: mpt,
             hM: mpt,
           };
-          if (det.courses) items.push(...courseDetailItems(det, frame, seed, it.depth, depthTiles, cam, lv, base, el.key, fog, curve));
-          if (det.tufts || det.speckle) items.push(...groundAccentItems(det, frame, seed, it.depth, depthTiles, cam, lv, base, `${x},${y},${z}`, fog, curve));
+          if (det.courses) items.push(...courseDetailItems(det, frame, seed, it.depth, depthTiles, cam, fLv, base, el.key, fog, curve));
+          if (det.tufts || det.speckle) items.push(...groundAccentItems(det, frame, seed, it.depth, depthTiles, cam, fLv, base, `${x},${y},${z}`, fog, curve));
         }
         // MAILLAGE DE TUILES — LE repère de profondeur au sol, jusqu'à la portée max. Terrain
         // appareillé → son joint (vraie ligne d'appareillage, dès la 1re case) ; terrain nu MARCHABLE
@@ -560,7 +605,7 @@ export function buildPovDrawList(
             if (!d || w <= 0) return;
             items.push({
               path: d,
-              stroke: tint(mixHex(base, strokeBase!, w), lv, fogT, fog),
+              stroke: tint(mixHex(base, strokeBase!, w), fLv, fogT, fog),
               strokeW,
               depth: meshDepth,
               key: `mesh:${x},${y},${z}${suffix}`,
