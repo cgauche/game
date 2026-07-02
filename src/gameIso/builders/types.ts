@@ -105,10 +105,28 @@ export interface WallEl extends ElBase {
   door: boolean;
   faces: Face[];
 }
+/** Ligne SÉMANTIQUE d'un toit, en MONDE : faîte (crête horizontale), arêtier (crête/noue diagonale),
+ *  égout (bord bas de la nappe), rang (rangée de tuiles le long de la pente). Les backends la stylent
+ *  depuis la def du matériau (`line`/`course`) — le builder ne connaît que la géométrie. */
+export type RoofLineKind = 'faite' | 'aretier' | 'egout' | 'rang';
+export interface RoofLine {
+  a: GP;
+  b: GP;
+  kind: RoofLineKind;
+}
 export interface RoofEl extends ElBase {
   kind: 'roof';
   sortClass: 'roof';
+  /** Empreinte du toit (cases) — profondeur de tri au coin caméra-proche (`footprintDepth`). */
+  span: { w: number; h: number };
+  /** Matériau de couverture (id `RoofMaterialDef`) : chaque backend résout les teintes par `part`. */
+  material: string;
+  /** Étiquette du mode plan (vue du dessus / éditeur). */
+  label: string;
+  /** PANS CONTINUS : UNE face par pan (plane 'slope', part = orientation N/E/S/O de la pente
+   *  DESCENDANTE) — plus aucune nappe par-cellule. */
   faces: Face[];
+  lines: RoofLine[];
 }
 /** Élément BILLBOARD (zéro face) : le backend rend le SVG iso ancré aux pieds. */
 export interface PropEl extends ElBase {

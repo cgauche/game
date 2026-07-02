@@ -57,8 +57,8 @@ import { buildWalls, wallEnds } from './builders/walls';
 import { wallDepth, wallSvg } from './backends/affineWalls';
 import { isStructure } from '../engine/structures';
 import { getViewZ, subscribeViewZ } from './viewLevel';
-import { roofObj } from './RoofSprite';
-import { roofHidden } from '../state/buildings';
+import { buildRoofs } from './builders/roofs';
+import { roofSvg, roofDepth } from './backends/affineRoofs';
 import { walkXY, STEP_MS } from './walkPath';
 import { useCombatFx } from './fx/useCombatFx';
 import { useWalkAnim } from './fx/useWalkAnim';
@@ -373,31 +373,45 @@ export function IsoStage() {
     return out;
   }, [scene, shownRot, shownEdge, viewMode, occludesActor]);
 
-  const roofObjs = useMemo<{ d: number; el: JSX.Element; vis: boolean }[]>(() => {
-    if (!scene) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
+  // Éléments de TOIT du pivot (`buildRoofs`) : vérités de scène CAMERA-FREE — pans continus + lignes,
+  // VISIBLE (une case de l'empreinte élargie d'1 en vue : de l'extérieur on ne voit jamais l'intérieur,
+  // mais on voit le bâtiment dès qu'on est à son pied → toit AU-DESSUS du voile) et roofOccupied (un
+  // allié DANS l'empreinte → cutaway).
+  const roofEls = useMemo(() => {
+    if (!scene?.roofs?.length) return [];
     const allies =
       mode === 'battle' && battle
         ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
         : [partyPos];
-    const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
-    // Cutaway TOUT-EN-SCÈNE : le toit se lève quand un allié est DANS l'empreinte (`roofHidden`) OU DERRIÈRE
-    // le bâtiment (une case de l'empreinte `occludesActor` → sinon le toit cacherait le perso qui passe derrière).
-    return (scene.roofs ?? []).map((roof) => {
-      const f = roof.foot;
-      const rz = roof.z ?? 0;
-      let behind = false, vis = false;
-      // VISIBLE si UNE case de l'empreinte ÉLARGIE d'1 est en vue : de l'extérieur on ne voit jamais l'intérieur
-      // (les murs coupent la vue), mais on voit le bâtiment dès qu'on est à son pied → toit AU-DESSUS du voile.
-      for (let dy = -1; dy <= f.h; dy++)
-        for (let dx = -1; dx <= f.w; dx++) {
-          const inside = dy >= 0 && dy < f.h && dx >= 0 && dx < f.w;
-          if (inside && !behind && occludesActor(f.x + dx, f.y + dy)) behind = true;
-          if (!vis && visible.has(`${f.x + dx},${f.y + dy},${rz}`)) vis = true;
-        }
-      return { ...roofObj(roof, d, roofHidden(roof, allies) || behind, night), vis };
+    return buildRoofs(scene, visible, { allies });
+  }, [scene, visible, mode, battle, partyPos]);
+
+  const roofObjs = useMemo<{ d: number; el: JSX.Element; vis: boolean }[]>(() => {
+    if (!scene || !roofEls.length) return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
+    // Cutaway TOUT-EN-SCÈNE : le toit se lève quand un allié est DANS l'empreinte (`roofOccupied`, vérité
+    // de SCÈNE du builder) OU DERRIÈRE le bâtiment (vérité de VUE : une case de l'empreinte `occludesActor`
+    // → sinon le toit cacherait le perso qui passe derrière) — opacité 0 en iso, estompe en plan.
+    return roofEls.map((el) => {
+      let behind = false;
+      for (let dy = 0; dy < el.span.h && !behind; dy++)
+        for (let dx = 0; dx < el.span.w && !behind; dx++)
+          if (occludesActor(el.cell.x + dx, el.cell.y + dy)) behind = true;
+      const cut = el.states.roofOccupied || behind;
+      return {
+        d: roofDepth(el, d),
+        vis: el.states.visible,
+        el: (
+          <g
+            key={el.key}
+            style={{ transition: 'opacity 0.25s' }}
+            opacity={cut ? (viewMode === 'top' ? 0.5 : 0) : 1}
+            dangerouslySetInnerHTML={{ __html: roofSvg(el, d) }}
+          />
+        ),
+      };
     });
-  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos, gameTime, occludesActor, visible]);
+  }, [scene, roofEls, shownRot, shownEdge, viewMode, occludesActor]);
 
   // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
   // (LDB 13 l.123) → pion fantomatique. Distingue « hors LdV » de « hors de portée » (aucun

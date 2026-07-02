@@ -1,8 +1,9 @@
 /**
  * POV — assemblage de la LISTE DE DESSIN (polygones SVG) d'une scène vue en première personne. PUR.
  *
- * v1 = couche COURANTE du groupe seule (`cam.z`) : sols + plafonds + cloisons d'arête. Chaque surface
- * est prise en MONDE (camera.ts), clippée au plan proche, projetée en pixels, teintée (lumière + brouillard),
+ * Sols/relief et murs viennent des BUILDERS partagés du pivot (`buildFloors`/`buildWalls`, les mêmes
+ * faces monde que l'iso) ; seuls les plafonds restent dérivés ici (spécifique POV). Chaque surface est
+ * prise en MONDE (camera.ts), clippée au plan proche, projetée en pixels, teintée (lumière + brouillard),
  * puis triée du plus LOIN au plus PROCHE (peintre). La visibilité (brouillard de guerre) est fournie par
  * l'appelant (Set de clés « x,y,z ») ; la lumière par un champ structurel `{ at(x,y,z) → 0..1 }`.
  */
@@ -19,8 +20,9 @@ import {
   type CamPose,
   type Vec3,
 } from './camera';
-import { sceneMetresPerTile, tileAt, heightAt, isIndoor, type Scene } from '../../state/scene';
+import { sceneMetresPerTile, isIndoor, type Scene } from '../../state/scene';
 import { TERRAIN_DEFS } from '../../state/terrain';
+import { buildFloors } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { structureAppearance, wallPartColor, type WallPart } from '../catalog/structures';
 import { reliefMaterial } from '../catalog/relief';
@@ -41,13 +43,10 @@ export type DrawItem = {
 // + la brume de distance.
 export const FLOOR_FALLBACK = reliefMaterial('sol-inconnu').face; // sol sans terrain connu
 export const CEIL_BASE = reliefMaterial('plafond').face; // plafond (INTÉRIEUR uniquement)
-const RISER_ROCK = reliefMaterial('riser').face; // face verticale (falaise/marche/rampe/rempart) : roche/maçonnerie, PAS la couleur du sol
 export const FOG_OUTDOOR = '#9fb2c6'; // brume claire (ciel) en extérieur ; intérieur = FOG_COLOR sombre (PovStage cale l'horizon du ciel dessus)
 
 /** Couleur pleine d'un terrain (`TerrainDef.swatch`, donnée partagée iso ⇄ POV). */
 const TERRAIN_SWATCH: Map<string, string> = new Map(TERRAIN_DEFS.map((t) => [t.id, t.swatch]));
-const floorColor = (scene: Scene, x: number, y: number, z: number): string =>
-  TERRAIN_SWATCH.get(tileAt(scene, x, y, z)) ?? FLOOR_FALLBACK;
 
 // ── Résolution de couleur : les defs de pierre portent des couleurs `var(--struct-*)` (partagées avec
 //    l'iso, définies dans src/ui/styles/base.css) ; mais `tint` du POV attend un hex `#rrggbb`. On résout
@@ -142,46 +141,14 @@ function visibleColumns(visible: Set<string>): Set<string> {
   return cols;
 }
 
-/** Hauteur du DESSUS de la colonne voisine (surface la PLUS HAUTE, toutes couches ; hors-carte/vide → 0).
- *  Une face verticale n'est dessinée QUE si la case dépasse ce dessus (marche/falaise RÉELLE) — deux cases
- *  coplanaires (ex. un chemin de ronde plat) ne produisent AUCUN riser. PUR. */
-function neighborTop(scene: Scene, nx: number, ny: number): number {
-  let best = -Infinity;
-  for (const L of scene.layers) {
-    if (tileAt(scene, nx, ny, L.z) === 'vide') continue;
-    const hz = heightAt(scene, nx, ny, L.z);
-    if (hz > best) best = hz;
-  }
-  return best === -Infinity ? 0 : best;
-}
-
-const SIDES = ['N', 'E', 'S', 'O'] as const;
-const SIDE_DELTA: Record<(typeof SIDES)[number], [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], O: [-1, 0] };
-
-/** Coins MONDE d'une FACE VERTICALE (falaise/marche/rampe) sur l'arête cardinale d'une case, de `hBas` à
- *  `hHaut`. Mêmes extrémités A,B par côté que `wallCornersWorld` → géométrie d'arête cohérente. PUR. */
-function riserCornersWorld(mpt: number, x: number, y: number, side: (typeof SIDES)[number], hBas: number, hHaut: number): Vec3[] {
-  let A: { x: number; y: number };
-  let B: { x: number; y: number };
-  switch (side) {
-    case 'N': A = { x: x - 0.5, y: y - 0.5 }; B = { x: x + 0.5, y: y - 0.5 }; break;
-    case 'E': A = { x: x + 0.5, y: y - 0.5 }; B = { x: x + 0.5, y: y + 0.5 }; break;
-    case 'S': A = { x: x + 0.5, y: y + 0.5 }; B = { x: x - 0.5, y: y + 0.5 }; break;
-    default:  A = { x: x - 0.5, y: y + 0.5 }; B = { x: x - 0.5, y: y - 0.5 }; break;
-  }
-  return [
-    { x: A.x * mpt, y: A.y * mpt, z: hBas },
-    { x: B.x * mpt, y: B.y * mpt, z: hBas },
-    { x: B.x * mpt, y: B.y * mpt, z: hHaut },
-    { x: A.x * mpt, y: A.y * mpt, z: hHaut },
-  ];
-}
-
-/** Assemble la liste de dessin POV en HEIGHTFIELD SOLIDE. Trie du plus LOIN au plus PROCHE. PUR.
- *  Pour chaque COLONNE visible (x,y) et chaque couche, rend le SOL à sa hauteur + les FACES VERTICALES
- *  (falaise/marche/rampe) vers les voisins plus bas → le relief (remparts, plateformes, rampes) devient
- *  SOLIDE (fin du « on voit à travers »). Les MURS d'arête s'élèvent depuis la hauteur de leur colonne
- *  (parapet sur plateforme). On rend par COLONNE (pas par tuile) pour voir aussi ce qui monte au-dessus.
+/** Assemble la liste de dessin POV. Trie du plus LOIN au plus PROCHE. PUR.
+ *  SOLS + RELIEF = géométrie PARTAGÉE du pivot (`buildFloors`, les MÊMES faces monde que l'iso) : losange
+ *  de terrain (swatch partagé), PAROIS de relief auto-dérivées (falaise/rampe → les ex-risers, désormais
+ *  aux matériaux pierre/terre de l'iso), et ce que l'ancien heightfield local IGNORAIT — DALLES FINES de
+ *  tablier (`deck` : on voit sous un pont/une loge, parité avec le modèle de surplomb iso) et WEDGES de
+ *  raccord de terrain. Les PILIERS de tablier (2 points) restent un ornement d'écran affine, comme les
+ *  montants de mur (LOD minimal). Les MURS d'arête s'élèvent depuis la hauteur de leur colonne. On rend
+ *  par COLONNE visible (pas par tuile) pour voir aussi ce qui monte au-dessus.
  *  Tout vient de la scène PARTAGÉE (hauteurs, murs, portes) : éditer en iso impacte le POV.
  *  - `visible` : clés « x,y,z » du brouillard ; `light` : champ `{ at(x,y,z) }` (0..1). */
 export function buildPovDrawList(
@@ -194,37 +161,38 @@ export function buildPovDrawList(
   const farMetres = FAR_TILES * mpt;
   const indoor = isIndoor(scene); // intérieur → plafond + brume sombre ; extérieur → ciel (fond) + brume claire
   const fog = indoor ? FOG_COLOR : FOG_OUTDOOR;
-  const { w, h: H } = scene.dimensions;
   const cols = visibleColumns(visible);
   const items: DrawItem[] = [];
 
-  for (const layer of scene.layers) {
-    const z = layer.z;
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < w; x++) {
-        if (!cols.has(`${x},${y}`)) continue;
-        if (tileAt(scene, x, y, z) === 'vide') continue; // pas de surface réelle sur cette couche ici
-        const hh = heightAt(scene, x, y, z);
-        const lv = light.at(x, y, z);
-        const base = floorColor(scene, x, y, z); // couleur du terrain (donnée partagée)
-        // SOL (dessus de la case, à sa hauteur).
-        const floor = makeItem(tileCornersWorld(scene, x, y, z, false), cam, farMetres, lv, base, 'floor', `floor:${x},${y},${z}`, FLOOR_BIAS, fog);
-        if (floor) items.push(floor);
-        // FACES VERTICALES vers les voisins plus bas (falaise/marche/rampe) → relief solide, ombré.
-        for (const side of SIDES) {
-          const [dx, dy] = SIDE_DELTA[side];
-          const nb = neighborTop(scene, x + dx, y + dy); // dessus du voisin
-          if (hh - nb > 0.3) {
-            const r = makeItem(riserCornersWorld(mpt, x, y, side, nb, hh), cam, farMetres, lv * 0.82, RISER_ROCK, 'riser', `riser:${x},${y},${z},${side}`, 0, fog);
-            if (r) items.push(r);
-          }
-        }
-        // PLAFOND : intérieur, couche du groupe seulement.
-        if (indoor && z === cam.z) {
-          const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, lv, CEIL_BASE, 'ceiling', `ceil:${x},${y},${z}`, 0, fog);
-          if (ceil) items.push(ceil);
-        }
+  // TOUTES les couches PLEINES (activeZ = couche max → aucun fantôme de surplomb : le POV voit le monde
+  // entier, la visibilité est portée par `cols`).
+  const maxZ = Math.max(...scene.layers.map((l) => l.z));
+  for (const el of buildFloors(scene, undefined, { activeZ: maxZ })) {
+    const { x, y, z } = el.cell;
+    if (!cols.has(`${x},${y}`)) continue;
+    const lv = light.at(x, y, z);
+    el.faces.forEach((f, i) => {
+      if (f.poly.length < 3) return; // pilier (2 points) : hors POV
+      const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
+      if (f.material.domain === 'relief') {
+        // Paroi de relief (falaise/rampe/dalle de tablier) : ombrée comme l'ex-riser (×0.82), au ton du
+        // matériau du builder (rampe : dessus de pente si la def en a un).
+        const m = reliefMaterial(f.material.id);
+        const base = (f.material.part === 'ramp' ? m.slopeTop : undefined) ?? m.face;
+        const it = makeItem(corners, cam, farMetres, lv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog);
+        if (it) items.push(it);
+      } else {
+        // Losange de terrain (clé historique `floor:x,y,z`) + wedges de raccord (peints PAR-DESSUS leur base).
+        const wedge = f.material.part === 'wedge';
+        const base = TERRAIN_SWATCH.get(f.material.id) ?? FLOOR_FALLBACK;
+        const it = makeItem(corners, cam, farMetres, lv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog);
+        if (it) items.push(it);
       }
+    });
+    // PLAFOND : intérieur, couche du groupe seulement (spécifique POV).
+    if (indoor && z === cam.z) {
+      const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, lv, CEIL_BASE, 'ceiling', `ceil:${x},${y},${z}`, 0, fog);
+      if (ceil) items.push(ceil);
     }
   }
 

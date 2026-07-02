@@ -49,12 +49,13 @@ export const SIEGE_ENGINES = siegeEngines; // FOYER UNIQUE du filtre = `data/sie
  *  l'inspecteur (en attendant un catalogue de toits dédié). Le style pilotera le rendu de la couverture. */
 export const ROOF_STYLES = ['maison', 'taverne', 'forge', 'echoppe', 'chapelle', 'tour', 'manoir'] as const;
 
-/** Matériaux de couverture (`RoofParams.roofMaterial`) → libellé + teinte d'aperçu éditeur (alignée sur
- *  l'art du jeu, `catalog/buildings/render-helpers`). SOURCE UNIQUE partagée Inspecteur ⇄ Canvas. */
-export const ROOF_MATERIALS: { id: NonNullable<RoofParams['roofMaterial']>; label: string; swatch: string }[] = [
-  { id: 'tuile', label: 'Tuiles', swatch: '#8a3326' },
-  { id: 'chaume', label: 'Chaume', swatch: '#9a7b3a' },
-  { id: 'ardoise', label: 'Ardoise', swatch: '#4a5560' },
+/** Matériaux de couverture (`RoofParams.roofMaterial`) → libellé du sélecteur de l'Inspecteur. Les
+ *  TEINTES vivent dans la donnée (`roofMaterials.json`) : le canvas rend via le pivot (`buildRoofs` +
+ *  `affineRoofs` en mode plan), plus aucune couleur ici. */
+export const ROOF_MATERIALS: { id: NonNullable<RoofParams['roofMaterial']>; label: string }[] = [
+  { id: 'tuile', label: 'Tuiles' },
+  { id: 'chaume', label: 'Chaume' },
+  { id: 'ardoise', label: 'Ardoise' },
 ];
 
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */

@@ -6,7 +6,8 @@ const EXPECTED_IDS = ['chapelle', 'echoppe', 'forge', 'maison', 'manoir', 'taver
 
 describe('méta des bâtiments (registre defs/ réduit au TOIT)', () => {
   // Un bâtiment = des `WallSeg` (murs d'arête) sur un sol de terrain ; le `BuildingDef` n'est plus
-  // qu'une méta (id/label/empreinte + matériau de toit). La nappe de toit est rendue par `roofFromCells`.
+  // qu'une méta (id/label/empreinte + matériau de toit). La nappe de toit est rendue par le pivot
+  // (`builders/roofs` + `backends/affineRoofs`).
   it('expose les ids de bâtiments attendus', () => {
     expect(Object.keys(BUILDINGS_META).sort()).toEqual(EXPECTED_IDS);
   });

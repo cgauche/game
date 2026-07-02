@@ -19,8 +19,8 @@ export interface RenderCtx {
 }
 /** Bâtiment composable UNIFIÉ (registre defs/) : pure méta sémantique (id/label/empreinte par défaut +
  *  matériau de toit). Un bâtiment réel = des murs d'arête (`WallSeg`) sur un sol de terrain ; sa nappe de
- *  toit est rendue par `RoofSprite` via `roofFromCells` (le `roofMaterial` ci-dessous est le défaut).
- *  `BUILDINGS_META` en dérive. Un fichier `buildings/defs/<id>.ts` = un `export const building: BuildingDef`. */
+ *  toit est rendue par le pivot `builders/roofs` + backend `affineRoofs` (le `roofMaterial` ci-dessous est
+ *  le défaut). `BUILDINGS_META` en dérive. Un fichier `buildings/defs/<id>.ts` = un `export const building: BuildingDef`. */
 export interface BuildingDef {
   id: string;
   label: string;

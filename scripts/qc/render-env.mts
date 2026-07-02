@@ -1,7 +1,7 @@
 /**
  * QC — GALERIE D'ENVIRONNEMENT headless : instrument de NON-RÉGRESSION VISUELLE de la refonte du rendu.
  * Rend les 4 scènes de référence (siège, Bourg de l'arène, opéra, caveau) avec les MÊMES primitives
- * PURES que le jeu (buildFloors+floorSvg / buildWalls+wallSvg / terrainOverlay / roofObj / propSvg / buildPovDrawList),
+ * PURES que le jeu (buildFloors+floorSvg / buildWalls+wallSvg / terrainOverlay / buildRoofs+roofSvg / propSvg / buildPovDrawList),
  * dans TOUTES les projections : iso losange rot 0..3, edge-on rot 0..3, vue du dessus, + 2 POV
  * (première personne, œil au départ du groupe). Environnement STATIQUE uniquement : ni brouillard,
  * ni tokens, ni FX.
@@ -10,12 +10,12 @@
  */
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { buildFloors } from '../../src/gameIso/builders/floors';
 import { floorSvg, floorDepth } from '../../src/gameIso/backends/affineFloors';
 import { buildWalls } from '../../src/gameIso/builders/walls';
 import { wallDepth, wallSvg } from '../../src/gameIso/backends/affineWalls';
-import { roofObj } from '../../src/gameIso/RoofSprite';
+import { buildRoofs } from '../../src/gameIso/builders/roofs';
+import { roofDepth, roofSvg } from '../../src/gameIso/backends/affineRoofs';
 import { DEFS, terrainOverlay } from '../../src/gameIso/sprites';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { stageSize, depth, tileCenter, billboardScale, TH, type Dims, type Rot } from '../../src/gameIso/iso';
@@ -72,11 +72,8 @@ function envPanel(scene: Scene, dims: Dims): { w: number; h: number; svg: string
       svg: `${sh}<g transform="translate(${cx - 60 * scale},${cy + TH / 2 - 150 * scale}) scale(${scale})">${propSvg(ent.ref ?? 'tonneau', ent.facing, dims.rot ?? 0)}</g>`,
     });
   }
-  // Toits des bâtiments composés (jamais en cutaway : environnement pur).
-  for (const roof of scene.roofs ?? []) {
-    const r = roofObj(roof, dims);
-    objs.push({ d: r.d, svg: renderToStaticMarkup(r.el) });
-  }
+  // Toits des bâtiments composés en PANS CONTINUS (jamais en cutaway : environnement pur).
+  for (const el of buildRoofs(scene)) objs.push({ d: roofDepth(el, dims), svg: roofSvg(el, dims) });
   objs.sort((a, b) => a.d - b.d);
   const st = stageSize(dims);
   return { w: st.w, h: st.h, svg: objs.map((o) => o.svg).join('') };

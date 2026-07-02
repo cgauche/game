@@ -15,8 +15,8 @@ const COVERED: string[] = [
   'backends/affineFloors.ts', // backend affine des sols (pov/geometry.ts a encore brouillard/struct-fallback hors phase)
   'backends/affineWalls.ts', // backend affine des murs — couleurs par `wallPartColor` + `shade`
   'backends/project.ts', // pont monde→écran partagé des backends affines
-  'RoofSprite.tsx', // Phase 3a (chemin de toit LIVE)
-  'catalog/buildings/render-helpers.ts', // Phase 3b (render() mort retiré → ne reste que roofFromCells)
+  'builders/roofs.ts', // builder de toits (pans continus) — géométrie + ids, jamais une couleur
+  'backends/affineRoofs.ts', // backend affine des toits — teintes/lignes par `roofMaterial`
   // Phase 4 → 'sprites.ts'
 ];
 

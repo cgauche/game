@@ -7,8 +7,6 @@
 import type { BuildingDef } from '../types';
 import { BUILDING_DEFS } from './_registry.generated';
 
-export { roofFromCells } from './render-helpers';
-
 /** Méta sémantique d'un bâtiment pour l'éditeur (libellé d'outil, empreinte par défaut à la pose,
  *  matériau de toit par défaut). */
 export type BuildingMeta = Pick<BuildingDef, 'id' | 'label' | 'defaultFoot' | 'roofMaterial'>;

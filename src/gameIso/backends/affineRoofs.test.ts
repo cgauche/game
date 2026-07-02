@@ -1,0 +1,112 @@
+import { describe, it, expect } from 'vitest';
+import { buildRoofs } from '../builders/roofs';
+import type { RoofEl } from '../builders/types';
+import { roofDepth, roofSvg } from './affineRoofs';
+import { footprintDepth, tileCenter, WALL_H, WALL_H_M, type Dims } from '../iso';
+import { metricToLift } from '../../state/relief';
+import { roofMaterial } from '../catalog/roofs';
+import { emptyScene, type Roof, type Scene } from '../../state/scene';
+
+/**
+ * Backend écran-affine des toits : projette les éléments `roof` du pivot via le pont partagé (`projGP`).
+ * On vérifie la teinte PAR PAN (une couleur par orientation, STABLE aux 4 rotations — fini le choix
+ * par-cellule), les lignes stylées par la def (`line`/`course`), la PARITÉ de géométrie avec l'ex-nappe
+ * (avant-toit à WALL_H px au-dessus du coin de grille), la profondeur de tri (footprintDepth) et les
+ * deux modes PLAN (vue du dessus = boîte étiquetée ; éditeur = couverture par-cellule + libellé).
+ */
+
+const dims: Dims = { w: 10, h: 10 };
+
+function el(roof: Partial<Roof>, edit?: (s: Scene) => void): RoofEl {
+  const s = emptyScene(10, 10);
+  s.roofs = [{ id: 'r1', foot: { x: 2, y: 2, w: 4, h: 2 }, style: 'maison', ...roof }];
+  edit?.(s);
+  return buildRoofs(s)[0];
+}
+
+const count = (svg: string, needle: string) => svg.split(needle).length - 1;
+
+describe('roofSvg — pans : UNE teinte par pan, par ORIENTATION de la def, stable aux 4 rotations', () => {
+  const tuile = roofMaterial('tuile');
+  it.each([0, 1, 2, 3] as const)('cran %s : 4 pans remplis N/E/S/O de la donnée, exactement un chacun', (rot) => {
+    const svg = roofSvg(el({}), { ...dims, rot });
+    for (const part of ['N', 'E', 'S', 'O'] as const) expect(count(svg, `fill="${tuile[part]}"`)).toBe(1);
+  });
+
+  it('edge-on : mêmes 4 pans (la nappe suit la projection, pas la boîte-plan)', () => {
+    const svg = roofSvg(el({}), { ...dims, rot: 1, edge: true });
+    for (const part of ['N', 'E', 'S', 'O'] as const) expect(count(svg, `fill="${tuile[part]}"`)).toBe(1);
+  });
+
+  it('matériau des params (ardoise) : teintes de SA def', () => {
+    const svg = roofSvg(el({ params: { roofMaterial: 'ardoise' } }), dims);
+    expect(svg).toContain(`fill="${roofMaterial('ardoise').N}"`);
+    expect(svg).not.toContain(`fill="${tuile.N}"`);
+  });
+
+  it('1×1 : pan PLAT unique au ton N (parité avec l’ex-choix par-cellule)', () => {
+    const svg = roofSvg(el({ foot: { x: 3, y: 3, w: 1, h: 1 } }), dims);
+    expect(count(svg, '<path')).toBe(1);
+    expect(svg).toContain(`fill="${tuile.N}"`);
+  });
+});
+
+describe('roofSvg — lignes stylées par la def (liseré + rangs)', () => {
+  it('faîte/arêtiers/égouts au liseré `line`, rangs de tuiles au ton `course`', () => {
+    const tuile = roofMaterial('tuile');
+    const svg = roofSvg(el({}), dims);
+    // 1 faîte + 4 arêtiers + 4 égouts = 9 lignes de structure ; 3 rangs × 4 pans = 12 rangs (courses=3).
+    expect(count(svg, `stroke="${tuile.line}"`)).toBe(9);
+    expect(count(svg, `stroke="${tuile.course}"`)).toBe(12);
+  });
+});
+
+describe('roofSvg — parité de géométrie avec l’ex-nappe (base WALL_H px au-dessus du coin de grille)', () => {
+  it.each([0, 1, 2, 3] as const)('cran %s : le coin d’avant-toit NO passe par tileCenter(x−0.5,y−0.5) − WALL_H', (rot) => {
+    const d: Dims = { ...dims, rot };
+    const svg = roofSvg(el({}), d);
+    const { cx, cy } = tileCenter(1.5, 1.5, d, metricToLift(WALL_H_M)); // coin de grille (2,2) soulevé de WALL_H px
+    expect(svg).toContain(`${cx},${cy}`);
+    expect(metricToLift(WALL_H_M) * 96).toBe(WALL_H); // la conversion m⇔px retombe sur la vérité partagée
+  });
+
+  it('la hauteur MÉTRIQUE de la case soulève toute la nappe (tuiles à 4 m → +1 niveau écran)', () => {
+    const lifted = el({}, (s) => { s.layers[0].height = new Array(100).fill(4); });
+    const svg = roofSvg(lifted, dims);
+    const { cx, cy } = tileCenter(1.5, 1.5, dims, metricToLift(4 + WALL_H_M));
+    expect(svg).toContain(`${cx},${cy}`);
+  });
+});
+
+describe('roofDepth — footprintDepth de l’empreinte à l’index de couche', () => {
+  it.each([0, 1, 2, 3] as const)('cran %s', (rot) => {
+    const d: Dims = { ...dims, rot };
+    expect(roofDepth(el({}), d)).toBe(footprintDepth(2, 2, 4, 2, d, 0));
+  });
+});
+
+describe('roofSvg — modes PLAN', () => {
+  it('vue du dessus : boîte étiquetée historique (planBody/planEdge/planText + nom)', () => {
+    const plan = roofMaterial('plan');
+    const svg = roofSvg(el({ label: 'Taverne' }), { ...dims, view: 'top' });
+    expect(svg).toContain(`fill="${plan.planBody}"`);
+    expect(svg).toContain(`stroke="${plan.planEdge}"`);
+    expect(svg).toContain(`fill="${plan.planText}"`);
+    expect(svg).toContain('>Taverne</text>');
+    expect(svg).not.toContain(`fill="${roofMaterial('tuile').N}"`); // pas de pans en plan
+  });
+
+  it('éditeur ({ plan: true }) : une tuile semi-transparente PAR CASE de l’empreinte + libellé', () => {
+    const svg = roofSvg(el({ label: 'Forge' }), dims, { plan: true });
+    expect(count(svg, '<path')).toBe(8); // 4×2 cases
+    expect(count(svg, 'opacity="0.7"')).toBe(8);
+    expect(svg).toContain(`fill="${roofMaterial('tuile').O}"`); // teinte du matériau de couverture
+    expect(svg).toContain('>Forge</text>');
+  });
+
+  it('libellé échappé (XML) dans les deux modes plan', () => {
+    const evil = el({ label: 'A<B & C>' });
+    expect(roofSvg(evil, { ...dims, view: 'top' })).toContain('A&lt;B &amp; C&gt;');
+    expect(roofSvg(evil, dims, { plan: true })).toContain('A&lt;B &amp; C&gt;');
+  });
+});

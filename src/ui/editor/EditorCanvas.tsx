@@ -7,7 +7,7 @@
  */
 import { useMemo, useRef, useState } from 'react';
 import { Scene, tileAt, Roof } from '../../state/scene';
-import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, footprintDepth, TH } from '../../gameIso/iso';
+import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
@@ -16,19 +16,17 @@ import { buildFloors } from '../../gameIso/builders/floors';
 import { floorSvg } from '../../gameIso/backends/affineFloors';
 import { buildWalls } from '../../gameIso/builders/walls';
 import { wallDepth, wallSvg } from '../../gameIso/backends/affineWalls';
+import { buildRoofs } from '../../gameIso/builders/roofs';
+import { roofDepth, roofSvg } from '../../gameIso/backends/affineRoofs';
 import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
-  Tool, Layers, Sel, Rect, Pt, Edge4, ROOF_MATERIALS, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
+  Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addRoof, addEnemyMember, eraseAt, sameSel,
   toggleEdgeWall, toggleDiagonalWall, paintHeight, nearestEdge, canonEdge, pickWallEdge,
 } from './editorState';
 
-/** Teinte d'aperçu d'un toit selon son matériau de couverture (défaut tuile). Source = `ROOF_MATERIALS`. */
-const roofFill = (params: Roof['params']): string =>
-  ROOF_MATERIALS.find((m) => m.id === params?.roofMaterial)?.swatch ?? ROOF_MATERIALS[0].swatch;
-
-/** Cases de l'empreinte d'un toit (footprint plat) — base du rendu et du surlignage de sélection. */
+/** Cases de l'empreinte d'un toit (footprint plat) — base du surlignage de sélection. */
 const footCells = (foot: Roof['foot']): Pt[] => {
   const out: Pt[] = [];
   for (let y = foot.y; y < foot.y + foot.h; y++) for (let x = foot.x; x < foot.x + foot.w; x++) out.push({ x, y });
@@ -336,27 +334,16 @@ export function EditorCanvas({
                   const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
                   if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
                 }
-              // Toits des bâtiments COMPOSÉS : couverture semi-transparente (teintée par le matériau) +
-              // libellé, posée dans le tri global. Les MURS sont rendus par le pipeline pivot
-              // (`buildWalls` + backend affine) ci-dessous — un toit n'est que la couverture, on
-              // voit/édite les murs au travers.
+              // Toits des bâtiments COMPOSÉS : le pipeline pivot (`buildRoofs` + backend affine) en mode
+              // PLAN étiqueté — couverture semi-transparente teintée par le matériau + libellé, posée
+              // dans le tri global. Les MURS sont rendus par `buildWalls` ci-dessous — un toit n'est que
+              // la couverture, on voit/édite les murs au travers.
               if (layers.roofs)
-                for (const rf of scene.roofs ?? []) {
-                  const { cx, cy } = tileCenter(rf.foot.x + (rf.foot.w - 1) / 2, rf.foot.y + (rf.foot.h - 1) / 2, dims);
+                for (const el of buildRoofs(scene))
                   objs.push({
-                    d: footprintDepth(rf.foot.x, rf.foot.y, rf.foot.w, rf.foot.h, dims),
-                    el: (
-                      <g key={`roof-${rf.id}`} pointerEvents="none">
-                        {footCells(rf.foot).map((t) => (
-                          <path key={`${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill={roofFill(rf.params)} opacity={0.7} stroke="#241a12" strokeWidth={0.5} />
-                        ))}
-                        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="bold" fill="#f2e6cc" stroke="#241a12" strokeWidth={0.5}>
-                          {rf.label ?? rf.style}
-                        </text>
-                      </g>
-                    ),
+                    d: roofDepth(el, dims),
+                    el: <g key={el.key} pointerEvents="none" dangerouslySetInnerHTML={{ __html: roofSvg(el, dims, { plan: true }) }} />,
                   });
-                }
               // Entités de COMBAT : celles enrôlées dans une rencontre (teinte rouge + empreinte).
               const memberIds = new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
               for (const en of scene.entities) {
