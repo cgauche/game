@@ -712,20 +712,39 @@ export function ammoFamily(subType?: string): string {
   return s;
 }
 
-/** Munitions de l'inventaire compatibles avec une arme à distance (même famille canonique, qty>0). */
+/** Munitions compatibles avec une arme à distance (même famille canonique, qty>0) : l'inventaire du
+ *  porteur, PLUS — s'il SERT cette pièce (`mannedPoste`) — le STOCK DU POSTE (MDG ch.12 l.410-424 :
+ *  le coffre à boulets de la pièce), en tête (le stock de bord prime sur la besace du servant). */
 export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
   if (weapon.type !== 'ranged') return [];
   const fam = ammoFamily(weapon.subType);
   if (!fam) return [];
-  return (c.items ?? []).filter((i) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && ammoFamily(i.subType) === fam);
+  const match = (i: ItemInstance) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && ammoFamily(i.subType) === fam;
+  const poste = c.mannedPoste;
+  const posteStock = poste && poste.item.uid === weapon.uid ? (poste.ammo ?? []).filter(match) : [];
+  return [...posteStock, ...(c.items ?? []).filter(match)];
 }
 
-/** Munition que le porteur tirera : celle sélectionnée (`ammoUid`) si compatible, sinon la 1re compatible.
- *  PUR (inventaire/famille) — vit ici (≠ état) pour servir AUSSI les sites combat MOTEUR (bandes de portée
- *  modifiées par la munition, `effectiveWeaponRange`). `undefined` = pas de munition (mod de Portée nul). */
+/** Munition que le porteur tirera : son choix ponctuel (`c.ammoUid`, hotbar) s'il est compatible, sinon la
+ *  sélection PERSISTANTE du poste servi (`poste.ammoUid`, fiche du navire — MDG ch.12 : boulet/mitraille),
+ *  sinon la 1re compatible. PUR (inventaire/famille) — vit ici (≠ état) pour servir AUSSI les sites combat
+ *  MOTEUR (bandes de portée modifiées par la munition, `effectiveWeaponRange`). `undefined` = pas de munition. */
 export function selectedAmmo(c: Combatant, weapon: Weapon): ItemInstance | undefined {
   const compat = compatibleAmmo(c, weapon);
-  return compat.find((a) => a.uid === c.ammoUid) ?? compat[0];
+  const poste = c.mannedPoste;
+  const posteUid = poste && poste.item.uid === weapon.uid ? poste.ammoUid : undefined;
+  return compat.find((a) => a.uid === c.ammoUid) ?? compat.find((a) => a.uid === posteUid) ?? compat[0];
+}
+
+/** CONSOMME une munition tirée (décrément `qty`, retrait à 0) LÀ OÙ ELLE VIT : stock du poste servi
+ *  (`mannedPoste.ammo`) ou inventaire du tireur — source unique du décrément (tir individuel ET bordée). */
+export function consumeAmmo(c: Combatant, used: ItemInstance): void {
+  if ((used.qty ?? 0) <= 0) return;
+  used.qty = (used.qty ?? 0) - 1;
+  if (used.qty > 0) return;
+  const poste = c.mannedPoste;
+  if (poste?.ammo?.some((i) => i.uid === used.uid)) poste.ammo = poste.ammo.filter((i) => i.uid !== used.uid);
+  else c.items = (c.items ?? []).filter((i) => i.uid !== used.uid);
 }
 
 /** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (flats additionnés, BF si l'un

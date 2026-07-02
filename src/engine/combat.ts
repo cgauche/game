@@ -23,7 +23,7 @@ import { traumaDodgePenalty, damageSBBonus } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt, selectedAmmo } from './items';
-import { incomingAttackMod, incomingDamageNullified } from './ops';
+import { incomingAttackMod, incomingDamageNullified, skillDRBonus } from './ops';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
@@ -31,6 +31,7 @@ import { spellEffectOps } from './flowCore';
 import { weaponGroupLabel, findPsychologyById } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
 import { isEngagedWith, reachRank } from './engagement';
+import { hullHitAdjust } from './shipMelee';
 import { rule } from './policy';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
@@ -599,7 +600,10 @@ function combineOpposed(
   const dodgeMod = opts.dodgeMod ?? 0;
   const noSize = !!attacker.swarm || !!defender.swarm; // Nuée : ignore toutes les règles de Taille (LDB 85 l.200)
   const parrySizePenalty = defenseMode === 'parade' && !noSize ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
-  const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender);
+  // +DR d'effet actif/trait sur un Test d'ATTAQUE RÉUSSI (chanson « Jacques Bret » : +1 DR Corps à corps,
+  // MDG 09 l.228) — même règle d'application que le +DR de Talent (LDB 10 l.20 : « utilisation RÉUSSIE »).
+  const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender)
+    + (atk.success ? skillDRBonus(attacker, weapon.type === 'ranged' ? 'projectiles' : 'corps-a-corps') : 0);
   const defSL = def.sl - parrySizePenalty + vsDefenseDRAdjust(weapon)
     + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
@@ -673,7 +677,7 @@ export function resolveMeleePassive(
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
-  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21)
+  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'corps-a-corps'), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un Test réussi (Jacques Bret, MDG 09 l.228)
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
@@ -818,7 +822,7 @@ export function resolveRanged(
       log: `${attacker.name} manque sa cible.`,
     };
   }
-  return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21)
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'projectiles'), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un tir réussi
 }
 
 /** Jet d'attaque FIGÉ d'un TIR (Test de Projectiles, mods de portée/Taille/État inclus) — mirror de
@@ -939,6 +943,10 @@ function applyHit(
   // s'il est plus élevé ; déterminez toujours ce point avant toute autre règle ».
   if (isSlayer(attacker)) sb = Math.max(sb, bonus(effectiveChar(defender, 'E')));
   const dmgSize = dmgProxy?.size ?? attacker.size; // Taille servant aux règles de DÉGÂTS (Atouts conférés + ×N)
+  // COQUE de navire (MDG ch.13) : petites armes sans effet sur le vaisseau (l.605) ; corps à corps mitigé
+  // par le TABLEAU DE COMPARAISON DES TAILLES (l.618-637), qui « remplace les modificateurs normaux » de
+  // Taille (l.616) → `noSize` ; plancher 0 Blessure (un coup trop faible ricoche, comme la bordée).
+  const hullAdj = hullHitAdjust(dmgSize, weapon, defender);
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
   const effDR = dr + qualitySum(weapon, 'damageDR'); // Atout Pointue : +1 DR sur une touche (l.301)
@@ -946,13 +954,16 @@ function applyHit(
   // par la Taille (attaquant plus grand, LDB 85 l.295) fusionnés via `extra` (qualityDamageStep).
   // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.
   // Épuisante (LDB 63 l.16-17) : Percutante/Dévastatrice de l'arme inertes hors Charge (`charged`).
-  const noSize = !!attacker.swarm || !!defender.swarm || withholding; // Retenir ses coups perd l'Atout Taille (l.2505)
+  const noSize = !!attacker.swarm || !!defender.swarm || withholding || !!hullAdj; // Retenir ses coups perd l'Atout Taille (l.2505) ; coque : tableau MDG à la place (l.616)
   const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units, charged: !!attacker.chargedThisTurn }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
   let damage = weaponDmg + Math.max(0, dmgDR) + dmgBonus;
   // Talents de Dégâts (LDB 10) : Coup puissant (mêlée), Tir précis (distance), Combat déloyal
   // (Bagarre), Charge berserk/Déterminé (en Charge) — +niveau, avant le multiplicateur de Taille.
   damage += talentDamageBonus(attacker, weapon, !!attacker.chargedThisTurn);
   if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
+  // Coque (MDG ch.13 l.618-637) : le BE ajusté du tableau (« 3 × BE » / « BE−1 ») est appliqué côté
+  // Dégâts (mathématiquement identique, sans écraser le clamp de PA) — « 3 × BE » ⇔ −2×BE de plus.
+  if (hullAdj && 'extraTB' in hullAdj) damage -= hullAdj.extraTB;
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
   // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18-Traumatisme l.30) est désormais
   // géré par le STORE (pipeline de critique), car il dépend des PB courants de la cible — pas des PB max.
@@ -971,7 +982,11 @@ function applyHit(
   const ignoredAP = loc ? ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: critForArmour, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) }) : 0;
   // Tir sûr (LDB 10) : ignore niveau PA de la cible au tir.
   const sureShot = weapon.type === 'ranged' ? talentRangedAPIgnore(attacker) : 0;
-  const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot);
+  // Coque bloquée (MDG ch.13) : petites armes (l.605) / case « – » du tableau des Tailles (l.614) →
+  // AUCUNE Blessure ni Critique de navire ; sinon plancher 0 pour une coque (un coup faible ricoche).
+  const hullBlocked = !!hullAdj && 'blocked' in hullAdj;
+  if (hullBlocked) isCritical = false;
+  const woundsLost = hullBlocked ? 0 : woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot, hullAdj ? 0 : 1);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
   // Retenir ses coups (l.2503) : « vous N'infligez de Blessure Critique QUE SI votre adversaire tombe à 0
@@ -989,11 +1004,14 @@ function applyHit(
     critical: isCritical,
     advantageTo: 'attacker',
     defenderDefeated: defeated,
-    log:
-      `${attacker.name} touche ${defender.name}${loc ? ` (${locationLabel(loc, defender.bodyShape)})` : ''} : ` +
-      `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
-      (isCritical ? ' — CRITIQUE !' : '') +
-      '.',
+    log: hullBlocked
+      ? `${attacker.name} touche ${defender.name}, sans effet sur la coque (${hullAdj.blocked === 'petites-armes'
+          ? 'les tirs de petites armes n’infligent pas assez de Dégâts pour avoir un effet sur un vaisseau'
+          : 'trop petit pour entamer cette coque'} — MDG ch.13).`
+      : `${attacker.name} touche ${defender.name}${loc ? ` (${locationLabel(loc, defender.bodyShape)})` : ''} : ` +
+        `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
+        (isCritical ? ' — CRITIQUE !' : '') +
+        '.',
   };
 }
 

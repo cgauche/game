@@ -1,59 +1,57 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { canReroll } from '../engine/fortune';
-import { findCrewRoleById } from '../data';
-import { crewRoleValue } from '../engine/crewMorale';
+import { findCrewRoleById, findCrewTestTypeById } from '../data';
+import { crewRoleValue, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import { MultiRollShell } from './MultiRollShell';
 import { ParticipantRow } from './ParticipantRow';
 
 /**
- * Modale du TIR DE BATTERIE (« bordée », MDG ch.14 l.128) — JUMEAU de `ShipManeuverModal` (flux MULTI,
- * `MultiRollShell` + `ParticipantRow`). Chaque Artilleur tenu = une rangée (PJ influençable / marin témoin) ;
- * le bandeau somme les DR (essentiel ×2) + Moral → le **DR PARTAGÉ** qui s'applique à TOUTES les pièces du bord
- * (l.128). Pas de virage : `extra` montre la cible + les pièces qui tirent. « Feu ! » résout la volée (`shipBatteryConfirm`).
+ * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — JUMEAU de
+ * `ShipBatteryModal`/`ShipManeuverModal` (flux MULTI, `MultiRollShell` + `ParticipantRow`), paramétrée par le
+ * TYPE (`pendingCrewTest.testTypeId`). Chaque rôle tenu = une rangée ; le bandeau somme les DR (essentiel ×2)
+ * + Moral + Manque de bras + sabotage. **Rude épreuve** (l.106-114) : un total NÉGATIF réduit le Moral d'autant
+ * (l.110) — la perte est prévisualisée dans le bandeau avant « Appliquer ».
  */
-export function ShipBatteryModal() {
-  const p = useGame((s) => s.pendingShipBattery);
+export function CrewTestModal() {
+  const p = useGame((s) => s.pendingCrewTest);
   const battle = useGame((s) => s.battle);
   const net = useGame((s) => s.net);
-  const roll = useGame((s) => s.shipBatteryRoll);
-  const reroll = useGame((s) => s.shipBatteryReroll);
-  const bonus = useGame((s) => s.shipBatteryBonusSL);
-  const darkPact = useGame((s) => s.shipBatteryDarkPact);
-  const force = useGame((s) => s.shipBatteryForceSuccess);
-  const confirm = useGame((s) => s.shipBatteryConfirm);
-  const cancel = useGame((s) => s.shipBatteryCancel);
+  const roll = useGame((s) => s.crewTestRoll);
+  const reroll = useGame((s) => s.crewTestReroll);
+  const bonus = useGame((s) => s.crewTestBonusSL);
+  const darkPact = useGame((s) => s.crewTestDarkPact);
+  const force = useGame((s) => s.crewTestForceSuccess);
+  const confirm = useGame((s) => s.crewTestConfirm);
+  const cancel = useGame((s) => s.crewTestCancel);
   if (!p || !battle) return null;
   const ship = battle.combatants.find((c) => c.id === p.shipId);
-  const target = battle.combatants.find((c) => c.id === p.targetId);
-  if (!ship || !target) return null;
+  const testType = findCrewTestTypeById(p.testTypeId);
+  if (!ship || !testType) return null;
   const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   const allRolled = p.participants.every((x) => x.result);
   const unrolled = p.participants.filter((x) => x.interactive && !x.result && owns(x.id));
-  const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // DR PARTAGÉ (essentiel ×2 + Moral + Manque de bras + sabotage)
-  const postes = (ship.postes ?? []).filter((pp) => pp.side === p.side);
-  const plural = (n: number) => (n > 1 ? 's' : '');
+  const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
+  const moraleLoss = p.testTypeId === 'rude-epreuve' ? rudeEpreuveMoraleDelta(total) : 0;
   const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
 
   return (
     <MultiRollShell
-      title="🎯 Tir de batterie — Test d’équipage"
+      title={`⚓ ${testType.label} — Test d’équipage`}
       variant="test"
-      subtitle={<><strong>{ship.name}</strong> — bordée {p.side} sur <strong>{target.name}</strong> ({postes.length} pièce{plural(postes.length)}, MDG ch.14)</>}
-      extra={
-        <div className="rm-threat">
-          🎯 {target.name} — Coque {target.wounds.current}/{target.wounds.max}. {postes.length} pièce{plural(postes.length)} : {postes.map((pp) => pp.item.name).join(' · ')}.
-        </div>
-      }
+      subtitle={<><strong>{ship.name}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''} (MDG ch.14)</>}
+      extra={p.extraDR
+        ? <div className="rm-threat">⚠ Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage, MDG ch.14).</div>
+        : undefined}
       summary={allRolled
-        ? <>DR PARTAGÉ <b>{sign(dr)}</b> → chaque pièce inflige (Dégâts {sign(dr)}) ; volée de {postes.length} pièce{plural(postes.length)} (l.128).</>
+        ? <>DR total <b>{sign(total)}</b> — {total >= 1 ? 'succès' : 'échec'} (l.13).{moraleLoss ? <> Rude épreuve : <b>{moraleLoss}</b> Moral (l.110).</> : null}</>
         : undefined}
       onRollAll={unrolled.length >= 2 ? () => unrolled.forEach((x) => roll(x.id)) : undefined}
       onCancel={cancel}
       onConfirm={confirm}
-      confirmLabel="🔥 Feu !"
+      confirmLabel="Appliquer"
       confirmDisabled={!allRolled}
     >
       {p.participants.map((part) => {

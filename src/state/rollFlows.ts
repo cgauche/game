@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
+  PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -39,7 +39,8 @@ import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
-import { testValue } from '../engine/skills';
+import { testValue, effectiveSkillCharKey } from '../engine/skills';
+import { skillDRBonus, charDRBonusOf } from '../engine/ops';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, psychResolution } from '../engine/psychology';
@@ -166,6 +167,8 @@ export type RollFlowActionsMap =
   & MonoRollActions<'run', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
   & MultiRollActions<'shipManeuver', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MultiRollActions<'shipBattery', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MultiRollActions<'crewTest', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'shanty', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'test', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MultiRollActions<'counterspell', Exclude<RollVerb, 'resist'>>
@@ -173,6 +176,29 @@ export type RollFlowActionsMap =
   & MultiRollActions<'forceDoor', Exclude<RollVerb, 'resist'>>
   & MultiRollActions<'cascade', RollVerb>
   & MultiRollActions<'opposition', RollVerb>;
+
+/** Spec PARTAGÉE des Tests d'équipage MULTI (MDG ch.14) : un jet PAR RÔLE tenu (`rollCrewRole`), Résilience
+ *  = DR max du contributeur (`forceCrewRole`), Chance « +1 DR » sur SON jet. Consommée par les 3 flux jumeaux
+ *  (manœuvre / bordée / Test d'équipage générique) — la spec n'est écrite qu'UNE fois. */
+function crewRoleFlowSpec<P extends import('./rollFlow').PendingBase & { participants: ShipManeuverParticipant[] }>(
+  key: 'pendingShipManeuver' | 'pendingShipBattery' | 'pendingCrewTest',
+): import('./rollFlow').RollFlowSpec<P, ShipManeuverParticipant> {
+  return {
+    key,
+    multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
+    rolled: (r) => !!r.result,
+    actor: (s, r) => actorIn(s, r.id),
+    caps: { forced: true },
+    resolve: (s, r, actor, _get, forced) => {
+      if (!actor) return null;
+      const rr = forced ? forceCrewRole(actor, r.roleId, r.cumul) : rollCrewRole(actor, r.roleId, battleRng(), r.cumul);
+      return rr ? { result: rr } : null;
+    },
+    failed: (r) => !!r.result && r.result.roll > r.result.target, // d100 propre raté → Chance
+    // Chance « +1 DR » sur CE contributeur (LDB 17 l.26).
+    bonus: { derive: (s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null) },
+  };
+}
 
 export const FLOWS = {
   /**
@@ -787,40 +813,35 @@ export const FLOWS = {
    *  (Chance/+1 DR/Pacte/Résilience sur SON jet) ; marin PNJ = témoin (auto-roulé à l'ouverture). La SOMME des DR
    *  (essentiel ×2) + Moral nourrit la Progression — calculée à la confirmation (`shipManeuverConfirm`). Forced
    *  (Résilience) = DR max du contributeur. Patron `forceDoor`. */
-  shipManeuver: makeRollFlow<PendingShipManeuver, ShipManeuverParticipant>({
-    key: 'pendingShipManeuver',
-    multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
-    rolled: (r) => !!r.result,
-    actor: (s, r) => actorIn(s, r.id),
-    caps: { forced: true },
-    resolve: (s, r, actor, _get, forced) => {
-      if (!actor) return null;
-      const rr = forced ? forceCrewRole(actor, r.roleId, r.cumul) : rollCrewRole(actor, r.roleId, battleRng(), r.cumul);
-      return rr ? { result: rr } : null;
-    },
-    failed: (r) => !!r.result && r.result.roll > r.result.target, // d100 propre raté → Chance
-    bonus: {
-      // Chance « +1 DR » sur CE contributeur (LDB 17 l.26).
-      derive: (s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null),
-    },
-  }),
+  shipManeuver: makeRollFlow<PendingShipManeuver, ShipManeuverParticipant>(crewRoleFlowSpec('pendingShipManeuver')),
 
   /** TIR DE BATTERIE = Test d'équipage des Artilleurs (MDG ch.14 l.128) — JUMEAU de `shipManeuver` (mêmes
    *  `rollCrewRole`/`forceCrewRole`) ; le total (`maneuverCrewTotal`) = DR PARTAGÉ de la volée, appliqué par
    *  `shipBatteryConfirm`. Forced (Résilience) = DR max du contributeur. */
-  battery: makeRollFlow<PendingShipBattery, ShipBatteryParticipant>({
-    key: 'pendingShipBattery',
-    multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
-    rolled: (r) => !!r.result,
-    actor: (s, r) => actorIn(s, r.id),
+  battery: makeRollFlow<PendingShipBattery, ShipBatteryParticipant>(crewRoleFlowSpec('pendingShipBattery')),
+
+  /** TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ consommateur de la MÊME spec
+   *  de jet par rôle ; l'issue par type (Rude épreuve → Moral, l.110) vit dans `crewTestConfirm`. */
+  crewTest: makeRollFlow<PendingCrewTest, ShipManeuverParticipant>(crewRoleFlowSpec('pendingCrewTest')),
+
+  /** CHANSON DE MARIN (Talent, MDG 09 l.32-40) : Test de **Divertissement (Chant)** du chanteur — la
+   *  chanson doit être CHOISIE au pré-jet (OptionChooser). Réussi → effet 3 min + DR sur l'équipage
+   *  (`shantyConfirm`). Résilience : 01 → DR max (durée maximale). */
+  shanty: makeRollFlow<PendingShanty>({
+    key: 'pendingShanty',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.singerId),
     caps: { forced: true },
-    resolve: (s, r, actor, _get, forced) => {
-      if (!actor) return null;
-      const rr = forced ? forceCrewRole(actor, r.roleId, r.cumul) : rollCrewRole(actor, r.roleId, battleRng(), r.cumul);
-      return rr ? { result: rr } : null;
+    resolve: (s, p, actor, _get, forced) => {
+      if (!actor || !p.shantyId) return null; // chanson non choisie → pas de jet
+      const value = testValue(actor, 'divertissement', undefined, 'Chant'); // Intermédiaire (+0) → cible = valeur
+      if (forced) return { result: { roll: 1, target: value, success: true, sl: evaluateTest(1, value).sl } };
+      const t = rollTest(value, 'intermediaire', battleRng());
+      return { result: { roll: t.roll, target: t.target, success: t.success, sl: t.sl } };
     },
-    failed: (r) => !!r.result && r.result.roll > r.result.target,
-    bonus: { derive: (s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null) },
+    failed: (p) => !!p.result && !p.result.success,
+    // Chance « +1 DR » : +1 minute de chant (MDG 09 l.38 — la durée suit le DR).
+    bonus: { derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1 } } : null) },
   }),
 
   /** Focalisation (Test étendu de magie) — vaut en combat ET hors combat (`actorIn`). */
@@ -991,8 +1012,14 @@ export const FLOWS = {
     resolve: (s, p, actor, _get, forced) => {
       // +DR de Talent (LDB 10) sur un Test RÉUSSI — règle UNIVERSELLE `talentTestSLBonus` (matcher
       // STRUCTURÉ `test.matches`, par id ; subsume l'ex-`talentTestDR`). Le contexte `when` n'est pas
-      // évalué ici (défaut conservateur ; cf. plan).
-      const tDR = actor ? talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec }) : 0;
+      // évalué ici (défaut conservateur ; cf. plan). PLUS les +DR d'effet actif/trait : par Compétence
+      // (`skillDRBonus` — chanson « De toutes les terreurs » : +1 DR Calme, MDG 09 l.232) et par
+      // Caractéristique (`charDRBonusOf` — « Camarades d'équipage » : +1 DR Sociabilité, l.236).
+      const tDR = actor
+        ? talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec })
+          + (p.skillId ? skillDRBonus(actor, p.skillId, p.spec) : 0)
+          + charDRBonusOf(actor, p.char ?? (p.skillId ? effectiveSkillCharKey(actor, p.skillId, { spec: p.spec }) : undefined))
+        : 0;
       if (forced) {
         if (p.success) return null; // (ancien `force.guard : !p.success`) — rien à forcer si déjà réussi
         // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double sur un Test de

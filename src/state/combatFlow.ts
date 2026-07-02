@@ -67,6 +67,7 @@ import {
   isMagicMissile,
   prayerWrathTriggered,
   castBlockedBy,
+  prayerSinLock,
   hasTalent,
   evaluateMissile,
   spellRangeTiles, effectiveSpellRangeTiles,
@@ -103,13 +104,14 @@ import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, exte
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
-import { applyHullCritical } from '../engine/shipCritical';
+import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
+import { endShanty } from './shipCrew';
 import { isInanimate, isStructure, structureAimCell } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
-import { recomputeLoadout, weaponWithAmmo, selectedAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon } from '../engine/items';
+import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon } from '../engine/items';
 import { hasCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
@@ -1669,6 +1671,8 @@ export function applyAttackResult(
   // Dispatcher générique (state/triggeredEffects), plus de handler en dur ni de branche par-nom.
   if (res.hit && res.woundsLost) {
     for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set, attackType: weapon.type, woundsDealt: res.woundsLost })) critLog.push(line);
+    // Chanson de marin (MDG 09 l.38) : « Si le Personnage subit des Dégâts …, sa Chanson de marin prend fin. »
+    if (target.singingShanty) critLog.push(...endShanty(get, target));
   }
   // Effet déclenché « à la mise hors de combat d'un adversaire » authoré (Affamé : Test de FM ou
   // festoie — perd Action + Mouvement) — dispatcher générique (state/triggeredEffects).
@@ -1681,14 +1685,12 @@ export function applyAttackResult(
   for (const c of [target, attacker]) critLog.push(...notifySlain(get, set, c));
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, QUALITY_IDS.Taille)) damageArmour(target, res.location ?? 'corps');
-  // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
+  // Munition héros : consommée à l'application (stock du poste servi OU inventaire — `consumeAmmo`,
+  // source unique) ; arme à Recharge → déchargée (Test étendu requis pour recharger).
   if (weapon.type === 'ranged' && attacker.kind === 'hero') {
     attacker.shotsThisTurn = (attacker.shotsThisTurn ?? 0) + 1; // Salve : compteur de tirs du tour (−10 cumulatif)
     const used = selectedAmmo(attacker, weapon);
-    if (used && (used.qty ?? 0) > 0) {
-      used.qty = (used.qty ?? 0) - 1;
-      if (used.qty <= 0) attacker.items = (attacker.items ?? []).filter((i) => i.uid !== used.uid);
-    }
+    if (used) consumeAmmo(attacker, used);
     if ((weapon.reload ?? 0) > 0) {
       // À Répétition (Indice) (LDB 62 l.264-265) : Indice munitions auto-rechargées entre les coups ;
       // le rechargement complet (Test étendu) n'est exigé qu'une fois le chargeur vide.
@@ -1957,6 +1959,21 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       if (c.wounds.current <= 0) applyZeroWounds(c);
       wearActiveWeapon(c, weapon, true); // arme détruite, persistée sur l'ItemInstance source
       log.push(tr('cf.fumbleMisfire', { lost }));
+      // Arme d'équipe (MDG ch.12 l.464) : « Si une arme dotée du Défaut Arme d'équipe subit un Incident de
+      // tir, tous les membres de son équipage sont affectés. » → CHAQUE servant APTE du poste (hors le
+      // tireur, déjà frappé ci-dessus) subit le même coup (Dégâts au Bras principal, mitigés à SA fiche).
+      if (hasQuality(weapon, QUALITY_IDS.ArmeDEquipe) && c.mannedPoste) {
+        const servants = exposedCrew((c.mannedPoste.crewIds ?? [])
+          .filter((id) => id !== c.id)
+          .map((id) => battle.combatants.find((x) => x.id === id))
+          .filter((x): x is Combatant => !!x));
+        for (const s of servants) {
+          const sLost = woundsFromHit(weapon, s, 'brasD', effectiveWeaponDamage(weapon, sb) + units);
+          s.wounds.current = Math.max(0, s.wounds.current - sLost);
+          if (s.wounds.current <= 0) applyZeroWounds(s);
+          log.push(tr('cf.fumbleMisfireCrew', { name: s.name, lost: sLost }));
+        }
+      }
       break;
     }
   }
@@ -2688,6 +2705,13 @@ export function castSpell(
     castRefused(get, set, caster, `${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
     return;
   }
+  // Verrou de Péché du culte (MDG 11 l.142 — Stromfels : Invocation retirée à 2 Péchés, Béni à 5) —
+  // lu en DONNÉE (`GodData.sinLocks`), générique à tout culte qui en porterait.
+  const sinLock = prayerSinLock(caster, spell);
+  if (sinLock) {
+    castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.name, talent: sinLock.family === 'beni' ? 'Béni' : 'Invocation', sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));
+    return;
+  }
   // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
   if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
     castRefused(get, set, caster, tr('cf.grimoireRefused', { name: caster.name, spell: label }));
@@ -2795,6 +2819,12 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
   if (blocked) {
     castRefused(get, set, caster, `${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
     return true; // c'était bien une zone — l'entrée est consommée (refus signalé)
+  }
+  // Verrou de Péché du culte (MDG 11 l.142) — même gate que `castSpell` (les miracles à ZdE passent ici).
+  const sinLock = prayerSinLock(caster, spell);
+  if (sinLock) {
+    castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.name, talent: sinLock.family === 'beni' ? 'Béni' : 'Invocation', sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));
+    return true;
   }
   const focusedNI0 = caster.focus?.spell === spell.id && caster.focus.dr >= (spell.cn ?? 0);
   set({

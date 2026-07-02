@@ -16,7 +16,7 @@ import { isDoubleRoll } from './tests';
 import { effectiveWeaponDamage } from './weaponDamage';
 import { woundsFromHit, shipHitLocation, type ShipRig, type ShipLocation } from './combat';
 import { qualitySum, attackDRAdjust } from './qualities/dispatch';
-import { mannedPosteWeapon, compatibleAmmo, weaponWithAmmo } from './items';
+import { mannedPosteWeapon, selectedAmmo, weaponWithAmmo } from './items';
 import { crewedFireWeapon } from './crewedWeapon';
 import { exposedCrew } from './shipCritical';
 import type { Combatant, ShipPoste, Weapon, ItemInstance } from './types';
@@ -36,6 +36,9 @@ export interface VolleyShot {
   critical: boolean;
   /** uid de la pièce (`item.uid`) — pour poser la Recharge sur le bon poste après le tir. */
   posteUid: string;
+  /** Munition TIRÉE (l'instance du stock du poste / de l'inventaire du chef) — consommée par l'appelant
+   *  (`consumeAmmo`, MDG ch.12 l.410-424) : le résolveur reste PUR, aucune mutation ici. */
+  ammo?: ItemInstance;
   /** Recharge effective de la pièce (Recharge N, ×2 si sous-effectif via `crewedFireWeapon`) — Rounds avant de re-tirer. */
   reload: number;
   /** Arme EFFECTIVE de la pièce (munition + sous-effectif déjà bakés) — pour rejouer les effets `onHit` et l'AIRE
@@ -48,13 +51,10 @@ export interface VolleyResult {
   totalWounds: number;
 }
 
-/** Munition sélectionnée par le chef d'une pièce (son `ammoUid`, sinon la 1re compatible). PUR — sans le gate
- *  `kind:'hero'` du tir individuel : un équipage de pièce (PNJ) charge aussi sa munition. */
-function posteAmmo(chef: Combatant | undefined, weapon: Weapon): ItemInstance | undefined {
-  if (!chef) return undefined;
-  const compat = compatibleAmmo(chef, weapon);
-  return compat.find((a) => a.uid === chef.ammoUid) ?? compat[0];
-}
+// (La sélection de munition passe par `selectedAmmo` — SOURCE UNIQUE partagée avec le tir individuel :
+//  choix ponctuel du chef `c.ammoUid` > sélection persistante du poste `poste.ammoUid` > 1re compatible,
+//  pool = stock du poste (MDG ch.12 l.410-424) ∪ inventaire du chef. Pas de gate `kind:'hero'` : un
+//  équipage PNJ charge aussi sa munition.)
 
 /**
  * Résout la volée d'une bordée. `firingShip` = navire tireur ; `postes` = pièces du bord qui porte ; `target` = coque
@@ -72,7 +72,7 @@ export function resolveVolley(
     let weapon = mannedPosteWeapon(firingShip, poste);
     if (!weapon) continue; // pièce détruite
     const chef = byId.get((poste.crewIds ?? [])[0]);
-    const ammo = posteAmmo(chef, weapon);
+    const ammo = chef ? selectedAmmo(chef, weapon) : undefined;
     if (ammo) weapon = weaponWithAmmo(weapon, ammo);
     weapon = crewedFireWeapon(weapon, servants.length); // Recharge×2 / Imprécise / Dangereuse selon l'effectif
     // DR de la pièce = DR partagé + Atouts d'attaque (Imprécise du sous-effectif). « Pour le pire » : un DR négatif
@@ -82,7 +82,7 @@ export function resolveVolley(
     const wounds = woundsFromHit(weapon, target, 'corps', damage, 0, 0); // BE/blindage/Perforante/bypass, plancher 0
     const locRoll = d100(rng);
     shots.push({
-      weaponName: weapon.name, ammoName: ammo?.name, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
+      weaponName: weapon.name, ammoName: ammo?.name, ammo, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
       location: shipHitLocation(rig, locRoll), locRoll,
       critical: isDoubleRoll(locRoll) || target.wounds.current <= 0, // double, OU coque à 0 (l.656)
       posteUid: poste.item.uid, reload: weapon.reload ?? 0, // Recharge effective (crewedFireWeapon a doublé si sous-effectif)

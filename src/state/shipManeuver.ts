@@ -20,7 +20,7 @@ import { testValue } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
 import { navalMoveMod, navalSkillTestDR } from '../engine/navalTraits';
 import { exposedCrew } from '../engine/shipCritical';
-import { crewRoleValue, moraleBand } from '../engine/crewMorale';
+import { crewRoleValue, crewTalentDR, moraleBand } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
 import { findVehicleById, findCrewRoleById } from '../data';
 import type { RNG } from '../engine/dice';
@@ -31,14 +31,15 @@ import type { Get } from './flowTypes';
 export interface CrewRoleRoll { roll: number; target: number; sl: number }
 
 /** Jet d'UN contributeur à son rôle : Test de la compétence du rôle (MDG ch.14). PUR (RNG injecté). `null` si le
- *  rôle est inconnu. La valeur suit `crewRoleValue` (meilleure compétence du rôle pour ce marin). */
+ *  rôle est inconnu. La valeur suit `crewRoleValue` (meilleure compétence du rôle pour ce marin) ; sur un jet
+ *  RÉUSSI s'ajoute le +DR de Talent en contexte Test d'équipage (`crewTalentDR` — Commandant émérite, MDG 09 l.54). */
 export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG, cumul = false): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
   // Cumul de 2 rôles (un marin déjà engagé dans un autre Test d'équipage ce Round) → +2 crans de Difficulté
   // (Manque de bras, MDG ch.14 l.53).
   const t = rollTest(crewRoleValue(crew, role).value, cumul ? easeDifficulty('intermediaire', -2) : 'intermediaire', rng);
-  return { roll: t.roll, target: t.target, sl: t.sl };
+  return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? crewTalentDR(crew, role) : 0) };
 }
 
 /** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL (dé 01) à son rôle (LDB 17 l.73). PUR. */
@@ -47,25 +48,27 @@ export function forceCrewRole(crew: Combatant, roleId: string, cumul = false): C
   if (!role) return null;
   // Résilience à DR max ; cible abaissée de +2 crans si cumul (Manque de bras, l.53).
   const target = crewRoleValue(crew, role).value + (cumul ? DIFFICULTY_MODIFIERS[easeDifficulty('intermediaire', -2)] : 0);
-  return { roll: 1, target, sl: evaluateTest(1, target).sl };
+  return { roll: 1, target, sl: evaluateTest(1, target).sl + crewTalentDR(crew, role) };
 }
 
 /** Total du Test d'équipage de MANŒUVRE (MDG ch.14 l.13) : Σ des DR des contributeurs, le rôle ESSENTIEL compté
  *  DOUBLE (l.19), + la bande de Moral (l.13 « bonus/pénalités… en masse »), + le **Manque de bras** global
- *  (`undercrew` : −2 DR/tranche de 10 % manquant + plafond Succès Minime, l.55). Ce total tient lieu de DR de
+ *  (`undercrew` : −2 DR/tranche de 10 % manquant + plafond Succès Minime, l.55), + `extraDR` (SABOTAGE,
+ *  l.45-47 : −1..−5 DR imposés au Test d'équipage). Ce total tient lieu de DR de
  *  Navigation que la manœuvre (ch.13) module ensuite par le Man du navire. PUR. */
 export function maneuverCrewTotal(
   participants: { roleId: string; result: CrewRoleRoll | null }[],
   essentialRoleId: string | undefined,
   moraleScore: number,
   undercrew?: { dr: number; capSuccesMinime: boolean },
+  extraDR = 0,
 ): number {
   let base = 0;
   for (const p of participants) {
     if (!p.result) continue;
     base += essentialRoleId && p.roleId === essentialRoleId ? p.result.sl * 2 : p.result.sl;
   }
-  let total = base + moraleBand(moraleScore).crewTestDR + (undercrew?.dr ?? 0);
+  let total = base + moraleBand(moraleScore).crewTestDR + (undercrew?.dr ?? 0) + extraDR;
   if (undercrew?.capSuccesMinime && total > 0) total = 0; // jamais mieux qu'un Succès Minime (l.55)
   return total;
 }

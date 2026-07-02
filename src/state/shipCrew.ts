@@ -5,10 +5,13 @@
  * batterie, perception…) — un seul endroit assigne les marins aux postes.
  */
 import type { Combatant } from '../engine/types';
-import { crewRoleValue, MORALE_BASE, undercrewPenalty, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
-import { findCrewRoleById, findCrewTestTypeById, findVehicleById } from '../data';
+import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
+import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findSeaShantyById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
-import type { Get } from './flowTypes';
+import { applyOps } from '../engine/ops';
+import { removeActiveEffects } from '../engine/conditions';
+import { battleRng } from './battleRng';
+import type { Get, Set as SetFn } from './flowTypes';
 
 /**
  * Assignation de l'équipage APTE d'un navire aux rôles qui contribuent à `testTypeId` (MDG ch.14). Chaque marin tient
@@ -116,4 +119,75 @@ export function shipUndercrew(ship: Combatant, combatants: Combatant[]): Undercr
   const nominal = findVehicleById(ship.creatureId ?? '')?.ship?.crew ?? 0;
   const present = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)).length;
   return undercrewPenalty(nominal, present);
+}
+
+/** SABOTAGE des Tests d'équipage d'une coque (MDG ch.14 l.45-47 : « de -1 à -5 DR sur le Test d'équipage »)
+ *  — lit `Combatant.saboteurDR` (authoré par le scénario) CLAMPÉ à la fourchette RAW [-5, 0]. PUR. */
+export function shipSaboteurDR(ship: Combatant): number {
+  return Math.max(-5, Math.min(0, ship.saboteurDR ?? 0));
+}
+
+/** QUART de veille (MDG 09 l.40 : « Une seule chanson de marin peut être chantée lors de chaque quart ») —
+ *  le RAW ne chiffre pas le quart ; on prend le quart de veille naval STANDARD de 4 heures (240 min). */
+export const QUART_MINUTES = 240;
+export const quartIndex = (gameTime: number): number => Math.floor(gameTime / QUART_MINUTES);
+
+/** Préfixe d'identité des effets de chanson (retrait ciblé à l'interruption — MDG 09 l.38). */
+const SHANTY_LABEL = (label: string): string => `Chanson de marin — ${label}`;
+
+/**
+ * APPLIQUE une chanson de marin RÉUSSIE (MDG 09 l.36-40 + l.218-248) : ses `crewOps` sur CHAQUE membre
+ * d'équipage APTE (« Une chanson de marin affecte un équipage entier », l.36) et ses `captainOps` sur le
+ * seul TITULAIRE du rôle Capitaine (« Suivez le capitaine », l.246-248). Durée : « trois minutes plus un
+ * nombre de minutes égal au DR » (l.38) → effets d'HORLOGE (`defaultUntilTime`). Pose l'identité de chant
+ * sur le chanteur (interruption sur Dégâts, l.38) et consomme le QUART du navire (l.40). Renvoie le journal.
+ */
+export function applyShantyToCrew(get: Get, ship: Combatant, singer: Combatant, shantyId: string, sl: number): string[] {
+  const shanty = findSeaShantyById(shantyId);
+  if (!shanty) return [];
+  const label = SHANTY_LABEL(shanty.label);
+  const until = get().gameTime + 3 + Math.max(0, sl); // 3 min + DR (l.38)
+  const combatants = get().battle?.combatants ?? get().party;
+  const crew = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
+  const lines: string[] = [`🎶 ${singer.name} entonne « ${shanty.label} » (${3 + Math.max(0, sl)} min).`];
+  for (const c of crew) if (shanty.crewOps?.length) lines.push(...applyOps(c, shanty.crewOps, { label, rng: battleRng(), defaultUntilTime: until }));
+  if (shanty.captainOps?.length) {
+    const roles = shipDefaultRoles(crew, 'manoeuvre');
+    const captain = crew.find((c) => roles.get(c.id) === 'capitaine');
+    if (captain) lines.push(...applyOps(captain, shanty.captainOps, { label, rng: battleRng(), defaultUntilTime: until }));
+    else lines.push('Aucun Capitaine à bord : la chanson ne trouve pas son héros.');
+  }
+  singer.singingShanty = { shantyId, label };
+  ship.lastShantyQuart = quartIndex(get().gameTime);
+  return lines;
+}
+
+/** FIN DE CHANT (MDG 09 l.38 : « Si le Personnage subit des Dégâts ou rate un Test opposé, sa Chanson de
+ *  marin prend fin ») : retire l'effet de la chanson de TOUS les combattants (retrait par IDENTITÉ de
+ *  label, même chemin que l'expiration — `removeActiveEffects`). Renvoie une ligne de journal, ou []. */
+export function endShanty(get: Get, singer: Combatant): string[] {
+  const song = singer.singingShanty;
+  if (!song) return [];
+  delete singer.singingShanty;
+  const combatants = get().battle?.combatants ?? get().party;
+  for (const c of combatants) removeActiveEffects(c, (e) => e.label === song.label);
+  return [`🎶 La chanson de ${singer.name} s'interrompt.`];
+}
+
+/**
+ * Applique un DELTA de Moral au NAVIRE DE CAMPAGNE (MDG ch.14 — Rude épreuve l.110 : le Moral évolue en jeu,
+ * pas seulement au recalc hebdomadaire) : PERSISTE sur `CampaignVessel.morale.score` quand la coque EST le
+ * navire de campagne (sinon no-op : une coque adverse/transitoire ne suit pas de Moral). Renvoie les lignes
+ * de journal (delta + changement de bande éventuel — « Des canailles que je ne parviens pas à mater »).
+ */
+export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delta: number): string[] {
+  const vessel = get().vessel;
+  if (!delta || !vessel || ship.creatureId !== vessel.vehicleId) return [];
+  const before = vessel.morale.score;
+  const after = before + delta;
+  set({ vessel: { ...vessel, morale: { ...vessel.morale, score: after } } });
+  const lines = [`Moral de l'équipage : ${delta > 0 ? '+' : ''}${delta} (${before} → ${after}).`];
+  const bandAfter = moraleBand(after);
+  if (bandAfter.id !== moraleBand(before).id) lines.push(`« ${bandAfter.desc.split('.')[0]}. »`);
+  return lines;
 }

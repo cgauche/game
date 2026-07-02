@@ -140,8 +140,20 @@ function etatTestMods(c: Combatant): Extract<GameOp, { op: 'testMod' }>[] {
   return out;
 }
 
+/** Nombre d'États dont les pénalités de Test sont IGNORÉES (op `ignoreStatePenalties{count}` — « Les dames
+ *  de L'Anguille », MDG 09 l.244 : « peut ignorer un État », UN seul au choix). Σ des effets actifs porteurs. */
+function ignoredStatesCount(c: Combatant): number {
+  return (c.activeEffects ?? []).reduce((s, e) => s + (e.ignoreStatesCount ?? 0), 0);
+}
+
+/** Retire les N PIRES candidats (les plus négatifs) du pool de pénalités d'État — « ignorer UN État » :
+ *  le pool non-cumul (le pire seul s'applique, LDB 16 l.20) rend rationnel d'ignorer le pire d'abord. */
+function dropWorst(cand: number[], n: number): number[] {
+  return n > 0 ? [...cand].sort((a, b) => a - b).slice(n) : cand;
+}
+
 export function combatTestPenalty(c: Combatant): number {
-  const cand: number[] = [];
+  let cand: number[] = [];
   // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
   // n'efface QUE les pénalités d'État (l'aura Perturbante est un trait, pas un État).
   if (!hasActiveFlag(c, 'ignoreStatePenalties')) {
@@ -149,6 +161,7 @@ export function combatTestPenalty(c: Combatant): number {
       if (m.movementOnly) continue; // pénalité de DÉPLACEMENT (À Terre/Empêtré) — pas un Test de combat
       cand.push(m.amount); // magnitude/portée en données (etats.json) ; déjà ×pions (Exténué)
     }
+    cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
   }
   // Auras de combat (Perturbant : −20 à BE m, LDB 85 p.341) — `testMod` projetés dans `auraMods` par le hook
   // `recompute-auras`. HORS du gate `ignoreStatePenalties` : une aura est un TRAIT, pas un État (Endurance de
@@ -173,13 +186,14 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   if (!c.conditions?.length) return effMod;
   // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
   if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;
-  const cand: number[] = [];
+  let cand: number[] = [];
   for (const m of etatTestMods(c)) {
     if (m.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
     if (m.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
     if (m.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
     cand.push(m.amount);
   }
+  cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
   return (cand.length ? Math.min(...cand) : 0) + effMod;
 }
 

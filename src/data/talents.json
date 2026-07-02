@@ -4173,7 +4173,18 @@
       ]
     },
     "desc": "Ce Talent permet à un Personnage d'apprendre une chanson de marin (voir page 67). Chaque fois qu'un Personnage achète un nouveau niveau dans ce Talent, il apprend une nouvelle chanson. Une chanson de marin affecte un équipage entier. Pour utiliser ce Talent, le Personnage doit trouver un endroit où chanter depuis lequel il peut être entendu par autant de membres d'équipage que possible et réussir un Test de Divertissement (Chant).\n\nUn Personnage met 30 secondes chanter la la chanson de marin, après quoi l'effet dure trois minutes plus un nombre de minutes égal au DR sur le Test de **Divertissement (Chant)**. La seule action de combat que le Personnage peut effectuer tant qu'il est en train de chanter la chanson de marin est une Esquive. Si le MJ l'autorise, il peut effectuer d'autres actions comme un Test de Perception ou de Calme. Si le Personnage subit des Dégâts ou rate un Test opposé, sa Chanson de marin prend fin.\n\nUne seule chanson de marin peut être chantée lors de chaque quart. Difficile d'inspirer davantage un équipage.",
-    "specs": [],
+    "specs": [
+      "Naviguons tous ensemble, ho hisse, ho hisse…",
+      "Jacques Bret a rencontré notre acier sur les mers !",
+      "De toutes les terreurs sur les mers…",
+      "Camarades d'équipage, rassemblez-vous…",
+      "Tous à la vigie, car la nuit a des yeux…",
+      "Les dames de L'Anguille…",
+      "Suivez le capitaine, suivez le héros…"
+    ],
+    "combat": {
+      "seaShanty": true
+    },
     "rand": null,
     "source": {
       "book": "MDG",
@@ -4191,7 +4202,9 @@
       "matches": [
         {
           "skill": "commandement",
-          "manual": true
+          "when": {
+            "kind": "crewTest"
+          }
         }
       ]
     },

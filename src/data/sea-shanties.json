@@ -7,7 +7,12 @@
       "book": "MDG",
       "page": 67
     },
-    "pending": "Modificateur +10 aux Tests INDIVIDUELS composant un Test d'équipage : scope « Test d'équipage » à ouvrir dans crewMorale (lot systèmes naval)."
+    "crewOps": [
+      {
+        "op": "crewTestMod",
+        "mod": 10
+      }
+    ]
   },
   {
     "id": "jacques-bret-a-rencontre-notre-acier",
@@ -49,7 +54,14 @@
       "book": "MDG",
       "page": 67
     },
-    "pending": "+1 DR par CARACTÉRISTIQUE (tout Test de Sociabilité, intention fraterniser/apaiser) : variante charDRBonus à créer (lot systèmes naval)."
+    "crewOps": [
+      {
+        "op": "charDRBonus",
+        "char": "Soc",
+        "bonus": 1
+      }
+    ],
+    "note": "L'INTENTION (« fraterniser ou apaiser ») n'est pas suivie par le moteur : le +1 DR s'applique à tout Test de Sociabilité réussi de l'équipage — arbitrage MJ pour les usages hostiles."
   },
   {
     "id": "tous-a-la-vigie",
@@ -66,7 +78,7 @@
         "mod": 10
       }
     ],
-    "pending": "Le +20 « sur tous les Tests qui l'endormiraient en cas d'échec » est conditionnel à la conséquence du Test — inexprimable, arbitrage MJ (lot systèmes naval)."
+    "note": "Le +20 « sur tous les Tests qui l'endormiraient en cas d'échec » dépend de la CONSÉQUENCE du Test (aucun Test de sommeil n'est modélisé) — arbitrage MJ."
   },
   {
     "id": "les-dames-de-l-anguille",
@@ -76,7 +88,13 @@
       "book": "MDG",
       "page": 67
     },
-    "pending": "« Ignorer UN État » (au choix, un seul) : ignoreStatePenalties actuel ignore TOUT — paramètre {count:1} à créer (lot systèmes naval)."
+    "crewOps": [
+      {
+        "op": "ignoreStatePenalties",
+        "count": 1
+      }
+    ],
+    "note": "« Ignorer un État » est mécanisé sur ses PÉNALITÉS DE TEST (le pire État est ignoré) ; les restrictions d'action d'un État (À Terre, Inconscient…) restent — arbitrage MJ."
   },
   {
     "id": "suivez-le-capitaine",
@@ -86,6 +104,13 @@
       "book": "MDG",
       "page": 67
     },
-    "pending": "+20 aux Tests de Sociabilité du CAPITAINE (ou figure d'autorité) ciblant l'équipage : gating de rôle et de cible à créer (lot systèmes naval)."
+    "captainOps": [
+      {
+        "op": "testMod",
+        "amount": 20,
+        "char": "Soc"
+      }
+    ],
+    "note": "Le +20 est posé sur le CAPITAINE (titulaire du rôle) pour ses Tests de Sociabilité ; la restriction « ciblant l'équipage » n'est pas suivie par le moteur — arbitrage MJ hors bord."
   }
 ]

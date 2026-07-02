@@ -158,14 +158,15 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
   return 0; // indiceOf / stacks / engagedAdvantageGap : hors contexte au planning
 }
 
-/** Somme des bonus de DR à une Compétence (`skillId`) conférés par les Traits du porteur — op PASSIVE
- *  `skillDRBonus` portée par `TraitData.passive`, lue PAR ID (jamais par libellé). Furtif : +Bonus
- *  d'Agilité au DR de Discrétion (LDB 85). Distincte de `skillMod` (valeur du Test) — consommée au
- *  calcul du DR (ex. Test de Discrétion de la Surprise). */
+/** Somme des bonus de DR à une Compétence (`skillId`) conférés au porteur — op `skillDRBonus` PASSIVE
+ *  (`TraitData.passive`, lue PAR ID — Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85), PROJETÉE
+ *  par une aura (`auraMods`), OU TEMPORISÉE par un effet actif (`ActiveEffect.drBonus` — chansons de
+ *  marin, MDG 09). Distincte de `skillMod` (valeur du Test) — consommée au calcul du DR d'un Test
+ *  RÉUSSI (Discrétion de la Surprise, incantation, attaque, Test générique). */
 export function skillDRBonus(c: Combatant, skillId: string, spec?: string): number {
   // Une op SANS `spec` s'applique à toute spécialisation (Furtif → Discrétion) ; une op AVEC `spec` ne
   // s'applique qu'à cette spécialisation (Aura de Dhar → Langue (Magick) seulement, pas Langue (Bretonnien)).
-  const matches = (op: Extract<GameOp, { op: 'skillDRBonus' }>) => op.skill === skillId && (op.spec == null || op.spec === spec);
+  const matches = (op: { skill: string; spec?: string }) => op.skill === skillId && (op.spec == null || op.spec === spec);
   let n = 0;
   for (const t of c.traits ?? []) {
     for (const op of traitById.get(t.id)?.passive ?? []) {
@@ -175,6 +176,24 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
   // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux casters alliés) — `aura.passive` projeté
   // dans `auraMods` par le hook `recompute-auras`. Sommé (le DR cumule), comme les passifs de trait.
   for (const op of c.auraMods ?? []) if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
+  // Effets ACTIFS temporisés (op `skillDRBonus` exécutée — chanson de marin « Jacques Bret », MDG 09 l.228).
+  for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.skill != null && matches({ skill: b.skill, spec: b.spec })) n += b.bonus;
+  return n;
+}
+
+/** Somme des bonus de DR aux Tests d'une CARACTÉRISTIQUE (op `charDRBonus` — chanson « Camarades
+ *  d'équipage » : +1 DR aux Tests de Sociabilité, MDG 09 l.236) : passifs de trait + auras + effets
+ *  actifs. Consommée sur un Test RÉUSSI (même règle d'application que `skillDRBonus`/LDB 10 l.20). */
+export function charDRBonusOf(c: Combatant, char: CharKey | undefined): number {
+  if (!char) return 0;
+  let n = 0;
+  for (const t of c.traits ?? []) {
+    for (const op of traitById.get(t.id)?.passive ?? []) {
+      if (op.op === 'charDRBonus' && op.char === char) n += resolveFormula(op.bonus, c);
+    }
+  }
+  for (const op of c.auraMods ?? []) if (op.op === 'charDRBonus' && op.char === char) n += resolveFormula(op.bonus, c);
+  for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.char === char) n += b.bonus;
   return n;
 }
 
@@ -396,8 +415,10 @@ export type GameOp =
    *  `onlyGroups` : gaté par Groupe (Fauche-démon → cible Démoniaque seulement). */
   | { op: 'banish'; narration?: 'chaos' | 'unravel'; onlyGroups?: string[] }
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
-   *  drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. */
-  | { op: 'ignoreStatePenalties' }
+   *  drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. `count` : n'ignore que les
+   *  pénalités des N PIRES États (chanson « Les dames de L'Anguille » : « peut ignorer un État »,
+   *  MDG 09 l.244 — un seul, au choix ; le pool non-cumul rend rationnel d'ignorer le pire). */
+  | { op: 'ignoreStatePenalties'; count?: number }
   /** « Peut relancer le prochain Test auquel elle échoue » (Bénédiction de Chance, LDB 41) —
    *  drapeau consommé à l'usage au point de relance des flux de jet. */
   | { op: 'freeReroll' }
@@ -568,11 +589,22 @@ export type GameOp =
    *  PASSIF par les helpers de trauma depuis `t.ops` (annulable par prothèse), et — si posé par un sort
    *  via `applyOps` — par `ActiveEffect.skillMods` (testValue/defenseValue). Une op, n'importe quelle compétence. */
   | { op: 'skillMod'; skill: string; mod: number }
-  /** +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339).
-   *  PASSIF — lu par `skillDRBonus` depuis les `TraitData.passive` du porteur (par id) ; DISTINCT de
-   *  `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). Inerte dans `applyOps`. `spec` OPTIONNEL :
+  /** +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339 ;
+   *  chanson « Jacques Bret » : +1 DR sur tout Test de Corps à corps réussi, MDG 09 l.228).
+   *  Lu par `skillDRBonus` — PASSIF depuis les `TraitData.passive` du porteur (par id), ET, quand
+   *  l'op est EXÉCUTÉE par un sort/une chanson (`applyOps`), depuis un `ActiveEffect.drBonus` temporisé.
+   *  DISTINCT de `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). `spec` OPTIONNEL :
    *  restreint à une spécialisation (Aura de Dhar → Langue (Magick) seulement) ; absent = toute spéc. */
   | { op: 'skillDRBonus'; skill: string; bonus: Formula; spec?: string }
+  /** +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de
+   *  Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. Exécutée → `ActiveEffect.drBonus`
+   *  temporisé ; lisible aussi en PASSIF (trait/aura). Consommée par `charDRBonusOf` sur un Test RÉUSSI. */
+  | { op: 'charDRBonus'; char: CharKey; bonus: Formula }
+  /** Modificateur aux Tests INDIVIDUELS composant un TEST D'ÉQUIPAGE (MDG ch.14) — chanson « Naviguons
+   *  tous ensemble » : « +10 sur les Tests individuels de chaque membre d'équipage impliqué dans un Test
+   *  d'équipage » (MDG 09 l.224). Exécutée → `ActiveEffect.crewTestMod`, lu par `crewRoleValue`
+   *  (engine/crewMorale) — le SEUL point de valeur des Tests d'équipage. */
+  | { op: 'crewTestMod'; mod: number }
   /** Modificateur au Test de l'ATTAQUANT qui vise le porteur (Parasité : −10 au toucher en mêlée, LDB 85
    *  p.340). PASSIF, lu par `incomingAttackMod` à la collecte des mods d'attaque — DISTINCT de `testMod`
    *  (qui modifie les Tests du porteur LUI-MÊME). `mode` : portée concernée (`all` = mêlée ET distance).
@@ -1229,7 +1261,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           duration: durationFromCtx(ctx),
-          ignoreStatePenalties: true,
+          // `count` (Les dames de L'Anguille, MDG 09 l.244 : « peut ignorer UN État ») → n'ignore que
+          // les N pires États ; absent = TOUTES les pénalités d'État (Endurance de l'anachorète, LDB 42).
+          ...(o.count != null ? { ignoreStatesCount: o.count } : { ignoreStatePenalties: true }),
         });
         lines.push(t('op.ignoreStatePenalties', { name: target.name, src: ctx.label ?? 'sort' }));
         break;
@@ -1564,6 +1598,36 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           skillMods: { [o.skill]: o.mod },
         });
         lines.push(t('op.skillMod', { name: target.name, mod: `${o.mod >= 0 ? '+' : ''}${o.mod}`, skill: o.skill, src: ctx.label ?? 'sort' }));
+        break;
+      }
+      // +DR temporisé à une Compétence / une Caractéristique (chansons de marin, MDG 09 l.228/236) :
+      // porté par `ActiveEffect.drBonus`, lu par `skillDRBonus`/`charDRBonusOf` sur un Test RÉUSSI.
+      case 'skillDRBonus': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0, duration: durationFromCtx(ctx),
+          drBonus: [{ skill: o.skill, ...(o.spec != null ? { spec: o.spec } : {}), bonus: resolveFormula(o.bonus, ref, rng) }],
+        });
+        lines.push(t('op.drBonus', { name: target.name, what: o.skill, src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'charDRBonus': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0, duration: durationFromCtx(ctx),
+          drBonus: [{ char: o.char, bonus: resolveFormula(o.bonus, ref, rng) }],
+        });
+        lines.push(t('op.drBonus', { name: target.name, what: CHAR_LABELS[o.char], src: ctx.label ?? 'sort' }));
+        break;
+      }
+      // Modificateur aux Tests INDIVIDUELS d'un Test d'équipage (« Naviguons tous ensemble », MDG 09 l.224).
+      case 'crewTestMod': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0, duration: durationFromCtx(ctx),
+          crewTestMod: o.mod,
+        });
+        lines.push(t('op.crewTestMod', { name: target.name, mod: `${o.mod >= 0 ? '+' : ''}${o.mod}`, src: ctx.label ?? 'sort' }));
         break;
       }
       case 'light': {

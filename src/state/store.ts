@@ -71,7 +71,7 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingApproach, PendingWard, PendingFocus, PendingDispel,
+  PendingAppraise, PendingAttack, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
@@ -376,6 +376,10 @@ export interface GameState extends RollFlowActionsMap {
   pendingShipManeuver: PendingShipManeuver | null;
   /** Tir de batterie en cours (MDG ch.14 : Test d'équipage des Artilleurs → volée sur la cible). */
   pendingShipBattery: PendingShipBattery | null;
+  /** Test d'équipage GÉNÉRIQUE en cours (MDG ch.14 — Rude épreuve : total négatif → perte de Moral, l.110). */
+  pendingCrewTest: PendingCrewTest | null;
+  /** Chanson de marin en cours (Talent, MDG 09 l.32-40 : choix de la chanson + Test de Divertissement (Chant)). */
+  pendingShanty: PendingShanty | null;
   /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.29). */
   pendingApproach: PendingApproach | null;
   /** Bénédiction de Protection en cours (Test de FM +20 différant la déclaration d'attaque — LDB 41 l.105). */
@@ -836,6 +840,18 @@ export interface GameState extends RollFlowActionsMap {
   shipBatteryConfirm: () => void;
   shipBatteryCancel: () => void;
   // shipBattery{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap, MULTI).
+  /** Test d'équipage GÉNÉRIQUE (MDG ch.14) : ouvre la modale multi-jets du type `testTypeId` (Rude épreuve…). */
+  battleCrewTest: (shipId: string, testTypeId: string) => void;
+  crewTestConfirm: () => void;
+  crewTestCancel: () => void;
+  // crewTest{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap, MULTI).
+  /** Chanson de marin (Talent, MDG 09 l.32-40) : ouvre la modale du chanteur (choix de chanson + Test de Chant). */
+  battleSingShanty: (shipId: string) => void;
+  /** Choix de la chanson (pré-jet, parmi les specs CONNUES du Talent). */
+  shantySetSong: (shantyId: string) => void;
+  shantyConfirm: () => void;
+  shantyCancel: () => void;
+  // shanty{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   // run{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   runConfirm: () => void;
   runCancel: () => void;
@@ -958,6 +974,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Épingle (`role`) ou détache (`null`) le rôle d'ÉQUIPAGE naval d'un marin (`shipRole`) — interface de gestion
    *  du navire. Patche `party` ET `battle.combatants` (l'équipage vit dans la bataille en mer). */
   setShipRole: (crewId: string, role: string | null) => void;
+  /** Sélectionne la munition PERSISTANTE d'un poste d'artillerie (`ShipPoste.ammoUid` — boulet/mitraille,
+   *  MDG ch.12 l.410-424), depuis la fiche du navire. `null` → retour au défaut (1re compatible). */
+  setPosteAmmo: (shipId: string, posteUid: string, ammoUid: string | null) => void;
   /** Dernier jour (index d'horloge) traité par l'entretien quotidien (rations/faim) — anti-double-comptage. */
   lastUpkeepDay: number;
   /** Navire de campagne PERSISTANT (MDG ch.13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
@@ -1753,6 +1772,16 @@ export const useGame = create<GameState>((set, get) => ({
       party: get().party.map(patch),
       ...(b ? { battle: { ...b, combatants: b.combatants.map(patch) } } : {}),
     });
+  },
+  setPosteAmmo: (shipId, posteUid, ammoUid) => {
+    const b = get().battle;
+    const ship = b?.combatants.find((c) => c.id === shipId);
+    const poste = ship?.postes?.find((p) => p.item.uid === posteUid);
+    if (!b || !poste) return;
+    // Le poste est PARTAGÉ par référence avec `mannedPoste` du chef (serveChef) → muter la même instance
+    // suffit ; le `set` re-render (pattern combat : mutation + refresh).
+    poste.ammoUid = ammoUid ?? undefined;
+    set({ battle: { ...b } });
   },
   /** Acquitte le récit de voyage. Une EMBUSCADE différée (`recap.then`) se déclenche ICI :
    *  le joueur a lu ce qui lui arrive, le combat démarre — fermer la modale (bouton/Échap)

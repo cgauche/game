@@ -62,6 +62,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['foeInLoS', 'Ennemi en Ligne de Vue'],
   ['hiddenFromFoes', 'Caché de l’ennemi (hors de vue)'],
   ['engaged', 'Engagé avec un ennemi'],
+  ['crewTest', 'Au sein d’un Test d’équipage (à bord)'],
   ['nearestFoe', 'Distance à l’ennemi le plus proche'],
   ['capability', 'Capacité de combat'],
   ['relation', 'Camp / relation'],
@@ -104,6 +105,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'foeInLoS': return 'ennemi en Ligne de Vue';
     case 'hiddenFromFoes': return 'caché (hors de vue de l’ennemi)';
     case 'engaged': return 'engagé avec un ennemi';
+    case 'crewTest': return 'au sein d’un Test d’équipage';
     case 'nearestFoe': return `ennemi le + proche ${c.op} ${c.value} cases`;
     case 'capability': return `${WHO_LABEL[c.who]} : capacité « ${c.id || '?'} » ${c.op ?? '>='} ${c.value ?? 1}`;
     case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
@@ -134,6 +136,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'foeInLoS': return { kind: 'foeInLoS' };
     case 'hiddenFromFoes': return { kind: 'hiddenFromFoes' };
     case 'engaged': return { kind: 'engaged' };
+    case 'crewTest': return { kind: 'crewTest' };
     case 'nearestFoe': return cond.kind === 'nearestFoe' ? cond : { kind: 'nearestFoe', op: '<=', value: 3 };
     case 'capability': return cond.kind === 'capability' ? cond : { kind: 'capability', who: 'target', id: 'braveheart', op: '>=', value: 1 };
     case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };

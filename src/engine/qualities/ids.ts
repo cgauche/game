@@ -37,4 +37,5 @@ export const QUALITY_IDS = {
   Devastatrice: 'devastatrice',
   Percutante: 'percutante',
   Perforante: 'perforante',
+  ArmeDEquipe: 'arme-d-equipe',
 } as const;

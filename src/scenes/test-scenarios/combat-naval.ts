@@ -8,29 +8,30 @@ import type { TestScenario } from './_shared';
 const GUNNERS = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
 
 /**
- * Un poste de PIERRIER (canon léger de pont, MDG ch.12) monté à tribord de la barge, servi par `chefId`.
- * La pièce appartient à la COQUE (source de vérité) ; au début du combat `applyShipPostes` la sert au chef
- * (`mannedPoste`) → l'attaque dédiée « Servir le pierrier » (arc de bordée). PLUS de pierrier en inventaire
- * (l'ancienne triche `armGunner`) : le canon est une pièce du navire, pas une arme perso du héros.
+ * Un poste de PIERRIER (canon léger de pont, MDG ch.12) monté à tribord de la barge, servi par `chefId`,
+ * avec son STOCK DE MUNITIONS (l.410-424) : balles & poudre (Empaleuse/Perforante, Tir de zone 3) ET
+ * petites munitions (Tir de zone 6) — le coffre appartient à la PIÈCE (sélecteur sur la fiche du navire),
+ * plus à la besace du servant. La pièce appartient à la COQUE (source de vérité) ; au début du combat
+ * `applyShipPostes` la sert au chef (`mannedPoste`) → l'attaque dédiée « Servir le pierrier ».
  */
 function pierrierPoste(chefId: string): ShipPoste {
-  return { item: itemFromTrappingById('pierrier')!, side: 'tribord', crewIds: [chefId] };
+  const balles = itemFromTrappingById('balles-et-poudre-pierrier')!;
+  balles.qty = 10; // de quoi bombarder plusieurs Rounds (Recharge entre chaque tir)
+  const mitraille = itemFromTrappingById('petites-munitions-et-poudre-pierrier')!;
+  mitraille.qty = 6;
+  return { item: itemFromTrappingById('pierrier')!, side: 'tribord', crewIds: [chefId], ammo: [balles, mitraille], ammoUid: balles.uid };
 }
 
 /**
- * Groupe d'arène, mais le Soldat + le Chasseur (les 2 chefs de pièce, cf. GUNNERS) embarquent des MUNITIONS
- * de siège (balles & poudre) et démarrent CHARGÉS — le CANON, lui, reste un poste de la barge (servi au
+ * Groupe d'arène ; les 2 chefs de pièce (Soldat + Chasseur, cf. GUNNERS) démarrent CHARGÉS — les munitions
+ * vivent dans le COFFRE du poste (cf. `pierrierPoste`), le canon reste un poste de la barge (servi au
  * combat par `applyShipPostes`). Les 2 autres (Tueur + Sorcier) gardent leur arme de mêlée pour l'abordage.
  */
 function makeNavalParty(): Combatant[] {
   const party = makeShowcaseParty();
   for (const id of GUNNERS) {
     const g = party.find((h) => h.id === id);
-    if (!g) continue;
-    const ammo = itemFromTrappingById('balles-et-poudre-pierrier')!;
-    ammo.qty = 10; // de quoi bombarder plusieurs Rounds (Recharge entre chaque tir)
-    g.items = [ammo, ...(g.items ?? [])];
-    g.loaded = true; // chargé d'emblée → tir dès le 1er Round
+    if (g) g.loaded = true; // chargé d'emblée → tir dès le 1er Round
   }
   return party;
 }

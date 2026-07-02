@@ -37,7 +37,7 @@ import { resolveOpposed, evaluateTest, extendedTestStep, assistBonus } from '../
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
-import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
+import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, hasCommandTeam } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
@@ -53,7 +53,10 @@ import { rollOups } from '../engine/oups';
 import { spawnEnemy, placeCombatant } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
-import { crewTestContributors, shipMoraleScore, shipUndercrew, withCrewActed } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
+import { rudeEpreuveMoraleDelta } from '../engine/crewMorale';
+import { knownShanties } from '../engine/combatFeatures/dispatch';
+import { findSeaShantyByLabel } from '../data';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById } from '../data';
 import { structureCombatant } from '../engine/structures';
 import { targetArc } from './fireArc';
@@ -93,6 +96,41 @@ import { describeFrenzy, describeReload, describeStateRecovery } from './flowOut
  *  performClick d'IsoStage — pour rester neutre vis-à-vis des harnais de test sans UI.) */
 const combatBusy = (s: Pick<GameState, 'pendingCleave' | 'pendingDualStrike' | 'pendingCast'>): boolean =>
   !!(pickActiveModalKey(s as never) || s.pendingCleave || s.pendingDualStrike || s.pendingCast);
+
+/** OUVERTURE partagée d'un Test d'équipage MULTI (MDG ch.14) : contributeurs par rôle (`crewTestContributors` —
+ *  UN jet par poste, PJ interactifs, l.9/39/41), Moral, Manque de bras (l.55) et SABOTAGE (l.45-47) dérivés du
+ *  navire. SOURCE UNIQUE des 3 flux jumeaux (manœuvre / bordée / Test d'équipage générique) — le pending
+ *  appelant y ajoute ses champs propres (turnSteps, targetId+side, testTypeId). `null` si aucun rôle tenu. */
+function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
+  participants: ShipManeuverParticipant[];
+  essentialRoleId?: string;
+  moraleScore: number;
+  undercrew: ReturnType<typeof shipUndercrew>;
+  extraDR?: number;
+} | null {
+  const battle = get().battle;
+  if (!battle) return null;
+  const partyIds = new Set(get().party.map((h) => h.id));
+  const contributors = crewTestContributors(ship, battle.combatants, testTypeId, partyIds);
+  if (!contributors.length) return null;
+  const essentialRoleId = findCrewTestTypeById(testTypeId)?.essential;
+  const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
+    id: a.crew.id,
+    label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}${(battle.crewActed?.[ship.id] ?? []).includes(a.crew.id) ? ' ⚠ −2 (cumul)' : ''}`,
+    interactive: partyIds.has(a.crew.id),
+    roleId: a.roleId,
+    essential: a.roleId === essentialRoleId,
+    cumul: (battle.crewActed?.[ship.id] ?? []).includes(a.crew.id), // déjà engagé dans un Test ce Round → cumul +2 crans (l.53)
+    result: null,
+  }));
+  const saboteur = shipSaboteurDR(ship); // MDG ch.14 l.45-47 : −1..−5 DR plats
+  return {
+    participants, essentialRoleId,
+    moraleScore: shipMoraleScore(get, ship),
+    undercrew: shipUndercrew(ship, battle.combatants),
+    ...(saboteur ? { extraDR: saboteur } : {}),
+  };
+}
 
 /** Avance l'étape-jet d'attaque de la cascade combat à la FIN de la chaîne (plus de `pendingAttack` NI
  *  d'enchaînement balayage/dual) → conséquences inline ou reprise. La cascade reste ouverte pendant la
@@ -828,26 +866,14 @@ export function createCombatSlice(get: Get, set: Set) {
       // un héros-équipage prend la barre (`id` = le héros, navire dérivé via `shipOfCrew`).
       const ship = isVehicle(active) ? active : shipOfCrew(battle.combatants, id);
       if (!ship) return;
-      // Contributeurs du Test d'équipage de manœuvre (MDG ch.14) — UN jet par POSTE (PJ + marin représentant, l.9/39/41).
-      const partyIds = new Set(get().party.map((h) => h.id));
-      const contributors = crewTestContributors(ship, battle.combatants, 'manoeuvre', partyIds);
-      if (!contributors.length) return; // aucun rôle tenu → le navire ne peut pas manœuvrer
-      const essentialRoleId = findCrewTestTypeById('manoeuvre')?.essential;
-      const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
-        id: a.crew.id,
-        label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}${(battle.crewActed?.[ship.id] ?? []).includes(a.crew.id) ? ' ⚠ −2 (cumul)' : ''}`,
-        interactive: partyIds.has(a.crew.id),
-        roleId: a.roleId,
-        essential: a.roleId === essentialRoleId,
-        cumul: (battle.crewActed?.[ship.id] ?? []).includes(a.crew.id), // déjà engagé dans un Test ce Round → cumul +2 crans (l.53)
-        result: null,
-      }));
+      const opened = openCrewTestPending(get, ship, 'manoeuvre');
+      if (!opened) return; // aucun rôle tenu → le navire ne peut pas manœuvrer
       set({
-        pendingShipManeuver: { shipId: ship.id, turnSteps: 0, participants, essentialRoleId, moraleScore: shipMoraleScore(get, ship), undercrew: shipUndercrew(ship, battle.combatants) },
+        pendingShipManeuver: { shipId: ship.id, turnSteps: 0, ...opened },
         battle: { ...battle, action: null, preview: null },
       });
       // Auto-roule les TÉMOINS (marins PNJ) — leur jet initial est résolu sans influence (cf. makeRollFlow).
-      for (const part of participants) if (!part.interactive) get().shipManeuverRoll(part.id);
+      for (const part of opened.participants) if (!part.interactive) get().shipManeuverRoll(part.id);
     },
     shipManeuverSetTurn: (steps: number) => {
       const p = get().pendingShipManeuver;
@@ -860,7 +886,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
       const ship = battle.combatants.find((c) => c.id === p.shipId);
       if (!ship) return;
-      const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew); // Σ DR (essentiel ×2) + Moral + Manque de bras
+      const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // Σ DR (essentiel ×2) + Moral + Manque de bras + sabotage
       const result = deriveManeuverFromCrew(ship, total); // virage si DR final ≥ 1 (ch.14)
       set({ pendingShipManeuver: null });
       applyShipManeuver(get, p.shipId, result, p.turnSteps); // vire (si succès) + avance ; logue
@@ -882,24 +908,13 @@ export function createCombatSlice(get: Get, set: Set) {
       const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos, target.pos); // bord qui porte (auto-dérivé de la cible)
       const postes = bearingPostes(ship, side); // sur ce bord ET chargées (pas en cours de recharge, ch.12)
       if (!postes.length) { get().log(t('cs.bordeeNoArc', { ship: ship.name, side })); return; }
-      const partyIds = new Set(get().party.map((h) => h.id));
-      const contributors = crewTestContributors(ship, battle.combatants, 'batterie', partyIds); // Artilleurs (UN jet/poste)
-      if (!contributors.length) return; // aucun Artilleur apte → pas de bordée
-      const essentialRoleId = findCrewTestTypeById('batterie')?.essential;
-      const participants: ShipBatteryParticipant[] = contributors.map((a) => ({
-        id: a.crew.id,
-        label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}${(battle.crewActed?.[ship.id] ?? []).includes(a.crew.id) ? ' ⚠ −2 (cumul)' : ''}`,
-        interactive: partyIds.has(a.crew.id),
-        roleId: a.roleId,
-        essential: a.roleId === essentialRoleId,
-        cumul: (battle.crewActed?.[ship.id] ?? []).includes(a.crew.id), // déjà engagé dans un Test ce Round → cumul +2 crans (l.53)
-        result: null,
-      }));
+      const opened = openCrewTestPending(get, ship, 'batterie'); // Artilleurs (UN jet/poste)
+      if (!opened) return; // aucun Artilleur apte → pas de bordée
       set({
-        pendingShipBattery: { shipId: ship.id, targetId: target.id, side, participants, essentialRoleId, moraleScore: shipMoraleScore(get, ship), undercrew: shipUndercrew(ship, battle.combatants) },
+        pendingShipBattery: { shipId: ship.id, targetId: target.id, side, ...opened },
         battle: { ...battle, action: null, preview: null },
       });
-      for (const part of participants) if (!part.interactive) get().shipBatteryRoll(part.id); // témoins (marins PNJ) auto-roulés
+      for (const part of opened.participants) if (!part.interactive) get().shipBatteryRoll(part.id); // témoins (marins PNJ) auto-roulés
     },
     ...rollFlowActionsMulti('shipBattery', FLOWS.battery, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     shipBatteryConfirm: () => {
@@ -909,7 +924,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const ship = battle.combatants.find((c) => c.id === p.shipId);
       const target = battle.combatants.find((c) => c.id === p.targetId);
       if (!ship || !target) { set({ pendingShipBattery: null }); return; }
-      const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew); // DR PARTAGÉ (Σ, essentiel ×2, + Moral, + Manque de bras)
+      const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // DR PARTAGÉ (Σ, essentiel ×2, + Moral, + Manque de bras, + sabotage)
       const postes = bearingPostes(ship, p.side);
       const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
       const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
@@ -933,8 +948,14 @@ export function createCombatSlice(get: Get, set: Set) {
         critLines.push(...area.lines);
       }
       // Recharge (ch.12 / LDB 62) : chaque pièce qui a tiré est DÉCHARGÉE et le RESTE jusqu'à la fin d'un Test
-      // étendu de recharge (action « Recharger » du navire) — pas d'auto-rechargement passif.
-      for (const s of volley.shots) { const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid); if (poste) { poste.loaded = false; poste.reloadProgress = 0; } }
+      // étendu de recharge (action « Recharger » du navire) — pas d'auto-rechargement passif. La munition
+      // tirée est CONSOMMÉE (stock du poste / besace du chef — `consumeAmmo`, source unique, MDG ch.12 l.410-424).
+      for (const s of volley.shots) {
+        const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid);
+        if (poste) { poste.loaded = false; poste.reloadProgress = 0; }
+        const chef = poste?.crewIds?.[0] ? battle.combatants.find((c) => c.id === poste.crewIds![0]) : undefined;
+        if (chef && s.ammo) consumeAmmo(chef, s.ammo);
+      }
       get().log(t('cs.bordee', { side: p.side, ship: ship.name, target: target.name, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max }));
       for (const l of critLines) get().log(l);
       const bB = get().battle!;
@@ -943,6 +964,93 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
     shipBatteryCancel: () => set({ pendingShipBattery: null }),
+
+    // ── TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ jumeau de la manœuvre/bordée,
+    //    paramétré par `testTypeId`. Câblé en COMBAT : **Rude épreuve** (l.106-114 — « les gens ont peur de ce
+    //    que pourrait prochainement subir le bateau ») : un total NÉGATIF réduit le Moral d'autant (l.110),
+    //    persisté sur le navire de campagne. Les types de NAVIGATION/VOYAGE réutiliseront ce pending (7b). ──
+    battleCrewTest: (shipId: string, testTypeId: string) => {
+      if (combatBusy(get())) return;
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return;
+      const active = activeCombatant(battle);
+      if (!active || aiDriven(get(), active) || !canTakeAction(active)) return;
+      const ship = isVehicle(active) && active.id === shipId ? active : shipOfCrew(battle.combatants, active.id);
+      if (!ship || ship.id !== shipId || !findCrewTestTypeById(testTypeId)) return;
+      const opened = openCrewTestPending(get, ship, testTypeId);
+      if (!opened) return; // aucun rôle tenu → pas de Test d'équipage
+      set({
+        pendingCrewTest: { shipId: ship.id, testTypeId, ...opened },
+        battle: { ...battle, action: null, preview: null },
+      });
+      for (const part of opened.participants) if (!part.interactive) get().crewTestRoll(part.id); // témoins auto-roulés
+    },
+    ...rollFlowActionsMulti('crewTest', FLOWS.crewTest, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
+    crewTestConfirm: () => {
+      const { battle, pendingCrewTest: p } = get();
+      if (!battle || !p) return;
+      if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
+      const ship = battle.combatants.find((c) => c.id === p.shipId);
+      if (!ship) { set({ pendingCrewTest: null }); return; }
+      const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
+      set({ pendingCrewTest: null });
+      const label = findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId;
+      // « Si le total est de 1 DR ou plus, le résultat global est un succès » (MDG ch.14 l.13).
+      get().log(t('cs.crewTest', { label, ship: ship.name, dr: total >= 0 ? `+${total}` : `${total}`, outcome: total >= 1 ? t('cs.crewTestOk') : t('cs.crewTestKo') }));
+      // ISSUE PAR TYPE — Rude épreuve (l.110) : « Si le total de ce Test donne un ou plusieurs DR négatifs,
+      // réduisez le Moral d'un nombre égal au nombre de ces DR. » Persiste sur le navire de campagne.
+      if (p.testTypeId === 'rude-epreuve') {
+        for (const l of applyShipMoraleDelta(get, set, ship, rudeEpreuveMoraleDelta(total))) get().log(l);
+      }
+      const bC = get().battle!;
+      set({ battle: { ...bC, action: null, acted: true, preview: null, crewActed: withCrewActed(bC.crewActed, p.shipId, p.participants.map((x) => x.id)) } }); // un jet = une Action ; marins engagés ce Round
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    crewTestCancel: () => set({ pendingCrewTest: null }),
+
+    // ── CHANSON DE MARIN (Talent, MDG 09 l.32-40) : le chanteur (équipage doté du Talent) choisit une
+    //    chanson CONNUE (spec du Talent) puis lance son Test de Divertissement (Chant) ; réussi → l'effet
+    //    (`crewOps`/`captainOps`) couvre l'équipage 3 min + DR. Tâche PARALLÈLE du tour du navire (comme
+    //    Recharger : le chant occupe le CHANTEUR, pas l'Action du navire) ; une chanson par QUART (l.40). ──
+    battleSingShanty: (shipId: string) => {
+      if (combatBusy(get())) return;
+      const battle = get().battle;
+      if (!battle || battle.over) return;
+      const ship = battle.combatants.find((c) => c.id === shipId);
+      if (!ship || ship.lastShantyQuart === quartIndex(get().gameTime)) return; // « une seule chanson … par quart »
+      const crew = exposedCrew((ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
+      // Le CHANTEUR : le marin apte au Talent qui connaît le plus de chansons (les specs = chansons apprises, l.36).
+      const singer = crew.filter((c) => knownShanties(c).length > 0 && !c.singingShanty)
+        .sort((a, b) => knownShanties(b).length - knownShanties(a).length)[0];
+      if (!singer) return;
+      const known = knownShanties(singer);
+      set({
+        pendingShanty: { shipId: ship.id, singerId: singer.id, shantyId: known.length === 1 ? findSeaShantyByLabel(known[0])?.id ?? null : null, result: null },
+        battle: { ...battle, action: null, preview: null },
+      });
+    },
+    shantySetSong: (shantyId: string) => {
+      const p = get().pendingShanty;
+      if (p && !p.result) set({ pendingShanty: { ...p, shantyId } }); // choix pré-jet (chanson ⟂ dé)
+    },
+    ...rollFlowActions('shanty', FLOWS.shanty, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
+    shantyConfirm: () => {
+      const { battle, pendingShanty: p } = get();
+      if (!battle || !p || !p.result || !p.shantyId) return;
+      const ship = battle.combatants.find((c) => c.id === p.shipId);
+      const singer = battle.combatants.find((c) => c.id === p.singerId);
+      set({ pendingShanty: null });
+      if (!ship || !singer) return;
+      if (p.result.success) {
+        for (const l of applyShantyToCrew(get, ship, singer, p.shantyId, p.result.sl)) get().log(l);
+      } else {
+        ship.lastShantyQuart = quartIndex(get().gameTime); // la chanson a été chantée (30 s) — le quart est consommé, sans effet
+        get().log(t('cs.shantyFail', { name: singer.name }));
+      }
+      set({ battle: { ...get().battle! } });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    shantyCancel: () => set({ pendingShanty: null }),
 
     // ── Approche d'une source de Peur (LDB 21 l.29) : Test de Calme Intermédiaire (+0) qui DIFFÈRE le
     //    clic d'approche. Succès → fearGate 'passed' (approches libres ce Tour) + l'intention est relancée ;

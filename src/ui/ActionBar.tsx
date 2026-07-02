@@ -18,6 +18,8 @@ import { hasHealSkill, healableTargets } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import { combatDistance } from '../state/footprint';
 import { shipOfCrew, servablePostes } from '../state/shipPostes';
+import { quartIndex } from '../state/shipCrew';
+import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { canAidTeam } from '../state/commandTeam';
 import { isVehicle } from '../engine/vehicle';
 import { ownsLocally } from '../state/netOwnership';
@@ -63,6 +65,9 @@ export function ActionBar() {
   const reload = useGame((s) => s.battleReload);
   const battleShipManeuver = useGame((s) => s.battleShipManeuver);
   const battleShipReload = useGame((s) => s.battleShipReload);
+  const battleCrewTest = useGame((s) => s.battleCrewTest);
+  const battleSingShanty = useGame((s) => s.battleSingShanty);
+  const gameTime = useGame((s) => s.gameTime);
   const manPoste = useGame((s) => s.battleManPoste);
   const leavePoste = useGame((s) => s.battleLeavePoste);
   const aidTeam = useGame((s) => s.battleAidTeam);
@@ -381,6 +386,15 @@ export function ActionBar() {
     slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: '🧭', label: `Manœuvrer${battle.acted ? ' ✓' : ''}`, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
     if ((active.postes ?? []).length > 0)
       slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: '🎯', label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte (MDG ch.14)`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
+    // Rude épreuve (MDG ch.14 l.106-114) : Test d'équipage quand « les gens ont peur de ce que pourrait
+    // prochainement subir le bateau » — un total NÉGATIF réduit le Moral d'autant (l.110). Coûte l'Action du navire.
+    slots.push({ id: 'crew-test-rude-epreuve', disabled: battle.acted, icon: '⚓', label: 'Rude épreuve', title: `Test d'équipage de Rude épreuve (MDG ch.14) : Cuisinier ★, Chansonnier, Navigateur, Mousse, Chirurgien — un total négatif fait dégringoler le Moral d'autant`, run: () => battleCrewTest(active.id, 'rude-epreuve') });
+    // Chanson de marin (Talent, MDG 09 l.32-40) : tâche PARALLÈLE (le chant occupe le chanteur, pas l'Action
+    // du navire) — visible si un marin apte connaît une chanson ET que le quart n'a pas déjà eu la sienne (l.40).
+    const shipCrew = (active.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+    const canSing = active.lastShantyQuart !== quartIndex(gameTime) && shipCrew.some((c) => !isOutOfAction(c) && knownShanties(c).length > 0 && !c.singingShanty);
+    if (canSing)
+      slots.push({ id: 'sing-shanty', icon: '🎶', label: 'Chanson de marin', title: `Entonner une chanson de marin (Talent, MDG 09) : Test de Divertissement (Chant), effet sur tout l'équipage 3 min + DR — une chanson par quart`, run: () => battleSingShanty(active.id) });
     // Recharge (MDG ch.12 l.462 / LDB 62) : pièces DÉCHARGÉES dont le chef n'a pas encore agi ce Round → Test
     // étendu de Projectiles du chef + Soutien. Tâche d'équipage PARALLÈLE (occupe l'équipage, pas le tour du navire).
     const reloadable = (active.postes ?? []).filter((p) => p.loaded === false && p.crewIds?.[0] && !(battle.crewActed?.[active.id] ?? []).includes(p.crewIds[0]));

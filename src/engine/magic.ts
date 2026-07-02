@@ -28,12 +28,12 @@ import { Formula, resolveFormula, skillDRBonus } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
 import { type OvercastSource, effectiveRangeMetres } from './overcast';
-import { arcaneDomainIdOf } from './combatFeatures/dispatch';
+import { arcaneDomainIdOf, featuresOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey } from './types';
-import { findTalent, findTalentById, findDomainById, type TestMatch } from '../data';
+import { findTalent, findTalentById, findDomainById, findGodById, type TestMatch } from '../data';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -109,6 +109,27 @@ export function castBlockedBy(c: Combatant, skill: 'priere' | 'langue' | 'focali
 /** « Pensez à vos actes » (Colère, LDB 40) : tout Test de Prière réussi plafonné à 0 DR. */
 export function prayerMaxZeroDR(c: Combatant): boolean {
   return (c.castPenalties ?? []).some((p) => penaltyMatches(p, 'priere') && p.maxZeroDR);
+}
+
+/** CULTE du prêtre : la spécialisation de son Talent de Prière (Béni (Sigmar) / Invocation (Sigmar)),
+ *  lue en DONNÉE via `castingKind` (aucun name-match). `undefined` si non spécialisé / pas prêtre. */
+export function priestCult(c: Combatant): string | undefined {
+  for (const { def, ctx } of featuresOf(c)) {
+    if ((def.castingKind === 'beni' || def.castingKind === 'invocation') && ctx.spec) return ctx.spec;
+  }
+  return undefined;
+}
+
+/** VERROU de Péché du culte (MDG 11 l.142 : « Stromfels retire à un suivant la capacité d'utiliser le
+ *  Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le Talent *Béni*
+ *  s'il possède au moins cinq Points de Péché ») — GÉNÉRIQUE : lit `GodData.sinLocks` du culte du
+ *  prêtre (par famille de la Prière tentée). Renvoie le seuil franchi (message de refus), sinon null. */
+export function prayerSinLock(c: Combatant, spell: SpellLike): { family: 'beni' | 'invocation'; threshold: number; cult: string } | null {
+  const fam = spell.family;
+  if (fam !== 'beni' && fam !== 'invocation') return null;
+  const cult = priestCult(c);
+  const threshold = cult ? findGodById(cult)?.sinLocks?.[fam] : undefined;
+  return cult && threshold != null && (c.sinPoints ?? 0) >= threshold ? { family: fam, threshold, cult } : null;
 }
 
 /**

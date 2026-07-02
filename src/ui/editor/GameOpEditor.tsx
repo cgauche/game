@@ -41,7 +41,9 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   charMod: '📊 Modif. de caractéristique',
   ap: '🛡️ +PA (Localisation ou toutes)',
   testMod: '📉 Modif. à tous les Tests',
-  skillDRBonus: '🥷 +DR à une Compétence (passif)',
+  skillDRBonus: '🥷 +DR à une Compétence',
+  charDRBonus: '🎖️ +DR aux Tests d’une Caractéristique',
+  crewTestMod: '⚓ Modif. aux Tests individuels d’un Test d’équipage',
   incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
   incomingAdvantage: '⚔️ Avantage donné à l’attaquant (mêlée)',
   sbBonus: '💪 +Bonus de Force aux Dégâts',
@@ -126,7 +128,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
 const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
   ['🌀 États', ['condition', 'removeCondition']],
-  ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
+  ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
@@ -313,6 +315,9 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'light': return { op: 'light', radiusTiles: 5 };
     case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
+    case 'skillDRBonus': return { op: 'skillDRBonus', skill: 'calme', bonus: 1 };
+    case 'charDRBonus': return { op: 'charDRBonus', char: 'Soc', bonus: 1 };
+    case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
     case 'attrMod': return { op: 'attrMod', attr: 'fortune', mod: 1 };
@@ -347,6 +352,9 @@ export function opSummary(o: GameOp): string {
     case 'sbBonus': return `${L} +${o.amount} BF aux Dégâts`;
     case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
+    case 'skillDRBonus': return `${L} +${formulaSummary(o.bonus)} DR ${refLabel('skills', { id: o.skill })}${o.spec ? ` (${o.spec})` : ''}`;
+    case 'charDRBonus': return `${L} +${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
+    case 'crewTestMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
     case 'attrMod': return `${L} +${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
     case 'ap': return `${L} +${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;

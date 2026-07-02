@@ -278,3 +278,12 @@ export function hasSurgery(c: Combatant): boolean {
 export function hasCommandTeam(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.commandTeam);
 }
+
+/** Chansons de marin CONNUES du combattant (MDG 09 l.36 : « Chaque fois qu'un Personnage achète un
+ *  nouveau niveau dans ce Talent, il apprend une nouvelle chanson ») — les SPECS de ses acquisitions du
+ *  Talent à `seaShanty` (libellés de chanson, résolus en `SeaShantyData` par l'appelant). */
+export function knownShanties(c: Combatant): string[] {
+  const out: string[] = [];
+  for (const { def, ctx } of featuresOf(c)) if (def.seaShanty && ctx.spec) out.push(ctx.spec);
+  return out;
+}

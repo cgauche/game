@@ -352,15 +352,9 @@ export interface ShipManeuverParticipant extends RollParticipant {
   cumul?: boolean;
   result: CrewRoleRoll | null;
 }
-/** Contributeur ARTILLEUR d'un Tir de batterie (MDG ch.14) — même forme qu'un rôle de manœuvre (un rôle, son DR). */
-export interface ShipBatteryParticipant extends RollParticipant {
-  roleId: string;
-  /** Rôle ESSENTIEL (Artilleur, DR ×2, l.19). */
-  essential: boolean;
-  /** Marin déjà engagé dans un AUTRE Test d'équipage ce Round → cumul à +2 crans de Difficulté (Manque de bras, l.53). */
-  cumul?: boolean;
-  result: CrewRoleRoll | null;
-}
+/** Contributeur ARTILLEUR d'un Tir de batterie (MDG ch.14) — MÊME forme qu'un rôle de manœuvre (un rôle,
+ *  son DR) : alias du contributeur de Test d'équipage (une seule structure pour les 3 flux jumeaux). */
+export type ShipBatteryParticipant = ShipManeuverParticipant;
 /** TIR DE BATTERIE en Test d'équipage (MDG ch.14 l.128) : les Artilleurs lancent, DR sommés (essentiel ×2) + Moral →
  *  un **DR PARTAGÉ** qui remplace le jet de touche de chaque pièce du bord `side` qui porte sur `targetId`. */
 export interface PendingShipBattery extends MultiPending<ShipBatteryParticipant> {
@@ -372,6 +366,8 @@ export interface PendingShipBattery extends MultiPending<ShipBatteryParticipant>
   moraleScore: number;
   /** Manque de bras global (MDG ch.14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
   undercrew?: { dr: number; capSuccesMinime: boolean };
+  /** Sabotage (MDG ch.14 l.45-47) : −1..−5 DR plats au total du Test d'équipage (`shipSaboteurDR`). */
+  extraDR?: number;
 }
 /** Manœuvre navale en TEST D'ÉQUIPAGE (MDG ch.13-14) : chaque rôle tenu lance son Test, les DR sont sommés (rôle
  *  essentiel ×2) + la bande de Moral ; le total tient lieu de DR de Navigation. La direction (`turnSteps`, choisie
@@ -386,6 +382,35 @@ export interface PendingShipManeuver extends MultiPending<ShipManeuverParticipan
   moraleScore: number;
   /** Manque de bras global (MDG ch.14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
   undercrew?: { dr: number; capSuccesMinime: boolean };
+  /** Sabotage (MDG ch.14 l.45-47) : −1..−5 DR plats au total du Test d'équipage (`shipSaboteurDR`). */
+  extraDR?: number;
+}
+/** TEST D'ÉQUIPAGE GÉNÉRIQUE en combat (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ jumeau de la
+ *  manœuvre/bordée : chaque rôle tenu lance SON Test (multi-jets), DR sommés (essentiel ×2) + Moral +
+ *  Manque de bras + sabotage. L'ISSUE dépend du type (`crewTestConfirm`) : **Rude épreuve** (l.106-114)
+ *  → un total NÉGATIF réduit le Moral d'autant (l.110), PERSISTÉ sur `CampaignVessel.morale`. Les types
+ *  de NAVIGATION/VOYAGE (Progression, Poursuite, Perception, Orientation…) réutiliseront CE pending (7b). */
+export interface PendingCrewTest extends MultiPending<ShipManeuverParticipant> {
+  shipId: string;
+  /** Type de Test d'équipage (`crew-test-types.json`) — décide des rôles, du rôle essentiel et de l'issue. */
+  testTypeId: string;
+  essentialRoleId?: string;
+  moraleScore: number;
+  undercrew?: { dr: number; capSuccesMinime: boolean };
+  extraDR?: number;
+}
+/** CHANSON DE MARIN en attente (Talent, MDG 09 l.32-40) : le chanteur choisit sa chanson CONNUE (pré-jet,
+ *  OptionChooser — specs du Talent) puis lance son Test de **Divertissement (Chant)** ; sur un succès,
+ *  l'effet (`crewOps`/`captainOps` de `sea-shanties.json`) est posé sur TOUT l'équipage pour
+ *  « trois minutes plus un nombre de minutes égal au DR » (l.38). Une chanson par QUART (l.40). */
+export interface PendingShanty {
+  shipId: string;
+  singerId: string;
+  /** Chanson choisie (id `sea-shanties.json`) — null tant que le chanteur n'a pas choisi (pré-jet). */
+  shantyId: string | null;
+  result: { roll: number; target: number; success: boolean; sl: number } | null;
+  rerolled?: boolean;
+  forced?: boolean;
 }
 /** Approche d'une source de PEUR (LDB 21 l.29 : « incapable de vous rapprocher … à moins de réussir un
  *  Test de Calme Intermédiaire (+0) ») : le clic d'approche est DIFFÉRÉ derrière ce Test sec. Succès →

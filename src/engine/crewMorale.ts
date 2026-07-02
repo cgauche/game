@@ -19,6 +19,7 @@ import { findTableEntry } from './tables';
 import { rollExpr, type RNG, defaultRNG } from './dice';
 import { rollTest, easeDifficulty } from './tests';
 import { testValue } from './skills';
+import { talentTestSLBonus } from './magic';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
 import type { Combatant, Difficulty } from './types';
 
@@ -93,6 +94,9 @@ export interface CrewContributor {
   label?: string;
   /** Difficulté PROPRE à ce contributeur (sinon celle du Test) — sert au double-rôle « Manque de bras » (+2 crans). */
   difficulty?: Difficulty;
+  /** +DR de Talent sur SON jet RÉUSSI (règle LDB 10 l.20, contexte Test d'équipage — Commandant émérite,
+   *  MDG 09 l.54 : « Ce bonus s'applique aux Tests d'équipage »). Ajouté AVANT le doublement essentiel. */
+  successDR?: number;
 }
 
 export interface CrewTestResult {
@@ -122,8 +126,9 @@ export function resolveCrewTest(
 ): CrewTestResult {
   const contributions = contributors.map((c) => {
     const t = rollTest(c.value, c.difficulty ?? difficulty, rng);
-    const counted = c.essential ? t.sl * 2 : t.sl;
-    return { label: c.label, sl: t.sl, essential: !!c.essential, counted };
+    const sl = t.sl + (t.success ? (c.successDR ?? 0) : 0); // +DR de Talent sur un jet RÉUSSI (Commandant émérite)
+    const counted = c.essential ? sl * 2 : sl;
+    return { label: c.label, sl, essential: !!c.essential, counted };
   });
   const baseTotal = contributions.reduce((s, c) => s + c.counted, 0);
   const moraleDR = moraleBand(moraleScore).crewTestDR;
@@ -178,6 +183,13 @@ export function tickShipMorale(state: ShipMoraleState, currentDay: number, rng: 
   return { state: { ...state, score: r.score, lastMoraleWeek: week }, recalced: true, lines: r.lines };
 }
 
+/** Delta de MORAL d'un Test d'équipage de RUDE ÉPREUVE (MDG ch.14 l.110 : « Si le total de ce Test donne
+ *  un ou plusieurs DR négatifs, réduisez le Moral d'un nombre égal au nombre de ces DR ») — un total
+ *  négatif RETIRE autant de Moral ; un total ≥ 0 n'en rend PAS. PUR. */
+export function rudeEpreuveMoraleDelta(total: number): number {
+  return total < 0 ? total : 0;
+}
+
 /** Assignation d'un membre d'équipage à un rôle, pour un Test d'équipage piloté par les rôles (MDG ch.14). */
 export interface CrewAssignment {
   /** Le Combattant d'équipage qui tient le rôle. */
@@ -188,7 +200,16 @@ export interface CrewAssignment {
   doubleRole?: boolean;
 }
 
-/** Valeur de Compétence d'un membre pour un rôle : la MEILLEURE de ses compétences (Mousse = Voile/Ramer). PUR. */
+/** Modificateur aux Tests INDIVIDUELS d'un Test d'équipage porté par les effets ACTIFS du marin
+ *  (op `crewTestMod` — chanson « Naviguons tous ensemble », MDG 09 l.224 : « un modificateur de +10 sur
+ *  les Tests individuels de chaque membre d'équipage impliqué dans un Test d'équipage »). Σ. PUR. */
+export function crewTestModOf(c: Combatant): number {
+  return (c.activeEffects ?? []).reduce((s, e) => s + (e.crewTestMod ?? 0), 0);
+}
+
+/** Valeur de Compétence d'un membre pour un rôle : la MEILLEURE de ses compétences (Mousse = Voile/Ramer),
+ *  PLUS le modificateur « Test d'équipage » de ses effets actifs (`crewTestModOf` — chansons de marin).
+ *  SEUL point de valeur des Tests d'équipage (manœuvre, bordée, générique, fiche du navire). PUR. */
 export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: number; used?: { skillId: string; spec?: string } } {
   let best = -Infinity;
   let used: { skillId: string; spec?: string } | undefined;
@@ -196,7 +217,16 @@ export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: num
     const v = testValue(crew, s.skillId, undefined, s.spec);
     if (v > best) { best = v; used = s; }
   }
-  return { value: Number.isFinite(best) ? best : 0, used };
+  return { value: (Number.isFinite(best) ? best : 0) + crewTestModOf(crew), used };
+}
+
+/** +DR de TALENT d'un membre sur SON jet de rôle RÉUSSI, en contexte TEST D'ÉQUIPAGE — règle UNIVERSELLE
+ *  `talentTestSLBonus` (LDB 10 l.20) évaluée avec le contexte `crewTest` VRAI : Commandant émérite
+ *  (MDG 09 l.50-54, `when {crewTest}`) s'applique « aux Tests d'équipage comme aux Tests de Commandement
+ *  individuels » — ici la moitié Tests d'équipage. Compétence = celle que le rôle utilise (`crewRoleValue.used`). PUR. */
+export function crewTalentDR(crew: Combatant, role: CrewRoleData): number {
+  const used = crewRoleValue(crew, role).used;
+  return used ? talentTestSLBonus(crew, { skill: used.skillId, spec: used.spec }, (cond) => cond.kind === 'crewTest') : 0;
 }
 
 /** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) :
@@ -226,8 +256,10 @@ export function defaultCrewRole(crew: Combatant): string | null {
  * un rôle, on lit sa VRAIE valeur de Compétence (la meilleure du rôle) ; le rôle désigné ESSENTIEL par le type
  * de Test voit son DR doublé ; on additionne via `resolveCrewTest`. Manque de bras : double rôle → +2 crans
  * sur SON jet (l.53) ; sous-effectif (`understaffed`) → −2 DR et jamais mieux qu'un Succès Minime (DR total
- * plafonné à 0, l.55). PUR (RNG injecté). NB : le bonus de chant du Chansonnier (l.32) n'est PAS chiffré par
- * le RAW (« des bonus ») → NON modélisé (règle 1 : aucune invention de valeur).
+ * plafonné à 0, l.55). `extraDR` : modificateur PLAT au total — SABOTAGE (MDG ch.14 l.45-47 : le saboteur
+ * « n'effectue pas ce Test… le MJ pourra imposer de -1 à -5 DR sur le Test d'équipage ») et tout « bonus ou
+ * pénalité … en masse » (l.13). PUR (RNG injecté). NB : le bonus de chant du Chansonnier (l.32) n'est PAS
+ * chiffré par le RAW (« des bonus ») — l'effet mécanisé vient des CHANSONS DE MARIN (MDG 09, `crewTestMod`).
  */
 export function resolveCrewTestByRoles(
   assignments: CrewAssignment[],
@@ -235,7 +267,7 @@ export function resolveCrewTestByRoles(
   difficulty: Difficulty,
   moraleScore: number,
   rng: RNG = defaultRNG,
-  opts: { understaffed?: boolean } = {},
+  opts: { understaffed?: boolean; extraDR?: number } = {},
 ): CrewTestResult {
   const essentialRole = findCrewTestTypeById(testTypeId)?.essential;
   const contributors: CrewContributor[] = assignments.map((a) => {
@@ -245,9 +277,10 @@ export function resolveCrewTestByRoles(
       essential: a.roleId === essentialRole,
       label: role?.label ?? a.roleId,
       difficulty: a.doubleRole ? easeDifficulty(difficulty, -2) : undefined,
+      successDR: role ? crewTalentDR(a.crew, role) : 0, // Commandant émérite (MDG 09 l.54)
     };
   });
-  const res = resolveCrewTest(contributors, difficulty, moraleScore, rng, opts.understaffed ? -2 : 0);
+  const res = resolveCrewTest(contributors, difficulty, moraleScore, rng, (opts.understaffed ? -2 : 0) + (opts.extraDR ?? 0));
   if (opts.understaffed && res.total > 0) {
     // MDG ch.14 l.55 : « ne peuvent jamais être meilleurs qu'un Succès Minime » → DR total plafonné à 0.
     return { ...res, total: 0, lines: [...res.lines, 'Manque de bras : jamais mieux qu’un Succès Minime (DR total plafonné à 0).'] };

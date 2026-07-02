@@ -1086,21 +1086,29 @@ export function findNavalTrait(id: string): NavalTraitData | undefined {
 }
 /** Chanson de marins (MDG 09 l.218-248, payload du Talent Chanson de marin) — catalogue app-owned.
  *  `crewOps` = effet exprimé dans la langue UNIQUE `GameOp[]`, appliqué à CHAQUE membre d'équipage pendant
- *  l'effet (3 min + DR du Test de Divertissement (Chant) en minutes, 1 chanson par quart — mécanisme
- *  d'activation porté par le Talent, lot systèmes naval). `pending` = manque de vocabulaire PRÉCIS quand
- *  l'effet RAW n'est pas (entièrement) exprimable — comblé par le lot systèmes, jamais un effet inventé. */
+ *  l'effet (3 min + DR du Test de Divertissement (Chant) en minutes, 1 chanson par quart — activation
+ *  `battleSingShanty`, state/combatSlice). `captainOps` = ops appliquées au seul CAPITAINE (titulaire du
+ *  rôle — « Suivez le capitaine », l.246-248). `note` = clause RAW laissée à l'arbitrage MJ (intention/
+ *  conséquence de Test non suivies par le moteur) — affichée, jamais un effet inventé. */
 export interface SeaShantyData {
   id: string;
   label: string;
   desc: string;
   crewOps?: import('../engine/ops').GameOp[];
-  pending?: string;
+  captainOps?: import('../engine/ops').GameOp[];
+  note?: string;
   source: { book: string; page: number };
 }
 export const seaShanties = seaShantiesJson as SeaShantyData[];
 const seaShantyById = new Map(seaShanties.map((s) => [s.id, s]));
 export function findSeaShantyById(id: string): SeaShantyData | undefined {
   return seaShantyById.get(id);
+}
+/** Résout une chanson par son LIBELLÉ — frontière donnée : les chansons CONNUES d'un chanteur sont les
+ *  SPECS de son Talent (libellés authorés) ; le runtime repasse par l'id sitôt la frontière franchie. */
+const seaShantyByLabel = new Map(seaShanties.map((s) => [s.label, s]));
+export function findSeaShantyByLabel(label: string): SeaShantyData | undefined {
+  return seaShantyByLabel.get(label);
 }
 /** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE
@@ -1189,6 +1197,13 @@ export interface GodData {
   miracles: Ref[];
   desc?: string;
   source?: { book: string; page: number };
+  /** VERROU de Péché du culte (MDG 11 l.142, Stromfels : « retire à un suivant la capacité d'utiliser le
+   *  Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le Talent *Béni*
+   *  s'il possède au moins cinq Points de Péché ») — seuil de Points de Péché à partir duquel le dieu
+   *  RETIRE l'usage du Talent de Prière (clé = famille d'incantation). GÉNÉRIQUE : aucun culte LDB n'en
+   *  porte (LDB 40 ne connaît que la Colère au dé des unités) ; consommé par le flux de Prière
+   *  (`prayerSinLock`, engine/magic). */
+  sinLocks?: { beni?: number; invocation?: number };
 }
 export const gods = godsJson as GodData[];
 export const names = namesJson as Record<string, NamePool>;

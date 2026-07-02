@@ -482,6 +482,16 @@ export interface ActiveEffect {
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  lu par combatTestPenalty/testStatePenalty. */
   ignoreStatePenalties?: boolean;
+  /** N'ignore que les N PIRES pénalités d'État (op `ignoreStatePenalties{count}` — « Les dames de
+   *  L'Anguille » : « peut ignorer un État », MDG 09 l.244). Lu par combatTestPenalty/testStatePenalty. */
+  ignoreStatesCount?: number;
+  /** +DR temporisés (ops `skillDRBonus`/`charDRBonus` exécutées — chansons de marin, MDG 09) : par
+   *  Compétence (`skill`+`spec`) OU par Caractéristique (`char`), `bonus` déjà résolu numérique.
+   *  Lus par `skillDRBonus`/`charDRBonusOf` (engine/ops) sur un Test RÉUSSI. */
+  drBonus?: { skill?: string; spec?: string; char?: CharKey; bonus: number }[];
+  /** Modificateur aux Tests INDIVIDUELS d'un Test d'équipage (op `crewTestMod` — « Naviguons tous
+   *  ensemble », MDG 09 l.224 : +10). Lu par `crewRoleValue` (engine/crewMorale). */
+  crewTestMod?: number;
   /** Détermination (LDB 17 l.62) : immunité PSYCHOLOGIQUE temporaire (la source est IGNORÉE, pas vaincue).
    *  Durée portée par `duration` (Rounds) → décrémentée/expirée par le système de Durée unifié. */
   psychImmune?: boolean;
@@ -740,6 +750,15 @@ export interface ShipPoste {
   /** DR cumulés du Test étendu de recharge (vers `reloadDRTarget` = Recharge N, ×2 si sous-effectif).
    *  Remis à 0 si la recharge est INTERROMPUE (servants réassignés avant la fin, LDB 62 l.335). */
   reloadProgress?: number;
+  /** STOCK DE MUNITIONS du poste (MDG ch.12 l.410-424, « Munitions pour pièces d'artillerie ») — le coffre
+   *  à boulets DE LA PIÈCE (boulet/mitraille pour un canon, carreau pour une baliste, bombe pour un
+   *  mortier…), des `ItemInstance` `kind:'ammo'` avec leur `qty`. AUTHORÉ avec le poste et PERSISTANT
+   *  (la coque vit dans la scène/sauvegarde). Fondu au pool du chef par `compatibleAmmo` (source unique) ;
+   *  consommé au tir (individuel comme bordée). */
+  ammo?: ItemInstance[];
+  /** Munition SÉLECTIONNÉE du poste (uid dans `ammo` — « boulet ou mitraille ? ») : le choix PERSISTANT de
+   *  la pièce (fiche du navire), sous le choix ponctuel du héros-chef (`Combatant.ammoUid`, hotbar). */
+  ammoUid?: string;
 }
 
 /** Emplacement de POSTE sur un gabarit de pont (`ShipDeck`) — un MOUNT POINT authoré (pos + arc), PAS une
@@ -800,6 +819,17 @@ export interface Combatant {
   /** Pièces d'artillerie MONTÉES sur ce Combattant-coque (source de vérité, MDG ch.12-13). Au spawn, chaque
    *  poste pose son arme sur le chef de pièce via `mannedPoste`. */
   postes?: ShipPoste[];
+  /** SABOTAGE des Tests d'équipage de cette coque (MDG ch.14 l.45-47 : un saboteur à bord « n'effectue pas
+   *  ce Test… le MJ pourra imposer de -1 à -5 DR sur le Test d'équipage ») — AUTHORÉ par le scénario sur le
+   *  Combattant-coque (le contenu est de la donnée, pas du code) ; lu CLAMPÉ à [-5, 0] par `shipSaboteurDR`
+   *  et appliqué au total de TOUT Test d'équipage (manœuvre, bordée, Rude épreuve…). */
+  saboteurDR?: number;
+  /** Coque : QUART du dernier chant de marin (index `gameTime ÷ 4 h`) — « Une seule chanson de marin peut
+   *  être chantée lors de chaque quart » (MDG 09 l.40). Posé par `battleSingShanty`. */
+  lastShantyQuart?: number;
+  /** Le combattant CHANTE une chanson de marin (MDG 09 l.38) — identité de l'effet posé sur l'équipage
+   *  (retrait ciblé) : « Si le Personnage subit des Dégâts …, sa Chanson de marin prend fin. » */
+  singingShanty?: { shantyId: string; label: string };
   /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12 — Sabord, Bélier, Blindage, Lissage…), réfs par id
    *  STABLE (ex. `{ id: 'blindage-fer' }`), JAMAIS le libellé. S'ajoutent aux Traits du TYPE (`ship.traits`) ;
    *  lues par `engine/navalTraits.ts`. Blindage est appliqué au spawn (PA de coque) ; Lissage/Peu maniable au

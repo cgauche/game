@@ -126,4 +126,8 @@ export interface CombatFeature {
    *  de voix » (Test de Commandement Intermédiaire) — sur réussite, l'équipe tire au score de Projectiles
    *  du Personnage. Lu par `hasCommandTeam` (affordance + substitution `state/commandTeam`). */
   commandTeam?: boolean;
+  /** Chanson de marin (MDG 09 l.32-40) : peut ENTONNER une chanson de marin connue (une spec du Talent =
+   *  une chanson apprise, l.36) — Test de Divertissement (Chant), effet 3 min + DR sur tout l'équipage,
+   *  une seule chanson par quart. Lu par `shantySingers` (affordance) + `battleSingShanty` (state). */
+  seaShanty?: boolean;
 }

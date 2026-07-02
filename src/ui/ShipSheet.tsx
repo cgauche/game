@@ -33,17 +33,32 @@ export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; c
 }
 
 /** Bloc « Armes / Postes » : par pièce d'artillerie (MDG ch.12), son bord + son équipage de pièce (PLUSIEURS servants
- *  possibles, MDG ch.14 l.9) en portraits. Lecture seule ici (l'assignation des servants viendra avec la Bordée). */
+ *  possibles, MDG ch.14 l.9) en portraits, et son STOCK DE MUNITIONS (l.410-424) — un sélecteur persiste le choix
+ *  de la pièce (`ShipPoste.ammoUid` : boulet ou mitraille ?) avec la quantité restante par munition. */
 export function ShipPostes({ ship, combatants }: { ship: Combatant; combatants: Combatant[] }) {
+  const setPosteAmmo = useGame((s) => s.setPosteAmmo);
   if (!ship.postes?.length) return null;
   return (
     <div className="ship-section">
       <div className="mini-title">Armes · postes</div>
       {ship.postes.map((p, i) => {
         const gun = (p.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+        const stock = (p.ammo ?? []).filter((a) => (a.qty ?? 0) > 0);
         return (
           <div className="ship-poste" key={i}>
             <span className="ship-poste-name">🎯 {p.side ? SIDE_LABEL[p.side] ?? p.side : 'Omni'} · {p.item.name}</span>
+            {stock.length > 0 && (
+              <label className="ship-poste-ammo">
+                <span aria-hidden>🧨</span>
+                <select
+                  value={p.ammoUid ?? stock[0].uid}
+                  onChange={(e) => setPosteAmmo(ship.id, p.item.uid, e.target.value)}
+                  title="Munition chargée par la pièce (MDG ch.12) — stock du poste"
+                >
+                  {stock.map((a) => <option key={a.uid} value={a.uid}>{a.name} × {a.qty ?? 0}</option>)}
+                </select>
+              </label>
+            )}
             <div className="ship-crew-row">
               {gun.length ? gun.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={c.name} />) : <span className="muted">— sans servant —</span>}
             </div>

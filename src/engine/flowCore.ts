@@ -167,6 +167,9 @@ export type Condition =
   /** L'acteur est-il ENGAGÉ avec un adversaire (LDB 13 l.159) ? Gate de récupération du Brisé (LDB 16 l.57 :
    *  aucun Test si Engagé). Précalculé (`ctx.engaged`). Hors combat = false. */
   | { kind: 'engaged' }
+  /** Le Test courant est-il un TEST D'ÉQUIPAGE à bord (MDG ch.14) ? Gate du bonus « Commandant émérite »
+   *  (MDG 09 l.54 : « à bord de votre bateau ou impliquant votre équipage »). Hors Test d'équipage = false. */
+  | { kind: 'crewTest' }
   /** Distance (cases) à l'adversaire VIVANT le plus proche, comparée par `op` à `value` (Brisé : Très
    *  difficile si ≤ 3, LDB 16 l.58). Précalculée (`ctx.nearestFoeDist`). Aucun adversaire / hors combat = +∞. */
   | { kind: 'nearestFoe'; op: CompareOp; value: number }
@@ -222,6 +225,9 @@ export interface ConditionCtx {
   engaged?: boolean;
   /** Distance (cases) à l'adversaire vivant le plus proche — lue par `nearestFoe`. +∞ si aucun. */
   nearestFoeDist?: number;
+  /** Le Test courant est-il un TEST D'ÉQUIPAGE à bord (MDG ch.14) — lu par la Condition `crewTest`
+   *  (Commandant émérite : « à bord de votre bateau ou impliquant votre équipage », MDG 09 l.54). */
+  crewTest?: boolean;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -277,6 +283,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'foeInLoS': return !!ctx.foeInLoS;
     case 'hiddenFromFoes': return !!ctx.hiddenFromFoes;
     case 'engaged': return !!ctx.engaged;
+    case 'crewTest': return !!ctx.crewTest;
     case 'nearestFoe': return applyCompareOp(ctx.nearestFoeDist ?? Infinity, cond.op, cond.value);
     case 'capability': {
       const a = cond.who === 'caster' ? ctx.caster : ctx.target;
