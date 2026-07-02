@@ -6,12 +6,25 @@ import { makeCamera, VW, VH } from './camera';
 import { buildPovDrawList } from './geometry';
 import { AMBIANCE, povAmbianceDefs } from '../catalog/ambiance';
 import { DEFS } from '../sprites';
-import { PovBillboards } from './billboards';
+import { buildPovBillboards, paintOrder, type Painted } from './billboards';
+import type { DrawItem } from './geometry';
+
+/** Nœud SVG d'une pièce de géométrie (tracé LOD matériaux OU polygone plein) — sa clé stable = `d.key`. */
+function drawNode(d: DrawItem): JSX.Element {
+  return d.path ? (
+    <path key={d.key} d={d.path} fill={d.fill ?? 'none'} stroke={d.stroke} strokeWidth={d.strokeW} strokeLinecap="round" />
+  ) : (
+    <polygon key={d.key} points={d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
+  );
+}
 
 /**
  * POV — couche RÉACTIVE (rendu SVG première personne). Ne fait AUCUN calcul : lit l'état, appelle le
- * noyau PUR (`makeCamera` + `buildPovDrawList`) et pose les polygones + les billboards d'entités. La
- * géométrie n'est recalculée qu'au PAS ou au PIVOT (memo sur partyPos/cap/lumière) — pas par frame.
+ * noyau PUR (`makeCamera` + `buildPovDrawList`) et pose la géométrie ET les billboards d'entités dans UN
+ * SEUL peintre fusionné (`paintOrder`, loin→près) → un mur cache une créature qui est derrière lui, et
+ * une créature devant lui le recouvre (plus de billboards toujours au-dessus des murs). La géométrie
+ * n'est recalculée qu'au PAS ou au PIVOT (memo sur partyPos/cap/lumière) — pas par frame ; l'idle des
+ * billboards s'anime dans son propre rAF isolé (`usePovIdle`), clés stables → aucun remontage au tri.
  * Monté par `CampaignView` en exploration quand `povActive` (le combat reste sur `IsoStage`). Le cap =
  * regard du meneur `facing[party[0].id]` (le même que `moveParty`/`pivotParty` écrivent). TOUT vient de
  * la scène PARTAGÉE (terrain, murs, hauteurs, entités) : éditer en iso impacte le POV sans code dédié.
@@ -39,6 +52,13 @@ export function PovStage() {
   if (!scene || !view) return null;
   const indoor = isIndoor(scene);
   const bg = indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoor;
+  // PEINTRE UNIQUE : la géométrie (`view.draw` → un polygone/tracé chacun) ET les billboards (créatures,
+  // props) fusionnés dans UN tableau trié loin→près. Deux profondeurs dans le MÊME espace mètres-caméra
+  // (DrawItem.depth ⇄ footAnchor.depth) → un mur à 5 m se peint après une créature à 8 m et avant une à 3 m.
+  const painted: Painted[] = paintOrder([
+    ...view.draw.map((d): Painted => ({ key: d.key, depth: d.depth, node: drawNode(d) })),
+    ...buildPovBillboards(scene, view.cam, view.visible),
+  ]);
   return (
     <div className="pov-stage" style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: bg }}>
       <svg width="100%" height="100%" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice">
@@ -47,15 +67,7 @@ export function PovStage() {
         <defs dangerouslySetInnerHTML={{ __html: povAmbianceDefs() + DEFS }} />
         {/* Fond : ciel dégradé dehors (plafond non dessiné), sombre en intérieur. */}
         <rect x={0} y={0} width={VW} height={VH} fill={indoor ? bg : 'url(#pov-sky)'} />
-        {view.draw.map((d) =>
-          d.path ? (
-            // Tracé du LOD matériaux : joints strokés / trapèzes de blocs remplis.
-            <path key={d.key} d={d.path} fill={d.fill ?? 'none'} stroke={d.stroke} strokeWidth={d.strokeW} strokeLinecap="round" />
-          ) : (
-            <polygon key={d.key} points={d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
-          ),
-        )}
-        <PovBillboards scene={scene} cam={view.cam} visible={view.visible} />
+        {painted.map((p) => p.node)}
         <rect x={0} y={0} width={VW} height={VH} fill="url(#pov-vignette)" pointerEvents="none" />
       </svg>
     </div>

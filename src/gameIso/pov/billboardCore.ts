@@ -5,7 +5,7 @@
  * BUDGET par famille (tri loin→près, les plus proches priment — plus aucun cap en dur).
  *
  * Les PROPS (décor : tonneaux, arbres, tentes…) se rendent ici en CHAÎNES SVG du MÊME dessin iso
- * (`propSvg`, source unique du décor) — consommées par `PovBillboards` (jeu) ET la QC headless
+ * (`propSvg`, source unique du décor) — consommées par `buildPovBillboards` (jeu) ET la QC headless
  * (`env-panels`). Les personnages/créatures (rig/gabarit) restent dans la couche React (billboards.tsx),
  * sur CE noyau.
  */

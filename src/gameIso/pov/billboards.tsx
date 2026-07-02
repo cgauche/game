@@ -13,9 +13,10 @@
  *    (`plan.idlePose` : battement d'ailes/ondulation/dodelinement), même rAF isolé (`PovCreature`) ; un
  *    plan sans `idlePose` (quadrupède…) reste figé en `restPose`, comme l'iso ;
  *  - PROPS (décor) : le MÊME SVG que l'iso (`buildPropBillboards`, noyau pur — aussi consommé par la QC).
- * Les trois familles fusionnent dans UN peintre (loin→près) : un tonneau devant un PNJ le recouvre.
+ * Ces familles + la GÉOMÉTRIE (sols/murs/toits) fusionnent dans UN SEUL peintre (loin→près, `paintOrder`,
+ * tri assemblé par `PovStage`) : un mur DEVANT une créature la cache, un tonneau devant un PNJ le recouvre.
  *
- * PUR & TESTABLE : composant à PROPS (aucune lecture de store) → `renderToStaticMarkup`.
+ * PUR & TESTABLE : `buildPovBillboards` ne lit AUCUN store (props seuls) → nœuds rendus sous `renderToStaticMarkup`.
  * L'occlusion (LdV / brouillard) est déjà résolue en amont : `visible` porte les clés de case vues ;
  * une entité dont la case n'y est pas n'est simplement pas rendue.
  */
@@ -46,8 +47,9 @@ import { usePovIdle } from './usePovIdle';
  *  store/bus de l'iso. La POSE, elle, vient de `plan.idlePose` (donnée), jamais d'une valeur en dur. */
 const IDLE_MS = 1600;
 
-/** Un billboard prêt à trier/rendre : profondeur caméra (m) + son nœud SVG déjà positionné. */
-type Billboard = { id: string; depth: number; node: JSX.Element };
+/** Un élément PEINT en POV : profondeur caméra (m), clé stable et son nœud SVG déjà positionné. Type
+ *  COMMUN à la géométrie (DrawItem→Painted dans `PovStage`) ET aux billboards → un seul peintre fusionné. */
+export type Painted = { key: string; depth: number; node: JSX.Element };
 
 /** Nœud ancré aux pieds : `translate(sx,sy)` puis recentrage/échelle de la boîte locale 120×150.
  *  `o` = fondu atmosphérique (une silhouette lointaine se délave dans la brume). */
@@ -106,7 +108,9 @@ function PovCreature({ id, plan, species, view, mirror, colors, eyes, a }: {
 }
 
 /**
- * Couche des entités en POV. Pour chaque `SceneEntity` de `kind:'personnage'` :
+ * Billboards des entités en POV : liste `{key, depth, node}` NON TRIÉE (le tri PEINTRE final est fait
+ * par `PovStage` qui fusionne ces nœuds AVEC la géométrie — cf. `paintOrder`). Pour chaque
+ * `SceneEntity` de `kind:'personnage'` :
  *  1. CULL par visibilité (clé `x,y,z` absente de `visible` → sautée : le brouillard gère l'occlusion) ;
  *  2. ancre PIEDS + cull distance/derrière/hors-cadre ET échelle ∝ profondeur × espèce
  *     (`footAnchor(…, ENT_H_M, r.scale)`, noyau partagé) ;
@@ -115,10 +119,10 @@ function PovCreature({ id, plan, species, view, mirror, colors, eyes, a }: {
  *     `plan.idlePose`), tous deux via le même rAF isolé `usePovIdle`. Miroir = `translate(120,0)
  *     scale(-1,1)` AUTOUR de la boîte (comme `RigToken`, via `mirrored`) + `mirror` passé à `RigSprite`
  *     (profondeur de profil de l'arme/bouclier) ;
- *  6. TRI loin→près + BUDGET par famille (`keepClosest`) — puis fusion peintre avec les PROPS.
+ *  6. BUDGET par famille (`keepClosest`) puis ajout des PROPS — l'ordre de rendu est décidé en aval.
  */
-export function PovBillboards({ scene, cam, visible }: { scene: Scene; cam: CamPose; visible: Set<string> }): JSX.Element {
-  const persons: Billboard[] = [];
+export function buildPovBillboards(scene: Scene, cam: CamPose, visible: Set<string>): Painted[] {
+  const persons: Painted[] = [];
 
   for (const e of scene.entities) {
     if (e.kind !== 'personnage') continue; // les props passent par le noyau pur (ci-dessous)
@@ -148,21 +152,27 @@ export function PovBillboards({ scene, cam, visible }: { scene: Scene; cam: CamP
         traits: e.statblock?.traits,
         armour: e.statblock?.armour,
       });
-      if (prof) persons.push({ id: e.id, depth: a.depth, node: <PovPerson key={e.id} id={e.id} prof={prof} view={view} mirror={mirror} a={a} /> });
+      if (prof) persons.push({ key: e.id, depth: a.depth, node: <PovPerson key={e.id} id={e.id} prof={prof} view={view} mirror={mirror} a={a} /> });
     } else {
       // Gabarit corporel (quadrupède/ailé/serpentin/…) : billboard ANIMÉ de son anim de repos
       // (`plan.idlePose`), rAF isolé — cf. `PovCreature` (miroir de `PovPerson`).
       const plan = planById(r.plan);
       if (plan)
-        persons.push({ id: e.id, depth: a.depth, node: <PovCreature key={e.id} id={e.id} plan={plan} species={r.species} view={view} mirror={mirror} colors={e.appearance?.colors} eyes={eyesArtFromKeys(e.appearance?.eyes)} a={a} /> });
+        persons.push({ key: e.id, depth: a.depth, node: <PovCreature key={e.id} id={e.id} plan={plan} species={r.species} view={view} mirror={mirror} colors={e.appearance?.colors} eyes={eyesArtFromKeys(e.appearance?.eyes)} a={a} /> });
     }
   }
 
-  // 6) budget par famille, puis PEINTRE COMMUN (loin→près) : props et personnages s'occultent entre eux.
-  const kept: Billboard[] = keepClosest(persons, MAX_PERSON_BILLBOARDS);
+  // 6) budget par famille (les plus proches priment) puis PROPS — la fusion peintre finale (avec la
+  // géométrie) revient à `PovStage`/`paintOrder`, donc aucun tri ni wrapper `<g>` ici.
+  const kept: Painted[] = keepClosest(persons, MAX_PERSON_BILLBOARDS);
   for (const p of buildPropBillboards(scene, cam, visible))
-    kept.push({ id: p.key, depth: p.depth, node: <g key={p.key} dangerouslySetInnerHTML={{ __html: p.svg }} /> });
-  kept.sort((a, b) => b.depth - a.depth);
+    kept.push({ key: p.key, depth: p.depth, node: <g key={p.key} dangerouslySetInnerHTML={{ __html: p.svg }} /> });
+  return kept;
+}
 
-  return <g className="pov-billboards">{kept.map((b) => b.node)}</g>;
+/** Peintre UNIQUE du POV : géométrie (sols/murs/toits) ET billboards (créatures/props) triés ENSEMBLE
+ *  par profondeur DÉCROISSANTE (loin→près). Un mur à 5 m se peint APRÈS (donc PAR-DESSUS) une créature à
+ *  8 m, mais AVANT une créature à 3 m — l'occlusion mur↔billboard devient enfin correcte. PUR. */
+export function paintOrder(items: Painted[]): Painted[] {
+  return items.slice().sort((a, b) => b.depth - a.depth);
 }
