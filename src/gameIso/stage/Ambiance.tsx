@@ -5,7 +5,7 @@
 import { Scene } from '../../state/scene';
 import { sceneIsDark } from '../../state/sceneRules';
 import { Dims, tileCenter } from '../iso';
-import { AMBIANCE } from '../catalog/ambiance';
+import { AMBIANCE, edgeDepthVeil } from '../catalog/ambiance';
 import { VW, VH } from './useStageCamera';
 
 /** Mouches qui tournoient au-dessus de chaque cadavre (faune d'ambiance) — dans le groupe caméra. */
@@ -31,11 +31,12 @@ export function Flies({ scene, dims }: { scene: Scene; dims: Dims }) {
 /** Voiles fixes par-dessus la scène (ne suivent pas la caméra) : lueur chaude, corbeau qui traverse le
  *  ciel (extérieurs), vignette, puis l'assombrissement de mise en scène (Lot L) piloté par `lightLevel`,
  *  sinon l'obscurité d'horloge/ambiance. 1 = plein jour (aucun voile) → 0 = noir. Transition douce. */
-export function AmbianceVeils({ scene, gameTime, lightLevel }: { scene: Scene; gameTime: number; lightLevel: number | null | undefined }) {
+export function AmbianceVeils({ scene, dims, gameTime, lightLevel }: { scene: Scene; dims: Dims; gameTime: number; lightLevel: number | null | undefined }) {
   const light = lightLevel ?? (scene && sceneIsDark(scene, gameTime) ? 0.4 : 1);
   const veil = (1 - Math.max(0, Math.min(1, light))) * 0.82;
   return (
     <>
+      {dims.edge && dims.view !== 'top' && <g dangerouslySetInnerHTML={{ __html: edgeDepthVeil(dims, VW, VH) }} pointerEvents="none" />}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />
       {scene.ambiance !== 'interieur' && (
         <g className="crow" style={{ transform: 'translate(-140px,90px)' }} pointerEvents="none">

@@ -19,7 +19,13 @@
       "saturate": 0.72,
       "slope": 0.84
     },
-    "nightVeil": "#05040a"
+    "nightVeil": "#05040a",
+    "edgeDepth": {
+      "color": "#0e131e",
+      "alpha": 0.1,
+      "topFrac": 0,
+      "bottomFrac": 0.62
+    }
   },
   "pov": {
     "skyTop": "#5b83ac",

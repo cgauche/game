@@ -12,7 +12,7 @@
 import { project, fogAt, fogCurveOf, farTilesOf, fy, VW, VH, type CamPose } from './camera';
 import { propSvg } from '../catalog/decor';
 import { AMBIANCE } from '../catalog/ambiance';
-import { decorFootGeometry } from '../../state/footprint';
+import { buildProps } from '../builders/props';
 import { heightAt, isIndoor, type Scene } from '../../state/scene';
 
 /** Boîte LOCALE d'un billboard (repère paper-doll ET prop : 120×150, pieds/base en (60,150)). */
@@ -87,27 +87,25 @@ export interface PropBillboard {
 }
 
 /**
- * Billboards des PROPS visibles de la scène : MÊME SVG que l'iso (`propSvg(ref, facing, 0)` — un prop
- * directionnel garde son orientation d'auteur), ancré aux pieds du CENTRE de son empreinte
- * (`decorFootGeometry` : offset fractionnaire + échelle au côté max, comme l'iso), échelle ∝ profondeur
- * (même règle que les personnages, hauteur `PROP_H_M`), cull LdV/brouillard + distance, budget
- * `MAX_PROP_BILLBOARDS`. PUR (chaînes) — consommé par le jeu ET la QC headless.
+ * Billboards des PROPS visibles de la scène : consomme le MÊME builder pivot que l'iso/l'éditeur
+ * (`buildProps` — clés `prop:<id>`, `ref` normalisée, empreinte `foot` = `decorFootGeometry`, vérité de
+ * scène `states.visible`), donc plus aucun re-scan de `scene.entities` ici (source unique). Rendu :
+ * MÊME SVG que l'iso (`propSvg(ref, facing, 0)` — un prop directionnel garde son orientation d'auteur),
+ * ancré aux pieds du CENTRE de son empreinte, échelle ∝ profondeur (hauteur `PROP_H_M`), cull
+ * LdV/brouillard + distance, budget `MAX_PROP_BILLBOARDS`. PUR (chaînes) — jeu ET QC headless.
  */
 export function buildPropBillboards(scene: Scene, cam: CamPose, visible: ReadonlySet<string>): PropBillboard[] {
   const out: PropBillboard[] = [];
-  for (const e of scene.entities) {
-    if (e.kind !== 'prop') continue;
-    const z = e.z ?? 0;
-    if (!visible.has(`${e.pos.x},${e.pos.y},${z}`)) continue;
-    const fg = decorFootGeometry(e.foot);
-    const a = footAnchor(scene, cam, e.pos.x + fg.offX, e.pos.y + fg.offY, z, PROP_H_M, fg.scale);
+  for (const el of buildProps(scene, visible)) {
+    if (el.source !== 'entity' || !el.states.visible) continue; // overlays de terrain hors billboards ; cull LdV
+    const a = footAnchor(scene, cam, el.cell.x + el.foot.offX, el.cell.y + el.foot.offY, el.cell.z, PROP_H_M, el.foot.scale);
     if (!a) continue;
     const t = bbTransform(a, a.s);
     const op = a.o < 1 ? ` opacity="${a.o.toFixed(3)}"` : '';
     out.push({
-      key: `prop:${e.id}`,
+      key: el.key,
       depth: a.depth,
-      svg: `<g transform="${t.outer}"${op}><g transform="${t.inner}">${propSvg(e.ref ?? 'tonneau', e.facing, 0)}</g></g>`,
+      svg: `<g transform="${t.outer}"${op}><g transform="${t.inner}">${propSvg(el.ref, el.facing, 0)}</g></g>`,
     });
   }
   return keepClosest(out, MAX_PROP_BILLBOARDS);

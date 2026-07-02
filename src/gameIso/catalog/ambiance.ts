@@ -3,6 +3,7 @@
  *  nuit. Les stages (IsoStage/PovStage) et la QC headless consomment les MÊMES defs SVG assemblées ici —
  *  plus aucune de ces couleurs en dur dans un renderer. */
 import { ambiance } from '../../data';
+import type { Dims } from '../iso';
 
 /** Halo radial (voile chaud / vignette) : centre + rayon en %, couleur et alpha au bord utile. */
 export interface RadialVeilDef { cx: string; cy: string; r: string; color: string; alpha: number; innerOff?: string }
@@ -17,6 +18,10 @@ export interface AmbianceDef {
     lowerFloorDim: { saturate: number; slope: number };
     /** Voile de NUIT (rect plein écran, alpha piloté par la lumière ambiante). */
     nightVeil: string;
+    /** Ombrage de PROFONDEUR de la vue « de face » (edge-on) : les rangées écran LOINTAINES (haut de
+     *  l'écran) s'assombrissent progressivement (perspective atmosphérique). Décoration de VUE, subtile
+     *  (alpha ≈ 8-12 % max). `topFrac`/`bottomFrac` = bornes verticales écran du dégradé (0 = haut). */
+    edgeDepth: { color: string; alpha: number; topFrac: number; bottomFrac: number };
   };
   pov: {
     /** Haut du ciel d'extérieur — l'horizon se fond dans `fogOutdoor`. */
@@ -78,6 +83,23 @@ export function isoAmbianceDefs(): string {
     radialVeil('g_vig', vignette, false) +
     `<filter id="lower-floor-dim" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix type="saturate" values="${dim.saturate}"/>` +
     `<feComponentTransfer><feFuncR type="linear" slope="${dim.slope}"/><feFuncG type="linear" slope="${dim.slope}"/><feFuncB type="linear" slope="${dim.slope}"/></feComponentTransfer></filter>`
+  );
+}
+
+/** Voile d'ASSOMBRISSEMENT de profondeur de la vue « de face » (edge-on) : les rangées écran lointaines
+ *  (haut de l'écran) reculent dans une brume sombre progressive. DÉCORATION DE VUE (screen-space) —
+ *  jamais dans les builders : le stage affine ET la QC l'appliquent au dessin, PAR-DESSUS la scène. Vide
+ *  hors edge-on. Auto-contenu (gradient objectBoundingBox + rect plein cadre) → une seule source, deux
+ *  consommateurs ; l'id partagé est sans risque (contenu identique entre panneaux). */
+export function edgeDepthVeil(dims: Dims, w: number, h: number): string {
+  if (!dims.edge || dims.view === 'top') return '';
+  const { color, alpha, topFrac, bottomFrac } = AMBIANCE.iso.edgeDepth;
+  return (
+    `<linearGradient id="edge-depth" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="${(topFrac * 100).toFixed(1)}%" stop-color="${color}" stop-opacity="${alpha}"/>` +
+    `<stop offset="${(bottomFrac * 100).toFixed(1)}%" stop-color="${color}" stop-opacity="0"/>` +
+    `</linearGradient>` +
+    `<rect x="0" y="0" width="${w}" height="${h}" fill="url(#edge-depth)" pointer-events="none"/>`
   );
 }
 

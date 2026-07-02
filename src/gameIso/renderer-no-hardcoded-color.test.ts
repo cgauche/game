@@ -4,7 +4,7 @@
  * capture aussi les anciennes tables `Record<…>` (hex-valuées). `COVERED` grandit à chaque phase.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
@@ -46,7 +46,9 @@ const COVERED: string[] = [
   'stage/useStageCamera.ts', // caméra du stage — aucune couleur
   'stage/useStagePointer.ts', // pointeur du stage — aucune couleur
   'stage/useHoverTargeting.ts', // visée au survol — aucune couleur
-  // Lot 7 → 'sprites.ts' + decor defs
+  'catalog/decorPalette.ts', // accès typé à la palette — importe la donnée JSON, aucun littéral
+  // Les 97 defs de `catalog/decor/defs/` sont couvertes par le bloc glob ci-dessous (palette partagée).
+  // Reste hors Lot 7 : 'sprites.ts' (wallBlock/tree/villager/rigFxGradients).
 ];
 
 // `rgb(`/`hsl(` ne mordent que sur des CANAUX LITTÉRAUX : `rgb(${r},…)` (assemblage d'une couleur
@@ -85,5 +87,20 @@ describe('garde-fou — aucune couleur en dur dans un renderer migré', () => {
   it.each(COVERED)('%s : zéro couleur en dur', (rel) => {
     const hits = colorHits(readFileSync(HERE + rel, 'utf8'));
     expect(hits, `Couleurs en dur dans ${rel} :\n${hits.join('\n')}`).toEqual([]);
+  });
+});
+
+// Les 97 defs de décor : le dessin reste du code par def, MAIS toute couleur vient de la palette
+// partagée (`P.<ton>`, `src/data/decorPalette.json`). Glob → couvre aussi tout nouveau `defs/<id>.ts`.
+const DECOR_DEFS_DIR = HERE + 'catalog/decor/defs';
+const DECOR_DEFS = readdirSync(DECOR_DEFS_DIR).filter((f) => f.endsWith('.ts'));
+
+describe('garde-fou — decor defs consomment la palette (zéro couleur en dur)', () => {
+  it('la liste des defs n’est pas vide', () => {
+    expect(DECOR_DEFS.length).toBeGreaterThan(90);
+  });
+  it.each(DECOR_DEFS)('catalog/decor/defs/%s : zéro couleur en dur', (f) => {
+    const hits = colorHits(readFileSync(`${DECOR_DEFS_DIR}/${f}`, 'utf8'));
+    expect(hits, `Couleurs en dur dans decor/defs/${f} :\n${hits.join('\n')}`).toEqual([]);
   });
 });

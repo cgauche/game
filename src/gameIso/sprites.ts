@@ -3,7 +3,7 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { TW, TH, EDGE_W, EDGE_H, tileCenter, depth, diamondPath, isSquareView, Dims, type Rot } from './iso';
+import { TW, TH, EDGE_W, EDGE_H, tileCenter, depth, diamondPath, billboardScale, isSquareView, Dims, type Rot } from './iso';
 import { propSvg } from './catalog/decor';
 import type { Dir8 } from '../state/dir8';
 import { TERRAIN_DEFS } from '../state/terrain';
@@ -71,8 +71,13 @@ export function wallBlock(x: number, y: number, dims: Dims): string {
 
 export function tree(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);
-  return `<ellipse cx="${cx}" cy="${cy + 2}" rx="26" ry="13" fill="#000" opacity="0.3"/>
-    <g transform="translate(${cx},${cy + TH / 2})">
+  // Billboard : réduit en vue « de face » (edge-on) pour remplir SA tuile plus étroite (comme tout
+  // token, cf. billboardScale) — sinon le feuillage déborde sur les voisins. En iso k=1 → identique.
+  const k = billboardScale(dims);
+  const footY = cy + (dims.edge && dims.view !== 'top' ? EDGE_H : TH) / 2;
+  const sc = k !== 1 ? ` scale(${k})` : '';
+  return `<ellipse cx="${cx}" cy="${cy + 2}" rx="${26 * k}" ry="${13 * k}" fill="#000" opacity="0.3"/>
+    <g transform="translate(${cx},${footY})${sc}">
       <rect x="-7" y="-34" width="14" height="40" rx="3" fill="#4a3220"/>
       <path d="M0 -150 L40 -78 L14 -86 L46 -30 L-46 -30 L-14 -86 L-40 -78 Z" fill="#1d3d18"/>
       <path d="M0 -150 L40 -78 L14 -86 L46 -30 L0 -44 Z" fill="#2a5320"/>

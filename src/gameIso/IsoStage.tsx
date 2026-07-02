@@ -250,7 +250,7 @@ export function IsoStage() {
         {debugLabels && <DebugMapLabels scene={scene} dims={dims} liftAt={liftAt} />}
       </g>
       {debugLabels && <DebugLegend />}
-      <AmbianceVeils scene={scene} gameTime={gameTime} lightLevel={lightLevel} />
+      <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />
     </svg>
   );
 }
