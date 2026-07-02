@@ -28,7 +28,7 @@ const FRAME_W = 1.3, BAR_W = 1.7; // moulure bois / barreau de herse (lignes mé
  *  la lecture 3D « dessiné main » prime sur l'ancien aplat brut. */
 const TINTED: ReadonlySet<WallPart> = new Set([
   'face', 'panneau', 'moulure', 'plinthe', 'couronnement',
-  'croisee-cadre', 'meneau', 'vantail', 'vantail-planche', 'poignee', // fenêtre + vantail : bois/pierre, ombrés par l'orientation
+  'meneau', 'vantail', 'vantail-planche', 'poignee', // fenêtre (meneau) + vantail : bois/pierre, ombrés par l'orientation
 ]);
 
 /** Parties MAÇONNÉES recevant le motif d'appareillage quand la def porte une recette — SOURCE UNIQUE

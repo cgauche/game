@@ -45,7 +45,6 @@ export function wallPartColor(app: StructureAppearanceDef, part: WallPart): stri
     case 'vantail': return app.door?.leaf ?? app.wood?.inset ?? shade(app.face, 0.78);
     case 'vantail-planche': return app.door?.plank ?? app.wood?.skirt ?? app.post;
     case 'poignee': return app.door?.handle ?? app.cap ?? app.wood?.cap ?? app.face;
-    case 'croisee-cadre': return app.window?.frame ?? app.wood?.frame ?? app.cap ?? app.face;
     case 'vitre': return app.window?.glass ?? defaultWindow()?.glass ?? app.face;
     case 'meneau': return app.window?.mullion ?? app.wood?.frame ?? app.post;
     case 'poteau': return app.post;

@@ -43,7 +43,7 @@ export type WallPart =
   | 'face' | 'poteau' | 'couronnement' | 'panneau' | 'moulure' | 'plinthe' // panneau bois encadré
   | 'embrasure' | 'chambranle' | 'jambage' // porte bois ajourée (ouverte)
   | 'vantail' | 'vantail-planche' | 'poignee' // vantail de porte FERMÉE
-  | 'croisee-cadre' | 'vitre' | 'meneau' // fenêtre (croisée : cadre + vitre + meneau/croisillon)
+  | 'vitre' | 'meneau' // fenêtre AJOURÉE (vitre transparente + meneau/croisillon ; encadrée par la `face`)
   | 'parapet' | 'bande' | 'arase' | 'merlon' // fortification crénelée
   | 'linteau' | 'herse-barreau' | 'herse-traverse' | 'seuil' // corps de garde (herse / seuil d'éboulis)
   | 'gravats' | 'gravats-tas'; // brèche (structure abattue)
