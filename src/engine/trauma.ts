@@ -15,7 +15,9 @@ import { isPainless, traitPassiveMods } from './traits/dispatch';
 import { findConditionById, findPsychologyById, findTrappingById } from '../data';
 import { talentPassiveMods } from './talentEffects';
 import { diseasePassiveOps } from './disease';
-import { hungerCharPenalties } from './provisions';
+import { hungerCharPenalties, thirstCharPenalties } from './provisions';
+import { drunkCharPenalties } from './drunkenness';
+import { hasActiveFlag } from './activeFlags';
 import { wornSocialMod, qualityWearMods } from './wearPenalty';
 import type { GameOp, PassiveKind, PassiveMod } from './ops';
 import traumasJson from '../data/traumas.json';
@@ -402,6 +404,7 @@ const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'p
   faim: [], // annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle
   magique: [], // sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ intrinsèque additif)
   etat: [], // État (LDB 16) : annulé NON PAS ici mais par le flag de combat `ignoreStatePenalties` (au consommateur) ; pool non-cumul
+  ivresse: [], // Ivresse (LDB 09) : gaté à la SOURCE par le flag `drunkIgnore` (Détermination, 1 Round) ; pool non-cumul
   intrinsèque: [],
 };
 
@@ -462,6 +465,14 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   }
   if (c.hunger && modSurvives(c, 'faim')) {
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
+  }
+  if (c.thirst && modSurvives(c, 'faim')) { // Soif (l.420) : même privation (kind `faim` — « Plus besoin de manger/boire »)
+    for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of thirstCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
+  }
+  // Ivresse (LDB 09 l.475) : −10/échec aux CC/CT/Ag/Dex/Int (pool non-cumul, kind `ivresse`). Gaté à la
+  // SOURCE par la Détermination : « ignorer les modificateurs négatifs de l'ivresse » (flag `drunkIgnore`).
+  if (c.drunk && !hasActiveFlag(c, 'drunkIgnore')) {
+    for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of drunkCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'ivresse' });
   }
   // États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant →
   // `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20).

@@ -59,6 +59,7 @@ import {
   pursuitLowMPenalty, forcePaceDifficulty, exhaustionDifficulty, REPARATION,
 } from '../engine/seaNavigation';
 import { exposureNight, expireExposureEffects } from '../engine/exposure';
+import { pursuitOutcome } from '../engine/pursuit';
 import { addCondition } from '../engine/conditions';
 import { findWhirlpool } from '../engine/seaPerils';
 import {
@@ -618,10 +619,12 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       const gain = pursuitDistanceGain(myM, total + pursuitLowMPenalty(myM)) - pursuitDistanceGain(c.foeM, foe.sl + pursuitLowMPenalty(c.foeM));
       const distance = c.distance + gain;
       tell(get, set, [`🏴 Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`]);
-      if (distance >= c.escapeAt) {
+      // Issue = primitive PARTAGÉE avec la poursuite terrestre (engine/pursuit) : seuils identiques, calcul de gain propre au naval (mètres, MDG ch.13).
+      const outcome = pursuitOutcome(distance, c.escapeAt);
+      if (outcome === 'escaped') {
         patchSea(get, set, { crisis: undefined });
         tell(get, set, ['🏴 Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).']);
-      } else if (distance <= 0) {
+      } else if (outcome === 'caught') {
         patchSea(get, set, { crisis: undefined });
         tell(get, set, ['🏴 Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).']);
         startChaseBoarding(get, set);

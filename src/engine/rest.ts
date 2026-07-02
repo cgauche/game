@@ -31,7 +31,7 @@ import { effectiveChar, bonus } from './characteristics';
 import { addCondition, removeCondition, stacks, hasCondition, nightmareCheck } from './conditions';
 import { tickDisease, activeMalaiseCount, diseaseBlesseCount, DISEASE_DEFS } from './disease';
 import { MINUTES_PER_DAY } from './clock';
-import { isStarving } from './provisions';
+import { isStarving, isThirsty, isDeprived } from './provisions';
 
 /** États à dégâts périodiques qui empêchent un repos réparateur (LDB 16 l.105 : on ne « reprend pas ses
  *  esprits » tant qu'un Hémorragique subsiste — on étend à En flammes/Empoisonné, qu'on ne traverse pas
@@ -136,7 +136,7 @@ export function recoveryTarget(c: Combatant): number {
 /** Un héros doit-il LANCER le Test de récupération cette nuit ? (Non si mort/éjecté/instable/affamé/PB
  *  plein.) Sépare la DÉCISION du jet (pour différer en cascade) de son application. */
 export function needsRecoveryRoll(c: Combatant): boolean {
-  return !c.dead && !c.outOfRencontre && !unstable(c) && !isStarving(c) && c.wounds.current < c.wounds.max;
+  return !c.dead && !c.outOfRencontre && !unstable(c) && !isDeprived(c) && c.wounds.current < c.wounds.max;
 }
 
 /**
@@ -150,8 +150,8 @@ export function needsRecoveryRoll(c: Combatant): boolean {
 export function applyRecoveryDay(c: Combatant, recoveryRoll: { sl: number; success: boolean } | null): { wokeUp: boolean } {
   if (c.dead || c.outOfRencontre || unstable(c)) return { wokeUp: false };
   const be = bonus(effectiveChar(c, 'E'));
-  // Faim & Soif (18 l.418) : un héros AFFAMÉ ne récupère ni PB ni Exténué naturellement.
-  const starving = isStarving(c);
+  // Faim & Soif (18 l.418) : un héros PRIVÉ (affamé OU assoiffé) ne récupère ni PB ni Exténué naturellement.
+  const starving = isDeprived(c);
   // Maladies (LDB 20) : l'Exténué « collant » du malaise (l.153) reste ; chaque « blessé » bloque 1 PB (l.110).
   const malaise = activeMalaiseCount(c);
   const blesse = diseaseBlesseCount(c);
@@ -212,7 +212,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
   const healed = c.wounds.current - startPB;
   const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
   if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);
-  if (isStarving(c)) log.push(`${c.name} est affamé — pas de récupération naturelle (Faim & Soif).`);
+  if (isDeprived(c)) log.push(`${c.name} est ${isStarving(c) && isThirsty(c) ? 'affamé et assoiffé' : isThirsty(c) ? 'assoiffé' : 'affamé'} — pas de récupération naturelle (Faim & Soif).`);
   if (hadFatigue && stacks(c, 'extenue') === 0) log.push(`${c.name} se réveille reposé (Exténué dissipé).`);
   if (nightmareNights > 0) log.push(`${c.name} a fait des cauchemars (${nightmareNights}/${days} nuit${days > 1 ? 's' : ''}) → Exténué.`);
   return log;

@@ -46,3 +46,65 @@ export function maxJumpTiles(movement: number): number {
 export function jumpNeedsTest(movement: number, tiles: number): boolean {
   return tiles > freeJumpTiles(movement);
 }
+
+/**
+ * Escalade — échelle ou surface facile (LDB 15-Déplacement l.52-55). « Le fait de grimper à une échelle,
+ * ou sur une autre surface tout aussi facile, ne nécessite pas de Test mais va simplement vous ralentir.
+ * Sur de telles surfaces, vous vous déplacez à la moitié de votre vitesse. » La Marche = 2×M mètres/Round →
+ * la montée passive (½ vitesse) atteint `M` mètres avec le Mouvement d'un Round (ex. 4 m de Mouvement pour
+ * gravir 2 m d'échelle : ½ vitesse). Pur.
+ */
+export function ladderClimbReach(movement: number): number {
+  return Math.max(0, movement);
+}
+
+/**
+ * Escalade RAPIDE d'une échelle/surface facile (LDB 15 l.55) : « utilisez votre Action pour effectuer un
+ * Test d'Escalade Accessible (+20). Vous escaladerez alors une distance supplémentaire équivalent à votre
+ * Mouvement + DR mètres » (ex. M4, DR+2 → 6 m de plus). Le bonus s'applique même sur DR négatif (clampé ≥ 0).
+ */
+export function resolveLadderClimb(
+  escalade: number,
+  movement: number,
+  rng: RNG = defaultRNG,
+): { success: boolean; roll: number; target: number; dr: number; metres: number } {
+  const t = rollTest(escalade, 'accessible', rng); // Escalade Accessible (+20)
+  return { success: t.success, roll: t.roll, target: t.target, dr: t.sl, metres: Math.max(0, movement + t.sl) };
+}
+
+/**
+ * Escalade d'une surface À PRISES, deux mains libres (LDB 15 l.57) : « en utilisant votre Action du tour et
+ * en réussissant un Test d'Escalade. Votre vitesse (de monte ou de descente) est (½ Mouvement + DR) mètres.
+ * La difficulté du Test est définie par le MJ… Certaines escalades seront bien trop compliquées pour la
+ * plupart des Personnages qui ne possèdent pas le Talent Grimpeur. » `tooHard` (surface exigeant Grimpeur) +
+ * absence du Talent ⇒ escalade IMPOSSIBLE (0 m). Sur un échec de Test : aucune progression. Pur.
+ */
+export function resolveSurfaceClimb(
+  escalade: number,
+  movement: number,
+  rng: RNG = defaultRNG,
+  opts: { difficulty?: import('./types').Difficulty; requiresGrimpeur?: boolean; hasGrimpeur?: boolean } = {},
+): { success: boolean; roll: number; target: number; dr: number; metres: number; impossible: boolean } {
+  if (opts.requiresGrimpeur && !opts.hasGrimpeur) {
+    return { success: false, roll: 0, target: 0, dr: 0, metres: 0, impossible: true };
+  }
+  const t = rollTest(escalade, opts.difficulty ?? 'intermediaire', rng);
+  return { success: t.success, roll: t.roll, target: t.target, dr: t.sl, metres: t.success ? Math.max(0, Math.floor(movement / 2) + t.sl) : 0, impossible: false };
+}
+
+/**
+ * Chute VOLONTAIRE — « à dessein » (LDB 15-Déplacement l.82) : « vous pouvez tenter un Test d'Athlétisme
+ * Accessible (+20) afin de réduire les Dégâts reçus. Pour chaque DR, considérez que vous tombez de 1 m de
+ * moins. Si vous parvenez à réduire votre distance de chute à 0 ou moins, vous ne subissez aucun Dégât de
+ * chute. » Renvoie la hauteur EFFECTIVE de chute (à passer à `applyFall`) après réduction ; seul un DR
+ * POSITIF réduit (un Test raté ne fait pas chuter de plus haut que la chute subie). Pur ; ne mute rien.
+ */
+export function resolveDeliberateFall(
+  athletics: number,
+  metres: number,
+  rng: RNG = defaultRNG,
+): { success: boolean; roll: number; target: number; dr: number; effectiveMetres: number } {
+  const t = rollTest(athletics, 'accessible', rng); // Athlétisme Accessible (+20)
+  const reduction = Math.max(0, t.sl); // −1 m par DR (positif) ; échec = aucune réduction
+  return { success: t.success, roll: t.roll, target: t.target, dr: t.sl, effectiveMetres: Math.max(0, metres - reduction) };
+}

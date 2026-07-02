@@ -122,6 +122,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   critOnRoll: '🎯 Atout d’arme — Critique sur jet (passif)',
   spendAdvantage: '⬇️ Dépenser de l’Avantage',
   rollThreshold: '🎲 Jet à paliers (un dé → ops par seuil)',
+  intoxicate: '🍺 Boisson alcoolisée (échec de Résistance à l’alcool)',
   narrative: '📝 Effet narratif (texte libre)',
 };
 

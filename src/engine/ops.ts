@@ -23,6 +23,7 @@ import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
+import { applyAlcoholTest } from './drunkenness';
 import { cureCriticalWounds } from './trauma';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
@@ -321,6 +322,11 @@ export type GameOp =
        *  ou un littéral (`60`). Absente ⇒ le flux de récupération garde son défaut (Force de la source
        *  vivante, ou Test simple). */
       escapeStrength?: Formula;
+      /** VERROU de Critique (LDB 18) : l'État posé ne pourra être RETIRÉ que lorsque cette Condition
+       *  (algèbre flowCore) sera vraie. Ex. Aveuglé « tant que tous les Hémorragique n'ont pas été
+       *  éliminés » (Tête 46-50) ⇒ `{ kind:'compare', subject:{who:'target',condition:'hemorragique'},
+       *  op:'==', value:0 }`. Figé sur l'entrée d'État, évalué par `isConditionLocked`. */
+      lockedUntil?: import('./flowCore').Condition;
       /** Empoignade (LDB 14 l.159) : poser AUSSI la relation symétrique `grapplingWith` entre le RÉFÉRENT
        *  (`ctx.caster`, l'attaquant) et la cible — la SEULE voie data-driven de démarrage d'une Empoignade
        *  (Constricteur onHit, Tentacules/Langue, Absorption, et l'init JOUEUR migrée). L'État *Empêtré* est
@@ -503,7 +509,7 @@ export type GameOp =
    *  Tests, porté par un effet actif, STACKE sur les États, lu par `combat/testStatePenalty`). AVEC `char` =
    *  modificateur de TEST qualifié par Caractéristique (Visage inversé −20 Soc, objet Laid −20 Soc), émis par
    *  le collecteur passif et lu par `testValue/passiveTestMod` — n'altère PAS la Caractéristique (≠ charMod). */
-  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; exceptSkills?: string[] }
+  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; hearingOnly?: boolean; exceptSkills?: string[] }
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
    *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
   | { op: 'weatherWard' }
@@ -652,7 +658,11 @@ export type GameOp =
    *  p.340). PASSIF, lu par `incomingAttackMod` à la collecte des mods d'attaque — DISTINCT de `testMod`
    *  (qui modifie les Tests du porteur LUI-MÊME). `mode` : portée concernée (`all` = mêlée ET distance).
    *  Inerte dans `applyOps`. */
-  | { op: 'incomingAttackMod'; mode: 'melee' | 'ranged' | 'all'; amount: number }
+  | { op: 'incomingAttackMod'; mode: 'melee' | 'ranged' | 'all'; amount: number;
+      /** Ne s'applique QUE si l'attaquant frappe par le flanc ou par derrière (Assourdi : « par le flanc
+       *  ou par derrière gagne +10 », LDB 16 l.29) — bonus ADDITIF (« supplémentaire ») évalué par
+       *  `meleeAttackerBonus` seulement quand l'appelant a établi l'angle (facing). Absent = inconditionnel. */
+      flankRear?: boolean }
   /** L'ASSAILLANT du porteur GAGNE `amount` Avantage(s) avant son attaque (Sonné : « +1 Avantage », LDB 16
    *  l.123). PASSIF de l'État/trait du DÉFENSEUR, lu par `incomingMeleeAdvantage` au moment de l'attaque
    *  (≠ `incomingAttackMod` = bonus de TOUCHE éphémère). Inerte dans `applyOps`. */
@@ -758,6 +768,10 @@ export type GameOp =
    *  INERTE dans applyOps — lu par `combatantLights` (vision) pour les objets PORTÉS/TENUS. Côté SORT :
    *  pousse un `ActiveEffect.light` temporisé (durée), lu au MÊME point. */
   | { op: 'light'; radiusTiles: number; durationRounds?: Formula }
+  /** Boisson alcoolisée : enregistre UN échec de Résistance à l'alcool (LDB 09 l.475) sur la cible —
+   *  −10 aux CC/CT/Ag/Dex/Int (plafond −30), et Ivresse (1d10) au seuil BE. Posé sur la branche `fail`
+   *  du Flow de consommable d'une boisson (le Test de Résistance à l'alcool est le nœud `test` du Flow). */
+  | { op: 'intoxicate' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -772,6 +786,7 @@ export type PassiveKind =
   | 'faim'         // pénalité de Faim : « Plus besoin de manger »
   | 'magique'      // effet de SORT actif (ActiveEffect) : inconditionnel mais combiné en POOL non-cumul ; expire seul
   | 'etat'         // pénalité/effet d'un État (LDB 16) : pool NON-CUMUL, le pire seul (l.20) ; Exténué ×stacks
+  | 'ivresse'      // pénalité d'Ivresse (LDB 09 l.475) : pool non-cumul ; ignorée 1 Round par la Détermination (flag `drunkIgnore`)
   | 'intrinsèque'; // trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent)
 
 /** Effet PASSIF porté par un élément (trauma/trait/mutation/qualité…) : une op + son profil d'annulation.
@@ -1011,7 +1026,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           addTimedCondition(target, o.name, v, rounds, escape);
           lines.push(t('op.condTimed', { name: target.name, v, cond: conditionLabel(o.name), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
         } else {
-          addCondition(target, o.name, v, escape);
+          addCondition(target, o.name, v, escape, o.lockedUntil); // `lockedUntil` : verrou de Critique (LDB 18)
           lines.push(t('op.cond', { name: target.name, v, cond: conditionLabel(o.name) })); // libellé (« Exténué »), cohérent avec removeCond
         }
         // Empoignade (LDB 14 l.159) : le flag `grapple` pose la relation symétrique entre l'attaquant
@@ -1750,6 +1765,13 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'spendAdvantage': {
         const who = ctx.caster ?? target;
         who.advantage = Math.max(0, (who.advantage ?? 0) - o.amount);
+        break;
+      }
+      case 'intoxicate': {
+        // Boisson alcoolisée (LDB 09 l.475) : un échec de Résistance à l'alcool → −10 aux CC/CT/Ag/Dex/Int,
+        // Ivresse (1d10) au seuil BE. Le Test lui-même est le nœud `test` du Flow de consommable (branche fail).
+        const be = bonus(effectiveChar(target, 'E'));
+        lines.push(...applyAlcoholTest(target, false, be, rng).log);
         break;
       }
       case 'narrative':

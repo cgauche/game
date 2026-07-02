@@ -25,10 +25,12 @@ import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { tickShipMorale, moraleBand } from '../engine/crewMorale';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { dailyFoodUpkeep, feedFromMeal } from '../engine/provisions';
+import { dailyFoodUpkeep, dailyWaterUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
-import { loseWounds } from '../engine/conditions';
+import { loseWounds, addClockCondition } from '../engine/conditions';
+import { rollTest } from '../engine/tests';
+import { soberUp } from '../engine/drunkenness';
 import { DIFFICULTY_MODIFIERS, type UpkeepDeferTest } from '../engine/types';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
 import { conditionLabel } from '../data';
@@ -111,6 +113,10 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
   const party = get().party;
   const lines: string[] = [];
   let rations = 0;
+  // Accès à l'eau (LDB 18 l.420) : abondant au Reikland sauf règle `water-scarcity` ; en mer, suit les
+  // tonneaux du navire (`vessel.waterLitres`) — stable sur l'entretien, calculé une fois.
+  const waterLitres = get().vessel?.waterLitres;
+  const hasWater = waterLitres != null ? waterLitres > 0 : rule('water-scarcity') !== true;
   for (let d = last + 1; d <= today; d++) {
     for (const h of party) {
       if (h.dead) continue;
@@ -128,6 +134,18 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);
+      // 1bis. Eau / Soif (LDB 18 l.420) — accès à l'eau calculé plus haut (`hasWater`).
+      const w = dailyWaterUpkeep(h, hasWater, testValue(h, 'resistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng(), defer);
+      if (w.damage > 0) loseWounds(h, w.damage);
+      lines.push(...w.log);
+      // 1ter. Dessoûlage (LDB 09 l.485) : une nuit sans boire dégrise. Deux Tests de Résistance à l'alcool
+      //       Intermédiaires fixent la dissipation (10−DR h) et la gueule de bois (Exténué 5−DR h, horloge).
+      if (h.drunk) {
+        const alc = testValue(h, 'resistance-a-l-alcool', 'E');
+        const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
+        lines.push(...sr.log);
+        if (sr.hangover) addClockCondition(h, sr.hangover.name, sr.hangover.value, sr.hangover.until);
+      }
       // 2. Maladies (LDB 20 — jours calendaires, #T3). Règle optionnelle : désactivable (disease-mode off).
       if (rule('disease-mode') !== 'off') lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor, defer));
       // 3. Convalescence des Blessures critiques (LDB 18 — jours calendaires, #T3).

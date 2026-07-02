@@ -333,7 +333,7 @@ export function attackModifiers(
   attacker: Combatant,
   target: Combatant | null,
   weapon: Weapon,
-  opts: { kind: 'melee' | 'ranged'; location?: HitLocation | null; distanceTiles?: number; env?: ModLine[] },
+  opts: { kind: 'melee' | 'ranged'; location?: HitLocation | null; distanceTiles?: number; env?: ModLine[]; flankRear?: boolean },
 ): ModLine[] {
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
@@ -366,7 +366,7 @@ export function attackModifiers(
       if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm });
     }
   } else if (target) {
-    const vuln = meleeAttackerBonus(target);
+    const vuln = meleeAttackerBonus(target, { flankRear: opts.flankRear });
     if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
     // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
     const para = incomingAttackMod(target, 'melee');
@@ -474,6 +474,9 @@ export interface AttackOptions {
    *  qu'en MÊLÉE (jamais tir/sort) et pas avec une arme infligeant *En flammes*. Retire Empaleuse/
    *  Percutante/Perforante + l'Atout Taille du coup, et supprime le Critique SAUF si la cible tombe à 0. */
   withhold?: boolean;
+  /** L'attaque frappe par le FLANC ou le DERRIÈRE de la cible (facing établi par combatFlow) : active le
+   *  bonus SUPPLÉMENTAIRE d'Assourdi (+10, LDB 16 l.29) dans `meleeAttackerBonus`. Absent = de face. */
+  flankRear?: boolean;
 }
 
 // `woundsFromHit` (Blessures d'un coup d'arme) vit désormais dans le module FEUILLE `woundsCalc.ts`
@@ -507,9 +510,10 @@ export function rollMeleeAttacker(
   rng: RNG = defaultRNG,
   location?: HitLocation,
   env: ModLine[] = [],
+  flankRear?: boolean,
 ): TestResult {
   const atkVal = combatValue(attacker, 'melee', weapon);
-  return rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env })));
+  return rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env, flankRear })));
 }
 
 /** Jet du DÉFENSEUR seul (Parade = Corps à corps, Esquive = Agilité + avances ;
@@ -695,7 +699,7 @@ export function resolveMelee(
 ): AttackResult {
   // Un OBJET INANIMÉ (structure de siège / véhicule-coque / affût inerte) n'a ni CC/Ag, ni Parade, ni Esquive → jamais de défense.
   const defenseMode = (cannotDefend(defender) || isInanimate(defender)) ? 'none' : opts.defense ?? 'parade';
-  let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
+  let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env, opts.flankRear);
   // Cible Inconsciente (LDB 16 l.112) : auto-réussite + Critique (RAW). Règle optionnelle « mort-auto » :
   // en CORPS À CORPS la cible est tuée automatiquement → on marque `autoKill` (le store finalise la mort
   // par le chemin normal, Destin possible). Le tir n'est PAS concerné (cf. resolveRanged).

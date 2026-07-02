@@ -190,6 +190,21 @@ export interface SkillData {
    *  Empêtré (`movementOnly`). Classification de COMPÉTENCE portée par la DONNÉE (éditable au Codex),
    *  lue par `engine/conditions.testStatePenalty` — plus de liste d'ids en dur. */
   movement?: boolean;
+  /** Test « impliquant l'audition » (LDB 16 l.29) : ciblé par la pénalité d'État Assourdi (`hearingOnly`).
+   *  Classification de COMPÉTENCE portée par la DONNÉE (Perception — l'ouïe est un de ses sens), lue par
+   *  `engine/conditions.testStatePenalty`. Approximation assumée : le −10 d'Assourdi ne s'applique qu'aux
+   *  Tests des Compétences marquées `hearing` (faute d'un tag « ce Test précis fait appel à l'ouïe »). */
+  hearing?: boolean;
+  /** Application de COMBAT « cumuler l'Avantage » (LDB 09 l.60/305-308) : passer son tour à réussir un Test
+   *  de cette Compétence donne +1 Avantage, jusqu'à un maximum égal au Bonus de la Caractéristique `cap`
+   *  (Intuition/Savoir/Survie → Int ; Prière → Soc). Lu par `engine/skillCombatApps.skillAdvantageCap`. */
+  combatAdvantage?: { cap: CharKey };
+  /** Substitution en COMBAT d'une Compétence sociale à la Compétence de combat (LDB 09) : Intimidation
+   *  « à la place de Corps à corps … face à ceux qui ont peur de vous » (l.287), Dressage « au lieu de
+   *  Corps à corps » après avoir instillé la peur (l.207). `role` = défense / attaque / les deux ; `gate`
+   *  = condition d'accès (`fear` : l'adversaire est sous une Peur/intimidation SOURCÉE par ce personnage).
+   *  Lu par `engine/skillCombatApps`. */
+  combatSubstitute?: { role: 'defense' | 'attack' | 'both'; gate: 'fear' };
   /** OUTIL requis par la Compétence (Crochetage → outils de crochetage, LDB 09 l.168 : « Les Niveaux de
    *  Difficulté supposent l'utilisation d'outils de crochetage. Des crochets improvisés… peuvent être
    *  utilisés avec une pénalité de -10 ») : `capability` = clé `ItemCapabilities` que doit porter un

@@ -15,8 +15,15 @@
  *    d'Endurance (le « minimum de 1 » serait sinon sans objet — même formulation que l'Exposition).
  *  - Talent « Brouet » (10-Talents l.108-113) : « subsister avec la moitié de la nourriture
  *    nécessaire » (1 ration / 2 jours) et « Test concernant la faim tous les 3 jours et pas 2 ».
- *  - L'EAU est réputée disponible (Reikland : rivières, puits, auberges — décision de périmètre) ;
- *    le volet Soif (l.420) n'est pas suivi.
+ *  - SOIF / privation d'eau (l.420) : « chaque jour sans eau nécessite un Test de Résistance. Sur un
+ *    premier échec, vous subissez une pénalité de −10 en Intelligence, Force Mentale et Sociabilité.
+ *    À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de −10 et vous
+ *    subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure. » Modélisée par
+ *    `dailyWaterUpkeep`, sur le MÊME patron que la Faim (Tests de plus en plus durs l.418, dégâts
+ *    réduits du BE min 1). L'accès à l'eau est décidé par l'APPELANT (`hasWater`) : abondante par
+ *    défaut au Reikland (rivières/puits/auberges) ; à sec en mer (`vessel.waterLitres` épuisé, MDG
+ *    ch.14) ou sous la règle optionnelle `water-scarcity` (siège, désert, souterrain). « Ni nourriture
+ *    ni boisson … ne peuvent pas récupérer » (l.418) → `isDeprived` = affamé OU assoiffé, lu par `rest.ts`.
  *
  * La nourriture = objets « Ration (1 jour) » (trappings LDB p.302) dans l'inventaire du héros.
  * CHOIX documenté (canon muet sur la résorption) : manger à nouveau remet les compteurs ET les
@@ -45,6 +52,16 @@ export interface HungerState {
   coveredDay?: boolean;
 }
 
+/** État de soif d'un personnage (absent = désaltéré). Miroir de `HungerState` (l.420). */
+export interface ThirstState {
+  /** Jours consécutifs sans eau. */
+  days: number;
+  /** Tests de soif déjà tentés (le suivant est à −10 × tests, l.418). */
+  tests: number;
+  /** Échecs cumulés : 1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ et suivants → −10 autres + 1d10 dégâts (l.420). */
+  failures: number;
+}
+
 /** Talent Brouet (LDB 10 l.108-113) — lu sur la donnée, sans import. */
 export function hasBrouet(c: Combatant): boolean {
   return (c.talents ?? []).some((t) => t.talentId === 'brouet' && (t.times ?? 1) >= 1);
@@ -64,6 +81,26 @@ export function rationCount(c: Combatant): number {
 /** Sans provisions depuis ≥ 1 jour → pas de récupération naturelle (PB/Exténué), l.418. */
 export function isStarving(c: Combatant): boolean {
   return (c.hunger?.days ?? 0) >= 1;
+}
+
+/** Sans eau depuis ≥ 1 jour (l.420). Comme la faim, bloque la récupération naturelle. */
+export function isThirsty(c: Combatant): boolean {
+  return (c.thirst?.days ?? 0) >= 1;
+}
+
+/** « Ni nourriture ni boisson … ne peuvent pas récupérer » (l.418) : affamé OU assoiffé bloque le repos. */
+export function isDeprived(c: Combatant): boolean {
+  return isStarving(c) || isThirsty(c);
+}
+
+/** Pénalités de Caractéristique dues à la SOIF (l.420), injectées dans le pool non-cumul
+ *  d'`effectiveChar` (kind `faim`, même privation) : 1ᵉʳ échec → −10 Int/FM/Soc ; dès le 2ᵉ → −10 le reste. */
+export function thirstCharPenalties(c: Combatant, key: CharKey): number[] {
+  const f = c.thirst?.failures ?? 0;
+  const first = key === 'Int' || key === 'FM' || key === 'Soc';
+  if (f >= 1 && first) return [-10];
+  if (f >= 2 && !first) return [-10];
+  return [];
 }
 
 /** Repas pris (auberge, hôte — effet `mealParty`) : nourri pour la journée SANS ration, et les
@@ -186,5 +223,76 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     }
   }
   c.hunger = h;
+  return res;
+}
+
+export interface WaterUpkeepResult {
+  /** A bu aujourd'hui (accès à l'eau). */
+  drank: boolean;
+  /** Dégâts NETS à appliquer par l'appelant (ignorant les PA — via `loseWounds`). */
+  damage: number;
+  log: string[];
+}
+
+/**
+ * Applique le RÉSULTAT d'un Test de Soif DIFFÉRÉ (cascade de nuit) : compte le Test (l.418), et sur un
+ * échec applique les pénalités (l.420 : 1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 le reste + 1d10 Dégâts réduits
+ * du BE, min 1). Mute `c.thirst` ; renvoie le journal + les Dégâts. Miroir de `applyFaimTest`.
+ */
+export function applySoifTest(c: Combatant, success: boolean, be: number, rng: RNG = defaultRNG): { log: string[]; damage: number } {
+  const s: ThirstState = c.thirst ?? { days: 0, tests: 0, failures: 0 };
+  s.tests += 1;
+  const log: string[] = [];
+  let damage = 0;
+  if (!success) {
+    s.failures += 1;
+    if (s.failures === 1) log.push(`${c.name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
+    else {
+      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.420)
+      log.push(`${c.name} se déshydrate : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la soif ignore l'armure).`);
+    }
+  }
+  c.thirst = s;
+  return { log, damage };
+}
+
+/**
+ * Entretien QUOTIDIEN d'eau d'UN personnage (l.420). `hasWater` = l'accès à l'eau ce jour, décidé par
+ * l'appelant (Reikland : toujours vrai sauf règle `water-scarcity` ; mer : `vessel.waterLitres` > 0).
+ * A de l'eau → boit, la soif se dissipe. Sinon : Test QUOTIDIEN (l.420), de plus en plus dur (−10 ×
+ * Tests, l.418). `deferTest` : le Test devient une ÉTAPE de cascade (résolu par `applySoifTest`).
+ * Mute `c.thirst`. `resVal`/`be` passés par l'appelant (cycle d'import, cf. en-tête).
+ */
+export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number, be: number, rng: RNG = defaultRNG, deferTest?: UpkeepDeferTest): WaterUpkeepResult {
+  const res: WaterUpkeepResult = { drank: false, damage: 0, log: [] };
+  if (c.dead) return res;
+  // Sustentation magique (Graisse de la terre, LDB 48 : « n'a pas besoin de manger ou de BOIRE ») :
+  // la Soif est suspendue au même titre que la Faim (drapeau `noHunger`), compteurs purgés.
+  if (hasWater || hasActiveFlag(c, 'noHunger')) {
+    res.drank = true;
+    if (c.thirst && (c.thirst.days > 0 || c.thirst.failures > 0)) res.log.push(`${c.name} se désaltère — les effets de la soif se dissipent.`);
+    c.thirst = undefined;
+    return res;
+  }
+  const s: ThirstState = c.thirst ?? { days: 0, tests: 0, failures: 0 };
+  s.days += 1; // chaque JOUR sans eau nécessite un Test (l.420)
+  const penalty = -10 * s.tests || 0; // l.418 : chaque Test est plus dur (cumulatif ; évite −0)
+  if (deferTest) {
+    c.thirst = s; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
+    deferTest({ kind: 'soif', label: 'Soif', base: resVal, difficulty: 'intermediaire', penalty });
+    return res;
+  }
+  const t = rollTest(resVal, 'intermediaire', rng, penalty);
+  s.tests += 1;
+  res.log.push(`${c.name} — Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''} : 🎲 ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`);
+  if (!t.success) {
+    s.failures += 1;
+    if (s.failures === 1) res.log.push(`${c.name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
+    else {
+      res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.420)
+      res.log.push(`${c.name} se déshydrate : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la soif ignore l'armure).`);
+    }
+  }
+  c.thirst = s;
   return res;
 }

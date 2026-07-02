@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { Characteristics, Combatant, ItemInstance } from './types';
 import { makeRNG, RNG } from './dice';
-import { dailyFoodUpkeep, applyFaimTest, isStarving, hungerCharPenalties, rationCount, isRation } from './provisions';
+import { dailyFoodUpkeep, applyFaimTest, isStarving, hungerCharPenalties, rationCount, isRation, dailyWaterUpkeep, applySoifTest, isThirsty, isDeprived, thirstCharPenalties } from './provisions';
 import { effectiveChar } from './characteristics';
-import { restRecovery } from './rest';
+import { restRecovery, needsRecoveryRoll } from './rest';
 import { addCondition, stacks } from './conditions';
 
 const chars = (E = 30): Characteristics => ({
@@ -168,5 +168,74 @@ describe('Faim & repos (LDB 18 l.418) : pas de récupération naturelle sans pro
     restRecovery(c, makeRNG(1));
     expect(c.wounds.current).toBeGreaterThan(5);
     expect(stacks(c, 'extenue')).toBe(0);
+  });
+});
+
+describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
+  it('avec eau : boit, pas de soif ; la soif installée se dissipe', () => {
+    const c = hero();
+    c.thirst = { days: 3, tests: 2, failures: 1 };
+    const w = dailyWaterUpkeep(c, true, 30, 3, fixed(1));
+    expect(w.drank).toBe(true);
+    expect(isThirsty(c)).toBe(false);
+    expect(w.log.join(' ')).toContain('se désaltère');
+  });
+
+  it('sans eau : Test QUOTIDIEN (1ᵉʳ échec → −10 Int/FM/Soc, pas de dégâts)', () => {
+    const c = hero();
+    const w = dailyWaterUpkeep(c, false, 30, 3, fixed(95)); // jour 1 : Test raté → 1ᵉʳ échec
+    expect(c.thirst?.days).toBe(1);
+    expect(c.thirst?.failures).toBe(1);
+    expect(w.damage).toBe(0);
+    expect(effectiveChar(c, 'Int')).toBe(20);
+    expect(effectiveChar(c, 'FM')).toBe(20);
+    expect(effectiveChar(c, 'Soc')).toBe(20);
+    expect(effectiveChar(c, 'F')).toBe(30); // pas encore touché au 1ᵉʳ échec
+  });
+
+  it('2ᵉ échec : −10 aux autres Caractéristiques + 1d10 − BE (min 1) Dégâts', () => {
+    const c = hero({ E: 30 });
+    dailyWaterUpkeep(c, false, 30, 3, fixed(95)); // j1 : 1ᵉʳ échec
+    const w2 = dailyWaterUpkeep(c, false, 30, 3, fixed(95)); // j2 : Test plus dur, 2ᵉ échec
+    expect(c.thirst?.failures).toBe(2);
+    expect(w2.damage).toBe(7); // d10 forcé 10 − BE 3
+    expect(effectiveChar(c, 'F')).toBe(20); // « toutes les autres » désormais touchées
+    expect(thirstCharPenalties(c, 'CC')).toEqual([-10]);
+  });
+
+  it('Tests de plus en plus durs (−10 cumulatif, l.418)', () => {
+    const c = hero();
+    const w1 = dailyWaterUpkeep(c, false, 30, 3, fixed(1)); // j1 réussi
+    expect(w1.log.join(' ')).not.toContain('−'); // 1ᵉʳ Test : pas de malus
+    const w2 = dailyWaterUpkeep(c, false, 30, 3, fixed(1)); // j2
+    expect(w2.log.join(' ')).toContain('(−10)'); // 2ᵉ Test : −10
+  });
+
+  it('deferTest : le Test devient une étape de cascade (rien de roulé ici)', () => {
+    const c = hero();
+    const seen: { kind: string }[] = [];
+    const w = dailyWaterUpkeep(c, false, 30, 3, fixed(95), (spec) => seen.push(spec));
+    expect(seen[0]?.kind).toBe('soif');
+    expect(c.thirst?.days).toBe(1);
+    expect(c.thirst?.tests).toBe(0); // pas encore compté
+    expect(w.log).toEqual([]);
+  });
+
+  it('applySoifTest : applique le résultat différé', () => {
+    const c = hero({ E: 30 });
+    const r1 = applySoifTest(c, false, 3, fixed(95)); // 1ᵉʳ échec
+    expect(c.thirst?.failures).toBe(1);
+    expect(r1.damage).toBe(0);
+    const r2 = applySoifTest(c, false, 3, fixed(95)); // 2ᵉ échec → dégâts
+    expect(r2.damage).toBe(7);
+  });
+
+  it('isDeprived : affamé OU assoiffé bloque la récupération ; assoiffé seul suffit', () => {
+    const c = hero({ rations: 1 }); // pas affamé
+    c.thirst = { days: 2, tests: 1, failures: 0 };
+    expect(isStarving(c)).toBe(false);
+    expect(isThirsty(c)).toBe(true);
+    expect(isDeprived(c)).toBe(true);
+    expect(needsRecoveryRoll({ ...c, wounds: { current: 5, max: 12 } } as typeof c)).toBe(false);
   });
 });

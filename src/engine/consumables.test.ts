@@ -101,12 +101,13 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       { op: 'removeCondition', name: 'hemorragique', all: true },
     ]);
   });
-  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille T2C + sel sacré MDG)', () => {
+  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille T2C + sel sacré MDG + boissons alcoolisées LDB 09)', () => {
     const ids = trappings.filter((t) => t.consumable).map((t) => t.id).sort();
     expect(ids).toEqual([
       'bandages',
       'bave',
       'belladone',
+      'biere-pinte',
       'bonnet-de-fou',
       'brise-coeur',
       'cataplasme-de-guerison',
@@ -126,6 +127,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       'sel-sacre',
       'soude-commune',
       'tonique-digestif',
+      'vin-spiritueux-verre',
     ]);
   });
 });

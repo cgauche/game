@@ -2,7 +2,8 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ActiveEffect } from './types';
+import { Combatant, ActiveEffect, ConditionInstance } from './types';
+import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, skills } from '../data';
 import { t } from '../i18n';
@@ -50,7 +51,7 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
-export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number): void {
+export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition): void {
   c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
@@ -59,11 +60,12 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
     // CONTRAIGNANTE (max), pour qu'un Enchevêtrement ne soit pas affaibli par un État Empêtré « banal »
     // qui s'empile par-dessus (et inversement, un sort plus fort durcit l'évasion).
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
+    if (lockedUntil != null) existing.lockedUntil = lockedUntil; // un Critique re-verrouille l'État déjà porté
     // Un ajout NON temporisé sur un État à durée : la durée saute (l'État redevient régi
     // par ses règles normales — on n'écourte jamais un État au prétexte qu'un sort expirait).
     delete existing.roundsLeft;
   } else {
-    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}) });
+    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(lockedUntil != null ? { lockedUntil } : {}) });
   }
   // L'État vient d'être GAGNÉ (nouveau ou empilé) → déclenche `onGainCondition` (Mâchoires d'acier).
   onConditionGained?.(c, name);
@@ -107,9 +109,24 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
   }
 }
 
+/** Un État posé par un Critique est-il VERROUILLÉ (LDB 18) ? Vrai si `lockedUntil` est présent et pas
+ *  encore satisfait (algèbre flowCore, évaluée contre l'état VIVANT du porteur — États par nom, drapeaux).
+ *  Ex. Aveuglé « tant que tous les Hémorragique n'ont pas été éliminés » (Tête 46-50) reste verrouillé
+ *  tant que `stacks(hemorragique) > 0`. Tant qu'il tient, `removeCondition` est inerte sur cet État. */
+export function isConditionLocked(inst: ConditionInstance, c: Combatant): boolean {
+  if (!inst.lockedUntil) return false;
+  const ctx: ConditionCtx = {
+    flags: {}, // les verrous de Critique s'expriment sur l'état du porteur (États par nom), pas des drapeaux de scène
+    gameTime: 0,
+    target: { conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.name, x.value])) } as unknown as ActorView,
+  };
+  return !evalCondition(inst.lockedUntil, ctx);
+}
+
 export function removeCondition(c: Combatant, name: string, value = 1): void {
   const existing = c.conditions.find((x) => x.name === name);
   if (!existing) return;
+  if (isConditionLocked(existing, c)) return; // verrou de Critique (LDB 18) : ne part pas tant que sa Condition n'est pas remplie
   existing.value -= value;
   if (existing.value <= 0) c.conditions = c.conditions.filter((x) => x.name !== name);
 }
@@ -159,6 +176,7 @@ export function combatTestPenalty(c: Combatant): number {
   if (!hasActiveFlag(c, 'ignoreStatePenalties')) {
     for (const m of etatTestMods(c)) {
       if (m.movementOnly) continue; // pénalité de DÉPLACEMENT (À Terre/Empêtré) — pas un Test de combat
+      if (m.hearingOnly) continue; // pénalité d'AUDITION (Assourdi) — pas un Test de combat (l.29)
       cand.push(m.amount); // magnitude/portée en données (etats.json) ; déjà ×pions (Exténué)
     }
     cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
@@ -181,6 +199,8 @@ export function combatTestPenalty(c: Combatant): number {
 // (`SkillData.movement`, éditable au Codex), plus de liste d'ids en dur. Acrobaties (spé de
 // Représentation) non classables à l'id de base → non couvertes.
 const MOVEMENT_SKILL = new Set(skills.filter((s) => s.movement).map((s) => s.id));
+// Tests « impliquant l'audition » (Assourdi −10, LDB 16 l.29) — même patron DONNÉE (`SkillData.hearing`).
+const HEARING_SKILL = new Set(skills.filter((s) => s.hearing).map((s) => s.id));
 export function testStatePenalty(c: Combatant, skill?: string): number {
   const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
   if (!c.conditions?.length) return effMod;
@@ -190,6 +210,7 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   for (const m of etatTestMods(c)) {
     if (m.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
     if (m.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
+    if (m.hearingOnly && !HEARING_SKILL.has(skill ?? '')) continue; // Assourdi : Tests d'audition seuls (Perception)
     if (m.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
     cand.push(m.amount);
   }
@@ -198,20 +219,23 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
 }
 
 /**
- * Bonus pour TOUCHER en mêlée une cible affectée (LDB ch.16). Non-cumul : meilleur
- * bonus d'un seul État. À Terre/Surpris +20, Aveuglé +10. (Assourdi +10 par le
- * flanc/derrière : non modélisé — l'orientation des combattants n'est pas suivie.)
+ * Bonus pour TOUCHER en mêlée une cible affectée (LDB ch.16). Deux familles, lues en DONNÉES
+ * (`incomingAttackMod` des `passive` d'État, kind `etat`) :
+ *  - INCONDITIONNELS (À Terre/Surpris +20, Aveuglé +10) : non-cumul, le MEILLEUR seul (LDB 16 l.13) ;
+ *  - flanc/derrière (Assourdi +10, `flankRear:true`) : bonus SUPPLÉMENTAIRE (LDB 16 l.29) ADDITIF, appliqué
+ *    SEULEMENT si `opts.flankRear` (l'appelant a établi l'angle via le facing) ; plusieurs Assourdi ne
+ *    l'augmentent pas → max entre entrées flankRear (« ce bonus n'est pas augmenté avec de multiples Assourdi »).
  */
-export function meleeAttackerBonus(target: Combatant): number {
-  // Lu en DONNÉES : le `passive` de chaque État (`incomingAttackMod` melee/all, kind `etat`) ;
-  // non-cumul = le MEILLEUR seul (LDB 16). À Terre/Surpris +20, Aveuglé +10 vivent dans `etats.json`.
-  let best = 0;
+export function meleeAttackerBonus(target: Combatant, opts?: { flankRear?: boolean }): number {
+  let best = 0;  // pool non-cumul des bonus inconditionnels
+  let flank = 0; // bonus flanc/dos ADDITIF (« supplémentaire »)
   for (const m of passiveMods(target)) {
     if (m.kind === 'etat' && m.op.op === 'incomingAttackMod' && (m.op.mode === 'melee' || m.op.mode === 'all')) {
-      best = Math.max(best, m.op.amount);
+      if (m.op.flankRear) { if (opts?.flankRear) flank = Math.max(flank, m.op.amount); }
+      else best = Math.max(best, m.op.amount);
     }
   }
-  return best;
+  return best + flank;
 }
 
 /**

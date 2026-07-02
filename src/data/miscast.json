@@ -88,8 +88,19 @@
       "ops": [
         {
           "op": "condition",
-          "name": "Enchevêtré",
-          "value": 1
+          "name": "empetre",
+          "value": 1,
+          "escapeStrength": {
+            "times": {
+              "of": {
+                "dice": {
+                  "n": 1,
+                  "sides": 10
+                }
+              },
+              "factor": 5
+            }
+          }
         }
       ]
     },

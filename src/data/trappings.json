@@ -3550,6 +3550,28 @@
     "source": {
       "book": "LDB",
       "page": 302
+    },
+    "consumable": {
+      "kind": "test",
+      "test": {
+        "skill": "resistance-a-l-alcool",
+        "label": "Bière — Résistance à l'alcool"
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "intoxicate"
+            }
+          ]
+        }
+      }
     }
   },
   {
@@ -3780,6 +3802,29 @@
     "source": {
       "book": "LDB",
       "page": 302
+    },
+    "consumable": {
+      "kind": "test",
+      "test": {
+        "skill": "resistance-a-l-alcool",
+        "label": "Vin & spiritueux — Résistance à l'alcool",
+        "difficulty": "difficile"
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "intoxicate"
+            }
+          ]
+        }
+      }
     }
   },
   {

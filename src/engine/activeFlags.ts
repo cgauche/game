@@ -11,7 +11,7 @@
  */
 import type { Combatant } from './types';
 
-export type ActiveFlag = 'freeReroll' | 'critRollTwice' | 'ignoreStatePenalties' | 'suffocates' | 'noBreath' | 'attackWardFM' | 'noHunger';
+export type ActiveFlag = 'freeReroll' | 'critRollTwice' | 'ignoreStatePenalties' | 'suffocates' | 'noBreath' | 'attackWardFM' | 'noHunger' | 'drunkIgnore';
 
 /** Le combattant porte-t-il un effet actif avec ce drapeau ? */
 export function hasActiveFlag(c: Combatant, flag: ActiveFlag): boolean {

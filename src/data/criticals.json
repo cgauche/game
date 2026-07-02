@@ -165,7 +165,16 @@
         {
           "op": "condition",
           "name": "aveugle",
-          "value": 1
+          "value": 1,
+          "lockedUntil": {
+            "kind": "compare",
+            "subject": {
+              "who": "target",
+              "condition": "hemorragique"
+            },
+            "op": "==",
+            "value": 0
+          }
         }
       ],
       "desc": "L'Aveuglé persiste tant que tous les Hémorragique ne sont pas éliminés."

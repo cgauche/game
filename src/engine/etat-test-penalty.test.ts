@@ -18,6 +18,7 @@ describe('pénalités de Test d’État lues en DONNÉES (etats.json passive tes
     });
     it('Aveuglé → −10 (combatOnly s’applique EN combat)', () => { const c = mk(); addCondition(c, COND.aveugle); expect(combatTestPenalty(c)).toBe(-10); });
     it('À Terre → 0 (pénalité de DÉPLACEMENT, pas un Test de combat)', () => { const c = mk(); addCondition(c, COND.aTerre); expect(combatTestPenalty(c)).toBe(0); });
+    it('Assourdi → 0 en combat (pénalité d’AUDITION, pas un Test de combat — LDB 16 l.29)', () => { const c = mk(); addCondition(c, COND.assourdi); expect(combatTestPenalty(c)).toBe(0); });
   });
   describe('hors combat (testStatePenalty)', () => {
     it('Aveuglé → 0 (combatOnly : non classé hors combat)', () => { const c = mk(); addCondition(c, COND.aveugle); expect(testStatePenalty(c, 'perception')).toBe(0); });
@@ -33,6 +34,11 @@ describe('pénalités de Test d’État lues en DONNÉES (etats.json passive tes
       const c = mk(); addCondition(c, COND.empetre);
       expect(testStatePenalty(c, 'escalade')).toBe(-10);
       expect(testStatePenalty(c, 'perception')).toBe(0);
+    });
+    it('Assourdi → −10 sur un Test d’AUDITION (Perception) seulement (LDB 16 l.29)', () => {
+      const c = mk(); addCondition(c, COND.assourdi);
+      expect(testStatePenalty(c, 'perception')).toBe(-10); // Perception = hearing:true
+      expect(testStatePenalty(c, 'athletisme')).toBe(0); // pas un Test d'audition
     });
   });
 });

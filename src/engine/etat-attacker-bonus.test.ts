@@ -32,6 +32,27 @@ describe('meleeAttackerBonus — bonus à l’attaquant lu en DONNÉES (etats.js
   });
 });
 
+describe('Assourdi — +10 flanc/derrière (LDB 16 l.29) : conditionnel à l’angle, ADDITIF', () => {
+  it('Assourdi de FACE → aucun bonus', () => {
+    const c = mk(); addCondition(c, COND.assourdi);
+    expect(meleeAttackerBonus(c)).toBe(0);
+    expect(meleeAttackerBonus(c, { flankRear: false })).toBe(0);
+  });
+  it('Assourdi par le flanc/derrière → +10', () => {
+    const c = mk(); addCondition(c, COND.assourdi);
+    expect(meleeAttackerBonus(c, { flankRear: true })).toBe(10);
+  });
+  it('plusieurs Assourdi n’augmentent pas le +10 (« pas augmenté avec de multiples Assourdi »)', () => {
+    const c = mk(); addCondition(c, COND.assourdi, 3);
+    expect(meleeAttackerBonus(c, { flankRear: true })).toBe(10);
+  });
+  it('SUPPLÉMENTAIRE : Assourdi (+10 flanc) s’ajoute à À Terre (+20 inconditionnel) → +30', () => {
+    const c = mk(); addCondition(c, COND.assourdi); addCondition(c, COND.aTerre);
+    expect(meleeAttackerBonus(c, { flankRear: true })).toBe(30); // 20 (À Terre) + 10 (Assourdi flanc)
+    expect(meleeAttackerBonus(c, { flankRear: false })).toBe(20); // de face : seul À Terre
+  });
+});
+
 describe('incomingMeleeAdvantage — Avantage donné à l’assaillant lu en DONNÉES (Sonné, plus de branche par-nom)', () => {
   it('Sonné → +1 Avantage à l’attaquant en mêlée (LDB 16 l.123)', () => {
     const c = mk(); addCondition(c, COND.sonne);

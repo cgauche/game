@@ -1,0 +1,36 @@
+{
+  "table": [
+    {
+      "id": "harnais-casse",
+      "min": 1,
+      "max": 2,
+      "name": "Harnais cassé",
+      "effect": "harness",
+      "desc": "Harnais cassé : un cheval (ou équivalent) se libère ; réduisez la vitesse en fonction."
+    },
+    {
+      "id": "cahots",
+      "min": 3,
+      "max": 5,
+      "name": "Cahots de la route",
+      "effect": "jolt",
+      "desc": "Cahots de la route : les passagers subissent 1 Point de Blessure et la marchandise fragile pourrait être endommagée."
+    },
+    {
+      "id": "roue-brisee",
+      "min": 6,
+      "max": 8,
+      "name": "Roue brisée",
+      "effect": "wheel",
+      "desc": "Roue brisée : réussissez un Test de Conduite d'attelage à chaque Round pour éviter l'accident. Les véhicules à deux roues avec une Roue brisée se retrouvent automatiquement Accidentés."
+    },
+    {
+      "id": "essieu-casse",
+      "min": 9,
+      "max": 10,
+      "name": "Essieu cassé",
+      "effect": "crash",
+      "desc": "Essieu cassé : le véhicule devient incontrôlable et se retrouve Accidenté."
+    }
+  ]
+}

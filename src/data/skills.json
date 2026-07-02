@@ -184,6 +184,10 @@
     "label": "Dressage",
     "characteristic": "Int",
     "type": "avancée",
+    "combatSubstitute": {
+      "role": "both",
+      "gate": "fear"
+    },
     "specs": [
       "Blaireau",
       "Cheval",
@@ -283,6 +287,18 @@
     }
   },
   {
+    "id": "hypnotisme",
+    "label": "Hypnotisme",
+    "characteristic": "Int",
+    "type": "avancée",
+    "specs": [],
+    "desc": "Grâce à cette Compétence, vous pouvez mettre en transe un autre Personnage. Tant qu'elle est hypnotisée, la cible n'a conscience que de votre voix : elle répond à vos questions honnêtement, et peut se rappeler des souvenirs qu'elle a réprimés à cause d'un traumatisme ou oubliés à cause d'un sortilège. De plus, vous pouvez lui suggérer des ordres au niveau inconscient. La cible les mettra à exécution jusqu'à la fin de la séance.\n\nPour que l'hypnose fonctionne, l'attention du sujet doit être focalisée sur l'hypnotiseur pendant au moins une minute. Pendant ce temps, l'hypnotiseur met son sujet en transe en lui parlant d'une voix douce et monotone. Il peut utiliser un pendule s'il le souhaite. Si le sujet coopère, le Test d'Hypnotisme est simple. Sinon, il peut faire un Test de Force Mentale pour y résister.\n\nSur un Test d'Hypnotisme réussi, le sujet entre en transe. Un sujet volontaire reste en transe jusqu'à la fin de la séance d'hypnose. Un sujet contraint a droit à un Test de Calme par Round, opposé à la Compétence d'Hypnotisme de l'hypnotiseur. Si son succès n'est que Minime, il sort de la transe, mais subit un État Sonné.",
+    "source": {
+      "book": "T3",
+      "page": 152
+    }
+  },
+  {
     "id": "guerison",
     "label": "Guérison",
     "characteristic": "Int",
@@ -299,6 +315,10 @@
     "label": "Intimidation",
     "characteristic": "F",
     "type": "base",
+    "combatSubstitute": {
+      "role": "both",
+      "gate": "fear"
+    },
     "specs": [],
     "desc": "Cette Compétence vous permet de contraindre ou d'effrayer des créatures douées de conscience. La manière précise d'initier un Test d'Intimidation dépend du contexte : bien qu'il soit généralement accompagné d'une menace non dissimulée, il peut s'agir parfois d'une allusion subtile ou même d'un simple regard. L'Intimidation est presque toujours opposée à la Compétence Calme de votre cible ; sur un succès, vous pouvez intimider un nombre de cibles égal à votre Bonus de Force + DR. Chaque cible réagira à l'Intimidation en fonction de sa propre personnalité et de la façon dont vous avez réussi à la menacer, mais dans tous les cas, elle fera marche arrière ou s'écartera du chemin et ne vous dénoncera pas, ou bien considérera que le combat est la seule solution et préparera ses armes.\n\nEn combat, vous provoquez la Peur (voir page 190) chez toutes les cibles Intimidées. Vous pouvez aussi utiliser votre Compétence Intimidation à la place de Corps à corps quand vous vous défendez face à ceux qui ont peur de vous, obligeant les personnes intimidées à quitter le combat par votre volonté et votre seule posture. Par ailleurs, avec l'accord de votre MJ, vous pouvez utiliser Intimidation pour « attaquer » de telles cibles, en dictant des ordres précis, comme « lâche ton arme » ou « dégage de là ». Cependant, si vous échouez à l'un de ces Tests d'Intimidation ultérieurs, vous n'intimidez plus (ou ne causez plus de la Peur) les adversaires affectés. Avec l'accord de votre MJ, vous pouvez tenter de les Intimider de nouveau lors d'un prochain Round, mais cela entraîne un modificateur négatif, puisqu'ayant déjà constaté vos fanfaronnades, ils sont moins susceptibles de vous craindre.",
     "source": {
@@ -311,6 +331,9 @@
     "label": "Intuition",
     "characteristic": "I",
     "type": "base",
+    "combatAdvantage": {
+      "cap": "Int"
+    },
     "specs": [],
     "desc": "La Compétence Intuition vous permet de percevoir ce qui vous entoure, de remarquer quand quelque chose ne va pas, et de ressentir quand des gens vous cachent quelque chose. Une utilisation réussie de la Compétence Intuition vous donne des renseignements subtils et implicites concernant votre environnement, déterminés par votre MJ. Cela peut être une information, comme savoir si quelqu'un est convaincu de la véracité de ses propos, quelle est l'attitude générale envers le noble local, ou est-ce que les intentions des gens du coin, si serviables, sont aussi pures qu'elles le paraissent. Si quelqu'un essaye activement de dissimuler ses intentions, il peut résister à votre Intuition avec Calme ou Divertissement (Interprétation).\n\nEn combat, un Test d'Intuition réussi peut être utilisé pour vous donner +1 Avantage puisque vous évaluez l'environnement et vos adversaires. Vous pouvez continuer à renforcer votre Avantage lors des tours suivants à condition que vous soyez capable d'observer vos cibles et que vous ne soyez pas interrompu (en étant attaqué par exemple) ; de cette façon vous pouvez gagner un maximum d'Avantages égal à votre Bonus d'Intelligence.",
     "source": {
@@ -486,6 +509,7 @@
     "label": "Perception",
     "characteristic": "I",
     "type": "base",
+    "hearing": true,
     "specs": [],
     "desc": "Il s'agit de votre capacité à percevoir des choses avec vos sens – la vue, l'odorat, l'ouïe, le toucher et le goût, et tout autre sens comme des sens magiques ou non humains. Votre MJ peut vous demander d'effectuer un Test de Perception pour détecter quelque chose, comme un mouvement derrière la ligne des arbres, la présence d'un piège ou quelqu'un qui vous suit, modifié par la facilité à le remarquer. La Perception est aussi utilisée pour résister aux tentatives pour dissimuler des choses par le biais de Compétences telles qu'Escamotage ou Discrétion.\n\nLa Perception a de nombreuses utilités en combat, le plus souvent pour remarquer des détails importants, au-delà de ce qui est évident dans l'environnement alentour et vos adversaires, comme déterminé par le MJ.",
     "source": {
@@ -522,6 +546,9 @@
     "label": "Prière",
     "characteristic": "Soc",
     "type": "avancée",
+    "combatAdvantage": {
+      "cap": "Soc"
+    },
     "specs": [],
     "desc": "Il s'agit de votre capacité à invoquer ou à communier avec une divinité. Pour plus d'informations sur l'utilisation de la Compétence Prière dans l'espoir d'une intervention divine, voir le Chapitre 7 : Religions et Croyances.\n\nEn combat, si votre MJ estime que c'est approprié compte tenu de votre situation et de votre foi, vous pouvez utiliser Prière pour méditer et vous concentrer. Chaque Round que vous passez à prier en combat – réussissant un Test de Prière – vous gagnez +1 Avantage. De cette façon, vous pouvez gagner des Avantages supplémentaires, jusqu'à un maximum égal à votre Bonus de Sociabilité. De plus, si vos ennemis comprennent votre langue et connaissent (ou craignent) votre divinité, le MJ peut vous permettre d'utiliser Prière au lieu de la Compétence Intimidation.",
     "source": {
@@ -636,6 +663,9 @@
     "label": "Savoir",
     "characteristic": "Int",
     "type": "avancée",
+    "combatAdvantage": {
+      "cap": "Int"
+    },
     "specs": [
       "Anatomie",
       "Art",
@@ -754,6 +784,9 @@
     "label": "Survie en extérieur",
     "characteristic": "Int",
     "type": "base",
+    "combatAdvantage": {
+      "cap": "Int"
+    },
     "specs": [],
     "desc": "La Compétence Survie en extérieur est utilisée pour la survie dans la nature, et comprend la capacité de pêcher, de chasser, de rechercher de la nourriture, de faire un feu et de construire un abri. Les voyageurs expérimentés sont doués pour repérer les signes d'un changement de météo et les excréments de nombreuses bêtes dangereuses.\n\nQuand vous campez, faites un Test de Survie en extérieur, modifié par la rudesse des conditions – par exemple, un Test est Intermédiaire (+0) s'il pleut, Difficile (-20) lors d'une tempête. Un Test réussi indique que vous pouvez vous procurer de la nourriture et un abri pour la nuit. Chaque DR vous permet de procurer l'équivalent pour un Personnage de plus. Si le Test échoue, vous devez faire un Test de Résistance Intermédiaire (+0) ou recevoir l'État Exténué. Si vous subissez un Échec Stupéfiant, quelque chose de fâcheux est arrivé, déterminé par le MJ ; peut-être votre camp est-il attaqué pendant la nuit ?\n\nQuand vous combattez dans la nature sauvage, vous pouvez effectuer un Test de Survie en extérieur pour recevoir +1 Avantage, de la même façon qu'avec Intuition, pour un nombre maximum d'Avantages égal à votre Bonus d'Intelligence, car vous repérez les terrains dangereux ou intéressants pour les utiliser à votre Avantage.",
     "source": {

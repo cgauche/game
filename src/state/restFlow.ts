@@ -40,7 +40,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
-import { isRation, feedFromMeal, applyFaimTest } from '../engine/provisions';
+import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, type Money } from '../engine/money';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep } from './upkeep';
@@ -288,6 +288,13 @@ registerCascadeApplier('faim', (_get, _set, step, hero) => {
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.422)
   return { journal: r.log };
 }, (ok, n) => (ok ? `${n} supporte la faim.` : `${n} souffre de la faim.`));
+
+registerCascadeApplier('soif', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  const r = applySoifTest(hero, step.result.success, bonus(effectiveChar(hero, 'E')), battleRng());
+  if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.420)
+  return { journal: r.log };
+}, (ok, n) => (ok ? `${n} supporte la soif.` : `${n} souffre de la soif.`));
 
 registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;

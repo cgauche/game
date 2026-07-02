@@ -433,6 +433,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: false,
     hint: 'Option « Attraper Froid » : Test d’Exposition en fin d’Étape sous intempéries (pluie/neige sans manteau ni tente ; toujours sous averse/blizzard). En saison froide, l’exposition donne un rhume. Sauté si un héros réussit le poste « Plein air ». Sans effet si « Voyage par Étapes » est éteint.',
   },
+  {
+    id: 'water-scarcity',
+    label: 'Pénurie d’eau',
+    ref: 'LDB 18 l.420',
+    group: 'Voyage',
+    kind: 'flag',
+    default: false,
+    hint: 'L’eau est réputée abondante au Reikland (rivières, puits, auberges) → aucune Soif par défaut. Activer pour un contexte À SEC (siège, désert, souterrain prolongé) : chaque jour sans eau impose un Test de Résistance (de plus en plus dur) — 1ᵉʳ échec −10 Int/FM/Soc, puis −10 le reste + 1d10 Blessures (LDB 18 l.420). En mer, la Soif suit automatiquement les tonneaux du navire, sans cette règle.',
+  },
   // NB : l'ancien flag POC `travel-forage` est RETIRÉ — l'Approvisionnement est désormais un POSTE
   // d'Activité (un héros assigné via `travelRole`), résolu par `travelPostes` sous « Voyage par Étapes ».
 ];

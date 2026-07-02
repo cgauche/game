@@ -403,7 +403,7 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
  *  « Tirer dans le tas », dodge météo) — l'aperçu n'utilise que `env`/`blocked`. */
 // seesInDark → combatGeometry.ts
 
-export interface AttackEnv { env: ModLine[]; blocked: boolean; inMelee: boolean; crowd: Combatant[]; cm: ModLine | null; sc: ReturnType<typeof sceneCombatModifiers>; }
+export interface AttackEnv { env: ModLine[]; blocked: boolean; inMelee: boolean; crowd: Combatant[]; cm: ModLine | null; sc: ReturnType<typeof sceneCombatModifiers>; flankRear?: boolean; }
 export function attackEnv(
   get: Get,
   attacker: Combatant,
@@ -465,8 +465,8 @@ export function attackEnv(
   // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
   // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
   const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
-  if (tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)))
-    env.push({ label: 'Flanc/dos', value: 20 });
+  const flankRear = !!(tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)));
+  if (flankRear) env.push({ label: 'Flanc/dos', value: 20 });
   // En contrebas (Difficultés de Combat) : l'attaquant le PLUS BAS subit −10 (la hauteur ne donne AUCUN
   // bonus « high-ground » — RAW : seul ce malus existe). Comparaison de la hauteur métrique des surfaces.
   if ((target.pos?.h ?? 0) - (attacker.pos?.h ?? 0) > STEP_MAX_M) env.push({ label: 'En contrebas de la cible', value: -10 });
@@ -474,7 +474,7 @@ export function attackEnv(
   const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
   if (onm) env.push(onm);
   env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
-  return { env, blocked: false, inMelee: false, crowd: [], cm: null, sc };
+  return { env, blocked: false, inMelee: false, crowd: [], cm: null, sc, flankRear };
 }
 
 export function resolveAttack(
@@ -496,7 +496,7 @@ export function resolveAttack(
   const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants); // arme choisie + munition + sous-effectif du poste servi
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
-  const { env, blocked, inMelee, crowd, cm, sc } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
+  const { env, blocked, inMelee, crowd, cm, sc, flankRear } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
   if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13-Combat l.123)
   if (weapon.type === 'ranged') {
     // « Tirer dans le tas » (LDB 14 l.136/146) : un ennemi AU HASARD est touché ; succès dû au seul bonus = 0 DR.
@@ -529,7 +529,7 @@ export function resolveAttack(
   // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → dodgeMod.
   const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
   const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'F')), size: chargeMount.size } : undefined;
-  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold }), weapon };
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold, flankRear }), weapon };
 }
 
 /** 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638). Jet d'attaquant IMPOSÉ : `reverseRoll(mainRoll)`,

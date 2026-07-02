@@ -387,6 +387,12 @@ export interface ConditionInstance {
    *  « 1d10 + 4 heures », LDB 72 l.18) — posée par `addClockCondition` (op `condition.durationHours`),
    *  purgée par `purgeClockEffects` (upkeep, à chaque avance d'horloge). Exclusif de `roundsLeft`. */
   untilTime?: number;
+  /** VERROU conditionnel (LDB 18 : Blessures critiques) : un État posé par un Critique ne peut être RETIRÉ
+   *  que lorsque cette Condition (algèbre flowCore) est VRAIE. Ex. « Aveuglé qui ne peut pas être retiré
+   *  tant que tous les États Hémorragique n'ont pas été éliminés » (Tête 46-50) ⇒ `compare {condition:
+   *  'hemorragique'} == 0`. Tant que le verrou tient, `removeCondition` (dont l'auto-dissipation) est INERTE
+   *  sur cet État. Évalué par `isConditionLocked`. */
+  lockedUntil?: import('./flowCore').Condition;
 }
 
 /** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
@@ -512,6 +518,15 @@ export interface ActiveEffect {
   /** « N'a pas besoin de manger ou de boire » (Graisse de la terre, LDB 48) : exempte de la Faim —
    *  `dailyFoodUpkeep` saute la consommation de ration et l'aggravation tant que l'effet dure. */
   noHunger?: boolean;
+  /** Détermination : « ignorer les modificateurs négatifs de l'ivresse jusqu'à la fin du prochain
+   *  Round » (LDB 09 l.487) — lu par `passiveMods` (les pénalités d'Ivresse ne sont pas émises). */
+  drunkIgnore?: boolean;
+  /** Marqueur d'un ActiveEffect issu de l'Ivresse (Bravoure +20 Calme, « meilleur ami ») : retiré
+   *  d'un bloc au dessoûlage (`soberUp`), LDB 09 l.485. */
+  drunkEffect?: boolean;
+  /** « Vous êtes mon meilleur ami ! » (Ivresse 3-4, LDB 09 l.480) : ignore Préjugés et Animosités
+   *  existants tant que l'effet dure. */
+  ignoreAnimosity?: boolean;
   /** Modificateur GLOBAL à TOUS les Tests du porteur (Malédiction de malchance : −10 ; bénédictions
    *  futures : +N) — STACKE par-dessus la pénalité d'État (≠ État, donc non soumis au non-cumul ni à
    *  `ignoreStatePenalties`). Lu par `combatTestPenalty`/`testStatePenalty` (engine/conditions). */
@@ -1030,6 +1045,12 @@ export interface Combatant {
   /** Faim (LDB 18 l.417-422) : jours sans manger, Tests tentés (−10 cumulatif), échecs (malus de
    *  caracs lus par `hungerCharPenalties`). Absent = nourri. Entretien quotidien : `dailyFoodUpkeep`. */
   hunger?: import('./provisions').HungerState;
+  /** Soif (LDB 18 l.420) : jours sans eau, Tests tentés (−10 cumulatif), échecs (malus de caracs lus
+   *  par `thirstCharPenalties`). Absent = désaltéré. Entretien quotidien : `dailyWaterUpkeep`. */
+  thirst?: import('./provisions').ThirstState;
+  /** Ivresse (LDB 09 l.471-487) : échecs de Résistance à l'alcool (−10/échec aux CC/CT/Ag/Dex/Int, lus
+   *  par `drunkCharPenalties`) + seuil d'Ivresse + résultat du Tableau. Absent = sobre. */
+  drunk?: import('./drunkenness').DrunkState;
   /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
   diseaseImmunities?: string[];
   /** Maladies auxquelles ce combattant a été EXPOSÉ pendant le combat (blessé par une source porteuse :
@@ -1052,6 +1073,12 @@ export interface Combatant {
   /** Suffocation (LDB 18 l.425) : Rounds restants avant la MORT une fois Inconscient à 0 PB
    *  en suffoquant (posé à BE, décrémenté par Round de suffocation continue ; 0 → mort). */
   suffocationCountdown?: number;
+  /** Rétention de souffle (LDB 18 l.345) : « si vous êtes suffisamment préparé, vous pouvez retenir
+   *  votre souffle pendant un nombre de secondes égal à votre Bonus d'Endurance x 10 sans avoir à
+   *  effectuer un Test ». SECONDES de souffle restantes, posées par `prepareBreathHold` quand la
+   *  privation d'air est ANTICIPÉE (plongée volontaire) : tant que > 0, la suffocation ne fait perdre
+   *  aucune Blessure. Absent/0 = privé d'air BRUTALEMENT → suffocation immédiate (l.344). */
+  breathHoldSeconds?: number;
   /** Attribut de Shyish (LDB 48 l.400) : « Une cible ne peut avoir qu'un seul État Exténué gagné
    *  de cette façon à la fois » — marqueur posé au premier Exténué d'un Sort de la Mort. */
   shyishExhausted?: boolean;

@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { Combatant } from './types';
-import { suffocationTick } from './suffocation';
+import { suffocationTick, prepareBreathHold, breathHoldSeconds } from './suffocation';
 import { inDeathCondition, hasCondition } from './conditions';
 import { applyOps } from './ops';
 import { findSpell } from '../data';
@@ -64,6 +64,36 @@ describe('suffocationTick — Noyade et Suffocation (LDB 18 l.424-425)', () => {
     suffocationTick(c);
     expect(c.suffocationCountdown).toBeUndefined();
     expect(inDeathCondition(c)).toBe(false);
+  });
+});
+
+describe('Rétention de souffle (LDB 18 l.345) : BE×10 s avant suffocation si préparé', () => {
+  it('BE×10 secondes de souffle (BE 3 → 30 s)', () => {
+    expect(breathHoldSeconds(mk())).toBe(30);
+  });
+  it('privé d’air BRUTALEMENT (non préparé) : suffocation immédiate (perte de PB dès le 1ᵉʳ Round)', () => {
+    const c = mk(); // pas de prepareBreathHold → suffoque tout de suite
+    suffocationTick(c);
+    expect(c.wounds.current).toBe(1);
+  });
+  it('préparé : aucune Blessure perdue tant que le souffle dure (30 s = 3 Rounds de 10 s)', () => {
+    const c = mk();
+    prepareBreathHold(c); // 30 s
+    suffocationTick(c); // 20 s
+    suffocationTick(c); // 10 s
+    suffocationTick(c); // 0 s
+    expect(c.wounds.current).toBe(2); // aucune Blessure perdue pendant l'apnée
+    expect(c.breathHoldSeconds).toBe(0);
+    suffocationTick(c); // plus d'air → suffocation
+    expect(c.wounds.current).toBe(1);
+  });
+  it('l’air revient avant épuisement du souffle : le crédit d’apnée est purgé', () => {
+    const c = mk();
+    prepareBreathHold(c);
+    suffocationTick(c);
+    c.activeEffects = []; // remonte à la surface
+    suffocationTick(c);
+    expect(c.breathHoldSeconds).toBeUndefined();
   });
 });
 
