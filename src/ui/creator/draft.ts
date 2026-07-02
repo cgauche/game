@@ -39,10 +39,22 @@ import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLeve
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpeciesById, rigSpeciesId, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, findStarById, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, rigSpeciesId, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
+
+// ── Quotas d'allocation de la création (SOURCE UNIQUE : validation ET rendu les consomment) ──
+/** « Vous pouvez sélectionner 3 Compétences auxquelles ajouter 5 Augmentations à chacune » (LDB 05 l.484). */
+export const SPECIES_SKILLS_PLUS5 = 3;
+/** « …et 3 Compétences auxquelles ajouter 3 Augmentations à chacune » (LDB 05 l.484). */
+export const SPECIES_SKILLS_PLUS3 = 3;
+/** « Répartissez 40 Points d'Augmentations entre vos huit Compétences de départ » (LDB 05 l.535). */
+export const CAREER_SKILL_ADVANCES = 40;
+/** « sans dépasser plus de 10 Points alloués à une seule Compétence à ce stade » (LDB 05 l.535). */
+export const MAX_ADV_PER_SKILL = 10;
+/** « répartir comme bon vous semble un total de 5 Augmentations entre les Caractéristiques » (LDB 05 l.459). */
+export const CAREER_CHAR_ADVANCES = 5;
 
 export interface CreatorDraft {
   /** Seed unique de l'assistant — tous les flux aléatoires en dérivent (figés). */
@@ -322,9 +334,6 @@ export const starXp = (d: CreatorDraft): number => (d.starRoll && d.star === d.s
 export const xpTotal = (d: CreatorDraft): number => speciesXp(d) + careerXp(d) + charsXp(d) + starXp(d);
 
 // ── 3bis) Signe astral (ADE2 ch.03) ──
-/** 5 demeures célestes (ADE2 l.342-350) — ossature narrative FIXE de la lecture astrale (flavor pur). */
-const CELESTIAL_HOUSES = ['Demeure du Sens', 'Demeure des Épreuves', 'Demeure de la Pensée', "Demeure de l'Amour", "Demeure de l'Argent"];
-
 /** Tirage 1d100 FIGÉ du signe (anti-savescum, comme l'espèce) : on le garde (+25 PX) ou on choisit
  *  librement ensuite (+0 PX, RAW l.36). Pas de relance — RAW n'en offre aucune. */
 export function rollDraftStar(d: CreatorDraft): CreatorDraft {
@@ -332,12 +341,13 @@ export function rollDraftStar(d: CreatorDraft): CreatorDraft {
   return { ...d, starRoll: id, star: id };
 }
 
-/** Ascendant + demeures célestes (ADE2 l.331-360) — flavor pur, tirages figés par le seed. `rollStar`
- *  renvoie un `id` ; pour cette astrologie purement NARRATIVE on stocke le LIBELLÉ lisible. */
+/** Ascendant (ADE2 ch.03 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
+ *  ADE2 l.504-512) — flavor pur, tirages figés par le seed. `rollStar` renvoie un `id` ; pour cette
+ *  astrologie purement NARRATIVE on stocke le LIBELLÉ lisible. */
 export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
   const rng = makeRNG(d.seed ^ 0xa57e);
   const signLabel = (): string => findStarById(rollStar(rng))?.label ?? '';
-  return { ...d, ascendant: signLabel(), dwellings: CELESTIAL_HOUSES.map((house) => ({ house, sign: signLabel() })) };
+  return { ...d, ascendant: signLabel(), dwellings: celestialHouses.map((h) => ({ house: h.label, sign: signLabel() })) };
 }
 
 // ── 4) Compétences & Talents ──
@@ -369,11 +379,14 @@ export function careerSkillEntries(d: CreatorDraft): string[] {
   return [...base, ...careerSkillAdditions(probeHero(d))];
 }
 
-/** « Répartition simple » (étape 5) : +5 sur chacune des 8 Compétences de carrière du Niveau
- *  (LDB 05). Keyé par LIBELLÉ — comme la grille, `careerAdvTotal` et `validateStep` ; une clé
- *  par objet `AdvancementRef` donnerait « [object Object] », illisible (jamais comptée). */
+/** « Répartition simple » (étape 5) : « ajouter 5 Augmentations à chaque Compétence de Carrière »
+ *  (LDB 05 l.535 — les 40 également réparties sur les 8 Compétences du Niveau). Keyé par LIBELLÉ —
+ *  comme la grille, `careerAdvTotal` et `validateStep` ; une clé par objet `AdvancementRef`
+ *  donnerait « [object Object] », illisible (jamais comptée). */
 export function evenCareerSkillAdvances(d: CreatorDraft): Record<string, number> {
-  return Object.fromEntries((draftLevel(d)?.skills ?? []).map((a) => [advancementLabel('skills', a), 5]));
+  const entries = draftLevel(d)?.skills ?? [];
+  const each = Math.floor(CAREER_SKILL_ADVANCES / (entries.length || 1));
+  return Object.fromEntries(entries.map((a) => [advancementLabel('skills', a), each]));
 }
 
 /** Options de spec d'une entrée « (Au choix) » (liste restreinte, sinon `wildcardSpecs` partagé). */
@@ -463,13 +476,15 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
       }
       const careerChars = careerCharKeys(d).length;
       const alloc = Object.values(d.charAdvancesAlloc).reduce((a, b) => a + (b ?? 0), 0);
-      if (careerChars && alloc !== 5) return `Répartissez 5 Augmentations sur les Caractéristiques de carrière (actuel : ${alloc}).`;
+      if (careerChars && alloc !== CAREER_CHAR_ADVANCES)
+        return `Répartissez ${CAREER_CHAR_ADVANCES} Augmentations sur les Caractéristiques de carrière (actuel : ${alloc}).`;
       const split = d.fateSplit.fate + d.fateSplit.resilience;
       if (split !== sp.fate.extra) return `Répartissez les ${sp.fate.extra} points entre Destin et Résilience (actuel : ${split}).`;
       return null;
     }
     case 'skills': {
-      if (d.speciesPlus5.length !== 3 || d.speciesPlus3.length !== 3) return 'Choisissez 3 Compétences d\'espèce à +5 et 3 à +3.';
+      if (d.speciesPlus5.length !== SPECIES_SKILLS_PLUS5 || d.speciesPlus3.length !== SPECIES_SKILLS_PLUS3)
+        return `Choisissez ${SPECIES_SKILLS_PLUS5} Compétences d'espèce à +5 et ${SPECIES_SKILLS_PLUS3} à +3.`;
       if (d.speciesPlus5.some((s) => d.speciesPlus3.includes(s))) return 'Une Compétence d\'espèce ne peut pas être à la fois +5 et +3.';
       for (const raw of [...d.speciesPlus5, ...d.speciesPlus3]) {
         if (isUnresolvedChoice(raw) && !d.specChoices[raw]) return `Choisissez la Spécialisation de « ${raw} ».`;
@@ -481,10 +496,10 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
       }
       const entries = careerSkillEntries(d);
       const total = entries.reduce((a, e) => a + (d.skillAdvances[e] ?? 0), 0);
-      if (total !== 40) return `Répartissez 40 Augmentations de carrière (actuel : ${total}).`;
+      if (total !== CAREER_SKILL_ADVANCES) return `Répartissez ${CAREER_SKILL_ADVANCES} Augmentations de carrière (actuel : ${total}).`;
       for (const e of entries) {
         const adv = d.skillAdvances[e] ?? 0;
-        if (adv < 0 || adv > 10) return `Maximum 10 Augmentations par Compétence à la création (« ${e} »).`;
+        if (adv < 0 || adv > MAX_ADV_PER_SKILL) return `Maximum ${MAX_ADV_PER_SKILL} Augmentations par Compétence à la création (« ${e} »).`;
         if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} ».`;
       }
       if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
@@ -507,8 +522,12 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
 // ── Construction finale ──
 export function buildHero(d: CreatorDraft, id?: string): Combatant {
   const sp = draftSpecies(d);
-  const plus5 = d.speciesPlus5.length === 3 ? d.speciesPlus5 : sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a));
-  const plus3 = d.speciesPlus3.length === 3 ? d.speciesPlus3 : sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a));
+  const plus5 = d.speciesPlus5.length === SPECIES_SKILLS_PLUS5
+    ? d.speciesPlus5
+    : sp.skills.slice(0, SPECIES_SKILLS_PLUS5).map((a) => advancementLabel('skills', a));
+  const plus3 = d.speciesPlus3.length === SPECIES_SKILLS_PLUS3
+    ? d.speciesPlus3
+    : sp.skills.slice(SPECIES_SKILLS_PLUS5, SPECIES_SKILLS_PLUS5 + SPECIES_SKILLS_PLUS3).map((a) => advancementLabel('skills', a));
   const hero = createHero({
     speciesId: d.speciesId,
     careerId: d.careerId,

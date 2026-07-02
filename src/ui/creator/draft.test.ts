@@ -19,6 +19,7 @@ import {
   stepIds,
   starXp,
   rollDraftStar,
+  rollDraftAstrology,
   buildHero,
   draftWealth,
   draftSpecies,
@@ -29,7 +30,7 @@ import { CHAR_KEYS } from '../../engine/types';
 import { rigSpeciesId } from '../../data';
 import { isUnresolvedChoice, concreteLabel, splitLabel } from '../../engine/careerSlots';
 import { specOptionsFor, pettySpellQuota } from './draft';
-import { spells, advancementLabel, stars } from '../../data';
+import { spells, advancementLabel, stars, celestialHouses } from '../../data';
 
 const draft = () => newDraft(1234);
 
@@ -261,6 +262,15 @@ describe('signe astral (ADE2 ch.03) — étape, tirage, PX et effet', () => {
     const other = stars.find((s) => s.id !== rolled.starRoll)!.id;
     expect(starXp({ ...rolled, star: other })).toBe(0);
     expect(starXp(draft())).toBe(0); // aucun tirage
+  });
+
+  it('rollDraftAstrology : une lecture par Demeure céleste, depuis la DONNÉE (ADE2 ch.03 l.504-512)', () => {
+    const d = rollDraftAstrology(draft());
+    expect(d.ascendant).toBeTruthy();
+    expect(celestialHouses.length).toBe(5);
+    expect(d.dwellings!.map((w) => w.house)).toEqual(celestialHouses.map((h) => h.label));
+    for (const w of d.dwellings!) expect(w.sign).toBeTruthy();
+    expect(rollDraftAstrology(draft()).dwellings).toEqual(d.dwellings); // figé par le seed
   });
 
   it('buildHero applique les ±carac du signe aux attributs de départ', () => {

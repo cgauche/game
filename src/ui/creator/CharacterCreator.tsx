@@ -32,7 +32,10 @@ import {
   levelsForCareer,
   characteristics as charData,
   stars as starsTable,
+  celestialHouses,
   spells as allSpells,
+  rigSpeciesId,
+  findTalentById,
   SpeciesData,
   CareerData,
 } from '../../data';
@@ -45,7 +48,10 @@ import { formatSpellRange, formatSpellDuration } from '../../engine/spellRangeFo
 import { formatMoney } from '../../engine/money';
 import { makeRNG } from '../../engine/dice';
 import { generateName } from '../../engine/names';
-import { RigSprite } from '../../gameIso/rig/composeRig';
+import { CharacterPreview } from '../CharacterPreview';
+import { Icon } from '../Icon';
+import { OptionChooser } from '../OptionChooser';
+import { OrnateFrame, RuleDivider } from '../Ornaments';
 import { AppearancePanel } from '../AppearancePanel';
 import { BackgroundFields } from '../BackgroundFields';
 import { CodexRef } from '../compendium/CodexRef';
@@ -89,6 +95,11 @@ import {
   starXp,
   rollDraftStar,
   rollDraftAstrology,
+  SPECIES_SKILLS_PLUS5,
+  SPECIES_SKILLS_PLUS3,
+  CAREER_SKILL_ADVANCES,
+  MAX_ADV_PER_SKILL,
+  CAREER_CHAR_ADVANCES,
   buildHero,
   draftFromHero,
   probeHero,
@@ -122,6 +133,10 @@ const WEAPON_CHOICES = allTrappings
   .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !/mains nues/i.test(t.label))
   .map((t) => ({ id: t.id, label: t.label }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+/** Lookup id d'arme par libellé (le brouillon stocke le LIBELLÉ choisi) — Map module-scope, pas de `.find()` par rendu. */
+const WEAPON_ID_BY_LABEL = new Map(WEAPON_CHOICES.map((w) => [w.label, w.id]));
+/** Description RAW d'une demeure céleste par libellé (ADE2 ch.03 l.504-512) — tooltip du thème astral. */
+const HOUSE_DESC_BY_LABEL = new Map(celestialHouses.map((h) => [h.label, mdToText(h.desc)]));
 
 /** Texte de données (desc Markdown) → extrait lisible pour cartes et infobulles. */
 function blurb(md: string | null | undefined, max = 160): string {
@@ -157,15 +172,9 @@ function Stepper({ value, min = 0, max, onChange, disabled }: { value: number; m
   );
 }
 
-/** Figurine SVG (rig) d'une espèce/carrière. */
-function Figure({ speciesLabel, career, sex = 'M', seed = 7, className = 'row-figure' }: { speciesLabel: string; career?: string; sex?: 'M' | 'F'; seed?: number; className?: string }) {
-  const appearance: Appearance = { species: speciesLabel, sex, build: 0.5, seed };
-  return (
-    <svg viewBox="14 6 92 138" className={className}>
-      <RigSprite appearance={appearance} equip={{ weapons: [], armour: [] }} career={career} />
-    </svg>
-  );
-}
+/** Apparence de PRÉ-SÉLECTION (rail/entête, avant tout réglage) d'une espèce par `id` rules —
+ *  mêmes briques que le brouillon (`rigSpeciesId`), rendue par la primitive `CharacterPreview`. */
+const pickAppearance = (speciesId: string, sex: 'M' | 'F'): Appearance => ({ species: rigSpeciesId(speciesId), sex, build: 0.5, seed: 7 });
 
 function XpBadge({ value }: { value: number }) {
   return value > 0 ? <span className="xp-badge">+{value} PX</span> : null;
@@ -269,7 +278,7 @@ export function CharacterCreator() {
 
       {editing && !editing.lossless && (
         <p className="hint" style={{ margin: '4px 12px', color: 'var(--gold)' }}>
-          ⚠️ Brouillon d'origine indisponible : race, carrière, identité et apparence sont repris, mais
+          <Icon id="ui/warning" size="sm" /> Brouillon d'origine indisponible : race, carrière, identité et apparence sont repris, mais
           les tirages, allocations et Talents sont à revoir étape par étape avant d'enregistrer.
         </p>
       )}
@@ -293,7 +302,7 @@ export function CharacterCreator() {
           </button>
         ) : (
           <button className="btn btn-primary" disabled={(!editing && party.length >= 4) || !canNext} onClick={create}>
-            {editing ? '💾 Enregistrer les modifications' : "⚔️ Créer l'aventurier"}
+            {editing ? 'Enregistrer les modifications' : "Créer l'aventurier"}
           </button>
         )}
       </footer>
@@ -302,12 +311,6 @@ export function CharacterCreator() {
 }
 
 type StepProps = { d: CreatorDraft; setD: (d: CreatorDraft) => void };
-
-/** Famille d'une espèce : « Humains (Middenheim) » → « Humains » ; sans variante → le label. */
-function speciesFamily(label: string): { family: string; variant: string | null } {
-  const m = label.match(/^(.*?)\s*\((.*)\)\s*$/);
-  return m ? { family: m[1].trim(), variant: m[2].trim() } : { family: label, variant: null };
-}
 
 /** Rendu Markdown des textes de données (descriptions — verbatim de la source, via la primitive Prose). */
 function LoreText({ md }: { md: string | null | undefined }) {
@@ -319,34 +322,30 @@ function LoreText({ md }: { md: string | null | undefined }) {
 function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sp = draftSpecies(d);
 
-  // Groupes par race (les variantes des suppléments perdent leur préfixe répétitif),
+  // Groupes par race (`SpeciesData.family` — donnée, plus de regex sur le libellé),
   // les races du Livre de base d'abord — l'ordre des familles suit les données.
   // Le Gnome (et tout contenu NADJ) n'apparaît dans la grille que si la règle optionnelle l'autorise.
   const gnomeOn = !!rule('creation-gnome-jouable');
   const families: { family: string; list: SpeciesData[] }[] = [];
   for (const s of allSpecies) {
     if (s.source.book === 'NADJ' && !gnomeOn) continue;
-    const { family } = speciesFamily(s.label);
-    const g = families.find((f) => f.family === family);
+    const g = families.find((f) => f.family === s.family);
     if (g) g.list.push(s);
-    else families.push({ family, list: [s] });
+    else families.push({ family: s.family, list: [s] });
   }
   families.sort((a, b) => Number(b.list.some((s) => CORE.includes(s.label))) - Number(a.list.some((s) => CORE.includes(s.label))));
 
-  const row = (s: SpeciesData) => {
-    const { variant } = speciesFamily(s.label);
-    return (
-      <button key={s.label} className={`pick-row ${d.speciesId === s.id ? 'selected' : ''}`} onClick={() => setD(withSpecies(d, s.id))}>
-        <Figure speciesLabel={s.label} sex={d.sex} />
-        <span className="row-body">
-          <strong>{variant ?? s.label}</strong>
-          <em>
-            M {s.movement} · Destin {s.fate.fate} · Rés. {s.fate.resilience} · +{s.fate.extra}
-          </em>
-        </span>
-      </button>
-    );
-  };
+  const row = (s: SpeciesData) => (
+    <button key={s.label} className={`pick-row ${d.speciesId === s.id ? 'selected' : ''}`} onClick={() => setD(withSpecies(d, s.id))}>
+      <CharacterPreview appearance={pickAppearance(s.id, d.sex)} size="xs" />
+      <span className="row-body">
+        <strong>{s.variant ?? s.label}</strong>
+        <em>
+          M {s.movement} · Destin {s.fate.fate} · Rés. {s.fate.resilience} · +{s.fate.extra}
+        </em>
+      </span>
+    </button>
+  );
 
   const rail = (
     <>
@@ -366,7 +365,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
         {!d.speciesRoll ? (
           <div className="row-flex">
             <button className="btn" onClick={() => setD(rollDraftSpecies(d))}>
-              🎲 Tirer la race (d100) — +20 PX si vous acceptez
+              <Icon id="nav/dice" size="sm" /> Tirer la race (d100) — +20 PX si vous acceptez
             </button>
           </div>
         ) : (
@@ -375,14 +374,15 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
               Jet : <b>{d.speciesRoll.roll}</b>
               {d.speciesRoll.ids.length > 1 && ' — choisissez librement parmi les races de cette borne (le bonus est conservé)'}
             </p>
-            <div className="talent-choices">
-              {d.speciesRoll.ids.map((id) => (
-                <label className="radio" key={id}>
-                  <input type="radio" name="species-roll" checked={d.speciesId === id} onChange={() => setD(withSpecies(d, id))} />
-                  <b>{findSpeciesById(id)?.label ?? id}</b> (+20 PX)
-                </label>
-              ))}
-            </div>
+            <OptionChooser
+              layout="grid"
+              options={d.speciesRoll.ids.map((id) => ({
+                key: id,
+                label: `${findSpeciesById(id)?.label ?? id} (+20 PX)`,
+                primary: d.speciesId === id,
+                onSelect: () => setD(withSpecies(d, id)),
+              }))}
+            />
           </>
         )}
       </Section>
@@ -410,7 +410,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
 
   const main = (
     <TabbedEntry
-      figure={<Figure speciesLabel={sp.label} sex={d.sex} className="main-figure" />}
+      figure={<CharacterPreview appearance={pickAppearance(sp.id, d.sex)} size="md" ambiance="panel" />}
       title={<CodexRef category="races" label={sp.label}>{sp.label}</CodexRef>}
       blurb={blurb(sp.desc, 300)}
       tabs={[
@@ -450,7 +450,7 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
                   const l1 = levelsForCareer(c.id).find((l) => l.level === 1);
                   return (
                     <button key={c.id} className={`pick-row ${d.careerId === c.id ? 'selected' : ''}`} onClick={() => setD(withCareer(d, c.id))}>
-                      <Figure speciesLabel={sp.label} career={c.label} sex={d.sex} />
+                      <CharacterPreview appearance={pickAppearance(sp.id, d.sex)} career={c.label} size="xs" />
                       <span className="row-body">
                         <strong>{c.label}</strong>
                         <em>{l1 ? `${l1.label} · ${l1.status}` : findClassById(c.class)?.label}</em>
@@ -469,7 +469,7 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
   const main = (
     <>
       <div className="main-head">
-        <Figure speciesLabel={sp.label} career={career?.label} sex={d.sex} className="main-figure" />
+        <CharacterPreview appearance={pickAppearance(sp.id, d.sex)} career={career?.label} size="md" ambiance="panel" />
         <div>
           <h2>
             <CodexRef category="careers" label={career?.label ?? d.careerId}>{career?.label ?? d.careerId}</CodexRef>{' '}
@@ -493,7 +493,7 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
         )}
         {d.careerRolls.length === 0 && (
           <button className="btn" onClick={() => setD(rollDraftCareer(d))}>
-            🎲 Tirer la carrière (d100)
+            <Icon id="nav/dice" size="sm" /> Tirer la carrière (d100)
           </button>
         )}
         {d.careerRolls.length > 0 && (
@@ -519,12 +519,12 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
         )}
         {d.careerRolls.length === 1 && (
           <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD(rollDraftCareer(d))}>
-            🎲 Pas convaincu : 2 jets de plus (choix parmi 3, +25 PX)
+            <Icon id="nav/dice" size="sm" /> Pas convaincu : 2 jets de plus (choix parmi 3, +25 PX)
           </button>
         )}
         {d.careerRolls.length >= 3 && (
           <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD(rollDraftCareer(d))}>
-            🎲 Continuer à relancer (0 PX)
+            <Icon id="nav/dice" size="sm" /> Continuer à relancer (0 PX)
           </button>
         )}
       </Section>
@@ -586,27 +586,24 @@ export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: Reac
   const rail = (
     <>
       <Section title="Méthode" right={<XpBadge value={charsXp(d)} />}>
-        <div className="talent-choices">
-          <label className="radio">
-            <input type="radio" name="char-mode" checked={d.charMode === 'rolled'} onChange={() => setD({ ...d, charMode: 'rolled' })} />
-            Garder le tirage 2d10 {d.charRerolls === 0 ? '(+50 PX)' : '(+0 PX)'}
-          </label>
-          <label className="radio">
-            <input type="radio" name="char-mode" checked={d.charMode === 'reassigned'} onChange={() => setD({ ...d, charMode: 'reassigned' })} />
-            Réassigner les dix jets {d.charRerolls === 0 ? '(+25 PX)' : '(+0 PX)'}
-          </label>
-          <label className="radio">
-            <input type="radio" name="char-mode" checked={d.charMode === 'pointBuy'} onChange={() => setD({ ...d, charMode: 'pointBuy' })} />
-            Répartir 100 Points (4-18, +0 PX)
-          </label>
-        </div>
+        <OptionChooser
+          layout="grid"
+          options={[
+            { key: 'rolled', label: `Garder le tirage 2d10 ${d.charRerolls === 0 ? '(+50 PX)' : '(+0 PX)'}`, mode: 'rolled' as const },
+            { key: 'reassigned', label: `Réassigner les dix jets ${d.charRerolls === 0 ? '(+25 PX)' : '(+0 PX)'}`, mode: 'reassigned' as const },
+            { key: 'pointBuy', label: 'Répartir 100 Points (4-18, +0 PX)', mode: 'pointBuy' as const },
+          ].map(({ key, label, mode }) => ({ key, label, primary: d.charMode === mode, onSelect: () => setD({ ...d, charMode: mode }) }))}
+        />
         {d.charMode !== 'pointBuy' && (
           <button className="btn small" style={{ marginTop: 10 }} onClick={() => setD({ ...d, charRerolls: d.charRerolls + 1 })}>
-            🎲 Relancer les dix jets (bonus perdus)
+            <Icon id="nav/dice" size="sm" /> Relancer les dix jets (bonus perdus)
           </button>
         )}
       </Section>
-      <Section title="Augmentations gratuites" right={<b className={allocTotal === 5 ? 'ok-text' : 'warn-text'}>{allocTotal}/5</b>}>
+      <Section
+        title="Augmentations gratuites"
+        right={<b className={allocTotal === CAREER_CHAR_ADVANCES ? 'ok-text' : 'warn-text'}>{allocTotal}/{CAREER_CHAR_ADVANCES}</b>}
+      >
         <p className="hint" style={{ marginTop: 0 }}>
           À répartir sur les Caractéristiques de votre carrière.
         </p>
@@ -615,7 +612,7 @@ export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: Reac
             <span><CodexRef category="characteristics" label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
             <Stepper
               value={d.charAdvancesAlloc[k] ?? 0}
-              max={Math.min(5, (d.charAdvancesAlloc[k] ?? 0) + (5 - allocTotal))}
+              max={Math.min(CAREER_CHAR_ADVANCES, (d.charAdvancesAlloc[k] ?? 0) + (CAREER_CHAR_ADVANCES - allocTotal))}
               onChange={(v) => setD({ ...d, charAdvancesAlloc: { ...d.charAdvancesAlloc, [k]: v } })}
             />
           </div>
@@ -623,10 +620,11 @@ export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: Reac
       </Section>
       <Section title="Destin & Résilience" right={<b className={splitTotal === sp.fate.extra ? 'ok-text' : 'warn-text'}>{splitTotal}/{sp.fate.extra}</b>}>
         <p className="hint" style={{ marginTop: 0 }}>
-          ☄️ Destin : survie & Chance. 🛡️ Résilience : Détermination (votre Motivation la recharge).
+          <Icon id="resource/fate" size="sm" /> Destin : survie & Chance. <Icon id="resource/resilience" size="sm" /> Résilience :
+          Détermination (votre Motivation la recharge).
         </p>
         <div className="rail-line">
-          <span>☄️ Destin (base {sp.fate.fate})</span>
+          <span><Icon id="resource/fate" size="sm" /> Destin (base {sp.fate.fate})</span>
           <Stepper
             value={d.fateSplit.fate}
             max={Math.min(sp.fate.extra, d.fateSplit.fate + (sp.fate.extra - splitTotal))}
@@ -634,7 +632,7 @@ export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: Reac
           />
         </div>
         <div className="rail-line">
-          <span>🛡️ Résilience (base {sp.fate.resilience})</span>
+          <span><Icon id="resource/resilience" size="sm" /> Résilience (base {sp.fate.resilience})</span>
           <Stepper
             value={d.fateSplit.resilience}
             max={Math.min(sp.fate.extra, d.fateSplit.resilience + (sp.fate.extra - splitTotal))}
@@ -652,7 +650,7 @@ export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: Reac
         right={d.charMode === 'pointBuy' ? <b className={pbTotal === 100 ? 'ok-text' : 'warn-text'}>Points : {pbTotal}/100</b> : undefined}
       >
         <p className="hint" style={{ marginTop: 0 }}>
-          💡 Les Caractéristiques <span className="tag char">carrière</span> progressent au coût normal en PX et comptent
+          Les Caractéristiques <span className="tag char">carrière</span> progressent au coût normal en PX et comptent
           pour la complétion du Niveau. Les Blessures dépendent des <b>Bonus</b> (dizaine) de F, E et FM
           {sp.small ? ' (sans BF pour les Petits)' : ''} ; l'Initiative départage l'ordre du combat.
         </p>
@@ -732,7 +730,7 @@ function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
   const xp = starXp(d);
 
   const rail = (
-    <Section title="Signe astral" right={<button className="btn small" onClick={() => setD(rollDraftStar(d))}>🎲 Tirer</button>}>
+    <Section title="Signe astral" right={<button className="btn small" onClick={() => setD(rollDraftStar(d))}><Icon id="nav/dice" size="sm" /> Tirer</button>}>
       <label>
         Signe
         <select value={d.star ?? ''} onChange={(e) => setD({ ...d, star: e.target.value || undefined })}>
@@ -769,14 +767,22 @@ function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
       <Section title={sign ? sign.label : 'Sous quel signe êtes-vous né ?'}>
         {sign ? <LoreText md={sign.desc} /> : <p className="hint">Gardez le tirage : +25 PX · Choix libre : +0 PX.</p>}
       </Section>
-      <Section title="Astrologie (facultatif)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}>🎲 Thème astral</button>}>
+      <Section title="Astrologie (facultatif)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}><Icon id="nav/dice" size="sm" /> Thème astral</button>}>
         {d.ascendant || d.dwellings?.length ? (
           <>
             {d.ascendant && <p style={{ margin: '0 0 4px' }}><b>Ascendant :</b> {d.ascendant}</p>}
-            {d.dwellings?.length ? <ul className="trapping-list">{d.dwellings.map((h) => <li key={h.house}><b>{h.house} :</b> {h.sign}</li>)}</ul> : null}
+            {d.dwellings?.length ? (
+              <ul className="trapping-list">
+                {d.dwellings.map((h) => (
+                  <li key={h.house} title={HOUSE_DESC_BY_LABEL.get(h.house)}>
+                    <b>{h.house} :</b> {h.sign}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </>
         ) : (
-          <p className="hint">Ascendant + 5 demeures célestes — pur roleplay (aucun effet de jeu).</p>
+          <p className="hint">Ascendant + {celestialHouses.length} demeures célestes — pur roleplay (aucun effet de jeu).</p>
         )}
       </Section>
     </>
@@ -800,9 +806,10 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
 
   const togglePick = (list: 'speciesPlus5' | 'speciesPlus3', skill: string) => {
     const cur = d[list];
+    const quota = list === 'speciesPlus5' ? SPECIES_SKILLS_PLUS5 : SPECIES_SKILLS_PLUS3;
     const other = list === 'speciesPlus5' ? d.speciesPlus3 : d.speciesPlus5;
     if (cur.includes(skill)) setD({ ...d, [list]: cur.filter((s) => s !== skill) });
-    else if (cur.length < 3 && !other.includes(skill)) setD({ ...d, [list]: [...cur, skill] });
+    else if (cur.length < quota && !other.includes(skill)) setD({ ...d, [list]: [...cur, skill] });
   };
 
   const rail = (
@@ -810,12 +817,22 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
       <Section
         title="Compétences de race"
         right={
-          <b className={d.speciesPlus5.length === 3 && d.speciesPlus3.length === 3 ? 'ok-text' : 'warn-text'}>
-            +5 : {d.speciesPlus5.length}/3 · +3 : {d.speciesPlus3.length}/3
+          <b className={d.speciesPlus5.length === SPECIES_SKILLS_PLUS5 && d.speciesPlus3.length === SPECIES_SKILLS_PLUS3 ? 'ok-text' : 'warn-text'}>
+            +5 : {d.speciesPlus5.length}/{SPECIES_SKILLS_PLUS5} · +3 : {d.speciesPlus3.length}/{SPECIES_SKILLS_PLUS3}
           </b>
         }
       >
-        <button className="btn small" style={{ marginBottom: 8 }} onClick={() => setD({ ...d, speciesPlus5: sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a)), speciesPlus3: sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a)) })}>
+        <button
+          className="btn small"
+          style={{ marginBottom: 8 }}
+          onClick={() =>
+            setD({
+              ...d,
+              speciesPlus5: sp.skills.slice(0, SPECIES_SKILLS_PLUS5).map((a) => advancementLabel('skills', a)),
+              speciesPlus3: sp.skills.slice(SPECIES_SKILLS_PLUS5, SPECIES_SKILLS_PLUS5 + SPECIES_SKILLS_PLUS3).map((a) => advancementLabel('skills', a)),
+            })
+          }
+        >
           Répartition par défaut
         </button>
         {sp.skills.map((a) => advancementLabel('skills', a)).map((raw) => {
@@ -900,7 +917,10 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
 
   const main = (
     <>
-      <Section title="Compétences de carrière" right={<b className={total === 40 ? 'ok-text' : 'warn-text'}>{total}/40 · max 10</b>}>
+      <Section
+        title="Compétences de carrière"
+        right={<b className={total === CAREER_SKILL_ADVANCES ? 'ok-text' : 'warn-text'}>{total}/{CAREER_SKILL_ADVANCES} · max {MAX_ADV_PER_SKILL}</b>}
+      >
         <button className="btn small" style={{ marginBottom: 8 }} onClick={() => setD({ ...d, skillAdvances: evenCareerSkillAdvances(d) })}>
           Répartition simple : +5 sur les 8 Compétences
         </button>
@@ -916,7 +936,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
                 </span>
                 <Stepper
                   value={adv}
-                  max={Math.min(10, adv + (40 - total))}
+                  max={Math.min(MAX_ADV_PER_SKILL, adv + (CAREER_SKILL_ADVANCES - total))}
                   onChange={(val) => setD({ ...d, skillAdvances: { ...d.skillAdvances, [raw]: val } })}
                 />
               </div>
@@ -1058,7 +1078,7 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
               </option>
             ))}
           </select>
-          {d.weaponChoice && <p className="hint">{trappingMeta(WEAPON_CHOICES.find((w) => w.label === d.weaponChoice)?.id ?? '')}</p>}
+          {d.weaponChoice && <p className="hint">{trappingMeta(WEAPON_ID_BY_LABEL.get(d.weaponChoice) ?? '')}</p>}
         </Section>
       )}
     </>
@@ -1091,7 +1111,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
             setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
           }}
         >
-          🎲 Tirer
+          <Icon id="nav/dice" size="sm" /> Tirer
         </button>
       }
     >
@@ -1129,7 +1149,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
                 if (n) setD({ ...d, name: n });
               }}
             >
-              🎲
+              <Icon id="nav/dice" size="sm" />
             </button>
           </span>
         </label>
@@ -1151,12 +1171,16 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
   return { rail, main };
 }
 
-// ════ 7) Récapitulatif ════
-function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactNode } {
+// ════ 7) Récapitulatif — la « feuille de personnage » cérémonielle : parchemin, figurine équipée
+//      en double vue, et les descriptions RAW réelles (espèce, carrière, signe, talents) via Prose ════
+export function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactNode } {
   const hero = previewHero(d);
   const wealth = draftWealth(d);
-  const speciesLabel = findSpeciesById(d.speciesId)?.label ?? d.speciesId;
-  const careerLabel = findCareerById(d.careerId)?.label ?? d.careerId;
+  const sp = findSpeciesById(d.speciesId);
+  const career = findCareerById(d.careerId);
+  const speciesLabel = sp?.label ?? d.speciesId;
+  const careerLabel = career?.label ?? d.careerId;
+  const sign = d.star ? starsTable.find((s) => s.id === d.star) : undefined;
   const rail = (
     <Section title="PX bonus de création">
       <ul className="hint" style={{ margin: 0, paddingLeft: 18 }}>
@@ -1169,53 +1193,83 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
     </Section>
   );
   const main = (
-    <>
-      <Section title="Votre aventurier">
-        <p>
-          <b>{d.name.trim() || 'Aventurier'}</b> — <CodexRef category="races" label={speciesLabel}>{speciesLabel}</CodexRef>, {draftLevel(d)?.label} (<CodexRef category="careers" label={careerLabel}>{careerLabel}</CodexRef>) ·{' '}
-          {draftLevel(d)?.status}. Richesse initiale : <b>{formatMoney(wealth)}</b> (créditée au groupe).
-        </p>
-        <p className="hint">
-          {hero?.details?.age ? `${hero.details.age} ans · ` : ''}
-          {hero?.details?.height ? `${hero.details.height} cm · ` : ''}
-          {hero?.details?.eyes ? `yeux ${hero.details.eyes} · ` : ''}
-          {hero?.details?.hair ? `cheveux ${hero.details.hair}` : ''}
-        </p>
-        {d.motivation && (
-          <p className="hint">
-            Motivation : <b>{d.motivation}</b>
-          </p>
+    <OrnateFrame tone="gold" className="recap-sheet tx-parchment">
+      <div className="recap-head">
+        {hero && (
+          <div className="recap-figures">
+            <CharacterPreview hero={hero} view="front" size="lg" />
+            <CharacterPreview hero={hero} view="profile" size="lg" />
+          </div>
         )}
-        {(d.ambitionShort || d.ambitionLong) && (
-          <p className="hint">
-            Ambitions : {d.ambitionShort || '—'} / {d.ambitionLong || '—'}
+        <div className="recap-id">
+          <h2>{d.name.trim() || 'Aventurier'}</h2>
+          <p>
+            <CodexRef category="races" label={speciesLabel}>{speciesLabel}</CodexRef>, {draftLevel(d)?.label} (
+            <CodexRef category="careers" label={careerLabel}>{careerLabel}</CodexRef>) · {draftLevel(d)?.status}
           </p>
-        )}
-      </Section>
-      <Section title="Talents">
-        <div className="skill-tags">
-          {(hero?.talents ?? []).map((t) => (
-            <TalentChip key={`${t.talentId}|${t.spec ?? ''}`} talent={t} />
+          <p className="recap-meta">
+            {hero?.details?.age ? `${hero.details.age} ans · ` : ''}
+            {hero?.details?.height ? `${hero.details.height} cm · ` : ''}
+            {hero?.details?.eyes ? `yeux ${hero.details.eyes} · ` : ''}
+            {hero?.details?.hair ? `cheveux ${hero.details.hair}` : ''}
+          </p>
+          {d.motivation && (
+            <p className="recap-meta">
+              Motivation : <b>{d.motivation}</b>
+            </p>
+          )}
+          {(d.ambitionShort || d.ambitionLong) && (
+            <p className="recap-meta">Ambitions : {d.ambitionShort || '—'} / {d.ambitionLong || '—'}</p>
+          )}
+          <p className="recap-meta">
+            Richesse initiale : <b>{formatMoney(wealth)}</b> (créditée au groupe).
+          </p>
+        </div>
+      </div>
+
+      <RuleDivider label={speciesLabel} />
+      {sp?.desc && <Prose md={sp.desc} selfLabel={sp.label} />}
+
+      <RuleDivider label={careerLabel} />
+      {career?.desc && <Prose md={career.desc} selfLabel={career.label} />}
+
+      {sign && (
+        <>
+          <RuleDivider label={sign.label} />
+          <p className="recap-meta">{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
+          {sign.desc && <Prose md={sign.desc} />}
+        </>
+      )}
+
+      <RuleDivider label="Talents" />
+      {(hero?.talents ?? []).map((t) => {
+        const data = findTalentById(t.talentId);
+        return (
+          <div key={`${t.talentId}|${t.spec ?? ''}`} className="recap-talent">
+            <h4>
+              <TalentChip talent={t} />
+            </h4>
+            {data?.desc && <Prose md={data.desc} selfLabel={data.label} />}
+          </div>
+        );
+      })}
+
+      <RuleDivider label="Compétences formées" />
+      <div className="skill-tags">
+        {(hero?.skills ?? [])
+          .filter((s) => s.advances > 0)
+          .map((s) => (
+            <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />
           ))}
-        </div>
-      </Section>
-      <Section title="Compétences formées">
-        <div className="skill-tags">
-          {(hero?.skills ?? [])
-            .filter((s) => s.advances > 0)
-            .map((s) => (
-              <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />
-            ))}
-        </div>
-      </Section>
-      <Section title="Équipement">
-        <div className="skill-tags">
-          {(hero?.items ?? []).map((it) => (
-            <EntityRef key={it.uid} category="trappings" label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
-          ))}
-        </div>
-      </Section>
-    </>
+      </div>
+
+      <RuleDivider label="Équipement" />
+      <div className="skill-tags">
+        {(hero?.items ?? []).map((it) => (
+          <EntityRef key={it.uid} category="trappings" label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
+        ))}
+      </div>
+    </OrnateFrame>
   );
   return { rail, main };
 }

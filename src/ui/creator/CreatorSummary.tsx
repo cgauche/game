@@ -1,14 +1,16 @@
 /**
  * « Fiche vivante » du créateur — colonne persistante façon RPG vidéo (BG3/Pathfinder) :
- * silhouette du personnage (rig SVG, tenue de carrière), Caractéristiques EN DIRECT (talents +5
- * et Augmentations gratuites inclus via buildHero), attributs dérivés (Blessures, Mouvement,
- * Destin/Chance, Résilience/Détermination), PX bonus accumulés et bourse de départ.
+ * figurine du personnage (primitive CharacterPreview : rig réel, tenue de carrière, ÉQUIPEMENT
+ * porté dérivé du héros prévisualisé), Caractéristiques EN DIRECT (talents +5 et Augmentations
+ * gratuites inclus via buildHero), attributs dérivés (Blessures, Mouvement, Destin/Chance,
+ * Résilience/Détermination), PX bonus accumulés et bourse de départ.
  */
 import { useMemo } from 'react';
 import { Combatant } from '../../engine/types';
 import { formatMoney } from '../../engine/money';
-import { RigSprite } from '../../gameIso/rig/composeRig';
 import type { Appearance } from '../../gameIso/rig/appearance';
+import { CharacterPreview } from '../CharacterPreview';
+import { Icon } from '../Icon';
 import { CharStatsGrid } from '../CharStatsGrid';
 import { SkillChip, TalentChip } from '../EntityChip';
 import { findCareerById, rigSpeciesId } from '../../data';
@@ -28,15 +30,17 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
   const level = draftLevel(d);
   const baseChars = draftChars(d);
   const careerLabel = findCareerById(d.careerId)?.label ?? d.careerId;
+  // Repli si le brouillon ne construit pas encore un héros : apparence du brouillon, sans équipement.
   const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   const wealth = draftWealth(d);
 
   return (
     <aside className="creator-summary">
-      <svg viewBox="0 0 120 150" className="creator-figure">
-        <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={8} />
-        <RigSprite appearance={appearance} equip={{ weapons: hero?.weapons ?? [], armour: [] }} career={careerLabel} />
-      </svg>
+      {hero ? (
+        <CharacterPreview hero={hero} size="fill" ambiance="panel" className="creator-fig" />
+      ) : (
+        <CharacterPreview appearance={appearance} career={careerLabel} size="fill" ambiance="panel" className="creator-fig" />
+      )}
       <div className="creator-id">
         <strong>{d.name.trim() || 'Aventurier'}</strong>
         <span className="char-sub">{sp.label}</span>
@@ -53,19 +57,19 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
 
       <div className="creator-derived">
         <span>
-          ❤️ Blessures <b>{hero?.wounds.max ?? '—'}</b>
+          <Icon id="resource/wounds" size="sm" /> Blessures <b>{hero?.wounds.max ?? '—'}</b>
         </span>
         <span>
-          👣 Mouvement <b>{hero?.movement ?? sp.movement}</b>
+          <Icon id="resource/movement" size="sm" /> Mouvement <b>{hero?.movement ?? sp.movement}</b>
         </span>
         <span>
-          ☄️ Destin <b>{hero?.fate ?? sp.fate.fate}</b> · Chance <b>{hero?.fortune ?? '—'}</b>
+          <Icon id="resource/fate" size="sm" /> Destin <b>{hero?.fate ?? sp.fate.fate}</b> · Chance <b>{hero?.fortune ?? '—'}</b>
         </span>
         <span>
-          🛡️ Résilience <b>{hero?.resilience ?? sp.fate.resilience}</b> · Déterm. <b>{hero?.resolve ?? '—'}</b>
+          <Icon id="resource/resilience" size="sm" /> Résilience <b>{hero?.resilience ?? sp.fate.resilience}</b> · Déterm. <b>{hero?.resolve ?? '—'}</b>
         </span>
         <span>
-          💰 Bourse <b>{formatMoney(wealth)}</b>
+          <Icon id="resource/gold-purse" size="sm" /> Bourse <b>{formatMoney(wealth)}</b>
         </span>
       </div>
 

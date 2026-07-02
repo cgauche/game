@@ -138,4 +138,9 @@ describe('Intégrité des données src/data/*.json', () => {
   it('5 — les refs (créature/trait/État/maladie) résolvent', () => {
     expect(scan.badRefs, `Ref(s) non résolue(s) :\n${fmt(scan.badRefs)}`).toEqual([]);
   });
+  it('6 — species.json : family non vide sur chaque espèce (groupage du rail créateur — remplace la regex sur label)', () => {
+    const species = JSON.parse(readFileSync(join(DIR, 'species.json'), 'utf8')) as { id: string; family?: string }[];
+    const missing = species.filter((s) => typeof s.family !== 'string' || !s.family.trim()).map((s) => s.id);
+    expect(missing, `Espèce(s) sans family :\n  ${missing.join('\n  ')}`).toEqual([]);
+  });
 });

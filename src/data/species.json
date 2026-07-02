@@ -2,6 +2,8 @@
   {
     "id": "humains-reiklander",
     "label": "Humains (Reiklander)",
+    "family": "Humains",
+    "variant": "Reiklander",
     "refChar": "Humain",
     "refCareer": "Humain",
     "rand": 90,
@@ -124,6 +126,8 @@
   {
     "id": "humains-middenheim",
     "label": "Humains (Middenheim)",
+    "family": "Humains",
+    "variant": "Middenheim",
     "refChar": "Humain",
     "refCareer": "Middenheim",
     "rand": 90,
@@ -244,6 +248,8 @@
   {
     "id": "humains-middenland",
     "label": "Humains (Middenland)",
+    "family": "Humains",
+    "variant": "Middenland",
     "refChar": "Humain",
     "refCareer": "Middenland",
     "rand": 90,
@@ -372,6 +378,8 @@
   {
     "id": "humains-nordland",
     "label": "Humains (Nordland)",
+    "family": "Humains",
+    "variant": "Nordland",
     "refChar": "Humain",
     "refCareer": "Nordland",
     "rand": 90,
@@ -515,6 +523,8 @@
   {
     "id": "humains-tileens",
     "label": "Humains (Tiléens)",
+    "family": "Humains",
+    "variant": "Tiléens",
     "refChar": "Humain",
     "refCareer": "Humain",
     "rand": 90,
@@ -644,6 +654,8 @@
   {
     "id": "humains-bjornling-norse",
     "label": "Humains (Bjornling Norse)",
+    "family": "Humains",
+    "variant": "Bjornling Norse",
     "refChar": "Humain",
     "refCareer": "Norse",
     "rand": 90,
@@ -786,6 +798,8 @@
   {
     "id": "humains-sarl-norse",
     "label": "Humains (Sarl Norse)",
+    "family": "Humains",
+    "variant": "Sarl Norse",
     "refChar": "Humain",
     "refCareer": "Norse",
     "rand": 90,
@@ -929,6 +943,8 @@
   {
     "id": "humains-skaeling-norse",
     "label": "Humains (Skaeling Norse)",
+    "family": "Humains",
+    "variant": "Skaeling Norse",
     "refChar": "Humain",
     "refCareer": "Norse",
     "rand": 90,
@@ -1073,6 +1089,7 @@
   {
     "id": "halflings",
     "label": "Halflings",
+    "family": "Halflings",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -1197,6 +1214,8 @@
   {
     "id": "halflings-cendreplaine",
     "label": "Halflings (Cendreplaine)",
+    "family": "Halflings",
+    "variant": "Cendreplaine",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -1332,6 +1351,8 @@
   {
     "id": "halflings-basseronce",
     "label": "Halflings (Basseronce)",
+    "family": "Halflings",
+    "variant": "Basseronce",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -1465,6 +1486,8 @@
   {
     "id": "halflings-tuilecaramel",
     "label": "Halflings (Tuilecaramel)",
+    "family": "Halflings",
+    "variant": "Tuilecaramel",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -1600,6 +1623,8 @@
   {
     "id": "halflings-piedfoin",
     "label": "Halflings (Piedfoin)",
+    "family": "Halflings",
+    "variant": "Piedfoin",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -1734,6 +1759,8 @@
   {
     "id": "halflings-piedpaille",
     "label": "Halflings (Piedpaille)",
+    "family": "Halflings",
+    "variant": "Piedpaille",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -1867,6 +1894,8 @@
   {
     "id": "halflings-piedfoin-piedpaille",
     "label": "Halflings (Piedfoin-Piedpaille)",
+    "family": "Halflings",
+    "variant": "Piedfoin-Piedpaille",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -2000,6 +2029,8 @@
   {
     "id": "halflings-pochegaree",
     "label": "Halflings (Pochégarée)",
+    "family": "Halflings",
+    "variant": "Pochégarée",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -2132,6 +2163,8 @@
   {
     "id": "halflings-havrebas",
     "label": "Halflings (Havrebas)",
+    "family": "Halflings",
+    "variant": "Havrebas",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -2269,6 +2302,8 @@
   {
     "id": "halflings-rumster",
     "label": "Halflings (Rumster)",
+    "family": "Halflings",
+    "variant": "Rumster",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -2403,6 +2438,8 @@
   {
     "id": "halflings-bordecharde",
     "label": "Halflings (Bordécharde)",
+    "family": "Halflings",
+    "variant": "Bordécharde",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -2537,6 +2574,8 @@
   {
     "id": "halflings-pavederonces",
     "label": "Halflings (Pavéderonces)",
+    "family": "Halflings",
+    "variant": "Pavéderonces",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -2675,6 +2714,8 @@
   {
     "id": "halflings-fraisedebois",
     "label": "Halflings (Fraisedébois)",
+    "family": "Halflings",
+    "variant": "Fraisedébois",
     "refChar": "Halfling",
     "refCareer": "Halfling",
     "rand": 94,
@@ -2809,6 +2850,7 @@
   {
     "id": "nains",
     "label": "Nains",
+    "family": "Nains",
     "refChar": "Nain",
     "refCareer": "Nain",
     "rand": 97,
@@ -2954,6 +2996,8 @@
   {
     "id": "nains-norse",
     "label": "Nains (Norse)",
+    "family": "Nains",
+    "variant": "Norse",
     "refChar": "Nain",
     "refCareer": "Nain",
     "rand": 97,
@@ -3098,6 +3142,7 @@
   {
     "id": "gnomes",
     "label": "Gnomes",
+    "family": "Gnomes",
     "refChar": "Gnome",
     "refCareer": "Gnome",
     "rand": 98,
@@ -3263,6 +3308,7 @@
   {
     "id": "ogres",
     "label": "Ogres",
+    "family": "Ogres",
     "refChar": "Ogre",
     "refCareer": "Ogre",
     "rand": 98,
@@ -3411,6 +3457,7 @@
   {
     "id": "hauts-elfes",
     "label": "Hauts elfes",
+    "family": "Hauts elfes",
     "refChar": "Haut Elfe",
     "refCareer": "Haut Elfe",
     "rand": 99,
@@ -3555,6 +3602,7 @@
   {
     "id": "elfes-sylvains",
     "label": "Elfes sylvains",
+    "family": "Elfes sylvains",
     "refChar": "Elfe Sylvain",
     "refCareer": "Elfe Sylvain",
     "rand": 100,
