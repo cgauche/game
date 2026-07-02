@@ -97,7 +97,7 @@ export interface PropBillboard {
 export function buildPropBillboards(scene: Scene, cam: CamPose, visible: ReadonlySet<string>): PropBillboard[] {
   const out: PropBillboard[] = [];
   for (const el of buildProps(scene, visible)) {
-    if (el.source !== 'entity' || !el.states.visible) continue; // overlays de terrain hors billboards ; cull LdV
+    if (!el.states.visible) continue; // cull LdV/brouillard (décor de scène ET overlay de terrain bois→arbre)
     const a = footAnchor(scene, cam, el.cell.x + el.foot.offX, el.cell.y + el.foot.offY, el.cell.z, PROP_H_M, el.foot.scale);
     if (!a) continue;
     const t = bbTransform(a, a.s);

@@ -7,12 +7,21 @@
  */
 import { Scene, tileAt, heightAt, isWalkable } from '../../state/scene';
 import { gradeBetween } from '../../state/relief';
-import { terrainPriority } from '../../state/terrain';
+import { terrainPriority, terrainSolidHeightM } from '../../state/terrain';
 import type { CellSide, Face, FloorEl } from './types';
 
 /** Épaisseur (mètres) de la DALLE ajourée d'un tablier de surplomb : la face de bord donnant sur le
  *  vide descend de cette hauteur seulement (pas une falaise de pleine hauteur) → on voit dessous. */
 const DECK_THICKNESS_M = 0.3;
+
+/** Hauteur d'AFFICHAGE (m) d'une surface = hauteur combat (`heightAt`, vérité INTOUCHÉE) + le BLOC PLEIN
+ *  éventuel du terrain (`solidHeightM`, ex. mur). SEULE la dérivation des faces de `buildFloors` la lit :
+ *  une tuile `mur` (combat-hauteur 0) s'affiche ainsi comme un bloc de sa `solidHeightM` (4 faces + dessus,
+ *  via le relief EXISTANT), sans qu'AUCUN code combat ne voie cette hauteur. Le bloc s'AJOUTE à la hauteur
+ *  propre de la tuile (opéra : mur posé sur un étage surélevé). */
+function displayHeightAt(scene: Scene, x: number, y: number, z: number): number {
+  return heightAt(scene, x, y, z) + terrainSolidHeightM(tileAt(scene, x, y, z));
+}
 
 const SIDES: CellSide[] = ['N', 'E', 'S', 'O'];
 const NEIGHBOURS: Record<CellSide, [number, number]> = {
@@ -48,9 +57,9 @@ export function isOverhang(scene: Scene, x: number, y: number, z: number): boole
   return false;
 }
 
-/** Hauteur MÉTRIQUE de la surface INFÉRIEURE sous un surplomb (1ʳᵉ couche marchable en dessous), ou null. */
+/** Hauteur d'AFFICHAGE de la surface INFÉRIEURE sous un surplomb (1ʳᵉ couche marchable en dessous), ou null. */
 function overhangLowerHeight(scene: Scene, x: number, y: number, z: number): number | null {
-  for (let zz = z - 1; zz >= 0; zz--) if (isWalkable(scene, x, y, zz)) return heightAt(scene, x, y, zz);
+  for (let zz = z - 1; zz >= 0; zz--) if (isWalkable(scene, x, y, zz)) return displayHeightAt(scene, x, y, zz);
   return null;
 }
 
@@ -83,7 +92,7 @@ function edgeCorners(x: number, y: number, side: CellSide): [{ x: number; y: num
 function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boolean): Face[] | null {
   const terrain = tileAt(scene, x, y, z);
   if (terrain === 'vide') return null;
-  const self = heightAt(scene, x, y, z);
+  const self = displayHeightAt(scene, x, y, z); // AFFICHAGE (bloc plein `solidHeightM` compris) — jamais lu par le combat
   const faces: Face[] = [];
 
   // PILIERS de support d'un surplomb : pour chaque arête donnant sur le VIDE, deux montants verticaux
@@ -116,7 +125,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
   // route du dessous reste visible ; une falaise de TERRAIN PLEIN garde sa face pleine.
   for (const side of SIDES) {
     const [dx, dy] = NEIGHBOURS[side];
-    const nb = heightAt(scene, x + dx, y + dy, z);
+    const nb = displayHeightAt(scene, x + dx, y + dy, z); // voisin en hauteur d'AFFICHAGE (mur voisin = bloc plein)
     if (self <= nb) continue; // la case HAUTE porte la paroi (plateau surélevé ET rebord de fosse)
     const grade = gradeBetween(self, nb);
     if (grade === 'flat') continue; // de niveau → aucune paroi

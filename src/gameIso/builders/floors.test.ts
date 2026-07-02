@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildFloors, edgeBlends, isOverhang, fogFloorZ } from './floors';
 import type { FloorEl } from './types';
-import { emptyScene, type Scene } from '../../state/scene';
+import { emptyScene, heightAt, type Scene } from '../../state/scene';
 import { gradeBetween, STEP_MAX_M } from '../../state/relief';
 
 /**
@@ -110,6 +110,43 @@ describe('buildFloors — parois de relief auto-dérivées du dénivelé métriq
     const els = buildFloors(s, undefined, { activeZ: 1 });
     expect(els.filter((e) => e.cell.z === 1)).toHaveLength(1); // seule la tuile construite
     expect(els.filter((e) => e.cell.z === 0)).toHaveLength(9);
+  });
+});
+
+describe('buildFloors — bloc PLEIN d’un terrain (solidHeightM, ex. mur) : RENDU seul, combat intouché', () => {
+  it('une tuile mur cernée d’herbe s’affiche comme un bloc : 4 FALAISES + dessus à solidHeightM, heightAt=0', () => {
+    const s = emptyScene(3, 3); // tout herbe, hauteur COMBAT 0 partout
+    s.layers[0].tiles[1 * 3 + 1] = 'mur'; // centre = mur (solidHeightM ≈ 2.25 m)
+    const el = elAt(buildFloors(s), 1, 1)!;
+    const cliffs = reliefParts(el);
+    expect(cliffs).toHaveLength(4); // le bloc domine ses 4 voisins herbe
+    expect(cliffs.every((f) => f.material.part === 'cliff' && f.plane === 'vertical')).toBe(true);
+    // Dessus (losange de base) à la hauteur d’AFFICHAGE (= solidHeightM du mur), matériau = swatch du mur.
+    const base = el.faces.find((f) => f.plane === 'ground' && !f.material.part)!;
+    const H = base.poly[0].h;
+    expect(H).toBeGreaterThan(STEP_MAX_M); // > pas franchissable → falaise (bloc plein), pas rampe
+    expect(base.material).toEqual({ domain: 'terrain', id: 'mur' });
+    expect(cliffs[0].poly.map((p) => p.h)).toEqual([H, H, 0, 0]); // haut au sommet du bloc, bas au sol
+    // INVARIANT COMBAT : heightAt (vérité) reste 0 — la hauteur d’affichage ne le touche pas.
+    expect(heightAt(s, 1, 1)).toBe(0);
+  });
+
+  it('deux tuiles mur adjacentes : pas de paroi sur l’arête PARTAGÉE (bloc continu), falaise vers l’herbe', () => {
+    const s = emptyScene(3, 3);
+    s.layers[0].tiles[1 * 3 + 1] = 'mur';
+    s.layers[0].tiles[1 * 3 + 2] = 'mur'; // voisin E, même bloc
+    const dirs = reliefParts(elAt(buildFloors(s), 1, 1)).map((f) => f.side);
+    expect(dirs).not.toContain('E'); // arête partagée entre deux murs : de niveau
+    expect(dirs).toContain('O');     // bord du bloc vers l’herbe : falaise
+  });
+
+  it('le bloc s’AJOUTE à la hauteur propre de la tuile (mur posé sur un étage surélevé)', () => {
+    const s = emptyScene(3, 3);
+    s.layers[0].height = new Array(9).fill(0);
+    s.layers[0].tiles[1 * 3 + 1] = 'mur';
+    s.layers[0].height[1 * 3 + 1] = 4; // étage surélevé de 4 m SOUS le mur
+    const base = buildFloors(s).find((e) => e.key === 'floor:1,1,0')!.faces.find((f) => f.plane === 'ground' && !f.material.part)!;
+    expect(base.poly[0].h).toBeGreaterThan(4 + STEP_MAX_M); // dessus = 4 m (étage) + solidHeightM (bloc)
   });
 });
 

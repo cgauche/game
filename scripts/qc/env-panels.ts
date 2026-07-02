@@ -1,7 +1,7 @@
 /**
  * QC — PANNEAUX D'ENVIRONNEMENT partagés (headless) : assemble une scène avec les MÊMES primitives
- * PURES que le jeu (buildFloors+floorSvg(+accents) / buildWalls+wallSvg(+accents) / terrainOverlay /
- * buildRoofs+roofSvg / propSvg / buildPovDrawList), en iso/edge/top (affine) et en POV première
+ * PURES que le jeu (buildFloors+floorSvg(+accents) / buildWalls+wallSvg(+accents) / buildProps+propSvg /
+ * buildRoofs+roofSvg / buildPovDrawList), en iso/edge/top (affine) et en POV première
  * personne. Consommé par `render-env.mts` (planches contact) et `pilote-siege-avant-apres.mts`
  * (planche comparative). Environnement STATIQUE uniquement : ni brouillard, ni tokens, ni FX.
  * Matériaux v2 : zoom 1 (plein détail) — fills + motifs de joints + accents seedés, defs par panneau.
@@ -13,14 +13,15 @@ import { wallDepth, wallSvg, wallAccentsSvg } from '../../src/gameIso/backends/a
 import { buildRoofs } from '../../src/gameIso/builders/roofs';
 import { roofDepth, roofSvg } from '../../src/gameIso/backends/affineRoofs';
 import { detailPatternDefs } from '../../src/gameIso/backends/affineDetail';
-import { terrainOverlay } from '../../src/gameIso/sprites';
+import { buildProps } from '../../src/gameIso/builders/props';
 import { propSvg } from '../../src/gameIso/catalog/decor';
+import { edgeDepthVeil } from '../../src/gameIso/catalog/ambiance';
 import { stageSize, depth, tileCenter, billboardScale, TH, type Dims } from '../../src/gameIso/iso';
 import { makeCamera, VW, VH } from '../../src/gameIso/pov/camera';
 import { buildPovDrawList } from '../../src/gameIso/pov/geometry';
 import { buildPropBillboards } from '../../src/gameIso/pov/billboardCore';
 import { AMBIANCE } from '../../src/gameIso/catalog/ambiance';
-import { tileAt, heightAt, isIndoor, sceneMetresPerTile, type Scene } from '../../src/state/scene';
+import { heightAt, isIndoor, sceneMetresPerTile, type Scene } from '../../src/state/scene';
 import { metricToLift } from '../../src/state/relief';
 import { DIR8_DELTA, type Dir8 } from '../../src/gameIso/rig/facing';
 
@@ -38,24 +39,19 @@ export function envPanel(scene: Scene, dims: Dims): Panel {
     objs.push({ d: floorDepth(el, dims), svg: floorSvg(el, dims, opts) + floorAccentsSvg(el, dims, opts) });
   // Murs d'arête (portes/parapets/herses inclus — apparence 100 % donnée), toutes couches.
   for (const el of buildWalls(scene)) objs.push({ d: wallDepth(el, dims), svg: wallSvg(el, dims, opts) + wallAccentsSvg(el, dims, opts) });
-  // Overlays de terrain en relief (tuile 'mur' pleine, 'bois') — couche de base, comme IsoStage.
-  for (let y = 0; y < dims.h; y++)
-    for (let x = 0; x < dims.w; x++) {
-      const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
-      if (ov) objs.push({ d: ov.d, svg: ov.html });
-    }
-  // Props de scène (décor statique) : placement type placeSprite (boîte 120×150, pieds au bas de la
-  // tuile), soulevés au lift MÉTRIQUE de leur case, réduits en edge-on (billboardScale).
-  for (const ent of scene.entities) {
-    if (ent.kind !== 'prop') continue;
-    const z = ent.z ?? 0;
-    const lift = metricToLift(heightAt(scene, ent.pos.x, ent.pos.y, z));
-    const { cx, cy } = tileCenter(ent.pos.x, ent.pos.y, dims, lift);
+  // PROPS en billboards du MÊME SVG iso — décor de scène (tonneaux, tentes…) ET overlays de terrain
+  // (bois → arbre), tous via `buildProps` (source unique). Placement type placeSprite (boîte 120×150,
+  // pieds au bas de la tuile), soulevés au lift MÉTRIQUE de leur case, réduits en edge-on (billboardScale).
+  // Le mur PLEIN, lui, est déjà rendu par `buildFloors` (bloc de relief), pas ici.
+  for (const el of buildProps(scene)) {
+    const { x, y, z } = el.cell;
+    const lift = metricToLift(heightAt(scene, x, y, z));
+    const { cx, cy } = tileCenter(x, y, dims, lift);
     const scale = 0.55 * billboardScale(dims);
     const sh = `<ellipse cx="${cx}" cy="${cy + 3}" rx="${22 * scale + 4}" ry="${(22 * scale + 4) / 2}" fill="#000" opacity="0.33"/>`;
     objs.push({
-      d: depth(ent.pos.x, ent.pos.y, dims, z),
-      svg: `${sh}<g transform="translate(${cx - 60 * scale},${cy + TH / 2 - 150 * scale}) scale(${scale})">${propSvg(ent.ref ?? 'tonneau', ent.facing, dims.rot ?? 0)}</g>`,
+      d: depth(x, y, dims, z),
+      svg: `${sh}<g transform="translate(${cx - 60 * scale},${cy + TH / 2 - 150 * scale}) scale(${scale})">${propSvg(el.ref, el.facing, dims.rot ?? 0)}</g>`,
     });
   }
   // Toits des bâtiments composés en PANS CONTINUS (jamais en cutaway : environnement pur), au plein
@@ -64,8 +60,9 @@ export function envPanel(scene: Scene, dims: Dims): Panel {
   objs.sort((a, b) => a.d - b.d);
   const st = stageSize(dims);
   // Defs des matériaux v2 DANS le panneau (le `patternTransform` dépend de la projection ; les ids
-  // sont étiquetés par projection → plusieurs panneaux coexistent dans un même document).
-  return { w: st.w, h: st.h, svg: `<defs>${detailPatternDefs(dims, opts.mpt)}</defs>` + objs.map((o) => o.svg).join('') };
+  // sont étiquetés par projection → plusieurs panneaux coexistent dans un même document). Le voile
+  // d'ombrage de profondeur (edge-on) est posé PAR-DESSUS la scène (décoration de vue, comme le stage).
+  return { w: st.w, h: st.h, svg: `<defs>${detailPatternDefs(dims, opts.mpt)}</defs>` + objs.map((o) => o.svg).join('') + edgeDepthVeil(dims, st.w, st.h) };
 }
 
 // ── POV : caméra + liste de dessin PURES ; « tout visible » + lumière uniforme (QC d'environnement) ──

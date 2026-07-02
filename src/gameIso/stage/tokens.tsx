@@ -61,21 +61,21 @@ function tokenNode(ctx: TokenCtx, id: string, x: number, y: number, child: React
   );
 }
 
-/** Décors (props : épave, cadavres, sang…) — STATIQUES, rendus dans LES DEUX modes (restent visibles
- *  pendant le combat). L'anim d'ambiance CSS (fx) passe par le calque fx. Empreinte multi-cases (tente
- *  2×2, tribune 3×1…) : token centré sur le bloc, agrandi au côté MAX (`foot.scale` — l'échelle
- *  « largeur projetée » l'écrasait en 1×1 quand l'empreinte pointait vers la profondeur), profondeur au
- *  coin le plus PROCHE (comme les bâtiments). `vis` : en vue → au-dessus du voile ; mémorisé → sous. */
+/** Décors (props : épave, cadavres, sang… ET overlays de terrain bois→arbre) — STATIQUES, rendus dans LES
+ *  DEUX modes (restent visibles pendant le combat) via le MÊME billboard. L'anim d'ambiance CSS (fx) passe
+ *  par le calque fx. Empreinte multi-cases (tente 2×2, tribune 3×1…) : token centré sur le bloc, agrandi
+ *  au côté MAX (`foot.scale` — l'échelle « largeur projetée » l'écrasait en 1×1 quand l'empreinte pointait
+ *  vers la profondeur), profondeur au coin le plus PROCHE (comme les bâtiments). `vis` : en vue → au-dessus
+ *  du voile ; mémorisé → sous. Un overlay de terrain n'a pas d'`entId` → clé = son identité monde `el.key`. */
 export function propLayerObjs(propEls: PropEl[], ctx: TokenCtx): StageObj[] {
   const out: StageObj[] = [];
   for (const el of propEls) {
-    if (el.source !== 'entity') continue;
     const px = el.cell.x + el.foot.offX, py = el.cell.y + el.foot.offY;
     out.push({
       d: propDepth(el, ctx.dims),
       z: el.cell.z,
       vis: el.states.visible,
-      el: token(ctx, `e-${el.entId}`, px, py, propSprite(el.ref, el.facing, ctx.dims.rot ?? 0), 0.55 * el.foot.scale, undefined, false, el.fx, false, false, el.cell.z),
+      el: token(ctx, el.entId ? `e-${el.entId}` : el.key, px, py, propSprite(el.ref, el.facing, ctx.dims.rot ?? 0), 0.55 * el.foot.scale, undefined, false, el.fx, false, false, el.cell.z),
     });
   }
   return out;

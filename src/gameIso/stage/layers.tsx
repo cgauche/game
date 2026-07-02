@@ -12,9 +12,8 @@ import { TW, TH, EDGE_H, Dims, tileCenter, depth, makeOccludes } from '../iso';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
 import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
 import { roofSvg, roofDepth } from '../backends/affineRoofs';
-import { terrainOverlayOf } from '../backends/affineProps';
 import type { DetailOpts } from '../backends/affineDetail';
-import type { FloorEl, WallEl, RoofEl, PropEl } from '../builders/types';
+import type { FloorEl, WallEl, RoofEl } from '../builders/types';
 import type { StageObj } from './objs';
 
 /** Opacité d'un tablier de SURPLOMB rendu AU-DESSUS de la zone active (FANTÔME) : on voit la silhouette
@@ -105,24 +104,6 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, occludesActor: (x: num
       el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: wallSvg(el, d, detailOpts) }} />,
     };
   });
-}
-
-/** Overlays de TERRAIN en relief (tuile 'mur' pleine, 'bois') — éléments `prop` du builder de source
- *  'terrain', dessinés par le registre (backend). Toujours SOUS le voile (décor « mémorisé »). */
-export function decorLayerObjs(propEls: PropEl[], d: Dims, occludesActor: (x: number, y: number) => boolean): StageObj[] {
-  const out: StageObj[] = [];
-  for (const el of propEls) {
-    if (el.source !== 'terrain') continue;
-    const ov = terrainOverlayOf(el, d);
-    if (!ov) continue;
-    out.push({
-      d: ov.d,
-      x: el.cell.x,
-      y: el.cell.y,
-      el: <g key={el.key} style={{ opacity: occludesActor(el.cell.x, el.cell.y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: ov.html }} />,
-    });
-  }
-  return out;
 }
 
 /** Toits du pivot : cutaway TOUT-EN-SCÈNE — le toit se lève quand un allié est DANS l'empreinte

@@ -1,13 +1,15 @@
 /**
  * BUILDER de PROPS — produit les éléments `prop` du pivot (cf. ./types) : le DÉCOR de scène (entités
- * `kind:'prop'` — tonneaux, cadavres, tentes… rendus en billboard du SVG catalogue) et les OVERLAYS de
- * TERRAIN en relief (tuile 'mur' pleine, 'bois' — rendus en code par le registre, couche de base).
- * PUR et projection-agnostique : identité + case + empreinte + vérités de scène, aucune caméra.
- * Consommé par IsoStage (couches décor/props/affordances) et l'éditeur (overlays terrain).
+ * `kind:'prop'` — tonneaux, cadavres, tentes…) et les OVERLAYS de TERRAIN à décor (tuile `bois → 'arbre'`).
+ * TOUS rendus en BILLBOARD du SVG catalogue (`propSvg`) par les DEUX backends (iso/éditeur ET POV) —
+ * l'overlay de terrain n'est plus qu'un prop dérivé d'une donnée `TerrainDef.overlayProp` (le mur PLEIN,
+ * lui, naît de `solidHeightM` via le relief de `buildFloors`, pas d'ici). PUR et projection-agnostique :
+ * identité + case + empreinte + vérités de scène, aucune caméra.
+ * Consommé par IsoStage (couches props/affordances), l'éditeur et le POV (mêmes billboards).
  */
 import { Scene, tileAt } from '../../state/scene';
 import { decorFootGeometry } from '../../state/footprint';
-import { terrainHasOverlay } from '../sprites';
+import { terrainOverlayProp } from '../../state/terrain';
 import type { FloorView } from './floors';
 import type { PropEl } from './types';
 
@@ -20,22 +22,24 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
   const out: PropEl[] = [];
-  // Overlays de TERRAIN en relief — couche de base uniquement (historique IsoStage/éditeur).
+  // Overlays de TERRAIN à DÉCOR (bois → arbre) — un billboard par tuile (couche de base), MÊME chemin de
+  // rendu que les props de scène. `visible` suit le brouillard comme un prop : en vue → au-dessus du voile
+  // (donc VISIBLE en POV) ; mémorisé → sous le voile. Éditeur/QC (`visible` absent) → tout visible.
   const { w, h } = scene.dimensions;
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {
-      const t = tileAt(scene, x, y);
-      if (!terrainHasOverlay(t)) continue;
+      const ref = terrainOverlayProp(tileAt(scene, x, y));
+      if (!ref) continue;
       out.push({
         kind: 'prop',
         key: `ov:${x},${y}`,
         cell: { x, y, z: 0 },
         sortClass: 'prop',
         source: 'terrain',
-        ref: t,
+        ref,
         foot: { offX: 0, offY: 0, scale: 1 },
         interact: false,
-        states: { visible: false },
+        states: { visible: !visible || visible.has(`${x},${y},0`) },
       });
     }
   // Props de scène (décor) — visibles dans les deux modes (exploration ET combat).

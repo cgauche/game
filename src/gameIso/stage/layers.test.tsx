@@ -4,7 +4,7 @@ import { buildFloors } from '../builders/floors';
 import { buildProps } from '../builders/props';
 import { buildWalls } from '../builders/walls';
 import type { Dims } from '../iso';
-import { floorLayerObjs, decorLayerObjs, wallLayerObjs } from './layers';
+import { floorLayerObjs, wallLayerObjs } from './layers';
 
 const DIMS = (s: { dimensions: { w: number; h: number } }): Dims => ({ ...s.dimensions, rot: 0, view: 'iso' });
 const OPTS = { zoom: 1, mpt: 2 };
@@ -48,15 +48,20 @@ describe('couches statiques du stage — vérités de VUE décorées au dessin',
     expect(deck.op).toBe(0.22); // le groupe se tient dessous → on le révèle
   });
 
-  it('décor de terrain (mur/bois) : objs SANS étage (jamais assombris par lower-floor-dim), estompés devant un acteur', () => {
+  it('mur PLEIN : rendu par la couche SOL (bloc de relief), plus jamais un overlay de décor', () => {
     const s = emptyScene(3, 3);
     s.layers[0].tiles[4] = 'mur'; // (1,1)
-    const els = buildProps(s);
-    const clear = decorLayerObjs(els, DIMS(s), () => false);
-    expect(clear).toHaveLength(1);
-    expect('z' in clear[0] && clear[0].z !== undefined).toBe(false); // pas de z → pas de filtre d'étage
-    const occluded = decorLayerObjs(els, DIMS(s), () => true);
-    expect(occluded[0].el.props.style.opacity).toBe(0.4);
+    const objs = floorLayerObjs(buildFloors(s), s, DIMS(s), EXPLO({ x: 0, y: 0 }), 0, OPTS);
+    expect(objs.find((o) => o.x === 1 && o.y === 1)).toBeDefined(); // un obj de SOL (le bloc plein)
+    expect(buildProps(s).some((e) => e.source === 'terrain')).toBe(false); // le mur n'est PAS un prop
+  });
+
+  it('bois : émis en billboard de PROP (overlayProp → arbre) — MÊME chemin que le décor de scène', () => {
+    const s = emptyScene(3, 3);
+    s.layers[0].tiles[4] = 'bois'; // (1,1)
+    const props = buildProps(s).filter((e) => e.source === 'terrain');
+    expect(props).toHaveLength(1);
+    expect(props[0].ref).toBe('arbre');
   });
 
   it('murs : estompe d’occlusion (0.4) devant un acteur à suivre, vis = vérité du builder', () => {

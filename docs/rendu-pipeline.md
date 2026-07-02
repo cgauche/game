@@ -108,7 +108,8 @@ byte-identique.
   référencent par id, les backends résolvent les couleurs par `part`.
 - **un ton de couleur du décor** : entrée dans `src/data/decorPalette.json` → dispo en `P.<ton>`.
 - **un terrain** : `src/state/terrain/defs/<id>.ts` (`TerrainDef` : `gradient`/`swatch`/`stops`) puis
-  `npm run gen`. Overlay en relief (mur/arbre) : entrée dans `TERRAIN_OVERLAYS` (`sprites.ts`).
+  `npm run gen`. Décor de terrain : `overlayProp` (billboard de prop, ex. `bois → 'arbre'`, rendu par les
+  2 backends via `buildProps`) ou `solidHeightM` (bloc plein, ex. `mur`, dérivé du relief par `buildFloors`).
 - **un prop / décor** : `src/gameIso/catalog/decor/defs/<id>.ts` (`PropViz.render`, SVG boîte 120×150,
   couleurs via `P.<ton>`) puis `npm run gen`.
 - **un TYPE d'élément** (au-delà de floor/wall/roof/prop/token) : ajouter le variant à `SceneEl`

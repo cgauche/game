@@ -6,8 +6,8 @@ import { buildProps } from './props';
 describe('buildProps — éléments prop du pivot', () => {
   const scene = () => {
     const s = emptyScene(6, 6);
-    s.layers[0].tiles[1 * 6 + 2] = 'mur'; // (2,1) : overlay terrain « mur plein »
-    s.layers[0].tiles[3 * 6 + 4] = 'bois'; // (4,3) : overlay terrain « arbre »
+    s.layers[0].tiles[1 * 6 + 2] = 'mur'; // (2,1) : BLOC PLEIN — géré par le relief (solidHeightM), PAS un prop
+    s.layers[0].tiles[3 * 6 + 4] = 'bois'; // (4,3) : overlay à DÉCOR (overlayProp → 'arbre')
     s.entities = [
       { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 } }, // ref absente → normalisée 'tonneau'
       { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', foot: { w: 2, h: 2 }, facing: 'SE', anim: 'flottement', interact: { flow: { kind: 'seq', steps: [] } } },
@@ -16,14 +16,23 @@ describe('buildProps — éléments prop du pivot', () => {
     return s;
   };
 
-  it('émet les overlays de TERRAIN (source terrain, toujours sous le voile) puis les props de scène', () => {
+  it('émet un billboard de DÉCOR pour un terrain à overlayProp (bois→arbre) ; le mur PLEIN est un bloc de relief, pas un prop', () => {
     const els = buildProps(scene());
     const terrain = els.filter((e) => e.source === 'terrain');
-    expect(terrain.map((e) => e.key)).toEqual(['ov:2,1', 'ov:4,3']);
-    expect(terrain.map((e) => e.ref)).toEqual(['mur', 'bois']);
-    for (const t of terrain) expect(t.states.visible).toBe(false);
+    expect(terrain.map((e) => e.key)).toEqual(['ov:4,3']); // seul `bois` a un overlayProp
+    expect(terrain.map((e) => e.ref)).toEqual(['arbre']);  // rendu comme un prop d'entité (billboard partagé)
+    expect(terrain[0].foot).toEqual({ offX: 0, offY: 0, scale: 1 });
+    expect(terrain[0].interact).toBe(false);
+    for (const t of terrain) expect(t.states.visible).toBe(true); // `visible` absent (éditeur/QC) → tout visible
     const props = els.filter((e) => e.source === 'entity');
     expect(props.map((e) => e.key)).toEqual(['prop:p1', 'prop:p2']);
+  });
+
+  it('un overlay de terrain suit le brouillard comme un prop (en vue → au-dessus du voile, cull LdV en POV sinon)', () => {
+    const seen = buildProps(scene(), new Set(['4,3,0'])).find((e) => e.key === 'ov:4,3')!;
+    expect(seen.states.visible).toBe(true); // sa tuile est en vue
+    const hidden = buildProps(scene(), new Set(['0,0,0'])).find((e) => e.key === 'ov:4,3')!;
+    expect(hidden.states.visible).toBe(false); // mémorisé → sous le voile / culé en POV
   });
 
   it('normalise la ref (défaut tonneau) et porte facing/empreinte/fx/interact', () => {

@@ -130,14 +130,14 @@ export interface RoofEl extends ElBase {
   faces: Face[];
   lines: RoofLine[];
 }
-/** Élément BILLBOARD (zéro face) : le backend rend le SVG iso ancré aux pieds.
- *  `source` route le dessin : 'entity' = prop de scène (SVG du catalogue décor, billboard iso/POV) ;
- *  'terrain' = overlay de terrain en relief (tuile 'mur' pleine, 'bois') rendu en code par le registre. */
+/** Élément BILLBOARD (zéro face) : les DEUX backends rendent son SVG catalogue (`propSvg`) ancré aux pieds.
+ *  `source` = ORIGINE (le rendu est identique) : 'entity' = prop de scène (fouillable, empreinte, facing,
+ *  anim) ; 'terrain' = décor dérivé d'un terrain (`overlayProp`, ex. bois → arbre — 1×1, jamais fouillable). */
 export interface PropEl extends ElBase {
   kind: 'prop';
   sortClass: 'prop';
   source: 'entity' | 'terrain';
-  /** Id de dessin : ref de prop NORMALISÉE (défaut 'tonneau', la même partout) ou id de terrain. */
+  /** Id de dessin : ref de prop NORMALISÉE (défaut 'tonneau', la même partout — décor d'entité OU de terrain). */
   ref: string;
   /** Orientation MONDE d'auteur (props directionnels) — chaque backend la projette avec SA caméra. */
   facing?: Dir8;

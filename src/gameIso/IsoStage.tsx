@@ -33,7 +33,7 @@ import { buildWalls } from './builders/walls';
 import { buildRoofs } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
-import { makeOccludesActor, floorLayerObjs, wallLayerObjs, decorLayerObjs, roofLayerObjs } from './stage/layers';
+import { makeOccludesActor, floorLayerObjs, wallLayerObjs, roofLayerObjs } from './stage/layers';
 import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
@@ -142,7 +142,6 @@ export function IsoStage() {
   const occludesActor = useMemo(() => makeOccludesActor(scene, dims, { mode, battle, partyPos }), [scene, dims, mode, battle, partyPos]);
   const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, { mode, battle, partyPos }, lod, detailOpts) : []), [scene, floorEls, dims, mode, battle, partyPos, lod, detailOpts]);
   const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, occludesActor, lod, detailOpts), [wallEls, dims, occludesActor, lod, detailOpts]);
-  const decorObjs = useMemo(() => decorLayerObjs(propEls, dims, occludesActor), [propEls, dims, occludesActor]);
   const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, occludesActor, viewMode === 'top', detailOpts), [roofEls, dims, occludesActor, viewMode, detailOpts]);
   const highlightObjs = useMemo(
     () => (scene && mode === 'battle' && battle ? combatHighlightObjs(useGame.getState, scene, battle, dims, liftAt, { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast }) : []),
@@ -153,8 +152,8 @@ export function IsoStage() {
   const figurantObjs = useMemo(() => figurantLayerObjs(tokenEls, { dims, view: viewMode, liftAt }), [tokenEls, dims, viewMode, scene]);
   // Ordre de concaténation = ordre d'émission historique (départage STABLE des ex æquo de profondeur).
   const staticObjs = useMemo(
-    () => sortByDepth(floorObjs, wallObjs, decorObjs, roofObjs, highlightObjs, propObjs, figurantObjs),
-    [floorObjs, wallObjs, decorObjs, roofObjs, highlightObjs, propObjs, figurantObjs],
+    () => sortByDepth(floorObjs, wallObjs, roofObjs, highlightObjs, propObjs, figurantObjs),
+    [floorObjs, wallObjs, roofObjs, highlightObjs, propObjs, figurantObjs],
   );
 
   // ── Pointeur & visée au survol ──────────────────────────────────────────────────────────────────
