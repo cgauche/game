@@ -10,7 +10,7 @@ import type { Effect } from './scene';
 import type { Flow } from './flow';
 import type { GameOp } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
-import type { AttackResult } from '../engine/combat';
+import type { AttackResult, DefenseMode } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
@@ -120,6 +120,12 @@ export interface PendingTest {
   onFailure?: Flow;
   /** Continuation : le Flow à reprendre APRÈS la branche (suite du `seq` parent d'un nœud `test`). */
   after?: Flow;
+  /** Action de COMBAT « cumuler l'Avantage » (LDB 09 l.305-308 : Intuition/Savoir/Survie/Prière) : sur
+   *  RÉUSSITE, octroie +1 Avantage au combattant `combatantId`, plafonné à `cap` (= Bonus de la
+   *  Caractéristique — Int pour Intuition/Savoir/Survie, Soc pour Prière). Appliqué par `resolveTest`
+   *  (via `gainAdvantage`, qui respecte AUSSI le plafond général d'Avantage). Consomme l'Action, réussi
+   *  ou non (« Chaque Round que vous passez à… »). Absent = Test ordinaire. */
+  combatAdvantage?: { combatantId: string; cap: number };
 }
 /** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
  *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */
@@ -603,9 +609,13 @@ export interface PendingDefense {
   weapon: Weapon; // arme active de l'attaquant, figée
   location: HitLocation | null; // visée par l'IA (aucune pour l'instant → null)
   atk: TestResult; // jet d'attaque figé (rollMeleeAttacker)
-  mode: 'parade' | 'esquive'; // réaction choisie (défaut = bestDefenseMode)
+  mode: DefenseMode; // réaction choisie (défaut = bestDefenseMode) ; 'social' = substitution sociale (mêlée)
   /** Arme de parade choisie (uid d'ItemInstance) ; absent = main principale (weapons[0]). */
   parryWeaponUid?: string;
+  /** Substitution sociale (`mode:'social'`, LDB 09 l.207/287) : id de la Compétence substituée à Corps
+   *  à corps (Intimidation/Dressage), figé au choix de l'option. Sa valeur de Test est re-dérivée à
+   *  l'affichage/résolution (`skillBaseValue`) — le gate `fear` n'est vérifié qu'à l'OFFRE de l'option. */
+  substituteSkillId?: string;
   /** TIR défendu (RAW LDB 14 l.62/70, 62 l.307) : modes de réaction AUTORISÉS — limite le segmented
    *  control de la modale (ex. Esquive seule à Bout Portant, Parade seule avec bouclier Protectrice 2+).
    *  Absent = mêlée (Parade/Esquive libres). `distanceTiles` sert au breakdown Projectiles (finishRanged). */

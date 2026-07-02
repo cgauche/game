@@ -16,9 +16,10 @@
  * PUR : lit la donnée (`findSkillById`) + `effectiveChar` ; ne mute rien. La couche combat/UI consomme
  * ces primitives (surface d'attaque/défense) — cette FEUILLE ne connaît ni le store ni le rendu.
  */
-import type { Combatant, CharKey } from './types';
+import type { Combatant } from './types';
 import { findSkillById } from '../data';
 import { effectiveChar, bonus } from './characteristics';
+import { skillBaseValue } from './skills';
 
 /** Le personnage POSSÈDE-t-il la Compétence (Base = toujours ; Avancée = au moins une Augmentation) ? */
 function possesses(c: Combatant, skillId: string): boolean {
@@ -28,11 +29,11 @@ function possesses(c: Combatant, skillId: string): boolean {
   return sd.type === 'base' || (inst?.advances ?? 0) > 0;
 }
 
-/** Valeur d'un Test de la Compétence `skillId` pour `c` : Caractéristique effective + Augmentations. */
-function skillValue(c: Combatant, skillId: string): number {
-  const sd = findSkillById(skillId);
-  if (!sd) return 0;
-  return effectiveChar(c, sd.characteristic) + (c.skills?.find((s) => s.skillId === skillId)?.advances ?? 0);
+/** Valeur d'un Test de la Compétence `skillId` (spécialisation `spec`) pour `c` — SOURCE UNIQUE partagée
+ *  avec la valeur de défense sociale : `skillBaseValue` (Caractéristique EFFECTIVE + carac alternative +
+ *  Augmentations), pour que la valeur OFFERTE (surface d'attaque/défense) == la valeur RÉSOLUE. */
+function skillValue(c: Combatant, skillId: string, spec?: string): number {
+  return skillBaseValue(c, skillId, spec);
 }
 
 // ── A) Cumuler l'Avantage ────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ export function combatSubstitute(self: Combatant, foe: Combatant, role: 'defense
     if (!sub || (sub.role !== 'both' && sub.role !== role)) continue;
     if (!possesses(self, inst.skillId)) continue;
     if (sub.gate === 'fear' && !fearsBy(foe, self)) continue;
-    const value = skillValue(self, inst.skillId);
+    const value = skillValue(self, inst.skillId, inst.spec);
     if (!best || value > best.value) best = { skillId: inst.skillId, value };
   }
   return best;

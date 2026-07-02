@@ -57,6 +57,8 @@ import { rule, ruleOverrides, loadRuleOverrides } from '../engine/policy';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { type HealMode } from '../engine/healing';
+import type { DefenseMode } from '../engine/combat';
+import { gainAdvantage } from '../engine/advantage';
 import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
@@ -129,7 +131,7 @@ export interface BattleState {
    *  'cast' = ciblage d'un sort · 'teleport' = case d'arrivée d'une Téléportation · 'resolve'/'ammo'/'heal'
    *  = panneaux (Détermination / munition / soin). La Focalisation / l'usage d'objet / le ramassage NE sont
    *  PAS des modes : ils passent par `battleFocusSpell`→`pendingFocus`, `battleUseItem`, `battlePickup`. */
-  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | 'dispel' | 'battery' | null;
+  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | 'dispel' | 'battery' | 'advantage' | null;
   /** Sort sélectionné pour l'action d'incantation en cours (id STABLE — le libellé se résout à l'affichage). */
   selectedSpellId: string | null;
   /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
@@ -612,7 +614,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Flow, opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | null) => void;
+  battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** Pré-jet : bascule le mode de soin (Blessures ⇄ Hémorragie) dans la modale ouverte. */
@@ -889,6 +891,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
   // frenzy{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
+  /** Action « cumuler l'Avantage » (LDB 09 l.305-308) : Test de la Compétence `skillId` (Intuition/
+   *  Savoir/Survie/Prière) via la modale de Test standard ; sur réussite +1 Avantage plafonné. Coûte l'Action. */
+  battleGainAdvantage: (skillId: string) => void;
   frenzyConfirm: () => void;
   frenzyCancel: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
@@ -896,7 +901,7 @@ export interface GameState extends RollFlowActionsMap {
   fumbleConfirm: () => void;
   /** Flux de défense réactive (héros attaqué par l'IA) : choisir Parade/Esquive, défendre,
    *  dépenser une Chance, appliquer ; « Subir » = défense passive. */
-  defenseSetMode: (mode: 'parade' | 'esquive') => void;
+  defenseSetMode: (mode: DefenseMode, subSkillId?: string) => void;
   /** Choisit l'arme de parade (uid d'ItemInstance ; null = main principale) — avant le jet de défense. */
   defenseSetParryWeapon: (uid: string | null) => void;
   // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
@@ -1769,6 +1774,16 @@ export const useGame = create<GameState>((set, get) => ({
       tool.destroyed = true;
       set({ party: [...get().party] }); // persiste la casse + re-render
       get().log(`${tool.name} (Bâclé) se brise sur la Maladresse de ${actor?.name ?? pt.actorName}.`);
+    }
+    // Action de combat « cumuler l'Avantage » (LDB 09 l.305-308) : sur réussite, +1 Avantage plafonné au
+    // `cap` de la Compétence (via `gainAdvantage`, qui respecte aussi le plafond général) ; l'Action est
+    // consommée qu'on réussisse ou non (on a « passé son tour » à s'observer/prier — LDB 09 l.308/419).
+    const ca = pt.combatAdvantage;
+    const battle = ca ? get().battle : null;
+    if (ca && battle) {
+      const c = battle.combatants.find((x) => x.id === ca.combatantId);
+      if (c && effSuccess && (c.advantage ?? 0) < ca.cap) gainAdvantage(c, 1);
+      set({ battle: { ...battle, acted: true, action: null } });
     }
     // Branche choisie PUIS continuation (suite du `seq` parent d'un nœud `test`) — exécutées par runFlow
     // (butin de Test → fenêtre d'attribution ; if/test imbriqués gérés).

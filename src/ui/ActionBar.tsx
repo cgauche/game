@@ -15,6 +15,8 @@ import { compatibleAmmo, loadoutLabel } from '../engine/items';
 import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets } from '../engine/healing';
+import { combatAdvantageSkills } from '../engine/skillCombatApps';
+import { findSkillById } from '../data/index';
 import { mountableNear } from '../state/mount';
 import { combatDistance } from '../state/footprint';
 import { shipOfCrew, servablePostes } from '../state/shipPostes';
@@ -79,6 +81,7 @@ export function ActionBar() {
   const aim = useGame((s) => s.battleAim);
   const togglePushback = useGame((s) => s.battleTogglePushback);
   const dispelSpell = useGame((s) => s.battleDispelSpell);
+  const gainAdvantage = useGame((s) => s.battleGainAdvantage);
   const selectAttack = useGame((s) => s.battleSelectAttack);
   const maneuverArea = useGame((s) => s.battleManeuverArea);
   const cancelMove = useGame((s) => s.cancelMove);
@@ -339,6 +342,12 @@ export function ActionBar() {
   // Dissipation (LDB 46 l.204-207) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
   const canDispel = isHero && actorHasSkill(active, 'langue', 'Magick');
   const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];
+  // Cumuler l'Avantage (LDB 09 l.305-308) : Compétences data-driven (`combatAdvantage`) que l'actif peut
+  // tester pour +1 Avantage, tant qu'il n'est PAS déjà au plafond de la méthode. Dédupliqué par id de
+  // Compétence (Savoir groupé → un seul bouton). Coûte l'Action.
+  const advSkills = isHero && !frenzied
+    ? [...new Map(combatAdvantageSkills(active).filter((s) => s.cap > active.advantage).map((s) => [s.skillId, s])).values()]
+    : [];
 
   // ── Capacités de la barre, DATA-DRIVEN : UNE liste de descripteurs, source du rendu ET des
   // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
@@ -355,6 +364,7 @@ export function ActionBar() {
     if (hasSpells && !frenzied) slots.push({ id: 'cast', cls: battle.action === 'cast' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/cast" />, label: 'Incanter', done: battle.acted, title: "Incanter un sort (Test de Langage mystique) — coûte l'Action", run: () => selectAction(battle.action === 'cast' ? null : 'cast') });
     if (canHeal && healTargets.length > 0) slots.push({ id: 'heal', cls: battle.action === 'heal' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="journal/heal" />, label: 'Soigner', title: "Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action", run: () => selectAction(battle.action === 'heal' ? null : 'heal') });
     if (canDispel && dispellable.length > 0 && !frenzied) slots.push({ id: 'dispel', cls: battle.action === 'dispel' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/dispel" />, label: 'Dissiper', done: battle.acted, title: "Dissiper un sort permanent (Test étendu de Langue (Magick) → NI) — coûte l'Action chaque Round", run: () => selectAction(battle.action === 'dispel' ? null : 'dispel') });
+    if (advSkills.length > 0) slots.push({ id: 'advantage', cls: battle.action === 'advantage' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/aim" />, label: 'Prendre l’Avantage', done: battle.acted, title: 'Évaluer l’environnement / prier pour gagner +1 Avantage (Test d’une Compétence — coûte l’Action, plafonné au Bonus de Caractéristique)', run: () => selectAction(battle.action === 'advantage' ? null : 'advantage') });
     if (!frenzied) slots.push({ id: 'defend', disabled: battle.acted || stunned || broken, icon: <Icon id="action/defend" />, label: 'Défensive', done: battle.acted, title: '+20 à tous vos Tests de défense jusqu’à votre prochain tour', run: defendTotal });
     if (onFire) slots.push({ id: 'roll-fire', disabled: battle.acted || stunned, icon: <Icon id="action/roll-fire" />, label: 'Se rouler', done: battle.acted, title: "Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action)", run: () => recoverState('en-flammes') });
     if (entangled) slots.push({ id: 'free-entangle', disabled: battle.acted || stunned, icon: <Icon id="action/break-free" />, label: 'Se libérer', done: battle.acted, title: "Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)", run: () => recoverState('empetre') });
@@ -456,6 +466,22 @@ export function ActionBar() {
                 <button className="btn btn-sm" onClick={() => dispelSpell(d.spellId, d.casterId)} title="Test étendu de Langue (Magick) — coûte l'Action chaque Round">
                   <Icon id="action/dispel" size="sm" /> {d.label} <span className="bp-spell-ni">(NI {d.ni})</span>{prog > 0 ? ` — ${prog}/${d.ni} DR` : ''}
                 </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {battle.action === 'advantage' && (
+        <div className="ab-spells">
+          {advSkills.length === 0 && <div className="ab-hint">Aucune Compétence exploitable ici.</div>}
+          {advSkills.map((s) => {
+            const label = findSkillById(s.skillId)?.label ?? s.skillId;
+            return (
+              <div key={s.skillId} className="ab-spell-row">
+                <button className="btn btn-sm" onClick={() => gainAdvantage(s.skillId)} title={`Test de ${label} : +1 Avantage sur réussite (max ${s.cap}) — coûte l’Action`}>
+                  <Icon id="action/aim" size="sm" /> {label} <span className="bp-spell-ni">(max {s.cap})</span>
+                </button>
+                <CodexRef category="skills" label={label} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
               </div>
             );
           })}

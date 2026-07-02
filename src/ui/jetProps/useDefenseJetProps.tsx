@@ -1,7 +1,9 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
 import { FLOWS } from '../../state/rollFlows';
-import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../../engine/combat';
+import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL, type DefenseMode } from '../../engine/combat';
+import { combatSubstitute } from '../../engine/skillCombatApps';
+import { findSkillById } from '../../data/index';
 import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
@@ -45,12 +47,20 @@ export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | nul
   // Armes pouvant parer (hors Mains nues) ; arme de parade choisie (défaut = main principale).
   const parryPickable = defender.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const chosenParry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0];
+  // Substitution sociale (LDB 09 l.207/287) : proposée en MÊLÉE quand une Compétence sociale
+  // (Intimidation/Dressage `combatSubstitute`) est utilisable en défense — l'attaquant a PEUR du
+  // défenseur (gate `fear`). Data-driven : l'option existe parce que la donnée+le gate le disent.
+  const sub = pd.weapon.type === 'melee' ? combatSubstitute(defender, attacker, 'defense') : null;
+  const socialLabel = sub ? findSkillById(sub.skillId)?.label ?? 'Intimidation' : undefined;
+  // Base de la défense sociale (mode 'social') = valeur de Test de la Compétence substituée.
+  const socialBase = pd.mode === 'social' ? sub?.value : undefined;
   // MA ligne pré-remplie : valeur + mods de la défense CHOISIE (recalculés à chaque changement).
   const myMods = defenseModifiers(defender, pd.mode, 0, pd.mode === 'parade' ? chosenParry : undefined);
-  const myBase = defenseValue(defender, pd.mode, chosenParry);
+  const myBase = defenseValue(defender, pd.mode, chosenParry, socialBase);
+  const myLabel = pd.mode === 'social' ? (socialLabel ?? 'Intimidation') : DEFENSE_LABEL[pd.mode];
   // Valeurs affichées sur le segmented control (chaque option montre SA valeur effective).
-  const segVal = (mode: 'parade' | 'esquive') =>
-    optionValue(defenseValue(defender, mode, chosenParry), defenseModifiers(defender, mode, 0, mode === 'parade' ? chosenParry : undefined));
+  const segVal = (mode: DefenseMode) =>
+    optionValue(defenseValue(defender, mode, chosenParry, mode === 'social' ? sub?.value : undefined), defenseModifiers(defender, mode, 0, mode === 'parade' ? chosenParry : undefined));
   const forcedDie = FLOWS.defense.picker?.(pd, defender); // dé choisi (source unique : caps.picker)
   // `pd.modes` (tir) limite les réactions proposées ; absent = mêlée (Parade + Esquive). Filtre seul.
   const allowMode = (m: 'parade' | 'esquive') => !pd.modes || pd.modes.includes(m);
@@ -76,6 +86,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | nul
             options={[
               ...(allowMode('parade') ? [{ key: 'parade', label: 'Parade', value: segVal('parade'), selected: pd.mode === 'parade', title: 'Parer avec son arme (Corps à corps)', onSelect: () => setMode('parade') }] : []),
               ...(allowMode('esquive') ? [{ key: 'esquive', label: 'Esquive', value: segVal('esquive'), selected: pd.mode === 'esquive', title: 'Esquiver (Agilité)', onSelect: () => setMode('esquive') }] : []),
+              ...(sub ? [{ key: 'social', label: socialLabel!, value: segVal('social'), selected: pd.mode === 'social', title: `${socialLabel} à la place de Corps à corps : l’attaquant a peur de vous (LDB 09)`, onSelect: () => setMode('social', sub.skillId) }] : []),
             ]}
           />
           {pd.mode === 'parade' && parryPickable.length >= 2 && (
@@ -109,7 +120,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | nul
                 sl: pd.atk.sl,
               },
             },
-            { combatant: defender, pending: { label: DEFENSE_LABEL[pd.mode], base: myBase, mods: myMods } },
+            { combatant: defender, pending: { label: myLabel, base: myBase, mods: myMods } },
           ]}
         />
       </>

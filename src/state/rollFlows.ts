@@ -33,18 +33,18 @@ import {
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
-import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, type AttackResult } from '../engine/combat';
+import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
-import { testValue, effectiveSkillCharKey } from '../engine/skills';
+import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, psychResolution } from '../engine/psychology';
-import { findSpellById } from '../data/index';
+import { findSpellById, findSkillById } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
  *  choisi) : Test opposé si un défenseur a joué, attaque passive sinon — partagé attaque/force. */
@@ -64,10 +64,20 @@ function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack
  *  Protectrice 2+/Bout Portant/tireur Engagé) OU mêlée (`finishMelee`), selon le type d'arme FIGÉE de
  *  l'attaquant. `p.distanceTiles` sert au breakdown Projectiles ; `parry` = arme de parade choisie. */
 function finishDefenseResult(attacker: Combatant, defender: Combatant, p: PendingDefense, def: TestResult, dodgeMod = 0, parry?: Weapon): AttackResult {
+  const sub = defenseSubOf(defender, p);
   return p.weapon.type === 'ranged'
     ? finishRanged(attacker, defender, p.weapon, p.atk, def, p.mode, p.distanceTiles, p.location ?? undefined, [], parry, dodgeMod)
-    : finishMelee(attacker, defender, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry);
+    : finishMelee(attacker, defender, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry, false, sub);
 }
+
+/** Descripteur de la défense par SUBSTITUTION sociale (Intimidation/Dressage, LDB 09 l.207/287), ou
+ *  `undefined` hors mode 'social'. Base = valeur de Test de la Compétence figée au choix
+ *  (`substituteSkillId`, `skillBaseValue`) ; libellé = son nom d'affichage. */
+function defenseSubOf(defender: Combatant, p: PendingDefense): DefenseSub | undefined {
+  if (p.mode !== 'social' || !p.substituteSkillId) return undefined;
+  return { base: skillBaseValue(defender, p.substituteSkillId), label: findSkillById(p.substituteSkillId)?.label ?? DEFENSE_LABEL_FALLBACK };
+}
+const DEFENSE_LABEL_FALLBACK = 'Intimidation';
 
 /** Issue d'une étape de cascade `triggeredTest` OPPOSÉE : le DÉFENSEUR (victime) vient de jeter `def` ;
  *  l'ATTAQUANT (porteur) garde son jet FIGÉ `aT`. `resolveOpposed(aT, def)` met l'ATTAQUANT en 1ʳᵉ
@@ -288,7 +298,7 @@ export const FLOWS = {
       // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
       const dodgeMod = (s.scene ? sceneCombatModifiers(s.scene, s.gameTime).dodgeMod : 0) + mountedDodgePenalty(actor);
       const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
-      const def = rollMeleeDefender(actor, p.mode, battleRng(), dodgeMod, parry, p.weapon);
+      const def = rollMeleeDefender(actor, p.mode, battleRng(), dodgeMod, parry, p.weapon, defenseSubOf(actor, p));
       return { def, result: finishDefenseResult(attacker, actor, p, def, dodgeMod, parry) };
     },
     failed: (p) => !!p.result && !p.def?.success,

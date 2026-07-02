@@ -157,12 +157,24 @@ export function hasWeaponGroupSkill(c: Combatant, weapon: Weapon, kind: 'melee' 
   return c.skills.some((s) => s.skillId === skillId && wanted.includes((s.spec ?? '').toLowerCase()));
 }
 
+/** Mode de défense STRUCTUREL. `social` = SUBSTITUTION d'une Compétence sociale à Corps à corps (LDB 09
+ *  l.207 Dressage / l.287 Intimidation) « à la place de Corps à corps quand vous vous défendez face à
+ *  ceux qui ont peur de vous » — data-driven (`SkillData.combatSubstitute`), MÊLÉE uniquement (le tir
+ *  n'ouvre que Parade/Esquive). Sa valeur de base voyage dans `socialBase` (calculée par la couche
+ *  état/UI via `combatSubstitute`), son libellé dans `DefenseSub.label`. */
+export type DefenseMode = 'parade' | 'esquive' | 'social';
+/** Descripteur d'une défense par substitution sociale : valeur de Test de la Compétence substituée
+ *  (`base`) + son libellé d'affichage (`label`, ex. « Intimidation »). Thread depuis la couche état. */
+export interface DefenseSub { base: number; label: string }
+
 /**
- * Valeur de défense (Parade = Corps à corps avec l'arme parante ; Esquive = Agilité + avances).
+ * Valeur de défense (Parade = Corps à corps avec l'arme parante ; Esquive = Agilité + avances ;
+ * Social = valeur de Test de la Compétence substituée, fournie par `socialBase`).
  * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB p.295). `weapon` (arme du
  * défenseur) n'est utilisé qu'en Parade, pour aligner la Spé de Corps à corps sur l'arme tenue.
  */
-export function defenseValue(c: Combatant, mode: 'parade' | 'esquive', weapon?: Weapon): number {
+export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, socialBase?: number): number {
+  if (mode === 'social') return socialBase ?? 0; // base = Test de la Compétence sociale (Intimidation/Dressage), calculée en amont
   if (mode === 'parade') return combatValue(c, 'melee', weapon ?? c.weapons[0]);
   const sk = c.skills.find((s) => s.skillId === 'esquive');
   // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
@@ -185,7 +197,7 @@ export interface RollBreakdown {
   label: string;
   /** Mode de défense STRUCTUREL (≠ libellé d'affichage) — renseigné sur le jet du DÉFENSEUR pour que
    *  le moteur branche sur la nature de la défense (Esquive = Test de Déplacement) sans matcher le texte. */
-  mode?: 'parade' | 'esquive';
+  mode?: DefenseMode;
   /** Valeur de Compétence/Caractéristique de base (avant modificateurs). */
   base: number;
   /** Somme des modificateurs appliqués (Avantage, viser, États, portée, Atouts…). */
@@ -239,7 +251,7 @@ export interface AttackResult {
   log: string;
 }
 
-const bd = (label: string, base: number, t: TestResult, mods?: ModLine[], mode?: 'parade' | 'esquive'): RollBreakdown => ({
+const bd = (label: string, base: number, t: TestResult, mods?: ModLine[], mode?: DefenseMode): RollBreakdown => ({
   label,
   ...(mode ? { mode } : {}),
   base,
@@ -434,7 +446,7 @@ export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): n
 /** Modificateurs étiquetés d'un Test de DÉFENSE (Parade/Esquive). `dodgeMod` = pénalité météo
  *  (neige épaisse −20) appliquée à l'esquive uniquement (LDB 14 l.115-116). `weapon` = arme de parade
  *  (pénalité de main secondaire en Parade, sauf exception Parade+Défensive). */
-export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive', dodgeMod = 0, weapon?: Weapon): ModLine[] {
+export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMod = 0, weapon?: Weapon): ModLine[] {
   const out: ModLine[] = [];
   const adv = defender.advantage * 10;
   // Avantage HORS table de Difficulté (comme `attackModifiers`) → `uncapped` : ne compte PAS dans le
@@ -448,7 +460,9 @@ export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive'
     const pp = parryPenalty(defender, weapon);
     if (pp) out.push({ label: 'Main secondaire', value: pp });
   }
-  if (defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
+  // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
+  // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.
+  if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
   return out;
 }
 
@@ -460,7 +474,7 @@ export function baseTestMods(c: Combatant): number {
 }
 
 export interface AttackOptions {
-  defense?: 'parade' | 'esquive' | 'none';
+  defense?: DefenseMode | 'none';
   /** Localisation visée (Complexe -10 au Test ; sinon localisation = jet inversé). */
   location?: HitLocation;
   /** Modificateurs dérivés de la scène (couvert/obscurité/météo/mouvement/tir-mêlée), injectés par combatFlow. */
@@ -520,13 +534,14 @@ export function rollMeleeAttacker(
  *  « Sur la défensive » +20). C'est le SEUL jet relancé par un point de Chance. */
 export function rollMeleeDefender(
   defender: Combatant,
-  mode: 'parade' | 'esquive',
+  mode: DefenseMode,
   rng: RNG = defaultRNG,
   dodgeMod = 0, // neige épaisse : −20 à l'esquive (LDB 14 l.115-116) ; n'affecte pas la parade
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + pénalité main 2nde)
   vsWeapon?: Weapon, // arme de l'ATTAQUANT (Rapide : −10 à la parade d'une arme non-Rapide, LDB 62 l.320-321)
+  sub?: DefenseSub, // substitution sociale (mode 'social') : base = Test de la Compétence substituée
 ): TestResult {
-  const defVal = defenseValue(defender, mode, parryWeapon);
+  const defVal = defenseValue(defender, mode, parryWeapon, sub?.base);
   // Modificateurs = SOURCE UNIQUE `defenseModifiers` (Avantage uncapped, État, Sur la défensive, Neige,
   // Main secondaire, Maniement deux armes) + le malus Rapide (qui dépend de l'arme ATTAQUANTE, donc
   // hors `defenseModifiers`), le tout PLAFONNÉ par `combineMods` comme l'attaque (LDB 14 l.126-131 :
@@ -569,16 +584,17 @@ export function finishMelee(
   weapon: Weapon,
   atk: TestResult,
   def: TestResult,
-  defenseMode: 'parade' | 'esquive',
+  defenseMode: DefenseMode,
   location?: HitLocation,
   env: ModLine[] = [],
   dodgeMod = 0,
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + Atouts + pénalité main 2nde)
   withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505)
+  sub?: DefenseSub, // substitution sociale (mode 'social') : base + libellé de la Compétence substituée
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
-  return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, dmgProxy, parryWeapon, dodgeMod, withhold });
+  return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, dmgProxy, parryWeapon, dodgeMod, withhold, sub });
 }
 
 /**
@@ -595,9 +611,9 @@ function combineOpposed(
   weapon: Weapon,
   atk: TestResult,
   def: TestResult,
-  defenseMode: 'parade' | 'esquive',
+  defenseMode: DefenseMode,
   atkBd: ReturnType<typeof bd>,
-  opts: { location?: HitLocation; dmgProxy?: AttackOptions['dmgProxy']; parryWeapon?: Weapon; dodgeMod?: number; withhold?: boolean } = {},
+  opts: { location?: HitLocation; dmgProxy?: AttackOptions['dmgProxy']; parryWeapon?: Weapon; dodgeMod?: number; withhold?: boolean; sub?: DefenseSub } = {},
 ): AttackResult {
   const { location, dmgProxy } = opts;
   const parryWeapon = opts.parryWeapon ?? defender.weapons[0];
@@ -613,7 +629,8 @@ function combineOpposed(
     + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0)
     + offTerrainTestDR(defender);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
-  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, parryWeapon), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon), defenseMode);
+  const defLabel = defenseMode === 'social' ? (opts.sub?.label ?? DEFENSE_LABEL.parade) : DEFENSE_LABEL[defenseMode];
+  const defBd = bd(defLabel, defenseValue(defender, defenseMode, parryWeapon, opts.sub?.base), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon), defenseMode);
   const usedParry = defenseMode === 'parade' ? parryWeapon : undefined; // arme de parade (Critiques opposés / Piège-lame)
   if (opp.winner === 'defender') {
     return {
@@ -855,7 +872,7 @@ export function finishRanged(
   weapon: Weapon,
   atk: TestResult,
   def: TestResult,
-  defenseMode: 'parade' | 'esquive',
+  defenseMode: DefenseMode, // le tir n'ouvre que Parade/Esquive (cf. rangedDefenseModes) — 'social' n'y parvient jamais
   distanceTiles?: number,
   location?: HitLocation,
   env: ModLine[] = [],

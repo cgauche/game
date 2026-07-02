@@ -25,11 +25,13 @@ import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive } from '../engine/combat';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
 import { gainAdvantage } from '../engine/advantage';
+import { skillAdvantageCap } from '../engine/skillCombatApps';
+import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, spellTargetCount } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts } from '../engine/overcast';
@@ -1873,10 +1875,11 @@ export function createCombatSlice(get: Get, set: Set) {
     },
 
     // ── Défense réactive (héros attaqué par l'IA en mêlée) ──
-    defenseSetMode: (mode: 'parade' | 'esquive') => {
+    defenseSetMode: (mode: DefenseMode, subSkillId?: string) => {
       const pd = get().pendingDefense;
       if (!pd || pd.result) return; // le mode ne change plus après le jet
-      set({ pendingDefense: { ...pd, mode } });
+      // Substitution sociale : fige la Compétence substituée (Intimidation/Dressage) ; sinon on l'efface.
+      set({ pendingDefense: { ...pd, mode, substituteSkillId: mode === 'social' ? subSkillId : undefined } });
     },
     defenseSetParryWeapon: (uid: string | null) => {
       const pd = get().pendingDefense;
@@ -1913,7 +1916,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // cascade combat (donnée SUR l'étape — plus de `pendingFumble` à orpheliner), SANS déclencher la
       // Frénésie de l'attaquant (comme avant le fold).
       const parryWeapon = defender ? (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined) ?? defender.weapons[0] : undefined;
-      if (defender && defender.kind === 'hero' && defenderFumbled(pd.result, parryWeapon) && !isOutOfAction(defender)) {
+      // Substitution sociale (Intimidation/Dressage) : ce n'est pas un Test d'arme → aucune Maladresse d'arme (LDB 14 l.48-51).
+      if (defender && defender.kind === 'hero' && pd.mode !== 'social' && defenderFumbled(pd.result, parryWeapon) && !isOutOfAction(defender)) {
         // L'Oups ! porte sur l'ARME DE PARADE réellement utilisée (dégât d'arme / quelle arme casse), pas weapons[0].
         pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parryWeapon!, result: null } });
         // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon
@@ -2131,7 +2135,7 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
 
-    battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | null) => {
+    battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle, scene } = get();
       if (!battle || !scene) return;
@@ -2719,6 +2723,35 @@ export function createCombatSlice(get: Get, set: Set) {
       checkBattleOver(get, set);
     },
     frenzyCancel: () => set({ pendingFrenzy: null }),
+
+    // ── Cumuler l'Avantage par une Compétence (LDB 09 l.305-308 : Intuition/Savoir/Survie → Int, Prière → Soc) ──
+    // « Chaque Round que vous passez à [observer/prier]… réussissant un Test… vous gagnez +1 Avantage »
+    // → une ACTION dont la modale de Test STANDARD (cascade, `pendingTest`) octroie l'Avantage plafonné
+    // (`combatAdvantage` lu par `resolveTest`). Data-driven : l'action n'existe que si `skillAdvantageCap`
+    // (donnée `SkillData.combatAdvantage`) est > 0 — aucune Compétence nommée en dur.
+    battleGainAdvantage: (skillId: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return;
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      const cap = skillAdvantageCap(active, skillId);
+      if (cap <= 0 || (active.advantage ?? 0) >= cap) return; // pas d'application « Avantage », ou déjà au plafond de la méthode
+      const skillLabel = findSkillById(skillId)?.label ?? skillId;
+      const value = testValue(active, skillId);
+      set({
+        pendingTest: {
+          actorId: active.id, actorName: active.name,
+          label: `Avantage — ${skillLabel}`, skill: skillLabel, skillId,
+          skillValue: value, difficulty: 'intermediaire', requireSL: 0,
+          target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS.intermediaire)),
+          isDouble: false, roll: null, success: false, sl: 0,
+          combatAdvantage: { combatantId: active.id, cap },
+        },
+        battle: { ...battle, action: null },
+      });
+      startCascade(get, set, { title: `Avantage — ${skillLabel}`, icon: '🎲', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: active.id }] });
+    },
 
     // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) du flux `cast` (forceSuccess/dé choisi) —
     // cycle UNIFIÉ par la fabrique rollFlow. (`attack`/`defense` plus haut ; `test` reste côté store.)
