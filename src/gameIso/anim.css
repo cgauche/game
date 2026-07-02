@@ -73,7 +73,10 @@
   }
   100% {
     opacity: 0;
-    transform: translateY(-40px) scale(1.6);
+    /* Montée RELATIVE à la boîte du panache (`transform-box:fill-box` → -100 % = sa propre hauteur)
+       plutôt qu'un décalage absolu en px : la fumée s'élève proportionnellement à toute échelle
+       (billboard POV lointain comme token iso), au lieu de gicler au loin quand le sprite est réduit. */
+    transform: translateY(-100%) scale(1.6);
   }
 }
 

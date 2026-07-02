@@ -102,10 +102,16 @@ export function buildPropBillboards(scene: Scene, cam: CamPose, visible: Readonl
     if (!a) continue;
     const t = bbTransform(a, a.s);
     const op = a.o < 1 ? ` opacity="${a.o.toFixed(3)}"` : '';
+    const inner = `<g transform="${t.inner}">${propSvg(el.ref, el.facing, 0)}</g>`;
+    // Anim d'ambiance d'auteur (`PropEl.fx` : enseigne qui balance, lanterne qui luit) : classe CSS posée
+    // sur un wrapper ENVELOPPANT le groupe d'échelle — MÊME couche fx qu'en iso (`BodyToken`), donc son
+    // pivot `fill-box` s'ajuste à la taille projetée (l'anim joue à toute distance). Sans `fx` (props
+    // ordinaires, overlays de terrain bois→arbre) : markup NU, inchangé.
+    const body = el.fx ? `<g class="${el.fx}">${inner}</g>` : inner;
     out.push({
       key: el.key,
       depth: a.depth,
-      svg: `<g transform="${t.outer}"${op}><g transform="${t.inner}">${propSvg(el.ref, el.facing, 0)}</g></g>`,
+      svg: `<g transform="${t.outer}"${op}>${body}</g>`,
     });
   }
   return keepClosest(out, MAX_PROP_BILLBOARDS);

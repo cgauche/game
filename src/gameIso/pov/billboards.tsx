@@ -7,7 +7,8 @@
  * Trois familles, même mécanisme, budgets distincts :
  *  - PERSONNAGES humanoïdes : rig paper-doll (`entityRigProfile` → `RigSprite`), l'ANGLE présenté
  *    (face/dos/profil + miroir) piloté par `povView(cam.fwd, cam.right, facing)` — surtout PAS par la
- *    rotation iso (`useRigAnim`/`RigToken` la dérivent du camRot iso : inutilisable ici) ;
+ *    rotation iso (`useRigAnim`/`RigToken` la dérivent du camRot iso : inutilisable ici) ; un idle bob
+ *    (respiration `CLIPS.idle`) les anime via un rAF ISOLÉ (`PovPerson`), l'angle `povView` conservé ;
  *  - CRÉATURES non-humanoïdes : gabarit corporel en POSE DE REPOS, rendu STATIQUE PUR
  *    (`planById(...).resolve` + `bonesToSvg` — le moteur d'anim rAF `usePlanAnim` reste hors POV v1) ;
  *  - PROPS (décor) : le MÊME SVG que l'iso (`buildPropBillboards`, noyau pur — aussi consommé par la QC).
@@ -29,6 +30,7 @@ import {
 } from './billboardCore';
 import { entityRigProfile } from '../rig/enemyProfile';
 import { RigSprite } from '../rig/composeRig';
+import { useRigClip } from '../rig/anim/useRigClip';
 import { resolveRender, planById } from '../rig/bodyPlan';
 import { bonesToSvg } from '../rig/renderBones';
 import { eyesArtFromKeys } from '../rig/parts/eyes';
@@ -50,15 +52,37 @@ function anchored(id: string, a: { sx: number; sy: number; o: number }, s: numbe
   );
 }
 
+/** Miroir DANS le repère local (autour de la boîte 120×150), comme `RigToken` — l'entité regarde bâbord. */
+function mirrored(sprite: JSX.Element, mirror: boolean): JSX.Element {
+  return mirror ? <g transform={`translate(${BB_W},0) scale(-1,1)`}>{sprite}</g> : sprite;
+}
+
+/** Billboard d'un PERSONNAGE humanoïde en POV, ANIMÉ d'un idle bob (respiration) : le moteur d'anim PUR
+ *  (`useRigClip` → `CLIPS.idle`/`sampleClip`) échantillonne une pose par frame dans SON PROPRE rAF (comme
+ *  un token iso), donc SEUL ce sous-arbre se re-rend — la géométrie POV mémoïsée (sols/murs) ne bouge pas.
+ *  L'angle présenté (`view`/`mirror`, imposé par `povView`) est CONSERVÉ : la respiration n'ajoute que des
+ *  deltas d'os (torse/tête), jamais un changement de vue. */
+function PovPerson({ id, prof, view, mirror, a }: {
+  id: string;
+  prof: NonNullable<ReturnType<typeof entityRigProfile>>;
+  view: 'front' | 'back' | 'profile';
+  mirror: boolean;
+  a: { sx: number; sy: number; o: number; s: number };
+}): JSX.Element {
+  const { pose } = useRigClip(); // idle en boucle (respiration) — rAF isolé, sans culling iso
+  const sprite = <RigSprite appearance={prof.appearance} equip={prof.equip} career={prof.tenue} view={view} mirror={mirror} pose={pose} />;
+  return anchored(id, a, a.s, mirrored(sprite, mirror));
+}
+
 /**
  * Couche des entités en POV. Pour chaque `SceneEntity` de `kind:'personnage'` :
  *  1. CULL par visibilité (clé `x,y,z` absente de `visible` → sautée : le brouillard gère l'occlusion) ;
  *  2. ancre PIEDS + cull distance/derrière/hors-cadre ET échelle ∝ profondeur × espèce
  *     (`footAnchor(…, ENT_H_M, r.scale)`, noyau partagé) ;
  *  4. VUE/MIROIR imposés par `povView` (l'entité regarde `facing`, vue depuis la caméra) ;
- *  5. corps : rig humanoïde (RigSprite) OU gabarit non-bipède en pose de repos (statique pur). Miroir =
- *     `translate(120,0) scale(-1,1)` AUTOUR de la boîte (comme `RigToken`) + `mirror` passé à
- *     `RigSprite` (profondeur de profil de l'arme/bouclier) ;
+ *  5. corps : rig humanoïde ANIMÉ (`PovPerson` : idle bob) OU gabarit non-bipède en pose de repos
+ *     (statique pur). Miroir = `translate(120,0) scale(-1,1)` AUTOUR de la boîte (comme `RigToken`,
+ *     via `mirrored`) + `mirror` passé à `RigSprite` (profondeur de profil de l'arme/bouclier) ;
  *  6. TRI loin→près + BUDGET par famille (`keepClosest`) — puis fusion peintre avec les PROPS.
  */
 export function PovBillboards({ scene, cam, visible }: { scene: Scene; cam: CamPose; visible: Set<string> }): JSX.Element {
@@ -76,8 +100,8 @@ export function PovBillboards({ scene, cam, visible }: { scene: Scene; cam: CamP
     if (!a) continue;
     const { view, mirror } = povView(cam.fwd, cam.right, e.facing ?? 'S'); // 4) angle présenté
 
-    let sprite: JSX.Element | null = null;
     if (r.kind === 'rig') {
+      // PERSONNAGE humanoïde : billboard ANIMÉ (idle bob de respiration), rAF isolé — cf. `PovPerson`.
       const prof = entityRigProfile(refName, seed, {
         species: e.appearance?.species,
         tenue: e.appearance?.tenue,
@@ -92,25 +116,22 @@ export function PovBillboards({ scene, cam, visible }: { scene: Scene; cam: CamP
         traits: e.statblock?.traits,
         armour: e.statblock?.armour,
       });
-      if (prof) sprite = <RigSprite appearance={prof.appearance} equip={prof.equip} career={prof.tenue} view={view} mirror={mirror} />;
+      if (prof) persons.push({ id: e.id, depth: a.depth, node: <PovPerson key={e.id} id={e.id} prof={prof} view={view} mirror={mirror} a={a} /> });
     } else {
       // Gabarit corporel (quadrupède/ailé/serpentin/…) : POSE DE REPOS, ailes repliées — le rendu
-      // statique du plan est PUR (resolve + bonesToSvg), l'animation reste au token iso.
+      // statique du plan est PUR (resolve + bonesToSvg), l'animation de plan reste au token iso.
       const plan = planById(r.plan);
-      if (plan)
-        sprite = (
+      if (plan) {
+        const sprite = (
           <g
             dangerouslySetInnerHTML={{
               __html: bonesToSvg(plan.resolve(r.species, view, plan.restPose(), { colors: e.appearance?.colors, eyes: eyesArtFromKeys(e.appearance?.eyes), wings: 'folded' })),
             }}
           />
         );
+        persons.push({ id: e.id, depth: a.depth, node: anchored(e.id, a, a.s, mirrored(sprite, mirror)) });
+      }
     }
-    if (!sprite) continue;
-
-    // 5) miroir DANS le repère local (autour de la boîte 120×150), comme `RigToken`.
-    const local = mirror ? <g transform={`translate(${BB_W},0) scale(-1,1)`}>{sprite}</g> : sprite;
-    persons.push({ id: e.id, depth: a.depth, node: anchored(e.id, a, a.s, local) });
   }
 
   // 6) budget par famille, puis PEINTRE COMMUN (loin→près) : props et personnages s'occultent entre eux.
