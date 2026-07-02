@@ -158,6 +158,15 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Icônes UI SVG maison (24×24, currentColor — remplacent les emojis) : 1 famille = 1 fichier defs/.
+    dir: 'src/ui/icons/defs',
+    out: 'src/ui/icons/_registry.generated.ts',
+    exportName: 'icons',
+    arrayName: 'ICON_FAMILIES',
+    type: 'IconFamily',
+    typeFrom: './types',
+  },
+  {
     // Sons (assets CC0 Kenney dans public/audio) : 1 son (avec variantes) = 1 fichier defs/.
     dir: 'src/audio/defs',
     out: 'src/audio/_registry.generated.ts',

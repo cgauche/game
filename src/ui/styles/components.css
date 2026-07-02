@@ -13,6 +13,7 @@
      .chip               badge/pastille (alias de .tag) ; .count = pastille numérique
      .modal-overlay/.modal  cadre de modale partagé (+ .modal-actions/.btn-ghost/.rm-influence)
      .charprev           aperçu « perso en pied » (CharacterPreview) : tailles + ambiances
+     .icon               icône SVG maison (primitive <Icon> — src/ui/Icon.tsx, registre src/ui/icons/)
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
 /* ── SURFACE ── */
@@ -306,4 +307,11 @@
   inset: 0;
   background: radial-gradient(ellipse 62% 48% at 50% 60%, color-mix(in srgb, var(--gold2) 22%, transparent), transparent 72%);
   pointer-events: none;
+}
+
+/* ── ICÔNE (primitive <Icon> — src/ui/Icon.tsx, registre src/ui/icons/) ── */
+.icon {
+  display: inline-block;
+  vertical-align: -0.18em; /* cale l'icône sur la ligne de base du texte adjacent */
+  flex: none;
 }
