@@ -62,6 +62,9 @@ import {
 const CELL_WALL_HEIGHT_M = 4;
 /** Terrain MARCHABLE du chemin de ronde auto-posé par une `cells` d'enceinte (dessus du mur plein). */
 const CELL_WALKWAY: Terrain = 'pierre';
+/** Terrain de la MASSE d'un mur plein `cells` : BLOC PLEIN `mur` (4 m = un étage, échelle unifiée) posé au
+ *  sol. Le moteur en dérive TOUTES ses faces (relief existant), y compris la PAROI du tunnel qu'il borde. */
+const CELL_MASS: Terrain = 'mur';
 
 /** Un segment de mur DÉCLARATIF : arête cardinale N/E/S/O (canonisée avant écriture) + door/structure,
  *  ou diagonale `\\`/`/` en travers de la case. Plus large que `scene.WallSeg` (qui n'admet que la forme
@@ -349,10 +352,14 @@ export function buildScene(spec: MapSpec): Scene {
     if (build) {
       const zz = c.z + 1;
       const height = rec.wall?.height ?? CELL_WALL_HEIGHT_M;
-      s = addLayer(s, zz); // garantir la couche du chemin de ronde (no-op si déjà là)
-      s = paintTiles(s, { x: c.x, y: c.y }, CELL_WALKWAY, 1, zz); // dessus MARCHABLE
-      s = paintHeight(s, { x: c.x, y: c.y }, height, 1, zz); // masse pleine à `height` m
-      s = paintRampart(s, { x: c.x, y: c.y }, build.structure, 1, zz); // zone rempart → rendu + z0 impassable
+      // MASSE : un mur plein → BLOC `muraille` posé au SOL (le moteur en dérive toutes les faces, dont la
+      // PAROI du tunnel qu'il borde). Une PORTE laisse le sol z0 tel quel → passable = le TUNNEL. Zéro marqueur.
+      if (rec.wall) s = paintTiles(s, { x: c.x, y: c.y }, CELL_MASS, 1, c.z);
+      // CHEMIN DE RONDE : une COUCHE DE SOL marchable posée par-dessus, à `height` m (dessus du bloc / toit
+      // du tunnel). Sur une porte, ce sol coiffe un vide → SURPLOMB → son dessous = le plafond (règle générale).
+      s = addLayer(s, zz);
+      s = paintTiles(s, { x: c.x, y: c.y }, CELL_WALKWAY, 1, zz);
+      s = paintHeight(s, { x: c.x, y: c.y }, height, 1, zz);
     }
     if (rec.gate) {
       const facing = rec.gate.facing ?? 'N';

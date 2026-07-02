@@ -51,7 +51,7 @@ import {
   type CamPose,
   type Vec3,
 } from './camera';
-import { sceneMetresPerTile, isIndoor, tileAt, type Scene } from '../../state/scene';
+import { sceneMetresPerTile, isIndoor, tileAt, heightAt, type Scene } from '../../state/scene';
 import { TERRAIN_DEFS, terrainSolidHeightM } from '../../state/terrain';
 import { buildFloors, SIDES, NEIGHBOURS } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
@@ -93,6 +93,20 @@ export type DrawItem = {
 // lumière + la brume de distance (`AMBIANCE.pov`).
 export const FLOOR_FALLBACK = reliefMaterial('sol-inconnu').face; // sol sans terrain connu
 export const CEIL_BASE = reliefMaterial('plafond').face; // plafond (intérieur / dessous d'un toit)
+const COVER_CEIL_BASE = reliefMaterial('pierre').face; // dessous d'un solide (tunnel/pont/surplomb) — voûte de pierre
+
+/** Hauteur du DESSOUS du solide le PLUS BAS qui COUVRE (x,y,z) — une couche supérieure y a une tuile pleine
+ *  (non `vide`) : tunnel de porte, pont, surplomb. null si rien au-dessus (ciel ouvert). RÈGLE GÉNÉRALE,
+ *  aucune notion d'élément : si un solide est au-dessus, on en voit le dessous depuis dessous. PUR. */
+function coveringHeight(scene: Scene, x: number, y: number, z: number): number | null {
+  let best: number | null = null;
+  for (const l of scene.layers)
+    if (l.z > z && tileAt(scene, x, y, l.z) !== 'vide') {
+      const h = heightAt(scene, x, y, l.z);
+      if (best == null || h < best) best = h;
+    }
+  return best;
+}
 
 /** Couleur pleine d'un terrain (`TerrainDef.swatch`, donnée partagée iso ⇄ POV) + sa recette de détail. */
 const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
@@ -647,6 +661,23 @@ export function buildPovDrawList(
     if (indoor && z === cam.z && seen) {
       const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, lv, CEIL_BASE, 'ceiling', `ceil:${x},${y},${z}`, 0, fog, curve);
       if (ceil) items.push(ceil);
+    }
+    // PLAFOND GÉNÉRAL : une tuile COUVERTE par un solide au-dessus (tunnel de porte, pont, surplomb) montre
+    // son DESSOUS depuis dessous — l'iso occlut par le haut, le POV a besoin de la voûte. Aucune notion
+    // d'élément : c'est vrai pour tout ce qui est couvert. À la couche de l'œil (extérieur ; l'intérieur
+    // est déjà traité ci-dessus). Voûte de PIERRE à la hauteur du dessous du solide couvrant.
+    if (!indoor && z === cam.z && seen) {
+      const coverH = coveringHeight(scene, x, y, z);
+      if (coverH != null) {
+        const cc: Vec3[] = [
+          { x: (x - 0.5) * mpt, y: (y - 0.5) * mpt, z: coverH },
+          { x: (x + 0.5) * mpt, y: (y - 0.5) * mpt, z: coverH },
+          { x: (x + 0.5) * mpt, y: (y + 0.5) * mpt, z: coverH },
+          { x: (x - 0.5) * mpt, y: (y + 0.5) * mpt, z: coverH },
+        ];
+        const ceil = makeItem(cc, cam, farMetres, lv, COVER_CEIL_BASE, 'ceiling', `coverceil:${x},${y},${z}`, 0, fog, curve);
+        if (ceil) items.push(ceil);
+      }
     }
   }
 

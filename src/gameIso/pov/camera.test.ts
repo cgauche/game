@@ -20,6 +20,7 @@ import {
   type Vec3,
 } from './camera';
 import { WALL_H_M } from '../iso';
+import { METRES_PER_LEVEL } from '../../state/relief';
 import { emptyScene, type Scene } from '../../state/scene';
 import { type Dir8 } from '../rig/facing';
 
@@ -34,8 +35,8 @@ function camN(): CamPose {
 }
 
 describe('WALL_H_M', () => {
-  it('vaut 54/96*4 ≈ 2.25 m', () => {
-    expect(WALL_H_M).toBeCloseTo(2.25, 6);
+  it('UNIFIÉ : un mur = un étage → WALL_H_M = METRES_PER_LEVEL = 4 m', () => {
+    expect(WALL_H_M).toBeCloseTo(METRES_PER_LEVEL, 6);
   });
 });
 

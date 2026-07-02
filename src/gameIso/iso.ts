@@ -15,11 +15,13 @@ export const CELL = 56; // côté d'une case carrée (vue du dessus)
 export const EDGE_W = TW * Math.SQRT1_2; // ≈ 45.25
 export const EDGE_H = TH * Math.SQRT1_2; // ≈ 22.63
 export const LEVEL_H = 96; // hauteur écran (px) d'un étage : un niveau z>0 est dessiné soulevé d'autant
-/** Hauteur écran (px) d'une cloison dressée sur une arête (mur `WallSeg`) — FIXE : le relief est porté par
- *  le sol, pas par les murs (un mur = cloison d'arête, pas une plateforme). Vit ici (module de projection,
- *  sans cycle) → partagé par `walls.ts` (rendu du mur) ET `catalog/buildings` (base du toit qui REPOSE
- *  dessus). `walls.ts` la ré-exporte pour ses anciens importeurs. */
-export const WALL_H = 54;
+/** Hauteur écran (px) d'une cloison dressée sur une arête (mur `WallSeg`). UNIFIÉ : un mur = un ÉTAGE
+ *  (`WALL_H = LEVEL_H` ⇒ `WALL_H_M = METRES_PER_LEVEL`, une seule échelle de hauteur dans tout le monde —
+ *  un mur atteint le plafond, une herse remplit son ouverture, pas de « délire » mur 2,25 m / niveau 4 m).
+ *  Le relief reste porté par le SOL, pas par les murs (un mur = cloison d'arête, pas une plateforme). Vit
+ *  ici (module de projection, sans cycle) → partagé par `walls.ts` (rendu du mur) ET `catalog/buildings`
+ *  (base du toit qui REPOSE dessus). `walls.ts` la ré-exporte pour ses anciens importeurs. */
+export const WALL_H = LEVEL_H;
 /** Conversion px-iso → MÈTRES MONDE (SOURCE UNIQUE, ex-`pxToM` du POV) : `LEVEL_H` px (un étage écran)
  *  ⇔ `METRES_PER_LEVEL` m. Les hauteurs px des defs d'apparence (merlons, bandes, linteaux…) passent
  *  par ici pour devenir des hauteurs MONDE consommées par les builders puis les DEUX backends. */

@@ -43,26 +43,40 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(s.dimensions.h - 39).toBeLessThan(MOUTH_ROW); // cour ≪ champ
   });
 
-  it('enceinte : HERSE sur la BOUCHE extérieure (cols 14-15, arête N de la bande) ; courtine = MASSE (zone rempart z1)', () => {
+  it('enceinte : BLOC PLEIN `mur` (z0) + chemin de ronde `pierre` (z1, 4 m) ; HERSE sur la BOUCHE extérieure ; porte = tunnel passable', () => {
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
     expect(gate.length).toBe(2);
     expect(gate.map((w) => w.x).sort((a, b) => a - b)).toEqual([14, 15]); // porte aux cols 14-15
     expect(gate.every((w) => w.y === MOUTH_ROW && w.side === 'N')).toBe(true); // bouche = arête N extérieure (côté champ)
-    // La COURTINE n'est PLUS un WallSeg : c'est la MASSE de rempart (zone z1) → aucun WallSeg 'mur-en-pierre'.
-    expect(s.walls!.some((w) => w.structure === 'mur-en-pierre')).toBe(false);
-    // CHEMIN DE RONDE = ZONE REMPART solide (couche z1, rangées 37-38) : marquée `layer.rampart` (le RENDU en
-    // dérive la face de maçonnerie + la crénelure de périmètre). Les colonnes de PORTE portent l'apparence de la
-    // herse (gatehouse crénelé continu), les colonnes de courtine 'mur-en-pierre'.
+    // MODÈLE GÉNÉRAL (comme un bâtiment) : la MASSE est un BLOC PLEIN `mur` (terrain z0) — le moteur en dérive
+    // toutes les faces —, le chemin de ronde une COUCHE DE SOL `pierre` marchable posée par-dessus (z1, 4 m).
+    // AUCUN code « rempart » : pas de marqueur `layer.rampart`, pas de WallSeg de courtine.
+    const z0 = s.layers.find((l) => l.z === 0)!;
     const z1 = s.layers.find((l) => l.z === 1)!;
-    expect(z1.rampart).toBeDefined();
     const W = s.dimensions.w;
-    for (const x of [0, 8, 21, 29]) for (const y of [MOUTH_ROW, INNER_ROW]) expect(z1.rampart![y * W + x]).toBe('mur-en-pierre');
-    for (const x of GATE_COLS) for (const y of [MOUTH_ROW, INNER_ROW]) expect(z1.rampart![y * W + x]).toBe('porte-de-ville');
-    expect(z1.rampart![36 * W + 0]).toBeNull(); // rangée 36 (champ) HORS zone
-    expect(z1.rampart![39 * W + 0]).toBeNull(); // rangée 39 (cour) HORS zone
-    expect(s.walls!.some((w) => (w.z ?? 0) === 1)).toBe(false); // aucun WallSeg z1 (crénelure = rendu, pas donnée de scène)
-    // La verticalité du rempart est sa COUCHE z1 (4 m), pas un champ `WallSeg.height` (retiré du contrat).
+    const t0 = (x: number, y: number) => z0.tiles[y * W + x];
+    const t1 = (x: number, y: number) => z1.tiles[y * W + x];
+    expect(z1.rampart).toBeUndefined(); // plus de marqueur zone-rempart (modèle supprimé)
+    expect(s.walls!.some((w) => w.structure === 'mur-en-pierre')).toBe(false); // courtine = terrain, pas WallSeg
+    // Courtine = bloc plein `mur` au sol (IMPASSABLE + opaque) ; colonnes de PORTE = sol `pierre` passable (tunnel).
+    for (const x of [0, 8, 21, 29]) for (const y of [MOUTH_ROW, INNER_ROW]) {
+      expect(t0(x, y)).toBe('mur');
+      expect(isWalkable(s, x, y, 0)).toBe(false); // masse pleine → on ne traverse pas au sol
+    }
+    for (const x of GATE_COLS) for (const y of [MOUTH_ROW, INNER_ROW]) {
+      expect(t0(x, y)).toBe('pierre'); // tunnel : sol passable
+      expect(isWalkable(s, x, y, 0)).toBe(true); // le SOL du tunnel est marchable (la herse INTACTE barre la bouche)
+    }
+    // Chemin de ronde = couche de sol `pierre` marchable à 4 m sur toute la bande (courtine ET porte).
+    for (const x of [0, 8, 14, 21, 29]) for (const y of [MOUTH_ROW, INNER_ROW]) {
+      expect(t1(x, y)).toBe('pierre');
+      expect(z1.height![y * W + x]).toBe(4);
+      expect(isWalkable(s, x, y, 1)).toBe(true);
+    }
+    expect(t0(0, 36)).not.toBe('mur'); // rangée 36 (champ) HORS enceinte
+    expect(t0(0, 39)).not.toBe('mur'); // rangée 39 (cour) HORS enceinte
+    // La verticalité du rempart est la COUCHE z1 (4 m) + le bloc plein du terrain, pas un champ `WallSeg.height`.
     expect(s.walls!.every((w) => !('height' in w))).toBe(true);
   });
 
