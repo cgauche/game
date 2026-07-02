@@ -8,11 +8,11 @@
  * remplace l'assemblage iso (ex-walls.ts) ET l'assemblage POV (ex-pov/geometry) — les DEUX backends
  * dessinent ces mêmes faces, chacun à sa résolution.
  */
-import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, edgeOf, tileAt, type Scene, type WallSeg, type WallSide } from '../../state/scene';
+import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, tileAt, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { terrainSolidHeightM } from '../../state/terrain';
 import { wallApp, structureAppearance, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
 import { WALL_H_M, isoPxToM } from '../iso';
-import { METRES_PER_LEVEL } from '../../state/relief';
+import { METRES_PER_LEVEL, gradeBetween } from '../../state/relief';
 import type { Face, WallEl } from './types';
 import type { FloorView } from './floors';
 
@@ -241,8 +241,14 @@ export function crestEls(scene: Scene, visible?: ReadonlySet<string>, view?: Flo
           const [dx, dy] = CARD_NB[side];
           const nx = x + dx, ny = y + dy;
           if (isCrenellated(scene, nx, ny, z)) continue; // arête INTERNE → pas de crête
+          // ACCÈS (rampe/escalier atteint le chemin de ronde à ~même hauteur) → entrée OUVERTE, pas de
+          // merlons en travers du passage.
+          if (scene.layers.some((l) => isWalkable(scene, nx, ny, l.z) && gradeBetween(surfaceH, heightAt(scene, nx, ny, l.z)) !== 'cliff')) continue;
           const e = edgeOf(x, y, nx, ny);
           if (!e) continue;
+          // STRUCTURE (porte/herse) sous l'arête → elle rend DÉJÀ sa propre crête (corps de garde) : pas de
+          // double crénelure au-dessus de la porte.
+          if (scene.layers.some((l) => l.z < z && structureAt(scene, e.x, e.y, e.side, l.z))) continue;
           const [A, B] = wallEnds({ x: e.x, y: e.y, side: e.side });
           out.push({
             kind: 'wall', key: `crest:${e.x},${e.y},${e.side},${z}`, cell: { x: e.x, y: e.y, z }, side: e.side,
