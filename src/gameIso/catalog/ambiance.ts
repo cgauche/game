@@ -30,6 +30,10 @@ export interface AmbianceDef {
     fogIndoor: string;
     /** Brume de distance en EXTÉRIEUR (claire) — aussi l'horizon du ciel. */
     fogOutdoor: string;
+    /** Facteur de LUMIÈRE D'AMBIANCE d'une surface STATIQUE non encore VUE (brouillard de guerre) :
+     *  multiplie la lumière ambiante de la scène (jour clair / nuit sombre) pour garder la matière
+     *  lisible mais LÉGÈREMENT en retrait d'une case explorée — jamais du noir ni un aplat de brume. */
+    ambientUnseen: number;
     /** PROFONDEUR du POV — portées, courbes de brume et bandes de LOD, tout en DONNÉE. */
     depth: PovDepthDef;
     vignette: RadialVeilDef;

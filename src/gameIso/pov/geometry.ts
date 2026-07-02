@@ -21,8 +21,13 @@
  *    réel des terrains appareillés, maille subtile fondue à l'entrée pour les autres) — LE repère de
  *    profondeur au sol, jusqu'au bout de la portée, pour un coût d'items en O(anneaux), pas O(tuiles).
  * La brume ATMOSPHÉRIQUE (courbe smoothstep^gamma en donnée) délave le tout progressivement.
- * Les colonnes NON VISIBLES (brouillard de guerre / hors LdV) sont rendues en SILHOUETTES DE BRUME
- * PURE (fogT=1, zéro détail, zéro info de couleur) : le monde reste CONTINU — plus de trous de ciel.
+ * La géométrie STATIQUE (sols, murs, toits) est TOUJOURS rendue avec sa VRAIE matière, même hors de la
+ * vue : une colonne non visible (brouillard de guerre / hors LdV) reçoit une LUMIÈRE D'AMBIANCE
+ * (plancher du champ de lumière — jour clair / nuit sombre, × `pov.ambientUnseen`) et la brume de
+ * DISTANCE normale (proche = nette, loin = fondue) — jamais un aplat de brume, jamais du noir. Le monde
+ * reste CONTINU (plus de trous de ciel) ; seul le DYNAMIQUE (créatures/props billboards,
+ * `pov/billboards.tsx`) est CULÉ par le brouillard. Le DÉTAIL FIN (appareillage/joints/accents) reste
+ * RÉSERVÉ aux faces VUES (proches) : une structure pas encore explorée montre sa forme + matière de base.
  * DÉTAIL DE TERRAIN au LOD PROCHE (mêmes recettes/seed que l'iso) : variance de teinte par tuile
  * (`tintVar`, miroir du choix de variante iso), TOUFFES d'herbe (`tufts`, brins dressés en monde) et
  * MOUCHETIS (`speckle`, galets/reflets) — fondus par la distance, éteints dès que la brume prend le
@@ -103,6 +108,17 @@ const FLOOR_BIAS = 0.01;
 
 /** Champ de lumière structurel (0..1). */
 type LightField = { at(x: number, y: number, z?: number): number };
+
+/** Facteur POV de la lumière d'AMBIANCE d'une surface STATIQUE non encore VUE (brouillard de guerre) —
+ *  DONNÉE (`ambiance.json`). */
+const AMBIENT_UNSEEN = AMBIANCE.pov.ambientUnseen;
+
+/** Lumière effective d'une case pour la géométrie STATIQUE (sol/mur/toit) : `light.at` si la case est
+ *  VUE, sinon la lumière d'AMBIANCE de la scène en retrait (× `AMBIENT_UNSEEN`) — jamais le noir de la
+ *  lumière-viewer 0. `light.at` a pour PLANCHER l'ambiant jour/nuit de la scène (cf. `computeLightField`)
+ *  → un mur lointain est clair-hazé de jour, sombre-hazé de nuit, jamais noir plat ni bleu-ciel plat. */
+const staticLight = (light: LightField, seen: boolean, x: number, y: number, z: number): number =>
+  seen ? light.at(x, y, z) : light.at(x, y, z) * AMBIENT_UNSEEN;
 
 /** Centroïde monde d'un polygone (moyenne des sommets). */
 function centroid(pts: Vec3[]): Vec3 {
@@ -194,7 +210,8 @@ function clipSegScreen(a: Pt, b: Pt): [Pt, Pt] | null {
  *  `nearRef` : portée/brume évaluées au point le plus PROCHE au lieu du centroïde — pour les GRANDES
  *  faces (pans de toit) dont le centroïde tombe dans la brume opaque alors que le bord proche est en
  *  pleine vue (sinon : « maison sans toit » au bord de la brume). Le tri peintre reste au centroïde.
- *  `fogOverride` : brume FORCÉE (silhouette de brume pure des colonnes non visibles : fogT=1). */
+ *  La brume est TOUJOURS celle de la DISTANCE (`fogAt`) : la géométrie statique non vue se fond au loin,
+ *  jamais en aplat forcé — c'est sa LUMIÈRE (ambiante) qui dit « pas encore explorée », pas la brume. */
 function makeItem(
   cornersWorld: Vec3[],
   cam: CamPose,
@@ -207,7 +224,6 @@ function makeItem(
   fogColor: string,
   curve: FogCurve,
   nearRef = false,
-  fogOverride?: number,
 ): DrawItem | null {
   const clipped = clipNear(cornersWorld, cam);
   if (clipped.length < 3) return null; // entièrement derrière (ou dégénéré)
@@ -222,7 +238,7 @@ function makeItem(
     }),
   );
   if (points.length < 3) return null; // hors du champ
-  const fill = tint(base, lightVal, fogOverride ?? fogAt(refDepth / cam.mpt, curve), fogColor);
+  const fill = tint(base, lightVal, fogAt(refDepth / cam.mpt, curve), fogColor);
   return { points, fill, depth: cp.depth + depthBias, key, kind };
 }
 
@@ -464,8 +480,9 @@ export function buildPovDrawList(
   const items: DrawItem[] = [];
 
   // TOUTES les couches PLEINES (activeZ = couche max → aucun fantôme de surplomb : le POV voit le monde
-  // entier). Une colonne NON VISIBLE (brouillard de guerre / hors LdV) est rendue en SILHOUETTE DE
-  // BRUME PURE (fogT=1 : la couleur est exactement la brume — zéro info) : le monde reste continu.
+  // entier). Une colonne NON VISIBLE (brouillard de guerre / hors LdV) est rendue avec sa VRAIE matière
+  // sous une LUMIÈRE D'AMBIANCE (`staticLight`) + la brume de DISTANCE — pas un aplat de brume : le monde
+  // reste continu, sans détail fin (réservé au vu).
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
   for (const el of buildFloors(scene, undefined, { activeZ: maxZ })) {
     const { x, y, z } = el.cell;
@@ -473,27 +490,24 @@ export function buildPovDrawList(
     // « vu » (la lumière n'atteint pas l'intérieur d'un mur, le rayon vers lui est bloqué par lui-même).
     // Comme un WallSeg (posé sur une arête bordant une tuile ouverte), chacune de ses faces s'éclaire et
     // se voit depuis la tuile OUVERTE qu'elle borde, PAS depuis la tuile-bloc elle-même. Les valeurs par
-    // défaut (`seen`/`lv`/`fogOv`, de la tuile) restent celles de tout autre sol/relief ; on ne les
-    // SURCHARGE par face que pour un bloc solide (`fSeen`/`fLv`/`fFog`, ci-dessous).
+    // défaut (`seen`/`lv`, de la tuile) restent celles de tout autre sol/relief ; on ne les SURCHARGE par
+    // face que pour un bloc solide (`fSeen`/`fLv`, ci-dessous).
     const solid = terrainSolidHeightM(tileAt(scene, x, y, z)) > 0;
     const seen = cols.has(`${x},${y}`);
-    const fogOv = seen ? undefined : 1;
-    const lv = seen ? light.at(x, y, z) : 0;
+    const lv = staticLight(light, seen, x, y, z);
     el.faces.forEach((f, i) => {
       if (f.poly.length < 3) return; // pilier (2 points) : hors POV
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
       // Vue/lumière EFFECTIVES de CETTE face. Bloc solide : un FLANC (relief) prend celles du voisin
       // ouvert que son arête borde ; le DESSUS (losange terrain) celles du MEILLEUR voisin ouvert vu
-      // (max sur les 4 — sinon il resterait une silhouette pâle au-dessus du mur). Sinon : la tuile.
+      // (max sur les 4 — un voisin vu éclaire le sommet ; sinon lumière d'AMBIANCE). Sinon : la tuile.
       let fSeen = seen;
       let fLv = lv;
-      let fFog = fogOv;
       if (solid) {
         if (f.side && f.material.domain === 'relief') {
           const [dx, dy] = NEIGHBOURS[f.side];
           fSeen = cols.has(`${x + dx},${y + dy}`);
-          fLv = fSeen ? light.at(x + dx, y + dy, z) : 0;
-          fFog = fSeen ? undefined : 1;
+          fLv = staticLight(light, fSeen, x + dx, y + dy, z);
         } else if (f.material.domain === 'terrain' && !f.material.part) {
           fSeen = false;
           fLv = 0;
@@ -501,7 +515,7 @@ export function buildPovDrawList(
             const [dx, dy] = NEIGHBOURS[s];
             if (cols.has(`${x + dx},${y + dy}`)) { fSeen = true; fLv = Math.max(fLv, light.at(x + dx, y + dy, z)); }
           }
-          fFog = fSeen ? undefined : 1;
+          if (!fSeen) fLv = light.at(x, y, z) * AMBIENT_UNSEEN; // aucun voisin vu : ambiance de la scène (jamais noir)
         }
       }
       if (f.material.domain === 'relief') {
@@ -509,7 +523,7 @@ export function buildPovDrawList(
         // matériau du builder (rampe : dessus de pente si la def en a un).
         const m = reliefMaterial(f.material.id);
         const base = (f.material.part === 'ramp' ? m.slopeTop : undefined) ?? m.face;
-        const it = makeItem(corners, cam, farMetres, fLv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog, curve, false, fFog);
+        const it = makeItem(corners, cam, farMetres, fLv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog, curve);
         if (!it) return;
         items.push(it);
         // APPAREILLAGE d'un FLANC de BLOC SOLIDE (mur) vu : la pierre porte ses assises (recette `pierre`,
@@ -532,10 +546,10 @@ export function buildPovDrawList(
         const wedge = f.material.part === 'wedge';
         const def = TERRAIN_BY_ID.get(f.material.id);
         const base = def?.swatch ?? FLOOR_FALLBACK;
-        const it = makeItem(corners, cam, farMetres, fLv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog, curve, false, fFog);
+        const it = makeItem(corners, cam, farMetres, fLv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog, curve);
         if (!it) return;
         items.push(it);
-        if (!fSeen || wedge) return; // silhouette de brume / wedge : aucun détail
+        if (!fSeen || wedge) return; // non vu (forme + matière seules) / wedge : pas de détail fin
         const depthTiles = (it.depth - FLOOR_BIAS) / cam.mpt;
         const h = f.poly[0].h;
         const det = def?.detail;
@@ -634,15 +648,15 @@ export function buildPovDrawList(
   // projette chaque face (GP grille+mètres → mètres monde par `mpt`) avec sa caméra + clip + teinte, la
   // couleur de base venant de `wallPartColor` (source unique avec l'affine). Le détail BOIS (panneau/
   // moulure/plinthe/embrasure) devient AUSSI visible en POV (ex-divergence : face/bandes/arase seulement).
-  // Colonne NON VISIBLE = silhouette de brume pure (monde continu, un rempart lointain ne se troue
-  // plus) ; PORTE ouverte (state `open`) = passage béant ; structure ABATTUE = faces de brèche (tas de
-  // gravats). Les MONTANTS (poteau/jambage, 2 points) restent un ornement d'écran affine.
+  // Colonne NON VISIBLE = matière réelle sous lumière d'AMBIANCE + brume de distance (un rempart lointain
+  // se fond, ne se troue pas), SANS appareillage fin ; PORTE ouverte (state `open`) = passage béant ;
+  // structure ABATTUE = faces de brèche (tas de gravats). Les MONTANTS (poteau/jambage, 2 points)
+  // restent un ornement d'écran affine.
   for (const el of buildWalls(scene)) {
     if (el.states.open) continue;
     const seen = cols.has(`${el.cell.x},${el.cell.y}`);
-    const fogOv = seen ? undefined : 1;
     const app = structureAppearance(el.appearance);
-    const lv = seen ? light.at(el.cell.x, el.cell.y, el.cell.z) : 0;
+    const lv = staticLight(light, seen, el.cell.x, el.cell.y, el.cell.z);
     el.faces.forEach((f, i) => {
       if (f.poly.length < 3) return; // montant 2 points : hors POV (LOD minimal)
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
@@ -650,10 +664,10 @@ export function buildPovDrawList(
       const base = wallPartColor(app, part);
       // Peintre INTRA-mur : les faces s'empilent dans l'ordre du builder (détail PAR-DESSUS le fond) —
       // biais NÉGATIF croissant (plus proche), trop petit pour déclasser deux murs distincts.
-      const it = makeItem(corners, cam, farMetres, lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve, false, fogOv);
+      const it = makeItem(corners, cam, farMetres, lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve);
       if (!it) return;
       items.push(it);
-      if (!seen) return; // silhouette : aucun détail
+      if (!seen) return; // non vu : forme + matière, pas d'appareillage fin (réservé au vu)
       // APPAREILLAGE au LOD de distance en FONDU (parts maçonnées d'une def à recette — même aiguillage
       // COURSED que l'iso ; nuances de bloc sur la GRANDE face seulement, comme les accents iso).
       const det = app.detail;
@@ -682,9 +696,9 @@ export function buildPovDrawList(
   // pas de pans, mais le PLAFOND intérieur de l'empreinte (même convention que l'indoor : surface +
   // WALL_H_M, ton `plafond`) — une scène `interieur` a déjà son plafond tuile à tuile, on ne double pas.
   const eyeCell = { x: Math.round(cam.eye.x / mpt), y: Math.round(cam.eye.y / mpt) };
-  // TOUS les toits (pas de gate `visible` du builder) : un toit dont AUCUNE case de l'empreinte
-  // élargie d'1 n'est en colonne vue devient une SILHOUETTE de brume pure — même règle de visibilité
-  // que le builder, mais au lieu de disparaître (trou de ciel), le bâtiment se fond dans la brume.
+  // TOUS les toits (pas de gate `visible` du builder) : un toit dont AUCUNE case de l'empreinte élargie
+  // d'1 n'est en colonne vue est rendu avec sa VRAIE tuile sous lumière d'AMBIANCE + brume de distance —
+  // au lieu de disparaître (trou de ciel) ou de blanchir en brume, le bâtiment se fond au loin.
   for (const el of buildRoofs(scene, undefined, { allies: [eyeCell] })) {
     const z = el.cell.z;
     let seen = false;
@@ -703,12 +717,12 @@ export function buildPovDrawList(
       continue;
     }
     const sh = roofMaterial(el.material);
-    const lv = seen ? light.at(el.cell.x, el.cell.y, z) : 0;
+    const lv = staticLight(light, seen, el.cell.x, el.cell.y, z);
     el.faces.forEach((f, i) => {
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
       const base = sh[f.material.part as CellSide] ?? sh.N ?? FLOOR_FALLBACK;
       // `nearRef` : un pan est GRAND (bâtiment entier) — portée/brume à son bord le plus proche.
-      const it = makeItem(corners, cam, farMetres, lv, base, 'roof', `${el.key}:${i}`, 0, fog, curve, true, seen ? undefined : 1);
+      const it = makeItem(corners, cam, farMetres, lv, base, 'roof', `${el.key}:${i}`, 0, fog, curve, true);
       if (it) items.push(it);
     });
   }

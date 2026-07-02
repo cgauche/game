@@ -30,29 +30,62 @@ describe('buildPovDrawList', () => {
     }
   });
 
-  it('une tuile HORS de `visible` devient une SILHOUETTE DE BRUME PURE : monde continu, zéro info', () => {
+  it('une tuile HORS de `visible` = MATIÈRE + lumière d\'AMBIANCE (plus de silhouette de brume pure)', () => {
     const s = scene();
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
     const visible = new Set<string>();
     for (let y = 4; y <= 8; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
-    // (6,2) n’est PAS dans `visible` (droit devant, dans la portée) → sol rendu, couleur = brume
-    // EXACTE (fogT forcé à 1 : ni terrain ni lumière ne fuient), et AUCUN détail d'appareillage.
+    // (6,2) n’est PAS dans `visible` (droit devant, dans la portée) → le sol est TOUJOURS rendu (plus de
+    // trou de ciel), mais avec sa VRAIE matière sous une lumière d'ambiance : ni brume pure, ni noir, et
+    // AUCUN détail d'appareillage (réservé au vu).
     const list = buildPovDrawList(s, cam, visible, LIGHT);
     const fogRgb = 'rgb(159,178,198)'; // AMBIANCE.pov.fogOutdoor #9fb2c6
     const hidden = list.filter((it) => it.key.includes('6,2,0'));
     expect(hidden.length).toBeGreaterThan(0); // plus de trou de ciel à travers le sol
     for (const it of hidden) {
-      expect(it.kind).not.toBe('detail');
-      expect(it.fill).toBe(fogRgb);
+      expect(it.kind).not.toBe('detail'); // pas d'appareillage fin sur une case non vue
+      expect(it.fill).not.toBe(fogRgb); // la matière se montre, pas un aplat de brume
+      expect(it.fill).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
     }
-    // Les murs d'une colonne non visible sont aussi des silhouettes de brume (pas de détail).
+    // Les murs d'une colonne non visible se MONTRENT aussi (matière + ambiance), sans détail d'appareillage.
     const sw = scene();
     sw.walls = [{ x: 6, y: 2, side: 'N', structure: 'mur-en-pierre' }];
     const lw = buildPovDrawList(sw, cam, visible, LIGHT);
     const hiddenWalls = lw.filter((it) => it.kind === 'wall' && it.key.includes('6,2'));
     expect(hiddenWalls.length).toBeGreaterThan(0);
-    for (const it of hiddenWalls) expect(it.fill).toBe(fogRgb);
+    for (const it of hiddenWalls) expect(it.fill).not.toBe(fogRgb);
     expect(lw.some((it) => it.kind === 'detail' && it.key.startsWith('wall:6,2'))).toBe(false);
+  });
+
+  it('structure NON VUE : matière+ambiance FONDUE par la DISTANCE (proche nette, loin délavée ; jamais brume pure ni noir)', () => {
+    // Sol plat, RIEN de visible → tout est non vu (lumière d'ambiance). On compare le fond d'une tuile
+    // PROCHE (droit devant) à celui d'une tuile LOINTAINE : la lointaine doit être NETTEMENT plus délavée
+    // vers la brume (fondu de distance `fogAt`), preuve que le rendu n'est ni un aplat de brume ni du noir.
+    const N = 34;
+    const flat = () => {
+      const s = emptyScene(N, N);
+      s.layers = [{ z: 0, tiles: new Array(N * N).fill('sol') }];
+      return s;
+    };
+    const s = flat();
+    const cam = makeCamera(s, { x: 16, y: 30 }, 'N'); // regarde Nord (y↓)
+    const list = buildPovDrawList(s, cam, new Set<string>(), LIGHT);
+    const fogRgb = 'rgb(159,178,198)';
+    const fog = [159, 178, 198];
+    const distToFog = (fill: string): number => {
+      const [r, g, b] = fill.match(/\d+/g)!.map(Number);
+      return Math.hypot(r - fog[0], g - fog[1], b - fog[2]);
+    };
+    const near = list.find((it) => it.kind === 'floor' && it.key === 'floor:16,28,0'); // ~2 cases
+    const far = list.find((it) => it.kind === 'floor' && it.key === 'floor:16,10,0'); // ~20 cases
+    expect(near).toBeTruthy();
+    expect(far).toBeTruthy();
+    for (const it of [near!, far!]) {
+      expect(it.fill).not.toBe(fogRgb); // pas d'aplat de brume pure
+      expect(it.fill).not.toBe('rgb(0,0,0)'); // ni noir (lumière d'ambiance)
+    }
+    // La tuile LOINTAINE est nettement plus proche de la brume que la PROCHE → fondu par la distance.
+    expect(distToFog(far!.fill!)).toBeLessThan(distToFog(near!.fill!) - 20);
   });
 
   it('produit des items de mur (kind wall) pour les murs dont une case borde une tuile visible', () => {
@@ -222,15 +255,15 @@ describe('buildPovDrawList', () => {
     expect(inside.some((it) => it.key.startsWith('ceil:'))).toBe(true);
   });
 
-  it('toit HORS des colonnes visibles (empreinte élargie) → SILHOUETTE de brume pure (pas un trou)', () => {
+  it('toit HORS des colonnes visibles (empreinte élargie) → MATIÈRE + ambiance (pas un trou, pas de brume pure)', () => {
     const s = scene();
     s.roofs = [{ id: 'loin', style: 'maison', foot: { x: 4, y: 2, w: 2, h: 2 } }];
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
     const visible = new Set<string>(['6,7,0', '6,6,0']); // le toit n'est pas en vue
     const list = buildPovDrawList(s, cam, visible, LIGHT);
     const roofs = list.filter((it) => it.kind === 'roof');
-    expect(roofs.length).toBeGreaterThan(0); // le bâtiment se fond dans la brume au lieu de disparaître
-    for (const it of roofs) expect(it.fill).toBe('rgb(159,178,198)'); // brume EXACTE (zéro info)
+    expect(roofs.length).toBeGreaterThan(0); // le bâtiment se rend (fondu au loin) au lieu de disparaître
+    for (const it of roofs) expect(it.fill).not.toBe('rgb(159,178,198)'); // sa tuile réelle, pas un aplat de brume
   });
 
   it('LOD murs en FONDU : appareillage complet près, blocs dissous après blocksT+fadeT, rangs JUSQU\'AU LOIN', () => {
