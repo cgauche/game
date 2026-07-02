@@ -99,7 +99,7 @@ describe('Fin de combat — règle « Utilisation des Maladies » (disease-mode,
   it("'situational' : GARDE la Blessure Purulente d'un Trait Infecté (Skavens/Nurgle)", () => {
     setRule('disease-mode', 'situational');
     // Exposition unifiée (op exposeDisease) : Infecté → 'blessure-purulente' dans diseaseExposure.
-    const c = hero({ id: 'a', characteristics: e30, diseaseExposure: ['blessure-purulente'] });
+    const c = hero({ id: 'a', characteristics: e30, diseaseExposure: [{ disease: 'blessure-purulente' }] });
     setBattle([c]); useGame.setState({ party: [hero({ id: 'a', characteristics: e30 })] });
     resolveCombatEnd();
     expect(c.diseases?.some((d) => d.name === 'blessure-purulente')).toBe(true);
@@ -107,7 +107,7 @@ describe('Fin de combat — règle « Utilisation des Maladies » (disease-mode,
 
   it("'off' : pas de Blessure Purulente + exposition purgée", () => {
     setRule('disease-mode', 'off');
-    const c = hero({ id: 'a', characteristics: e30, diseaseExposure: ['blessure-purulente'] });
+    const c = hero({ id: 'a', characteristics: e30, diseaseExposure: [{ disease: 'blessure-purulente' }] });
     setBattle([c]); useGame.setState({ party: [hero({ id: 'a', characteristics: e30 })] });
     resolveCombatEnd();
     expect(c.diseases ?? []).toHaveLength(0);

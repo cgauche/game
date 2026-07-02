@@ -22,6 +22,7 @@
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
+import { availableResistance, markResistanceUsed, resistanceForcedSL } from '../engine/menace';
 import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { touchActors } from './combatOrParty';
 import { gainCorruption } from './corruptionFlow';
@@ -33,19 +34,28 @@ export interface PendingBase {
   rerolled?: boolean;
   /** Réussite forcée par Résilience (LDB 17 l.73) — posé par `forceSuccess`, ouvre `setForcedRoll`. */
   forced?: boolean;
+  /** MENACE à laquelle ce Test RÉSISTE (« Résistance (Menace) », LDB 10 l.1015-1021 : 'Maladie' /
+   *  'Corruption' / 'Mutation' / 'Magie' / 'Poison'…) — posé par le SITE qui ouvre le pending/l'étape.
+   *  Présent + talent disponible ⇒ le verbe `resist` offre l'auto-succès (1× par spec et par séance). */
+  menace?: string;
 }
 
 /**
- * Résolution FORCÉE par la Résilience (LDB 17 l.73 « vous choisissez le résultat des dés »).
- * Passé en 5ᵉ argument de `resolve` quand `caps.forced` est posé :
- *  - `{}`               → `forceSuccess` : le flux applique son dé PAR DÉFAUT (01 → DR max, ou,
- *                          en Test opposé, le jet courant forcé à l'emporter) ;
- *  - `{ roll: n }`      → `setForcedRoll` : le joueur a CHOISI le dé `n` (doit rester une réussite).
- * Absent (`resolve` appelé sans ce paramètre) → jet NORMAL (RNG). Un seul résolveur porte donc les
- * trois cas, au lieu des dérives séparées `force`/`forceRoll` (le « code dérivé » d'avant).
+ * Résolution FORCÉE — auto-succès du MÊME mécanisme pour DEUX sources RAW.
+ * Passé en 5ᵉ argument de `resolve` :
+ *  - `{}`               → `forceSuccess` (Résilience, LDB 17 l.73) : le flux applique son dé PAR
+ *                          DÉFAUT (01 → DR max, ou, en Test opposé, le jet courant forcé à l'emporter) ;
+ *  - `{ roll: n }`      → `setForcedRoll` (Résilience) : le joueur a CHOISI le dé `n` (doit rester une réussite) ;
+ *  - `{ sl: n }`        → `resist` (Résistance (Menace), LDB 10 l.1015-1021) : auto-succès à DR IMPOSÉ
+ *                          (« utilisez votre Bonus d'Endurance comme DR pour le Test ») — pas de choix du dé.
+ * Absent (`resolve` appelé sans ce paramètre) → jet NORMAL (RNG). Un seul résolveur porte donc tous
+ * les cas, au lieu des dérives séparées `force`/`forceRoll` (le « code dérivé » d'avant).
  */
 export interface ForcedResolve {
   roll?: number;
+  /** DR imposé de l'auto-succès du talent Résistance (Menace) — seulement via le verbe `resist`
+   *  (`caps.resist`) ; les flux qui ne le déclarent pas ne le reçoivent jamais. */
+  sl?: number;
 }
 
 /**
@@ -103,6 +113,9 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
   caps?: {
     forced?: boolean;
     picker?: (slot: Slot, actor: Combatant | undefined) => ForcedPick | null;
+    /** Ce flux accepte l'auto-succès du talent Résistance (Menace) (LDB 10) : son `resolve` porte la
+     *  branche `forced.sl` (DR = Bonus d'Endurance). Offert seulement sur un slot tagué `menace`. */
+    resist?: boolean;
   };
   /** Patch de re-rendu après mutation en place de l'acteur. Défaut : `touchActors` (combat ⇄ groupe). */
   touch?: (s: GameState) => Partial<GameState>;
@@ -116,6 +129,10 @@ export interface RollFlowHandlers {
   forceSuccess: (get: Get, set: Set, pid?: string) => void;
   /** Choix du dé d'un Test forcé (no-op sans `caps.forced` ou avant `forceSuccess`). */
   setForcedRoll: (get: Get, set: Set, roll: number, pid?: string) => void;
+  /** Résistance (Menace), LDB 10 l.1015-1021 : auto-succès du premier Test qui résiste à la menace
+   *  taguée sur le slot (`menace`), DR = Bonus d'Endurance, 1× par spec et par séance. No-op sans
+   *  `caps.resist`, sans tag, sans talent disponible, ou si le Test est déjà réussi. */
+  resist: (get: Get, set: Set, pid?: string) => void;
   /** Sélecteur du dé choisi pour le picker partagé (cf. `caps.picker`) — absent si le flux n'en a pas.
    *  `slot` est le pending/participant CONCRET ; `any` ici (les handlers ne portent pas `Slot`). */
   picker?: (slot: any, actor: Combatant | undefined) => ForcedPick | null;
@@ -183,6 +200,23 @@ function opForceSuccess<P extends PendingBase>(
   if (!patch) return; // `null` = cas interdit/déjà réussi → pas de dépense
   actor.resilience = (actor.resilience ?? 0) - 1;
   commit(patch, { forced: true, touch: true });
+}
+
+/** Résistance (Menace), LDB 10 l.1015-1021 : auto-succès du premier Test qui résiste à la menace du
+ *  slot — MÊME mécanisme que `forceSuccess` (le résolveur reçoit `{ sl: BE }`), autre RESSOURCE : la
+ *  spec du talent, consommée 1× par séance (compteur `resistanceUsed`, remis par `restoreFortune`).
+ *  Comme la Résilience, utilisable AVANT le jet ou APRÈS un échec — jamais sur un Test déjà réussi. */
+function opResist<P extends PendingBase>(
+  slot: P, actor: Combatant | undefined, rolled: boolean, failed: boolean,
+  resolveResist: (sl: number) => Partial<P> | null, commit: Commit<P>,
+): void {
+  if (!actor || !slot.menace || (rolled && !failed)) return;
+  const spec = availableResistance(actor, slot.menace);
+  if (spec == null) return;
+  const patch = resolveResist(resistanceForcedSL(actor));
+  if (!patch) return; // précondition manquante → pas de dépense
+  markResistanceUsed(actor, spec);
+  commit(patch, { touch: true });
 }
 
 /** Résilience — dé CHOISI (LDB 17 l.73), seulement après `forceSuccess` (slot `forced`). */
@@ -276,6 +310,15 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc) return;
       opSetForcedRoll(loc.slot, spec.actor(s, loc.slot, p), roll, (r) => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, { roll: r }, p), loc.commit);
+    },
+    resist(get, set, pid) {
+      if (!spec.caps?.resist) return;
+      const s = get(); const p = pendingOf(s); if (!p) return;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      // Le tag `menace` vit sur le SLOT (étape de cascade) ou sur le PENDING entier (opposition de sort).
+      const slot = loc.slot.menace != null ? loc.slot : { ...loc.slot, menace: (p as PendingBase).menace } as Slot;
+      opResist(slot, spec.actor(s, loc.slot, p), spec.rolled(loc.slot), spec.failed(loc.slot),
+        (sl) => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, { sl }, p), loc.commit);
     },
     cancel(_get, set) {
       set({ [spec.key]: null } as Partial<GameState>);

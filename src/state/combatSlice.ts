@@ -2356,7 +2356,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // rendue par `CascadeModal` (via `useExtendedTestJetProps`). `pendingExtendedTest` coexiste comme
     // porteur de données (les Rounds y vivent) ; `extendedTestNext` ferme les deux à la réussite.
 
-    ...rollFlowActionsMulti('cascade', FLOWS.cascade, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
+    ...rollFlowActionsMulti('cascade', FLOWS.cascade, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist']),
     cascadeChoose: (pid: string, key: string) => setCascadeChoice(get, set, pid, key),
     cascadeNext: () => {
       const done = advanceCascade(get, set);
@@ -2400,7 +2400,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
     // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
     // Préfixe store `opposition` ≠ clé de flux `castOpposition` (handler passé explicitement).
-    ...rollFlowActionsMulti('opposition', FLOWS.castOpposition, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
+    ...rollFlowActionsMulti('opposition', FLOWS.castOpposition, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist']),
     oppositionConfirm: () => {
       const pco = get().pendingCastOpposition;
       const pc = get().pendingCast;

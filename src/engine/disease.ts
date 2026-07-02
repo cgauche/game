@@ -201,10 +201,12 @@ export function contractionDue(c: Combatant, diseaseName: string): boolean {
   return !(c.diseaseImmunities ?? []).includes(diseaseName); // Vérole Urticante (l.97) : pas deux fois
 }
 
-/** Applique le RÉSULTAT d'un Test de Contraction DIFFÉRÉ : échec → contracte la maladie. Mute `c.diseases`. */
-export function applyContraction(c: Combatant, diseaseName: string, success: boolean, rng: RNG = defaultRNG): string[] {
+/** Applique le RÉSULTAT d'un Test de Contraction DIFFÉRÉ : échec → contracte la maladie. Mute `c.diseases`.
+ *  `opts.instant` (Contagieux (Type), EDO App.2 l.230 : « son incubation est changée en “Instantanée” ») :
+ *  la maladie contractée démarre ACTIVE (incubation 0). */
+export function applyContraction(c: Combatant, diseaseName: string, success: boolean, rng: RNG = defaultRNG, opts?: { instant?: boolean }): string[] {
   if (success || !contractionDue(c, diseaseName)) return [];
-  const dz = contractDisease(diseaseName, rng);
+  const dz = contractDisease(diseaseName, rng, opts?.instant ? { incubation: 0 } : undefined);
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
   return [`${c.name} contracte : ${diseaseLabel(diseaseName)}.`];

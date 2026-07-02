@@ -270,6 +270,7 @@ export const fr = {
   'turn.afflictionGrip': '{name} est en proie à son {type} ({cible}).',
   'turn.psychSuperseded': '{name} : {psych} cède devant un effet psychologique plus fort.',
   'turn.rageEnter': '{name} entre dans une rage dévorante (Frénésie) !',
+  'turn.rageHate': '{name} enrage : son Avantage devient Haine ({cible}).',
   // ── Phase C : narration de manœuvres de créature (state/combatManeuvers). ──
   'manv.trigger': '{name} déclenche {label} !',
   'manv.resists': '{name} résiste.',

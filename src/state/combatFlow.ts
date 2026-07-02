@@ -99,7 +99,7 @@ import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
-import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep } from '../engine/tests';
+import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
@@ -2763,7 +2763,8 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
     .filter((t) => !isOutOfAction(t))
     .map((t) => ({ id: t.id, interactive: t.kind === 'hero', result: null }));
   if (!participants.length) return false;
-  set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char } });
+  // `menace: 'Magie'` : le Test opposé « résiste au Sort » → Résistance (Menace : Magie) offerte (LDB 10).
+  set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char, menace: 'Magie' } });
   // Cibles IA (témoin) : jet auto-roulé immédiatement (révélé dans la modale, jamais caché).
   for (const p of participants) if (!p.interactive) get().oppositionRoll(p.id);
   return true;
@@ -3719,8 +3720,10 @@ export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLik
 }
 
 /** Un Test de Contraction de fin de combat DÛ pour un héros (LDB 18/20) : la maladie, sa difficulté de
- *  Résistance et le libellé d'exposition. Le `resistVal` (Résistance effective) est figé à la décision. */
-interface CombatEndDiseaseTest { disease: string; difficulty: Difficulty; label: string }
+ *  Résistance (les crans de l'exposition — Contagieux : 2 plus difficile — DÉJÀ appliqués) et le libellé
+ *  d'exposition. `instant` (Contagieux, EDO App.2 l.230) : contractée → incubation « Instantanée ».
+ *  Le `resistVal` (Résistance effective) est figé à la décision. */
+interface CombatEndDiseaseTest { disease: string; difficulty: Difficulty; label: string; instant?: boolean }
 
 /** Valeur de Résistance d'un héros pour les Tests de Contraction (E + avances de Résistance) — figée à la
  *  décision pour rester stable entre la pose de l'étape et sa résolution. */
@@ -3751,12 +3754,19 @@ function decideCombatEndHeroTests(
   c.tookCriticalThisFight = false; // consommé (idempotent)
   c.woundDressed = false;
   // Exposition aux Maladies (LDB 20 l.32/49 ; LDB 85 p.340) — SOURCE UNIQUE `diseaseExposure` (Infecté/
-  // Rongeur/Maladie/munition exposent via l'op `exposeDisease`). Difficulté = celle de la maladie
-  // (`def.contractDifficulty`). 'off' : aucune contraction.
+  // Rongeur/Maladie/munition/Contagieux exposent via l'op `exposeDisease`). Difficulté = celle de la
+  // maladie (`def.contractDifficulty`), décalée des crans de l'exposition (Contagieux, EDO App.2
+  // l.228-230 : « 2 niveaux plus difficile » → shift −2 ; « incubation “Instantanée” » → `instant`).
+  // 'off' : aucune contraction.
   if (dm !== 'off' && !c.dead) {
-    for (const diseaseId of c.diseaseExposure ?? []) {
-      const def = DISEASE_DEFS[diseaseId];
-      if (def && contractionDue(c, def.id)) diseases.push({ disease: def.id, difficulty: def.contractDifficulty, label: `Contagion (${diseaseLabel(def.id)})` });
+    for (const exp of c.diseaseExposure ?? []) {
+      const def = DISEASE_DEFS[exp.disease];
+      if (def && contractionDue(c, def.id)) diseases.push({
+        disease: def.id,
+        difficulty: easeDifficulty(def.contractDifficulty, exp.difficultyShift ?? 0),
+        label: `Contagion (${diseaseLabel(def.id)})`,
+        ...(exp.instant ? { instant: true } : {}),
+      });
     }
   }
   c.diseaseExposure = undefined;
@@ -3788,7 +3798,7 @@ function resolveCombatEndHeroTestsInline(
   const resVal = combatEndResistVal(c);
   for (const d of decided.diseases) {
     const t = rollTest(resVal, d.difficulty, battleRng());
-    lines.push(...applyContraction(c, d.disease, t.success, battleRng()));
+    lines.push(...applyContraction(c, d.disease, t.success, battleRng(), d.instant ? { instant: true } : undefined));
   }
   if (decided.corruption && corr) {
     const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
@@ -3825,7 +3835,8 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
       steps.push({
         id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: '🤢',
         rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[d.difficulty] + combatTestPenalty(c),
-        label: `🤢 ${d.label}`, meta: { disease: d.disease },
+        label: `🤢 ${d.label}`, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
+        menace: 'Maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
     }
     if (decided.corruption && corr) {
@@ -3834,6 +3845,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: '🧬',
         rollLabel: 'Résistance', base: res, target: res + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
         label: `🧬 Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
+        menace: 'Corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
       });
     }
   }
@@ -3847,7 +3859,7 @@ registerCascadeApplier('combatEndDisease', (get, set, step, hero) => {
   if (!hero || !step.result) return;
   const disease = typeof step.meta?.disease === 'string' ? step.meta.disease : undefined;
   if (!disease) return;
-  const lines = applyContraction(hero, disease, step.result.success, battleRng());
+  const lines = applyContraction(hero, disease, step.result.success, battleRng(), step.meta?.instant === true ? { instant: true } : undefined);
   set({ party: [...get().party] });
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
   return { journal: lines.length ? lines : [tr('cf.resistsInfection', { name: hero.name })] };

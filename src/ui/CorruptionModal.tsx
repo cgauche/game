@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
@@ -29,12 +30,17 @@ export function CorruptionModal() {
   const reroll = useGame((s) => s.corruptionReroll);
   const bonusSL = useGame((s) => s.corruptionBonusSL);
   const darkPact = useGame((s) => s.corruptionDarkPact);
+  const resistAct = useGame((s) => s.corruptionResist); // Résistance (Menace) : auto-succès du talent (LDB 10)
   const resolve = useGame((s) => s.resolveCorruption);
   if (!pc) return null;
   const pool = battle?.combatants ?? party;
   const hero = pool.find((c) => c.id === pc.heroId);
   const rolled = pc.roll != null;
   const seuil = pc.kind === 'seuil';
+  // Résistance (Menace) (LDB 10) : exposition → 'Corruption', seuil → 'Mutation' (tag posé à l'ouverture).
+  // Offert AVANT le jet ou après un ÉCHEC, si la spec du talent n'a pas déjà servi cette séance.
+  const resistAvail = pc.menace != null && hero != null && availableResistance(hero, pc.menace) != null
+    && (!rolled || pc.success === false);
   // Pré-jet (audit M6) : `pc.target` n'existe qu'après resolve → base réelle du Test affichée
   // AVANT le jet (même parité que les autres flux RollFlowShell).
   const base = hero ? testValue(hero, pc.skill) : 0;
@@ -77,6 +83,7 @@ export function CorruptionModal() {
       onBonusSL={bonusSL}
       darkPactable={rolled && pc.roll! > (pc.target ?? 0)}
       onDarkPact={darkPact}
+      resist={resistAvail ? { menace: pc.menace!, onResist: resistAct } : undefined}
       confirmLabel="Continuer"
       onConfirm={resolve}
     />

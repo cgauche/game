@@ -22,7 +22,7 @@ const REL_LABEL: Record<Relation | Camp, string> = {
   party: 'du groupe (joueur)', neutral: 'neutre (PNJ)', hostile: 'hostile (ennemi)',
 };
 /** Nature de l'appartenance testée par la Condition `has`. */
-const WHAT_LABEL: Record<'group' | 'talent' | 'trait', string> = { group: 'le Groupe', talent: 'le Talent', trait: 'le Trait' };
+const WHAT_LABEL: Record<'group' | 'talent' | 'trait' | 'psych', string> = { group: 'le Groupe', talent: 'le Talent', trait: 'le Trait', psych: 'l’état psy' };
 
 const ALWAYS: Condition = { kind: 'always' };
 
@@ -330,10 +330,10 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
             {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
           </select>
           a
-          <select className="cond-kind" value={cond.what} onChange={(e) => onChange({ ...cond, what: e.target.value as 'group' | 'talent' | 'trait' })}>
-            {(Object.keys(WHAT_LABEL) as ('group' | 'talent' | 'trait')[]).map((w) => <option key={w} value={w}>{WHAT_LABEL[w]}</option>)}
+          <select className="cond-kind" value={cond.what} onChange={(e) => onChange({ ...cond, what: e.target.value as 'group' | 'talent' | 'trait' | 'psych' })}>
+            {(Object.keys(WHAT_LABEL) as ('group' | 'talent' | 'trait' | 'psych')[]).map((w) => <option key={w} value={w}>{WHAT_LABEL[w]}</option>)}
           </select>
-          <input className="cond-flag" value={cond.value} placeholder={cond.what === 'group' ? 'Groupe (ex. Morts-vivants)' : cond.what === 'talent' ? 'id Talent (ex. magie-des-arcanes)' : 'id Trait (ex. mort-vivant)'} onChange={(e) => onChange({ ...cond, value: e.target.value })} />
+          <input className="cond-flag" value={cond.value} placeholder={cond.what === 'group' ? 'Groupe (ex. Morts-vivants)' : cond.what === 'talent' ? 'id Talent (ex. magie-des-arcanes)' : cond.what === 'psych' ? 'type psy (ex. frenesie)' : 'id Trait (ex. mort-vivant)'} onChange={(e) => onChange({ ...cond, value: e.target.value })} />
           {cond.what === 'talent' && (
             <input style={{ width: '6em' }} value={cond.spec ?? ''} placeholder="spéc. (Feu…)" onChange={(e) => onChange({ ...cond, spec: e.target.value || undefined })} />
           )}

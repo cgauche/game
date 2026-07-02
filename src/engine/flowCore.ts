@@ -79,6 +79,9 @@ export interface ActorView {
   id: string; woundsCurrent: number; woundsMax: number; size: number; advantage: number; camp: Camp;
   groups: string[]; talents: { id: string; spec?: string }[]; traits: string[];
   conditions: Record<string, number>;
+  /** États PSYCHOLOGIQUES actifs portés (`psychState` — types dont l'affliction n'est pas résistée) —
+   *  lus par `has what:'psych'` (gate « porteur en Frénésie » du Contrôle de la Frénésie, LDB 10). */
+  psych?: string[];
   /** Caractéristiques EFFECTIVES (toutes), lues par la Condition `compare` via `{who, char}` (+ `bonus`). */
   chars: Record<CharKey, number>;
   /** Niveau des CAPACITÉS de combat (`CombatFeature` agrégées) — lu par la Condition `capability`
@@ -156,9 +159,10 @@ export type Condition =
    *  Acteur(s) absent(s) = false. */
   | { kind: 'relation'; who: ActorRef; is: Relation | Camp }
   /** L'acteur (`who`) POSSÈDE un élément : appartenance à un **Groupe** (faction, via `groupMatch`),
-   *  un **Talent** (par id, `spec` éventuel — « Magie des Arcanes (Feu) »), ou un **Trait** (par id).
-   *  Généralise les gates op-level `onlyGroups`/`unlessImmune`. Acteur absent = false. */
-  | { kind: 'has'; who: ActorRef; what: 'group' | 'talent' | 'trait'; value: string; spec?: string }
+   *  un **Talent** (par id, `spec` éventuel — « Magie des Arcanes (Feu) »), un **Trait** (par id), ou
+   *  un **état psychologique** actif (par type — `psych`, ex. 'frenesie' : gate du Contrôle de la
+   *  Frénésie, LDB 10). Généralise les gates op-level `onlyGroups`/`unlessImmune`. Acteur absent = false. */
+  | { kind: 'has'; who: ActorRef; what: 'group' | 'talent' | 'trait' | 'psych'; value: string; spec?: string }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
@@ -270,6 +274,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       if (!a) return false;
       if (cond.what === 'group') return groupMatch(cond.value, a.groups);
       if (cond.what === 'talent') return a.talents.some((t) => t.id === cond.value && (!cond.spec || t.spec === cond.spec));
+      if (cond.what === 'psych') return (a.psych ?? []).includes(cond.value);
       return a.traits.includes(cond.value);
     }
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
@@ -340,6 +345,10 @@ export interface FlowTest {
    *  comme `unlessImmune`/`onlyGroups`). Généralise ces gates à l'algèbre de Conditions (Brisé : « pas
    *  Engagé OU Cœur vaillant, ET pions restants »). Évaluée AVANT le jet par `resolveFlowTest`/`resolveInlineFlowTest`. */
   gate?: Condition;
+  /** MENACE à laquelle ce Test RÉSISTE (tag du talent « Résistance (Menace) », LDB 10 l.1015-1021 :
+   *  'Poison' pour Venin/lames empoisonnées…). Copié sur l'étape de cascade du héros → offre
+   *  l'auto-succès du talent (verbe `resist`, cf. engine/menace). Absent = Test non couvert. */
+  menace?: string;
   /** Difficulté DYNAMIQUE : la PREMIÈRE Condition vraie impose sa difficulté ; sinon `difficulty` (défaut
    *  Intermédiaire). Brisé (LDB 16 l.58) : caché → Accessible, ennemi à ≤3 → Très difficile, sinon Intermédiaire. */
   difficultyBy?: { cond: Condition; difficulty: Difficulty }[];
@@ -434,6 +443,11 @@ export interface TriggeredEffect<E = EffectOp> {
    *  attaque de ce type (`melee`/`ranged`). Absent = tout type (Sang corrosif : « chaque fois qu'elle subit
    *  des Blessures », LDB 85 l.220 → aucune restriction). Lu via `ctx.attackType`. */
   attackType?: 'melee' | 'ranged';
+  /** Effet OPT-IN (RAW « Vous pouvez… » — Contrôle de la Frénésie, LDB 10 l.251-255) : le porteur CHOISIT
+   *  de le déclencher. Héros en cadence MANUELLE → proposé (étape de CHOIX de fin de Round, skippable) ;
+   *  IA / cadence auto → JAMAIS exercé (défaut conservateur : pas de décision silencieuse ni de jet caché
+   *  — la sortie rationnelle de l'IA, « plus d'ennemi en vue », est déjà l'effet auto de psychology.json). */
+  optional?: boolean;
 }
 
 /** Enveloppe une liste d'effets-feuilles (ancien format `Effect[]`) en un Flow `seq` de `do` — pont de

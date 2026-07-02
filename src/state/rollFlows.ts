@@ -90,8 +90,9 @@ function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bon
 // EXACTEMENT le même ensemble de clés (le store passe la liste des verbes voulus) sans rien
 // recopier ; le runtime est byte-identique (mêmes appels `FLOWS.<x>.<m>(get, set[, …])`).
 
-/** Les 6 verbes du cycle de jet différé (cf. `RollFlowHandlers`). */
-export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll';
+/** Les 7 verbes du cycle de jet différé (cf. `RollFlowHandlers`). `resist` = Résistance (Menace),
+ *  LDB 10 — exposé par les seuls flux à `caps.resist` (Tests qui « résistent à une menace »). */
+export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist';
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
@@ -148,7 +149,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'attack', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'bargain', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'cast', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
-  & MonoRollActions<'corruption', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
+  & MonoRollActions<'corruption', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'resist'>
   & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'disengage', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'auContact', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
@@ -167,9 +168,9 @@ export type RollFlowActionsMap =
   & MultiRollActions<'shipBattery', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'test', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
-  & MultiRollActions<'counterspell', RollVerb>
-  & MultiRollActions<'extendedTest', RollVerb>
-  & MultiRollActions<'forceDoor', RollVerb>
+  & MultiRollActions<'counterspell', Exclude<RollVerb, 'resist'>>
+  & MultiRollActions<'extendedTest', Exclude<RollVerb, 'resist'>>
+  & MultiRollActions<'forceDoor', Exclude<RollVerb, 'resist'>>
   & MultiRollActions<'cascade', RollVerb>
   & MultiRollActions<'opposition', RollVerb>;
 
@@ -401,6 +402,13 @@ export const FLOWS = {
       if (!actor || !pcCast || !pco) return null;
       const castT = castTestOf(pcCast); // l'incantation figée = l'« attaquant » de l'opposition
       const oppVal = testValue(actor, pco.skill, pco.char); // FM / Intelligence de la cible
+      if (forced?.sl != null) {
+        // Résistance (Magie), LDB 10 l.1015-1021 : le Test pour résister au Sort réussit d'office —
+        // la cible RÉSISTE (interprétation : « réussir le Test pour résister » = l'opposition est
+        // tenue), DR imposé = Bonus d'Endurance (nourrit la marge).
+        const oppose: TestResult = { roll: 1, target: oppVal, success: true, sl: forced.sl, isDouble: false };
+        return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - forced.sl) } };
+      }
       if (forced) {
         // Résilience « Je ne faillirai pas ! » : la cible force sa réussite → résiste (l'emporte).
         const cur = part.result;
@@ -415,7 +423,8 @@ export const FLOWS = {
     },
     // La cible a ÉCHOUÉ à résister (le lanceur l'emporte) → relançable par SA Chance (héros défenseur).
     failed: (part) => !!part.result && !part.result.resisted,
-    caps: { forced: true },
+    // `resist` : « résister aux sorts » = la menace 'Magie' du talent (tag posé par openCastOpposition).
+    caps: { forced: true, resist: true },
     bonus: {
       derive: (s, part, actor) => {
         const pcCast = s.pendingCast?.result;
@@ -473,6 +482,11 @@ export const FLOWS = {
     resolve: (_s, st, _actor, _get, forced) => {
       if (st.target == null) return null; // étape sans jet → rien à lancer
       const opp = st.meta?.opposed; // Test OPPOSÉ figé (Assommante) → l'issue vient de resolveOpposed.
+      if (forced?.sl != null) {
+        // Résistance (Menace), LDB 10 l.1015-1021 : auto-succès du Test de l'étape (Contraction,
+        // Exposition à la Corruption, Venin…) — DR IMPOSÉ = Bonus d'Endurance (pas de choix du dé).
+        return { result: { roll: 1, target: st.target, sl: forced.sl, success: true } };
+      }
       if (forced) {
         // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : « au lieu de lancer les dés, vous
         // choisissez le résultat ». Dé CHOISI (`forced.roll`, picker des Peurs étendues — le DR gagné
@@ -490,10 +504,12 @@ export const FLOWS = {
       return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
     },
     failed: (st) => !!st.result && !st.result.success,
-    // Résilience GLOBALE ; `picker` (dé choisi) UNIQUEMENT sur une Peur de COMBAT (Test ÉTENDU, le DR
+    // Résilience GLOBALE + Résistance (Menace) sur les étapes taguées `menace` (Contraction/Corruption/
+    // Venin) ; `picker` (dé choisi) UNIQUEMENT sur une Peur de COMBAT (Test ÉTENDU, le DR
     // gagné dépend du dé, LDB 21 l.27) — pas sur une étape BINAIRE (Terreur/cible/Test de scène/nuit/opposé).
     caps: {
       forced: true,
+      resist: true,
       picker: (st) => {
         const cp = st.combatPsych;
         const isExtendedPeur = !!cp && psychResolution(cp.kind).mode === 'extended';
@@ -1013,10 +1029,17 @@ export const FLOWS = {
     key: 'pendingCorruption',
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.heroId),
-    resolve: (s, p) => {
-      const actor = actorIn(s, p.heroId);
-      if (!actor) return null;
-      const t = rollTest(testValue(actor, p.skill), 'intermediaire', battleRng());
+    // Résistance (Menace) (LDB 10, `caps.resist`) : exposition → menace 'Corruption' ; seuil (échec =
+    // mutation) → menace 'Mutation'. Pas de Résilience sur ce flux (inchangé : pas de `caps.forced`).
+    caps: { resist: true },
+    resolve: (s, p, actor, _get, forced) => {
+      const a = actor ?? actorIn(s, p.heroId);
+      if (!a) return null;
+      if (forced?.sl != null) {
+        // Auto-succès du talent : « utilisez votre Bonus d'Endurance comme DR » (LDB 10 l.1015-1021).
+        return { roll: 1, target: testValue(a, p.skill), sl: forced.sl, success: true };
+      }
+      const t = rollTest(testValue(a, p.skill), 'intermediaire', battleRng());
       return { roll: t.roll, target: t.target, sl: t.sl, success: t.success };
     },
     failed: (p) => (p.roll ?? 0) > (p.target ?? 0),

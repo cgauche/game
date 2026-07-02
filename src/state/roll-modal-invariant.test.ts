@@ -53,7 +53,8 @@ const offendersOf = (body: string): string[] => {
 
 // Les RÉSOLVEURS de modale (le jet différé lui-même) : convention de suffixe.
 // `*Resolve` : résolveurs aussi (resolveTest ; la psy de combat/rencontre passe par FLOWS.cascade).
-const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|Resolve)$/;
+// `*Resist` : Résistance (Menace), LDB 10 — auto-succès du MÊME mécanisme que ForceSuccess (verbe rollFlow).
+const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|Resolve|Resist)$/;
 
 /**
  * Liste blanche JUSTIFIÉE — chaque entrée dit OÙ le jet est montré au joueur (catégories 2/3).

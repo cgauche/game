@@ -11,7 +11,7 @@
  */
 import { type Combatant, type Weapon, type HitLocation, type Difficulty, CHAR_LABELS } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
-import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest, spellEffectOps } from './flow';
+import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest, spellEffectOps, EMPTY_FLOW } from './flow';
 import type { OpsCtx, GameOp } from '../engine/ops';
 import { describeTestRoll } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
@@ -73,9 +73,11 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
  * Atouts d'arme (`weapon.onHitEffects`), Traits, Qualités d'arme, Talents, ÉTATS, états PSY. Chaque source
  * est taguée `key`/`cap`/`label` (+ `stacks` pour les statuts, pions réduits d'une capacité de la cible).
  * TOUT le reste en DÉRIVE (zéro énumérateur parallèle) : `fireTriggers` (via `effectsOf` non-statut +
- * `fireConditionEffects`/`firePsychEffects`), `resolveFreeAttacks` (via `freeAttackSourcesOf`). AJOUTER UN
+ * `fireConditionEffects`/`firePsychEffects`), `resolveFreeAttacks` (via `freeAttackSourcesOf`), et le
+ * COLLECTEUR jumeau de fin de Round (`collectRoundEndTestSteps`, combat/triggeredTest — les Tests d'un
+ * héros MANUEL deviennent des étapes de cascade au lieu d'être joués inline). AJOUTER UN
  * KIND = ICI seulement. Ordre FIGÉ (enchant → traits → atouts → talents → États → psy) = déroulé RNG déterministe. */
-function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
+export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
   const out: TriggerSource[] = [];
   if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
   for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg, tr.value), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
@@ -324,6 +326,12 @@ export function applyTriggeredEffects(
       // sa propre chute (Démoniaque banni à 0 PB, futur « éclate/se dédouble à la mort »). Les déclencheurs
       // de FRONTIÈRE de round (`onRoundEnd`/`onRoundStart`) filtrent eux-mêmes les hors-combat côté appelant.
       if (isOutOfAction(t) && t.id !== actor.id) continue;
+      // Effet OPT-IN (`optional`, RAW « Vous pouvez… » — Contrôle de la Frénésie LDB 10) : seul un HÉROS
+      // en cadence MANUELLE décide (fin de Round : sauté ici, COLLECTÉ en étape de CHOIX par
+      // `collectRoundEndTestSteps`). IA / cadence auto ne l'exercent JAMAIS — ni décision silencieuse ni
+      // jet caché (la sortie rationnelle de l'IA — plus d'ennemi en vue — est déjà l'effet AUTO de
+      // psychology.json).
+      if (eff.optional && !roundTestInteractive(t)) continue;
       // Flow PORTANT un nœud `test` (à n'importe quelle profondeur — top-level Mâchoires, ou enfoui sous
       // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
       // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant
@@ -343,7 +351,13 @@ export function applyTriggeredEffects(
         // Hors fin de Round : voie cadence-aware si un routeur est branché (onGainCondition / attaques →
         // cascade influençable pour un héros manuel, inline + file différée sinon) ; SANS routeur (entretien
         // HORS COMBAT) → INLINE. Jamais avalé. GÉNÉRIQUE : tout État à `onRoundEnd` test (Empoisonné…).
-        if (ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, eff.flow, flowCtx); continue; }
+        // Un effet OPT-IN atteint ici un héros MANUEL (les autres sont filtrés plus haut) : son Flow est
+        // emballé dans un nœud `choice` (Oui/Renoncer) — le « Vous pouvez » RAW devient une étape de choix.
+        const flow: Flow = eff.optional
+          ? { kind: 'choice', prompt: eff.flow.kind === 'test' ? (eff.flow.test.label ?? 'Réaction') : 'Réaction', yes: eff.flow, no: EMPTY_FLOW }
+          : eff.flow;
+        if (ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, flow, flowCtx); continue; }
+        if (eff.optional) continue; // opt-in SANS voie de choix (entretien hors combat) → non exercé
         lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
         continue;
       }

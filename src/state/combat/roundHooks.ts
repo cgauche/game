@@ -18,7 +18,7 @@ import { clearPsychOf } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
-import { collectConditionRecoverySteps } from './triggeredTest';
+import { collectRoundEndTestSteps } from './triggeredTest';
 import { roundTestInteractive } from './cadenceGate';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
@@ -135,7 +135,7 @@ registerCombatHook({
 // `hiddenFromFoes`) ; (B) Test de Calme gaté « pas Engagé OU Cœur vaillant, ET pions restants », difficulté par
 // circonstances (`difficultyBy` : caché → Accessible, ennemi à ≤3 → Très difficile), succès retire 1 + DR, vidé
 // → Exténué (l.80). Dispatché par le DISPATCHER UNIQUE (hook `end-of-round`) : ennemi/auto inline, héros manuel
-// → étape de cascade collectée par `collectConditionRecoverySteps`. La géométrie d'arène est calculée par
+// → étape de cascade collectée par `collectRoundEndTestSteps`. La géométrie d'arène est calculée par
 // `recoveryGeometry` (triggeredEffects). Plus de hook `broken-recovery` ni de `brokenContext`/`brokenRecoveryApply`.
 
 // --- Migration ISO-COMPORTEMENT des derniers blocs du franchissement de Round (corps copiés tel quel,
@@ -262,7 +262,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   //    `triggeredTest` INFLUENÇABLE, bâtie depuis la MÊME donnée que la voie inline (ennemi/auto) et hors-combat
   //    (`simpleTriggeredTestStep`). Les DÉGÂTS périodiques ont DÉJÀ été appliqués par le dispatcher (hook
   //    `end-of-round`) ; seul le TEST passe en cascade. En TÊTE (physiologique). Plus de `poisonResist` par-nom.
-  steps.push(...collectConditionRecoverySteps(get, c));
+  steps.push(...collectRoundEndTestSteps(get, c));
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
   // (Récupération du Brisé : MIGRÉE en DONNÉES — son retrait « caché » + Exténué SANS-Test sont appliqués

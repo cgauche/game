@@ -4,6 +4,7 @@ import type { RollBreakdown } from '../engine/combat';
 import { bus, EVT } from '../state/bus';
 import { ForcedRollPicker } from './ForcedRollPicker';
 import { ResilienceButton } from './ResilienceButton';
+import { ResistButton } from './ResistButton';
 import { InfluenceRow } from './InfluenceRow';
 import { RollPanel, type RollRowData } from './RollPanel';
 import type { PendingRoll } from './RollLine';
@@ -61,6 +62,7 @@ export function RollFlowShell({
   onForce,
   preRollForce,
   forceShow = false,
+  resist,
   forcedRoll,
   confirmLabel = 'Appliquer',
   confirmTitle,
@@ -123,6 +125,9 @@ export function RollFlowShell({
   preRollForce?: () => void;
   /** Montre la Résilience APRÈS le jet (condition d'échec propre au flux). */
   forceShow?: boolean;
+  /** Résistance (Menace) (LDB 10) : auto-succès du talent sur un Test tagué `menace` — fourni quand le
+   *  talent est DISPONIBLE (spec non consommée cette séance). Affiché AVANT le jet, et après un ÉCHEC. */
+  resist?: { menace: string; onResist: () => void };
   /** « vous choisissez le résultat » (LDB 17 l.73) : sélecteur du dé d'un Test FORCÉ — fourni par
    *  les flux où la valeur a un enjeu (double → Critique). Absent → pas de sélecteur. */
   forcedRoll?: { roll: number; target: number; onSet: (roll: number) => void; critable?: boolean };
@@ -201,6 +206,8 @@ export function RollFlowShell({
               <div className="rm-influence">
                 {/* Résilience AVANT le jet (LDB 17 l.73 : « au lieu de lancer les dés »). */}
                 {onForce && <ResilienceButton resilience={resilience} show={resilience > 0} onForce={preRollForce ?? onForce} />}
+                {/* Résistance (Menace) AVANT le jet (LDB 10 : « réussir automatiquement le premier Test »). */}
+                {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
                 {preInfluence}
                 {determineBtn}
               </div>
@@ -234,6 +241,8 @@ export function RollFlowShell({
             onForce={onForce}
             forceShow={forceShow}
           >
+            {/* Résistance (Menace) après un ÉCHEC — le parent ne passe `resist` que quand l'issue est encore défavorable. */}
+            {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
             {forceShow && determineBtn}
           </InfluenceRow>
           <div className="modal-actions">

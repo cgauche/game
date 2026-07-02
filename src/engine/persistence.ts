@@ -34,6 +34,7 @@ export function carryOverState(c: Combatant): {
   damned?: boolean;
   traits?: import('./statEntry').TraitList;
   psychTraits?: import('./psychology').PsychTrait[];
+  resistanceUsed?: string[];
 } {
   return {
     wounds: { current: c.wounds.current, max: c.wounds.max },
@@ -65,6 +66,8 @@ export function carryOverState(c: Combatant): {
     // Traits gagnés par mutation (Tentacules, Frénésie…) : un héros n'en change pas autrement.
     ...(c.mutations?.length && c.traits ? { traits: [...c.traits] } : {}),
     ...(c.mutations?.length && c.psychTraits ? { psychTraits: c.psychTraits.map((t) => ({ ...t })) } : {}),
+    // Résistance (Menace), LDB 10 : le compteur « 1 par séance » consommé EN combat suit le héros.
+    ...(c.resistanceUsed?.length ? { resistanceUsed: [...c.resistanceUsed] } : {}),
   };
 }
 

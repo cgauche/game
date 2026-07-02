@@ -1640,7 +1640,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
-  ...rollFlowActions('corruption', FLOWS.corruption, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
+  ...rollFlowActions('corruption', FLOWS.corruption, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist']),
   corruptionSetSkill: (skill) => {
     const pc = get().pendingCorruption;
     // Pré-jet uniquement, et JAMAIS si la compétence est déterminée en amont (source ou seuil).

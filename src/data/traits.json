@@ -1811,7 +1811,8 @@
               "skill": "resistance",
               "difficulty": "intermediaire",
               "argDifficulty": true,
-              "unlessImmune": "poison"
+              "unlessImmune": "poison",
+              "menace": "Poison"
             },
             "success": {
               "kind": "seq",
@@ -2077,7 +2078,28 @@
     "source": {
       "book": "EDO",
       "page": 147
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "victim",
+            "ops": [
+              {
+                "op": "exposeDisease",
+                "disease": "$arg",
+                "difficultyShift": -2,
+                "incubation": "instant"
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "decerebre",

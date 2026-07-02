@@ -27,6 +27,8 @@ export function buildActorView(c: Combatant | undefined): ActorView | undefined 
     advantage: c.advantage ?? 0, camp: campOf(c),
     groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
     conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])), capabilities: aggregateCapabilities(c),
+    // États psy ACTIFS (un trait ciblé RÉSISTÉ — `active:false` — ne compte pas comme « possédé »).
+    psych: (c.psychState ?? []).filter((p) => p.active !== false).map((p) => p.type),
     chars: Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(c, k)])) as Record<CharKey, number>,
   } : undefined;
 }

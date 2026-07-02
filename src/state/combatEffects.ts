@@ -800,7 +800,8 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const hero = corruptionTarget(env.get(), e.heroId);
       // `e.skill` présent = déterminé en amont (verrouillé) ; absent = nature indéterminée → le
       // joueur choisira Résistance/Calme dans la modale (défaut affiché : Résistance).
-      if (hero) env.set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null, align: e.align } });
+      // Test d'Exposition = « résister à la Corruption » → Résistance (Menace : Corruption) offerte (LDB 10).
+      if (hero) env.set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null, align: e.align, menace: 'Corruption' } });
     },
   },
   giveSin: {

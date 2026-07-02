@@ -94,7 +94,7 @@ describe('Exposition aux Maladies — op générique exposeDisease (onHit, plus 
     const atk = mk({ traits: [{ id: 'infecte' }] as never });
     const vic = mk();
     onHit(atk, vic, 3);
-    expect(vic.diseaseExposure).toEqual(['blessure-purulente']);
+    expect(vic.diseaseExposure).toEqual([{ disease: 'blessure-purulente' }]);
   });
 
   it('Infecté + Maladie (Fièvre du rongeur) → blessure-purulente ET fievre-du-rongeur (deux sources, un dispatch)', () => {
@@ -103,14 +103,14 @@ describe('Exposition aux Maladies — op générique exposeDisease (onHit, plus 
     const atk = mk({ traits: [{ id: 'infecte' }, { id: 'maladie', arg: 'fievre-du-rongeur' }] as never });
     const vic = mk();
     onHit(atk, vic, 3);
-    expect(vic.diseaseExposure?.sort()).toEqual(['blessure-purulente', 'fievre-du-rongeur']);
+    expect(vic.diseaseExposure?.map((e) => e.disease).sort()).toEqual(['blessure-purulente', 'fievre-du-rongeur']);
   });
 
   it('trait Maladie (Type) : l’`arg` d’instance est injecté dans l’op (`$arg` → withArg)', () => {
     const atk = mk({ traits: [{ id: 'maladie', arg: 'peste-noire' }] as never });
     const vic = mk();
     onHit(atk, vic, 3);
-    expect(vic.diseaseExposure).toEqual(['peste-noire']);
+    expect(vic.diseaseExposure).toEqual([{ disease: 'peste-noire' }]);
   });
 
   it('touche SANS Blessure (woundsDealt=0) → aucune exposition (gate woundsDealt>0)', () => {

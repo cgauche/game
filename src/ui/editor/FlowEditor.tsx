@@ -93,6 +93,14 @@ function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest
         <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="compétence" value={test.easierIf?.hasSkill} onChange={(v) => setEase({ hasSkill: (v as { id: string; spec?: string } | null) ?? undefined })} nullable />
         <input placeholder="ou talent" value={test.easierIf?.hasTalent ?? ''} onChange={(e) => setEase({ hasTalent: e.target.value || undefined })} />
         <label className="dr">−<input type="number" min={1} value={test.easierIf?.steps ?? 1} onChange={(e) => setEase({ steps: Number(e.target.value) })} /> cran(s)</label>
+        {/* Menace du talent « Résistance (Menace) » (LDB 10) : tag qui offre son auto-succès sur CE Test. */}
+        <input
+          style={{ width: '9em' }}
+          placeholder="menace (Poison…)"
+          title="Résistance (Menace), LDB 10 : ce Test « résiste » à la menace indiquée (Poison, Maladie, Magie…) — le talent y offre son auto-succès"
+          value={test.menace ?? ''}
+          onChange={(e) => upd({ menace: e.target.value.trim() || undefined })}
+        />
       </div>
     </>
   );

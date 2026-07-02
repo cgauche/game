@@ -28,7 +28,7 @@ import { testValue, rawCombatTestBase } from '../../engine/skills';
 import { applyOps, describeTestRoll, type OpsCtx } from '../../engine/ops';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
-import { refLabel, findConditionById } from '../../data';
+import { refLabel } from '../../data';
 import { type Flow, type FlowTest, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
@@ -36,7 +36,7 @@ import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings
 import { battleRng } from '../battleRng';
 import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { fireTriggers, recoveryGeometry } from '../triggeredEffects';
+import { fireTriggers, recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
 import { roundTestInteractive } from './cadenceGate';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
@@ -171,28 +171,49 @@ export function simpleTriggeredTestStep(
     kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
     base, target: base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c), label: ft.label ?? skillLabel,
     meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after, ...extraMeta },
+    // Tag de DONNÉE (`FlowTest.menace` — Venin/lames empoisonnées : 'Poison') → l'étape offre
+    // l'auto-succès du talent Résistance (Menace) (LDB 10, verbe `cascadeResist`).
+    ...(ft.menace ? { menace: ft.menace } : {}),
   };
 }
 
-/** Étapes de cascade de RÉCUPÉRATION d'États en fin de Round pour un héros MANUEL (LDB 16) : pour chaque
- *  État porté dont la DONNÉE déclare un `effects: onRoundEnd` à nœud `test` (Empoisonné Résistance ; plus
- *  tard En Flammes Athlétisme / Sonné Résistance), une étape `triggeredTest` INFLUENÇABLE bâtie depuis la
- *  MÊME donnée (`simpleTriggeredTestStep`) que la voie inline (ennemi/auto) et la voie hors-combat. GÉNÉRIQUE
- *  (aucun État nommé en dur). `after` vide : un Test de récupération est top-level. */
-export function collectConditionRecoverySteps(get: Get, c: Combatant): CascadeStep[] {
+/** Étapes de cascade des Tests de FIN DE ROUND en DONNÉES pour un héros MANUEL — pour chaque SOURCE
+ *  d'effets déclenchés (États : récupération d'Empoisonné/Brisé LDB 16 ; TALENTS : Contrôle de la
+ *  Frénésie LDB 10 ; Traits/psy demain) dont un `effects: onRoundEnd` porte un nœud `test`, une étape
+ *  INFLUENÇABLE bâtie depuis la MÊME donnée (`simpleTriggeredTestStep`) que la voie inline (ennemi/auto)
+ *  et la voie hors-combat. GÉNÉRIQUE (aucune entité nommée). Un effet OPT-IN (`optional`, RAW « Vous
+ *  pouvez… ») devient une étape de CHOIX `triggeredChoice` (Oui → le Test est poussé par l'applier ;
+ *  Renoncer par défaut), émise APRÈS les Tests obligatoires (du plus mécanique au plus optionnel).
+ *  `after` vide : un Test de fin de Round est top-level. Jumeau du dispatcher (`effectSourcesOf` —
+ *  MÊME énumération que `fireTriggers`, qui a lui SAUTÉ ces héros via `deferInteractiveTest`). */
+export function collectRoundEndTestSteps(get: Get, c: Combatant): CascadeStep[] {
   const steps: CascadeStep[] = [];
+  const optional: CascadeStep[] = [];
   // `ConditionCtx` de combat (géométrie d'arène : caché/Engagé/proximité du Brisé) — MÊME géométrie que
   // celle injectée par le dispatcher dans la voie inline, pour évaluer GATE et difficulté DYNAMIQUE.
   const cc = combatConditionCtx(c, { caster: c, ...recoveryGeometry(get, c) });
-  for (const cond of c.conditions ?? []) {
-    for (const eff of findConditionById(cond.name)?.effects ?? []) {
+  for (const src of effectSourcesOf(c)) {
+    for (const eff of src.effects) {
       if (eff.trigger !== 'onRoundEnd' || eff.flow.kind !== 'test') continue;
       const ft = eff.flow.test;
-      if (flowTestGated(ft, c, cc)) continue; // gate fermée (Brisé caché/Engagé) → pas d'étape (no-op, comme inline)
+      if (flowTestGated(ft, c, cc)) continue; // gate fermée (Brisé caché/Engagé ; pas en Frénésie) → pas d'étape
+      if (eff.optional) {
+        // « Vous pouvez… » : étape de CHOIX (applier générique `triggeredChoice`) — le Oui pousse le
+        // Test influençable dans la MÊME cascade (runCombatFlow → resolveFlowTest, liveMerge).
+        const prompt = ft.label ?? src.label;
+        optional.push({
+          id: `triggeredChoice-${c.id}-${prompt}`, kind: 'triggeredChoice', actorId: c.id,
+          icon: '🤔', label: prompt,
+          options: [{ key: 'yes', label: prompt }, { key: 'no', label: 'Renoncer' }],
+          defaultChoice: 'no', interactive: true,
+          meta: { choiceYes: eff.flow, choiceNo: EMPTY_FLOW, after: EMPTY_FLOW },
+        });
+        continue;
+      }
       steps.push(simpleTriggeredTestStep(c, ft, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW, resolveTestDifficulty(ft, cc)));
     }
   }
-  return steps;
+  return [...steps, ...optional];
 }
 
 /** Rejoue la CONTINUATION `after` d'un `test` (le reste du `seq`) sur `c` EN COMBAT (peut ré-appender
@@ -318,6 +339,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
           id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
           base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
           meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
+          ...(ft.menace ? { menace: ft.menace } : {}),
         }
       : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta));
     return;

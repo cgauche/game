@@ -743,6 +743,19 @@ export interface WeaponLoadout {
   off?: string;
 }
 
+/** UNE exposition à une maladie (op `exposeDisease`) — consommée par le bilan de fin de combat
+ *  (Test de Contraction, LDB 20 l.32/49). Les modulateurs viennent de la SOURCE de l'exposition :
+ *  Contagieux (Type), EDO App.2 l.228-230 → `difficultyShift: -2` (« 2 niveaux plus difficile »,
+ *  sens `easeDifficulty` : négatif = plus difficile) + `instant` (« incubation “Instantanée” »). */
+export interface DiseaseExposure {
+  /** id de la maladie (`maladies.json`). */
+  disease: string;
+  /** Crans de difficulté du Test de Contraction (sens `easeDifficulty` : négatif = plus difficile). */
+  difficultyShift?: number;
+  /** Si contractée, l'incubation devient « Instantanée » (symptômes immédiats). */
+  instant?: boolean;
+}
+
 export interface Combatant {
   id: string;
   name: string;
@@ -905,6 +918,10 @@ export interface Combatant {
   fortune?: number;
   resilience?: number;
   resolve?: number;
+  /** Talent Résistance (Menace), LDB 10 l.1015-1021 : specs (normalisées) dont l'auto-succès « premier
+   *  Test pour résister à la menace » a DÉJÀ servi cette séance de jeu. Remis à zéro par la couture de
+   *  début de séance (`restoreFortune`, LDB 17 l.47). Persisté (party + writeback de combat). */
+  resistanceUsed?: string[];
   motivation?: string;
   /** Signe astral (« Naissance sous les Étoiles », ADE2) — `id` STABLE du signe (≠ libellé —
    *  multilangue-safe) ; résolu à l'affichage par `findStarById`. */
@@ -946,9 +963,10 @@ export interface Combatant {
   diseaseImmunities?: string[];
   /** Maladies auxquelles ce combattant a été EXPOSÉ pendant le combat (blessé par une source porteuse :
    *  Infecté → 'blessure-purulente', Maladie (Type) → l'`arg` (ex. 'fievre-du-rongeur' des rats),
-   *  munition Infecté) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20 l.32/49). SOURCE UNIQUE
-   *  (op `exposeDisease`). */
-  diseaseExposure?: string[];
+   *  munition Infecté ; touché par Contagieux (Type) — EDO App.2 l.228-230 : Test 2 niveaux plus
+   *  difficile + incubation « Instantanée ») → Tests de Contraction post-combat (LDB 85 p.340 /
+   *  LDB 20 l.32/49). SOURCE UNIQUE (op `exposeDisease`). */
+  diseaseExposure?: DiseaseExposure[];
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */
   nextActionPenalty?: number;

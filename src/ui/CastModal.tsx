@@ -9,6 +9,7 @@ import { testValue } from '../engine/skills';
 import { castingValue, spellTargetCount } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
+import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { CharFrame } from './CharFrame';
 import { RollFlowShell } from './RollFlowShell';
@@ -55,6 +56,7 @@ export function CastModal() {
   const oppBonusSL = useGame((s) => s.oppositionBonusSL);
   const oppDarkPact = useGame((s) => s.oppositionDarkPact);
   const oppForce = useGame((s) => s.oppositionForceSuccess);
+  const oppResist = useGame((s) => s.oppositionResist); // Résistance (Menace : Magie) — auto-succès du talent (LDB 10)
   const oppConfirm = useGame((s) => s.oppositionConfirm);
   // Contre-sort (Dissipation) : RÉACTION au Sort ENNEMI figé dans `pendingCast` — plus de modale
   // séparée (« le contre-sort, c'est le lancement d'un sort qui peut être opposé »). Chaque héros
@@ -298,6 +300,9 @@ export function CastModal() {
                     onDarkPact={() => oppDarkPact(part.id)}
                     onForce={() => oppForce(part.id)}
                     forceShow={!!r && !r.resisted}
+                    /* Résistance (Menace : Magie), LDB 10 : auto-succès du Test qui résiste au Sort. */
+                    resist={pcs.menace != null && availableResistance(actor, pcs.menace) != null && (!r || !r.resisted)
+                      ? { menace: pcs.menace, onResist: () => oppResist(part.id) } : undefined}
                     extra={r && <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? '✅ Résiste !' : `subit · marge DR ${r.margin}`}</div>}
                   />
                 );

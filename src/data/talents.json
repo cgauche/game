@@ -779,7 +779,49 @@
     "source": {
       "book": "LDB",
       "page": 135
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "optional": true,
+        "flow": {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "intermediaire",
+            "label": "🐗 Contrôle de la Frénésie",
+            "gate": {
+              "kind": "has",
+              "who": "target",
+              "what": "psych",
+              "value": "frenesie"
+            }
+          },
+          "success": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "endPsych",
+                  "type": "frenesie"
+                },
+                {
+                  "op": "condition",
+                  "name": "extenue"
+                }
+              ]
+            }
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      }
+    ]
   },
   {
     "id": "cooperatif",

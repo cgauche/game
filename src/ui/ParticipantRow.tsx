@@ -3,6 +3,7 @@ import type { Combatant } from '../engine/types';
 import { RollPanel, type RollRowData } from './RollPanel';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
+import { ResistButton } from './ResistButton';
 
 /**
  * Une RANGÉE de participant d'un flux MULTI (parallèle ou séquentiel), pendant UI de la fabrique
@@ -25,6 +26,7 @@ export function ParticipantRow({
   onDarkPact,
   onForce,
   forceShow = false,
+  resist,
   extra,
 }: {
   actor: Combatant;
@@ -40,6 +42,9 @@ export function ParticipantRow({
   onDarkPact?: () => void;
   onForce?: () => void;
   forceShow?: boolean;
+  /** Résistance (Menace) (LDB 10) : auto-succès du talent — fourni quand disponible ET issue encore
+   *  défavorable (le parent décide). Affiché AVANT le jet et après un échec. */
+  resist?: { menace: string; onResist: () => void };
   /** Issue courte (« Dissipé ! », « DR net +2 ») affichée sous la ligne. */
   extra?: ReactNode;
 }) {
@@ -52,6 +57,8 @@ export function ParticipantRow({
           {/* Résilience PRÉ-jet (LDB 17 l.73 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
               seulement après un échec, comme dans `RollFlowShell`. */}
           {onForce && <ResilienceButton resilience={actor.resilience ?? 0} show onForce={onForce} />}
+          {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
+          {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
           {onRoll && <button className="btn small btn-primary" onClick={onRoll}>{rollLabel}</button>}
         </div>
       )}
@@ -65,7 +72,9 @@ export function ParticipantRow({
           onDarkPact={onDarkPact}
           onForce={onForce}
           forceShow={forceShow}
-        />
+        >
+          {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
+        </InfluenceRow>
       )}
     </div>
   );

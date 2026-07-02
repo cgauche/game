@@ -6015,7 +6015,8 @@
                   "characteristic": "E",
                   "skill": "resistance",
                   "difficulty": "complexe",
-                  "unlessImmune": "poison"
+                  "unlessImmune": "poison",
+                  "menace": "Poison"
                 },
                 "success": {
                   "kind": "seq",
@@ -6400,7 +6401,8 @@
                   "onlyGroups": [
                     "Mort-vivant"
                   ],
-                  "unlessImmune": "poison"
+                  "unlessImmune": "poison",
+                  "menace": "Poison"
                 },
                 "success": {
                   "kind": "seq",

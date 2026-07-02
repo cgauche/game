@@ -421,6 +421,9 @@ function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] |
               <label className="dr">max <input type="number" min={1} style={{ width: '3.4em' }} value={eff.on.max} onChange={(e) => set(i, { on: { pick: 'engaged', ...((eff.on as { sizeAtMost?: 'self' }).sizeAtMost ? { sizeAtMost: 'self' as const } : {}), max: Math.max(1, Number(e.target.value) || 1) } })} />
               <input type="checkbox" checked={(eff.on as { sizeAtMost?: 'self' }).sizeAtMost === 'self'} onChange={(e) => set(i, { on: { pick: 'engaged', ...(e.target.checked ? { sizeAtMost: 'self' as const } : {}), max: (eff.on as { max: number }).max } })} /> Taille ≤ la sienne</label>
             )}
+            <label className="dr" title="RAW « Vous pouvez… » (Contrôle de la Frénésie) : le héros CHOISIT de déclencher (étape de choix en fin de Round) ; l’IA ne l’exerce jamais">
+              <input type="checkbox" checked={!!eff.optional} onChange={(e) => set(i, { optional: e.target.checked || undefined })} /> optionnel
+            </label>
             <button className="btn small danger" title="Supprimer l’effet" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
           </div>
           <FlowEditor flow={eff.flow ?? EMPTY_FLOW} ctx={{ encounters: [], dialogues: [] }} onChange={(flow) => set(i, { flow })} />

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
@@ -42,6 +43,7 @@ export function CascadeModal() {
   const bonusSL = useGame((s) => s.cascadeBonusSL);
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
+  const resistAct = useGame((s) => s.cascadeResist); // Résistance (Menace) : auto-succès du talent (LDB 10)
   const setForcedRoll = useGame((s) => s.cascadeSetForcedRoll); // Résilience : dé CHOISI (Peur étendue, LDB 17 l.73)
   const determine = useGame((s) => s.cascadeDetermine); // Détermination (immunité Psychologie de rencontre)
   const next = useGame((s) => s.cascadeNext);
@@ -252,6 +254,9 @@ export function CascadeModal() {
   // gagné dépend du dé → on expose le sélecteur de dé (source unique `FLOWS.cascade.picker`). Les étapes
   // BINAIRES (Terreur/cible/Test de scène) renvoient `null` → réussite au DR max, sans choix.
   const forcedDie = FLOWS.cascade.picker?.(cur, actor);
+  // Résistance (Menace) (LDB 10) : étape taguée `menace` + spec du talent disponible (non consommée
+  // cette séance) + issue encore défavorable → auto-succès offert (avant le jet ou après un échec).
+  const resistAvail = cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
 
   return (
     <RollFlowShell
@@ -275,6 +280,7 @@ export function CascadeModal() {
       resilience={actor.resilience ?? 0}
       onForce={() => force(cur.id)}
       forceShow={rolled && !res?.success}
+      resist={resistAvail ? { menace: cur.menace!, onResist: () => resistAct(cur.id) } : undefined}
       /* Résilience : dé CHOISI sur une Peur de combat étendue (le DR gagné suit le dé, LDB 17 l.73). */
       forcedRoll={forcedDie ? { ...forcedDie, onSet: (r) => setForcedRoll(cur.id, r) } : undefined}
       /* Psychologie (rencontre OU combat) : Détermination (immunité, LDB 17 l.62) AVANT le jet. */

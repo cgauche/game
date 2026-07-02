@@ -344,9 +344,13 @@ export type GameOp =
   | { op: 'preventInfection' }
   /** EXPOSE la cible à une Maladie (`disease` = id de `maladies.json`) → Test de Contraction au bilan de
    *  fin de combat (LDB 20 l.32/49). Op GÉNÉRIQUE : Infecté → 'blessure-purulente', trait Maladie →
-   *  l'`arg` (ex. 'fievre-du-rongeur' pour les rats/skavens). Cumule sans doublon dans `diseaseExposure`.
-   *  Inerte sur un non-héros (bilan héros-only). */
-  | { op: 'exposeDisease'; disease: string }
+   *  l'`arg` (ex. 'fievre-du-rongeur' pour les rats/skavens). Cumule sans doublon dans `diseaseExposure`
+   *  (double exposition à la même maladie → on garde la PIRE : shift le plus dur, `instant` si l'une
+   *  l'impose). Contagieux (Type), EDO App.2 l.228-230 : `difficultyShift: -2` (« le Test est de 2
+   *  niveaux plus difficile » — sens `easeDifficulty`, négatif = plus difficile) + `incubation:
+   *  'instant'` (« son incubation est changée en “Instantanée” »). Inerte sur un non-héros (bilan
+   *  héros-only). */
+  | { op: 'exposeDisease'; disease: string; difficultyShift?: number; incubation?: 'instant' }
   /** CONTRACTE instantanément une Maladie (`disease` = id) — incubation 0, durée tirée. Complète
    *  `exposeDisease` (exposition→test). Utilisé p.ex. par la conséquence `onFail` d'un symptôme « Blessé »
    *  (→ Blessure Purulente) ; applicable par tout effet (artefact maudit…). Inerte si déjà porteur. */
@@ -1074,7 +1078,16 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'exposeDisease': {
         // SILENCIEUX (comme l'ancien flag) : l'exposition ne s'exprime qu'au bilan de fin de combat.
-        if (!(target.diseaseExposure ?? []).includes(o.disease)) target.diseaseExposure = [...(target.diseaseExposure ?? []), o.disease];
+        // Double exposition à la MÊME maladie → fusion en gardant la PIRE (shift le plus dur, instant si l'une l'impose).
+        const entry = { disease: o.disease, ...(o.difficultyShift ? { difficultyShift: o.difficultyShift } : {}), ...(o.incubation === 'instant' ? { instant: true } : {}) };
+        const prev = (target.diseaseExposure ?? []).find((e) => e.disease === o.disease);
+        target.diseaseExposure = prev
+          ? (target.diseaseExposure ?? []).map((e) => e !== prev ? e : {
+              disease: e.disease,
+              ...(Math.min(e.difficultyShift ?? 0, entry.difficultyShift ?? 0) !== 0 ? { difficultyShift: Math.min(e.difficultyShift ?? 0, entry.difficultyShift ?? 0) } : {}),
+              ...(e.instant || entry.instant ? { instant: true } : {}),
+            })
+          : [...(target.diseaseExposure ?? []), entry];
         break;
       }
       case 'contractDisease': {

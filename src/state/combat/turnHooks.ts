@@ -161,15 +161,45 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
 // `onTurnStart` en DONNÉES (`psychology.json` : Sonné/Inconscient ∨ plus d'ennemi en LdV → Exténué),
 // diffusé UNIFORMÉMENT (héros + IA) par `fireTurnStartTriggers` AVANT les hooks d'entrée ci-dessous.
 registerCombatHook({
-  id: 'rage', // Rage (LDB 85 p.341) : « dépenser tous ses Avantages (minimum 3) pour entrer en Frénésie »
+  // Rage (LDB 85 l.281-283) : « Elle peut dépenser tous ses Avantages (minimum 1) pour que celui
+  // devienne Haine envers ses adversaires en combat rapproché. Elle peut aussi dépenser tous ses
+  // Avantages (minimum 3) pour entrer en Frénésie. » Décision IA (RNG-free) : ≥ 3 → Frénésie
+  // (politique historique conservée) ; sinon ≥ 1 ET des adversaires au contact non encore haïs →
+  // tout dépenser pour la Haine (état psy ciblé LDB 21 : +1 DR aux Tests de Combat contre le groupe
+  // + immunité à sa Peur, via psychology.json/psychDRAdjust). Cible = le 1ᵉʳ Groupe de chaque
+  // adversaire Engagé (racial des héros) ; re-testable en fin de Round comme toute Haine (LDB 21).
+  id: 'rage',
   phase: 'onTurnStart',
   order: 20,
   run: ({ get, set, battle, self }) => {
     const enemy = self;
-    if (!enemy || !hasRage(enemy.traits) || isFrenzied(enemy) || (enemy.advantage ?? 0) < 3) return;
+    if (!enemy || !hasRage(enemy.traits) || isFrenzied(enemy)) return;
+    const adv = enemy.advantage ?? 0;
+    if (adv >= 3) {
+      enemy.advantage = 0;
+      (enemy.psychState ??= []).push({ type: 'frenesie' });
+      battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.name }), enemy.id));
+      set({ battle: { ...battle } });
+      return;
+    }
+    if (adv < 1) return;
+    // Adversaires en COMBAT RAPPROCHÉ (Engagés, vivants) non déjà couverts par une Haine ACTIVE.
+    const foes = (enemy.engagedWith ?? [])
+      .map((id) => battle.combatants.find((x) => x.id === id))
+      .filter((f): f is Combatant => !!f && f.kind !== enemy.kind && !isOutOfAction(f));
+    const hated = (enemy.psychState ?? []).filter((p) => p.type === 'haine' && p.active === true && p.cible);
+    const uncovered = foes.filter((f) => !hated.some((p) => groupMatch(p.cible!, f.groups ?? [])));
+    // Cibles de Haine : 1ᵉʳ Groupe de chaque adversaire non couvert (dédupliqué) — un foe sans Groupe
+    // n'est pas modélisable en Trait ciblé (groupMatch), on ne dépense pas pour lui.
+    const cibles = [...new Set(uncovered.map((f) => f.groups?.[0]).filter((g): g is string => !!g))];
+    if (!cibles.length) return;
     enemy.advantage = 0;
-    (enemy.psychState ??= []).push({ type: 'frenesie' });
-    battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.name }), enemy.id));
+    enemy.psychState ??= [];
+    for (const cible of cibles) {
+      const src = uncovered.find((f) => f.groups?.[0] === cible)!;
+      enemy.psychState.push({ type: 'haine', cible, sourceId: src.id, active: true, lastTestRound: battle.round });
+      battle.log.push(ev('fear', t('turn.rageHate', { name: enemy.name, cible }), enemy.id));
+    }
     set({ battle: { ...battle } });
   },
 });
