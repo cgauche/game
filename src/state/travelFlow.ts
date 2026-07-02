@@ -148,7 +148,7 @@ export function startTravel(
   get: Get, set: Set,
   routeId: string,
   mode: TravelMode,
-  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure } = {},
+  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure; seaPace?: number } = {},
 ): void {
   const { worldMap, scene, battle, party } = get();
   if (battle || !worldMap || !scene) return;
@@ -166,7 +166,7 @@ export function startTravel(
   // MILLES, résolution du jour déléguée à `seaVoyageFlow` (météo/vent, Tests d'équipage, événements).
   if (mode === 'mer') {
     if (!route.sea) return;
-    const seaPlan = buildSeaPlan(get, routeId, from.id, to.id, route);
+    const seaPlan = buildSeaPlan(get, routeId, from.id, to.id, route, { pace: opts.seaPace });
     if (!seaPlan) {
       log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);
       return;

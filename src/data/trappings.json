@@ -11912,6 +11912,36 @@
     }
   },
   {
+    "id": "carte-marine",
+    "label": "Carte marine",
+    "type": "trapping",
+    "subType": "livres-et-documents",
+    "enc": 0,
+    "availability": "ND",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "orientation",
+        "bonus": 2
+      }
+    ],
+    "desc": "Vous dessinez une carte qui peut être reproduite et vendue pour faire un bénéfice, mais aussi servir d'outil pour s'orienter. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation.",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 130
+    }
+  },
+  {
     "id": "peau-de-phoque",
     "label": "Peau de phoque",
     "type": "trapping",

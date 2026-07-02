@@ -92,6 +92,8 @@ import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
+import * as portFlow from './portFlow';
+import * as seaActivities from './seaActivities';
 import { startCascade } from './cascade';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
@@ -965,7 +967,7 @@ export interface GameState extends RollFlowActionsMap {
   travelRecap: import('./travelFlow').TravelRecap | null;
   dismissTravelRecap: () => void;
   /** Démarre un voyage depuis le lieu courant le long d'une route (mode + classe + allure). */
-  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure }) => void;
+  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number }) => void;
   /** Reprend un voyage interrompu par une péripétie. */
   resumeTravel: () => void;
   /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.5),
@@ -982,6 +984,28 @@ export interface GameState extends RollFlowActionsMap {
   /** Navire de campagne PERSISTANT (MDG ch.13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
    *  semaine par l'entretien quotidien via `tickShipMorale`). `null` hors campagne navale. */
   vessel: CampaignVessel | null;
+  /** Écran PORT ouvert (services au navire à quai — MDG 15) : réparation/carénage/Améliorations +
+   *  commerce (offres d'achat générées à l'escale). `null` = fermé. */
+  port: import('./portFlow').PortState | null;
+  /** Ouvre l'écran Port si le groupe est à un lieu portuaire de la carte avec un navire de campagne. */
+  openPort: () => void;
+  closePort: () => void;
+  /** Achète `enc` points d'une cargaison de l'escale (Type/Taille/Marchandage, MDG 15 l.319-349). */
+  portBuyCargo: (cargoId: string, enc: number) => void;
+  /** Vend un lot de la cale (Trouver un acheteur/Prix d'offre/Marchandage, MDG 15 l.351-397). */
+  portSellCargo: (cargoIndex: number) => void;
+  /** Brade un lot invendable (¼ du prix de base, MDG 15 l.399). */
+  portDumpCargo: (cargoIndex: number) => void;
+  /** Répare la coque au chantier (1 CO/Blessure, MDG 13 l.643) — journalise le résultat. */
+  portRepair: () => void;
+  /** Carène en cale sèche (Salissures, MDG 13 l.150-159). */
+  portCareen: () => void;
+  /** Installe une Amélioration navale (coût par bande de Taille, MDG 12). */
+  portInstallUpgrade: (traitId: string, units?: number) => void;
+  /** ACTIVITÉS EN MER en attente (semaine de 8 jours, MDG 15 l.266-306) — modale de choix par héros. */
+  pendingSeaActivities: import('./seaActivities').PendingSeaActivities | null;
+  /** Résout les Activités choisies puis rend la main à la halte de nuit. */
+  seaActivitiesConfirm: (picks: Record<string, import('./seaActivities').SeaActivityPick | null>) => void;
 }
 
 /** Navire que le groupe possède/commande en campagne — survit aux jours et aux combats (≠ la coque
@@ -1010,6 +1034,9 @@ export interface CampaignVessel {
   /** Eau douce embarquée (litres — tonneau : 145 L, MDG ch.14 l.242). Absent = ravitaillement réputé
    *  assuré (même décision de périmètre que la Soif, cf. provisions.ts). */
   waterLitres?: number;
+  /** Milles de la DERNIÈRE traversée accomplie — vente à un port PRODUCTEUR : « Si le bateau a
+   *  parcouru plus de 100 milles » (MDG 15 l.366). Absent = navire à quai depuis sa mise à l'eau. */
+  lastVoyageMilles?: number;
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -1783,6 +1810,15 @@ export const useGame = create<GameState>((set, get) => ({
   closeWorldMap: () => set({ worldMapOpen: false }),
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
+  openPort: () => portFlow.openPort(get, set),
+  closePort: () => portFlow.closePort(get, set),
+  portBuyCargo: (cargoId, enc) => portFlow.portBuyCargo(get, set, cargoId, enc),
+  portSellCargo: (cargoIndex) => portFlow.portSellCargo(get, set, cargoIndex),
+  portDumpCargo: (cargoIndex) => portFlow.portDumpCargo(get, set, cargoIndex),
+  portRepair: () => portFlow.portRepairVessel(get, set).forEach((l) => get().log(l)),
+  portCareen: () => portFlow.portCareenVessel(get, set).forEach((l) => get().log(l)),
+  portInstallUpgrade: (traitId, units) => portFlow.portInstallUpgrade(get, set, traitId, units).forEach((l) => get().log(l)),
+  seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
   setTravelRole: (heroId, role) => set({
     party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),
   }),

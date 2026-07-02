@@ -105,7 +105,7 @@ describe('commerce maritime (MDG ch.15 l.309-436)', () => {
     expect(far.target).toBe(30);
     expect(far.sellerDR).toBe(-2);
     const near = sellChance(producer, 'poisson-sale', 50);
-    expect(near.gossip?.difficulty).toBe('tres-difficile'); // l.368 : « comme … un Surplus »
+    expect(near.gossip?.difficulty).toBe('tresDifficile'); // l.368 : « comme … un Surplus »
     expect(near.target).toBe(15);
     expect(near.sellerDR).toBe(-3);
   });

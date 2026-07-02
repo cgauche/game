@@ -27,6 +27,7 @@
 import seaWeatherJson from '../data/sea-weather.json';
 import { findTableEntry } from './tables';
 import { d10, type RNG, defaultRNG } from './dice';
+import { WORK_PERIOD_HOURS } from './seaNavigation';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
 
@@ -168,4 +169,15 @@ export function precipitationSkillMod(precip: SeaPrecipitationId, skillId: strin
  *  borne haute retenue : choix documenté). PUR. */
 export function dailyWaterLitres(temp: SeaTemperatureId): number {
   return temperatureDef(temp).litresParJour ?? 3;
+}
+
+/** Tests d'Exposition d'une JOURNÉE en mer pour la bande de Température (l.203-225 : « Toutes les
+ *  deux/quatre heures, effectuez un Test de Résistance… »). Le jour de voyage ne se simule pas heure
+ *  par heure : la période EXPOSÉE sur le pont = UNE Période de travail à la voile (8 h, l.107) →
+ *  8 ÷ cadence Tests par jour (bandes 4 h → 2 Tests ; bandes 2 h → 4 — mêmes comptes que la nuit
+ *  dehors d'`exposureNight` : difficile 2 / extrême 4). Médiane → 0 (« tolérable », l.217). PUR. */
+export function seaExposureTestsPerDay(temp: SeaTemperatureId): number {
+  const def = temperatureDef(temp);
+  if (!def.exposure || !def.testEveryHours) return 0;
+  return Math.max(1, Math.round(WORK_PERIOD_HOURS.voile / def.testEveryHours));
 }

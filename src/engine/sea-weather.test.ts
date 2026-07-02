@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   rollSeaWeather, rollWindDirection, windAspect, tickWindForce, windEffect, windAdjustedM,
   visibilityDRPenalty, precipitationSkillMod, dailyWaterLitres, WIND_FORCES, temperatureDef,
+  seaExposureTestsPerDay,
 } from './seaWeather';
 import type { RNG } from './dice';
 
@@ -115,5 +116,14 @@ describe('effets d’ambiance — Précipitations / Température / Visibilité (
     expect(dailyWaterLitres('caniculaire')).toBe(4);
     expect(dailyWaterLitres('chaude')).toBe(3);
     expect(dailyWaterLitres('mediane')).toBe(3); // régime de bord « 2 à 3 litres » (MDG ch.14 l.242)
+  });
+
+  it('seaExposureTestsPerDay : 8 h de pont / cadence de bande (4 h → 2 Tests, 2 h → 4) ; Médiane → 0', () => {
+    // Une Période de travail à la voile = 8 h (l.107) ÷ la cadence RAW (l.209-225).
+    expect(seaExposureTestsPerDay('caniculaire')).toBe(4); // 8 ÷ 2
+    expect(seaExposureTestsPerDay('glaciale')).toBe(4); // 8 ÷ 2
+    expect(seaExposureTestsPerDay('chaude')).toBe(2); // 8 ÷ 4
+    expect(seaExposureTestsPerDay('froide')).toBe(2); // 8 ÷ 4
+    expect(seaExposureTestsPerDay('mediane')).toBe(0); // tolérable (l.217)
   });
 });

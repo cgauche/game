@@ -12,6 +12,9 @@ import { rationCount } from '../engine/provisions';
 import { findVehicleById } from '../data';
 import { formatMoney, canAfford } from '../engine/money';
 import { rule } from '../engine/policy';
+import { forcePaceDifficulty } from '../engine/seaNavigation';
+import { shipHasNavalTrait } from '../engine/navalTraits';
+import { DIFFICULTY_LABELS } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
@@ -86,6 +89,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const [allure, setAllure] = useState<Allure>('pas');
   /** Attelage forcé au pas de course (EDOC 07 l.229). */
   const [forceGallop, setForceGallop] = useState(false);
+  /** Forcer le rythme en mer (MDG 13 l.95-107) : bonus de M demandé (0 = allure de conception). */
+  const [seaPace, setSeaPace] = useState(0);
   /** Lieu cliqué SANS route directe depuis ici → on l'explique au lieu de rester muet. */
   const [farId, setFarId] = useState<string | null>(null);
 
@@ -105,12 +110,14 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     setForced(false);
     setAllure('pas');
     setForceGallop(false);
+    setSeaPace(0);
   };
   const pickMode = (m: TravelMode) => {
     setMode(m);
     setClassKey(vehicleTravel(m)?.classes[0].key ?? '');
     setAllure('pas');
     setForceGallop(false);
+    setSeaPace(0);
   };
 
   // « En selle » (EDOC ch.4, règle `travel-allures`) : mode IMPLICITE des routes praticables à pied,
@@ -127,6 +134,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const vesselData = vessel ? findVehicleById(vessel.vehicleId) : undefined;
   const vesselLabel = vesselData?.label ?? '';
   const seaM = (vessel?.wounds == null || vessel.wounds.current > 0) ? (vesselData?.ship?.sail?.m ?? vesselData?.ship?.oars?.m ?? 0) : 0;
+  // Forcer le rythme (MDG 13 l.95-107) : +1 M voile/avirons, +2 M avirons seulement — rien à la vapeur (ch.12 l.311).
+  const seaRig: 'voile' | 'avirons' = vesselData?.ship?.sail ? 'voile' : 'avirons';
+  const seaSteam = !!vessel && shipHasNavalTrait([...(vesselData?.ship?.traits ?? []), ...(vessel.upgrades ?? [])], 'propulsion-a-vapeur');
+  const seaPaceChoices = seaSteam || !(vesselData?.ship?.sail || vesselData?.ship?.oars) ? [0] : [0, 1, 2].filter((b) => b === 0 || forcePaceDifficulty(b, seaRig) != null);
 
   // Estimations du trajet sélectionné (mêmes formules que le flux — RAW l.207-224).
   const base = baseHoursPerDay(map);
@@ -339,6 +350,26 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               </select>
             </label>
           )}
+          {mode === 'mer' && vessel && seaM > 0 && seaPaceChoices.length > 1 && (
+            <div className="wm-modes">
+              {seaPaceChoices.map((b) => {
+                const diff = b ? forcePaceDifficulty(b, seaRig) : null;
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    className={`btn small ${seaPace === b ? 'btn-primary' : ''}`}
+                    onClick={() => setSeaPace(b)}
+                    title={b && diff
+                      ? `Test de ${seaRig === 'voile' ? 'Voile' : 'Ramer'} ${DIFFICULTY_LABELS[diff]} chaque jour — réussi : +${b} M ; le soir, Test de Résistance Complexe (−10) sous peine d'Exténué (MDG ch.13).`
+                      : 'Allure de conception du navire.'}
+                  >
+                    {b === 0 ? 'Rythme normal' : `Forcer +${b} M`}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {alluresOn && vehicleTravel(mode)?.draft && (
             <label className="wm-opt" title="Forcer l'attelage au pas de course : Test de Conduite d'attelage par kilomètre (-10 par km déjà au galop) — un Échec Stupéfiant provoque un Problème de véhicule.">
               <input type="checkbox" checked={forceGallop} onChange={(e) => setForceGallop(e.target.checked)} />
@@ -350,7 +381,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               vessel && seaM > 0 ? (
                 // 18 milles/jour par point de M (MDG ch.15 l.57-70) — le vent et les Tests d'équipage
                 // de Progression (±10 %/DR) modulent chaque journée.
-                <>⚓ {vesselLabel} · ≈ {18 * seaM} milles/jour (M {seaM}, hors vent) · ~{Math.max(1, Math.ceil(selRoute.km / (18 * seaM)))} jour(s)</>
+                <>⚓ {vesselLabel} · ≈ {18 * seaM} milles/jour (M {seaM}, hors vent{seaPace ? ` · ${18 * (seaM + seaPace)} si le rythme est tenu` : ''}) · ~{Math.max(1, Math.ceil(selRoute.km / (18 * seaM)))} jour(s)</>
               ) : (
                 <>Aucun navire de campagne en état de prendre la mer.</>
               )
@@ -382,6 +413,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 classKey: classKey || undefined,
                 hoursPerDay: forced ? (mode === 'pied' ? maxH : mode === 'monture' ? 12 : undefined) : undefined,
                 allure: effAllure,
+                seaPace: mode === 'mer' && seaPace > 0 ? seaPace : undefined,
               })}
             >
               🧭 Partir

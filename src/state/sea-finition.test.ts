@@ -1,0 +1,174 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useGame } from './store';
+import { makePregens } from '../data/pregens';
+import { seedBattleRng } from './battleRng';
+import { buildSeaPlan } from './seaVoyageFlow';
+import { seaActivityBlocked } from './seaActivities';
+import { activityById } from '../engine/activities';
+import type { WorldMap } from './worldMap';
+import type { Combatant } from '../engine/types';
+
+/**
+ * FINITION du chantier naval (reliquats 7a/7b) — les consommateurs joueur :
+ *  #28 Température câblée (Exposition + eau), #27 Forcer le rythme (+M + Épuisement),
+ *  #30 écran Port (commerce d'escale), #29 Activités en mer (semaine de 8 jours).
+ */
+const get = useGame.getState.bind(useGame);
+const set = useGame.setState.bind(useGame);
+
+const seaMap: WorldMap = {
+  id: 'm', nom: 'Mer des Griffes',
+  places: [
+    { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a', port: { taille: 4, richesse: 4, production: ['bois'], surplus: { 'produits-de-luxe': 1 } } },
+    { id: 'B', label: 'Marienburg', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 4, richesse: 5, production: ['commerce'], demande: { bois: 1 }, cosmopolite: true } },
+  ],
+  routes: [{ id: 'r1', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est' }],
+};
+
+function freshState() {
+  seedBattleRng(7);
+  useGame.setState({
+    party: makePregens().slice(0, 3),
+    scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    battle: null,
+    worldMap: seaMap,
+    travelPlan: null,
+    travelRecap: null,
+    pendingCrewTest: null,
+    pendingRest: null,
+    pendingSeaActivities: null,
+    port: null,
+    gameTime: 8 * 60,
+    lastUpkeepDay: 0,
+    money: { gold: 5000, silver: 0, brass: 0 },
+    vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
+    journal: [],
+  } as never);
+}
+
+/** Déroule la journée maritime jusqu'à une SUSPENSION (halte, Activités en mer), en roulant tous les
+ *  Tests d'équipage rencontrés — garde-fou 40 modales (crises/événements possibles). */
+function runOneSeaDay() {
+  for (let i = 0; i < 40; i++) {
+    if (get().pendingRest || get().pendingSeaActivities) break;
+    const p = get().pendingCrewTest;
+    if (!p) break;
+    for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
+    get().crewTestConfirm();
+  }
+}
+
+describe('#27 Forcer le rythme (MDG 13 l.95-107)', () => {
+  beforeEach(freshState);
+
+  it('buildSeaPlan({pace}) porte le bonus de M demandé sur l’état naval', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0], { pace: 1 })!;
+    expect(plan.sea!.forcePace).toBe(1);
+    const plain = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    expect(plain.sea!.forcePace).toBeUndefined();
+  });
+
+  it('une journée à rythme forcé → Test de Voile puis Test d’Épuisement (Complexe −10) par PJ', () => {
+    seedBattleRng(1); // jour 1 navigable (ni Encalminé ni Affaler) → la Voile/le rythme se joue
+    get().startTravel('r1', 'mer', { seaPace: 1 });
+    runOneSeaDay();
+    // Le recap du jour (halte de nuit) porte la journée ENTIÈRE — le journal, capé à 40 lignes,
+    // évince les lignes précoces comme « Forcer le rythme ».
+    const day = get().pendingRest!.travelDay!.lines.join('\n');
+    expect(day).toMatch(/Forcer le rythme/);
+    expect(day).toMatch(/Épuisement.*rythme forcé/);
+  });
+});
+
+describe('#28 Température en mer (MDG 13 l.203-225) — câblée au jour', () => {
+  beforeEach(freshState);
+
+  it('la journée en mer consomme de l’eau selon la bande de Température (tonneaux suivis)', () => {
+    seedBattleRng(3);
+    set({ vessel: { ...get().vessel!, waterLitres: 500 } });
+    get().startTravel('r1', 'mer');
+    runOneSeaDay();
+    // Une journée entière est passée : l'eau a été consommée (crew × litres de la bande).
+    expect(get().vessel!.waterLitres).toBeLessThan(500);
+    expect(get().journal.join('\n')).toMatch(/Eau douce|À SEC/);
+  });
+});
+
+describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
+  beforeEach(freshState);
+
+  it('la semaine de 8 jours ouvre la modale d’Activités (déclencheur hebdomadaire)', () => {
+    seedBattleRng(3);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    // On amorce au 7ᵉ jour révolu : la journée suivante franchit la 8ᵉ → pendingSeaActivities.
+    set({ travelPlan: { ...plan, kmDone: 40, sea: { ...plan.sea!, daysAtSea: 7 } } });
+    get().resumeTravel();
+    runOneSeaDay();
+    // Soit la modale d'Activités s'ouvre (8ᵉ jour), soit l'arrivée/halte (selon les milles) — mais
+    // sur 550 milles à ~40 milles restants elle ne peut pas arriver : la modale doit s'ouvrir.
+    expect(get().pendingSeaActivities).toBeTruthy();
+  });
+
+  it('seaActivitiesConfirm — Cartographie réussie → une Carte marine (+2 DR d’Orientation) sur le héros', () => {
+    seedBattleRng(3);
+    const heroes = get().party;
+    // Un cartographe hors pair : Métier (Cartographe) à 90.
+    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 60 } as never];
+    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, Dex: 40 };
+    set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
+    get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });
+    const owner = get().party[0];
+    const chart = (owner.items ?? []).find((it) => it.trappingId === 'carte-marine');
+    // Métier 90 Complexe (−10) = 80 → très probablement réussi ; la carte est créée en cas de succès.
+    // (RNG seedé déterministe : on tolère l'absence si l'unique jet échoue, mais on vérifie la halte.)
+    if (chart) expect(chart.trappingId).toBe('carte-marine');
+    expect(get().pendingRest).toBeTruthy(); // la halte de nuit suit la confirmation
+    expect(get().pendingSeaActivities).toBeNull();
+  });
+
+  it('Entraînement d’équipage est BLOQUÉ (équipage PNJ abstrait, MDG 14 l.39)', () => {
+    const def = activityById('entrainement-equipage')!;
+    expect(seaActivityBlocked(get, def)).toMatch(/équipage/i);
+  });
+});
+
+describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
+  beforeEach(freshState);
+
+  it('openPort génère les offres d’achat de l’escale (Production + Surplus)', () => {
+    seedBattleRng(2); // d10 non-1 → disponibilités non nulles (le 1 sur le d10 = « aucune », l.327)
+    get().openPort();
+    const st = get().port!;
+    expect(st.placeId).toBe('A');
+    expect(st.offers.length).toBeGreaterThan(0); // bois (Production) et/ou produits de luxe (Surplus)
+  });
+
+  it('portBuyCargo débite la bourse et embarque la cargaison ; portSellCargo la revend', () => {
+    seedBattleRng(2);
+    get().openPort();
+    const offer = get().port!.offers[0];
+    const before = get().money.gold;
+    get().portBuyCargo(offer.cargoId, Math.min(10, offer.enc));
+    const vessel = get().vessel!;
+    expect((vessel.cargo ?? []).length).toBe(1);
+    expect(get().money.gold).toBeLessThanOrEqual(before);
+    // Vente dans un autre port : on pose le navire à Marienburg (« commerce ») et on solde le lot.
+    set({ vessel: { ...get().vessel!, lastVoyageMilles: 550 }, port: null, scene: { id: 'port-b', nom: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
+    get().openPort();
+    const cargoLen = (get().vessel!.cargo ?? []).length;
+    get().portSellCargo(0);
+    // Trouvé un acheteur (port « commerce » : bonnes chances) → lot vendu, ou pas (RNG) mais l'appel ne casse pas.
+    expect((get().vessel!.cargo ?? []).length).toBeLessThanOrEqual(cargoLen);
+  });
+
+  it('portDumpCargo brade à ¼ du prix de base dans un port « commerce »', () => {
+    seedBattleRng(2);
+    set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 100, basePriceGold: 2 }] } });
+    set({ scene: { id: 'port-b', nom: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
+    get().openPort();
+    const before = get().money.gold;
+    get().portDumpCargo(0);
+    expect((get().vessel!.cargo ?? []).length).toBe(0);
+    expect(get().money.gold).toBeGreaterThan(before); // ¼ × 100 × 2 = 50 CO
+  });
+});

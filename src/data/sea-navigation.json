@@ -10,12 +10,12 @@
   "forcerLeRythme": [
     {
       "bonusM": 1,
-      "voile": "tres-difficile",
+      "voile": "tresDifficile",
       "avirons": "difficile"
     },
     {
       "bonusM": 2,
-      "avirons": "tres-difficile"
+      "avirons": "tresDifficile"
     }
   ],
   "vitesseMax": {
@@ -52,7 +52,7 @@
       {
         "min": 9,
         "max": 9999,
-        "difficulty": "tres-difficile",
+        "difficulty": "tresDifficile",
         "per": "round",
         "damage": 8
       }
@@ -279,7 +279,7 @@
     "lissageRepairSurcoutPct": 50,
     "temporaire": {
       "difficultyMin": "complexe",
-      "difficultyMax": "tres-difficile",
+      "difficultyMax": "tresDifficile",
       "hoursPerRepair": 1,
       "woundsPerRepair": "1d10",
       "failDamage": "1d10-4"

@@ -416,5 +416,63 @@
     "where": [
       "altdorf"
     ]
+  },
+  {
+    "id": "commerce-opportunite",
+    "label": "Commerce d'opportunité",
+    "contexts": [
+      "mer"
+    ],
+    "source": {
+      "book": "MDG",
+      "page": 130
+    },
+    "skills": [
+      {
+        "skillId": "marchandage"
+      }
+    ],
+    "difficulty": "complexe",
+    "resolver": "opportunityTrade",
+    "desc": "Si votre voyage vous fait passer par des ports appropriés, vous pouvez tenter de faire du commerce d'opportunité. Un achat ou une vente rapide peut faire une grosse différence. Vous pouvez investir jusqu'à l'équivalent de la valeur totale d'Encombrement disponible et non surchargé de votre bateau en couronnes d'or. Effectuez un Test étendu de **Marchandage Complexe (–10)** nécessitant 10 DR et autorisant jusqu'à trois tentatives. Reportez-vous au tableau ci-dessous pour connaitre le résultat de votre investissement."
+  },
+  {
+    "id": "cartographie",
+    "label": "Cartographie",
+    "contexts": [
+      "mer"
+    ],
+    "source": {
+      "book": "MDG",
+      "page": 130
+    },
+    "skills": [
+      {
+        "skillId": "metier",
+        "spec": "Cartographe"
+      }
+    ],
+    "difficulty": "complexe",
+    "resolver": "seaChart",
+    "desc": "Vous dessinez une carte qui peut être reproduite et vendue pour faire un bénéfice, mais aussi servir d'outil pour s'orienter. Effectuez un Test de **Métier (Cartographe) Complexe (–10)** et désignez deux ports. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation."
+  },
+  {
+    "id": "entrainement-equipage",
+    "label": "Entraînement d'équipage",
+    "contexts": [
+      "mer"
+    ],
+    "source": {
+      "book": "MDG",
+      "page": 130
+    },
+    "skills": [
+      {
+        "skillId": "commandement"
+      }
+    ],
+    "difficulty": "difficile",
+    "resolver": "crewTraining",
+    "desc": "Votre équipage pourrait devenir plus compétent. Choisissez l'une de vos Compétences utiles à la gestion d'un bateau. Vous passez votre temps à former l'équipage à cette Compétence. Effectuez un Test de **Commandement Difficile (–20)** suivi d'un Test **Difficile (–20)** dans la Compétence à entraîner. En cas de succès, augmentez le score de l'équipage dans la Compétence que vous lui avez apprise d'un nombre égal au nombre de DR obtenus sur le Test de Commandement et dépensez 2 pistoles d'argent en frais et en grog de félicitations par membre de l'équipage entraîné. Vous ne pouvez pas augmenter un score de Compétence au-delà de vos propres Augmentations dans cette Compétence. Seuls les PNJ peuvent gagner des Augmentations grâce à cette Activité."
   }
 ]

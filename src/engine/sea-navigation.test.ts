@@ -20,10 +20,10 @@ const hull = (E: number): Combatant => ({
 
 describe('Forcer le rythme & Épuisement (MDG ch.13 l.95-111)', () => {
   it('+1 M : Voile Très Difficile (−30) / Ramer Difficile (−20) ; +2 M : Ramer Très Difficile seulement', () => {
-    expect(forcePaceDifficulty(1, 'voile')).toBe('tres-difficile');
+    expect(forcePaceDifficulty(1, 'voile')).toBe('tresDifficile');
     expect(forcePaceDifficulty(1, 'avirons')).toBe('difficile');
     expect(forcePaceDifficulty(2, 'voile')).toBeNull(); // « n/a »
-    expect(forcePaceDifficulty(2, 'avirons')).toBe('tres-difficile');
+    expect(forcePaceDifficulty(2, 'avirons')).toBe('tresDifficile');
     expect(forcePaceDifficulty(3, 'avirons')).toBeNull();
   });
 
@@ -38,7 +38,7 @@ describe('« Ça va lâcher, capitaine ! » (MDG ch.13 l.121-142)', () => {
     expect(overspeedRow(5, 9)).toBeNull(); // M+4
     expect(overspeedRow(5, 10)).toMatchObject({ difficulty: 'accessible', per: 'heure', damage: 1 });
     expect(overspeedRow(5, 12)).toMatchObject({ difficulty: 'complexe', per: 'minute', damage: 3 });
-    expect(overspeedRow(5, 14)).toMatchObject({ difficulty: 'tres-difficile', per: 'round', damage: 8 });
+    expect(overspeedRow(5, 14)).toMatchObject({ difficulty: 'tresDifficile', per: 'round', damage: 8 });
     expect(overspeedRow(5, 20)).toMatchObject({ damage: 8 }); // « M+9 ou plus »
   });
 

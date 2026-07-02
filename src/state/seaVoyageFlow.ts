@@ -46,17 +46,20 @@ import { testValue, partyAssisted } from '../engine/skills';
 import { applyOps } from '../engine/ops';
 import { itemCapability } from '../engine/capabilities';
 import { isRation } from '../engine/provisions';
-import { toDate } from '../engine/clock';
+import { toDate, MINUTES_PER_DAY } from '../engine/clock';
 import { seasonOfMonth } from '../engine/travelStages';
 import {
   rollSeaWeather, rollWindDirection, windAspect, tickWindForce, windEffect, windAdjustedM,
-  seaWeatherLabel, dailyWaterLitres, AFFALER_RULES, type SeaWeather, type WindDirection,
+  seaWeatherLabel, dailyWaterLitres, temperatureDef, seaExposureTestsPerDay, AFFALER_RULES,
+  type SeaWeather, type WindDirection,
 } from '../engine/seaWeather';
 import {
   seaMilesPerDay, orientationOutcome, rollCourseChange, foulingEffects, rollWeeklyFouling,
   lighthouseSpotDifficulty, lighthouseOrientationDR, savoirOceansBonus, pursuitDistanceGain,
-  pursuitLowMPenalty, REPARATION,
+  pursuitLowMPenalty, forcePaceDifficulty, exhaustionDifficulty, REPARATION,
 } from '../engine/seaNavigation';
+import { exposureNight, expireExposureEffects } from '../engine/exposure';
+import { addCondition } from '../engine/conditions';
 import { findWhirlpool } from '../engine/seaPerils';
 import {
   rollBoardEvent, rollPortEvent, rollDaysToNextEvent, applyManannFactor, addManann, MANANN_BASE,
@@ -67,7 +70,7 @@ import { subtract, toMoney } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease } from '../engine/disease';
-import type { Combatant, Difficulty } from '../engine/types';
+import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
 
@@ -109,6 +112,11 @@ export interface SeaVoyageState {
   /** Infestation de rats ACTIVE (Test étendu d'Extermination, MDG 14 l.98 + événements ch.15). */
   infestation?: { label: string; difficulty: Difficulty; need: number; progress: number; spoilPerNight: string };
   crisis?: SeaCrisis;
+  /** FORCER LE RYTHME (MDG 13 l.95-107) : bonus de M demandé au départ (+1 voile/avirons, +2 avirons). */
+  forcePace?: number;
+  /** Issue du Test de Voile/Ramer du JOUR (l.97) : 'won' → le +M s'applique aux milles du jour. Présent
+   *  (won OU lost) = le rythme a été forcé → Test d'Épuisement Complexe (−10) au soir (l.111). */
+  paceToday?: 'won' | 'lost';
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -176,7 +184,10 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
   }
   const sail = !!vd?.sail;
   const fouling = foulingEffects(vessel?.fouling?.level ?? 0);
-  const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0);
+  // Forcer le rythme (MDG 13 l.95-107) : le bonus de M du jour n'est acquis que si le Test de
+  // Voile/Ramer du jour a été RÉUSSI ('won' — posé par la boucle à l'étape Progression).
+  const pace = sea.paceToday === 'won' ? sea.forcePace ?? 0 : 0;
+  const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace;
   const aspect = windAspect(sea.heading, sea.windFrom);
   const cell = windEffect(sea.weather.vent, aspect, shipHasNavalTrait(traits, 'clinfoc'));
   const m = windAdjustedM(Math.max(0, baseM), cell, sail);
@@ -219,6 +230,7 @@ function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string
 export function buildSeaPlan(
   get: Get, routeId: string, fromPlaceId: string, toPlaceId: string,
   route: { km: number; seaHeading?: WindDirection },
+  opts: { pace?: number } = {},
 ): TravelPlan | null {
   const ship = voyageShip(get);
   if (!ship || ship.hull.wounds.current <= 0) return null;
@@ -233,6 +245,7 @@ export function buildSeaPlan(
       windFrom: rollWindDirection(rng),
       daysToEvent: rollDaysToNextEvent(rng), // « Tous les 1d10 jours » (ch.15 l.89)
       daysAtSea: 0, step: 'meteo', lines: [], milesToday: 0,
+      ...(opts.pace ? { forcePace: opts.pace } : {}), // Forcer le rythme (MDG 13 l.95-107)
     },
   };
 }
@@ -262,7 +275,7 @@ export function runSeaDays(get: Get, set: Set): void {
         if (lock && lock.days <= 0) lock = undefined;
         let reversed = sea.reversedWinds;
         if (reversed && reversed > 0) { windFrom = 'est'; reversed -= 1; } // dominants d'ouest inversés (ch.15)
-        patchSea(get, set, { weather, windFrom, weatherLock: lock, reversedWinds: reversed, milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, step: 'affaler' });
+        patchSea(get, set, { weather, windFrom, weatherLock: lock, reversedWinds: reversed, milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined, step: 'affaler' });
         tell(get, set, [`🌊 Météo du jour : ${seaWeatherLabel(weather)} — vent de ${windFrom} (cap ${sea.heading}).`]);
         break;
       }
@@ -280,7 +293,7 @@ export function runSeaDays(get: Get, set: Set): void {
       }
       case 'progression': {
         // 3. Progression du jour (Test d'équipage, MDG 14 l.61-65 ; ±10 %/DR ch.15 l.78).
-        const eff = effectiveSeaM(get);
+        let eff = effectiveSeaM(get);
         if (sea.sailsDown || eff.m === null) {
           // Encalminé (l.296) ou voiles affalées (l.294) : ancre si le navire en a une, sinon dérive à 25 %.
           const anchored = shipHasNavalTrait(hullTraits(plan.vehicle!), 'ancre');
@@ -290,6 +303,23 @@ export function runSeaDays(get: Get, set: Set): void {
             : `⛵ Voiles affalées — ${anchored ? 'ancre jetée en attendant l\'accalmie.' : `le vent pousse le navire (${drift} milles, 25 % de la vitesse — l.294).`}`]);
           patchSea(get, set, { milesToday: 0, step: 'crise' });
           break;
+        }
+        // FORCER LE RYTHME (MDG 13 l.95-107) : Test de Voile/Ramer du jour AVANT la Progression —
+        // « pour bénéficier du bonus de Mouvement, un Test de Voile ou de Ramer doit être réussi ».
+        // Au niveau JOUR, UN Test représente la journée (même abstraction que la Progression) ; « ce
+        // Test n'est pas un Test de Navigation » (l.97) → jet direct du meilleur PJ, soutenu (LDB 12).
+        const vd = findVehicleById(plan.vehicle!.creatureId ?? '')?.ship;
+        // Vapeur : M 4 constant, ni voiles ni avirons à forcer (MDG ch.12 l.311).
+        if (sea.forcePace && sea.paceToday == null && (vd?.sail || vd?.oars) && !shipHasNavalTrait(hullTraits(plan.vehicle!), 'propulsion-a-vapeur')) {
+          const rig: 'voile' | 'avirons' = vd?.sail ? 'voile' : 'avirons';
+          const diff = forcePaceDifficulty(sea.forcePace, rig);
+          const best = diff ? partyAssisted(get().party, rig === 'voile' ? 'voile' : 'ramer') : null;
+          if (diff && best) {
+            const t = rollTest(best.value, diff, rng);
+            patchSea(get, set, { paceToday: t.success ? 'won' : 'lost' });
+            tell(get, set, [`💪 ${best.actor.name} — Forcer le rythme (${rig === 'voile' ? 'Voile' : 'Ramer'} ${DIFFICULTY_LABELS[diff]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? `+${sea.forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`]);
+            eff = effectiveSeaM(get); // le +M du jour entre dans le M effectif
+          }
         }
         patchSea(get, set, { step: 'crise' });
         tell(get, set, [`⛵ ${plan.vehicle!.name} fait route (${eff.label}, M effectif ${eff.m}).`]);
@@ -440,23 +470,68 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   set({ gameTime: get().gameTime + 24 * 60 });
   bus.emit(EVT.TIME_ADVANCED, { minutes: 24 * 60 });
   const upkeep = runDailyUpkeep(get, set);
+  const evening: string[] = [];
+
+  // TEMPÉRATURE (MDG 13 l.203-225) : Tests d'Exposition du jour à la cadence de la bande. Le jour de
+  // voyage ne se simule pas heure par heure — la période EXPOSÉE = une Période de travail sur le pont
+  // (8 h, l.107) → `seaExposureTestsPerDay` (bandes 4 h → 2 Tests, 2 h → 4), Résistance à la
+  // Difficulté RAW de la bande. Froid : cascade UNIQUE d'`engine/exposure` (manteau −10, peau de
+  // phoque +1 DR — MDG 14 l.277) ; chaleur : cascade LDB 18 l.330. Appliqué APRÈS l'entretien (les
+  // pénalités de la veille, échues à 24 h, viennent d'être purgées — pas de double-empilement).
+  const tdef = temperatureDef(sea.weather.temperature);
+  const expCount = seaExposureTestsPerDay(sea.weather.temperature);
+  if (tdef.exposure && expCount > 0) {
+    for (const h of get().party) {
+      if (h.dead) continue;
+      const r = exposureNight(h, expCount, testValue(h, 'resistance', 'E'), rng, { kind: tdef.exposure, difficulty: tdef.difficulty });
+      const icon = tdef.exposure === 'froid' ? '🥶' : '🥵';
+      evening.push(`${icon} ${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `🎲 ${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`);
+      evening.push(...r.log);
+      expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h (purge #T3)
+    }
+    set({ party: [...get().party] });
+  }
+
+  // ÉPUISEMENT (MDG 13 l.109-111) : le rythme a été FORCÉ aujourd'hui (réussi OU non) → chaque PJ
+  // (l'équipage = les PJ, MDG 14 l.39) teste Résistance Complexe (−10) sous peine d'Exténué. Le Test
+  // de base des Périodes de travail (Accessible +20) est absorbé par l'abstraction d'équipage PNJ —
+  // il n'est joué que quand le joueur CHOISIT de forcer (décision documentée).
+  if (sea.paceToday) {
+    const diff = exhaustionDifficulty(true);
+    for (const h of get().party) {
+      if (h.dead) continue;
+      const t = rollTest(testValue(h, 'resistance', 'E'), diff, rng);
+      evening.push(`😮‍💨 ${h.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[diff]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'tient bon.' : '+1 Exténué.'}`);
+      if (!t.success) addCondition(h, 'extenue');
+    }
+    set({ party: [...get().party] });
+  }
+
   const miles = sea.milesToday;
   const kmDone = Math.min(plan.km, plan.kmDone + miles);
   patchSea(get, set, { daysAtSea, step: 'meteo', lines: [] });
   set({ travelPlan: { ...get().travelPlan!, kmDone } });
   persistHullWounds(get, set);
-  tell(get, set, lines);
+  tell(get, set, [...lines, ...evening]);
 
   const worldMap = get().worldMap as WorldMap;
   const to = placeById(worldMap, plan.toPlaceId);
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...upkeep] };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...upkeep, ...evening] };
 
   if (plan.km - kmDone < 1e-9 && to) {
-    // ARRIVÉE : événement de port (2d10 ± Humeur, ch.15 l.127-129) puis transition.
-    set({ travelPlan: null });
+    // ARRIVÉE : événement de port (2d10 ± Humeur, ch.15 l.127-129) puis transition. La distance de la
+    // traversée est NOTÉE sur le navire (vente à un port producteur : « plus de 100 milles », l.366).
+    set({ travelPlan: null, ...(get().vessel ? { vessel: { ...get().vessel!, lastVoyageMilles: plan.km } } : {}) });
     log(get, set, [`⚓ — Accostage à ${to.label} —`]);
     resolvePortArrival(get, set, to.port, battleRng());
     get().transitionTo(to.scene, to.entry);
+    return;
+  }
+  // ACTIVITÉS EN MER (MDG 15 l.266-272) : « Pour chaque semaine (8 jours) de voyage en mer, chaque
+  // Personnage a l'occasion d'effectuer une Activité » — la 8ᵉ journée révolue ouvre le choix (modale),
+  // la halte de nuit suit à la confirmation (le recap du jour lui est transmis).
+  if (daysAtSea > 0 && daysAtSea % 8 === 0) {
+    set({ pendingSeaActivities: { picks: {}, day: recapDay } });
     return;
   }
   // Halte de nuit (machinerie de repos EXISTANTE — le recap du jour s'y lit, patron travelFlow).

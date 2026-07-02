@@ -91,6 +91,52 @@
   .wm-role-row { flex-direction: column; align-items: stretch; }
 }
 
+/* ── Écran Port (MDG 15 : chantier naval + commerce maritime) ─────────────────── */
+.worldmap-btn.port-btn { left: 154px; }
+.port-overlay { overflow-y: auto; }
+.port-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: min(900px, 96vw);
+  margin: 0 auto;
+}
+.port-purse { margin-left: auto; font-size: 13px; color: var(--muted); }
+.port-body { width: min(900px, 96vw); margin: 6px auto 0; }
+.port-yard, .port-trade { align-items: start; }
+.port-section { padding: 12px 14px; }
+.port-section h3 { margin: 0 0 8px; font-size: 15px; color: var(--gold2); }
+.port-section .btn { margin: 4px 0; }
+.port-hint { font-size: 12.5px; color: var(--muted); margin: 6px 0; }
+.port-upgrade {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px 10px;
+  background: var(--panel2);
+}
+.port-upgrade-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.port-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.port-table th { text-align: left; color: var(--muted); font-weight: 500; padding: 4px 6px; }
+.port-table td { padding: 4px 6px; border-top: 1px solid var(--border); }
+.port-table input { width: 68px; }
+.port-sell-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn.ghost { opacity: 0.75; }
+
+/* ── Activités en mer (MDG 15 l.266-306) ─────────────────────────────────────── */
+.sea-activities { width: min(760px, 96vw); max-height: 88vh; overflow-y: auto; }
+.sea-act-intro { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+.sea-act-hero { padding: 10px 12px; }
+.sea-act-hero h4 { margin: 0 0 8px; display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.sea-act-choices { display: flex; gap: 6px; flex-wrap: wrap; }
+.sea-act-detail { margin-top: 8px; font-size: 12.5px; }
+.sea-act-invest { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; }
+.sea-act-invest input { width: 84px; }
+.sea-act-purse { font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+@media (max-width: 560px) {
+  .port-purse { margin-left: 0; }
+}
+
 /* ── Éditeur de carte du monde (#T2) ─────────────────────────────────────────── */
 .wme-overlay {
   position: fixed;

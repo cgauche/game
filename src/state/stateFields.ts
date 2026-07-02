@@ -31,7 +31,8 @@ type FieldKey =
   | 'pendingCastOpposition' | 'pendingHeal' | 'pendingSurgery' | 'medic' | 'pendingRest' | 'pendingCleave'
   | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingManeuver'
   | 'pendingRun' | 'pendingShipManeuver' | 'pendingShipBattery' | 'pendingCrewTest' | 'pendingShanty' | 'pendingApproach' | 'pendingWard' | 'pendingFocus' | 'pendingDispel' | 'pendingFrenzy' | 'pendingRoundStart'
-  | 'pendingFateSave' | 'pendingVictory' | 'pendingLoot' | 'document' | 'previousScene';
+  | 'pendingFateSave' | 'pendingVictory' | 'pendingLoot' | 'document' | 'previousScene'
+  | 'port' | 'pendingSeaActivities';
 
 type FieldSpec<K extends FieldKey> = { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] };
 type Manifest = { readonly [K in FieldKey]: FieldSpec<K> };
@@ -90,6 +91,10 @@ const STATE_FIELDS: Manifest = {
   pendingLoot: { init: null, resetOn: [] },
   document: { init: null, resetOn: ['scene'] },
   previousScene: { init: null, resetOn: [] },
+  // Écran Port : fermé au changement de scène (on quitte le lieu portuaire). Activités en mer :
+  // transient de voyage (ne survit à rien d'autre que la confirmation → halte de nuit).
+  port: { init: null, resetOn: ['scene'] },
+  pendingSeaActivities: { init: null, resetOn: [] },
 };
 
 const FIELD_KEYS = Object.keys(STATE_FIELDS) as FieldKey[];

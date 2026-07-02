@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade } from './seaVoyageFlow';
+import { seedBattleRng } from './battleRng';
 import type { WorldMap } from './worldMap';
 
 /**
@@ -22,6 +23,7 @@ const seaMap: WorldMap = {
 };
 
 function freshState() {
+  seedBattleRng(1); // déterminisme (suite isolate:false) : jour 1 navigable → le Test de Progression se joue
   useGame.setState({
     party: makePregens().slice(0, 3),
     scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,

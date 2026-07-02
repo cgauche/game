@@ -346,7 +346,7 @@
       "minMilles": 100
     },
     "surplusGossip": {
-      "difficulty": "tres-difficile",
+      "difficulty": "tresDifficile",
       "targetPerSize": 5
     },
     "sellerDR": {

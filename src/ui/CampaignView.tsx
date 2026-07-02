@@ -30,6 +30,8 @@ import { HouseRulesModal } from './HouseRulesModal';
 import { CoopMenuSection } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
+import { PortView } from './PortView';
+import { SeaActivitiesModal } from './SeaActivitiesModal';
 import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
@@ -59,6 +61,10 @@ export function CampaignView() {
   const worldMap = useGame((s) => s.worldMap);
   const worldMapOpen = useGame((s) => s.worldMapOpen);
   const openWorldMap = useGame((s) => s.openWorldMap);
+  const port = useGame((s) => s.port);
+  const openPort = useGame((s) => s.openPort);
+  const pendingSeaActivities = useGame((s) => s.pendingSeaActivities);
+  const vessel = useGame((s) => s.vessel);
   const travelPlan = useGame((s) => s.travelPlan);
   const travelRecap = useGame((s) => s.travelRecap);
   const setScreen = useGame((s) => s.setScreen);
@@ -177,6 +183,18 @@ export function CampaignView() {
             🗺️
           </button>
         )}
+        {/* ⚓ Port — le groupe est à un lieu PORTUAIRE de la carte avec un navire de campagne :
+            services au chantier + commerce maritime (MDG 15). */}
+        {mode === 'exploration' && !travelPlan && vessel && worldMap && placeOfScene(worldMap, scene?.id)?.port && (
+          <button
+            type="button"
+            className="worldmap-btn port-btn"
+            onClick={openPort}
+            title="Port — chantier naval et commerce maritime"
+          >
+            ⚓
+          </button>
+        )}
         {/* 🌙 Dormir ici — l'offre (auberge/chez soi/dehors) vient de la ZONE où se tient le
             groupe, sinon de la scène (donnée d'auteur, restPlacesHere). */}
         {mode === 'exploration' && !travelPlan && restHere && (
@@ -207,6 +225,8 @@ export function CampaignView() {
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
         {worldMapOpen && mode === 'exploration' && <WorldMapView />}
+        {port && mode === 'exploration' && <PortView />}
+        {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}
