@@ -62,16 +62,18 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   à tel AUTRE port » (index géographique du Reikland) reste une feature de scénario future (nécessite
   un index géographique mappé à la carte + un board de rumeurs persistant).
 
-### Compagnon de Mort sur le Reik (T2C) — apports au-delà du commerce (repérés, non couverts)
-- **Navigation fluviale (T2C ch.5)** : la barge n'est qu'un transport payant dans `travelFlow` (on paie,
-  on arrive) — AUCUN Test de Navigation (Voile/Ramer), ni périls/météo de rivière. Le système de Test
-  d'équipage n'existe que pour les routes MARITIMES (`seaVoyageFlow`). Gap : navigation fluviale non
-  modélisée (pourrait réutiliser/adapter la machinerie navale).
-- **Améliorations de bateau (T2C ch.10 : Blindage, coque…)** : absent (ni éditable ni joué).
-- **Naufrageurs / contrebandiers / pirates (ch.12) & bestiaire fluvial (ch.13)** : contenu d'embuscade/
-  créatures — porté par `MapRoute.ambush` mais non peuplé dans le scénario de commerce (démo pure).
-- **Maladies transmises par l'eau (ch.14)** : `waterExposure` existe et est éditable, mais aucun scénario
-  ne l'exerce — le scénario fluvial `15-commerce-fluvial` serait le candidat naturel.
+### Compagnon de Mort sur le Reik (T2C) — apports au-delà du commerce
+- ~~**Navigation fluviale (ch.5)**~~ ✅ **RÉSOLU** (commit caa98539) : descente jouée jour par jour (Test de
+  Navigation Voile/Ramer par étape, Savoir Voies fluviales +1 DR, Agilité de rame, vents, chavirage/naufrage
+  en BE tours, périls Débris/Barrage/Rochers/Bas-fonds), réutilise la machinerie navale, câblée sur le Reik.
+  Résidus : présentation inline (pas de modale par jet), Force de renflouage à l'échouage non chiffrée,
+  option déblayage manuel du barrage non modélisée.
+- **Améliorations de bateau (ch.10 : Blindage, coque…)** : absent (ni éditable ni joué). RESTE.
+- **Naufrageurs / contrebandiers / pirates (ch.12) & bestiaire fluvial (ch.13)** : contenu de combat de
+  bateau (dégâts/localisation d100, Critiques rames/gouvernail, accidents Tangon/Gouvernail) + créatures —
+  non livrés (à ajouter AVEC leur consommateur, pas en donnée morte). RESTE.
+- **Maladies transmises par l'eau (ch.14)** : `waterExposure` existe et est éditable, mais aucun scénario ne
+  l'exerce — `15-commerce-fluvial` est le candidat naturel. RESTE.
 
 ### Naval (MDG)
 - **Artilleur haut-elfe** : la substitution de compétence par espèce (MDG 09) n'a aucun siège moteur
