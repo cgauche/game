@@ -2348,5 +2348,20 @@
       "book": "EDOC",
       "page": 68
     }
+  },
+  {
+    "id": "buveur-de-saumure",
+    "label": "Buveur de saumure",
+    "desc": "Quelqu'un qui possède cette mutation peut boire l'eau salée sans que cela soit nocif pour lui. En plus de son avantage sur le plan de la survie en mer, cela permet au mutant de cracher un torrent de vomi corrosif, piquant et salé. C'est une attaque de Vomissement, mais au lieu de subir des Dégâts, la cible doit réussir un Test de **Résistance Complexe (–10)** sous peine de subir un État *Aveuglé*, et toute pièce d'armure en métal qu'elle porte voit ses Points d'Armure réduits de moitié (arrondi au supérieur), car le métal se met tout de suite à rouiller. La peau du mutant est constamment recouverte d'une croûte salée et humide et il doit boire une pinte d'eau de mer salée (et pas seulement d'eau douce à laquelle du sel a été ajouté) par jour, sous peine de subir un État *Exténué*.",
+    "kind": "physique",
+    "source": {
+      "book": "MDG",
+      "page": 55
+    },
+    "appearance": {
+      "colors": {
+        "peau": "#d9dbd2"
+      }
+    }
   }
 ]

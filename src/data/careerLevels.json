@@ -25359,5 +25359,2629 @@
       "Ag"
     ],
     "status": "Or 1"
+  },
+  {
+    "label": "Mousse artilleur",
+    "career": "artilleur-de-navire",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Bagarre"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Bataille"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Poudre noire"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "infatigable"
+        }
+      },
+      {
+        "ref": {
+          "id": "loup-de-mer"
+        }
+      },
+      {
+        "ref": {
+          "id": "pied-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "rechargement-rapide"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Hamac"
+      },
+      {
+        "id": "seau"
+      }
+    ],
+    "characteristics": [
+      "CT",
+      "Ag",
+      "Int"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Artilleur de navire",
+    "career": "artilleur-de-navire",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "artilleur"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "Équipage"
+        }
+      },
+      {
+        "ref": {
+          "id": "tireur-de-precision"
+        }
+      },
+      {
+        "ref": {
+          "id": "tireur-embusque"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "chapeau"
+      },
+      {
+        "text": "Coffre de marin"
+      },
+      {
+        "text": "Outils"
+      }
+    ],
+    "characteristics": [
+      "I"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Capitaine d'artillerie",
+    "career": "artilleur-de-navire",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Fabriquant de canons"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Artillerie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "commandant-d-equipe"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "vigilance"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Équipe de servants"
+      },
+      {
+        "text": "Longue-vue"
+      }
+    ],
+    "characteristics": [
+      "E"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître artilleur",
+    "career": "artilleur-de-navire",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "coeur-vaillant"
+        }
+      },
+      {
+        "ref": {
+          "id": "exaltant"
+        }
+      },
+      {
+        "ref": {
+          "id": "tir-precis"
+        }
+      },
+      {
+        "ref": {
+          "id": "voyageur-aguerri"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Cabine"
+      },
+      {
+        "text": "Uniforme de bonne qualité"
+      }
+    ],
+    "characteristics": [
+      "FM"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Chanteur",
+    "career": "chansonnier",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Bagarre"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Chant"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "musicien"
+        },
+        "specOptions": [
+          "Accordéon",
+          "Flûtiau",
+          "Violon"
+        ]
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "bon-marcheur",
+          "spec": "Littoral"
+        }
+      },
+      {
+        "ref": {
+          "id": "oreille-absolue"
+        }
+      },
+      {
+        "ref": {
+          "id": "pied-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "Équipage"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Chapeau de pluie"
+      },
+      {
+        "text": "Instrument de musique"
+      }
+    ],
+    "characteristics": [
+      "Dex",
+      "Int",
+      "Soc"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Chansonnier",
+    "career": "chansonnier",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "representation"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "chanson-de-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "nageur-endurant"
+        }
+      },
+      {
+        "ref": {
+          "id": "saut-carpe"
+        }
+      },
+      {
+        "ref": {
+          "id": "voyageur-aguerri"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Manteau en peau de phoque"
+      }
+    ],
+    "characteristics": [
+      "Ag"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Capitaine chansonnier",
+    "career": "chansonnier",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "loup-de-mer"
+        }
+      },
+      {
+        "ref": {
+          "id": "noctambule"
+        }
+      },
+      {
+        "ref": {
+          "id": "orateur"
+        }
+      },
+      {
+        "ref": {
+          "id": "pecheur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Instrument de qualité"
+      }
+    ],
+    "characteristics": [
+      "FM"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître chansonnier",
+    "career": "chansonnier",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magnum-opus"
+        }
+      },
+      {
+        "ref": {
+          "id": "perseverant"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Chapeau de qualité"
+      }
+    ],
+    "characteristics": [
+      "I"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Mousse",
+    "career": "marin-cotier",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Bagarre"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "musicien",
+          "spec": "Flûtiau"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "bon-marcheur",
+          "spec": "Littoral"
+        }
+      },
+      {
+        "ref": {
+          "id": "infatigable"
+        }
+      },
+      {
+        "ref": {
+          "id": "nageur-endurant"
+        }
+      },
+      {
+        "ref": {
+          "id": "pecheur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Brosse à reluire"
+      },
+      {
+        "id": "seau"
+      },
+      {
+        "id": "serpillere"
+      }
+    ],
+    "characteristics": [
+      "Ag",
+      "Dex",
+      "Soc"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Marin",
+    "career": "marin-cotier",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Chant"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "bonnes-jambes"
+        }
+      },
+      {
+        "ref": {
+          "id": "pied-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "souplesse-feline"
+        }
+      },
+      {
+        "ref": {
+          "id": "voyageur-aguerri"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "gaffe"
+      },
+      {
+        "id": "justaucorps-de-cuir"
+      }
+    ],
+    "characteristics": [
+      "CC"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Quartier-maître",
+    "career": "marin-cotier",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Charpentier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "coup-puissant"
+        }
+      },
+      {
+        "ref": {
+          "id": "loup-de-mer"
+        }
+      },
+      {
+        "ref": {
+          "id": "perseverant"
+        }
+      },
+      {
+        "ref": {
+          "id": "tres-fort"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "outils-professionnels-charpentier"
+      }
+    ],
+    "characteristics": [
+      "I"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Bosco",
+    "career": "marin-cotier",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "orateur"
+        }
+      },
+      {
+        "ref": {
+          "id": "perspicace"
+        }
+      },
+      {
+        "ref": {
+          "id": "pilote"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Cartes de navigation"
+      },
+      {
+        "text": "Longue-vue"
+      },
+      {
+        "text": "Sextant"
+      }
+    ],
+    "characteristics": [
+      "Int"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Pilleur d'épaves",
+    "career": "naufrageur-cotier",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Fronde"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "criminel"
+        }
+      },
+      {
+        "ref": {
+          "id": "effraction"
+        }
+      },
+      {
+        "ref": {
+          "id": "infatigable"
+        }
+      },
+      {
+        "ref": {
+          "id": "pecheur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "pied-de-biche"
+      },
+      {
+        "id": "grand-sac"
+      },
+      {
+        "id": "gants-en-cuir"
+      }
+    ],
+    "characteristics": [
+      "CC",
+      "F",
+      "I"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Naufrageur",
+    "career": "naufrageur-cotier",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "piegeage"
+        }
+      },
+      {
+        "ref": {
+          "id": "subornation"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "fuite"
+        }
+      },
+      {
+        "ref": {
+          "id": "nageur-endurant"
+        }
+      },
+      {
+        "ref": {
+          "id": "nomade"
+        }
+      },
+      {
+        "ref": {
+          "id": "trappeur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "gaffe"
+      },
+      {
+        "id": "lampe-tempete"
+      },
+      {
+        "id": "huile-de-lampe"
+      },
+      {
+        "id": "veste-de-cuir"
+      }
+    ],
+    "characteristics": [
+      "FM"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Pirate",
+    "career": "naufrageur-cotier",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "Rurale"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arbalète"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "combat-deloyal"
+        }
+      },
+      {
+        "ref": {
+          "id": "marinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "Criminels"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "arbalete"
+      },
+      {
+        "text": "Carreaux",
+        "count": {
+          "fixed": 10
+        }
+      },
+      {
+        "text": "Bateau de transport"
+      },
+      {
+        "text": "Corde avec grappin"
+      }
+    ],
+    "characteristics": [
+      "CT"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Capitaine pirate",
+    "career": "naufrageur-cotier",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "assaut-feroce"
+        }
+      },
+      {
+        "ref": {
+          "id": "combattant-au-contact"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandant-emerite"
+        }
+      },
+      {
+        "ref": {
+          "id": "guerrier-ne"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Flottille de bateaux de transport avec un équipage de Naufrageurs"
+      },
+      {
+        "id": "menottes"
+      },
+      {
+        "text": "Tonnelet de bière"
+      }
+    ],
+    "characteristics": [
+      "Soc"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Guide portuaire",
+    "career": "nautonier-cotier",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Région"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "marinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "pecheur"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "gaffe"
+      },
+      {
+        "id": "lampe-tempete"
+      },
+      {
+        "id": "huile-de-lampe"
+      }
+    ],
+    "characteristics": [
+      "CC",
+      "E",
+      "I"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Nautonier",
+    "career": "nautonier-cotier",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "flairer-les-ennuis"
+        }
+      },
+      {
+        "ref": {
+          "id": "loup-de-mer"
+        }
+      },
+      {
+        "ref": {
+          "id": "negociateur"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "Guildes"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "barque"
+      },
+      {
+        "id": "corde"
+      },
+      {
+        "id": "justaucorps-de-cuir"
+      }
+    ],
+    "characteristics": [
+      "FM"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Pilote",
+    "career": "nautonier-cotier",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Épaves"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Région"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "pied-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "pilote"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Vue"
+        }
+      },
+      {
+        "ref": {
+          "id": "tres-fort"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "perche"
+      }
+    ],
+    "characteristics": [
+      "Int"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître pilote",
+    "career": "nautonier-cotier",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "nageur-endurant"
+        }
+      },
+      {
+        "ref": {
+          "id": "perseverant"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      },
+      {
+        "ref": {
+          "id": "vivacite"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Canotier"
+      },
+      {
+        "text": "Petit bateau de transport"
+      }
+    ],
+    "characteristics": [
+      "Soc"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Enseigne",
+    "career": "officier",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "pied-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "Équipage"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "arme-simple"
+      },
+      {
+        "id": "uniforme"
+      }
+    ],
+    "characteristics": [
+      "CC",
+      "Int",
+      "Soc"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Officier",
+    "career": "officier",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Poudre noire"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "commandant-emerite"
+        }
+      },
+      {
+        "ref": {
+          "id": "imperturbable"
+        }
+      },
+      {
+        "ref": {
+          "id": "loup-de-mer"
+        }
+      },
+      {
+        "ref": {
+          "id": "pilote"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Coffre de navire"
+      },
+      {
+        "text": "Uniforme de bonne qualité"
+      }
+    ],
+    "characteristics": [
+      "CT"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Capitaine",
+    "career": "officier",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "art",
+          "spec": "Cartographie"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "affable"
+        }
+      },
+      {
+        "ref": {
+          "id": "exaltant"
+        }
+      },
+      {
+        "ref": {
+          "id": "seigneur-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "voyageur-aguerri"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Bateau à commander"
+      },
+      {
+        "text": "Grand chapeau"
+      },
+      {
+        "text": "Journal du capitaine"
+      }
+    ],
+    "characteristics": [
+      "E"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Amiral",
+    "career": "officier",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "coeur-vaillant"
+        }
+      },
+      {
+        "ref": {
+          "id": "orateur"
+        }
+      },
+      {
+        "ref": {
+          "id": "presence-imposante"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Flotte de navires"
+      }
+    ],
+    "characteristics": [
+      "FM"
+    ],
+    "status": "Or 5"
+  },
+  {
+    "label": "Initié",
+    "career": "pretre-marin-de-manann",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Classique"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "priere"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Manann"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "beni",
+          "spec": "Manann"
+        }
+      },
+      {
+        "ref": {
+          "id": "pied-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "tres-fort"
+        }
+      },
+      {
+        "ref": {
+          "id": "visions-sacrees"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Coutelas"
+      },
+      {
+        "text": "Symbole de Manann"
+      },
+      {
+        "text": "Toge de prêtre bleue, verte ou turquoise"
+      }
+    ],
+    "characteristics": [
+      "E",
+      "Ag",
+      "FM"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Prêtre marin",
+    "career": "pretre-marin-de-manann",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Armes d'hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Chant"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "infatigable"
+        }
+      },
+      {
+        "ref": {
+          "id": "invocation",
+          "spec": "Manann"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "orateur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Livre sacré de Manann"
+      },
+      {
+        "text": "Trident (considéré comme une lance)"
+      }
+    ],
+    "characteristics": [
+      "Soc"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Prêtre capitaine",
+    "career": "pretre-marin-de-manann",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Poudre noire"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "haine",
+          "spec": "Suivants de Stromfels"
+        }
+      },
+      {
+        "ref": {
+          "id": "loup-de-mer"
+        }
+      },
+      {
+        "ref": {
+          "id": "nageur-endurant"
+        }
+      },
+      {
+        "ref": {
+          "id": "pilote"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Bateau de cérémonie"
+      },
+      {
+        "text": "Prêtres subalternes"
+      },
+      {
+        "text": "Temple"
+      },
+      {
+        "text": "Toge de bonne qualité"
+      }
+    ],
+    "characteristics": [
+      "I"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Seigneur des vagues",
+    "career": "pretre-marin-de-manann",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Politique"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "ame-pure"
+        }
+      },
+      {
+        "ref": {
+          "id": "chanson-de-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "exaltant"
+        }
+      },
+      {
+        "ref": {
+          "id": "voyageur-aguerri"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Flottille de bateaux"
+      },
+      {
+        "text": "Relique sacrée"
+      },
+      {
+        "text": "Prêtres capitaines subalternes"
+      }
+    ],
+    "characteristics": [
+      "Int"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Récupérateur",
+    "career": "ratisseur-de-plages",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "Rurale"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Côtes et marées"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "bon-marcheur",
+          "spec": "Littoral"
+        }
+      },
+      {
+        "ref": {
+          "id": "nageur-endurant"
+        }
+      },
+      {
+        "ref": {
+          "id": "pecheur"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Filet de pêche"
+      },
+      {
+        "text": "Sac à cordons"
+      }
+    ],
+    "characteristics": [
+      "CC",
+      "I",
+      "Int"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Ratisseur de plages",
+    "career": "ratisseur-de-plages",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "piegeage"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Fronde"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "brouet"
+        }
+      },
+      {
+        "ref": {
+          "id": "fuite"
+        }
+      },
+      {
+        "ref": {
+          "id": "imperturbable"
+        }
+      },
+      {
+        "ref": {
+          "id": "nomade"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Bottes trouvées"
+      },
+      {
+        "text": "Chapeau de pluie"
+      },
+      {
+        "id": "justaucorps-de-cuir"
+      }
+    ],
+    "characteristics": [
+      "Ag"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Dériveur",
+    "career": "ratisseur-de-plages",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "bricoleur"
+        }
+      },
+      {
+        "ref": {
+          "id": "loup-de-mer"
+        }
+      },
+      {
+        "ref": {
+          "id": "pied-marin"
+        }
+      },
+      {
+        "ref": {
+          "id": "savant",
+          "spec": "Côtes et marées"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Bateau"
+      },
+      {
+        "text": "Cabane"
+      },
+      {
+        "id": "lampe-tempete"
+      },
+      {
+        "id": "huile-de-lampe"
+      }
+    ],
+    "characteristics": [
+      "FM"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Maître des plages",
+    "career": "ratisseur-de-plages",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Constructeur de navires"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "guide-fluvial"
+        }
+      },
+      {
+        "ref": {
+          "id": "negociateur"
+        }
+      },
+      {
+        "ref": {
+          "id": "perseverant"
+        }
+      },
+      {
+        "ref": {
+          "id": "voyageur-aguerri"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Épave transformée en logis"
+      }
+    ],
+    "characteristics": [
+      "E"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Initié",
+    "career": "pretre-de-stromfels",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "priere"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "beni",
+          "spec": "Stromfels"
+        }
+      },
+      {
+        "ref": {
+          "id": "criminel"
+        }
+      },
+      {
+        "ref": {
+          "id": "nageur-endurant"
+        }
+      },
+      {
+        "ref": {
+          "id": "visions-sacrees"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "arme-simple"
+      },
+      {
+        "id": "gants-en-cuir"
+      },
+      {
+        "id": "grand-sac"
+      },
+      {
+        "id": "justaucorps-de-cuir"
+      },
+      {
+        "id": "pied-de-biche"
+      }
+    ],
+    "characteristics": [
+      "CC",
+      "F",
+      "I"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Prêtre de Stromfels",
+    "career": "pretre-de-stromfels",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Chant"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "pistage"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Stromfels"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "fuite"
+        }
+      },
+      {
+        "ref": {
+          "id": "invocation",
+          "spec": "Stromfels"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "sans-peur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "lampe-tempete"
+      },
+      {
+        "id": "huile-de-lampe"
+      },
+      {
+        "id": "veste-de-cuir"
+      }
+    ],
+    "characteristics": [
+      "Soc"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Prêtre pirate",
+    "career": "pretre-de-stromfels",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "piegeage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Océans"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "ferveur-ardente"
+        }
+      },
+      {
+        "ref": {
+          "id": "grand-orateur"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "haine",
+              "spec": "Manannites"
+            }
+          },
+          {
+            "ref": {
+              "id": "haine",
+              "spec": "Suivants du Chaos"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "nomade"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Bateau de transport fluvial"
+      },
+      {
+        "text": "Corde avec grappin"
+      },
+      {
+        "text": "Relique religieuse"
+      }
+    ],
+    "characteristics": [
+      "Ag"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Prêtre terreur des mers",
+    "career": "pretre-de-stromfels",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "corps-a-corps"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Poudre noire"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "assaut-feroce"
+        }
+      },
+      {
+        "ref": {
+          "id": "combattant-au-contact"
+        }
+      },
+      {
+        "ref": {
+          "id": "guerrier-ne"
+        }
+      },
+      {
+        "ref": {
+          "id": "pilote"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Groupe de cultistes"
+      },
+      {
+        "id": "pistolet"
+      },
+      {
+        "text": "Munitions",
+        "count": {
+          "fixed": 10
+        }
+      }
+    ],
+    "characteristics": [
+      "CT"
+    ],
+    "status": "Argent 5"
   }
 ]

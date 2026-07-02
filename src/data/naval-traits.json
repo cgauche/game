@@ -55,12 +55,104 @@
     "desc": "Les bateaux Solides sont construits pour endurer les rigueurs de la guerre. Un même navire peut posséder jusqu'à trois niveaux de Solide et chaque niveau augmente les Blessures du vaisseau de 30 %."
   },
   {
+    "id": "ancre",
+    "label": "Ancre",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 10
+          },
+          {
+            "min": "grande",
+            "value": 20
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 50
+          },
+          {
+            "min": "grande",
+            "value": 75
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Un bateau sans Ancre n'a aucun moyen de se fixer à un endroit donné quand il est en mer. Un navire qui jette son Ancre à un emplacement approprié (beaucoup de parties de l'océan sont trop profondes) n'est affecté ni par les vents ni par les courants tant que l'Ancre est abaissée.\n\nLever une Ancre n'est pas un processus aisé. Si elle doit être levée rapidement, l'équipage doit transpirer au cabestan ; il faut réussir un Test étendu de **Force** pour la remonter. La difficulté du Test dépend de la Taille du vaisseau (il est **Complexe (–10)** pour les bateaux Petits ou Moyens et **Difficile (–20)** pour les bateaux plus grands) et le nombre total de DR nécessaires dépend de la profondeur de l'Ancre (mais tourne en général autour de 15 DR)."
+  },
+  {
     "id": "belier",
     "label": "Bélier",
     "kind": "amelioration",
     "ram": {
       "ic": 5,
       "ap": 5
+    },
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "tres-petite",
+            "value": 15
+          },
+          {
+            "min": "petite",
+            "max": "moyenne",
+            "value": 30
+          },
+          {
+            "min": "grande",
+            "max": "grande",
+            "value": 60
+          },
+          {
+            "min": "enorme",
+            "max": "enorme",
+            "value": 120
+          },
+          {
+            "min": "monstrueuse",
+            "value": 240
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "tres-petite",
+            "value": 30
+          },
+          {
+            "min": "petite",
+            "max": "moyenne",
+            "value": 60
+          },
+          {
+            "min": "grande",
+            "max": "grande",
+            "value": 120
+          },
+          {
+            "min": "enorme",
+            "max": "enorme",
+            "value": 240
+          },
+          {
+            "min": "monstrueuse",
+            "value": 480
+          }
+        ]
+      }
     },
     "source": {
       "book": "MDG",
@@ -79,6 +171,29 @@
         "amount": 1
       }
     ],
+    "install": {
+      "cost": {
+        "per": "5m",
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 250
+          },
+          {
+            "min": "grande",
+            "value": 500
+          }
+        ]
+      },
+      "weightEnc": {
+        "per": "5m",
+        "bands": [
+          {
+            "value": 175
+          }
+        ]
+      }
+    },
     "source": {
       "book": "MDG",
       "page": 97
@@ -96,11 +211,188 @@
         "amount": 2
       }
     ],
+    "install": {
+      "cost": {
+        "per": "5m",
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 330
+          },
+          {
+            "min": "grande",
+            "value": 560
+          }
+        ]
+      },
+      "weightEnc": {
+        "per": "5m",
+        "bands": [
+          {
+            "value": 160
+          }
+        ]
+      }
+    },
     "source": {
       "book": "MDG",
       "page": 97
     },
     "desc": "Le Blindage ne peut être installé que sur des chantiers navals spécialisés et nécessite les compétences de forgerons et de constructeurs de navires experts en la matière. Ajouter le blindage prend deux semaines pour les navires Petits à Moyens et un mois pour les navires plus grands que Moyens.\n\nLe blindage d'un vaisseau fonctionne à peu près comme l'armure d'un personnage. Les Dégâts des coups qui touchent la Coque sont réduits d'un nombre de points égal aux PA, puis d'un nombre de points égal au BE. Contrairement à une armure personnelle, le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques.\n\n**Fer :** la Coque bénéficie de 2 PA ; si le vaisseau devient Sali (voir page 105), les plaques de fer rouillent au point de devenir inutiles et les PA sont retirés."
+  },
+  {
+    "id": "cabine-de-luxe",
+    "label": "Cabine de luxe",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "per": "unite",
+        "bands": [
+          {
+            "value": 155
+          }
+        ]
+      },
+      "weightEnc": {
+        "per": "unite",
+        "bands": [
+          {
+            "value": 40
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Occupant un espace équivalent à deux cabines normales, une Cabine de luxe permet à celui qui l'occupe de voyager dans le confort et l'élégance. Si le MJ l'autorise, le propriétaire d'une Cabine de luxe gagne un bonus de +10 sur tous les Tests de Sociabilité qu'il effectue s'ils ont lieu à l'intérieur de la cabine."
+  },
+  {
+    "id": "clinfoc",
+    "label": "Clinfoc",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 5
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 20
+          },
+          {
+            "min": "petite",
+            "max": "petite",
+            "value": 40
+          },
+          {
+            "min": "moyenne",
+            "max": "moyenne",
+            "value": 80
+          },
+          {
+            "min": "grande",
+            "max": "grande",
+            "value": 160
+          },
+          {
+            "min": "enorme",
+            "max": "enorme",
+            "value": 320
+          },
+          {
+            "min": "monstrueuse",
+            "value": 600
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 5
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 25
+          },
+          {
+            "min": "petite",
+            "max": "petite",
+            "value": 45
+          },
+          {
+            "min": "moyenne",
+            "max": "moyenne",
+            "value": 70
+          },
+          {
+            "min": "grande",
+            "max": "grande",
+            "value": 135
+          },
+          {
+            "min": "enorme",
+            "max": "enorme",
+            "value": 240
+          },
+          {
+            "min": "monstrueuse",
+            "value": 430
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Un Clinfoc est une misaine supplémentaire. Le bateau doit nécessairement comporter un beaupré pour pouvoir l'ajouter. Les grands bateaux ont des arrangements plus complexes de plusieurs voiles remplissant la même fonction. Ajouter un beaupré augmente la longueur d'un vaisseau de 10 %.\n\nUn bateau propulsé par ses Voiles doté d'un Clinfoc utilise le tableau d'Effet du vent ci-après au lieu de celui fourni en page 107."
+  },
+  {
+    "id": "embarcation-de-bord",
+    "label": "Embarcation de bord",
+    "kind": "amelioration",
+    "install": {
+      "cost": "modele",
+      "weightEnc": "modele"
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Si un navire est doté d'une Contenance suffisante, il peut embarquer un autre bateau. Cette embarcation peut servir à transporter une cargaison ou des passagers entre le navire principal et le port, peut faire office de canot de sauvetage en cas d'urgence ou peut même être utilisée pour remorquer le bateau le plus grand (à M1 et Man –4 DR). Le modèle de l'Embarcation de bord va de Taille Minuscule à Très Petite."
+  },
+  {
+    "id": "figure-de-proue",
+    "label": "Figure de proue",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "value": 2
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "value": 10
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Les Figures de proue sont des sculptures de bois peintes de couleurs vives et fixées à l'avant d'un vaisseau. Elles sont censées porter bonheur et aider à personnaliser le bateau, ainsi que contribuer à montrer que celui à qui le vaisseau appartient est quelqu'un d'avisé et de généreux. La plupart des Figures de proue représentent des aspects de Manann, une sirène ou une personnification idéalisée du blason ou de la nationalité du propriétaire.\n\nSi la Figure de proue est de particulièrement bonne facture, elle devient une source de fierté pour l'équipage. Une Figure de proue possédant deux Atouts *Raffiné* minimum ajoute 1 au Moral total (voir page 124)."
   },
   {
     "id": "lissage",
@@ -112,6 +404,21 @@
         "mod": 1
       }
     ],
+    "install": {
+      "cost": {
+        "per": "5m",
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 66
+          },
+          {
+            "min": "grande",
+            "value": 132
+          }
+        ]
+      }
+    },
     "source": {
       "book": "MDG",
       "page": 97
@@ -119,10 +426,187 @@
     "desc": "La coque du bateau est polie pour lisser toute irrégularité risquant de causer une résistance inutile et donc de ralentir. Le Lissage initial d'une coque prend une semaine sur un chantier naval pour les bateaux Minuscules à Moyens et deux semaines pour les bateaux plus grands que Moyens. Une coque polie fournit M +1 au bateau.\n\nLe coût pour réparer une coque polie est supérieur à la normale de 50 % (voir page 116). Des réparations moins onéreuses font perdre les bénéfices du Lissage."
   },
   {
+    "id": "nid-de-pie",
+    "label": "Nid-de-pie",
+    "kind": "amelioration",
+    "ranked": true,
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "perception",
+        "bonus": 1
+      }
+    ],
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 5
+          },
+          {
+            "min": "grande",
+            "value": 20
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 5
+          },
+          {
+            "min": "grande",
+            "value": 20
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Un Nid-de-pie est une plateforme en bois placée au sommet du mât le plus haut. Un Personnage qui se trouve dans le Nid-de-pie peut effectuer tous les Tests de Perception demandés pour repérer des phénomènes visibles en mer, comme des périls ou la lumière d'un phare. Le Nid-de-pie fournit des avantages sur les Tests de Perception, qui dépendent de la Taille du navire : +1 DR (Taille Petite à Moyenne) ou +2 DR (Taille Grande à Monstrueuse)."
+  },
+  {
+    "id": "propulsion-a-vapeur",
+    "label": "Propulsion à vapeur",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "value": 500
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "value": 200
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Un bateau propulsé par un moteur à vapeur est doté d'un M de 4 tant qu'il reste du carburant dans le moteur, quelle que soit la direction du vent. Le moteur doit être entretenu par un ingénieur qualifié, et les Tests de **Navigation** sont remplacés par des Tests de **Métier (Ingénieur)**.\n\nMais les moteurs à vapeur peuvent être capricieux, et malgré leur taille et leur volume, leurs mécanismes se dérèglent facilement. Chaque fois que quelqu'un obtient un double sur un Test de **Métier (Ingénieur)** raté, que le résultat est un Échec Stupéfiant ou que le bateau subit un Coup Critique à la Coque, lancez les dés dans le tableau *Panne de Vapeur.*"
+  },
+  {
+    "id": "ralentisseurs-lateraux",
+    "label": "Ralentisseurs latéraux",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 10
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 45
+          },
+          {
+            "min": "petite",
+            "max": "petite",
+            "value": 75
+          },
+          {
+            "min": "moyenne",
+            "max": "moyenne",
+            "value": 140
+          },
+          {
+            "min": "grande",
+            "max": "grande",
+            "value": 200
+          },
+          {
+            "min": "enorme",
+            "max": "enorme",
+            "value": 350
+          },
+          {
+            "min": "monstrueuse",
+            "value": 500
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 15
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 40
+          },
+          {
+            "min": "petite",
+            "max": "petite",
+            "value": 50
+          },
+          {
+            "min": "moyenne",
+            "max": "moyenne",
+            "value": 110
+          },
+          {
+            "min": "grande",
+            "max": "grande",
+            "value": 150
+          },
+          {
+            "min": "enorme",
+            "max": "enorme",
+            "value": 300
+          },
+          {
+            "min": "monstrueuse",
+            "value": 500
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "MDG",
+      "page": 97
+    },
+    "desc": "Ce mécanisme est composé de deux larges ailettes de bois qui peuvent être dépliées sur les côtés du bateau. Quand vous avancez, ouvrir les freins augmente la résistance et réduit le Mouvement de 1 ou 2 points, selon s'ils sont ouverts à moitié ou totalement. S'ils sont ouverts dans un Détroit ou dans un Tourbillon, ils augmentent le M effectif du courant du même nombre de points."
+  },
+  {
     "id": "sabord",
     "label": "Sabord",
     "kind": "amelioration",
     "deckCover": true,
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "moyenne",
+            "value": 15
+          },
+          {
+            "min": "grande",
+            "value": 85
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "value": 0
+          }
+        ]
+      }
+    },
     "source": {
       "book": "MDG",
       "page": 97

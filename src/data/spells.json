@@ -17369,5 +17369,980 @@
       "page": 472
     },
     "family": "arcane"
+  },
+  {
+    "id": "apaiser-les-eaux",
+    "label": "Apaiser les eaux",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Sociabilité) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un Détroit ou un Tourbillon"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "Soc"
+      }
+    },
+    "desc": "Vous pouvez psalmodier cette prière pour apaiser un fort courant. L'Indice M (voir p. 112-113) d'un Détroit ou d'un Tourbillon tombe à 0 tant que le Miracle fait effet.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Apaiser les eaux : l'Indice M d'un Détroit ou d'un Tourbillon tombe à 0 tant que le Miracle fait effet — arbitrage MJ (péril nautique non modélisé)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "benediction-de-l-albatros",
+    "label": "Bénédiction de l'albatros",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un navire"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "FM"
+      },
+      "unit": "days"
+    },
+    "desc": "Une fois l'invocation terminée, un albatros descend des nuages et suit le bateau. L'oiseau attend 1 heure maximum que le navire prenne la mer, puis il reste avec le vaisseau jusqu'à la fin de la durée du Miracle. Tant que l'albatros est présent, le navire ne peut pas couler, quelle que soit la quantité de Dégâts qu'il subit. Si l'albatros est tué, le bateau subit –1d10 au Moral et –2d10 à l'Humeur de Manann (si vous avez besoin de la fiche d'un albatros, considérez-le comme un pigeon en page 316 de **WFJDR**, mais sa Taille est Petite et il a 3 Blessures).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Bénédiction de l'albatros : un albatros suit le navire ; tant qu'il est présent le navire NE PEUT PAS couler, quels que soient les Dégâts. Si l'albatros est tué : –1d10 au Moral et –2d10 à l'Humeur de Manann — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "benediction-du-marinier",
+    "label": "Bénédiction du marinier",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 1,
+      "unit": "days"
+    },
+    "desc": "Votre bénédiction accorde à un Personnage une compréhension instinctive de la mer et de la navigation. Tous les Tests de Natation, de Ramer ou de Voile qu'il effectue bénéficient de +1 DR.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Bénédiction du marinier : tous les Tests de Natation, de Ramer ou de Voile de la cible bénéficient de +1 DR pendant 1 jour."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "contre-courants",
+    "label": "Contre-courants",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Sociabilité) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un navire"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "Soc"
+      }
+    },
+    "desc": "Vous pouvez psalmodier cette prière à l'adresse d'un navire que vous pouvez voir. Le bateau subit –1 M et –1 DR sur sa caractéristique Man.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Contre-courants : le navire ciblé subit –1 M et –1 DR sur sa caractéristique Man tant que le Miracle fait effet — arbitrage MJ (caractéristiques de navire non ciblables par op)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "malediction-de-la-mer",
+    "label": "Malédiction de la mer",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Sociabilité) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un navire"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "Soc"
+      }
+    },
+    "desc": "Vous appelez les calamités sur les ennemis de Manann. Si l'équipage du navire ciblé est composé d'êtres qui ne méritent pas le respect de Manann (des suivants du Chaos, des adorateurs de Stromfels, des orcs et des gobelins, des skavens ou des membres d'équipage dont le score d'Humeur de Manann est négatif), il subit une malédiction. Ajoutez 2 aux Dégâts de tous les coups reçus par l'équipage tant que le Miracle fait effet.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Malédiction de la mer : si l'équipage du navire ciblé ne mérite pas le respect de Manann (Chaos, Stromfels, orcs/gobelins, skavens, Humeur de Manann négative), +2 aux Dégâts de tous les coups reçus par l'équipage tant que le Miracle fait effet — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "navigation-benie",
+    "label": "Navigation bénie",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un navire"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Ce Miracle peut être accompli chaque fois qu'un navire doit calculer l'Humeur de Manann. Vous exécutez les rites jugés comme appropriés pour implorer Manann. Son Humeur s'améliore de 2d10, –1 par Point de Péché que vous avez actuellement.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Navigation bénie : au calcul de l'Humeur de Manann du navire, l'Humeur s'améliore de 2d10, –1 par Point de Péché actuel du prêtre — arbitrage MJ (Humeur de Manann non modélisée)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "repousser-une-creature-marine",
+    "label": "Repousser une créature marine",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Sociabilité) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Une créature possédant le Trait Aquatique (voir page 90 du Compagnon de Mort sur le Reik) ou le Trait Créature marine (voir page 140)"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "Soc"
+      }
+    },
+    "desc": "Vous pouvez psalmodier cette prière à l'adresse d'une créature marine, ce qui lui fait oublier sa rage et sa faim tant que le Miracle fait effet. Pendant toute la durée du Miracle, la créature n'effectue aucune action hostile si elle ne subit ni Dégâts ni États nuisibles.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Repousser une créature marine : la créature (Trait Aquatique ou Créature marine) n'effectue aucune action hostile tant qu'elle ne subit ni Dégâts ni États nuisibles, pendant la durée du Miracle — arbitrage MJ/IA."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "respiration-aquatique",
+    "label": "Respiration aquatique",
+    "type": "Invocation",
+    "subType": "Manann",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "Soc"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vos prières permettent à un Personnage de respirer l'eau comme s'il s'agissait d'air. S'il risquerait normalement de se noyer dans de l'eau, le Personnage peut ignorer les règles de Suffocation en page 181 de **WFJDR** pendant toute la durée du Miracle. Vous ne pouvez pas accomplir ce Miracle si votre propre bouche est déjà sous l'eau.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "noBreath"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 87
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "faire-fi-de-l-humeur-de-manann",
+    "label": "Faire fi de l'Humeur de Manann",
+    "type": "Invocation",
+    "subType": "Stromfels",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "F"
+      },
+      "unit": "days"
+    },
+    "desc": "Vous proclamez que Stromfels est le véritable Seigneur des mers et que les superstitions de ceux qui respectent Manann ne sont que des illusions. Une fois que le Miracle fait effet, lancez le dé dans le tableau qui suit et appliquez le résultat au score d'Humeur de Manann pour le navire à bord duquel vous vous trouvez actuellement (voir page 130). Ajoutez 1 au résultat du jet par Point de Péché que vous possédez.\n\n| Résultat du d10 | Effet |\n|---|---|\n| 1 à 4 | Stromfels triomphe ! Tant que le Miracle fait effet, considérez que l'Humeur de Manann est de 0. |\n| 5 à 8 | Stromfels s'élève ! Lancez 5d10. Le résultat peut être ajouté à l'Humeur de Manann si elle est actuellement négative, ou en être soustrait si elle est positive. |\n| 9 | Pas d'effet. L'Humeur de Manann est calculée normalement. |\n| 10 ou plus | Manann est provoqué ! Lancez 5d10. Soustrayez le résultat de l'Humeur de Manann. |",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Faire fi de l'Humeur de Manann : d10 (+1 par Point de Péché) sur la table du Miracle, appliqué au score d'Humeur de Manann du navire du prêtre — arbitrage MJ (Humeur de Manann non modélisée)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 91
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "flairer-le-sang",
+    "label": "Flairer le sang",
+    "type": "Invocation",
+    "subType": "Stromfels",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 1,
+      "unit": "hours"
+    },
+    "desc": "Quand vous tentez de pister quelqu'un qui a été blessé, vous flairez la moindre goutte de sang, même si on a essayé de la nettoyer. Vous pouvez suivre la piste du blessé sur la terre comme sur l'eau en réussissant un Test de **Pistage Facile (+40)**.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Flairer le sang : pendant 1 heure, vous pouvez suivre la piste d'un blessé sur terre comme sur l'eau en réussissant un Test de Pistage Facile (+40) — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 91
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "lame-de-fond",
+    "label": "Lame de fond",
+    "type": "Invocation",
+    "subType": "Stromfels",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Force) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous ordonnez à la mer de former une vague énorme qui s'écrase sur une cible spécifique, par exemple une personne dans l'eau ou sur la rive, un bateau ou un phare. La vague est considérée comme ayant un IC de 15 (voir *Indice de Collision* page 111).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Lame de fond : une vague énorme s'écrase sur la cible (personne, bateau, phare…) — collision d'IC 15 (Indice de Collision, MDG p.111) — arbitrage MJ (collisions navales non modélisées)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 91
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "mal-de-mer",
+    "label": "Mal de mer",
+    "type": "Invocation",
+    "subType": "Stromfels",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Force) mètres × 10"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "F"
+      },
+      "unit": "hours"
+    },
+    "desc": "Vous infligez à quelqu'un, même au plus vieux des loups de mer, un mal de mer qui dure au moins une heure. Reportez-vous à la page 125 pour connaître les règles concernant le mal de mer.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "contractDisease",
+                "disease": "mal-de-mer"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 91
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "malediction-de-la-maitresse-cruelle",
+    "label": "Malédiction de la maîtresse cruelle",
+    "type": "Invocation",
+    "subType": "Stromfels",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "F"
+      },
+      "unit": "days"
+    },
+    "desc": "Vous infligez des cauchemars à votre cible qui l'empêchent de dormir correctement la nuit, ce qui la rend léthargique et faible. Les mauvais rêves sont extrêmement vivaces, perturbants et liés à l'océan d'une manière ou d'une autre ; ils impliquent généralement une femme drapée dans des frondes de ruinesang qui sort de la mer pour tourmenter la victime. Tant qu'elle est sous l'influence du Miracle, la cible doit réussir un Test de **Calme Complexe (–10)** chaque fois qu'elle se repose pour récupérer d'États *Exténué*. En cas d'échec, l'État *Exténué* persiste.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Malédiction de la maîtresse cruelle : pendant (Bonus de Force) jours, à chaque repos visant à récupérer d'États Exténué, la cible doit réussir un Test de Calme Complexe (–10), sinon l'État Exténué persiste — arbitrage MJ (hook de repos)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 91
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "sacrifice-a-stromfels",
+    "label": "Sacrifice à Stromfels",
+    "type": "Invocation",
+    "subType": "Stromfels",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Force) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 navire avec au moins un Indice de Voie d'eau"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous vous concentrez sur un navire endommagé et vous exercez votre volonté pour vous assurer que personne n'en réchappe. Les trous et les déchirures dans la coque du navire ciblé s'élargissent sous l'effet du Miracle. Doublez l'Indice de Voie d'eau du navire ciblé (voir page 117).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Sacrifice à Stromfels : l'Indice de Voie d'eau du navire ciblé est DOUBLÉ — arbitrage MJ (pas d'op de mise à l'échelle d'un État à valeur)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 91
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "vents-de-tempete",
+    "label": "Vents de tempête",
+    "type": "Invocation",
+    "subType": "Stromfels",
+    "isPrayer": true,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "(Force) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 navire"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "charOf": "F"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous invoquez les vents pour qu'ils soufflent avec davantage de force dans les voiles d'un navire. Augmentez l'intensité du vent d'un cran pendant toute la durée du Miracle (voir page 107). La direction du vent n'est pas affectée.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Vents de tempête : l'intensité du vent augmente d'un cran pour le navire ciblé pendant (Force) minutes ; direction inchangée — arbitrage MJ (échelle de vent non modélisée)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 91
+    },
+    "family": "invocation",
+    "curated": true
+  },
+  {
+    "id": "bourbier-vivant",
+    "label": "Bourbier vivant",
+    "type": "Magie des Arcanes",
+    "subType": "Vie",
+    "isPrayer": false,
+    "cn": 8,
+    "range": {
+      "kind": "special",
+      "text": "(Force Mentale) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un navire"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "FM"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Face à un bateau en mer, vous produisez une gerbe d'algues. Les plantes visqueuses entourent le vaisseau, qui s'enlise dedans. Tant qu'il est pris dans le bourbier, le bateau subit -2 à sa Caractéristique de Mouvement et ajuste sa Caractéristique de Manœuvre de -3 DR. Il est possible d'ordonner à l'équipage de couper les algues pour dégager la coque avec un Test étendu de **Navigation Intermédiaire (+0)** sur un nombre de cibles égal au Bonus de Force Mentale + DR du lanceur du sort.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Bourbier vivant : le navire subit –2 Mouvement et –3 DR de Manœuvre tant qu'il est pris ; l'équipage peut couper les algues (Test étendu de Navigation Intermédiaire (+0), cibles = BFM + DR du lanceur) — arbitrage MJ (caractéristiques de navire)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 15
+    },
+    "family": "arcane",
+    "domainId": "vie",
+    "curated": true
+  },
+  {
+    "id": "que-d-eau-que-d-eau",
+    "label": "Que d'eau, que d'eau",
+    "type": "Magie des Arcanes",
+    "subType": "Vie",
+    "isPrayer": false,
+    "cn": 6,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un navire"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous rassemblez *Ghyran* depuis la mer et vous emportez de petites quantités d'eau grâce à lui. Nettoyée de toutes ses impuretés, cette eau s'écoule dans les réserves du navire et remplit d'eau tous les tonneaux vides.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Que d'eau, que d'eau : tous les tonneaux vides des réserves du navire se remplissent d'eau pure — arbitrage MJ (réserves d'eau du navire non modélisées)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 15
+    },
+    "family": "arcane",
+    "domainId": "vie",
+    "curated": true
+  },
+  {
+    "id": "tourbillon",
+    "label": "Tourbillon",
+    "type": "Magie des Arcanes",
+    "subType": "Vie",
+    "isPrayer": false,
+    "cn": 6,
+    "range": {
+      "kind": "special",
+      "text": "(Force Mentale) mètres × 10"
+    },
+    "target": {
+      "kind": "special",
+      "text": "ZdE (Force Mentale) mètres"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "FM"
+      }
+    },
+    "desc": "Vous tirez sur le *Ghyran* entourant la zone ciblée et vous le faites tourner sur lui-même. L'eau se met à bouillonner et un tourbillon se forme dans la zone ciblée. Les tourbillons sont décrits en page 113. Ce Sort crée une zone de rotation lente, mais des DR peuvent être dépensés pour agrandir le tourbillon en suivant les règles de Surincantation.\n\n### SURINCANTATION DE TOURBILLON\n\n| DR | Taille du tourbillon |\n|---|---|\n| 5 | Tourbillon |\n| 8 | Puissant vortex |\n| 13 | Maelstrom |\n| 21 ou plus | Maelstrom primordial |",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Tourbillon : un tourbillon (rotation lente, MDG p.113) se forme dans la ZdE ; Surincantation : 5 DR → Tourbillon, 8 → Puissant vortex, 13 → Maelstrom, 21+ → Maelstrom primordial — arbitrage MJ (périls nautiques non modélisés)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 15
+    },
+    "family": "arcane",
+    "domainId": "vie",
+    "curated": true
+  },
+  {
+    "id": "bienfait-de-bel-shanaar",
+    "label": "Bienfait de Bel Shanaar",
+    "type": "Magie des Arcanes",
+    "subType": "Cieux",
+    "isPrayer": false,
+    "cn": 2,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": 1,
+      "unit": "days"
+    },
+    "desc": "Ce Sort doit être lancé au cours d'un voyage à la destination prédéterminée, et cette destination doit être un lieu connu du lanceur. Vous fermez les yeux et vous focalisez votre Seconde vue sur les cieux, suivant la trajectoire d'*Azyr* tandis qu'il crépite dans le ciel et semble sauter d'étoile en étoile. Pendant un instant, un éclair d'*Azyr* vous relie à votre destination et laisse une image rémanente bleue et scintillante dans votre vision. Pendant toute la durée du Sort, tous les Tests d'Orientation effectués par le sorcier (ou impliquant le sorcier dans le cas des Tests d'équipage) bénéficient de +2 DR.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Bienfait de Bel Shanaar : pendant 1 jour, tous les Tests d'Orientation du sorcier (ou impliquant le sorcier dans un Test d'équipage) bénéficient de +2 DR."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 15
+    },
+    "family": "arcane",
+    "domainId": "cieux",
+    "curated": true
+  },
+  {
+    "id": "mer-d-huile",
+    "label": "Mer d'huile",
+    "type": "Magie des Arcanes",
+    "subType": "Cieux",
+    "isPrayer": false,
+    "cn": 10,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "special",
+      "text": "ZdE (Bonus de Force Mentale) milles"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "FM"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous hurlez à tous ceux à bord de votre vaisseau de se taire et vous fermez les yeux. Un silence inquiétant enveloppe d'abord le navire, puis la zone qui l'entoure. Les voiles se dégonflent et les vagues se calment. L'effet Calme plat du tableau Effet du vent (voir page 107) s'applique pendant toute la durée du Sort.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Mer d'huile : l'effet Calme plat (tableau Effet du vent, MDG p.107) s'applique dans une ZdE de (BFM) milles pendant (BFM) minutes — arbitrage MJ (échelle de vent non modélisée)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 15
+    },
+    "family": "arcane",
+    "domainId": "cieux",
+    "curated": true
+  },
+  {
+    "id": "solution-de-tir-optimal-de-niezlib",
+    "label": "Solution de tir optimal de Niezlib",
+    "type": "Magie des Arcanes",
+    "subType": "Cieux",
+    "isPrayer": false,
+    "cn": 6,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "FM"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Un navire"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 1
+    },
+    "desc": "Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotthelm Niezlib, qui cherchait à l'utiliser pour prouver ses théories concernant le mouvement des corps célestes. Il s'est ensuite rendu compte que cette magie avait des applications plus concrètes et l'a modifiée pour déterminer le moment exact auquel un bateau doit tirer une bordée. Le lanceur peut calculer le roulis du vaisseau, la distance par rapport à la cible, le poids des boulets de canon et la puissance de chaque tir. Pendant toute la durée du Sort, les Tests effectués pour tirer avec un canon bénéficient de +1 DR.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Solution de tir optimal de Niezlib : pendant 1 Round, les Tests effectués pour tirer avec un canon depuis le navire ciblé bénéficient de +1 DR."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "MDG",
+      "page": 15
+    },
+    "family": "arcane",
+    "domainId": "cieux",
+    "curated": true
   }
 ]

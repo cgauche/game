@@ -482,7 +482,7 @@ Détails complets par niveau (compétences/talents/possessions) → [`catalogue-
 
 **Sources RAW** : `MDG 09 l.3-30` + `l.57-757`
 **Voir aussi** : [Index des carrières](#index-des-carrières) · [Carrières norses (MDG)](#carrières-norses-mdg) · [`talents.md`](talents.md) (Chanson de marin, Commandant d'équipe, Commandant émérite)
-**Implémente** : `src/data/careerLevels.json`, `src/data/classes.json` (Classe Côtier) — données app-owned (non implémenté à ce jour pour MDG)
+**Implémente** : `src/data/classes.json` (`cotiers`) + `src/data/careers.json`/`careerLevels.json` (8 carrières × 4 niveaux) + `src/ui/creator/draft.ts` (`careerRollPool` — swap Riverains ↔ Côtiers AVANT le d100)
 
 ---
 
@@ -504,7 +504,7 @@ Une chanson de marin affecte un équipage entier. Le Personnage doit trouver un 
 
 **Sources RAW** : `MDG 09 l.32-54`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Chansons de marins (MDG)](#chansons-de-marins-mdg) · [`talents.md`](talents.md)
-**Implémente** : `src/data/talents.json` (TalentData.passive/effects) — `src/engine/talentEffects.ts` (non implémenté pour MDG)
+**Implémente** : `src/data/talents.json` (`chanson-de-marin`, `commandant-emerite` — Maxi/Tests/desc ; `commandant-d-equipe` = réimpression du talent AA existant). Flux d'activation du chant + bonus DR navals (non implémenté — lot systèmes naval)
 
 ---
 
@@ -528,7 +528,7 @@ Le **Chansonnier** est inextricablement lié au culte de **Manann** ; d'autres d
 
 **Sources RAW** : `MDG 09 l.206-248`
 **Voir aussi** : [Nouveaux Talents de la Classe Côtier (MDG)](#nouveaux-talents-de-la-classe-côtier-mdg)
-**Implémente** : `src/data/talents.json` (variantes Chanson de marin) — `src/engine/ops.ts` (GameOp) (non implémenté)
+**Implémente** : `src/data/sea-shanties.json` (7 chansons, desc verbatim ; `crewOps` GameOp pour les 3 exprimables, `pending` pour les 4 autres). Application à l'équipage (non implémenté — lot systèmes naval)
 
 ---
 
@@ -584,7 +584,7 @@ Ces Carrières sont les Carrières **existantes** (LDB + Côtiers), réinterpré
 
 **Sources RAW** : `MDG 07 l.263-311`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg)
-**Implémente** : `src/data/classes.json` (table de tirage norse) — `src/engine/creation.ts` (d100 espèce/carrière) (non implémenté pour MDG)
+**Implémente** : `src/data/careers.json` (colonne `Norse` de `rand`, 31 carrières) — `src/engine/creation.ts` (`rollCareer` lit la colonne via `SpeciesData.refCareer = 'Norse'`)
 
 ---
 
@@ -606,7 +606,7 @@ Trois origines humaines norses (`MDG 07 l.228-246`) :
 
 **Sources RAW** : `MDG 07 l.222-260`
 **Voir aussi** : [Carrières norses (MDG)](#carrières-norses-mdg) · [Trait Marque de Khorne (MDG)](#trait-marque-de-khorne-mdg)
-**Implémente** : `src/data/races.json` / `src/engine/character.ts` (espèce + augmentations de création) (non implémenté pour MDG)
+**Implémente** : `src/data/species.json` (3 origines humaines norses + `nains-norse` : compétences/talents/langue Norse, `refCareer: 'Norse'`) / `src/engine/character.ts` (création)
 
 ---
 
@@ -622,7 +622,7 @@ De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient 
 
 **Sources RAW** : `MDG 07 l.248-252`
 **Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
-**Implémente** : `src/data/creatures.json` (TraitData.passive → grantTalent) — `src/engine/trauma.ts` (collecteur passiveMods) (non implémenté pour MDG)
+**Implémente** : `src/data/traits.json` (`marque-de-khorne` — desc verbatim). Effets mécaniques (Frénésie/Animosité/interdits/achats hors carrière) (non implémenté — même canal que `marque-de-tzeentch`)
 
 ## Bilan
 
@@ -633,6 +633,7 @@ De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient 
   - ADE I : 4 carrières raciales (Chevaucheur de Blaireau, Gardechamps, Patrouilleur des Karak, Rôdeur Fantôme).
   - ADE II / AA : 18 carrières supplémentaires (Mangeur d'Hommes, Boucher Ogre, + 16 militaires/ordres).
   - Middenheim : 1 carrière (Frère Loup), 3 origines humaines.
+  - MDG : 9 carrières (8 Côtiers + Prêtre de Stromfels, MDG 11), 3 origines humaines norses + nains norses.
 - **Refs code couvertes** : `src/engine/careerSlots.ts` — accumulation de compétences (`skillSlots` l.153-156), talents du niveau courant uniquement (`talentSlots` l.158-162), emplacements Au choix (`parseEntry`, `wildcardSpecs`), maxi talent (`talentMaxById`).
 - **Détails par niveau des carrières (compétences/talents/possessions) = catalogue volumineux à transcrire séparément (présent dans `src/data/careerLevels.json`).**
 - **Anomalies données** : typo « Agent 1 » pour Nautonier N2 dans `careerLevels.json` (ligne 15499) ; Receleur N4 et Patrouilleur Fluvial N4 avec Argent 1 semblent inattendus — à vérifier contre la source LDB p. 101+.

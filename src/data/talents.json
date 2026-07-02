@@ -319,6 +319,7 @@
       "Rhya",
       "Shallya",
       "Sigmar",
+      "Stromfels",
       "Taal",
       "Ulric",
       "Verena"
@@ -1724,14 +1725,17 @@
     },
     "desc": "Vous êtes consumé par la Haine pour quelque chose dans le Vieux Monde, comme décrit à la page 190. Chaque fois que vous prenez ce Talent, vous développez une certaine haine envers un nouveau groupe. Voici quelques exemples de groupes que vous pouvez haïr : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmarites, morts-vivants, Sorciers dissidents.",
     "specs": [
+      "Hérétiques",
       "Hommes-bêtes",
       "Hors-la-loi",
-      "Hérétiques",
+      "Manannites",
       "Monstres",
       "Morts-vivants",
       "Peaux-vertes",
       "Sigmarites",
-      "Sorciers dissidents"
+      "Sorciers dissidents",
+      "Suivants de Stromfels",
+      "Suivants du Chaos"
     ],
     "rand": null,
     "source": {
@@ -1970,6 +1974,7 @@
       "Rhya",
       "Shallya",
       "Sigmar",
+      "Stromfels",
       "Taal",
       "Ulric",
       "Verena"
@@ -3113,11 +3118,12 @@
     },
     "desc": "Votre forte constitution vous permet de survivre plus facilement à une menace spécifique. Vous pouvez réussir automatiquement le premier Test pour résister à la menace spécifiée, telle que Magie, Poison, Maladie, Mutation, à chaque séance de jeu. Si le DR requis est important, utilisez votre Bonus d'Endurance comme DR pour le Test.",
     "specs": [
+      "Chaos",
       "Corruption",
       "Magie",
-      "Poison",
       "Maladie",
-      "Mutation"
+      "Mutation",
+      "Poison"
     ],
     "rand": 75,
     "source": {
@@ -3273,38 +3279,40 @@
       "Bêtes sauvages",
       "Chaos",
       "Chimie",
-      "Dragons",
+      "Côtes et marées",
       "Démonologie",
+      "Dragons",
       "Empire",
+      "Épaves",
       "Esprits",
       "Folklore",
       "Forteresses et routes naines",
-      "Guerre",
       "Géants",
       "Généalogie",
       "Géographie",
       "Géologie",
+      "Guerre",
+      "Héraldique",
       "Herbes",
       "Histoire",
-      "Héraldique",
       "Ingénierie",
       "Itinéraires",
       "Le Moot",
       "Loi",
-      "Nécromancie",
       "Magick",
       "Magie",
       "Magie noire",
       "Métallurgie",
       "Nains",
+      "Nécromancie",
       "Noble",
       "Plantes",
       "Poison",
       "Politique",
       "Prophétie",
+      "Région",
       "Reikland",
       "Remèdes",
-      "Région",
       "Savoir-vivre",
       "Science",
       "Sigmar",
@@ -3314,8 +3322,7 @@
       "Théologie",
       "Torture",
       "Trolls",
-      "Voies fluviales",
-      "Épaves"
+      "Voies fluviales"
     ],
     "rand": null,
     "source": {
@@ -3346,6 +3353,7 @@
     "specs": [
       "Criminels",
       "Cultistes",
+      "Équipage",
       "Érudits",
       "Fidèles",
       "Guildes",
@@ -4147,6 +4155,52 @@
     "source": {
       "book": "ADE1",
       "page": 78
+    }
+  },
+  {
+    "id": "chanson-de-marin",
+    "label": "Chanson de marin",
+    "max": {
+      "bonusOf": "Int"
+    },
+    "test": {
+      "raw": "Divertissement (Chant)",
+      "matches": [
+        {
+          "skill": "divertissement",
+          "spec": "Chant"
+        }
+      ]
+    },
+    "desc": "Ce Talent permet à un Personnage d'apprendre une chanson de marin (voir page 67). Chaque fois qu'un Personnage achète un nouveau niveau dans ce Talent, il apprend une nouvelle chanson. Une chanson de marin affecte un équipage entier. Pour utiliser ce Talent, le Personnage doit trouver un endroit où chanter depuis lequel il peut être entendu par autant de membres d'équipage que possible et réussir un Test de Divertissement (Chant).\n\nUn Personnage met 30 secondes chanter la la chanson de marin, après quoi l'effet dure trois minutes plus un nombre de minutes égal au DR sur le Test de **Divertissement (Chant)**. La seule action de combat que le Personnage peut effectuer tant qu'il est en train de chanter la chanson de marin est une Esquive. Si le MJ l'autorise, il peut effectuer d'autres actions comme un Test de Perception ou de Calme. Si le Personnage subit des Dégâts ou rate un Test opposé, sa Chanson de marin prend fin.\n\nUne seule chanson de marin peut être chantée lors de chaque quart. Difficile d'inspirer davantage un équipage.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "MDG",
+      "page": 63
+    }
+  },
+  {
+    "id": "commandant-emerite",
+    "label": "Commandant émérite",
+    "max": {
+      "bonusOf": "Soc"
+    },
+    "test": {
+      "raw": "Commandement",
+      "matches": [
+        {
+          "skill": "commandement",
+          "manual": true
+        }
+      ]
+    },
+    "desc": "Vos hommes vous respectent et vous font confiance. Pour tout Test de Commandement approprié effectué à bord de votre bateau ou impliquant votre équipage, vous gagnez un bonus de DR égal à votre nombre de niveaux en Commandant émérite. Ce bonus s'applique aux Tests d'équipage comme aux Tests de Commandement individuels.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "MDG",
+      "page": 63
     }
   }
 ]

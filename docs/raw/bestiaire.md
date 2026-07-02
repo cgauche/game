@@ -434,7 +434,7 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (T2C) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente** :
-- `(non implémenté en règle moteur)` — Trait à porter en donnée dans `traits.json` (id type `creature-marine`), `passive: GameOp[]` pour le malus hors-eau (M→1, −2 DR) conditionné à l'environnement. Le moteur n'a pas de notion d'environnement aquatique/terrestre par case ni de hook de suffocation hors-eau → effet narratif côté MJ pour l'instant.
+- `src/data/traits.json` (`creature-marine`, desc verbatim ; `aquatique` T2C p.90 également porté). Le malus hors-eau (M→1, −2 DR) et la suffocation restent (non implémenté) : pas de notion d'environnement aquatique/terrestre par case ni de hook de suffocation hors-eau → effet narratif côté MJ (lot systèmes naval).
 
 ---
 
@@ -457,7 +457,7 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 **Voir aussi** : [Avantage permanent — Trait *Redoutable* (Grim) (ZI)](combat.md#avantage-permanent--trait-redoutable-grim-zi) — `combat.md` ; Avantage de groupe (AA) — `combat.md`.
 
 **Implémente** :
-- `(non implémenté en règle moteur)` — cf. `combat.md` : Trait présent en donnée (`src/data/frenchy-traits.json` id `redoutable`, desc verbatim) mais le **regain d'Avantage début de tour n'est PAS câblé**. La clause AA d'Avantage de groupe n'est pas modélisée.
+- `src/data/traits.json` (`redoutable`, desc verbatim — la clause AA l.13 y est appendue) : le regain d'Avantage début de tour EST câblé (`effects` `onTurnStart` → op `gainAdvantage`, gardé Empêtré/Surpris). La clause AA d'Avantage de groupe n'est pas modélisée (non implémenté).
 
 ## Bilan de fidélité
 

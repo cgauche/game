@@ -2216,7 +2216,7 @@
     "label": "Redoutable",
     "prefix": null,
     "suffix": null,
-    "desc": "Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son Indice de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État Empêtré, Inconscient ou Surpris, elle ne gagne pas d'Avantage.",
+    "desc": "Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son Indice de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État Empêtré, Inconscient ou Surpris, elle ne gagne pas d'Avantage.\n\nSi vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires.",
     "source": {
       "book": "ZI",
       "page": 11
@@ -2398,6 +2398,39 @@
     },
     "capabilities": {
       "structImpenetrable": true
+    }
+  },
+  {
+    "id": "creature-marine",
+    "label": "Créature marine",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature est chez elle dans l'océan et est inadaptée à la vie sur terre. Le profil de ce type de créature part du principe qu'elle se trouve dans un environnement aquatique et qu'elle se déplace de tout son M dans l'eau. Si elle est sortie de l'eau, son M tombe à 1 et tous les Tests qu'elle effectue subissent –2 DR.\n\nLes créatures possédant le Trait *Créature marine* doivent être immergées pour respirer correctement. Si elles sont sorties de l'eau, elles doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer comme décrit en page 181 de **WFJDR**.",
+    "source": {
+      "book": "MDG",
+      "page": 140
+    }
+  },
+  {
+    "id": "marque-de-khorne",
+    "label": "Marque de Khorne",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Khorne a apposé une marque physique sur cette créature pour la proclamer fidèle à sa cause. La créature bénéficie du Talent Frénésie. Elle gagne le Talent Savoir-vivre (Suivants de Khorne) et éprouve de l'Animosité envers ceux qui sont ouvertement des suivants de Slaanesh. Les suivants de Slaanesh éprouvent également de l'Animosité envers la créature si la Marque de Khorne est visible. Le Personnage ne peut jamais utiliser les Compétences Langue (Magick) et Focalisation, sauf pour dissiper un sort.\n\nDe plus, le Personnage peut acheter les Talents suivant comme s'ils étaient des Augmentations de Carrière au coût en PX normal : Assaut féroce, Charge berserk, Combat instinctif, Coup puissant, Déterminé, Endurci, Guerrier né, Résistance (Magie), Résistance à la magie, Vigilance.",
+    "source": {
+      "book": "MDG",
+      "page": 56
+    }
+  },
+  {
+    "id": "aquatique",
+    "label": "Aquatique",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature peut respirer sous l'eau et s'y déplace à sa pleine vitesse de Mouvement. Elle ne peut pas se déplacer sur la terre ferme.",
+    "source": {
+      "book": "T2C",
+      "page": 90
     }
   }
 ]

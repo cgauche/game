@@ -645,9 +645,9 @@
     "id": "humains-bjornling-norse",
     "label": "Humains (Bjornling Norse)",
     "refChar": "Humain",
-    "refCareer": "Humain",
+    "refCareer": "Norse",
     "rand": 90,
-    "desc": "",
+    "desc": "Si vous désirez créer un Personnage venant de Norsca, vous pouvez utiliser les règles ci-dessous à la place des règles pour les Personnages du Reikland en page 36 du **Livre de Règles Warhammer Fantasy le Jeu de Rôle.** Les Joueurs et le MJ doivent réfléchir à l'impact qu'un Personnage norse pourrait avoir sur un groupe d'aventuriers typique. Même les Personnages norses les plus civilisés ont été élevés dans une société qui légitime une forme de respect envers les dieux du Chaos, apprend à ses jeunes à développer leur robustesse personnelle et à considérer ceux qui ne le font pas comme des idiots et des faibles.",
     "movement": 4,
     "fate": {
       "fate": 2,
@@ -731,6 +731,12 @@
         "ref": {
           "id": "evaluation"
         }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Norse"
+        }
       }
     ],
     "talents": [
@@ -765,7 +771,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "Chaos"
         }
       },
       {
@@ -781,9 +787,9 @@
     "id": "humains-sarl-norse",
     "label": "Humains (Sarl Norse)",
     "refChar": "Humain",
-    "refCareer": "Humain",
+    "refCareer": "Norse",
     "rand": 90,
-    "desc": "",
+    "desc": "Si vous désirez créer un Personnage venant de Norsca, vous pouvez utiliser les règles ci-dessous à la place des règles pour les Personnages du Reikland en page 36 du **Livre de Règles Warhammer Fantasy le Jeu de Rôle.** Les Joueurs et le MJ doivent réfléchir à l'impact qu'un Personnage norse pourrait avoir sur un groupe d'aventuriers typique. Même les Personnages norses les plus civilisés ont été élevés dans une société qui légitime une forme de respect envers les dieux du Chaos, apprend à ses jeunes à développer leur robustesse personnelle et à considérer ceux qui ne le font pas comme des idiots et des faibles.",
     "movement": 4,
     "fate": {
       "fate": 2,
@@ -805,8 +811,9 @@
     },
     "skills": [
       {
-        "wildcard": {
-          "id": "chevaucher"
+        "ref": {
+          "id": "chevaucher",
+          "spec": "Cheval"
         }
       },
       {
@@ -818,7 +825,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Gospodarinyi"
+          "spec": "Gospodarin"
         }
       },
       {
@@ -866,6 +873,12 @@
       {
         "wildcard": {
           "id": "voile"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Norse"
         }
       }
     ],
@@ -917,9 +930,9 @@
     "id": "humains-skaeling-norse",
     "label": "Humains (Skaeling Norse)",
     "refChar": "Humain",
-    "refCareer": "Humain",
+    "refCareer": "Norse",
     "rand": 90,
-    "desc": "",
+    "desc": "Si vous désirez créer un Personnage venant de Norsca, vous pouvez utiliser les règles ci-dessous à la place des règles pour les Personnages du Reikland en page 36 du **Livre de Règles Warhammer Fantasy le Jeu de Rôle.** Les Joueurs et le MJ doivent réfléchir à l'impact qu'un Personnage norse pourrait avoir sur un groupe d'aventuriers typique. Même les Personnages norses les plus civilisés ont été élevés dans une société qui légitime une forme de respect envers les dieux du Chaos, apprend à ses jeunes à développer leur robustesse personnelle et à considérer ceux qui ne le font pas comme des idiots et des faibles.",
     "movement": 4,
     "fate": {
       "fate": 2,
@@ -965,7 +978,7 @@
       },
       {
         "ref": {
-          "id": "langue",
+          "id": "savoir",
           "spec": "Khorne"
         }
       },
@@ -1005,6 +1018,12 @@
         "wildcard": {
           "id": "voile"
         }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Norse"
+        }
       }
     ],
     "talents": [
@@ -1039,7 +1058,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "Chaos"
         }
       },
       {
@@ -2938,7 +2957,7 @@
     "refChar": "Nain",
     "refCareer": "Nain",
     "rand": 97,
-    "desc": "",
+    "desc": "Un Joueur pourrait vouloir créer un Personnage nain norse venant de l'une des krakas. Dans ce cas, vous pouvez utiliser les règles ci-dessous à la place de celles concernant les nains en page 36 du **Livre de Règles Warhammer Fantasy le Jeu de Rôle**.",
     "movement": 3,
     "fate": {
       "fate": 0,

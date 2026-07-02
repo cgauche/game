@@ -101,7 +101,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       { op: 'removeCondition', name: 'hemorragique', all: true },
     ]);
   });
-  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille T2C)', () => {
+  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille T2C + sel sacré MDG)', () => {
     const ids = trappings.filter((t) => t.consumable).map((t) => t.id).sort();
     expect(ids).toEqual([
       'bandages',
@@ -123,6 +123,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       'racine-de-terre',
       'racine-des-tombes',
       'rouille-mouchetee',
+      'sel-sacre',
       'soude-commune',
       'tonique-digestif',
     ]);

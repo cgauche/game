@@ -44,6 +44,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Anguille mâcheprise": {
+    "def": "Serpent",
+    "plan": "serpentine",
+    "scale": 1,
+    "species": "serpent",
+  },
   "Apothicaire": {
     "def": null,
     "plan": "biped",
@@ -157,6 +163,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "humain",
+  },
+  "Baudroye": {
+    "def": "Brochet du Stir",
+    "plan": "fish",
+    "scale": 1.05,
+    "species": "brochet-du-stir",
   },
   "Beate Moser": {
     "def": null,
@@ -542,6 +554,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.9,
     "species": "cheval",
   },
+  "Crabe boxeur": {
+    "def": "Il Potente Granchio",
+    "plan": "crustace",
+    "scale": 1.1,
+    "species": "il-potente-granchio",
+  },
   "Cultiste": {
     "def": null,
     "plan": "biped",
@@ -793,6 +811,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "demon",
+  },
+  "Gargantuan": {
+    "def": "Serpent",
+    "plan": "serpentine",
+    "scale": 1,
+    "species": "serpent",
   },
   "Gerdon Salzwed": {
     "def": null,
@@ -1154,6 +1178,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.2,
     "species": "hydre",
   },
+  "Hydre d'os": {
+    "def": "Hydre",
+    "plan": "quadruped",
+    "scale": 1.2,
+    "species": "hydre",
+  },
   "Hyppogriffe": {
     "def": "Hippogriffe",
     "plan": "winged",
@@ -1239,6 +1269,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "jabberslythe",
   },
   "Jacopo Schmidt": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Jaego Roth": {
     "def": null,
     "plan": "biped",
     "scale": 1,
@@ -1454,6 +1490,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Kharibde": {
+    "def": "Amibe",
+    "plan": "amorphous",
+    "scale": 1,
+    "species": "amibe",
+  },
   "L'Ombre du Fleuve": {
     "def": "Cheval",
     "plan": "quadruped",
@@ -1496,6 +1538,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "lion-de-guerre-de-chrace",
   },
+  "Long Drong Silver": {
+    "def": "Nain",
+    "plan": "biped",
+    "scale": 1,
+    "species": "nain",
+  },
   "Loup": {
     "def": "Loup",
     "plan": "quadruped",
@@ -1525,6 +1573,18 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "crustace",
     "scale": 1.15,
     "species": "leviathan",
+  },
+  "Léviathan noir": {
+    "def": "Brochet du Stir",
+    "plan": "fish",
+    "scale": 1.05,
+    "species": "brochet-du-stir",
+  },
+  "Léviathan-phare": {
+    "def": "Brochet du Stir",
+    "plan": "fish",
+    "scale": 1.05,
+    "species": "brochet-du-stir",
   },
   "Macareux à Bec Tranchant": {
     "def": "Macareux à Bec Tranchant",
@@ -1813,6 +1873,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "ogre",
+  },
+  "Olg Blóðsalt": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Ombre Vengeresse": {
     "def": "Spectre",
@@ -2186,6 +2252,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.92,
     "species": "sangsue",
   },
+  "Sangsue des abysses": {
+    "def": "Sangsue",
+    "plan": "serpentine",
+    "scale": 0.92,
+    "species": "sangsue",
+  },
   "Sanguinaire de Khorne": {
     "def": "Démon",
     "plan": "biped",
@@ -2396,11 +2468,23 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Stylet": {
+    "def": "Brochet du Stir",
+    "plan": "fish",
+    "scale": 1.05,
+    "species": "brochet-du-stir",
+  },
   "Stégadon": {
     "def": "Stégadon",
     "plan": "quadruped",
     "scale": 1.3,
     "species": "stegadon",
+  },
+  "Syrène bleue": {
+    "def": "Banshee",
+    "plan": "spectral",
+    "scale": 0.96,
+    "species": "banshee",
   },
   "Technomage": {
     "def": "Skaven",
@@ -2439,6 +2523,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "loup",
   },
   "Traudl Bauer": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Triton": {
     "def": null,
     "plan": "biped",
     "scale": 1,
@@ -2576,6 +2666,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Vrisk Gratte-le-Fer": {
+    "def": "Skaven",
+    "plan": "biped",
+    "scale": 1,
+    "species": "skaven",
+  },
   "Vénérable": {
     "def": null,
     "plan": "biped",
@@ -2607,6 +2703,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "humain",
   },
   "Wulfric Tore": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Wulfrik": {
     "def": null,
     "plan": "biped",
     "scale": 1,
@@ -2671,6 +2773,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "orc",
+  },
+  "Élémentaire de mer": {
+    "def": "Amibe",
+    "plan": "amorphous",
+    "scale": 1,
+    "species": "amibe",
   },
   "Érudit": {
     "def": null,

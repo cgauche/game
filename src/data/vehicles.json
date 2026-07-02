@@ -926,5 +926,42 @@
       },
       "traits": []
     }
+  },
+  {
+    "id": "bateau-tresor-cathayen",
+    "label": "Bateau-trésor cathayen",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 10000,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 50,
+        "B": 400
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "voile"
+    },
+    "ship": {
+      "crew": 220,
+      "manoeuvre": 0,
+      "lengthM": 130,
+      "footprint": 4,
+      "capacity": 4000,
+      "sail": {
+        "m": 9,
+        "crew": 200
+      },
+      "traits": []
+    }
   }
 ]

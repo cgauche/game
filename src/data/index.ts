@@ -27,6 +27,7 @@ import reliefMaterialsJson from './reliefMaterials.json';
 import roofMaterialsJson from './roofMaterials.json';
 import ambianceJson from './ambiance.json';
 import navalTraitsJson from './naval-traits.json';
+import seaShantiesJson from './sea-shanties.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
 import weaponGroupsJson from './weaponGroups.json';
@@ -803,6 +804,12 @@ export interface DomainData {
    *  carac par défaut (ADE II l.653 : la Magie de la Gueule, réservée aux ogres, se lance sur l'Endurance).
    *  Lue par `castingValue` — porté par la DONNÉE du domaine, aucun sniff d'espèce dans le moteur. */
   castingChar?: import('../engine/types').CharKey;
+  /** Modificateur des Vents de Magie EN MER (MDG 02 l.178-186) — VERBATIM. Règle d'application (l.178) :
+   *  « Les modificateurs suivants s'appliquent aux tentatives de Focalisation et d'Incantation en mer. »
+   *  Seuls 4 Domaines en portent un (Bête/Feu/Cieux/Vie). Donnée descriptive : le contexte « en mer »
+   *  et l'échelle de vent (Violente tempête/Calme plat, MDG p.107) ne sont pas modélisés — lu par
+   *  `magic.ts` quand le lot systèmes naval ouvrira ce contexte. */
+  seaModifier?: string;
 }
 export interface SpellData {
   /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */
@@ -1033,6 +1040,21 @@ export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').Am
  *  navire hors vocabulaire combattant : `ram` (Bélier → collision proue/frontale) et `deckCover` (Sabord →
  *  couvert de pont). Absent = pas d'effet mécanisé (Robuste déféré) ou déjà baké dans les colonnes du véhicule
  *  (Renforcé/Solide → E/B). */
+/** Taille de navire MDG (catégorie dérivée de la LONGUEUR, tableau CARACTÉRISTIQUES DE BATEAU STANDARD,
+ *  MDG ch.12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — ids stables des bandes d'installation. */
+export type ShipSize = 'minuscule' | 'tres-petite' | 'petite' | 'moyenne' | 'grande' | 'enorme' | 'monstrueuse';
+/** Bande de Taille d'un tarif d'installation : `min`/`max` inclusifs (absent = ouvert vers le bas/le haut),
+ *  `value` = CO (coût) ou Enc (poids) selon le champ porteur. */
+export interface InstallBand { min?: ShipSize; max?: ShipSize; value: number }
+/** Coût / Poids d'INSTALLATION d'une Amélioration navale (MDG ch.12, lignes « Coût : / Poids : » de chaque
+ *  Amélioration, l.195-364) — VERBATIM structuré par bandes de Taille. `per: '5m'` = « par tranche de 5 m
+ *  de Taille » (Blindage, Lissage) ; `per: 'unite'` = « par cabine » (Cabine de luxe) ; `'modele'` = ceux
+ *  du modèle embarqué (Embarcation de bord). `weightEnc` absent = aucun poids (Lissage). Donnée consommée
+ *  par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en dur. */
+export interface NavalInstall {
+  cost: { bands: InstallBand[]; per?: '5m' | 'unite' } | 'modele';
+  weightEnc?: { bands: InstallBand[]; per?: '5m' | 'unite' } | 'modele';
+}
 export interface NavalTraitData {
   /** id STABLE (slug) — la clé d'appariement avec `ship.traits`/`Combatant.upgrades` (`NavalTraitRef.id`). */
   id: string;
@@ -1041,6 +1063,8 @@ export interface NavalTraitData {
   kind: 'trait' | 'amelioration';
   source?: { book: string; page: number };
   desc: string;
+  /** Coût/Poids d'installation (Améliorations seulement) — cf. `NavalInstall`. */
+  install?: NavalInstall;
   /** Prend un Indice (le libellé authoré peut être « Renforcé 2 ») — l'effet `passive` est répété par niveau. */
   ranked?: boolean;
   /** Effet mécanique en `GameOp[]` (langue unique) — lu par `navalPassiveOps` puis filtré par effet
@@ -1059,6 +1083,24 @@ const navalTraitById = new Map(NAVAL_TRAITS.map((t) => [t.id, t]));
  *  PAS dans la clé (plus de parsing de libellé « Renforcé 2 »). PUR. */
 export function findNavalTrait(id: string): NavalTraitData | undefined {
   return navalTraitById.get(id);
+}
+/** Chanson de marins (MDG 09 l.218-248, payload du Talent Chanson de marin) — catalogue app-owned.
+ *  `crewOps` = effet exprimé dans la langue UNIQUE `GameOp[]`, appliqué à CHAQUE membre d'équipage pendant
+ *  l'effet (3 min + DR du Test de Divertissement (Chant) en minutes, 1 chanson par quart — mécanisme
+ *  d'activation porté par le Talent, lot systèmes naval). `pending` = manque de vocabulaire PRÉCIS quand
+ *  l'effet RAW n'est pas (entièrement) exprimable — comblé par le lot systèmes, jamais un effet inventé. */
+export interface SeaShantyData {
+  id: string;
+  label: string;
+  desc: string;
+  crewOps?: import('../engine/ops').GameOp[];
+  pending?: string;
+  source: { book: string; page: number };
+}
+export const seaShanties = seaShantiesJson as SeaShantyData[];
+const seaShantyById = new Map(seaShanties.map((s) => [s.id, s]));
+export function findSeaShantyById(id: string): SeaShantyData | undefined {
+  return seaShantyById.get(id);
 }
 /** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE

@@ -67,6 +67,8 @@ import {
   withCareer,
   rollDraftSpecies,
   rollDraftCareer,
+  withCoastalSwap,
+  coastalSwapAvailable,
   speciesXp,
   careerXp,
   charsXp,
@@ -484,6 +486,13 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
         <p className="hint" style={{ marginTop: 0 }}>
           1ᵉʳ jet accepté : +50 PX · choix parmi 3 jets : +25 PX · choix libre / relances : +0 PX.
         </p>
+        {/* MDG 09 l.9 : choix AVANT le jet — basculer réinitialise les jets (même d100, autre table). */}
+        {coastalSwapAvailable(d) && (
+          <label className="radio" style={{ marginBottom: 8, fontSize: 12 }}>
+            <input type="checkbox" checked={d.coastalSwap} onChange={(e) => setD(withCoastalSwap(d, e.target.checked))} />
+            Côtiers à la place des Riverains
+          </label>
+        )}
         {d.careerRolls.length === 0 && (
           <button className="btn" onClick={() => setD(rollDraftCareer(d))}>
             🎲 Tirer la carrière (d100)

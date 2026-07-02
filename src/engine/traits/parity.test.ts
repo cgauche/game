@@ -98,6 +98,10 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Voleur de chair', 'revêt la peau d’un humain tué (trait de Gideon) — pas de système de déguisement (MJ)'],
   // Trait ZI sans système support (desc verbatim, MJ).
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
+  // Traits MDG (bestiaire marin) + T2C (bestiaire fluvial) — desc verbatim, environnement aquatique non mécanisé.
+  ['Créature marine', 'hors de l’eau : M→1, −2 DR à tous les Tests, suffocation (MDG 16 l.17-19) — environnement aquatique non modélisé (lot systèmes naval)'],
+  ['Aquatique', 'respire sous l’eau, aucun déplacement terrestre (T2C p.90) — terrain aquatique non mécanisé (MJ)'],
+  ['Marque de Khorne', 'Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh + interdits + achats hors carrière (MDG 07 l.250-252) — même canal que Marque de Tzeentch (auteur/MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
   // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).
   // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est

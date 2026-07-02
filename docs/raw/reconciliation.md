@@ -5,7 +5,7 @@
 > hors du code. Tolérance ligne = ±20.
 
 **Sens A — code → Atlas** : 0 chapitre(s) cités par le code & absents de l'Atlas · 4 chapitre(s) couverts avec des lignes non pinées.
-**Sens B — Atlas → code** : 164 marqueur(s) « (non implémenté) » · 31 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
+**Sens B — Atlas → code** : 161 marqueur(s) « (non implémenté) » · 27 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
 
 ## A1 — Chapitres appelés par le CODE, ABSENTS de l'Atlas (trous durs)
 
@@ -14,19 +14,19 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ## A2 — Lignes appelées par le CODE non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
 ### LDB 46 — 10/28 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
-- l.185 — `src/state/combatSlice.ts:2470` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
-- l.188 — `src/data/index.ts:317` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+- l.185 — `src/state/combatSlice.ts:2474` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+- l.188 — `src/data/index.ts:378` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
 - l.193 — `src/state/combatFlow.ts:1776` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
-- l.194 — `src/engine/ops.ts:456` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+- l.194 — `src/engine/ops.ts:487` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
 - l.199 — `src/engine/magic.ts:144` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
 - l.202 — `src/engine/magic.ts:490` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
-- l.204 — `src/engine/conditions.ts:303` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-- l.205 — `src/state/combatSlice.ts:2531` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+- l.204 — `src/engine/conditions.ts:324` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
+- l.205 — `src/state/combatSlice.ts:2535` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
 - l.207 — `src/engine/tests.ts:183` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
-### LDB 10 — 5/16 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.310 — `src/engine/types.ts:650` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+### LDB 10 — 5/18 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+- l.310 — `src/engine/types.ts:681` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
 - l.365 — `src/state/medicFlow.ts:173` — *  (LDB 10 l.365) RÉVÉLÉ témoin (jet SUBI, pas influençable — comme toute contraction de maladie). Patient
 - l.569 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
 - l.859 — `src/engine/combatFeatures/dispatch.ts:53` — /** Sans peur (LDB 10 l.859) : `c` ignore la Peur/Terreur que `foe` inspire — talent possédé
@@ -34,7 +34,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ### LDB 11 — 2/2 ligne(s) code hors couverture (propriétaire : docs\raw\equipement.md)
 - l.143 — `src/state/vision.ts:11` — * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
-- l.147 — `src/data/index.ts:587` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
+- l.147 — `src/data/index.ts:648` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
 
 ### LDB 12 — 1/19 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
 - l.229 — `src/engine/tests.test.ts:64` — describe('evaluateCombinedTest — Test Combiné (LDB 12 l.229) : un jet vs DEUX valeurs', () => {
@@ -74,14 +74,11 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\activites.md** L721 — **Implémente** : (non implémenté).
 - **docs\raw\activites.md** L745 — **Implémente** : (non implémenté).
 - **docs\raw\avancement.md** L300 — **Implémente** : non implémenté (attribution de PX = décision MJ dans le store via `xp(n)` dans `src/state/devtools.ts` et `partyFlow.ts`).
-- **docs\raw\bestiaire.md** L437 — - `(non implémenté en règle moteur)` — Trait à porter en donnée dans `traits.json` (id type `creature-marine`), `passive: GameOp[]` pour le malus hors-eau (M→1, −2 DR) conditionné à l'environnement. L
-- **docs\raw\bestiaire.md** L460 — - `(non implémenté en règle moteur)` — cf. `combat.md` : Trait présent en donnée (`src/data/frenchy-traits.json` id `redoutable`, desc verbatim) mais le **regain d'Avantage début de tour n'est PAS câb
-- **docs\raw\carrieres.md** L485 — **Implémente** : `src/data/careerLevels.json`, `src/data/classes.json` (Classe Côtier) — données app-owned (non implémenté à ce jour pour MDG)
-- **docs\raw\carrieres.md** L507 — **Implémente** : `src/data/talents.json` (TalentData.passive/effects) — `src/engine/talentEffects.ts` (non implémenté pour MDG)
-- **docs\raw\carrieres.md** L531 — **Implémente** : `src/data/talents.json` (variantes Chanson de marin) — `src/engine/ops.ts` (GameOp) (non implémenté)
-- **docs\raw\carrieres.md** L587 — **Implémente** : `src/data/classes.json` (table de tirage norse) — `src/engine/creation.ts` (d100 espèce/carrière) (non implémenté pour MDG)
-- **docs\raw\carrieres.md** L609 — **Implémente** : `src/data/races.json` / `src/engine/character.ts` (espèce + augmentations de création) (non implémenté pour MDG)
-- **docs\raw\carrieres.md** L625 — **Implémente** : `src/data/creatures.json` (TraitData.passive → grantTalent) — `src/engine/trauma.ts` (collecteur passiveMods) (non implémenté pour MDG)
+- **docs\raw\bestiaire.md** L437 — - `src/data/traits.json` (`creature-marine`, desc verbatim ; `aquatique` T2C p.90 également porté). Le malus hors-eau (M→1, −2 DR) et la suffocation restent (non implémenté) : pas de notion d'environn
+- **docs\raw\bestiaire.md** L460 — - `src/data/traits.json` (`redoutable`, desc verbatim — la clause AA l.13 y est appendue) : le regain d'Avantage début de tour EST câblé (`effects` `onTurnStart` → op `gainAdvantage`, gardé Empêtré/Su
+- **docs\raw\carrieres.md** L507 — **Implémente** : `src/data/talents.json` (`chanson-de-marin`, `commandant-emerite` — Maxi/Tests/desc ; `commandant-d-equipe` = réimpression du talent AA existant). Flux d'activation du chant + bonus D
+- **docs\raw\carrieres.md** L531 — **Implémente** : `src/data/sea-shanties.json` (7 chansons, desc verbatim ; `crewOps` GameOp pour les 3 exprimables, `pending` pour les 4 autres). Application à l'équipage (non implémenté — lot système
+- **docs\raw\carrieres.md** L625 — **Implémente** : `src/data/traits.json` (`marque-de-khorne` — desc verbatim). Effets mécaniques (Frénésie/Animosité/interdits/achats hors carrière) (non implémenté — même canal que `marque-de-tzeentch
 - **docs\raw\code-map.md** L46 — | `NON IMPLÉMENTÉ` | empoignade, poursuite-ldb, aa-systeme-blessures-alternatif, aa-structures-sieges, aa-rupture-poursuites, aa-armes-poudre-munitions-tables, ade-ii-combat-de-masse-puissance-de-bata
 - **docs\raw\combat.md** L145 — - `initiativeOrder` (`src/engine/combat.ts`) — tri par Initiative décroissante puis départage par Agilité (`LDB 13 l.31`, 1er niveau). Le **2e niveau de départage (Test opposé d'Agilité)** n'est `(non
 - **docs\raw\combat.md** L146 — - `rollInitiative` (`src/state/combatSetup.ts`) + règle maison `combat-init-method` (`src/engine/policy.ts`, label « Méthode d'Initiative », `ref: 'LDB 13 l.37'`) — implémente les variantes de tirage 
@@ -208,7 +205,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code
 
-LDB 06 · LDB 6 · LDB 7 · LDB 8 · LDB 24 · LDB 25 · LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 36 · LDB 37 · LDB 38 · LDB 39 · LDB 43 · LDB 44 · LDB 49 · LDB 50 · LDB 65 · LDB 66 · LDB 68 · LDB 69 · LDB 70 · LDB 71 · LDB 80
+LDB 06 · LDB 6 · LDB 7 · LDB 8 · LDB 25 · LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39 · LDB 43 · LDB 44 · LDB 49 · LDB 50 · LDB 65 · LDB 66 · LDB 68 · LDB 69 · LDB 70 · LDB 80
 
 ## Autres livres
 

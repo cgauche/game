@@ -59909,5 +59909,2624 @@
       "species": "humain",
       "tenue": "marin"
     }
+  },
+  {
+    "id": "baudroye",
+    "label": "Baudroye",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 4,
+      "CC": 40,
+      "CT": null,
+      "F": 45,
+      "E": 35,
+      "I": 30,
+      "Ag": 20,
+      "Dex": null,
+      "Int": 5,
+      "FM": 40,
+      "Soc": null,
+      "B": 3
+    },
+    "traits": [
+      {
+        "id": "affame"
+      },
+      {
+        "id": "amphibie"
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "perturbant"
+      },
+      {
+        "id": "redoutable",
+        "value": 1
+      },
+      {
+        "id": "taille",
+        "arg": "Très Petite"
+      },
+      {
+        "id": "arme",
+        "value": 8,
+        "arg": "Crocs horribles"
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Nuée"
+      },
+      {
+        "key": "Taille",
+        "arg": "Petite à Moyenne"
+      }
+    ],
+    "skills": [],
+    "talents": [
+      {
+        "id": "assaut-feroce",
+        "times": 2
+      },
+      {
+        "id": "charge-berserk",
+        "times": 3
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Ces poissons hideux ne sont pas des créatures marines, mais les marins de la Mer des Griffes savent qu'ils doivent se méfier d'eux, car ils rôdent dans les fjords de Norsca et les eaux de rivières comme la Salz, la Lynsk et la Sannez. La Baudroye se cache dans la boue et les herbes près des rives d'un cours d'eau en maintenant son corps trapu juste en dessous de la surface.\n\nLa baudroye utilise l'étrange lueur phosphorescente sur sa tête pour attirer les animaux qui vivent sur les rives. Cet appendice qui oscille doucement a des propriétés hypnotiques ; même les créatures intelligentes peuvent être envoûtées par cet appât lumineux. Grâce à ses puissants ailerons caudaux, elle se propulse ensuite sur sa proie pour l'agripper par morsure, déchirant la chair et avalant le sang. Elle peut survivre hors de l'eau pendant un certain temps et donc lâcher un animal qui s'enfuit, puis retourner dans la rivière par petits bonds. Si quelqu'un a le courage de manger une baudroye, la chair a un goût délicieux.\n\n**Appât de la baudroye :** les lumières bleues-vertes, ondulant doucement et visibles sur les bords d'une rivière à l'aube et au crépuscule sont parfois confondues avec des lucioles. Si un Personnage réussit un Test de **Savoir (Voies fluviales) Difficile (–20)**, il sait que ces lueurs sont probablement des appâts de baudroye. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine d'être envoûtés par le spectacle et incapables d'entreprendre la moindre action à part se déplacer vers la lumière, ce qui en pratique revient à subir l'État *Inconscient*.",
+    "source": {
+      "book": "MDG",
+      "page": 140
+    },
+    "appearance": {
+      "species": "brochet-du-stir"
+    }
+  },
+  {
+    "id": "crabe-boxeur",
+    "label": "Crabe boxeur",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 5,
+      "CC": 45,
+      "CT": null,
+      "F": 35,
+      "E": 25,
+      "I": 10,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 5,
+      "FM": 35,
+      "Soc": null,
+      "B": 7
+    },
+    "traits": [
+      {
+        "id": "amphibie"
+      },
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "taille",
+        "arg": "Petite"
+      },
+      {
+        "id": "arme",
+        "value": 6,
+        "arg": "Pince"
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Nuée"
+      },
+      {
+        "key": "Taille",
+        "arg": "Très Petite"
+      }
+    ],
+    "skills": [],
+    "talents": [
+      {
+        "id": "desarmer"
+      },
+      {
+        "id": "maitrise-du-combat"
+      },
+      {
+        "id": "vigilance"
+      }
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Un crabe boxeur adulte fait la taille d'un chien. Il est doté d'une carapace portant un marquage qui évoque un crâne et de grands yeux écarlates polypeux. Cette créature fait partie de la faune de Norsca. Les jeunes crabes boxeurs plus petits forment des essaims dangereux, capables d'escalader les cordages qui pendent d'un bateau ou de grimper les uns sur les autres pour former des escaliers vivants leur permettant de surmonter les obstacles. Leur cycle de vie peut aussi se révéler nuisible pour les navires, car leurs petits forment des grappes semblables à celles des coquillages pouvant endommager la coque d'un bateau, tandis que les crabes adultes rôdent sur les plages pour trouver de la chair à manger. Ils ont l'habitude de s'entraîner en se combattant entre eux et tentent souvent de désarmer ou d'empoigner leur adversaire. Ils font un excellent repas.",
+    "source": {
+      "book": "MDG",
+      "page": 141
+    },
+    "appearance": {
+      "species": "il-potente-granchio"
+    }
+  },
+  {
+    "id": "anguille-macheprise",
+    "label": "Anguille mâcheprise",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 6,
+      "CC": 45,
+      "CT": null,
+      "F": 40,
+      "E": 35,
+      "I": 30,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 5,
+      "FM": 35,
+      "Soc": null,
+      "B": 3
+    },
+    "traits": [
+      {
+        "id": "a-sang-froid"
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "taille",
+        "arg": "Très Petite"
+      },
+      {
+        "id": "arme",
+        "value": 8,
+        "arg": "Crocs"
+      },
+      {
+        "id": "morsure",
+        "value": 10
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Affamé"
+      },
+      {
+        "key": "Nuée"
+      },
+      {
+        "key": "Taille",
+        "arg": "Petite"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les anguilles mâcheprises sont des créatures serpentines pouvant mesurer jusqu'à un mètre vingt de long. Leur corps arbore une teinte aigue-marine profonde et est doté d'une puissante mâchoire faite pour agripper. Elles se nourrissent en s'accrochant à leurs victimes, en se tordant de manière à faire un nœud avec leur propre corps pour pouvoir produire un effet de levier et en l'utilisant pour déchirer des morceaux de chair de leur proie. Les anguilles mâcheprises adultes sont connues pour avoir la force d'arracher des morceaux d'armure. Elles peuvent aussi sécréter une gelée visqueuse qui les rend impossibles à empoigner. La projection de cette gelée collante peut obstruer le nez (ou les branchies) d'une victime pour la faire suffoquer. Une anguille mère est souvent accompagnée par une nuée de petits de trente centimètres de long.\n\n**Visqueuse :** les anguilles mâcheprises peuvent produire une quantité surprenante de gelée visqueuse, que ce soit dans ou hors de l'eau. Si une anguille mâcheprise est *Empoignée* par un adversaire, elle peut effectuer un Test d'Endurance. En cas de succès, elle produit un amas de gelée et bénéficie alors de +4 DR sur les Tests ultérieurs pour se libérer. L'adversaire doit effectuer un Test d'**Athlétisme Intermédiaire (+0)**. En cas d'échec, la gelée lui a recouvert le visage et il doit soit relâcher l'anguille mâcheprise, soit commencer à suffoquer (voir page 181 de **WFJDR**).",
+    "source": {
+      "book": "MDG",
+      "page": 141
+    },
+    "appearance": {
+      "species": "serpent"
+    }
+  },
+  {
+    "id": "stylet",
+    "label": "Stylet",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 10,
+      "CC": 32,
+      "CT": 35,
+      "F": 35,
+      "E": 36,
+      "I": 30,
+      "Ag": 48,
+      "Dex": null,
+      "Int": 4,
+      "FM": 18,
+      "Soc": null,
+      "B": 3
+    },
+    "traits": [
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "bond"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "taille",
+        "arg": "Très Petite"
+      },
+      {
+        "id": "a-distance",
+        "value": 7,
+        "arg": "son propre corps",
+        "range": 20
+      },
+      {
+        "id": "arme",
+        "value": 7,
+        "arg": "Ailerons tranchants"
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Affamé"
+      },
+      {
+        "key": "Nuée"
+      },
+      {
+        "key": "Taille",
+        "arg": "Minuscule"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le stylet est une espèce de poisson volant. Les adultes font environ trente centimètres de longueur et leurs ailerons de « vol » environ quarante-cinq centimètres d'envergure. Le nom de ce poisson vient des épines tranchantes comme des rasoirs saillant des extrémités de ses ailerons. Sa capacité à sauter hors de l'eau jusqu'à une hauteur d'un mètre vingt, souvent en grands bancs, le rend physiquement dangereux, car ses épines sont assez aiguisées pour couper le tissu et la chair. Même s'ils ne représentent généralement une menace que pour les radeaux, les chaloupes et les autres vaisseaux de faible hauteur, des stylets d'une taille inhabituellement imposante peuvent parfois sauter assez haut pour atterrir sur le pont d'un grand bateau.\n\nMême si les stylets préfèrent les eaux chaudes, ils fréquentent la Mer des Griffes pendant l'été. Ils sont comestibles et ont bon goût, et peuvent être pris dans des filets quand ils sautent hors de l'eau. Ils sont attirés par les lumières vives, c'est pourquoi les pêcheurs les attrapent souvent lors des nuits sans lune en prenant des bateaux à faible tirant d'eau et en apportant des lanternes. Ceux qui ne savent pas que les stylets sont appâtés par la lumière risquent de se mettre en danger s'ils sont près d'une source lumineuse, car dans ce cas, un grand banc n'hésite pas à sauter hors de l'eau plusieurs fois.\n\n**Vers la lumière :** les stylets sont attirés par la lumière. Si quelqu'un tente d'utiliser le feu pour leur faire peur, cela ne fait que les encourager. Ils possèdent le Trait *Bestial*, mais ils ne reculent pas devant le feu et ne subissent pas d'État *Brisé* parce qu'ils sont touchés par des attaques enflammées.",
+    "source": {
+      "book": "MDG",
+      "page": 141
+    },
+    "appearance": {
+      "species": "brochet-du-stir"
+    }
+  },
+  {
+    "id": "elementaire-de-mer",
+    "label": "Élémentaire de mer",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 12,
+      "CC": 55,
+      "CT": null,
+      "F": 59,
+      "E": 59,
+      "I": 55,
+      "Ag": 55,
+      "Dex": 21,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 80
+    },
+    "traits": [
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "fabrique"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "lanceur-de-sorts",
+        "arg": "Ghyran"
+      },
+      {
+        "id": "protection",
+        "value": 8
+      },
+      {
+        "id": "redoutable",
+        "value": 3
+      },
+      {
+        "id": "se-cabrer"
+      },
+      {
+        "id": "taille",
+        "arg": "Énorme"
+      },
+      {
+        "id": "terreur",
+        "value": 3
+      },
+      {
+        "id": "arme",
+        "value": 10,
+        "arg": "Poings"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [
+      {
+        "id": "bourbier-vivant"
+      },
+      {
+        "id": "tourbillon"
+      }
+    ],
+    "desc": "D'après ceux qui étudient les arcanes de la magie, le Vent de Jade de *Ghyran* comporte une certaine ressemblance avec l'eau. Ceux qui possèdent la Seconde vue peuvent le regarder tomber sur la terre comme de la pluie, s'écouler le long des fleuves et des rivières et s'accumuler en mares. Il n'est donc pas très surprenant que les océans du monde contiennent de grandes quantités de *Ghyran*.\n\n*Ghyran* ne se disperse pas dans les eaux des mers. Le Vent de magie bouge peut-être comme de l'eau, mais sur les grands océans, il se concentre dans certaines zones locales et dérive sous forme de « bancs ». Cette intensité de *Ghyran* peut faire proliférer la vie et se développer de gros tapis d'algues ou des nuées de méduses ondulantes.\n\nLà où *Ghyran* est le plus concentré, les eaux qui le portent peuvent s'animer et dessiner la silhouette grossière d'une gigantesque forme humanoïde. Les histoires parlant de ces élémentaires de mer suscitent beaucoup de débats parmi les magisters du Collège de Jade. Certains soutiennent que ces créatures sont les cousines des naïades, car ce sont des esprits de la nature qui se manifestent sous forme d'eau vivante. D'autres supposent que ce sont des élémentaires incarnant directement *Ghyran*. Pour l'heure, aucun rite permettant à un sorcier d'invoquer un élémentaire de mer n'a encore été développé, bien que certains mages affirment en avoir déjà soumis un à leur volonté pendant une courte période de temps.\n\nUn élémentaire de mer sauvage est une perspective effrayante. Il est peut-être imprégné du Vent de la Vie, mais cela ne veut pas dire que son tempérament est nourricier et doux. C'est une créature tapageuse et violente, exubérante de force et de vitalité au détriment de ceux qui se trouvent sur sa route. L'élémentaire semble adorer détruire, par exemple en broyant des navires ou en invoquant des tourbillons. Il s'abat sur les marins dans une frénésie vorace pour les prendre dans les eaux tumultueuses de son propre corps et les y noyer.\n\n**Immersion :** l'élémentaire de mer peut tenter d'immerger ses adversaires en effectuant une Empoignade. S'il inflige un État *Empêtré* à son opposant, il l'engloutit dans les eaux de son propre corps.\n\nLe personnage immergé suffoque comme détaillé en page 181 de **WFJDR**. Il peut essayer de s'échapper en se libérant de l'État *Empêtré* comme s'il était Empoigné par l'élémentaire de mer, en effectuant des Tests opposés de **Force** pour se dégager. Cependant, l'élémentaire de mer n'a pas besoin de maintenir activement l'Empoignade, il peut agir comme si le personnage immergé n'était pas là et n'est pas considéré comme Engagé.\n\n**Résistant au feu :** les élémentaires de mer ne subissent jamais l'État *En flammes*.\n\n**Lanceur de sorts instinctif :** les élémentaires de mer peuvent utiliser leur Caractéristique Force pour le lancement de sorts et la focalisation.",
+    "source": {
+      "book": "MDG",
+      "page": 142
+    },
+    "appearance": {
+      "species": "amibe"
+    }
+  },
+  {
+    "id": "gargantuan",
+    "label": "Gargantuan",
+    "title": null,
+    "named": true,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 12,
+      "CC": 60,
+      "CT": null,
+      "F": 75,
+      "E": 75,
+      "I": 30,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 7,
+      "FM": 55,
+      "Soc": null,
+      "B": 208
+    },
+    "traits": [
+      {
+        "id": "a-sang-froid"
+      },
+      {
+        "id": "affame"
+      },
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "constricteur"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "redoutable",
+        "value": 3
+      },
+      {
+        "id": "regeneration"
+      },
+      {
+        "id": "se-cabrer"
+      },
+      {
+        "id": "taille",
+        "arg": "Monstrueuse"
+      },
+      {
+        "id": "arme",
+        "value": 11,
+        "arg": "Dents aiguisées comme des rasoirs"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le Gargantuan est une bête serpentine d'au moins une centaine de mètres de long. Son corps est musculeux et incroyablement puissant, atteignant jusqu'à dix mètres de diamètre. Selon les elfes d'Ulthuan, il n'existe qu'un seul Gargantuan, qui vit dans les profondeurs depuis l'aube du monde.\n\nParfois, des voyageurs jurent avoir aperçu l'énorme serpent nager derrière des bancs de poisson et en prendre des dizaines dans sa gueule pour satisfaire son appétit.\n\nMais ces histoires sont rares. Peut-être parce que, comme le suggèrent les elfes, le Gargantuan est réellement le seul survivant d'une espèce qui proliférait autrefois, avant l'Avènement du Chaos. Mais peut-être que l'explication est plus sinistre et que le Gargantuan est simplement une créature belliqueuse et cruelle qui aime autant broyer un navire et dévorer son équipage qu'avaler un banc de krills. La méthode d'attaque favorite de cette créature consiste à approcher sa proie par en dessous, à enrouler ses anneaux sinueux autour de la victime et à l'écraser pour la tuer. Si la cible se révèle trop récalcitrante, le monstre a recours à une autre forme d'assaut : son vaste corps musclé peut administrer une forte décharge électrique à tout ce qui est pris dans ses anneaux.\n\n**Broyeur de bateaux :** le Gargantuan peut tenter d'écraser un vaisseau de Taille Grande ou moins. Pour ce faire, il doit passer un Tour à s'enrouler autour du navire par tranche de 10 points de Taille que le vaisseau possède. Une fois le bateau pris dans ses anneaux, le Gargantuan commence à les serrer et effectue un Test opposé étendu de **Force / Endurance** du bateau. Quand le DR est égal aux Blessures du vaisseau, le bateau se brise et n'est plus qu'une masse de débris flottants.\n\nPendant ce temps, l'équipage du navire peut attaquer le Gargantuan ou essayer de le décrocher du bateau. Les attaques qui lui infligent plus de 7 Blessures peuvent forcer le Gargantuan à lâcher s'il rate ensuite un Test de **Calme Accessible (+20)**. Pour décrocher le Gargantuan, il faut être au moins de Taille (Enorme) et effectuer un Test opposé de **Force** contre la créature. Un résultat de 0 à 4 DR l'empêche de serrer ses anneaux autour du bateau ce Tour-ci et un résultat de 5 DR ou plus le force à relâcher le vaisseau.\n\n**Décharge électrique :** si la créature réussit à Empoigner un adversaire, au début de chacun de ses Tours suivants, elle peut dépenser 1 Avantage pour administrer un choc électrique au personnage Empoigné. La décharge électrique inflige un coup de 10 Dégâts qui ignore les armures en métal non magiques. Si un Personnage subit des Blessures à cause de l'attaque électrique, il doit aussi réussir un Test de **Résistance Complexe (–10)** sous peine de subir un État *Sonné*.\n\nMais ces attaques coûtent de l'énergie au Gargantuan. Chaque fois qu'il utilise l'électricité, il doit effectuer un Test de **Résistance Accessible (+20)**. En cas d'échec, il subit un État *Exténué*.\n\nTant que le Gargantuan est sous l'effet d'un État *Exténué*, ses attaques de décharge électrique n'infligent que des coups de 6 Dégâts qui ignorent les armures en métal non magiques.\n\nLe Gargantuan peut aussi transmettre des décharges électriques quand il a *Empoigné* un navire. Cela n'inflige pas de Dégâts au vaisseau, mais les membres de l'équipage reçoivent tous un choc et subissent un coup de 6 Dégâts (3 Dégâts seulement si le Gargantuan subit un État *Exténué*).",
+    "source": {
+      "book": "MDG",
+      "page": 143
+    },
+    "appearance": {
+      "species": "serpent"
+    }
+  },
+  {
+    "id": "kharibde",
+    "label": "Kharibde",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 6,
+      "CC": 55,
+      "CT": null,
+      "F": 65,
+      "E": 55,
+      "I": 40,
+      "Ag": 15,
+      "Dex": null,
+      "Int": 5,
+      "FM": 25,
+      "Soc": null,
+      "B": 72
+    },
+    "traits": [
+      {
+        "id": "affame"
+      },
+      {
+        "id": "amphibie"
+      },
+      {
+        "id": "armure",
+        "value": 3
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "constricteur"
+      },
+      {
+        "id": "furtif"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "perturbant",
+        "arg": "Hurlements"
+      },
+      {
+        "id": "redoutable",
+        "value": 2
+      },
+      {
+        "id": "regeneration"
+      },
+      {
+        "id": "taille",
+        "arg": "Énorme"
+      },
+      {
+        "id": "venin",
+        "arg": "Complexe"
+      },
+      {
+        "id": "arme",
+        "value": 10,
+        "arg": "Crocs et griffes"
+      },
+      {
+        "id": "attaque-caudale",
+        "value": 8
+      },
+      {
+        "id": "morsure",
+        "value": 9
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Belliqueux"
+      },
+      {
+        "key": "Territorial"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le kharibde ne fait pas partie de la faune naturelle de la Mer des Griffes. Ces bêtes hantent les profondeurs froides et obscures autour des rives de Naggaroth, loin à l'ouest. Ce sont d'horribles créatures, stupides, mais puissantes. De leur corps trapu et immense jaillit une couronne de cinq tentacules fouettant l'air. Quatre se terminent par une tête rudimentaire, atavique au point d'être quasiment un vestige. À peine plus qu'une bouche dotée d'un goût et d'un odorat basiques, elle est spécialisée dans la tâche de rechercher et dévorer des proies. La cinquième tête, la centrale, est plus large et plus complexe et abrite le minuscule cerveau de la créature. Elle est pourvue d'une longue et sinueuse mâchoire inférieure bordée de centaines de crocs acérés. Le kharibde utilise cette bouche en torsade pour déchirer les grosses proies, faisant ainsi gicler des morceaux de chair et d'organes que les petites têtes dévorent. Ce monstre a un appétit vorace et des enzymes digestifs férocement efficaces capables de dissoudre la chair, le métal et les os en quelques minutes seulement.\n\nLes elfes noirs de Naggaroth ont appris diverses techniques leur permettant de diriger un kharibde et sont connus pour en utiliser certains comme bêtes de guerre en les poussant à attaquer. Depuis la destruction de l'arche noire Hachoir d'âmes, de nombreuses attaques de monstres marins visqueux à plusieurs têtes contre les communautés insulaires d'Odner et de Lugern ont été signalées. Maître Stefan Ellendan, professeur de sciences à l'université de Salzenmund, a émis l'hypothèse que plusieurs de ces monstres ont été démembrés pendant la destruction du vaisseau des elfes noirs et que chaque morceau est devenu un adulte distinct à part entière. Cela a entraîné chez les érudits du Nordland une fausse croyance selon laquelle la créature posséderait de puissantes capacités de régénération, et la vérité plus prosaïque, à savoir qu'une paire de reproducteurs s'est échappée du bateau et a fait des petits, a été totalement ignorée.\n\nMalheureusement, ceux qui vivent près de la mer ne savent pas que la terre ferme n'est pas un refuge contre le kharibde, car même si la créature vit naturellement dans l'océan, elle fait des ravages partout où sa faim la mène. Son corps visqueux, adapté pour résister à l'énorme pression des fonds marins, est incroyablement fort et résistant. Le kharibde n'est certes pas agile hors de l'eau, mais ses pieds palmés peuvent tout de même le propulser vers l'avant à une pointe de vitesse surprenante. La créature est également connue pour les hurlements qu'elle pousse lorsqu'elle est excitée. Ceux qui ont survécu à ses attaques affirment souvent que le plus perturbant chez le kharibde est que ses cris sont étrangement plaintifs, presque comme ceux d'un humain désespéré.\n\n**Gigue d'os :** un kharibde bouge dans tous les sens et semble être partout quand il se bat, car ses nombreuses têtes mordent, agrippent et enchevêtrent tour à tour ses adversaires. Si le kharibde gagne 1 point d'Avantage alors qu'il est Engagé pendant un combat, son Indice *Redoutable 2* monte à *Redoutable 4* et y reste tant que le kharibde reste Engagé contre un adversaire.",
+    "source": {
+      "book": "MDG",
+      "page": 144
+    },
+    "appearance": {
+      "species": "amibe"
+    }
+  },
+  {
+    "id": "syrene-bleue",
+    "label": "Syrène bleue",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 6,
+      "CC": 30,
+      "CT": null,
+      "F": 30,
+      "E": 30,
+      "I": 20,
+      "Ag": 30,
+      "Dex": 30,
+      "Int": 25,
+      "FM": 20,
+      "Soc": 20,
+      "B": 11
+    },
+    "traits": [
+      {
+        "id": "amphibie"
+      },
+      {
+        "id": "corruption",
+        "arg": "Mineure"
+      },
+      {
+        "id": "ethere"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "mort-vivant"
+      },
+      {
+        "id": "rage"
+      },
+      {
+        "id": "terreur",
+        "value": 3
+      },
+      {
+        "id": "arme",
+        "value": 7,
+        "arg": "Lame spectrale"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les légendes parlent des syrènes bleues dont le chant mène les marins à la mort sur les récifs rocheux. Elles seraient une forme de banshee hantant les mers. Quand une sorcière est noyée, les histoires racontent que son âme reste dans ce monde sous la forme d'une ombre tourmentée. Les essences spirituelles des sorcières se changent très souvent en spectres, car elles craignent les punitions qui les attendent dans le royaume de Morr, ou peut-être qu'elles sont si imprégnées de *Dhar* qu'elles reviennent en tant que fantômes.\n\nLes autres peuples soupçonnent les Sarls de jeter des utilisateurs de magie mineure dans les flots pour créer volontairement des zones côtières hantées par des syrènes bleues. De l'autre côté du Grand Océan, l'archigrand commodore vampire Luthor Harkon connaît également les rites nécessaires pour créer une syrène bleue et cherche des sorcières pour les noyer et les lier à sa marine de morts.\n\n**Chant de la syrène bleue :** au prix d'une action, la syrène bleue peut entonner son chant hypnotique. Les Personnages situés à (Initiative de la syrène) mètres ou moins du monstre doivent réussir un Test de **Calme Complexe (–10)** sous peine d'être envoûtés par la mélodie et incapables d'entreprendre la moindre action à part se déplacer vers la syrène bleue, ce qui en pratique revient à subir l'État *Inconscient*.",
+    "source": {
+      "book": "MDG",
+      "page": 145
+    },
+    "appearance": {
+      "species": "banshee"
+    }
+  },
+  {
+    "id": "hydre-d-os",
+    "label": "Hydre d'os",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 6,
+      "CC": 40,
+      "CT": 30,
+      "F": 75,
+      "E": 75,
+      "I": 15,
+      "Ag": 15,
+      "Dex": null,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 224
+    },
+    "traits": [
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "corruption",
+        "arg": "Modérée"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "fabrique"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "insensible-a-la-douleur"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "mort-vivant"
+      },
+      {
+        "id": "peur",
+        "value": 2
+      },
+      {
+        "id": "redoutable",
+        "value": 1
+      },
+      {
+        "id": "taille",
+        "arg": "Monstrueuse"
+      },
+      {
+        "id": "arme",
+        "value": 11,
+        "arg": "Mâchoires tenailles"
+      },
+      {
+        "id": "morsure",
+        "value": 10
+      },
+      {
+        "id": "souffle",
+        "value": 10,
+        "arg": "Poison, Difficulté Difficile (–20)"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "En de rares occasions, les cadavres de créatures marines dérivent dans des zones où la magie malveillante de malepierres sous-marines peut les corrompre et les réanimer.\n\nL'hydre d'os est une bête créée de cette façon. Ce n'est pas le squelette d'une véritable hydre (dans la mesure, d'ailleurs, où les créatures du Chaos peuvent être considérées comme de « véritables » bêtes), car elle n'est dotée que de trois têtes. Chacune de ces têtes est énorme. Certains érudits émettent l'hypothèse que l'hydre d'os était autrefois un dragon des mers à plusieurs têtes. Maître Stefan Ellendan de l'université de Salzenmund suggère qu'il s'agit d'une forme de crocodile géant de la Lustrie et que le monstre n'a muté qu'après sa mort.\n\nL'hydre d'os n'est pas une créature originaire de la Mer des Griffes ; elle hante la zone connue sous le nom de cimetière du Galion loin en haute mer. Mais comme les désolations du Chaos et la terre sinistre de Norsca sont très proches de la Mer des Griffes, des bêtes tout aussi étranges rôdent sous ses vagues.",
+    "source": {
+      "book": "MDG",
+      "page": 146
+    },
+    "appearance": {
+      "species": "hydre"
+    }
+  },
+  {
+    "id": "sangsue-des-abysses",
+    "label": "Sangsue des abysses",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 4,
+      "CC": 33,
+      "CT": null,
+      "F": 80,
+      "E": 80,
+      "I": 5,
+      "Ag": 5,
+      "Dex": null,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 256
+    },
+    "traits": [
+      {
+        "id": "a-sang-froid"
+      },
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "corruption",
+        "arg": "Modérée"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "fabrique"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "insensible-a-la-douleur"
+      },
+      {
+        "id": "redoutable",
+        "value": 1
+      },
+      {
+        "id": "taille",
+        "arg": "Monstrueuse"
+      },
+      {
+        "id": "arme",
+        "value": 12,
+        "arg": "Mâchoires tenailles"
+      },
+      {
+        "id": "attaque-caudale",
+        "value": 11
+      },
+      {
+        "id": "morsure",
+        "value": 11
+      },
+      {
+        "id": "vomissement"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les sangsues des abysses sont un autre habitant des fonds marins corrompus par de grandes concentrations de *Dhar*. Ces énormes vers ne sont pas des animaux féroces par nature. Leur bouche est certes tapissée de dents rugueuses, mais les sangsues sont léthargiques et leur corps est mou. Pour qu'elles ingèrent la chair qui compose leur régime alimentaire, la viande doit déjà être dans un état de décomposition relativement avancé.\n\nCependant, quand les sangsues des abysses localisent un cadavre, elles s'enfouissent dans le corps et s'y multiplient. Un cadavre infesté de sangsues des abysses peut se mettre à bouger de nouveau, car les créatures remplacent les tendons et les muscles de leur hôte putréfié par leur propre corps. Et une fois qu'elles ont un hôte, les sangsues deviennent dangereuses, car pour entretenir leur cycle de vie elles doivent envoyer davantage de cadavres dans les profondeurs.\n\nLes sangsues des abysses sont les dépouilles animées de dragons des mers qui ont sombré dans les profondeurs, puis ont été infestées par des sangsues des abysses. Le dragon des mers est l'hôte préféré de ces monstres, car il possède assez de chair pour les nourrir pendant des années tout en leur fournissant un corps immense et puissant capable de tuer d'autres créatures que la prochaine génération de sangsues va habiter.",
+    "source": {
+      "book": "MDG",
+      "page": 146
+    },
+    "appearance": {
+      "species": "sangsue"
+    }
+  },
+  {
+    "id": "leviathan-phare",
+    "label": "Léviathan-phare",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 3,
+      "CC": 40,
+      "CT": null,
+      "F": 65,
+      "E": 65,
+      "I": 15,
+      "Ag": 10,
+      "Dex": null,
+      "Int": 5,
+      "FM": 30,
+      "Soc": null,
+      "B": 168
+    },
+    "traits": [
+      {
+        "id": "affame"
+      },
+      {
+        "id": "armure",
+        "value": 3
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "perturbant"
+      },
+      {
+        "id": "redoutable",
+        "value": 2
+      },
+      {
+        "id": "taille",
+        "arg": "Monstrueuse"
+      },
+      {
+        "id": "arme",
+        "value": 10,
+        "arg": "Crocs gigantesques"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Il existe plusieurs espèces de léviathans dans les océans du monde. Elles ont toutes en commun d'être des poissons osseux dont la tête et le dos sont protégés par de lourdes écailles. Ce sont toutes des prédateurs voraces.\n\nLe léviathan-phare est de couleur pâle et enveloppé d'une couche de graisse ressemblant à celle d'un phoque. C'est une petite espèce, car les adultes atteignent à peine 45 mètres de longueur. Cette créature est gauche et dotée d'un métabolisme lent, adapté à la vie dans les profondeurs des océans les plus froids. Pendant les hivers glacials, elle est parfois aperçue dans la Mer des Griffes. La bête n'est pas armée pour mener une chasse active et porte un appât lumineux oscillant d'avant en arrière sur un filament devant sa gueule béante s'ouvrant en forme de sourire. Maître Stefan Ellendan, professeur de sciences à l'université de Salzenmund, a émis l'hypothèse que le léviathan-phare soit la véritable forme adulte de la baudroye, mais même si leurs appâts fonctionnent de manière similaire, ces monstres sont deux espèces totalement distinctes.\n\n**Appât du léviathan :** le premier signe de l'attaque imminente d'un léviathan-phare est une lumière jaune chatoyante dérivant lentement sous l'eau. Si un Personnage réussit un Test de **Savoir (Océans) Difficile (–20)**, il a entendu parler de l'appât de cette bête et peut détourner le regard avant que la lueur fasse effet. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine de subir l'État *Sonné*.\n\n**Résistant au froid :** toute arme, Sort ou effet infligeant des Dégâts ou des altérations négatives à cause du froid aura probablement un impact réduit sur un léviathanphare. Le monstre peut effectuer un Test de **Résistance Intermédiaire (+0)** pour ignorer tout effet négatif venant du froid et de la glace.",
+    "source": {
+      "book": "MDG",
+      "page": 147
+    },
+    "appearance": {
+      "species": "brochet-du-stir"
+    }
+  },
+  {
+    "id": "leviathan-noir",
+    "label": "Léviathan noir",
+    "title": null,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 10,
+      "CC": 55,
+      "CT": null,
+      "F": 125,
+      "E": 145,
+      "I": 25,
+      "Ag": 10,
+      "Dex": null,
+      "Int": 5,
+      "FM": 45,
+      "Soc": null,
+      "B": 352
+    },
+    "traits": [
+      {
+        "id": "affame"
+      },
+      {
+        "id": "armure",
+        "value": 6
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "infravision"
+      },
+      {
+        "id": "redoutable",
+        "value": 5
+      },
+      {
+        "id": "taille",
+        "arg": "Monstrueuse"
+      },
+      {
+        "id": "arme",
+        "value": 16,
+        "arg": "Crocs gigantesques"
+      },
+      {
+        "id": "attaque-caudale",
+        "value": 14
+      },
+      {
+        "id": "morsure",
+        "value": 14
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le plus grand des léviathans est le léviathan noir, un énorme poisson des abysses carnivore à la gueule caverneuse remplie de crocs dentelés et aux écailles plus épaisses que la coque d'un croiseur. Le léviathan noir a sa tanière dans les profondeurs de la mer, mais il chasse en surface. Il a pour habitude d'approcher les proies convenables en restant très profondément sous l'eau. Quand il est assez près, il s'élève brutalement de sous les vagues, son immense mâchoire grande ouverte, et engloutit sa victime tout rond. La taille exacte du léviathan noir est un grand sujet de débat parmi les savants. Maître Ellendan affirme avoir mené une recherche sur des rapports signalant des apparitions de ce monstre et suppose que le spécimen moyen fait *« huit cent quarante-cinq mètres du premier croc avant à l'extrémité de la queue »*.\n\n**Assaut dévastateur :** quand un léviathan noir charge un navire, il cause une collision avec un IC de 50 (voir p. 111).\n\n**Différence d'échelle :** le léviathan noir possède le Trait *Bestial* et peut être effrayé par le feu. Cependant, les torches vacillantes sont trop petites pour attirer son regard, sans même parler de l'intimider. Pour bénéficier des propriétés terrifiantes du feu, il doit avoir la taille et l'intensité d'un grand feu de joie ; le léviathan noir ne se préoccupera de rien de moins.\n\nPour considérer l'impact psychologique des autres sources de Peur et de Terreur, le MJ doit prendre en compte le fait que, si une source n'est pas quelque chose que le léviathan noir devrait respecter en termes de taille, elle ne va probablement pas le troubler. Même si les démonettes, les zombies et les sorciers à la tête enflammée sont clairement surnaturels, aux yeux du léviathan noir, ils sont surtout de la nourriture pour poisson.",
+    "source": {
+      "book": "MDG",
+      "page": 147
+    },
+    "appearance": {
+      "species": "brochet-du-stir"
+    }
+  },
+  {
+    "id": "triton",
+    "label": "Triton",
+    "title": null,
+    "named": true,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 10,
+      "CC": 63,
+      "CT": 45,
+      "F": 79,
+      "E": 69,
+      "I": 53,
+      "Ag": 45,
+      "Dex": 32,
+      "Int": 39,
+      "FM": 54,
+      "Soc": 44,
+      "B": 192
+    },
+    "traits": [
+      {
+        "id": "animosite",
+        "arg": "Elfes noirs"
+      },
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "beni",
+        "arg": "Manann"
+      },
+      {
+        "id": "champion"
+      },
+      {
+        "id": "creature-marine"
+      },
+      {
+        "id": "endurant"
+      },
+      {
+        "id": "magique"
+      },
+      {
+        "id": "protection",
+        "value": 9
+      },
+      {
+        "id": "redoutable",
+        "value": 3
+      },
+      {
+        "id": "resistance-a-la-magie",
+        "value": 4
+      },
+      {
+        "id": "se-cabrer"
+      },
+      {
+        "id": "taille",
+        "arg": "Monstrueuse"
+      },
+      {
+        "id": "terreur",
+        "value": 3
+      },
+      {
+        "id": "arme",
+        "value": 16,
+        "arg": "Trident de Triton"
+      },
+      {
+        "id": "attaque-caudale",
+        "value": 10
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 65
+      },
+      {
+        "id": "charme",
+        "value": 74
+      },
+      {
+        "id": "commandement",
+        "value": 64
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 83,
+        "spec": "Armes d'hast"
+      },
+      {
+        "id": "emprise-sur-les-animaux",
+        "value": 74
+      },
+      {
+        "id": "focalisation",
+        "value": 74,
+        "spec": "Magie des mers de Triton"
+      },
+      {
+        "id": "intuition",
+        "value": 68
+      },
+      {
+        "id": "langue",
+        "value": 69,
+        "spec": "Magick"
+      },
+      {
+        "id": "orientation",
+        "value": 88
+      },
+      {
+        "id": "perception",
+        "value": 78
+      },
+      {
+        "id": "resistance",
+        "value": 94
+      },
+      {
+        "id": "savoir",
+        "value": 59,
+        "spec": "Elfes"
+      },
+      {
+        "id": "savoir",
+        "value": 99,
+        "spec": "Océans"
+      },
+      {
+        "id": "savoir",
+        "value": 69,
+        "spec": "Théologie"
+      }
+    ],
+    "talents": [
+      {
+        "id": "affinite-avec-les-animaux",
+        "times": 4
+      },
+      {
+        "id": "assaut-feroce"
+      },
+      {
+        "id": "chanceux",
+        "times": 2
+      },
+      {
+        "id": "charge-berserk",
+        "times": 4
+      },
+      {
+        "id": "combat-instinctif",
+        "times": 4
+      },
+      {
+        "id": "contorsionniste"
+      },
+      {
+        "id": "coup-puissant",
+        "times": 3
+      },
+      {
+        "id": "desarmer",
+        "times": 3
+      },
+      {
+        "id": "diction-instinctive",
+        "times": 3
+      },
+      {
+        "id": "endurci",
+        "times": 4
+      },
+      {
+        "id": "frappe-blessante",
+        "times": 3
+      },
+      {
+        "id": "frappe-precise",
+        "times": 3
+      },
+      {
+        "id": "frappe-reactive"
+      },
+      {
+        "id": "harmonisation-aethyrique",
+        "times": 3
+      },
+      {
+        "id": "inebranlable",
+        "times": 3
+      },
+      {
+        "id": "machoires-d-acier"
+      },
+      {
+        "id": "mage-de-guerre"
+      },
+      {
+        "id": "maitrise-du-combat",
+        "times": 4
+      },
+      {
+        "id": "oreille-absolue",
+        "times": 2
+      },
+      {
+        "id": "perception-de-la-magie"
+      },
+      {
+        "id": "perseverant"
+      },
+      {
+        "id": "seconde-vue"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "Ouïe"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "Vue"
+      },
+      {
+        "id": "sens-de-l-orientation"
+      },
+      {
+        "id": "vigilance",
+        "times": 3
+      },
+      {
+        "id": "volonte-de-fer"
+      }
+    ],
+    "trappings": [
+      {
+        "text": "couronne de Triton"
+      },
+      {
+        "text": "trident de Triton"
+      }
+    ],
+    "spells": [
+      {
+        "id": "bourbier-vivant"
+      },
+      {
+        "id": "mer-d-huile"
+      },
+      {
+        "id": "tourbillon"
+      },
+      {
+        "id": "contre-courants"
+      },
+      {
+        "id": "encalmine"
+      },
+      {
+        "id": "malediction-de-la-mer"
+      },
+      {
+        "id": "vents-favorables"
+      },
+      {
+        "id": "lame-de-fond"
+      }
+    ],
+    "desc": "Aucune autre créature au monde ne suscite autant de légendes et de spéculation que Triton. Malgré la fascination qu'il génère aussi bien chez les marins que chez les érudits, les sorciers et les prêtres, l'immense majorité des informations concernant sa nature fait l'objet d'une intense controverse.\n\nBien qu'il soit rarement aperçu, les rumeurs affirment qu'il parcourt les mers du monde. Sa morphologie ressemble à celle des séduisantes sirènes qui sont parfois vues en train de sillonner les eaux entre les îles de la mer Tiléenne. Audessus de la ceinture, il a la forme physique d'un homme à la carrure puissante et au visage beau, mais féroce. Ses cheveux forment une épaisse crinière et il arbore une grosse barbe broussailleuse. Sous le nombril et à partir des hanches, il est doté d'une queue de poisson. Il est aussi véritablement titanesque : même les immenses géants broyeurs d'os semblent petits à côté du formidable Triton.\n\nTriton maîtrise plusieurs pouvoirs mystiques : il peut contrôler les éléments et dompter les monstres des profondeurs. Ses capacités ont des points communs avec la pratique de la magie des mers et les miracles accomplis par les prêtres de Manann. Mais malgré ces preuves d'intelligence complexe, personne ne l'a jamais vu communiquer avec les marins. Il émet des sons incompréhensibles quand il lance ses sorts, et s'il parle une langue, ni les elfes, ni les sorciers ne la connaissent.\n\nUne faction au sein des Maîtres du Savoir de Saphery affirme que Triton vivait dans l'océan avant l'Avènement du Chaos et qu'il a appris à leurs ancêtres comment naviguer et s'orienter. Ces elfes disent qu'il était autrefois plus petit, mais communicatif et coopératif. Quand le Chaos est entré dans le monde, il a altéré Triton, augmentant énormément sa taille et sa force, mais le privant de la capacité ou de la volonté de parler.\n\nUne autre théorie soutient que Triton n'a pas été affecté par le Chaos et que sa réserve vient du fait qu'il est extrêmement offensé par la témérité des marins qui pillent les mers pour en tirer de la nourriture et de l'huile de baleine. Triton semble effectivement avoir de l'affection pour les créatures de l'océan, comme en témoigne l'hostilité qu'il a toujours démontrée envers les elfes noirs qui semblent le courroucer en soumettant les kharibde et les dragons des mers.\n\nLes humains du Vieux Monde croient que Triton a un lien de parenté avec Manann, mais les contes populaires et les testaments apocryphes déclarent tour à tour qu'il s'agit du fils, du frère, de l'avatar, du premier fidèle ou du serviteur divin du dieu marin. Les elfes pensent que la question n'est pas si simple, car les Druchii honorent Mathlann (la divinité elfique dont le domaine et la nature sont très proches de ceux de Manann) aussi sincèrement que les marins de Cothique, et pourtant Triton leur voue une haine meurtrière.\n\n**Magie des mers de Triton :** Triton est un lanceur de sorts puissant, mais il lance sa magie d'une manière différente de tous les autres êtres du monde. Ses pouvoirs sont un mélange entre les miracles des dieux et la maîtrise de l'Aethyr. Triton connaît les Sorts de magie des mers suivants (voir page 15) : *Bourbier vivant, Mer d'huile, Tourbillon*.\n\nIl peut lancer les Miracles de Manann suivants comme s'ils étaient des Sorts avec un NI de 1 : *Contre-courants, Encalminé, Malédiction de la mer, Vents favorables*. Il peut également lancer le Miracle de Stromfels suivant comme s'il était un Sort avec un NI de 1 : *Lame de fond*. Si Triton génère des DR supplémentaires quand il lance ces Miracles comme des Sorts, il peut utiliser les règles de Surincantation pour les ajuster comme s'ils étaient des Sorts.\n\n**Faveur de Manann :** la relation exacte de Triton avec Manann est mystérieuse, mais son existence est indéniable. Au MJ de déterminer la manière dont elle se manifeste, mais Triton ne va probablement pas bien réagir à un vaisseau dont l'Humeur de Manann est négative et peut traiter avec respect un bateau dont l'Humeur de Manann est de 50 ou plus. À l'inverse, si quelqu'un manque de respect à Triton, l'Humeur de Manann peut baisser et si quelqu'un lui fait plaisir, l'Humeur de Manann peut augmenter.\n\n**Seigneur des profondeurs :** la Compétence Emprise sur les animaux et le Talent Affinité avec les animaux de Triton ne peuvent être utilisés que sur des créatures marines. Cela dit, les critères qui pourraient normalement empêcher un Personnage d'employer la Compétence Emprise sur les animaux ne s'appliquent pas à Triton, c'est-à-dire que les créatures des mers belliqueuses, territoriales, dressées ou blessées lui témoignent tout de même du respect. Seules les créatures marines dominées par magie ne respectent plus le commandement de Triton.\n\nLes créatures dotées du Trait *Amphibie* et/ou *Aquatique* sont soumises à cette règle lorsqu'elles se trouvent dans l'eau, mais peuvent l'ignorer sur terre.\n\n**Trident de Triton :** une immense arme d'hast à trois pointes faisant plus de cent mètres de long. Triton pourrait utiliser son arme pour empaler les monstres les plus gigantesques ou écraser la coque d'une arche noire.\n\n| Arme | Groupe | Enc | Allonge | Dégâts | Atouts et Défauts |\n| --- | --- | --- | --- | --- | --- |\n| Trident de Triton | Armes d'hast | 250 | Considérable | +BF+6 | Dévastatrice, Empaleuse, Magique, Percutante |\n\n**Naufrageuse :** chaque fois que le trident de Triton inflige des Dégâts à la Coque d'un vaisseau, ce bateau doit effectuer un Test d'**Endurance Complexe (–10)**. En cas d'échec, le navire subit *Voie d'eau 1*. Chaque fois que le trident de Triton inflige des Dégâts Critiques à la Coque d'un bateau, ce vaisseau doit effectuer un Test d'**Endurance Difficile (–20)**. En cas d'échec, le navire subit *Voie d'eau 3*.",
+    "source": {
+      "book": "MDG",
+      "page": 148
+    },
+    "appearance": {
+      "species": "humain",
+      "sex": "M",
+      "tenue": "nu",
+      "features": [
+        "queue-de-poisson"
+      ]
+    }
+  },
+  {
+    "id": "jaego-roth",
+    "label": "Jaego Roth",
+    "title": "Capitaine corsaire (OR 2)",
+    "named": true,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 4,
+      "CC": 83,
+      "CT": 43,
+      "F": 45,
+      "E": 51,
+      "I": 78,
+      "Ag": 67,
+      "Dex": 65,
+      "Int": 76,
+      "FM": 74,
+      "Soc": 87,
+      "B": 21
+    },
+    "traits": [
+      {
+        "id": "a-distance",
+        "value": 8,
+        "arg": "Pistolet",
+        "range": 20
+      },
+      {
+        "id": "arme",
+        "value": 6,
+        "arg": "Crochet"
+      },
+      {
+        "id": "arme",
+        "value": 8,
+        "arg": "Rapière"
+      },
+      {
+        "id": "armure",
+        "value": 3
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 75
+      },
+      {
+        "id": "calme",
+        "value": 86
+      },
+      {
+        "id": "commandement",
+        "value": 102
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 87,
+        "spec": "Base"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 90,
+        "spec": "Escrime"
+      },
+      {
+        "id": "escalade",
+        "value": 52
+      },
+      {
+        "id": "esquive",
+        "value": 73
+      },
+      {
+        "id": "guerison",
+        "value": 84
+      },
+      {
+        "id": "intimidation",
+        "value": 63
+      },
+      {
+        "id": "intuition",
+        "value": 85
+      },
+      {
+        "id": "langue",
+        "value": 78,
+        "spec": "Khazalid"
+      },
+      {
+        "id": "langue",
+        "value": 93,
+        "spec": "Tiléen"
+      },
+      {
+        "id": "marchandage",
+        "value": 95
+      },
+      {
+        "id": "natation",
+        "value": 58
+      },
+      {
+        "id": "orientation",
+        "value": 98
+      },
+      {
+        "id": "perception",
+        "value": 92
+      },
+      {
+        "id": "projectiles",
+        "value": 58,
+        "spec": "Poudre noire"
+      },
+      {
+        "id": "ragot",
+        "value": 94
+      },
+      {
+        "id": "ramer",
+        "value": 67
+      },
+      {
+        "id": "resistance",
+        "value": 78
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 60
+      },
+      {
+        "id": "savoir",
+        "value": 97,
+        "spec": "Guerre"
+      },
+      {
+        "id": "savoir",
+        "value": 103,
+        "spec": "Navigation"
+      },
+      {
+        "id": "savoir",
+        "value": 78,
+        "spec": "Politique"
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 83
+      },
+      {
+        "id": "voile",
+        "value": 92
+      }
+    ],
+    "talents": [
+      {
+        "id": "battement"
+      },
+      {
+        "id": "ergoteur"
+      },
+      {
+        "id": "exaltant",
+        "times": 5
+      },
+      {
+        "id": "ferveur-ardente"
+      },
+      {
+        "id": "frappe-precise"
+      },
+      {
+        "id": "frappe-reactive"
+      },
+      {
+        "id": "haine",
+        "spec": "Morts-vivants"
+      },
+      {
+        "id": "imperturbable"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "loup-de-mer"
+      },
+      {
+        "id": "maitrise-du-combat",
+        "times": 3
+      },
+      {
+        "id": "marinier"
+      },
+      {
+        "id": "menacant",
+        "times": 3
+      },
+      {
+        "id": "nageur-endurant"
+      },
+      {
+        "id": "negociateur"
+      },
+      {
+        "id": "perseverant"
+      },
+      {
+        "id": "perspicace"
+      },
+      {
+        "id": "pied-marin"
+      },
+      {
+        "id": "pilote"
+      },
+      {
+        "id": "presence-imposante"
+      },
+      {
+        "id": "riposte"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Marins"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Nobles"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "Pirates"
+      },
+      {
+        "id": "seigneur-de-guerre"
+      },
+      {
+        "id": "sens-de-l-orientation"
+      },
+      {
+        "id": "suborneur",
+        "times": 3
+      },
+      {
+        "id": "vigilance"
+      },
+      {
+        "id": "volonte-de-fer"
+      },
+      {
+        "id": "voyageur-aguerri"
+      }
+    ],
+    "trappings": [
+      {
+        "text": "cadran lunaire et longue-vue enchantés"
+      },
+      {
+        "text": "carte punaisée sur une carapace de tortue"
+      },
+      {
+        "id": "crochet",
+        "text": "crochet de main"
+      },
+      {
+        "text": "outils de cartographe"
+      },
+      {
+        "id": "pistolet"
+      },
+      {
+        "id": "plastron"
+      },
+      {
+        "id": "rapiere"
+      }
+    ],
+    "spells": [],
+    "desc": "Le capitaine Jaego Roth est considéré comme le plus grand corsaire de l'époque actuelle. Fils du célèbre cartographe et explorateur Indigio Roth, le jeune Jaego passait sa vie à bord d'un bateau, voyageant avec son père vers des lieux inconnus de tous les autres flibustiers, pourtant grands marins, de Sartosa. Quand Roth père a finalement été forcé de prendre sa retraite après avoir perdu ses deux jambes face à un géant des mers, Jaego est parti forger sa propre légende.\n\nÀ bord de son bateau le *Quart de nuit*, Jaego Roth a vogué des mers glacées du nord jusqu'aux rivages brumeux de la Lustrie. En suivant les cartes de son père, il rapportait des trésors tels que peu de gens avaient vu, les ajoutant au butin récolté en s'attaquant à d'autres vaisseaux. Il est devenu si célèbre que rapidement une foule de gens a voulu acheter ses services comme commandant naval, et il a parcouru la mer au sein des flottes de Tilée, de Bretonnie et de l'Empire. Après chaque victoire, Jaego retournait voir sa famille avec ses cales remplies de richesses.\n\nPuis, en une nuit, il a tout perdu. Jaego est rentré à Sartosa et a trouvé le Port Rouillé en flammes. Ceux qui racontent cette histoire affirment que cela a été la première et la seule fois que ce grand corsaire a connu la peur. Jaego s'est frayé un chemin à travers l'incendie, tentant désespérément d'atteindre le navire de son père, l'*Illumination*, où vivait sa famille. Mais quand il est enfin parvenu à monter à bord de force, il était trop tard. Dans la chambre de son fils, il n'a trouvé que deux cadavres calcinés.\n\nAlors qu'il ressortait en titubant, ayant à peine conscience de la fumée qui lui encrassait les poumons, il a été accueilli par une dernière horreur. Le corps de son père gisait sur le pont. Le vieux marin s'était traîné dans l'air de la nuit avant que la chaleur et la fumée finissent par l'achever. Parmi les innombrables trésors de ses aventures, le cartographe n'avait choisi que trois choses à sauver : un cadran lunaire, un télescope et une carte punaisée sur l'intérieur d'une carapace de tortue.\n\nDepuis cette nuit, Jaego n'est plus le même. Ceux qui le connaissaient avant disent que c'est comme si une lumière s'était éteinte dans ses yeux, remplacée par quelque chose de froid et de déterminé. Les survivants que son équipage a trouvés ont confusément raconté des histoires étranges sur l'attaque : un navire fantôme avec un équipage de spectres, un énorme kraken poussant un hurlement semblable à du métal que l'on tord, une épave flottante composée d'innombrables navires naufragés. Un nom est cependant revenu parmi tous ces récits embrouillés : Noctilus, le seigneur vampire du mythique *Cimetière du Galion*. La plupart des gens ont tout de suite considéré que ces déclarations n'avaient rien de crédible, mais Jaego s'y est accroché, comme un homme à la mer à un morceau de bois flottant.\n\nLe capitaine Roth n'a passé que très peu de temps à récupérer avant d'ordonner au *Quart de nuit* de hisser de nouveau les voiles. Il allait trouver ce vampire. Il allait trouver l'endroit où se cachait la créature. Et il allait le réduire en cendres. À présent, il recherche toutes les informations possibles concernant ce monstre, accumulant des bribes de contes comme un avare avec son or. Les trois reliques que son père a protégé jusque dans la mort sont constamment sur son bureau et Jaego a passé d'innombrables heures à tenter de comprendre leur signification. Le cimetière du Galion était devenu l'obsession de son père, une histoire répétée encore et encore par un homme qui perdait l'esprit avec l'âge. Du moins c'est ce que pensait Jaego à l'époque. Mais si ces artefacts sont un moyen de trouver le *Cimetière du Galion*, jusqu'ici, il n'est pas parvenu à résoudre leur énigme.\n\nSa quête l'a récemment emmené sur la Mer des Griffes et le long de la côte de l'Empire. Il n'avance pas sur la question de l'emplacement du cimetière même, mais le capitaine n'a rien d'un idiot. Tuer un vampire, surtout quand il est aussi puissant que Noctilus, va nécessiter bien plus de force que ce que son équipage et lui sont capables de déployer. Roth se fait rembourser toutes les faveurs qu'il a jamais gagnées pour obtenir audience auprès de barons, de sorciers et même de comtes électeurs. Il a entendu dire que le temple de Sigmar pourrait détenir les moyens d'accomplir sa vengeance, et il compte plaider sa cause devant le Grand Théogoniste d'Altdorf. Mais ce ne sera pas facile. Altdorf est située au cœur de l'Empire, et pour descendre le Reik, Jaego va devoir traverser Marienburg, où les marchands ont toutes les raisons de haïr le nom de Roth.\n\nAvec sa prothèse, Jaego ne subit pas de pénalité parce qu'il lui manque une main (voir page 308 de **WFJDR** pour plus de détails).\n\n**Héritier du cartographe :** Jaego connaît parfaitement les mers du monde, car il a étudié les cartes toute sa vie. Il bénéfice de +2 DR sur tous les Tests d'Orientation qu'il effectue. S'il est le Capitaine d'un vaisseau, il peut effectuer des Tests d'Orientation et non de Commandement dans le cadre des Tests d'équipage.\n\n**Reliques d'Indigio Roth :** Jaego Roth recherche quiconque pourrait lui apporter des réponses au sujet de ces artefacts.\n\n**Cadran lunaire de Roth :** un appareil complexe capable, sans que Jaego sache trop comment, de suivre les déplacements de Morrslieb.\n\n**Longue-vue enchantée :** une longue-vue d'Arabie sur laquelle sont gravées des inscriptions délicates. Elle ignore tout ce qui pourrait voiler la vision, que ce soit un brouillard naturel ou une illusion magique.\n\n**Carte sur une carapace de tortue :** une carte couverte d'une iconographie grotesque, avec un maelstrom tourbillonnant au centre.",
+    "source": {
+      "book": "MDG",
+      "page": 150
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "marin"
+    }
+  },
+  {
+    "id": "long-drong-silver",
+    "label": "Long Drong Silver",
+    "title": "Capitaine des Pirates Tueurs",
+    "named": true,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 3,
+      "CC": 72,
+      "CT": 62,
+      "F": 56,
+      "E": 69,
+      "I": 40,
+      "Ag": 29,
+      "Dex": 32,
+      "Int": 40,
+      "FM": 71,
+      "Soc": 52,
+      "B": 30
+    },
+    "traits": [
+      {
+        "id": "a-distance",
+        "value": 8,
+        "arg": "Pistolets",
+        "range": 20
+      },
+      {
+        "id": "arme",
+        "value": 8,
+        "arg": "Crochet"
+      },
+      {
+        "id": "arme",
+        "value": 10,
+        "arg": "Épée"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 59
+      },
+      {
+        "id": "calme",
+        "value": 86
+      },
+      {
+        "id": "commandement",
+        "value": 72
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 82,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 87,
+        "spec": "Base"
+      },
+      {
+        "id": "divertissement",
+        "value": 57,
+        "spec": "Chant"
+      },
+      {
+        "id": "divertissement",
+        "value": 62,
+        "spec": "Narration"
+      },
+      {
+        "id": "dressage",
+        "value": 55,
+        "spec": "Perroquet"
+      },
+      {
+        "id": "escalade",
+        "value": 66
+      },
+      {
+        "id": "esquive",
+        "value": 44
+      },
+      {
+        "id": "guerison",
+        "value": 55
+      },
+      {
+        "id": "intimidation",
+        "value": 81
+      },
+      {
+        "id": "intuition",
+        "value": 70
+      },
+      {
+        "id": "langue",
+        "value": 80,
+        "spec": "Reikspiel"
+      },
+      {
+        "id": "langue",
+        "value": 70,
+        "spec": "Tiléen"
+      },
+      {
+        "id": "marchandage",
+        "value": 67
+      },
+      {
+        "id": "natation",
+        "value": 71
+      },
+      {
+        "id": "orientation",
+        "value": 75
+      },
+      {
+        "id": "perception",
+        "value": 65
+      },
+      {
+        "id": "projectiles",
+        "value": 77,
+        "spec": "Poudre noire"
+      },
+      {
+        "id": "ramer",
+        "value": 61
+      },
+      {
+        "id": "resistance",
+        "value": 79
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 89
+      },
+      {
+        "id": "savoir",
+        "value": 70,
+        "spec": "Guerre"
+      },
+      {
+        "id": "savoir",
+        "value": 70,
+        "spec": "Ingénierie"
+      },
+      {
+        "id": "savoir",
+        "value": 90,
+        "spec": "Navigation"
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 75
+      },
+      {
+        "id": "voile",
+        "value": 84
+      }
+    ],
+    "talents": [
+      {
+        "id": "assaut-feroce"
+      },
+      {
+        "id": "chanceux",
+        "times": 5
+      },
+      {
+        "id": "charge-berserk"
+      },
+      {
+        "id": "coeur-vaillant"
+      },
+      {
+        "id": "controle-de-la-frenesie"
+      },
+      {
+        "id": "coup-puissant"
+      },
+      {
+        "id": "dur-a-cuire"
+      },
+      {
+        "id": "endurci"
+      },
+      {
+        "id": "frenesie"
+      },
+      {
+        "id": "impitoyable"
+      },
+      {
+        "id": "inebranlable"
+      },
+      {
+        "id": "infatigable",
+        "times": 2
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "loup-de-mer"
+      },
+      {
+        "id": "machoires-d-acier"
+      },
+      {
+        "id": "maitrise-du-combat",
+        "times": 3
+      },
+      {
+        "id": "maniement-de-deux-armes"
+      },
+      {
+        "id": "marinier"
+      },
+      {
+        "id": "nageur-endurant"
+      },
+      {
+        "id": "noctambule"
+      },
+      {
+        "id": "perseverant"
+      },
+      {
+        "id": "pied-marin"
+      },
+      {
+        "id": "pilote"
+      },
+      {
+        "id": "robuste",
+        "times": 3
+      },
+      {
+        "id": "sans-peur",
+        "spec": "Tout"
+      },
+      {
+        "id": "tir-precis"
+      },
+      {
+        "id": "tir-rapide"
+      },
+      {
+        "id": "tres-fort"
+      },
+      {
+        "id": "tres-resistant"
+      },
+      {
+        "id": "tueur"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "trappings": [
+      {
+        "text": "bandoulière avec 12 pistolets chargés"
+      },
+      {
+        "text": "cache-œil"
+      },
+      {
+        "id": "crochet"
+      },
+      {
+        "text": "épée"
+      },
+      {
+        "text": "jambe de bois"
+      },
+      {
+        "text": "perroquet (Pièce)"
+      },
+      {
+        "text": "poudre et munitions pour 24 tirs"
+      },
+      {
+        "text": "rhum tord-boyaux"
+      }
+    ],
+    "spells": [],
+    "desc": "*« J'te tirerai dessus d'puis les halles de Grimnir, salopard ! »*\n\n– Long Drong Silver\n\nLong Drong Silver, chef des Pirates Tueurs, est l'un des capitaines les plus respectés de Sartosa, même si ce respect se rapproche sans doute davantage de celui accordé à un baril de poudre noire. Aucun autre marin ne se rendrait volontairement là où Long Drong s'aventure, poursuivant les monstres les plus terrifiants de l'océan dans son voyage en mer vers une mort glorieuse.\n\nLong Drong (appelé ainsi, car pour un nain, il est très grand) était autrefois un marin de Barak Varr. Il n'a jamais recherché une vie d'aventure. Il était capitaine du *Tonneau de bière* et transportait les meilleures cuvées jusqu'aux nains assoiffés partout où il accostait. « *Lentement, mais sûrement* » était sa devise et il avait acquis une réputation de fiabilité. Jusqu'à ce qu'une tempête écrase le *Tonneau* contre les falaises de Sartosa. L'équipage n'a dû sa survie qu'à l'esprit vif de Long Drong et a tout de même été forcé d'abandonner son navire bien-aimé empalé sur les rochers, sa précieuse cargaison de bière teintant les vagues d'or. Pour Long Drong, c'était une honte insupportable. Ses camarades et lui ont prêté le Serment du Tueur et sont partis rencontrer leur destin sinistre à Sartosa.\n\nSa première action a été de prendre d'assaut la forteresse du seigneur pirate, le capitaine Sissico. En entendant les histoires qui parlaient de ce tyran cruel, Drong a cru voir en lui sa chance de recevoir une mort glorieuse. Malheureusement, les choses ne se sont pas passées ainsi. Ce qu'il a en réalité reçu, c'est une forteresse où s'installer, le perroquet de Sissico (qu'il a appelé Gelty, car l'animal répète souvent « Pièces d'or »), le navire de Sissico et assez de butin pillé pour acheter quelque chose qu'un nain pourrait être fier de faire voguer sur les flots. La *Belle Fregar* est à présent une merveille d'ingénierie naine, instantanément reconnaissable à sa figure de proue, forgée à l'image d'une jeune fille naine d'une grande beauté. Cette figure sert aussi de bélier.\n\nLes Pirates Tueurs ont acquis une réputation de guerriers talentueux et ont rejoint les rangs de compagnies de mercenaires allant de la Tilée à l'Empire. Ils sont passés maîtres dans l'art de s'emparer des coffres de paie utilisés pour rémunérer les armées de mercenaires rivales en brisant la ligne de soldats d'élite qui les garde par un barrage frénétique de tirs de pistolet et d'insultes. Et ils sont bien payés pour ce qu'ils font, car Long Drong n'a pas perdu son sens des affaires. Mais en vérité, leur travail de mercenaires leur permet juste de s'approvisionner en rhum et en poudre noire. Leur objectif réel, celui qui envoie la *Belle Fregar* charger aux quatre coins du monde, est de combattre les monstres marins.\n\nLong Drong n'a pas encore rencontré de créature qu'il n'est pas parvenu à vaincre. Les flancs de la *Belle Fregar* portent des entailles venant des batailles contre un léviathan, tandis que des lambeaux de cuir écailleux de wyrm des mers battent au vent sous la bannière personnelle de Drong, une cruche et deux pistolets croisés. Ces victoires ont coûté cher : Drong a perdu une main à cause d'une baudroye, une jambe à cause d'un dragon des mers et un œil à cause d'un pari (c'est une longue histoire). Sa destinée fatale ne cesse de lui échapper, même s'il est satisfait de savoir que beaucoup des membres de son équipage ont regagné leur honneur à son service, puis ont été remplacés par d'autres recherchant la mort en mer.\n\nLes capitaines pirates de Sartosa qui se joignent parfois à Long Drong pour un verre décrivent quelque chose de sombre qui le dévore petit à petit. Drong continue de boire de la bière, de chanter des chansons de marins et de raconter ses dernières victoires en parlant très fort pour récolter des rugissements d'approbation. Mais au fur et à mesure que la nuit avance, la mélancolie s'empare de lui. Il reste assis à sa table à frotter la courbe de son crochet et à regarder fixement la mer. Drong sait qu'il ne pourra pas poursuivre sa chasse éternellement, à cause du grand âge. Combien de temps lui reste-t-il avant d'être privé d'une mort glorieuse ?\n\nAvec ses prothèses, Long Drong ne subit pas de pénalité parce qu'il lui manque des membres (voir page 308 de **WFJDR** pour plus de détails).\n\n**Rhum tord-boyaux :** un mélange de rhum, de Poudre noire et de copeaux de fer. Considéré comme deux verres et celui qui le boit doit effectuer un Test de Résistance à l'alcool. En cas d'échec, il est pris de maux de ventre et de flatulences. Le Personnage subit alors une pénalité de –20 sur ses Tests de Charme et reçoit le Trait *Perturbant* jusqu'à ce qu'il redevienne sobre.",
+    "source": {
+      "book": "MDG",
+      "page": 152
+    },
+    "appearance": {
+      "species": "nain",
+      "tenue": "marin"
+    }
+  },
+  {
+    "id": "wulfrik",
+    "label": "Wulfrik",
+    "title": "Champion des Sarls (OR 2)",
+    "named": true,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 4,
+      "CC": 83,
+      "CT": 34,
+      "F": 62,
+      "E": 51,
+      "I": 48,
+      "Ag": 62,
+      "Dex": 64,
+      "Int": 39,
+      "FM": 78,
+      "Soc": 53,
+      "B": 28
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 9,
+        "arg": "Bouclier"
+      },
+      {
+        "id": "arme",
+        "value": 12,
+        "arg": "Épée bâtarde"
+      },
+      {
+        "id": "armure",
+        "value": 4
+      },
+      {
+        "id": "champion"
+      },
+      {
+        "id": "corruption",
+        "arg": "Mineure"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 72
+      },
+      {
+        "id": "calme",
+        "value": 88
+      },
+      {
+        "id": "commandement",
+        "value": 68
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 88,
+        "spec": "Base"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 93,
+        "spec": "Deux mains"
+      },
+      {
+        "id": "divertissement",
+        "value": 68,
+        "spec": "Narration"
+      },
+      {
+        "id": "escalade",
+        "value": 82
+      },
+      {
+        "id": "esquive",
+        "value": 82
+      },
+      {
+        "id": "intimidation",
+        "value": 92
+      },
+      {
+        "id": "intuition",
+        "value": 68
+      },
+      {
+        "id": "langue",
+        "value": 54,
+        "spec": "Gospodarin"
+      },
+      {
+        "id": "langue",
+        "value": 64,
+        "spec": "Reikspiel"
+      },
+      {
+        "id": "natation",
+        "value": 74
+      },
+      {
+        "id": "orientation",
+        "value": 78
+      },
+      {
+        "id": "perception",
+        "value": 63
+      },
+      {
+        "id": "pistage",
+        "value": 73
+      },
+      {
+        "id": "priere",
+        "value": 58
+      },
+      {
+        "id": "ramer",
+        "value": 77
+      },
+      {
+        "id": "resistance",
+        "value": 81
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 86
+      },
+      {
+        "id": "savoir",
+        "value": 74,
+        "spec": "Guerre"
+      },
+      {
+        "id": "savoir",
+        "value": 54,
+        "spec": "Histoire"
+      },
+      {
+        "id": "savoir",
+        "value": 84,
+        "spec": "Navigation"
+      },
+      {
+        "id": "savoir",
+        "value": 49,
+        "spec": "Religion"
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 68
+      },
+      {
+        "id": "voile",
+        "value": 77
+      }
+    ],
+    "talents": [
+      {
+        "id": "ambidextre"
+      },
+      {
+        "id": "assaut-feroce"
+      },
+      {
+        "id": "battement"
+      },
+      {
+        "id": "bonnes-jambes"
+      },
+      {
+        "id": "chanceux",
+        "times": 2
+      },
+      {
+        "id": "charge-berserk"
+      },
+      {
+        "id": "combat-deloyal",
+        "times": 3
+      },
+      {
+        "id": "combat-instinctif",
+        "times": 2
+      },
+      {
+        "id": "combattant-au-contact"
+      },
+      {
+        "id": "coup-puissant"
+      },
+      {
+        "id": "determine"
+      },
+      {
+        "id": "dur-a-cuire"
+      },
+      {
+        "id": "effrayant",
+        "times": 2
+      },
+      {
+        "id": "endurci"
+      },
+      {
+        "id": "ergoteur"
+      },
+      {
+        "id": "guerrier-ne"
+      },
+      {
+        "id": "impitoyable"
+      },
+      {
+        "id": "inebranlable"
+      },
+      {
+        "id": "loup-de-mer"
+      },
+      {
+        "id": "maitrise-du-combat",
+        "times": 4
+      },
+      {
+        "id": "maniement-de-deux-armes"
+      },
+      {
+        "id": "marinier"
+      },
+      {
+        "id": "menacant"
+      },
+      {
+        "id": "noctambule"
+      },
+      {
+        "id": "pied-marin"
+      },
+      {
+        "id": "pilote"
+      },
+      {
+        "id": "porte-bouclier"
+      },
+      {
+        "id": "presence-imposante"
+      },
+      {
+        "id": "renversement"
+      },
+      {
+        "id": "robuste",
+        "times": 3
+      },
+      {
+        "id": "sans-peur",
+        "spec": "Tout"
+      },
+      {
+        "id": "vigilance"
+      },
+      {
+        "id": "volonte-de-fer"
+      }
+    ],
+    "trappings": [
+      {
+        "text": "armure lourde"
+      },
+      {
+        "id": "bouclier"
+      },
+      {
+        "text": "crânes trophées"
+      },
+      {
+        "id": "epee-batarde"
+      }
+    ],
+    "spells": [],
+    "desc": "Tous les langskips norses éveillent la terreur dans les cœurs de ceux qui vivent le long de la côte, mais il en existe un que même les plus braves ont appris à redouter. Sa voile arbore la roue sans cesse en mouvement des Puissances de la Ruine, barbouillée de sang séché. Des têtes, venant uniquement d'adversaires vaincus en combat singulier, bordent sa proue. Ses avirons brassent les vagues à l'unisson, faisant avancer le vaisseau en rythme au son des chanteurs skalds entonnant un seul nom : Wulfrik.\n\nCe géant par la taille est le champion le plus craint et le plus révéré des Sarls. Il vogue sur la Mer des Griffes et au-delà, pillant et massacrant pour apporter toujours davantage de gloire à son nom, et aux dieux évidemment. Il porte leur marque sur sa chair, ce qui indique à quiconque croise sa route qu'il est une personne digne de l'attention des divinités. Et selon Wulfrik, les divinités ont bien raison.\n\nMême s'il est encore jeune, Wulfrik a mené ses pillards à d'innombrables victoires le long des côtes du sud, rapportant du butin pour remplir les coffres du roi des Sarls et ne laissant que des survivants au regard hanté et des ruines calcinées derrière lui. De la Bretonnie à Kislev, des têtes de paysans comme de guerriers sont venues rejoindre la décoration de son navire. À chaque nouveau succès, un couplet se rajoute à sa saga. Les récits de ses exploits sont connus dans toute la Norsca à présent, même si personne ne les raconte avec autant d'enthousiasme que Wulfrik lui-même.\n\nL'une des histoires décrit comment ses camarades et lui ont croisé un galion bretonnien encalminé dans la mer déserte. Les dieux ont observé leur champion tandis que Wulfrik faisait progresser son bateau, Kotfotr (la *Griffe du chasseur*), sous la pluie de boulets de canon en hurlant un défi au noble qui commandait le grand vaisseau. Mais le noble a refusé ; il s'est terré dans les entrailles du galion et a laissé son propre équipage mourir. Wulfrik l'a traqué dans ces recoins sombres pendant près d'une heure, et quand il a enfin fini par traîner ce lâche dans la lumière, il a refusé de lui accorder une mort honorable. Au lieu de cela, il l'a attaché à la proue de son langskip pour qu'il serve de sinistre figure de proue. L'homme a hurlé pendant trois jours avant de finir par mourir.\n\nRien ne fait plus plaisir à Wulfrik que vaincre d'autres champions en combat singulier. C'est un sentiment merveilleux, dit-il tandis que l'hydromel coule à flots chaque nuit, de faire mordre la poussière aux combattants les plus talentueux et les plus courageux de votre ennemi et de voir leurs compagnons fléchir quand ils se rendent compte, vraiment compte, qu'ils sont promis à une mort certaine. Ses vantardises et son ascension rapide ont donné à Wulfrik d'innombrables occasions de se livrer à ce passetemps. Chaque fois qu'il jette l'ancre à Kirkjugarður Langskipa, des champions venus de toutes les terres norses, et même de plus loin pour certains, viennent défier ce jeune arriviste. Ceux qui livrent un combat que Wulfrik juge suffisamment correct sont parfois autorisés à rejoindre son équipage. Les autres servent à bord du Kotfotr comme décorations.\n\nCependant, l'arrogance de Wulfrik grandit en même temps que sa réputation. Selon lui, il ne trouve plus de vrai défi à présent. Tant des plus grands champions des dieux sont déjà tombés sous ses lames qu'il est contraint d'en chercher d'autres plus loin. Il traque les rumeurs parlant de grands guerriers avec presque autant d'avidité que le butin, car il sait que plus sa célébrité augmente, plus son pouvoir sera grand un jour. Wulfrik est ambitieux. Il ne compte pas passer toute sa vie à rechercher vainement la faveur d'un dieu frivole ou d'un autre. Les divinités savent qu'elles ont bien choisi leur champion avec lui, et il leur apportera davantage de gloire encore si elles le laissent obtenir ce qu'il veut.\n\nLes chefs et les rois des peuples norses deviennent faibles et sont trop occupés à se disputer le pouvoir entre eux. Le temps est venu de mettre en place un nouveau commandant, que tous les hommes considéreront indubitablement comme un champion de valeur. Pour Wulfrik, son plus grand trésor est sa saga. Plus sa légende s'enrichit, plus les guerriers se ralliant à sa bannière sont nombreux et plus les chefs apprennent à craindre son nom. Un jour, Wulfrik prouvera qu'il a davantage de valeur qu'eux tous réunis. Telle est la destinée que les dieux lui ont présentée. Que pouvaient-ils vouloir d'autre pour quelqu'un d'aussi puissant que Wulfrik ?\n\n**Champion élu du Chaos :** pour les autres norses, le succès de Wulfrik indique qu'il a la faveur des dieux. Tous les Tests de Charme, de Commandement ou d'Intimidation effectués par ce personnage pour tenter d'influencer un suivant du Chaos reçoit un +10 supplémentaire.\n\n**Chasseur de têtes :** quand Wulfrik inflige une Blessure Critique, il peut décider de lancer les dés dans le tableau Blessures Critiques à la Tête au lieu de celui de la localisation normale.\n\n**Tueur de champions :** Wulfrik gagne un point d'Avantage quand il affronte un chef ou un champion ennemi en combat singulier.",
+    "source": {
+      "book": "MDG",
+      "page": 154
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "guerrier-du-chaos"
+    }
+  },
+  {
+    "id": "vrisk-gratte-le-fer",
+    "label": "Vrisk Gratte-le-Fer",
+    "title": "Archiseigneur des mers du clan Skorbut",
+    "named": true,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 5,
+      "CC": 74,
+      "CT": 70,
+      "F": 73,
+      "E": 73,
+      "I": 78,
+      "Ag": 66,
+      "Dex": 60,
+      "Int": 85,
+      "FM": 70,
+      "Soc": 30,
+      "B": 28
+    },
+    "traits": [
+      {
+        "id": "a-distance",
+        "value": 7,
+        "arg": "Pistolet",
+        "range": 10
+      },
+      {
+        "id": "arme",
+        "value": 12,
+        "arg": "Épée"
+      },
+      {
+        "id": "arme",
+        "value": 12,
+        "arg": "Hallebarde"
+      },
+      {
+        "id": "armure",
+        "value": 4
+      },
+      {
+        "id": "infecte"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 96
+      },
+      {
+        "id": "calme",
+        "value": 85
+      },
+      {
+        "id": "commandement",
+        "value": 55
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 99,
+        "spec": "Armes d'hast"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 94,
+        "spec": "Base"
+      },
+      {
+        "id": "escalade",
+        "value": 98
+      },
+      {
+        "id": "esquive",
+        "value": 96
+      },
+      {
+        "id": "intimidation",
+        "value": 98
+      },
+      {
+        "id": "intuition",
+        "value": 98
+      },
+      {
+        "id": "langue",
+        "value": 90,
+        "spec": "Reikspiel"
+      },
+      {
+        "id": "langue",
+        "value": 90,
+        "spec": "Tiléen"
+      },
+      {
+        "id": "metier",
+        "value": 80,
+        "spec": "Charpentier"
+      },
+      {
+        "id": "natation",
+        "value": 98
+      },
+      {
+        "id": "orientation",
+        "value": 103
+      },
+      {
+        "id": "pari",
+        "value": 105
+      },
+      {
+        "id": "perception",
+        "value": 98
+      },
+      {
+        "id": "projectiles",
+        "value": 95,
+        "spec": "Armes à projectiles skavens"
+      },
+      {
+        "id": "ragot",
+        "value": 50
+      },
+      {
+        "id": "ramer",
+        "value": 98
+      },
+      {
+        "id": "resistance",
+        "value": 83
+      },
+      {
+        "id": "savoir",
+        "value": 95,
+        "spec": "Guerre"
+      },
+      {
+        "id": "savoir",
+        "value": 95,
+        "spec": "Histoire"
+      },
+      {
+        "id": "savoir",
+        "value": 105,
+        "spec": "Navigation"
+      },
+      {
+        "id": "savoir",
+        "value": 105,
+        "spec": "Politique"
+      },
+      {
+        "id": "survie-en-exterieur",
+        "value": 105
+      },
+      {
+        "id": "voile",
+        "value": 86
+      }
+    ],
+    "talents": [
+      {
+        "id": "ambidextre"
+      },
+      {
+        "id": "battement"
+      },
+      {
+        "id": "bonnes-jambes"
+      },
+      {
+        "id": "chanceux",
+        "times": 13
+      },
+      {
+        "id": "combat-instinctif",
+        "times": 3
+      },
+      {
+        "id": "combattant-en-espace-clos"
+      },
+      {
+        "id": "coup-puissant"
+      },
+      {
+        "id": "feinte"
+      },
+      {
+        "id": "frappe-blessante"
+      },
+      {
+        "id": "frappe-precise"
+      },
+      {
+        "id": "fuite"
+      },
+      {
+        "id": "grimpeur"
+      },
+      {
+        "id": "guerrier-ne"
+      },
+      {
+        "id": "inebranlable"
+      },
+      {
+        "id": "infatigable"
+      },
+      {
+        "id": "maitrise-du-combat",
+        "times": 3
+      },
+      {
+        "id": "maniement-de-deux-armes"
+      },
+      {
+        "id": "marinier"
+      },
+      {
+        "id": "menacant",
+        "times": 3
+      },
+      {
+        "id": "nageur-endurant"
+      },
+      {
+        "id": "perspicace"
+      },
+      {
+        "id": "pied-marin"
+      },
+      {
+        "id": "pilote"
+      },
+      {
+        "id": "rat-d-egout"
+      },
+      {
+        "id": "reflexes-foudroyants"
+      },
+      {
+        "id": "seigneur-de-guerre"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "Odorat"
+      },
+      {
+        "id": "souplesse-feline"
+      },
+      {
+        "id": "tir-precis"
+      },
+      {
+        "id": "tir-rapide"
+      },
+      {
+        "id": "tres-fort"
+      },
+      {
+        "id": "tres-resistant"
+      },
+      {
+        "id": "vigilance"
+      },
+      {
+        "id": "vivacite"
+      }
+    ],
+    "trappings": [
+      {
+        "text": "armure de malepierre complète"
+      },
+      {
+        "text": "bourse contenant 425 grammes de malepierre raffinée"
+      },
+      {
+        "text": "pistolet patte d'oie à malepierre"
+      },
+      {
+        "text": "épée"
+      },
+      {
+        "id": "hallebarde"
+      }
+    ],
+    "spells": [],
+    "desc": "Vrisk Gratte-le-Fer est l'Archiseigneur des mers du clan Skorbut. Il était présent au Grand Rassemblement de 2302 et a audacieusement placé sa patte sur le pilier noir des Commandements et gagné le droit de siéger au conseil des Treize. Son élévation a surpris beaucoup de monde, car le clan Skorbut n'était absolument pas une puissance majeure chez les skavens.\n\nLe Grand Rassemblement, et ses conséquences, ont inculqué un but commun aux skavens et Vrisk a rapidement trouvé une niche à occuper. Au vu du fait que la majorité des territoires de son clan était composée des terriers forés dans les falaises sous la ville de Tobaro, il a suggéré que le clan Skorbut reçoive une généreuse provision de malepièces pour concevoir et construire une marine efficace.\n\nAprès beaucoup de chamailleries, le conseil a accordé une portion de ressources généreuses à Vrisk. L'humble statut du clan Skorbut a probablement contribué à cette décision providentielle : en lui donnant une fortune en malepièces, les autres conseillers se refusaient mutuellement une jolie manne qui aurait pu perturber l'équilibre des puissances. Mieux valait fournir de l'assistance à un petit clan que donner les moyens à un clan majeur de dominer ses rivaux. Quand il a gagné cette rétribution, Vrisk a aussi dû promettre d'acheter de l'armement et des soldats spécialisés aux clans Skryre, Moulder, Eshin et Pestilens. Il est également intéressant de noter que le seigneur gris Kritislik a fortement objecté à la construction d'une marine en affirmant que ce serait une manœuvre trop visible qui laisserait des preuves pouvant être retrouvées par les ennemis des skavens, ce qui signifie que les autres conseillers ont peut-être voté en faveur de cette création simplement pour agacer le seigneur gris.\n\nGrâce à la générosité (conditionnelle) du conseil, le clan Skorbut a reçu les ressources nécessaires pour forer la tanière de Port de l'Échine dans la Cité souterraine, caché à l'intérieur de cavernes que les tempêtes avaient percées dans la côte de Tobaro. En 2321 CI, d'étranges embarcations de bric et de broc ont été repérées sur la Mer Tiléenne et les nains de Barak Varr ont signalé avoir coulé plusieurs vaisseaux dotés d'un équipage de marins skavens. En moins de deux décennies, Vrisk avait fait beaucoup pour tenir sa promesse auprès du conseil.\n\nLe clan Skorbut représente à présent une menace maritime sérieuse. Sa flotte branlante récolte une fortune grâce à la piraterie, dont la majeure partie est dépensée pour capturer de nouveaux prisonniers affectés à actionner les roue d'esclaves propulsant ses navires.\n\nLe clan fait également grossir son butin en récupérant des épaves sur la côte de l'île des Sirènes qui sont ramenées à Port de l'Échine. Les skavens ont tendance à éviter d'attaquer les vaisseaux près de la côte, car ils ne veulent pas donner raison au seigneur gris Kritislik. Pour sa part, Vrisk participe activement aux opérations de son clan. À bord d'un bateau de clan, tous les skavens sont suspectés de mutinerie, ce qui n'est pas plus mal, car ils comptent tous effectivement se rebeller tôt ou tard. Les capitaines-griffes de Vrisk luttent pour maintenir l'ordre, c'est pourquoi l'Archiseigneur des mers lui-même juge bon de surveiller la situation depuis la proue du vaisseau amiral du clan Skorbut, les *Crocs de Port de l'Échine*, une masse grouillante hérissée de canons navals à malefoudre.\n\nVrisk occupe le huitième siège du conseil des Treize. C'est une position humble et il se livre rarement aux intrigues nécessaires pour gagner davantage de pouvoir. Les rumeurs affirment qu'il dédaigne la compétition rancunière de Skarogne au profit d'une vie sur les vagues de l'océan. De surcroît, s'il ne consacrait pas son énergie à mener son clan en personne, la moitié de son peuple se serait déjà mutinée le soir suivant.\n\n**Alimenté par la malepierre (1 fragment) :** Vrisk a besoin de consommer une certaine quantité de malepierre raffinée chaque semaine pour que son corps fonctionne normalement. S'il passe une semaine sans consommer 1 fragment (28 grammes) de malepierre raffinée, réduisez toutes ses Caractéristiques à pourcentage de 20 et son Talent Chanceux 13 devient Chanceux 3.\n\n**Favori du Rat Cornu :** Vrisk a touché le pilier des Commandements et y a survécu. Il possède 3 points de Destin et 3 points de Résilience.\n\n**Armure de malepierre :** de la malepierre réduite en poudre a été utilisée pour forger les plaques d'une armure de malepierre complète. En plus de fournir une protection, cette armure est une Influence corruptrice Mineure (voir page 182 de **WFJDR**) pour quiconque affronte celui qui la porte au corps à corps.\n\n**Pistolet patte d'oie à malepierre :** Vrisk a sur lui une étrange arme à feu à cinq canons, qu'il sort quand il mène un abordage.\n\n| Arme | Enc | Portée | Dégâts | Atouts et Défauts |\n| --- | --- | --- | --- | --- |\n| Pistolet patte d'oie à malepierre | 1 | 10 | +7 | Dangereuse, Imprécise, Malepierre, Recharge 5, Tir de zone 5 |\n\n**Malepierre :** en plus des dégâts normaux, toute attaque de Vrisk infligeant une Blessure Critique cause également une Exposition Mineure à la Corruption (voir page 182 de **WFJDR**).",
+    "source": {
+      "book": "MDG",
+      "page": 156
+    },
+    "appearance": {
+      "species": "skaven",
+      "tenue": "vermine-de-choc"
+    }
+  },
+  {
+    "id": "olg-blodsalt",
+    "label": "Olg Blóðsalt",
+    "title": "Capitaine skaeling (OR 2)",
+    "named": true,
+    "folder": "Bestiaire de la Mer des Griffes",
+    "char": {
+      "M": 4,
+      "CC": 57,
+      "CT": 30,
+      "F": 48,
+      "E": 38,
+      "I": 54,
+      "Ag": 56,
+      "Dex": 57,
+      "Int": 36,
+      "FM": 30,
+      "Soc": 42,
+      "B": 13
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 9,
+        "arg": "Hache"
+      },
+      {
+        "id": "armure",
+        "value": 3
+      },
+      {
+        "id": "marque-de-khorne"
+      },
+      {
+        "id": "mutation",
+        "arg": "Buveur de saumure"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 66
+      },
+      {
+        "id": "calme",
+        "value": 40
+      },
+      {
+        "id": "charme",
+        "value": 47
+      },
+      {
+        "id": "commandement",
+        "value": 68
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 72,
+        "spec": "Bagarre"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 72,
+        "spec": "Base"
+      },
+      {
+        "id": "escalade",
+        "value": 53
+      },
+      {
+        "id": "esquive",
+        "value": 71
+      },
+      {
+        "id": "langue",
+        "value": 41,
+        "spec": "Reikspiel"
+      },
+      {
+        "id": "langue",
+        "value": 46,
+        "spec": "Wastelander"
+      },
+      {
+        "id": "metier",
+        "value": 62,
+        "spec": "Charpentier"
+      },
+      {
+        "id": "natation",
+        "value": 53
+      },
+      {
+        "id": "orientation",
+        "value": 64
+      },
+      {
+        "id": "pari",
+        "value": 41
+      },
+      {
+        "id": "perception",
+        "value": 69
+      },
+      {
+        "id": "ragot",
+        "value": 57
+      },
+      {
+        "id": "ramer",
+        "value": 53
+      },
+      {
+        "id": "resistance",
+        "value": 53
+      },
+      {
+        "id": "resistance-a-l-alcool",
+        "value": 43
+      },
+      {
+        "id": "savoir",
+        "value": 46,
+        "spec": "Khorne"
+      },
+      {
+        "id": "voile",
+        "value": 66
+      }
+    ],
+    "talents": [
+      {
+        "id": "bon-marcheur",
+        "spec": "Littoral"
+      },
+      {
+        "id": "bonnes-jambes"
+      },
+      {
+        "id": "charge-berserk"
+      },
+      {
+        "id": "coup-puissant"
+      },
+      {
+        "id": "infatigable"
+      },
+      {
+        "id": "loup-de-mer"
+      },
+      {
+        "id": "nageur-endurant"
+      },
+      {
+        "id": "orateur"
+      },
+      {
+        "id": "pecheur"
+      },
+      {
+        "id": "perseverant"
+      },
+      {
+        "id": "perspicace"
+      },
+      {
+        "id": "pied-marin"
+      },
+      {
+        "id": "pilote"
+      },
+      {
+        "id": "sens-de-l-orientation"
+      },
+      {
+        "id": "souplesse-feline"
+      },
+      {
+        "id": "tres-fort"
+      },
+      {
+        "id": "voyageur-aguerri"
+      }
+    ],
+    "trappings": [
+      {
+        "text": "bouclier rouillé"
+      },
+      {
+        "text": "chemise de mailles rouillée"
+      },
+      {
+        "text": "dague rouillée"
+      },
+      {
+        "text": "hache"
+      },
+      {
+        "text": "jambières de cuir"
+      },
+      {
+        "id": "veste-de-cuir"
+      }
+    ],
+    "spells": [],
+    "desc": "La férocité d'Olg vient de son amertume et de sa détestation pour cette supposée bénédiction. Il n'a pas choisi ce don ; cela lui a été imposé. Être vu comme puissant n'a aucune importance si vous êtes également vu comme vieux et laid, surtout pour quelqu'un qui est en réalité à la fleur de l'âge. Il envie les gens aimés et beaux, mais malgré sa colère, il sait qu'ils ne sont pas plus responsables de leur situation que lui de la sienne.\n\nPendant ses raids et ses batailles, il capture toujours les adversaires intéressants si cela est possible. Il les emmène en privé et les interroge discrètement dans l'espoir qu'ils connaissent une manière de le guérir de sa terrible bénédiction. Quelques-uns ont proposé des solutions mensongères pour retarder leur mort ou leur vente comme esclave, mais quand cela a échoué, leur sort a été plus horrible encore.",
+    "source": {
+      "book": "MDG",
+      "page": 55
+    },
+    "appearance": {
+      "species": "humain",
+      "tenue": "marin"
+    }
   }
 ]

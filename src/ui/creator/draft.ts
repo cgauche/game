@@ -58,6 +58,10 @@ export interface CreatorDraft {
   /** `id` STABLE de la carrière (`CareerData.id`) — ≠ libellé. */
   careerId: string;
   ignoreRestrictions: boolean;
+  /** Remplacer les Riverains par les CÔTIERS dans la table de tirage (MDG 09 l.9 : choix du joueur
+   *  AVANT de lancer les dés). Le d100 est figé par le seed : basculer re-lit le MÊME jet sur l'autre
+   *  table (zéro savescum) — les jets sont donc réinitialisés au changement. */
+  coastalSwap: boolean;
   /** Jets de carrière figés (1 puis 3) ; au-delà : relances libres (0 PX, RAW l.195). Chaque jet
    *  désigne une BORNE → `ids` = toutes les carrières de cette borne (choix libre, PX conservé). */
   careerRolls: { roll: number; ids: string[] }[];
@@ -126,6 +130,7 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
     speciesId: sp.id,
     careerId: careersForSpecies(sp.refCareer)[0]?.id ?? careers[0].id,
     ignoreRestrictions: false,
+    coastalSwap: false,
     careerRolls: [],
     careerFreeRolls: 0,
     charMode: 'rolled',
@@ -229,24 +234,50 @@ export function withSpecies(d: CreatorDraft, id: string): CreatorDraft {
 }
 
 // ── 2) Carrière ──
+/** Le remplacement Riverains → Côtiers (MDG 09 l.9) s'offre-t-il à cette espèce ? Uniquement quand SA
+ *  colonne du tableau contient les DEUX portions (les 5 colonnes du LDB) : les tables régionales
+ *  (Middenheim/ADE2/NADJ) ne sont pas étendues par MDG, et la table Norse embarque déjà les variantes
+ *  côtières SANS portion Riverains (rien à remplacer). Dérivé de la DONNÉE, aucune liste de colonnes. */
+export const coastalSwapAvailable = (d: CreatorDraft): boolean => {
+  const col = draftSpecies(d).refCareer;
+  return careers.some((c) => c.class === 'riverains' && c.rand?.[col] != null)
+    && careers.some((c) => c.class === 'cotiers' && c.rand?.[col] != null);
+};
+
+/** Table de tirage EFFECTIVE : là où la colonne porte les deux portions, les Riverains et les CÔTIERS
+ *  ne coexistent JAMAIS dans un même tirage (remplacement, pas cumul) ; ailleurs, la colonne est déjà
+ *  la bonne table (Norse : variantes côtières seules ; régionales : Riverains seuls). */
+export const careerRollPool = (d: CreatorDraft): typeof careers => {
+  if (!coastalSwapAvailable(d)) return careers;
+  return careers.filter((c) => c.class !== (d.coastalSwap ? 'riverains' : 'cotiers'));
+};
+
+/** Bascule Riverains ↔ Côtiers (MDG 09 l.9 : « avant de lancer les dés ») — réinitialise les jets ;
+ *  les d100 étant figés par le seed, ils retombent à l'identique sur l'autre table. */
+export function withCoastalSwap(d: CreatorDraft, coastalSwap: boolean): CreatorDraft {
+  if (coastalSwap === d.coastalSwap) return d;
+  return { ...d, coastalSwap, careerRolls: [], careerFreeRolls: 0 };
+}
+
 export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
   const sp = draftSpecies(d);
+  const pool = careerRollPool(d);
   const n = d.careerRolls.length;
   if (n === 0) {
-    const r = rollCareer(careers, sp, makeRNG(d.seed ^ 0xca1));
+    const r = rollCareer(pool, sp, makeRNG(d.seed ^ 0xca1));
     // Chaque jet désigne une borne (`ids`) ; défaut = 1ʳᵉ carrière, le joueur peut en choisir une autre.
     return r ? withCareer({ ...d, careerRolls: [r] }, r.ids[0]) : d;
   }
   if (n === 1) {
     // « Faites deux lancers de plus, ce qui porte votre total à 3 choix » (LDB 05 l.193).
     const rng = makeRNG(d.seed ^ 0xca2);
-    const r2 = rollCareer(careers, sp, rng);
-    const r3 = rollCareer(careers, sp, rng);
+    const r2 = rollCareer(pool, sp, rng);
+    const r3 = rollCareer(pool, sp, rng);
     if (!r2 || !r3) return d;
     return { ...d, careerRolls: [...d.careerRolls, r2, r3] };
   }
   // « continuez à relancer jusqu'à obtenir quelque chose qui vous plaît » (l.195) — 0 PX.
-  const r = rollCareer(careers, sp, makeRNG(d.seed ^ (0xca3 + d.careerFreeRolls)));
+  const r = rollCareer(pool, sp, makeRNG(d.seed ^ (0xca3 + d.careerFreeRolls)));
   return r ? withCareer({ ...d, careerFreeRolls: d.careerFreeRolls + 1 }, r.ids[0]) : d;
 }
 export function careerXp(d: CreatorDraft): number {

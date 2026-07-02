@@ -23,7 +23,7 @@ describe('isNamed — source UNIQUE de la nommé-ité (jamais via `title`)', () 
   });
 });
 
-/** Garde de DONNÉE : les 55 individus nommés validés contre le RAW (desc verbatim singulier = individu)
+/** Garde de DONNÉE : les individus nommés validés contre le RAW (desc verbatim singulier = individu)
  *  portent `named:true`, et rien d'autre. Les ex-« douteux » (sous-espèces/templates ZI décrits au
  *  PLURIEL) restent génériques — régression à garder si on retouche le backfill. */
 describe('creatures.json — backfill `named`', () => {
@@ -44,18 +44,22 @@ describe('creatures.json — backfill `named`', () => {
     'walpurga-wurklich', 'andrea-bruhn', 'jacopo-schmidt', 'traudl-bauer',
     'beate-moser', 'le-vieil-otto', 'brigitte-schleigel',
     'gerdon-salzwed', 'hasso-schroeter', 'kat-sperber', 'theresia-kleist',
+    // MDG ch.16 (+ ch.7) : individus uniques du bestiaire marin — le Gargantuan (« il n'existe qu'un seul
+    // Gargantuan »), Triton (demi-dieu unique) et les capitaines nommés.
+    'gargantuan', 'triton', 'jaego-roth', 'long-drong-silver', 'wulfrik', 'vrisk-gratte-le-fer', 'olg-blodsalt',
   ];
   const GENERIC_IDS = [
     'brochet-du-stir', 'heomreth-hibou-geant', 'peau-de-loup', 'tregara',
     'experience-unique-du-clan-moulder', 'mangeuse-d-hommes-de-la-drakwald-araignee-geante',
   ];
 
-  it('les 55 nommés validés portent named:true (ids résolus)', () => {
+  it('les nommés validés portent named:true (ids résolus)', () => {
     const bad = NAMED_IDS.filter((id) => { const c = findCreatureById(id); return !c || !isNamed(c); });
     expect(bad).toEqual([]);
   });
-  it('exactement 55 nommés dans la base (zéro générique flaggé)', () => {
-    expect(creatures.filter(isNamed).length).toBe(55);
+  it('AUCUN nommé hors liste validée (zéro générique flaggé)', () => {
+    const extra = creatures.filter(isNamed).map((c) => c.id).filter((id) => !NAMED_IDS.includes(id));
+    expect(extra).toEqual([]);
   });
   it('les ex-douteux (sous-espèces/templates au pluriel) restent génériques', () => {
     const bad = GENERIC_IDS.filter((id) => { const c = findCreatureById(id); return !c || isNamed(c); });
