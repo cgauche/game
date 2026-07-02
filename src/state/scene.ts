@@ -264,6 +264,11 @@ export type Effect =
   /** Inflige le trauma « Cauchemars » (LDB 21 l.92) à un héros (défaut : le premier) après une scène
    *  marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. L'auteur l'assigne (pas inventé). */
   | { type: 'inflictNightmares'; heroId?: string }
+  /** Trauma (ADE II Annexe I « Troubles psychologiques », règle facultative `psych-acquisition-optional`) :
+   *  un héros TÉMOIN d'un événement rendant une de ses Ambitions complètement irréalisable → Test de Calme
+   *  Accessible (+20) ; échec → Trait psychologique *Trauma*. Déclencheur NARRATIF (aucun hook mécanique),
+   *  donc posé par l'auteur (défaut : le premier héros). Inerte si la règle facultative est éteinte. */
+  | { type: 'ambitionLost'; heroId?: string }
   /** Inflige une Maladie (LDB 20) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
    *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
   | { type: 'inflictDisease'; disease: string; heroId?: string }

@@ -327,6 +327,9 @@ export const fr = {
   'eff.criticalSuffered': '{name} subit une Blessure Critique ({kind}, {location}).',
   'eff.criticalTitle': 'Blessure Critique — {kind}',
   'eff.nightmares': '{name} est marqué par un trauma : des cauchemars le hanteront chaque nuit.',
+  'eff.ambitionTitle': 'Ambition anéantie',
+  'eff.ambitionTrauma': '{name} voit une Ambition anéantie (Calme {roll} vs {target}, échec) : il développe un Trauma.',
+  'eff.ambitionResisted': '{name} encaisse l’anéantissement d’une Ambition (Calme {roll} vs {target}, réussite) sans sombrer.',
   'eff.meal': 'Le groupe prend un vrai repas — chacun mange à sa faim.',
   // ── Phase C : narration d'issue des jets (state/flowOutcomes — source unique popin ↔ journal). ──
   'out.testForced': '{name} ne faillit pas (Résilience) : réussite garantie.',

@@ -29,6 +29,10 @@ export interface MapPlace {
    *  maritime (commerce, événements d'escale, chantier). `lighthouse` : un phare veille sur l'approche
    *  (Test de Perception d'équipage à l'atterrage, MDG ch.13 l.333-351). */
   port?: import('../engine/seaVoyage').PortProfile & { lighthouse?: boolean };
+  /** Indices de COMMERCE TERRESTRE/FLUVIAL (Index géographique, T2C ch.11 l.183-278) — présent = ce Lieu
+   *  offre des opportunités de commerce de cargaison (achat/vente/rumeurs). Taille + Richesse + colonne
+   *  Produits, éditables par l'auteur (aucun index codé en dur). */
+  market?: import('../engine/landCargo').LandMarketProfile;
 }
 
 /** Péripétie d'AUTEUR sur une route : tirée chaque jour de voyage à `chancePct` %. */

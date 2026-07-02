@@ -34,6 +34,7 @@ export function carryOverState(c: Combatant): {
   damned?: boolean;
   traits?: import('./statEntry').TraitList;
   psychTraits?: import('./psychology').PsychTrait[];
+  briseFromTerreur?: number;
   resistanceUsed?: string[];
 } {
   return {
@@ -65,7 +66,11 @@ export function carryOverState(c: Combatant): {
     ...(c.damned ? { damned: true } : {}),
     // Traits gagnés par mutation (Tentacules, Frénésie…) : un héros n'en change pas autrement.
     ...(c.mutations?.length && c.traits ? { traits: [...c.traits] } : {}),
-    ...(c.mutations?.length && c.psychTraits ? { psychTraits: c.psychTraits.map((t) => ({ ...t })) } : {}),
+    // Traits psychologiques : mutation-conférés OU ACQUIS en jeu (Phobie/Animosité/Haine/Trauma, ADE II
+    // Annexe I) — persistent dès qu'il en existe, plus seulement si une mutation est présente.
+    ...(c.psychTraits?.length ? { psychTraits: c.psychTraits.map((t) => ({ ...t })) } : {}),
+    // Phobie du noir (ADE II) : le compteur d'États Brisé issus de la Terreur suit le héros entre combats.
+    ...(c.briseFromTerreur ? { briseFromTerreur: c.briseFromTerreur } : {}),
     // Résistance (Menace), LDB 10 : le compteur « 1 par séance » consommé EN combat suit le héros.
     ...(c.resistanceUsed?.length ? { resistanceUsed: [...c.resistanceUsed] } : {}),
   };

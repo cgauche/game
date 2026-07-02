@@ -907,6 +907,10 @@ export interface Combatant {
    *  du cœur discrétionnaire de l'IA : aucune garde RAW (fuite Bestial, Frénésie, Brisé…) n'en dépend. */
   aiDoctrine?: string;
   psychTraits?: import('./psychology').PsychTrait[];
+  /** Phobie du noir (ADE II Annexe I, règle facultative `psych-acquisition-optional`) : total cumulé
+   *  d'États *Brisé* subis À CAUSE d'une *Terreur* ; à ≥ Bonus de FM → une *Phobie* est acquise et le
+   *  compteur remis à zéro (cf. `gainPhobieIfThreshold`). DONNÉE persistée (survit au writeback de combat). */
+  briseFromTerreur?: number;
   /** Traits de créature (STRUCTURÉS — `TraitInstance` : id/value/arg/count/range) → attaques
    *  naturelles gratuites & règles dérivées (Morsure, Attaque caudale, Souffle… cf.
    *  engine/creatureAttacks). Lus sans aucun parsing (`resolveTraits`/`hasTraitKey`). Conservés au spawn. */

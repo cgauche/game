@@ -11,6 +11,8 @@ import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES } from '../data/criticals';
 import { traumaById, traumaFicheById } from './trauma';
+import { rule } from './policy';
+import { resolveAACritical } from './aaCritical';
 import type { GameOp } from './ops';
 
 /**
@@ -98,6 +100,9 @@ export function rollCritical(
   overkill = 0,
   twice = false, // Bénédiction de Sauvagerie (LDB 41) : « deux lancers, choisissez le meilleur » (l'attaquant veut le plus sévère)
 ): CriticalResolved {
+  // BIFURCATION du système ALTERNATIF Aux Armes (l.2441-2627) : tables + décalage +10/Blessure propres.
+  // `twice` (Sauvagerie) reste au chemin LDB (l'Atout ne coexiste pas avec la variante AA).
+  if (!twice && rule('combat-aa-blessures') === 'aa') return resolveAACritical(target, location, rng, overkill);
   const be = bonus(effectiveChar(target, 'E'));
   const reduction = overkill > be ? 20 : 0; // l.30 : overkill > BE → -20 (résultat moins sévère)
   const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);

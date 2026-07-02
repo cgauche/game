@@ -199,6 +199,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Sacrifier 1 PA pour annuler un Coup Critique sur une localisation blindée. Désactiver : le Critique est toujours subi (plus d’offre de déviation).',
   },
   {
+    id: 'combat-aa-blessures',
+    label: 'Blessures & Critiques (Aux Armes)',
+    ref: 'AA l.2441-2627',
+    group: 'Combat',
+    kind: 'mode',
+    default: 'ldb',
+    options: ['ldb', 'aa'],
+    hint: 'Système ALTERNATIF de Blessures/Blessures Critiques/mort d’Aux Armes (remplace WFJDR p.172-178). ldb = Livre de base (RAW, défaut). aa = tables de Critiques PAR LOCALISATION d’Aux Armes + Critique sur un double (même s’il reste des Blessures) + décalage +10/Blessure au-delà de 0 + mort si (Inconscient & 0 PB & Blessures critiques > Bonus d’Endurance). Les sous-effets conditionnels/durées des lignes AA restent en texte (arbitrage), le corps mécanique (Blessures + États immédiats + Mort) est appliqué.',
+  },
+  {
     id: 'combat-ranged-melee-penalty',
     label: 'Tir dans un corps à corps',
     ref: 'LDB 14 l.133',

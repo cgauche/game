@@ -17,6 +17,7 @@ import { parseStatus } from '../engine/creation';
 import { easeDifficulty } from '../engine/tests';
 import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
+import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
 import { findCreatureById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
@@ -870,6 +871,30 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
       const who = env.mutateHero(e.heroId, (h) => ({ ...h, nightmares: true }));
       if (who) env.log(t('eff.nightmares', { name: who.name }));
+    },
+  },
+  ambitionLost: {
+    group: '☠️ Afflictions', label: 'Ambition anéantie → Trauma (ADE II Annexe I)', icon: '💔',
+    make: () => ({ type: 'ambitionLost', heroId: '' }),
+    apply: (e, env) => {
+      // Trauma (ADE II Annexe I) : « témoin d'un événement qui rend une Ambition complètement irréalisable
+      // → Test de Calme Accessible (+20) ; échec → Trauma Psychologique ». La fonction pure porte la garde de
+      // la règle facultative `psych-acquisition-optional` (null si éteinte → effet inerte, aucun RNG consommé).
+      let shown: { roll: number; target: number } | null = null;
+      let acquired = false;
+      const who = env.mutateHero(e.heroId, (h) => {
+        const res = traumaOnImpossibleAmbition(h, battleRng());
+        if (!res) return h; // règle facultative éteinte
+        shown = { roll: res.test.roll, target: res.test.target };
+        if (!res.trait) return h; // Calme réussi → l'Ambition brisée n'a pas laissé de trauma
+        acquired = true;
+        return { ...h, psychTraits: [...(h.psychTraits ?? []), res.trait] };
+      });
+      if (!who || !shown) return;
+      const s = shown as { roll: number; target: number };
+      const line = t(acquired ? 'eff.ambitionTrauma' : 'eff.ambitionResisted', { name: who.name, roll: s.roll, target: s.target });
+      env.log(line);
+      if (acquired) env.pushReveal({ kind: 'effet', title: t('eff.ambitionTitle'), lines: [line], subjectId: who.id, severity: 'grave' });
     },
   },
   corruptionExposure: {

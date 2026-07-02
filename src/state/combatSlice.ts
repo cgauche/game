@@ -39,7 +39,7 @@ import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity,
 import { resolveOpposed, evaluateTest, extendedTestStep, assistBonus } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
+import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, hasCommandTeam } from '../engine/combatFeatures/dispatch';
@@ -100,6 +100,22 @@ import { describeFrenzy, describeReload, describeStateRecovery } from './flowOut
  *  performClick d'IsoStage — pour rester neutre vis-à-vis des harnais de test sans UI.) */
 const combatBusy = (s: Pick<GameState, 'pendingCleave' | 'pendingDualStrike' | 'pendingCast'>): boolean =>
   !!(pickActiveModalKey(s as never) || s.pendingCleave || s.pendingDualStrike || s.pendingCast);
+
+/** Animosité & Haine (ADE II Annexe I « Troubles psychologiques », règle facultative `psych-acquisition-optional`) :
+ *  un héros qui DÉPENSE le Destin « pour rester en vie » effectue un Test de Calme Intermédiaire (+0) ; échec →
+ *  Animosité envers « l'individu ou l'élément qui l'a presque tué » (Cible = son Groupe/nom), ou HAINE si une
+ *  Animosité de même Cible existe déjà. Mute `hero.psychTraits` (l'APPLICATION que le noyau pur `animositeOrHaine`
+ *  laisse à la couche state) et renvoie la ligne de journal (null : règle éteinte / Cible inconnue / Calme réussi). */
+function acquireAnimositeOnFate(hero: Combatant, foeCible: string | undefined): string | null {
+  if (!foeCible) return null;
+  const res = animositeOrHaine(hero, foeCible, battleRng());
+  if (!res?.trait) return null;
+  if (res.replacesAnimosite) hero.psychTraits = (hero.psychTraits ?? []).filter((p) => !(p.type === 'animosite' && p.cible === foeCible));
+  hero.psychTraits = [...(hero.psychTraits ?? []), res.trait];
+  return res.trait.type === 'haine'
+    ? `💢 ${hero.name} voue désormais une Haine à ${foeCible} (frôler la mort a durci son cœur).`
+    : `💢 ${hero.name} développe une Animosité envers ${foeCible} (frôler la mort a laissé une marque).`;
+}
 
 /** OUVERTURE partagée d'un Test d'équipage MULTI (MDG ch.14) : contributeurs par rôle (`crewTestContributors` —
  *  UN jet par poste, PJ interactifs, l.9/39/41), Moral, Manque de bras (l.55) et SABOTAGE (l.45-47) dérivés du
@@ -1276,7 +1292,8 @@ export function createCombatSlice(get: Get, set: Set) {
       hero.fate = (hero.fate ?? 0) - 1;
       if (p.restoreWounds != null) hero.wounds.current = p.restoreWounds; // annule tout le coup (restaure les PB)
       hero.criticalWounds = Math.max(0, (hero.criticalWounds ?? 0) - 1);
-      set({ battle: { ...battle, log: [...battle.log, ev('info', t('cs.fateDodge', { name: hero.name }), hero.id)] } });
+      const anim = acquireAnimositeOnFate(hero, p.foeCible); // ADE II Annexe I (règle facultative)
+      set({ battle: { ...battle, log: [...battle.log, ev('info', t('cs.fateDodge', { name: hero.name }), hero.id), ...(anim ? [ev('fear', anim, hero.id)] : [])] } });
       resumeEnemyTurn(get, set);
     },
     fateSurvive: () => {
@@ -1289,7 +1306,8 @@ export function createCombatSlice(get: Get, set: Set) {
       hero.fate = (hero.fate ?? 0) - 1;
       hero.outOfRencontre = true; // survit mais éjecté de la rencontre (vivant)
       if (!hero.conditions.some((c) => c.name === COND.inconscient)) addCondition(hero, COND.inconscient);
-      set({ battle: { ...battle, log: [...battle.log, ev('info', t('cs.fateFlee', { name: hero.name }), hero.id)] } });
+      const anim = acquireAnimositeOnFate(hero, p.foeCible); // ADE II Annexe I (règle facultative)
+      set({ battle: { ...battle, log: [...battle.log, ev('info', t('cs.fateFlee', { name: hero.name }), hero.id), ...(anim ? [ev('fear', anim, hero.id)] : [])] } });
       if (source === 'slow') resolveRoundBoundary(get, set);
       else resumeEnemyTurn(get, set);
     },

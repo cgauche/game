@@ -402,7 +402,10 @@ export interface GameState extends RollFlowActionsMap {
   /** Coop : marque le siège PRÊT au ready-check d'ouverture (round 1) ; l'hôte lance quand tous ✓. */
   roundStartReady: (seat: number) => void;
   /** Sauvetage par le Destin en attente (LDB ch.17 l.31-35). */
-  pendingFateSave: { heroId: string; source: 'hit' | 'slow'; restoreWounds?: number } | null;
+  pendingFateSave: { heroId: string; source: 'hit' | 'slow'; restoreWounds?: number;
+    /** Animosité & Haine (ADE II Annexe I, règle facultative) : Groupe (ou nom) de « l'individu ou
+     *  l'élément qui l'a presque tué » — Cible de l'Animosité acquise si le héros dépense le Destin. */
+    foeCible?: string } | null;
   /** Récompenses de victoire capturées (écran de fin de combat) ; null hors victoire. */
   pendingVictory: PendingVictory | null;
   /** Attribue un objet d'équipement (giveTrapping) du butin de victoire au héros choisi. */

@@ -92,6 +92,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'inflictNightmares': return `${icon} Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'inflictDisease': return `${icon} Maladie : ${e.disease || '?'}`;
     case 'inflictTrauma': return `${icon} Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
+    case 'ambitionLost': return `${icon} Ambition anéantie → Trauma${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'ops': {
       const who = e.on === 'hero' ? '1ᵉʳ héros' : e.on === 'caster' ? 'lanceur' : e.on === 'target' ? 'cible' : 'groupe';
       return `${icon} ${who} : ${(e.ops ?? []).map(opSummary).join(', ') || '(aucune op)'}`;

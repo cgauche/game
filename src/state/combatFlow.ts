@@ -152,7 +152,7 @@ import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovem
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
-import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt } from './path';
@@ -1066,10 +1066,13 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
 }
 
 /** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir
- *  (LDB ch.17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal. */
-export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number): void {
+ *  (LDB ch.17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal.
+ *  `foe` = « l'individu ou l'élément qui l'a presque tué » (coup direct) → Cible d'une éventuelle
+ *  Animosité si le Destin est dépensé (ADE II Annexe I, règle facultative) ; absent pour la mort lente. */
+export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number, foe?: Pick<Combatant, 'name' | 'groups'>): void {
   if (hero.kind === 'hero' && (hero.fate ?? 0) > 0) {
-    set({ pendingFateSave: { heroId: hero.id, source, restoreWounds } });
+    const foeCible = foe ? (foe.groups?.[0] ?? foe.name) : undefined;
+    set({ pendingFateSave: { heroId: hero.id, source, restoreWounds, ...(foeCible ? { foeCible } : {}) } });
   } else {
     hero.dead = true;
   }
@@ -1322,7 +1325,7 @@ function applyCritAndFinalize(
   log: string[], ctx: DeviationCtx, woundsBefore: number, crit?: CriticalResolved, suppressReveal?: boolean,
 ): boolean {
   const lethal = applyCriticalToTarget(target, location, isCoupCritique, overkill, log, set, { ctx, prerolled: crit, suppressReveal, get });
-  if (lethal) finalizeHeroDeath(get, set, target, 'hit', woundsBefore);
+  if (lethal) finalizeHeroDeath(get, set, target, 'hit', woundsBefore, get().battle?.combatants.find((c) => c.id === ctx.attackerId));
   return lethal;
 }
 
@@ -1463,7 +1466,7 @@ export function applyAttackResult(
     if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique (LDB 13 l.174-175) — jamais avec un objet INANIMÉ
     const currentBefore = target.wounds.current;
     target.wounds.current = 0;
-    finalizeHeroDeath(get, set, target, 'hit', currentBefore); // Destin possible (héros) ; sinon mort directe
+    finalizeHeroDeath(get, set, target, 'hit', currentBefore, attacker); // Destin possible (héros) ; sinon mort directe
     if (isOutOfAction(target)) {
       clearEngagementOf(get().battle?.combatants ?? [], target.id);
       clearPsychOf(get().battle?.combatants ?? [], target.id);
@@ -4627,6 +4630,7 @@ registerCascadeApplier(
       return { journal: [tr('cf.psychImmune', { name: hero.name })] };
     }
     let line: string;
+    let phobieLine: string | null = null;
     const res = psychResolution(cp.kind);
     if (res.mode === 'terreur') {
       // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → État `failCondition` = Indice + |DR négatifs| ; devient
@@ -4635,6 +4639,19 @@ registerCascadeApplier(
       if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
       if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: cp.sourceId, indice: r.success ? 0 : cp.indice, calmeDR: 0, lastTestRound: battle?.round });
       line = r.success ? tr('out.terreurHold', { name: hero.name }) : tr('cf.terreurThenFear', { name: hero.name, foe: cp.sourceName, brise, indice: cp.indice });
+      // Phobie du noir (ADE II Annexe I, règle facultative `psych-acquisition-optional`) : cumuler les États
+      // Brisé subis À CAUSE de la Terreur ; à ≥ Bonus de FM → Phobie liée à la source (son Groupe si connu,
+      // sinon son nom), puis remise à zéro du compteur. `gainPhobieIfThreshold` porte la garde de la règle.
+      if (brise > 0 && res.failCondition === COND.brise) {
+        hero.briseFromTerreur = (hero.briseFromTerreur ?? 0) + brise;
+        const foe = battle?.combatants.find((x) => x.id === cp.sourceId);
+        const gained = gainPhobieIfThreshold(hero, hero.briseFromTerreur, foe?.groups?.[0] ?? cp.sourceName ?? '');
+        if (gained) {
+          hero.psychTraits = [...(hero.psychTraits ?? []), gained.phobie];
+          hero.briseFromTerreur = 0;
+          phobieLine = `😨 ${hero.name} développe une Phobie durable : ${gained.phobie.cible}.`;
+        }
+      }
     } else if (CIBLE_TYPES.has(cp.kind)) {
       // Trait ciblé : échec → affliction active ; succès → marqueur inerte (pas de re-déclenchement).
       let e = hero.psychState.find((p) => p.type === cp.kind && p.cible === cp.cible);
@@ -4665,7 +4682,7 @@ registerCascadeApplier(
     const superseded = suppressSupersededPsych(hero);
     set({ party: [...get().party] });
     if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-    return { journal: [line, ...superseded.map((tp) => tr('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))] };
+    return { journal: [line, ...(phobieLine ? [phobieLine] : []), ...superseded.map((tp) => tr('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))] };
   },
   (success, name) => (success ? tr('out.terreurHold', { name }) : tr('cf.psychYields', { name })),
 );

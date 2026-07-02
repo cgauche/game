@@ -19,9 +19,13 @@
 import seaEventsJson from '../data/sea-events.json';
 import seaCargoJson from '../data/sea-cargo.json';
 import { findTableEntry } from './tables';
-import { d10, d100, roll as rollDice, rollExpr, type RNG, defaultRNG } from './dice';
+import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
+// Tronc commun cargaison (partagé avec le commerce terrestre T2C, `landCargo.ts`) — modèle de lot,
+// tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
+import { type CargoDef, rollSeasonalCargo, cargoBasePrice } from './cargo';
+export { type CargoDef, type CargoLot, cargoTotalEnc, removeCargo, cargoBasePrice, bargainDeltaPct } from './cargo';
 
 // ── Types de la donnée ───────────────────────────────────────────────────────────────────────────
 
@@ -42,13 +46,6 @@ const EVENTS = seaEventsJson as unknown as {
   boardEvents: SeaEventDef[];
   portEvents: SeaEventDef[];
 };
-
-export interface CargoDef {
-  id: string;
-  label: string;
-  avail: Record<Season, [number, number]>;
-  price: Record<Season, number> | { dice: string };
-}
 
 const CARGO = seaCargoJson as unknown as {
   cargoes: CargoDef[];
@@ -143,17 +140,9 @@ export interface PortProfile {
   cosmopolite?: boolean;
 }
 
-/** Cargaison ALÉATOIRE de la saison (l.402-418) : d100 dans la colonne saisonnière. PUR. */
+/** Cargaison ALÉATOIRE de la saison (l.402-418) : d100 dans la colonne saisonnière (tableau MARITIME). PUR. */
 export function rollRandomCargo(season: Season, rng: RNG = defaultRNG): CargoDef {
-  const r = d100(rng);
-  return CARGO.cargoes.find((c) => r >= c.avail[season][0] && r <= c.avail[season][1]) ?? CARGO.cargoes[CARGO.cargoes.length - 1];
-}
-
-/** Prix de BASE d'une cargaison (CO par point d'Enc) pour la saison (l.420-436) — Vin : 3d10 CO,
- *  tiré une fois à l'achat (« Notez le prix du Vin quand il est acheté »). PUR (RNG injecté). */
-export function cargoBasePrice(cargo: CargoDef, season: Season, rng: RNG = defaultRNG): number {
-  if ('dice' in cargo.price) return rollExpr(cargo.price.dice, rng);
-  return cargo.price[season];
+  return rollSeasonalCargo(CARGO.cargoes, season, rng);
 }
 
 /** Enc DISPONIBLE d'une cargaison à l'achat (l.323-331) : « additionnez la Taille et la Richesse du
@@ -246,33 +235,5 @@ export function opportunityTradePct(totalDR: number): number {
   return 100 + (CARGO.opportunite.outcomes.find((o) => o.on === 'success' && o.minExtraDR == null)?.pct ?? 10);
 }
 
-// ── Cargaison EMBARQUÉE (persistée sur le navire de campagne) ────────────────────────────────────
-
-/** Un LOT de cargaison en cale (commerce maritime, ch.15) — `basePriceGold` = prix de base NOTÉ à
- *  l'achat (CO/Enc, « Notez le type de cargaison et le prix de base », l.420 ; le Vin fige son 3d10). */
-export interface CargoLot {
-  cargoId: string;
-  enc: number;
-  basePriceGold: number;
-}
-
-/** Enc TOTAL embarqué (pénalités de Contenance, événements « gâtent 1d10 Enc »…). PUR. */
-export function cargoTotalEnc(lots: CargoLot[]): number {
-  return lots.reduce((s, l) => s + Math.max(0, l.enc), 0);
-}
-
-/** RETIRE `enc` points d'une cargaison (avarie, vol, vente partielle) — au fil des lots de cet id,
- *  les lots vidés disparaissent. PUR (nouvelle liste). */
-export function removeCargo(lots: CargoLot[], cargoId: string, enc: number): { lots: CargoLot[]; removed: number } {
-  let left = Math.max(0, enc);
-  let removed = 0;
-  const out: CargoLot[] = [];
-  for (const l of lots) {
-    if (l.cargoId !== cargoId || left <= 0) { out.push(l); continue; }
-    const take = Math.min(l.enc, left);
-    left -= take;
-    removed += take;
-    if (l.enc - take > 0) out.push({ ...l, enc: l.enc - take });
-  }
-  return { lots: out, removed };
-}
+// La cargaison EMBARQUÉE (CargoLot, cargoTotalEnc, removeCargo) est désormais le tronc commun de
+// `cargo.ts`, re-exporté en tête de ce module (partagé avec le commerce terrestre T2C).
