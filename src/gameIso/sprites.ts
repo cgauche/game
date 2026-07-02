@@ -11,13 +11,6 @@ import { TERRAIN_DEFS } from '../state/terrain';
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
 
-/** Place un sprite (boîte 120×150, pieds en (60,150)) sur la tuile (x,y). */
-export function placeSprite(inner: string, x: number, y: number, dims: Dims, scale = 0.62): string {
-  const { cx, cy } = tileCenter(x, y, dims);
-  const sh = `<ellipse cx="${cx}" cy="${cy + 3}" rx="${22 * scale + 4}" ry="${(22 * scale + 4) / 2}" fill="#000" opacity="0.33"/>`;
-  return `${sh}<g transform="translate(${cx - 60 * scale},${cy + TH / 2 - 150 * scale}) scale(${scale})">${inner}</g>`;
-}
-
 // --- Tuiles & décor de terrain --------------------------------------------
 // Présentation des terrains : pilotée par le catalogue (catalog/terrain.ts).
 export { terrainGradient } from './catalog/terrain';
@@ -40,6 +33,12 @@ const TERRAIN_OVERLAYS: Record<string, { render: (x: number, y: number, dims: Di
 export function terrainOverlay(id: string, x: number, y: number, dims: Dims): { d: number; html: string } | null {
   const ov = TERRAIN_OVERLAYS[id];
   return ov ? { d: depth(x, y, dims) + ov.depthBias, html: ov.render(x, y, dims) } : null;
+}
+
+/** Ce terrain porte-t-il un overlay en relief ? Prédicat CAMERA-FREE du builder de props (`buildProps`
+ *  émet l'élément ; le backend affine appelle `terrainOverlay` avec SA caméra pour le dessiner). */
+export function terrainHasOverlay(id: string): boolean {
+  return id in TERRAIN_OVERLAYS;
 }
 
 export function wallBlock(x: number, y: number, dims: Dims): string {

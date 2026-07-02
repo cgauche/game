@@ -1,0 +1,105 @@
+/**
+ * BUILDER de SURBRILLANCES de combat (jeu seul) — les grilles LOURDES memoïsées du stage en éléments
+ * SÉMANTIQUES camera-free : portées de Marche/Course, teintes d'équipe des cases occupées, zones
+ * persistantes (fumée/feu), anneaux de cibles (attaque/soin/flux différés/« tirer dans le tas »).
+ * Le backend affine (`backends/affineHighlights`) les projette et leur donne leurs couleurs.
+ * Les APERÇUS par-frame (tap-1, survol, tether d'engagement, halo de l'actif) restent au stage.
+ * PUR : les portées/cibles (dérivées du store) arrivent EN DONNÉES (`HighlightsView`), le builder ne
+ * fait que les mapper en cases + hauteur MÉTRIQUE (le lift d'étage est projeté par le backend).
+ */
+import { heightAt, type Scene } from '../../state/scene';
+import { isOutOfAction } from '../../engine/conditions';
+import { isRider } from '../../state/mount';
+import { footprintN } from '../../state/footprint';
+import type { BattleState } from '../../state/store';
+
+/** Élément sémantique de surbrillance : case + hauteur métrique + nature. Les clés reprennent les clés
+ *  React historiques (stables entre frames). */
+export type HighlightEl = { key: string; cell: { x: number; y: number; z: number }; h: number } & (
+  | { kind: 'walk' | 'run' }
+  | { kind: 'team'; hero: boolean; active: boolean }
+  | { kind: 'zone'; smoke: boolean }
+  | { kind: 'ring'; tone: 'target' | 'ally' | 'crowd' }
+);
+
+/** Vérités dérivées du STORE, préparées par le stage (le builder reste pur et testable) :
+ *  portée de Marche affichée, zone de Course, anneaux d'attaque du mode neutre, cibles éligibles de
+ *  « tirer dans le tas », candidats du mode de ciblage courant (soin/flux différés). */
+export interface HighlightsView {
+  myTurn: boolean;
+  walkReach: ReadonlyMap<string, number>;
+  runReach: ReadonlyMap<string, number>;
+  /** Id de l'unité active (une monture est « active » si SON cavalier l'est). */
+  activeId: string | null;
+  /** Cibles à anneau d'attaque (mode neutre) — null si le contexte ne les affiche pas. */
+  eligibleIds: ReadonlySet<string> | null;
+  /** Cibles éligibles « tirer dans le tas » — null hors pendingAttack.intoCrowd. */
+  crowdIds: ReadonlySet<string> | null;
+  /** Candidats du mode de ciblage courant + teinte amie (soin) + déjà cochés (surincantation). */
+  candidates: { ids: readonly string[]; friendly: boolean; checkedIds: ReadonlySet<string> | null } | null;
+}
+
+export function buildHighlights(scene: Scene, battle: BattleState, view: HighlightsView): HighlightEl[] {
+  const out: HighlightEl[] = [];
+  // Hauteur métrique d'une case : 0 au sol (byte-identique mono-niveau), sinon la surface réelle.
+  const hAt = (x: number, y: number, z: number) => (z ? heightAt(scene, x, y, z) : 0);
+  const parse = (k: string): [number, number, number] => {
+    const [x, y, z = 0] = k.split(',').map(Number); // clé z-aware : « x,y » (sol) ou « x,y,z » (étage)
+    return [x, y, z];
+  };
+  // Portée de Marche AFFICHÉE EN PERMANENCE au tour d'un héros (modèle de clic implicite).
+  if (view.myTurn)
+    for (const k of view.walkReach.keys()) {
+      const [x, y, z] = parse(k);
+      out.push({ key: `h${k}`, cell: { x, y, z }, h: hAt(x, y, z), kind: 'walk' });
+    }
+  // Zone de COURSE (LDB 15 l.79-82) au-delà de la Marche : y cliquer demandera le Test d'Athlétisme.
+  if (view.myTurn)
+    for (const k of view.runReach.keys()) {
+      if (view.walkReach.has(k)) continue;
+      const [x, y, z] = parse(k);
+      out.push({ key: `r${k}`, cell: { x, y, z }, h: hAt(x, y, z), kind: 'run' });
+    }
+  // Teinte d'équipe des CASES occupées : allié vert / ennemi rouge / actif jaune, sur toute l'empreinte.
+  for (const c of battle.combatants) {
+    if (!c.pos || isOutOfAction(c)) continue;
+    if (isRider(c)) continue; // le cavalier est REPRÉSENTÉ par l'empreinte de sa MONTURE
+    const active = c.id === view.activeId || c.riderId === view.activeId;
+    const fp = footprintN(c);
+    const cz = c.pos.z ?? 0;
+    for (let dx = 0; dx < fp; dx++)
+      for (let dy = 0; dy < fp; dy++) {
+        const x = c.pos.x + dx, y = c.pos.y + dy;
+        out.push({ key: `tt${c.id}-${dx}-${dy}`, cell: { x, y, z: cz }, h: hAt(x, y, cz), kind: 'team', hero: c.kind === 'hero', active });
+      }
+  }
+  // Zones persistantes (L11) : fumée opaque / feu translucide — l'occupant voit le danger. Au sol (z0).
+  for (const zone of battle.zones ?? [])
+    for (const t of zone.tiles)
+      out.push({ key: `zone-${zone.label}-${t.x}-${t.y}`, cell: { x: t.x, y: t.y, z: 0 }, h: 0, kind: 'zone', smoke: !!zone.blocksLoS });
+  // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » (mode neutre).
+  if (view.eligibleIds)
+    for (const c of battle.combatants) {
+      if (!c.pos || !view.eligibleIds.has(c.id)) continue;
+      const cz = c.pos.z ?? 0;
+      out.push({ key: `tgt-${c.id}`, cell: { x: c.pos.x, y: c.pos.y, z: cz }, h: hAt(c.pos.x, c.pos.y, cz), kind: 'ring', tone: 'target' });
+    }
+  // « Tirer dans le tas » : cibles ÉLIGIBLES touchables au hasard.
+  if (view.crowdIds)
+    for (const c of battle.combatants) {
+      if (!c.pos || !view.crowdIds.has(c.id)) continue;
+      const cz = c.pos.z ?? 0;
+      out.push({ key: `crowd-${c.id}`, cell: { x: c.pos.x, y: c.pos.y, z: cz }, h: hAt(c.pos.x, c.pos.y, cz), kind: 'ring', tone: 'crowd' });
+    }
+  // Cibles cliquables du MODE de ciblage courant : soin (anneau ami) / flux différés (anneau hostile,
+  // déjà cochés en vert).
+  if (view.candidates)
+    for (const id of view.candidates.ids) {
+      const t = battle.combatants.find((c) => c.id === id);
+      if (!t?.pos) continue;
+      const tz = t.pos.z ?? 0;
+      const tone = view.candidates.friendly || view.candidates.checkedIds?.has(id) ? 'ally' : 'target';
+      out.push({ key: `cand-${id}`, cell: { x: t.pos.x, y: t.pos.y, z: tz }, h: hAt(t.pos.x, t.pos.y, tz), kind: 'ring', tone });
+    }
+  return out;
+}

@@ -6,9 +6,10 @@
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
 import { useMemo, useRef, useState } from 'react';
-import { Scene, tileAt, sceneMetresPerTile, Roof } from '../../state/scene';
+import { Scene, sceneMetresPerTile, Roof } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
-import { terrainOverlay } from '../../gameIso/sprites';
+import { buildProps } from '../../gameIso/builders/props';
+import { terrainOverlayOf } from '../../gameIso/backends/affineProps';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
@@ -361,11 +362,13 @@ export function EditorCanvas({
           <g pointerEvents="none">
             {(() => {
               const objs: { d: number; el: JSX.Element }[] = [];
-              for (let y = 0; y < dims.h; y++)
-                for (let x = 0; x < dims.w; x++) {
-                  const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
-                  if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
-                }
+              // Overlays de terrain en relief (mur plein, bois) — MÊME source que le jeu : les éléments
+              // `prop` du builder (source 'terrain'), dessinés par le backend affine.
+              for (const p of buildProps(scene)) {
+                if (p.source !== 'terrain') continue;
+                const ov = terrainOverlayOf(p, dims);
+                if (ov) objs.push({ d: ov.d, el: <g key={`ov${p.cell.x}-${p.cell.y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
+              }
               // Toits des bâtiments COMPOSÉS : le pipeline pivot (`buildRoofs` + backend affine) en mode
               // PLAN étiqueté — couverture semi-transparente teintée par le matériau + libellé, posée
               // dans le tri global. Les MURS sont rendus par `buildWalls` ci-dessous — un toit n'est que

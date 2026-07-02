@@ -6,7 +6,9 @@
  * et le POV n'hérite d'aucun concept d'écran.
  */
 
-import type { WallSide } from '../../state/scene';
+import type { SceneEntity, WallSide } from '../../state/scene';
+import type { Combatant } from '../../engine/types';
+import type { Dir8 } from '../../state/dir8';
 
 /** Point MONDE : (x,y) en unités de GRILLE continues (coins de case à ±0.5), `h` en MÈTRES.
  *  Jamais de rotation ni d'écran ici — backend affine : `tileCenter(x, y, dims, metricToLift(h))` ;
@@ -128,16 +130,42 @@ export interface RoofEl extends ElBase {
   faces: Face[];
   lines: RoofLine[];
 }
-/** Élément BILLBOARD (zéro face) : le backend rend le SVG iso ancré aux pieds. */
+/** Élément BILLBOARD (zéro face) : le backend rend le SVG iso ancré aux pieds.
+ *  `source` route le dessin : 'entity' = prop de scène (SVG du catalogue décor, billboard iso/POV) ;
+ *  'terrain' = overlay de terrain en relief (tuile 'mur' pleine, 'bois') rendu en code par le registre. */
 export interface PropEl extends ElBase {
   kind: 'prop';
   sortClass: 'prop';
+  source: 'entity' | 'terrain';
+  /** Id de dessin : ref de prop NORMALISÉE (défaut 'tonneau', la même partout) ou id de terrain. */
   ref: string;
+  /** Orientation MONDE d'auteur (props directionnels) — chaque backend la projette avec SA caméra. */
+  facing?: Dir8;
+  /** Géométrie d'empreinte du décor (décalage fractionnaire vers le centre + échelle au côté max). */
+  foot: { offX: number; offY: number; scale: number };
+  /** Anim CSS d'ambiance (calque fx du token). */
+  fx?: string;
+  /** Prop fouillable : l'affordance (halo/étincelle) est décidée côté stage (flags de jeu). */
+  interact: boolean;
+  /** Id de l'entité source (flags `__fouille_<id>`, clés d'affordance). Absent pour un overlay terrain. */
+  entId?: string;
 }
+/** Le SUJET d'un token — la donnée d'identité que le stage transforme en corps React (pickBackend/
+ *  BodyToken). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
+ *  porte que la position LOGIQUE (`cell`) et les décisions de scène (filtres, ordre d'anneau héros). */
+export type TokenSubjectEl =
+  /** PNJ/créature d'AMBIANCE (ex-entityObjs) — `inBattle` : rendu estompé + non interactif. */
+  | { kind: 'figurant'; ent: SceneEntity; enrolled: boolean; inBattle: boolean }
+  /** Combattant (branche combat). `heroIndex` = ordinal d'anneau héros ; `overhang` = jeton de
+   *  muraille rendu AU-DESSUS de la zone active (chemin de ronde vu d'en bas). */
+  | { kind: 'combatant'; c: Combatant; heroIndex?: number; overhang: boolean }
+  /** Couple monté (iso) : UN corps composite à la tuile/empreinte de la monture. */
+  | { kind: 'mounted'; mount: Combatant; rider: Combatant };
 export interface TokenEl extends ElBase {
   kind: 'token';
   sortClass: 'token';
   id: string;
+  subject: TokenSubjectEl;
 }
 
 export type SceneEl = FloorEl | WallEl | RoofEl | PropEl | TokenEl;
