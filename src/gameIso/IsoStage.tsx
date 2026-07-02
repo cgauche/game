@@ -53,7 +53,8 @@ import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
 import { buildFloors, isOverhang, fogFloorZ } from './builders/floors';
 import { floorSvg, floorDepth } from './backends/affineFloors';
-import { wallSeg } from './walls';
+import { buildWalls, wallEnds } from './builders/walls';
+import { wallDepth, wallSvg } from './backends/affineWalls';
 import { isStructure } from '../engine/structures';
 import { getViewZ, subscribeViewZ } from './viewLevel';
 import { roofObj } from './RoofSprite';
@@ -241,10 +242,10 @@ export function IsoStage() {
   // Planchers fusionnés dans le tri de profondeur GLOBAL (objs) : chaque tuile de sol porte sa propre
   // profondeur de case (depth(x,y,z)−0.5), sous SES objets et, pour la même case, au-dessus du jeton de
   // l'étage inférieur — un sol haut SURPLOMBE localement le bas. Tuiles « vide » non rendues (on voit le dessous).
-  // Étages rendus = l'ACTIF + ceux du DESSOUS (cf. renderLevels), JAMAIS au-dessus. Asymétrie voulue : d'en
-  // HAUT (loges) on voit le parterre EN CONTREBAS par le puits (utile, sans occlusion) ; d'en BAS, dessiner
-  // les loges en surplomb OCCULTERAIT le parterre et rendrait la navigation aveugle. Cohérent avec le
-  // PICKING (z <= activeZ). Override DEBUG `viewLevel(z)` isole un étage.
+  // Étages rendus = l'ACTIF + ceux du DESSOUS (z ≤ activeZ, sélection des builders), JAMAIS au-dessus.
+  // Asymétrie voulue : d'en HAUT (loges) on voit le parterre EN CONTREBAS par le puits (utile, sans
+  // occlusion) ; d'en BAS, dessiner les loges en surplomb OCCULTERAIT le parterre et rendrait la
+  // navigation aveugle. Cohérent avec le PICKING (z <= activeZ). Override DEBUG `viewLevel(z)` isole un étage.
   const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
   const activePos = mode === 'battle' && battle ? (battle.combatants.find((c) => c.id === battle.order[battle.turn])?.pos as { z?: number } | undefined) : undefined;
   const activeZ = viewZ ?? (activePos?.z ?? partyPos.z ?? 0);
@@ -254,12 +255,6 @@ export function IsoStage() {
   // avec son sol) ET aux SURLIGNAGES de case → le halo SUIT le jeton. `diamondPath(x,y,dims,liftAt(...))` :
   // tileCenter/diamondPath multiplient ce lift par LEVEL_H (cf. iso.ts).
   const liftAt = (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0);
-
-  // Étages à RENDRE : l'ACTIF + ceux du DESSOUS (z <= activeZ) — d'en haut on voit l'auditorium par le
-  // puits ; d'en bas on ne dessine PAS les loges en surplomb (elles cacheraient le parterre). Les tuiles
-  // « vide » d'un étage haut ne dessinent rien → on voit l'étage du dessous au travers. Override debug
-  // `viewLevel(z)` isole un seul étage. Le tri de profondeur (z-aware) empile les étages correctement.
-  const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.layers.filter((l) => l.z === viewZ) : scene.layers.filter((l) => l.z <= activeZ)) : []), [scene, viewZ, activeZ]);
 
   // Étage de SOL effectif sous (x,y) pour le BROUILLARD — `fogFloorZ` (builders/floors), la MÊME vérité
   // que le surplomb PLEIN du builder → voile et sols pleins ne divergent jamais. Stable (memo) → ne
@@ -336,29 +331,27 @@ export function IsoStage() {
     return makeOccludes(d, actorTiles);
   }, [scene, mode, battle, partyPos, shownRot, viewMode, shownEdge]);
 
-  // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
-  // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
+  // Éléments de MUR du pivot (`buildWalls`) : vérité de scène CAMERA-FREE — faces monde de l'assemblage
+  // (courtine/parapet/herse/brèche routés par la def), états down (structure abattue, recalculée à
+  // l'Effondrement via la nouvelle réf de scène), open, et VISIBLE (une des DEUX cases bordant l'arête
+  // en vue → dessiné AU-DESSUS du voile ; sinon SOUS le voile qui le grise). Couches ≤ activeZ (les
+  // cloisons des loges se dressent au-dessus du parterre, rien au-dessus de la zone active).
+  const wallEls = useMemo(() => (scene?.walls?.length ? buildWalls(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
+
+  // Murs sur arêtes (cloisons fines) : les faces du builder projetées par le backend affine, fusionnées
+  // dans le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
   const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis: boolean }[]>(() => {
-    if (!scene?.walls?.length) return [];
+    if (!scene || !wallEls.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    const zs = new Set(renderLevels.map((l) => l.z));
-    // VISIBLE si l'une des DEUX cases bordant l'arête est en vue (on voit le mur depuis un côté ou l'autre)
-    // → dessiné AU-DESSUS du voile ; sinon (mur mémorisé/inconnu) SOUS le voile, qui le grise/masque.
-    const NB: Record<string, [number, number]> = { N: [0, -1], S: [0, 1], E: [1, 0], O: [-1, 0] };
-    // Cloisons des étages rendus (raised par leur z) → les murs des loges se dressent au-dessus du parterre.
-    // Une arête à STRUCTURE de siège se rend en fortification (intacte) ou brèche (abattue) — l'état
-    // `structureIsDown` est passé comme l'overlay porte passe `doorIsOpen` ; le memo dépend de `scene`,
-    // donc l'Effondrement (nouvelle réf de scène, `collapseStructure`) recalcule la brèche.
-    return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
-      const seg = wallSeg(w, d, w.structure ? structureIsDown(scene, w) : false, heightAt(scene, w.x, w.y, w.z ?? 0));
-      const wz = w.z ?? 0;
-      const [nx, ny] = NB[w.side] ?? [0, 0];
-      const vis = visible.has(`${w.x},${w.y},${wz}`) || visible.has(`${w.x + nx},${w.y + ny},${wz}`);
-      // `z` d'atténuation = la couche du mur (son sommet est une cloison de hauteur FIXE, plus un rempart
-      // porteur de passerelle) → il borde le sol de SA couche et reste à sa lumière.
-      return { d: seg.d, x: w.x, y: w.y, z: wz, vis, el: <g key={`wall-${i}`} style={{ opacity: occludesActor(w.x, w.y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
-    });
-  }, [scene, shownRot, shownEdge, viewMode, renderLevels, occludesActor, visible]);
+    return wallEls.map((el) => ({
+      d: wallDepth(el, d),
+      x: el.cell.x,
+      y: el.cell.y,
+      z: el.cell.z,
+      vis: el.states.visible,
+      el: <g key={el.key} style={{ opacity: occludesActor(el.cell.x, el.cell.y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: wallSvg(el, d) }} />,
+    }));
+  }, [scene, wallEls, shownRot, shownEdge, viewMode, occludesActor]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
     if (!scene) return [];
@@ -1750,12 +1743,10 @@ export function IsoStage() {
                 }
               }
           }
-          // 2) Rôle des MURS/structures : porte jaune / courtine rouge ; marqueur dressé sur l'arête à sa couche.
-          const edgePts = (w: WallSeg, z: number): [{ cx: number; cy: number }, { cx: number; cy: number }] => {
-            if (w.side === 'N' || w.side === 'E') return tileEdge(w.x, w.y, w.side, dims, z);
-            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, z);
-            return w.side === '\\' ? [gc(w.x, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x + 1, w.y), gc(w.x, w.y + 1)];
-          };
+          // 2) Rôle des MURS/structures : porte jaune / courtine rouge ; marqueur dressé sur l'arête à sa
+          //    couche. Extrémités = l'aiguillage UNIQUE du builder (`wallEnds`, cardinales + diagonales).
+          const edgePts = (w: WallSeg, z: number): [{ cx: number; cy: number }, { cx: number; cy: number }] =>
+            wallEnds(w).map((p) => tileCenter(p.x, p.y, dims, z)) as [{ cx: number; cy: number }, { cx: number; cy: number }];
           for (const w of scene.walls ?? []) {
             const role = structureById.get(w.structure ?? '')?.kind === 'porte' ? '#f4d020' : '#e03a3a';
             const z = w.z ?? 0;

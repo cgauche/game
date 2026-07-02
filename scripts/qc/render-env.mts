@@ -1,7 +1,7 @@
 /**
  * QC — GALERIE D'ENVIRONNEMENT headless : instrument de NON-RÉGRESSION VISUELLE de la refonte du rendu.
  * Rend les 4 scènes de référence (siège, Bourg de l'arène, opéra, caveau) avec les MÊMES primitives
- * PURES que le jeu (buildFloors+floorSvg / wallSegs / terrainOverlay / roofObj / propSvg / buildPovDrawList),
+ * PURES que le jeu (buildFloors+floorSvg / buildWalls+wallSvg / terrainOverlay / roofObj / propSvg / buildPovDrawList),
  * dans TOUTES les projections : iso losange rot 0..3, edge-on rot 0..3, vue du dessus, + 2 POV
  * (première personne, œil au départ du groupe). Environnement STATIQUE uniquement : ni brouillard,
  * ni tokens, ni FX.
@@ -13,7 +13,8 @@ import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { buildFloors } from '../../src/gameIso/builders/floors';
 import { floorSvg, floorDepth } from '../../src/gameIso/backends/affineFloors';
-import { wallSegs } from '../../src/gameIso/walls';
+import { buildWalls } from '../../src/gameIso/builders/walls';
+import { wallDepth, wallSvg } from '../../src/gameIso/backends/affineWalls';
 import { roofObj } from '../../src/gameIso/RoofSprite';
 import { DEFS, terrainOverlay } from '../../src/gameIso/sprites';
 import { propSvg } from '../../src/gameIso/catalog/decor';
@@ -49,8 +50,8 @@ function envPanel(scene: Scene, dims: Dims): { w: number; h: number; svg: string
   // parois de relief auto-dérivées comprises.
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
   for (const el of buildFloors(scene, undefined, { activeZ: maxZ })) objs.push({ d: floorDepth(el, dims), svg: floorSvg(el, dims) });
-  // Murs d'arête (portes/parapets/herses inclus — apparence 100 % donnée).
-  objs.push(...wallSegs(scene, dims));
+  // Murs d'arête (portes/parapets/herses inclus — apparence 100 % donnée), toutes couches.
+  for (const el of buildWalls(scene)) objs.push({ d: wallDepth(el, dims), svg: wallSvg(el, dims) });
   // Overlays de terrain en relief (tuile 'mur' pleine, 'bois') — couche de base, comme IsoStage.
   for (let y = 0; y < dims.h; y++)
     for (let x = 0; x < dims.w; x++) {

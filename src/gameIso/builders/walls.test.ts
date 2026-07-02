@@ -1,0 +1,215 @@
+import { describe, it, expect } from 'vitest';
+import { buildWalls, wallEnds } from './walls';
+import type { WallEl } from './types';
+import { WALL_H_M, isoPxToM } from '../iso';
+import { METRES_PER_LEVEL } from '../../state/relief';
+import { structureAppearance } from '../catalog/structures';
+import { emptyScene, setStructureDown, type Scene, type WallSeg } from '../../state/scene';
+
+/**
+ * Builder de MURS du pivot : on teste la sortie MONDE (camera-free) — l'aiguillage d'arête unique
+ * (`wallEnds`), les hauteurs en MÈTRES (conversion px⇔m partagée `isoPxToM`), les faces d'assemblage
+ * pilotées par la DEF (parapet/merlons/herse/porte/brèche) et les vérités de scène (down/open/visible).
+ */
+
+function sceneWith(walls: WallSeg[]): Scene {
+  const s = emptyScene(6, 6);
+  s.walls = walls;
+  return s;
+}
+const one = (s: Scene): WallEl => buildWalls(s)[0];
+const parts = (el: WallEl) => el.faces.map((f) => f.material.part);
+const facesOf = (el: WallEl, part: string) => el.faces.filter((f) => f.material.part === part);
+
+describe('wallEnds — aiguillage d’arête UNIQUE (cardinales + diagonales)', () => {
+  it('N/E/\\// : mêmes extrémités A,B que les ex-implémentations (walls.edgeEnds, pov.segEnds)', () => {
+    expect(wallEnds({ x: 5, y: 6, side: 'N' })).toEqual([{ x: 4.5, y: 5.5 }, { x: 5.5, y: 5.5 }]);
+    expect(wallEnds({ x: 5, y: 6, side: 'E' })).toEqual([{ x: 5.5, y: 5.5 }, { x: 5.5, y: 6.5 }]);
+    expect(wallEnds({ x: 5, y: 6, side: '\\' })).toEqual([{ x: 4.5, y: 5.5 }, { x: 5.5, y: 6.5 }]);
+    expect(wallEnds({ x: 5, y: 6, side: '/' })).toEqual([{ x: 5.5, y: 5.5 }, { x: 4.5, y: 6.5 }]);
+  });
+});
+
+describe('buildWalls — mur BOIS nu (def sans parapet)', () => {
+  const el = one(sceneWith([{ x: 2, y: 2, side: 'N' }]));
+
+  it('faces dans l’ordre de peinture : poteau, face, panneau encadré, moulure, plinthe, couronnement ×2, poteau', () => {
+    expect(parts(el)).toEqual(['poteau', 'face', 'panneau', 'moulure', 'plinthe', 'couronnement', 'couronnement', 'poteau']);
+  });
+
+  it('la face est un quad [A@haut, B@haut, B@bas, A@bas] de WALL_H_M mètres sur l’arête wallEnds', () => {
+    const face = facesOf(el, 'face')[0];
+    expect(face.plane).toBe('vertical');
+    expect(face.poly.map((p) => p.h)).toEqual([WALL_H_M, WALL_H_M, 0, 0]);
+    const [A, B] = wallEnds({ x: 2, y: 2, side: 'N' });
+    expect(face.poly[0]).toMatchObject(A);
+    expect(face.poly[1]).toMatchObject(B);
+  });
+
+  it('les montants (poteau) = 2 points [haut, bas] aux extrémités (convention du pilier de sol)', () => {
+    const posts = facesOf(el, 'poteau');
+    expect(posts).toHaveLength(2);
+    for (const p of posts) {
+      expect(p.poly).toHaveLength(2);
+      expect(p.poly[0].h).toBe(WALL_H_M);
+      expect(p.poly[1].h).toBe(0);
+    }
+    expect(posts[0].poly[0]).toMatchObject({ x: 1.5, y: 1.5 }); // A
+    expect(posts[1].poly[0]).toMatchObject({ x: 2.5, y: 1.5 }); // B
+  });
+
+  it('identité : key stable, side, appearance résolue (plain à hauteur 0), états à faux', () => {
+    expect(el.key).toBe('wall:2,2,N,0');
+    expect(el.side).toBe('N');
+    expect(el.appearance).toBe('plain');
+    expect(el.states).toEqual({ visible: true, down: false, open: false });
+  });
+});
+
+describe('buildWalls — hauteur de base MÉTRIQUE (heightAt, vérité partagée iso/POV)', () => {
+  it('un mur sur une case à 4 m part de 4 m ; sans structure il devient rempart (wallApp base > 1 m)', () => {
+    const s = sceneWith([{ x: 2, y: 2, side: 'E' }]);
+    s.layers[0].height = new Array(36).fill(0);
+    s.layers[0].height[2 * 6 + 2] = 4;
+    const el = one(s);
+    expect(el.appearance).toBe('mur-en-pierre');
+    expect(el.ends[0].h).toBe(4);
+    const face = facesOf(el, 'face')[0];
+    expect(face.poly.map((p) => p.h)).toEqual([4 + WALL_H_M, 4 + WALL_H_M, 4, 4]);
+  });
+});
+
+describe('buildWalls — porte BOIS (routée par le seg.door)', () => {
+  const el = one(sceneWith([{ x: 2, y: 2, side: 'N', door: true }]));
+
+  it('embrasure + face au-dessus de l’ouverture + chambranle + jambages, ouverture 0.52 × WALL_H_M', () => {
+    expect(parts(el)).toEqual(['poteau', 'embrasure', 'face', 'chambranle', 'couronnement', 'jambage', 'jambage', 'poteau']);
+    const op = WALL_H_M * 0.52;
+    expect(facesOf(el, 'embrasure')[0].poly.map((p) => p.h)).toEqual([op, op, 0, 0]);
+    expect(facesOf(el, 'face')[0].poly[2].h).toBe(op); // la face ne descend que jusqu'à l'ouverture
+    for (const j of facesOf(el, 'jambage')) expect(j.poly.map((p) => p.h)).toEqual([op, 0]);
+  });
+
+  it('porte sans `closed` = OUVERTE (state open) ; `closed: true` = fermée', () => {
+    expect(el.states.open).toBe(true);
+    expect(one(sceneWith([{ x: 2, y: 2, side: 'N', door: true, closed: true }])).states.open).toBe(false);
+  });
+});
+
+describe('buildWalls — fortification de PIERRE (def à parapet)', () => {
+  const def = structureAppearance('mur-en-pierre');
+  const el = one(sceneWith([{ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }]));
+
+  it('courtine ferrée + couronne crénelée, tout depuis les champs de la def', () => {
+    expect(parts(el)).toEqual([
+      'poteau', 'face', 'bande', 'bande', 'bande', // face + 3 ferrures (def.bands)
+      'parapet', 'bande', 'arase', 'merlon', 'merlon', 'merlon', // couronne (5 tronçons, pas de 2 → 3 merlons)
+      'poteau',
+    ]);
+  });
+
+  it('hauteurs : parapet = heightLevelFrac × METRES_PER_LEVEL au-dessus du sommet, merlons au-dessus', () => {
+    const P = def.parapet!.heightLevelFrac * METRES_PER_LEVEL;
+    expect(facesOf(el, 'parapet')[0].poly.map((p) => p.h)).toEqual([WALL_H_M + P, WALL_H_M + P, WALL_H_M, WALL_H_M]);
+    const merlon = facesOf(el, 'merlon')[0];
+    expect(merlon.poly[0].h).toBeCloseTo(WALL_H_M + P + isoPxToM(def.parapet!.merlonHeightPx), 9);
+    // Les poteaux montent jusqu'au sommet du parapet.
+    expect(facesOf(el, 'poteau')[0].poly[0].h).toBeCloseTo(WALL_H_M + P, 9);
+  });
+
+  it('les merlons tronçonnent l’arête (i/count → (i+1)/count, pas de merlonStep)', () => {
+    const xs = facesOf(el, 'merlon').map((m) => [m.poly[0].x, m.poly[1].x]);
+    const [A, B] = wallEnds({ x: 2, y: 2, side: 'N' });
+    const at = (t: number) => A.x + (B.x - A.x) * t;
+    expect(xs).toEqual([[at(0), at(0.2)], [at(0.4), at(0.6)], [at(0.8), at(1)]]);
+  });
+});
+
+describe('buildWalls — corps de garde (porte-de-ville : ouverture béante + herse)', () => {
+  const def = structureAppearance('porte-de-ville');
+  const el = one(sceneWith([{ x: 2, y: 2, side: 'N', structure: 'porte-de-ville' }]));
+
+  it('PAS de face pleine ni de poteau : barreaux + traverses + linteau + couronne crénelée', () => {
+    expect(facesOf(el, 'face')).toHaveLength(0);
+    expect(facesOf(el, 'poteau')).toHaveLength(0);
+    expect(facesOf(el, 'herse-barreau')).toHaveLength(def.door!.herse!.bars + 1); // 7 barreaux (0..bars)
+    expect(facesOf(el, 'herse-traverse')).toHaveLength(def.door!.herse!.traverseFracs.length);
+    expect(facesOf(el, 'linteau')).toHaveLength(1);
+    expect(facesOf(el, 'merlon')).toHaveLength(3);
+  });
+
+  it('barreaux : tronçons fins clampés à [0,1], du sol au linteau (topFrac × WALL_H_M)', () => {
+    const bars = facesOf(el, 'herse-barreau');
+    expect(bars[0].poly[0].x).toBe(wallEnds({ x: 2, y: 2, side: 'N' })[0].x); // clampé à t=0
+    for (const b of bars) {
+      expect(b.poly[0].h).toBeCloseTo(WALL_H_M * def.door!.herse!.topFrac, 9);
+      expect(b.poly[2].h).toBe(0);
+    }
+  });
+
+  it('ABATTU : la herse cède la place à un seuil d’éboulis, linteau et couronne restent', () => {
+    let s = sceneWith([{ x: 2, y: 2, side: 'N', structure: 'porte-de-ville' }]);
+    s = setStructureDown(s, 2, 2, 'N', 0, true);
+    const down = one(s);
+    expect(down.states.down).toBe(true);
+    expect(parts(down)).toEqual(['seuil', 'linteau', 'parapet', 'bande', 'arase', 'merlon', 'merlon', 'merlon']);
+  });
+});
+
+describe('buildWalls — BRÈCHE (structure abattue, paramétrisation unique bois+pierre)', () => {
+  it('courtine abattue : gravats + tas dentelé + moignons de poteau', () => {
+    let s = sceneWith([{ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }]);
+    s = setStructureDown(s, 2, 2, 'N', 0, true);
+    const el = one(s);
+    expect(el.states.down).toBe(true);
+    expect(parts(el)).toEqual(['gravats', 'gravats-tas', 'poteau', 'poteau']);
+    const heap = facesOf(el, 'gravats-tas')[0];
+    const hr = WALL_H_M * 0.32;
+    expect(heap.poly.map((p) => p.h)).toEqual([0, hr, hr * 0.7, 0]); // dentelure A → m1 → m2 → B
+    const [a, b] = facesOf(el, 'poteau');
+    expect(a.poly[0].h).toBeCloseTo(hr * 0.7, 9); // moignons asymétriques
+    expect(b.poly[0].h).toBeCloseTo(hr * 0.55, 9);
+  });
+});
+
+describe('buildWalls — vérité VISIBLE (une des deux cases bordant l’arête en vue)', () => {
+  const seg: WallSeg = { x: 2, y: 2, side: 'N' };
+  it.each([
+    ['case propre', '2,2,0', true],
+    ['case voisine (N → y−1)', '2,1,0', true],
+    ['autre case', '3,3,0', false],
+  ])('%s', (_lbl, key, vis) => {
+    expect(buildWalls(sceneWith([seg]), new Set([key]))[0].states.visible).toBe(vis);
+  });
+  it('diagonale : seule SA case compte ; set absent ⇒ visible (éditeur/QC)', () => {
+    const s = sceneWith([{ x: 2, y: 2, side: '\\' }]);
+    expect(buildWalls(s, new Set(['2,2,0']))[0].states.visible).toBe(true);
+    expect(buildWalls(s, new Set(['2,1,0']))[0].states.visible).toBe(false);
+    expect(buildWalls(s)[0].states.visible).toBe(true);
+  });
+});
+
+describe('buildWalls — sélection des couches', () => {
+  const s = sceneWith([{ x: 1, y: 1, side: 'N' }, { x: 2, y: 2, side: 'N', z: 1 }]);
+  it('view absent ⇒ toutes les couches (éditeur/QC/POV)', () => {
+    expect(buildWalls(s).map((e) => e.cell.z)).toEqual([0, 1]);
+  });
+  it('activeZ borne : rien AU-DESSUS de la zone active', () => {
+    expect(buildWalls(s, undefined, { activeZ: 0 }).map((e) => e.key)).toEqual(['wall:1,1,N,0']);
+    expect(buildWalls(s, undefined, { activeZ: 1 })).toHaveLength(2);
+  });
+  it('viewZ isole un étage (debug viewLevel)', () => {
+    expect(buildWalls(s, undefined, { activeZ: 1, viewZ: 1 }).map((e) => e.key)).toEqual(['wall:2,2,N,1']);
+  });
+});
+
+describe('buildWalls — stabilité', () => {
+  it('deux appels identiques → mêmes clés, mêmes faces', () => {
+    const s = sceneWith([{ x: 1, y: 1, side: 'N' }, { x: 3, y: 3, side: '/', door: true }]);
+    const a = buildWalls(s);
+    const b = buildWalls(s);
+    expect(a.map((e) => e.key)).toEqual(b.map((e) => e.key));
+    expect(a.map(parts)).toEqual(b.map(parts));
+    expect(new Set(a.map((e) => e.key)).size).toBe(a.length);
+  });
+});

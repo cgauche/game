@@ -16,14 +16,13 @@ import {
   fx,
   VW,
   FOG_COLOR,
-  WALL_H_M,
   type CamPose,
   type Vec3,
 } from './camera';
-import { sceneMetresPerTile, tileAt, heightAt, isIndoor, doorIsOpen, structureIsDown, type Scene, type WallSeg } from '../../state/scene';
+import { sceneMetresPerTile, tileAt, heightAt, isIndoor, type Scene } from '../../state/scene';
 import { TERRAIN_DEFS } from '../../state/terrain';
-import { WALL_H, LEVEL_H } from '../iso';
-import { wallApp } from '../catalog/structures';
+import { buildWalls } from '../builders/walls';
+import { structureAppearance, wallPartColor, type WallPart } from '../catalog/structures';
 import { reliefMaterial } from '../catalog/relief';
 
 /** Une pièce dessinable : polygone écran (points), couleur, profondeur de tri, clé stable, nature. */
@@ -70,10 +69,6 @@ function resolveCss(c: string): string {
   const out = hex.startsWith('#') ? hex : (STRUCT_FALLBACK[name] ?? '#808080');
   cssCache.set(name, out); return out;
 }
-
-/** Convertit une hauteur ISO en px (def : `WALL_H`, `LEVEL_H`, merlonHeightPx…) en mètres MONDE. Une
- *  cloison d'arête vaut `WALL_H` px ⇔ `WALL_H_M` m → toute hauteur px suit le même facteur. PUR. */
-const pxToM = (px: number): number => (px / WALL_H) * WALL_H_M;
 
 /** Biais de profondeur : donne aux sols un cran DERRIÈRE (plus loin) pour qu'ils ne z-fightent pas avec
  *  la base des murs à centroïde égal. */
@@ -182,46 +177,6 @@ function riserCornersWorld(mpt: number, x: number, y: number, side: (typeof SIDE
   ];
 }
 
-/** Extrémités A,B (coords de tuile) de l'arête d'un `WallSeg` selon son `side` — MÊME aiguillage que
- *  `wallCornersWorld` (N/E/`\`/`/`) → géométrie d'arête cohérente entre face, parapet, merlons et herse. */
-function segEnds(seg: WallSeg): { A: { x: number; y: number }; B: { x: number; y: number } } {
-  const { x, y } = seg;
-  switch (seg.side) {
-    case 'N': return { A: { x: x - 0.5, y: y - 0.5 }, B: { x: x + 0.5, y: y - 0.5 } };
-    case 'E': return { A: { x: x + 0.5, y: y - 0.5 }, B: { x: x + 0.5, y: y + 0.5 } };
-    case '\\': return { A: { x: x - 0.5, y: y - 0.5 }, B: { x: x + 0.5, y: y + 0.5 } };
-    default: return { A: { x: x + 0.5, y: y - 0.5 }, B: { x: x - 0.5, y: y + 0.5 } }; // '/'
-  }
-}
-
-/** Quad MONDE de la face de l'arête d'un `WallSeg` entre `hBas` et `hHaut` (mètres). Ordre
- *  [A@bas, B@bas, B@haut, A@haut] — comme `wallCornersWorld`, pour un clip convexe cohérent. PUR. */
-function edgeFaceWorld(scene: Scene, seg: WallSeg, hBas: number, hHaut: number): Vec3[] {
-  const mpt = sceneMetresPerTile(scene);
-  const { A, B } = segEnds(seg);
-  return [
-    { x: A.x * mpt, y: A.y * mpt, z: hBas },
-    { x: B.x * mpt, y: B.y * mpt, z: hBas },
-    { x: B.x * mpt, y: B.y * mpt, z: hHaut },
-    { x: A.x * mpt, y: A.y * mpt, z: hHaut },
-  ];
-}
-
-/** Quad MONDE d'un TRONÇON de l'arête (interpolé A→B sur `[t0,t1]`) entre `hBas` et `hHaut` (mètres) —
- *  brique des merlons (par pas le long du sommet) et des barreaux de herse (fines bandes verticales). PUR. */
-function edgeSpanWorld(scene: Scene, seg: WallSeg, t0: number, t1: number, hBas: number, hHaut: number): Vec3[] {
-  const mpt = sceneMetresPerTile(scene);
-  const { A, B } = segEnds(seg);
-  const px = (t: number) => (A.x + (B.x - A.x) * t) * mpt;
-  const py = (t: number) => (A.y + (B.y - A.y) * t) * mpt;
-  return [
-    { x: px(t0), y: py(t0), z: hBas },
-    { x: px(t1), y: py(t1), z: hBas },
-    { x: px(t1), y: py(t1), z: hHaut },
-    { x: px(t0), y: py(t0), z: hHaut },
-  ];
-}
-
 /** Assemble la liste de dessin POV en HEIGHTFIELD SOLIDE. Trie du plus LOIN au plus PROCHE. PUR.
  *  Pour chaque COLONNE visible (x,y) et chaque couche, rend le SOL à sa hauteur + les FACES VERTICALES
  *  (falaise/marche/rampe) vers les voisins plus bas → le relief (remparts, plateformes, rampes) devient
@@ -273,59 +228,25 @@ export function buildPovDrawList(
     }
   }
 
-  // MURS d'arête — géométrie & couleurs TOUTES tirées de l'apparence partagée (`structureAppearance`, la
-  // même def que walls.ts). Colonne visible requise ; PORTE ouverte / STRUCTURE abattue (brèche) = passage
-  // béant. Chaque mur assemble : face pleine (repli d'une ouverture au-dessus du linteau), parapet crénelé
-  // (parapet + ferrure + arase + merlons) et herse (barreaux) — chacun selon les champs présents de la def.
-  for (const seg of scene.walls ?? []) {
-    if (!cols.has(`${seg.x},${seg.y}`)) continue;
-    if ((seg.door && doorIsOpen(scene, seg)) || (seg.structure && structureIsDown(scene, seg))) continue;
-    const z = seg.z ?? 0;
-    const baseH = heightAt(scene, seg.x, seg.y, z);
-    const app = wallApp(seg, baseH);
-    const lv = light.at(seg.x, seg.y, z);
-    const key = `${seg.x},${seg.y},${seg.side},${z}`;
-    const H1 = baseH + WALL_H_M; // sommet de la face pleine (mètres)
-    const push = (corners: Vec3[], color: string, k: string, bias: number) => {
-      const it = makeItem(corners, cam, farMetres, lv, color, 'wall', k, bias, fog);
+  // MURS d'arête — géométrie PARTAGÉE du pivot (`buildWalls`, les MÊMES faces monde que l'iso) : le POV
+  // projette chaque face (GP grille+mètres → mètres monde par `mpt`) avec sa caméra + clip + teinte, la
+  // couleur de base venant de `wallPartColor` (source unique avec l'affine). Le détail BOIS (panneau/
+  // moulure/plinthe/embrasure) devient AUSSI visible en POV (ex-divergence : face/bandes/arase seulement).
+  // Colonne visible requise ; PORTE ouverte (state `open`) = passage béant ; structure ABATTUE = faces de
+  // brèche (tas de gravats). Les MONTANTS (poteau/jambage, 2 points) restent un ornement d'écran affine.
+  for (const el of buildWalls(scene)) {
+    if (!cols.has(`${el.cell.x},${el.cell.y}`)) continue;
+    if (el.states.open) continue;
+    const app = structureAppearance(el.appearance);
+    const lv = light.at(el.cell.x, el.cell.y, el.cell.z);
+    el.faces.forEach((f, i) => {
+      if (f.poly.length < 3) return; // montant 2 points : hors POV (LOD minimal)
+      const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
+      // Peintre INTRA-mur : les faces s'empilent dans l'ordre du builder (détail PAR-DESSUS le fond) —
+      // biais NÉGATIF croissant (plus proche), trop petit pour déclasser deux murs distincts.
+      const it = makeItem(corners, cam, farMetres, lv, resolveCss(wallPartColor(app, f.material.part as WallPart)), 'wall', `${el.key}:${i}:${f.material.part}`, -i * 0.002, fog);
       if (it) items.push(it);
-    };
-
-    // (a) FACE PLEINE — sauf ouverture BÉANTE (openingFrac ≥ 1 : corps de garde traversant). Une porte
-    //     à ouverture partielle ne rend que la portion AU-DESSUS de l'ouverture (linteau → sommet).
-    if (!(app.door && app.door.openingFrac >= 1)) {
-      const hOpen = app.door ? baseH + pxToM(WALL_H * app.door.openingFrac) : baseH;
-      push(edgeFaceWorld(scene, seg, hOpen, H1), resolveCss(app.face), `wall:${key}`, 0);
-    }
-
-    // (b) PARAPET (fortification) : dosseret plein + ferrure de fer + arase de couronnement.
-    const par = app.parapet;
-    if (par) {
-      const P = pxToM(LEVEL_H * par.heightLevelFrac); // hauteur dressée du parapet (mètres)
-      push(edgeFaceWorld(scene, seg, H1, H1 + P), resolveCss(app.face), `parapet:${key}`, 0.02);
-      const bandLo = H1 + P * par.parapetBandFrac;
-      push(edgeFaceWorld(scene, seg, bandLo, bandLo + pxToM(par.bandThickPx)), resolveCss(app.band ?? app.face), `parband:${key}`, 0.03);
-      push(edgeFaceWorld(scene, seg, H1 + P - pxToM(par.arasePx), H1 + P), resolveCss(app.cap ?? app.face), `arase:${key}`, 0.03);
-
-      // (c) MERLONS — créneaux au sommet : un merlon tous les `merlonStep` tronçons sur `merlonCount`.
-      const capC = resolveCss(app.cap ?? app.face);
-      const mTop = H1 + P + pxToM(par.merlonHeightPx);
-      for (let i = 0; i < par.merlonCount; i += par.merlonStep) {
-        push(edgeSpanWorld(scene, seg, i / par.merlonCount, (i + 1) / par.merlonCount, H1 + P, mTop), capC, `merlon:${key},${i}`, 0.04);
-      }
-    }
-
-    // (d) HERSE — grille de barreaux verticaux pendant du linteau (portail de fort barré).
-    const herse = app.door?.herse;
-    if (herse) {
-      const barC = resolveCss(app.band ?? app.face);
-      const hTop = baseH + pxToM(WALL_H * herse.topFrac);
-      const eps = 0.02; // demi-largeur d'un barreau (fraction d'arête)
-      for (let k = 0; k <= herse.bars; k++) {
-        const t = k / herse.bars;
-        push(edgeSpanWorld(scene, seg, Math.max(0, t - eps), Math.min(1, t + eps), baseH, hTop), barC, `herse:${key},${k}`, 0.05);
-      }
-    }
+    });
   }
 
   // Peintre : loin d'abord (depth DÉCROISSANT).

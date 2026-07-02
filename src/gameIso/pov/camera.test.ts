@@ -4,12 +4,10 @@ import {
   project,
   clipNear,
   tileCornersWorld,
-  wallCornersWorld,
   povView,
   tint,
   fogAt,
   EYE_H,
-  WALL_H_M,
   NEAR,
   VW,
   VH,
@@ -18,7 +16,8 @@ import {
   type CamPose,
   type Vec3,
 } from './camera';
-import { emptyScene, type Scene, type WallSeg } from '../../state/scene';
+import { WALL_H_M } from '../iso';
+import { emptyScene, type Scene } from '../../state/scene';
 import { type Dir8 } from '../rig/facing';
 
 // — Fabrique de caméra de test : scène plate (herbe, height 0), groupe au centre regardant Nord.
@@ -269,32 +268,3 @@ describe('tileCornersWorld', () => {
   });
 });
 
-describe('wallCornersWorld', () => {
-  const s = flatScene();
-  it('N de (x,y) : A=(x-0.5,y-0.5), B=(x+0.5,y-0.5) ; [A@h0,B@h0,B@h1,A@h1]', () => {
-    const seg: WallSeg = { x: 5, y: 6, side: 'N' };
-    const c = wallCornersWorld(s, seg);
-    expect(c.length).toBe(4);
-    expect(c[0]).toEqual({ x: 4.5 * 2, y: 5.5 * 2, z: 0 }); // A@h0
-    expect(c[1]).toEqual({ x: 5.5 * 2, y: 5.5 * 2, z: 0 }); // B@h0
-    expect(c[2].z).toBeCloseTo(WALL_H_M, 6); // B@h1
-    expect(c[3].z).toBeCloseTo(WALL_H_M, 6); // A@h1
-    expect(c[2].x).toBeCloseTo(5.5 * 2, 6);
-    expect(c[3].x).toBeCloseTo(4.5 * 2, 6);
-  });
-  it('E de (x,y) : A=(x+0.5,y-0.5), B=(x+0.5,y+0.5)', () => {
-    const c = wallCornersWorld(s, { x: 5, y: 6, side: 'E' });
-    expect(c[0]).toEqual({ x: 5.5 * 2, y: 5.5 * 2, z: 0 });
-    expect(c[1]).toEqual({ x: 5.5 * 2, y: 6.5 * 2, z: 0 });
-  });
-  it('oblique \\ : A=(x-0.5,y-0.5), B=(x+0.5,y+0.5)', () => {
-    const c = wallCornersWorld(s, { x: 5, y: 6, side: '\\' });
-    expect(c[0]).toEqual({ x: 4.5 * 2, y: 5.5 * 2, z: 0 });
-    expect(c[1]).toEqual({ x: 5.5 * 2, y: 6.5 * 2, z: 0 });
-  });
-  it('oblique / : A=(x+0.5,y-0.5), B=(x-0.5,y+0.5)', () => {
-    const c = wallCornersWorld(s, { x: 5, y: 6, side: '/' });
-    expect(c[0]).toEqual({ x: 5.5 * 2, y: 5.5 * 2, z: 0 });
-    expect(c[1]).toEqual({ x: 4.5 * 2, y: 6.5 * 2, z: 0 });
-  });
-});

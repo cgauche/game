@@ -3,6 +3,8 @@
  * Une tuile occupe TW de large et TH de haut en losange.
  * Conventions partagées par le rendu ET le picking (clic → tuile).
  */
+import { METRES_PER_LEVEL } from '../state/relief';
+
 export const TW = 64; // largeur d'un losange (pleine)
 export const TH = 32; // hauteur d'un losange (pleine)
 export const SPRITE_HEADROOM = 160; // place au-dessus des tuiles pour les sprites hauts
@@ -18,6 +20,12 @@ export const LEVEL_H = 96; // hauteur écran (px) d'un étage : un niveau z>0 es
  *  sans cycle) → partagé par `walls.ts` (rendu du mur) ET `catalog/buildings` (base du toit qui REPOSE
  *  dessus). `walls.ts` la ré-exporte pour ses anciens importeurs. */
 export const WALL_H = 54;
+/** Conversion px-iso → MÈTRES MONDE (SOURCE UNIQUE, ex-`pxToM` du POV) : `LEVEL_H` px (un étage écran)
+ *  ⇔ `METRES_PER_LEVEL` m. Les hauteurs px des defs d'apparence (merlons, bandes, linteaux…) passent
+ *  par ici pour devenir des hauteurs MONDE consommées par les builders puis les DEUX backends. */
+export const isoPxToM = (px: number): number => (px / LEVEL_H) * METRES_PER_LEVEL;
+/** Hauteur MÉTRIQUE d'une cloison d'arête (`WALL_H` px ≈ 2.25 m) — vérité partagée builder/backends/POV. */
+export const WALL_H_M = isoPxToM(WALL_H);
 /** Profondeur de tri : la base (anti-diagonale ÉCRAN) PRIME (× BASE_SCALE) ; l'étage `z` n'est qu'un
  *  cran SECONDAIRE (Z_STEP) de départage, lui-même au-dessus des offsets de COUCHE ajoutés par les
  *  appelants (sol −0.5, prop 0, overlay +0.25, jeton +0.5, mur +0.45, escalier +0.42 / haut d'escalier

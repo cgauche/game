@@ -8,16 +8,13 @@
  * Repère CAMÉRA : `fwd` (avant, vers l'écran) et `right` (tribord) sont des vecteurs SOL unitaires en
  * unités de GRILLE ; l'axe vertical monde `z` sert d'axe « haut » écran.
  */
-import { WALL_H, LEVEL_H } from '../iso';
-import { METRES_PER_LEVEL } from '../../state/relief';
-import { heightAt, sceneMetresPerTile, type Scene, type WallSeg } from '../../state/scene';
+import { WALL_H_M } from '../iso';
+import { heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { DIR8_DELTA, type Dir8 } from '../rig/facing';
 
-// — Constantes de caméra/projection —
+// — Constantes de caméra/projection — (hauteur de cloison : `WALL_H_M`, vérité partagée dans iso.ts)
 /** Hauteur de l'œil au-dessus de la surface où se tient le groupe (mètres). */
 export const EYE_H = 1.7;
-/** Hauteur métrique d'une cloison d'arête : `WALL_H` px ÷ `LEVEL_H` px × `METRES_PER_LEVEL` m ≈ 2.25 m. */
-export const WALL_H_M = (WALL_H / LEVEL_H) * METRES_PER_LEVEL;
 /** Champ de vision horizontal (radians ≈ 75°). */
 export const FOV_X = (75 * Math.PI) / 180;
 /** Plan proche (mètres) — tout ce qui est plus près/derrière est clippé. > 0. */
@@ -134,41 +131,6 @@ export function tileCornersWorld(scene: Scene, x: number, y: number, z: number, 
     { x: x0, y: y1, z: h },
     { x: x1, y: y1, z: h },
     { x: x1, y: y0, z: h },
-  ];
-}
-
-/** 4 coins MONDE (mètres) d'une cloison d'arête (`WallSeg`). Extrémités A,B en coords de tuile selon le
- *  `side` ; h0 = surface porteuse, h1 = h0 + `WALL_H_M`. Ordre : [A@h0, B@h0, B@h1, A@h1] (quad vertical). */
-export function wallCornersWorld(scene: Scene, seg: WallSeg): Vec3[] {
-  const mpt = sceneMetresPerTile(scene);
-  const { x, y } = seg;
-  let A: { x: number; y: number };
-  let B: { x: number; y: number };
-  switch (seg.side) {
-    case 'N':
-      A = { x: x - 0.5, y: y - 0.5 };
-      B = { x: x + 0.5, y: y - 0.5 };
-      break;
-    case 'E':
-      A = { x: x + 0.5, y: y - 0.5 };
-      B = { x: x + 0.5, y: y + 0.5 };
-      break;
-    case '\\':
-      A = { x: x - 0.5, y: y - 0.5 };
-      B = { x: x + 0.5, y: y + 0.5 };
-      break;
-    default: // '/'
-      A = { x: x + 0.5, y: y - 0.5 };
-      B = { x: x - 0.5, y: y + 0.5 };
-      break;
-  }
-  const h0 = heightAt(scene, seg.x, seg.y, seg.z ?? 0);
-  const h1 = h0 + WALL_H_M;
-  return [
-    { x: A.x * mpt, y: A.y * mpt, z: h0 },
-    { x: B.x * mpt, y: B.y * mpt, z: h0 },
-    { x: B.x * mpt, y: B.y * mpt, z: h1 },
-    { x: A.x * mpt, y: A.y * mpt, z: h1 },
   ];
 }
 

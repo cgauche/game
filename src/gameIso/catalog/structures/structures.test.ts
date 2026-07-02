@@ -1,11 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { structureAppearance, wallApp } from './index';
+import { structureAppearance, wallApp, wallPartColor } from './index';
 import { structureAppearances } from '../../../data';
-import { wallSeg } from '../../walls';
-import type { WallSeg } from '../../../state/scene';
+import { buildWalls } from '../../builders/walls';
+import { wallSvg } from '../../backends/affineWalls';
+import { emptyScene, type Scene, type WallSeg } from '../../../state/scene';
 import type { Dims } from '../../iso';
 
 const DIMS: Dims = { w: 6, h: 6 }; // iso (view non défini)
+
+function sceneWith(seg: WallSeg): Scene {
+  const s = emptyScene(6, 6);
+  s.walls = [seg];
+  return s;
+}
 
 describe('apparence de structure (JSON partagé iso/POV)', () => {
   it('les 6 apparences sont présentes', () => {
@@ -36,10 +43,22 @@ describe('apparence de structure (JSON partagé iso/POV)', () => {
     expect(wallApp({ x: 0, y: 0, side: 'N' } as WallSeg, 0).id).toBe('plain');
   });
 
-  it('walls.ts consomme la donnée : la face du JSON apparaît dans le SVG rendu', () => {
-    const wood = wallSeg({ x: 1, y: 1, side: 'E' } as WallSeg, DIMS, false, 0); // 'plain' bois
-    expect(wood.svg).toContain(structureAppearance('plain').face); // #6e5940 (face E = SIDE_LIT identité)
-    const stone = wallSeg({ x: 1, y: 1, side: 'E', structure: 'mur-en-pierre' } as WallSeg, DIMS, false, 0);
-    expect(stone.svg).toContain('var(--struct-face)');
+  it('le pipeline murs (buildWalls + backend affine) consomme la donnée : la face du JSON apparaît dans le SVG', () => {
+    const wood = wallSvg(buildWalls(sceneWith({ x: 1, y: 1, side: 'E' }))[0], DIMS); // 'plain' bois
+    expect(wood).toContain(structureAppearance('plain').face); // #6e5940 (face E = SIDE_LIT identité)
+    const stone = wallSvg(buildWalls(sceneWith({ x: 1, y: 1, side: 'E', structure: 'mur-en-pierre' }))[0], DIMS);
+    expect(stone).toContain('var(--struct-face)');
+  });
+
+  it('wallPartColor : couleur de base par PART depuis les champs de la def (source unique des 2 backends)', () => {
+    const bois = structureAppearance('plain');
+    expect(wallPartColor(bois, 'face')).toBe(bois.face);
+    expect(wallPartColor(bois, 'panneau')).toBe(bois.wood!.inset);
+    expect(wallPartColor(bois, 'gravats')).toBe(bois.wood!.rubble); // repli bois (pas de rubble pierre)
+    const pierre = structureAppearance('mur-en-pierre');
+    expect(wallPartColor(pierre, 'bande')).toBe(pierre.band);
+    expect(wallPartColor(pierre, 'merlon')).toBe(pierre.cap);
+    const porte = structureAppearance('porte-de-ville');
+    expect(wallPartColor(porte, 'herse-traverse')).toBe(porte.door!.herse!.traverseColor);
   });
 });

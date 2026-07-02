@@ -14,7 +14,8 @@ import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { buildFloors } from '../../gameIso/builders/floors';
 import { floorSvg } from '../../gameIso/backends/affineFloors';
-import { wallSegs } from '../../gameIso/walls';
+import { buildWalls } from '../../gameIso/builders/walls';
+import { wallDepth, wallSvg } from '../../gameIso/backends/affineWalls';
 import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
@@ -336,8 +337,9 @@ export function EditorCanvas({
                   if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
                 }
               // Toits des bâtiments COMPOSÉS : couverture semi-transparente (teintée par le matériau) +
-              // libellé, posée dans le tri global. Les MURS sont rendus par `wallSegs` (arêtes) ci-dessous —
-              // un toit n'est que la couverture, on voit/édite les murs au travers.
+              // libellé, posée dans le tri global. Les MURS sont rendus par le pipeline pivot
+              // (`buildWalls` + backend affine) ci-dessous — un toit n'est que la couverture, on
+              // voit/édite les murs au travers.
               if (layers.roofs)
                 for (const rf of scene.roofs ?? []) {
                   const { cx, cy } = tileCenter(rf.foot.x + (rf.foot.w - 1) / 2, rf.foot.y + (rf.foot.h - 1) / 2, dims);
@@ -400,8 +402,8 @@ export function EditorCanvas({
                   objs.push({ d: depth(en.pos.x, en.pos.y, dims) + 0.5, el: <EntityToken key={en.id} ent={en} dims={dims} /> });
                 }
               }
-              // Cloisons (murs/portes/diagonales) — mêmes segments texturés que le jeu, dans le tri global.
-              wallSegs(scene, dims).forEach((s, i) => objs.push({ d: s.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: s.svg }} /> }));
+              // Cloisons (murs/portes/diagonales) — mêmes faces pivot que le jeu (toutes couches), dans le tri global.
+              buildWalls(scene).forEach((el) => objs.push({ d: wallDepth(el, dims), el: <g key={el.key} dangerouslySetInnerHTML={{ __html: wallSvg(el, dims) }} /> }));
               objs.sort((a, b) => a.d - b.d);
               return objs.map((o) => o.el);
             })()}

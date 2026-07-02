@@ -10,9 +10,11 @@ import { fileURLToPath } from 'node:url';
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 
 const COVERED: string[] = [
-  'walls.ts',
   'builders/floors.ts', // builder de sols (pivot) — ne porte que des IDS de matériau, jamais une couleur
+  'builders/walls.ts', // builder de murs (pivot) — faces par PART de la def, jamais une couleur
   'backends/affineFloors.ts', // backend affine des sols (pov/geometry.ts a encore brouillard/struct-fallback hors phase)
+  'backends/affineWalls.ts', // backend affine des murs — couleurs par `wallPartColor` + `shade`
+  'backends/project.ts', // pont monde→écran partagé des backends affines
   'RoofSprite.tsx', // Phase 3a (chemin de toit LIVE)
   'catalog/buildings/render-helpers.ts', // Phase 3b (render() mort retiré → ne reste que roofFromCells)
   // Phase 4 → 'sprites.ts'

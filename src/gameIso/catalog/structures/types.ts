@@ -31,3 +31,12 @@ export interface StructureAppearanceDef {
     herse?: { bars: number; topFrac: number; traverseFracs: number[]; traverseColor: string };
   };
 }
+
+/** Partie NOMMÉE d'un mur assemblé par le builder du pivot (`builders/walls`). Chaque backend résout la
+ *  couleur de BASE d'une partie via `wallPartColor` puis applique SA lumière (orientation iso / tint POV). */
+export type WallPart =
+  | 'face' | 'poteau' | 'couronnement' | 'panneau' | 'moulure' | 'plinthe' // panneau bois encadré
+  | 'embrasure' | 'chambranle' | 'jambage' // porte bois ajourée
+  | 'parapet' | 'bande' | 'arase' | 'merlon' // fortification crénelée
+  | 'linteau' | 'herse-barreau' | 'herse-traverse' | 'seuil' // corps de garde (herse / seuil d'éboulis)
+  | 'gravats' | 'gravats-tas'; // brèche (structure abattue)

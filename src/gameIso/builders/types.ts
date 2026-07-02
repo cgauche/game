@@ -6,6 +6,8 @@
  * et le POV n'hérite d'aucun concept d'écran.
  */
 
+import type { WallSide } from '../../state/scene';
+
 /** Point MONDE : (x,y) en unités de GRILLE continues (coins de case à ±0.5), `h` en MÈTRES.
  *  Jamais de rotation ni d'écran ici — backend affine : `tileCenter(x, y, dims, metricToLift(h))` ;
  *  backend perspective : `{ x·mpt, y·mpt, h }`. */
@@ -91,6 +93,16 @@ export interface FloorEl extends ElBase {
 export interface WallEl extends ElBase {
   kind: 'wall';
   sortClass: 'wall';
+  /** Côté d'arête du segment (cardinal N/E ou diagonal `\`/`/`) — ombrage d'orientation MONDE (arête N
+   *  dans l'ombre) et cases de profondeur du backend affine. */
+  side: WallSide;
+  /** Extrémités A,B de l'arête à la hauteur de BASE (mètres) — la vue du dessus SYMBOLIQUE (traits/
+   *  glyphe de porte) se trace dessus sans re-scanner la scène. */
+  ends: [GP, GP];
+  /** Id d'apparence de structure (`wallApp`) : chaque backend résout les couleurs par `part` depuis la def. */
+  appearance: string;
+  /** Le segment porte une PORTE (vantail bois / corps de garde) — route la représentation 'top'. */
+  door: boolean;
   faces: Face[];
 }
 export interface RoofEl extends ElBase {

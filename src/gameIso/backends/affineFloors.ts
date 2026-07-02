@@ -10,7 +10,8 @@ import { metricToLift } from '../../state/relief';
 import { terrainGradient } from '../catalog/terrain';
 import { reliefMaterial } from '../catalog/relief';
 import { shade, ao, warm, spec } from '../shade';
-import type { CellSide, Face, FloorEl, GP } from '../builders/types';
+import { projGP, type Pt2 } from './project';
+import type { CellSide, Face, FloorEl } from '../builders/types';
 
 /** Pied de rampe = nez de pente × ce facteur (ombrage doux du haut vers le bas). */
 const SLOPE_BOT = 0.67;
@@ -24,19 +25,12 @@ export function floorDepth(el: FloorEl, dims: Dims): number {
   return depth(el.cell.x, el.cell.y, dims, el.cell.z) - 0.5;
 }
 
-type Pt2 = [number, number];
 const polyPts = (pts: Pt2[]) => pts.map((p) => `${p[0]},${p[1]}`).join(' ');
 const lerpP = (a: Pt2, b: Pt2, t: number): Pt2 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 
-/** Projette un point GRILLE+MÈTRES à l'écran — le SEUL pont monde→écran du backend. */
-function proj(gp: GP, dims: Dims): Pt2 {
-  const { cx, cy } = tileCenter(gp.x, gp.y, dims, metricToLift(gp.h));
-  return [cx, cy];
-}
-
 /** Un MONTANT vertical fin (PILLAR_W) du haut (dessous de dalle) au bas (surface inférieure). */
 function pillarSvg(f: Face, dims: Dims): string {
-  const [top, bot] = f.poly.map((p) => proj(p, dims));
+  const [top, bot] = f.poly.map((p) => projGP(p, dims));
   const w = PILLAR_W / 2;
   const pts = `${top[0] - w},${top[1]} ${top[0] + w},${top[1]} ${bot[0] + w},${bot[1]} ${bot[0] - w},${bot[1]}`;
   return (
@@ -49,7 +43,7 @@ function pillarSvg(f: Face, dims: Dims): string {
  *  bas-gauche]. Face ÉCLAIRÉE si son arête HAUTE est devant (plus bas à l'écran) que le centre de la
  *  case — suit la rotation caméra. */
 function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims): string {
-  const [tl, tr, br, bl] = f.poly.map((p) => proj(p, dims));
+  const [tl, tr, br, bl] = f.poly.map((p) => projGP(p, dims));
   const m = reliefMaterial(f.material.id);
   if (f.material.part === 'ramp') {
     // RAMPE (dénivelé ≤ STEP_MAX_M) : plan incliné LISSE — ombrage doux dégradé du haut (nez éclairé)

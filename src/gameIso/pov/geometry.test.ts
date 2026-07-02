@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildPovDrawList } from './geometry';
 import { makeCamera } from './camera';
-import { emptyScene, type Scene, type WallSeg } from '../../state/scene';
+import { emptyScene, setStructureDown, type Scene, type WallSeg } from '../../state/scene';
 
 // Petite scène plate (sol marchable, height 0) + quelques murs devant la caméra.
 function scene(): Scene {
@@ -108,11 +108,12 @@ describe('buildPovDrawList', () => {
     const walls = list.filter((it) => it.kind === 'wall');
     // La def porte-de-ville produit plusieurs pièces (parapet + ferrure + arase + 3 merlons + 7 barreaux).
     expect(walls.length).toBeGreaterThan(1);
-    // Ouverture béante (openingFrac 1.0) → PAS de face pleine (clé `wall:...`), mais herse + merlons présents.
-    expect(walls.some((it) => it.key.startsWith('wall:'))).toBe(false);
-    expect(walls.some((it) => it.key.startsWith('herse:'))).toBe(true);
-    expect(walls.some((it) => it.key.startsWith('merlon:'))).toBe(true);
-    expect(walls.some((it) => it.key.startsWith('parapet:'))).toBe(true);
+    // Ouverture béante (openingFrac 1.0) → PAS de face pleine, mais herse + merlons présents
+    // (clés = `<el.key>:<i>:<part>`, les MÊMES faces pivot que l'iso).
+    expect(walls.some((it) => it.key.endsWith(':face'))).toBe(false);
+    expect(walls.some((it) => it.key.endsWith(':herse-barreau'))).toBe(true);
+    expect(walls.some((it) => it.key.endsWith(':merlon'))).toBe(true);
+    expect(walls.some((it) => it.key.endsWith(':parapet'))).toBe(true);
   });
 
   it('mur-en-pierre (rempart) → face pleine + merlons crénelés', () => {
@@ -123,9 +124,30 @@ describe('buildPovDrawList', () => {
     s.walls = [{ x: 6, y: 5, side: 'N', structure: 'mur-en-pierre' }];
     const list = buildPovDrawList(s, cam, visible, LIGHT);
     const walls = list.filter((it) => it.kind === 'wall');
-    expect(walls.some((it) => it.key.startsWith('wall:'))).toBe(true); // face pleine (pas d'ouverture)
-    expect(walls.some((it) => it.key.startsWith('merlon:'))).toBe(true); // créneaux du rempart
-    expect(walls.some((it) => it.key.startsWith('herse:'))).toBe(false); // pas de porte → pas de herse
+    expect(walls.some((it) => it.key.endsWith(':face'))).toBe(true); // face pleine (pas d'ouverture)
+    expect(walls.some((it) => it.key.endsWith(':merlon'))).toBe(true); // créneaux du rempart
+    expect(walls.some((it) => it.key.endsWith(':herse-barreau'))).toBe(false); // pas de porte → pas de herse
+  });
+
+  it('mur BOIS → le détail (panneau/moulure/plinthe) est AUSSI visible en POV ; montants (2 points) exclus', () => {
+    const s = scene();
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>(['6,5,0', '6,6,0', '6,7,0', '6,8,0']);
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    const keys = list.filter((it) => it.kind === 'wall').map((it) => it.key);
+    for (const part of [':face', ':panneau', ':moulure', ':plinthe', ':couronnement']) expect(keys.some((k) => k.endsWith(part))).toBe(true);
+    expect(keys.some((k) => k.endsWith(':poteau'))).toBe(false); // ornement d'écran affine (2 points)
+  });
+
+  it('structure ABATTUE → faces de BRÈCHE (tas de gravats) au lieu du mur, plus de face pleine', () => {
+    let s = scene();
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>(['6,5,0', '6,6,0', '6,7,0', '6,8,0']);
+    s.walls = [{ x: 6, y: 5, side: 'N', structure: 'mur-en-pierre' }];
+    s = setStructureDown(s, 6, 5, 'N', 0, true);
+    const keys = buildPovDrawList(s, cam, visible, LIGHT).filter((it) => it.kind === 'wall').map((it) => it.key);
+    expect(keys.some((k) => k.endsWith(':gravats-tas'))).toBe(true);
+    expect(keys.some((k) => k.endsWith(':face'))).toBe(false);
   });
 
   it('porte OUVERTE = passage (aucun mur) ; porte FERMÉE = vantail', () => {
