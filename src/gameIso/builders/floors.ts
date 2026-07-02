@@ -5,7 +5,7 @@
  * de terrain, et les VÉRITÉS DE SCÈNE (visible/surplomb/fantôme/surplomb plein). PUR et
  * projection-agnostique : géométrie en unités de GRILLE + MÈTRES (`GP`), aucune notion de caméra.
  */
-import { Scene, tileAt, heightAt, isWalkable, isRampart, rampAccessAcross, structureAt, edgeOf } from '../../state/scene';
+import { Scene, tileAt, heightAt, isWalkable } from '../../state/scene';
 import { gradeBetween } from '../../state/relief';
 import { terrainPriority, terrainSolidHeightM } from '../../state/terrain';
 import type { CellSide, Face, FloorEl } from './types';
@@ -54,18 +54,7 @@ export function edgeBlends(scene: Scene, x: number, y: number, z = 0): EdgeBlend
  *  ne descend PAS jusqu'au sol (dalle fine + piliers), la couche du dessous reste visible/passable. */
 export function isOverhang(scene: Scene, x: number, y: number, z: number): boolean {
   if (z <= 0) return false;
-  if (isRampart(scene, x, y, z)) return false; // zone rempart SOLIDE : falaise pleine de périmètre, jamais un tablier ajouré
   for (let zz = z - 1; zz >= 0; zz--) if (isWalkable(scene, x, y, zz)) return true;
-  return false;
-}
-
-/** Une STRUCTURE d'arête (porte/courtine/brèche) est-elle posée SOUS l'arête (ax,ay)–(bx,by), pour une
- *  zone rempart de niveau `zoneZ` ? Le canal MUR (`rampartWallEls`) rend alors sa face/arche pleine hauteur
- *  → `floorFaces` NE pose PAS sa falaise à cette arête (sinon l'arche serait murée). Scanne z < zoneZ. */
-function structureUnderEdge(scene: Scene, ax: number, ay: number, bx: number, by: number, zoneZ: number): boolean {
-  const e = edgeOf(ax, ay, bx, by);
-  if (!e) return false;
-  for (let zz = zoneZ - 1; zz >= 0; zz--) if (structureAt(scene, e.x, e.y, e.side, zz)) return true;
   return false;
 }
 
@@ -143,10 +132,6 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
     if (self <= nb) continue; // la case HAUTE porte la paroi (plateau surélevé ET rebord de fosse)
     const grade = gradeBetween(self, nb);
     if (grade === 'flat') continue; // de niveau → aucune paroi
-    // ZONE REMPART : à une arête de périmètre, ne PAS poser la falaise si (a) une STRUCTURE la porte (porte/
-    // courtine/brèche : sa face/arche vient du canal MUR `rampartWallEls`, sinon on murerait l'arche) ou
-    // (b) c'est un ACCÈS (rampe/escalier atteint la zone à même hauteur → l'entrée reste ouverte).
-    if (isRampart(scene, x, y, z) && (structureUnderEdge(scene, x, y, x + dx, y + dy, z) || rampAccessAcross(scene, x, y, z, side))) continue;
     const deck = overhang && tileAt(scene, x + dx, y + dy, z) === 'vide';
     const loH = deck ? self - DECK_THICKNESS_M : nb;
     const [A, B] = edgeCorners(x, y, side);

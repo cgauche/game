@@ -228,34 +228,6 @@ describe('buildFloors — surplomb (tablier au-dessus d’une surface marchable)
   });
 });
 
-describe('buildFloors — ZONE REMPART solide (opt-in `layer.rampart`) : falaise PLEINE, jamais un tablier', () => {
-  /** z0 praticable ; tuile (1,1) z1 à 4 m MARQUÉE rempart (au-dessus de sol marchable = serait un overhang). */
-  function rampScene(): Scene {
-    const s = emptyScene(4, 4);
-    s.layers[0].tiles = new Array(16).fill('plancher');
-    s.layers[0].height = new Array(16).fill(0);
-    s.layers.push({ z: 1, tiles: new Array(16).fill('vide'), height: new Array(16).fill(0), rampart: new Array(16).fill(null) });
-    s.layers[1].tiles[1 * 4 + 1] = 'pierre';
-    s.layers[1].height![1 * 4 + 1] = 4;
-    s.layers[1].rampart![1 * 4 + 1] = 'mur-en-pierre';
-    return s;
-  }
-
-  it('isOverhang = false pour une tuile de zone rempart (bien qu’une surface marchable soit dessous)', () => {
-    expect(isOverhang(rampScene(), 1, 1, 1)).toBe(false); // vs `true` pour le tablier (deckScene)
-  });
-
-  it('bords sur le vide = FALAISE PLEINE (cliff, pierre, 4→0 m), PAS de deck ni de pilier', () => {
-    const el = elAt(buildFloors(rampScene(), undefined, { activeZ: 1 }), 1, 1, 1)!;
-    expect(el.faces.some((f) => f.material.part === 'deck')).toBe(false); // plus de dalle ajourée
-    expect(el.faces.some((f) => f.material.part === 'pillar')).toBe(false); // plus de pilotis
-    const cliffs = el.faces.filter((f) => f.material.part === 'cliff');
-    expect(cliffs).toHaveLength(4); // 4 arêtes de périmètre → maçonnerie pleine
-    expect(cliffs.every((f) => f.material.id === 'pierre')).toBe(true);
-    expect(cliffs[0].poly.map((p) => p.h)).toEqual([4, 4, 0, 0]); // descend jusqu'au sol, plus une dalle de 0.3 m
-  });
-});
-
 describe('buildFloors — sélection des couches et clés', () => {
   it('viewZ isole une seule couche (debug viewLevel)', () => {
     const s = emptyScene(2, 2);

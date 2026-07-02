@@ -42,7 +42,7 @@ import {
   patchWall,
   toggleDiagonalWall,
   paintHeight,
-  paintRampart,
+  paintCrenellated,
   paintTiles,
   addLayer,
   putLayer,
@@ -330,12 +330,12 @@ export function buildScene(spec: MapSpec): Scene {
   }
 
   // 3. relief (coordonnées, repli) PUIS 3bis les hauteurs pilotées par l'ASCII (`elevate`) : nombre = pente/
-  //    palier ; objet `{height, parapet}` = ZONE REMPART (hauteur + marquage `rampart` pour le rendu crénelé).
+  //    palier ; objet `{height, parapet}` = hauteur + marquage CRÉNELÉ (décoration de crête sur le pourtour).
   for (const r of spec.relief ?? []) s = applyRelief(s, r);
   for (const c of elevateCells) {
     const cfg = spec.elevate![c.char];
     s = paintHeight(s, { x: c.x, y: c.y }, typeof cfg === 'number' ? cfg : cfg.height, 1, c.z);
-    if (typeof cfg === 'object') s = paintRampart(s, { x: c.x, y: c.y }, cfg.parapet, 1, c.z);
+    if (typeof cfg === 'object') s = paintCrenellated(s, { x: c.x, y: c.y }, cfg.parapet, 1, c.z);
   }
 
   // 3ter. cells : recette par LETTRE de case complète. Une lettre-mur/porte AUTO-POSE une ZONE REMPART sur
@@ -345,6 +345,9 @@ export function buildScene(spec: MapSpec): Scene {
   //   BOUCHE = l'arête `facing` UNIQUEMENT là où elle borde l'EXTÉRIEUR de la bande (voisin hors bande) ; les
   //   arêtes internes d'une bande épaisse n'en portent pas (une seule herse à abattre). GÉNÉRAL, toute forme.
   const bandSet = new Set(cellCells.filter((c) => spec.cells![c.char].wall || spec.cells![c.char].gate).map((c) => `${c.x},${c.y},${c.z}`));
+  // Apparence de CRÉNELURE de la bande = la structure du mur plein (`#`) — merlons de PÉRIMÈTRE dérivés par
+  // `crestEls` (décoration de rendu, ne coupe pas la LdV plongeante). Toute la bande la porte (crête continue).
+  const crestApp = Object.values(spec.cells ?? {}).find((r) => r.wall)?.wall?.structure;
   const cellWalls: WallSpec[] = [];
   for (const c of cellCells) {
     const rec = spec.cells![c.char];
@@ -352,14 +355,16 @@ export function buildScene(spec: MapSpec): Scene {
     if (build) {
       const zz = c.z + 1;
       const height = rec.wall?.height ?? CELL_WALL_HEIGHT_M;
-      // MASSE : un mur plein → BLOC `muraille` posé au SOL (le moteur en dérive toutes les faces, dont la
-      // PAROI du tunnel qu'il borde). Une PORTE laisse le sol z0 tel quel → passable = le TUNNEL. Zéro marqueur.
+      // MASSE : un mur plein → BLOC `mur` posé au SOL (le moteur en dérive toutes les faces, dont la PAROI
+      // du tunnel qu'il borde, comme un bâtiment). Une PORTE laisse le sol z0 tel quel → passable = le TUNNEL.
       if (rec.wall) s = paintTiles(s, { x: c.x, y: c.y }, CELL_MASS, 1, c.z);
       // CHEMIN DE RONDE : une COUCHE DE SOL marchable posée par-dessus, à `height` m (dessus du bloc / toit
       // du tunnel). Sur une porte, ce sol coiffe un vide → SURPLOMB → son dessous = le plafond (règle générale).
       s = addLayer(s, zz);
       s = paintTiles(s, { x: c.x, y: c.y }, CELL_WALKWAY, 1, zz);
       s = paintHeight(s, { x: c.x, y: c.y }, height, 1, zz);
+      // CRÉNELURE (décoration) : marque le chemin de ronde → merlons sur le PÉRIMÈTRE de la bande.
+      if (crestApp) s = paintCrenellated(s, { x: c.x, y: c.y }, crestApp, 1, zz);
     }
     if (rec.gate) {
       const facing = rec.gate.facing ?? 'N';

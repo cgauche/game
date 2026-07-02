@@ -51,14 +51,14 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(gate.every((w) => w.y === MOUTH_ROW && w.side === 'N')).toBe(true); // bouche = arête N extérieure (côté champ)
     // MODÈLE GÉNÉRAL (comme un bâtiment) : la MASSE est un BLOC PLEIN `mur` (terrain z0) — le moteur en dérive
     // toutes les faces —, le chemin de ronde une COUCHE DE SOL `pierre` marchable posée par-dessus (z1, 4 m).
-    // AUCUN code « rempart » : pas de marqueur `layer.rampart`, pas de WallSeg de courtine.
+    // AUCUNE « zone rempart » gameplay : la seule donnée sur z1 est la CRÉNELURE (décoration de rendu).
     const z0 = s.layers.find((l) => l.z === 0)!;
     const z1 = s.layers.find((l) => l.z === 1)!;
     const W = s.dimensions.w;
     const t0 = (x: number, y: number) => z0.tiles[y * W + x];
     const t1 = (x: number, y: number) => z1.tiles[y * W + x];
-    expect(z1.rampart).toBeUndefined(); // plus de marqueur zone-rempart (modèle supprimé)
-    expect(s.walls!.some((w) => w.structure === 'mur-en-pierre')).toBe(false); // courtine = terrain, pas WallSeg
+    expect(z1.crenellated).toBeDefined(); // crénelure = DÉCORATION de rendu (n'affecte NI passabilité NI LdV — cf. plus bas)
+    expect(s.walls!.some((w) => w.structure === 'mur-en-pierre')).toBe(false); // courtine = terrain (bloc plein), pas WallSeg
     // Courtine = bloc plein `mur` au sol (IMPASSABLE + opaque) ; colonnes de PORTE = sol `pierre` passable (tunnel).
     for (const x of [0, 8, 21, 29]) for (const y of [MOUTH_ROW, INNER_ROW]) {
       expect(t0(x, y)).toBe('mur');

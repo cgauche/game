@@ -707,15 +707,10 @@ export function buildPovDrawList(
       const it = makeItem(corners, cam, farMetres, lit ? Math.max(lv, 0.95) : lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve);
       if (!it) return;
       if (lit) it.cls = 'warm';
-      // VITRE de JOUR : la fenêtre est une vraie OUVERTURE. Derrière le verre, une PIÈCE EN PÉNOMBRE — une
-      // dalle sombre OPAQUE (posée un cheveu plus loin que le verre) qui MASQUE le mur : sans elle la vitre
-      // transparente montrerait la même couleur que le mur → « opaque ». Le verre par-dessus reste LÉGER
-      // (sheen). On voit donc À TRAVERS, dans un intérieur dim. La nuit : vitre ambrée PLEINE (pas d'ouverture).
-      if (part === 'vitre' && !lit) {
-        const room = makeItem(corners, cam, farMetres, lv * 0.4, CEIL_BASE, 'wall', `${el.key}:${i}:room`, -i * 0.002 + 0.0004, fog, curve);
-        if (room) items.push(room);
-        it.opacity = 0.3;
-      }
+      // VITRE de JOUR : verre QUASI-INVISIBLE (opacity 0.1) → la fenêtre est une vraie OUVERTURE, on voit
+      // la géométrie DERRIÈRE (l'intérieur depuis dehors, l'extérieur depuis dedans). AUCUNE dalle opaque
+      // derrière (elle bloquerait la vue). La nuit : vitre ambrée PLEINE (fenêtre éclairée, pas d'ouverture).
+      if (part === 'vitre' && !lit) it.opacity = 0.1;
       items.push(it);
       if (!seen) return; // non vu : forme + matière, pas d'appareillage fin (réservé au vu)
       // APPAREILLAGE au LOD de distance en FONDU (parts maçonnées d'une def à recette — même aiguillage

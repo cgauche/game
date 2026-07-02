@@ -430,11 +430,11 @@ export interface Layer {
   z: number;
   tiles: Terrain[];
   height?: number[];
-  /** REMPART : parallèle à `tiles` (indexation `y·w+x`). `null` = tuile ordinaire ; une chaîne = id de
-   *  structure crénelée (`structureAppearance.json`) marquant la case comme « zone surélevée SOLIDE ». Le
-   *  rendu en dérive une face de maçonnerie pleine + une crête crénelée sur le PÉRIMÈTRE de la zone (toute
-   *  arête dont le voisin même-z n'est pas de la zone) — jamais à l'intérieur. Absent = aucune zone rempart. */
-  rampart?: (string | null)[];
+  /** CRÉNELURE (RENDU PUR) : parallèle à `tiles` (`y·w+x`). `null` = pas de crénelure ; une chaîne = id de
+   *  structure crénelée (`structureAppearance.json`) → le crest builder (`crestEls`) en dérive des MERLONS
+   *  sur le PÉRIMÈTRE (arête dont le voisin même-z n'est pas crénelé) — jamais à l'intérieur. Marqueur de
+   *  DÉCORATION seulement (comme un toit auto-dessiné) : n'affecte NI la passabilité NI la LdV plongeante. */
+  crenellated?: (string | null)[];
 }
 
 /** Aire d'une zone d'effet : rectangle (`rect`) ou disque de Chebyshev (`disc`, rayon en CASES). */
@@ -555,71 +555,24 @@ export function heightAt(scene: Scene, x: number, y: number, z = 0): number {
   return layer.height?.[y * scene.dimensions.w + x] ?? 0;
 }
 
-/** Id de structure crénelée d'une case de « zone rempart » (surélevée solide) sur la couche `z`, ou `null`
- *  (case ordinaire / hors-grille / sans tableau `rampart`). SOURCE UNIQUE lue par les builders de rendu
- *  (falaise pleine de périmètre + crête crénelée). PUR. */
-export function rampartAt(scene: Scene, x: number, y: number, z = 0): string | null {
+/** Id de structure crénelée d'une case de chemin de ronde (couche `z`), ou `null`. Marqueur de RENDU PUR
+ *  (le crest builder `crestEls` en dérive les merlons de PÉRIMÈTRE) — n'affecte NI passabilité NI LdV. PUR. */
+export function crenellatedAt(scene: Scene, x: number, y: number, z = 0): string | null {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return null;
   const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];
-  return layer.rampart?.[y * scene.dimensions.w + x] ?? null;
+  return layer.crenellated?.[y * scene.dimensions.w + x] ?? null;
 }
 
-/** La case (x,y,z) appartient-elle à une zone rempart (surélevée solide) ? */
-export function isRampart(scene: Scene, x: number, y: number, z = 0): boolean {
-  return rampartAt(scene, x, y, z) !== null;
-}
-
-/** La case (x,y,z) est-elle ENSEVELIE sous une zone rempart (une couche SUPÉRIEURE la couvre d'une masse
- *  solide) ? → masse de mur : impassable au sol, sauf trouée de tunnel (`gateTunnelAt`). PUR. */
-export function buriedUnderRampart(scene: Scene, x: number, y: number, z: number): boolean {
-  return scene.layers.some((l) => l.z > z && isRampart(scene, x, y, l.z));
-}
-
-/** La case ENSEVELIE (x,y,z) est-elle un TUNNEL de porte (donc PASSABLE) ? Une structure-porte (WallSeg
- *  `structure`) posée sur le PÉRIMÈTRE extérieur de la bande de rempart (arête séparant une case ensevelie
- *  d'une case libre) PERCE la masse : depuis sa BOUCHE, le tunnel s'enfonce en ligne droite à travers
- *  l'épaisseur de rempart CONTIGUË. GÉNÉRAL : direction de percée déduite de l'arête (toute orientation /
- *  épaisseur, mur horizontal ou vertical) ; la structure INTACTE bloque encore la bouche via `wallBetween`
- *  (le SOL du tunnel, lui, est toujours là). PUR. */
-export function gateTunnelAt(scene: Scene, x: number, y: number, z: number): boolean {
-  for (const w of scene.walls ?? []) {
-    if (!w.structure || (w.z ?? 0) !== z) continue;
-    if (w.side !== 'N' && w.side !== 'E') continue; // structure sur arête cardinale canonique
-    const a = { x: w.x, y: w.y };
-    const b = w.side === 'N' ? { x: w.x, y: w.y - 1 } : { x: w.x + 1, y: w.y };
-    const aBur = buriedUnderRampart(scene, a.x, a.y, z);
-    const bBur = buriedUnderRampart(scene, b.x, b.y, z);
-    if (aBur === bBur) continue; // pas une BOUCHE de périmètre (bande des deux côtés, ou d'aucun)
-    const mouth = aBur ? a : b; // case de bande adjacente à la bouche
-    const back = aBur ? b : a; // case LIBRE de l'autre côté (le champ)
-    const dx = mouth.x - back.x, dy = mouth.y - back.y; // sens d'enfoncement (champ → bande)
-    let cx = mouth.x, cy = mouth.y;
-    while (buriedUnderRampart(scene, cx, cy, z)) {
-      if (cx === x && cy === y) return true;
-      cx += dx; cy += dy;
-    }
-  }
-  return false;
-}
-
-/** À travers l'arête cardinale `side` de (x,y,z), existe-t-il une surface MARCHABLE reliée à ~la même
- *  hauteur (rampe/escalier atteignant une zone surélevée) sur UNE couche quelconque ? → l'arête est un
- *  ACCÈS ouvert (le rendu de zone rempart n'y pose ni falaise ni crête, sinon l'accès serait emmuré). PUR. */
-export function rampAccessAcross(scene: Scene, x: number, y: number, z: number, side: 'N' | 'E' | 'S' | 'O'): boolean {
-  const [dx, dy] = side === 'N' ? [0, -1] : side === 'E' ? [1, 0] : side === 'S' ? [0, 1] : [-1, 0];
-  const nx = x + dx, ny = y + dy;
-  const sh = heightAt(scene, x, y, z);
-  return scene.layers.some((l) => isWalkable(scene, nx, ny, l.z) && gradeBetween(sh, heightAt(scene, nx, ny, l.z)) !== 'cliff');
+/** La case (x,y,z) porte-t-elle une crénelure (marqueur de rendu) ? */
+export function isCrenellated(scene: Scene, x: number, y: number, z = 0): boolean {
+  return crenellatedAt(scene, x, y, z) !== null;
 }
 
 export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
   if (z > 0 && tileCollapsed(scene, x, y, z)) return false; // passerelle effondrée → plus marchable
   if (entityBlockedAt(scene, x, y)) return false; // empreinte multi-cases d'un décor (foot {w,h})
-  // MASSE DE MUR : une case ENSEVELIE sous une ZONE REMPART (à un étage supérieur) est IMPASSABLE — on ne
-  // traverse pas la courtine au sol, le chemin de ronde est son TOIT. Seule EXCEPTION : le TUNNEL d'une
-  // porte, qui perce la masse (`gateTunnelAt`) — son sol reste marchable (la herse INTACTE bloque encore la
-  // bouche via `wallBetween`). Le rempart lui-même (couche z1) reste marchable.
-  if (buriedUnderRampart(scene, x, y, z) && !gateTunnelAt(scene, x, y, z)) return false;
+  // Impassabilité de la MASSE = le TERRAIN (bloc plein `mur` = walkable:false) ; le sol du TUNNEL (`pierre`)
+  // reste marchable, la herse INTACTE barrant la bouche via `wallBetween`. Aucune règle « rempart » ici.
   return terrainWalkable(tileAt(scene, x, y, z));
 }
 

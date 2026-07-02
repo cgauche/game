@@ -141,8 +141,9 @@ describe('buildScene — `cells` (recette par LETTRE de case : enceinte pleine +
       expect(z1.height![idx(x, y)]).toBe(4);
       expect(isWalkable(s, x, y, 1)).toBe(true);
     }
-    // AUCUN marqueur « zone rempart » (modèle supprimé) : le solide vient du TERRAIN, comme un bâtiment.
-    expect(z1.rampart).toBeUndefined();
+    // Le SOLIDE vient du TERRAIN (bloc plein `mur`), comme un bâtiment ; la seule donnée z1 est la CRÉNELURE
+    // (décoration de rendu, n'affecte NI passabilité NI LdV).
+    expect(z1.crenellated).toBeDefined();
     // Champ/cour restent au SOL : pas de bloc `mur`, pas de chemin de ronde (z1 vide).
     for (const y of [0, 1, 4, 5]) for (const x of [0, 2, 4]) {
       expect(z0.tiles[idx(x, y)]).not.toBe('mur');

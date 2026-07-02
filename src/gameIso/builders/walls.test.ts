@@ -118,12 +118,12 @@ describe('buildWalls — porte FERMÉE = VANTAIL (se lit comme une porte, pas un
 
 describe('buildWalls — mur FENÊTRÉ (vraie OUVERTURE : verre transparent, on voit l’intérieur)', () => {
   const el = one(sceneWith([{ x: 2, y: 2, side: 'N', window: true }]));
-  it('cadre de `face` (trumeau + linteau + jambages) + croisée (cadre + vitre + meneau vertical + traverse)', () => {
+  it('cadre de `face` (trumeau + linteau + jambages) + vitre AJOURÉE + croisée (meneau vertical + traverse)', () => {
     const p = parts(el);
     expect(p).toContain('face'); // le mur devient un CADRE de `face` autour du vide vitré (bloque encore la MÉCANIQUE)
-    expect(p).toContain('croisee-cadre');
     expect(p).toContain('vitre');
-    expect(p.filter((x) => x === 'meneau')).toHaveLength(2); // meneau vertical + traverse horizontale
+    expect(p).not.toContain('croisee-cadre'); // PAS de fond plein derrière la vitre → on voit à travers
+    expect(p.filter((x) => x === 'meneau')).toHaveLength(2); // meneau vertical + traverse horizontale (croisée)
     expect(el.states.open).toBe(false); // une fenêtre n’ouvre JAMAIS l’arête
   });
   it('la vitre est un quad dans la moitié HAUTE de la face (0.42 → 0.8 × WALL_H_M)', () => {
@@ -262,8 +262,8 @@ describe('buildWalls — stabilité', () => {
   });
 });
 
-describe('rampartWallEls — crénelure de PÉRIMÈTRE (générale, jamais à l’intérieur)', () => {
-  // Zone rempart 2×2 (cells 2,2/3,2/2,3/3,3) à 4 m sur z1, posée PAR L'ASCII via `ramparts` (coordonnée-free).
+describe('crestEls — crénelure de PÉRIMÈTRE (RENDU PUR, générale, jamais à l’intérieur)', () => {
+  // Zone crénelée 2×2 (cells 2,2/3,2/2,3/3,3) à 4 m sur z1, posée PAR L'ASCII via `elevate` (coordonnée-free).
   const empty = '......';
   const spec2x2 = {
     id: 't', nom: 't', size: [6, 6] as [number, number],
@@ -271,44 +271,37 @@ describe('rampartWallEls — crénelure de PÉRIMÈTRE (générale, jamais à l�
     elevate: { W: { height: 4, parapet: 'mur-en-pierre' } },
     levels: { z0: Array(6).fill(empty).join('\n'), z1: ['......', '......', '..WW..', '..WW..', '......', '......'].join('\n') },
   };
-  const rampEls = (s: Scene) => buildWalls(s).filter((e) => e.key.startsWith('rampart:'));
+  const crestElsOf = (s: Scene) => buildWalls(s).filter((e) => e.key.startsWith('crest:'));
 
-  it('rect 2×2 → crête sur les 8 arêtes de CONTOUR, RIEN sur les 4 arêtes internes', () => {
-    const els = rampEls(buildScene(spec2x2));
+  it('rect 2×2 crénelé → crête sur les 8 arêtes de CONTOUR, RIEN sur les 4 arêtes internes', () => {
+    const els = crestElsOf(buildScene(spec2x2));
     expect(els).toHaveLength(8); // 4 cases d'angle × 2 arêtes extérieures
-    // Chaque crête porte la couronne crénelée (parapet + merlons), PAS de face pleine (fournie par la falaise sol).
+    // Chaque crête = couronne crénelée SEULE (parapet + merlons), PAS de face pleine (elle n'est pas un mur).
     for (const el of els) {
       const ps = new Set(el.faces.map((f) => f.material.part));
       expect(ps.has('parapet')).toBe(true);
       expect(ps.has('merlon')).toBe(true);
-      expect(ps.has('face')).toBe(false); // la maçonnerie de périmètre vient de `floorFaces`, pas du mur synthétique
+      expect(ps.has('face')).toBe(false); // crête SEULE ; la maçonnerie du mur vient du bloc plein (`floorFaces`)
     }
     // AUCUNE crête sur l'arête INTERNE entre (2,2) et (2,3) (= N de (2,3)) ni entre (2,2)-(3,2) (= E de (2,2)).
     const keys = new Set(els.map((e) => e.key));
-    expect(keys.has('rampart:2,3,N,1')).toBe(false);
-    expect(keys.has('rampart:2,2,E,1')).toBe(false);
+    expect(keys.has('crest:2,3,N,1')).toBe(false);
+    expect(keys.has('crest:2,2,E,1')).toBe(false);
     // … et la crête existe bien sur le contour (N de (2,2) = arête nord extérieure).
-    expect(keys.has('rampart:2,2,N,1')).toBe(true);
+    expect(keys.has('crest:2,2,N,1')).toBe(true);
   });
 
   it('forme en L (concave) → crête sur les rentrants, toujours jamais à l’intérieur', () => {
     const L = { ...spec2x2, levels: { ...spec2x2.levels, z1: ['......', '......', '..WW..', '..W...', '......', '......'].join('\n') } };
-    const els = rampEls(buildScene(L)); // cases 2,2 / 3,2 / 2,3 (L)
+    const els = crestElsOf(buildScene(L)); // cases 2,2 / 3,2 / 2,3 (L)
     // Contour d'un tromino en L = 8 arêtes de périmètre (aucune arête interne n'en fait partie).
     expect(els).toHaveLength(8);
     for (const el of els) expect(el.faces.some((f) => f.material.part === 'merlon')).toBe(true);
   });
 
-  it('PORTE sur une arête de périmètre → OUVERTURE pleine hauteur (herse), pas une crête simple', () => {
-    const s = buildScene({ ...spec2x2, walls: [{ x: 2, y: 2, side: 'N', structure: 'porte-de-ville' }] });
-    const gate = buildWalls(s).find((e) => e.key === 'rampart:2,2,N,1')!;
-    expect(gate.appearance).toBe('porte-de-ville');
-    const ps = gate.faces.map((f) => f.material.part);
-    expect(ps).toContain('herse-barreau'); // arche béante barrée d'une herse (structure sur le périmètre)
-    // La face PLEINE monte du sol (0 m) jusqu'au chemin de ronde (4 m) — pas seulement WALL_H_M.
-    const top = Math.max(...gate.faces.flatMap((f) => f.poly.map((p) => p.h)));
-    expect(top).toBeGreaterThan(4); // 4 m (surface) + couronne du parapet
-    // Le WallSeg-porte gameplay n'est PAS re-rendu en double (arête de périmètre → skip visuel).
-    expect(buildWalls(s).some((e) => e.key === 'wall:2,2,N,0')).toBe(false);
+  it('la crête est RENDU PUR (aucun `WallSeg` de scène) → ne coupe NI passage NI LdV plongeante', () => {
+    const s = buildScene(spec2x2);
+    expect(s.walls ?? []).toHaveLength(0); // la crénelure n'ajoute AUCUN mur gameplay (contrairement à une porte)
+    expect(crestElsOf(s).length).toBeGreaterThan(0); // mais bien des éléments de RENDU (merlons de contour)
   });
 });
