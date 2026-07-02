@@ -50,6 +50,9 @@ export interface TestScenario {
   /** Règles optionnelles pré-activées au lancement (mêmes ids que le panneau Règles maison, donc
    *  modifiables en jeu) — ex. `{ 'travel-etapes': true }` pour le Voyage par Étapes EDOC. */
   rules?: Record<string, import('../../engine/policy').RuleValue>;
+  /** Bataille de masse (ADE II 08) : amorce le sous-système de Puissance de Bataille après le chargement
+   *  de la scène (les Scènes de combat démarrent les rencontres de cette scène). */
+  massBattle?: import('../../state/massBattleFlow').MassBattleSpec;
 }
 
 /** Arène dégagée + point de départ des héros (base des scénarios de combat direct). Preset MINCE

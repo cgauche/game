@@ -33,6 +33,8 @@ export function TestScenariosScreen() {
     else startScene(sc.scene);
     if (sc.money) useGame.setState({ money: sc.money }); // bourse du scénario (après le reset du lancement)
     if (sc.autoCombat) startCombat(sc.autoCombat);
+    // Bataille de masse (ADE II 08) : startMassBattle bascule lui-même sur l'écran dédié.
+    if (sc.massBattle) { useGame.getState().startMassBattle(sc.massBattle); return; }
     setScreen('campaign');
   };
 

@@ -295,8 +295,16 @@ export function buildApi() {
       else s.startScene(sc.scene);
       if (sc.autoCombat) g().startCombat(sc.autoCombat);
       if (g().pendingRoundStart) g().confirmRoundStart();
+      if (sc.massBattle) { g().startMassBattle(sc.massBattle); return `✅ bataille de masse « ${sc.title} » lancée`; }
       s.setScreen('campaign');
       return `✅ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
+    },
+
+    /** Lance une bataille de masse de démonstration (ADE II 08) sans scénario : __wfrp.massBattle(60, 40, 3).
+     *  Les Scènes de COMBAT ne s'amorcent que si la scène courante porte les rencontres attendues. */
+    massBattle: (ally = 50, enemy = 55, rounds = 3) => {
+      g().startMassBattle({ allyMight: ally, enemyMight: enemy, plannedRounds: rounds, terrain: 'Les deux armées se font face dans la plaine.' });
+      return `✅ bataille de masse lancée — Puissance ${ally} contre ${enemy}, ${rounds} Round(s)`;
     },
 
     /** Snapshot COMBAT compact : round, actif, modales ouvertes, et chaque combattant en une ligne. */

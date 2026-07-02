@@ -28,6 +28,9 @@ import * as netFlow from './netFlow';
 import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
 export type { PendingActivity } from './interludeFlow';
+import * as massBattleFlow from './massBattleFlow';
+import type { MassBattleState, MassBattleSpec, PendingBattleTest } from './massBattleFlow';
+export type { MassBattleState, MassBattleSpec, PendingBattleTest } from './massBattleFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
@@ -102,7 +105,7 @@ import { startCascade } from './cascade';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
 
-export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
+export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium' | 'massBattle';
 
 /** Registre des scènes (pour les transitions de campagne). */
 const sceneRegistry: Record<string, Scene> = {};
@@ -459,6 +462,29 @@ export interface GameState extends RollFlowActionsMap {
   pendingActivity: PendingActivity | null;
   activityCancel: () => void;
   activityConfirm: () => void;
+  /** Combat de masse / Puissance de Bataille (ADE II 08) : état de la bataille abstraite en cours
+   *  (Puissance des deux armées, Round, Scènes) — null hors bataille. */
+  massBattle: MassBattleState | null;
+  /** Jet de PJ d'une bataille de masse (Discours inspirant / Scène de Compétence) — modale différée.
+   *  Délégués `battleTest{Roll,Reroll,BonusSL,DarkPact,ForceSuccess}` : générés (RollFlowActionsMap). */
+  pendingBattleTest: PendingBattleTest | null;
+  /** Amorce une bataille de masse et bascule sur sa vue. */
+  startMassBattle: (spec: MassBattleSpec) => void;
+  /** Passe de la phase pré-bataille (Discours/Planification) aux Rounds de bataille. */
+  massBattleBegin: () => void;
+  /** Ouvre le Test de Commandement du Discours inspirant (l.71). */
+  massBattleInspire: () => void;
+  /** Choisit une Scène cinématique du Round (Test de Compétence ou combat tactique). */
+  massBattleScene: (sceneId: string) => void;
+  /** Tire/choisit le facteur environnemental du Round (l.309, 1d10). */
+  massBattleHazard: (roll?: number) => void;
+  /** Résout le Test spectaculaire de Puissance du Round puis fait avancer la bataille. */
+  massBattleClash: () => void;
+  /** Ferme la bataille et revient au jeu. */
+  endMassBattle: () => void;
+  /** « Appliquer » d'un jet de bataille (Discours/Scène). */
+  battleTestConfirm: () => void;
+  battleTestCancel: () => void;
   /** Activités (LDB 23) : Revenus, Artisanat (engager l'ouvrage puis lancer), banque. */
   interludeRevenus: (heroId: string) => void;
   interludeCraftStart: (heroId: string, trappingId: string, atouts: string[], defauts: string[]) => void;
@@ -1280,6 +1306,19 @@ export const useGame = create<GameState>((set, get) => ({
   ...rollFlowActions('activity', FLOWS.activity, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   activityCancel: () => FLOWS.activity.cancel(get, set),
   activityConfirm: () => interludeFlow.confirmActivity(get, set),
+  // Combat de masse / Puissance de Bataille (ADE II 08) — flux d'orchestration + jet de PJ différé.
+  massBattle: null,
+  pendingBattleTest: null,
+  startMassBattle: (spec) => massBattleFlow.startMassBattle(get, set, spec),
+  massBattleBegin: () => massBattleFlow.massBattleBegin(get, set),
+  massBattleInspire: () => massBattleFlow.openMassBattleInspire(get, set),
+  massBattleScene: (sceneId) => massBattleFlow.openMassBattleScene(get, set, sceneId),
+  massBattleHazard: (roll) => massBattleFlow.massBattleSetHazard(get, set, roll),
+  massBattleClash: () => massBattleFlow.massBattleClash(get, set),
+  endMassBattle: () => massBattleFlow.endMassBattle(get, set),
+  ...rollFlowActions('battleTest', FLOWS.battleTest, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
+  battleTestConfirm: () => massBattleFlow.battleTestConfirm(get, set),
+  battleTestCancel: () => FLOWS.battleTest.cancel(get, set),
   interludeRevenus: (heroId) => interludeFlow.openRevenus(get, set, heroId),
   interludeCraftStart: (heroId, trapping, atouts, defauts) => interludeFlow.craftStart(get, set, heroId, trapping, atouts, defauts),
   interludeCraftRoll: (heroId) => interludeFlow.openCraftRoll(get, set, heroId),
@@ -1619,9 +1658,14 @@ export const useGame = create<GameState>((set, get) => ({
     const pv = get().pendingVictory;
     const leftoverGear = (pv?.gear ?? []).map((g) => g.effect); // équipement non attribué → 1er héros par défaut
     const cont = pv?.onContinue;
+    // Scène de COMBAT d'une bataille de masse (ADE II 08) : la victoire tactique nourrit la réduction
+    // de Puissance ennemie (l.139 : ennemis neutralisés), puis on reprend la vue de bataille.
+    const kills = (pv?.defeated ?? []).reduce((n, d) => n + d.count, 0);
+    const inMassBattleCombat = !!get().massBattle?.combatScene;
     set({ pendingVictory: null, battle: null, mode: 'exploration' });
     if (leftoverGear.length) applyEffects(get, set, leftoverGear);
     if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
+    if (inMassBattleCombat) massBattleFlow.massBattleResumeCombat(get, set, kills);
   },
   /** Ferme la fenêtre de loot — même contrat que la victoire : le non-attribué va au 1er héros. */
   dismissLoot: () => {

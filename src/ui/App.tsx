@@ -14,6 +14,7 @@ const CampaignView = lazy(() => import('./CampaignView').then((m) => ({ default:
 const Editor = lazy(() => import('./editor/Editor').then((m) => ({ default: m.Editor })));
 const TestScenariosScreen = lazy(() => import('./TestScenariosScreen').then((m) => ({ default: m.TestScenariosScreen })));
 const InterludeScreen = lazy(() => import('./InterludeScreen').then((m) => ({ default: m.InterludeScreen })));
+const MassBattleView = lazy(() => import('./MassBattleView').then((m) => ({ default: m.MassBattleView })));
 const CoopLobby = lazy(() => import('./CoopLobby').then((m) => ({ default: m.CoopLobby })));
 const CompendiumScreen = lazy(() => import('./compendium/CompendiumScreen').then((m) => ({ default: m.CompendiumScreen })));
 const CodexOverlay = lazy(() => import('./compendium/CompendiumScreen').then((m) => ({ default: m.CodexOverlay })));
@@ -54,6 +55,7 @@ export function App() {
         {screen === 'editor' && <Editor />}
         {screen === 'test' && <TestScenariosScreen />}
         {screen === 'interlude' && <InterludeScreen />}
+        {screen === 'massBattle' && <MassBattleView />}
         {screen === 'coop' && <CoopLobby />}
         {screen === 'compendium' && <CompendiumScreen />}
         {/* Drill-in d'une réf Codex EN JEU : modale par-dessus l'écran courant (n'importe lequel),

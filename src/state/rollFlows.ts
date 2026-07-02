@@ -20,6 +20,7 @@ import type {
   PendingCascade, CascadeStep,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
+import type { PendingBattleTest } from './massBattleFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import { makeRollFlow, type RollFlowHandlers } from './rollFlow';
@@ -183,6 +184,7 @@ export type RollFlowActionsMap =
   & MultiRollActions<'crewTest', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'shanty', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'test', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'battleTest', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MultiRollActions<'counterspell', Exclude<RollVerb, 'resist'>>
   & MultiRollActions<'extendedTest', Exclude<RollVerb, 'resist'>>
@@ -1067,6 +1069,28 @@ export const FLOWS = {
     },
     failed: (p) => (p.roll ?? 0) > p.target, // d100 propre raté (LDB ch.12 l.56 + l.29-31)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
+  }),
+
+  /** Jet de PJ d'une bataille de masse (ADE II 08) : Discours inspirant (Commandement, l.71) ou Scène
+   *  cinématique de Compétence (Motivation/Duel/Ligne de mire…, l.149-225). Même cycle Chance/Pacte/
+   *  Résilience que le Test de scène ; l'application (delta de Puissance) vit dans `battleTestConfirm`. */
+  battleTest: makeRollFlow<PendingBattleTest>({
+    key: 'pendingBattleTest',
+    rolled: (p) => p.roll != null,
+    actor: (s, p) => actorIn(s, p.actorId),
+    touch: touchActors,
+    caps: { forced: true },
+    resolve: (_s, p, _actor, _get, forced) => {
+      if (forced) {
+        if (p.success) return null; // rien à forcer si déjà réussi
+        // Résilience « vous choisissez le résultat » (LDB 17 l.73) : 01 → DR MAXIMUM.
+        return { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1), forced: true };
+      }
+      const res = rollTest(p.skillValue, p.difficulty, battleRng());
+      return { roll: res.roll, sl: res.sl, success: res.success };
+    },
+    failed: (p) => (p.roll ?? 0) > p.target,
+    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) },
   }),
 
   /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance ou de Calme

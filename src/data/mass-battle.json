@@ -1,0 +1,407 @@
+{
+  "powerEstimate": [
+    {
+      "id": "insignifiante",
+      "label": "Insignifiante",
+      "ally": 30,
+      "enemy": 70,
+      "example": "Une défense de ville provinciale face à un Comte vampire et sa légion de morts-vivants."
+    },
+    {
+      "id": "desavantagee",
+      "label": "Désavantagée",
+      "ally": 40,
+      "enemy": 60,
+      "example": "Une compagnie de mercenaires contre un Waaagh ! de peaux vertes."
+    },
+    {
+      "id": "egale",
+      "label": "De force égale",
+      "ally": 50,
+      "enemy": 50,
+      "example": "Des armées provinciales qui s'affrontent sur le champ de bataille."
+    },
+    {
+      "id": "avantagee",
+      "label": "Avantagée",
+      "ally": 60,
+      "enemy": 40,
+      "example": "Un château bien approvisionné se défendant contre une horde de guerriers de clans skavens mal organisés."
+    },
+    {
+      "id": "ecrasante",
+      "label": "Écrasante",
+      "ally": 70,
+      "enemy": 30,
+      "example": "Une alliance d'humains et de nains prenant d'assaut un bivouac d'hommes-bêtes."
+    }
+  ],
+  "mightModifiers": [
+    {
+      "id": "mal-equipee",
+      "label": "Mal équipée",
+      "mod": -10,
+      "example": "Armure Légère (Armure 1) ou moins, Armes improvisées, Arme +4 ou moins"
+    },
+    {
+      "id": "bien-equipee",
+      "label": "Bien équipée",
+      "mod": 10,
+      "example": "Armure Lourde (Armure 3), Armes à Poudre noire, Arme +10 ou plus"
+    },
+    {
+      "id": "lanceurs-de-sorts",
+      "label": "Comprend des lanceurs de sorts",
+      "mod": 10,
+      "example": "Sorciers, prêtres, vampires"
+    },
+    {
+      "id": "unites-veterans",
+      "label": "Comprend des Unités Vétérans",
+      "mod": 10,
+      "example": "Compétence Corps à corps ou Projectiles de 45 ou plus"
+    },
+    {
+      "id": "unites-elites",
+      "label": "Comprend des Unités Élites",
+      "mod": 20,
+      "example": "Compétence Corps à corps ou Projectiles de 60 ou plus"
+    },
+    {
+      "id": "taille-petite",
+      "label": "Comprend des Unités de Taille Petite",
+      "mod": -10,
+      "example": "Halflings, snotlings"
+    },
+    {
+      "id": "taille-grande",
+      "label": "Comprend des Unités de Taille Grande",
+      "mod": 10,
+      "example": "Ogres, trolls, cavalerie à cheval"
+    },
+    {
+      "id": "taille-enorme",
+      "label": "Comprend des Unités de Taille Énorme",
+      "mod": 20,
+      "example": "Griffons, vouivres"
+    },
+    {
+      "id": "taille-monstrueuse",
+      "label": "Comprend des Unités de Taille Monstrueuse",
+      "mod": 30,
+      "example": "Dragons, géants"
+    }
+  ],
+  "warMachines": [
+    {
+      "id": "baliste",
+      "label": "Baliste",
+      "price": "75 CO",
+      "crew": 4,
+      "availability": "Rare",
+      "range": "150",
+      "damage": "+14",
+      "traits": "Empaleuse, Perforante, Recharge 2",
+      "siege": false
+    },
+    {
+      "id": "belier",
+      "label": "Bélier",
+      "price": "10 CO",
+      "crew": 6,
+      "availability": "Limitée",
+      "range": "Moyenne",
+      "damage": "+BF +10",
+      "traits": "Siège",
+      "siege": true
+    },
+    {
+      "id": "batterie-tonnerre-de-feu",
+      "label": "Batterie tonnerre de feu",
+      "price": "200 CO",
+      "crew": 4,
+      "availability": "Exotique",
+      "range": "200",
+      "damage": "+12",
+      "traits": "Dangereuse, Explosion 15, Imprécise, Recharge 5",
+      "siege": false
+    },
+    {
+      "id": "canon-a-repetition-feu-d-enfer",
+      "label": "Canon à répétition feu d'enfer",
+      "price": "300 CO",
+      "crew": 4,
+      "availability": "Exotique",
+      "range": "100",
+      "damage": "+14",
+      "traits": "À Poudre noire, À répétition 3, Dangereuse, Explosion 5, Recharge 5",
+      "siege": false
+    },
+    {
+      "id": "canon",
+      "label": "Canon",
+      "price": "120 CO",
+      "crew": 4,
+      "availability": "Exotique",
+      "range": "120",
+      "damage": "+20",
+      "traits": "À Poudre noire, Dangereuse, Explosion 3, Recharge 3, Siège",
+      "siege": true
+    },
+    {
+      "id": "canon-a-flammes-nain",
+      "label": "Canon à flammes nain",
+      "price": "200 CO",
+      "crew": 4,
+      "availability": "Exotique",
+      "range": "60",
+      "damage": "Spéciaux",
+      "traits": "Dangereuse, Explosion 5, Imprécise, Recharge 3",
+      "siege": false
+    },
+    {
+      "id": "mangonneau",
+      "label": "Mangonneau",
+      "price": "60 CO",
+      "crew": 6,
+      "availability": "Rare",
+      "range": "60",
+      "damage": "+10",
+      "traits": "Explosion 5, Recharge 4, Siège",
+      "siege": true
+    },
+    {
+      "id": "onagre",
+      "label": "Onagre",
+      "price": "80 CO",
+      "crew": 6,
+      "availability": "Rare",
+      "range": "100",
+      "damage": "+12",
+      "traits": "Explosion 5, Recharge 4, Siège",
+      "siege": true
+    },
+    {
+      "id": "trebuchet",
+      "label": "Trébuchet",
+      "price": "40 CO",
+      "crew": 8,
+      "availability": "Limitée",
+      "range": "150",
+      "damage": "+14",
+      "traits": "Explosion 5, Recharge 5, Siège",
+      "siege": true
+    },
+    {
+      "id": "mortier",
+      "label": "Mortier",
+      "price": "100 CO",
+      "crew": 6,
+      "availability": "Exotique",
+      "range": "200",
+      "damage": "+20",
+      "traits": "À Poudre noire, Dangereuse, Explosion 5, Imprécise, Recharge 2, Siège",
+      "siege": true
+    }
+  ],
+  "structures": [
+    {
+      "id": "porte",
+      "label": "Porte",
+      "be": 2,
+      "wounds": 8,
+      "traits": "Résistant"
+    },
+    {
+      "id": "porte-blindee",
+      "label": "Porte blindée",
+      "be": 5,
+      "wounds": 15,
+      "traits": "Résistant"
+    },
+    {
+      "id": "porte-de-ville",
+      "label": "Porte de ville",
+      "be": 10,
+      "wounds": 30,
+      "traits": "Impénétrable"
+    },
+    {
+      "id": "mur-en-bois",
+      "label": "Mur en bois",
+      "be": 6,
+      "wounds": 15,
+      "traits": "Résistant"
+    },
+    {
+      "id": "mur-en-pierre",
+      "label": "Mur en pierre",
+      "be": 12,
+      "wounds": 40,
+      "traits": "Impénétrable"
+    }
+  ],
+  "hazards": [
+    {
+      "min": 1,
+      "max": 1,
+      "label": "Tempête",
+      "text": "une violente tempête se lève alors que la bataille s'éternise. Le sol devient boueux et humide, ou est recouvert de neige. Tous les combattants au corps à corps d'une Taille inférieure à Grande subissent une pénalité de –10 à tous les Tests de Combat et leurs Mouvements sont réduits de moitié. À cause du vent violent et d'un manque de visibilité, les attaquants à distance et les montures volantes ont une pénalité de –20 à tous les Tests de Combat, tandis que les Tests de Discrétion bénéficient d'un bonus de +20. La tempête accorde aux sorciers du Domaine des Cieux un bonus de +10 pour tous les Tests d'Incantation et de Focalisation"
+    },
+    {
+      "min": 2,
+      "max": 2,
+      "label": "Pièges",
+      "text": "l'ennemi a dispersé des pièges sur tout le champ de bataille. Il peut s'agir de n'importe quel type de pièges : fosses avec des pointes, explosifs sur un déclencheur à pression, ou peut même être de nature magique. Lorsqu'un Personnage se déplace, il doit réussir un Test de Perception Intermédiaire (+0) sous peine de déclencher un piège. Le Personnage qui déclenche le piège doit réussir un Test d'Esquive Intermédiaire (+0) pour éviter ses effets. Les pièges infligent 8 Dégâts et les Personnages subissent des États en fonction de la nature du piège. Un piège à ours provoque Empêtré et une fosse laisse les Personnages À Terre dans un trou. Chaque fois qu'ils déclenchent un piège, les Personnages peuvent effectuer un Test de Perception Difficile (–20) pour ne plus se faire avoir. Quelque part sur le champ de bataille se trouve l'ingénieur ennemi avec un plan où sont marqués les emplacements de tous les pièges. Si le plan est récupéré, tous les pièges peuvent être neutralisés."
+    },
+    {
+      "min": 3,
+      "max": 3,
+      "label": "Armes de siège",
+      "text": "l'ennemi attaque avec des armes de siège, par exemple des canons ou des catapultes qui lancent des rochers. À la fin de chaque Round de bataille, tous les Personnages doivent réussir un Test d'Esquive Facile (+40) ou recevoir une Blessure Critique. Cet effet prend fin si les Personnages parviennent à vaincre les Équipes qui manœuvrent les armes de siège. Ensuite, ils peuvent même les utiliser contre l'armée adverse."
+    },
+    {
+      "min": 4,
+      "max": 4,
+      "label": "Influence corruptrice",
+      "text": "l'armée ennemie est fortement corrompue par le Chaos, et sa concentration l'a rendue puissante. À la fin de chaque Round de bataille, tous les Personnages doivent effectuer un Test de Résistance Intermédiaire (+0) ou gagner 1 point de Corruption. Le MJ peut effectuer un Test de Résistance Facile (+40) avec l'Endurance moyenne des troupes (généralement, 35). En cas d'échec, un allié proche mute brutalement et se met à attaquer sans distinction entre ses amis et ses ennemis."
+    },
+    {
+      "min": 5,
+      "max": 5,
+      "label": "Nuage toxique",
+      "text": "que ce soit à l'aide de la magie ou d'une arme puissante, l'ennemi a libéré un nuage de gaz toxique. Le nuage dissimule l'environnement autant que du brouillard. À la fin de chaque Round d'un combat, tous les Personnages à l'intérieur du nuage doivent effectuer un Test de Résistance Intermédiaire (+0) ou subir un État Empoisonné. Le nuage peut s'enflammer et inflige alors 3 États En flammes aux Personnages qui sont à l'intérieur."
+    },
+    {
+      "min": 6,
+      "max": 6,
+      "label": "Broussailles gênantes",
+      "text": "l'herbe et les plantes rendent le combat difficile, tous les Mouvements sont réduits de moitié. Un Personnage qui souffre d'une Maladresse subit également un État Empêtré en plus des autres effets habituels. À l'aide d'une lame, un Personnage peut passer une Scène cinématique à retirer les broussailles en réussissant un Test de Corps à corps"
+    },
+    {
+      "min": 7,
+      "max": 7,
+      "label": "Rivière",
+      "text": "une rivière à fort courant traverse le champ de bataille. Les Personnages d'une Taille inférieure à Grande reçoivent une pénalité de –20 à tous les Tests de Combat durant la traversée. Un Personnage qui termine son tour dans la rivière doit réussir un Test de Force Intermédiaire (+0) sous peine d'être emporté. Prendre le contrôle d'un pont à proximité obligera l'ennemi à traverser la rivière."
+    },
+    {
+      "min": 8,
+      "max": 8,
+      "label": "Brasier",
+      "text": "un terrible incendie d'origine alchimique ou magique ravage le champ de bataille. En se déplaçant sur le champ de bataille, les Personnages doivent réussir un Test d'Athlétisme Intermédiaire (+0) ou subir 1 État En flammes. Trouver la source de l'incendie, comme un alchimiste, un sorcier ou un engin de siège, et l'empêcher de nuire, permet de mettre fin à l'incendie après 1 Round de bataille."
+    },
+    {
+      "min": 9,
+      "max": 9,
+      "label": "Retour à la vie",
+      "text": "un puissant nécromancien se cache parmi les troupes ennemies. Pour chaque réduction de Puissance de votre armée, celle de l'ennemi augmente de 1 tandis que vos morts la rejoignent sous forme de squelettes et de zombies. Vaincre le nécromancien met fin à l'effet, et toute la Puissance gagnée par l'ennemi est perdue lorsque les morts tombent en morceaux."
+    },
+    {
+      "min": 10,
+      "max": 10,
+      "label": "Peur",
+      "text": "l'ennemi transporte une structure avec une image terrifiante. Il peut s'agir d'une sculpture du Chaos, ou d'une plateforme exhibant des écorchés vifs hurlant de douleur. L'armée subit une pénalité de –10 à tous les Tests de Puissance tant que la structure est intacte."
+    }
+  ],
+  "scenes": [
+    {
+      "id": "motivation",
+      "label": "Motivation",
+      "kind": "test",
+      "desc": "Parfois, la source du problème n'est pas l'ennemi, mais sa propre armée : troupes blessées, moral au plus bas, désertion, etc. Un Personnage peut résoudre ces soucis en utilisant un Test de Compétence au cours d'une Scène de Motivation. En cas de Succès, la Puissance de l'armée augmente de +DR.",
+      "skills": [
+        {
+          "skillId": "commandement"
+        },
+        {
+          "skillId": "intimidation"
+        },
+        {
+          "skillId": "charme"
+        }
+      ],
+      "difficulty": "intermediaire",
+      "effect": {
+        "side": "ally",
+        "scale": "perDR",
+        "amount": 1
+      }
+    },
+    {
+      "id": "ligne-de-mire",
+      "label": "Ligne de mire",
+      "kind": "test",
+      "desc": "Au milieu du chaos de la bataille, un Personnage aperçoit soudain un capitaine ennemi isolé non loin de lui. Il peut le charger ou l'attaquer à une distance de 12 mètres. En cas de Succès, l'ennemi perd –5 de Puissance. Si c'est le général qui est tué ou neutralisé, la Puissance diminue encore de –5. Après cette attaque, les troupes ennemies encerclent le Personnage, qui doit battre en retraite.",
+      "skills": [
+        {
+          "skillId": "corps-a-corps"
+        },
+        {
+          "skillId": "projectiles"
+        }
+      ],
+      "difficulty": "intermediaire",
+      "effect": {
+        "side": "enemy",
+        "scale": "fixed",
+        "amount": -5
+      }
+    },
+    {
+      "id": "survol",
+      "label": "Survol",
+      "kind": "test",
+      "desc": "Une monture volante accorde aux Personnages une unique tentative pour surprendre le général ennemi à l'arrière des lignes. Réussir un Test de Chevaucher Intermédiaire (+0) permet aux Personnages d'effectuer une attaque à distance, ou toute autre Action réalisable à une distance de 15 moins DR mètres. Si l'attaque réussit, l'ennemi perd –5 de Puissance. Si le général ennemi est neutralisé ou tué, la Puissance diminue encore de –15.",
+      "skills": [
+        {
+          "skillId": "chevaucher"
+        }
+      ],
+      "difficulty": "intermediaire",
+      "effect": {
+        "side": "enemy",
+        "scale": "fixed",
+        "amount": -5
+      }
+    },
+    {
+      "id": "duel",
+      "label": "Duel",
+      "kind": "test",
+      "desc": "Le champ de bataille se retrouve soudainement figé lorsque les généraux (dont idéalement l'un des Personnages) de chaque armée se font face. D'un accord tacite, chacun dégaine son arme, tandis que les troupes les encerclent pour les laisser se battre. Le camp vaincu au cours du duel voit sa Puissance réduite de –20 tandis que les troupes assistent à la mort de leur commandant.",
+      "skills": [
+        {
+          "skillId": "corps-a-corps"
+        }
+      ],
+      "difficulty": "intermediaire",
+      "effect": {
+        "side": "enemy",
+        "scale": "fixed",
+        "amount": -20
+      }
+    },
+    {
+      "id": "charge",
+      "label": "Charge",
+      "kind": "combat",
+      "desc": "Si un ou plusieurs Personnages chargent à corps perdu dans la mêlée, ils peuvent se battre pendant un maximum de 2 Rounds. Le camp qui mène une charge commence avec 1 Avantage, puis chacun agit tour à tour par ordre d'Initiative. Pour chaque ennemi touché par les Personnages, la Puissance ennemie diminue de 1. Pour chaque ennemi neutralisé ou tué, la Puissance diminue encore de 2.",
+      "effect": {
+        "side": "enemy",
+        "scale": "perKill",
+        "amount": -2
+      }
+    },
+    {
+      "id": "tuez-la-bete",
+      "label": "Tuez la bête !",
+      "kind": "combat",
+      "desc": "L'ennemi a libéré une créature gigantesque. Elle inflige des dégâts importants aux troupes. Vainquez-la en 3 Rounds pour diminuer la Puissance de l'ennemi de –10. Divisez les Blessures de départ de la créature par deux pour tenir compte des autres troupes qui l'attaquent.",
+      "effect": {
+        "side": "enemy",
+        "scale": "fixed",
+        "amount": -10
+      }
+    }
+  ]
+}
