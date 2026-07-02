@@ -52,11 +52,13 @@ import {
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { areGrappling, clearGrapple, grappleEnvMod } from '../engine/grapple';
 import { gainAdvantage } from '../engine/advantage';
+import { groupAdvantage } from '../engine/advantagePool';
+import { campGain, reversalStealOne, roundEndAdvantageTransfer } from './combat/advantagePool';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
-import { hasStealAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
@@ -220,10 +222,10 @@ import { startCascade, registerCascadeApplier } from './cascade';
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
  *  l'attaque » (LDB 16 l.123) — ce gain profite déjà au jet en cours puis persiste. À appeler une seule
  *  fois par attaque (avant le 1er jet ; pas sur une relance). Plus de branche par-nom de l'État. */
-export function applyIncomingMeleeAdvantage(attacker: Combatant, target: Combatant): void {
+export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, target: Combatant): void {
   const adv = attacker.weapons[0]?.type === 'melee' ? incomingMeleeAdvantage(target) : 0;
   if (adv > 0) {
-    gainAdvantage(attacker, adv);
+    campGain(get, attacker, adv);
     attacker.gainedAdvThisRound = true;
   }
 }
@@ -1720,27 +1722,32 @@ export function applyAttackResult(
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
   if (res.advantageTo === 'attacker' && !deferAttackerAdvantage) {
-    // Renversement (LDB 10) : « au lieu de gagner +1 Avantage, vous prenez tous les Avantages
-    // actuels de votre adversaire » — appliqué quand c'est mieux que +1.
-    if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
+    // Renversement : « au lieu de gagner +1, prendre l'Avantage adverse ». LDB 10 → tout l'Avantage
+    // individuel de la cible (quand c'est mieux que +1) ; variante « Avantage de groupe » (AA l.4442) →
+    // 1 dans la réserve adverse. Sinon +1 au vainqueur du Test opposé (per-combattant OU réserve du camp).
+    if (weapon.type === 'melee' && stealsOneAdvantage(attacker)) {
+      if (reversalStealOne(get, attacker, target)) critLog.push(tr('cf.reversal', { name: attacker.name }));
+    } else if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
       gainAdvantage(attacker, target.advantage);
       target.advantage = 0;
       critLog.push(tr('cf.reversal', { name: attacker.name }));
-    } else gainAdvantage(attacker);
+    } else campGain(get, attacker);
     attacker.gainedAdvThisRound = true;
   }
   if (res.advantageTo === 'defender') {
-    // Renversement côté défenseur (même règle) ; Porte-Bouclier (LDB 10) : +niveau Avantage en
-    // défense gagnée au Bouclier.
-    if (weapon.type === 'melee' && hasStealAdvantage(target) && (attacker.advantage ?? 0) > 1) {
+    // Renversement côté défenseur (même règle) ; Porte-Bouclier (LDB 10 → +niveau Avantage en défense
+    // gagnée au Bouclier ; en mode groupe la variante AA n'accorde plus ce gain — `shieldAdvantageLevel`→0).
+    if (weapon.type === 'melee' && stealsOneAdvantage(target)) {
+      if (reversalStealOne(get, target, attacker)) critLog.push(tr('cf.reversal', { name: target.name }));
+    } else if (weapon.type === 'melee' && hasStealAdvantage(target) && (attacker.advantage ?? 0) > 1) {
       gainAdvantage(target, attacker.advantage);
       critLog.push(tr('cf.reversal', { name: target.name }));
-    } else gainAdvantage(target);
-    gainAdvantage(target, shieldAdvantageLevel(target, res.parryWeapon));
+    } else campGain(get, target);
+    campGain(get, target, shieldAdvantageLevel(target, res.parryWeapon));
     target.gainedAdvThisRound = true;
-    attacker.advantage = 0; // l'attaquant a échoué au Test opposé
+    if (!groupAdvantage()) attacker.advantage = 0; // l'attaquant a échoué au Test opposé (LDB ; pas de perte per-combattant en mode groupe)
   }
-  if (res.hit && res.woundsLost) target.advantage = 0; // perdre une Blessure → perte de tout Avantage
+  if (res.hit && res.woundsLost && !groupAdvantage()) target.advantage = 0; // perdre une Blessure → perte de tout Avantage (LDB ; inerte en mode groupe)
   const kind = weapon.type === 'ranged' ? 'ranged' : 'melee';
   const defense = weapon.type === 'ranged' ? 'none' : bestDefenseMode(target);
   // Orientation : l'attaquant se tourne vers la cible, le défenseur vers l'attaquant (frappe offensive).
@@ -2037,7 +2044,7 @@ export function maybeOpenDefense(
   if (weapon?.type !== 'melee') return false;
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
-  applyIncomingMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
+  applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
   // Le MÊME env que resolveAttack (météo, Flanc/dos, Surnombre, Combat monté) : le jet figé de la
   // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.217).
   const { env } = attackEnv(get, attacker, target, weapon);
@@ -2078,7 +2085,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
     const b0 = get().battle;
     if (b0) set({ battle: { ...b0, log: [...b0.log, ev('shoot', tr('cf.aim', { name: attacker.name, target: target.name }), attacker.id, target.id)] } });
   }
-  applyIncomingMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
+  applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
   // Charge montée (LDB 14 l.223) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
   // Taille de sa monture — PARITÉ avec le joueur (le proxy ne s'applique que s'il chevauche réellement).
   const r = resolveAttack(get, attacker, target, undefined, attacker.chargedThisTurn);
@@ -3307,7 +3314,7 @@ export function applyCast(
   if (battle && isSort && spell.subType && res.cast) {
     const marks = battle.domainCasts ?? [];
     if (marks.some((m) => m.targetId === target.id && m.domain === spell.subType)) {
-      gainAdvantage(caster);
+      campGain(get, caster);
       caster.gainedAdvThisRound = true;
       logLines.push(tr('cf.windConverges', { name: caster.name, wind: spell.subType, target: target.name }));
     }
@@ -4349,9 +4356,12 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   if (bleedFateHero) { set({ pendingFateSave: { heroId: bleedFateHero.c.id, source: 'slow' } }); return; }
   for (const d of doomedBleed) { d.c.dead = true; battle.log.push(ev('death', d.line, d.c.id)); for (const line of notifySlain(get, set, d.c)) battle.log.push(ev('death', line, d.c.id)); }
   battle.bleedDoomed = undefined;
-  // (3) Avantage : -1 si aucun gagné ce Round (LDB Dépl. l.40) ; Engagé périmé (LDB 13-Combat l.175).
+  // (3) Avantage : mode Livre de base → -1 si aucun gagné ce Round (LDB Dépl. l.40) ; mode « Avantage de
+  //     groupe » (AA l.4146) → transfert de domination du camp majoritaire (REMPLACE décroissance +
+  //     Surnombre). Engagé périmé (LDB 13-Combat l.175).
+  if (groupAdvantage()) roundEndAdvantageTransfer(battle);
   for (const c of battle.combatants) {
-    if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
+    if (!groupAdvantage() && !isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
     c.gainedAdvThisRound = false;
     c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.202)
   }
@@ -5085,7 +5095,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
           if (!wasEngaged) {
             const adv = chargeAdvantage(effectiveMovement(geom), distBefore);
             if (adv) {
-              gainAdvantage(enemy, adv);
+              campGain(get, enemy, adv);
               enemy.gainedAdvThisRound = true;
               enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
               // Frappe réactive (LDB 10) : la cible CHARGÉE peut riposter HORS séquence (Test d'Init) avant

@@ -24,6 +24,7 @@ import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { rule } from '../../engine/policy';
+import { groupAdvantage } from '../../engine/advantagePool';
 import { t } from '../../i18n';
 import type { Combatant } from '../../engine/types';
 import type { CascadeStep } from '../pendings';
@@ -110,6 +111,7 @@ registerCombatHook({
   phase: 'onRoundEnd',
   order: 55,
   run: ({ battle, sink }) => {
+    if (groupAdvantage()) return; // mode « Avantage de groupe » : le Surnombre est absorbé par le transfert de domination (AA l.4146)
     for (const c of battle.combatants) {
       if (isOutOfAction(c) || (c.advantage ?? 0) <= 0) continue;
       const foes = (c.engagedWith ?? []).filter((id) => {

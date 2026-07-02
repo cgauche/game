@@ -255,6 +255,10 @@ export interface TalentData {
    *  talent ne se rapporte à aucun Test. */
   test: TalentTest | null;
   desc: string;
+  /** Lecture ALTERNATIVE « Avantage de groupe » (Aux Armes, Annexe III — l.4347-4442), verbatim. Affichée
+   *  à la place de `desc` quand la règle `combat-aa-avantage-groupe` est active (Compendium/Codex). Le champ
+   *  MÉCANIQUE correspondant est `combat.aa`. Absent = le Talent ne change pas en mode groupe. */
+  descAA?: string;
   specs?: string[];
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;

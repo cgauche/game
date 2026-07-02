@@ -30,7 +30,8 @@ import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, r
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
-import { gainAdvantage } from '../engine/advantage';
+import { groupAdvantage, mirrorPools } from '../engine/advantagePool';
+import { campGain, startAdvantagePools } from './combat/advantagePool';
 import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
@@ -42,7 +43,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
-import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, hasCommandTeam } from '../engine/combatFeatures/dispatch';
+import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
@@ -283,7 +284,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const foes = (mover.engagedWith ?? [])
         .map((id) => battle.combatants.find((c) => c.id === id))
         .filter((c): c is Combatant => !!c);
-      mover.advantage = 0; // « ramener votre Avantage à 0 » (l.87)
+      if (!groupAdvantage()) mover.advantage = 0; // « ramener votre Avantage à 0 » (l.87) — en mode groupe la réserve n'est pas dépensée ici (Retraite stratégique = dépense dédiée, non modélisée)
       for (const f of foes) disengageFrom(mover, f); // se place hors de portée de TOUS (l.87)
       set({
         pendingDisengage: null,
@@ -320,7 +321,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!mover || !foe) return;
       const log = [...battle.log];
       if (pd.result === 'success') {
-        gainAdvantage(mover); // +1 Avantage (l.89)
+        campGain(get, mover); // +1 Avantage (l.89)
         mover.gainedAdvThisRound = true;
         // Esquive réussie = on s'extrait du corps à corps → libéré de TOUS les Engagements
         // (cohérent avec l'option A, qui libère aussi tous les foes).
@@ -338,7 +339,7 @@ export function createCombatSlice(get: Get, set: Set) {
         log.push(ev('flee', t('cs.disengageNeutral', { name: mover.name }), mover.id, foe.id));
         set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
       } else {
-        gainAdvantage(foe); // l'adversaire gagne +1, la fuite échoue (l.89)
+        campGain(get, foe); // l'adversaire gagne +1, la fuite échoue (l.89)
         foe.gainedAdvThisRound = true;
         log.push(ev('flee', t('cs.disengageFail', { name: mover.name, foe: foe.name }), mover.id, foe.id));
         set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
@@ -357,13 +358,13 @@ export function createCombatSlice(get: Get, set: Set) {
       const foe = battle.combatants.find((c) => c.id === pd.foeId);
       if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
       const log = [...battle.log];
-      gainAdvantage(foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
+      campGain(get, foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
       foe.gainedAdvThisRound = true;
       const res = resolveBackstabAttack(foe, mover, battleRng()); // coup dans le dos SUBI (montré INLINE)
       log.push(ev('flee', t('cs.fleeBackstab', { name: mover.name, foe: foe.name, log: res.log }), mover.id, foe.id));
       if (res.hit && res.woundsLost) {
         loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
-        gainAdvantage(foe); // touché → +1 Avantage de plus (l.107)
+        campGain(get, foe); // touché → +1 Avantage de plus (l.107)
         // Test de Calme DIFFÉRÉ en jet INFLUENÇABLE : on n'applique NI le Brisé NI la libération/Course
         // ici — `fleeConfirm` le fait après le jet. Phase 'fuir' ouverte avec le coup dans le dos SUBI.
         set({ battle: { ...battle, log }, pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: true, woundsLost: res.woundsLost, calme: null } } });
@@ -519,7 +520,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const foe = battle.combatants.find((c) => c.id === pd.foeId);
       if (!actor || !foe) return set({ pendingGrapple: null });
       if (pd.result === 'success') return set({ pendingGrapple: { ...pd, phase: 'options' }, battle: { ...battle, acted: true, action: null } }); // l'acteur tranche ; Action dépensée
-      if (pd.result === 'failure') gainAdvantage(foe, 1); // l'adversaire l'emporte → +1 Avantage
+      if (pd.result === 'failure') campGain(get, foe, 1); // l'adversaire l'emporte → +1 Avantage
       const key = pd.result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie';
       const log = [...battle.log, ev('attack', t(key, { name: actor.name, foe: foe.name }), actor.id, foe.id)];
       set({ pendingGrapple: null, battle: { ...battle, acted: true, action: null, log } });
@@ -1458,6 +1459,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const reloadTalent = pr.success ? reloadDRBonus(chef, w) : 0; // Rechargement rapide / Artilleur (LDB 10)
         const step = crewedReloadStep(w ?? ({ reload: pr.reload, qualities: [] } as never), pr.progressBefore, pr.sl + reloadTalent);
         if (step.done) { poste.loaded = true; poste.reloadProgress = 0; } else poste.reloadProgress = step.progress;
+        if (pr.success && reloadGrantsAssessAdvantage(chef)) campGain(get, chef, 1); // AA l.4353/4434 : recharger = Action Évaluer → +1 Avantage (mode groupe)
         set({ battle: { ...battle, action: null,
           crewActed: withCrewActed(battle.crewActed, ship.id, poste.crewIds ?? []), // chef + servants OCCUPÉS ce Round
           log: [...battle.log, ev('reload', describeReload(pr, step.progress, w?.name ?? 'pièce'), chef.id)] } });
@@ -1478,6 +1480,7 @@ export function createCombatSlice(get: Get, set: Set) {
       } else {
         a.reloadProgress = progress;
       }
+      if (pr.success && reloadGrantsAssessAdvantage(a)) campGain(get, a, 1); // AA l.4353/4434 : recharger = Action Évaluer → +1 Avantage (mode groupe)
       // Issue = source UNIQUE avec la popin (describeReload) — `progress` inclut le bonus de Talent (réalisé à l'application).
       const reloadName = a.weapons.find((w) => w.uid === pr.weaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', describeReload(pr, progress, reloadName), a.id)] } });
@@ -1703,7 +1706,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
       const target = battle.combatants.find((c) => c.id === pa.targetId);
       if (!attacker || !target) return;
-      applyIncomingMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
+      applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
       const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223) ; pa.withhold = Retenir ses coups (AA)
       if (!r) {
         get().log(firedWeapon(attacker, target, pa.weaponUid).type === 'ranged' ? t('cf.noLoSMasked') : t('cs.meleeOutOfRange'));
@@ -1783,7 +1786,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // 2ᵉ frappe résolue (LDB 10 l.638) : +1 Avantage UNIQUE si LES DEUX frappes touchent (pas +1 par frappe).
         // `dualBefore` n'existe que si la 1ʳᵉ a touché ; `pa.result.hit` = la 2ᵉ touche → les deux touchent.
         if (isDualSecond) {
-          if (dualBefore && pa.result.hit) { gainAdvantage(attacker); attacker.gainedAdvThisRound = true; }
+          if (dualBefore && pa.result.hit) { campGain(get, attacker); attacker.gainedAdvThisRound = true; }
           set({ pendingDualStrike: null, battle: { ...get().battle! } });
         }
         // Attaque gratuite de MANŒUVRE de mêlée (Morsure/Attaque caudale/Tentacules, LDB 85) : l'Action est
@@ -2132,7 +2135,11 @@ export function createCombatSlice(get: Get, set: Set) {
         onVictory: onVictory ?? enc.onVictory,
         // Pièges/hasards authorés de la scène → zones de bataille PERMANENTES (même runtime que les sorts).
         zones: sceneZonesToBattle(scene.effectZones),
+        // Réserves d'Avantage par camp (AA l.4149-4167) : seulement en mode « Avantage de groupe ».
+        // Positionnement initial AUTO-dérivé (Surnombre + Surprise) ; le reste reste à l'appréciation du MJ.
+        advantagePools: groupAdvantage() ? startAdvantagePools(all, doSurprise) : undefined,
       };
+      if (battle.advantagePools) mirrorPools(battle.advantagePools, all); // projette la réserve de départ sur chaque combattant
       // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
       // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
       // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »

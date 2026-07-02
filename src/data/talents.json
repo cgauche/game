@@ -126,6 +126,7 @@
     },
     "test": null,
     "desc": "Vous pouvez recharger avec facilité les armes à Poudre noire. Ajoutez un DR égal à votre niveau d'Artilleur à n'importe quel Test étendu pour recharger une arme à Poudre noire.",
+    "descAA": "Vous pouvez recharger avec facilité les armes à Poudre noire. Ajoutez un DR égal à votre niveau d'artilleur à n'importe quel Test étendu pour recharger une arme à Poudre noire. Recharger une arme à Poudre noire pendant un combat est également considéré comme une Action Évaluer pour vous. Vous gagnez +1 Avantage supplémentaire quand vous effectuez ce Test d'Évaluer.",
     "specs": [],
     "rand": null,
     "source": {
@@ -133,7 +134,10 @@
       "page": 132
     },
     "combat": {
-      "reloadDR": "blackpowder"
+      "reloadDR": "blackpowder",
+      "aa": {
+        "reloadAssessAdvantage": true
+      }
     }
   },
   {
@@ -285,6 +289,7 @@
       ]
     },
     "desc": "Vous êtes entraîné à effectuer des frappes précises contrôlées sur l'arme de votre adversaire, créant une ouverture pour une attaque ou empêchant simplement une attaque de vous atteindre. Pour votre Action, vous pouvez choisir Battement avant de lancer les dés. Effectuez un Test de Corps à corps ; sur un succès, votre adversaire perd -1 Avantage et -1 de plus par DR que vous avez obtenu. Ce Test n'est pas opposé. Ce Talent est inutile si votre adversaire ne porte pas d'arme, ou est d'une Taille supérieure à la vôtre (voir page 342).",
+    "descAA": "Vous êtes entraîné à effectuer des frappes précises contrôlées sur l'arme de votre adversaire, créant une ouverture pour une attaque ou empêchant simplement une attaque de vous atteindre. Pour votre Action, vous pouvez choisir Battement avant de lancer les dés. Effectuez un Test de Corps à Corps ; sur un Succès, la réserve d'Avantages du camp adverse perd -1 Avantage et -1 de plus si vous avez obtenu 6 DR. Ce Test n'est pas opposé. Ce Talent est inutile si votre adversaire ne porte pas d'arme, ou est d'une Taille supérieure à la vôtre.",
     "specs": [],
     "rand": null,
     "source": {
@@ -465,11 +470,17 @@
       ]
     },
     "desc": "Vous êtes à l'aise en selle même dans les situations les plus difficiles, et savez comment tirer le meilleur de votre monture pendant les conflits. En supposant que vous possédez la Compétence Chevaucher, vous pouvez directement demander à votre monture d'effectuer une Action, pas seulement un Mouvement, sans Test de Chevaucher.",
+    "descAA": "Vous êtes à l'aise en selle même dans les situations les plus difficiles, et savez comment tirer le meilleur de votre monture pendant les conflits. En supposant que vous possédiez la Compétence Chevaucher, vous pouvez directement demander à votre monture d'effectuer une Action, pas seulement un Mouvement, sans Test de Chevaucher. De plus, vous considérez votre Taille comme égale à celle de votre monture pour résister à la *Peur* et à la *Terreur* causées uniquement par la Taille de votre adversaire, car vous êtes confiant une fois monté.",
     "specs": [],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
+    },
+    "combat": {
+      "aa": {
+        "fearSizeAsMount": true
+      }
     }
   },
   {
@@ -910,11 +921,17 @@
       ]
     },
     "desc": "Vous avez été formé à combattre côte à côte avec d'autres soldats. Si un ennemi vous fait perdre des Avantages alors qu'il se tient à côté d'un allié actif possédant le Talent Coude-à- coude, vous pouvez conserver 1 Avantage perdu pour chaque fois que vous avez pris le Talent Coude-à-coude. ",
+    "descAA": "Vous avez été formé à combattre côte à côte avec d'autres soldats. Chaque Personnage possédant le Talent Coude-à-coude compte comme deux combattants pour ce qui est de perdre un Avantage (voir page 134).",
     "specs": [],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
+    },
+    "combat": {
+      "aa": {
+        "transferWeight": 2
+      }
     }
   },
   {
@@ -1082,6 +1099,7 @@
       ]
     },
     "desc": "Vous êtes formé à effectuer des mouvements simples pour distraire ou surprendre votre adversaire, détournant les regards de votre véritable intention. Vous pouvez utiliser votre Mouvement pour Distraire. Ceci se résout par un Test opposé d'Athlétisme/Calme. Sur un succès, votre adversaire ne gagne pas d'Avantage jusqu'à la fin du prochain Round.",
+    "descAA": "Vous êtes formé à effectuer des mouvements simples pour distraire ou surprendre votre adversaire, détournant les regards de votre véritable intention. Vous pouvez utiliser votre Mouvement pour Distraire. Ceci se résout par un Test opposé d'**Athlétisme/Calme** contre votre cible. Sur un succès, votre adversaire ne gagne pas d'Avantage pour sa réserve jusqu'à la fin du prochain Round.",
     "specs": [],
     "rand": null,
     "source": {
@@ -1859,6 +1877,7 @@
     },
     "test": null,
     "desc": "Quand votre esprit est rivé sur une cible, personne ne peut vous empêcher de l'atteindre. Si vous utilisez des Avantages quand vous vous Désengagez, vous pouvez garder un nombre d'Avantages égal à votre Niveau d'Impitoyable. De plus, vous pouvez utiliser des Avantages pour vous Désengager même si vous avez moins d'Avantages que vos adversaires.",
+    "descAA": "Quand votre esprit est rivé sur une cible, personne ne peut vous empêcher de l'atteindre. La dépense d'Avantages pour une Retraite stratégique tombe à 1 pour vous.",
     "specs": [],
     "rand": null,
     "source": {
@@ -2972,6 +2991,7 @@
       "matches": []
     },
     "desc": "Vous êtes habile dans le maniement de votre bouclier pour manœuvrer en combat afin de pouvoir tirer le meilleur parti d'une situation désespérée. Quand vous utilisez un Bouclier pour vous défendre, vous gagnez un nombre d'Avantages égal au nombre de Niveaux que vous possédez en Porte-Bouclier si vous perdez le Test opposé.",
+    "descAA": "Vous êtes habile dans le maniement de votre bouclier pour manœuvrer en combat afin de pouvoir tirer le meilleur parti d'une situation désespérée. Quand vous utilisez un bouclier pour vous défendre, une fois par Round, vous pouvez dépenser 2 Avantages soit pour causer des Dégâts quand vous êtes attaqué comme s'il s'agissait de votre Action, soit pour pousser votre adversaire sur 2 mètres dans la direction directement opposée à vous et ne plus être considéré comme Engagé.",
     "specs": [],
     "rand": null,
     "source": {
@@ -2979,7 +2999,10 @@
       "page": 144
     },
     "combat": {
-      "shieldAdvantage": true
+      "shieldAdvantage": true,
+      "aa": {
+        "shieldAdvantage": false
+      }
     }
   },
   {
@@ -3050,6 +3073,7 @@
     },
     "test": null,
     "desc": "Vous pouvez recharger les armes à distance avec facilité. Vous ajoutez un DR égal à votre niveau de Rechargement rapide à n'importe quel Test pour recharger une arme à distance.",
+    "descAA": "Vous pouvez recharger avec facilité les armes à distance. Ajoutez un DR égal à votre niveau de Rechargement rapide à n'importe quel Test étendu pour recharger une arme à distance. Recharger une arme à distance pendant un combat est également considéré comme une Action Évaluer pour vous. Vous gagnez +1 Avantage supplémentaire quand vous effectuez ce Test d'Évaluer.",
     "specs": [],
     "rand": null,
     "source": {
@@ -3057,7 +3081,10 @@
       "page": 144
     },
     "combat": {
-      "reloadDR": "all"
+      "reloadDR": "all",
+      "aa": {
+        "reloadAssessAdvantage": true
+      }
     }
   },
   {
@@ -3096,6 +3123,7 @@
       ]
     },
     "desc": "Vous êtes habitué aux combats désespérés, capable de retourner même les situations les plus désastreuses à votre Avantage. Si vous gagnez le Test opposé de Corps à corps, au lieu de gagner +1 Avantage, vous prenez tous les Avantages actuels de votre adversaire. Dans ce cas, vous ne pouvez infliger aucun Dégât, même si c'était votre Tour dans le Round.",
+    "descAA": "Vous êtes habitué aux combats désespérés, capable de retourner même les situations les plus désastreuses à votre avantage. Si vous gagnez le Test opposé de **Corps à Corps**, au lieu de gagner +1 Avantage, vous pouvez prendre 1 Avantage dans la réserve d'Avantages du camp opposé et l'ajouter à la vôtre. Dans ce cas, vous ne pouvez infliger aucun Dégât, même si c'était votre Tour dans le Round.",
     "specs": [],
     "rand": null,
     "source": {
@@ -3103,7 +3131,11 @@
       "page": 144
     },
     "combat": {
-      "stealAdvantage": true
+      "stealAdvantage": true,
+      "aa": {
+        "stealAdvantage": false,
+        "stealOne": true
+      }
     }
   },
   {

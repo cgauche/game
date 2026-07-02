@@ -78,6 +78,18 @@ export interface CombatFeature {
   counterRequiresFastParry?: boolean;
   /** Renversement : en gagnant le Test opposé de Corps à corps, prend TOUS les Avantages adverses au lieu de +1. */
   stealAdvantage?: boolean;
+  /** Renversement — variante « Avantage de groupe » (AA l.4442) : prend 1 Avantage dans la réserve
+   *  ADVERSE (au lieu de tout l'Avantage individuel de l'adversaire), l'ajoute à sa réserve, sans Dégât. */
+  stealOne?: boolean;
+  /** Coude-à-coude — variante « Avantage de groupe » (AA l.4387) : « compte comme deux combattants »
+   *  au décompte de domination de fin de Round (transfert d'Avantage). Poids par défaut 1. */
+  transferWeight?: number;
+  /** Artilleur / Rechargement rapide — variante « Avantage de groupe » (AA l.4353/4434) : recharger une
+   *  arme pendant un combat compte comme une Action Évaluer → +1 Avantage supplémentaire au rechargement. */
+  reloadAssessAdvantage?: boolean;
+  /** Cavalier émérite — variante « Avantage de groupe » (AA l.4369) : Taille considérée égale à celle de
+   *  la monture pour résister à la Peur/Terreur causée UNIQUEMENT par la Taille de l'adversaire. */
+  fearSizeAsMount?: boolean;
   /** Maîtrise du combat : compte pour 1+niveau personnes au calcul du surnombre. */
   outnumberCount?: boolean;
   // (Mâchoires d'acier n'est PLUS une CombatFeature : c'est un effet `onGainCondition` data-driven —
@@ -130,4 +142,8 @@ export interface CombatFeature {
    *  une chanson apprise, l.36) — Test de Divertissement (Chant), effet 3 min + DR sur tout l'équipage,
    *  une seule chanson par quart. Lu par `shantySingers` (affordance) + `battleSingShanty` (state). */
   seaShanty?: boolean;
+  /** Variante « Avantage de groupe » (Aux Armes, Annexe I) de cette capacité : FUSIONNÉE par-dessus les
+   *  champs de base quand la règle `combat-aa-avantage-groupe` est active (`featuresOf`). Le bon champ est
+   *  ainsi lu selon le toggle — AUCUN code ne nomme un Talent. LDB (défaut) : les champs de base seuls. */
+  aa?: Partial<CombatFeature>;
 }

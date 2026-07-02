@@ -16,6 +16,7 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed,
 } from '../../data';
+import { groupAdvantage } from '../../engine/advantagePool';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
@@ -363,7 +364,8 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'talents', label: 'Talents', group: 'Compétences',
     items: talents.map((t) => ({
-      label: t.label, desc: t.desc, source: src(t.source),
+      label: t.label, desc: groupAdvantage() && t.descAA ? t.descAA : t.desc, source: src(t.source), // lecture « Avantage de groupe » (AA) selon le toggle
+
       meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', t.specs?.length ? t.specs.join(', ') : null)),
       sections: sections(
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)

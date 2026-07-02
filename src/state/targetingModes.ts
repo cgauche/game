@@ -18,7 +18,7 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
 import { isOutOfAction, canTakeAction, hasCondition, COND } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
-import { gainAdvantage } from '../engine/advantage';
+import { campGain } from './combat/advantagePool';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzied } from '../engine/psychology';
 import { healableTargets, combatHealModes } from '../engine/healing';
@@ -430,7 +430,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
     if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
     applyZoneCrossings(get, active, approachPath); // Mur de feu & co (L11) : charger À TRAVERS coûte
-    gainAdvantage(active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
+    campGain(get, active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
     if (plan.adv > 0) active.gainedAdvThisRound = true;
     active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
     set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', t('cs.charge', { name: active.name, target: target.name, adv: plan.adv ? t('cs.fragChargeAdv', { adv: plan.adv }) : '' }), active.id, target.id)] } });

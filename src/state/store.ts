@@ -61,7 +61,7 @@ import { QUALITY_IDS } from '../engine/qualities/ids';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { type HealMode } from '../engine/healing';
 import type { DefenseMode } from '../engine/combat';
-import { gainAdvantage } from '../engine/advantage';
+import { campGain } from './combat/advantagePool';
 import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
@@ -165,6 +165,10 @@ export interface BattleState {
   /** « Avantages et Magie » (LDB 46 l.176) : cibles déjà visées par un Sort d'un Domaine CE Round —
    *  re-viser la même cible avec le même Vent donne +1 Avantage au lanceur. Purgé chaque Round. */
   domainCasts?: { targetId: string; domain: string }[];
+  /** Réserves d'Avantage par CAMP (Aux Armes, Annexe I — mode « Avantage de groupe ») : présentes
+   *  seulement quand la règle `combat-aa-avantage-groupe` est active. SOURCE DE VÉRITÉ de l'Avantage ;
+   *  chaque `Combatant.advantage` en est la PROJECTION du camp (`mirrorPools`). Absent en mode Livre de base. */
+  advantagePools?: import('../engine/advantagePool').AdvantagePools;
   /** Mort par Hémorragique (LDB 16 l.105) — combattants pour qui le jet de fin de Round (10 %/pion) a
    *  donné la MORT ce Round : marqués par le hook `bleed-death` (jet RNG, une fois), FINALISÉS par
    *  `resolveRoundBoundary` (qui peut SUSPENDRE pour un héros à Destin). `deathLine` = la ligne de
@@ -1886,7 +1890,7 @@ export const useGame = create<GameState>((set, get) => ({
     const battle = ca ? get().battle : null;
     if (ca && battle) {
       const c = battle.combatants.find((x) => x.id === ca.combatantId);
-      if (c && effSuccess && (c.advantage ?? 0) < ca.cap) gainAdvantage(c, 1);
+      if (c && effSuccess && (c.advantage ?? 0) < ca.cap) campGain(get, c, 1);
       set({ battle: { ...battle, acted: true, action: null } });
     }
     // Branche choisie PUIS continuation (suite du `seq` parent d'un nœud `test`) — exécutées par runFlow

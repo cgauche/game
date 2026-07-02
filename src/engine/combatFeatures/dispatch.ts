@@ -8,7 +8,16 @@ import { groupMatch } from '../groups';
 import { isShieldItem } from '../equipCompare';
 import { findTalentById, domainByLabel, traitById } from '../../data';
 import { canStrikeFirst } from '../qualities/dispatch';
+import { groupAdvantage } from '../advantagePool';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
+
+/** Lecture EFFECTIVE d'une capacité de talent : en mode « Avantage de groupe » (AA), la variante `aa`
+ *  est fusionnée par-dessus les champs de base (le bon champ selon le toggle) ; sinon les champs de base
+ *  seuls (LDB, byte-pour-byte). Fonction UNIQUE — aucun code ne nomme un Talent. */
+function effectiveFeature(raw: CombatFeature | undefined): CombatFeature | undefined {
+  if (!raw) return raw;
+  return groupAdvantage() && raw.aa ? { ...raw, ...raw.aa } : raw;
+}
 
 /** Famille d'incantation d'un Talent par son `id` STABLE (« magie-mineure », « beni ») via sa DONNÉE
  *  (`TalentData.combat.castingKind`), ou undefined. Pour les consommateurs qui ont un id, pas un Combattant. */
@@ -39,12 +48,12 @@ export function arcaneDomainIdOf(c: Combatant): string | undefined {
 export function featuresOf(c: Combatant): { def: CombatFeature; ctx: CombatFeatureCtx }[] {
   const out: { def: CombatFeature; ctx: CombatFeatureCtx }[] = [];
   for (const t of c.talents ?? []) {
-    const def = findTalentById(t.talentId)?.combat;
+    const def = effectiveFeature(findTalentById(t.talentId)?.combat);
     if (def) out.push({ def, ctx: { combatant: c, level: t.times ?? 1, spec: t.spec } });
   }
   for (const e of c.activeEffects ?? []) {
     if (!e.grantedTalent) continue;
-    const def = findTalentById(e.grantedTalent.talentId)?.combat;
+    const def = effectiveFeature(findTalentById(e.grantedTalent.talentId)?.combat);
     if (def) out.push({ def, ctx: { combatant: c, level: 1, spec: e.grantedTalent.spec } });
   }
   return out;
@@ -196,6 +205,30 @@ export function hasStealAdvantage(c: Combatant): boolean {
 /** Maîtrise du combat (LDB 10) : compte pour 1+niveau personnes au calcul du surnombre. */
 export function outnumberCountBonus(c: Combatant): number {
   return levelSum(c, (d) => !!d.outnumberCount);
+}
+
+/** Renversement — variante « Avantage de groupe » (AA l.4442) : prend 1 Avantage dans la réserve adverse
+ *  (au lieu de tout l'Avantage individuel via `stealAdvantage`, lecture LDB). */
+export function stealsOneAdvantage(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.stealOne);
+}
+
+/** Poids d'un combattant au décompte de domination de fin de Round (AA l.4146) : 1, ou 2 pour un porteur
+ *  de Coude-à-coude en mode « Avantage de groupe » (l.4387, « compte comme deux combattants »). */
+export function advantageTransferWeight(c: Combatant): number {
+  return featuresOf(c).reduce((m, { def }) => Math.max(m, def.transferWeight ?? 1), 1);
+}
+
+/** Artilleur / Rechargement rapide — variante AA (l.4353/4434) : recharger compte comme une Action
+ *  Évaluer → +1 Avantage supplémentaire au rechargement. Lu par le flux de rechargement (mode groupe). */
+export function reloadGrantsAssessAdvantage(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.reloadAssessAdvantage);
+}
+
+/** Cavalier émérite — variante AA (l.4369) : Taille considérée = celle de la monture contre la Peur/
+ *  Terreur causée UNIQUEMENT par la Taille de l'adversaire. Lu par la résolution de peur montée. */
+export function fearSizeAsMount(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.fearSizeAsMount);
 }
 
 /** Cœur vaillant (LDB 10) : récupération du Brisé même Engagé. */

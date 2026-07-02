@@ -8,6 +8,7 @@ import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, skills } from '../data';
 import { t } from '../i18n';
 import { rule } from './policy';
+import { groupAdvantage } from './advantagePool';
 import { bonus, effectiveChar } from './characteristics';
 import { d100, RNG, defaultRNG } from './dice';
 import { passiveMods } from './trauma';
@@ -53,7 +54,7 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
 }
 
 export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition): void {
-  c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
+  if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez tout Avantage » (LDB 16 l.15) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
     existing.value += value;
@@ -78,7 +79,7 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
 export function addTimedCondition(c: Combatant, name: string, value: number, rounds: number, escapeStrength?: number): void {
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
-    c.advantage = 0;
+    if (!groupAdvantage()) c.advantage = 0;
     existing.value += value;
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (existing.roundsLeft != null) existing.roundsLeft = Math.max(existing.roundsLeft, rounds);
@@ -98,7 +99,7 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
 export function addClockCondition(c: Combatant, name: string, value: number, until: number, escapeStrength?: number): void {
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
-    c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
+    if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État, vous perdez tout Avantage » (LDB 16 l.15) — inerte en mode « Avantage de groupe »
     existing.value += value;
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (existing.untilTime != null) existing.untilTime = Math.max(existing.untilTime, until);
@@ -492,7 +493,7 @@ export function loseWounds(c: Combatant, amount: number): number {
   if (amount <= 0 || c.wounds.current <= 0) return 0;
   const lost = Math.min(amount, c.wounds.current);
   c.wounds.current -= lost;
-  c.advantage = 0; // perdre une Blessure → perdre tout l'Avantage (LDB 15 l.40)
+  if (!groupAdvantage()) c.advantage = 0; // perdre une Blessure → perdre tout l'Avantage (LDB 15 l.40) — inerte en mode « Avantage de groupe »
   if (c.wounds.current <= 0 && !c.dead && !hasCondition(c, COND.inconscient)) applyZeroWounds(c);
   return lost;
 }

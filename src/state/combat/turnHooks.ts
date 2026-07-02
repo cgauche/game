@@ -26,6 +26,7 @@ import { rollTest } from '../../engine/tests';
 import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
 import { roundTestInteractive } from './cadenceGate';
+import { reconcileAdvantageToPool } from './advantagePool';
 import { mountMovement } from '../mount';
 import { losClear } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
@@ -48,6 +49,10 @@ import type { Get, Set as SetFn } from '../flowTypes';
  *  Journalisé en `detail` (kind agnostique — l'IA comme le héros). No-op si hors d'action. */
 export function fireTurnStartTriggers(get: Get, set: SetFn, c: Combatant | undefined): void {
   fireTurnEdgeTriggers(get, set, c, 'onTurnStart');
+  // Mode « Avantage de groupe » : un octroi d'Avantage par OP au début du tour (Redoutable, ZI : complète
+  // jusqu'à l'Indice — op `gainAdvantage`) écrit sur la projection ; on relève la réserve du camp (adverse
+  // pour une créature) en conséquence. No-op hors mode groupe.
+  if (c) reconcileAdvantageToPool(get, c);
 }
 
 /** Effets « fin de tour » authorés du combattant qui CESSE d'être actif (`onTurnEnd`) — appelé par

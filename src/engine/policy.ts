@@ -209,6 +209,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Système ALTERNATIF de Blessures/Blessures Critiques/mort d’Aux Armes (remplace WFJDR p.172-178). ldb = Livre de base (RAW, défaut). aa = tables de Critiques PAR LOCALISATION d’Aux Armes + Critique sur un double (même s’il reste des Blessures) + décalage +10/Blessure au-delà de 0 + mort si (Inconscient & 0 PB & Blessures critiques > Bonus d’Endurance). Les sous-effets conditionnels/durées des lignes AA restent en texte (arbitrage), le corps mécanique (Blessures + États immédiats + Mort) est appliqué.',
   },
   {
+    id: 'combat-aa-avantage-groupe',
+    label: 'Avantage de groupe (Aux Armes)',
+    ref: 'AA l.4105-4181',
+    group: 'Combat',
+    kind: 'flag',
+    default: false,
+    hint: 'Système ALTERNATIF d’Avantage d’Aux Armes (Annexe I) : l’Avantage n’est plus accumulé par combattant mais dans DEUX réserves de camp (alliés / adversaires). La génération est routée vers la réserve du camp (héros/alliés → alliés ; PNJ hostile ou neutre → adversaires). En fin de Round, le camp DOMINANT (le plus de combattants ; Coude-à-coude compte pour deux) prend 1 Avantage à l’autre (ou +1 si l’autre est vide) — remplace la décroissance et le Surnombre du Livre de base. Les Talents Battement/Coude-à-coude/Distraire/Impitoyable/Porte-bouclier/Rechargement rapide/Renversement/Artilleur (+ Cavalier émérite) lisent alors leur variante AA. Désactivé (défaut) = modèle par combattant du Livre de base, inchangé.',
+  },
+  {
     id: 'combat-ranged-melee-penalty',
     label: 'Tir dans un corps à corps',
     ref: 'LDB 14 l.133',
