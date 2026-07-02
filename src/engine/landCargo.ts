@@ -26,7 +26,7 @@ export interface LandCargoDef extends CargoDef { wine?: boolean }
 
 interface WineTier { min: number; max: number; label: string; price: number }
 interface OfferRow { richesse: number; label: string; pct: number }
-interface RumourRow { min: number; max: number; biens: string[]; text: string }
+export interface RumourRow { min: number; max: number; biens: string[]; text: string }
 
 const LAND = landCargoJson as unknown as {
   cargoes: LandCargoDef[];
@@ -37,7 +37,6 @@ const LAND = landCargoJson as unknown as {
   rumours: RumourRow[];
 };
 
-export const LAND_CARGOES = LAND.cargoes;
 export const WINE_QUALITY = LAND.wineQuality;
 export const findLandCargoById = (id: string): LandCargoDef | undefined => LAND.cargoes.find((c) => c.id === id);
 
@@ -130,6 +129,24 @@ export function landCargoBasePrice(cargo: LandCargoDef, season: Season, place: L
  *  personnage a une Compétence Résistance à l'alcool ≥ 50. PUR. */
 export function wineEvalDifficulty(alcoholResist: number): Difficulty {
   return alcoholResist >= LAND.buy.wineAlcoholResistThreshold ? LAND.buy.wineEvalEasyDifficulty : LAND.buy.wineEvalDifficulty;
+}
+
+/** RÉVÉLATION de la qualité SECRÈTE d'un lot de Vin après le Test d'Évaluation (l.95). La qualité réelle est
+ *  déduite du prix de base FIGÉ à l'ouverture (`WINE_QUALITY`, prix uniques). Succès → la vraie qualité ; échec
+ *  → une FAUSSE indication décalée de |DR| échelons (« donnez-lui une fausse indication dont l'inexactitude est
+ *  en rapport avec son degré d'échec » — direction vers le haut, ou vers le bas si plafonnée, pour rester FAUSSE ;
+ *  magnitude/direction arbitrées, laissées au MJ par le RAW). PUR. */
+export function wineEvalReveal(basePrice: number, success: boolean, sl: number): { trueLabel: string; shownLabel: string } {
+  const last = WINE_QUALITY.length - 1;
+  let idx = WINE_QUALITY.findIndex((w) => w.price === basePrice);
+  if (idx < 0) idx = 0;
+  const trueLabel = WINE_QUALITY[idx].label;
+  if (success) return { trueLabel, shownLabel: trueLabel };
+  const step = Math.max(1, Math.abs(sl));
+  let shown = idx + step;
+  if (shown > last) shown = idx - step; // décalage haut plafonné → on dévalue à la place (indication toujours FAUSSE)
+  shown = Math.min(last, Math.max(0, shown));
+  return { trueLabel, shownLabel: WINE_QUALITY[shown].label };
 }
 
 /** Surcoût d'un LOT PARTIEL à l'achat (l.131) : « le prix de base par 10 Points d'Encombrement doit être

@@ -24,6 +24,7 @@ import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { rule } from '../../engine/policy';
+import { t } from '../../i18n';
 import type { Combatant } from '../../engine/types';
 import type { CascadeStep } from '../pendings';
 import type { Get, Set as SetFn } from '../flowTypes';
@@ -138,13 +139,50 @@ registerCombatHook({
 // → étape de cascade collectée par `collectRoundEndTestSteps`. La géométrie d'arène est calculée par
 // `recoveryGeometry` (triggeredEffects). Plus de hook `broken-recovery` ni de `brokenContext`/`brokenRecoveryApply`.
 
+/** Aux Armes (l.2449) : un combattant à 0 PB porteur de l'État Hémorragique (et pas déjà Inconscient / hors
+ *  d'action) doit tester sa Résistance chaque Round sous peine de tomber Inconscient. Prédicat PARTAGÉ par le
+ *  hook (ENNEMIS/auto) et le collecteur de cascade (HÉROS). `isOutOfAction` exclut déjà mort/Inconscient/
+ *  figurant en Mort Subite. PUR. */
+function aaBleedUnconsciousDue(c: Combatant): boolean {
+  return !isOutOfAction(c) && c.wounds.current <= 0 && stacks(c, COND.hemorragique) > 0;
+}
+/** Conséquence du Test de Résistance AA « perte de sang » (l.2449) : échec → Inconscient ; succès → tient bon.
+ *  Partagée par le hook (ENNEMIS/auto) et l'applier de cascade (HÉROS). Renvoie la ligne d'échec, ou `null`. */
+function aaBleedUnconsciousApply(c: Combatant, success: boolean): string | null {
+  if (success) return null; // reste conscient (À Terre)
+  addCondition(c, COND.inconscient);
+  return t('cond.aaBleedUnconscious', { name: c.name });
+}
+
 // --- Migration ISO-COMPORTEMENT des derniers blocs du franchissement de Round (corps copiés tel quel,
 //     `ctx.sink` remplace `tickLine`). Pas de hook suspensif (aucun pending). ---
 registerCombatHook({
-  id: 'tick-death', // 0 PB → Inconscient (LDB 18 l.28)
+  id: 'tick-death', // 0 PB → Inconscient après BE Rounds (LDB 18 l.15) — désactivé en mode AA (cf. tickDeath)
   phase: 'onRoundEnd',
   order: 76,
   run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => sink(l, c)); },
+});
+registerCombatHook({
+  // Aux Armes (l.2449) : dans le système ALTERNATIF de Blessures, on ne tombe PAS Inconscient d'office à
+  // 0 PB (le décompte LDB de `tick-death` est neutralisé) — c'est l'État Hémorragique qui l'impose : « à
+  // la fin de chaque Tour [modélisé au franchissement de Round, comme tout l'entretien de mort], vous devez
+  // réussir un Test de Résistance Intermédiaire (+0) sous peine de subir immédiatement l'État Inconscient ».
+  // RÈGLE DE MORT/machinerie (comme `tick-death`/`bleed-death`) gatée par le mode ; NOMME Hémorragique tout
+  // comme `bleed-death`. Résolu AVANT `bleed-death` (77) : un combattant qui tombe Inconscient ICI devient
+  // éligible au jet de mort par hémorragie le même Round. HÉROS manuel → différé à la cascade d'entretien
+  // (collectHeroRoundEndUpkeep) pour rester influençable (Chance/Résilience) ; ennemi/auto → jet inline.
+  id: 'aa-bleed-unconscious',
+  phase: 'onRoundEnd',
+  order: 76.5,
+  run: ({ battle, sink }) => {
+    if (rule('combat-aa-blessures') !== 'aa') return; // inerte en LDB (aucun RNG consommé → golden préservé)
+    for (const c of battle.combatants) {
+      if (!aaBleedUnconsciousDue(c) || roundTestInteractive(c)) continue; // héros manuel → étape de cascade
+      const res = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
+      const line = aaBleedUnconsciousApply(c, res.success);
+      if (line) sink(line, c);
+    }
+  },
 });
 registerCombatHook({
   // Mort par Hémorragique (LDB 16 l.105) : à la fin du Round, 10 %/pion de mourir (jet d100 ≤ 10×pions) ;
@@ -269,6 +307,13 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   //    (`simpleTriggeredTestStep`). Les DÉGÂTS périodiques ont DÉJÀ été appliqués par le dispatcher (hook
   //    `end-of-round`) ; seul le TEST passe en cascade. En TÊTE (physiologique). Plus de `poisonResist` par-nom.
   steps.push(...collectRoundEndTestSteps(get, c));
+  // 0bis) Perte de sang AA (l.2449) : en mode Aux Armes, à 0 PB avec l'État Hémorragique, Test de Résistance
+  //    Intermédiaire chaque Round ou Inconscience — étape INFLUENÇABLE (le hook `aa-bleed-unconscious` saute
+  //    le héros manuel). Le résolveur générique de cascade tire le Test sur `target` ; l'applier applique.
+  if (rule('combat-aa-blessures') === 'aa' && aaBleedUnconsciousDue(c)) {
+    const res = testValue(c, 'resistance');
+    steps.push({ id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', actorId: c.id, icon: '🩸', rollLabel: 'Résistance', base: res, target: res, label: '🩸 Perte de sang' });
+  }
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
   // (Récupération du Brisé : MIGRÉE en DONNÉES — son retrait « caché » + Exténué SANS-Test sont appliqués
@@ -302,4 +347,10 @@ registerCascadeApplier('fatigue', (get, set, step, hero) => {
   const line = fatigueApply(hero, step.result.success, step.result.sl);
   syncCombatant(get, set);
   return { journal: line ? [line] : [`${hero.name} tient bon malgré l’effort.`] };
+});
+registerCascadeApplier('aaBleedUnconscious', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const line = aaBleedUnconsciousApply(hero, step.result.success);
+  syncCombatant(get, set);
+  return { journal: line ? [line] : [t('cond.aaBleedHold', { name: hero.name })] };
 });

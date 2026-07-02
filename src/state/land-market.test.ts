@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
+import { toBrass } from '../engine/money';
+import { WINE_QUALITY } from '../engine/landCargo';
 import type { WorldMap } from './worldMap';
 import type { CargoLot } from '../engine/cargo';
 
@@ -94,5 +96,63 @@ describe('#58 — commerce de cargaison terrestre (T2C ch.11)', () => {
     get().landDumpCargo(0);
     expect((get().caravanCargo ?? []).length).toBe(1); // refusé : rien bradé
     expect(get().money.gold).toBe(before);
+  });
+
+  it('landBuyCargo REFUSE un lot de moins de minCargoEnc (l.131)', () => {
+    seedBattleRng(3);
+    get().openLandMarket();
+    const offer = get().landMarket!.offers[0];
+    const before = get().money.gold;
+    get().landBuyCargo(offer.cargoId, 5); // < 10 Enc → refusé
+    expect((get().caravanCargo ?? []).length).toBe(0);
+    expect(get().money.gold).toBe(before);
+  });
+
+  it('landEvalWine révèle la qualité secrète d’un lot de Vin (Test d’Évaluation, l.95)', () => {
+    seedBattleRng(3);
+    get().openLandMarket();
+    const wine = get().landMarket!.offers.find((o) => o.wine)!;
+    expect(wine.wineTier).toBeUndefined(); // qualité incertaine tant que non évaluée
+    get().landEvalWine(wine.cargoId);
+    const after = get().landMarket!.offers.find((o) => o.cargoId === wine.cargoId)!;
+    expect(WINE_QUALITY.map((w) => w.label)).toContain(after.wineTier); // une qualité (vraie ou fausse) est affichée
+    expect(typeof after.wineEvalOk).toBe('boolean');
+  });
+
+  it('rumeur commerciale (l.180) : un bien visé par la rumeur du Lieu se vend au DOUBLE du prix de base', () => {
+    // Paramètres à intermédiaire ENTIER (enc 100 × base 1 × mise 100 % × Marchandage ±10/20 %) → doublage exact.
+    const mkt = { taille: 4, richesse: 3, produits: ['vivres', 'commerce'] }; // mise à prix = 100 % du base
+    const lot: CargoLot = { cargoId: 'vivres', enc: 100, basePriceGold: 1 };
+    const rum = { min: 1, max: 100, biens: ['vivres'], text: 'Forte demande de vivres.' };
+    // Baseline SANS rumeur.
+    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: null } } as never);
+    seedBattleRng(2);
+    const b0 = toBrass(get().money);
+    get().landSellCargo(0);
+    const base = toBrass(get().money) - b0;
+    // Même graine, MÊME état, AVEC une rumeur qui vise « vivres ».
+    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: rum } } as never);
+    seedBattleRng(2);
+    const b1 = toBrass(get().money);
+    get().landSellCargo(0);
+    const withRumour = toBrass(get().money) - b1;
+    expect(base).toBeGreaterThan(0);
+    expect(withRumour).toBe(base * 2); // prix doublé (l.180)
+  });
+
+  it('rumeur commerciale : un bien NON visé n’est pas doublé', () => {
+    const mkt = { taille: 4, richesse: 3, produits: ['vivres', 'commerce'] };
+    const lot: CargoLot = { cargoId: 'metal', enc: 100, basePriceGold: 1 };
+    const rum = { min: 1, max: 100, biens: ['vivres'], text: 'Forte demande de vivres.' }; // ne vise PAS le métal
+    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: null } } as never);
+    seedBattleRng(2);
+    const b0 = toBrass(get().money);
+    get().landSellCargo(0);
+    const base = toBrass(get().money) - b0;
+    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: rum } } as never);
+    seedBattleRng(2);
+    const b1 = toBrass(get().money);
+    get().landSellCargo(0);
+    expect(toBrass(get().money) - b1).toBe(base); // pas de doublage (bien hors rumeur)
   });
 });

@@ -1046,6 +1046,8 @@ export interface GameState extends RollFlowActionsMap {
   landSellCargo: (cargoIndex: number) => void;
   /** Brade un lot invendable (½ du prix de base dans un Lieu de Commerce, T2C l.160). */
   landDumpCargo: (cargoIndex: number) => void;
+  /** Évalue la qualité secrète d'un lot de Vin proposé (Test d'Évaluation, T2C l.95). */
+  landEvalWine: (cargoId: string) => void;
   /** ACTIVITÉS EN MER en attente (semaine de 8 jours, MDG 15 l.266-306) — modale de choix par héros. */
   pendingSeaActivities: import('./seaActivities').PendingSeaActivities | null;
   /** Résout les Activités choisies puis rend la main à la halte de nuit. */
@@ -1887,6 +1889,7 @@ export const useGame = create<GameState>((set, get) => ({
   landBuyCargo: (cargoId, enc) => landMarketFlow.landBuyCargo(get, set, cargoId, enc),
   landSellCargo: (cargoIndex) => landMarketFlow.landSellCargo(get, set, cargoIndex),
   landDumpCargo: (cargoIndex) => landMarketFlow.landDumpCargo(get, set, cargoIndex),
+  landEvalWine: (cargoId) => landMarketFlow.landEvalWine(get, set, cargoId),
   seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
   setTravelRole: (heroId, role) => set({
     party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),

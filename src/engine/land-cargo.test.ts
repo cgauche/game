@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   hasCommerce, availabilityPct, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo,
-  rollWineQuality, landCargoBasePrice, wineEvalDifficulty, rollMerchantSkill, sellDemandTarget,
+  rollWineQuality, landCargoBasePrice, wineEvalDifficulty, wineEvalReveal, rollMerchantSkill, sellDemandTarget,
   sellOfferPct, landDumpingPct, rollTradeRumour, rumourMatches, findLandCargoById, minCargoEnc, partialSurchargePct,
   type LandMarketProfile,
 } from './landCargo';
@@ -63,6 +63,15 @@ describe('Commerce terrestre T2C ch.11 — ACHAT (l.22-131)', () => {
   it('Test d’Évaluation du Vin : Intermédiaire, ou Accessible avec Résistance à l’alcool ≥ 50 (l.95)', () => {
     expect(wineEvalDifficulty(30)).toBe('intermediaire');
     expect(wineEvalDifficulty(50)).toBe('accessible');
+  });
+
+  it('Révélation de la qualité du Vin (l.95) : succès → vraie qualité ; échec → fausse indication décalée du DR', () => {
+    // Prix de base 3 CO = « Bon » (idx 3). Succès → la vraie qualité.
+    expect(wineEvalReveal(3, true, 2)).toEqual({ trueLabel: 'Bon', shownLabel: 'Bon' });
+    // Échec DR −2 → décalé de 2 échelons vers le haut (idx 3+2=5) = « Supérieur » (fausse indication).
+    expect(wineEvalReveal(3, false, -2)).toEqual({ trueLabel: 'Bon', shownLabel: 'Supérieur' });
+    // Échec au sommet (12 CO = « Supérieur » idx 5) : le décalage haut est plafonné → on dévalue (idx 5−2=3).
+    expect(wineEvalReveal(12, false, -2)).toEqual({ trueLabel: 'Supérieur', shownLabel: 'Bon' });
   });
 
   it('Marchandage : marchand 2d10+30 (l.129) ; lot partiel +10 %, mini 10 Enc (l.131)', () => {

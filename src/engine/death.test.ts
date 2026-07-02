@@ -58,6 +58,15 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
     tickDeath(h, makeRNG(1));
     expect(hasCondition(h, 'inconscient')).toBe(true);
   });
+  it('tickDeath : mode AA (l.2449) — PAS d’Inconscient auto à 0 PB (remplacé par le Test de Résistance Hémorragique)', () => {
+    setRule('combat-aa-blessures', 'aa');
+    try {
+      const h = mk({ wounds: { current: 0, max: 12 }, roundsAtZero: 9 }); // très au-delà de BE : LDB tomberait Inconscient
+      tickDeath(h, makeRNG(1));
+      expect(hasCondition(h, 'inconscient')).toBe(false); // AA : le décompte déterministe est neutralisé
+      expect(h.roundsAtZero).toBe(10); // compteur toujours suivi (info)
+    } finally { resetRule('combat-aa-blessures'); }
+  });
   it('tickDeath : à 0 PB Inconscient + critiques > BE → condition de mort remplie (finalisée par le store)', () => {
     const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
     tickDeath(h, makeRNG(1));

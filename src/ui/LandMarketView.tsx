@@ -19,6 +19,7 @@ export function LandMarketView() {
   const buy = useGame((s) => s.landBuyCargo);
   const sell = useGame((s) => s.landSellCargo);
   const dump = useGame((s) => s.landDumpCargo);
+  const evalWine = useGame((s) => s.landEvalWine);
   const isGuest = useGame((s) => s.net.mode) === 'guest';
   const [buyEnc, setBuyEnc] = useState<Record<string, number>>({});
 
@@ -38,6 +39,15 @@ export function LandMarketView() {
       </div>
 
       <div className="port-body">
+        {market.rumour && (
+          <section className="panel port-section">
+            <h3>Rumeur au marché</h3>
+            <p>{market.rumour.text}</p>
+            <p className="port-hint">
+              Forte demande : {market.rumour.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ')} — ces biens se vendent au double du prix de base ici (T2C ch.11 l.180).
+            </p>
+          </section>
+        )}
         <div className="layout-sidebar port-trade">
           <section className="panel port-section">
             <h3>Acheter — offres de l’étape</h3>
@@ -49,7 +59,12 @@ export function LandMarketView() {
                   const want = buyEnc[o.cargoId] ?? o.enc;
                   return (
                     <tr key={o.cargoId}>
-                      <td>{o.label}{o.wine ? ' (qualité incertaine)' : ''}</td>
+                      <td>
+                        {o.label}
+                        {o.wine && (o.wineTier
+                          ? <span className="port-hint"> — {o.wineTier}{o.wineEvalOk ? '' : ' (?)'}</span>
+                          : <> <button type="button" className="btn small ghost" disabled={isGuest} title="Test d’Évaluation pour révéler la qualité secrète du vin (T2C ch.11 l.95)" onClick={() => evalWine(o.cargoId)}>Évaluer</button></>)}
+                      </td>
                       <td>{o.enc}</td>
                       <td>{o.basePrice} CO/Enc</td>
                       <td>

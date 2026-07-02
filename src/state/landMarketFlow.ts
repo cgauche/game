@@ -15,14 +15,15 @@
  */
 import { battleRng } from './battleRng';
 import { placeOfScene } from './worldMap';
-import { partyAssisted } from '../engine/skills';
-import { opposedTest, SL_ASTOUNDING } from '../engine/tests';
+import { partyAssisted, partyBest, testValue } from '../engine/skills';
+import { opposedTest, SL_ASTOUNDING, rollTest } from '../engine/tests';
 import { d100 } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney } from '../engine/money';
 import {
-  type LandMarketProfile, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo, landCargoBasePrice,
-  findLandCargoById, sellDemandTarget, sellOfferPct, landDumpingPct, rollMerchantSkill, partialSurchargePct,
+  type LandMarketProfile, type RumourRow, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo, landCargoBasePrice,
+  findLandCargoById, sellDemandTarget, sellOfferPct, landDumpingPct, rollMerchantSkill, partialSurchargePct, minCargoEnc,
+  wineEvalDifficulty, wineEvalReveal, rollTradeRumour, rumourMatches, gossipRule,
 } from '../engine/landCargo';
 import { type CargoLot, cargoTotalEnc } from '../engine/cargo';
 import { seasonOfMonth } from '../engine/travelStages';
@@ -37,6 +38,11 @@ export interface LandOffer {
   enc: number;
   basePrice: number;
   wine: boolean;
+  /** Vin ÉVALUÉ (Test d'Évaluation joué, l.95) : la qualité affichée (vraie sur un succès, FAUSSE sur un
+   *  échec). Absent tant que le lot n'a pas été évalué (« qualité incertaine »). */
+  wineTier?: string;
+  /** Le Test d'Évaluation a-t-il RÉUSSI (indication fiable) ? Présent une fois évalué. */
+  wineEvalOk?: boolean;
 }
 
 /** État MARCHÉ TERRESTRE ouvert (généré une fois à l'arrivée — les d100 de disponibilité ne se re-tirent pas
@@ -46,6 +52,9 @@ export interface LandMarketState {
   label: string;
   market: LandMarketProfile;
   offers: LandOffer[];
+  /** Rumeur commerciale entendue à l'arrivée (Test de Ragot réussi, l.176-180) : signale les biens très
+   *  recherchés — ils se vendent au DOUBLE de leur prix de base à ce Lieu. `null`/absent = pas de rumeur. */
+  rumour?: RumourRow | null;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -87,7 +96,36 @@ export function openLandMarket(get: Get, set: Set): void {
   if (find.localFound) for (const id of market.produits.filter((p) => p !== 'commerce' && p !== 'subsistance')) addOffer(id);
   // « Commerce » (l.32-34) : une cargaison ALÉATOIRE de la table saisonnière en plus.
   if (find.randomFound) addOffer(rollRandomLandCargo(season, rng).id);
-  set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers } });
+  // Rumeurs commerciales (l.176-180) : en tendant l'oreille au marché, un Test de Ragot Complexe (−10) ; sur
+  // un succès, une rumeur signale les biens très recherchés → ils s'y vendent le DOUBLE (l.180). Roulé APRÈS
+  // les offres pour ne pas déplacer leur flux RNG. ADAPTATION assumée : le RAW fait entendre la rumeur dans une
+  // AUBERGE, pointant un AUTRE Lieu via l'index géographique du Reikland (absent de la carte de l'arène) ; ici la
+  // rumeur vaut pour le Lieu COURANT (modèle minimal endossé par la conception — cf. rapport #58).
+  let rumour: RumourRow | null = null;
+  const gossip = partyBest(get().party, 'ragot');
+  if (gossip) {
+    const g = rollTest(gossip.value, gossipRule.difficulty, rng, gossipRule.mod);
+    if (g.success) rumour = rollTradeRumour(rng);
+  }
+  set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers, rumour } });
+  if (rumour) log(get, set, [`Rumeur au marché : forte demande locale — ${rumour.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ')} s'y vendent le double (T2C ch.11 l.180).`]);
+}
+
+/** ÉVALUATION de la qualité SECRÈTE d'un lot de Vin/Eau-de-vie proposé (l.95) : Test d'Évaluation, difficulté
+ *  Intermédiaire (Accessible si le meneur a Résistance à l'alcool ≥ 50). Sur un succès, révèle la vraie qualité ;
+ *  sur un échec, une FAUSSE indication décalée du degré d'échec. Un lot ne s'évalue qu'une fois. */
+export function landEvalWine(get: Get, set: Set, cargoId: string): void {
+  const st = get().landMarket;
+  if (!st) return;
+  const offer = st.offers.find((o) => o.cargoId === cargoId);
+  if (!offer || !offer.wine || offer.wineTier) return; // pas du vin, ou déjà évalué
+  const best = partyBest(get().party, 'evaluation');
+  if (!best) { log(get, set, ['Personne dans le groupe ne sait évaluer un vin.']); return; }
+  const diff = wineEvalDifficulty(testValue(best.actor, 'resistance-a-l-alcool'));
+  const res = rollTest(best.value, diff, battleRng());
+  const rev = wineEvalReveal(offer.basePrice, res.success, res.sl);
+  set({ landMarket: { ...st, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, wineTier: rev.shownLabel, wineEvalOk: res.success } : o) } });
+  log(get, set, [`${best.actor.name} — Évaluation du ${offer.label} (${res.roll}) : qualité jugée « ${rev.shownLabel} »${res.success ? '.' : ' — jugement peu sûr…'}`]);
 }
 
 export function closeLandMarket(_get: Get, set: Set): void {
@@ -108,6 +146,9 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   if (!offer) return;
   const want = Math.max(0, Math.min(Math.floor(enc), offer.enc));
   if (want <= 0) { log(get, set, ['Rien à acheter.']); return; }
+  // Lot minimal (l.131) : « Les marchands ne sont pas du tout intéressés par la vente de cargaisons de moins
+  // de 10 Points d'Encombrement et orienteront plutôt les Personnages vers un marché. »
+  if (want < minCargoEnc) { log(get, set, [`Les marchands ne cèdent pas de lot de moins de ${minCargoEnc} Points d'Encombrement (T2C ch.11 l.131).`]); return; }
   const rng = battleRng();
   const best = partyAssisted(get().party, 'marchandage');
   const merchant = rollMerchantSkill(rng); // petit marchand : 2d10 + 30 (l.129)
@@ -177,12 +218,15 @@ export function landSellCargo(get: Get, set: Set, cargoIndex: number): void {
     else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(false, netSL); // l'acheteur le baisse
     bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   }
-  const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100)));
+  // Rumeur commerciale (l.180) : une rumeur du Lieu courant qui vise ce bien le fait vendre au DOUBLE du base.
+  const rumourHit = !!st.rumour && rumourMatches(st.rumour, lot.cargoId);
+  const rumourMult = rumourHit ? 2 : 1;
+  const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100) * rumourMult));
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
     caravanCargo: sellEnc >= lot.enc ? lots.filter((_, i) => i !== cargoIndex) : lots.map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l),
   });
-  log(get, set, [`${sellEnc} Enc de ${label} vendus (mise à prix ${offerPct} % du base — ${bargainLine}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
+  log(get, set, [`${sellEnc} Enc de ${label} vendus (mise à prix ${offerPct} % du base — ${bargainLine}${rumourHit ? ' Rumeur : demande exceptionnelle, prix doublé (l.180) !' : ''}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }
 
 /** BRADER un lot invendable (l.160) : la MOITIÉ du prix de base, dans un Lieu ayant le Commerce en Produits —

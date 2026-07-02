@@ -499,9 +499,12 @@ export function loseWounds(c: Combatant, amount: number): number {
 
 /**
  * Upkeep de mort en fin de Round (LDB 18 l.28, l.48-49) — héros/importants seulement :
- *  - à 0 PB non soigné : roundsAtZero++ ; après (Bonus d'Endurance) Rounds → Inconscient ;
+ *  - à 0 PB non soigné : roundsAtZero++ ; après (Bonus d'Endurance) Rounds → Inconscient (LDB 18 l.15) ;
  *  - Inconscient + 0 PB + (criticalWounds > BE) → mort.
- * Retourne le journal. (`_rng` réservé pour de futurs Tests ; non utilisé ici.)
+ * Variante Aux Armes (l.2449) : le système alternatif REMPLACE ce décompte déterministe → à 0 PB, on ne
+ * tombe PAS automatiquement Inconscient ; la chute Inconscient passe par le Test de Résistance de l'État
+ * Hémorragique (hook `aa-bleed-unconscious`). On garde le compteur `roundsAtZero` (info) mais on n'applique
+ * pas l'Inconscient en mode AA. Retourne le journal. (`_rng` réservé pour de futurs Tests ; non utilisé ici.)
  */
 export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
@@ -512,7 +515,7 @@ export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
     return log;
   }
   c.roundsAtZero = (c.roundsAtZero ?? 0) + 1;
-  if (c.roundsAtZero > be && !hasCondition(c, COND.inconscient)) {
+  if (rule('combat-aa-blessures') !== 'aa' && c.roundsAtZero > be && !hasCondition(c, COND.inconscient)) {
     addCondition(c, COND.inconscient);
     log.push(t('cond.unconscious', { name: c.name, rounds: c.roundsAtZero }));
   }

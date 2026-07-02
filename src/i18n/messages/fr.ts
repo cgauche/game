@@ -184,6 +184,8 @@ export const fr = {
   'cond.nightmareNone': "{name} dort d'un sommeil sans rêve.",
   'cond.nightmare': '{name} est en proie à de terribles cauchemars (Calme +40 raté) et gagne Exténué.',
   'cond.unconscious': '{name} perd connaissance (0 PB depuis {rounds} Rounds).',
+  'cond.aaBleedUnconscious': '{name} défaille à cause de la perte de sang (Résistance ratée) — Inconscient.',
+  'cond.aaBleedHold': '{name} lutte contre la perte de sang et reste conscient.',
   'upkeep.fateSaved': "{name} est sauvé in extremis (Point de Destin) — l'hémorragie est jugulée.",
   'upkeep.succumb': '{name} succombe à ses blessures.',
   // ── Phase C : narration moteur (GameOp/applyOps & describeTestRoll). Patrons byte-identiques. ──
