@@ -32,8 +32,16 @@
     "fogIndoor": "#0a0a10",
     "fogOutdoor": "#9fb2c6",
     "depth": {
-      "outdoor": { "farTiles": 32, "fogStartT": 5, "fogGamma": 1.5 },
-      "indoor": { "farTiles": 14, "fogStartT": 4, "fogGamma": 1.2 },
+      "outdoor": {
+        "farTiles": 32,
+        "fogStartT": 5,
+        "fogGamma": 1.5
+      },
+      "indoor": {
+        "farTiles": 14,
+        "fogStartT": 4,
+        "fogGamma": 1.2
+      },
       "lod": {
         "blocksT": 4,
         "fadeT": 1.5,
@@ -43,7 +51,10 @@
         "meshShade": 0.95,
         "meshJointWM": 0.025
       },
-      "billboards": { "maxPersons": 12, "maxProps": 40 }
+      "billboards": {
+        "maxPersons": 12,
+        "maxProps": 40
+      }
     },
     "vignette": {
       "cx": "50%",

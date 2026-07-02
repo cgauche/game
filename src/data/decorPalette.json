@@ -135,6 +135,7 @@
   "boisFonce49": "#8a6a24",
   "boisFonce50": "#5a554a",
   "boisFonce51": "#7a5e1e",
+  "boisFonce52": "#776a52",
   "boisMoyen": "#ff7a1a",
   "boisMoyen2": "#9a6e42",
   "boisMoyen3": "#a87c48",
@@ -159,6 +160,7 @@
   "boisMoyen22": "#9e8f6f",
   "boisMoyen23": "#b58a2e",
   "boisMoyen24": "#8a7c5c",
+  "boisMoyen25": "#9b8e72",
   "boisClair": "#c9a182",
   "boisClair2": "#ff9a3a",
   "boisClair3": "#bdb4a8",
@@ -425,5 +427,11 @@
   "osTresClair8": "#f0ede3",
   "osTresClair9": "#cdcabf",
   "osTresClair10": "#e2dfd4",
+  "villageoisPeau": "#e2b48c",
+  "villageoisCheveux": "#5a4427",
+  "villageoisEtoffe": "#6a5a3a",
+  "villageoisEtoffeClaire": "#8a7048",
+  "villageoisBouche": "#9a7a5a",
+  "villageoisPupille": "#140a06",
   "blanc": "#fff"
 }

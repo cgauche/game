@@ -1,55 +1,53 @@
 /**
- * Garde-fou : un renderer d'environnement migré ne porte AUCUN littéral de couleur (identité de
- * matériau). Toute couleur vient du JSON (`src/data/*.json`) ou de `shade.ts`. Forbidder `#hex`/`rgb()`
- * capture aussi les anciennes tables `Record<…>` (hex-valuées). `COVERED` grandit à chaque phase.
+ * Garde-fou : AUCUN renderer d'environnement ne porte de littéral de couleur (identité de matériau).
+ * Toute couleur vient de la DONNÉE (`src/data/*.json`, defs de terrain) ou de `shade.ts` (la LUMIÈRE :
+ * ombre d'orientation, occlusion, spéculaire). `#hex` / `rgb()` littéraux capturent aussi les anciennes
+ * tables hex-valuées. Deux niveaux de couverture :
+ *   1) balayage RÉCURSIF des arborescences pivot/backend/pov/catalog/stage — auto-couvre tout NOUVEAU
+ *      fichier (plus de liste à tenir à la main) ;
+ *   2) les renderers à la RACINE de `gameIso/`, nommés explicitement (`IsoStage`, `sprites`).
+ * `catalog/decor/defs/` (les 97 defs de props) a son propre bloc plus bas (dessin par def, MAIS couleurs
+ * tirées de la palette partagée) → exclu du balayage.
+ *
+ * HORS périmètre (couleur LÉGITIME, non balayés) : le rig (`rig/**` = bestiaire/équipement dessinés
+ * « à la main »), les FX de combat (`fx/**`), les tokens & le brouillard (`BodyToken`/`FogLayer` =
+ * chrome d'état, pas un matériau du monde), `shade.ts` (helpers de voile lumineux sanctionnés
+ * `ao`/`spec`/`warm`), et les defs de terrain (`state/terrain/defs/**` = DONNÉE d'identité matériau,
+ * gradient/swatch, au même titre qu'un JSON).
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const HERE = fileURLToPath(new URL('.', import.meta.url));
+const HERE = fileURLToPath(new URL('.', import.meta.url)); // …/src/gameIso/
 
-const COVERED: string[] = [
-  'builders/floors.ts', // builder de sols (pivot) — ne porte que des IDS de matériau, jamais une couleur
-  'builders/walls.ts', // builder de murs (pivot) — faces par PART de la def, jamais une couleur
-  'backends/affineFloors.ts', // backend affine des sols — gradients/variantes + `shade`
-  'backends/affineWalls.ts', // backend affine des murs — couleurs par `wallPartColor` + `shade`
-  'backends/affineDetail.ts', // matériaux v2 — motifs/accents aux couleurs des RECETTES + `shade`
-  'backends/project.ts', // pont monde→écran partagé des backends affines
-  'builders/roofs.ts', // builder de toits (pans continus) — géométrie + ids, jamais une couleur
-  'backends/affineRoofs.ts', // backend affine des toits — teintes/lignes par `roofMaterial`
-  'catalog/ambiance.ts', // defs d'ambiance assemblées depuis `ambiance.json` — jamais un littéral
+// Renderers d'environnement à la RACINE de gameIso/ (hors arborescence balayée) — nommés.
+const ROOT_RENDERERS = [
   'IsoStage.tsx', // stage iso (coquille fine) — orchestration seule, zéro couleur
-  'pov/PovStage.tsx', // stage POV — ciel/brumes/vignette depuis la def d'ambiance
-  'pov/camera.ts', // caméra POV — brume intérieure depuis la def d'ambiance
-  'pov/geometry.ts', // liste de dessin POV — matériaux/recettes partagés, plus de miroir CSS
-  'builders/props.ts', // builder de props — ids de dessin (prop/terrain), jamais une couleur
-  'builders/tokens.ts', // builder de tokens — identité/position logique, jamais une couleur
-  'builders/highlights.ts', // builder de surbrillances — cases sémantiques, couleurs au backend
-  'backends/affineProps.ts', // backend affine des props — profondeurs + registre terrain
-  'backends/affineHighlights.tsx', // backend affine des surbrillances — tokens :root + teamColors
-  'stage/objs.ts', // tri statique + fusion dynamique — aucune couleur
-  'stage/layers.tsx', // couches statiques (vérités de vue) — opacités/filtres seuls
-  'stage/tokens.tsx', // couche tokens — anneaux/teintes via teamColors, chrome en tokens :root
-  'stage/highlightLayer.tsx', // surbrillances de combat — tokens :root
-  'stage/movePreview.tsx', // tracé de déplacement partagé — tokens :root
-  'stage/CulledScene.tsx', // culling + sandwich de brouillard — aucune couleur
-  'stage/DoorOverlays.tsx', // overlay portes — tokens :root
-  'stage/SiegeHitAreas.tsx', // hit-areas de siège — transparent + tokens :root
-  'stage/Telegraphs.tsx', // télégraphes ennemis — tokens :root
-  'stage/ZdeTemplate.tsx', // gabarit de ZdE — tokens :root
-  'stage/MoveOverlays.tsx', // curseur + aperçus de déplacement — tokens :root
-  'stage/AimOverlay.tsx', // réticule/infobulle de visée — tokens :root
-  'stage/CrewTooltip.tsx', // tooltip d'équipage — tokens :root
-  'stage/DebugOverlay.tsx', // overlay debug — tokens :root (--dbg-*)
-  'stage/Ambiance.tsx', // faune + voiles fixes — defs d'ambiance (donnée)
-  'stage/useStageCamera.ts', // caméra du stage — aucune couleur
-  'stage/useStagePointer.ts', // pointeur du stage — aucune couleur
-  'stage/useHoverTargeting.ts', // visée au survol — aucune couleur
-  'catalog/decorPalette.ts', // accès typé à la palette — importe la donnée JSON, aucun littéral
-  // Les 97 defs de `catalog/decor/defs/` sont couvertes par le bloc glob ci-dessous (palette partagée).
-  // Reste hors Lot 7 : 'sprites.ts' (wallBlock/tree/villager/rigFxGradients).
+  'sprites.ts', // overlays de terrain (mur/arbre) + villageois d'ambiance — tons de decorPalette + ao()
 ];
+
+// Arborescences pivot / backend / moteur de recettes / catalogue / stage / POV : chaque .ts/.tsx
+// (hors test) est un renderer d'environnement (ou l'alimente en données) → hex-free.
+// `catalog/decor/defs` a son bloc dédié (palette) → exclu du balayage.
+const SWEEP_DIRS = ['builders', 'backends', 'detail', 'pov', 'catalog', 'stage'];
+
+/** Fichiers .ts/.tsx (hors tests) d'un sous-arbre, chemins relatifs à `gameIso/`. */
+function walk(abs: string, rel: string): string[] {
+  const out: string[] = [];
+  for (const ent of readdirSync(abs, { withFileTypes: true })) {
+    const childRel = `${rel}/${ent.name}`;
+    if (ent.isDirectory()) {
+      if (childRel.endsWith('catalog/decor/defs')) continue; // bloc dédié ci-dessous
+      out.push(...walk(`${abs}/${ent.name}`, childRel));
+    } else if (/\.tsx?$/.test(ent.name) && !/\.test\.tsx?$/.test(ent.name)) {
+      out.push(childRel);
+    }
+  }
+  return out;
+}
+
+const COVERED = [...ROOT_RENDERERS, ...SWEEP_DIRS.flatMap((d) => walk(HERE + d, d))];
 
 // `rgb(`/`hsl(` ne mordent que sur des CANAUX LITTÉRAUX : `rgb(${r},…)` (assemblage d'une couleur
 // CALCULÉE, ex. `tint` du POV) n'est pas une identité en dur.
@@ -75,13 +73,21 @@ function colorHits(src: string): string[] {
     .filter((l) => COLOR_LITERAL.test(l));
 }
 
-describe('garde-fou — aucune couleur en dur dans un renderer migré', () => {
+describe('garde-fou — aucune couleur en dur dans un renderer d’environnement', () => {
   it('le détecteur mord', () => {
     expect(colorHits('const a = "#5d4c36";')).toHaveLength(1);
     expect(colorHits('fill = `rgba(0,0,0,0.3)`;')).toHaveLength(1);
     expect(colorHits('const c = shade(app.wood.face, SIDE_N);')).toHaveLength(0);
     expect(colorHits('fill="var(--combat-gold)"')).toHaveLength(0);
+    expect(colorHits('fill={`rgb(${mix(a, b)}, 0, 0)`}')).toHaveLength(0); // canaux calculés = OK
     expect(colorHits('// ancien: #5d4c36')).toHaveLength(0);
+  });
+
+  it('la surface couverte est complète (racine + balayage)', () => {
+    expect(COVERED).toContain('sprites.ts');
+    expect(COVERED).toContain('pov/geometry.ts');
+    expect(COVERED).toContain('backends/affineWalls.ts');
+    expect(COVERED.length).toBeGreaterThan(40);
   });
 
   it.each(COVERED)('%s : zéro couleur en dur', (rel) => {

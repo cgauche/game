@@ -7,13 +7,12 @@ import { TW, TH, EDGE_W, EDGE_H, tileCenter, depth, diamondPath, billboardScale,
 import { propSvg } from './catalog/decor';
 import type { Dir8 } from '../state/dir8';
 import { TERRAIN_DEFS } from '../state/terrain';
+import { P } from './catalog/decorPalette';
+import { ao } from './shade';
+import { rigFxGradients } from './rig/fxGradients';
 
 const e = (cx: number, cy: number, r = 2) =>
-  `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
-
-// --- Tuiles & décor de terrain --------------------------------------------
-// Présentation des terrains : pilotée par le catalogue (catalog/terrain.ts).
-export { terrainGradient } from './catalog/terrain';
+  `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="${P.villageoisPupille}"/>`;
 
 /**
  * Terrains à rendu « en relief » : un objet depth-trié dessiné AU-DESSUS du sol
@@ -41,12 +40,14 @@ export function terrainHasOverlay(id: string): boolean {
   return id in TERRAIN_OVERLAYS;
 }
 
-export function wallBlock(x: number, y: number, dims: Dims): string {
+// Matériau du bloc de mur : une seule teinte bois-clair (torchis) déclinée en 3 niveaux de lumière
+// (dessus éclairé · face gauche · face droite ombrée), tons de `decorPalette` — jamais un hex ici.
+function wallBlock(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);
   if (isSquareView(dims.view)) {
     // Grille carrée : un mur vu de dessus = un bloc plein sur sa case (pas d'extrusion iso, qui
     // dessinait des faces orientées en losange → murs « mal orientés » sur la grille carrée).
-    return `<path d="${diamondPath(x, y, dims)}" fill="#9b8e72" stroke="rgba(0,0,0,0.4)" stroke-width="1"/>`;
+    return `<path d="${diamondPath(x, y, dims)}" fill="${P.boisMoyen25}" stroke="${ao(0.4)}" stroke-width="1"/>`;
   }
   if (dims.edge) {
     // Vue de FACE (edge-on) : bloc AXIS-ALIGNÉ (façade droite + dessus), pas le cube-iso losange.
@@ -54,8 +55,8 @@ export function wallBlock(x: number, y: number, dims: Dims): string {
     const Hh = TH * 1.6; // même hauteur visuelle qu'en iso
     const yTop = cy + hy - Hh; // arête haute de la façade (= arête avant du dessus)
     return (
-      `<polygon points="${cx - hx},${cy + hy} ${cx + hx},${cy + hy} ${cx + hx},${yTop} ${cx - hx},${yTop}" fill="#9b8e72" stroke="rgba(0,0,0,0.3)" stroke-width="0.7"/>` + // façade
-      `<polygon points="${cx - hx},${cy - hy - Hh} ${cx + hx},${cy - hy - Hh} ${cx + hx},${yTop} ${cx - hx},${yTop}" fill="#cdbfa0" stroke="rgba(0,0,0,0.25)"/>` // dessus
+      `<polygon points="${cx - hx},${cy + hy} ${cx + hx},${cy + hy} ${cx + hx},${yTop} ${cx - hx},${yTop}" fill="${P.boisMoyen25}" stroke="${ao(0.3)}" stroke-width="0.7"/>` + // façade
+      `<polygon points="${cx - hx},${cy - hy - Hh} ${cx + hx},${cy - hy - Hh} ${cx + hx},${yTop} ${cx - hx},${yTop}" fill="${P.boisClair10}" stroke="${ao(0.25)}"/>` // dessus
     );
   }
   const H = TH * 1.6;
@@ -63,37 +64,37 @@ export function wallBlock(x: number, y: number, dims: Dims): string {
   const left = `M${cx - TW / 2},${cy - H} L${cx},${cy + TH / 2 - H} L${cx},${cy + TH / 2} L${cx - TW / 2},${cy} Z`;
   const right = `M${cx + TW / 2},${cy - H} L${cx},${cy + TH / 2 - H} L${cx},${cy + TH / 2} L${cx + TW / 2},${cy} Z`;
   return (
-    `<path d="${left}" fill="#9b8e72" stroke="rgba(0,0,0,0.3)"/>` +
-    `<path d="${right}" fill="#776a52" stroke="rgba(0,0,0,0.3)"/>` +
-    `<path d="${top}" fill="#cdbfa0" stroke="rgba(0,0,0,0.25)"/>`
+    `<path d="${left}" fill="${P.boisMoyen25}" stroke="${ao(0.3)}"/>` +
+    `<path d="${right}" fill="${P.boisFonce52}" stroke="${ao(0.3)}"/>` +
+    `<path d="${top}" fill="${P.boisClair10}" stroke="${ao(0.25)}"/>`
   );
 }
 
-export function tree(x: number, y: number, dims: Dims): string {
+function tree(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);
   // Billboard : réduit en vue « de face » (edge-on) pour remplir SA tuile plus étroite (comme tout
   // token, cf. billboardScale) — sinon le feuillage déborde sur les voisins. En iso k=1 → identique.
   const k = billboardScale(dims);
   const footY = cy + (dims.edge && dims.view !== 'top' ? EDGE_H : TH) / 2;
   const sc = k !== 1 ? ` scale(${k})` : '';
-  return `<ellipse cx="${cx}" cy="${cy + 2}" rx="${26 * k}" ry="${13 * k}" fill="#000" opacity="0.3"/>
+  return `<ellipse cx="${cx}" cy="${cy + 2}" rx="${26 * k}" ry="${13 * k}" fill="${P.ombre}" opacity="0.3"/>
     <g transform="translate(${cx},${footY})${sc}">
-      <rect x="-7" y="-34" width="14" height="40" rx="3" fill="#4a3220"/>
-      <path d="M0 -150 L40 -78 L14 -86 L46 -30 L-46 -30 L-14 -86 L-40 -78 Z" fill="#1d3d18"/>
-      <path d="M0 -150 L40 -78 L14 -86 L46 -30 L0 -44 Z" fill="#2a5320"/>
-      <path d="M0 -120 L28 -70 L0 -80 Z" fill="#327026" opacity="0.6"/>
+      <rect x="-7" y="-34" width="14" height="40" rx="3" fill="${P.boisSombre2}"/>
+      <path d="M0 -150 L40 -78 L14 -86 L46 -30 L-46 -30 L-14 -86 L-40 -78 Z" fill="${P.feuillageSombre11}"/>
+      <path d="M0 -150 L40 -78 L14 -86 L46 -30 L0 -44 Z" fill="${P.feuillageSombre9}"/>
+      <path d="M0 -120 L28 -70 L0 -80 Z" fill="${P.feuillageFonce22}" opacity="0.6"/>
     </g>`;
 }
 
 // --- PNJ / props / objets --------------------------------------------------
 function villager() {
-  return `<g class="bob"><path d="M44 80 Q60 70 76 80 L82 150 L38 150 Z" fill="#6a5a3a"/>
-    <path d="M44 78 Q60 70 76 78 L80 110 Q60 118 40 110 Z" fill="#8a7048"/>
-    <path d="M44 82 Q32 92 34 112" stroke="#6a5a3a" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <path d="M76 82 Q88 92 86 112" stroke="#6a5a3a" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <circle cx="60" cy="56" r="14" fill="#e2b48c"/>
-    <path d="M46 52 Q60 36 74 52 Q70 44 60 44 Q50 44 46 52 Z" fill="#5a4427"/>${e(55, 56, 1.6)}${e(65, 56, 1.6)}
-    <path d="M54 64 q6 4 12 0" stroke="#9a7a5a" stroke-width="1.5" fill="none"/></g>`;
+  return `<g class="bob"><path d="M44 80 Q60 70 76 80 L82 150 L38 150 Z" fill="${P.villageoisEtoffe}"/>
+    <path d="M44 78 Q60 70 76 78 L80 110 Q60 118 40 110 Z" fill="${P.villageoisEtoffeClaire}"/>
+    <path d="M44 82 Q32 92 34 112" stroke="${P.villageoisEtoffe}" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M76 82 Q88 92 86 112" stroke="${P.villageoisEtoffe}" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <circle cx="60" cy="56" r="14" fill="${P.villageoisPeau}"/>
+    <path d="M46 52 Q60 36 74 52 Q70 44 60 44 Q50 44 46 52 Z" fill="${P.villageoisCheveux}"/>${e(55, 56, 1.6)}${e(65, 56, 1.6)}
+    <path d="M54 64 q6 4 12 0" stroke="${P.villageoisBouche}" stroke-width="1.5" fill="none"/></g>`;
 }
 
 export function pnjSprite(): string {
@@ -148,23 +149,5 @@ const terrainGradients = (() => {
   return out;
 })();
 
-/** Dégradés RIG/FX (armes, tenues, halos, chair…) — inline verbatim (hors registre de terrain). */
-const rigFxGradients = `
-  <linearGradient id="g_steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8edf5"/><stop offset="45%" stop-color="#9aa6b8"/><stop offset="100%" stop-color="#5a6376"/></linearGradient>
-  <linearGradient id="g_steelD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b94a6"/><stop offset="100%" stop-color="#444b5a"/></linearGradient>
-  <linearGradient id="g_axe" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#dfe6ef"/><stop offset="100%" stop-color="#6a7384"/></linearGradient>
-  <linearGradient id="g_cloak" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a8323a"/><stop offset="100%" stop-color="#5e1418"/></linearGradient>
-  <linearGradient id="g_robe" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a3f7a"/><stop offset="100%" stop-color="#171a36"/></linearGradient>
-  <radialGradient id="g_glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#bdf3ff"/><stop offset="55%" stop-color="#4ec3e0" stop-opacity="0.7"/><stop offset="100%" stop-color="#4ec3e0" stop-opacity="0"/></radialGradient>
-  <radialGradient id="g_arcane" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e7d8ff"/><stop offset="55%" stop-color="#8a5cf0" stop-opacity="0.72"/><stop offset="100%" stop-color="#6a3cd8" stop-opacity="0"/></radialGradient>
-  <radialGradient id="g_divine" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff4c2"/><stop offset="55%" stop-color="#f0c24a" stop-opacity="0.72"/><stop offset="100%" stop-color="#caa030" stop-opacity="0"/></radialGradient>
-  <linearGradient id="g_coat" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#30303a"/><stop offset="100%" stop-color="#141419"/></linearGradient>
-  <linearGradient id="g_hVest" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6f7e3a"/><stop offset="100%" stop-color="#46521f"/></linearGradient>
-  <linearGradient id="g_mut" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c9152"/><stop offset="100%" stop-color="#39501f"/></linearGradient>
-  <linearGradient id="g_mutD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5d7540"/><stop offset="100%" stop-color="#2a3c18"/></linearGradient>
-  <linearGradient id="g_flesh" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8b88e"/><stop offset="100%" stop-color="#b07a52"/></linearGradient>
-  <linearGradient id="g_crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff7a1a"/><stop offset="100%" stop-color="#c43f0a"/></linearGradient>
-  <radialGradient id="g_eye" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffe14a"/><stop offset="70%" stop-color="#d88a1a"/><stop offset="100%" stop-color="#7a3a08"/></radialGradient>
-  <radialGradient id="g_blood" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#7e1212"/><stop offset="100%" stop-color="#360707"/></radialGradient>`;
-
+/** DEFS globaux = dégradés de TERRAIN (données) + dégradés RIG/FX (`rig/fxGradients`, verbatim). */
 export const DEFS = terrainGradients + rigFxGradients;

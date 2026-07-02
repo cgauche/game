@@ -3,10 +3,10 @@
  * plinthes/arases, mouchetis. DONNÉE PURE portée par les defs d'apparence (`StructureAppearanceDef`,
  * `RoofMaterialDef`, `ReliefMaterialDef`, `TerrainDef`) via leur champ optionnel `detail`.
  *
- * AUCUN renderer ne la consomme encore (branchement au Lot 4) : `expandRecipe` (expand.ts) déplie la
- * recette en primitives UV en ESPACE DE FACE [0,1]² (+ mètres pour les épaisseurs), que chaque backend
- * (iso affine ET POV perspective) rasterise à sa résolution — les deux vues retombent sur le MÊME
- * détail parce que le seed est dérivé de l'identité MONDE (`hash32`, jamais stocké).
+ * `expandRecipe` (expand.ts) déplie la recette en primitives UV en ESPACE DE FACE [0,1]² (+ mètres pour
+ * les épaisseurs), consommées par `backends/affineDetail.ts` (iso) et `pov/geometry.ts` (perspective) :
+ * chaque backend rasterise à sa résolution, les deux vues retombent sur le MÊME détail parce que le
+ * seed est dérivé de l'identité MONDE (`hash32`, jamais stocké).
  *
  * Convention UV : u ∈ [0,1] le long de la face (gauche→droite), v ∈ [0,1] du HAUT (0) vers le BAS (1).
  * Les dimensions physiques (`hM`, `jointW`, `wM`, `rM`…) sont en MÈTRES : l'expansion les convertit en
