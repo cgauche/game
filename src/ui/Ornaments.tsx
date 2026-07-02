@@ -4,8 +4,9 @@ import type { ReactNode } from 'react';
    irrégulier cohérent avec la direction du rendu iso (src/gameIso/sprites.ts). Les SVG
    consomment currentColor / les tokens :root ; les styles vivent dans styles/ornaments.css. */
 
-/** Fleuron central « dessiné main » : losange impérial + volutes latérales (remplace le ⚜ texte). */
-function Fleuron({ size = 20 }: { size?: number }) {
+/** Fleuron central « dessiné main » : losange impérial + volutes latérales (remplace le ⚜ texte).
+ *  Aussi motif discret autonome (emplacement vide de l'écran d'équipe). */
+export function Fleuron({ size = 20 }: { size?: number }) {
   return (
     <svg className="orn-fleuron" width={size * 2.9} height={size} viewBox="0 0 64 22" aria-hidden>
       <path d="M32 3.2 L38 11 L32 18.8 L26 11 Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />

@@ -102,7 +102,6 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/CascadeModal.tsx',
   'src/ui/CastModal.tsx',
   'src/ui/ChanceButtons.tsx',
-  'src/ui/CharCard.tsx',
   'src/ui/CharacterSheet.tsx',
   'src/ui/CoopLobby.tsx',
   'src/ui/CoopPanels.tsx',

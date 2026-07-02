@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PartyPicker, PartyScreenView } from './PartyScreen';
+import { PartyPicker, PartyScreenView, slotKeyNav } from './PartyScreen';
 import { makePregens } from '../data/pregens';
 import { rosterAdd } from '../state/roster';
 import { initialNet, type NetState } from '../state/netFlow';
@@ -238,5 +238,80 @@ describe("PartyScreen -- libelles i18n Phase D", () => {
     expect(html).toContain("Pré-tirés");
     expect(html).toContain("Terminé");
     expect(html).toContain("Choisir");
+  });
+});
+
+describe('PartyScreen — présentation v2 (cadres ornés, carte en pied, nav clavier, picker)', () => {
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+  });
+  afterEach(() => {
+    delete (globalThis as { localStorage?: Storage }).localStorage;
+  });
+
+  const noop = () => {};
+  const render = (party: Combatant[], net: NetState) =>
+    renderToStaticMarkup(
+      <PartyScreenView
+        party={party}
+        net={net}
+        title="Votre groupe d'aventuriers"
+        onMenu={noop}
+        onQuitCoop={noop}
+        onCreate={noop}
+        onAddHero={noop}
+        onRemoveHero={noop}
+        onAssignSlot={noop}
+        onStart={noop}
+      />,
+    );
+
+  it('roving tabindex : UN seul emplacement tabbable, les trois autres à -1', () => {
+    const html = render([], initialNet()); // groupe vide : les seuls tabindex sont ceux des slots
+    expect((html.match(/tabindex="0"/g) ?? []).length).toBe(1);
+    expect((html.match(/tabindex="-1"/g) ?? []).length).toBe(3);
+  });
+
+  it('slotKeyNav (pur) : flèches = focus voisin bouclé, Enter/Espace = action principale', () => {
+    expect(slotKeyNav('ArrowRight', 0, 4)).toEqual({ focus: 1 });
+    expect(slotKeyNav('ArrowLeft', 1, 4)).toEqual({ focus: 0 });
+    expect(slotKeyNav('ArrowLeft', 0, 4)).toEqual({ focus: 3 }); // bouclé à gauche
+    expect(slotKeyNav('ArrowRight', 3, 4)).toEqual({ focus: 0 }); // bouclé à droite
+    expect(slotKeyNav('Enter', 2, 4)).toBe('primary');
+    expect(slotKeyNav(' ', 2, 4)).toBe('primary');
+    expect(slotKeyNav('Tab', 2, 4)).toBeNull();
+    expect(slotKeyNav('ArrowDown', 2, 4)).toBeNull();
+  });
+
+  it('emplacement vide : cadre orné + fleuron dessiné (plus de ✠ texte, plus de min-height CSS)', () => {
+    const html = render([], initialNet());
+    expect(html).toContain('empty-slot');
+    expect(html).toContain('ornate-frame'); // OrnateFrame
+    expect(html).toContain('orn-fleuron'); // motif Ornaments
+    expect(html).not.toContain('✠');
+  });
+
+  it('slot occupé : carte v2 — perso EN PIED (CharacterPreview) dans un cadre orné, identité + statut', () => {
+    const h = savedHero();
+    const html = render([h], initialNet());
+    expect(html).toContain('char-card');
+    expect(html).toContain('ornate-frame');
+    expect(html).toContain('charprev'); // figure en pied (rig réel)
+    expect(html).toContain(h.name);
+    expect(html).toContain('Statut'); // statut social du niveau de carrière
+    expect(html).not.toContain('char-card-row'); // mode plein, pas la rangée compacte
+  });
+
+  it('picker : « Créer un personnage » visible MÊME avec un roster non vide', () => {
+    rosterAdd({ hero: savedHero(), wealth: { gold: 0, silver: 0, brass: 0 } });
+    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
+    expect(html).toContain('Créer un personnage');
+    expect(html).toContain('Aventurière Sauvegardée'); // le roster reste listé sous le bouton
+  });
+
+  it('picker : rangées compactes v2 (char-card-row + figure xs)', () => {
+    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
+    expect(html).toContain('char-card-row');
+    expect(html).toContain('charprev-xs');
   });
 });

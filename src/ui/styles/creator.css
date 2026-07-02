@@ -11,7 +11,7 @@
   align-items: center;
   flex-wrap: wrap; /* 360px : la carte garde sa largeur, les boutons passent dessous */
 }
-.pregen-row .char-card {
+.pregen-row .char-card-row {
   flex: 1;
   min-width: 200px;
 }

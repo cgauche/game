@@ -443,29 +443,45 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  border-radius: 8px;
+}
+/* Roving tabindex : le slot lui-même est focusable (flèches ⇄, Enter = action principale). */
+.party-slot:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+/* Apparition en cascade des emplacements (index par slot via --i, posé par le composant). */
+@media (prefers-reduced-motion: no-preference) {
+  .party-slot {
+    animation: slot-in 0.35s ease-out backwards;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+}
+@keyframes slot-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 /* La carte remplit le slot étiré par la grille (iso-hauteur entre slots) — scopé au slot d'équipe
- * pour ne pas toucher la carte compacte du picker. */
+ * pour ne pas toucher la rangée compacte du picker. */
 .party-slot > .char-card {
   flex: 1;
 }
+/* Emplacement vide : cadre orné (OrnateFrame) au gabarit de la carte pleine — aspect-ratio au lieu
+   d'une hauteur fixe ; fleuron discret en tête (motif Ornaments, remplace le ✠ texte). */
 .empty-slot {
   background: var(--panel);
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 24px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: center;
-  min-height: 240px;
   justify-content: center;
+  aspect-ratio: 3 / 4;
+  flex: 1;
 }
-.empty-slot::before {
-  content: '✠';
+.empty-slot > .orn-fleuron {
   color: var(--border);
-  font-size: 30px;
-  line-height: 1;
 }
 .empty-slot .btn {
   width: 100%;
@@ -531,27 +547,26 @@ h3 {
   letter-spacing: 0.4px;
 }
 
-/* Character card */
-/* .char-card = primitive .panel (components.css) + fond plein --panel et radius 12 propres à la carte */
-.char-card.panel {
+/* ── Carte de personnage v2 (CharCard) — cadre orné + perso EN PIED dominant ── */
+.char-card {
   background: var(--panel);
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.char-card.ornate-frame {
   padding: 14px;
 }
-.char-card.compact {
-  padding: 10px;
-}
+/* Zone cliquable figure + identité (ouvre la fiche complète). */
 .char-head {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 8px;
 }
-/* F1 : la tête de carte (portrait + identité) ouvre la fiche complète au clic. */
 .char-head.clickable {
   cursor: pointer;
   border-radius: 8px;
-  margin: -4px -4px 6px;
+  margin: -4px;
   padding: 4px;
   transition: background 0.12s ease;
 }
@@ -562,6 +577,18 @@ h3 {
   outline: 2px solid var(--gold);
   outline-offset: 1px;
 }
+/* Figure dominante : le rig réel en pied (CharacterPreview size=fill, ambiance panel).
+   L'aperçu est posé en ABSOLU : le ratio intrinsèque du SVG (120/150) gonflerait sinon la
+   hauteur min-content du flex item au-delà de l'aspect-ratio voulu. */
+.char-fig {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 4;
+}
+.char-fig > .charprev {
+  position: absolute;
+  inset: 0;
+}
 .char-id {
   display: flex;
   flex-direction: column;
@@ -570,6 +597,32 @@ h3 {
 .char-sub {
   color: var(--gold);
   font-size: 12px;
+}
+.char-status {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+/* Rangée compacte (PartyPicker) : figure xs + identité + l'essentiel — une rangée dense, pas une carte. */
+.char-card-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.char-card-row.clickable {
+  cursor: pointer;
+}
+.char-card-row .char-id {
+  flex: 1;
+}
+.char-row-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
 }
 .char-stats {
   display: grid;

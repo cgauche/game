@@ -91,6 +91,8 @@ export const fr = {
   'party.slot.pick': 'Choisir un personnage',
   'party.slot.waiting': '⏳ En attente de {name}…',
   'party.slot.you': ' (vous)',
+  'party.seat.host': 'Hôte',
+  'party.seat.player': 'Joueur {n}',
   'party.hero.edit': 'Modifier',
   'party.hero.replace': 'Remplacer',
   'party.hero.remove': 'Retirer',
@@ -98,6 +100,8 @@ export const fr = {
   'party.action.start': 'Commencer →',
   'party.action.start.guestPending': "Des emplacements attribués aux autres joueurs sont encore vides.",
   'party.action.start.willReset': 'Relance la campagne au début — la partie en cours sera perdue.',
+  // Campagne intégrée (`pendingCampaign` null).
+  'campaign.builtin': "L'Arène",
   'party.campaign.pick.title': 'Choisir la campagne',
   'party.campaign.pick.current': 'Actuelle',
   'party.campaign.pick.choose': 'Choisir',

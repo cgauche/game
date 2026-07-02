@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useGame, type GameState } from '../state/store';
 import type { NetState } from '../state/netFlow';
 import { makePregens } from '../data/pregens';
@@ -11,6 +11,7 @@ import { Money, formatMoney } from '../engine/money';
 import { CharCard } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
 import { Icon } from './Icon';
+import { OrnateFrame, Fleuron } from './Ornaments';
 import { t } from '../i18n';
 
 /**
@@ -22,8 +23,14 @@ import { t } from '../i18n';
  * (hôte seul ; les invités voient le nom via le snapshot). Le choix par défaut est l'Arène.
  */
 
-/** Nom affiché de la campagne intégrée (l'Arène — `pendingCampaign` null). */
-export const BUILTIN_CAMPAIGN_NAME = "L'Arène";
+/** Nav clavier des emplacements (roving tabindex) : flèches ⇄ emplacement voisin (bouclé),
+ *  Enter/Espace = action principale de l'emplacement. Pur — testé sans DOM. */
+export function slotKeyNav(key: string, idx: number, count: number): { focus: number } | 'primary' | null {
+  if (key === 'ArrowLeft' || key === 'ArrowRight') {
+    return { focus: (idx + (key === 'ArrowLeft' ? -1 : 1) + count) % count };
+  }
+  return key === 'Enter' || key === ' ' ? 'primary' : null;
+}
 
 /** Appariement emplacements → héros : le k-ième emplacement du siège S affiche le k-ième héros
  *  possédé par S (ordre de `party`). Les héros orphelins (siège sans emplacement, ex. réattribution
@@ -78,7 +85,7 @@ export function PartyScreen() {
         party={party}
         net={net}
         title={t('party.title')}
-        campaignName={pendingCampaign ? pendingCampaign.name : BUILTIN_CAMPAIGN_NAME}
+        campaignName={pendingCampaign ? pendingCampaign.name : t('campaign.builtin')}
         onChangeCampaign={canPickCampaign ? () => setCampaignPick(true) : undefined}
         inProgress={inProgress}
         onMenu={() => setScreen('menu')}
@@ -117,7 +124,7 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
         <h3 className="picker-title">{t('party.campaign.pick.title')}</h3>
         <div className="pregen-list">
           <div className="pregen-row">
-            <span className="campaign-row-name"><Icon id="scenario/arena" size="sm" /> {BUILTIN_CAMPAIGN_NAME}</span>
+            <span className="campaign-row-name"><Icon id="scenario/arena" size="sm" /> {t('campaign.builtin')}</span>
             <button className="btn small btn-primary" disabled={currentName == null} onClick={() => pick(null)}>
               {currentName == null ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
             </button>
@@ -191,6 +198,10 @@ export function PartyScreenView({
   const [picker, setPicker] = useState(false);
   // Slot occupé → « Remplacer » : ouvre le picker MÊME à 4/4 (un remplacement ne change pas l'effectif).
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null);
+  // Roving tabindex : UN seul emplacement tabbable ; flèches gauche/droite entre emplacements,
+  // Enter/Espace = action principale (fiche du héros / créer). Cf. `slotKeyNav` (pur).
+  const [focusSlot, setFocusSlot] = useState(0);
+  const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   // F1 : cliquer le portrait d'un héros ouvre sa fiche complète (réutilise CharacterSheet).
   const [sheetId, setSheetId] = useState<string | null>(null);
   // L2 (solo) : carte slot→héros STABLE — l'emplacement d'un héros retiré RESTE en place (le trou ne
@@ -218,7 +229,8 @@ export function PartyScreenView({
   const coop = net.mode !== 'local';
   const isHost = net.mode !== 'guest';
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
-  const seatName = (seat: number) => net.seatNames[seat] ?? (seat === 0 ? 'Hôte' : `Joueur ${seat + 1}`);
+  const seatName = (seat: number) =>
+    net.seatNames[seat] ?? (seat === 0 ? t('party.seat.host') : t('party.seat.player', { n: seat + 1 }));
   const views = coop
     ? slotViews(party, net.slots ?? [0, 0, 0, 0], net.ownership)
     : slotMap.map((id) => ({ seat: 0, hero: id ? party.find((h) => h.id === id) : undefined }));
@@ -281,7 +293,31 @@ export function PartyScreenView({
         {views.map(({ seat, hero: h }, i) => {
           const mine = !coop || seat === net.mySeat;
           return (
-            <div className="party-slot" key={i}>
+            <div
+              className="party-slot"
+              key={i}
+              ref={(el) => { slotRefs.current[i] = el; }}
+              style={{ '--i': i } as CSSProperties}
+              role="group"
+              aria-label={t('party.slot.adventurer', { n: i + 1 })}
+              tabIndex={i === focusSlot ? 0 : -1}
+              onFocus={(e) => { if (e.target === e.currentTarget) setFocusSlot(i); }}
+              onKeyDown={(e) => {
+                const nav = slotKeyNav(e.key, i, views.length);
+                if (!nav) return;
+                if (nav === 'primary') {
+                  // Enter/Espace sur un contrôle INTERNE (bouton, select…) = le contrôle, pas le slot.
+                  if (e.target !== e.currentTarget) return;
+                  e.preventDefault();
+                  if (h) setSheetId(h.id);
+                  else if (mine) onCreate();
+                } else {
+                  e.preventDefault();
+                  setFocusSlot(nav.focus);
+                  slotRefs.current[nav.focus]?.focus();
+                }
+              }}
+            >
               {coop && (
                 net.mode === 'host' && !h ? (
                   <label className="slot-owner">
@@ -318,7 +354,8 @@ export function PartyScreenView({
                   )}
                 </>
               ) : mine ? (
-                <div className="empty-slot">
+                <OrnateFrame className="empty-slot">
+                  <Fleuron />
                   <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
                   <button className="btn" onClick={onCreate}>
                     {t('party.slot.create')}
@@ -326,12 +363,13 @@ export function PartyScreenView({
                   <button className="btn" onClick={() => setPicker(true)}>
                     {t('party.slot.pick')}
                   </button>
-                </div>
+                </OrnateFrame>
               ) : (
-                <div className="empty-slot">
+                <OrnateFrame className="empty-slot">
+                  <Fleuron />
                   <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
                   <span className="hint">{t('party.slot.waiting', { name: seatName(seat) })}</span>
-                </div>
+                </OrnateFrame>
               )}
             </div>
           );
@@ -390,6 +428,7 @@ export function PartyPicker({
   const [importErr, setImportErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const setScreen = useGame((s) => s.setScreen);
+  const setEditingHero = useGame((s) => s.setEditingHero);
 
   const inParty = (id: string) => party.some((p) => p.id === id);
   const removeSaved = (id: string) => {
@@ -426,11 +465,11 @@ export function PartyPicker({
 
         {tab === 'roster' ? (
           <div className="pregen-list">
-            {roster.length === 0 && (
-              <button className="btn" onClick={() => setScreen('creator')}>
-                {t('picker.roster.create')}
-              </button>
-            )}
+            {/* TOUJOURS visible (pas seulement roster vide) : créer reste un chemin de recrutement.
+               setEditingHero(null) : un « Modifier » antérieur ne doit pas rouvrir le créateur en mode édition. */}
+            <button className="btn" onClick={() => { setEditingHero(null); setScreen('creator'); }}>
+              {t('picker.roster.create')}
+            </button>
             {roster.map(({ hero, wealth }) => (
               <div key={hero.id} className="pregen-row">
                 <CharCard hero={hero} compact />
