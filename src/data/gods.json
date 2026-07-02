@@ -1,5 +1,82 @@
 [
   {
+    "key": "Asuryan",
+    "title": "Créateur et roi de tous les dieux",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Cadai\n\n**Sphères:** Toute création, les cieux, phénix\n\n**Adorateurs:** Dirigeants, juges, juristes en général\n\n**Offrandes:** Plumes blanches, masques, cristaux blancs\n\n**Remarques:** Créateur et roi de tous les dieux. Asuryan a créé le royaume des mortels et le royaume divin, puis les a séparés.\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\nLes hauts elfes vénèrent en particulier les Cadai et entretiennent des clergés sophistiqués dédiés à leur apprentissage. Ils apaisent les Cytharai si nécessaire, mais il est illégal de les prier, en dehors de Mathlann dont l'aide est recherchée par les marins. Selon leurs mythes, Asuryan, le dieu de la Création, est le roi de tous les dieux, capable de prononcer un jugement contre chacun d'eux.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Atharti",
+    "title": "La Dame du Désir",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Cytharai\n\n**Sphères:** Plaisir, séduction, serpents, l'esprit\n\n**Adorateurs:** Hédonistes, racoleurs, et ceux perdus dans leurs émotions\n\n**Offrandes:** Serpents, gemmes, cristaux rose pâle\n\n**Remarques:** La Dame du Désir. Atharti a libéré les émotions des elfes après leur création. Les hauts elfes interdisent largement son culte.\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Bögenauer",
+    "title": "Dieu de la rivière Bögen",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Rivière Bögen\n\n**Adorateurs:** Bateliers, marchands et Bögenhafeners\n\n**Offrandes:** Pièces, gerbes de roseaux, pierres façonnées\n\n**Remarques:** Un seul temple à Bögenhafen sans religieux à temps plein ; les sanctuaires bordent la rivière.\n\n### Les dieux du Reikland\n\nComme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés.",
+    "source": {
+      "book": "LDB",
+      "page": 203
+    }
+  },
+  {
+    "key": "Borchbach",
+    "title": "Dieu de la rhétorique",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Rhétorique\n\n**Adorateurs:** Agitateurs, politiciens, juristes\n\n**Offrandes:** Discours rédigés, glands, plumes d'oie\n\n**Remarques:** Plusieurs sanctuaires et deux temples de Borchbach se trouvent à Altdorf.\n\n### Les dieux du Reikland\n\nComme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés.",
+    "source": {
+      "book": "LDB",
+      "page": 203
+    }
+  },
+  {
+    "key": "Clio",
+    "title": "Déesse de l'Histoire",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Histoire\n\n**Adorateurs:** Érudits\n\n**Offrandes:** Artefacts antiques, pêches, gravures\n\n**Remarques:** Un temple important de la déesse traditionnelle Clio est rattaché à l'Université d'Altdorf.\n\n### Les dieux du Reikland\n\nComme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés.",
+    "source": {
+      "book": "LDB",
+      "page": 203
+    }
+  },
+  {
+    "key": "Dyrath",
+    "title": "Déesse des femmes",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Femmes\n\n**Adorateurs:** Femmes\n\n**Offrandes:** Fruits, miel, menstrues\n\n**Remarques:** Dyrath ne possède pas de temple ; mais un culte secret s'est répandu à travers les villages et les hameaux des Hägercrybs.\n\n### Les dieux du Reikland\n\nComme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés.",
+    "source": {
+      "book": "LDB",
+      "page": 203
+    }
+  },
+  {
+    "key": "Esméralda",
+    "title": "La maintes-fois Grand-Mère",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Terre, foyer, hospitalité\n\n**Adorateurs:** Tous les halflings essaient d'imiter Esméralda\n\n**Offrandes:** Nourriture, feu, confort\n\n**Remarques:** La maintes-fois Grand-Mère\n\n### Les dieux halflings\n\nCertains disent que les halflings sont superstitieux plus que religieux, et leurs divinités en général confirment cette impression. La plupart des dieux et déesses halflings ont tous un lien avec le foyer, la maison, la cuisine, la connaissance des plantes, les préoccupations générales de la terre et du quotidien. Les dieux halflings sont plus pragmatiques que philosophes car comme dit le proverbe « Pensées profondes ne paient pas ». Les halflings respectent également certaines divinités humaines – Sigmar, Taal et Rhya en particulier –, mais c'est plus par volonté d'éviter le conflit que par sincère dévotion.\n\n### Les prêtres halflings\n\nLes halflings n'ont pas réellement de clergé, et ils ne construisent évidemment pas de temples (même si les humains, en particulier les Sigmarites semblent heureux de le faire pour eux). Il y a mieux à faire que de bavasser sur les affaires d'autrui. Bien sûr, ils respectent les dieux, et gardent des sanctuaires à portée s'ils ont besoin de papoter, mais personne ne fait carrière en parlant exclusivement à un seul dieu – pourquoi être si exclusif ? Si un dieu en particulier a besoin d'être apaisé, un ancien local doit faire le nécessaire au nom de la communauté, souvent après de longues discussions avec des experts en la matière ou des pairs.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
     "key": "Evawn",
     "title": "Déesse des voyages",
     "blessings": [
@@ -37,6 +114,138 @@
     "source": {
       "book": "NADJ",
       "page": 90
+    }
+  },
+  {
+    "key": "Grand-père Reik",
+    "title": "Dieu du fleuve Reik",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Fleuve Reik\n\n**Adorateurs:** Marchands, mariniers, pêcheurs\n\n**Offrandes:** Bières, anguilles, argent\n\n**Remarques:** Des sanctuaires longent le fleuve Reik, mais il n'y a pas de culte formel\n\n### Les dieux du Reikland\n\nComme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés.",
+    "source": {
+      "book": "LDB",
+      "page": 203
+    }
+  },
+  {
+    "key": "Grimnir",
+    "title": "Dieu ancêtre des guerriers et du courage",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Guerrier, courage\n\n**Adorateurs:** Soldats, tueurs\n\n**Offrandes:** Hache, bijoux en or, rancunes apaisées\n\n**Remarques:** Le Grand temple se trouve à Karaz-a-Karak ; le plus grand Temple des Tueurs se trouve à Karak Kadrin. Mari de Valaya, frère de Grungni\n\n### Les dieux ancêtres nains\n\nLes nains vénèrent leurs ancêtres, valorisant avant tout la tradition. Même si le Temps des dieux ancêtres remonte à plusieurs milliers d'années, les nains conservent toujours des registres de cette époque au cœur de leurs plus anciennes forteresses. Beaucoup de noms proviennent de cette époque, formant un vaste panthéon, mais trois dieux ancêtres bénéficient d'une importance particulière et sont connus de tous les nains : Grimnir, Grungni et Valaya, tous trois ancêtres de la race naine. En plus des dieux ancêtres, les nains vénèrent également les fondateurs des clans locaux en tant que divinités gardiennes.\n\n### Les prêtres nains\n\nCeux qui se dévouent aux cultes des dieux ancêtres n'utilisent pas les Carrières de Prêtre, Nonne ou Prêtre Guerrier, car les nains entretiennent une relation très différente avec leurs dieux, cherchant à les imiter plutôt qu'à les vénérer ou les apaiser.\n\nDe ce fait, si vous souhaitez jouer un nain dévoué à l'un des dieux ancêtres, choisissez simplement une Carrière permettant de marcher dans les traces de cette divinité. Si vous cherchez à imiter Grimnir, en devenant effectivement un de ses prêtres, jouez peut-être un Tueur et rejoignez le Culte du Tueur, ou bien devenez un Soldat.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Grungni",
+    "title": "Dieu ancêtre de la mine, du métal et de la pierre",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Exploitation minière, travail des métaux, travail de la pierre\n\n**Adorateurs:** Artisans, mineurs\n\n**Offrandes:** Pierre fine ou métal travaillé, armure de mailles\n\n**Remarques:** Le Grand temple se trouve à Karak Azul. Mari de Valaya, frère de Grimnir\n\n### Les dieux ancêtres nains\n\nLes nains vénèrent leurs ancêtres, valorisant avant tout la tradition. Même si le Temps des dieux ancêtres remonte à plusieurs milliers d'années, les nains conservent toujours des registres de cette époque au cœur de leurs plus anciennes forteresses. Beaucoup de noms proviennent de cette époque, formant un vaste panthéon, mais trois dieux ancêtres bénéficient d'une importance particulière et sont connus de tous les nains : Grimnir, Grungni et Valaya, tous trois ancêtres de la race naine. En plus des dieux ancêtres, les nains vénèrent également les fondateurs des clans locaux en tant que divinités gardiennes.\n\n### Les prêtres nains\n\nCeux qui se dévouent aux cultes des dieux ancêtres n'utilisent pas les Carrières de Prêtre, Nonne ou Prêtre Guerrier, car les nains entretiennent une relation très différente avec leurs dieux, cherchant à les imiter plutôt qu'à les vénérer ou les apaiser.\n\nDe ce fait, si vous souhaitez jouer un nain dévoué à l'un des dieux ancêtres, choisissez simplement une Carrière permettant de marcher dans les traces de cette divinité. Si vous cherchez à imiter Grimnir, en devenant effectivement un de ses prêtres, jouez peut-être un Tueur et rejoignez le Culte du Tueur, ou bien devenez un Soldat.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Handrich",
+    "title": "Dieu du Commerce",
+    "blessings": [],
+    "miracles": [],
+    "desc": "L'Empire héberge une vaste variété de divinités – patrons de provinces, de villes, de forêts, de lacs, de rivières, de métiers et bien plus encore. Regroupés en panthéons complexes par des légendes et des mythes locaux, les dieux provinciaux ont souvent de petits cultes qui leur sont dédiés, mais peu possèdent de l'influence. Il y a toutefois des exceptions : se tenant bien au-dessus des autres dieux provinciaux, le Culte de Handrich, le dieu du Commerce, s'est largement répandu grâce aux échanges commerciaux et se vante à présent d'une présence importante parmi la Classe marchande en expansion de l'Empire.\n\n### Le Grand Conclave\n\nBien que d'autres cultes influents existent – tels que le Culte d'Handrich, qui fait actuellement pression pour obtenir sa place au Conclave – les dix y siégeant de nos jours sont unanimement considérés comme les plus importants de l'Empire.",
+    "source": {
+      "book": "LDB",
+      "page": 202
+    }
+  },
+  {
+    "key": "Hoeth",
+    "title": "Le Seigneur de la Sagesse",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Cadai\n\n**Sphères:** Sagesse, connaissance, apprentissage\n\n**Adorateurs:** Érudits, mages, perfectionnistes\n\n**Offrandes:** Ouvrages, épées, cristaux jaunes\n\n**Remarques:** Le Seigneur de la Sagesse. Hoeth a élevé les elfes à la conscience.\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Hyacinthe",
+    "title": "Déesse de la naissance et de la fertilité",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Naissance, fertilité, sexe\n\n**Adorateurs:** Sages-femmes, femmes enceintes, fêtards\n\n**Offrandes:** Eau bouillante, herbes palliatives\n\n**Remarques:** A un penchant pour les jumeaux et les triplés\n\n### Les dieux halflings\n\nCertains disent que les halflings sont superstitieux plus que religieux, et leurs divinités en général confirment cette impression. La plupart des dieux et déesses halflings ont tous un lien avec le foyer, la maison, la cuisine, la connaissance des plantes, les préoccupations générales de la terre et du quotidien. Les dieux halflings sont plus pragmatiques que philosophes car comme dit le proverbe « Pensées profondes ne paient pas ». Les halflings respectent également certaines divinités humaines – Sigmar, Taal et Rhya en particulier –, mais c'est plus par volonté d'éviter le conflit que par sincère dévotion.\n\n### Les prêtres halflings\n\nLes halflings n'ont pas réellement de clergé, et ils ne construisent évidemment pas de temples (même si les humains, en particulier les Sigmarites semblent heureux de le faire pour eux). Il y a mieux à faire que de bavasser sur les affaires d'autrui. Bien sûr, ils respectent les dieux, et gardent des sanctuaires à portée s'ils ont besoin de papoter, mais personne ne fait carrière en parlant exclusivement à un seul dieu – pourquoi être si exclusif ? Si un dieu en particulier a besoin d'être apaisé, un ancien local doit faire le nécessaire au nom de la communauté, souvent après de longues discussions avec des experts en la matière ou des pairs.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Isha",
+    "title": "La Mère",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Cadai\n\n**Sphères:** Fertilité, vie\n\n**Adorateurs:** Populations rurales de tous genres\n\n**Offrandes:** Nourriture, larmes, cristaux verts\n\n**Remarques:** La Mère. Femme de Kurnous. Elle a créé les elfes\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\nLes elfes sylvains favorisent une approche plus nuancée et érigent des temples et des sanctuaires pour tous les dieux ayant une incidence sur leur vie, qu'ils soient Cadai ou Cytharai. À cause de leur relation étroite avec les bois et les forêts, ils vénèrent Isha la Mère et Kurnous le Chasseur avant tous les autres, et des rumeurs persistantes prétendent que ces dieux participent directement aux affaires courantes des elfes sylvains.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Josias",
+    "title": "Le Croyant",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Agriculture, animaux domestiques\n\n**Adorateurs:** Fermiers, bergers, jardiniers\n\n**Offrandes:** Récoltes, nourriture, garbure\n\n**Remarques:** Le Croyant. Josias est connu pour travailler dur et se reposer dur\n\n### Les dieux halflings\n\nCertains disent que les halflings sont superstitieux plus que religieux, et leurs divinités en général confirment cette impression. La plupart des dieux et déesses halflings ont tous un lien avec le foyer, la maison, la cuisine, la connaissance des plantes, les préoccupations générales de la terre et du quotidien. Les dieux halflings sont plus pragmatiques que philosophes car comme dit le proverbe « Pensées profondes ne paient pas ». Les halflings respectent également certaines divinités humaines – Sigmar, Taal et Rhya en particulier –, mais c'est plus par volonté d'éviter le conflit que par sincère dévotion.\n\n### Les prêtres halflings\n\nLes halflings n'ont pas réellement de clergé, et ils ne construisent évidemment pas de temples (même si les humains, en particulier les Sigmarites semblent heureux de le faire pour eux). Il y a mieux à faire que de bavasser sur les affaires d'autrui. Bien sûr, ils respectent les dieux, et gardent des sanctuaires à portée s'ils ont besoin de papoter, mais personne ne fait carrière en parlant exclusivement à un seul dieu – pourquoi être si exclusif ? Si un dieu en particulier a besoin d'être apaisé, un ancien local doit faire le nécessaire au nom de la communauté, souvent après de longues discussions avec des experts en la matière ou des pairs.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Katya",
+    "title": "Déesse de la beauté désarmante",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Beauté désarmante\n\n**Adorateurs:** Racoleurs, amoureux, célibataires\n\n**Offrandes:** Pièces de monnaie, joyaux, vêtements\n\n**Remarques:** Les temples de Katya servent également de lupanars dans les villes du Vorbergland.\n\n### Les dieux du Reikland\n\nComme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés.",
+    "source": {
+      "book": "LDB",
+      "page": 203
+    }
+  },
+  {
+    "key": "Khaine",
+    "title": "Dieu du Meurtre",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Cytharai\n\n**Sphères:** Guerre, sang versé, violence\n\n**Adorateurs:** Guerriers et tous les soldats\n\n**Offrandes:** Sang, armes, cristaux rouges\n\n**Remarques:** La Main sanglante\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\n### Dans l'Empire\n\nDerrière eux, se dissimule également Khaine, le dieu du Meurtre, bien que son culte soit illégal dans beaucoup d'endroits.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Khorne",
+    "title": "Dieu de la Rage",
+    "blessings": [],
+    "miracles": [],
+    "desc": "Les dieux démoniaques des Royaumes du Chaos constituent la plus grande menace du Vieux Monde, car chacun d'entre eux est déterminé à apporter la ruine absolue sur le royaume des mortels. Khorne, Nurgle, Tzeentch et Slaanesh : respectivement dieux de la Rage, du Désespoir, de l'Ambition et de l'Excès. Bien peu osent chuchoter leurs noms corrupteurs, car ils détiennent un pouvoir malveillant et répandent mutation et horreur dans leur sillage.\n\n### Les Puissances de la Ruine\n\nLes Puissances de la Ruine du Chaos constituent la principale menace existentielle du Vieux Monde, mais demeurent en grande partie un mystère. Le simple fait de rechercher de telles connaissances sans l'autorisation du Culte de Sigmar est passible de la peine de mort. Réclamer une telle permission rarement accordée entraîne un examen minutieux de votre personne et de vos motivations.\n\nLes Puissances de la Ruine sont considérées par le commun des mortels comme une punition du péché, et c'est la raison pour laquelle tous doivent se comporter convenablement sur le plan social, comme les cultes le préconisent. Se livrer à la violence, à la luxure, à la négligence ou à une curiosité inconvenante a des répercussions directes sur l'individu (corrompu et voué à une fin terrible) et sur sa communauté, car son comportement déviant attire l'attention destructrice des forces diaboliques.\n\nLa plupart des gens connaîtront la plus puissante de ces forces à travers des euphémismes, tels que le dieu du Sang, le Seigneur de la Peste, le Seigneur du Changement, et le Prince de la Douleur. Mêmes les érudits les plus instruits de ces savoirs interdits peuvent seulement présumer de ce qui motive ces puissances obscènes, ou du but qu'elles poursuivent au-delà de leurs pulsions primaires.\n\nIl semblerait qu'il y ait des factions rivales dédiées à différents aspects de la Ruine, aussi ennemis les uns des autres que du reste du Vieux Monde. Mais quand, à de rares occasions, ils coopèrent comme ils le firent il y a plus de deux cents ans pendant la Grande Guerre contre le Chaos, le monde tremble. Certains affirment que des cultes dédiés aux dieux du Chaos ont infiltré l'Empire. La plupart des gens trouvent cette idée absurde, car aucun individu sensé ne serait assez stupide pour vénérer l'une des Puissances de la Ruine.\n\n### Khorne et la Magie\n\nTrois des quatre Grandes Puissances du Chaos possèdent un Domaine de Magie unique — seul Khorne, le dieu du Sang, qui exècre la Magie et tout ce qui s'y rapporte, ne possède pas de Domaine.",
+    "source": {
+      "book": "LDB",
+      "page": 217
+    }
+  },
+  {
+    "key": "Kurnous",
+    "title": "Le Roi de la Chasse sauvage",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Cadai\n\n**Sphères:** Animaux, régions sauvages, chasse\n\n**Adorateurs:** Chasseurs, hommes des bois et ceux travaillant avec les animaux\n\n**Offrandes:** Animaux, sang ennemi, cristaux ambre\n\n**Remarques:** Le Roi de la Chasse sauvage, Seigneur des Bêtes et mari de Isha. Kurnous a créé tous les animaux\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\nLes elfes sylvains favorisent une approche plus nuancée et érigent des temples et des sanctuaires pour tous les dieux ayant une incidence sur leur vie, qu'ils soient Cadai ou Cytharai. À cause de leur relation étroite avec les bois et les forêts, ils vénèrent Isha la Mère et Kurnous le Chasseur avant tous les autres, et des rumeurs persistantes prétendent que ces dieux participent directement aux affaires courantes des elfes sylvains.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
     }
   },
   {
@@ -126,6 +335,28 @@
     "source": {
       "book": "LDB",
       "page": 205
+    }
+  },
+  {
+    "key": "Mathlann",
+    "title": "Le Seigneur des Profondeurs",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Cytharai\n\n**Sphères:** Océans\n\n**Adorateurs:** Tous les peuples liés à la mer\n\n**Offrandes:** Or, poisson, cristaux turquoise\n\n**Remarques:** Le Seigneur des Profondeurs. A peu d'affection pour tout ce qui est lié à la terre, y compris les elfes\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\nLes hauts elfes vénèrent en particulier les Cadai et entretiennent des clergés sophistiqués dédiés à leur apprentissage. Ils apaisent les Cytharai si nécessaire, mais il est illégal de les prier, en dehors de Mathlann dont l'aide est recherchée par les marins. Selon leurs mythes, Asuryan, le dieu de la Création, est le roi de tous les dieux, capable de prononcer un jugement contre chacun d'eux.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
+    }
+  },
+  {
+    "key": "Morai-Heg",
+    "title": "Déesse du destin et de la mort",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Groupe:** Non aligné\n\n**Sphères:** Mort, destin, corbeaux\n\n**Adorateurs:** Les endeuillés\n\n**Offrandes:** Os, plumes noires, cristaux noirs\n\n**Remarques:** L'Aïeule. Son culte est généralement évité car il est imprudent d'attirer son attention\n\n### Le panthéon elfe\n\nDeux groupes de dieux sont primordiaux, les Cadai et les Cytharai. Les Cadai règnent sur les cieux et entretiennent un lien puissant avec leurs adorateurs elfes, les aidant directement lorsqu'ils le peuvent. Les égocentriques Cytharai règnent sur le monde souterrain et se soucient fort peu des elfes. À l'écart de ces deux cours, se trouve un groupe libre de dieux non alignés, la plus influente étant Morai-Heg l'Aïeule, déesse du destin et de la mort.\n\n### Les prêtres elfes\n\nLes hauts elfes et les elfes sylvains ont des clergés pour leurs dieux, mais sans Bénédictions ni Miracles. Les elfes ne croient pas que ces derniers se manifestent de la sorte, mais considèrent par contre la magie comme un cadeau divin. Donc, si vous souhaitez jouer un prêtre elfe, utilisez la Carrière de Sorcier, et choisissez un Domaine approprié pour représenter la magie que votre dieu vous a offerte. Ainsi, un « prêtre » de Kurnous peut utiliser le Domaine des Bêtes, un adorateur d'Isha, le Domaine de la Vie, et les dévots d'Asuryan les Domaines de la Lumière ou du Feu.",
+    "source": {
+      "book": "LDB",
+      "page": 216
     }
   },
   {
@@ -251,6 +482,28 @@
     "source": {
       "book": "LDB",
       "page": 207
+    }
+  },
+  {
+    "key": "Nurgle",
+    "title": "Dieu du Désespoir",
+    "blessings": [],
+    "miracles": [],
+    "desc": "Les dieux démoniaques des Royaumes du Chaos constituent la plus grande menace du Vieux Monde, car chacun d'entre eux est déterminé à apporter la ruine absolue sur le royaume des mortels. Khorne, Nurgle, Tzeentch et Slaanesh : respectivement dieux de la Rage, du Désespoir, de l'Ambition et de l'Excès. Bien peu osent chuchoter leurs noms corrupteurs, car ils détiennent un pouvoir malveillant et répandent mutation et horreur dans leur sillage.\n\n### Les Puissances de la Ruine\n\nLes Puissances de la Ruine du Chaos constituent la principale menace existentielle du Vieux Monde, mais demeurent en grande partie un mystère. Le simple fait de rechercher de telles connaissances sans l'autorisation du Culte de Sigmar est passible de la peine de mort. Réclamer une telle permission rarement accordée entraîne un examen minutieux de votre personne et de vos motivations.\n\nLes Puissances de la Ruine sont considérées par le commun des mortels comme une punition du péché, et c'est la raison pour laquelle tous doivent se comporter convenablement sur le plan social, comme les cultes le préconisent. Se livrer à la violence, à la luxure, à la négligence ou à une curiosité inconvenante a des répercussions directes sur l'individu (corrompu et voué à une fin terrible) et sur sa communauté, car son comportement déviant attire l'attention destructrice des forces diaboliques.\n\nLa plupart des gens connaîtront la plus puissante de ces forces à travers des euphémismes, tels que le dieu du Sang, le Seigneur de la Peste, le Seigneur du Changement, et le Prince de la Douleur. Mêmes les érudits les plus instruits de ces savoirs interdits peuvent seulement présumer de ce qui motive ces puissances obscènes, ou du but qu'elles poursuivent au-delà de leurs pulsions primaires.\n\nIl semblerait qu'il y ait des factions rivales dédiées à différents aspects de la Ruine, aussi ennemis les uns des autres que du reste du Vieux Monde. Mais quand, à de rares occasions, ils coopèrent comme ils le firent il y a plus de deux cents ans pendant la Grande Guerre contre le Chaos, le monde tremble. Certains affirment que des cultes dédiés aux dieux du Chaos ont infiltré l'Empire. La plupart des gens trouvent cette idée absurde, car aucun individu sensé ne serait assez stupide pour vénérer l'une des Puissances de la Ruine.\n\n### Le Domaine de Nurgle\n\nLe Domaine de Nurgle répand d'horribles maladies et immondices, mélangeant les excès boursouflés du Vent de Jade avec toute la corruption disponible, avant de les recracher dans tous les endroits possibles.",
+    "source": {
+      "book": "LDB",
+      "page": 217
+    }
+  },
+  {
+    "key": "Quinsberry",
+    "title": "Divinité de la connaissance et de la tradition ancestrale",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Connaissance, tradition ancestrale\n\n**Adorateurs:** Érudits\n\n**Offrandes:** Livres, tapisseries, or\n\n**Remarques:** Possède une bibliothèque détaillant l'histoire et la généalogie complète de chaque halfling\n\n### Les dieux halflings\n\nCertains disent que les halflings sont superstitieux plus que religieux, et leurs divinités en général confirment cette impression. La plupart des dieux et déesses halflings ont tous un lien avec le foyer, la maison, la cuisine, la connaissance des plantes, les préoccupations générales de la terre et du quotidien. Les dieux halflings sont plus pragmatiques que philosophes car comme dit le proverbe « Pensées profondes ne paient pas ». Les halflings respectent également certaines divinités humaines – Sigmar, Taal et Rhya en particulier –, mais c'est plus par volonté d'éviter le conflit que par sincère dévotion.\n\n### Les prêtres halflings\n\nLes halflings n'ont pas réellement de clergé, et ils ne construisent évidemment pas de temples (même si les humains, en particulier les Sigmarites semblent heureux de le faire pour eux). Il y a mieux à faire que de bavasser sur les affaires d'autrui. Bien sûr, ils respectent les dieux, et gardent des sanctuaires à portée s'ils ont besoin de papoter, mais personne ne fait carrière en parlant exclusivement à un seul dieu – pourquoi être si exclusif ? Si un dieu en particulier a besoin d'être apaisé, un ancien local doit faire le nécessaire au nom de la communauté, souvent après de longues discussions avec des experts en la matière ou des pairs.",
+    "source": {
+      "book": "LDB",
+      "page": 216
     }
   },
   {
@@ -490,6 +743,17 @@
     }
   },
   {
+    "key": "Slaanesh",
+    "title": "Dieu de l'Excès",
+    "blessings": [],
+    "miracles": [],
+    "desc": "Les dieux démoniaques des Royaumes du Chaos constituent la plus grande menace du Vieux Monde, car chacun d'entre eux est déterminé à apporter la ruine absolue sur le royaume des mortels. Khorne, Nurgle, Tzeentch et Slaanesh : respectivement dieux de la Rage, du Désespoir, de l'Ambition et de l'Excès. Bien peu osent chuchoter leurs noms corrupteurs, car ils détiennent un pouvoir malveillant et répandent mutation et horreur dans leur sillage.\n\n### Les Puissances de la Ruine\n\nLes Puissances de la Ruine du Chaos constituent la principale menace existentielle du Vieux Monde, mais demeurent en grande partie un mystère. Le simple fait de rechercher de telles connaissances sans l'autorisation du Culte de Sigmar est passible de la peine de mort. Réclamer une telle permission rarement accordée entraîne un examen minutieux de votre personne et de vos motivations.\n\nLes Puissances de la Ruine sont considérées par le commun des mortels comme une punition du péché, et c'est la raison pour laquelle tous doivent se comporter convenablement sur le plan social, comme les cultes le préconisent. Se livrer à la violence, à la luxure, à la négligence ou à une curiosité inconvenante a des répercussions directes sur l'individu (corrompu et voué à une fin terrible) et sur sa communauté, car son comportement déviant attire l'attention destructrice des forces diaboliques.\n\nLa plupart des gens connaîtront la plus puissante de ces forces à travers des euphémismes, tels que le dieu du Sang, le Seigneur de la Peste, le Seigneur du Changement, et le Prince de la Douleur. Mêmes les érudits les plus instruits de ces savoirs interdits peuvent seulement présumer de ce qui motive ces puissances obscènes, ou du but qu'elles poursuivent au-delà de leurs pulsions primaires.\n\nIl semblerait qu'il y ait des factions rivales dédiées à différents aspects de la Ruine, aussi ennemis les uns des autres que du reste du Vieux Monde. Mais quand, à de rares occasions, ils coopèrent comme ils le firent il y a plus de deux cents ans pendant la Grande Guerre contre le Chaos, le monde tremble. Certains affirment que des cultes dédiés aux dieux du Chaos ont infiltré l'Empire. La plupart des gens trouvent cette idée absurde, car aucun individu sensé ne serait assez stupide pour vénérer l'une des Puissances de la Ruine.\n\n### Le Domaine de Slaanesh\n\nLe Domaine de Slaanesh n'est que tortures et excès, destinés à être exhibés devant le Prince du Plaisir et de la Souffrance pour son éternel amusement. Il est en général composé du mélange perverti des vents d'Améthyste, d'Or et de Jade, aussi tordu qu'original.",
+    "source": {
+      "book": "LDB",
+      "page": 217
+    }
+  },
+  {
     "key": "Taal",
     "title": "Dieu de la nature",
     "blessings": [
@@ -539,6 +803,17 @@
     }
   },
   {
+    "key": "Tzeentch",
+    "title": "Dieu de l'Ambition",
+    "blessings": [],
+    "miracles": [],
+    "desc": "Les dieux démoniaques des Royaumes du Chaos constituent la plus grande menace du Vieux Monde, car chacun d'entre eux est déterminé à apporter la ruine absolue sur le royaume des mortels. Khorne, Nurgle, Tzeentch et Slaanesh : respectivement dieux de la Rage, du Désespoir, de l'Ambition et de l'Excès. Bien peu osent chuchoter leurs noms corrupteurs, car ils détiennent un pouvoir malveillant et répandent mutation et horreur dans leur sillage.\n\n### Les Puissances de la Ruine\n\nLes Puissances de la Ruine du Chaos constituent la principale menace existentielle du Vieux Monde, mais demeurent en grande partie un mystère. Le simple fait de rechercher de telles connaissances sans l'autorisation du Culte de Sigmar est passible de la peine de mort. Réclamer une telle permission rarement accordée entraîne un examen minutieux de votre personne et de vos motivations.\n\nLes Puissances de la Ruine sont considérées par le commun des mortels comme une punition du péché, et c'est la raison pour laquelle tous doivent se comporter convenablement sur le plan social, comme les cultes le préconisent. Se livrer à la violence, à la luxure, à la négligence ou à une curiosité inconvenante a des répercussions directes sur l'individu (corrompu et voué à une fin terrible) et sur sa communauté, car son comportement déviant attire l'attention destructrice des forces diaboliques.\n\nLa plupart des gens connaîtront la plus puissante de ces forces à travers des euphémismes, tels que le dieu du Sang, le Seigneur de la Peste, le Seigneur du Changement, et le Prince de la Douleur. Mêmes les érudits les plus instruits de ces savoirs interdits peuvent seulement présumer de ce qui motive ces puissances obscènes, ou du but qu'elles poursuivent au-delà de leurs pulsions primaires.\n\nIl semblerait qu'il y ait des factions rivales dédiées à différents aspects de la Ruine, aussi ennemis les uns des autres que du reste du Vieux Monde. Mais quand, à de rares occasions, ils coopèrent comme ils le firent il y a plus de deux cents ans pendant la Grande Guerre contre le Chaos, le monde tremble. Certains affirment que des cultes dédiés aux dieux du Chaos ont infiltré l'Empire. La plupart des gens trouvent cette idée absurde, car aucun individu sensé ne serait assez stupide pour vénérer l'une des Puissances de la Ruine.\n\n### Le Domaine de Tzeentch\n\nTzeentch est le Maître de la Magie, de la traîtrise et du mensonge. Le Domaine de Tzeentch en est l'incarnation, composé en grande partie de Sorts se concentrant sur le changement, ces derniers s'appuyant sur les Vents Gris, Améthyste et Blanc.",
+    "source": {
+      "book": "LDB",
+      "page": 217
+    }
+  },
+  {
     "key": "Ulric",
     "title": "Dieu de la guerre",
     "blessings": [
@@ -585,6 +860,17 @@
     "source": {
       "book": "LDB",
       "page": 213
+    }
+  },
+  {
+    "key": "Valaya",
+    "title": "Déesse ancêtre du brassage, de la terre et de la guérison",
+    "blessings": [],
+    "miracles": [],
+    "desc": "**Sphères:** Brassage, terre, guérison\n\n**Adorateurs:** Artisans, érudits, médecins\n\n**Offrandes:** Bière, boucliers, nourriture\n\n**Remarques:** Le Grand temple se trouve à Karaz-a-Karak. Femme de Grimnir et Grungni\n\n### Les dieux ancêtres nains\n\nLes nains vénèrent leurs ancêtres, valorisant avant tout la tradition. Même si le Temps des dieux ancêtres remonte à plusieurs milliers d'années, les nains conservent toujours des registres de cette époque au cœur de leurs plus anciennes forteresses. Beaucoup de noms proviennent de cette époque, formant un vaste panthéon, mais trois dieux ancêtres bénéficient d'une importance particulière et sont connus de tous les nains : Grimnir, Grungni et Valaya, tous trois ancêtres de la race naine. En plus des dieux ancêtres, les nains vénèrent également les fondateurs des clans locaux en tant que divinités gardiennes.\n\n### Les prêtres nains\n\nCeux qui se dévouent aux cultes des dieux ancêtres n'utilisent pas les Carrières de Prêtre, Nonne ou Prêtre Guerrier, car les nains entretiennent une relation très différente avec leurs dieux, cherchant à les imiter plutôt qu'à les vénérer ou les apaiser.\n\nDe ce fait, si vous souhaitez jouer un nain dévoué à l'un des dieux ancêtres, choisissez simplement une Carrière permettant de marcher dans les traces de cette divinité. Si vous cherchez à imiter Grimnir, en devenant effectivement un de ses prêtres, jouez peut-être un Tueur et rejoignez le Culte du Tueur, ou bien devenez un Soldat.",
+    "source": {
+      "book": "LDB",
+      "page": 216
     }
   },
   {

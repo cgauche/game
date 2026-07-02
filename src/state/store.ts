@@ -447,7 +447,7 @@ export interface GameState extends RollFlowActionsMap {
   interludeRevenus: (heroId: string) => void;
   interludeCraftStart: (heroId: string, trappingId: string, atouts: string[], defauts: string[]) => void;
   interludeCraftRoll: (heroId: string) => void;
-  interludeBank: (heroId: string, kind: 'invest' | 'stash', amountBrass: number, rate?: number) => void;
+  interludeBank: (heroId: string, kind: 'invest' | 'stash' | 'mecenat', amountBrass: number, rate?: number) => void;
   interludeWithdraw: (index: number) => void;
   /** Apprentissage particulier (Talent hors carrière, Test −20) — `talent` = `id` STABLE ;
    *  Passer commande (Exotique). */
@@ -455,6 +455,9 @@ export interface GameState extends RollFlowActionsMap {
   interludeOrder: (heroId: string, trappingId: string) => void;
   /** Identifier un artefact magique (ADE2 ch.4) : une semaine d'étude, Test de Savoir (Magie) +0. */
   interludeIdentify: (heroId: string, itemUid: string) => void;
+  /** Activité du CATALOGUE data-driven (`activities.json`, contexte 'interlude' + gate `where`) :
+   *  Convalescence (ADE2), Activités d'Altdorf (ACE Annexe I). Cibles éventuelles : objet / sort / dépôt. */
+  interludeActivity: (heroId: string, activityId: string, opts?: { itemUid?: string; spellId?: string; depositIndex?: number }) => void;
   /** Coop en ligne : état réseau sérialisable + actions de session — délégué à netFlow.
    *  Les objets réseau vivants (sessions, sockets du relay) restent des singletons de module. */
   net: NetState;
@@ -1168,6 +1171,7 @@ export const useGame = create<GameState>((set, get) => ({
   interludeLearn: (heroId, talent) => interludeFlow.openLearn(get, set, heroId, talent),
   interludeOrder: (heroId, trapping) => interludeFlow.orderItem(get, set, heroId, trapping),
   interludeIdentify: (heroId, itemUid) => interludeFlow.openIdentify(get, set, heroId, itemUid),
+  interludeActivity: (heroId, activityId, opts) => interludeFlow.openCatalogActivity(get, set, heroId, activityId, opts),
 
   net: netFlow.initialNet(),
   netHostStart: (name) => netFlow.netHostStart(get, set, name),

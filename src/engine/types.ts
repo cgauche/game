@@ -637,6 +637,9 @@ export interface ItemInstance {
   hands?: 1 | 2;
   /** Quantité (paquet de munitions, ex. « (12) » → 12). */
   qty?: number;
+  /** Arme INHABITUELLE (ACE Annexe I p.219) : exige la maîtrise (`Combatant.masteredWeapons`) pour
+   *  être maniée avec la Compétence du Groupe — copié du catalogue (`TrappingData.requiresMastery`). */
+  requiresMastery?: boolean;
   /** Dégâts subis par l'arme (LDB 62 l.178), persistés sur le trapping ; propagé au Weapon actif. */
   damageTaken?: number;
   /** Arme détruite (Incident de Tir) : non équipable. */
@@ -898,6 +901,11 @@ export interface Combatant {
    *  son dieu. Octroyés par le MJ/l'auteur (Effet `giveSin`), jamais inventés ; pas de
    *  maximum ; chaque jet de Colère des dieux en retire 1 (l.53). Persisté entre combats. */
   sinPoints?: number;
+  /** Armes INHABITUELLES maîtrisées (ids de trapping, `TrappingData.id`) — ACE Annexe I p.219
+   *  « Entraînement avec une arme inhabituelle ». Tant qu'une arme `requiresMastery` n'est pas
+   *  maîtrisée, son porteur est traité comme SANS la Compétence du Groupe (carac brute, LDB 09
+   *  l.44 ; Défauts contextuels du Groupe — cf. `weaponUnmastered`). */
+  masteredWeapons?: string[];
   /** Effets magiques actifs et temporisés (buffs de Bénédiction/Sort). */
   activeEffects?: ActiveEffect[];
   /** Pénalités/blocages d'incantation temporisés (contrecoups des tables d'Imparfaites/Colère,

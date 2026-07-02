@@ -16,16 +16,28 @@ import { battleRng } from './battleRng';
 import { d100 } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
-import { fromBrass, toBrass, formatMoney } from '../engine/money';
-import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
+import { fromBrass, toBrass, formatMoney, PA_PER_CO } from '../engine/money';
+import { itemFromTrappingById, recomputeLoadout, buildWeapon } from '../engine/items';
 import { sleepParty } from './restFlow';
-import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier } from '../engine/activities';
+import {
+  craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
+  ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt,
+  type PriceTier, type ActivityDef,
+} from '../engine/activities';
+import { applyOps, type GameOp } from '../engine/ops';
+import { isFumble } from '../engine/oups';
+import { combatValue } from '../engine/combat';
+import { spellCost } from '../engine/grimoire';
+import { gainCorruption } from './corruptionFlow';
+import { applyMiscast } from './combatFlow';
+import { buySpell as partyBuySpell } from './partyFlow';
 import { testValue } from '../engine/skills';
 import { rule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
+import type { ChaosAlign, ExposureLevel } from '../engine/corruption';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareerById, levelsForCareer, findTrappingById, findTalentById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
+import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
 import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
@@ -47,6 +59,10 @@ export interface InterludeHeroState {
   craft?: { trappingId: string; tier: PriceTier; avail: Availability; atouts: string[]; defauts: string[]; drDone: number; drTarget: number; difficulty: Difficulty };
   /** « +10 pour chaque tentative ratée » d'Apprentissage particulier (ch.23 l.63), par talent. */
   learnFails?: Record<string, number>;
+  /** Issues d'Activité DIFFÉRÉES à la clôture (États « le premier jour de votre prochaine aventure »,
+   *  ACE Annexe I p.219) — appliquées par `interludeEnd` APRÈS le repos de clôture (un État posé
+   *  avant serait dissipé par la récupération des nuits écoulées). */
+  closeOps?: GameOp[];
 }
 
 export interface InterludeState {
@@ -55,10 +71,11 @@ export interface InterludeState {
   perHero: Record<string, InterludeHeroState>;
 }
 
-/** Dépôt bancaire (Opérations bancaires, ch.23 l.154-165) — survit aux interludes et aventures. */
+/** Dépôt bancaire (Opérations bancaires, ch.23 l.154-165 ; `mecenat` = variante d'ACE Annexe I p.220,
+ *  retrait résolu par un Test d'Évaluation Intermédiaire) — survit aux interludes et aventures. */
 export interface BankDeposit {
   heroId: string;
-  kind: 'invest' | 'stash';
+  kind: 'invest' | 'stash' | 'mecenat';
   /** Montant déposé, en sous de cuivre. */
   brass: number;
   /** Indice d'intérêts (1-10) — taux % ET risque de faillite (invest seulement). */
@@ -128,10 +145,11 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
 // ── Activités (ch.23) — flux de jet par modale (fabrique rollFlow) ────────────────────────────
 
 /** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu) / Apprentissage /
- *  Identification d'artefact (ADE2 ch.4). */
+ *  Identification d'artefact (ADE2 ch.4) / Activité du CATALOGUE data-driven (`activities.json` —
+ *  Convalescence ADE2, Activités d'Altdorf ACE Annexe I). */
 export interface PendingActivity extends PendingBase {
   heroId: string;
-  kind: 'revenus' | 'craft' | 'learn' | 'identify';
+  kind: 'revenus' | 'craft' | 'learn' | 'identify' | 'catalog';
   label: string;
   skillLabel: string;
   skillValue: number;
@@ -147,8 +165,15 @@ export interface PendingActivity extends PendingBase {
   talent?: string;
   xpCost?: number;
   tutorBrass?: number;
-  /** Identifier un artefact (ADE2) : objet visé dans l'inventaire du héros. */
+  /** Identifier un artefact (ADE2) / Tester un objet magique / Entraînement d'arme (ACE) : objet visé
+   *  dans l'inventaire du héros. */
   itemUid?: string;
+  /** Activité du CATALOGUE (`kind:'catalog'`) : id de l'`ActivityDef` (`activities.json`). */
+  activityId?: string;
+  /** Recherche universitaire (ACE p.220) : sort à mémoriser IMMÉDIATEMENT (remise = DR × 100 PX). */
+  spellId?: string;
+  /** Retrait de Mécénat (ACE p.220) : index du dépôt `bank` soldé par le Test d'Évaluation. */
+  depositIndex?: number;
 }
 
 /** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »). */
@@ -321,6 +346,136 @@ export function openIdentify(get: Get, set: Set, heroId: string, itemUid: string
   });
 }
 
+// ── Catalogue d'Activités data-driven (`activities.json`, contexte 'interlude') ────────────────
+
+/** Lieu courant sur la carte du monde : la place dont la scène EST la scène courante (« Être dans
+ *  `scene` = être à ce lieu », worldMap.ts). `null` hors carte — les Activités à gate `where`
+ *  (ACE = « à Altdorf ») y sont alors indisponibles. */
+export function currentPlaceId(s: Pick<GameState, 'scene' | 'worldMap'>): string | null {
+  const sid = s.scene?.id;
+  return (sid && s.worldMap?.places.find((p) => p.scene === sid)?.id) || null;
+}
+
+/** Activités du catalogue proposables ICI (contexte 'interlude' + gate géographique `where`). */
+export function interludeCatalog(s: Pick<GameState, 'scene' | 'worldMap'>): ActivityDef[] {
+  const place = currentPlaceId(s);
+  return activitiesFor('interlude').filter((d) => activityAvailableAt(d, place));
+}
+
+/** Ouvre la modale d'une Activité du CATALOGUE (Convalescence ADE2, Activités d'Altdorf ACE Annexe I).
+ *  Le Test vient de la DONNÉE : compétences « au choix » → la MEILLEURE de l'acteur ; `masterWeapon`
+ *  IMPOSE la compétence d'après l'arme visée (« selon la spécialisation de l'arme », ACE p.219).
+ *  Cibles éventuelles : objet (`itemUid`), sort (`spellId` — achat immédiat), dépôt (`depositIndex`). */
+export function openCatalogActivity(get: Get, set: Set, heroId: string, activityId: string, opts: { itemUid?: string; spellId?: string; depositIndex?: number } = {}): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  const def = activityById(activityId);
+  if (!st || !h || st.left <= 0 || !def?.contexts.includes('interlude')) return;
+  if (!activityAvailableAt(def, currentPlaceId(get()))) {
+    get().log(`${def.label} n'est praticable qu'en un lieu précis — pas ici.`);
+    return;
+  }
+  let skillLabel: string;
+  let skillValue: number;
+  if (def.resolver === 'masterWeapon') {
+    const item = (h.items ?? []).find((i) => i.uid === opts.itemUid);
+    if (!item?.requiresMastery || !item.trappingId || (h.masteredWeapons ?? []).includes(item.trappingId)) return;
+    // Compétence IMPOSÉE par l'arme visée : valeur de combat RAW avec cette arme (combatValue —
+    // Spé du Groupe si possédée). L'arme synthétique n'a pas d'uid retrouvable → le gate de
+    // maîtrise est inerte pour le TEST d'entraînement (c'est l'arme qui est inhabituelle, pas la Spé).
+    const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
+    skillValue = combatValue(h, kind, buildWeapon({ name: item.name, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
+    skillLabel = refLabel('skills', { id: kind === 'melee' ? 'corps-a-corps' : 'projectiles' });
+  } else {
+    // « Au choix » parmi les compétences déclarées : la MEILLEURE de l'acteur (convention partagée
+    // avec resolveTravelActivity).
+    const best = (def.skills ?? [])
+      .map((ref) => ({ ref, v: testValue(h, ref.skillId, undefined, ref.spec) }))
+      .sort((a, b) => b.v - a.v)[0];
+    if (!best) return;
+    skillValue = best.v;
+    skillLabel = refLabel('skills', { id: best.ref.skillId });
+  }
+  if (def.resolver === 'memorizeDiscount') {
+    // Achat IMMÉDIAT obligatoire (ACE p.220) : le sort est choisi AVANT le jet — la remise
+    // s'appliquera à CET achat seul, à la validation.
+    const sp = opts.spellId ? findSpellById(opts.spellId) : undefined;
+    if (!sp || !((spellCost(h, sp) ?? 0) > 0)) return;
+  }
+  if (def.resolver === 'mecenat') {
+    const dep = (get().bank ?? [])[opts.depositIndex ?? -1];
+    if (dep?.kind !== 'mecenat' || dep.heroId !== heroId) return;
+  }
+  set({
+    pendingActivity: {
+      heroId, kind: 'catalog', activityId, label: def.label,
+      skillLabel, skillValue, difficulty: def.difficulty ?? 'intermediaire',
+      roll: null, target: 0, sl: 0, success: false,
+      ...(opts.itemUid ? { itemUid: opts.itemUid } : {}),
+      ...(opts.spellId ? { spellId: opts.spellId } : {}),
+      ...(opts.depositIndex != null ? { depositIndex: opts.depositIndex } : {}),
+    },
+  });
+}
+
+/** Retrait d'un dépôt de Mécénat (ACE p.220) : le dépôt est SOLDÉ, le rendu suit la bande du Test
+ *  d'Évaluation (« profit de 20 % » / investissement / moitié / perte). */
+function mecenatPayout(get: Get, set: Set, h: Combatant, depositIndex: number, payoutPct: number): string[] {
+  const dep = (get().bank ?? [])[depositIndex];
+  if (dep?.kind !== 'mecenat') return [];
+  set({ bank: (get().bank ?? []).filter((_, i) => i !== depositIndex) });
+  const payout = Math.floor((dep.brass * payoutPct) / 100);
+  if (payout > 0) set({ money: fromBrass(toBrass(get().money) + payout) });
+  return [payout > 0
+    ? `${h.name} récupère ${formatMoney(fromBrass(payout))} de son mécénat (${payoutPct} % de ${formatMoney(fromBrass(dep.brass))}).`
+    : `${h.name} perd son investissement de mécène (${formatMoney(fromBrass(dep.brass))}).`];
+}
+
+/** Dispatch des résolveurs BESPOKE d'issue d'Activité (bandes `resolver`) — chacun RÉUTILISE une
+ *  logique existante : Colère des dieux = `applyMiscast` (d100 + 10/Péché, expiation −1, LDB 40) ;
+ *  identification = modèle `identified`/`magicKnown` (ADE2) ; achat de sort = `buySpell` avec remise. */
+function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingActivity, h: Combatant): string[] {
+  switch (resolver) {
+    case 'wrathOfTheGods':
+      // « réalisez un Test sur le Tableau de la Colère des Dieux […] à la place » (ACE p.219) —
+      // point d'entrée hors-Prière sur la table existante (engine/miscast).
+      return applyMiscast(get, set, h, 'colere');
+    case 'masterWeapon': {
+      const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
+      if (!it?.trappingId) return [];
+      h.masteredWeapons = [...new Set([...(h.masteredWeapons ?? []), it.trappingId])];
+      return [`${h.name} a maîtrisé ${it.name} (ACE p.219).`];
+    }
+    case 'identifyByResearch': {
+      // ACE p.219 : ≥ +4 DR = étude en profondeur (plein potentiel + dangers) ; succès ≤ +3 =
+      // fonction principale — mappés sur le modèle EXISTANT identified/magicKnown (comme l'ADE2).
+      const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
+      if (!it) return [];
+      if (pa.sl >= 4) {
+        it.identified = true;
+        it.magicKnown = true;
+        delete it.suspectedQualities;
+        return [`${h.name} étudie ${it.name} en profondeur : Particularités et dangers révélés.`];
+      }
+      if (pa.success) {
+        it.magicKnown = true;
+        return [`${h.name} cerne la fonction principale de ${it.name} et son activation.`];
+      }
+      return [];
+    }
+    case 'memorizeDiscount': {
+      if (!pa.spellId) return [];
+      // « Chaque +DR vous permet de mémoriser un sort pour 100PX de moins […] vous devez acheter le
+      // sort immédiatement » (ACE p.220) : remise = DR × 100, appliquée à CET achat seul par buySpell.
+      const r = partyBuySpell(get, set, h.id, pa.spellId, { discountXp: Math.max(0, pa.sl) * 100 });
+      if (r.ok && r.chaos) return gainCorruption(get, set, h, 1); // sort du Chaos : +1 Corruption (LDB 51)
+      return [];
+    }
+    default:
+      return [];
+  }
+}
+
 /** Fausses Particularités (ADE2 : échec Impressionnant/Stupéfiant — « soupçonne que l'objet possède
  *  une/au moins deux Particularité(s) qu'il n'a pas réellement ») : Atouts plausibles du registre,
  *  hors qualités réellement portées par l'objet. */
@@ -461,19 +616,65 @@ export function confirmActivity(get: Get, set: Set): void {
       lines.push(`${h.name} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`);
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1, craft: { ...st.craft, drDone } };
     }
+  } else if (pa.kind === 'catalog' && pa.activityId) {
+    const def = activityById(pa.activityId);
+    if (def) {
+      // Maladresse d'Activité (LDB 12 : double raté) — porte les bandes `on:'fumble'` (Pénitence :
+      // Colère des dieux « à la place », ACE p.219).
+      const fumble = isFumble(pa.roll, pa.success);
+      // Défs à TABLE d'issues (bandes de DR) ou binaires (`onSuccess`, ex. Convalescence) — même chemin.
+      const bands = def.outcomes?.length
+        ? matchOutcomes(def, { success: pa.success, sl: pa.sl, fumble })
+        : pa.success && def.onSuccess?.length ? [{ ops: def.onSuccess }] : [];
+      if (fumble && def.outcomes?.some((b) => b.on === 'fumble')) lines.push(`${h.name} — MALADRESSE (🎲 ${pa.roll}) !`);
+      const closeOps: GameOp[] = [];
+      for (const band of bands) {
+        if (band.note) lines.push(band.note); // résultat VERBATIM de la table source
+        // Les ÉTATS d'issue tombent à la CLÔTURE de l'interlude (règle de CLASSE du contexte : les
+        // semaines ne s'écoulent qu'à la fermeture, et le repos de clôture dissiperait un État posé
+        // maintenant — « vous subissez 1 État Exténué le premier jour de votre prochaine aventure »,
+        // ACE p.219). Le reste (Péché, Exposition, soins…) s'applique tout de suite.
+        const immediate = (band.ops ?? []).filter((o) => o.op !== 'condition');
+        closeOps.push(...(band.ops ?? []).filter((o) => o.op === 'condition'));
+        if (immediate.length) {
+          lines.push(...applyOps(h, immediate, {
+            rng: battleRng(), label: def.label, now: get().gameTime,
+            onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
+            onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
+              set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'Corruption' } });
+              return [`${h.name} — Test d'Exposition ${level} à la Corruption à réaliser.`];
+            },
+          }));
+        }
+        if (band.payoutPct != null && pa.depositIndex != null) lines.push(...mecenatPayout(get, set, h, pa.depositIndex, band.payoutPct));
+        if (band.resolver) lines.push(...runActivityResolver(get, set, band.resolver, pa, h));
+      }
+      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, ...(closeOps.length ? { closeOps: [...(st.closeOps ?? []), ...closeOps] } : {}) };
+    }
   }
   set({ interlude: { ...itl }, party: [...get().party] });
   for (const l of lines) get().log(l);
 }
 
-/** Opérations bancaires (ch.23 l.154-165) — dépôt (1 Activité). Invest : Statut Or/Argent. */
-export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' | 'stash', amountBrass: number, rate?: number): void {
+/** Opérations bancaires (ch.23 l.154-165) — dépôt (1 Activité). Invest : Statut Or/Argent.
+ *  `mecenat` (ACE Annexe I p.220) : variante d'Opération bancaire — « au moins 5 CO » (minInvest de
+ *  la donnée), gate géographique de l'Activité ; le retrait se résout par un Test d'Évaluation. */
+export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' | 'stash' | 'mecenat', amountBrass: number, rate?: number): void {
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
   if (kind === 'invest' && heroStatus(h).tier === 'bronze') {
     get().log(`${h.name} : « Vous devez être des échelons Or et Argent pour épargner dans une banque ».`);
     return;
+  }
+  if (kind === 'mecenat') {
+    const def = ACTIVITIES.find((a) => a.resolver === 'mecenat');
+    if (!def || !activityAvailableAt(def, currentPlaceId(get()))) return;
+    const min = (def.minInvest?.gold ?? 0) * PA_PER_CO;
+    if (Math.floor(amountBrass) < min) {
+      get().log(`Mécénat : mise minimale ${formatMoney(fromBrass(min))} (« au moins 5 CO », ACE p.220).`);
+      return;
+    }
   }
   const amount = Math.max(1, Math.floor(amountBrass));
   if (toBrass(get().money) < amount) {
@@ -494,7 +695,9 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   set({ interlude: { ...itl } });
   lines.push(kind === 'invest'
     ? `${h.name} investit ${formatMoney(fromBrass(deposited))} (Indice d'intérêts ${r} — ${r} % de gains, faillite sur 🎲 ≤ ${r}).`
-    : `${h.name} planque ${formatMoney(fromBrass(deposited))} (retrait libre — découverte sur 🎲 ≤ 10).`);
+    : kind === 'mecenat'
+      ? `${h.name} sponsorise un dramaturge prometteur : ${formatMoney(fromBrass(deposited))} (retrait par Test d'Évaluation Intermédiaire — Mécénat, ACE p.220).`
+      : `${h.name} planque ${formatMoney(fromBrass(deposited))} (retrait libre — découverte sur 🎲 ≤ 10).`);
   // Émeutes (LDB 22) : « les dépôts des banques réputées doivent vérifier immédiatement la faillite ».
   if (kind === 'invest' && st.fx?.bankCrashCheck) {
     lines.push(...bankWithdrawInner(get, set, get().bank.length - 1, true));
@@ -507,6 +710,13 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
 export function bankWithdraw(get: Get, set: Set, index: number): void {
   const dep = (get().bank ?? [])[index];
   if (!dep) return;
+  if (dep.kind === 'mecenat') {
+    // Retrait de Mécénat (ACE p.220) = 1 Activité résolue par un Test d'Évaluation Intermédiaire :
+    // la modale d'Activité applique la bande (payoutPct) et consomme l'Activité à la validation.
+    const def = ACTIVITIES.find((a) => a.resolver === 'mecenat');
+    if (def) openCatalogActivity(get, set, dep.heroId, def.id, { depositIndex: index });
+    return;
+  }
   if (dep.kind === 'invest') {
     const st = heroState(get(), dep.heroId);
     if (!st || st.left <= 0) {
@@ -522,7 +732,7 @@ export function bankWithdraw(get: Get, set: Set, index: number): void {
 
 function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: boolean): string[] {
   const dep = (get().bank ?? [])[index];
-  if (!dep) return [];
+  if (!dep || dep.kind === 'mecenat') return []; // Mécénat : soldé par le Test d'Évaluation (bande payoutPct)
   const h = get().party.find((x) => x.id === dep.heroId);
   const roll = d100(battleRng());
   const outcome = bankWithdrawOutcome(dep.kind, dep.rate, roll);
@@ -542,6 +752,11 @@ function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: bo
 export function interludeEnd(get: Get, set: Set): void {
   const itl = get().interlude;
   if (!itl) return;
+  // Issues d'Activité DIFFÉRÉES (« le premier jour de votre prochaine aventure », ACE p.219) —
+  // capturées avant de fermer, appliquées APRÈS le repos de clôture (cf. plus bas).
+  const deferred = get().party
+    .map((h) => ({ h, ops: itl.perHero[h.id]?.closeOps ?? [] }))
+    .filter((x) => x.ops.length > 0 && !x.h.dead);
   const lines: string[] = [];
   for (const h of get().party) {
     const st = itl.perHero[h.id];
@@ -565,4 +780,12 @@ export function interludeEnd(get: Get, set: Set): void {
   // unique). `fedDaily` : la vie en ville (gîte ET couvert) est couverte par l'Argent à
   // gaspiller — la Faim RAW ne s'applique pas à la période (LDB 23, « le coût de la vie »).
   sleepParty(get, set, itl.weeks * 7, { fedDaily: true });
+  // Issues DIFFÉRÉES à la clôture (États « le premier jour de votre prochaine aventure », ACE p.219) :
+  // posées APRÈS le repos de clôture — un État posé avant serait dissipé par la récupération.
+  if (deferred.length) {
+    const after: string[] = [];
+    for (const { h, ops } of deferred) after.push(...applyOps(h, ops, { rng: battleRng(), now: get().gameTime }));
+    set({ party: [...get().party] });
+    for (const l of after) get().log(l);
+  }
 }

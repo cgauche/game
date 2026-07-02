@@ -389,7 +389,7 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentName: string
  *  famille (engine/grimoire.spellCost) ; un sort de Magie du Chaos inflige AUSSI
  *  +1 Point de Corruption (« le Sort s'insinue dans votre esprit ») — appliqué par
  *  l'appelant store (seuil → mutation). */
-export function buySpell(get: Get, set: Set, heroId: string, spellId: string): { ok: boolean; chaos?: boolean } {
+export function buySpell(get: Get, set: Set, heroId: string, spellId: string, opts: { discountXp?: number } = {}): { ok: boolean; chaos?: boolean } {
   let msg = '';
   let result: { ok: boolean; chaos?: boolean } = { ok: false };
   set((s) => ({
@@ -401,11 +401,15 @@ export function buySpell(get: Get, set: Set, heroId: string, spellId: string): {
         return h;
       }
       const clone: Combatant = structuredClone(h);
-      const cost = spellCost(clone, sp);
-      if (cost == null) {
+      const full = spellCost(clone, sp);
+      if (full == null) {
         msg = `${clone.name} ne peut pas apprendre ${sp.label} (déjà connu ou Talent manquant).`;
         return h;
       }
+      // Recherche universitaire (ACE Annexe I p.220) : « mémoriser un sort pour 100PX de moins que
+      // son prix normal (pour un minimum de 100PX) » — remise sur CET achat seul, jamais au-dessus
+      // du prix normal (plancher inerte pour les sorts à moins de 100 PX).
+      const cost = opts.discountXp && full > 0 ? Math.min(full, Math.max(100, full - opts.discountXp)) : full;
       if ((clone.xp ?? 0) < cost) {
         msg = `${clone.name} : ${cost} PX requis pour mémoriser ${sp.label} (reste ${clone.xp ?? 0}).`;
         return h;
@@ -413,7 +417,7 @@ export function buySpell(get: Get, set: Set, heroId: string, spellId: string): {
       clone.xp = (clone.xp ?? 0) - cost;
       clone.spells = [...(clone.spells ?? []), sp.id]; // runtime = id de sort (pas le libellé)
       msg = cost > 0
-        ? `${clone.name} mémorise ${sp.label} (−${cost} PX).`
+        ? `${clone.name} mémorise ${sp.label} (−${cost} PX${cost < full ? `, remise de ${full - cost} PX — Recherche universitaire` : ''}).`
         : `${clone.name} reçoit ${sp.label} (inclus au Talent).`;
       result = { ok: true, chaos: sp.family === 'chaos' };
       return clone;

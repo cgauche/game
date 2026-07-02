@@ -52,7 +52,7 @@ import {
 import { formatTrait } from './traits/dispatch';
 import { woundsFromHit } from './woundsCalc';
 import type { TraitInstance } from './statEntry';
-import type { ChaosAlign } from './corruption';
+import type { ChaosAlign, ExposureLevel } from './corruption';
 import { t } from '../i18n';
 
 // ---------------------------------------------------------------------------
@@ -283,6 +283,15 @@ export type GameOp =
    *  mutation → damnation) ; sans contexte, simple incrément du compteur.
    *  `align` : Puissance du Chaos de la source — force la table EDOC alignée si une mutation survient. */
   | { op: 'corruption'; amount: number; perSL?: PerSL; align?: ChaosAlign }
+  /** Points de PÉCHÉ ±N (LDB 40 l.36 : sanction du prêtre fautif ; ACE Annexe I « Pénitence » :
+   *  « enlevez 1 point de Péché, ou 2 sur un Succès Impressionnant ») — jamais sous 0. COUTURE UNIQUE
+   *  du Péché : l'Effet de scène `giveSin` passe par CETTE op (une seule implémentation). */
+  | { op: 'sinMod'; amount: number }
+  /** EXPOSITION à une Influence corruptrice (LDB 19 l.23-75) : Test différé par MODALE
+   *  (pendingCorruption) — op IMPURE résolue par la couche state via `ctx.onCorruptionExposure`
+   *  (même patron que `ctx.onCorruption`) ; sans contexte (moteur pur), journalisée sans jet.
+   *  `skill` absent = nature indéterminée → le joueur choisit Résistance/Calme dans la modale. */
+  | { op: 'corruptionExposure'; level: ExposureLevel; skill?: 'resistance' | 'calme' }
   /** Points de Chance OU de Destin accordés (`resource`, LDB 47 — « Les Signes d'Amul », « Que la
    *  chance persiste », « Maître du Destin », « Troisième Signe d'Amul ») : incrément immédiat (peut
    *  dépasser le maximum — c'est un grant de Sort) ; `temporary` pose un effet actif qui RETIRE les
@@ -657,6 +666,9 @@ export interface OpsCtx {
   /** Forme choisie par le lanceur pour une arme invoquée à forme libre (op `grantWeapon` +
    *  `chooseForm`) — fixe Groupe/allonge/mains. Défaut (absent) : la 1ʳᵉ forme proposée. */
   conjureForm?: ConjureForm;
+  /** Branché par le store : EXPOSITION corruptrice (op `corruptionExposure`) → Test différé par modale
+   *  (pendingCorruption). Sans hook (moteur pur/tests), l'op est journalisée inerte. */
+  onCorruptionExposure?: (level: ExposureLevel, skill?: 'resistance' | 'calme') => string[];
   /** Libellé de la source (sort/table) — ActiveEffect.label + journal. */
   label?: string;
   /** Durée (en Rounds) des `charMod` sans durée propre — celle du sort. */
@@ -954,6 +966,21 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           target.corruption = (target.corruption ?? 0) + amount;
           lines.push(t('op.corruptionAdd', { name: target.name, amount, s: amount > 1 ? 's' : '', total: target.corruption }));
         }
+        break;
+      }
+      case 'sinMod': {
+        // Péché ±N (LDB 40 l.36 ; ACE Annexe I « Pénitence ») — plancher 0, delta RÉEL journalisé.
+        const before = target.sinPoints ?? 0;
+        target.sinPoints = Math.max(0, before + o.amount);
+        const delta = target.sinPoints - before;
+        lines.push(t(delta > 0 ? 'op.sinAdd' : 'op.sinRemove', { name: target.name, amount: Math.abs(delta), total: target.sinPoints }));
+        break;
+      }
+      case 'corruptionExposure': {
+        // Test d'Exposition différé (LDB 19 l.23-75) : le store ouvre la modale (pendingCorruption) ;
+        // moteur pur sans hook → journalisé inerte (rien de tiré en silence).
+        if (ctx.onCorruptionExposure) lines.push(...ctx.onCorruptionExposure(o.level, o.skill));
+        else lines.push(t('op.corruptionExposure', { name: target.name, level: o.level }));
         break;
       }
       case 'gainResource': {

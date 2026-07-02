@@ -808,18 +808,24 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: '☠️ Afflictions', label: 'Points de Péché (prêtre fautif, LDB 40)', icon: '⚖️',
     make: () => ({ type: 'giveSin', amount: 1, heroId: '' }),
     apply: (e, env) => {
-      // Points de Péché (LDB 40 l.36) : sanction d'auteur, 1 à 3 selon la gravité.
+      // Points de Péché (LDB 40 l.36) : sanction d'auteur, 1 à 3 selon la gravité — appliquée par
+      // l'op `sinMod` (COUTURE UNIQUE du Péché, partagée avec les issues d'Activité ACE).
       // Cible : héros désigné, sinon le premier sachant Prier (le Péché vise un Bienheureux).
       const amount = Math.max(1, e.amount ?? 1);
+      const lines: string[] = [];
       const who = env.mutateHero(
         e.heroId,
-        (h) => ({ ...h, sinPoints: (h.sinPoints ?? 0) + amount }),
+        (h) => {
+          const clone = { ...h };
+          lines.push(...applyOps(clone, [{ op: 'sinMod', amount }], {}));
+          return clone;
+        },
         (party) => {
           const i = party.findIndex((h) => h.skills.some((sk) => sk.skillId === 'priere' && sk.advances >= 1));
           return i >= 0 ? i : 0;
         },
       );
-      if (who) env.log(t('eff.sin', { name: who.name, amount }));
+      if (who) for (const l of lines) env.log(l);
     },
   },
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { combatValue, defenseValue } from './combat';
+import { combatValue, defenseValue, hasWeaponGroupSkill, weaponUnmastered } from './combat';
 import { weaponGroupIdByLabel } from '../data';
-import type { Combatant, Weapon } from './types';
+import type { Combatant, ItemInstance, Weapon } from './types';
 
 /**
  * Jalon ② — la Spécialisation de Corps à corps / Projectiles compte enfin.
@@ -84,5 +84,36 @@ describe('combatValue — Spécialisation de Projectiles (LDB 62 l.225/234)', ()
     expect(combatValue(c, 'ranged', wpn('Poudre noire et ingénierie', 'ranged'))).toBe(62);
     // mais pas un Arc
     expect(combatValue(c, 'ranged', wpn('Arc', 'ranged'))).toBe(40);
+  });
+});
+
+describe('Arme inhabituelle — maîtrise requise (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle »)', () => {
+  const sk = (spec: string, advances: number) =>
+    ({ skillId: 'corps-a-corps', spec, characteristic: 'CC', advances } as Combatant['skills'][number]);
+  const item: ItemInstance = {
+    uid: 'u1', trappingId: 'couteau-de-harald', name: 'Couteau de Harald', kind: 'melee',
+    qualities: [], enc: 0, equipped: true, requiresMastery: true,
+  };
+  const w: Weapon = { ...wpn('Base'), uid: 'u1' };
+
+  it('non maîtrisée : carac brute (mécanique LDB 09 l.44) + Groupe réputé NON couvert (Défauts contextuels)', () => {
+    const c = hero({ skills: [sk('Base', 20)], items: [item] });
+    expect(weaponUnmastered(c, w)).toBe(true);
+    expect(combatValue(c, 'melee', w)).toBe(40); // CC 40, les +20 (Base) ne s'appliquent PAS
+    expect(hasWeaponGroupSkill(c, w, 'melee')).toBe(false);
+  });
+
+  it('maîtrisée (masteredWeapons, par id de trapping) : la Spé du Groupe compte à nouveau', () => {
+    const c = hero({ skills: [sk('Base', 20)], items: [item], masteredWeapons: ['couteau-de-harald'] });
+    expect(weaponUnmastered(c, w)).toBe(false);
+    expect(combatValue(c, 'melee', w)).toBe(60);
+    expect(hasWeaponGroupSkill(c, w, 'melee')).toBe(true);
+  });
+
+  it('arme ordinaire (sans requiresMastery) ou hors inventaire (créature) : gate inerte', () => {
+    const c = hero({ skills: [sk('Base', 20)], items: [{ ...item, requiresMastery: undefined }] });
+    expect(combatValue(c, 'melee', w)).toBe(60);
+    const noItems = hero({ skills: [sk('Base', 20)] });
+    expect(weaponUnmastered(noItems, w)).toBe(false); // uid non retrouvé → inerte
   });
 });

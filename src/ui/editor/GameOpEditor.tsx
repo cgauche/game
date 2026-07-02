@@ -9,7 +9,7 @@
  * « 0 » puis écrasé). Un nouveau type d'op = 1 entrée dans `OP_GROUPS` + 1 défaut dans `newOp`.
  */
 import { Formula, GameOp } from '../../engine/ops';
-import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
+import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel } from '../../data';
@@ -59,6 +59,8 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   gainAdvantage: '⚔️ Porter l’Avantage à (min)',
   attrMod: '🎲 Modif. d’attribut secondaire',
   corruption: '🧬 Points de Corruption',
+  sinMod: '⚖️ Points de Péché (±)',
+  corruptionExposure: '🧿 Exposition corruptrice (Test différé)',
   castPenalty: '🔮 Contrecoup d’incantation',
   castWard: '🔮 Aura anti-Sort (−20 Langue)',
   arrowWard: '🏹 Bouclier anti-projectiles',
@@ -121,7 +123,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
   ['🌀 États', ['condition', 'removeCondition']],
   ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
-  ['✨ Ressources', ['gainResource', 'corruption']],
+  ['✨ Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
@@ -242,6 +244,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'critTwice': return { op: 'critTwice' };
     case 'gainResource': return { op: 'gainResource', resource: 'fortune', amount: 1 };
     case 'corruption': return { op: 'corruption', amount: 1 };
+    case 'sinMod': return { op: 'sinMod', amount: 1 };
+    case 'corruptionExposure': return { op: 'corruptionExposure', level: 'mineure' };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
     case 'castWard': return { op: 'castWard', radius: 5 };
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
@@ -324,6 +328,8 @@ export function opSummary(o: GameOp): string {
     case 'critTwice': return `${L} deux lancers de Critique`;
     case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
+    case 'sinMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
+    case 'corruptionExposure': return `${L} ${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;
     case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
     case 'castWard': return `${L} −20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
@@ -375,7 +381,7 @@ export function opSummary(o: GameOp): string {
 /** Ops avec un éditeur DÉDIÉ ; toute autre op tombe sur le repli JSON (lisible/modifiable sans perte). */
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
-  'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
+  'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
   'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain',
 ]);
 
@@ -394,6 +400,23 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
       <div className="tf-row">
         {(op.op === 'wounds' || op.op === 'heal' || op.op === 'healCaster' || op.op === 'ap') && (
           <FormulaField label="Quantité" value={o.amount} min={0} onChange={(amount) => upd({ amount })} />
+        )}
+        {op.op === 'sinMod' && (
+          <label className="dr">Péché ±<input type="number" value={o.amount ?? 1} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+        )}
+        {op.op === 'corruptionExposure' && (
+          <>
+            <select value={o.level ?? 'mineure'} onChange={(e) => upd({ level: e.target.value as ExposureLevel })}>
+              {(Object.keys(EXPOSURE_LABELS) as ExposureLevel[]).map((k) => (
+                <option key={k} value={k}>Exposition {EXPOSURE_LABELS[k]}</option>
+              ))}
+            </select>
+            <select value={o.skill ?? ''} onChange={(e) => upd({ skill: (e.target.value || undefined) as 'resistance' | 'calme' | undefined })}>
+              <option value="">Compétence : au choix du joueur</option>
+              <option value="resistance">{refLabel('skills', { id: 'resistance' })} (Influence physique)</option>
+              <option value="calme">{refLabel('skills', { id: 'calme' })} (Influence spirituelle)</option>
+            </select>
+          </>
         )}
         {op.op === 'corruption' && (
           <>

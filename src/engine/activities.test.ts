@@ -16,7 +16,7 @@ import type { RNG } from './dice';
 import { toBrass } from './money';
 import { craftTarget, apprenticeshipTutorCost, bankWithdrawOutcome, statusIncome, ACTIVITIES, activitiesFor, activityById, resolveTravelActivity,
   resolveStageActivities, aggregateActivityOutcomes, STAGE_OUTCOME_AGG, type TravelActivityResult,
-  defaultTravelRole, stageAssignmentFromRoles } from './activities';
+  defaultTravelRole, stageAssignmentFromRoles, matchOutcomes, activityAvailableAt } from './activities';
 import { findSkillById } from '../data';
 import { testValue } from './skills';
 
@@ -315,5 +315,79 @@ describe('Convalescence — Activité d’interlude (ADE II Annexe I « Les chos
   });
   it("apparaît dans le catalogue des Activités d'interlude", () => {
     expect(activitiesFor('interlude').some((a) => a.id === 'convalescence')).toBe(true);
+  });
+});
+
+// ── Activités d'Altdorf (ACE Annexe I p.219-220) : bandes d'issue + gate géographique ─────────────
+
+describe('matchOutcomes — bandes d’issue par DR (ACE Annexe I)', () => {
+  const pen = activityById('penitence')!;
+  const tst = activityById('tester-objets-magiques')!;
+  const mec = activityById('mecenat')!;
+
+  it('Pénitence : −1 Péché en succès, −2 dès +4 DR (« Succès Impressionnant ou mieux »)', () => {
+    expect(matchOutcomes(pen, { success: true, sl: 2 }).flatMap((b) => b.ops ?? [])).toEqual([{ op: 'sinMod', amount: -1 }]);
+    expect(matchOutcomes(pen, { success: true, sl: 4 }).flatMap((b) => b.ops ?? [])).toEqual([{ op: 'sinMod', amount: -2 }]);
+  });
+
+  it('Pénitence : échec → État Exténué ; Maladresse → Colère des dieux « à la place » (bande exclusive)', () => {
+    expect(matchOutcomes(pen, { success: false, sl: -1 }).flatMap((b) => b.ops ?? [])).toEqual([{ op: 'condition', name: 'extenue' }]);
+    const fumbled = matchOutcomes(pen, { success: false, sl: -1, fumble: true });
+    expect(fumbled).toHaveLength(1);
+    expect(fumbled[0].resolver).toBe('wrathOfTheGods');
+    expect(fumbled[0].ops).toBeUndefined(); // « à la place » : l'Exténué d'échec ne tombe PAS
+  });
+
+  it('bandes ±0 : « +0 à +1 » réussit (fonction principale), « −0 à −1 » échoue (rien) — distinguées par `on`', () => {
+    const ok0 = matchOutcomes(tst, { success: true, sl: 0 });
+    expect(ok0).toHaveLength(1);
+    expect(ok0[0].resolver).toBe('identifyByResearch');
+    const ko0 = matchOutcomes(tst, { success: false, sl: 0 });
+    expect(ko0).toHaveLength(1);
+    expect(ko0[0].ops).toBeUndefined(); // « ne découvre aucune information utile »
+  });
+
+  it('Tester des objets : ≤ −4 DR → Test d’Exposition mineure à la Corruption (op GameOp)', () => {
+    const bad = matchOutcomes(tst, { success: false, sl: -5 });
+    expect(bad.flatMap((b) => b.ops ?? [])).toEqual([{ op: 'corruptionExposure', level: 'mineure', skill: 'resistance' }]);
+  });
+
+  it('Mécénat : 6 bandes — 120 % à +6, 100 % à +3..+5, 50 % à +0..+2, 0 en échec', () => {
+    expect(matchOutcomes(mec, { success: true, sl: 6 })[0].payoutPct).toBe(120);
+    expect(matchOutcomes(mec, { success: true, sl: 4 })[0].payoutPct).toBe(100);
+    expect(matchOutcomes(mec, { success: true, sl: 1 })[0].payoutPct).toBe(50);
+    expect(matchOutcomes(mec, { success: false, sl: -1 })[0].payoutPct).toBe(0);
+    expect(matchOutcomes(mec, { success: false, sl: -4 })[0].payoutPct).toBe(0);
+    expect(matchOutcomes(mec, { success: false, sl: -7 })[0].payoutPct).toBe(0);
+    for (const res of [{ success: true, sl: 6 }, { success: false, sl: -7 }]) {
+      expect(matchOutcomes(mec, res)).toHaveLength(1); // bandes exclusives (jamais deux paiements)
+    }
+  });
+
+  it('Maladresse SANS bande fumble déclarée = échec ordinaire (Mécénat)', () => {
+    expect(matchOutcomes(mec, { success: false, sl: -1, fumble: true })[0].payoutPct).toBe(0);
+  });
+});
+
+describe('activityAvailableAt — gate géographique `where` (ACE = « à Altdorf »)', () => {
+  it('les 5 Activités d’ACE sont gatées sur le lieu `altdorf` ; la Convalescence est partout', () => {
+    for (const id of ['penitence', 'entrainement-arme-inhabituelle', 'tester-objets-magiques', 'mecenat', 'recherche-universitaire']) {
+      const def = activityById(id)!;
+      expect(def.contexts, id).toContain('interlude');
+      expect(def.where, id).toEqual(['altdorf']);
+      expect(def.source.book, id).toBe('ACE');
+      expect(def.desc, id).toBeTruthy(); // description VERBATIM (règle 5)
+      expect(activityAvailableAt(def, 'altdorf'), id).toBe(true);
+      expect(activityAvailableAt(def, 'ubersreik'), id).toBe(false);
+      expect(activityAvailableAt(def, null), id).toBe(false); // hors carte = pas à Altdorf
+    }
+    const conv = activityById('convalescence')!;
+    expect(activityAvailableAt(conv, null)).toBe(true);
+    expect(activityAvailableAt(conv, 'ubersreik')).toBe(true);
+  });
+
+  it('Mécénat : variante d’Opération bancaire — mise minimale 5 CO portée par la donnée', () => {
+    expect(activityById('mecenat')!.minInvest).toEqual({ gold: 5 });
+    expect(activityById('mecenat')!.resolver).toBe('mecenat');
   });
 });

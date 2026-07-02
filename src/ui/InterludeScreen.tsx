@@ -1,20 +1,22 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
-import { formatMoney, fromBrass, toBrass, PA_PER_SC, type Money } from '../engine/money';
-import { heroStatus, heroClass, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
+import { formatMoney, fromBrass, toBrass, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
+import { heroStatus, heroClass, interludeCatalog, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout,
-  type CraftOption, type LearnOption,
+  type ActivityDef, type CraftOption, type LearnOption,
 } from '../engine/activities';
+import type { GameOp } from '../engine/ops';
+import { learnableSpells } from '../engine/grimoire';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { QUALITY_DESC, describeQuality } from '../engine/qualities/describe';
-import { findTalent, skillInstanceLabel, findTrappingById, qualities } from '../data';
+import { findTalent, skillInstanceLabel, findTrappingById, qualities, refLabel, conditionLabel } from '../data';
 import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
-import { mdToText } from './Prose';
+import { Prose, mdToText } from './Prose';
 import { t } from '../i18n';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
@@ -49,6 +51,10 @@ export interface InterludeSeam {
   pendingOrders: { heroId: string; trappingId: string }[];
   /** Phase d'ouverture forcée ('activities' saute l'intro Événements). */
   phase?: 'events' | 'activities' | 'closing';
+  /** Catalogue d'Activités data-driven proposables ICI (contexte 'interlude' + gate `where`) —
+   *  en jeu, dérivé du store (`interludeCatalog`) ; en SSR, fourni par le seam (le store SSR sert
+   *  l'état initial, comme les autres lectures). */
+  catalog?: ActivityDef[];
   net?: InterludeNet;
 }
 
@@ -75,9 +81,18 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   const bank = seam?.bank ?? storeBank;
   const pendingOrders = seam?.pendingOrders ?? storeOrders;
   const net: InterludeNet = seam?.net ?? storeNet;
+  // Catalogue d'Activités data-driven (`activities.json`) : contexte 'interlude' + gate `where`
+  // résolu contre le LIEU courant (place de la carte du monde ↔ scène courante).
+  const worldMap = useGame((s) => s.worldMap);
+  const scene = useGame((s) => s.scene);
+  const catalog = useMemo(
+    () => seam?.catalog ?? interludeCatalog({ scene, worldMap }),
+    [seam?.catalog, scene, worldMap],
+  );
   const [phase, setPhase] = useState<'events' | 'activities' | 'closing'>(seam?.phase ?? 'events');
   if (!interlude) return null;
   const heroes = party.filter((h) => !h.dead && interlude.perHero[h.id]);
+  const mecenat = catalog.find((d) => d.resolver === 'mecenat');
   // Possession coop (audit M7) : chaque joueur mène les Activités de SES héros ; l'hôte clôt.
   const ownsHero = (id: string) => net.mode === 'local' || (net.ownership[id] ?? 0) === net.mySeat;
   const ownerName = (id: string) => net.seatNames[net.ownership[id] ?? 0] ?? 'L\u2019h\u00f4te';
@@ -102,6 +117,8 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                   st={interlude.perHero[h.id]}
                   weeks={interlude.weeks}
                   money={money}
+                  catalog={catalog}
+                  mecenat={mecenat}
                   canDrive={ownsHero(h.id)}
                   ownerName={ownsHero(h.id) ? undefined : ownerName(h.id)}
                 />
@@ -183,10 +200,23 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
   );
 }
 
-type Pane = 'craft' | 'learn' | 'order' | 'bank' | 'identify' | null;
+/** Volet ouvert : outil codé ('craft'/'learn'/…) OU id d'une Activité du catalogue data-driven. */
+type Pane = string | null;
 
-function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
+/** Toutes les ops d'issue d'une Activité (binaire `onSuccess` + bandes `outcomes`) — pour les gates
+ *  d'affordance DATA-DRIVEN (ex. « expie du Péché » ⇒ inutile à 0 Péché). */
+const activityOps = (def: ActivityDef): GameOp[] =>
+  [...(def.onSuccess ?? []), ...(def.outcomes ?? []).flatMap((b) => b.ops ?? [])];
+
+/** Pictogramme d'une Activité du catalogue (par résolveur — pas par id). */
+const ACTIVITY_ICON: Record<string, string> = { masterWeapon: '⚔️', identifyByResearch: '🔍', memorizeDiscount: '📖' };
+
+function HeroCard({ hero, st, weeks, money, catalog, mecenat, canDrive, ownerName }: {
   hero: Combatant; st: InterludeHeroState; weeks: number; money: Money;
+  /** Activités du catalogue data-driven proposables ICI (contexte + gate `where`). */
+  catalog: ActivityDef[];
+  /** Activité de Mécénat (variante d'Opération bancaire) si proposable ici. */
+  mecenat?: ActivityDef;
   /** Possession coop (audit M7) : false = ce héros est mené par un autre joueur (lecture seule). */
   canDrive: boolean;
   ownerName?: string;
@@ -246,13 +276,85 @@ function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
         {paneBtn('order', '📦 Commande…', 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure')}
         {paneBtn('bank', '🏦 Banque…', 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)')}
         {paneBtn('identify', '🔮 Identifier…', 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)')}
+        {catalog.filter((d) => d.resolver !== 'mecenat').map((d) => (
+          paneBtn(d.id, `${ACTIVITY_ICON[d.resolver ?? ''] ?? '📜'} ${d.label}…`, d.desc ? `${mdToText(d.desc).slice(0, 160)}…` : d.label)
+        ))}
       </div>
       {pane === 'craft' && !st.craft && <CraftPane hero={hero} disabled={none} money={money} />}
       {pane === 'learn' && <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={money} />}
       {pane === 'order' && <OrderPane hero={hero} disabled={none} money={money} />}
-      {pane === 'bank' && <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} />}
+      {pane === 'bank' && <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} mecenat={mecenat} />}
       {pane === 'identify' && <IdentifyPane hero={hero} disabled={none} />}
+      {(() => {
+        const def = pane ? catalog.find((d) => d.id === pane) : undefined;
+        return def ? <CatalogPane hero={hero} def={def} disabled={none} /> : null;
+      })()}
     </section>
+  );
+}
+
+/** Volet d'une Activité du CATALOGUE data-driven : description VERBATIM (`<Prose>`), Test annoncé,
+ *  cible éventuelle selon le résolveur (arme inhabituelle / objet magique / sort à mémoriser), et
+ *  gates d'affordance dérivés de la DONNÉE (expiation sans Péché, soin psy sans Trait). */
+function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDef; disabled: boolean }) {
+  const start = useGame((s) => s.interludeActivity);
+  const [targetUid, setTargetUid] = useState('');
+  const [spellId, setSpellId] = useState('');
+  const ops = activityOps(def);
+  // Cibles par résolveur (data-driven : PAR résolveur, jamais par id d'activité).
+  const weapons = def.resolver === 'masterWeapon'
+    ? (hero.items ?? []).filter((i) => (i.kind === 'melee' || i.kind === 'ranged') && i.requiresMastery
+        && i.trappingId && !(hero.masteredWeapons ?? []).includes(i.trappingId))
+    : [];
+  const artefacts = def.resolver === 'identifyByResearch'
+    ? (hero.items ?? []).filter((i) => i.identified === false)
+    : [];
+  const spellOptions = useMemo(
+    () => (def.resolver === 'memorizeDiscount' ? learnableSpells(hero).filter((x) => x.cost > 0) : []),
+    [def.resolver, hero],
+  );
+  // Gates d'affordance dérivés des ops de la donnée — jamais un cas par id.
+  const blocked =
+    def.resolver === 'masterWeapon' && !weapons.length ? 'Aucune arme inhabituelle à maîtriser dans le sac.'
+    : def.resolver === 'identifyByResearch' && !artefacts.length ? `Aucun objet non identifié dans le sac de ${hero.name}.`
+    : def.resolver === 'memorizeDiscount' && !spellOptions.length ? 'Aucun sort à mémoriser (Talent de lanceur et sort payant requis).'
+    : ops.some((o) => o.op === 'sinMod' && o.amount < 0) && !(hero.sinPoints ?? 0) ? `${hero.name} n'a aucun Point de Péché à expier.`
+    : ops.some((o) => o.op === 'removePsychTrait') && !(hero.psychTraits?.length) ? `${hero.name} n'a aucun Trait psychologique à soigner.`
+    : null;
+  const uid = targetUid || weapons[0]?.uid || artefacts[0]?.uid || '';
+  const spell = spellId || spellOptions[0]?.spell.id || '';
+  const testLine = def.skills?.length
+    ? `Test de ${def.skills.map((s) => refLabel('skills', { id: s.skillId })).join(' ou ')} ${DIFFICULTY_LABELS[def.difficulty ?? 'intermediaire']}`
+    : null;
+  return (
+    <div className="interlude-pane">
+      {def.desc && <div className="interlude-pane-desc"><Prose md={def.desc} /></div>}
+      {blocked && <p className="interlude-blocked">{blocked}</p>}
+      {weapons.length > 0 && (
+        <select className="interlude-select" value={uid} onChange={(e) => setTargetUid(e.target.value)} aria-label="Arme à maîtriser">
+          {weapons.map((i) => <option key={i.uid} value={i.uid}>{i.name}</option>)}
+        </select>
+      )}
+      {artefacts.length > 0 && (
+        <select className="interlude-select" value={uid} onChange={(e) => setTargetUid(e.target.value)} aria-label="Objet magique à tester">
+          {artefacts.map((i) => <option key={i.uid} value={i.uid}>{i.name}{i.magicKnown ? ' ✨' : ''}</option>)}
+        </select>
+      )}
+      {spellOptions.length > 0 && (
+        <select className="interlude-select" value={spell} onChange={(e) => setSpellId(e.target.value)} aria-label="Sort à mémoriser">
+          {spellOptions.map((x) => <option key={x.spell.id} value={x.spell.id}>{x.spell.label} — {x.cost} PX</option>)}
+        </select>
+      )}
+      {testLine && <p className="interlude-detail">1 Activité · <b>{testLine}</b>.</p>}
+      <button
+        className="btn small btn-primary"
+        disabled={disabled || !!blocked}
+        title={blocked ?? `Entreprendre ${def.label} (consomme l'Activité au jet)`}
+        onClick={() => start(hero.id, def.id, { ...(uid ? { itemUid: uid } : {}), ...(spell ? { spellId: spell } : {}) })}
+      >
+        Entreprendre
+      </button>
+    </div>
   );
 }
 
@@ -463,13 +565,14 @@ function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
   );
 }
 
-function BankPane({ hero, disabled, bronzeBlocked, money }: { hero: Combatant; disabled: boolean; bronzeBlocked: boolean; money: Money }) {
+function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Combatant; disabled: boolean; bronzeBlocked: boolean; money: Money; mecenat?: ActivityDef }) {
   const bankDeposit = useGame((s) => s.interludeBank);
   const [amountPa, setAmountPa] = useState(10);
   const purseBrass = toBrass(money);
   const pa = Math.max(1, Math.floor(amountPa));
   const amountBrass = pa * PA_PER_SC;
   const quick = (frac: number) => setAmountPa(Math.max(1, Math.floor(purseBrass * frac / PA_PER_SC)));
+  const mecenatMinBrass = (mecenat?.minInvest?.gold ?? 0) * PA_PER_CO;
   return (
     <div className="interlude-pane">
       <div className="interlude-actions">
@@ -502,6 +605,18 @@ function BankPane({ hero, disabled, bronzeBlocked, money }: { hero: Combatant; d
         >
           🕳️ Planquer
         </button>
+        {mecenat && (
+          <button
+            className="btn small"
+            disabled={disabled || amountBrass > purseBrass || amountBrass < mecenatMinBrass}
+            onClick={() => bankDeposit(hero.id, 'mecenat', amountBrass)}
+            title={amountBrass < mecenatMinBrass
+              ? `Mise minimale ${formatMoney(fromBrass(mecenatMinBrass))} (« au moins 5 CO », ACE p.220)`
+              : 'Sponsoriser un dramaturge prometteur — retrait résolu par un Test d’Évaluation Intermédiaire (+0)'}
+          >
+            🎭 Mécénat
+          </button>
+        )}
       </div>
       <p className="interlude-detail">
         Investir : intérêts de l'Indice (1-10) %, faillite au retrait sur 🎲 ≤ Indice — retirer coûte
@@ -523,22 +638,25 @@ function BankList({ bank, party, interlude, canDrive }: {
         const owner = party.find((h) => h.id === b.heroId);
         const left = owner ? interlude.perHero[owner.id]?.left ?? 0 : 0;
         const foreign = !canDrive(b.heroId);
-        const lockedInvest = b.kind === 'invest' && left <= 0;
+        // Retirer un invest OU un mécénat exige une Activité (la planque est libre).
+        const locked = b.kind !== 'stash' && left <= 0;
         return (
           <button
             key={i}
             className="btn small"
-            disabled={foreign || lockedInvest}
+            disabled={foreign || locked}
             onClick={() => withdraw(i)}
             title={foreign
               ? 'Dépôt d’un héros mené par un autre joueur.'
-              : b.kind === 'invest'
-                ? lockedInvest
-                  ? 'Retirer un investissement exige une Activité — il n’en reste plus.'
-                  : `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur 🎲 ≤ ${b.rate})`
-                : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur 🎲 ≤ 10`}
+              : locked
+                ? 'Retirer ce dépôt exige une Activité — il n’en reste plus.'
+                : b.kind === 'invest'
+                  ? `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur 🎲 ≤ ${b.rate})`
+                  : b.kind === 'mecenat'
+                    ? 'Retirer (1 Activité) : Test d’Évaluation Intermédiaire (+0) — rendu de 120 % à la perte totale (Mécénat, ACE p.220)'
+                    : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur 🎲 ≤ 10`}
           >
-            {b.kind === 'invest' ? '🏦' : '🕳️'} {owner?.name} : {fmt(b.brass)}
+            {b.kind === 'invest' ? '🏦' : b.kind === 'mecenat' ? '🎭' : '🕳️'} {owner?.name} : {fmt(b.brass)}
             {b.kind === 'invest' ? ` → ${fmt(bankPayout('invest', b.brass, b.rate))} (Indice ${b.rate})` : ''} — Retirer
           </button>
         );
@@ -582,6 +700,13 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
           <li key={h.id} className="interlude-blocked">
             ⚠️ {h.name} n'a pas entrepris Revenus : retour au Niveau {(h.careerLevel ?? 1) - 1} de sa
             Carrière (« Avec le pouvoir »).
+          </li>
+        ))}
+        {heroes.filter((h) => interlude.perHero[h.id]?.closeOps?.length).map((h) => (
+          <li key={`close-${h.id}`} className="interlude-blocked">
+            😮‍💨 {h.name} : {(interlude.perHero[h.id]!.closeOps ?? [])
+              .map((o) => (o.op === 'condition' ? conditionLabel(o.name) : o.op)).join(', ')} au premier
+            jour de la prochaine aventure (Activité échouée).
           </li>
         ))}
         <li>🌙 Le temps passe : {interlude.weeks * 7} jours (récupération et convalescence comprises).</li>

@@ -25,6 +25,8 @@ import type {
 import type { PendingEncounterPsych } from './encounterPsychFlow';
 import type { PendingActivity } from './interludeFlow';
 import { CIBLE_TYPES, CIBLE_LABEL } from '../engine/psychology';
+import { activityById, matchOutcomes } from '../engine/activities';
+import { isFumble } from '../engine/oups';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingFailure, SL_ASTOUNDING } from '../engine/tests';
 import { healWoundsDelta } from '../engine/healing';
 import { corruptionGain } from '../engine/corruption';
@@ -106,6 +108,15 @@ export function describeCorruption(pc: PendingCorruption, name: string): string 
  *  Identification). La VALIDATION applique la conséquence chiffrée (somme, objet, PX) à part. */
 export function describeActivity(pa: PendingActivity): string {
   if (pa.roll == null) return '';
+  if (pa.kind === 'catalog' && pa.activityId) {
+    // Catalogue data-driven : l'issue EST la (les) bande(s) matchée(s) — notes VERBATIM de la table
+    // source (même matching que la validation, source unique).
+    const def = activityById(pa.activityId);
+    const bands = def ? matchOutcomes(def, { success: !!pa.success, sl: pa.sl, fumble: isFumble(pa.roll, !!pa.success) }) : [];
+    const notes = bands.map((b) => b.note).filter((n): n is string => !!n);
+    if (notes.length) return notes.join(' ');
+    return pa.success ? t('out.catalogOk') : t('out.catalogFail');
+  }
   const { total: after, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, pa.drTarget ?? 1);
   if (pa.kind === 'craft') {
     return done ? t('out.craftDone') : t('out.craftProgress', { after, target: String(pa.drTarget) });

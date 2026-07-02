@@ -261,3 +261,37 @@ describe("op:'grantPsychTrait' / op:'removePsychTrait' — Traits psychologiques
     expect(c.psychTraits).toEqual([]);
   });
 });
+
+describe("op:'sinMod' — Points de Péché ± (LDB 40 l.36 ; ACE Annexe I « Pénitence »)", () => {
+  it('ajoute et retire, plancher 0, delta réel journalisé', () => {
+    const c = hero({ sinPoints: 1 });
+    applyOps(c, [{ op: 'sinMod', amount: 2 }]);
+    expect(c.sinPoints).toBe(3);
+    applyOps(c, [{ op: 'sinMod', amount: -1 }]);
+    expect(c.sinPoints).toBe(2);
+    applyOps(c, [{ op: 'sinMod', amount: -5 }]); // « enlevez … » ne descend jamais sous 0
+    expect(c.sinPoints).toBe(0);
+    const lines = applyOps(c, [{ op: 'sinMod', amount: -1 }]); // à 0 : inerte (delta 0)
+    expect(c.sinPoints).toBe(0);
+    expect(lines).toHaveLength(1);
+  });
+});
+
+describe("op:'corruptionExposure' — Exposition différée (LDB 19 l.23-75)", () => {
+  it('avec ctx.onCorruptionExposure : le hook reçoit niveau + compétence (Test par modale côté state)', () => {
+    const c = hero();
+    const seen: unknown[] = [];
+    const lines = applyOps(c, [{ op: 'corruptionExposure', level: 'mineure', skill: 'resistance' }], {
+      onCorruptionExposure: (level, skill) => { seen.push([level, skill]); return ['ouvert']; },
+    });
+    expect(seen).toEqual([['mineure', 'resistance']]);
+    expect(lines).toEqual(['ouvert']);
+    expect(c.corruption ?? 0).toBe(0); // rien de tiré en silence : le Test vit dans la modale
+  });
+  it('sans contexte (moteur pur) : journalisée inerte, aucune Corruption ajoutée', () => {
+    const c = hero();
+    const lines = applyOps(c, [{ op: 'corruptionExposure', level: 'moderee' }]);
+    expect(lines).toHaveLength(1);
+    expect(c.corruption ?? 0).toBe(0);
+  });
+});

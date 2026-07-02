@@ -117,6 +117,7 @@ function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
 export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
   const charKey = kind === 'melee' ? 'CC' : 'CT';
   const base = effectiveChar(c, charKey);
+  if (weapon && weaponUnmastered(c, weapon)) return base; // arme inhabituelle non maîtrisée : carac brute (ACE p.219)
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
   const matching = c.skills.filter((s) => s.skillId === skillId);
   if (matching.length === 0) return base;
@@ -127,6 +128,21 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
 }
 
 /**
+ * Arme INHABITUELLE non maîtrisée (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle » :
+ * « pour véritablement maîtriser une telle arme, il faut avoir la patience d'échouer et de recommencer
+ * indéfiniment ») : tant que le trapping `requiresMastery` de l'arme tenue n'est pas dans
+ * `c.masteredWeapons`, le porteur est traité comme SANS la Compétence du Groupe — carac brute
+ * (mécanique de la Spé manquante, LDB 09 l.44) et Défauts contextuels du Groupe (LDB 62 l.146-147).
+ * Lue par `combatValue` et `hasWeaponGroupSkill` ; inerte sur les armes hors inventaire (créatures).
+ */
+export function weaponUnmastered(c: Combatant, weapon: Weapon): boolean {
+  if (!weapon.uid) return false;
+  const it = (c.items ?? []).find((i) => i.uid === weapon.uid);
+  if (!it?.requiresMastery) return false;
+  return !(it.trappingId != null && (c.masteredWeapons ?? []).includes(it.trappingId));
+}
+
+/**
  * Le combattant possède-t-il la Spécialisation (de Corps à corps / Projectiles) du **Groupe** de l'arme
  * (LDB 62 l.138-139) ? Réutilise `acceptableSpecs` — source UNIQUE des Spés autorisées par Groupe (comme
  * `combatValue`). Faux si l'arme n'a pas de Groupe (`subType` absent) ou si aucune Augmentation ne le couvre.
@@ -134,6 +150,7 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
  */
 export function hasWeaponGroupSkill(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): boolean {
   if (!weapon.subType) return false;
+  if (weaponUnmastered(c, weapon)) return false; // arme inhabituelle non maîtrisée (ACE p.219) : Défauts du Groupe
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
   const wanted = acceptableSpecs(weapon, kind);
   return c.skills.some((s) => s.skillId === skillId && wanted.includes((s.spec ?? '').toLowerCase()));

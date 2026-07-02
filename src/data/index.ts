@@ -257,6 +257,10 @@ export interface TrappingData {
    *  masse/marteau de guerre/demi-lance). Le picker pose le choix sur `ItemInstance.shape` ; défaut =
    *  `shape` du trapping. Absent pour une arme à forme unique. */
   formChoices?: string[];
+  /** Arme INHABITUELLE (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle ») : exige la
+   *  maîtrise (`Combatant.masteredWeapons`) pour être maniée avec la Compétence du Groupe. Flag
+   *  d'AUTEUR (artefacts uniques : « le couteau de lancer de Harald L'Infâme ») — éditable au Codex. */
+  requiresMastery?: boolean;
   /** Encombrement (Points d'Encombrement). Honnête : la donnée porte aussi des STRINGS pour des cas
    *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
    *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */
@@ -1299,8 +1303,11 @@ const GOD_BY_KEY = new Map(gods.map((g) => [g.key, g]));
 export function findGodById(key: string): GodData | undefined {
   return GOD_BY_KEY.get(key);
 }
-/** Clés de culte disponibles, triées (choix de divinité à la création, joker « Béni (Au choix) »). */
-export const CULT_KEYS: string[] = gods.map((g) => g.key).sort();
+/** Clés des cultes À BÉNÉDICTIONS, triées — DÉRIVÉ de la donnée (choix de culte du joker
+ *  « Béni (Au choix) » à la création/avancement). Les fiches de SAVEUR (dieux nains/elfes/halflings,
+ *  provinciaux, Puissances de la Ruine) n'accordent ni Bénédictions ni Miracles (LDB 37 l.17,
+ *  LDB 36 l.9) → exclues de tout choix de Prière. */
+export const CULT_KEYS: string[] = gods.filter((g) => g.blessings.length > 0).map((g) => g.key).sort();
 /** Les six Bénédictions d'un culte, IDS de sort (le runtime/grimoire compare par id ; l'UI résout en
  *  libellé). Culte inconnu → []. */
 export function blessingsOf(cult: string): string[] {

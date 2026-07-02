@@ -55,12 +55,49 @@ export type StageOutcome =
   | 'suppressExposure' | 'gatherInfo' | 'noSurprise' | 'mapMade' | 'rerollToken' | 'countsAsRest' | 'campCare'
   | 'extraActivity' | 'skipStage' | 'fullRecovery' | 'worsenWeather';
 
+/** Bande d'ISSUE par Degrés de Réussite d'une Activité (tables « DR → résultat », ACE Annexe I p.219-220) :
+ *  bornes de DR INCLUSIVES ; `on` distingue ±0 (« +0 à +1 » = succès / « −0 à −1 » = échec, comme les
+ *  tables RAW) et porte la Maladresse ; `ops` = effet mécanique (GameOp, langue UNIQUE des effets) ;
+ *  `resolver` = logique bespoke nommée (cf. dispatch d'interlude) ; `payoutPct` = rendu monétaire d'un
+ *  retrait de dépôt (Mécénat : 120/100/50/0) ; `note` = texte de résultat VERBATIM de la source. */
+export interface OutcomeBand {
+  on?: 'success' | 'failure' | 'fumble';
+  minSL?: number;
+  maxSL?: number;
+  ops?: GameOp[];
+  resolver?: string;
+  payoutPct?: number;
+  note?: string;
+}
+
+/** Bandes d'issue applicables à un jet résolu. Maladresse : les bandes `on:'fumble'` REMPLACENT toute
+ *  autre issue (« réalisez un Test sur le Tableau de la Colère des Dieux […] à la place », ACE p.219) ;
+ *  sans bande de Maladresse déclarée, la Maladresse reste un échec ordinaire. Une bande sans `on`
+ *  matche par DR seul. PUR. */
+export function matchOutcomes(def: ActivityDef, res: { success: boolean; sl: number; fumble?: boolean }): OutcomeBand[] {
+  const bands = def.outcomes ?? [];
+  if (res.fumble) {
+    const fb = bands.filter((b) => b.on === 'fumble');
+    if (fb.length) return fb;
+  }
+  const on = res.success ? 'success' : 'failure';
+  return bands.filter((b) => b.on !== 'fumble' && (b.on == null || b.on === on)
+    && (b.minSL == null || res.sl >= b.minSL) && (b.maxSL == null || res.sl <= b.maxSL));
+}
+
+/** Gate GÉOGRAPHIQUE : l'Activité est-elle proposable au lieu courant (`MapPlace.id`, null = hors carte) ?
+ *  Sans `where`, partout ; avec, il faut ÊTRE au lieu (les Activités d'ACE Annexe I sont « à Altdorf »). */
+export function activityAvailableAt(def: ActivityDef, placeId: string | null): boolean {
+  return !def.where?.length || (placeId != null && def.where.includes(placeId));
+}
+
 /**
  * Définition d'une Activité (donnée éditable). Un Test (compétence(s) + Difficulté, éventuellement
  * ÉTENDU) dont l'issue s'exprime, par ordre de préférence, en vocabulaire EXISTANT :
  *  - `onSuccess: GameOp[]` pour tout effet mécanique sur les Personnages (heal/removeCondition/giveTrapping…) ;
+ *  - `outcomes: OutcomeBand[]` pour les tables « DR → résultat » (bandes, Maladresse, verbatim) ;
  *  - `stageOutcome` pour les effets de portée Étape (voyage) que `GameOp` n'exprime pas ;
- *  - `resolver` (nom) pour réutiliser une logique existante (`'forage'`, et plus tard `'craft'`/`'learn'`/…).
+ *  - `resolver` (nom) pour réutiliser une logique existante (`'forage'`, `'masterWeapon'`, `'mecenat'`…).
  */
 export interface ActivityDef {
   /** id STABLE (slug). */
@@ -81,6 +118,15 @@ export interface ActivityDef {
   resolver?: string;
   /** Effet mécanique de réussite, en `GameOp` (langue UNIQUE des effets, appliquée par `applyOps`). */
   onSuccess?: GameOp[];
+  /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5, jamais de paraphrase). */
+  desc?: string;
+  /** Table d'issues par bande de DR (« RÉSULTATS DU TEST DE… », ACE Annexe I) — prime sur `onSuccess`. */
+  outcomes?: OutcomeBand[];
+  /** Gate GÉOGRAPHIQUE : ids de lieux de la carte du monde (`MapPlace.id`) où l'Activité est proposable
+   *  (ACE Annexe I = « à Altdorf »). Absent = partout — résolu par `activityAvailableAt`. */
+  where?: string[];
+  /** Mise MINIMALE d'un dépôt bancaire de cette Activité (Mécénat : « au moins 5 CO », ACE p.220). */
+  minInvest?: { gold: number };
   /** Issue de portée Étape (voyage). */
   stageOutcome?: StageOutcome;
   /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC l.176). */

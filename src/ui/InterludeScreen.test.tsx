@@ -11,6 +11,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { fromBrass } from '../engine/money';
 import { testScene } from '../scenes/test-fixture';
+import { interludeCatalog } from '../state/interludeFlow';
 import { InterludeScreen, type InterludeSeam } from './InterludeScreen';
 
 function buildSeam(weeks = 3): InterludeSeam {
@@ -99,6 +100,34 @@ describe('InterludeScreen — coop (audit M7) : chacun mène SES héros', () => 
     );
     expect(html).toContain('🎮 Antoine');
     expect(html).toContain('Clore l&#x27;interlude…');
+  });
+});
+
+describe('InterludeScreen — catalogue d’Activités data-driven (ADE2 + ACE Annexe I, gate `where`)', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('hors d’Altdorf : la Convalescence (ADE2, sans gate) est proposée, pas les Activités d’ACE', () => {
+    const seam = buildSeam();
+    useGame.setState({ worldMap: null });
+    const catalog = interludeCatalog(useGame.getState());
+    const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities', catalog }} />);
+    expect(html).toContain('Convalescence…');
+    expect(html).not.toContain('Pénitence…');
+    expect(html).not.toContain('Mécénat');
+  });
+
+  it('à Altdorf (place de la carte liée à la scène courante) : les Activités d’ACE apparaissent', () => {
+    const seam = buildSeam();
+    useGame.setState({ worldMap: { id: 'w', nom: 'W', places: [{ id: 'altdorf', label: 'Altdorf', pos: { x: 0, y: 0 }, scene: testScene.id }], routes: [] } });
+    const catalog = interludeCatalog(useGame.getState());
+    const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities', catalog }} />);
+    expect(html).toContain('Convalescence…');
+    expect(html).toContain('Pénitence…');
+    expect(html).toContain('Entraînement avec une arme inhabituelle…');
+    expect(html).toContain('Tester des objets magiques…');
+    expect(html).toContain('Recherche universitaire…');
+    expect(html).not.toContain('Mécénat…'); // pas un volet héros : variante d'Opération bancaire (volet Banque)
   });
 });
 
