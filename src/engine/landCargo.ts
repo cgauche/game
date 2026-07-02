@@ -38,6 +38,12 @@ const LAND = landCargoJson as unknown as {
 };
 
 export const WINE_QUALITY = LAND.wineQuality;
+/** Catalogue des cargaisons terrestres (Tableau des cargaisons, T2C ch.11 l.71-90) — source UNIQUE pour
+ *  énumérer les Produits d'un Lieu (éditeur de marché). */
+export const LAND_CARGOES: readonly LandCargoDef[] = LAND.cargoes;
+/** Échelons de Richesse et leur Mise à prix (T2C ch.11 l.150-156) — source des libellés (1 Misérable …
+ *  5 Prospère) pour l'éditeur de marché. */
+export const LAND_RICHESSE_ROWS: readonly OfferRow[] = LAND.sell.offerByRichesse;
 export const findLandCargoById = (id: string): LandCargoDef | undefined => LAND.cargoes.find((c) => c.id === id);
 
 /** Profil COMMERCIAL d'un Lieu terrestre/fluvial (Index géographique, l.183-278) — porté par le LIEU de

@@ -2,7 +2,17 @@ import { useRef, useState } from 'react';
 import { Scene } from '../../state/scene';
 import { WorldMap, MapPlace, MapRoute, emptyWorldMap, placeById } from '../../state/worldMap';
 import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
+import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { EffectList } from './EffectList';
+
+/** Libellés des Tailles de communauté (T2C ch.11 l.44-50, indices 1-4). */
+const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
+/** Produits d'un marché : les cargaisons du livre + les MARQUEURS « Commerce » / « Subsistance » (l.24-28). */
+const MARKET_PRODUITS: readonly { id: string; label: string }[] = [
+  ...LAND_CARGOES.map((c) => ({ id: c.id, label: c.label })),
+  { id: 'commerce', label: 'Commerce (plaque tournante)' },
+  { id: 'subsistance', label: 'Subsistance (rien à échanger)' },
+];
 
 /**
  * Éditeur de la CARTE DU MONDE (#T2 Voyage) — overlay plein écran de l'éditeur de niveau.
@@ -220,6 +230,55 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               <label className="ed-field">Point d'entrée (entryPoints de la scène, optionnel)
                 <input value={selPlace.entry ?? ''} onChange={(e) => updPlace(selPlace.id, { entry: e.target.value || undefined })} />
               </label>
+
+              {/* ── Marché de cargaison (Mort sur le Reik Compagnon ch.11) : Taille + Richesse + Produits ── */}
+              <div className="mini-title">Marché (commerce de cargaison, T2C ch.11)</div>
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={!!selPlace.market}
+                  onChange={(e) => updPlace(selPlace.id, { market: e.target.checked ? { taille: 2, richesse: 2, produits: [] } : undefined })}
+                />
+                🛒 Lieu de commerce (achat/vente de cargaison)
+              </label>
+              {selPlace.market && (() => {
+                const mk = selPlace.market;
+                const updMarket = (patch: Partial<LandMarketProfile>) => updPlace(selPlace.id, { market: { ...mk, ...patch } });
+                return (
+                  <>
+                    <label className="ed-field">Taille de la communauté (l.44-50)
+                      <select value={mk.taille} onChange={(e) => updMarket({ taille: Number(e.target.value) })}>
+                        {TAILLE_LABELS.map((label, i) => <option key={i} value={i + 1}>{i + 1} — {label}</option>)}
+                      </select>
+                    </label>
+                    <label className="ed-field">Richesse — Mise à prix (l.150-156)
+                      <select value={mk.richesse} onChange={(e) => updMarket({ richesse: Number(e.target.value) })}>
+                        {LAND_RICHESSE_ROWS.map((r) => (
+                          <option key={r.richesse} value={r.richesse}>{r.richesse} — {r.label} ({r.pct >= 0 ? '+' : ''}{r.pct} %)</option>
+                        ))}
+                      </select>
+                    </label>
+                    <div className="mini-title">Produits (colonne Produits, l.24-28)</div>
+                    {MARKET_PRODUITS.map((p) => (
+                      <label key={p.id} className="ed-check">
+                        <input
+                          type="checkbox"
+                          checked={mk.produits.includes(p.id)}
+                          onChange={() => updMarket({ produits: mk.produits.includes(p.id) ? mk.produits.filter((x) => x !== p.id) : [...mk.produits, p.id] })}
+                        />
+                        {p.label}
+                      </label>
+                    ))}
+                    <label className="ed-field">Vin supérieur : bonus de qualité (échelons, l.95 — Kemperbad : 2)
+                      <input
+                        type="number" min={0} max={5} placeholder="0"
+                        value={mk.wineBonusEchelons ?? ''}
+                        onChange={(e) => updMarket({ wineBonusEchelons: e.target.value === '' ? undefined : Math.max(0, Math.min(5, Number(e.target.value))) })}
+                      />
+                    </label>
+                  </>
+                );
+              })()}
             </>
           )}
 
@@ -272,6 +331,27 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                 />
                 🛏 Relais d'auberges (la halte de nuit propose l'auberge)
               </label>
+              {/* ── Route MARITIME (MDG ch.13-15) : se voyage sur le navire de campagne (mode « mer »), km en milles ── */}
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={selRoute.sea ?? false}
+                  onChange={(e) => updRoute(selRoute.id, e.target.checked
+                    ? { sea: true, modes: ['mer'] }
+                    : { sea: undefined, seaHeading: undefined, modes: selRoute.modes.filter((x) => x !== 'mer').length ? selRoute.modes.filter((x) => x !== 'mer') : ['pied'] })}
+                />
+                ⚓ Route maritime (navire de campagne ; distance en milles)
+              </label>
+              {selRoute.sea && (
+                <label className="ed-field">Cap dominant (aspect du vent, MDG ch.13 l.262-270)
+                  <select
+                    value={selRoute.seaHeading ?? 'ouest'}
+                    onChange={(e) => updRoute(selRoute.id, { seaHeading: e.target.value as MapRoute['seaHeading'] })}
+                  >
+                    {(['nord', 'sud', 'est', 'ouest'] as const).map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </label>
+              )}
 
               <div className="mini-title">Embuscade (« Attaqués ! » de la table d10)</div>
               <label className="ed-field">Scène d'embuscade (vide = narratif seul)
