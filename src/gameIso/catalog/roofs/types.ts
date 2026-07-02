@@ -23,4 +23,19 @@ export interface RoofMaterialDef {
   planEdge?: string;
   planInner?: string;
   planText?: string;
+  /** VOLUME de l'avant-toit (le toit DÉBORDE des murs, il ne pose plus à ras). Géométrie ADDITIVE émise
+   *  par le builder (`roofPans`) sur chaque ÉGOUT, colorée ici :
+   *  - `eaveOverhangM` : longueur du SOFFITE en CASES (run le long de la pente au-delà de l'égout ; le
+   *    bord extérieur descend de `eaveOverhangM × ROOF_SLOPE_M` → soffite COPLANAIRE au pan). Absent ⇒
+   *    aucun débord ;
+   *  - `soffite` : ton du DESSOUS débordant (uniforme, ombré — un dessous ne capte pas la lumière du ciel) ;
+   *  - `fasciaDropM` : hauteur de la planche de rive VERTICALE pendant du bord extérieur du soffite.
+   *    Absent ⇒ pas de fascia dure (bord arrondi, ex. chaume) ;
+   *  - `fascia` : ton de la fascia (sombre — c'est l'ombre sous l'avant-toit qui « détache » le toit du mur) ;
+   *  - `ridgeCap` : liseré CLAIR du couronnement de FAÎTE (rendu par un trait de faîte renforcé au backend). */
+  eaveOverhangM?: number;
+  soffite?: string;
+  fasciaDropM?: number;
+  fascia?: string;
+  ridgeCap?: string;
 }

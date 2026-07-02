@@ -6,6 +6,11 @@
     "S": "#531b13",
     "O": "#8a3527",
     "line": "#411409",
+    "eaveOverhangM": 0.32,
+    "soffite": "#3d130c",
+    "fasciaDropM": 0.2,
+    "fascia": "#2e0e07",
+    "ridgeCap": "#bf5e46",
     "detail": {
       "seedScope": "instance",
       "courses": {
@@ -28,6 +33,8 @@
     "S": "#59461a",
     "O": "#997c3c",
     "line": "#463714",
+    "eaveOverhangM": 0.36,
+    "soffite": "#4a3a16",
     "detail": {
       "seedScope": "instance",
       "courses": {
@@ -56,6 +63,11 @@
     "S": "#283037",
     "O": "#4d5964",
     "line": "#20272d",
+    "eaveOverhangM": 0.24,
+    "soffite": "#222831",
+    "fasciaDropM": 0.16,
+    "fascia": "#171c22",
+    "ridgeCap": "#788896",
     "detail": {
       "seedScope": "instance",
       "courses": {

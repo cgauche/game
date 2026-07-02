@@ -109,7 +109,9 @@ export interface RoofEl extends ElBase {
   /** Étiquette du mode plan (vue du dessus / éditeur). */
   label: string;
   /** PANS CONTINUS : UNE face par pan (plane 'slope', part = orientation N/E/S/O de la pente
-   *  DESCENDANTE) — plus aucune nappe par-cellule. */
+   *  DESCENDANTE) — plus aucune nappe par-cellule. Le VOLUME de l'avant-toit ajoute, par égout, une face
+   *  `part:'soffite'` (débord coplanaire) et une face `part:'fascia'` (planche de rive verticale, sombre)
+   *  — teintées par le backend depuis la def du matériau (`soffite`/`fascia`). */
   faces: Face[];
   lines: RoofLine[];
 }

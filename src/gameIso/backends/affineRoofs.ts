@@ -13,7 +13,7 @@
  * laquelle on voit/édite les murs). Toute couleur vient du JSON (`roofMaterials.json`) ou de `shade`.
  */
 import { CELL, diamondPath, footprintDepth, isSquareView, tileCenter, type Dims } from '../iso';
-import { roofMaterial } from '../catalog/roofs';
+import { roofMaterial, type RoofMaterialDef } from '../catalog/roofs';
 import { ROOF_SLOPE_M, roofCoursesPerStep } from '../builders/roofs';
 import {
   detailOf,
@@ -37,6 +37,17 @@ import type { GP, RoofEl } from '../builders/types';
 const SEAM_W = 0.6; // liseré au ton du pan : soude les coutures anti-aliasées entre pans
 const EGOUT_W = 0.8; // bord bas de la nappe
 const CREST_W = 1.1; // faîte / arêtier (crêtes nettes)
+const RIDGE_W = 2.2; // couronnement de faîte : base ÉPAISSE (ton `line`) — la crête a du volume
+const RIDGE_CAP_W = 0.9; // liseré CLAIR (`ridgeCap`) posé sur le dessus → lit un couronnement, pas un trait
+
+/** Ton d'une face de toit depuis la def (zéro littéral) : les faces de VOLUME d'avant-toit résolvent leur
+ *  ton DÉDIÉ (`soffite` = dessous débordant ombré ; `fascia` = planche de rive sombre) ; un pan ordinaire
+ *  suit son orientation N/E/S/O. */
+function panFill(sh: RoofMaterialDef, part: string): string {
+  if (part === 'soffite') return sh.soffite ?? sh.S ?? sh.N!;
+  if (part === 'fascia') return sh.fascia ?? sh.line ?? sh.S ?? sh.N!;
+  return sh[part as 'N' | 'E' | 'S' | 'O'] ?? sh.N!;
+}
 // Formes du détail de couverture (mètres). Le retrait et la fraction des nuances de bardeau réutilisent
 // le dosage PARTAGÉ de l'appareillage mural (`BLOCK_INSET_M` / `ACCENT_FRAC`, importés de detail/expand).
 const TICK_INSET_M = 0.03; // le joint vertical d'un bardeau laisse respirer les lignes de rang
@@ -219,8 +230,7 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   const pans: Pan[] = el.faces
     .map((f) => {
       const pts = f.poly.map((p) => projGP(p, dims));
-      const part = f.material.part as 'N' | 'E' | 'S' | 'O';
-      return { poly: f.poly, pts, fill: sh[part] ?? sh.N!, near: Math.max(...pts.map((p) => p[1])) };
+      return { poly: f.poly, pts, fill: panFill(sh, f.material.part!), near: Math.max(...pts.map((p) => p[1])) };
     })
     .sort((a, b) => a.near - b.near);
   let svg = '';
@@ -236,7 +246,15 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   if (lod >= 1 && sh.detail?.courses) svg += roofDetailSvg(el, pans, sh.detail, dims, lod as 1 | 2, mpt);
   for (const ln of el.lines) {
     if (ln.kind === 'rang') continue;
-    svg += lineSvg(projGP(ln.a, dims), projGP(ln.b, dims), sh.line!, ln.kind === 'egout' ? EGOUT_W : CREST_W);
+    const a = projGP(ln.a, dims);
+    const b = projGP(ln.b, dims);
+    if (ln.kind === 'faite' && sh.ridgeCap) {
+      // COURONNEMENT : trait de base épais (ton `line`) + liseré clair par-dessus → crête volumique.
+      svg += lineSvg(a, b, sh.line!, RIDGE_W);
+      svg += lineSvg(a, b, sh.ridgeCap, RIDGE_CAP_W);
+    } else {
+      svg += lineSvg(a, b, sh.line!, ln.kind === 'egout' ? EGOUT_W : CREST_W);
+    }
   }
   return svg;
 }

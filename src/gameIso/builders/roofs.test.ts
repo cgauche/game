@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildRoofs, roofPans, ROOF_SLOPE_M } from './roofs';
-import type { Face, GP, RoofLine } from './types';
+import type { Face, GP, RoofEl, RoofLine } from './types';
 import { WALL_H_M } from '../iso';
 import { emptyScene, type Roof, type Scene } from '../../state/scene';
 
@@ -158,6 +158,54 @@ describe('roofPans — cas limites', () => {
   });
 });
 
+describe('roofPans — VOLUME d’avant-toit (soffite débordant + fascia par ÉGOUT)', () => {
+  const eave = { overhang: 0.3, fasciaDrop: 0.2 };
+  const { faces } = roofPans(rect(0, 0, 4, 2), 0, 'tuile', undefined, eave);
+  const soffites = faces.filter((f) => f.material.part === 'soffite');
+  const fascias = faces.filter((f) => f.material.part === 'fascia');
+
+  it('un soffite + une fascia PAR ÉGOUT (4 façades) ; les 4 pans N/E/S/O intacts', () => {
+    expect(soffites).toHaveLength(4);
+    expect(fascias).toHaveLength(4);
+    expect(faces.filter((f) => ['N', 'E', 'S', 'O'].includes(f.material.part!))).toHaveLength(4);
+  });
+
+  it('le bord EXTÉRIEUR du soffite descend SOUS l’égout (débord = pente continuée), PLAN', () => {
+    for (const s of soffites) {
+      const hs = s.poly.map((p) => p.h);
+      expect(Math.min(...hs)).toBeCloseTo(-0.3 * S, 9); // bord extérieur : base − overhang·pente
+      expect(Math.max(...hs)).toBeCloseTo(0, 9); // bord intérieur : sur l’égout (base)
+      expect(isPlanar(s)).toBe(true); // coplanaire (débord franc, pas de pli)
+    }
+  });
+
+  it('la fascia PEND verticalement sous le bord extérieur (haut = soffite, bas = − fasciaDrop)', () => {
+    for (const fa of fascias) {
+      const top = fa.poly.filter((p) => Math.abs(p.h - (-0.3 * S)) < 1e-9);
+      const bot = fa.poly.filter((p) => Math.abs(p.h - (-0.3 * S - 0.2)) < 1e-9);
+      expect(top).toHaveLength(2); // arête haute sur le bord extérieur du soffite
+      expect(bot).toHaveLength(2); // arête basse, fasciaDrop plus bas
+    }
+  });
+
+  it('SANS EaveSpec (appels historiques) : aucun débord, juste les pans', () => {
+    const f = roofPans(rect(0, 0, 4, 2), 0, 'tuile').faces;
+    expect(f.every((x) => ['N', 'E', 'S', 'O'].includes(x.material.part!))).toBe(true);
+  });
+
+  it('fasciaDrop 0 (chaume, bord mou) : soffite SEUL, pas de fascia dure', () => {
+    const f = roofPans(rect(0, 0, 4, 2), 0, 'chaume', undefined, { overhang: 0.36, fasciaDrop: 0 }).faces;
+    expect(f.some((x) => x.material.part === 'soffite')).toBe(true);
+    expect(f.some((x) => x.material.part === 'fascia')).toBe(false);
+  });
+
+  it('pyramide (hip) : débord sur les 4 ÉGOUTS SEULEMENT, jamais sur les arêtiers', () => {
+    const { faces: pf } = roofPans(rect(0, 0, 4, 4), 0, 'tuile', undefined, eave);
+    expect(pf.filter((f) => f.material.part === 'soffite')).toHaveLength(4);
+    expect(pf.filter((f) => f.material.part === 'fascia')).toHaveLength(4);
+  });
+});
+
 describe('buildRoofs — hauteurs MÈTRES et vérités de scène', () => {
   function sceneWith(roof: Roof, edit?: (s: Scene) => void): Scene {
     const s = emptyScene(8, 8);
@@ -166,6 +214,8 @@ describe('buildRoofs — hauteurs MÈTRES et vérités de scène', () => {
     return s;
   }
   const roof: Roof = { id: 'r1', foot: { x: 2, y: 2, w: 4, h: 2 }, style: 'maison' };
+  const ORIENT = ['N', 'E', 'S', 'O'];
+  const pansOf = (el: RoofEl) => el.faces.filter((f) => ORIENT.includes(f.material.part!));
 
   it('avant-toit = hauteur métrique de la case la plus haute + WALL_H_M ; faîte + ROOF_SLOPE_M', () => {
     const s = sceneWith(roof, (sc) => {
@@ -173,19 +223,23 @@ describe('buildRoofs — hauteurs MÈTRES et vérités de scène', () => {
       sc.layers[0].height![2 * 8 + 3] = 2; // une case de l'empreinte à 2 m
     });
     const el = buildRoofs(s)[0];
-    const hs = el.faces.flatMap((f) => f.poly.map((p) => p.h));
+    const hs = pansOf(el).flatMap((f) => f.poly.map((p) => p.h)); // les PANS : égout (base) → faîte (+S)
     expect(Math.min(...hs)).toBeCloseTo(2 + WALL_H_M, 9);
     expect(Math.max(...hs)).toBeCloseTo(2 + WALL_H_M + S, 9);
+    // le VOLUME d'avant-toit débord SOUS l'égout (matériau maison = tuile : fascia dure).
+    const below = el.faces.flatMap((f) => f.poly.map((p) => p.h));
+    expect(Math.min(...below)).toBeLessThan(2 + WALL_H_M - 1e-6);
   });
 
-  it('identité : key/cell/span/material (params > style)/label, 4 pans', () => {
+  it('identité : key/cell/span/material (params > style)/label, 4 pans (+ avant-toit)', () => {
     const el = buildRoofs(sceneWith({ ...roof, label: 'Maison du charron', params: { roofMaterial: 'ardoise' } }))[0];
     expect(el.key).toBe('roof:r1');
     expect(el.cell).toEqual({ x: 2, y: 2, z: 0 });
     expect(el.span).toEqual({ w: 4, h: 2 });
     expect(el.material).toBe('ardoise');
     expect(el.label).toBe('Maison du charron');
-    expect(el.faces).toHaveLength(4);
+    expect(pansOf(el)).toHaveLength(4); // 4 pans + soffites/fascias débordants
+    expect(el.faces.some((f) => f.material.part === 'soffite')).toBe(true);
   });
 
   it('material par défaut = styleRoofMaterial (echoppe → chaume) ; label par défaut = style', () => {
@@ -210,6 +264,6 @@ describe('buildRoofs — hauteurs MÈTRES et vérités de scène', () => {
 
   it('teintes par orientation = vérité MONDE (parts indépendantes de toute caméra, stables par rotation)', () => {
     const el = buildRoofs(sceneWith(roof))[0];
-    expect(partsOf(el.faces)).toEqual(['E', 'N', 'O', 'S']); // le builder ne connaît aucune Dims
+    expect(partsOf(pansOf(el))).toEqual(['E', 'N', 'O', 'S']); // le builder ne connaît aucune Dims
   });
 });

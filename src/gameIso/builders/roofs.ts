@@ -14,7 +14,7 @@ import { roofHidden } from '../../state/buildings';
 import { styleRoofMaterial } from '../catalog/buildings';
 import { roofMaterial } from '../catalog/roofs';
 import { WALL_H_M, isoPxToM } from '../iso';
-import type { CellSide, Face, RoofEl, RoofLine, RoofLineKind } from './types';
+import type { CellSide, Face, GP, RoofEl, RoofLine, RoofLineKind } from './types';
 
 /** Montée de la nappe par CRAN de profondeur d'avant-toit (ex-SLOPE 17 px-iso), en mètres — une seule
  *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles se comptent PAR cran. */
@@ -29,6 +29,15 @@ export function roofCoursesPerStep(det?: { courses?: { hM: number } }): number |
 }
 
 const EPS = 1e-9;
+
+/** VOLUME de l'avant-toit (Lot 3) piloté par la DONNÉE matériau (`RoofMaterialDef`) : `overhang` = run du
+ *  soffite au-delà de l'égout, en CASES (drop = `overhang × ROOF_SLOPE_M`, coplanaire au pan) ; `fasciaDrop`
+ *  = hauteur (m) de la planche de rive verticale (0 ⇒ pas de fascia). Les TONS (soffite/fascia) restent au
+ *  backend — le builder ne produit que la GÉOMÉTRIE (faces `part:'soffite'`/`'fascia'`). */
+export interface EaveSpec {
+  overhang: number;
+  fasciaDrop: number;
+}
 
 type VXY = { x: number; y: number };
 /** Pièce PLANE du pavage (quad de cellule coplanaire, ou triangle issu d'une selle), sommets en ordre
@@ -108,7 +117,13 @@ const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
  *  pièces adjacentes de même plan (annulation d'arêtes internes → polygone de bord), classification des
  *  arêtes restantes (égout au bord, faîte/arêtier entre deux pans), rangs de tuiles en courbes de
  *  niveau du plan (`courses` rangs par cran de montée). */
-export function roofPans(cells: ReadonlySet<string>, base: number, matId: string, courses?: number): { faces: Face[]; lines: RoofLine[] } {
+export function roofPans(
+  cells: ReadonlySet<string>,
+  base: number,
+  matId: string,
+  courses?: number,
+  eave?: EaveSpec,
+): { faces: Face[]; lines: RoofLine[] } {
   if (!cells.size) return { faces: [], lines: [] };
   const has = (x: number, y: number) => cells.has(vk(x, y));
 
@@ -250,6 +265,44 @@ export function roofPans(cells: ReadonlySet<string>, base: number, matId: string
     b: { x: s.b.x - 0.5, y: s.b.y - 0.5, h: s.b.h },
     kind: s.kind,
   }));
+
+  // ── AVANT-TOIT (VOLUME) : chaque ÉGOUT (jamais un arêtier/faîte) projette un SOFFITE coplanaire au pan
+  //    (le débord PROLONGE la nappe vers l'extérieur, en CONTINUANT la pente → son bord extérieur descend
+  //    de `overhang × ROOF_SLOPE_M` sous l'égout) + une FASCIA verticale pendant sous ce bord. ADDITIF :
+  //    posé APRÈS le pavage/fusion/classification, il ne perturbe NI les pans NI les lignes. Un égout est
+  //    axis-aligné (empreinte = union de cellules) et sa normale SORTANTE (⊥ à l'égout, opposée au
+  //    centroïde de l'empreinte) coïncide avec la ligne de plus grande pente du pan → soffite COPLANAIRE.
+  //    Les bouts sont prolongés d'`overhang` LE LONG de l'égout : aux angles convexes, deux soffites/
+  //    fascias voisins se RECOUVRENT (même ton) au lieu de laisser un trou — coin fermé, net à toute vue.
+  if (eave && eave.overhang > EPS) {
+    const e = eave.overhang;
+    const drop = e * ROOF_SLOPE_M;
+    let cX = 0, cY = 0;
+    for (const k of cells) { const [x, y] = k.split(',').map(Number); cX += x; cY += y; }
+    cX /= cells.size; cY /= cells.size; // centroïde d'empreinte (repère GP : centre de cellule = (cx,cy))
+    for (const ln of lines) {
+      if (ln.kind !== 'egout') continue;
+      const { a, b } = ln;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy);
+      if (len < EPS) continue;
+      const ux = dx / len, uy = dy / len; // le long de l'égout
+      let nx = -uy, ny = ux; // normale
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      if (nx * (mx - cX) + ny * (my - cY) < 0) { nx = -nx; ny = -ny; } // orientée vers l'EXTÉRIEUR
+      const a2: GP = { x: a.x - ux * e, y: a.y - uy * e, h: a.h }; // bord intérieur, prolongé aux angles
+      const b2: GP = { x: b.x + ux * e, y: b.y + uy * e, h: b.h };
+      const aO: GP = { x: a2.x + nx * e, y: a2.y + ny * e, h: a2.h - drop }; // bord extérieur (sous l'égout)
+      const bO: GP = { x: b2.x + nx * e, y: b2.y + ny * e, h: b2.h - drop };
+      faces.push({ poly: [a2, b2, bO, aO], material: { domain: 'roof', id: matId, part: 'soffite' } });
+      if (eave.fasciaDrop > EPS) {
+        const aF: GP = { x: aO.x, y: aO.y, h: aO.h - eave.fasciaDrop };
+        const bF: GP = { x: bO.x, y: bO.y, h: bO.h - eave.fasciaDrop };
+        faces.push({ poly: [aO, bO, bF, aF], material: { domain: 'roof', id: matId, part: 'fascia' } });
+      }
+    }
+  }
+
   for (const r of rangs)
     lines.push({ a: { x: r.a.x - 0.5, y: r.a.y - 0.5, h: r.h0 }, b: { x: r.b.x - 0.5, y: r.b.y - 0.5, h: r.h1 }, kind: r.kind });
   return { faces, lines };
@@ -280,7 +333,11 @@ export function buildRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: R
       }
     base += WALL_H_M;
     const material = roof.params?.roofMaterial ?? styleRoofMaterial(roof.style);
-    const { faces, lines } = roofPans(cells, base, material, roofCoursesPerStep(roofMaterial(material).detail));
+    const def = roofMaterial(material);
+    const { faces, lines } = roofPans(cells, base, material, roofCoursesPerStep(def.detail), {
+      overhang: def.eaveOverhangM ?? 0,
+      fasciaDrop: def.fasciaDropM ?? 0,
+    });
     let vis = !visible;
     if (visible)
       for (let dy = -1; dy <= f.h && !vis; dy++)

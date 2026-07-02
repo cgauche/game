@@ -31,6 +31,24 @@ describe('apparence de toit (JSON pur iso/plan)', () => {
     expect(roofMaterial('chaume').detail?.tufts).toBeDefined(); // balayage de paille
   });
 
+  it('avant-toit (VOLUME) : débord + soffite sur les 3 couvertures ; fascia dure sauf chaume ; couronnement tuile/ardoise', () => {
+    for (const id of ['tuile', 'chaume', 'ardoise']) {
+      const m = roofMaterial(id);
+      expect(m.eaveOverhangM ?? 0, id).toBeGreaterThan(0); // le toit déborde des murs
+      expect(m.soffite, id).toBeTruthy(); // ton du dessous ombré
+    }
+    // Chaume = bord arrondi : PAS de fascia dure ni de couronnement de faîte (crête molle).
+    expect(roofMaterial('chaume').fasciaDropM).toBeUndefined();
+    expect(roofMaterial('chaume').fascia).toBeUndefined();
+    expect(roofMaterial('chaume').ridgeCap).toBeUndefined();
+    // Tuile & ardoise : fascia dure (planche de rive) + couronnement de faîte.
+    for (const id of ['tuile', 'ardoise']) {
+      expect(roofMaterial(id).fasciaDropM ?? 0, id).toBeGreaterThan(0);
+      expect(roofMaterial(id).fascia, id).toBeTruthy();
+      expect(roofMaterial(id).ridgeCap, id).toBeTruthy();
+    }
+  });
+
   it('plan vu du dessus (vue carrée)', () => {
     expect(roofMaterial('plan').planBody).toBe('#6e4f3a');
     expect(roofMaterial('plan').planEdge).toBe('#241a12');

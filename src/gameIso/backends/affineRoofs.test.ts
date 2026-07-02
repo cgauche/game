@@ -45,10 +45,12 @@ describe('roofSvg — pans : UNE teinte par pan, par ORIENTATION de la def, stab
     expect(svg).not.toContain(`fill="${tuile.N}"`);
   });
 
-  it('1×1 : pan PLAT unique au ton N (parité avec l’ex-choix par-cellule)', () => {
+  it('1×1 : pan PLAT au ton N + son avant-toit (4 soffites + 4 fascias débordants)', () => {
     const svg = roofSvg(el({ foot: { x: 3, y: 3, w: 1, h: 1 } }), dims);
-    expect(count(svg, '<path')).toBe(1);
-    expect(svg).toContain(`fill="${tuile.N}"`);
+    expect(count(svg, '<path')).toBe(9); // 1 pan + 4 soffites + 4 fascias (un débord par égout)
+    expect(count(svg, `fill="${tuile.N}"`)).toBe(1); // le pan reste au ton N
+    expect(svg).toContain(`fill="${tuile.soffite}"`); // dessous débordant ombré
+    expect(svg).toContain(`fill="${tuile.fascia}"`); // planche de rive sombre
   });
 });
 
@@ -61,6 +63,34 @@ describe('roofSvg — lignes stylées par la def (liseré + rangs de la recette)
     expect(count(svg, `stroke="${tuile.line}"`)).toBe(9);
     expect(count(svg, `stroke="${tuile.detail!.courses!.joint}"`)).toBe(12);
     expect(svg).not.toContain('<clipPath'); // aucun détail de couverture en LOD 0
+  });
+
+  it('faîtage : liseré CLAIR `ridgeCap` par-dessus le trait de base → couronnement volumique', () => {
+    const tuile = roofMaterial('tuile');
+    const svg = roofSvg(el({}), dims, { zoom: 0.4 });
+    expect(svg).toContain(`stroke="${tuile.ridgeCap}"`);
+    // chaume = crête molle : pas de couronnement — sa faîte n'emprunte AUCUN autre ton que `line`.
+    expect(roofMaterial('chaume').ridgeCap).toBeUndefined();
+  });
+});
+
+describe('roofSvg — VOLUME d’avant-toit (le toit DÉBORDE, ne pose plus à ras)', () => {
+  const tuile = roofMaterial('tuile');
+  it.each([0, 1, 2, 3] as const)('cran %s : soffites + fascias débordants au ton dédié de la def', (rot) => {
+    const svg = roofSvg(el({}), { ...dims, rot });
+    expect(count(svg, `fill="${tuile.soffite}"`)).toBeGreaterThan(0); // dessous ombré
+    expect(count(svg, `fill="${tuile.fascia}"`)).toBeGreaterThan(0); // planche de rive sombre
+  });
+  it('edge-on : le débord suit la projection (soffites + fascias présents)', () => {
+    const svg = roofSvg(el({}), { ...dims, rot: 1, edge: true });
+    expect(svg).toContain(`fill="${tuile.soffite}"`);
+    expect(svg).toContain(`fill="${tuile.fascia}"`);
+  });
+  it('chaume : soffite débordant mais AUCUNE fascia dure (bord arrondi)', () => {
+    const chaume = roofMaterial('chaume');
+    const svg = roofSvg(el({ params: { roofMaterial: 'chaume' } }), dims);
+    expect(svg).toContain(`fill="${chaume.soffite}"`);
+    expect(chaume.fascia).toBeUndefined();
   });
 });
 

@@ -529,11 +529,12 @@ export function buildPovDrawList(
         const it = makeItem(corners, cam, farMetres, fLv * 0.82, base, 'riser', `${el.key}:${i}:${f.material.part}`, 0, fog, curve);
         if (!it) return;
         items.push(it);
-        // APPAREILLAGE d'un FLANC de BLOC SOLIDE (mur) vu : la pierre porte ses assises (recette `pierre`,
-        // le MÊME `courseDetailItems` que les murs d'arête et l'appareillage iso) → une PAROI, pas un
-        // aplat nu. GATÉ au bloc solide : les vrais reliefs (falaise/rampe naturelle) gardent leur face
-        // nue en POV (parité avec leur rendu POV actuel, aucune régression).
-        if (solid && fSeen && f.side && f.material.part === 'cliff' && m.detail?.courses) {
+        // APPAREILLAGE d'un FLANC de FALAISE vu : si le MATÉRIAU porte une recette (`reliefMaterial.detail`
+        // — pierre appareillée d'un mur/rempart, strates d'une falaise de terre), la face reçoit ses assises
+        // via le MÊME `courseDetailItems` que les murs d'arête et l'iso → une PAROI matiérée, jamais un aplat
+        // nu. Clé = le MATÉRIAU, PAS le terrain-bloc `solidHeightM` : une zone rempart (sommet marchable en
+        // `pierre`, donc `solid` faux) est appareillée comme la courtine, exactement comme l'iso/edge la rendent.
+        if (fSeen && f.side && f.material.part === 'cliff' && m.detail?.courses) {
           const [P0, P1, , P3] = f.poly; // quad du builder : [A@haut, B@haut, B@bas, A@bas]
           const frame: FaceFrame = {
             at: (u, v) => ({ x: (P0.x + (P1.x - P0.x) * u) * mpt, y: (P0.y + (P1.y - P0.y) * u) * mpt, z: P0.h + (P3.h - P0.h) * v }),
@@ -727,7 +728,14 @@ export function buildPovDrawList(
     const lv = staticLight(light, seen, el.cell.x, el.cell.y, z);
     el.faces.forEach((f, i) => {
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
-      const base = sh[f.material.part as CellSide] ?? sh.N ?? FLOOR_FALLBACK;
+      // VOLUME d'avant-toit : le SOFFITE débordant (dessous ombré) et la FASCIA (planche de rive sombre)
+      // ont leur ton DÉDIÉ de la def → l'ombre sous l'égout se voit en première personne ; un pan ordinaire
+      // suit son orientation N/E/S/O (les mêmes couleurs que l'iso).
+      const part = f.material.part;
+      const base =
+        part === 'soffite' ? sh.soffite ?? sh.S ?? sh.N ?? FLOOR_FALLBACK
+        : part === 'fascia' ? sh.fascia ?? sh.line ?? sh.S ?? sh.N ?? FLOOR_FALLBACK
+        : sh[part as CellSide] ?? sh.N ?? FLOOR_FALLBACK;
       // `nearRef` : un pan est GRAND (bâtiment entier) — portée/brume à son bord le plus proche.
       const it = makeItem(corners, cam, farMetres, lv, base, 'roof', `${el.key}:${i}`, 0, fog, curve, true);
       if (it) items.push(it);
