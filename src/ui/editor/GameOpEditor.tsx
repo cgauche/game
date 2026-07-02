@@ -43,6 +43,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   testMod: '📉 Modif. à tous les Tests',
   skillDRBonus: '🥷 +DR à une Compétence',
   charDRBonus: '🎖️ +DR aux Tests d’une Caractéristique',
+  offTerrainMod: '🌊 Hors de son terrain (M imposé, ±DR)',
   crewTestMod: '⚓ Modif. aux Tests individuels d’un Test d’équipage',
   incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
   incomingAdvantage: '⚔️ Avantage donné à l’attaquant (mêlée)',
@@ -136,7 +137,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🪄 Projection & téléportation', ['push', 'teleport', 'chain']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
-  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
+  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
   ['🎓 Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
@@ -320,6 +321,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
+    case 'offTerrainMod': return { op: 'offTerrainMod', terrain: 'eau', mSet: 1, testDR: -2 };
     case 'attrMod': return { op: 'attrMod', attr: 'fortune', mod: 1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
@@ -356,6 +358,7 @@ export function opSummary(o: GameOp): string {
     case 'charDRBonus': return `${L} +${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'crewTestMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
+    case 'offTerrainMod': return `${L} hors ${o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}`;
     case 'attrMod': return `${L} +${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
     case 'ap': return `${L} +${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;
     case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;

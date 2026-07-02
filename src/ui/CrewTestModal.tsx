@@ -17,6 +17,7 @@ import { ParticipantRow } from './ParticipantRow';
 export function CrewTestModal() {
   const p = useGame((s) => s.pendingCrewTest);
   const battle = useGame((s) => s.battle);
+  const party = useGame((s) => s.party);
   const net = useGame((s) => s.net);
   const roll = useGame((s) => s.crewTestRoll);
   const reroll = useGame((s) => s.crewTestReroll);
@@ -25,8 +26,11 @@ export function CrewTestModal() {
   const force = useGame((s) => s.crewTestForceSuccess);
   const confirm = useGame((s) => s.crewTestConfirm);
   const cancel = useGame((s) => s.crewTestCancel);
-  if (!p || !battle) return null;
-  const ship = battle.combatants.find((c) => c.id === p.shipId);
+  if (!p) return null;
+  // En VOYAGE (7b, hors combat), l'équipage = le groupe et la coque vit dans le plan de traversée —
+  // le nom voyage sur le pending (`voyage.shipName`) ; en combat, le pool est la bataille.
+  const pool = battle?.combatants ?? party;
+  const ship = battle?.combatants.find((c) => c.id === p.shipId) ?? (p.voyage ? { name: p.voyage.shipName } : undefined);
   const testType = findCrewTestTypeById(p.testTypeId);
   if (!ship || !testType) return null;
   const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
@@ -55,7 +59,7 @@ export function CrewTestModal() {
       confirmDisabled={!allRolled}
     >
       {p.participants.map((part) => {
-        const actor = battle.combatants.find((c) => c.id === part.id);
+        const actor = pool.find((c) => c.id === part.id);
         if (!actor) return null;
         const res = part.result;
         const role = findCrewRoleById(part.roleId);

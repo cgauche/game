@@ -24,7 +24,7 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { deviatableArmourAt } from './items';
-import { Formula, resolveFormula, skillDRBonus } from './ops';
+import { Formula, resolveFormula, skillDRBonus, offTerrainTestDR } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
 import { type OvercastSource, effectiveRangeMetres } from './overcast';
@@ -286,7 +286,8 @@ export function talentTestSLBonus(
  *  PLUS les auras de +DR (Aura de Dhar via `skillDRBonus`, [[game-traits-trigger-aura-mechanisms]]). Le
  *  casting n'a pas de vue de combat → les `when` ne s'appliquent pas (aucun talent d'incantation n'en a). */
 export function castTestTalentDR(c: Combatant, skill: 'langue' | 'focalisation' | 'priere', spec?: string): number {
-  return talentTestSLBonus(c, { skill, spec }) + skillDRBonus(c, skill, spec);
+  // + hors de son terrain : −DR à TOUS les Tests, l'incantation comprise (Créature marine, MDG p.140).
+  return talentTestSLBonus(c, { skill, spec }) + skillDRBonus(c, skill, spec) + offTerrainTestDR(c);
 }
 
 /**

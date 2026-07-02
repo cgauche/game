@@ -398,6 +398,10 @@ export interface PendingCrewTest extends MultiPending<ShipManeuverParticipant> {
   moraleScore: number;
   undercrew?: { dr: number; capSuccesMinime: boolean };
   extraDR?: number;
+  /** Test d'équipage de VOYAGE maritime (7b — hors combat) : `kind` = l'issue à résoudre
+   *  (`seaVoyageFlow.resolveVoyageCrewTest`), `shipName` = affichage (la coque vit dans
+   *  `travelPlan.vehicle`, pas dans une bataille). Absent = Test de COMBAT (chemin historique). */
+  voyage?: { kind: string; shipName: string };
 }
 /** CHANSON DE MARIN en attente (Talent, MDG 09 l.32-40) : le chanteur choisit sa chanson CONNUE (pré-jet,
  *  OptionChooser — specs du Talent) puis lance son Test de **Divertissement (Chant)** ; sur un succès,

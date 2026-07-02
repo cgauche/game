@@ -1,0 +1,278 @@
+/**
+ * LONGS VOYAGES — couche PURE de MDG ch.15 (l.3-436), données verbatim `sea-events.json` /
+ * `sea-cargo.json`. Le rythme du voyage (milles/jour, Progression) vit dans `seaNavigation.ts` ; ici
+ * l'HUMEUR DE MANANN, les ÉVÉNEMENTS de bord/de port et le COMMERCE MARITIME.
+ *
+ * RAW :
+ *  - Humeur de Manann (l.83-125) : total cumulé PAR NAVIRE ; « Vous ne pouvez obtenir chaque
+ *    modificateur qu'une seule fois et les sacrifices ne sont pas cumulatifs » (l.85) → chaque
+ *    facteur appliqué UNE fois (registre `applied`).
+ *  - Événements de bord (l.89) : « Tous les 1d10 jours … Les lancers dans ce tableau sont modifiés
+ *    par le score actuel d'Humeur de Manann ».
+ *  - Événements de port (l.127-129) : à l'accostage, 2d10 (« dans les 2d10 heures ») ; Humeur
+ *    négative → −1 au 2d10, positive → +1.
+ *  - Commerce maritime (l.309-399) : achat (Production/Surplus, taille du lot = (Taille + Richesse +
+ *    Surplus) × 1d10 × 10, 1 sur le d10 = rien) ; vente (nombre visé selon la relation du port au
+ *    bien, Prix d'offre par Richesse+Taille+Demande) ; brader à 25 % du prix de base (l.399).
+ *  - Cargaisons (l.402-436) : type au d100 PAR SAISON, prix de base par saison (Vin : 3d10 CO).
+ */
+import seaEventsJson from '../data/sea-events.json';
+import seaCargoJson from '../data/sea-cargo.json';
+import { findTableEntry } from './tables';
+import { d10, d100, roll as rollDice, rollExpr, type RNG, defaultRNG } from './dice';
+import type { Difficulty } from './types';
+import type { Season } from './travelStages';
+
+// ── Types de la donnée ───────────────────────────────────────────────────────────────────────────
+
+export interface ManannFactor { id: string; label: string; effect: { sign: 1 | -1; flat: number; d10: number } }
+
+export interface SeaEventDef {
+  min: number;
+  max: number;
+  id: string;
+  label: string;
+  desc: string;
+  kind: string;
+  params?: Record<string, unknown>;
+}
+
+const EVENTS = seaEventsJson as unknown as {
+  manann: { base: number; portEventMod: number; factors: ManannFactor[] };
+  boardEvents: SeaEventDef[];
+  portEvents: SeaEventDef[];
+};
+
+export interface CargoDef {
+  id: string;
+  label: string;
+  avail: Record<Season, [number, number]>;
+  price: Record<Season, number> | { dice: string };
+}
+
+const CARGO = seaCargoJson as unknown as {
+  cargoes: CargoDef[];
+  buy: { availabilityMultiplier: number; merchantSkill: { d10: number; plus: number }; bigPortSkill: { d10: number; plus: number }; partialPurchaseSellerDR: number; surplusSellerDR: number };
+  sell: {
+    offerPrice: { sum: number; pct: number }[];
+    noProduceTargetPerSize: number; commerceBonus: number;
+    producesGossip: { difficulty: Difficulty; targetPerSize: number; minMilles: number };
+    surplusGossip: { difficulty: Difficulty; targetPerSize: number };
+    sellerDR: { noProduce: number; demand: number; produces: number; surplus: number };
+    dumpingPctOfBase: number;
+  };
+  opportunite: {
+    investMaxEnc: boolean;
+    test: { skillId: string; difficulty: Difficulty; totalDR: number; maxAttempts: number };
+    outcomes: { on: 'success' | 'failure'; minMissing?: number; minExtraDR?: number; pct: number }[];
+  };
+};
+
+export const MANANN_FACTORS = EVENTS.manann.factors;
+export const BOARD_EVENTS = EVENTS.boardEvents;
+export const PORT_EVENTS = EVENTS.portEvents;
+export const CARGOES = CARGO.cargoes;
+export const OPPORTUNITE = CARGO.opportunite;
+export const findCargoById = (id: string): CargoDef | undefined => CARGO.cargoes.find((c) => c.id === id);
+export const findManannFactor = (id: string): ManannFactor | undefined => EVENTS.manann.factors.find((f) => f.id === id);
+
+// ── Humeur de Manann (l.83-125) ──────────────────────────────────────────────────────────────────
+
+/** Humeur de Manann PERSISTANTE d'un navire (l.85 : « Ce nombre s'applique au navire lui-même »). */
+export interface ManannMood {
+  score: number;
+  /** Facteurs DÉJÀ appliqués (l.85 : chaque modificateur une seule fois, sacrifices non cumulatifs). */
+  applied: string[];
+}
+
+export const MANANN_BASE: ManannMood = { score: EVENTS.manann.base, applied: [] };
+
+/** Applique un facteur d'Humeur (id du tableau EFFET SUR L'HUMEUR DE MANANN) : roule ses dés signés,
+ *  UNE seule fois par navire (l.85) — déjà appliqué → no-op. PUR (nouvel état). */
+export function applyManannFactor(mood: ManannMood, factorId: string, rng: RNG = defaultRNG): { mood: ManannMood; delta: number; label?: string } {
+  const f = findManannFactor(factorId);
+  if (!f || mood.applied.includes(factorId)) return { mood, delta: 0 };
+  const delta = f.effect.sign * (f.effect.flat + (f.effect.d10 > 0 ? rollDice(f.effect.d10, 10, rng) : 0));
+  return { mood: { score: mood.score + delta, applied: [...mood.applied, factorId] }, delta, label: f.label };
+}
+
+/** Delta LIBRE d'Humeur (événements : « ajoutez 2d10 à son Humeur », Fête de Manann…) — pas un facteur
+ *  du tableau, donc hors registre `applied`. PUR. */
+export function addManann(mood: ManannMood, delta: number): ManannMood {
+  return { ...mood, score: mood.score + delta };
+}
+
+// ── Événements (l.89 + l.127-129) ────────────────────────────────────────────────────────────────
+
+/** Nombre de jours en mer avant le PROCHAIN événement de bord : « Tous les 1d10 jours » (l.89, l.15 —
+ *  les jours ne doivent pas être consécutifs : le compteur se suspend au port, l.19). PUR. */
+export function rollDaysToNextEvent(rng: RNG = defaultRNG): number {
+  return d10(rng);
+}
+
+/** Tire un ÉVÉNEMENT DE BORD (l.89) : d100 + Humeur de Manann du navire. PUR. */
+export function rollBoardEvent(manannScore: number, rng: RNG = defaultRNG): { roll: number; event: SeaEventDef } {
+  const roll = d100(rng) + manannScore;
+  return { roll, event: findTableEntry(EVENTS.boardEvents, roll) };
+}
+
+/** Tire un ÉVÉNEMENT DE PORT à l'accostage (l.127-129) : 2d10, ±1 selon le signe de l'Humeur ;
+ *  il « se produit dans les 2d10 heures après accostage ». PUR. */
+export function rollPortEvent(manannScore: number, rng: RNG = defaultRNG): { roll: number; hours: number; event: SeaEventDef } {
+  const mod = manannScore < 0 ? -EVENTS.manann.portEventMod : manannScore > 0 ? EVENTS.manann.portEventMod : 0;
+  const roll = d10(rng) + d10(rng) + mod;
+  return { roll, hours: d10(rng) + d10(rng), event: findTableEntry(EVENTS.portEvents, roll) };
+}
+
+// ── Commerce maritime (l.309-436) ────────────────────────────────────────────────────────────────
+
+/** Profil COMMERCIAL d'un port (Index des ports, l.439-506) — porté par le LIEU de la carte du monde
+ *  (`MapPlace.port`, donnée d'auteur). `production` : ids de cargaison, ou `'commerce'`/`'minimum-vital'`. */
+export interface PortProfile {
+  /** Taille du Lieu (1-4). */
+  taille: number;
+  /** Richesse du Lieu. */
+  richesse: number;
+  /** Colonne Production : ids de cargaison + éventuellement 'commerce' / 'minimum-vital'. */
+  production: string[];
+  /** Colonne Surplus : id → indice (+1, +2). */
+  surplus?: Record<string, number>;
+  /** Colonne Demande : id → indice. */
+  demande?: Record<string, number>;
+  /** Grand port cosmopolite (Marienburg/Lothern, l.343-349) : 3 cargaisons « commerce », marchands à 3d10+55. */
+  cosmopolite?: boolean;
+}
+
+/** Cargaison ALÉATOIRE de la saison (l.402-418) : d100 dans la colonne saisonnière. PUR. */
+export function rollRandomCargo(season: Season, rng: RNG = defaultRNG): CargoDef {
+  const r = d100(rng);
+  return CARGO.cargoes.find((c) => r >= c.avail[season][0] && r <= c.avail[season][1]) ?? CARGO.cargoes[CARGO.cargoes.length - 1];
+}
+
+/** Prix de BASE d'une cargaison (CO par point d'Enc) pour la saison (l.420-436) — Vin : 3d10 CO,
+ *  tiré une fois à l'achat (« Notez le prix du Vin quand il est acheté »). PUR (RNG injecté). */
+export function cargoBasePrice(cargo: CargoDef, season: Season, rng: RNG = defaultRNG): number {
+  if ('dice' in cargo.price) return rollExpr(cargo.price.dice, rng);
+  return cargo.price[season];
+}
+
+/** Enc DISPONIBLE d'une cargaison à l'achat (l.323-331) : « additionnez la Taille et la Richesse du
+ *  Lieu à tout Surplus de cette cargaison et multipliez le résultat par 1d10 × 10. Si le d10 donne
+ *  un 1 … aucune cargaison de ce type ». PUR. */
+export function rollCargoAvailability(port: PortProfile, cargoId: string, rng: RNG = defaultRNG): { d: number; enc: number } {
+  const d = d10(rng);
+  if (d === 1) return { d, enc: 0 };
+  const surplus = port.surplus?.[cargoId] ?? 0;
+  return { d, enc: (port.taille + port.richesse + surplus) * d * CARGO.buy.availabilityMultiplier };
+}
+
+/** Compétence Marchandage d'un commerçant pris au hasard (l.337 : 3d10+40 ; deux 10+ → Négociateur.
+ *  Marienburg/Lothern l.349 : 3d10+55 ; un 10 suffit). PUR. */
+export function rollMerchantSkill(cosmopolite: boolean, rng: RNG = defaultRNG): { value: number; negotiator: boolean } {
+  const spec = cosmopolite ? CARGO.buy.bigPortSkill : CARGO.buy.merchantSkill;
+  const dice = Array.from({ length: spec.d10 }, () => d10(rng));
+  const tens = dice.filter((d) => d >= 10).length;
+  return { value: dice.reduce((a, b) => a + b, 0) + spec.plus, negotiator: cosmopolite ? tens >= 1 : tens >= 2 };
+}
+
+/** +DR du VENDEUR au Marchandage d'ACHAT (l.339-341) : lot partiel +1 (« il peut se plaindre… »),
+ *  cargaison en Surplus +1 (« les vendeurs locaux peuvent toujours se permettre… »). PUR. */
+export function buySellerDR(partial: boolean, surplus: boolean): number {
+  return (partial ? CARGO.buy.partialPurchaseSellerDR : 0) + (surplus ? CARGO.buy.surplusSellerDR : 0);
+}
+
+/** Relation d'un port à une cargaison à la VENTE (l.360-372). PUR. */
+export type SellRelation = 'no-produce' | 'produces' | 'surplus';
+export function sellRelation(port: PortProfile, cargoId: string): SellRelation {
+  if ((port.surplus?.[cargoId] ?? 0) > 0) return 'surplus';
+  if (port.production.includes(cargoId) && !port.production.includes('commerce')) return 'produces';
+  return 'no-produce';
+}
+
+export interface SellChance {
+  /** Test de Ragot PRÉALABLE requis (ports qui produisent le bien) — `null` = pas de Test. */
+  gossip: { difficulty: Difficulty } | null;
+  /** Nombre visé du d100 « trouver un acheteur » (après le Ragot éventuel). */
+  target: number;
+  /** ±DR du vendeur aux Tests de Marchandage de la vente (l.387-397). */
+  sellerDR: number;
+}
+
+/** Chances de TROUVER UN ACHETEUR + DR de Marchandage à la vente (l.355-397). `milles` = distance
+ *  parcourue par le bateau (l.366 : « plus de 100 milles » requis pour vendre à un port producteur —
+ *  sinon traité comme un port en Surplus, l.368). PUR. */
+export function sellChance(port: PortProfile, cargoId: string, milles: number): SellChance {
+  let rel = sellRelation(port, cargoId);
+  if (rel === 'produces' && milles < CARGO.sell.producesGossip.minMilles) rel = 'surplus'; // l.368
+  const demand = port.demande?.[cargoId] ?? 0;
+  if (rel === 'no-produce') {
+    return {
+      gossip: null,
+      target: (port.taille + demand) * CARGO.sell.noProduceTargetPerSize + (port.production.includes('commerce') ? CARGO.sell.commerceBonus : 0),
+      sellerDR: CARGO.sell.sellerDR.noProduce + (demand > 0 ? CARGO.sell.sellerDR.demand : 0),
+    };
+  }
+  if (rel === 'produces') {
+    return { gossip: { difficulty: CARGO.sell.producesGossip.difficulty }, target: port.taille * CARGO.sell.producesGossip.targetPerSize, sellerDR: CARGO.sell.sellerDR.produces };
+  }
+  return { gossip: { difficulty: CARGO.sell.surplusGossip.difficulty }, target: port.taille * CARGO.sell.surplusGossip.targetPerSize, sellerDR: CARGO.sell.sellerDR.surplus };
+}
+
+/** PRIX D'OFFRE d'un acheteur trouvé (l.374-383) : % du prix de base selon Richesse + Taille + Demande. PUR. */
+export function offerPricePct(port: PortProfile, cargoId: string): number {
+  const sum = port.richesse + port.taille + (port.demande?.[cargoId] ?? 0);
+  const row = [...CARGO.sell.offerPrice].reverse().find((r) => sum >= r.sum) ?? CARGO.sell.offerPrice[0];
+  return 100 + row.pct;
+}
+
+/** BRADER une cargaison invendable (l.399) : « pour un quart de son prix de base dans n'importe quel
+ *  Lieu … "commerce" … ou … Demande pour ce bien ». `null` si le port ne s'y prête pas. PUR. */
+export function dumpingPricePct(port: PortProfile, cargoId: string): number | null {
+  return port.production.includes('commerce') || (port.demande?.[cargoId] ?? 0) > 0 ? CARGO.sell.dumpingPctOfBase : null;
+}
+
+/** Issue du COMMERCE D'OPPORTUNITÉ (Activité en mer, l.276-286) : Test étendu de Marchandage Complexe
+ *  (−10), 10 DR en ≤ 3 tentatives — échec de 6 DR → tout perdu ; échec → moitié ; succès → +10 % ;
+ *  succès de 6 DR (16+) → +20 %. Renvoie le % de l'investissement récupéré. PUR. */
+export function opportunityTradePct(totalDR: number): number {
+  const need = CARGO.opportunite.test.totalDR;
+  for (const o of CARGO.opportunite.outcomes) {
+    if (o.on === 'failure' && o.minMissing != null && totalDR <= need - o.minMissing) return 100 + o.pct;
+  }
+  if (totalDR < need) return 100 + (CARGO.opportunite.outcomes.find((o) => o.on === 'failure' && o.minMissing == null)?.pct ?? -50);
+  for (const o of CARGO.opportunite.outcomes) {
+    if (o.on === 'success' && o.minExtraDR != null && totalDR >= need + o.minExtraDR) return 100 + o.pct;
+  }
+  return 100 + (CARGO.opportunite.outcomes.find((o) => o.on === 'success' && o.minExtraDR == null)?.pct ?? 10);
+}
+
+// ── Cargaison EMBARQUÉE (persistée sur le navire de campagne) ────────────────────────────────────
+
+/** Un LOT de cargaison en cale (commerce maritime, ch.15) — `basePriceGold` = prix de base NOTÉ à
+ *  l'achat (CO/Enc, « Notez le type de cargaison et le prix de base », l.420 ; le Vin fige son 3d10). */
+export interface CargoLot {
+  cargoId: string;
+  enc: number;
+  basePriceGold: number;
+}
+
+/** Enc TOTAL embarqué (pénalités de Contenance, événements « gâtent 1d10 Enc »…). PUR. */
+export function cargoTotalEnc(lots: CargoLot[]): number {
+  return lots.reduce((s, l) => s + Math.max(0, l.enc), 0);
+}
+
+/** RETIRE `enc` points d'une cargaison (avarie, vol, vente partielle) — au fil des lots de cet id,
+ *  les lots vidés disparaissent. PUR (nouvelle liste). */
+export function removeCargo(lots: CargoLot[], cargoId: string, enc: number): { lots: CargoLot[]; removed: number } {
+  let left = Math.max(0, enc);
+  let removed = 0;
+  const out: CargoLot[] = [];
+  for (const l of lots) {
+    if (l.cargoId !== cargoId || left <= 0) { out.push(l); continue; }
+    const take = Math.min(l.enc, left);
+    left -= take;
+    removed += take;
+    if (l.enc - take > 0) out.push({ ...l, enc: l.enc - take });
+  }
+  return { lots: out, removed };
+}

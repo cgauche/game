@@ -40,7 +40,7 @@ import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evalua
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { testValue, effectiveSkillCharKey } from '../engine/skills';
-import { skillDRBonus, charDRBonusOf } from '../engine/ops';
+import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, psychResolution } from '../engine/psychology';
@@ -1019,6 +1019,7 @@ export const FLOWS = {
         ? talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec })
           + (p.skillId ? skillDRBonus(actor, p.skillId, p.spec) : 0)
           + charDRBonusOf(actor, p.char ?? (p.skillId ? effectiveSkillCharKey(actor, p.skillId, { spec: p.spec }) : undefined))
+          + offTerrainTestDR(actor) // hors de son terrain : −DR à TOUS les Tests (Créature marine, MDG p.140)
         : 0;
       if (forced) {
         if (p.success) return null; // (ancien `force.guard : !p.success`) — rien à forcer si déjà réussi

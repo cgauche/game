@@ -3930,6 +3930,12 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     return c ? { ...h, ...carryOverState(c) } : h;
   });
   set({ party: newParty, ...(endLines.length ? { journal: [...get().journal.slice(-40), ...endLines] } : {}) });
+  // #30 — Blessures de COQUE persistantes : si une coque du combat EST le navire de campagne
+  // (creatureId = vehicleId), son état de fin de combat est écrit sur `CampaignVessel.wounds`
+  // (le voyage maritime et les réparations au port en repartent).
+  const vessel = get().vessel;
+  const hull = vessel ? battle.combatants.find((c) => c.creatureId === vessel.vehicleId) : undefined;
+  if (vessel && hull) set({ vessel: { ...vessel, wounds: { current: hull.wounds.current, max: hull.wounds.max } } });
   // Réconciliation de la scène : tout combattant ISSU d'une entité de scène (identité unifiée,
   // Combatant.id === SceneEntity.id) et hors d'action quitte la scène. Victoire → les ennemis sont tous
   // hors d'action = retirés ; défaite → ennemis vivants = conservés ; les héros du groupe ne sont jamais

@@ -20,6 +20,7 @@ import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
 import { conditionGating } from './conditions';
 import { traumaMovementHalved, passiveMoveMod } from './trauma';
+import { offTerrainMoveCap } from './ops';
 import encumbranceTiersJson from '../data/encumbranceTiers.json';
 
 export interface EncumbrancePenalties {
@@ -68,7 +69,9 @@ export function effectiveMovement(c: Combatant): number {
   if (p.immobile || gate === 'none') return 0;
   // `moveMod` ADDITIF du collecteur passif unifié : mutation PERMANENTE (Pattes d'animaux +1 / Corpulent /
   // Court sur pattes −1, kind `intrinsèque`) + sort actif (kind `magique`) — sommés avant tout demi-Mouvement.
-  const mv = Math.max(0, c.movement + passiveMoveMod(c));
+  // HORS de son terrain (op `offTerrainMod`, gaté par `c.offTerrain`) : le M est REMPLACÉ (Créature marine
+  // « son M tombe à 1 » MDG p.140 ; Aquatique → 0, T2C p.90) — les gates/demi-Mouvement s'appliquent dessus.
+  const mv = offTerrainMoveCap(c) ?? Math.max(0, c.movement + passiveMoveMod(c));
   // `movePenalty` n'est null que sur le palier immobilisé (déjà court-circuité ci-dessus) → `?? 0` sûr.
   const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - (p.movePenalty ?? 0), p.moveFloor));
   // Demi-Mouvement : `gating.movement:'half'` (Sonné/À Terre) OU traumatisme de jambe/torse (LDB 18 :

@@ -9,6 +9,7 @@ import {
   type Allure, ALLURE_LABEL, availableAllures, partyFullyMounted, partyMounts,
 } from '../engine/mountTravel';
 import { rationCount } from '../engine/provisions';
+import { findVehicleById } from '../data';
 import { formatMoney, canAfford } from '../engine/money';
 import { rule } from '../engine/policy';
 import { TravelRolesPanel } from './TravelRolesPanel';
@@ -120,6 +121,12 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const modeChoices: TravelMode[] = selRoute
     ? [...selRoute.modes, ...(mounted && selRoute.modes.includes('pied') ? ['monture'] : [])]
     : [];
+
+  // Traversée MARITIME (routes `sea`, MDG ch.13/15) : sur le navire de campagne — estimation en milles/jour.
+  const vessel = useGame((s) => s.vessel);
+  const vesselData = vessel ? findVehicleById(vessel.vehicleId) : undefined;
+  const vesselLabel = vesselData?.label ?? '';
+  const seaM = (vessel?.wounds == null || vessel.wounds.current > 0) ? (vesselData?.ship?.sail?.m ?? vesselData?.ship?.oars?.m ?? 0) : 0;
 
   // Estimations du trajet sélectionné (mêmes formules que le flux — RAW l.207-224).
   const base = baseHoursPerDay(map);
@@ -289,7 +296,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       {!travelPlan?.interrupted && selRoute && dest && here && (
         <div className="worldmap-panel">
           <div className="wm-trip">
-            <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{dest.label}</b> · {selRoute.km} km</span>
+            <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{dest.label}</b> · {selRoute.km} {selRoute.sea ? 'milles' : 'km'}</span>
             <div className="wm-modes">
               {modeChoices.map((m) => (
                 <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
@@ -339,7 +346,15 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             </label>
           )}
           <p className="wm-est">
-            {kmh > 0 ? (
+            {mode === 'mer' ? (
+              vessel && seaM > 0 ? (
+                // 18 milles/jour par point de M (MDG ch.15 l.57-70) — le vent et les Tests d'équipage
+                // de Progression (±10 %/DR) modulent chaque journée.
+                <>⚓ {vesselLabel} · ≈ {18 * seaM} milles/jour (M {seaM}, hors vent) · ~{Math.max(1, Math.ceil(selRoute.km / (18 * seaM)))} jour(s)</>
+              ) : (
+                <>Aucun navire de campagne en état de prendre la mer.</>
+              )
+            ) : kmh > 0 ? (
               <>
                 Allure {kmh} km/h · Durée {plan ? fmtDuration(plan) : '—'}
                 {cost && <> · Prix {formatMoney(cost)}{!affordable && ' (bourse insuffisante)'}</>}
@@ -357,10 +372,11 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <button
               type="button"
               className="btn btn-primary"
-              disabled={kmh <= 0 || !affordable || isGuest}
+              disabled={(mode === 'mer' ? !vessel || seaM <= 0 : kmh <= 0 || !affordable) || isGuest}
               title={isGuest ? 'L’hôte décide des départs.'
-                : kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
-                : !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`
+                : mode === 'mer' && (!vessel || seaM <= 0) ? 'Aucun navire de campagne en état de prendre la mer.'
+                : mode !== 'mer' && kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
+                : mode !== 'mer' && !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`
                 : undefined}
               onClick={() => startTravel(selRoute.id, mode, {
                 classKey: classKey || undefined,

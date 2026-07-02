@@ -1,0 +1,389 @@
+{
+  "cargoes": [
+    {
+      "id": "cereales",
+      "label": "Céréales",
+      "avail": {
+        "printemps": [
+          1,
+          5
+        ],
+        "ete": [
+          1,
+          9
+        ],
+        "automne": [
+          1,
+          18
+        ],
+        "hiver": [
+          1,
+          9
+        ]
+      },
+      "price": {
+        "printemps": 2,
+        "ete": 1,
+        "automne": 0.5,
+        "hiver": 1
+      }
+    },
+    {
+      "id": "armes",
+      "label": "Armes",
+      "avail": {
+        "printemps": [
+          6,
+          8
+        ],
+        "ete": [
+          10,
+          12
+        ],
+        "automne": [
+          19,
+          21
+        ],
+        "hiver": [
+          10,
+          12
+        ]
+      },
+      "price": {
+        "printemps": 6,
+        "ete": 5,
+        "automne": 4,
+        "hiver": 5
+      }
+    },
+    {
+      "id": "produits-de-luxe",
+      "label": "Produits de luxe",
+      "avail": {
+        "printemps": [
+          9,
+          13
+        ],
+        "ete": [
+          13,
+          16
+        ],
+        "automne": [
+          22,
+          25
+        ],
+        "hiver": [
+          13,
+          16
+        ]
+      },
+      "price": {
+        "printemps": 25,
+        "ete": 25,
+        "automne": 25,
+        "hiver": 25
+      }
+    },
+    {
+      "id": "metaux",
+      "label": "Métaux",
+      "avail": {
+        "printemps": [
+          14,
+          19
+        ],
+        "ete": [
+          17,
+          22
+        ],
+        "automne": [
+          26,
+          30
+        ],
+        "hiver": [
+          17,
+          25
+        ]
+      },
+      "price": {
+        "printemps": 4,
+        "ete": 4,
+        "automne": 4,
+        "hiver": 4
+      }
+    },
+    {
+      "id": "bois",
+      "label": "Bois",
+      "avail": {
+        "printemps": [
+          20,
+          28
+        ],
+        "ete": [
+          23,
+          44
+        ],
+        "automne": [
+          31,
+          46
+        ],
+        "hiver": [
+          26,
+          36
+        ]
+      },
+      "price": {
+        "printemps": 1.5,
+        "ete": 0.75,
+        "automne": 1,
+        "hiver": 1.5
+      }
+    },
+    {
+      "id": "vin",
+      "label": "Vin",
+      "avail": {
+        "printemps": [
+          29,
+          33
+        ],
+        "ete": [
+          45,
+          56
+        ],
+        "automne": [
+          47,
+          60
+        ],
+        "hiver": [
+          37,
+          56
+        ]
+      },
+      "price": {
+        "dice": "3d10"
+      }
+    },
+    {
+      "id": "laine",
+      "label": "Laine",
+      "avail": {
+        "printemps": [
+          34,
+          50
+        ],
+        "ete": [
+          57,
+          62
+        ],
+        "automne": [
+          61,
+          65
+        ],
+        "hiver": [
+          57,
+          60
+        ]
+      },
+      "price": {
+        "printemps": 0.5,
+        "ete": 0.75,
+        "automne": 1,
+        "hiver": 1.5
+      }
+    },
+    {
+      "id": "sel",
+      "label": "Sel",
+      "avail": {
+        "printemps": [
+          51,
+          60
+        ],
+        "ete": [
+          63,
+          75
+        ],
+        "automne": [
+          66,
+          72
+        ],
+        "hiver": [
+          61,
+          64
+        ]
+      },
+      "price": {
+        "printemps": 2,
+        "ete": 3,
+        "automne": 4,
+        "hiver": 3
+      }
+    },
+    {
+      "id": "huile",
+      "label": "Huile",
+      "avail": {
+        "printemps": [
+          61,
+          70
+        ],
+        "ete": [
+          76,
+          82
+        ],
+        "automne": [
+          73,
+          83
+        ],
+        "hiver": [
+          65,
+          81
+        ]
+      },
+      "price": {
+        "printemps": 3,
+        "ete": 2,
+        "automne": 4,
+        "hiver": 6
+      }
+    },
+    {
+      "id": "poisson-sale",
+      "label": "Poisson salé",
+      "avail": {
+        "printemps": [
+          71,
+          90
+        ],
+        "ete": [
+          83,
+          90
+        ],
+        "automne": [
+          84,
+          90
+        ],
+        "hiver": [
+          82,
+          90
+        ]
+      },
+      "price": {
+        "printemps": 3,
+        "ete": 2,
+        "automne": 1,
+        "hiver": 2
+      }
+    },
+    {
+      "id": "pieces-detachees-de-navire",
+      "label": "Pièces détachées de navire",
+      "avail": {
+        "printemps": [
+          91,
+          100
+        ],
+        "ete": [
+          91,
+          100
+        ],
+        "automne": [
+          91,
+          100
+        ],
+        "hiver": [
+          91,
+          100
+        ]
+      },
+      "price": {
+        "printemps": 8,
+        "ete": 7,
+        "automne": 6,
+        "hiver": 7
+      }
+    }
+  ],
+  "buy": {
+    "availabilityMultiplier": 10,
+    "merchantSkill": {
+      "d10": 3,
+      "plus": 40
+    },
+    "bigPortSkill": {
+      "d10": 3,
+      "plus": 55
+    },
+    "partialPurchaseSellerDR": 1,
+    "surplusSellerDR": 1
+  },
+  "sell": {
+    "offerPrice": [
+      {
+        "sum": 1,
+        "pct": -50
+      },
+      {
+        "sum": 2,
+        "pct": -25
+      },
+      {
+        "sum": 3,
+        "pct": -10
+      },
+      {
+        "sum": 4,
+        "pct": 0
+      }
+    ],
+    "noProduceTargetPerSize": 10,
+    "commerceBonus": 30,
+    "producesGossip": {
+      "difficulty": "complexe",
+      "targetPerSize": 10,
+      "minMilles": 100
+    },
+    "surplusGossip": {
+      "difficulty": "tres-difficile",
+      "targetPerSize": 5
+    },
+    "sellerDR": {
+      "noProduce": 1,
+      "demand": 1,
+      "produces": -2,
+      "surplus": -3
+    },
+    "dumpingPctOfBase": 25
+  },
+  "opportunite": {
+    "investMaxEnc": true,
+    "test": {
+      "skillId": "marchandage",
+      "difficulty": "complexe",
+      "totalDR": 10,
+      "maxAttempts": 3
+    },
+    "outcomes": [
+      {
+        "on": "failure",
+        "minMissing": 6,
+        "pct": -100
+      },
+      {
+        "on": "failure",
+        "pct": -50
+      },
+      {
+        "on": "success",
+        "pct": 10
+      },
+      {
+        "on": "success",
+        "minExtraDR": 6,
+        "pct": 20
+      }
+    ]
+  }
+}

@@ -845,6 +845,11 @@ export interface Combatant {
   teamCommanderId?: string;
   species?: string;
   career?: string;
+  /** Drapeau POSITIONNEL dérivé « hors de son terrain d'élection » (op passive `offTerrainMod` — Créature
+   *  marine/Aquatique : la case occupée n'est pas `eau`) : posé par `placeCombatant` à CHAQUE placement,
+   *  lu par les consommateurs purs `offTerrainMoveCap`/`offTerrainTestDR` (trauma.ts). Re-dérivé au
+   *  placement suivant (jamais une vérité à maintenir à la main). */
+  offTerrain?: boolean;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
   size?: import('./size').SizeCategory;
   /** EMPREINTE de grille (côté N×N), DÉCOUPLÉE de la Taille créature `size` (lue par `footprintN`). Pour les

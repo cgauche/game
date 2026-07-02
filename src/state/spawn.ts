@@ -9,7 +9,8 @@ import { findCreatureById, findSkillById, findTalentById, findSpellById, findVeh
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus } from '../engine/navalTraits';
-import { CustomStatblock, EntityAppearance, type Scene, heightAt } from './scene';
+import { requiredTerrains } from '../engine/ops';
+import { CustomStatblock, EntityAppearance, type Scene, heightAt, tileAt } from './scene';
 import { emptyArmour, buildWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
@@ -36,10 +37,21 @@ import { bodyPlanById } from '../gameIso/rig/bodyPlan';
  * distance de combat verticale et le −10 « en contrebas » resteraient faux après le mouvement.
  * `z` omis quand nul et `h` omis quand la surface est à 0 m → byte-identique au plan sur une scène plate.
  */
-export function placeCombatant(c: { pos?: { x: number; y: number; z?: number; h?: number } }, scene: Scene | null | undefined, p: { x: number; y: number; z?: number }): void {
+export function placeCombatant(c: { pos?: { x: number; y: number; z?: number; h?: number }; traits?: Combatant['traits']; offTerrain?: boolean }, scene: Scene | null | undefined, p: { x: number; y: number; z?: number }): void {
   const z = p.z ?? 0;
   const h = scene ? heightAt(scene, p.x, p.y, z) : 0;
   c.pos = { x: p.x, y: p.y, ...(z ? { z } : {}), ...(h ? { h } : {}) };
+  // Drapeau POSITIONNEL « hors de son terrain » (op passive `offTerrainMod` — Créature marine MDG p.140 /
+  // Aquatique T2C p.90) : re-dérivé à CHAQUE placement (chokepoint UNIQUE du positionnement). Un porteur
+  // dont la case n'est pas de son terrain d'élection (`eau`) subit mSet/testDR ; sans passif, no-op.
+  const req = c.traits ? requiredTerrains(c as Combatant) : [];
+  if (req.length) c.offTerrain = !req.includes(tileAt2(scene ?? null, p.x, p.y, z));
+  else if (c.offTerrain) delete c.offTerrain;
+}
+
+/** Terrain de la case, tolérant une scène absente (harnais de test sans scène → 'sol'). */
+function tileAt2(scene: Scene | null, x: number, y: number, z: number): string {
+  return scene ? tileAt(scene, x, y, z) : 'sol';
 }
 
 export function bodyShapeOf(id: string): BodyShape {

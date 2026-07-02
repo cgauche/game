@@ -54,6 +54,7 @@ import { spawnEnemy, placeCombatant } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
+import { resolveVoyageCrewTest } from './seaVoyageFlow';
 import { rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyByLabel } from '../data';
@@ -988,8 +989,18 @@ export function createCombatSlice(get: Get, set: Set) {
     ...rollFlowActionsMulti('crewTest', FLOWS.crewTest, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     crewTestConfirm: () => {
       const { battle, pendingCrewTest: p } = get();
-      if (!battle || !p) return;
+      if (!p) return;
       if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
+      // Test d'équipage de VOYAGE maritime (7b — hors combat) : l'issue est déléguée au flux de
+      // traversée (`resolveVoyageCrewTest` : Progression, Orientation, Affaler, Poursuite…).
+      if (p.voyage) {
+        const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
+        set({ pendingCrewTest: null });
+        get().log(`⚓ ${findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId} — ${p.voyage.shipName} : DR ${total >= 0 ? `+${total}` : total} → ${total >= 1 ? 'succès' : 'échec'} (MDG 14 l.13).`);
+        resolveVoyageCrewTest(get, set, p, total);
+        return;
+      }
+      if (!battle) return;
       const ship = battle.combatants.find((c) => c.id === p.shipId);
       if (!ship) { set({ pendingCrewTest: null }); return; }
       const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
@@ -2012,6 +2023,12 @@ export function createCombatSlice(get: Get, set: Set) {
           postes: ent.postes, // navire → pièces d'artillerie montées (MDG ch.12-13)
           upgrades: ent.upgrades, // navire → Améliorations d'instance (MDG ch.12 : Blindage, Lissage…)
         }));
+      // #30 — Blessures de COQUE persistantes : une coque spawnée qui EST le navire de campagne
+      // (creatureId = vehicleId) repart de l'état persisté (writeback symétrique dans finalizeBattle).
+      const vessel0 = get().vessel;
+      if (vessel0?.wounds) {
+        for (const c of enemies) if (c.creatureId === vessel0.vehicleId) c.wounds.current = Math.min(vessel0.wounds.current, c.wounds.max);
+      }
       // Combat monté (LDB 14) : marquer les montures rideables, basculer les « alliés », puis appairer
       // les couples pré-montés (ridesEntityId → la monture). Le cavalier monte SUR sa monture.
       const idxByEntity = new Map(roster.map((r, i) => [r.ent.id, i]));

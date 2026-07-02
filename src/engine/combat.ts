@@ -23,7 +23,7 @@ import { traumaDodgePenalty, damageSBBonus } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt, selectedAmmo } from './items';
-import { incomingAttackMod, incomingDamageNullified, skillDRBonus } from './ops';
+import { incomingAttackMod, incomingDamageNullified, skillDRBonus, offTerrainTestDR } from './ops';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
@@ -603,9 +603,11 @@ function combineOpposed(
   // +DR d'effet actif/trait sur un Test d'ATTAQUE RÉUSSI (chanson « Jacques Bret » : +1 DR Corps à corps,
   // MDG 09 l.228) — même règle d'application que le +DR de Talent (LDB 10 l.20 : « utilisation RÉUSSIE »).
   const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender)
-    + (atk.success ? skillDRBonus(attacker, weapon.type === 'ranged' ? 'projectiles' : 'corps-a-corps') : 0);
+    + (atk.success ? skillDRBonus(attacker, weapon.type === 'ranged' ? 'projectiles' : 'corps-a-corps') : 0)
+    + offTerrainTestDR(attacker); // hors de son terrain (Créature marine, MDG p.140) : −DR à TOUS ses Tests
   const defSL = def.sl - parrySizePenalty + vsDefenseDRAdjust(weapon)
-    + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0);
+    + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0)
+    + offTerrainTestDR(defender);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
   const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, parryWeapon), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon), defenseMode);
   const usedParry = defenseMode === 'parade' ? parryWeapon : undefined; // arme de parade (Critiques opposés / Piège-lame)
@@ -677,7 +679,7 @@ export function resolveMeleePassive(
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
-  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'corps-a-corps'), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un Test réussi (Jacques Bret, MDG 09 l.228)
+  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'corps-a-corps') + offTerrainTestDR(attacker), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un Test réussi (Jacques Bret) ; hors de son terrain −DR (Créature marine, MDG p.140)
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
@@ -822,7 +824,7 @@ export function resolveRanged(
       log: `${attacker.name} manque sa cible.`,
     };
   }
-  return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'projectiles'), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un tir réussi
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'projectiles') + offTerrainTestDR(attacker), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un tir réussi ; hors de son terrain −DR (MDG p.140)
 }
 
 /** Jet d'attaque FIGÉ d'un TIR (Test de Projectiles, mods de portée/Taille/État inclus) — mirror de

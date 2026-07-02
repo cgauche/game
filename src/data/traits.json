@@ -2409,7 +2409,15 @@
     "source": {
       "book": "MDG",
       "page": 140
-    }
+    },
+    "passive": [
+      {
+        "op": "offTerrainMod",
+        "terrain": "eau",
+        "mSet": 1,
+        "testDR": -2
+      }
+    ]
   },
   {
     "id": "marque-de-khorne",
@@ -2431,6 +2439,13 @@
     "source": {
       "book": "T2C",
       "page": 90
-    }
+    },
+    "passive": [
+      {
+        "op": "offTerrainMod",
+        "terrain": "eau",
+        "mSet": 0
+      }
+    ]
   }
 ]

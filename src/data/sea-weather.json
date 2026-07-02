@@ -1,0 +1,447 @@
+{
+  "table": [
+    {
+      "min": -9999,
+      "max": 1,
+      "precipitations": "aucune",
+      "temperature": "caniculaire",
+      "visibilite": "degage",
+      "vent": "calme-plat"
+    },
+    {
+      "min": 2,
+      "max": 2,
+      "precipitations": "aucune",
+      "temperature": "chaude",
+      "visibilite": "degage",
+      "vent": "legere-brise"
+    },
+    {
+      "min": 3,
+      "max": 4,
+      "precipitations": "aucune",
+      "temperature": "mediane",
+      "visibilite": "degage",
+      "vent": "brise-fraiche"
+    },
+    {
+      "min": 5,
+      "max": 6,
+      "precipitations": "aucune",
+      "temperature": "mediane",
+      "visibilite": "brume",
+      "vent": "vent-modere"
+    },
+    {
+      "min": 7,
+      "max": 8,
+      "precipitations": "legeres",
+      "temperature": "mediane",
+      "visibilite": "brume",
+      "vent": "vent-violent"
+    },
+    {
+      "min": 9,
+      "max": 9,
+      "precipitations": "legeres",
+      "temperature": "froide",
+      "visibilite": "brouillard",
+      "vent": "violente-tempete"
+    },
+    {
+      "min": 10,
+      "max": 10,
+      "precipitations": "abondantes",
+      "temperature": "froide",
+      "visibilite": "puree-de-pois",
+      "vent": "vent-modere"
+    },
+    {
+      "min": 11,
+      "max": 12,
+      "precipitations": "tres-abondantes",
+      "temperature": "froide",
+      "visibilite": "brume",
+      "vent": "brise-fraiche"
+    },
+    {
+      "min": 13,
+      "max": 13,
+      "precipitations": "abondantes",
+      "temperature": "glaciale",
+      "visibilite": "brume",
+      "vent": "legere-brise"
+    },
+    {
+      "min": 14,
+      "max": 9999,
+      "precipitations": "aucune",
+      "temperature": "glaciale",
+      "visibilite": "degage",
+      "vent": "calme-plat"
+    }
+  ],
+  "seasonMod": {
+    "ete": 0,
+    "automne": 2,
+    "printemps": 2,
+    "hiver": 4
+  },
+  "warmSeaMod": -2,
+  "precipitations": [
+    {
+      "id": "aucune",
+      "label": "Aucune"
+    },
+    {
+      "id": "legeres",
+      "label": "Légères",
+      "desc": "–10 sur les Tests d'Athlétisme, d'Escalade et de Projectiles (Poudre noire)",
+      "skillMods": [
+        {
+          "skills": [
+            "athletisme",
+            "escalade",
+            "projectiles"
+          ],
+          "spec": {
+            "projectiles": "Poudre noire"
+          },
+          "mod": -10
+        }
+      ]
+    },
+    {
+      "id": "abondantes",
+      "label": "Abondantes",
+      "desc": "–20 sur les Tests d'Athlétisme, d'Escalade et de Projectiles (Poudre noire), –10 sur les Tests de Commandement, d'Orientation, de Perception, de Ramer et de Voile",
+      "skillMods": [
+        {
+          "skills": [
+            "athletisme",
+            "escalade",
+            "projectiles"
+          ],
+          "spec": {
+            "projectiles": "Poudre noire"
+          },
+          "mod": -20
+        },
+        {
+          "skills": [
+            "commandement",
+            "orientation",
+            "perception",
+            "ramer",
+            "voile"
+          ],
+          "mod": -10
+        }
+      ]
+    },
+    {
+      "id": "tres-abondantes",
+      "label": "Très abondantes",
+      "desc": "–30 sur les Tests d'Athlétisme, d'Escalade et de Projectiles (Poudre noire), –20 sur les Tests de Commandement, d'Orientation, de Perception, de Ramer et de Voile, –10 sur tous les autres Tests",
+      "skillMods": [
+        {
+          "skills": [
+            "athletisme",
+            "escalade",
+            "projectiles"
+          ],
+          "spec": {
+            "projectiles": "Poudre noire"
+          },
+          "mod": -30
+        },
+        {
+          "skills": [
+            "commandement",
+            "orientation",
+            "perception",
+            "ramer",
+            "voile"
+          ],
+          "mod": -20
+        }
+      ],
+      "otherMod": -10
+    }
+  ],
+  "temperatures": [
+    {
+      "id": "caniculaire",
+      "label": "Caniculaire",
+      "testEveryHours": 2,
+      "difficulty": "intermediaire",
+      "exposure": "chaleur",
+      "litresParJour": 4
+    },
+    {
+      "id": "chaude",
+      "label": "Chaude",
+      "testEveryHours": 4,
+      "difficulty": "accessible",
+      "exposure": "chaleur",
+      "litresParJour": 3
+    },
+    {
+      "id": "mediane",
+      "label": "Médiane"
+    },
+    {
+      "id": "froide",
+      "label": "Froide",
+      "testEveryHours": 4,
+      "difficulty": "accessible",
+      "exposure": "froid"
+    },
+    {
+      "id": "glaciale",
+      "label": "Glaciale",
+      "testEveryHours": 2,
+      "difficulty": "intermediaire",
+      "exposure": "froid"
+    }
+  ],
+  "visibilites": [
+    {
+      "id": "degage",
+      "label": "Dégagé"
+    },
+    {
+      "id": "brume",
+      "label": "Brume",
+      "drPenalty": -1,
+      "beyondM": 20
+    },
+    {
+      "id": "brouillard",
+      "label": "Brouillard",
+      "drPenalty": -2,
+      "beyondM": 10
+    },
+    {
+      "id": "puree-de-pois",
+      "label": "Purée de pois",
+      "drPenalty": -3,
+      "beyondM": 5
+    }
+  ],
+  "vents": [
+    {
+      "id": "calme-plat",
+      "label": "Calme plat"
+    },
+    {
+      "id": "legere-brise",
+      "label": "Légère brise"
+    },
+    {
+      "id": "brise-fraiche",
+      "label": "Brise fraîche"
+    },
+    {
+      "id": "vent-modere",
+      "label": "Vent modéré"
+    },
+    {
+      "id": "vent-violent",
+      "label": "Vent violent"
+    },
+    {
+      "id": "violente-tempete",
+      "label": "Violente tempête"
+    }
+  ],
+  "roseDesVents": [
+    {
+      "min": 1,
+      "max": 6,
+      "direction": "dominant"
+    },
+    {
+      "min": 7,
+      "max": 7,
+      "direction": "nord"
+    },
+    {
+      "min": 8,
+      "max": 8,
+      "direction": "sud"
+    },
+    {
+      "min": 9,
+      "max": 9,
+      "direction": "ouest"
+    },
+    {
+      "min": 10,
+      "max": 10,
+      "direction": "est"
+    }
+  ],
+  "effetDuVent": {
+    "calme-plat": {
+      "arriere": {
+        "encalmine": true
+      },
+      "lateral": {
+        "encalmine": true
+      },
+      "face": {
+        "encalmine": true
+      }
+    },
+    "legere-brise": {
+      "arriere": {
+        "pctSail": 0,
+        "pctOther": 0
+      },
+      "lateral": {
+        "pctSail": 0,
+        "pctOther": 0
+      },
+      "face": {
+        "pctSail": -10,
+        "pctOther": 0
+      }
+    },
+    "brise-fraiche": {
+      "arriere": {
+        "pctSail": 10,
+        "pctOther": 0
+      },
+      "lateral": {
+        "virement": true,
+        "pctSail": 10,
+        "pctOther": 0
+      },
+      "face": {
+        "pctSail": -25,
+        "pctOther": 0
+      }
+    },
+    "vent-modere": {
+      "arriere": {
+        "pctSail": 25,
+        "pctOther": 0
+      },
+      "lateral": {
+        "virement": true,
+        "pctSail": 25,
+        "pctOther": 0
+      },
+      "face": {
+        "pctSail": -50,
+        "pctOther": -10
+      }
+    },
+    "vent-violent": {
+      "arriere": {
+        "pctSail": 25,
+        "pctOther": 10
+      },
+      "lateral": {
+        "affaler": true,
+        "pctOther": -5
+      },
+      "face": {
+        "affaler": true,
+        "pctOther": -25
+      }
+    },
+    "violente-tempete": {
+      "arriere": {
+        "affaler": true
+      },
+      "lateral": {
+        "affaler": true
+      },
+      "face": {
+        "affaler": true
+      }
+    }
+  },
+  "effetDuVentClinfoc": {
+    "calme-plat": {
+      "arriere": {
+        "encalmine": true
+      },
+      "lateral": {
+        "encalmine": true
+      },
+      "face": {
+        "encalmine": true
+      }
+    },
+    "legere-brise": {
+      "arriere": {
+        "pctSail": 10
+      },
+      "lateral": {
+        "pctSail": 0
+      },
+      "face": {
+        "pctSail": -10
+      }
+    },
+    "brise-fraiche": {
+      "arriere": {
+        "pctSail": 25
+      },
+      "lateral": {
+        "virement": true,
+        "pctSail": 25
+      },
+      "face": {
+        "pctSail": -25
+      }
+    },
+    "vent-modere": {
+      "arriere": {
+        "pctSail": 25
+      },
+      "lateral": {
+        "virement": true,
+        "pctSail": 25
+      },
+      "face": {
+        "pctSail": -50
+      }
+    },
+    "vent-violent": {
+      "arriere": {
+        "pctSail": 50
+      },
+      "lateral": {
+        "affaler": true
+      },
+      "face": {
+        "affaler": true
+      }
+    },
+    "violente-tempete": {
+      "arriere": {
+        "affaler": true
+      },
+      "lateral": {
+        "affaler": true
+      },
+      "face": {
+        "affaler": true
+      }
+    }
+  },
+  "affaler": {
+    "difficulty": "intermediaire",
+    "failCritLocation": "greement",
+    "driftPctOfSpeed": 25
+  },
+  "encalmine": {
+    "currentM": 1,
+    "towM": 1,
+    "towManDR": -4
+  }
+}

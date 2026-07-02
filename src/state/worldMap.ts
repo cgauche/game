@@ -25,6 +25,10 @@ export interface MapPlace {
   entry?: string;
   /** Pictogramme affiché (emoji), défaut 📍. */
   icon?: string;
+  /** Profil COMMERCIAL de port (Index des ports, MDG ch.15 l.439-506) — présent = ce lieu est un port
+   *  maritime (commerce, événements d'escale, chantier). `lighthouse` : un phare veille sur l'approche
+   *  (Test de Perception d'équipage à l'atterrage, MDG ch.13 l.333-351). */
+  port?: import('../engine/seaVoyage').PortProfile & { lighthouse?: boolean };
 }
 
 /** Péripétie d'AUTEUR sur une route : tirée chaque jour de voyage à `chancePct` %. */
@@ -60,6 +64,11 @@ export interface MapRoute {
    *  l'auberge (chambres/repas payants, modale de Repos) en plus du campement. Absent = belle
    *  étoile seulement. */
   inns?: boolean;
+  /** Route MARITIME (MDG ch.13-15) : se voyage sur le NAVIRE DE CAMPAGNE (`state.vessel`) ; `km` est
+   *  alors en MILLES (les tables RAW — 18 milles/jour par M, distances ch.15 l.40-47 — sont en milles). */
+  sea?: boolean;
+  /** Cap DOMINANT du trajet (aspect du vent, MDG ch.13 l.262-270) — défaut 'ouest'. */
+  seaHeading?: import('../engine/seaWeather').WindDirection;
 }
 
 export interface WorldMapParams {

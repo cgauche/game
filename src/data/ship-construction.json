@@ -1,0 +1,242 @@
+{
+  "standard": [
+    {
+      "size": "minuscule",
+      "costGold": 10,
+      "crew": 1,
+      "sail": {
+        "m": 3,
+        "crew": 1
+      },
+      "oars": {
+        "m": 3,
+        "crew": 1
+      },
+      "lengthM": [
+        1,
+        10
+      ],
+      "e": 35,
+      "b": 10,
+      "capacity": 50
+    },
+    {
+      "size": "tres-petite",
+      "costGold": 50,
+      "crew": 2,
+      "sail": {
+        "m": 4,
+        "crew": 2
+      },
+      "oars": {
+        "m": 4,
+        "crew": 2
+      },
+      "lengthM": [
+        11,
+        15
+      ],
+      "e": 40,
+      "b": 20,
+      "capacity": 100
+    },
+    {
+      "size": "petite",
+      "costGold": 200,
+      "crew": 5,
+      "sail": {
+        "m": 5,
+        "crew": 4
+      },
+      "oars": {
+        "m": 5,
+        "crew": 12
+      },
+      "lengthM": [
+        16,
+        20
+      ],
+      "e": 40,
+      "b": 60,
+      "capacity": 200
+    },
+    {
+      "size": "moyenne",
+      "costGold": 500,
+      "crew": 20,
+      "sail": {
+        "m": 6,
+        "crew": 8
+      },
+      "oars": {
+        "m": 5,
+        "crew": 20
+      },
+      "lengthM": [
+        21,
+        35
+      ],
+      "e": 40,
+      "b": 90,
+      "capacity": 400
+    },
+    {
+      "size": "grande",
+      "costGold": 1000,
+      "crew": 30,
+      "sail": {
+        "m": 7,
+        "crew": 15
+      },
+      "oars": {
+        "m": 4,
+        "crew": 30
+      },
+      "lengthM": [
+        36,
+        50
+      ],
+      "e": 50,
+      "b": 150,
+      "capacity": 1000
+    },
+    {
+      "size": "enorme",
+      "costGold": 2500,
+      "crew": 50,
+      "sail": {
+        "m": 8,
+        "crew": 30
+      },
+      "lengthM": [
+        51,
+        80
+      ],
+      "e": 50,
+      "b": 250,
+      "capacity": 2000
+    },
+    {
+      "size": "monstrueuse",
+      "costGold": 5000,
+      "crew": 100,
+      "sail": {
+        "m": 9,
+        "crew": 80
+      },
+      "lengthM": [
+        81,
+        130
+      ],
+      "e": 50,
+      "b": 400,
+      "capacity": 4000
+    }
+  ],
+  "propulsion": {
+    "secondaryMalus": 2,
+    "secondaryMinM": 3
+  },
+  "manoeuvrability": [
+    {
+      "manDR": -2,
+      "costPct": -40
+    },
+    {
+      "manDR": -1,
+      "costPct": -20
+    },
+    {
+      "manDR": 0,
+      "costPct": 0
+    },
+    {
+      "manDR": 1,
+      "costPct": 20
+    }
+  ],
+  "speedTraits": [
+    {
+      "id": "escargot",
+      "label": "Escargot",
+      "mMod": -3,
+      "capacityPct": 100,
+      "manDR": -2,
+      "costPct": 0
+    },
+    {
+      "id": "tres-lent",
+      "label": "Très lent",
+      "mMod": -2,
+      "capacityPct": 50,
+      "manDR": -1,
+      "costPct": 0
+    },
+    {
+      "id": "lent",
+      "label": "Lent",
+      "mMod": -1,
+      "capacityPct": 25,
+      "manDR": 0,
+      "costPct": 0
+    },
+    {
+      "id": "moyen",
+      "label": "Moyen",
+      "mMod": 0,
+      "capacityPct": 0,
+      "manDR": 0,
+      "costPct": 0
+    },
+    {
+      "id": "rapide",
+      "label": "Rapide",
+      "mMod": 1,
+      "capacityPct": -25,
+      "manDR": 0,
+      "costPct": 0
+    },
+    {
+      "id": "tres-rapide",
+      "label": "Très rapide",
+      "mMod": 2,
+      "capacityPct": -50,
+      "manDR": 0,
+      "costPct": 10
+    },
+    {
+      "id": "foudroyant",
+      "label": "Foudroyant",
+      "mMod": 3,
+      "capacityPct": -75,
+      "manDR": 0,
+      "costPct": 10
+    }
+  ],
+  "constructionTraits": [
+    {
+      "id": "peu-maniable",
+      "maxLevel": 3,
+      "costPctPerLevel": -10
+    },
+    {
+      "id": "renforce",
+      "maxLevel": 3,
+      "ePerLevel": 10,
+      "capacityPctPerLevel": -10,
+      "costPctPerLevel": 10
+    },
+    {
+      "id": "robuste",
+      "maxLevel": 1,
+      "costPctPerLevel": 10
+    },
+    {
+      "id": "solide",
+      "maxLevel": 3,
+      "bPctPerLevel": 30,
+      "capacityPctPerLevel": -10,
+      "costPctPerLevel": 20
+    }
+  ]
+}

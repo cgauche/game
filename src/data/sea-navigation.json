@@ -1,0 +1,289 @@
+{
+  "workPeriodHours": {
+    "voile": 8,
+    "avirons": 2
+  },
+  "epuisement": {
+    "difficulty": "accessible",
+    "forcedDifficulty": "complexe"
+  },
+  "forcerLeRythme": [
+    {
+      "bonusM": 1,
+      "voile": "tres-difficile",
+      "avirons": "difficile"
+    },
+    {
+      "bonusM": 2,
+      "avirons": "tres-difficile"
+    }
+  ],
+  "vitesseMax": {
+    "safeBonus": 4,
+    "table": [
+      {
+        "min": 5,
+        "max": 5,
+        "difficulty": "accessible",
+        "per": "heure",
+        "damage": 1
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "difficulty": "intermediaire",
+        "per": "heure",
+        "damage": 2
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "difficulty": "complexe",
+        "per": "minute",
+        "damage": 3
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "difficulty": "difficile",
+        "per": "round",
+        "damage": 5
+      },
+      {
+        "min": 9,
+        "max": 9999,
+        "difficulty": "tres-difficile",
+        "per": "round",
+        "damage": 8
+      }
+    ]
+  },
+  "salissures": {
+    "weeklyTest": true,
+    "levels": [
+      {
+        "level": 1,
+        "manDR": -1,
+        "mMod": 0,
+        "navDR": 0,
+        "repairPctOfBase": 5,
+        "desc": "Des algues et des coquillages commencent à s'accrocher à la coque du bateau."
+      },
+      {
+        "level": 2,
+        "manDR": -1,
+        "mMod": -1,
+        "navDR": 0,
+        "repairPctOfBase": 10,
+        "desc": "Des tarets se mettent à faire des trous dans la coque."
+      },
+      {
+        "level": 3,
+        "manDR": -2,
+        "mMod": -1,
+        "navDR": 0,
+        "repairPctOfBase": 15,
+        "desc": "De gros amas d'algues et de faune marine ralentissent le vaisseau."
+      },
+      {
+        "level": 4,
+        "manDR": -2,
+        "mMod": -2,
+        "navDR": 0,
+        "repairPctOfBase": 20,
+        "desc": "Le ventre de la coque est totalement recouvert de varech."
+      },
+      {
+        "level": 5,
+        "manDR": -3,
+        "mMod": -2,
+        "navDR": -1,
+        "repairPctOfBase": 25,
+        "desc": "Sous la ligne de flottaison, le navire ressemble à un récif de corail inversé."
+      }
+    ]
+  },
+  "orientation": {
+    "testsPerDay": 1,
+    "reperes": [
+      {
+        "min": 4,
+        "max": 9999,
+        "outcome": "exact",
+        "desc": "Le Navigateur sait dans quelle direction vogue le navire et s'il a accès aux cartes appropriées, il peut désigner l'emplacement du bateau sur une carte."
+      },
+      {
+        "min": 0,
+        "max": 3,
+        "outcome": "ok",
+        "desc": "Le bateau avance dans la direction supposée par le Navigateur."
+      },
+      {
+        "min": -2,
+        "max": -1,
+        "outcome": "drift-minor",
+        "desc": "Le vaisseau a légèrement dévié de sa trajectoire. L'écart est mineur, c'est pourquoi ce résultat n'a aucun effet la première fois, mais s'il se reproduit, lancez le dé dans le tableau Changement de cap."
+      },
+      {
+        "min": -4,
+        "max": -3,
+        "outcome": "drift",
+        "desc": "Le bateau a dévié de sa trajectoire. Lancez le dé dans le tableau Changement de cap."
+      },
+      {
+        "min": -9999,
+        "max": -5,
+        "outcome": "drift-major",
+        "desc": "Le bateau a énormément dévié de sa trajectoire. Lancez le dé dans le tableau Changement de cap et ajoutez 2 au résultat."
+      }
+    ],
+    "driftMajorBonus": 2,
+    "driftSide": {
+      "tribordMax": 5
+    },
+    "changementDeCap": [
+      {
+        "min": -9999,
+        "max": 3,
+        "effect": "aucun",
+        "desc": "Le Navigateur n'arrive plus à trouver la position du bateau sur une carte. Sans conséquences."
+      },
+      {
+        "min": 4,
+        "max": 6,
+        "effect": "retard",
+        "delayPct": 10,
+        "desc": "Le Navigateur est un peu perdu. Ajoutez 10 % au temps que prendra le bateau pour atteindre sa prochaine destination voulue."
+      },
+      {
+        "min": 7,
+        "max": 9,
+        "effect": "retard",
+        "delayPct": 25,
+        "desc": "Le Navigateur a vraiment du mal à garder le cap. Ajoutez 25 % au temps que prendra le navire pour atteindre sa prochaine destination voulue."
+      },
+      {
+        "min": 10,
+        "max": 11,
+        "effect": "quart-de-tour",
+        "desc": "À cause des bourdes du Navigateur, le vaisseau a dévié de 90 degrés (donc s'il voyageait vers le nord, il voyage maintenant vers l'est ou l'ouest)."
+      },
+      {
+        "min": 12,
+        "max": 9999,
+        "effect": "demi-tour",
+        "desc": "Le bateau a accidentellement fait demi-tour et se dirige vers l'endroit d'où il vient."
+      }
+    ]
+  },
+  "phares": {
+    "voirLaLumiere": [
+      {
+        "min": 0,
+        "max": 5,
+        "difficulty": "facile"
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "difficulty": "intermediaire"
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "difficulty": "difficile"
+      }
+    ],
+    "perilSpotBonus": 20,
+    "clocher": {
+      "orientationDR": 2,
+      "distanceDiviseur": 2
+    }
+  },
+  "longsVoyages": {
+    "millesParJourParM": 18,
+    "sansVoguerDeNuitDiviseur": 2,
+    "progressionPctParDR": 10
+  },
+  "poursuite": {
+    "distanceUnitM": 10,
+    "escapeDistances": [
+      {
+        "id": "brouillard-labyrinthe",
+        "label": "Bancs d'un épais brouillard, formations rocheuses labyrinthiques",
+        "distance": 10
+      },
+      {
+        "id": "faible-lumiere-fjords",
+        "label": "Faible lumière, fjords ou criques",
+        "distance": 30
+      },
+      {
+        "id": "brume-rochers",
+        "label": "Légère brume, beaucoup de rochers et de bancs de sables à proximité",
+        "distance": 50
+      },
+      {
+        "id": "haute-mer-houleuse",
+        "label": "Haute, mer un peu houleuse",
+        "distance": 70
+      },
+      {
+        "id": "haute-mer-degagee",
+        "label": "Haute, mer d'huile, temps dégagé",
+        "distance": 100
+      }
+    ],
+    "drDeltas": [
+      {
+        "min": 4,
+        "max": 9999,
+        "delta": 1
+      },
+      {
+        "min": 0,
+        "max": 3,
+        "delta": 0
+      },
+      {
+        "min": -3,
+        "max": -1,
+        "delta": -1
+      },
+      {
+        "min": -9999,
+        "max": -4,
+        "delta": -2
+      }
+    ],
+    "lowMPenalty": [
+      {
+        "m": 3,
+        "dr": -1
+      },
+      {
+        "m": 2,
+        "dr": -2
+      },
+      {
+        "m": 1,
+        "dr": -3
+      }
+    ]
+  },
+  "reparation": {
+    "portCostGoldPerWound": 1,
+    "testHours": "1d10",
+    "woundsPerTest": "1d10",
+    "charpentierPenalty": -10,
+    "lissageRepairSurcoutPct": 50,
+    "temporaire": {
+      "difficultyMin": "complexe",
+      "difficultyMax": "tres-difficile",
+      "hoursPerRepair": 1,
+      "woundsPerRepair": "1d10",
+      "failDamage": "1d10-4"
+    },
+    "entretienCrewTestDR": -2
+  }
+}

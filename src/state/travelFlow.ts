@@ -57,6 +57,7 @@ import { rationCount } from '../engine/provisions';
 import { itemFromGive } from '../engine/items';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { resolveStagePostes } from './travelPostes';
+import { buildSeaPlan, runSeaDays } from './seaVoyageFlow';
 import type { Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
@@ -120,8 +121,12 @@ export interface TravelPlan {
   /** Cumul du Test ÉTENDU de cartographie (Établir des cartes, EDOC l.161) — cf. `extendedTestStep`. */
   extendedProgress?: number;
   /** Coque transitoire du véhicule du trajet (`Combatant`, depuis `vehicles.json` hull) — encaisse les
-   *  incidents (`vehicleWounds`). Présente seulement si le trajet utilise un véhicule à coque. */
+   *  incidents (`vehicleWounds`). Présente seulement si le trajet utilise un véhicule à coque.
+   *  Route MARITIME : la coque du NAVIRE DE CAMPAGNE (Blessures persistées sur `vessel.wounds`, #30). */
   vehicle?: Combatant;
+  /** État NAVAL du trajet (route `sea` — MDG ch.13/15) : météo/vent, événements, crises, étape du jour.
+   *  Présent = la résolution du jour est déléguée à `seaVoyageFlow.runSeaDays`. */
+  sea?: import('./seaVoyageFlow').SeaVoyageState;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -156,6 +161,22 @@ export function startTravel(
   if (!route.modes.includes(mode === 'monture' ? 'pied' : mode)) return;
   const to = placeById(worldMap, otherEnd(route, from.id));
   if (!to) return;
+
+  // Route MARITIME (MDG ch.13-15) : se voyage sur le NAVIRE DE CAMPAGNE — mode 'mer', distance en
+  // MILLES, résolution du jour déléguée à `seaVoyageFlow` (météo/vent, Tests d'équipage, événements).
+  if (mode === 'mer') {
+    if (!route.sea) return;
+    const seaPlan = buildSeaPlan(get, routeId, from.id, to.id, route);
+    if (!seaPlan) {
+      log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);
+      return;
+    }
+    set({ travelPlan: seaPlan, worldMapOpen: false, travelRecap: null });
+    log(get, set, [`— ${seaPlan.vehicle!.name} appareille vers ${to.label} (${route.km} milles) —`]);
+    runSeaDays(get, set);
+    return;
+  }
+  if (route.sea) return; // une route maritime ne s'emprunte qu'en mode 'mer'
 
   // Transport payant : prix par km PAR PASSAGER (l.207), débité au départ — refus si bourse insuffisante.
   if (mode !== 'pied' && mode !== 'monture') {
@@ -209,6 +230,7 @@ export function resumeTravel(get: Get, set: Set): void {
   if (get().travelRecap?.then) return; // une embuscade ATTEND son acquittement — pas d'esquive
   set({ travelPlan: { ...plan, interrupted: false }, worldMapOpen: false, travelRecap: null });
   log(get, set, ['— Le voyage reprend —']);
+  if (plan.sea) { runSeaDays(get, set); return; } // traversée maritime : résolution navale
   runTravelDays(get, set);
 }
 
@@ -363,6 +385,7 @@ function runTravelDays(get: Get, set: Set): void {
 export function continueTravelAfterNight(get: Get, set: Set): void {
   const plan = get().travelPlan;
   if (!plan || plan.interrupted || get().battle) return;
+  if (plan.sea) { runSeaDays(get, set); return; } // traversée maritime : la journée suivante est navale
   runTravelDays(get, set);
 }
 

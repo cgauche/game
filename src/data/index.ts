@@ -273,6 +273,15 @@ export interface ItemCapabilities {
    *  pénalité ») — consommé par `SkillData.tool` (crochetage → −10 sans outil, LDB 09 l.168). NON gaté
    *  sur le port : les posséder suffit (on les sort pour s'en servir, comme `isRations`). */
   lockpicks?: boolean;
+  /** Soupe de chou fermenté (MDG 14 l.230) : le Test de contraction du scorbut passe à Facile (+40)
+   *  « si le Personnage mange régulièrement de la soupe » — NON gaté (posséder ses rations suffit). */
+  scurvyGuard?: boolean;
+  /** Peau de phoque (MDG 14 l.277-279) : « +1 DR sur les Tests de Résistance effectués pour supporter
+   *  l'exposition au froid » — GATÉ sur le port (c'est un pardessus). */
+  sealskin?: boolean;
+  /** Pièces détachées de navire (MDG 14 l.281-283) : « consommées quand vous entreprenez l'Activité
+   *  Entretien du navire » — NON gaté (stock de cale). */
+  shipParts?: boolean;
 }
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */

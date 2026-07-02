@@ -53,6 +53,7 @@ export function vehicleTravel(mode: TravelMode): NonNullable<VehicleData['travel
 export const TRAVEL_MODE_LABEL: Record<string, string> = {
   pied: 'À pied',
   monture: 'En selle',
+  mer: 'En mer', // traversée sur le navire de campagne (route `sea`, MDG ch.13-15)
   ...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),
 };
 
@@ -60,6 +61,7 @@ export const TRAVEL_MODE_LABEL: Record<string, string> = {
 export function travelModeIcon(mode: TravelMode): string {
   if (mode === 'pied') return '🦶';
   if (mode === 'monture') return '🐎';
+  if (mode === 'mer') return '⚓';
   return VEHICLE_BY_ID.get(mode)?.icon ?? '🚐';
 }
 
@@ -85,6 +87,9 @@ export function partyWalkSpeed(party: Combatant[]): number {
  *  attelage forcé au galop, M de l'attelage × 3 ; à pied, une bête Boiteuse MENÉE plafonne le groupe
  *  à la moitié de sa vitesse de marche (EDOC 07 l.157). */
 export function travelSpeed(party: Combatant[], mode: TravelMode, movementOverride?: number, allure?: Allure): number {
+  // Traversée MARITIME : la vitesse est en MILLES/JOUR (vents, Tests d'équipage — MDG ch.13/15),
+  // résolue par `seaVoyageFlow`, pas en km/h terrestre. 0 = « pas de km/h » (l'UI affiche l'estimation navale).
+  if (mode === 'mer') return 0;
   if (mode === 'pied') {
     const walk = movementOverride ?? partyWalkSpeed(party);
     const cap = rule('travel-allures') ? lameLedCapKmh(party) : null;

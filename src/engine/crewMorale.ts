@@ -20,6 +20,7 @@ import { rollExpr, type RNG, defaultRNG } from './dice';
 import { rollTest, easeDifficulty } from './tests';
 import { testValue } from './skills';
 import { talentTestSLBonus } from './magic';
+import { skillDRBonus } from './ops';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
 import type { Combatant, Difficulty } from './types';
 
@@ -223,10 +224,14 @@ export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: num
 /** +DR de TALENT d'un membre sur SON jet de rôle RÉUSSI, en contexte TEST D'ÉQUIPAGE — règle UNIVERSELLE
  *  `talentTestSLBonus` (LDB 10 l.20) évaluée avec le contexte `crewTest` VRAI : Commandant émérite
  *  (MDG 09 l.50-54, `when {crewTest}`) s'applique « aux Tests d'équipage comme aux Tests de Commandement
- *  individuels » — ici la moitié Tests d'équipage. Compétence = celle que le rôle utilise (`crewRoleValue.used`). PUR. */
+ *  individuels » — ici la moitié Tests d'équipage. Compétence = celle que le rôle utilise (`crewRoleValue.used`).
+ *  S'y AJOUTE le +DR d'effet/trait/objet par Compétence (`skillDRBonus` — Boussole : +1 DR Orientation,
+ *  MDG 14 l.275 ; MÊME règle d'application « sur un jet réussi » que dans le combat, combat.ts). PUR. */
 export function crewTalentDR(crew: Combatant, role: CrewRoleData): number {
   const used = crewRoleValue(crew, role).used;
-  return used ? talentTestSLBonus(crew, { skill: used.skillId, spec: used.spec }, (cond) => cond.kind === 'crewTest') : 0;
+  if (!used) return 0;
+  return talentTestSLBonus(crew, { skill: used.skillId, spec: used.spec }, (cond) => cond.kind === 'crewTest')
+    + skillDRBonus(crew, used.skillId, used.spec);
 }
 
 /** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) :

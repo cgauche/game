@@ -1,4 +1,5 @@
 import { useGame } from './store';
+import { portRepairVessel, portCareenVessel, portInstallUpgrade } from './seaVoyageFlow';
 import { actorIn } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog } from './combatFlow';
 import { setAiTrace } from './ai';
@@ -667,6 +668,17 @@ export function buildApi() {
         return `❌ rencontre inconnue — dispo : ${encs.map((e) => e.id).join(', ') || 'aucune'}`;
       g().startCombat(encounterId);
       return g().battle ? `✅ combat lancé (${encounterId})` : `⚠️ rien lancé (rencontre vide ?)`;
+    },
+
+    /** RECETTE #30 : services du chantier naval au port — réparation (1 CO/Blessure, MDG ch.13
+     *  l.643), carénage (Salissures, l.150-159), pose d'Amélioration (ch.12 l.195-364). */
+    chantier: (what: 'reparer' | 'carener' | string = 'reparer', units = 1) => {
+      const get = useGame.getState.bind(useGame);
+      const set = useGame.setState.bind(useGame);
+      const lines = what === 'reparer' ? portRepairVessel(get, set)
+        : what === 'carener' ? portCareenVessel(get, set)
+        : portInstallUpgrade(get, set, what, units);
+      return lines.join('\n');
     },
 
     /** RECETTE : avance l'horloge (purge les effets à durée d'horloge). */

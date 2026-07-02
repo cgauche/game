@@ -1,0 +1,162 @@
+{
+  "echouer": {
+    "desc": "Quand un navire s'est Échoué, il s'arrête net. Le vaisseau ne peut plus bouger jusqu'à ce qu'il soit dégagé du péril. Cette tâche nécessite un Test de Force avec une pénalité égale au total de points d'Encombrement du navire et de sa cargaison. N'importe quel nombre de Personnages, de bêtes de somme, etc. peut aider s'ils ont tous assez de cordes pour tirer."
+  },
+  "hazards": [
+    {
+      "id": "iceberg",
+      "label": "Iceberg",
+      "m": 1,
+      "ic": 25,
+      "desc": "Un Iceberg se déplace à une vitesse de M1. La masse d'un Iceberg est très variable, mais en moyenne, il a un Indice de Collision de 25."
+    },
+    {
+      "id": "debris-marins",
+      "label": "Débris marins",
+      "m": 1,
+      "ic": 3,
+      "entangleChancePct": 20,
+      "entanglePenalties": [
+        {
+          "maxSize": "petite",
+          "manDR": -2,
+          "mMod": -1
+        },
+        {
+          "minSize": "moyenne",
+          "maxSize": "grande",
+          "manDR": -1,
+          "mMod": 0
+        }
+      ],
+      "freeTest": {
+        "skillId": "force",
+        "difficulty": "accessible",
+        "totalDR": 10
+      },
+      "desc": "Les Débris marins se déplacent à une vitesse de M1 et ont un Indice de Collision de 3. S'ils entrent en collision avec un navire, ce dernier a 20 % de chances de s'y empêtrer, ce qui lui impose une pénalité en fonction de sa Taille. L'équipage peut dégager le bateau des Débris marins en réussissant un Test étendu de Force Accessible (+20) pour un total de 10 DR."
+    },
+    {
+      "id": "rocher",
+      "label": "Rocher",
+      "ic": 47,
+      "strandChancePct": 20,
+      "desc": "La taille et la masse d'un Rocher sont très variables, mais le Rocher moyen possède un Indice de Collision de 47. En cas de collision avec un Rocher, un vaisseau a 20 % de chances de s'Échouer dessus."
+    },
+    {
+      "id": "bas-fonds",
+      "label": "Bas-fonds",
+      "ic": 10,
+      "strandChancePct": 40,
+      "desc": "Les Bas-fonds sont des bancs de petits rochers, de sable ou de boue. Leur taille et leur masse peuvent beaucoup varier d'un cas à l'autre, mais une zone de Bas-fonds typique possède un Indice de Collision de 10. S'il entre en collision avec des Bas-fonds, un bateau a 40 % de chances de s'y Échouer."
+    }
+  ],
+  "detroits": [
+    {
+      "id": "faible",
+      "label": "Faible",
+      "m": 4,
+      "navDR": -1
+    },
+    {
+      "id": "moyen",
+      "label": "Moyen",
+      "m": 8,
+      "navDR": -2
+    },
+    {
+      "id": "fort",
+      "label": "Fort",
+      "m": 16,
+      "navDR": -3
+    }
+  ],
+  "tourbillons": [
+    {
+      "id": "rotation-lente",
+      "label": "Rotation lente",
+      "m": 2,
+      "zoneRadiusM": 15,
+      "zoneSpiralM": 25,
+      "manDR": 0,
+      "ic": 4,
+      "evasion": {
+        "difficulty": "accessible",
+        "totalDR": 10
+      }
+    },
+    {
+      "id": "tourbillon",
+      "label": "Tourbillon",
+      "m": 4,
+      "zoneRadiusM": 30,
+      "zoneSpiralM": 50,
+      "manDR": -1,
+      "ic": 8,
+      "evasion": {
+        "difficulty": "intermediaire",
+        "totalDR": 20
+      }
+    },
+    {
+      "id": "puissant-vortex",
+      "label": "Puissant vortex",
+      "m": 6,
+      "zoneRadiusM": 45,
+      "zoneSpiralM": 75,
+      "manDR": -1,
+      "ic": 12,
+      "evasion": {
+        "difficulty": "complexe",
+        "totalDR": 25
+      }
+    },
+    {
+      "id": "maelstrom",
+      "label": "Maelstrom",
+      "m": 8,
+      "zoneRadiusM": 60,
+      "zoneSpiralM": 100,
+      "manDR": -2,
+      "ic": 20,
+      "evasion": {
+        "difficulty": "difficile",
+        "totalDR": 35
+      }
+    },
+    {
+      "id": "maelstrom-primordial",
+      "label": "Maelstrom primordial",
+      "m": 10,
+      "zoneRadiusM": 100,
+      "zoneSpiralM": 150,
+      "manDR": -2,
+      "ic": 50,
+      "evasion": {
+        "difficulty": "tres-difficile",
+        "totalDR": 45
+      }
+    }
+  ],
+  "tourbillonSwim": {
+    "skillId": "natation",
+    "difficulty": "complexe"
+  },
+  "gestionDesPerils": [
+    {
+      "distanceM": 100,
+      "spot": "difficile",
+      "avoid": "facile"
+    },
+    {
+      "distanceM": 50,
+      "spot": "intermediaire",
+      "avoid": "accessible"
+    },
+    {
+      "distanceM": 10,
+      "spot": "accessible",
+      "avoid": "complexe"
+    }
+  ]
+}

@@ -985,10 +985,31 @@ export interface GameState extends RollFlowActionsMap {
 }
 
 /** Navire que le groupe possède/commande en campagne — survit aux jours et aux combats (≠ la coque
- *  transitoire d'un combat). Son Moral est recalculé hebdomadairement (`tickShipMorale`). */
+ *  transitoire d'un combat). Son Moral est recalculé hebdomadairement (`tickShipMorale`). Les champs
+ *  du lot 7b sont OPTIONNELS : une save antérieure charge tel quel, chaque point de lecture porte son
+ *  défaut (coque intacte, humeur neutre, cale vide) — migration par défauts, jamais de corruption. */
 export interface CampaignVessel {
   vehicleId: string;
   morale: ShipMoraleState;
+  /** #30 — Blessures de COQUE persistantes (absent = coque intacte). Synchronisées par le voyage
+   *  maritime (`persistHullWounds`) et les réparations ; la coque de trajet en repart. */
+  wounds?: { current: number; max: number };
+  /** Améliorations d'INSTANCE posées au chantier (MDG ch.12 — Clinfoc, Blindage, Ancre…), recopiées
+   *  sur la coque au départ (`voyageShip`). */
+  upgrades?: import('../engine/types').NavalTraitRef[];
+  /** Salissures (MDG ch.13 l.144-159) : niveau 0-5 + garde hebdomadaire du Test. */
+  fouling?: { level: number; lastWeek: number };
+  /** Humeur de Manann (MDG ch.15 l.83-125) — par navire, registre des facteurs déjà appliqués. */
+  manann?: import('../engine/seaVoyage').ManannMood;
+  /** Cargaison en cale (commerce maritime, MDG ch.15) — perdue avec le navire (abandon/capture). */
+  cargo?: import('../engine/seaVoyage').CargoLot[];
+  /** Critiques de navire subis EN VOYAGE (notes verbatim, MDG ch.13) — à purger à la remise en état. */
+  criticals?: string[];
+  /** Crabes boxeurs (événement ch.15) : M −1 jusqu'à ce que la coque soit raclée. */
+  crabs?: boolean;
+  /** Eau douce embarquée (litres — tonneau : 145 L, MDG ch.14 l.242). Absent = ravitaillement réputé
+   *  assuré (même décision de périmètre que la Soif, cf. provisions.ts). */
+  waterLitres?: number;
 }
 
 export const useGame = create<GameState>((set, get) => ({

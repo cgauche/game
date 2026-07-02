@@ -11755,5 +11755,212 @@
         ]
       }
     }
+  },
+  {
+    "id": "tonneau-d-eau-douce",
+    "label": "Tonneau d'eau douce",
+    "type": "trapping",
+    "subType": "nourriture-boisson-et-hebergement",
+    "enc": 9,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "L'eau douce est généralement stockée dans de grands tonneaux et distribuée avec précaution. Un bon capitaine sait qu'il doit s'assurer que le navire transporte davantage d'eau que nécessaire, surtout pour les voyages sur des mers inconnues. Lors d'une telle expédition, le capitaine doit saisir la moindre occasion de renflouer ses réserves. Un tonneau contient 145 litres d'eau. Un membre d'équipage boit 2 à 3 litres d'eau par jour.",
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 6
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
+  },
+  {
+    "id": "tonneau-de-petite-biere",
+    "label": "Tonneau de petite bière",
+    "type": "trapping",
+    "subType": "nourriture-boisson-et-hebergement",
+    "enc": 9,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Parfois, la petite bière est utilisée à la place de l'eau ; cela aide à empêcher la contamination de la boisson et même si la bière est techniquement de l'alcool, elle est si diluée que le liquide hydrate tout de même. Un tonneau d'eau mélangé à un tonnelet de bière peut produire un tonneau de petite bière. La Marine bretonnienne utilise du vin dilué à la place.",
+    "price": {
+      "gold": 0,
+      "silver": 11,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
+  },
+  {
+    "id": "ration-biscuits-de-mer",
+    "label": "Ration de biscuits de mer pour un jour",
+    "type": "trapping",
+    "subType": "nourriture-boisson-et-hebergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "capabilities": {
+      "isRations": true
+    },
+    "desc": "Le célèbre biscuit de mer, ou galette de mer, est important car il fournit des calories indispensables, ne coûte pas cher à cuisiner, est compact et léger pour le stockage et ne se gâte pas avant très longtemps. Cependant, il est dur comme de la pierre et doit être trempé dans un liquide avant de pouvoir être mangé facilement. Les charançons qui infestent les biscuits sont juste une source de protéines supplémentaires. Les biscuits de mer suffisent à éviter la famine à bord, mais c'est un régime très médiocre.",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
+  },
+  {
+    "id": "ration-nourriture-preservee",
+    "label": "Ration de nourriture préservée pour un jour",
+    "type": "trapping",
+    "subType": "nourriture-boisson-et-hebergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "capabilities": {
+      "isRations": true
+    },
+    "desc": "Préserver et stocker les grandes quantités de nourriture nécessaires pour un voyage en mer est toujours problématique. Saler la viande est une méthode de préservation efficace. Les légumes sont souvent confits dans du vinaigre, de l'alcool ou du sucre.",
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
+  },
+  {
+    "id": "ration-soupe-chou-fermente",
+    "label": "Ration de soupe de chou fermenté pour un jour",
+    "type": "trapping",
+    "subType": "nourriture-boisson-et-hebergement",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "capabilities": {
+      "isRations": true,
+      "scurvyGuard": true
+    },
+    "desc": "La soupe de chou fermenté a un goût affreux et l'équipage la déteste de tout son cœur. La Marine impériale a récemment décrété que ceux qui ne buvaient pas leur ration quotidienne seraient fouettés. Mais cela n'empêche pas les marins de jeter la leur par-dessus bord quand les officiers ont le dos tourné. Un cuisinier de marine qui sait rendre cette soupe appétissante est très recherché.",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
+  },
+  {
+    "id": "boussole",
+    "label": "Boussole",
+    "type": "trapping",
+    "subType": "outils-et-necessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "orientation",
+        "bonus": 1
+      }
+    ],
+    "desc": "Une boussole rudimentaire fabriquée avec une aiguille en équilibre sur un axe. Les Tests d'Orientation bénéficient de +1 DR avec l'aide d'une boussole.",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
+  },
+  {
+    "id": "peau-de-phoque",
+    "label": "Peau de phoque",
+    "type": "trapping",
+    "subType": "vetements-et-accessoires",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "capabilities": {
+      "sealskin": true
+    },
+    "desc": "Un pardessus en peau de phoque garde celui qui le porte au chaud et au sec. Ils sont généralement accompagnés de mitaines, qui sont parfaites pour réchauffer les mains, mais rendent toute action impliquant une certaine dextérité impossible. Une bonne peau de phoque peut donner un bonus de +1 DR sur les Tests de Résistance effectués pour supporter l'exposition au froid.",
+    "price": {
+      "gold": 1,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
+  },
+  {
+    "id": "pieces-detachees-de-navire",
+    "label": "Pièces détachées de navire",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "capabilities": {
+      "shipParts": true
+    },
+    "desc": "« Pièces détachées de navire » est un terme global pour désigner les planches façonnées de manière à rentrer dans la coque, la poix pour imperméabiliser le navire, les cordes pour réparer le gréement et le tissu pour raccommoder les voiles. Les pièces détachées de navire sont consommées quand vous entreprenez l'Activité *Entretien du navire*.",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 127
+    }
   }
 ]

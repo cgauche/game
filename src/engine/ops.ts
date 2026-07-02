@@ -16,7 +16,7 @@
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition } from './conditions';
-import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
+import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel, findTrappingById } from '../data';
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
@@ -178,7 +178,50 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
   for (const op of c.auraMods ?? []) if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
   // Effets ACTIFS temporisés (op `skillDRBonus` exécutée — chanson de marin « Jacques Bret », MDG 09 l.228).
   for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.skill != null && matches({ skill: b.skill, spec: b.spec })) n += b.bonus;
+  // Objets POSSÉDÉS : leur `passive` skillDRBonus (Boussole : « Les Tests d'Orientation bénéficient de
+  // +1 DR avec l'aide d'une boussole », MDG 14 l.275) — NON gaté sur le port, comme `lockpicks`/`isRations`
+  // (l'outil se sort pour servir) ; les passifs de VALEUR d'objet (skillMod des Bésicles) restent, eux,
+  // gatés porté/tenu via `passiveMods`.
+  for (const it of c.items ?? []) {
+    if (!it.trappingId) continue;
+    for (const op of findTrappingById(it.trappingId)?.passive ?? []) if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
+  }
   return n;
+}
+
+/** Ops `offTerrainMod` PASSIVES du combattant (traits INHÉRENTS `c.traits`, lus PAR ID comme
+ *  `skillDRBonus` — Créature marine MDG p.140 / Aquatique T2C p.90). PUR. */
+function offTerrainOps(c: Combatant): Extract<GameOp, { op: 'offTerrainMod' }>[] {
+  const out: Extract<GameOp, { op: 'offTerrainMod' }>[] = [];
+  for (const t of c.traits ?? []) {
+    for (const op of traitById.get(t.id)?.passive ?? []) if (op.op === 'offTerrainMod') out.push(op);
+  }
+  return out;
+}
+
+/** Terrains d'ÉLECTION requis par les passifs `offTerrainMod` (`eau` pour Créature marine/Aquatique) —
+ *  vide = aucune contrainte. Lu par le state (`placeCombatant`) pour poser le drapeau `offTerrain`. PUR. */
+export function requiredTerrains(c: Combatant): string[] {
+  return [...new Set(offTerrainOps(c).map((o) => o.terrain))];
+}
+
+/** Mouvement IMPOSÉ hors de son terrain (op `offTerrainMod.mSet` — Créature marine : « son M tombe à 1 »,
+ *  MDG p.140 ; Aquatique : « ne peut pas se déplacer sur la terre ferme », T2C p.90 → 0), actif seulement
+ *  quand le drapeau POSITIONNEL `c.offTerrain` est posé. Plusieurs sources → la plus contraignante (min).
+ *  `null` = pas de contrainte. Lu par `effectiveMovement`. PUR. */
+export function offTerrainMoveCap(c: Combatant): number | null {
+  if (!c.offTerrain) return null;
+  const sets = offTerrainOps(c).filter((o) => o.mSet != null).map((o) => o.mSet!);
+  return sets.length ? Math.min(...sets) : null;
+}
+
+/** Malus de DR à TOUS les Tests hors de son terrain (op `offTerrainMod.testDR` — Créature marine :
+ *  « tous les Tests qu'elle effectue subissent –2 DR », MDG p.140), gaté par `c.offTerrain`. Σ. Consommé
+ *  aux épines de Test : attaque (`applyHit` via les sites `skillDRBonus` de combat.ts), Test générique
+ *  (`rollFlows`), incantation (`magicTestSLBonus`). PUR. */
+export function offTerrainTestDR(c: Combatant): number {
+  if (!c.offTerrain) return 0;
+  return offTerrainOps(c).reduce((s, o) => s + (o.testDR ?? 0), 0);
 }
 
 /** Somme des bonus de DR aux Tests d'une CARACTÉRISTIQUE (op `charDRBonus` — chanson « Camarades
@@ -632,6 +675,15 @@ export type GameOp =
   /** Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de
    *  `moveScale` (multiplicatif). `effectiveMovement` somme les `moveMod` PUIS applique les `moveScale`. */
   | { op: 'moveMod'; mod: number }
+  /** HORS de son terrain d'élection (`terrain` = type de tuile de la case occupée, ex. `eau`), le porteur
+   *  est diminué : `mSet` REMPLACE son Mouvement (Créature marine : « son M tombe à 1 », MDG p.140 ;
+   *  Aquatique : « ne peut pas se déplacer sur la terre ferme », T2C p.90 → `mSet: 0`) et `testDR`
+   *  s'applique à TOUS ses Tests (Créature marine : « tous les Tests qu'elle effectue subissent –2 DR »).
+   *  GÉNÉRIQUE (aucun nom de créature) : porté par le `passive` d'un Trait, GATÉ par la POSITION — le
+   *  state pose le drapeau dérivé `Combatant.offTerrain` à chaque placement (`placeCombatant`), les
+   *  consommateurs purs (`offTerrainMoveCap`/`offTerrainTestDR`, trauma.ts) lisent le drapeau. Inerte
+   *  dans applyOps (passif pur, jamais « lancé »). */
+  | { op: 'offTerrainMod'; terrain: string; mSet?: number; testDR?: number }
   /** Modif. d'un ATTRIBUT SECONDAIRE (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE), Chance
    *  (Chanceux), Détermination (Obstiné), Destin, Résilience. `mod` = Formula (`{bonusOf:'E'}` pour Dur
    *  à cuire). Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. */
@@ -1690,8 +1742,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'weaponDamageMod':
       case 'armourPierce':
       case 'critOnRoll':
+      case 'offTerrainMod':
         // PASSIFS d'arme (Atouts/Défauts) lus PAR ID par `engine/qualities/dispatch` aux moments de combat —
         // INERTES dans le moteur d'ops (comme skillDRBonus/incomingAttackMod/attackKeyword/mitigateIncoming).
+        // `offTerrainMod` : passif POSITIONNEL (Créature marine/Aquatique), lu par offTerrainMoveCap/TestDR.
         break;
       case 'spendAdvantage': {
         const who = ctx.caster ?? target;
