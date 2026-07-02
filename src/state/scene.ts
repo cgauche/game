@@ -317,6 +317,11 @@ export type Effect =
    *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
    *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */
   | { type: 'learnSpell'; spell: string; heroId?: string }
+  /** « Petites Prières » (LDB 25 l.22-24, option `prayer-petites`) : posé sur un SITE SACRÉ (autel,
+   *  sanctuaire). Un personnage NON Béni y prie : 1d100 secret, exaucé sur 01 (pourcentage relevé s'il
+   *  possède la Compétence Prière). Exaucée → le `reward` (Flow authoré : bonus, don, flag…) s'applique ;
+   *  sinon rien. Cible : `heroId`, sinon le premier héros vivant non Béni. Sans effet hors du toggle. */
+  | { type: 'petitePriere'; heroId?: string; reward: Flow }
   /** « Entre deux aventures » (LDB 22-23, Jalon 5) : ouvre l'interlude — Événement d100 par héros,
    *  min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. À poser en fin
    *  de chapitre par l'auteur de campagne. */

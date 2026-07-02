@@ -259,3 +259,7 @@
 .bargain-tag { font-size: 13px; color: var(--muted); }
 .bargain-tag.soured { color: var(--danger); }
 
+
+/* « Baisse des prix » à la vente (LDB 59 l.60) : Disponibilité de l'acheteur + brader ÷2 */
+.sell-haggle { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
+.sell-haggle .sell-av { white-space: nowrap; }

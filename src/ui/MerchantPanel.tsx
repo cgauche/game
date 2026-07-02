@@ -10,7 +10,7 @@ import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/it
 import { rangeSpecLabel, ammoRangeModLabel } from './weaponStats';
 import type { WeaponDamageSpec, WeaponRangeSpec, AmmoRangeMod } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
-import { sellGain } from '../state/merchantFlow';
+import { sellGain, barterQuote, sellBuyerAvailability } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 import { Coins } from './Coins';
 import { Prose, mdToText } from './Prose';
@@ -83,7 +83,7 @@ const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', sa
 const TREND_SYM: Record<string, string> = { up: '▲', down: '▼', same: '' };
 
 /** Présentationnel (props) — testable hors store. `initialTab`/`initialDetails`/`initialBuyView` = état de départ (SSR/test). */
-export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, initialTab, initialDetails, initialBuyView, initialSellView }: {
+export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, onSellHalving, onBarter, initialTab, initialDetails, initialBuyView, initialSellView }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
@@ -104,17 +104,24 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   onBargain: (mode: 'buy' | 'sell') => void;
   onAppraise: (uid: string, heroId: string) => void;
   onClose: () => void;
-  initialTab?: 'buy' | 'sell' | 'repair';
+  /** « Baisse des prix » à la vente (LDB 59 l.60) — optionnel (rendu sans si absent). */
+  onSellHalving?: (uid: string, delta: number) => void;
+  /** Troc (LDB 59 l.64-76) — optionnel : l'onglet Troc n'apparaît que s'il est fourni. */
+  onBarter?: (opts: { giveHeroId: string; giveTrappingId: string; getStockId: string; getCount?: number }) => void;
+  initialTab?: 'buy' | 'sell' | 'repair' | 'barter';
   initialDetails?: string;
   initialBuyView?: 'browse' | 'cart';
   initialSellView?: 'browse' | 'cart';
 }) {
-  const [tab, setTab] = useState<'buy' | 'sell' | 'repair'>(initialTab ?? 'buy');
+  const [tab, setTab] = useState<'buy' | 'sell' | 'repair' | 'barter'>(initialTab ?? 'buy');
   const [buyCat, setBuyCat] = useState<string | null>(null);
   const [details, setDetails] = useState<string | null>(initialDetails ?? null);
   const [buyView, setBuyView] = useState<'browse' | 'cart'>(initialBuyView ?? 'browse');
   const [sellView, setSellView] = useState<'browse' | 'cart'>(initialSellView ?? 'browse');
   const [sellHero, setSellHero] = useState<string | null>(null); // onglet PJ actif côté Vente
+  const [barterGive, setBarterGive] = useState(''); // Troc : « heroId|trappingId » du bien cédé
+  const [barterGetId, setBarterGetId] = useState(''); // Troc : id du stock acquis
+  const [barterCount, setBarterCount] = useState(1);
   const toggleDetails = (label: string) => setDetails((d) => (d === label ? null : label));
 
   const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => isRepairable(it)).map((it) => ({ h, it })));
@@ -419,6 +426,19 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
               {it.identified === false ? ' (non identifié)' : ''}
             </span>
             <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>
+            {/* « Baisse des prix » (LDB 59 l.60) : brader (÷2) monte la Disponibilité d'un acheteur d'un
+                cran. Montré pour les biens qu'un acheteur commun ne prend pas d'emblée (Limitée+). */}
+            {onSellHalving && (() => {
+              const h = merchant.sellHalvings?.[it.uid] ?? 0;
+              if (sellBuyerAvailability(it, 0) === 'Commune' && h === 0) return null;
+              return (
+                <span className="sell-haggle" title="Baisser le prix de moitié augmente la Disponibilité d'un acheteur d'un cran (LDB 59 l.60)">
+                  <button className="btn-step" disabled={h <= 0} onClick={() => onSellHalving(it.uid, -1)} aria-label="Prix plein">−</button>
+                  <span className="sell-av">acheteur {sellBuyerAvailability(it, h)}{h > 0 ? ` (÷${2 ** h})` : ''}</span>
+                  <button className="btn-step" disabled={h >= 4} onClick={() => onSellHalving(it.uid, 1)} aria-label="Brader de moitié" title="Diviser le prix par deux">÷2</button>
+                </span>
+              );
+            })()}
             {it.identified === false && (
               <button className="btn small" onClick={() => onAppraise(it.uid, activeSellId)} title="Test d'Évaluation : révèle les qualités cachées">Évaluer</button>
             )}
@@ -464,6 +484,60 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     </>
   );
 
+  // --- Troc (LDB 59 l.64-76) : céder N exemplaires d'un bien contre M du stock, sans argent ---
+  const renderBarter = () => {
+    if (!onBarter) return null;
+    // Biens cédables : par (héros, trapping) non équipé et à prix chiffré, avec le nombre en stock.
+    const giveOpts: { key: string; heroId: string; trappingId: string; label: string; count: number }[] = [];
+    for (const h of party) {
+      const byTrap = new Map<string, number>();
+      for (const it of h.items ?? []) if (it.trappingId && !it.equipped) byTrap.set(it.trappingId, (byTrap.get(it.trappingId) ?? 0) + 1);
+      for (const [tid, count] of byTrap) {
+        const t = findTrappingById(tid);
+        if (t && (t.price?.gold || t.price?.silver || t.price?.bronze)) giveOpts.push({ key: `${h.id}|${tid}`, heroId: h.id, trappingId: tid, label: `${t.label} ×${count} (${h.name})`, count });
+      }
+    }
+    const getOpts = inStock.map((l) => ({ id: l.id, label: `${labelOf(l.id)} ×${l.qty}` }));
+    const give = giveOpts.find((o) => o.key === barterGive) ?? giveOpts[0];
+    const getId = getOpts.find((o) => o.id === barterGetId)?.id ?? getOpts[0]?.id ?? '';
+    const count = Math.max(1, barterCount);
+    const quote = give && getId ? barterQuote(give.trappingId, getId, count) : null;
+    const getStockQty = inStock.find((l) => l.id === getId)?.qty ?? 0;
+    const ok = !!quote && !!give && give.count >= quote.giveCount && getStockQty >= count;
+    return (
+      <div className="merch-tab tavern-block">
+        <p className="tavern-detail">Échange sans argent : la Disponibilité des deux biens fixe le ratio (LDB 59 l.64-76).</p>
+        {!giveOpts.length ? <p className="empty">— aucun bien chiffré à céder —</p> : (
+          <>
+            <label className="tavern-amount">Céder
+              <select value={give?.key ?? ''} onChange={(e) => setBarterGive(e.target.value)}>
+                {giveOpts.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+              </select>
+            </label>
+            <label className="tavern-amount">Acquérir
+              <select value={getId} onChange={(e) => setBarterGetId(e.target.value)}>
+                {getOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select>
+            </label>
+            <label className="tavern-amount">Quantité acquise
+              <input type="number" min={1} max={getStockQty || 1} value={count} onChange={(e) => setBarterCount(Math.max(1, Number(e.target.value) || 1))} />
+            </label>
+            {quote && give && (
+              <p className="tavern-detail">
+                Ratio {quote.giveAv} <b>{quote.ratio.give}:{quote.ratio.get}</b> {quote.getAv} → céder <b>{quote.giveCount}</b> × {findTrappingById(give.trappingId)?.label} contre <b>{count}</b> × {labelOf(getId)}.
+                {give.count < quote.giveCount && <span className="cart-warn"> Exemplaires insuffisants ({give.count}/{quote.giveCount}).</span>}
+                {getStockQty < count && <span className="cart-warn"> Stock insuffisant.</span>}
+              </p>
+            )}
+            <div className="modal-actions">
+              <button className="btn btn-primary" disabled={!ok} onClick={() => give && onBarter({ giveHeroId: give.heroId, giveTrappingId: give.trappingId, getStockId: getId, getCount: count })}>Échanger</button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="merchant-panel modal-overlay">
       <div className="merchant-box">
@@ -476,6 +550,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           <button className={`mtab ${tab === 'buy' ? 'active' : ''}`} onClick={() => setTab('buy')}>Acheter{cartCount ? <span className="tab-count">{cartCount}</span> : null}</button>
           <button className={`mtab ${tab === 'sell' ? 'active' : ''}`} onClick={() => setTab('sell')}>Vendre{sellable.length ? <span className="tab-count">{sellable.length}</span> : null}</button>
           <button className={`mtab ${tab === 'repair' ? 'active' : ''}`} onClick={() => setTab('repair')}>Réparer{damaged.length ? <span className="tab-count">{damaged.length}</span> : null}</button>
+          {onBarter && <button className={`mtab ${tab === 'barter' ? 'active' : ''}`} onClick={() => setTab('barter')}>Troc</button>}
         </div>
 
         <div className="merchant-body">
@@ -508,6 +583,8 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
               {!damaged.length && <p className="empty">— aucun objet à réparer —</p>}
             </div>
           )}
+
+          {tab === 'barter' && renderBarter()}
         </div>
       </div>
     </div>
@@ -536,6 +613,8 @@ export function MerchantPanel() {
   const startBargain = useGame((s) => s.startBargain);
   const appraiseItem = useGame((s) => s.appraiseItem);
   const closeMerchant = useGame((s) => s.closeMerchant);
+  const setSellHalving = useGame((s) => s.setSellHalving);
+  const barterExchange = useGame((s) => s.barterExchange);
   if (!merchant) return null;
   return (
     <MerchantPanelView
@@ -544,6 +623,7 @@ export function MerchantPanel() {
       onAssignDist={assignDistribution} onConfirmDist={confirmDistribution}
       onSell={sellItem} onAddToSellCart={addToSellCart} onRemoveSellCart={removeFromSellCart} onClearSellCart={clearSellCart} onConfirmSell={confirmSell}
       onRepair={repairItem} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
+      onSellHalving={setSellHalving} onBarter={barterExchange}
     />
   );
 }

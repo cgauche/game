@@ -11,7 +11,9 @@ import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity 
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
+import { rule } from '../engine/policy';
 import { CharFrame } from './CharFrame';
+import { OptionChooser } from './OptionChooser';
 import { RollFlowShell } from './RollFlowShell';
 import { RollPanel } from './RollPanel';
 import { VsHeader } from './VsHeader';
@@ -41,6 +43,7 @@ export function CastModal() {
   const darkPact = useGame((s) => s.castDarkPact);
   const setCritChoice = useGame((s) => s.castSetCritChoice);
   const setConjureForm = useGame((s) => s.castSetConjureForm);
+  const setDiscreet = useGame((s) => s.castSetDiscreet);
   const allocOvercast = useGame((s) => s.castAllocOvercast);
   const toggleExtraTarget = useGame((s) => s.castToggleExtraTarget);
   const pickTargets = useGame((s) => s.castPickTargets);
@@ -146,6 +149,18 @@ export function CastModal() {
       cancelLabel={csp ? 'Laisser passer' : undefined}
       setup={
         <>
+          {/* « Prêchez, ma sœur ! » (LDB 40 l.40-42) : entonner la Prière à voix haute (Intermédiaire)
+              ou discrètement (murmurée → un cran plus dure). Seulement Prière + option active + avant le jet. */}
+          {isPrayer && !res && rule('prayer-conviction') && (
+            <OptionChooser
+              layout="seg"
+              groupLabel="🙏 Ton de la Prière"
+              options={[
+                { key: 'aloud', label: 'À voix haute', selected: !pc.discreet, onSelect: () => setDiscreet(false), title: 'Prière entonnée fermement (Intermédiaire +0, RAW)' },
+                { key: 'discreet', label: 'Discrètement', selected: !!pc.discreet, onSelect: () => setDiscreet(true), title: 'Prière murmurée / sans conviction : Difficulté d’un cran plus dure (LDB 40 l.42)' },
+              ]}
+            />
+          )}
           {conjureForms.length > 0 && (
             <div className="rm-crit-choice rm-options">
               {/* Arme invoquée à forme libre (LDB 47) : le lanceur choisit sa Compétence de Corps à corps. */}

@@ -705,6 +705,10 @@ export interface PendingCast {
   rerolled?: boolean;
   /** Incantation forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
+  /** « Prêchez, ma sœur ! » (LDB 40 l.40-42, option `prayer-conviction`) : Prière entonnée
+   *  DISCRÈTEMENT / sans conviction (murmurée) → Difficulté d'un cran plus dure (`discreetPrayerDifficulty`).
+   *  Ne concerne que les Prières ; absent/faux = à voix haute (Intermédiaire, RAW). */
+  discreet?: boolean;
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix du lanceur — Blessure Critique
    *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
    *  Force inéluctable (indissipable). Défaut auto à l'application. */

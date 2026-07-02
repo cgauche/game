@@ -104,6 +104,10 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
     case 'waterExposure': return `${icon} Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;
     case 'learnSpell': return `${icon} Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
+    case 'petitePriere': {
+      const n = e.reward ? (e.reward.kind === 'seq' ? e.reward.steps.length : 1) : 0;
+      return `${icon} Petites Prières (site sacré)${e.heroId ? ` → ${e.heroId}` : ''} · ${n} bloc(s) si exaucée`;
+    }
     case 'rest': return `${icon} Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
     case 'mealParty': return `${icon} Repas du groupe`;
     case 'interlude': return `${icon} Interlude : ${e.weeks ?? 1} semaine(s)`;
@@ -346,6 +350,15 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               ))}
             </select>
           </label>
+        )}
+        {effect.type === 'petitePriere' && (
+          <div className="test-fields">
+            <input placeholder="id du héros (vide = premier non-Béni)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+            <div className="branch">
+              <span className="branch-label">Si la Prière est exaucée (bonus, don, flag…) :</span>
+              <FlowEditor flow={e.reward ?? EMPTY_FLOW} onChange={(reward) => upd({ reward })} ctx={ctx} />
+            </div>
+          </div>
         )}
         {effect.type === 'delayedEffect' && (
           <div className="test-fields">

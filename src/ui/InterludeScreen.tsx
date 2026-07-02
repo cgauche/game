@@ -13,7 +13,9 @@ import { DIFFICULTY_LABELS } from '../engine/types';
 import { QUALITY_DESC, describeQuality } from '../engine/qualities/describe';
 import { findTalent, skillInstanceLabel, findTrappingById, qualities, refLabel, conditionLabel } from '../data';
 import type { Combatant } from '../engine/types';
+import { rule } from '../engine/policy';
 import { ActiveModal } from './ActiveModal';
+import { TavernGameModal } from './TavernGameModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 import { Icon } from './Icon';
@@ -131,6 +133,9 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                 <BankList bank={bank} party={party} interlude={interlude} canDrive={ownsHero} />
               </section>
             )}
+            {/* Jeux de taverne (NADJ ch.16) — délassement entre deux aventures ; affordance montrée
+                seulement si l'option `tavern-games` est active. Ne consomme pas d'Activité. */}
+            {rule('tavern-games') && <TavernGamesEntry />}
             <div className="interlude-close">
               <p className="interlude-warning" title={t('interlude.close.warning.title')}>
                 {t('interlude.close.warning')}
@@ -145,10 +150,23 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
       {/* Arbitre partagé (audit M8) : la modale de jet d'Activité s'affiche chez le PROPRIÉTAIRE
           du héros, les autres voient « X joue… ». */}
       <ActiveModal />
+      <TavernGameModal />
       {phase === 'closing' && (
         <CloseRecap heroes={heroes} interlude={interlude} money={money} bank={bank} pendingOrders={pendingOrders} onCancel={() => setPhase('activities')} />
       )}
     </div>
+  );
+}
+
+/** Entrée « Jeux de taverne » (NADJ ch.16) : ouvre la modale de jeu (choix jeu + adversaire). */
+function TavernGamesEntry() {
+  const open = useGame((s) => s.openTavernGames);
+  return (
+    <section className="interlude-hero panel">
+      <h3>🎲 Jeux de taverne</h3>
+      <p className="interlude-detail">Un moment de détente : dés, boules, bras de fer… (Nuits agitées, ch.16).</p>
+      <button className="btn small btn-primary" onClick={open}>Proposer une partie</button>
+    </section>
   );
 }
 

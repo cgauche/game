@@ -3,7 +3,8 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
-import { d10, defaultRNG, type RNG } from '../engine/dice';
+import { d10, d100, defaultRNG, type RNG } from '../engine/dice';
+import { petitePriereAnswered } from '../engine/prayer';
 import { applyOps, resolveFormula, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -696,6 +697,37 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         (party) => party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.id)),
       );
       if (who) env.log(t('eff.learnSpell', { name: who.name, spell: sp.label }));
+    },
+  },
+  petitePriere: {
+    group: '🎁 Récompenses', label: 'Petites Prières (site sacré — non-Béni, LDB 25)', icon: '🙏',
+    make: () => ({ type: 'petitePriere', reward: EMPTY_FLOW }),
+    apply: (e, env) => {
+      // « Petites Prières » (LDB 25 l.22-24, option `prayer-petites`) : un NON-Béni prie dans un site
+      // sacré → 1d100 secret, exaucé sur 01 (pourcentage relevé s'il a la Compétence Prière).
+      if (!rule('prayer-petites')) return; // option désactivée → ignorée
+      const pool = env.get().party;
+      const target = e.heroId
+        ? pool.find((h) => h.id === e.heroId && !h.dead)
+        : pool.find((h) => !h.dead && !hasTalent(h, 'Béni'));
+      if (!target) return;
+      // Un Bienheureux prie NORMALEMENT (Miracle/Bénédiction) — les Petites Prières sont la voie des
+      // non-Bénis (LDB 25 l.24).
+      if (hasTalent(target, 'Béni')) {
+        env.log(`${target.name} est Béni — il prie directement (les Petites Prières sont la voie des non-Bénis).`);
+        return;
+      }
+      // Seuil : « exaucé sur 01 » ; « Si vous avez la Compétence Prière, le MJ peut augmenter ce
+      // pourcentage » → +1 % par avance de Prière (arbitrage jeu-sans-MJ, modeste et documenté).
+      const priereAdv = target.skills.find((sk) => sk.skillId === 'priere')?.advances ?? 0;
+      const threshold = 1 + Math.max(0, priereAdv);
+      const roll = d100(battleRng());
+      if (petitePriereAnswered(roll, threshold)) {
+        env.log(`🙏 ${target.name} prie sur le site sacré (🎲 ${roll} ≤ ${threshold}) — et les dieux l'entendent !`);
+        runFlow(env.get, env.set, e.reward, 'Petite Prière exaucée'); // récompense authorée (bonus/don/flag)
+      } else {
+        env.log(`${target.name} prie sur le site sacré (🎲 ${roll}) — sans réponse divine.`);
+      }
     },
   },
   restoreFortune: {

@@ -43,6 +43,8 @@ import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
+import { discreetPrayerDifficulty } from '../engine/prayer';
+import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, psychResolution } from '../engine/psychology';
 import { findSpellById, findSkillById } from '../data/index';
@@ -360,9 +362,13 @@ export const FLOWS = {
       // Ward = pénalité « Sorcière » (LDB 42) + bonus conditionnel de Domaine (Aqshy près des flammes,
       // LDB 48) + bonus d'ENVIRONNEMENT (Vie/Ghyran +10 en zone rurale/sauvage, LDB 48 l.690).
       const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell) + domainEnvironmentBonus(spell, s.scene?.environment);
+      // « Prêchez, ma sœur ! » (LDB 40 l.40-42, option `prayer-conviction`) : une Prière murmurée
+      // subit une Difficulté d'un cran plus dure. Ne concerne QUE les Prières (`castInfoIsPrayer`).
+      const discreet = !!p.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');
+      const difficulty = discreetPrayerDifficulty('intermediaire', discreet);
       const res = p.missile
         ? resolveMagicMissile(actor, target, spell, battleRng(), p.focused, ward)
-        : resolveCasting(actor, spell, battleRng(), 'intermediaire', p.focused, ward);
+        : resolveCasting(actor, spell, battleRng(), difficulty, p.focused, ward);
       return { result: res };
     },
     // Échec d'incantation = d100 propre raté (roll > cible) — relance/Pacte alignés.

@@ -15,10 +15,12 @@ import { partyAssisted } from '../engine/skills';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
-import { rollStock, fullStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
-import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney } from '../engine/money';
+import { rollStock, fullStock, availabilitySearchBonus, barterRatio, availabilityAfterHalvings, priceAfterHalvings, type Settlement, type CatalogItem } from '../engine/disponibilite';
+import type { Availability } from '../engine/types';
+import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, statusBudgetBrass, type StatusTier } from '../engine/money';
+import { actorStatus } from '../engine/social';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { findTrappingById, trappings } from '../data/index';
+import { findTrappingById, findCareerById, trappings } from '../data/index';
 import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
@@ -49,6 +51,9 @@ export interface MerchantState {
   /** Panier de VENTE (#22b) : instances d'objets sélectionnées chez leur porteur, vendues d'un coup
    *  (`confirmSell`) — parité avec le panier d'achat. Une instance est unique (pas de quantité). */
   sellCart?: { uid: string; heroId: string }[];
+  /** « Baisse des prix » (LDB 59 l.60) : par instance vendue, nombre de fois où le vendeur divise son
+   *  prix par deux pour trouver un acheteur (chaque division monte la Disponibilité d'un cran). */
+  sellHalvings?: Record<string, number>;
   pendingDistribution?: { item: ItemInstance; heroId: string }[] | null;
   bargainLocked: boolean;
   bargainPaid?: boolean;
@@ -57,6 +62,40 @@ export interface MerchantState {
 
 /** Stock PERSISTANT par marchand (la déplétion survit aux visites ; réassort par l'horloge, #T3). */
 export type MerchantStocks = Record<string, { stock: { id: string; qty: number }[]; rolledAt: number; bargainLocked?: boolean }>;
+
+/** Prix listé d'un objet en sous de cuivre (catalogue × qualité d'artisanat) — la référence du seuil
+ *  « Tenir les comptes » ET du Troc (avant majoration/Marchandage). null (0) si prix non chiffré. */
+function listedBrassOf(t: { price: { gold?: number; silver?: number; bronze?: number }; qualities?: unknown[] }): number {
+  const b = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities as never });
+  return Number.isFinite(b) ? Math.round(b) : 0;
+}
+
+/** Meilleur seuil « Tenir les comptes » du groupe (LDB 59 l.9-11) : le plus haut budget de Statut
+ *  (Bronze N = N sous / Argent N = N pistoles / Or N = N couronnes) parmi les héros — le membre le plus
+ *  huppé couvre les achats courants. Consomme `statusBudgetBrass` (engine/money). */
+function partyStatusBudgetBrass(party: Combatant[]): number {
+  let best = 0;
+  for (const h of party) {
+    const st = actorStatus(h);
+    best = Math.max(best, statusBudgetBrass(st.tier.toLowerCase() as StatusTier, st.standing));
+  }
+  return best;
+}
+
+/** « Tenir les comptes » (LDB 59 l.9-11, option `market-tenir-comptes`) : un objet dont le prix listé
+ *  est ≤ au niveau de Statut du groupe s'achète « autant de fois que nécessaire », sans débit. */
+function comptesFree(party: Combatant[], listedBrass: number): boolean {
+  return !!rule('market-tenir-comptes') && listedBrass > 0 && listedBrass <= partyStatusBudgetBrass(party);
+}
+
+/** Bonus de recherche de Disponibilité du groupe (LDB 59 l.50) : +10 si un héros a une Carrière
+ *  cohérente (« Marchand ou Receleur », l.50). Le +10 « assidu » et le +10 « journée entière + Ragot »
+ *  restent des circonstances de scène (non auto-déclenchées ici — pas de sous-système « passer la
+ *  journée »). Renvoie le % à ajouter aux Tests de Disponibilité du stock. */
+function partyAvailabilityBonus(party: Combatant[]): number {
+  const coherent = party.some((h) => /marchand|receleur/i.test(findCareerById(h.career ?? '')?.label ?? ''));
+  return availabilitySearchBonus({ coherentCareer: coherent });
+}
 
 export function openMerchant(get: Get, set: Set, entityId: string): void {
   const ent = get().scene?.entities.find((e) => e.id === entityId);
@@ -87,9 +126,12 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
     // Seed dérivé de l'entité ET de la PÉRIODE de réassort → chaque réassort a un stock frais déterministe.
     const period = Math.floor(now / restockPeriod);
     const seed = [...`${entityId}:${period}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
+    // Recherche active (LDB 59 l.50) : Carrière cohérente (Marchand/Receleur) du groupe → +10 % aux
+    // Tests de Disponibilité (sans effet sur le système simplifié « tout en stock »).
+    const dispoBonus = partyAvailabilityBonus(get().party);
     const lines = marketMode === 'sans-disponibilite' || marketMode === 'simplifie'
       ? fullStock(cat, settlement, makeRNG(seed))
-      : rollStock(cat, settlement, makeRNG(seed), arch.curated);
+      : rollStock(cat, settlement, makeRNG(seed), arch.curated, dispoBonus);
     stock = lines.map((l) => ({ id: l.id, qty: l.qty }));
     const tested = lines.filter((l) => l.test);
     if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
@@ -116,8 +158,10 @@ export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
   const line = m.stock.find((l) => l.id === id); if (!line || line.qty <= 0) return;
   const t = findTrappingById(id); if (!t) return;
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
-  const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
-  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${t.label}.`); return; }
+  // « Tenir les comptes » (LDB 59 l.9-11) : objet ≤ Statut du groupe → acquis sans compter les pièces.
+  const free = comptesFree(get().party, listedBrassOf(t));
+  const cost = free ? fromBrass(0) : fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
+  if (!free && !canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${t.label}.`); return; }
   const it = itemFromTrappingById(id); if (!it) return;
   const dest = heroId ?? get().party[0]?.id;
   const decr = (st: { id: string; qty: number }[]) => st.map((l) => (l.id === id ? { ...l, qty: l.qty - 1 } : l));
@@ -134,7 +178,7 @@ export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
       merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
     };
   });
-  get().log(`Achat : ${t.label}.`);
+  get().log(free ? `Achat : ${t.label} (dans les moyens du Statut du groupe — Tenir les comptes).` : `Achat : ${t.label}.`);
 }
 
 export function addToCart(_get: Get, set: Set, id: string): void {
@@ -183,8 +227,11 @@ export function payCart(get: Get, set: Set): void {
   const m = get().merchant; if (!m) return;
   const cart = m.cart ?? []; if (!cart.length) return;
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
+  const party = get().party;
+  // « Tenir les comptes » (LDB 59 l.9-11) : une ligne ≤ Statut du groupe n'est pas comptée (0 sc).
   const unitBrass = (id: string) => {
     const t = findTrappingById(id); if (!t) return 0;
+    if (comptesFree(party, listedBrassOf(t))) return 0;
     return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
   };
   let totalBrass = 0;
@@ -242,13 +289,101 @@ export function confirmDistribution(_get: Get, set: Set): void {
  *  Option 2 (LDB 60 l.22) : ¼ par défaut (resaleRate/2) ; ½ si le Marchandage de vente est GAGNÉ. */
 export function sellGain(item: ItemInstance, m: MerchantState): ReturnType<typeof fromBrass> {
   const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
+  // « Baisse des prix » (LDB 59 l.60) : chaque division du prix par deux monte la Disponibilité d'un
+  // acheteur d'un cran — appliquée au gain FINAL (le vendeur accepte moins pour écouler un objet rare).
+  const halve = (b: number) => priceAfterHalvings(b, m.sellHalvings?.[item.uid] ?? 0);
   // Objet PRÉ-VALUÉ (pièces de monstre récoltées, ZI Précieuses Entrailles) : sa valeur de marché est
   // déjà nette (rareté × dangerosité × Taille × Conservation) → revendu en DIRECT, sans le taux de revente
   // catalogue. Le Marchandage de vente joue quand même (sellFactor/0.5 : ×1 par défaut, ×plus si gagné).
-  if (item.price) return fromBrass(Math.round(toBrass(item.price) * (sellFactor / 0.5)));
+  if (item.price) return fromBrass(halve(Math.round(toBrass(item.price) * (sellFactor / 0.5))));
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
-  return fromBrass(Math.round(base * m.resaleRate * sellFactor));
+  return fromBrass(halve(Math.round(base * m.resaleRate * sellFactor)));
+}
+
+/** Disponibilité d'un ACHETEUR pour un objet vendu (LDB 59 l.52-62) : sa Disponibilité catalogue montée
+ *  d'un cran par baisse de prix consentie (`halvings`). Sert d'affichage au vendeur (plus le cran est
+ *  bon, plus un acheteur se trouve vite). `Commune` par défaut si l'objet n'a pas de Disponibilité. */
+export function sellBuyerAvailability(item: ItemInstance, halvings: number): Availability {
+  const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
+  const av = t?.availability;
+  const base: Availability = av === 'Commune' || av === 'Limitée' || av === 'Rare' || av === 'Exotique' ? av : 'Commune';
+  return availabilityAfterHalvings(base, halvings);
+}
+
+/** « Baisse des prix » (LDB 59 l.60) : (dé)crémente le nombre de divisions par deux consenties pour
+ *  l'instance `uid` (0..4). Améliore la Disponibilité de l'acheteur, réduit le gain (via `sellGain`). */
+export function setSellHalving(get: Get, set: Set, uid: string, delta: number): void {
+  const m = get().merchant; if (!m) return;
+  const cur = m.sellHalvings?.[uid] ?? 0;
+  const next = Math.max(0, Math.min(4, cur + delta));
+  set({ merchant: { ...m, sellHalvings: { ...(m.sellHalvings ?? {}), [uid]: next } } });
+}
+
+// ── Troc (LDB 59 l.64-76) ───────────────────────────────────────────────────────────────────────
+/** Disponibilité d'un trapping pour le Troc (Commune si absente/non chiffrée). */
+function availabilityOf(id: string): Availability {
+  const av = findTrappingById(id)?.availability;
+  return av === 'Commune' || av === 'Limitée' || av === 'Rare' || av === 'Exotique' ? av : 'Commune';
+}
+
+export interface BarterQuote {
+  ratio: { give: number; get: number };
+  giveAv: Availability;
+  getAv: Availability;
+  /** Unités du bien DONNÉ requises pour acquérir `getCount` unités du bien acquis (lots de valeur ~égale
+   *  × premium de rareté du ratio, LDB 59 l.66-76). */
+  giveCount: number;
+}
+
+/** Devis de Troc (LDB 59 l.64-76) : combien d'unités du bien DONNÉ (`giveId`) contre `getCount` unités
+ *  du bien ACQUIS (`getId`). Constitue « deux lots de valeur approximativement équivalente » (prix
+ *  listés, l.66) puis applique le RATIO de rareté (`barterRatio`). null si un prix manque. */
+export function barterQuote(giveId: string, getId: string, getCount = 1): BarterQuote | null {
+  const giveT = findTrappingById(giveId), getT = findTrappingById(getId);
+  if (!giveT || !getT) return null;
+  const givePrice = listedBrassOf(giveT), getPrice = listedBrassOf(getT);
+  if (givePrice <= 0 || getPrice <= 0) return null;
+  const giveAv = availabilityOf(giveId), getAv = availabilityOf(getId);
+  const ratio = barterRatio(giveAv, getAv);
+  // Lots de valeur équivalente (l.66) puis premium de rareté : valeur à donner = valeur acquise × give/get.
+  const giveValue = getCount * getPrice * (ratio.give / ratio.get);
+  return { ratio, giveAv, getAv, giveCount: Math.max(1, Math.ceil(giveValue / givePrice)) };
+}
+
+/** Exécute un Troc (LDB 59 l.64) : le héros `giveHeroId` cède `giveCount` exemplaires du trapping
+ *  `giveTrappingId` (SANS argent) contre `getCount` exemplaires du stock `getStockId`. Refuse si le
+ *  héros n'a pas les exemplaires ou si le stock est insuffisant. Réutilise les flux objet existants. */
+export function barterExchange(get: Get, set: Set, opts: { giveHeroId: string; giveTrappingId: string; getStockId: string; getCount?: number }): void {
+  const m = get().merchant; if (!m) return;
+  const getCount = Math.max(1, Math.floor(opts.getCount ?? 1));
+  const quote = barterQuote(opts.giveTrappingId, opts.getStockId, getCount);
+  if (!quote) { get().log('Troc impossible : objet sans prix de référence.'); return; }
+  const hero = get().party.find((h) => h.id === opts.giveHeroId);
+  const stockLine = m.stock.find((l) => l.id === opts.getStockId);
+  if (!hero || !stockLine) return;
+  // Exemplaires cédés : instances NON équipées du même trapping chez ce héros.
+  const givable = (hero.items ?? []).filter((i) => i.trappingId === opts.giveTrappingId && !i.equipped);
+  if (givable.length < quote.giveCount) { get().log(`Troc : il faut ${quote.giveCount} × ${findTrappingById(opts.giveTrappingId)?.label ?? '?'} à céder (${givable.length} disponible(s)).`); return; }
+  if (stockLine.qty < getCount) { get().log('Troc : stock insuffisant chez le marchand.'); return; }
+  const soldUids = givable.slice(0, quote.giveCount).map((i) => i.uid);
+  const newStock = m.stock.map((l) => (l.id === opts.getStockId ? { ...l, qty: l.qty - getCount } : l));
+  set((s) => {
+    const eid = s.merchant!.entityId;
+    const persisted = s.merchantStocks[eid];
+    return {
+      party: s.party.map((h) => {
+        if (h.id !== opts.giveHeroId) return h;
+        let clone: Combatant = structuredClone(h);
+        clone.items = (clone.items ?? []).filter((i) => !soldUids.includes(i.uid)); // biens cédés
+        for (let i = 0; i < getCount; i++) clone = addItemToHero(clone, opts.getStockId); // biens acquis
+        return clone;
+      }),
+      merchant: { ...s.merchant!, stock: newStock },
+      merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
+    };
+  });
+  get().log(`Troc : ${quote.giveCount} × ${findTrappingById(opts.giveTrappingId)?.label ?? '?'} contre ${getCount} × ${findTrappingById(opts.getStockId)?.label ?? '?'} (${quote.giveAv} ${quote.ratio.give}:${quote.ratio.get} ${quote.getAv}).`);
 }
 
 /** Retire de `party` (clone + recompute) les instances `entries` (uid+heroId) et renvoie la nouvelle liste. */

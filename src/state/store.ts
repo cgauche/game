@@ -71,6 +71,7 @@ import { usePartyItem as usePartyConsumable } from './consumableFlow';
 import * as visionStateMod from './visionState';
 import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
+import * as tavernFlow from './tavernFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
@@ -287,6 +288,8 @@ export interface GameState extends RollFlowActionsMap {
   dialogue: { dialogue: Dialogue; nodeId: string; speakerId?: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
   merchant: MerchantState | null;
+  /** Jeux de taverne ouverts (option `tavern-games`, NADJ ch.16) — null = fermé ; `result` = dernière partie. */
+  tavernGames: tavernFlow.TavernGamesState | null;
   /** Stock PERSISTANT par marchand (#T3 re-stock) : déplété entre visites, re-tiré seulement après
    *  `restockDays` écoulés. `rolledAt` = gameTime du dernier tirage. `bargainLocked` = le joueur a négocié
    *  puis quitté SANS payer → plus de Marchandage avec ce marchand jusqu'au prochain réassort. Reset en nouvelle partie. */
@@ -562,6 +565,16 @@ export interface GameState extends RollFlowActionsMap {
   closeDialogue: () => void;
   openMerchant: (entityId: string) => void;
   closeMerchant: () => void;
+  /** Jeux de taverne (option `tavern-games`, NADJ ch.16) : ouvrir la modale / jouer une partie
+   *  (choisir un jeu + un adversaire, résolution par le moteur générique) / fermer. */
+  openTavernGames: () => void;
+  playTavernGame: (opts: { gameId: string; challengerId: string; opponent: tavernFlow.TavernOpponent; stakeBrass?: number }) => void;
+  closeTavernGames: () => void;
+  /** Troc (LDB 59 l.64-76) : céder N exemplaires d'un objet contre M exemplaires du stock, sans argent. */
+  barterExchange: (opts: { giveHeroId: string; giveTrappingId: string; getStockId: string; getCount?: number }) => void;
+  /** « Baisse des prix » (LDB 59 l.60) : (dé)cale d'un cran le nombre de divisions de moitié consenties
+   *  à la vente d'une instance (améliore la Disponibilité de l'acheteur, réduit le gain). */
+  setSellHalving: (uid: string, delta: number) => void;
   /** Achat direct (#2, primitif) : débite la Bourse et crée l'objet dans le sac du héros (défaut : 1er). */
   buyItem: (label: string, heroId?: string) => void;
   /** Panier (#2) : ajoute / retire / vide. L'achat passe par le panier → `payCart` (UI). */
@@ -693,6 +706,9 @@ export interface GameState extends RollFlowActionsMap {
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
   /** Arme invoquée à forme libre (Arme aethyrique) : le lanceur choisit la forme/Spé de Corps à corps. */
   castSetConjureForm: (form: ConjureForm) => void;
+  /** « Prêchez, ma sœur ! » (LDB 40 l.42, option `prayer-conviction`) : entonner la Prière discrètement
+   *  (murmurée → Difficulté d'un cran plus dure) plutôt qu'à voix haute. Avant le jet uniquement. */
+  castSetDiscreet: (discreet: boolean) => void;
   /** Surincantation : alloue (`delta` +1) ou rend (`delta` −1, reset) un pas de +2 DR à un axe
    *  (Portée / Zone d'Effet / Durée / Cible) ; l'effet d'un pas est source-aware (`engine/overcast.ts`). */
   castAllocOvercast: (axis: OvercastAxis, delta: number) => void;
@@ -1202,6 +1218,7 @@ export const useGame = create<GameState>((set, get) => ({
   dialogue: null,
   merchant: null,
   merchantStocks: {},
+  tavernGames: null,
   battle: null,
   campaignSceneId: null,
   money: { gold: 0, silver: 0, brass: 0 },
@@ -1564,6 +1581,12 @@ export const useGame = create<GameState>((set, get) => ({
   ...rollFlowActions('appraise', FLOWS.appraise, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   resolveAppraise: () => merchantFlow.resolveAppraise(get, set),
   appraiseCancel: () => set({ pendingAppraise: null }),
+
+  openTavernGames: () => tavernFlow.openTavernGames(get, set),
+  playTavernGame: (opts) => tavernFlow.playTavernGame(get, set, opts),
+  closeTavernGames: () => tavernFlow.closeTavernGames(get, set),
+  barterExchange: (opts) => merchantFlow.barterExchange(get, set, opts),
+  setSellHalving: (uid, delta) => merchantFlow.setSellHalving(get, set, uid, delta),
 
   seedRng: (seed) => {
     seedBattleRng(seed);

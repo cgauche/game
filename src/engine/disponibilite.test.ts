@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { rollAvailability, rollStock, fullStock, DISPO_PCT, type CatalogItem } from './disponibilite';
+import {
+  rollAvailability, rollStock, fullStock, DISPO_PCT, type CatalogItem,
+  barterRatio, BARTER_RATIOS, availabilityAfterHalvings, priceAfterHalvings, availabilitySearchBonus,
+} from './disponibilite';
 
 describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
   it('table RAW : Limitée 30/60/90, Rare 15/30/45', () => {
@@ -61,5 +64,53 @@ describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
     expect(s.every((l) => l.test === undefined)).toBe(true); // aucun Test de Disponibilité
     expect(s.find((l) => l.label === 'Clavecin')).toBeUndefined(); // Exotique exclu
     expect(s.find((l) => l.label === 'Inconnu')).toBeUndefined(); // availability nulle exclue
+  });
+});
+
+describe('disponibilite — recherche active (LDB 59 l.50)', () => {
+  it('availabilitySearchBonus : +10 par circonstance, plafonné à +20', () => {
+    expect(availabilitySearchBonus({})).toBe(0);
+    expect(availabilitySearchBonus({ coherentCareer: true })).toBe(10);
+    expect(availabilitySearchBonus({ diligent: true, coherentCareer: true })).toBe(20);
+    expect(availabilitySearchBonus({ diligent: true, coherentCareer: true, gossipDay: true })).toBe(20); // plafond
+  });
+  it('rollAvailability : +bonus élève la cible du Test (Rare Village 15 % → 35 % à +20)', () => {
+    // Un seed qui échoue à 15 % mais réussit à 35 % prouve que le bonus a bougé la cible.
+    let s = 1;
+    for (; s < 300; s++) {
+      const base = rollAvailability('Rare', 'village', makeRNG(s));
+      const boosted = rollAvailability('Rare', 'village', makeRNG(s), 20);
+      if (!base.inStock && boosted.inStock) break;
+    }
+    expect(s).toBeLessThan(300);
+    expect(rollAvailability('Rare', 'village', makeRNG(s), 20).test).toMatchObject({ target: 35 }); // 15 + 20
+  });
+});
+
+describe('disponibilite — Baisse des prix : Disponibilité acheteur (LDB 59 l.60-62)', () => {
+  it('chaque division par deux monte la Disponibilité d’un cran (Exotique + 2 = Limitée)', () => {
+    expect(availabilityAfterHalvings('Exotique', 0)).toBe('Exotique');
+    expect(availabilityAfterHalvings('Exotique', 1)).toBe('Rare');
+    expect(availabilityAfterHalvings('Exotique', 2)).toBe('Limitée'); // exemple canon (l.62)
+    expect(availabilityAfterHalvings('Exotique', 5)).toBe('Commune'); // borné à Commune
+    expect(availabilityAfterHalvings('Commune', 3)).toBe('Commune');
+  });
+  it('priceAfterHalvings : base ÷ 2^n (100 CO → 25 CO après 2 baisses)', () => {
+    expect(priceAfterHalvings(240 * 100, 0)).toBe(240 * 100); // 100 CO en sous
+    expect(priceAfterHalvings(240 * 100, 2)).toBe(240 * 25); // 100 CO ÷ 4 = 25 CO
+  });
+});
+
+describe('disponibilite — Troc (LDB 59 l.64-76)', () => {
+  it('table RATIOS DE TROC recopiée verbatim', () => {
+    expect(BARTER_RATIOS.Commune.Exotique).toEqual([8, 1]);
+    expect(BARTER_RATIOS.Exotique.Commune).toEqual([1, 8]);
+    expect(BARTER_RATIOS.Limitée.Rare).toEqual([2, 1]);
+    expect(BARTER_RATIOS.Rare.Limitée).toEqual([1, 2]);
+  });
+  it('barterRatio : 8 unités communes contre 1 exotique ; réflexivité même Disponibilité = 1:1', () => {
+    expect(barterRatio('Commune', 'Exotique')).toEqual({ give: 8, get: 1 });
+    expect(barterRatio('Exotique', 'Commune')).toEqual({ give: 1, get: 8 });
+    expect(barterRatio('Rare', 'Rare')).toEqual({ give: 1, get: 1 });
   });
 });
