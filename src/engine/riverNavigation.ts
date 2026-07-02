@@ -1,0 +1,282 @@
+/**
+ * NAVIGATION FLUVIALE — couche PURE de **Mort sur le Reik — Compagnon, ch.5** (« Navigation fluviale »,
+ * cité `T2C ch.5 l.<ligne>`), données verbatim dans `src/data/river-navigation.json` + `river-perils.json`.
+ * Pendant fluvial de `seaNavigation.ts` (mer, MDG). Les deux couches sont DISTINCTES parce que les tables
+ * RAW le sont : la mer (MDG) a 6 forces de vent + rose des vents + Salissures + Orientation ; le fleuve
+ * (T2C ch.5) a une table de vent PROPRE (5 forces, direction RELATIVE arrière/côté/contraire — l.21-41),
+ * un Test de Navigation SIMPLE (Voile OU Ramer, un par étape — l.11-15) et ses propres Critiques de bateau
+ * (l.72-94). Ce qui est réellement COMMUN (boucle jour/jour, halte de nuit, entretien quotidien, coque
+ * persistée) est réutilisé côté flux (`riverVoyageFlow` réutilise `openRest`/`runDailyUpkeep`/
+ * `persistHullWounds` de la machinerie de voyage), pas ré-implémenté.
+ *
+ * RAW modélisé (T2C ch.5) :
+ *  - **Test de Navigation** = Voile OU Ramer selon l'embarcation, regroupés sous « Navigation » (l.11) ;
+ *    UN par étape de voyage (l.15, renvoi aux règles de voyage EDOC). Barreur (voile) / meilleur rameur
+ *    (barque) (l.13). **Savoir (Voies fluviales)** → +1 DR (fleuves/rivières/canaux uniquement, l.13).
+ *  - **Ramer** = Compétence de base (tous peuvent) ; **Voile** non (l.17). Test d'**Agilité Intermédiaire
+ *    (+0)** au début de chaque jour : échec → vitesse −20 % ce jour ; Échec spectaculaire (−6 DR) → ÷2 (l.17).
+ *  - **Table des vents** (l.21-33) : Force 1d10 (Calme/Léger/Modéré/Fort/Très fort), Direction 1d10
+ *    (arrière 1-3 / côté 4-7 / contraire 8-10). d10 à l'aube/midi/crépuscule/minuit : sur un 1, la force
+ *    change d'un cran (bornes : Calme→Léger, Très fort→Fort). Effets % + Dérive/Louvoyer/Chavirage (l.37-41).
+ *  - **Chavirage** (note 4, l.40) : Très fort de côté → retirer la voile (Navigation Accessible +20) sinon
+ *    le bateau se renverse ; 1 Test de Navigation Accessible (+20)/Round pour redresser, chaque échec
+ *    −5 cumulatif ; non redressé → coule en **BE tours** (Bonus d'Endurance).
+ *  - **Critiques de bateau** (l.72-94) + **s'échouer** (12 Dégâts, l.99) + **« Y a un trou »** (coule en
+ *    E minutes, −10 Nav/tour, −1 % vitesse/tour, l.101-105).
+ *  - **Dangers** (l.119-166) : Débris, Barrage, Rochers, Eaux peu profondes — cf. `river-perils.json`.
+ */
+import riverNavJson from '../data/river-navigation.json';
+import riverPerilsJson from '../data/river-perils.json';
+import { findTableEntry } from './tables';
+import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
+import { rollTest } from './tests';
+import { bonus } from './characteristics';
+import { testValue } from './skills';
+import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
+
+// ── Types de la table des vents (l.21-41) ────────────────────────────────────────────────────────
+
+export type RiverWindForceId = 'calme' | 'leger' | 'modere' | 'fort' | 'tres-fort';
+/** Direction du vent RELATIVE au bateau (T2C ch.5 l.25-33) — pas une direction cardinale (≠ mer). */
+export type RiverWindDirId = 'arriere' | 'cote' | 'contraire';
+
+/** Cellule d'EFFET DU VENT (l.29-33) : % ajouté à la vitesse, ou un cas particulier (Dérive/Louvoyer/
+ *  Chavirage/Gréement en péril). `pct` absent = pas de gain de vitesse (Dérive / Très fort de côté). */
+export interface RiverWindEffect {
+  /** % de vitesse (peut être négatif : vent contraire). */
+  pct?: number;
+  /** Calme (l.29) : le bateau dérive en aval à 25 % ; Tests de Navigation −10 (note 2, l.38). */
+  drift?: boolean;
+  /** Vent de côté Modéré/Fort (note 3, l.39) : le +% n'est acquis qu'en louvoyant (Navigation Accessible +20). */
+  tack?: boolean;
+  /** Très fort de côté (note 4, l.40) : retirer la voile ou chavirer. */
+  capsizeRisk?: boolean;
+  /** Très fort contraire (note 5, l.41) : Navigation Accessible (+20) sinon Critique au gréement + dérive. */
+  riggingRisk?: boolean;
+}
+
+interface BandRow { id: string; label: string; min: number; max: number }
+interface CritDef { splinterDamage?: number; initiativeTest?: boolean; conditionId?: string; driftUntilRepair?: boolean; navDifficulty?: Difficulty; hole?: boolean }
+
+const DATA = riverNavJson as unknown as {
+  windForces: BandRow[];
+  windDirections: BandRow[];
+  windTickThreshold: number;
+  windTicksPerDay: number;
+  windEffect: Record<string, Record<RiverWindDirId, RiverWindEffect>>;
+  driftPctOfSpeed: number;
+  driftNavPenalty: number;
+  navBaseDifficulty: Difficulty;
+  tackDifficulty: Difficulty;
+  savoirVoiesFluvialesDR: number;
+  rowingAgility: { difficulty: Difficulty; failSpeedPct: number; spectacularSL: number; spectacularSpeedFactor: number };
+  capsize: { removeSailDifficulty: Difficulty; rightDifficulty: Difficulty; rightCumulativePenalty: number };
+  outOfControl: { navPenalty: number };
+  criticals: Record<string, CritDef>;
+  echouage: { hullDamage: number };
+  temporaryRepair: { difficulty: Difficulty; charpentierPenalty: number; woundsPerRepair: string };
+};
+
+export const RIVER_FORCES: RiverWindForceId[] = DATA.windForces.map((f) => f.id as RiverWindForceId);
+export const NAV_BASE_DIFFICULTY = DATA.navBaseDifficulty;
+export const TACK_DIFFICULTY = DATA.tackDifficulty;
+export const CAPSIZE = DATA.capsize;
+export const OUT_OF_CONTROL = DATA.outOfControl;
+export const ECHOUAGE = DATA.echouage;
+export const TEMPORARY_REPAIR = DATA.temporaryRepair;
+export const DRIFT_PCT_OF_SPEED = DATA.driftPctOfSpeed;
+export const DRIFT_NAV_PENALTY = DATA.driftNavPenalty;
+
+export const riverForceLabel = (id: RiverWindForceId): string => DATA.windForces.find((f) => f.id === id)?.label ?? id;
+export const riverDirLabel = (id: RiverWindDirId): string => DATA.windDirections.find((d) => d.id === id)?.label ?? id;
+
+// ── Vent (l.21-41) ───────────────────────────────────────────────────────────────────────────────
+
+/** Tire la force et la direction du vent en début de voyage (l.21 : « Lancez 2d10 … force et direction »). PUR. */
+export function rollRiverWind(rng: RNG = defaultRNG): { force: RiverWindForceId; dir: RiverWindDirId } {
+  return {
+    force: findTableEntry(DATA.windForces, d10(rng)).id as RiverWindForceId,
+    dir: findTableEntry(DATA.windDirections, d10(rng)).id as RiverWindDirId,
+  };
+}
+
+/** Mise à jour du vent (l.21 : « lancez un nouveau d10 à l'aube, à midi, au crépuscule et à minuit : sur un 1,
+ *  la force du vent change d'une catégorie »). Autant de chance de forcir que de mollir ; bornes : Calme →
+ *  Léger, Très fort → Fort. PUR — renvoie la nouvelle force. */
+export function tickRiverWind(current: RiverWindForceId, rng: RNG = defaultRNG): RiverWindForceId {
+  if (d10(rng) !== DATA.windTickThreshold) return current;
+  const i = RIVER_FORCES.indexOf(current);
+  const up = d10(rng) <= 5;
+  const next = i === 0 ? 1 : i === RIVER_FORCES.length - 1 ? RIVER_FORCES.length - 2 : i + (up ? 1 : -1);
+  return RIVER_FORCES[next];
+}
+
+/** Nombre de crans de force appliqués sur une JOURNÉE (4 tirages, l.21). PUR. */
+export function tickRiverWindDay(current: RiverWindForceId, rng: RNG = defaultRNG): RiverWindForceId {
+  let f = current;
+  for (let i = 0; i < DATA.windTicksPerDay; i++) f = tickRiverWind(f, rng);
+  return f;
+}
+
+/** Effet du vent pour une force × direction relative (Tableau des vents, l.29-33). PUR. */
+export function riverWindEffect(force: RiverWindForceId, dir: RiverWindDirId): RiverWindEffect {
+  return DATA.windEffect[force]?.[dir] ?? {};
+}
+
+// ── Navigation (l.11-17) ─────────────────────────────────────────────────────────────────────────
+
+/** Bonus de **Savoir (Voies fluviales)** aux Tests de Navigation (l.13 : « +1 DR … fleuves, rivières et
+ *  canaux »). 0 si la Compétence n'est pas ACQUISE (le +1 DR récompense la formation, pas l'Int nue). PUR. */
+export function savoirVoiesFluvialesBonus(c: Combatant): number {
+  const adv = (c.skills ?? []).find((s) => s.skillId === 'savoir' && s.spec === 'Voies fluviales')?.advances ?? 0;
+  return adv > 0 ? DATA.savoirVoiesFluvialesDR : 0;
+}
+
+/** Compétence de Navigation d'une embarcation (l.11-13) : **Voile** si le bateau porte une voilure, sinon
+ *  **Ramer** (barque). Décision de DONNÉE (facette `ship.sail` du véhicule), même règle que la manœuvre
+ *  navale (`shipManeuverParams`). PUR. */
+export function riverPilotSkill(hasSail: boolean): 'voile' | 'ramer' {
+  return hasSail ? 'voile' : 'ramer';
+}
+
+/** Le barreur garde-t-il le CONTRÔLE à l'issue du Test de Navigation de l'étape (l.15) ? Une réussite garde
+ *  toujours le cap ; un ÉCHEC de peu est rattrapé par le +1 DR de **Savoir (Voies fluviales)** (l.13 :
+ *  `navSL + savoir ≥ 0`). Sinon le contrôle est perdu → le courant emporte le bateau (dérive, note 2 l.38). PUR. */
+export function riverControlKept(navSuccess: boolean, navSL: number, savoirBonus: number): boolean {
+  return navSuccess || (savoirBonus > 0 && navSL + savoirBonus >= 0);
+}
+
+/** Facteur de vitesse du **Test d'Agilité** de rame du jour (l.17) : réussite → 1 ; échec → 1 + failSpeedPct
+ *  (−20 % → 0,8) ; Échec spectaculaire (DR ≤ −6) → spectacularSpeedFactor (÷2 → 0,5). PUR. */
+export function rowingAgilityFactor(success: boolean, sl: number): number {
+  if (success) return 1;
+  if (sl <= DATA.rowingAgility.spectacularSL) return DATA.rowingAgility.spectacularSpeedFactor;
+  return 1 + DATA.rowingAgility.failSpeedPct / 100;
+}
+export const ROWING_AGILITY_DIFFICULTY = DATA.rowingAgility.difficulty;
+
+/** Km parcourus dans la JOURNÉE : distance de base (barge M × heures, EDOC — l.15) modulée par l'effet du
+ *  vent (% l.29-33) et le facteur d'Agilité (l.17). Plancher 0. PUR. */
+export function riverDayKm(baseKmPerDay: number, windPct: number, agilityFactor: number): number {
+  return Math.max(0, baseKmPerDay * (1 + windPct / 100) * agilityFactor);
+}
+
+/** Distance de DÉRIVE en aval (note 2, l.38 ; hors de contrôle note 5, l.41) : 25 % de la vitesse de base. PUR. */
+export function riverDriftKm(baseKmPerDay: number): number {
+  return baseKmPerDay * (DATA.driftPctOfSpeed / 100);
+}
+
+/** Difficulté EFFECTIVE d'un Test de Navigation à partir de la base (Intermédiaire, l.15) + un malus PLAT
+ *  RAW (Dérive −10 note 2 ; hors de contrôle −20 note 5 ; gouvernail brisé −30 l.86). `flatPenalty` en pas
+ *  de 10 → crans (chaque cran = 10, `DIFFICULTY_MODIFIERS`). PUR. */
+export function navDifficultyWithPenalty(flatPenalty: number): Difficulty {
+  return difficultyFromModifier(DIFFICULTY_MODIFIERS[NAV_BASE_DIFFICULTY] + flatPenalty);
+}
+
+/** Difficulté dont le modificateur est le plus proche (≤) de `mod` (échelle `DIFFICULTY_MODIFIERS`). PUR.
+ *  Source unique pour composer une difficulté à partir d'un modificateur plat RAW (−10/−20/−30/+20). */
+export function difficultyFromModifier(mod: number): Difficulty {
+  let best: Difficulty = 'intermediaire';
+  let bestDelta = Infinity;
+  for (const [key, m] of Object.entries(DIFFICULTY_MODIFIERS) as [Difficulty, number][]) {
+    const delta = Math.abs(m - mod);
+    if (delta < bestDelta) { best = key; bestDelta = delta; }
+  }
+  return best;
+}
+
+// ── Chavirage (note 4, l.40) ─────────────────────────────────────────────────────────────────────
+
+export interface CapsizeRighting {
+  /** Le bateau a été redressé avant de couler. */
+  righted: boolean;
+  /** Le bateau a coulé (aucun redressement en BE Rounds). */
+  sank: boolean;
+  /** Jets successifs (1/Round, malus −5 cumulatif). */
+  rounds: { roll: number; target: number; success: boolean }[];
+}
+
+/** Redressement d'un bateau renversé (note 4, l.40) : « Les Personnages peuvent faire un seul Test de
+ *  Navigation Accessible (+20) par Round pour essayer de redresser le bateau ; chaque Test échoué ajoute un
+ *  malus de −5 au Test suivant. S'il n'est pas redressé, le bateau coule en un nombre de tours égal à son
+ *  Bonus d'Endurance. » `pilotValue` = valeur de Navigation du barreur (Savoir Voies fluviales inclus). PUR
+ *  (RNG injecté). */
+export function resolveCapsizeRighting(pilotValue: number, bonusEndurance: number, rng: RNG = defaultRNG): CapsizeRighting {
+  const rounds: CapsizeRighting['rounds'] = [];
+  let penalty = 0;
+  for (let r = 0; r < Math.max(1, bonusEndurance); r++) {
+    const t = rollTest(pilotValue + penalty, DATA.capsize.rightDifficulty, rng);
+    rounds.push({ roll: t.roll, target: t.target, success: t.success });
+    if (t.success) return { righted: true, sank: false, rounds };
+    penalty += DATA.capsize.rightCumulativePenalty; // −5 cumulatif
+  }
+  return { righted: false, sank: true, rounds };
+}
+
+/** Tours avant naufrage d'un bateau renversé non redressé (note 4, l.40) : Bonus d'Endurance de la coque. PUR. */
+export function capsizeSinkTurns(hullEndurance: number): number {
+  return bonus(hullEndurance);
+}
+
+/** Minutes avant naufrage d'une coque PERCÉE (« Y a un trou », l.103 : « coule en un nombre de minutes égal
+ *  à son Endurance »). PUR. */
+export function holeSinkMinutes(hullEndurance: number): number {
+  return hullEndurance;
+}
+
+// ── Critiques de bateau (l.72-94) ────────────────────────────────────────────────────────────────
+
+/** Définition d'un Coup Critique de bateau par localisation (l.72-94). PUR. */
+export function riverCritical(location: string): CritDef | undefined {
+  return DATA.criticals[location];
+}
+
+// ── Dangers (l.119-166) ──────────────────────────────────────────────────────────────────────────
+
+export type RiverPerilKind = 'navTest' | 'obstacle' | 'detect';
+export interface RiverPerilDef {
+  id: string;
+  label: string;
+  kind: RiverPerilKind;
+  /** Débris (l.125) : Test de Navigation raté → `hullHits` coups à la coque, `damagePerHit` chacun. */
+  onFail?: { hullHits: number; damagePerHit: number };
+  /** Barrage (l.128) : Endurance (`endurance`×`enduranceMult`), Blessures (`wounds`), bélier +`ramDamage`. */
+  obstacle?: { endurance: string; enduranceMult: number; wounds: string; ramDamage: number };
+  /** Rochers/eaux peu profondes (l.138-144) : à l'impact, Dégâts + chances de percée/échouage. */
+  onHit?: { hullDamage: number; holeChancePct?: number; echouageChancePct?: number };
+  ref: string;
+}
+
+export const RIVER_PERILS: RiverPerilDef[] = (riverPerilsJson as { perils: RiverPerilDef[] }).perils;
+export const findRiverPeril = (id: string): RiverPerilDef | undefined => RIVER_PERILS.find((p) => p.id === id);
+
+export interface RiverImpact {
+  hullDamage: number;
+  /** Coque percée (« Y a un trou ») — l.140 : rochers 50 % de chance. */
+  holed: boolean;
+  /** Le bateau s'échoue (l.140/144) : coque +12 Dégâts, à renflouer (Test de Force). */
+  echoue: boolean;
+}
+
+/** Résout l'IMPACT sur un rocher / des eaux peu profondes (l.138-144) : Dégâts fixes à la coque, puis
+ *  d100 de percée et d100 d'échouage selon les chances RAW. PUR (RNG injecté). */
+export function resolveRiverImpact(onHit: NonNullable<RiverPerilDef['onHit']>, rng: RNG = defaultRNG): RiverImpact {
+  return {
+    hullDamage: onHit.hullDamage,
+    holed: onHit.holeChancePct != null && d100(rng) <= onHit.holeChancePct,
+    echoue: onHit.echouageChancePct != null && d100(rng) <= onHit.echouageChancePct,
+  };
+}
+
+/** Roule une chance en pourcentage (d100 ≤ pct). PUR. */
+export function rollChance(pct: number, rng: RNG = defaultRNG): boolean {
+  return d100(rng) <= Math.max(0, Math.min(100, pct));
+}
+
+/** Endurance & Blessures d'un barrage de débris (l.128 : « Endurance de 1d10 × 10 et 2d10 de Blessures »). PUR. */
+export function rollBarrage(obstacle: NonNullable<RiverPerilDef['obstacle']>, rng: RNG = defaultRNG): { endurance: number; wounds: number } {
+  return { endurance: rollExpr(obstacle.endurance, rng) * obstacle.enduranceMult, wounds: rollExpr(obstacle.wounds, rng) };
+}
+
+/** Dégâts d'un bateau qui s'échoue (l.99 : « sa coque subit 12 Dégâts »). PUR. */
+export const echouageDamage = (): number => DATA.echouage.hullDamage;

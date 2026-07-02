@@ -58,6 +58,7 @@ import { itemFromGive } from '../engine/items';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { resolveStagePostes } from './travelPostes';
 import { buildSeaPlan, runSeaDays } from './seaVoyageFlow';
+import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import type { Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
@@ -127,6 +128,9 @@ export interface TravelPlan {
   /** État NAVAL du trajet (route `sea` — MDG ch.13/15) : météo/vent, événements, crises, étape du jour.
    *  Présent = la résolution du jour est déléguée à `seaVoyageFlow.runSeaDays`. */
   sea?: import('./seaVoyageFlow').SeaVoyageState;
+  /** État FLUVIAL du trajet (route `river`, mode barge — T2C ch.5) : vent, dérive/chavirage, jours à flot.
+   *  Présent = la résolution du jour est déléguée à `riverVoyageFlow.runRiverDays`. */
+  river?: import('./riverVoyageFlow').RiverVoyageState;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -177,6 +181,20 @@ export function startTravel(
     return;
   }
   if (route.sea) return; // une route maritime ne s'emprunte qu'en mode 'mer'
+
+  // Route FLUVIALE JOUÉE (T2C ch.5 « Navigation fluviale ») : sur une embarcation (barge…), la descente
+  // se JOUE jour par jour (Test de Navigation, table des vents, périls, chavirage) au lieu d'un transport
+  // payant. Repli sur le transport payant (« on paie un passeur ») si aucun batelier/embarcation.
+  if (route.river && mode !== 'pied' && mode !== 'monture' && findVehicleById(mode)?.ship) {
+    const riverPlan = buildRiverPlan(get, routeId, from.id, to.id, route);
+    if (riverPlan) {
+      set({ travelPlan: riverPlan, worldMapOpen: false, travelRecap: null });
+      log(get, set, [`— ${riverPlan.vehicle!.name} descend le fleuve vers ${to.label} (${route.km} km, navigation fluviale) —`]);
+      runRiverDays(get, set);
+      return;
+    }
+    // Pas de batelier/embarcation : on retombe sur le transport payant (passeur).
+  }
 
   // Transport payant : prix par km PAR PASSAGER (l.207), débité au départ — refus si bourse insuffisante.
   if (mode !== 'pied' && mode !== 'monture') {
@@ -231,6 +249,7 @@ export function resumeTravel(get: Get, set: Set): void {
   set({ travelPlan: { ...plan, interrupted: false }, worldMapOpen: false, travelRecap: null });
   log(get, set, ['— Le voyage reprend —']);
   if (plan.sea) { runSeaDays(get, set); return; } // traversée maritime : résolution navale
+  if (plan.river) { runRiverDays(get, set); return; } // descente fluviale : résolution fluviale
   runTravelDays(get, set);
 }
 
@@ -386,6 +405,7 @@ export function continueTravelAfterNight(get: Get, set: Set): void {
   const plan = get().travelPlan;
   if (!plan || plan.interrupted || get().battle) return;
   if (plan.sea) { runSeaDays(get, set); return; } // traversée maritime : la journée suivante est navale
+  if (plan.river) { runRiverDays(get, set); return; } // descente fluviale : la journée suivante est fluviale
   runTravelDays(get, set);
 }
 

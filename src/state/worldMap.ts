@@ -73,6 +73,13 @@ export interface MapRoute {
   sea?: boolean;
   /** Cap DOMINANT du trajet (aspect du vent, MDG ch.13 l.262-270) — défaut 'ouest'. */
   seaHeading?: import('../engine/seaWeather').WindDirection;
+  /** Route FLUVIALE JOUÉE (T2C ch.5 « Navigation fluviale ») : en mode `barge`, la descente se joue jour par
+   *  jour (Test de Navigation, table des vents, périls, chavirage) au lieu d'un transport payant. Repli
+   *  payant si aucun batelier/embarcation. Absent = barge en transport payant (comportement historique). */
+  river?: boolean;
+  /** Périls de rivière tirés chaque jour sur une route fluviale JOUÉE (T2C ch.5 l.119-166, `river-perils.json`) :
+   *  `perilId` (débris/rochers/eaux-peu-profondes/barrage) tiré à `chancePct` %. Data-driven, éditable. */
+  riverPerils?: { perilId: string; chancePct: number }[];
 }
 
 export interface WorldMapParams {

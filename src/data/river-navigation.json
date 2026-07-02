@@ -1,0 +1,155 @@
+{
+  "_source": "Mort sur le Reik — Compagnon, ch.5 « Navigation fluviale » (T2C ch.5). Tables VERBATIM.",
+  "windForces": [
+    {
+      "id": "calme",
+      "label": "Calme",
+      "min": 1,
+      "max": 2
+    },
+    {
+      "id": "leger",
+      "label": "Léger",
+      "min": 3,
+      "max": 4
+    },
+    {
+      "id": "modere",
+      "label": "Modéré",
+      "min": 5,
+      "max": 6
+    },
+    {
+      "id": "fort",
+      "label": "Fort",
+      "min": 7,
+      "max": 8
+    },
+    {
+      "id": "tres-fort",
+      "label": "Très fort",
+      "min": 9,
+      "max": 10
+    }
+  ],
+  "windDirections": [
+    {
+      "id": "arriere",
+      "label": "Vent arrière",
+      "min": 1,
+      "max": 3
+    },
+    {
+      "id": "cote",
+      "label": "Vent de côté",
+      "min": 4,
+      "max": 7
+    },
+    {
+      "id": "contraire",
+      "label": "Vent contraire",
+      "min": 8,
+      "max": 10
+    }
+  ],
+  "windTickThreshold": 1,
+  "windTicksPerDay": 4,
+  "windEffect": {
+    "calme": {
+      "arriere": {
+        "drift": true
+      },
+      "cote": {
+        "drift": true
+      },
+      "contraire": {
+        "drift": true
+      }
+    },
+    "leger": {
+      "arriere": {
+        "pct": 5
+      },
+      "cote": {
+        "pct": 0
+      },
+      "contraire": {
+        "pct": -5
+      }
+    },
+    "modere": {
+      "arriere": {
+        "pct": 10
+      },
+      "cote": {
+        "pct": 5,
+        "tack": true
+      },
+      "contraire": {
+        "pct": -10
+      }
+    },
+    "fort": {
+      "arriere": {
+        "pct": 20
+      },
+      "cote": {
+        "pct": 10,
+        "tack": true
+      },
+      "contraire": {
+        "pct": -20
+      }
+    },
+    "tres-fort": {
+      "arriere": {
+        "pct": 25
+      },
+      "cote": {
+        "capsizeRisk": true
+      },
+      "contraire": {
+        "pct": -25,
+        "riggingRisk": true
+      }
+    }
+  },
+  "driftPctOfSpeed": 25,
+  "driftNavPenalty": -10,
+  "navBaseDifficulty": "intermediaire",
+  "tackDifficulty": "accessible",
+  "savoirVoiesFluvialesDR": 1,
+  "rowingAgility": {
+    "difficulty": "intermediaire",
+    "failSpeedPct": -20,
+    "spectacularSL": -6,
+    "spectacularSpeedFactor": 0.5
+  },
+  "capsize": {
+    "removeSailDifficulty": "accessible",
+    "rightDifficulty": "accessible",
+    "rightCumulativePenalty": -5
+  },
+  "outOfControl": {
+    "navPenalty": -20
+  },
+  "criticals": {
+    "greement": {
+      "splinterDamage": 5,
+      "initiativeTest": true,
+      "conditionId": "empetre",
+      "driftUntilRepair": true
+    },
+    "coque": {
+      "hole": true
+    }
+  },
+  "echouage": {
+    "hullDamage": 12
+  },
+  "temporaryRepair": {
+    "difficulty": "complexe",
+    "charpentierPenalty": -10,
+    "woundsPerRepair": "1d10"
+  }
+}

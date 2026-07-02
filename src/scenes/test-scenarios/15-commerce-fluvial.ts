@@ -140,8 +140,13 @@ for (let i = 0; i < RIVER_ORDER.length - 1; i++) {
   routes.push(bargeRoute(RIVER_ORDER[i], RIVER_ORDER[i + 1], 30));
 }
 // Route DIRECTE Grünburg → Altdorf (le grand axe du Reik) : ~45 km, une journée de barge (M8 × 6 h = 48 km) —
-// permet la boucle d'arbitrage en un seul saut (achat à Grünburg → vente à Altdorf, l.150-156).
-routes.push(bargeRoute(START_ID, SELL_ID, 45, 'r-grunburg-altdorf'));
+// permet la boucle d'arbitrage en un seul saut (achat à Grünburg → vente à Altdorf, l.150-156). Cette descente
+// est JOUÉE (T2C ch.5 « Navigation fluviale ») : Test de Navigation par étape, table des vents, et un péril
+// atteignable (débris flottants, l.123-125). Le convoi marchand persiste pendant la descente (caravanCargo).
+const grunburgAltdorf = bargeRoute(START_ID, SELL_ID, 45, 'r-grunburg-altdorf');
+grunburgAltdorf.river = true;
+grunburgAltdorf.riverPerils = [{ perilId: 'debris', chancePct: 55 }];
+routes.push(grunburgAltdorf);
 
 const carte: WorldMap = {
   id: 'reik-commerce-carte',

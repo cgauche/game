@@ -1,0 +1,48 @@
+{
+  "_source": "Mort sur le Reik — Compagnon, ch.5 « Navigation fluviale » — DANGERS (T2C ch.5 l.119-166). VERBATIM.",
+  "perils": [
+    {
+      "id": "debris",
+      "label": "Débris flottants",
+      "kind": "navTest",
+      "onFail": {
+        "hullHits": 2,
+        "damagePerHit": 10
+      },
+      "ref": "T2C ch.5 l.123-125"
+    },
+    {
+      "id": "barrage",
+      "label": "Barrage de débris",
+      "kind": "obstacle",
+      "obstacle": {
+        "endurance": "1d10",
+        "enduranceMult": 10,
+        "wounds": "2d10",
+        "ramDamage": 10
+      },
+      "ref": "T2C ch.5 l.128"
+    },
+    {
+      "id": "rochers",
+      "label": "Rochers",
+      "kind": "detect",
+      "onHit": {
+        "hullDamage": 15,
+        "holeChancePct": 50,
+        "echouageChancePct": 20
+      },
+      "ref": "T2C ch.5 l.130-140"
+    },
+    {
+      "id": "eaux-peu-profondes",
+      "label": "Eaux peu profondes",
+      "kind": "detect",
+      "onHit": {
+        "hullDamage": 5,
+        "echouageChancePct": 40
+      },
+      "ref": "T2C ch.5 l.142-144"
+    }
+  ]
+}
