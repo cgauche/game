@@ -6,10 +6,12 @@
  * (source unique avec le POV). La vue du DESSUS ('top') est la représentation SYMBOLIQUE historique
  * (traits épais / glyphe de porte), routée par `isSquareView` — elle se trace sur `el.ends`, pas les faces.
  */
-import { CELL, depth, diamondPath, isSquareView, tileCenter, type Dims } from '../iso';
+import { CELL, WALL_H_M, depth, diamondPath, isoPxToM, isSquareView, tileCenter, type Dims } from '../iso';
 import { metricToLift } from '../../state/relief';
 import { structureAppearance, wallPartColor, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
 import { shade, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';
+import { detailOf, coursesOverlaySvg, verticalAccentsSvg, type DetailOpts } from './affineDetail';
+import { hash32 } from '../detail/hash';
 import type { Face, WallEl } from '../builders/types';
 import { projGP, type Pt2 } from './project';
 
@@ -21,9 +23,13 @@ const POST_W = 3.8, POST_CAP_H = 2.4, POST_BASE_H = 3; // montant d'extrémité
 const JAMB_W = 3.6, JAMB_CAP_H = 1.8; // jambage de porte
 const FRAME_W = 1.3, BAR_W = 1.7; // moulure bois / barreau de herse (lignes médianes)
 
-/** Parties BOIS ombrées par ORIENTATION (arête N assombrie) — mêmes que l'ex-houseWallIso. `shade` est
- *  un no-op sur les `var(--x)` pierre : la pierre garde ses tons bruts, comme l'historique. */
+/** Parties ombrées par ORIENTATION (arête N assombrie) — mêmes que l'ex-houseWallIso. La PIERRE (hex
+ *  depuis la palette unifiée du JSON) est désormais ombrée comme le bois : sa face N recule dans l'ombre,
+ *  la lecture 3D « dessiné main » prime sur l'ancien aplat brut. */
 const TINTED: ReadonlySet<WallPart> = new Set(['face', 'panneau', 'moulure', 'plinthe', 'couronnement']);
+
+/** Parties MAÇONNÉES recevant le motif d'appareillage partagé quand la def porte une recette (LOD ≥ 1). */
+const COURSED: ReadonlySet<WallPart> = new Set(['face', 'parapet', 'linteau']);
 
 /** Profondeur de tri : MAX sur les deux cases bordant l'arête → le mur reste devant son sol proche aux
  *  4 rotations ; vue du dessus symbolique : +0.6 (au-dessus des overlays de sol), comme l'historique. */
@@ -55,8 +61,9 @@ function jambSvg(top: Pt2, bot: Pt2, app: StructureAppearanceDef): string {
 }
 
 /** Une face du pivot en SVG. Quads = polygones remplis (+ liseré par partie) ; montants (2 points) =
- *  rects de largeur fixe ; moulure/barreau = leur LIGNE MÉDIANE (trait historique 1.3/1.7 px). */
-function faceSvg(f: Face, app: StructureAppearanceDef, tintK: number, dims: Dims): string {
+ *  rects de largeur fixe ; moulure/barreau = leur LIGNE MÉDIANE (trait historique 1.3/1.7 px). Une
+ *  partie MAÇONNÉE d'une def à recette reçoit PAR-DESSUS son motif d'appareillage partagé (LOD ≥ 1). */
+function faceSvg(f: Face, el: WallEl, app: StructureAppearanceDef, tintK: number, dims: Dims, opts?: DetailOpts): string {
   const part = f.material.part as WallPart;
   const p = f.poly.map((gp) => projGP(gp, dims));
   if (part === 'poteau') return postSvg(p[0], p[1], app);
@@ -71,7 +78,11 @@ function faceSvg(f: Face, app: StructureAppearanceDef, tintK: number, dims: Dims
   else if (part === 'chambranle') extra = strokeAttr(shade(app.face, OUTLINE), 0.5);
   else if (part === 'gravats-tas') extra = strokeAttr(app.band ?? shade(app.face, OUTLINE), 0.6);
   else if (part === 'embrasure') extra = ` opacity="${EMBRASURE_OPACITY}"`;
-  return `<polygon points="${polyPts(p)}" fill="${fill}"${extra}/>`;
+  let overlay = '';
+  const { lod, mpt } = detailOf(opts);
+  if (lod >= 1 && app.detail?.courses && COURSED.has(part))
+    overlay = coursesOverlaySvg({ recipe: app.detail, side: el.side, cell: el.cell, quad: p, dims, mpt });
+  return `<polygon points="${polyPts(p)}" fill="${fill}"${extra}/>` + overlay;
 }
 
 /** Vue du DESSUS symbolique : trait épais sur l'arête (courtine ferrée / mur bois / brèche en tirets),
@@ -103,9 +114,43 @@ function topSvg(el: WallEl, app: StructureAppearanceDef, dims: Dims): string {
 
 /** SVG d'un élément de mur : iso/edge-on = faces dans l'ORDRE DE PEINTURE du builder, ombrées par
  *  l'orientation MONDE de l'arête ; vue du dessus = représentation symbolique. */
-export function wallSvg(el: WallEl, dims: Dims): string {
+export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
   const app = structureAppearance(el.appearance);
   if (isSquareView(dims.view)) return topSvg(el, app, dims);
   const tintK = el.side === 'N' ? SIDE_N : SIDE_LIT;
-  return `<g>${el.faces.map((f) => faceSvg(f, app, tintK, dims)).join('')}</g>`;
+  return `<g>${el.faces.map((f) => faceSvg(f, el, app, tintK, dims, opts)).join('')}</g>`;
+}
+
+/** COUCHE D'ACCENTS d'un mur (LOD 2) : blocs nuancés ALIGNÉS sur l'appareillage + mouchetis d'usure de
+ *  la GRANDE face (part `face`), aux tons du fill teinté. SÉPARÉE de `wallSvg` : le stage ne l'étend
+ *  qu'APRÈS le culling écran (jamais dans le memo pleine-carte), et la met en cache par élément. */
+export function wallAccentsSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
+  const { lod, mpt } = detailOf(opts);
+  if (lod < 2 || isSquareView(dims.view) || el.states.down) return '';
+  const app = structureAppearance(el.appearance);
+  if (!app.detail) return '';
+  const tintK = el.side === 'N' ? SIDE_N : SIDE_LIT;
+  const [A, B] = el.ends;
+  // Les FERRURES (bandes de fortification) se posent PAR-DESSUS la maçonnerie : leurs intervalles
+  // (mètres depuis le HAUT de la face) sont réservés — un accent s'arrête à la ferrure, ne la couvre pas.
+  const thick = isoPxToM(app.parapet?.bandThickPx ?? 0);
+  const reservedV = (app.parapet?.bands ?? []).map((t): [number, number] => [WALL_H_M * (1 - t) - thick, WALL_H_M * (1 - t)]);
+  let svg = '';
+  for (const f of el.faces) {
+    if (f.material.part !== 'face') continue;
+    svg += verticalAccentsSvg({
+      recipe: app.detail,
+      side: el.side,
+      cell: el.cell,
+      quad: f.poly.map((gp) => projGP(gp, dims)),
+      faceWM: Math.hypot(B.x - A.x, B.y - A.y) * mpt,
+      faceHM: f.poly[0].h - f.poly[3].h,
+      base: shade(wallPartColor(app, 'face'), tintK),
+      seed: hash32('wall', el.cell.x, el.cell.y, el.cell.z, el.side),
+      dims,
+      mpt,
+      reservedV,
+    });
+  }
+  return svg;
 }

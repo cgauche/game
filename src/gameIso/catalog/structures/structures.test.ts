@@ -47,7 +47,7 @@ describe('apparence de structure (JSON partagé iso/POV)', () => {
     const wood = wallSvg(buildWalls(sceneWith({ x: 1, y: 1, side: 'E' }))[0], DIMS); // 'plain' bois
     expect(wood).toContain(structureAppearance('plain').face); // #6e5940 (face E = SIDE_LIT identité)
     const stone = wallSvg(buildWalls(sceneWith({ x: 1, y: 1, side: 'E', structure: 'mur-en-pierre' }))[0], DIMS);
-    expect(stone).toContain('var(--struct-face)');
+    expect(stone).toContain(structureAppearance('mur-en-pierre').face); // palette pierre UNIFIÉE (hex du JSON)
   });
 
   it('wallPartColor : couleur de base par PART depuis les champs de la def (source unique des 2 backends)', () => {

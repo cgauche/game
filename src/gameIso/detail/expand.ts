@@ -22,6 +22,8 @@ export interface BandUV { v0: number; v1: number; color: string }
 export interface TimberBrace { u0: number; v0: number; u1: number; v1: number }
 /** Tache de mouchetis : centre (u,v), rayon en MÈTRES. */
 export interface SpeckleDot { u: number; v: number; rM: number; color: string }
+/** Touffe d'herbe : pied (u,v), hauteur de brin en MÈTRES. */
+export interface TuftUV { u: number; v: number; hM: number; color: string }
 
 export interface DetailExpansion {
   /** Rangs + pierres (`blocks` vide = rangs continus type bardeau/planche). `jointWM` en mètres. */
@@ -30,13 +32,14 @@ export interface DetailExpansion {
   /** Poteaux (centres `u`, pleine hauteur) + écharpes ; largeur commune `wM` en mètres. */
   timber?: { posts: number[]; braces: TimberBrace[]; wM: number; color: string };
   speckles: SpeckleDot[];
+  tufts: TuftUV[];
 }
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 /** Déplie `recipe` pour une face de `faceWM`×`faceHM` mètres au `seed` donné. PUR. */
 export function expandRecipe(recipe: DetailRecipe, faceWM: number, faceHM: number, seed: number): DetailExpansion {
-  const out: DetailExpansion = { bands: [], speckles: [] };
+  const out: DetailExpansion = { bands: [], speckles: [], tufts: [] };
 
   if (recipe.courses) {
     const c = recipe.courses;
@@ -96,12 +99,29 @@ export function expandRecipe(recipe: DetailRecipe, faceWM: number, faceHM: numbe
     const s = recipe.speckle;
     const r = seedStream(hash32(seed, 'speckle'));
     const count = Math.round(s.perM2 * faceWM * faceHM); // densité ~ perM2 × aire (déterministe)
+    // Biais vertical : v = t^(1/(1+vBias)) tasse la distribution vers v=1 (le PIED de la face) —
+    // usure/lichen au bas d'un mur ; vBias 0/absent ⇒ t^1 = uniforme.
+    const exp = 1 / (1 + (s.vBias ?? 0));
     for (let i = 0; i < count; i++) {
       out.speckles.push({
         u: r(),
-        v: r(),
+        v: Math.pow(r(), exp),
         rM: s.rM[0] + r() * (s.rM[1] - s.rM[0]),
         color: s.colors[Math.floor(r() * s.colors.length)],
+      });
+    }
+  }
+
+  if (recipe.tufts) {
+    const t = recipe.tufts;
+    const r = seedStream(hash32(seed, 'tufts'));
+    const count = Math.round(t.perM2 * faceWM * faceHM);
+    for (let i = 0; i < count; i++) {
+      out.tufts.push({
+        u: r(),
+        v: r(),
+        hM: t.hM[0] + r() * (t.hM[1] - t.hM[0]),
+        color: t.colors[Math.floor(r() * t.colors.length)],
       });
     }
   }

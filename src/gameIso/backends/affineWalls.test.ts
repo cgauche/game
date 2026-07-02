@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildWalls } from '../builders/walls';
 import type { WallEl } from '../builders/types';
-import { wallDepth, wallSvg } from './affineWalls';
+import { wallDepth, wallSvg, wallAccentsSvg } from './affineWalls';
 import { depth, tileEdge, type Dims } from '../iso';
 import { structureAppearance } from '../catalog/structures';
 import { shade, SIDE_N } from '../shade';
@@ -67,13 +67,19 @@ describe('wallSvg — porte bois : embrasure ajourée + jambages', () => {
   });
 });
 
-describe('wallSvg — pierre : couleurs var(--struct-*) de la def (non teintées)', () => {
-  it('courtine : face/bandes/arase/merlons + herse absente', () => {
+describe('wallSvg — pierre : palette UNIFIÉE du JSON (hex), face ombrée par orientation comme le bois', () => {
+  const pierre = structureAppearance('mur-en-pierre');
+  it('courtine N : face assombrie (SIDE_N), bandes/arase/merlons aux hex de la def + motif d’appareillage', () => {
     const svg = wallSvg(el({ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }), dims);
-    expect(svg).toContain('fill="var(--struct-face)"');
-    expect(svg).toContain('fill="var(--struct-band)"');
-    expect(svg).toContain('fill="var(--struct-cap)"'); // arase + merlons
+    expect(svg).toContain(`fill="${shade(pierre.face, SIDE_N)}"`);
+    expect(svg).toContain(`fill="${pierre.band}"`);
+    expect(svg).toContain(`fill="${pierre.cap}"`); // arase + merlons
+    expect(svg).toContain('fill="url(#dt-'); // motif de joints partagé (recette `detail.courses`)
     expect(svg).not.toContain('stroke-width="1.7"');
+  });
+  it('LOD 0 (fills plats) : plus aucun motif', () => {
+    const svg = wallSvg(el({ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }), dims, { zoom: 0.4 });
+    expect(svg).not.toContain('fill="url(#dt-');
   });
   it('porte-de-ville : 7 barreaux de herse (lignes 1.7 px) + 2 traverses', () => {
     const svg = wallSvg(el({ x: 2, y: 2, side: 'N', structure: 'porte-de-ville' }), dims);
@@ -83,9 +89,26 @@ describe('wallSvg — pierre : couleurs var(--struct-*) de la def (non teintées
   });
   it('brèche : gravats + tas dentelé (liseré ferrure)', () => {
     const svg = wallSvg(el({ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }, (s) => setStructureDown(s, 2, 2, 'N', 0, true)), dims);
-    expect(svg).toContain('fill="var(--struct-rubble)"');
-    expect(svg).toContain('fill="var(--struct-rubble-hi)"');
+    expect(svg).toContain(`fill="${pierre.rubble}"`);
+    expect(svg).toContain(`fill="${pierre.rubbleHi}"`);
     expect(svg).toContain('stroke-width="0.6"');
+  });
+});
+
+describe('wallAccentsSvg — couche d’accents seedés (LOD 2), séparée du memo', () => {
+  it('pierre : blocs nuancés + mouchetis, déterministes au seed monde ; vide en LOD < 2 / vue du dessus / brèche', () => {
+    const w = el({ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' });
+    const a1 = wallAccentsSvg(w, dims);
+    const a2 = wallAccentsSvg(w, dims);
+    expect(a1).toBe(a2);
+    expect(a1).toContain('<path');
+    expect(wallAccentsSvg(el({ x: 3, y: 2, side: 'N', structure: 'mur-en-pierre' }), dims)).not.toBe(a1); // seed = identité monde
+    expect(wallAccentsSvg(w, dims, { zoom: 0.6 })).toBe('');
+    expect(wallAccentsSvg(w, { ...dims, view: 'top' })).toBe('');
+    expect(wallAccentsSvg(el({ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }, (s) => setStructureDown(s, 2, 2, 'N', 0, true)), dims)).toBe('');
+  });
+  it('bois (aucune recette) : aucune couche d’accents', () => {
+    expect(wallAccentsSvg(el({ x: 2, y: 2, side: 'N' }), dims)).toBe('');
   });
 });
 

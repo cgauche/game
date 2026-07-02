@@ -26,6 +26,7 @@ import { buildFloors } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { structureAppearance, wallPartColor, type WallPart } from '../catalog/structures';
 import { reliefMaterial } from '../catalog/relief';
+import { AMBIANCE } from '../catalog/ambiance';
 
 /** Une pièce dessinable : polygone écran (points), couleur, profondeur de tri, clé stable, nature. */
 export type DrawItem = {
@@ -39,35 +40,18 @@ export type DrawItem = {
 // Les SOLS suivent le `swatch` du terrain — donnée PARTAGÉE avec l'iso/l'éditeur : recolorer un terrain
 // recolore AUSSI le POV (rien de spécifique au POV). Les MURS suivent leur APPARENCE partagée
 // (`structureAppearance`, la même def que walls.ts consomme) : face/bandes/arase/merlons/herse viennent
-// TOUS de la def — plus AUCUNE couleur de mur en dur ni regex ici. Tout est ensuite teinté par la lumière
-// + la brume de distance.
+// TOUS de la def — palette pierre UNIFIÉE en hex dans le JSON (plus de `var(--struct-*)` à résoudre).
+// Tout est ensuite teinté par la lumière + la brume de distance (`AMBIANCE.pov`).
 export const FLOOR_FALLBACK = reliefMaterial('sol-inconnu').face; // sol sans terrain connu
 export const CEIL_BASE = reliefMaterial('plafond').face; // plafond (INTÉRIEUR uniquement)
-export const FOG_OUTDOOR = '#9fb2c6'; // brume claire (ciel) en extérieur ; intérieur = FOG_COLOR sombre (PovStage cale l'horizon du ciel dessus)
 
 /** Couleur pleine d'un terrain (`TerrainDef.swatch`, donnée partagée iso ⇄ POV). */
 const TERRAIN_SWATCH: Map<string, string> = new Map(TERRAIN_DEFS.map((t) => [t.id, t.swatch]));
 
-// ── Résolution de couleur : les defs de pierre portent des couleurs `var(--struct-*)` (partagées avec
-//    l'iso, définies dans src/ui/styles/base.css) ; mais `tint` du POV attend un hex `#rrggbb`. On résout
-//    donc chaque `var(--x)` vers son hex — via getComputedStyle en navigateur, sinon un repli miroir de
-//    base.css (tests hors-DOM). Un hex (bois : couleurs littérales de la def) passe tel quel.
-/** Repli hors-DOM (tests) — miroir de src/ui/styles/base.css ; en navigateur on lit la vraie valeur. */
-const STRUCT_FALLBACK: Record<string, string> = {
-  '--struct-face': '#6b6f76', '--struct-band': '#34373c', '--struct-cap': '#888d95',
-  '--struct-rubble': '#463f35', '--struct-rubble-hi': '#6a6253',
-};
-const cssCache = new Map<string, string>();
-/** Résout `var(--x)` → hex (getComputedStyle, sinon repli base.css) ; un hex est renvoyé tel quel. PUR-ish (lecture DOM cachée). */
-function resolveCss(c: string): string {
-  if (!c.startsWith('var(')) return c;
-  const name = c.slice(4, -1).trim(); // --struct-face
-  if (cssCache.has(name)) return cssCache.get(name)!;
-  let hex = '';
-  try { hex = getComputedStyle(document.documentElement).getPropertyValue(name).trim(); } catch { /* pas de DOM */ }
-  const out = hex.startsWith('#') ? hex : (STRUCT_FALLBACK[name] ?? '#808080');
-  cssCache.set(name, out); return out;
-}
+/** LOD minimaliste des ASSISES en POV : joints simples dessinés jusqu'à cette profondeur (cases). */
+const COURSES_MAX_TILES = 6;
+/** Demi-épaisseur MONDE (m) d'une ligne de joint POV. */
+const JOINT_HALF_M = 0.02;
 
 /** Biais de profondeur : donne aux sols un cran DERRIÈRE (plus loin) pour qu'ils ne z-fightent pas avec
  *  la base des murs à centroïde égal. */
@@ -160,7 +144,7 @@ export function buildPovDrawList(
   const mpt = sceneMetresPerTile(scene);
   const farMetres = FAR_TILES * mpt;
   const indoor = isIndoor(scene); // intérieur → plafond + brume sombre ; extérieur → ciel (fond) + brume claire
-  const fog = indoor ? FOG_COLOR : FOG_OUTDOOR;
+  const fog = indoor ? FOG_COLOR : AMBIANCE.pov.fogOutdoor;
   const cols = visibleColumns(visible);
   const items: DrawItem[] = [];
 
@@ -212,8 +196,28 @@ export function buildPovDrawList(
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
       // Peintre INTRA-mur : les faces s'empilent dans l'ordre du builder (détail PAR-DESSUS le fond) —
       // biais NÉGATIF croissant (plus proche), trop petit pour déclasser deux murs distincts.
-      const it = makeItem(corners, cam, farMetres, lv, resolveCss(wallPartColor(app, f.material.part as WallPart)), 'wall', `${el.key}:${i}:${f.material.part}`, -i * 0.002, fog);
-      if (it) items.push(it);
+      const it = makeItem(corners, cam, farMetres, lv, wallPartColor(app, f.material.part as WallPart), 'wall', `${el.key}:${i}:${f.material.part}`, -i * 0.002, fog);
+      if (!it) return;
+      items.push(it);
+      // ASSISES au LOD minimaliste POV : sur la GRANDE face d'une def à recette, joints HORIZONTAUX
+      // simples (rangs droits, sans blocs ni tremblé) jusqu'à COURSES_MAX_TILES — au-delà, la brume
+      // fait le travail. Quads MONDE minces au ton du joint, empilés juste devant leur face.
+      const c = app.detail?.courses;
+      if (!c || f.material.part !== 'face' || it.depth / cam.mpt > COURSES_MAX_TILES) return;
+      const hTop = f.poly[0].h, hBot = f.poly[3].h;
+      const n = Math.max(1, Math.round((hTop - hBot) / c.hM));
+      const [A, B] = [f.poly[0], f.poly[1]];
+      for (let k = 1; k < n; k++) {
+        const h = hBot + (hTop - hBot) * (k / n);
+        const quad: Vec3[] = [
+          { x: A.x * mpt, y: A.y * mpt, z: h + JOINT_HALF_M },
+          { x: B.x * mpt, y: B.y * mpt, z: h + JOINT_HALF_M },
+          { x: B.x * mpt, y: B.y * mpt, z: h - JOINT_HALF_M },
+          { x: A.x * mpt, y: A.y * mpt, z: h - JOINT_HALF_M },
+        ];
+        const jt = makeItem(quad, cam, farMetres, lv, c.joint, 'wall', `${el.key}:${i}:joint${k}`, -i * 0.002 - 0.001, fog);
+        if (jt) items.push(jt);
+      }
     });
   }
 

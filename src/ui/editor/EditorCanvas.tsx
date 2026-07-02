@@ -6,18 +6,19 @@
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
 import { useMemo, useRef, useState } from 'react';
-import { Scene, tileAt, Roof } from '../../state/scene';
+import { Scene, tileAt, sceneMetresPerTile, Roof } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { buildFloors } from '../../gameIso/builders/floors';
-import { floorSvg } from '../../gameIso/backends/affineFloors';
+import { floorSvg, floorAccentsSvg } from '../../gameIso/backends/affineFloors';
 import { buildWalls } from '../../gameIso/builders/walls';
-import { wallDepth, wallSvg } from '../../gameIso/backends/affineWalls';
+import { wallDepth, wallSvg, wallAccentsSvg } from '../../gameIso/backends/affineWalls';
 import { buildRoofs } from '../../gameIso/builders/roofs';
 import { roofDepth, roofSvg } from '../../gameIso/backends/affineRoofs';
+import { detailPatternDefs, lodOf, LOD_ZOOM } from '../../gameIso/backends/affineDetail';
 import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
@@ -75,6 +76,15 @@ export function EditorCanvas({
   const stage = stageSize(dims);
   stageRef.current = stage; // le zoom centré (molette/boutons) lit la taille à jour
 
+  // MATÉRIAUX v2 : palier de LOD dérivé du zoom de l'éditeur (WYSIWYG avec le jeu) — les memos
+  // dépendent du PALIER (pas du zoom continu), l'expansion des ACCENTS reste un thunk paresseux
+  // exécuté au rendu (sols : après le culling `inView`) puis mis en cache.
+  const lod = lodOf(vb.zoom);
+  const mpt = sceneMetresPerTile(scene);
+  const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt }), [lod, mpt]);
+  // `dims` dérive de (scene.dimensions, rot, viewMode) — deps couvertes.
+  const patternDefs = useMemo(() => (lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, rot, viewMode, mpt]);
+
   // SOLS par le pipeline pivot : bâtis 1× par SCÈNE (builder camera-free), dessinés 1× par CAMÉRA
   // (backend affine) — un déplacement de pointeur (re-rendus fréquents de l'éditeur) ne rebâtit plus
   // aucune chaîne SVG. L'éditeur voit TOUT (pas de brouillard) et dessine la couche de base (viewZ 0).
@@ -83,10 +93,24 @@ export function EditorCanvas({
     () =>
       floorEls.map((el) => {
         const { cx, cy } = tileCenter(el.cell.x, el.cell.y, dims);
-        return { key: el.key, cx, cy, html: floorSvg(el, dims) };
+        let accCache: string | null = null;
+        const acc = lod === 2 ? () => (accCache ??= floorAccentsSvg(el, dims, detailOpts)) : undefined;
+        return { key: el.key, cx, cy, html: floorSvg(el, dims, detailOpts), acc };
       }),
     // `dims` dérive de (scene.dimensions, rot, viewMode) : dimensions couvertes par floorEls (⊂ scene).
-    [floorEls, rot, viewMode],
+    [floorEls, rot, viewMode, lod, detailOpts],
+  );
+  // MURS par le pipeline pivot, memoïsés eux aussi (le IIFE de rendu les ré-insère dans le tri global) :
+  // un déplacement de pointeur ne rebâtit plus les chaînes SVG des cloisons.
+  const wallRows = useMemo(
+    () =>
+      buildWalls(scene).map((el) => {
+        let accCache: string | null = null;
+        const acc = lod === 2 ? () => (accCache ??= wallAccentsSvg(el, dims, detailOpts)) : undefined;
+        return { key: el.key, d: wallDepth(el, dims), html: wallSvg(el, dims, detailOpts), acc };
+      }),
+    // `dims` dérive de (scene.dimensions, rot, viewMode) — deps couvertes.
+    [scene, rot, viewMode, lod, detailOpts],
   );
   // CULLING au viewport : ne rend que les tuiles dont le centre écran tombe dans le viewBox courant
   // (+ marge pour les parois de relief hautes/basses) — fini de rastériser TOUTE la carte à chaque frame.
@@ -320,11 +344,19 @@ export function EditorCanvas({
             resizeRef.current = null;
           }}
         >
-          <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
+          <defs dangerouslySetInnerHTML={{ __html: DEFS + patternDefs }} />
           <g>
-            {floorRows.filter(inView).map((r) => (
-              <g key={r.key} dangerouslySetInnerHTML={{ __html: r.html }} />
-            ))}
+            {floorRows.filter(inView).map((r) =>
+              r.acc ? (
+                // Accents matériaux v2 (LOD 2) : étendus APRÈS le culling `inView`, puis servis du cache.
+                <g key={r.key}>
+                  <g dangerouslySetInnerHTML={{ __html: r.html }} />
+                  <g dangerouslySetInnerHTML={{ __html: r.acc() }} />
+                </g>
+              ) : (
+                <g key={r.key} dangerouslySetInnerHTML={{ __html: r.html }} />
+              ),
+            )}
           </g>
           <g pointerEvents="none">
             {(() => {
@@ -389,8 +421,21 @@ export function EditorCanvas({
                   objs.push({ d: depth(en.pos.x, en.pos.y, dims) + 0.5, el: <EntityToken key={en.id} ent={en} dims={dims} /> });
                 }
               }
-              // Cloisons (murs/portes/diagonales) — mêmes faces pivot que le jeu (toutes couches), dans le tri global.
-              buildWalls(scene).forEach((el) => objs.push({ d: wallDepth(el, dims), el: <g key={el.key} dangerouslySetInnerHTML={{ __html: wallSvg(el, dims) }} /> }));
+              // Cloisons (murs/portes/diagonales) — mêmes faces pivot que le jeu (toutes couches), memoïsées
+              // (wallRows), dans le tri global ; accents matériaux v2 (thunk en cache) par-dessus leur mur.
+              wallRows.forEach((r) =>
+                objs.push({
+                  d: r.d,
+                  el: r.acc ? (
+                    <g key={r.key}>
+                      <g dangerouslySetInnerHTML={{ __html: r.html }} />
+                      <g dangerouslySetInnerHTML={{ __html: r.acc() }} />
+                    </g>
+                  ) : (
+                    <g key={r.key} dangerouslySetInnerHTML={{ __html: r.html }} />
+                  ),
+                }),
+              );
               objs.sort((a, b) => a.d - b.d);
               return objs.map((o) => o.el);
             })()}

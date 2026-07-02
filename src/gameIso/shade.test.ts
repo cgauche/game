@@ -40,8 +40,8 @@ describe('shade — calibration ombre bois iso', () => {
     expect(near(shade('#352b1f', POST_BASE), '#241c12', 4)).toBe(true);
   });
 
-  it('un var CSS (pierre) passe tel quel', () => {
-    expect(shade('var(--struct-face)', SIDE_N)).toBe('var(--struct-face)');
+  it('un non-hex (var CSS de chrome UI) passe tel quel', () => {
+    expect(shade('var(--combat-gold)', SIDE_N)).toBe('var(--combat-gold)');
   });
 
   it('shade clampe et ne déborde pas', () => {

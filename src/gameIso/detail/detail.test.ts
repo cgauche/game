@@ -110,6 +110,30 @@ describe('expandRecipe — expansion pure en primitives UV', () => {
     expect(expandRecipe(rec, 1, 1, hash32('s')).speckles).toHaveLength(3);
   });
 
+  it('speckle vBias : tasse les taches vers le PIED (v moyen > uniforme), sans sortir de [0,1)', () => {
+    const flat: DetailRecipe = { seedScope: 'tile', speckle: { perM2: 40, rM: [0.02, 0.05], colors: ['#111'] } };
+    const foot: DetailRecipe = { seedScope: 'tile', speckle: { perM2: 40, rM: [0.02, 0.05], colors: ['#111'], vBias: 2 } };
+    const mean = (r: DetailRecipe) => {
+      const s = expandRecipe(r, 3, 3, hash32('vb')).speckles;
+      for (const d of s) { expect(d.v).toBeGreaterThanOrEqual(0); expect(d.v).toBeLessThan(1); }
+      return s.reduce((acc, d) => acc + d.v, 0) / s.length;
+    };
+    expect(mean(foot)).toBeGreaterThan(mean(flat));
+  });
+
+  it('tufts : densité = perM2 × aire, hauteur dans sa plage, couleur de la palette', () => {
+    const rec: DetailRecipe = { seedScope: 'tile', tufts: { perM2: 1.5, hM: [0.1, 0.22], colors: ['#5c8a40', '#39592a'] } };
+    const e = expandRecipe(rec, 2, 2, hash32('tile', 4, 6, 0));
+    expect(e.tufts).toHaveLength(6); // 1.5 × 4 m²
+    for (const t of e.tufts) {
+      expect(t.u).toBeGreaterThanOrEqual(0);
+      expect(t.u).toBeLessThan(1);
+      expect(t.hM).toBeGreaterThanOrEqual(0.1);
+      expect(t.hM).toBeLessThanOrEqual(0.22);
+      expect(rec.tufts!.colors).toContain(t.color);
+    }
+  });
+
   it('bands : atV = centre, hauteur métrique → fraction v, clampée à la face', () => {
     const rec: DetailRecipe = { seedScope: 'instance', bands: [{ atV: 0.94, hM: 0.25, color: '#222' }, { atV: 1, hM: 0.5, color: '#333' }] };
     const e = expandRecipe(rec, 3, 2.5, hash32('b'));
@@ -231,6 +255,7 @@ describe('expandRecipe — expansion pure en primitives UV', () => {
             "v": 0.304,
           },
         ],
+        "tufts": [],
       }
     `);
   });

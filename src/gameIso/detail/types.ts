@@ -37,8 +37,14 @@ export interface DetailRecipe {
   bands?: { atV: number; hM: number; color: string }[];
   /** Colombage : poteaux verticaux tous les `postEveryM` mètres + écharpes en X ou en V par travée. */
   timber?: { postEveryM: number; braces?: 'X' | 'V'; wM: number; color: string };
-  /** Mouchetis (lichen, salissure, silex) : densité par m², rayon (m) min/max, palette tirée au seed. */
-  speckle?: { perM2: number; rM: [number, number]; colors: string[] };
+  /** Mouchetis (lichen, salissure, silex) : densité par m², rayon (m) min/max, palette tirée au seed.
+   *  `vBias` > 0 tasse les taches vers le BAS de la face (usure/salissure au pied ; 0 = uniforme). */
+  speckle?: { perM2: number; rM: [number, number]; colors: string[]; vBias?: number };
+  /** Touffes d'herbe / brins (sol) : densité par m², hauteur de brin (m) min/max, palette tirée au seed. */
+  tufts?: { perM2: number; hM: [number, number]; colors: string[] };
+  /** Variance de TEINTE de la surface entière ∈ [0,1] par unité de seed (tuile/face) — tue l'uniformité
+   *  d'un aplat répété : le backend module le fill de base par `shade(base, 1 ± tintVar)`. */
+  tintVar?: number;
   /** Portée de l'IDENTITÉ du seed — dit à l'APPELANT quoi hasher (le seed n'est jamais stocké) :
    *  'edge' = par arête de mur (x,y,z,side), 'tile' = par tuile (x,y,z), 'instance' = par instance
    *  (bâtiment/structure entière : même détail sur toutes ses faces). */

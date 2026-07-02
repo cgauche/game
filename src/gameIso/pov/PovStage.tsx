@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { useGame } from '../../state/store';
 import { isIndoor } from '../../state/scene';
 import { computeStateVisible, sceneLightField } from '../../state/visionState';
-import { makeCamera, VW, VH, FOG_COLOR } from './camera';
-import { buildPovDrawList, FOG_OUTDOOR } from './geometry';
+import { makeCamera, VW, VH } from './camera';
+import { buildPovDrawList } from './geometry';
+import { AMBIANCE, povAmbianceDefs } from '../catalog/ambiance';
 import { PovBillboards } from './billboards';
 
 /**
@@ -13,6 +14,7 @@ import { PovBillboards } from './billboards';
  * Monté par `CampaignView` en exploration quand `povActive` (le combat reste sur `IsoStage`). Le cap =
  * regard du meneur `facing[party[0].id]` (le même que `moveParty`/`pivotParty` écrivent). TOUT vient de
  * la scène PARTAGÉE (terrain, murs, hauteurs, entités) : éditer en iso impacte le POV sans code dédié.
+ * L'AMBIANCE (ciel, brumes, vignette) vient de la def partagée (`catalog/ambiance`) — zéro couleur ici.
  */
 export function PovStage() {
   const scene = useGame((s) => s.scene);
@@ -35,22 +37,14 @@ export function PovStage() {
 
   if (!scene || !view) return null;
   const indoor = isIndoor(scene);
+  const bg = indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoor;
   return (
-    <div className="pov-stage" style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: indoor ? FOG_COLOR : FOG_OUTDOOR }}>
+    <div className="pov-stage" style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: bg }}>
       <svg width="100%" height="100%" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice">
-        <defs>
-          {/* Ciel d'extérieur : bleu en haut → brume d'horizon (= FOG_OUTDOOR, où se fond le lointain). */}
-          <linearGradient id="pov-sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#5b83ac" />
-            <stop offset="100%" stopColor={FOG_OUTDOOR} />
-          </linearGradient>
-          <radialGradient id="pov-vignette" cx="50%" cy="52%" r="72%">
-            <stop offset="58%" stopColor="#000" stopOpacity="0" />
-            <stop offset="100%" stopColor="#000" stopOpacity="0.5" />
-          </radialGradient>
-        </defs>
+        {/* Ciel d'extérieur (pov-sky : bleu → brume d'horizon) + vignette — defs d'ambiance PARTAGÉES. */}
+        <defs dangerouslySetInnerHTML={{ __html: povAmbianceDefs() }} />
         {/* Fond : ciel dégradé dehors (plafond non dessiné), sombre en intérieur. */}
-        <rect x={0} y={0} width={VW} height={VH} fill={indoor ? FOG_COLOR : 'url(#pov-sky)'} />
+        <rect x={0} y={0} width={VW} height={VH} fill={indoor ? bg : 'url(#pov-sky)'} />
         {view.draw.map((d) => (
           <polygon key={d.key} points={d.points.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
         ))}

@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable, heightAt, doorIsOpen, toggleDoorIn, structureIsDown, type WallSeg } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable, heightAt, doorIsOpen, toggleDoorIn, structureIsDown, sceneMetresPerTile, type WallSeg } from '../state/scene';
 import { metricToLift } from '../state/relief';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
@@ -52,9 +52,11 @@ import { FogLayer } from './FogLayer';
 import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
 import { buildFloors, isOverhang, fogFloorZ } from './builders/floors';
-import { floorSvg, floorDepth } from './backends/affineFloors';
+import { floorSvg, floorAccentsSvg, floorDepth } from './backends/affineFloors';
 import { buildWalls, wallEnds } from './builders/walls';
-import { wallDepth, wallSvg } from './backends/affineWalls';
+import { wallDepth, wallSvg, wallAccentsSvg } from './backends/affineWalls';
+import { detailPatternDefs, lodOf, LOD_ZOOM } from './backends/affineDetail';
+import { isoAmbianceDefs, AMBIANCE } from './catalog/ambiance';
 import { isStructure } from '../engine/structures';
 import { getViewZ, subscribeViewZ } from './viewLevel';
 import { buildRoofs } from './builders/roofs';
@@ -94,10 +96,6 @@ const OVERHANG_GHOST_OPACITY = 0.35;
 // slice) et la caméra recadre autour du point focal (groupe / combattant actif).
 const VW = 1100;
 const VH = 720;
-const AMBIANCE_DEFS = `
-  <radialGradient id="g_warm" cx="55%" cy="24%" r="78%"><stop offset="0%" stop-color="#ffce78" stop-opacity="0.10"/><stop offset="100%" stop-color="#ffce78" stop-opacity="0"/></radialGradient>
-  <radialGradient id="g_vig" cx="50%" cy="48%" r="60%"><stop offset="52%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#05040a" stop-opacity="0.58"/></radialGradient>
-  <filter id="lower-floor-dim" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix type="saturate" values="0.72"/><feComponentTransfer><feFuncR type="linear" slope="0.84"/><feFuncG type="linear" slope="0.84"/><feFuncB type="linear" slope="0.84"/></feComponentTransfer></filter>`;
 
 /** Tracé d'un DÉPLACEMENT (chemin + case d'arrivée + badge d'action) — source unique du rendu,
  *  partagée entre l'aperçu tap-1 (battle.preview, tactile) et l'aperçu au SURVOL (desktop). */
@@ -270,12 +268,24 @@ export function IsoStage() {
     [scene, battle, party, partyPos, gameTime, lightLevel],
   );
 
+  // MATÉRIAUX v2 : palier de LOD dérivé du zoom (0 fills plats · 1 motifs de joints · 2 motifs +
+  // accents seedés) + options passées aux backends (zoom du palier, échelle métrique de la scène).
+  const lod = lodOf(zoom);
+  const mpt = scene ? sceneMetresPerTile(scene) : 2;
+  const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt }), [lod, mpt]);
+  // Defs des matériaux v2 (motifs de joints partagés par orientation + variantes de teinte de terrain) —
+  // dépendent de la PROJECTION (le vecteur d'arête écran tourne avec la caméra), pas de la scène.
+  const patternDefs = useMemo(
+    () => (scene && lod >= 1 ? detailPatternDefs({ ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge }, mpt) : ''),
+    [scene, lod, shownRot, viewMode, shownEdge, mpt],
+  );
+
   // Éléments de SOL du pivot (`buildFloors`) : vérité de scène pure et CAMERA-FREE — couches rendues
   // (active + dessous, surplombs fantômes au-dessus), relief, wedges, surplomb PLEIN. Ce memo survit
   // aux rotations/projections ; il ne se recalcule que si la scène/la visibilité/l'étage actif changent.
   const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
 
-  const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis?: boolean }[]>(() => {
+  const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis?: boolean; acc?: () => string; op?: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     // « ALLER SOUS LE CHEMIN DE RONDE » : un sol d'étage SUPÉRIEUR (la passerelle) se rend SEMI-TRANSPARENT au-
@@ -305,14 +315,18 @@ export function IsoStage() {
     // au-dessus du voile — vérités de SCÈNE du builder) ; reveal au-dessus d'un acteur (vérité de VUE).
     // `floorDepth` = depth(x,y,z) − 0.5 → le sol passe juste SOUS les objets de SA case (prop +0, jeton
     // +0.5) tout en s'interclassant avec les voisins par sa vraie position écran (base ≫ z).
+    // ACCENTS (LOD 2) : thunk PARESSEUX — l'expansion seedée n'a lieu qu'au rendu, APRÈS le culling
+    // écran (jamais ici, dans le memo pleine-carte), puis reste en cache dans la closure.
     return floorEls.map((el) => {
       const { x, y, z } = el.cell;
       const ghost = !!el.states.ghost;
       const reveal = !ghost && coversActorBelow(x, y, z); // passerelle au-dessus d'un combattant → transparente
       const op = ghost ? (el.states.solidOverhang ? 1 : OVERHANG_GHOST_OPACITY) : reveal ? 0.22 : 1;
-      return { d: floorDepth(el, d), x, y, z, ...(el.states.visible ? { vis: true } : {}), el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d) }} /> };
+      let accCache: string | null = null;
+      const acc = lod === 2 && !ghost ? () => (accCache ??= floorAccentsSvg(el, d, detailOpts)) : undefined;
+      return { d: floorDepth(el, d), x, y, z, ...(el.states.visible ? { vis: true } : {}), op, ...(acc ? { acc } : {}), el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d, detailOpts) }} /> };
     });
-  }, [scene, floorEls, shownRot, shownEdge, viewMode, mode, battle, partyPos]);
+  }, [scene, floorEls, shownRot, shownEdge, viewMode, mode, battle, partyPos, detailOpts]);
 
   // Un MUR/DÉCOR/TOIT devant un acteur À SUIVRE (même colonne écran, camera-near, proche) s'ESTOMPE pour ne
   // pas le cacher — côté murs/toit, du cutaway. Mutualisé par `wallObjs`/`decorObjs`/`roofObjs` via la
@@ -340,18 +354,26 @@ export function IsoStage() {
 
   // Murs sur arêtes (cloisons fines) : les faces du builder projetées par le backend affine, fusionnées
   // dans le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
-  const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis: boolean }[]>(() => {
+  // ACCENTS (LOD 2) : thunk paresseux, étendu APRÈS le culling écran puis mis en cache (cf. floorObjs).
+  const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number; z: number; vis: boolean; acc?: () => string; op?: number }[]>(() => {
     if (!scene || !wallEls.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    return wallEls.map((el) => ({
-      d: wallDepth(el, d),
-      x: el.cell.x,
-      y: el.cell.y,
-      z: el.cell.z,
-      vis: el.states.visible,
-      el: <g key={el.key} style={{ opacity: occludesActor(el.cell.x, el.cell.y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: wallSvg(el, d) }} />,
-    }));
-  }, [scene, wallEls, shownRot, shownEdge, viewMode, occludesActor]);
+    return wallEls.map((el) => {
+      const op = occludesActor(el.cell.x, el.cell.y) ? 0.4 : 1;
+      let accCache: string | null = null;
+      const acc = lod === 2 ? () => (accCache ??= wallAccentsSvg(el, d, detailOpts)) : undefined;
+      return {
+        d: wallDepth(el, d),
+        x: el.cell.x,
+        y: el.cell.y,
+        z: el.cell.z,
+        vis: el.states.visible,
+        op,
+        ...(acc ? { acc } : {}),
+        el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: wallSvg(el, d, detailOpts) }} />,
+      };
+    });
+  }, [scene, wallEls, shownRot, shownEdge, viewMode, occludesActor, detailOpts]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
     if (!scene) return [];
@@ -617,7 +639,7 @@ export function IsoStage() {
     // Zones persistantes (L11) : fumée opaque en gris ; zones de feu/effet (Mur de feu,
     // Grands feux) en orange translucide — l'occupant voit le danger.
     for (const zone of battle.zones ?? []) {
-      const fill = zone.blocksLoS ? '#9aa0a6' : '#e2641e';
+      const fill = zone.blocksLoS ? 'var(--iso-zone-smoke)' : 'var(--iso-zone-fire)';
       for (const t of zone.tiles) {
         hl.push({ d: depth(t.x, t.y, d, 0) + 0.25, el: <path key={`zone-${zone.label}-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill={fill} opacity={zone.blocksLoS ? 0.5 : 0.35} pointerEvents="none" /> });
       }
@@ -800,7 +822,7 @@ export function IsoStage() {
         const ca = tileCenter(pa.x, pa.y, dims, za ? liftAt(pa.x, pa.y, za) : 0);
         const cb = tileCenter(pb.x, pb.y, dims, zb ? liftAt(pb.x, pb.y, zb) : 0);
         // tether posé à la profondeur de l'extrémité la plus PROCHE caméra (+0.25 ⇒ sous les jetons)
-        highlights.push({ d: Math.max(depth(pa.x, pa.y, dims, za), depth(pb.x, pb.y, dims, zb)) + 0.25, el: <line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke="#d98a3a" strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" /> });
+        highlights.push({ d: Math.max(depth(pa.x, pa.y, dims, za), depth(pb.x, pb.y, dims, zb)) + 0.25, el: <line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke="var(--iso-engage)" strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" /> });
       }
     }
     if (activeC?.pos) {
@@ -808,11 +830,11 @@ export function IsoStage() {
       const hz = (haloUnit.pos as { z?: number }).z ?? 0;
       const ap = walkPosOf(haloUnit.id, haloUnit.pos!.x, haloUnit.pos!.y); // le halo SUIT le token qui glisse
       for (const t of footprintTiles(ap, footprintN(haloUnit)))
-        highlights.push({ d: depth(t.x, t.y, dims, hz) + 0.25, el: <path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke="#ffe066" strokeWidth={3} /> });
+        highlights.push({ d: depth(t.x, t.y, dims, hz) + 0.25, el: <path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke="var(--iso-active-halo)" strokeWidth={3} /> });
     }
   }
   if (mode === 'exploration' && !dialogue)
-    highlights.push({ d: depth(partyPos.x, partyPos.y, dims, partyPos.z ?? 0) + 0.25, el: <path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} /> });
+    highlights.push({ d: depth(partyPos.x, partyPos.y, dims, partyPos.z ?? 0) + 0.25, el: <path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="var(--iso-active-halo)" strokeWidth={1.5} opacity={0.5} /> });
 
   // --- Objets triés par profondeur (murs, arbres, entités, tokens) ---
   // `z` = étage de l'objet (absent ⇒ non concerné) : un objet d'un étage SOUS l'actif (z < activeZ)
@@ -821,7 +843,9 @@ export function IsoStage() {
   // `vis` = cet objet représente une chose actuellement VISIBLE → dessiné AU-DESSUS du brouillard (son volume
   // haut, qui déborde dans les cases derrière, n'est plus mangé par l'ombre). Absent/false = SOUS le voile
   // (sol, décor de terrain, entité mémorisée/inconnue → correctement grisée/masquée par le brouillard).
-  type Obj = { d: number; el: JSX.Element; x?: number; y?: number; z?: number; vis?: boolean };
+  // `acc` = COUCHE D'ACCENTS matériaux v2 (LOD 2) : thunk paresseux à étendre au rendu, APRÈS le
+  // culling écran (avec `op`, l'opacité de son élément — le fantôme/reveal/estompe s'applique aussi).
+  type Obj = { d: number; el: JSX.Element; x?: number; y?: number; z?: number; vis?: boolean; acc?: () => string; op?: number };
   const objs: Obj[] = [];
 
   // décor statique + toits multi-tuiles : éléments memoïsés (cf. decorObjs/roofObjs), juste
@@ -1334,7 +1358,7 @@ export function IsoStage() {
         if (best) st.battleClickEntity(occ.id, { forceAttackId: best.id, confirm: true });
       }}
     >
-      <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
+      <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
         {/* CULLING au viewport (espace ÉCRAN, PAS l'AABB de tuiles — qui en iso couvre quasi toute la
             scène) : on projette la tuile de chaque objet lourd tagué (sol/décor/murs) et on ne rend que
@@ -1351,12 +1375,23 @@ export function IsoStage() {
           };
           // Atténuer SANS opacité (sinon on verrait À TRAVERS les murs du dessous) : désaturation +
           // assombrissement seuls (filtre `lower-floor-dim`) → l'étage inférieur recule, reste OPAQUE.
-          const draw = (o: Obj) =>
-            o.z !== undefined && o.z < activeZ ? (
-              <g key={o.el.key} filter="url(#lower-floor-dim)">{o.el}</g>
+          // ACCENTS matériaux v2 : le thunk `acc` ne s'étend qu'ICI (éléments à l'écran uniquement),
+          // rendu juste PAR-DESSUS son élément (même profondeur, même opacité), puis servi du cache.
+          const draw = (o: Obj) => {
+            const core = o.acc ? (
+              <g key={o.el.key}>
+                {o.el}
+                <g style={{ opacity: o.op ?? 1, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: o.acc() }} />
+              </g>
             ) : (
               o.el
             );
+            return o.z !== undefined && o.z < activeZ ? (
+              <g key={o.el.key} filter="url(#lower-floor-dim)">{core}</g>
+            ) : (
+              core
+            );
+          };
           // BROUILLARD ENCADRÉ par le tri : le voile se glisse ENTRE le décor caché (sol, terrain, entités
           // mémorisées/inconnues → `!vis`, DESSOUS, donc grisé/masqué) et le décor VISIBLE (murs/toits/tokens
           // → `vis`, AU-DESSUS). Ainsi un bâtiment qu'on voit garde son VOLUME HAUT même là où il déborde dans
@@ -1389,7 +1424,7 @@ export function IsoStage() {
               const open = doorIsOpen(scene, w);
               return (
                 <line key={`door-${w.x}-${w.y}-${w.side}-${z}`} x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy}
-                  stroke={open ? '#caa14a' : '#d4534a'} strokeWidth={11} strokeLinecap="round" opacity={0.45}
+                  stroke={open ? 'var(--iso-door-open)' : 'var(--iso-door-closed)'} strokeWidth={11} strokeLinecap="round" opacity={0.45}
                   className="door-toggle" style={{ cursor: 'pointer' }}
                   onPointerDown={(ev) => {
                     ev.stopPropagation();
@@ -1465,7 +1500,7 @@ export function IsoStage() {
             return (
               <g key={`flies-${e.id}`} transform={`translate(${cx},${cy - 14})`} pointerEvents="none">
                 {['f1', 'f2', 'f3'].map((f) => (
-                  <circle key={f} className={`fly ${f}`} r={1.5} fill="#0d0d0d" />
+                  <circle key={f} className={`fly ${f}`} r={1.5} fill="var(--iso-fauna)" />
                 ))}
               </g>
             );
@@ -1497,7 +1532,7 @@ export function IsoStage() {
             }
           }
           if (radius == null || !caster?.pos || ok == null) return null;
-          const col = ok ? 'var(--combat-enemy)' : '#777';
+          const col = ok ? 'var(--combat-enemy)' : 'var(--iso-invalid)';
           const tiles: JSX.Element[] = [];
           for (let dy = -radius; dy <= radius; dy++)
             for (let dx = -radius; dx <= radius; dx++) {
@@ -1538,7 +1573,7 @@ export function IsoStage() {
             for (let dx = -radius; dx <= radius; dx++) {
               const x = center.x + dx, y = center.y + dy;
               if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-              tiles.push(<path key={`aoe${x}-${y}`} d={diamondPath(x, y, dims)} fill="#d11a1a" opacity={0.25} pointerEvents="none" />);
+              tiles.push(<path key={`aoe${x}-${y}`} d={diamondPath(x, y, dims)} fill="var(--iso-threat)" opacity={0.25} pointerEvents="none" />);
             }
           return <g pointerEvents="none">{tiles}</g>;
         })()}
@@ -1627,8 +1662,8 @@ export function IsoStage() {
                 const w = tip.text.length * 6.4 + 14;
                 return (
                   <g transform={`translate(${to.cx},${to.cy - 64})`}>
-                    <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="var(--tooltip-bg)" opacity={0.94} stroke="#888" strokeWidth={1} />
-                    <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
+                    <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="var(--tooltip-bg)" opacity={0.94} stroke="var(--tooltip-border)" strokeWidth={1} />
+                    <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="var(--tooltip-fg)" fontSize={11} fontWeight={600}>
                       {tip.text}
                     </text>
                   </g>
@@ -1651,18 +1686,18 @@ export function IsoStage() {
                     <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke="var(--combat-gold)" strokeOpacity={0.75} strokeWidth={1} />
                     <text x={x0} y={-h + 16} fill="var(--combat-gold)" fontSize={11.5} fontWeight={700}>{tip.title}</text>
                     <text x={x0} y={y} fontSize={10.5}>
-                      <tspan fill="#b9b2a6">{tip.skill}</tspan>
-                      <tspan fill="#f0f0f0" fontWeight={700}>{`  ${eff}`}</tspan>
+                      <tspan fill="var(--tooltip-muted)">{tip.skill}</tspan>
+                      <tspan fill="var(--tooltip-fg)" fontWeight={700}>{`  ${eff}`}</tspan>
                       {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? 'var(--combat-ally)' : 'var(--combat-enemy)'} fontWeight={700}>{modTxt}</tspan>}
                     </text>
                     {l3 && (
                       <text x={x0} y={(y += 14)} fontSize={10.5}>
-                        <tspan fill="#b9b2a6">Dégâts</tspan>
-                        <tspan fill="#f0f0f0" fontWeight={700}>{`  +${tip.dmg}`}</tspan>
+                        <tspan fill="var(--tooltip-muted)">Dégâts</tspan>
+                        <tspan fill="var(--tooltip-fg)" fontWeight={700}>{`  +${tip.dmg}`}</tspan>
                       </text>
                     )}
                     {l4 && (
-                      <text x={x0} y={y + 14} fontSize={10.5} fill="#e3c45a" fontWeight={600}>
+                      <text x={x0} y={y + 14} fontSize={10.5} fill="var(--gold2)" fontWeight={600}>
                         {l4}
                       </text>
                     )}
@@ -1696,9 +1731,9 @@ export function IsoStage() {
             const present = chef ? servingCrewPresent(chef, battle.combatants) : undefined;
             const groupLabel = p.item.weaponGroup ? weaponGroupLabel(p.item.weaponGroup) : '';
             lines.push({ text: indice > 0 ? `${p.item.name} · Arme d’équipe ${indice}` : p.item.name, color: 'var(--combat-gold)', bold: true });
-            lines.push({ text: `Chef : ${manned ? chef?.name ?? 'aucun' : 'aucun'}`, color: '#f0f0f0' });
-            if (renforts.length) lines.push({ text: `Renforts : ${renforts.join(', ')}`, color: '#b9b2a6' });
-            if (aideNames.length) lines.push({ text: `Aides (non qual.) : ${aideNames.join(', ')}`, color: '#7f8893' });
+            lines.push({ text: `Chef : ${manned ? chef?.name ?? 'aucun' : 'aucun'}`, color: 'var(--tooltip-fg)' });
+            if (renforts.length) lines.push({ text: `Renforts : ${renforts.join(', ')}`, color: 'var(--tooltip-muted)' });
+            if (aideNames.length) lines.push({ text: `Aides (non qual.) : ${aideNames.join(', ')}`, color: 'var(--tooltip-dim)' });
             if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' ⚠ sous-effectif' : ''}`, color: present < indice ? 'var(--combat-enemy)' : 'var(--combat-ally)' });
             // Carte d'ACTION du héros actif : SA qualification pour CETTE pièce (même check RAW que l'effectif),
             // affichée DÈS le survol (même non adjacent) → on sait d'un coup d'œil si ce héros peut l'armer.
@@ -1706,10 +1741,10 @@ export function IsoStage() {
               const canServeNow = !!(servePoste && servePoste.item.uid === p.item.uid); // adjacent + servable maintenant
               if (isCrewQualified(active, p)) {
                 lines.push({ text: `✅ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: 'var(--combat-ally)', bold: true });
-                lines.push({ text: !canServeNow ? '↳ approchez-vous pour servir' : manned ? '↳ compte pour l’effectif' : '↳ chef : peut tirer (pièce libre)', color: '#9fb8a6' });
+                lines.push({ text: !canServeNow ? '↳ approchez-vous pour servir' : manned ? '↳ compte pour l’effectif' : '↳ chef : peut tirer (pièce libre)', color: 'var(--tooltip-ok)' });
               } else {
-                lines.push({ text: `⚠ NON qualifié (Projectiles ${groupLabel})`, color: '#e0a53a', bold: true });
-                lines.push({ text: '↳ AIDE : ne compte pas, ne tire pas', color: '#b9926a' });
+                lines.push({ text: `⚠ NON qualifié (Projectiles ${groupLabel})`, color: 'var(--tooltip-warn)', bold: true });
+                lines.push({ text: '↳ AIDE : ne compte pas, ne tire pas', color: 'var(--tooltip-aid)' });
               }
             }
           }
@@ -1737,7 +1772,7 @@ export function IsoStage() {
           // 1) Teinte par couche + coordonnées centrées (lift = HAUTEUR MÉTRIQUE → posé sur le sol réel).
           for (const lvl of scene.layers) {
             const z = lvl.z;
-            const tint = z >= 2 ? '#9a5cff' : z === 1 ? '#13c4d6' : null; // z0 : aucune teinte
+            const tint = z >= 2 ? 'var(--dbg-z2)' : z === 1 ? 'var(--dbg-z1)' : null; // z0 : aucune teinte
             for (let y = 0; y < H; y++)
               for (let x = 0; x < W; x++) {
                 if (lvl.tiles[y * W + x] === 'vide') continue;
@@ -1749,7 +1784,7 @@ export function IsoStage() {
                   const { cx, cy } = tileCenter(x, y, dims, lift);
                   els.push(
                     <text key={`dbgxy-${z}-${x}-${y}`} x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
-                      fontSize={10} fontWeight={700} fill="#fff" stroke="#0a0a12" strokeWidth={3}
+                      fontSize={10} fontWeight={700} fill="var(--dbg-fg)" stroke="var(--dbg-ink)" strokeWidth={3}
                       style={{ paintOrder: 'stroke' }} pointerEvents="none">
                       {z > 0 ? `${x},${y}z${z}` : `${x},${y}`}
                     </text>,
@@ -1762,12 +1797,12 @@ export function IsoStage() {
           const edgePts = (w: WallSeg, z: number): [{ cx: number; cy: number }, { cx: number; cy: number }] =>
             wallEnds(w).map((p) => tileCenter(p.x, p.y, dims, z)) as [{ cx: number; cy: number }, { cx: number; cy: number }];
           for (const w of scene.walls ?? []) {
-            const role = structureById.get(w.structure ?? '')?.kind === 'porte' ? '#f4d020' : '#e03a3a';
+            const role = structureById.get(w.structure ?? '')?.kind === 'porte' ? 'var(--dbg-door)' : 'var(--dbg-wall)';
             const z = w.z ?? 0;
             const [a, b] = edgePts(w, z);
             const key = `${w.x}-${w.y}-${w.side}-${w.z ?? 0}`;
             els.push(<line key={`dbgwall-${key}`} x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke={role} strokeWidth={4} strokeLinecap="round" opacity={0.92} pointerEvents="none" />);
-            els.push(<circle key={`dbgwalldot-${key}`} cx={(a.cx + b.cx) / 2} cy={(a.cy + b.cy) / 2} r={3.2} fill={role} stroke="#0a0a12" strokeWidth={0.8} pointerEvents="none" />);
+            els.push(<circle key={`dbgwalldot-${key}`} cx={(a.cx + b.cx) / 2} cy={(a.cy + b.cy) / 2} r={3.2} fill={role} stroke="var(--dbg-ink)" strokeWidth={0.8} pointerEvents="none" />);
           }
           return <g pointerEvents="none">{els}</g>;
         })()}
@@ -1775,22 +1810,22 @@ export function IsoStage() {
       {/* Légende DEBUG (recette `__wfrp.labels`) — FIXE dans un coin (hors groupe caméra : ne pan/zoome pas). */}
       {debugLabels && (() => {
         const items: [string, string][] = [
-          ['couche z1 (teinte cyan)', '#13c4d6'],
-          ['couche z2 (teinte violet)', '#9a5cff'],
-          ['courtine (mur)', '#e03a3a'],
-          ['porte', '#f4d020'],
+          ['couche z1 (teinte cyan)', 'var(--dbg-z1)'],
+          ['couche z2 (teinte violet)', 'var(--dbg-z2)'],
+          ['courtine (mur)', 'var(--dbg-wall)'],
+          ['porte', 'var(--dbg-door)'],
         ];
         const x0 = 12, y0 = 12, rowH = 18, w = 200, h = 30 + items.length * rowH;
         return (
           <g pointerEvents="none">
-            <rect x={x0} y={y0} width={w} height={h} rx={6} fill="#0a0a12" opacity={0.82} stroke="#444" strokeWidth={1} />
-            <text x={x0 + 10} y={y0 + 18} fill="#fff" fontSize={11} fontWeight={700}>🏷️ Debug carte (labels)</text>
+            <rect x={x0} y={y0} width={w} height={h} rx={6} fill="var(--dbg-ink)" opacity={0.82} stroke="var(--dbg-border)" strokeWidth={1} />
+            <text x={x0 + 10} y={y0 + 18} fill="var(--dbg-fg)" fontSize={11} fontWeight={700}>🏷️ Debug carte (labels)</text>
             {items.map(([label, col], i) => {
               const ly = y0 + 28 + i * rowH;
               return (
                 <g key={`dbgleg-${i}`}>
-                  <rect x={x0 + 10} y={ly} width={14} height={12} fill={col} stroke="#000" strokeWidth={0.8} />
-                  <text x={x0 + 30} y={ly + 10} fill="#e8e8e8" fontSize={10.5}>{label}</text>
+                  <rect x={x0 + 10} y={ly} width={14} height={12} fill={col} stroke="var(--dbg-ink)" strokeWidth={0.8} />
+                  <text x={x0 + 30} y={ly + 10} fill="var(--dbg-fg)" fontSize={10.5}>{label}</text>
                 </g>
               );
             })}
@@ -1802,10 +1837,10 @@ export function IsoStage() {
       {/* Corbeau qui traverse le ciel (extérieurs) — vie d'ambiance. */}
       {scene.ambiance !== 'interieur' && (
         <g className="crow" style={{ transform: 'translate(-140px,90px)' }} pointerEvents="none">
-          <ellipse cx={0} cy={0} rx={7} ry={3} fill="#0a0a0a" />
-          <path className="wing" d="M-2 0 q-14 -8 -22 -2 q12 4 22 2" fill="#0a0a0a" />
-          <path className="wing" d="M2 0 q14 -8 22 -2 q-12 4 -22 2" fill="#0a0a0a" />
-          <circle cx={6} cy={-1} r={2.4} fill="#0a0a0a" />
+          <ellipse cx={0} cy={0} rx={7} ry={3} fill="var(--iso-fauna)" />
+          <path className="wing" d="M-2 0 q-14 -8 -22 -2 q12 4 22 2" fill="var(--iso-fauna)" />
+          <path className="wing" d="M2 0 q14 -8 22 -2 q-12 4 -22 2" fill="var(--iso-fauna)" />
+          <circle cx={6} cy={-1} r={2.4} fill="var(--iso-fauna)" />
         </g>
       )}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" pointerEvents="none" />
@@ -1815,7 +1850,7 @@ export function IsoStage() {
         const light = lightLevel ?? (scene && sceneIsDark(scene, gameTime) ? 0.4 : 1);
         const veil = (1 - Math.max(0, Math.min(1, light))) * 0.82;
         return veil > 0.001 ? (
-          <rect x={0} y={0} width={VW} height={VH} fill="#05040a" opacity={veil} pointerEvents="none" style={{ transition: 'opacity 1.1s ease' }} />
+          <rect x={0} y={0} width={VW} height={VH} fill={AMBIANCE.iso.nightVeil} opacity={veil} pointerEvents="none" style={{ transition: 'opacity 1.1s ease' }} />
         ) : null;
       })()}
     </svg>

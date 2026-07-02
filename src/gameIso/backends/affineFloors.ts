@@ -4,6 +4,9 @@
  * `diamondCorners`/`metricToLift`). La ROTATION caméra vit ENTIÈREMENT ici (le builder n'en sait rien) ;
  * l'ÉCLAIRAGE d'une paroi (face avant/arrière) est une vérité d'ÉCRAN → déduit ici de l'arête projetée.
  * Les couleurs viennent des matériaux JSON (`reliefMaterial`/`terrainGradient`) et de `shade.ts`.
+ * MATÉRIAUX v2 : le fill de sol prend sa VARIANTE de teinte par tuile, une falaise porteuse d'une recette
+ * reçoit le motif d'appareillage partagé (LOD ≥ 1) ; les ACCENTS seedés (touffes, cailloux, blocs) sont
+ * une COUCHE SÉPARÉE (`floorAccentsSvg`, LOD 2) que le stage n'étend qu'APRÈS le culling écran.
  */
 import { Dims, depth, diamondCorners, tileCenter } from '../iso';
 import { metricToLift } from '../../state/relief';
@@ -11,6 +14,16 @@ import { terrainGradient } from '../catalog/terrain';
 import { reliefMaterial } from '../catalog/relief';
 import { shade, ao, warm, spec } from '../shade';
 import { projGP, type Pt2 } from './project';
+import {
+  detailOf,
+  terrainFillGradient,
+  terrainDetail,
+  groundAccentsSvg,
+  coursesOverlaySvg,
+  verticalAccentsSvg,
+  type DetailOpts,
+} from './affineDetail';
+import { hash32 } from '../detail/hash';
 import type { CellSide, Face, FloorEl } from '../builders/types';
 
 /** Pied de rampe = nez de pente × ce facteur (ombrage doux du haut vers le bas). */
@@ -39,10 +52,20 @@ function pillarSvg(f: Face, dims: Dims): string {
   );
 }
 
+/** Fill d'une FALAISE : face claire si son arête HAUTE est devant (plus bas à l'écran) que le centre de
+ *  la case — suit la rotation caméra. PARTAGÉ par le rendu de la paroi ET la couche d'accents (mêmes tons). */
+function cliffFill(f: Face, el: FloorEl, dims: Dims): { fill: string; lit: boolean } {
+  const [tl, tr] = f.poly.map((p) => projGP(p, dims));
+  const m = reliefMaterial(f.material.id);
+  const ctr = tileCenter(el.cell.x, el.cell.y, dims, metricToLift(f.poly[0].h));
+  const lit = (tl[1] + tr[1]) / 2 >= ctr.cy;
+  return { fill: lit ? m.face : shade(m.face, m.shadeDark!), lit };
+}
+
 /** Paroi de relief (falaise/rampe/tablier) : quad projeté [haut-gauche, haut-droit, bas-droit,
- *  bas-gauche]. Face ÉCLAIRÉE si son arête HAUTE est devant (plus bas à l'écran) que le centre de la
- *  case — suit la rotation caméra. */
-function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims): string {
+ *  bas-gauche]. Une FALAISE porteuse d'une recette (`reliefMaterial.detail`) reçoit le motif
+ *  d'appareillage de son orientation (LOD ≥ 1) entre sa face et son ombre de pied. */
+function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims, opts?: DetailOpts): string {
   const [tl, tr, br, bl] = f.poly.map((p) => projGP(p, dims));
   const m = reliefMaterial(f.material.id);
   if (f.material.part === 'ramp') {
@@ -57,9 +80,7 @@ function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims): string {
       `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="${warm(0.28)}" stroke-width="1.1"/>`
     );
   }
-  const ctr = tileCenter(el.cell.x, el.cell.y, dims, metricToLift(f.poly[0].h));
-  const lit = (tl[1] + tr[1]) / 2 >= ctr.cy; // l'arête haute est DEVANT (plus bas à l'écran) → face avant
-  const fill = lit ? m.face : shade(m.face, m.shadeDark!);
+  const { fill, lit } = cliffFill(f, el, dims);
   if (f.material.part === 'deck') {
     // DALLE FINE : bord d'un TABLIER de surplomb donnant sur le vide — ≠ falaise (pleine hauteur).
     return (
@@ -67,11 +88,17 @@ function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims): string {
       `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="${warm(0.22)}" stroke-width="1"/>`
     );
   }
-  // FALAISE : paroi VERTICALE — face (claire si avant, sombre si arrière) + ombre au pied + arête vive.
+  // FALAISE : paroi VERTICALE — face (claire si avant, sombre si arrière) + motif d'appareillage (recette)
+  // + ombre au pied + arête vive.
+  const { lod, mpt } = detailOf(opts);
+  let overlay = '';
+  if (lod >= 1 && m.detail?.courses && f.side)
+    overlay = coursesOverlaySvg({ recipe: m.detail, side: f.side, cell: el.cell, quad: [tl, tr, br, bl], dims, mpt });
   const foot = lit ? m.foot! : shade(m.foot!, m.shadeDark!);
   const fl = lerpP(tl, bl, 0.6), fr = lerpP(tr, br, 0.6); // bord haut de l'ombre de pied
   return (
     `<polygon class="elev-cliff" points="${polyPts([tl, tr, br, bl])}" fill="${fill}" stroke="${ao(0.3)}" stroke-width="0.6"/>` +
+    overlay +
     `<polygon points="${polyPts([fl, fr, br, bl])}" fill="${foot}" opacity="0.85"/>` +
     (lit ? `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="${warm(0.22)}" stroke-width="1.1"/>` : '')
   );
@@ -79,10 +106,12 @@ function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims): string {
 
 /** Losange de base. Coins recomputés par `diamondCorners` (ordre ÉCRAN top→right→bot→left, invariant
  *  par rotation — le poly GRILLE tournerait son point de départ avec la caméra) : parité flottante
- *  exacte avec la projection historique ; les backends non-affines projettent `poly` directement. */
-function groundFaceSvg(f: Face, el: FloorEl, dims: Dims): string {
+ *  exacte avec la projection historique ; les backends non-affines projettent `poly` directement.
+ *  LOD ≥ 1 : le dégradé prend sa VARIANTE de teinte par tuile (recette `tintVar`) — même coût. */
+function groundFaceSvg(f: Face, el: FloorEl, dims: Dims, opts?: DetailOpts): string {
   const { top, right, bot, left } = diamondCorners(el.cell.x, el.cell.y, dims, metricToLift(f.poly[0].h));
-  return `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${terrainGradient(f.material.id)})" stroke="${ao(0.16)}"/>`;
+  const grad = terrainFillGradient(f.material.id, el.cell, detailOf(opts).lod) ?? terrainGradient(f.material.id);
+  return `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${grad})" stroke="${ao(0.16)}"/>`;
 }
 
 const SCREEN_EDGE_IDX: Record<CellSide, number> = { N: 0, E: 1, S: 2, O: 3 };
@@ -102,11 +131,43 @@ function wedgeSvg(f: Face, el: FloorEl, dims: Dims): string {
 }
 
 /** SVG d'un élément de sol : faces dessinées DANS L'ORDRE du builder (piliers → parois → base → wedges). */
-export function floorSvg(el: FloorEl, dims: Dims): string {
+export function floorSvg(el: FloorEl, dims: Dims, opts?: DetailOpts): string {
   let svg = '';
   for (const f of el.faces) {
-    if (f.material.domain === 'relief') svg += f.material.part === 'pillar' ? pillarSvg(f, dims) : reliefFaceSvg(f, el, dims);
-    else svg += f.material.part === 'wedge' ? wedgeSvg(f, el, dims) : groundFaceSvg(f, el, dims);
+    if (f.material.domain === 'relief') svg += f.material.part === 'pillar' ? pillarSvg(f, dims) : reliefFaceSvg(f, el, dims, opts);
+    else svg += f.material.part === 'wedge' ? wedgeSvg(f, el, dims) : groundFaceSvg(f, el, dims, opts);
+  }
+  return svg;
+}
+
+/** COUCHE D'ACCENTS d'un sol (LOD 2) : touffes/cailloux du terrain (ancrés MONDE, stables aux rotations)
+ *  + blocs nuancés/mouchetis des FALAISES porteuses d'une recette. SÉPARÉE de `floorSvg` : le stage ne
+ *  l'étend qu'APRÈS le culling écran (jamais dans le memo pleine-carte), et la met en cache par élément. */
+export function floorAccentsSvg(el: FloorEl, dims: Dims, opts?: DetailOpts): string {
+  const { lod, mpt } = detailOf(opts);
+  if (lod < 2) return '';
+  let svg = '';
+  for (const f of el.faces) {
+    if (f.material.domain === 'terrain' && !f.material.part) {
+      const recipe = terrainDetail(f.material.id);
+      if (recipe) svg += groundAccentsSvg(recipe, el.cell, f.poly[0].h, dims, mpt);
+    } else if (f.material.domain === 'relief' && f.material.part === 'cliff' && f.side) {
+      const m = reliefMaterial(f.material.id);
+      if (!m.detail) continue;
+      const quad = f.poly.map((p) => projGP(p, dims));
+      svg += verticalAccentsSvg({
+        recipe: m.detail,
+        side: f.side,
+        cell: el.cell,
+        quad,
+        faceWM: mpt,
+        faceHM: f.poly[0].h - f.poly[3].h,
+        base: cliffFill(f, el, dims).fill,
+        seed: hash32('floor', el.cell.x, el.cell.y, el.cell.z, f.side),
+        dims,
+        mpt,
+      });
+    }
   }
   return svg;
 }

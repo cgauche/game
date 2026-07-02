@@ -79,23 +79,35 @@
       "seedScope": "edge",
       "courses": {
         "hM": 0.35,
-        "joint": "#2e2a24",
-        "jointW": 0.02,
+        "joint": "#33302b",
+        "jointW": 0.035,
         "stagger": 0.5,
         "blockWM": [
           0.4,
           0.9
         ],
-        "edgeWobble": 0.02,
-        "paletteVar": 0.12
+        "edgeWobble": 0.025,
+        "paletteVar": 0.08
+      },
+      "speckle": {
+        "perM2": 0.3,
+        "rM": [
+          0.05,
+          0.11
+        ],
+        "colors": [
+          "#5d6b52",
+          "#4c4841"
+        ],
+        "vBias": 1.6
       }
     },
-    "face": "var(--struct-face)",
+    "face": "#6b6f76",
     "post": "#352b1f",
-    "band": "var(--struct-band)",
-    "cap": "var(--struct-cap)",
-    "rubble": "var(--struct-rubble)",
-    "rubbleHi": "var(--struct-rubble-hi)",
+    "band": "#34373c",
+    "cap": "#888d95",
+    "rubble": "#463f35",
+    "rubbleHi": "#6a6253",
     "parapet": {
       "heightLevelFrac": 0.32,
       "merlonCount": 5,
@@ -115,12 +127,27 @@
     "id": "porte-de-ville",
     "label": "Porte de ville",
     "material": "pierre",
-    "face": "var(--struct-face)",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.35,
+        "joint": "#33302b",
+        "jointW": 0.035,
+        "stagger": 0.5,
+        "blockWM": [
+          0.4,
+          0.9
+        ],
+        "edgeWobble": 0.025,
+        "paletteVar": 0.08
+      }
+    },
+    "face": "#6b6f76",
     "post": "#352b1f",
-    "band": "var(--struct-band)",
-    "cap": "var(--struct-cap)",
-    "rubble": "var(--struct-rubble)",
-    "rubbleHi": "var(--struct-rubble-hi)",
+    "band": "#34373c",
+    "cap": "#888d95",
+    "rubble": "#463f35",
+    "rubbleHi": "#6a6253",
     "recess": "#241a10",
     "parapet": {
       "heightLevelFrac": 0.32,

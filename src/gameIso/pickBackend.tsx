@@ -8,6 +8,7 @@ import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { resolveRender, planById } from './rig/bodyPlan';
+import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
 import { findCreatureById, findCareerById, findTrappingById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
@@ -54,17 +55,19 @@ const CREATURE_BOX = '22 14 80 80';
 const planPortraitBox = (planId: string): string => planById(planId)?.portraitBox ?? CREATURE_BOX;
 /** Cadre PORTRAIT d'une structure de siège (centré sur le bloc crénelé ci-dessous). */
 const STRUCT_BOX = '26 38 68 68';
-/** Corps d'une STRUCTURE de siège (porte/rempart) : bloc de pierre crénelé ferré (tokens :root) — JAMAIS
- *  un bipède. Sert au portrait d'inspection / VsHeader de la modale d'attaque (le jeton de CASE, lui, est
- *  supprimé : la fortification se rend sur son arête, cf. IsoStage). */
+/** Corps d'une STRUCTURE de siège (porte/rempart) : bloc de pierre crénelé ferré aux couleurs de
+ *  l'apparence partagée (`mur-en-pierre`, palette pierre unifiée du JSON) — JAMAIS un bipède. Sert au
+ *  portrait d'inspection / VsHeader de la modale d'attaque (le jeton de CASE, lui, est supprimé : la
+ *  fortification se rend sur son arête, cf. IsoStage). */
+const STRUCT_APP = structureAppearance('mur-en-pierre');
 const STRUCT_BODY = (
   <g>
-    <rect x={34} y={50} width={52} height={64} fill="var(--struct-face)" stroke="var(--struct-band)" strokeWidth={2} />
-    <rect x={34} y={66} width={52} height={5} fill="var(--struct-band)" />
-    <rect x={34} y={90} width={52} height={5} fill="var(--struct-band)" />
-    <rect x={34} y={44} width={12} height={8} fill="var(--struct-cap)" />
-    <rect x={54} y={44} width={12} height={8} fill="var(--struct-cap)" />
-    <rect x={74} y={44} width={12} height={8} fill="var(--struct-cap)" />
+    <rect x={34} y={50} width={52} height={64} fill={STRUCT_APP.face} stroke={STRUCT_APP.band ?? STRUCT_APP.face} strokeWidth={2} />
+    <rect x={34} y={66} width={52} height={5} fill={STRUCT_APP.band ?? STRUCT_APP.face} />
+    <rect x={34} y={90} width={52} height={5} fill={STRUCT_APP.band ?? STRUCT_APP.face} />
+    <rect x={34} y={44} width={12} height={8} fill={STRUCT_APP.cap ?? STRUCT_APP.face} />
+    <rect x={54} y={44} width={12} height={8} fill={STRUCT_APP.cap ?? STRUCT_APP.face} />
+    <rect x={74} y={44} width={12} height={8} fill={STRUCT_APP.cap ?? STRUCT_APP.face} />
   </g>
 );
 

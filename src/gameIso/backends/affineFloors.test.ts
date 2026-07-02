@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildFloors } from '../builders/floors';
 import type { FloorEl } from '../builders/types';
 import { emptyScene, type Scene } from '../../state/scene';
-import { floorSvg, floorDepth } from './affineFloors';
+import { floorSvg, floorAccentsSvg, floorDepth } from './affineFloors';
 import { depth, diamondPath, tileCenter, type Dims } from '../iso';
 
 /**
@@ -27,9 +27,16 @@ const elAt = (scene: Scene, x: number, y: number, z = 0, activeZ = 0): FloorEl =
 };
 
 describe('floorSvg — losange de base', () => {
-  it('tuile plate = un losange au gradient du terrain, tracé écran de diamondPath', () => {
+  it('tuile plate = un losange au tracé écran de diamondPath ; herbe = VARIANTE de teinte par tuile (matériaux v2)', () => {
     const s = emptyScene(4, 4); // herbe partout
     const svg = floorSvg(elAt(s, 1, 1), dims);
+    expect(svg).toMatch(new RegExp(`^<path d="${diamondPath(1, 1, dims).replace(/([().])/g, '\\$1')}" fill="url\\(#g_grass-v[0-3]\\)" stroke="rgba\\(0,0,0,0.16\\)"/>$`));
+    expect(floorSvg(elAt(s, 1, 1), dims)).toBe(svg); // variante stable (hash du monde)
+  });
+
+  it('LOD 0 (fills plats) : le dégradé de BASE du terrain, sans variante', () => {
+    const s = emptyScene(4, 4);
+    const svg = floorSvg(elAt(s, 1, 1), dims, { zoom: 0.4 });
     expect(svg).toBe(`<path d="${diamondPath(1, 1, dims)}" fill="url(#g_grass)" stroke="rgba(0,0,0,0.16)"/>`);
   });
 
@@ -61,6 +68,24 @@ describe('floorSvg — parois de relief', () => {
     expect(svg).toContain('overhang-deck');
     expect(svg).toContain('overhang-pillar');
     expect(svg).not.toContain('elev-cliff'); // bord ajouré, pas une falaise pleine
+  });
+});
+
+describe('floorAccentsSvg — couche d’accents seedés (LOD 2), séparée du memo', () => {
+  it('herbe : touffes déterministes au seed monde, ancrées MONDE (même nombre de brins aux 4 rotations)', () => {
+    const s = emptyScene(4, 4);
+    const a1 = floorAccentsSvg(elAt(s, 1, 1), dims);
+    expect(a1).toBe(floorAccentsSvg(elAt(s, 1, 1), dims));
+    expect(a1).toContain('<path');
+    expect(floorAccentsSvg(elAt(s, 2, 1), dims)).not.toBe(a1); // seed = identité monde
+    const subCount = (svg: string) => (svg.match(/M/g) ?? []).length;
+    for (const rot of [1, 2, 3] as const) expect(subCount(floorAccentsSvg(elAt(s, 1, 1), { ...dims, rot }))).toBe(subCount(a1));
+  });
+  it('vide en LOD < 2 ; vide pour un terrain sans recette d’accents', () => {
+    const s = emptyScene(4, 4);
+    expect(floorAccentsSvg(elAt(s, 1, 1), dims, { zoom: 0.6 })).toBe('');
+    const dalle = withHeight(); // plancher : aucune recette
+    expect(floorAccentsSvg(elAt(dalle, 1, 1), dims)).toBe('');
   });
 });
 

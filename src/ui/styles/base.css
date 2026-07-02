@@ -25,11 +25,6 @@
   --blood: #6e1a10;
   --copper: #c9905a; /* monnaie : sou de cuivre */
   --silver: #cdd6df; /* monnaie : pistole d'argent */
-  --struct-face: #6b6f76; /* siège : face PIERRE d'un rempart/porte renforcée (≠ bois des murs) */
-  --struct-band: #34373c; /* siège : ferrure / liseré sombre de la fortification */
-  --struct-cap: #888d95; /* siège : chemin de ronde + créneaux (pierre claire) */
-  --struct-rubble: #463f35; /* siège : base de gravats d'une BRÈCHE abattue */
-  --struct-rubble-hi: #6a6253; /* siège : éboulis éclairés (tas dentelé) */
   --combat-walk: #4f8fe0; /* combat : portée de Marche */
   --combat-run: #9b6be0; /* combat : portée de Course */
   --combat-target: #ff5a4d; /* combat : anneau de cible d'attaque */
@@ -40,6 +35,29 @@
   --combat-gold-dk: #7a5b16; /* combat : contour sombre du glyphe or */
   --combat-halo: #ffe27a; /* combat : halo d'interaction (survol PNJ/objet) */
   --tooltip-bg: #14141c; /* combat : fond d'infobulle */
+  --tooltip-border: #888888; /* infobulle : liseré d'erreur */
+  --tooltip-fg: #f0f0f0; /* infobulle : texte principal */
+  --tooltip-muted: #b9b2a6; /* infobulle : libellés secondaires */
+  --tooltip-dim: #7f8893; /* infobulle : mentions effacées (aides non qualifiées) */
+  --tooltip-ok: #9fb8a6; /* infobulle : détail positif */
+  --tooltip-warn: #e0a53a; /* infobulle : avertissement */
+  --tooltip-aid: #b9926a; /* infobulle : rôle d'aide */
+  --iso-zone-smoke: #9aa0a6; /* combat : zone persistante opaque (fumée) */
+  --iso-zone-fire: #e2641e; /* combat : zone de feu/effet */
+  --iso-engage: #d98a3a; /* combat : lien d'engagement (pointillés) */
+  --iso-active-halo: #ffe066; /* carte : contour de case active / position du groupe */
+  --iso-door-open: #caa14a; /* carte : overlay de porte ouverte */
+  --iso-door-closed: #d4534a; /* carte : overlay de porte fermée */
+  --iso-invalid: #777777; /* visée : gabarit hors portée / hors Ligne de Vue */
+  --iso-threat: #d11a1a; /* combat : télégraphe de zone ennemi */
+  --iso-fauna: #0d0d0d; /* carte : faune d'ambiance (mouches, corbeau) */
+  --dbg-z1: #13c4d6; /* debug carte : teinte couche z1 */
+  --dbg-z2: #9a5cff; /* debug carte : teinte couche z2 */
+  --dbg-wall: #e03a3a; /* debug carte : courtine */
+  --dbg-door: #f4d020; /* debug carte : porte */
+  --dbg-ink: #0a0a12; /* debug carte : cerne/fond */
+  --dbg-fg: #f2f2f2; /* debug carte : texte */
+  --dbg-border: #444444; /* debug carte : bord de légende */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
 }
 
