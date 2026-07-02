@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildScene } from './mapSpec';
-import { layerTiles } from './scene';
+import { layerTiles, isWalkable, isRampart, rampartAt, heightAt, wallBetween, setStructureDown } from './scene';
+import { pathTo } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 
 /** GOLDEN = spécification exécutable du format `MapSpec`. Chaque bloc verrouille une section de la
@@ -107,6 +108,64 @@ describe('buildScene — murs d’arête explicites', () => {
     expect(edgeWallState(s, 1, 1, 'N')).toBe('wall');
     expect(edgeWallState(s, 1, 1, 'E')).toBe('door');
     expect(s.walls!.find((w) => w.x === 0 && w.y === 0 && w.side === 'N')!.structure).toBe('porte-de-ville');
+  });
+});
+
+describe('buildScene — `cells` (recette par LETTRE de case : enceinte pleine + tunnel + départ)', () => {
+  // ENCEINTE de 2 cases d'épaisseur (rows 2-3) percée d'une PORTE au col 2, sur une carte 5×6.
+  //   .....  (row 0 = champ)   ##D##  (row 2 = bande, gate col 2)   .....  (row 4 = cour)
+  //   .....  (row 1 = champ)   ##D##  (row 3 = bande)               H....  (row 5 = cour + départ)
+  const s = buildScene({
+    id: 'c', nom: 'C', size: [5, 6],
+    levels: { z0: ['.....', '.....', '##D##', '##D##', '.....', 'H....'].join('\n') },
+    cells: {
+      '#': { terrain: 'pierre', wall: { structure: 'mur-en-pierre', facing: 'N' } },
+      D: { terrain: 'pierre', gate: { structure: 'porte-de-ville', facing: 'N' } },
+      H: { terrain: 'pave', hero: true },
+    },
+  });
+  const idx = (x: number, y: number) => y * s.dimensions.w + x;
+
+  it('AUTO-POSE une ZONE REMPART sur la couche z+1 : chemin de ronde marchable (pierre, 4 m) + `rampart` marqué', () => {
+    expect(s.layers.map((l) => l.z)).toEqual([0, 1]); // couche z1 créée par la recette
+    const z1 = s.layers.find((l) => l.z === 1)!;
+    for (const y of [2, 3]) for (const x of [0, 1, 2, 3, 4]) {
+      expect(layerTiles(s, 1)[idx(x, y)]).toBe('pierre'); // dessus MARCHABLE (bande entière, gate incluse)
+      expect(z1.height![idx(x, y)]).toBe(4); // masse à 4 m
+      expect(isRampart(s, x, y, 1)).toBe(true); // zone rempart
+    }
+    // Créneaux/rempart CEINTURENT la bande : rien hors des rangées 2-3 (champ/cour restent au sol).
+    for (const y of [0, 1, 4, 5]) for (const x of [0, 2, 4]) expect(rampartAt(s, x, y, 1)).toBeNull();
+  });
+
+  it('MASSE DE MUR : une case de courtine (z0) est ENSEVELIE → IMPASSABLE ; le TUNNEL de porte reste PASSABLE', () => {
+    // Courtine pleine : z0 sous le rempart = impassable (on ne traverse pas la masse).
+    for (const y of [2, 3]) for (const x of [0, 1, 3, 4]) expect(isWalkable(s, x, y, 0)).toBe(false);
+    // Tunnel de porte (col 2, TOUTE l'épaisseur) : z0 marchable.
+    for (const y of [2, 3]) expect(isWalkable(s, 2, y, 0)).toBe(true);
+  });
+
+  it('HERSE sur la BOUCHE extérieure seule (facing N) : intacte elle coupe champ↔cour ; abattue, la brèche ouvre', () => {
+    const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
+    expect(gate).toHaveLength(1); // UNE herse (arête interne de la bande épaisse n'en porte pas)
+    expect(gate[0]).toMatchObject({ x: 2, y: 2, side: 'N' }); // bouche = arête extérieure (côté champ)
+    expect(gate[0].door).toBeUndefined(); // structure brèchable pure, pas une porte ouvrable
+    // INTACTE : aucun chemin z0 champ (2,0) → cour (2,4).
+    const field = { x: 2, y: 0, z: 0 }, cour = { x: 2, y: 4, z: 0 };
+    expect(wallBetween(s, 2, 1, 2, 2)).toBe(true); // la bouche bloque
+    expect(pathTo(s, field, cour, { blocked: new Set() })).toBeNull();
+    // ABATTUE : le tunnel s'ouvre et traverse les 2 cases de la bande.
+    const breached = setStructureDown(s, 2, 2, 'N', 0, true);
+    const path = pathTo(breached, field, cour, { blocked: new Set() });
+    expect(path).not.toBeNull();
+    expect(path!.some((p) => p.x === 2 && p.y === 2 && (p.z ?? 0) === 0)).toBe(true);
+    expect(path!.some((p) => p.x === 2 && p.y === 3 && (p.z ?? 0) === 0)).toBe(true);
+  });
+
+  it('`hero` pose le départ du groupe ; la fondation `terrain` évite l’herbe surprise', () => {
+    expect(s.entities.find((e) => e.kind === 'heroStart')?.pos).toEqual({ x: 0, y: 5 });
+    expect(layerTiles(s, 0)[idx(0, 5)]).toBe('pave'); // terrain de la recette hero
+    expect(layerTiles(s, 0)[idx(0, 2)]).toBe('pierre'); // fondation de courtine (pas 'mur' ni 'herbe')
   });
 });
 

@@ -15,12 +15,17 @@ import type { SceneEntity } from '../../state/scene';
 import type { Weapon } from '../../engine/types';
 
 /**
- * Siège à grande échelle (siege-enceinte) — vérif LOGIQUE headless de la Scene PRODUITE par le `MapSpec` :
- * champ profond, rivière+pont, enceinte à corps de garde, chemin de ronde épais (z1, 4 m), RAMPE au FLANC
- * GAUCHE (déportée de la porte → cour dégagée derrière la porte), batterie qui brèche la porte (IA cible la
- * structure), défenseurs PNJ alliés-IA, combat vertical.
+ * Siège à grande échelle (siege-enceinte) — vérif LOGIQUE headless de la Scene PRODUITE par le `MapSpec`.
+ * L'ENCEINTE est une VRAIE MASSE de maçonnerie PLEINE, authorée par la recette `cells` : une bande de 2 cases
+ * d'épaisseur (rangées 37-38) de `#` (mur plein) percée d'une PORTE `D` (cols 14-15). Chaque `#`/`D` auto-pose
+ * une ZONE REMPART sur z1 (bloc solide à 4 m + chemin de ronde marchable + crénelure) → le z0 sous la bande est
+ * IMPASSABLE (on ne traverse plus la « jupe »), SAUF le TUNNEL de la porte (z0 passable, herse sur la bouche
+ * extérieure). Champ profond, rivière+pont, chemin de ronde épais garni de pièces/archers PNJ alliés-IA, RAMPE au
+ * flanc gauche (déportée de la porte), batterie qui brèche la porte, combat vertical.
  */
-const WALL_ROW = 38;
+const MOUTH_ROW = 37; // rangée de bande côté CHAMP : l'arête N porte la HERSE (bouche extérieure du tunnel)
+const INNER_ROW = 38; // rangée de bande côté COUR (le tunnel traverse les deux)
+const GATE_COLS = [14, 15];
 
 /** Trouve l'emplacement (SceneEntity à poste) dont l'équipage inclut `crewId` (ids d'affûts auto-générés). */
 const emplWithCrew = (crewId: string): SceneEntity =>
@@ -34,28 +39,28 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const s = scenario.scene;
     expect(s.dimensions).toEqual({ w: 30, h: 46 });
     expect(s.layers.map((l) => l.z)).toEqual([0, 1]);
-    // Champ assaillant (y0 → mur y38 = 38 cases) PROFOND ; cour défenseur (y38..45 = 8 cases) MODESTE.
-    expect(WALL_ROW).toBe(38);
-    expect(s.dimensions.h - WALL_ROW).toBeLessThan(WALL_ROW); // cour ≪ champ
+    // Champ assaillant (y0 → bande y37 = 37 cases) PROFOND ; cour défenseur (y39..45 = 7 cases) MODESTE.
+    expect(s.dimensions.h - 39).toBeLessThan(MOUTH_ROW); // cour ≪ champ
   });
 
-  it('enceinte : PORTE flush dans la ligne du mur (cols 14-15) + courtine en pierre ; chemin de ronde = ZONE REMPART', () => {
+  it('enceinte : HERSE sur la BOUCHE extérieure (cols 14-15, arête N de la bande) ; courtine = MASSE (zone rempart z1)', () => {
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
     expect(gate.length).toBe(2);
     expect(gate.map((w) => w.x).sort((a, b) => a - b)).toEqual([14, 15]); // porte aux cols 14-15
-    expect(gate.every((w) => w.y === WALL_ROW && w.side === 'N')).toBe(true); // ouverture DANS la ligne d'enceinte
-    // Courtine `mur-en-pierre` sur toutes les AUTRES colonnes (0-13, 16-29 = 28 arêtes).
-    const courtine = s.walls!.filter((w) => w.structure === 'mur-en-pierre' && w.y === WALL_ROW);
-    expect(courtine.length).toBe(28);
-    // CHEMIN DE RONDE = ZONE REMPART solide (couche z1, rows 38-39) : marquée `layer.rampart='mur-en-pierre'`
-    // (le RENDU en dérive la face de maçonnerie + la crénelure de périmètre) — plus de WallSeg parapet authoré.
+    expect(gate.every((w) => w.y === MOUTH_ROW && w.side === 'N')).toBe(true); // bouche = arête N extérieure (côté champ)
+    // La COURTINE n'est PLUS un WallSeg : c'est la MASSE de rempart (zone z1) → aucun WallSeg 'mur-en-pierre'.
+    expect(s.walls!.some((w) => w.structure === 'mur-en-pierre')).toBe(false);
+    // CHEMIN DE RONDE = ZONE REMPART solide (couche z1, rangées 37-38) : marquée `layer.rampart` (le RENDU en
+    // dérive la face de maçonnerie + la crénelure de périmètre). Les colonnes de PORTE portent l'apparence de la
+    // herse (gatehouse crénelé continu), les colonnes de courtine 'mur-en-pierre'.
     const z1 = s.layers.find((l) => l.z === 1)!;
     expect(z1.rampart).toBeDefined();
     const W = s.dimensions.w;
-    for (const x of [0, 8, 15, 21, 29])
-      for (const y of [38, 39]) expect(z1.rampart![y * W + x]).toBe('mur-en-pierre');
-    expect(z1.rampart![37 * W + 0]).toBeNull(); // rangée 37 HORS zone (chemin déporté à l'intérieur)
+    for (const x of [0, 8, 21, 29]) for (const y of [MOUTH_ROW, INNER_ROW]) expect(z1.rampart![y * W + x]).toBe('mur-en-pierre');
+    for (const x of GATE_COLS) for (const y of [MOUTH_ROW, INNER_ROW]) expect(z1.rampart![y * W + x]).toBe('porte-de-ville');
+    expect(z1.rampart![36 * W + 0]).toBeNull(); // rangée 36 (champ) HORS zone
+    expect(z1.rampart![39 * W + 0]).toBeNull(); // rangée 39 (cour) HORS zone
     expect(s.walls!.some((w) => (w.z ?? 0) === 1)).toBe(false); // aucun WallSeg z1 (crénelure = rendu, pas donnée de scène)
     // La verticalité du rempart est sa COUCHE z1 (4 m), pas un champ `WallSeg.height` (retiré du contrat).
     expect(s.walls!.every((w) => !('height' in w))).toBe(true);
@@ -67,26 +72,26 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const h0 = s.layers.find((l) => l.z === 0)!.height!;
     const h1 = s.layers.find((l) => l.z === 1)!.height!;
     const idx = (x: number, y: number) => y * s.dimensions.w + x;
-    // Rampe FLANC GAUCHE (cols 3-4) : 40=4 m, 41=3 m, 42=2 m, 43=1 m, 44=0 m (raccord plat).
+    // Rampe FLANC GAUCHE (cols 3-4) : 39=4 m, 40=3 m, 41=2 m, 42=1 m, 43=0 m (raccord plat).
     for (const x of [3, 4]) {
-      expect(h0[idx(x, 40)]).toBe(4); // sommet (rejoint le chemin de ronde y39)
-      expect(h0[idx(x, 41)]).toBe(3);
-      expect(h0[idx(x, 42)]).toBe(2);
-      expect(h0[idx(x, 43)]).toBe(1);
-      expect(h0[idx(x, 44)]).toBe(0);
+      expect(h0[idx(x, 39)]).toBe(4); // sommet (jouxte le chemin de ronde y38)
+      expect(h0[idx(x, 40)]).toBe(3);
+      expect(h0[idx(x, 41)]).toBe(2);
+      expect(h0[idx(x, 42)]).toBe(1);
+      expect(h0[idx(x, 43)]).toBe(0);
     }
-    // Chemin de ronde z1 (y38 + y39) à 4 m sur TOUTES les colonnes (posé PAR L'ASCII via `ramparts`).
-    for (const x of [0, 8, 15, 21, 29]) {
-      expect(h1[idx(x, 38)]).toBe(4);
-      expect(h1[idx(x, 39)]).toBe(4);
+    // Chemin de ronde z1 (rangées 37 + 38) à 4 m sur les colonnes de courtine (posé PAR L'ASCII via `cells`).
+    for (const x of [0, 8, 21, 29]) {
+      expect(h1[idx(x, MOUTH_ROW)]).toBe(4);
+      expect(h1[idx(x, INNER_ROW)]).toBe(4);
     }
-    // La PORTE est aux cols 14-15 : DERRIÈRE elle (cols 14-15, rangées 40-44 = la cour) NE contient AUCUNE
-    // case de rampe → hauteur 0 partout (la rampe ne bloque plus la porte, cour = zone de mort dégagée).
-    for (const x of [14, 15])
-      for (let y = 40; y <= 44; y++)
+    // La PORTE est aux cols 14-15 : DERRIÈRE elle (rangées 39-44 = la cour) NE contient AUCUNE case de rampe →
+    // hauteur 0 partout (la rampe ne bloque plus la porte, cour = zone de mort dégagée).
+    for (const x of GATE_COLS)
+      for (let y = 39; y <= 44; y++)
         expect(h0[idx(x, y)]).toBe(0);
     // Connexité : depuis la cour (z0) on atteint le CHEMIN DE RONDE (z1) par la RAMPE du flanc gauche.
-    const path = pathTo(s, { x: 3, y: 44, z: 0 }, { x: 8, y: WALL_ROW + 1, z: 1 }, { blocked: new Set() });
+    const path = pathTo(s, { x: 3, y: 44, z: 0 }, { x: 6, y: INNER_ROW, z: 1 }, { blocked: new Set() });
     expect(path).not.toBeNull();
     expect(path!.some((p) => (p.z ?? 0) === 1)).toBe(true); // le trajet passe bien sur la couche 1
     // … et il grimpe bien par la rampe du flanc gauche (case surélevée en cols 3/4).
@@ -97,32 +102,35 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
     expect(gate.every((w) => !w.door)).toBe(true); // PAS de door:true → wallIsOpen = structureIsDown SEUL
-    const g = gate[0]; // arête N de (g.x, WALL_ROW) : sépare la cour (y=WALL_ROW) du champ (y=WALL_ROW-1)
-    expect(wallBetween(s, g.x, WALL_ROW, g.x, WALL_ROW - 1)).toBe(true);
-    expect(reachable(s, { x: g.x, y: WALL_ROW, z: 0 }, 1, { blocked: new Set() }).has(`${g.x},${WALL_ROW - 1}`)).toBe(false);
+    const g = gate[0]; // arête N de (g.x, MOUTH_ROW) : sépare la bande (y=MOUTH_ROW) du champ (y=MOUTH_ROW-1)
+    expect(wallBetween(s, g.x, MOUTH_ROW, g.x, MOUTH_ROW - 1)).toBe(true);
+    expect(reachable(s, { x: g.x, y: MOUTH_ROW, z: 0 }, 1, { blocked: new Set() }).has(`${g.x},${MOUTH_ROW - 1}`)).toBe(false);
     // Abattue (brèche) : passage ET BFS rouverts.
-    const breached = setStructureDown(s, g.x, WALL_ROW, 'N', 0, true);
-    expect(wallBetween(breached, g.x, WALL_ROW, g.x, WALL_ROW - 1)).toBe(false);
-    expect(reachable(breached, { x: g.x, y: WALL_ROW, z: 0 }, 1, { blocked: new Set() }).has(`${g.x},${WALL_ROW - 1}`)).toBe(true);
+    const breached = setStructureDown(s, g.x, MOUTH_ROW, 'N', 0, true);
+    expect(wallBetween(breached, g.x, MOUTH_ROW, g.x, MOUTH_ROW - 1)).toBe(false);
+    expect(reachable(breached, { x: g.x, y: MOUTH_ROW, z: 0 }, 1, { blocked: new Set() }).has(`${g.x},${MOUTH_ROW - 1}`)).toBe(true);
   });
 
   it('TUNNEL franchissable : un chemin z0 CHAMP→COUR par la porte est BLOQUÉ intact, OUVERT à la brèche', () => {
     const s = scenario.scene;
     const gate = s.walls!.filter((w) => w.structure === 'porte-de-ville');
     const gx = gate[0].x; // colonne de porte (x14)
-    const field = { x: gx, y: WALL_ROW - 2, z: 0 }; // (14,36) côté CHAMP
-    const cour = { x: gx, y: WALL_ROW + 1, z: 0 };   // (14,39) côté COUR
-    for (const t of [field, { x: gx, y: WALL_ROW - 1, z: 0 }, { x: gx, y: WALL_ROW, z: 0 }, cour])
+    const field = { x: gx, y: MOUTH_ROW - 2, z: 0 }; // (14,35) côté CHAMP
+    const cour = { x: gx, y: INNER_ROW + 1, z: 0 };  // (14,39) côté COUR
+    // Champ, DEUX bouches du tunnel (rangées de bande 37-38) et cour sont TOUS marchables (la masse est percée).
+    for (const t of [field, { x: gx, y: MOUTH_ROW - 1, z: 0 }, { x: gx, y: MOUTH_ROW, z: 0 }, { x: gx, y: INNER_ROW, z: 0 }, cour])
       expect(isWalkable(s, t.x, t.y, 0)).toBe(true);
-    // INTACTE : aucun chemin champ→cour (toute la ligne d'enceinte est murée, la porte coupe le tunnel).
+    // INTACTE : aucun chemin champ→cour (la masse est murée partout, la herse coupe le tunnel).
     expect(pathTo(s, field, cour, { blocked: new Set() })).toBeNull();
-    // ABATTUE : le chemin existe et TRAVERSE bien les deux cases du tunnel sous l'arche (y37 puis y38).
-    const breached = setStructureDown(s, gx, WALL_ROW, 'N', 0, true);
+    // ABATTUE : le chemin existe et TRAVERSE bien les deux cases du tunnel (y37 puis y38).
+    const breached = setStructureDown(s, gx, MOUTH_ROW, 'N', 0, true);
     const path = pathTo(breached, field, cour, { blocked: new Set() });
     expect(path).not.toBeNull();
     const onPath = (x: number, y: number) => path!.some((p) => p.x === x && (p.z ?? 0) === 0 && p.y === y);
-    expect(onPath(gx, WALL_ROW - 1)).toBe(true); // bouche CHAMP (y37) franchie
-    expect(onPath(gx, WALL_ROW)).toBe(true);     // bouche COUR (y38) franchie
+    expect(onPath(gx, MOUTH_ROW)).toBe(true); // bouche CHAMP (y37) franchie
+    expect(onPath(gx, INNER_ROW)).toBe(true); // bouche COUR (y38) franchie
+    // On ne traverse PAS la masse ailleurs : une colonne de courtine reste impassable au sol, intacte ou non.
+    expect(isWalkable(breached, 0, MOUTH_ROW, 0)).toBe(false);
   });
 
   it('rivière (eau infranchissable) traversée par un PONT (planches) qui canalise l\'assaut', () => {
@@ -142,9 +150,9 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const scene = useGame.getState().scene!;
     const hero = b.combatants.find((c) => c.kind === 'hero' && !c.aiControlled && !c.inert)!;
     // Placement PRODUCTION : `placeCombatant` stampe la hauteur métrique `pos.h` (= 4 m, chemin de ronde z1).
-    hero.pos = { x: 8, y: WALL_ROW, z: 1 };         // sur le chemin de ronde, au-dessus de la courtine
-    placeCombatant(hero, scene, hero.pos);           // RAFRAÎCHIT pos.h depuis le relief (4 m) — comme en production
-    const foot = { x: 8, y: WALL_ROW - 1, h: heightAt(scene, 8, WALL_ROW - 1, 0) }; // assaillant au pied du mur (z=0, 0 m)
+    hero.pos = { x: 8, y: MOUTH_ROW, z: 1 };          // sur le chemin de ronde, au-dessus de la courtine
+    placeCombatant(hero, scene, hero.pos);            // RAFRAÎCHIT pos.h depuis le relief (4 m) — comme en production
+    const foot = { x: 8, y: MOUTH_ROW - 1, h: heightAt(scene, 8, MOUTH_ROW - 1, 0) }; // assaillant au pied du mur (z=0, 0 m)
     // Δhauteur 4 m ÷ 2 m/case = 2 cases de séparation verticale → distance 2 (mêlée refusée à travers le vide).
     expect(combatDistance(hero, { pos: foot } as never)).toBe(2);
     expect(lineOfSightCover(scene, hero.pos, { x: 8, y: 10 }, []).blocked).toBe(false); // pilonne le champ

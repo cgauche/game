@@ -43,6 +43,8 @@ import {
   toggleDiagonalWall,
   paintHeight,
   paintRampart,
+  paintTiles,
+  addLayer,
   putLayer,
   placeEmplacement,
   setPosteCrew,
@@ -54,6 +56,12 @@ import {
   setAmbientLight,
   setSceneFlags,
 } from './sceneEdit';
+
+/** Hauteur (m) par défaut d'une ENCEINTE `cells` sans `height` explicite — chemin de ronde à ~4 m (un
+ *  « niveau » de relief, cf. `METRES_PER_LEVEL`). */
+const CELL_WALL_HEIGHT_M = 4;
+/** Terrain MARCHABLE du chemin de ronde auto-posé par une `cells` d'enceinte (dessus du mur plein). */
+const CELL_WALKWAY: Terrain = 'pierre';
 
 /** Un segment de mur DÉCLARATIF : arête cardinale N/E/S/O (canonisée avant écriture) + door/structure,
  *  ou diagonale `\\`/`/` en travers de la case. Plus large que `scene.WallSeg` (qui n'admet que la forme
@@ -121,6 +129,23 @@ export interface EncounterSpec {
   hidden?: boolean;
 }
 
+/** RECETTE par LETTRE d'une CASE COMPLÈTE (sol + AU PLUS un rôle/structure dessus) — l'authoring unifié
+ *  d'une enceinte : une lettre = la case entière, self-documentée (plus d'éparpillement `elevate`+`edgeWalls`).
+ *  - `wall` : ENCEINTE PLEINE. Auto-pose une ZONE REMPART sur la couche z+1 (bloc solide `height` m + chemin
+ *    de ronde marchable + crénelure) → le z0 devient impassable (MASSE DE MUR) et le rendu (falaise + merlons)
+ *    suit. `structure` = apparence crénelée (id `structureAppearance`). Le sol z0 = `terrain` (fondation).
+ *  - `gate` : TUNNEL brèchable. Comme `wall` (chemin de ronde CONTINU au-dessus, gatehouse) MAIS le z0 reste
+ *    PASSABLE et une structure-porte (`structure`, herse) est posée sur l'arête EXTÉRIEURE (`facing`) = la
+ *    BOUCHE du périmètre. Intacte elle bloque le passage (`wallBetween`) ; abattue → brèche ouverte.
+ *  - `hero` : départ du groupe à cette case. */
+export interface CellRecipe {
+  /** Sol / FONDATION de la case (défaut = base de l'étage — évite l'herbe surprise sous une enceinte). */
+  terrain?: Terrain;
+  wall?: { structure: string; facing?: Edge4; height?: number };
+  gate?: { structure: string; facing?: Edge4 };
+  hero?: boolean;
+}
+
 export interface MapSpec {
   size: [number, number];
   id: string;
@@ -160,6 +185,11 @@ export interface MapSpec {
    *  `{ M: { side: 'N', structure: 'mur-en-pierre' }, D: { side: 'N', structure: 'porte-de-ville' } }` pose une
    *  ligne d'enceinte + porte en marquant la rangée du mur. Pour un plan complet (arêtes tous côtés) → `walled`. */
   edgeWalls?: Record<string, { side: Edge4; structure?: string; door?: boolean }>;
+  /** RECETTE par LETTRE de CASE COMPLÈTE (`CellRecipe`) : `wall` (enceinte pleine), `gate` (tunnel brèchable),
+   *  `hero` (départ). Une lettre `cells` résout son `terrain` dans la légende ASCII, puis auto-pose sa
+   *  structure/rôle (zone rempart z+1, herse, heroStart). Point d'entrée UNIFIÉ d'une muraille (remplace le
+   *  couple `elevate`+`edgeWalls`) — mécanisme GÉNÉRAL, toute forme/épaisseur. */
+  cells?: Record<string, CellRecipe>;
   walls?: WallSpec[];
   relief?: ReliefSpec[];
   rooms?: RoomSpec[];
@@ -246,18 +276,26 @@ export function buildScene(spec: MapSpec): Scene {
   const bindChars = Object.keys(spec.bind ?? {}).join('');
   const scanned: { char: string; pos: Pt; z: number }[] = [];
   const walledWalls: WallSpec[] = [];
+  // LÉGENDE EFFECTIVE : les lettres `cells` résolvent leur `terrain` (fondation ; défaut = base d'étage) dans
+  // l'ASCII, en surchargeant `legend`/BASE_LEGEND → un `#` d'enceinte tombe en 'pierre', pas en 'mur' ni 'herbe'.
+  const cellTerrains: Record<string, Terrain> = {};
+  for (const [ch, rec] of Object.entries(spec.cells ?? {})) cellTerrains[ch] = rec.terrain ?? spec.terrain ?? 'herbe';
+  const effLegend = { ...spec.legend, ...cellTerrains };
   // Cases repérées dans l'ASCII pour les char-maps coordonnée-free (`elevate` hauteur/rempart, `edgeWalls`
-  // mur d'arête) — le char est de LÉGENDE (marqueurs déjà nettoyés → markerFill). `elevate` est appliqué à
-  // l'étape 3bis (APRÈS le relief) ; `edgeWalls` génère des `WallSpec` posés à l'étape 4.
+  // mur d'arête, `cells` recette de case) — le char est de LÉGENDE (marqueurs déjà nettoyés → markerFill).
+  // `elevate` est appliqué à l'étape 3bis (APRÈS le relief) ; `cells` à l'étape 3ter ; `edgeWalls`/`cells`
+  // génèrent des `WallSpec` posés à l'étape 4.
   const elevateCells: { char: string; x: number; y: number; z: number }[] = [];
   const edgeWallCells: { char: string; x: number; y: number; z: number }[] = [];
+  const cellCells: { char: string; x: number; y: number; z: number }[] = [];
   const scanChars = (rows: string[], z: number, colAt: (r: string, x: number) => string) => {
-    if (!spec.elevate && !spec.edgeWalls) return;
+    if (!spec.elevate && !spec.edgeWalls && !spec.cells) return;
     for (let y = 0; y < rows.length; y++)
       for (let x = 0; x < w; x++) {
         const ch = colAt(rows[y], x);
         if (spec.elevate?.[ch] !== undefined) elevateCells.push({ char: ch, x, y, z });
         if (spec.edgeWalls?.[ch]) edgeWallCells.push({ char: ch, x, y, z });
+        if (spec.cells?.[ch]) cellCells.push({ char: ch, x, y, z });
       }
   };
   if (spec.levels) {
@@ -266,7 +304,7 @@ export function buildScene(spec: MapSpec): Scene {
       const { positions, cleaned } = scanMarkers(rowsOf(rows), bindChars, spec.markerFill);
       for (const [ch, list] of Object.entries(positions)) for (const p of list) scanned.push({ char: ch, pos: p, z });
       const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
-      const tiles = parseAsciiRows(cleaned, base, spec.legend).tiles;
+      const tiles = parseAsciiRows(cleaned, base, effLegend).tiles;
       s = putLayer(s, z, tiles);
       scanChars(cleaned, z, (r, x) => r[x] ?? ' ');
     }
@@ -278,7 +316,7 @@ export function buildScene(spec: MapSpec): Scene {
       const z = parseInt(key.replace('z', ''), 10);
       const base: Terrain = z === 0 ? (spec.terrain ?? 'herbe') : 'vide';
       const padded = walledRowsOf(rows).map((r) => r.padEnd(2 * w + 1, ' '));
-      const parsed = parseWalledAscii(padded, base, spec.legend, { structures: spec.wallStructures });
+      const parsed = parseWalledAscii(padded, base, effLegend, { structures: spec.wallStructures });
       s = putLayer(s, z, parsed.tiles);
       for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.structure ? { structure: seg.structure } : {}) });
       scanChars(padded.filter((_, i) => i % 2 === 1), z, (r, x) => r[2 * x + 1] ?? ' '); // tuiles aux slots impairs
@@ -297,14 +335,45 @@ export function buildScene(spec: MapSpec): Scene {
     if (typeof cfg === 'object') s = paintRampart(s, { x: c.x, y: c.y }, cfg.parapet, 1, c.z);
   }
 
+  // 3ter. cells : recette par LETTRE de case complète. Une lettre-mur/porte AUTO-POSE une ZONE REMPART sur
+  //   la couche z+1 (bloc solide de `height` m + chemin de ronde marchable + crénelure `structure`) → le z0
+  //   devient impassable (MASSE DE MUR, `isWalkable`) et le rendu (falaise + merlons) suit tout seul. Une
+  //   porte laisse EN PLUS le z0 en TUNNEL (via `gateTunnelAt`) et pose sa herse (`WallSpec structure`) sur la
+  //   BOUCHE = l'arête `facing` UNIQUEMENT là où elle borde l'EXTÉRIEUR de la bande (voisin hors bande) ; les
+  //   arêtes internes d'une bande épaisse n'en portent pas (une seule herse à abattre). GÉNÉRAL, toute forme.
+  const bandSet = new Set(cellCells.filter((c) => spec.cells![c.char].wall || spec.cells![c.char].gate).map((c) => `${c.x},${c.y},${c.z}`));
+  const cellWalls: WallSpec[] = [];
+  for (const c of cellCells) {
+    const rec = spec.cells![c.char];
+    const build = rec.wall ?? rec.gate;
+    if (build) {
+      const zz = c.z + 1;
+      const height = rec.wall?.height ?? CELL_WALL_HEIGHT_M;
+      s = addLayer(s, zz); // garantir la couche du chemin de ronde (no-op si déjà là)
+      s = paintTiles(s, { x: c.x, y: c.y }, CELL_WALKWAY, 1, zz); // dessus MARCHABLE
+      s = paintHeight(s, { x: c.x, y: c.y }, height, 1, zz); // masse pleine à `height` m
+      s = paintRampart(s, { x: c.x, y: c.y }, build.structure, 1, zz); // zone rempart → rendu + z0 impassable
+    }
+    if (rec.gate) {
+      const facing = rec.gate.facing ?? 'N';
+      const [nx, ny] = facing === 'N' ? [c.x, c.y - 1] : facing === 'E' ? [c.x + 1, c.y] : facing === 'S' ? [c.x, c.y + 1] : [c.x - 1, c.y];
+      if (!bandSet.has(`${nx},${ny},${c.z}`)) // arête de BOUCHE (borde l'extérieur), pas une arête interne
+        cellWalls.push({ x: c.x, y: c.y, side: facing, ...(c.z ? { z: c.z } : {}), structure: rec.gate.structure });
+    }
+    if (rec.hero) {
+      const pos = { x: c.x, y: c.y };
+      s = pasteEntity(s, { id: '', kind: 'heroStart', pos, ...(c.z ? { z: c.z } : {}) }, pos).scene;
+    }
+  }
+
   // 4. walls : arêtes extraites de `walled`, PUIS `edgeWalls` (chars posés dans une grille `levels`,
-  //    canonicalisés N/E), PUIS les `walls` déclaratifs en coordonnées.
+  //    canonicalisés N/E), PUIS les herses de `cells`, PUIS les `walls` déclaratifs en coordonnées.
   const asciiWalls: WallSpec[] = edgeWallCells.map((c) => {
     const cfg = spec.edgeWalls![c.char];
     const e = canonEdge(c.x, c.y, cfg.side);
     return { x: e.x, y: e.y, side: e.side, ...(c.z ? { z: c.z } : {}), ...(cfg.door ? { door: true } : {}), ...(cfg.structure ? { structure: cfg.structure } : {}) };
   });
-  for (const wall of [...walledWalls, ...asciiWalls, ...(spec.walls ?? [])]) {
+  for (const wall of [...walledWalls, ...asciiWalls, ...cellWalls, ...(spec.walls ?? [])]) {
     const z = wall.z ?? 0;
     if (wall.side === '\\' || wall.side === '/') {
       s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);

@@ -12,19 +12,24 @@ import type { TestScenario } from './_shared';
  *    l'IA cible la structure (Atout Siège), le canon BRÈCHE la porte tout seul ;
  *  - des FANTASSINS qui traversent le glacis, FRANCHISSENT la RIVIÈRE par le PONT (seul passage) et s'amassent
  *    à la porte tant qu'elle tient ;
- *  - le MUR D'ENCEINTE = des `WallSpec` (courtine `mur-en-pierre` + une `porte-de-ville` brèchable), SANS aucune
- *    hauteur de mur : la 3ᵉ dimension du rempart est sa COUCHE z1 ;
- *  - le CHEMIN DE RONDE = couche 1 'pierre' à 4 m (épais de 2 cases, y37 côté champ + y38 côté cour) garni de
- *    PIÈCES servies (baliste/canon) et d'ARCHERS PNJ alliés-IA, surmonté d'un PARAPET (`WallSpec` z1 sur l'arête
- *    EXTÉRIEURE) ; on le rejoint par UNE RAMPE au FLANC GAUCHE (cols 3-4, montant ≤1 m/case sur 5 cases — le moteur
- *    en fait une pente, plus aucun escalier), DÉPORTÉE de la porte pour dégager la cour DERRIÈRE la porte (zone de mort) ;
+ *  - l'ENCEINTE = une VRAIE MASSE de maçonnerie PLEINE, authorée par la RECETTE `cells` (une LETTRE = la case
+ *    complète). La bande de mur de 2 cases d'épaisseur (rangées y37-y38) est `#` (mur plein) ; la PORTE `D`
+ *    (cols 14-15). Chaque `#`/`D` AUTO-POSE une ZONE REMPART sur la couche z1 (bloc solide à 4 m + chemin de
+ *    ronde marchable + crénelure) → le z0 sous la bande devient IMPASSABLE (on ne traverse PLUS la « jupe » :
+ *    le mur EST des cases pleines, le chemin de ronde est SON TOIT). La PORTE laisse le z0 en TUNNEL passable
+ *    et pose sa HERSE `porte-de-ville` sur la BOUCHE extérieure (arête N, côté champ) ; intacte elle bloque le
+ *    passage, abattue → BRÈCHE. Le chemin de ronde passe au-dessus du tunnel (gatehouse continu).
+ *  - le CHEMIN DE RONDE (couche z1, 4 m) est garni de PIÈCES servies (baliste/canon) et d'ARCHERS PNJ alliés-IA ;
+ *    on le rejoint par UNE RAMPE au FLANC GAUCHE (cols 3-4, montant ≤1 m/case — le moteur en fait une pente,
+ *    plus aucun escalier), DÉPORTÉE de la porte pour dégager la cour DERRIÈRE la porte (zone de mort) ;
  *  - au SUD, une COUR pavée MODESTE où démarre le groupe.
- * Combat VERTICAL : les défenseurs (couche 1, 4 m) pilonnent en contrebas et la mêlée est refusée à travers le
- * vide (`combatDistance` ajoute la séparation métrique) ; le parapet ne coupe PAS la LdV plongeante (cross-niveau).
+ * Combat VERTICAL : les défenseurs (couche z1, 4 m) pilonnent en contrebas et la mêlée est refusée à travers le
+ * vide (`combatDistance` ajoute la séparation métrique) ; la crénelure (rendu, PAS un WallSeg) ne coupe pas la
+ * LdV plongeante.
  *
- * TOUT est dans le `MapSpec` ci-dessous (grilles ASCII des 2 étages, relief, murs, binds de marqueurs, entités à
- * ids FIXES, rencontre). Les seules parts de code restantes = le `projForPiece` (Projectiles dérivée de la pièce)
- * et le `makeParty` (le SOLDAT reçoit les Spé de service). AUCUN push/setEncounters résiduel.
+ * TOUT est dans le `MapSpec` ci-dessous (grilles ASCII des 2 étages, recette `cells`, relief de rampe, binds de
+ * marqueurs, entités à ids FIXES, rencontre). Les seules parts de code restantes = le `projForPiece` (Projectiles
+ * dérivée de la pièce) et le `makeParty` (le SOLDAT reçoit les Spé de service). AUCUN push/setEncounters résiduel.
  */
 
 // Compétence Projectiles APPROPRIÉE au Groupe de l'engin (AA p.122 l.3900) : un servant ne compte dans l'équipe
@@ -57,45 +62,50 @@ const gunner = (
   combat: { skills: projForPiece(trappingId) },
 });
 
-const prop = (id: string, ref: string, x: number, y: number): SceneEntity => ({ id, kind: 'prop', ref, pos: { x, y } });
-
 export const spec: MapSpec = {
   id: 'siege-enceinte',
   nom: 'Siège — défendre la muraille',
   description:
     "Un siège à grande échelle : au nord, le camp assaillant et sa batterie (canon + catapulte) qui pilonne la " +
     "porte de très loin ; des fantassins franchissent la rivière par le pont et s'amassent à la porte ; au sud, " +
-    "l'enceinte à porte brèchable, son chemin de ronde (couche surélevée à 4 m) garni de pièces et d'archers, " +
-    "rejoint par une rampe au flanc gauche, et une cour pavée.",
+    "l'enceinte de maçonnerie pleine à porte brèchable, son chemin de ronde (le TOIT du mur, à 4 m) garni de " +
+    "pièces et d'archers, rejoint par une rampe au flanc gauche, et une cour pavée.",
   size: [30, 46],
   metresPerTile: 2, // person-scale (LDB) : 1 case = 2 m → bandes de portée (canon 50 m / catapulte 75 m)
   ambiance: 'exterieur',
   ambientLight: 'jour', // plein jour : on voit l'assaut approcher sur tout le glacis
   startMessage:
-    "Défendez l'enceinte. Gagnez le CHEMIN DE RONDE par la RAMPE du flanc gauche, SERVEZ une pièce et pilonnez " +
-    "l'assaut en contrebas. La batterie ennemie brèche la porte de très loin — quand elle cède, qui se tient " +
-    "sur la passerelle au-dessus chute. Les assaillants ne peuvent forcer le passage qu'une fois la porte abattue.",
+    "Défendez l'enceinte. Gagnez le CHEMIN DE RONDE (le dessus du mur) par la RAMPE du flanc gauche, SERVEZ une " +
+    "pièce et pilonnez l'assaut en contrebas. La batterie ennemie brèche la porte de très loin ; les assaillants " +
+    "ne peuvent forcer le passage — le tunnel de la porte — qu'une fois la herse abattue.",
 
-  // ── Légende partagée (base z0='herbe', z1='vide'). Tout est POSÉ PAR L'ASCII (zéro coordonnée) : 'W'=chemin
-  //    de ronde, '4/3/2/1'=paliers de rampe, 'M'=courtine, 'D'=porte — cf. `elevate`/`edgeWalls` ci-dessous. ─────
-  legend: { '~': 'eau', '=': 'planches', P: 'pave', W: 'pierre', M: 'pave', D: 'pave', '1': 'pave', '2': 'pave', '3': 'pave', '4': 'pave' },
-  // Terrain laissé sous un marqueur nettoyé : '@' garde la cour pavée ; A/G/B/K gardent la passerelle 'W'
-  // (sinon le chemin de ronde aurait un TROU sous chaque pièce/archer). k/p/o (champ) → '.' par défaut (herbe).
-  markerFill: { '@': 'P', A: 'W', G: 'W', B: 'W', K: 'W' },
-  // HAUTEURS pilotées par l'ASCII : 'W' (chemin de ronde z1) = ZONE REMPART solide à 4 m, crénelée `mur-en-pierre`
-  // (le rendu en tire face de maçonnerie + crénelure de PÉRIMÈTRE) ; '4/3/2/1' = paliers de la RAMPE (pente à ≤1 m/case).
-  elevate: { W: { height: 4, parapet: 'mur-en-pierre' }, '4': 4, '3': 3, '2': 2, '1': 1 },
-  // ENCEINTE posée par l'ASCII (arête N de la case marquée) : 'M' = courtine `mur-en-pierre`, 'D' = porte brèchable.
-  edgeWalls: { M: { side: 'N', structure: 'mur-en-pierre' }, D: { side: 'N', structure: 'porte-de-ville' } },
+  // ── Légende partagée (base z0='herbe', z1='vide'). '~'=rivière, '='=pont, 'P'=pavé de cour, '4/3/2/1'=paliers
+  //    de la rampe. L'ENCEINTE ('#' mur plein, 'D' porte) est décrite par la RECETTE `cells` ci-dessous. ─────────
+  legend: { '~': 'eau', '=': 'planches', P: 'pave', '1': 'pave', '2': 'pave', '3': 'pave', '4': 'pave' },
+  // Terrain laissé sous un marqueur nettoyé : '@' garde la cour pavée. A/G/B/K (z1) et k/p/o (z0) → '.' par défaut
+  //   (le chemin de ronde SOUS les pièces/archers est auto-posé par `cells`, pas par le fill du marqueur).
+  markerFill: { '@': 'P' },
+  // HAUTEURS pilotées par l'ASCII : SEULE la RAMPE ('4/3/2/1', pente ≤1 m/case). La hauteur du rempart est
+  //   auto-posée par `cells` (bande → zone rempart à 4 m sur z1) — plus aucun 'elevate W'.
+  elevate: { '4': 4, '3': 3, '2': 2, '1': 1 },
+  // ── RECETTE `cells` : une LETTRE = la case COMPLÈTE. '#' = ENCEINTE PLEINE (fondation 'pierre' + zone rempart
+  //   auto sur z1 : bloc solide 4 m + chemin de ronde marchable + crénelure ; le z0 devient impassable). 'D' =
+  //   PORTE : idem mais le z0 reste un TUNNEL passable et une HERSE `porte-de-ville` est posée sur la BOUCHE
+  //   extérieure (arête N, facing:'N' car le champ est AU NORD/en haut) ; intacte elle bloque, abattue → brèche. ─
+  cells: {
+    '#': { terrain: 'pierre', wall: { structure: 'mur-en-pierre', facing: 'N' } },
+    D: { terrain: 'pierre', gate: { structure: 'porte-de-ville', facing: 'N' } },
+  },
 
   // ── Grilles ASCII des 2 étages (RECOPIÉES telles quelles, marqueurs inclus). La RAMPE n'est PAS un marqueur :
-  //    ce sont des cases de cour dont la HAUTEUR monte (posée en `relief`). Marqueurs z0 : '@'=départ · 'k'=canon
-  //    de siège ennemi · 'p'=catapulte ennemie · 'o'=fantassin ennemi. Marqueurs z1 : 'B'=baliste · 'K'=canon ·
-  //    'A'=archer défenseur · 'G'=guetteur (au-dessus de la porte → chute quand la porte cède). ────────────────
+  //    ce sont des cases de cour dont la HAUTEUR monte (`elevate`). Marqueurs z0 : '@'=départ · 'k'=canon de siège
+  //    ennemi · 'p'=catapulte ennemie · 'o'=fantassin ennemi. Marqueurs z1 (sur le chemin de ronde) : 'B'=baliste ·
+  //    'K'=canon · 'A'=archer défenseur · 'G'=guetteur (au-dessus du tunnel de la porte). La BANDE d'enceinte est
+  //    la recette `cells` : '#'=mur plein, 'DD'=porte (cols 14-15), 2 cases d'épaisseur (rangées 37-38). ──────────
   levels: {
     z0: [
-      '..............................',
-      '..............................',
+      '...T....F.....T......F....T...',
+      '............E....E............',
       '........p.....................',
       '..............................',
       '..............................',
@@ -131,13 +141,13 @@ export const spec: MapSpec = {
       '..............................',
       '..............................',
       '..............................',
-      '..............................',
-      'MMMMMMMMMMMMMMDDMMMMMMMMMMMMMM',
-      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
+      '##############DD##############',
+      '##############DD##############',
       'PPP44PPPPPPPPPPPPPPPPPPPPPPPPP',
       'PPP33PPPPPPPPPPPPPPPPPPPPPPPPP',
       'PPP22PPPPPPPPPPPPPPPPPPPPPPPPP',
       'PPP11PPPPPPPPPPPPPPPPPPPPPPPPP',
+      'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
       'PPPPPPPPPPPPPP@PPPPPPPPPPPPPPP',
       'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',
     ].join('\n'),
@@ -179,9 +189,9 @@ export const spec: MapSpec = {
       '..............................',
       '..............................',
       '..............................',
+      '....A.....A...G...A.....A.....',
+      '........B............K........',
       '..............................',
-      'WWWWAWWWWWAWWWGWWWWAWWWWWAWWWW',
-      'WWWWWWWWBWWWWWWWWWWWWKWWWWWWWW',
       '..............................',
       '..............................',
       '..............................',
@@ -192,24 +202,21 @@ export const spec: MapSpec = {
   },
 
   // ── TOUT est POSÉ PAR L'ASCII (zéro coordonnée) ────────────────────────────────────────────────────────────
-  //  • CHEMIN DE RONDE : tuiles 'W' (z1, rows 38-39) marquées ZONE REMPART à 4 m (`elevate`) → face de maçonnerie
-  //    pleine + crénelure de PÉRIMÈTRE (jamais à l'intérieur), INTÉRIEUR au mur. La courtine gameplay est ENSEVELIE.
-  //  • RAMPE : paliers '4/3/2/1' (z0, cols 3-4, rows 40-43) → pente ≤1 m/case (`elevate`), sommet (y40, 4 m) jouxte
-  //    le chemin (y39). • ENCEINTE : 'M'=courtine, 'D'=PORTE brèchable (z0, arête N de la row 38) via `edgeWalls`.
-  //    La porte est une STRUCTURE brèchable (pas de `door`) : intacte elle bloque passage+vue ; abattue → BRÈCHE.
+  //  • ENCEINTE : bande `#`/`DD` (z0, rangées 37-38) → zone rempart auto sur z1 (masse pleine 4 m + chemin de
+  //    ronde marchable + crénelure de PÉRIMÈTRE) ; le z0 sous la bande est IMPASSABLE, sauf le TUNNEL de la porte.
+  //  • RAMPE : paliers '4/3/2/1' (z0, cols 3-4, rows 39-42) → pente ≤1 m/case, sommet (y39, 4 m) jouxte le chemin
+  //    de ronde (y38). DÉPORTÉE de la porte → cour dégagée derrière la porte (zone de mort).
 
-  // ── ENTITÉS à ids FIXES (référencées par les `crew` des emplacements) + décor du CAMP ────────────────────────
+  // ── ENTITÉS à ids FIXES : SEULS les SERVANTS de pièce (`entities`, PAS des marqueurs). Leur id est référencé
+  //    par le `crew` des emplacements ET par le roster de la rencontre → il doit être STABLE (un marqueur en
+  //    générerait un frais). Tout le RESTE (pièces, archers, gobelins, décor du camp) est posé PAR L'ASCII. ──────
   entities: [
-    // Servants de pièce DE REMPART (z1, côté défenseur) — postés à x-1 de leur affût (B(8,39)→(7,39), K(21,39)→(20,39)).
-    gunner('crew-baliste', { x: 7, y: 39 }, 'baliste', 'Servant de baliste', { z: 1 }),
-    gunner('crew-canon', { x: 20, y: 39 }, 'canon-petit', 'Servant de canon', { z: 1 }),
+    // Servants de pièce DE REMPART (z1, côté défenseur) — postés à x-1 de leur affût (B(8,38)→(7,38), K(21,38)→(20,38)).
+    gunner('crew-baliste', { x: 7, y: 38 }, 'baliste', 'Servant de baliste', { z: 1 }),
+    gunner('crew-canon', { x: 20, y: 38 }, 'canon-petit', 'Servant de canon', { z: 1 }),
     // Servants de la BATTERIE assaillante (z0, côté assaut, facing S) — à x-1 de leur affût (k(21,15)→(20,15), p(8,2)→(7,2)).
     gunner('brg-canon', { x: 20, y: 15 }, 'canon-petit', 'Canonnier de siège', { facing: 'S', ref: 'brigand' }),
     gunner('brg-cata', { x: 7, y: 2 }, 'catapulte-petite', 'Servant de catapulte', { facing: 'S', ref: 'brigand' }),
-    // CAMP assaillant (décor, nord).
-    prop('camp-tente-0', 'tente', 3, 0), prop('camp-tente-1', 'tente', 14, 0), prop('camp-tente-2', 'tente', 26, 0),
-    prop('camp-brasero-0', 'brasero', 8, 0), prop('camp-brasero-1', 'brasero', 21, 0),
-    prop('camp-etendard-0', 'etendard', 12, 1), prop('camp-etendard-1', 'etendard', 17, 1),
   ],
 
   // ── BINDS des marqueurs → poses. Archers/guetteur = PNJ alliés-IA (arcs). Emplacements = affûts INERTES servis
@@ -221,7 +228,7 @@ export const spec: MapSpec = {
       entity: { kind: 'personnage', ref: 'garde-du-village', weapon: 'Arc', facing: 'N', z: 1, label: 'Archer du guet' },
       member: { enc: 'assaut', side: 'ally', ai: true },
     },
-    // Guetteur au-dessus de la porte (chute à la brèche).
+    // Guetteur au-dessus du tunnel de la porte (chemin de ronde continu au-dessus de la brèche).
     G: {
       entity: { kind: 'personnage', ref: 'garde-du-village', weapon: 'Arc', facing: 'N', z: 1, label: 'Guetteur du corps de garde' },
       member: { enc: 'assaut', side: 'ally', ai: true },
@@ -234,6 +241,10 @@ export const spec: MapSpec = {
     p: { emplacement: 'catapulte-petite', crew: 'brg-cata', facing: 'S', member: { enc: 'assaut', side: 'enemy' } },
     // Fantassins gobelins (z0) : assaut ennemi qui traverse le pont et s'amasse à la porte.
     o: { entity: { kind: 'personnage', ref: 'gobelin', facing: 'S' }, member: { enc: 'assaut', side: 'enemy' } },
+    // CAMP assaillant (décor PUR, rangées 0-1) : tentes / braséros / étendards — POSÉS PAR L'ASCII (zéro coordonnée).
+    T: { kind: 'prop', ref: 'tente' },
+    F: { kind: 'prop', ref: 'brasero' },
+    E: { kind: 'prop', ref: 'etendard' },
   },
 
   // ── RENCONTRE : le roster des servants (alliés-IA au rempart ; brigands ennemis à la batterie) — le RESTE
