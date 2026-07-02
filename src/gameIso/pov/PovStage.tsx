@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useGame } from '../../state/store';
 import { isIndoor } from '../../state/scene';
+import { sceneIsDark } from '../../state/sceneRules';
 import { computeStateVisible, sceneLightField } from '../../state/visionState';
 import { makeCamera, VW, VH } from './camera';
 import { buildPovDrawList } from './geometry';
@@ -12,9 +13,9 @@ import type { DrawItem } from './geometry';
 /** Nœud SVG d'une pièce de géométrie (tracé LOD matériaux OU polygone plein) — sa clé stable = `d.key`. */
 function drawNode(d: DrawItem): JSX.Element {
   return d.path ? (
-    <path key={d.key} d={d.path} fill={d.fill ?? 'none'} stroke={d.stroke} strokeWidth={d.strokeW} strokeLinecap="round" />
+    <path key={d.key} className={d.cls} d={d.path} fill={d.fill ?? 'none'} stroke={d.stroke} strokeWidth={d.strokeW} strokeLinecap="round" />
   ) : (
-    <polygon key={d.key} points={d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
+    <polygon key={d.key} className={d.cls} points={d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} fill={d.fill} />
   );
 }
 
@@ -46,7 +47,9 @@ export function PovStage() {
     const input = { scene, battle: null, party, partyPos, gameTime, lightLevel };
     const visible = computeStateVisible(input);
     const { light } = sceneLightField(input);
-    return { cam, visible, draw: buildPovDrawList(scene, cam, visible, light) };
+    // Nuit = mise en scène `lightLevel` (≤ 0.5) sinon l'obscurité d'horloge (`sceneIsDark`) → vitres allumées.
+    const night = lightLevel != null ? lightLevel <= 0.5 : sceneIsDark(scene, gameTime);
+    return { cam, visible, draw: buildPovDrawList(scene, cam, visible, light, night) };
   }, [scene, partyPos, dir, party, gameTime, lightLevel]);
 
   if (!scene || !view) return null;

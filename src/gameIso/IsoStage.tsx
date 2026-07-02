@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
 import { heightAt, sceneMetresPerTile } from '../state/scene';
+import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
 import { computeStateVisible } from '../state/visionState';
 import { Combatant } from '../engine/types';
@@ -119,7 +120,9 @@ export function IsoStage() {
   // ── MATÉRIAUX v2 : palier de LOD (zoom) + defs de motifs (dépendent de la PROJECTION) ───────────
   const lod = lodOf(zoom);
   const mpt = scene ? sceneMetresPerTile(scene) : 2;
-  const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt }), [lod, mpt]);
+  // Nuit (fenêtres allumées) : mise en scène `lightLevel` (≤ 0.5) sinon l'obscurité d'horloge (`sceneIsDark`).
+  const night = scene ? (lightLevel != null ? lightLevel <= 0.5 : sceneIsDark(scene, gameTime)) : false;
+  const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt, night }), [lod, mpt, night]);
   const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: shownRot, view: viewMode, edge: shownEdge }), [scene, shownRot, viewMode, shownEdge]);
   const patternDefs = useMemo(() => (scene && lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, dims, mpt]);
 

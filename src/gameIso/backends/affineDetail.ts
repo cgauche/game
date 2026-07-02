@@ -34,8 +34,9 @@ export const lodOf = (zoom: number): Lod => (zoom < 0.5 ? 0 : zoom < 0.7 ? 1 : 2
 export const LOD_ZOOM: readonly [number, number, number] = [0.4, 0.6, 1];
 
 /** Options de rendu des backends affines : `zoom` pilote le LOD, `mpt` = mètres par case de la scène
- *  (échelle des recettes métriques). Absents ⇒ plein détail à l'échelle RAW (QC, scripts). */
-export interface DetailOpts { zoom?: number; mpt?: number }
+ *  (échelle des recettes métriques), `night` = ambiance nocturne (vitres de fenêtre allumées, ambrées
+ *  émissives). Absents ⇒ plein détail à l'échelle RAW, de JOUR (QC, scripts). */
+export interface DetailOpts { zoom?: number; mpt?: number; night?: boolean }
 export const detailOf = (opts?: DetailOpts): { lod: Lod; mpt: number } => ({ lod: lodOf(opts?.zoom ?? 1), mpt: opts?.mpt ?? 2 });
 
 // ── Constantes du motif ──────────────────────────────────────────────────────────────────────────────

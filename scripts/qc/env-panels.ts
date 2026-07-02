@@ -74,17 +74,18 @@ export function allVisible(scene: Scene): Set<string> {
   return vis;
 }
 
-export function povPanel(scene: Scene, eye: { x: number; y: number; z?: number }, cap: Dir8): Panel {
+export function povPanel(scene: Scene, eye: { x: number; y: number; z?: number }, cap: Dir8, night = false): Panel {
   const cam = makeCamera(scene, eye, cap);
   const visible = allVisible(scene);
-  const draw = buildPovDrawList(scene, cam, visible, { at: () => 1 });
+  const draw = buildPovDrawList(scene, cam, visible, { at: () => (night ? 0.3 : 1) }, night);
   // Fond = ciel dégradé (extérieur) / sombre (intérieur), comme PovStage (`pov-sky` : defs d'ambiance).
-  const bg = `<rect width="${VW}" height="${VH}" fill="${isIndoor(scene) ? AMBIANCE.pov.fogIndoor : 'url(#pov-sky)'}"/>`;
+  const bg = `<rect width="${VW}" height="${VH}" fill="${night ? '#0e1420' : isIndoor(scene) ? AMBIANCE.pov.fogIndoor : 'url(#pov-sky)'}"/>`;
+  const cls = (d: { cls?: string }) => (d.cls ? ` class="${d.cls}"` : '');
   const polys = draw
     .map((d) =>
       d.path
-        ? `<path d="${d.path}" fill="${d.fill ?? 'none'}" stroke="${d.stroke ?? 'none'}" stroke-width="${d.strokeW ?? 0}" stroke-linecap="round"/>`
-        : `<polygon points="${d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="${d.fill}"/>`,
+        ? `<path d="${d.path}" fill="${d.fill ?? 'none'}" stroke="${d.stroke ?? 'none'}" stroke-width="${d.strokeW ?? 0}" stroke-linecap="round"${cls(d)}/>`
+        : `<polygon points="${d.points!.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="${d.fill}"${cls(d)}/>`,
     )
     .join('');
   // Props en billboards du MÊME SVG iso (noyau pur partagé avec PovStage) — le décor peuple le POV.

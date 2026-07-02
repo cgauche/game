@@ -26,6 +26,15 @@ const CAP_FRAC = 0.86; // couronnement (bande haute)
 const CAP_LIP_PX = 4; // lèvre du couronnement au-dessus du sommet
 const FRAME_PX = 1.3; // épaisseur de la moulure (trait historique)
 const CHAMBRANLE_PX = 4; // linteau de porte bois
+// VANTAIL d'une porte FERMÉE : panneau bois entre les jambages [LEAF_T0,LEAF_T1], 3 joints de planches
+// verticaux (demi-largeur PLANK_HALF_T) et une poignée [HANDLE_T0,HANDLE_T1] à mi-hauteur.
+const LEAF_T0 = 0.16, LEAF_T1 = 0.84, PLANK_HALF_T = 0.012;
+const PLANK_TS = [0.34, 0.5, 0.66]; // positions des joints de planches (fraction d'arête)
+const HANDLE_T0 = 0.74, HANDLE_T1 = 0.8, HANDLE_LO = 0.42, HANDLE_HI = 0.56; // poignée
+// FENÊTRE (croisée) sertie dans la face PLEINE : rectangle [WIN_T0,WIN_T1]×[WIN_LO,WIN_HI] (fraction
+// d'arête × de WALL_H), cadre débordant de WIN_FRAME_T/WIN_FRAME_PX, meneau + traverse (demi-tailles).
+const WIN_T0 = 0.3, WIN_T1 = 0.7, WIN_LO = 0.42, WIN_HI = 0.8;
+const WIN_FRAME_T = 0.03, WIN_FRAME_PX = 2.4, MULLION_HALF_T = 0.02, MULLION_HALF_PX = 2;
 const TRAVERSE_PX = 2; // traverse de fer d'une herse
 /** Demi-largeur d'un BARREAU de herse (fraction d'arête) — l'affine retrace la ligne médiane (1.7 px). */
 const BAR_HALF_T = 0.02;
@@ -83,7 +92,7 @@ export function crownFaces(app: StructureAppearanceDef, A: GXY, B: GXY, baseH: n
  *  2,25 m ; une PORTE/courtine de rempart passe le DROP de la zone, ex. 4 m, pour monter jusqu'au chemin
  *  de ronde). Les hauteurs px des defs passent par `isoPxToM` (une seule vérité px⇔m). Un montant
  *  (poteau/jambage) = 2 points [haut, bas] — le backend lui donne sa largeur. */
-function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: boolean, wallHeightM = WALL_H_M): Face[] {
+function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: boolean, wallHeightM = WALL_H_M, open = false): Face[] {
   const [A, B] = wallEnds(seg);
   const at = (t: number): GXY => ({ x: A.x + (B.x - A.x) * t, y: A.y + (B.y - A.y) * t });
   const mat = (part: WallPart) => ({ domain: 'structure' as const, id: app.id, part });
@@ -144,14 +153,42 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
   if (down) return breach();
   if (seg.door) {
     const op = wallHeightM * (app.door?.openingFrac ?? DOOR_FRAC);
+    // OUVERTE → embrasure béante (le passage se voit) ; FERMÉE → VANTAIL (panneau + planches + poignée)
+    // pour que la porte se LISE comme une porte, pas comme un trou.
+    const leaf: Face[] = open
+      ? [slab('embrasure', b, b + op)]
+      : [
+          span('vantail', LEAF_T0, LEAF_T1, b, b + op),
+          ...PLANK_TS.map((t) => span('vantail-planche', t - PLANK_HALF_T, t + PLANK_HALF_T, b, b + op)),
+          span('poignee', HANDLE_T0, HANDLE_T1, b + op * HANDLE_LO, b + op * HANDLE_HI),
+        ];
     return [
       upright('poteau', 0, b, H1),
-      slab('embrasure', b, b + op),
+      ...leaf,
       slab('face', b + op, H1),
       slab('chambranle', b + op, b + op + isoPxToM(CHAMBRANLE_PX)),
       slab('couronnement', b + wallHeightM * CAP_FRAC, H1),
       upright('jambage', 0, b, b + op),
       upright('jambage', 1, b, b + op),
+      upright('poteau', 1, b, H1),
+    ];
+  }
+  if (seg.window) {
+    // FENÊTRE : face PLEINE (le mur reste plein — vitre sertie, aucune ouverture) + croisée encadrée dans
+    // la moitié haute. Cadre → vitre → meneau vertical + traverse (croisillon 4 carreaux).
+    const winLo = b + wallHeightM * WIN_LO, winHi = b + wallHeightM * WIN_HI;
+    const midT = (WIN_T0 + WIN_T1) / 2, midV = (winLo + winHi) / 2;
+    const fpx = isoPxToM(WIN_FRAME_PX), mpx = isoPxToM(MULLION_HALF_PX);
+    return [
+      upright('poteau', 0, b, H1),
+      slab('face', b, H1),
+      span('croisee-cadre', WIN_T0 - WIN_FRAME_T, WIN_T1 + WIN_FRAME_T, winLo - fpx, winHi + fpx),
+      span('vitre', WIN_T0, WIN_T1, winLo, winHi),
+      span('meneau', midT - MULLION_HALF_T, midT + MULLION_HALF_T, winLo, winHi), // meneau vertical
+      span('meneau', WIN_T0, WIN_T1, midV - mpx, midV + mpx), // traverse horizontale
+      slab('plinthe', b, b + wallHeightM * SKIRT_FRAC),
+      slab('couronnement', b + wallHeightM * CAP_FRAC, H1),
+      slab('couronnement', H1, H1 + isoPxToM(CAP_LIP_PX)),
       upright('poteau', 1, b, H1),
     ];
   }
@@ -288,7 +325,7 @@ export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: F
       door: !!w.door,
       appearance: app.id,
       ends: [{ ...A, h: baseH }, { ...B, h: baseH }],
-      faces: wallFaces(w, app, baseH, down),
+      faces: wallFaces(w, app, baseH, down, WALL_H_M, open),
       states: { visible: vis, down, open },
     });
   }

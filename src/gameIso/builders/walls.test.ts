@@ -96,6 +96,50 @@ describe('buildWalls — porte BOIS (routée par le seg.door)', () => {
   });
 });
 
+describe('buildWalls — porte FERMÉE = VANTAIL (se lit comme une porte, pas un trou)', () => {
+  it('closed → vantail + 3 planches + poignée à la place de l’embrasure béante', () => {
+    const el = one(sceneWith([{ x: 2, y: 2, side: 'N', door: true, closed: true }]));
+    const p = parts(el);
+    expect(p).toContain('vantail');
+    expect(p.filter((x) => x === 'vantail-planche')).toHaveLength(3);
+    expect(p).toContain('poignee');
+    expect(p).not.toContain('embrasure'); // le trou est bouché par le vantail
+    expect(el.states.open).toBe(false);
+    // le vantail remplit l’ouverture (0 → 0.52 × WALL_H_M) entre les jambages.
+    const leaf = facesOf(el, 'vantail')[0];
+    expect(leaf.poly.map((pt) => pt.h)).toEqual([WALL_H_M * 0.52, WALL_H_M * 0.52, 0, 0]);
+  });
+  it('OUVERTE → embrasure béante (le passage se voit), aucun vantail', () => {
+    const p = parts(one(sceneWith([{ x: 2, y: 2, side: 'N', door: true }])));
+    expect(p).toContain('embrasure');
+    expect(p).not.toContain('vantail');
+  });
+});
+
+describe('buildWalls — mur FENÊTRÉ (window décoratif serti dans la face pleine)', () => {
+  const el = one(sceneWith([{ x: 2, y: 2, side: 'N', window: true }]));
+  it('face PLEINE + croisée (cadre + vitre + meneau vertical + traverse)', () => {
+    const p = parts(el);
+    expect(p).toContain('face'); // la face pleine est CONSERVÉE (un mur fenêtré bloque comme un mur nu)
+    expect(p).toContain('croisee-cadre');
+    expect(p).toContain('vitre');
+    expect(p.filter((x) => x === 'meneau')).toHaveLength(2); // meneau vertical + traverse horizontale
+    expect(el.states.open).toBe(false); // une fenêtre n’ouvre JAMAIS l’arête
+  });
+  it('la vitre est un quad dans la moitié HAUTE de la face (0.42 → 0.8 × WALL_H_M)', () => {
+    const v = facesOf(el, 'vitre')[0];
+    expect(v.poly).toHaveLength(4);
+    const hs = v.poly.map((pt) => pt.h);
+    expect(Math.min(...hs)).toBeCloseTo(WALL_H_M * 0.42, 6);
+    expect(Math.max(...hs)).toBeCloseTo(WALL_H_M * 0.8, 6);
+  });
+  it('la face pleine reste identique à celle d’un mur nu (aucune découpe)', () => {
+    const plain = facesOf(one(sceneWith([{ x: 2, y: 2, side: 'N' }])), 'face')[0];
+    const win = facesOf(el, 'face')[0];
+    expect(win.poly.map((p) => p.h)).toEqual(plain.poly.map((p) => p.h));
+  });
+});
+
 describe('buildWalls — fortification de PIERRE (def à parapet)', () => {
   const def = structureAppearance('mur-en-pierre');
   const el = one(sceneWith([{ x: 2, y: 2, side: 'N', structure: 'mur-en-pierre' }]));

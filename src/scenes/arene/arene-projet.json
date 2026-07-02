@@ -4821,6 +4821,95 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 4,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 5,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 6,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 7,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 8,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 9,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 10,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 11,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 12,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 14,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 15,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 16,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 17,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 3,
      "y": 13,
      "side": "N",
@@ -4828,31 +4917,14 @@
     },
     {
      "x": 4,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 4,
      "y": 13,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 5,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 5,
      "y": 13,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 6,
-     "y": 3,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -4864,21 +4936,10 @@
     },
     {
      "x": 7,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
      "y": 13,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 8,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 8,
@@ -4888,19 +4949,7 @@
     },
     {
      "x": 9,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 9,
      "y": 13,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 10,
-     "y": 3,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -4912,19 +4961,7 @@
     },
     {
      "x": 11,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 11,
      "y": 13,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 12,
-     "y": 3,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -4936,31 +4973,14 @@
     },
     {
      "x": 13,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
      "y": 13,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 14,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 14,
      "y": 13,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 15,
-     "y": 3,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -4972,21 +4992,10 @@
     },
     {
      "x": 16,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 16,
      "y": 13,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 17,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 17,
@@ -5001,31 +5010,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 17,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 2,
      "y": 4,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 17,
-     "y": 4,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 2,
-     "y": 5,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 17,
      "y": 5,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5037,31 +5029,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 17,
-     "y": 6,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 2,
      "y": 7,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 17,
-     "y": 7,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 2,
-     "y": 8,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 17,
      "y": 8,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5073,31 +5048,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 17,
-     "y": 9,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 2,
      "y": 10,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 17,
-     "y": 10,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 2,
-     "y": 11,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 17,
      "y": 11,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5105,6 +5063,63 @@
     {
      "x": 2,
      "y": 12,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 4,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 17,
+     "y": 5,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 6,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 7,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 17,
+     "y": 8,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 9,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 17,
+     "y": 10,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 17,
+     "y": 11,
      "side": "E",
      "structure": "mur-en-bois"
     },
@@ -5121,6 +5136,82 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 35,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 36,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 37,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 38,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 39,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 40,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 41,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 42,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 43,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 44,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 45,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 34,
      "y": 14,
      "side": "N",
@@ -5128,31 +5219,14 @@
     },
     {
      "x": 35,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 35,
      "y": 14,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 36,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 36,
      "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 37,
-     "y": 3,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5164,31 +5238,14 @@
     },
     {
      "x": 38,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 38,
      "y": 14,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 39,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 39,
      "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 40,
-     "y": 3,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5200,31 +5257,14 @@
     },
     {
      "x": 41,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 41,
      "y": 14,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 42,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 42,
      "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 43,
-     "y": 3,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5236,21 +5276,10 @@
     },
     {
      "x": 44,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 44,
      "y": 14,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 45,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 45,
@@ -5260,12 +5289,6 @@
     },
     {
      "x": 46,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
      "y": 14,
      "side": "N",
      "structure": "mur-en-bois"
@@ -5277,31 +5300,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 46,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 33,
      "y": 4,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
-     "y": 4,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 33,
-     "y": 5,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
      "y": 5,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5313,31 +5319,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 46,
-     "y": 6,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 33,
      "y": 7,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
-     "y": 7,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 33,
-     "y": 8,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
      "y": 8,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5349,22 +5338,11 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 46,
-     "y": 9,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 33,
      "y": 10,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
-     "y": 10,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 33,
@@ -5373,19 +5351,7 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 46,
-     "y": 11,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 33,
-     "y": 12,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
      "y": 12,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5393,6 +5359,69 @@
     {
      "x": 33,
      "y": 13,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 4,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 46,
+     "y": 5,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 6,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 7,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 46,
+     "y": 8,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 9,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 10,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 46,
+     "y": 11,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 12,
      "side": "E",
      "structure": "mur-en-bois"
     },
@@ -5409,6 +5438,69 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 4,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 5,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 6,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 7,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 8,
+     "y": 27,
+     "side": "N",
+     "door": true
+    },
+    {
+     "x": 9,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 10,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 11,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 12,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 3,
      "y": 36,
      "side": "N",
@@ -5416,31 +5508,14 @@
     },
     {
      "x": 4,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 4,
      "y": 36,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 5,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 5,
      "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 6,
-     "y": 27,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5452,31 +5527,14 @@
     },
     {
      "x": 7,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
      "y": 36,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 8,
-     "y": 27,
-     "side": "N",
-     "door": true
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 8,
      "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 9,
-     "y": 27,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5488,21 +5546,10 @@
     },
     {
      "x": 10,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 10,
      "y": 36,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 11,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 11,
@@ -5512,19 +5559,7 @@
     },
     {
      "x": 12,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 12,
      "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
-     "y": 27,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5541,31 +5576,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 13,
-     "y": 27,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 2,
      "y": 28,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
-     "y": 28,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 2,
-     "y": 29,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
      "y": 29,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5577,31 +5595,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 13,
-     "y": 30,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 2,
      "y": 31,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
-     "y": 31,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 2,
-     "y": 32,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
      "y": 32,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5613,28 +5614,68 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 13,
-     "y": 33,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 2,
      "y": 34,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
-     "y": 34,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 2,
      "y": 35,
      "side": "E",
      "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 27,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 28,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 13,
+     "y": 29,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 30,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 31,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 13,
+     "y": 32,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 33,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 13,
+     "y": 34,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 13,
@@ -5649,32 +5690,15 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 36,
-     "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 37,
      "y": 27,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 37,
-     "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 38,
      "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 38,
-     "y": 36,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5685,22 +5709,11 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 39,
-     "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 40,
      "y": 27,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 40,
-     "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 41,
@@ -5709,6 +5722,69 @@
      "door": true
     },
     {
+     "x": 42,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 43,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 44,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 45,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 27,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 36,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 37,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 38,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 39,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 40,
+     "y": 36,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
      "x": 41,
      "y": 36,
      "side": "N",
@@ -5716,19 +5792,7 @@
     },
     {
      "x": 42,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 42,
      "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 43,
-     "y": 27,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5736,13 +5800,8 @@
      "x": 43,
      "y": 36,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 44,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 44,
@@ -5752,19 +5811,7 @@
     },
     {
      "x": 45,
-     "y": 27,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 45,
      "y": 36,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
-     "y": 27,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -5781,31 +5828,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 46,
-     "y": 27,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 35,
      "y": 28,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
-     "y": 28,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 35,
-     "y": 29,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
      "y": 29,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5817,31 +5847,14 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 46,
-     "y": 30,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 35,
      "y": 31,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
-     "y": 31,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 35,
-     "y": 32,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
      "y": 32,
      "side": "E",
      "structure": "mur-en-bois"
@@ -5853,28 +5866,68 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 46,
-     "y": 33,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 35,
      "y": 34,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 46,
-     "y": 34,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 35,
      "y": 35,
      "side": "E",
      "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 27,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 28,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 46,
+     "y": 29,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 30,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 31,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 46,
+     "y": 32,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 33,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 46,
+     "y": 34,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 46,
@@ -23482,6 +23535,19 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 4,
+     "y": 2,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 5,
+     "y": 2,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 3,
      "y": 5,
      "side": "N",
@@ -23489,24 +23555,12 @@
     },
     {
      "x": 4,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 4,
      "y": 5,
      "side": "N",
      "door": true
     },
     {
      "x": 5,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 5,
      "y": 5,
      "side": "N",
      "structure": "mur-en-bois"
@@ -23518,28 +23572,30 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 5,
-     "y": 2,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 2,
      "y": 3,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 5,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 2,
      "y": 4,
      "side": "E",
      "structure": "mur-en-bois"
+    },
+    {
+     "x": 5,
+     "y": 2,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 5,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 5,
@@ -23554,6 +23610,19 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 13,
+     "y": 2,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 14,
+     "y": 2,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 12,
      "y": 5,
      "side": "N",
@@ -23561,24 +23630,12 @@
     },
     {
      "x": 13,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 13,
      "y": 5,
      "side": "N",
      "door": true
     },
     {
      "x": 14,
-     "y": 2,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 14,
      "y": 5,
      "side": "N",
      "structure": "mur-en-bois"
@@ -23590,28 +23647,30 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 14,
-     "y": 2,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 11,
      "y": 3,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 14,
-     "y": 3,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 11,
      "y": 4,
      "side": "E",
      "structure": "mur-en-bois"
+    },
+    {
+     "x": 14,
+     "y": 2,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 14,
+     "y": 3,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 14,
@@ -23626,6 +23685,19 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 23,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 24,
+     "y": 3,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 22,
      "y": 6,
      "side": "N",
@@ -23633,21 +23705,10 @@
     },
     {
      "x": 23,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 23,
      "y": 6,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 24,
-     "y": 3,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 24,
@@ -23662,28 +23723,29 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 21,
+     "y": 4,
+     "side": "E",
+     "door": true
+    },
+    {
+     "x": 21,
+     "y": 5,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 24,
      "y": 3,
      "side": "E",
      "structure": "mur-en-bois"
     },
     {
-     "x": 21,
-     "y": 4,
-     "side": "E",
-     "door": true
-    },
-    {
      "x": 24,
      "y": 4,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 21,
-     "y": 5,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 24,
@@ -23698,6 +23760,31 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 26,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 27,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 28,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 29,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 25,
      "y": 18,
      "side": "N",
@@ -23705,21 +23792,10 @@
     },
     {
      "x": 26,
-     "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 26,
      "y": 18,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 27,
-     "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 27,
@@ -23729,19 +23805,7 @@
     },
     {
      "x": 28,
-     "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 28,
      "y": 18,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 29,
-     "y": 14,
      "side": "N",
      "structure": "mur-en-bois"
     },
@@ -23758,38 +23822,40 @@
      "structure": "mur-en-bois"
     },
     {
-     "x": 29,
-     "y": 14,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
      "x": 24,
      "y": 15,
      "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 29,
-     "y": 15,
-     "side": "E",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 24,
      "y": 16,
      "side": "E",
      "door": true
-    },
-    {
-     "x": 29,
-     "y": 16,
-     "side": "E",
-     "structure": "mur-en-bois"
     },
     {
      "x": 24,
      "y": 17,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 29,
+     "y": 14,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 29,
+     "y": 15,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 29,
+     "y": 16,
      "side": "E",
      "structure": "mur-en-bois"
     },
@@ -23806,6 +23872,19 @@
      "structure": "mur-en-bois"
     },
     {
+     "x": 6,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 7,
+     "y": 14,
+     "side": "N",
+     "structure": "mur-en-bois"
+    },
+    {
      "x": 5,
      "y": 17,
      "side": "N",
@@ -23813,21 +23892,10 @@
     },
     {
      "x": 6,
-     "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 6,
      "y": 17,
      "side": "N",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
-     "y": 14,
-     "side": "N",
-     "structure": "mur-en-bois"
+     "structure": "mur-en-bois",
+     "window": true
     },
     {
      "x": 7,
@@ -23837,12 +23905,6 @@
     },
     {
      "x": 4,
-     "y": 14,
-     "side": "E",
-     "structure": "mur-en-bois"
-    },
-    {
-     "x": 7,
      "y": 14,
      "side": "E",
      "structure": "mur-en-bois"
@@ -23850,6 +23912,19 @@
     {
      "x": 4,
      "y": 15,
+     "side": "E",
+     "structure": "mur-en-bois",
+     "window": true
+    },
+    {
+     "x": 4,
+     "y": 16,
+     "side": "E",
+     "structure": "mur-en-bois"
+    },
+    {
+     "x": 7,
+     "y": 14,
      "side": "E",
      "structure": "mur-en-bois"
     },
@@ -23858,12 +23933,6 @@
      "y": 15,
      "side": "E",
      "door": true
-    },
-    {
-     "x": 4,
-     "y": 16,
-     "side": "E",
-     "structure": "mur-en-bois"
     },
     {
      "x": 7,

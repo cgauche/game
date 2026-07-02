@@ -8,8 +8,8 @@
  */
 import { CELL, WALL_H_M, depth, diamondPath, isoPxToM, isSquareView, tileCenter, type Dims } from '../iso';
 import { metricToLift } from '../../state/relief';
-import { structureAppearance, wallPartColor, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
-import { shade, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';
+import { structureAppearance, wallPartColor, windowLit, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
+import { shade, spec, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';
 import { detailOf, coursesOverlaySvg, timberOverlaySvg, verticalAccentsSvg, type DetailOpts } from './affineDetail';
 import { hash32 } from '../detail/hash';
 import type { Face, WallEl } from '../builders/types';
@@ -26,7 +26,10 @@ const FRAME_W = 1.3, BAR_W = 1.7; // moulure bois / barreau de herse (lignes mé
 /** Parties ombrées par ORIENTATION (arête N assombrie) — mêmes que l'ex-houseWallIso. La PIERRE (hex
  *  depuis la palette unifiée du JSON) est désormais ombrée comme le bois : sa face N recule dans l'ombre,
  *  la lecture 3D « dessiné main » prime sur l'ancien aplat brut. */
-const TINTED: ReadonlySet<WallPart> = new Set(['face', 'panneau', 'moulure', 'plinthe', 'couronnement']);
+const TINTED: ReadonlySet<WallPart> = new Set([
+  'face', 'panneau', 'moulure', 'plinthe', 'couronnement',
+  'croisee-cadre', 'meneau', 'vantail', 'vantail-planche', 'poignee', // fenêtre + vantail : bois/pierre, ombrés par l'orientation
+]);
 
 /** Parties MAÇONNÉES recevant le motif d'appareillage quand la def porte une recette — SOURCE UNIQUE
  *  des deux backends (motif affine LOD ≥ 1, joints/trapèzes du LOD de distance POV). */
@@ -61,6 +64,23 @@ function jambSvg(top: Pt2, bot: Pt2, app: StructureAppearanceDef): string {
     `<rect x="${x}" y="${top[1]}" width="${JAMB_W}" height="${JAMB_CAP_H}" fill="${app.door?.jambCap ?? shade(app.face, JAMBCAP)}"/>`;
 }
 
+/** VITRE d'une croisée : verre FROID le jour (léger reflet en haut-gauche via `spec`), AMBRÉ ÉMISSIF la
+ *  nuit (halo pulsé + scintillement — classes `glow`/`warm` d'anim.css, GLOBALES iso+POV : signal de
+ *  bâtiment fort). Le poly = [hautA, hautB, basB, basA] projeté. */
+function glassSvg(p: Pt2[], app: StructureAppearanceDef, tintK: number, night: boolean): string {
+  const poly = polyPts(p);
+  if (night) {
+    const lit = windowLit(app);
+    const cx = (p[0][0] + p[1][0] + p[2][0] + p[3][0]) / 4, cy = (p[0][1] + p[1][1] + p[2][1] + p[3][1]) / 4;
+    const r = Math.hypot(p[1][0] - p[0][0], p[1][1] - p[0][1]) * 0.7 + 3;
+    return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="${lit}" opacity="0.4" class="glow"/>` +
+      `<polygon points="${poly}" fill="${lit}" class="warm"/>`;
+  }
+  const day = shade(wallPartColor(app, 'vitre'), tintK);
+  const sheen = `<polygon points="${polyPts([p[0], mid(p[0], p[1]), mid(p[0], p[3])])}" fill="${spec(0.16)}"/>`; // reflet du coin haut-gauche
+  return `<polygon points="${poly}" fill="${day}"/>` + sheen;
+}
+
 /** Une face du pivot en SVG. Quads = polygones remplis (+ liseré par partie) ; montants (2 points) =
  *  rects de largeur fixe ; moulure/barreau = leur LIGNE MÉDIANE (trait historique 1.3/1.7 px). Une
  *  partie MAÇONNÉE d'une def à recette reçoit PAR-DESSUS son motif d'appareillage partagé (LOD ≥ 1). */
@@ -69,6 +89,7 @@ function faceSvg(f: Face, el: WallEl, app: StructureAppearanceDef, tintK: number
   const p = f.poly.map((gp) => projGP(gp, dims));
   if (part === 'poteau') return postSvg(p[0], p[1], app);
   if (part === 'jambage') return jambSvg(p[0], p[1], app);
+  if (part === 'vitre') return glassSvg(p, app, tintK, !!opts?.night);
   if (part === 'moulure') return line(mid(p[0], p[3]), mid(p[1], p[2]), shade(wallPartColor(app, part), tintK), FRAME_W);
   if (part === 'herse-barreau') return line(mid(p[2], p[3]), mid(p[0], p[1]), wallPartColor(app, part), BAR_W);
   const base = wallPartColor(app, part);

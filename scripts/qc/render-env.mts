@@ -13,11 +13,32 @@ import { DEFS } from '../../src/gameIso/sprites';
 import { povAmbianceDefs } from '../../src/gameIso/catalog/ambiance';
 import { type Rot } from '../../src/gameIso/iso';
 import { type Scene } from '../../src/state/scene';
+import { buildScene } from '../../src/state/mapSpec';
 import { envPanel, povPanel, partyStart, capsToward } from './env-panels';
 import { scenario as siege } from '../../src/scenes/test-scenarios/siege-explore';
 import { scenario as arene } from '../../src/scenes/test-scenarios/arene';
 import { scenario as opera } from '../../src/scenes/test-scenarios/opera';
 import { scenario as caveau } from '../../src/scenes/test-scenarios/piege-caveau';
+
+// VITRINE BÂTIMENTS : petit bourg construit par `addBuilding` (via `rooms`) — 3 bâtiments à murs bois
+// avec PORTE et FENÊTRES décoratives (posées automatiquement par `addBuilding`). Prouve que les pans se
+// lisent comme des maisons (croisées + porte à vantail) en iso rot0-3, edge, top, POV jour ET nuit.
+const vitrine: Scene = buildScene({
+  size: [30, 24],
+  id: 'vitrine-batiments',
+  nom: 'Vitrine — bâtiments (fenêtres + portes)',
+  ambiance: 'exterieur',
+  terrain: 'herbe',
+  heroStart: { x: 24, y: 22 }, // œil POV sous la maison → sa façade (porte fermée + fenêtres) plein cadre
+  // Deux portes FERMÉES (vantail visible) : taverne (canon 10,13,N) + maison (canon 24,11,N). La forge
+  // reste ouverte (embrasure) pour le contraste. Clés = `__door_<x>_<y>_<side>_<z>`.
+  flags: { '__door_10_13_N_0': false, '__door_24_11_N_0': false },
+  rooms: [
+    { foot: [3, 3, 15, 10], style: 'taverne', door: { x: 10, y: 12, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Taverne', id: 'vit-taverne' },
+    { foot: [21, 4, 7, 7], style: 'maison', door: { x: 24, y: 10, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', id: 'vit-maison' },
+    { foot: [5, 16, 10, 5], style: 'forge', door: { x: 9, y: 16, side: 'N' }, wallStructure: 'mur-en-bois', floor: 'plancher', id: 'vit-forge' },
+  ],
+});
 
 // ── Planche contact : grille 4×3 de panneaux étiquetés, réduits pour tenir ≤ ~4800 px de large ───────
 const CELL_W = 1180;
@@ -37,6 +58,7 @@ function renderSheet(scene: Scene) {
     { label: 'top', p: envPanel(scene, { ...scene.dimensions, view: 'top' }) },
     { label: `POV (${eye.x},${eye.y}) → ${cap1}`, p: povPanel(scene, eye, cap1) },
     { label: `POV (${eye.x},${eye.y}) → ${cap2}`, p: povPanel(scene, eye, cap2) },
+    { label: `POV NUIT → ${cap1} (fenêtres allumées)`, p: povPanel(scene, eye, cap1, true) },
   ];
   const rows = Math.ceil(panels.length / COLS);
   const W = COLS * CELL_W;
@@ -74,3 +96,4 @@ function renderSheet(scene: Scene) {
 }
 
 for (const scn of [siege, arene, opera, caveau]) renderSheet(scn.scene);
+renderSheet(vitrine);

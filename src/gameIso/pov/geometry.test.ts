@@ -206,9 +206,27 @@ describe('buildPovDrawList', () => {
     // Porte SANS `closed` → ouverte par défaut (doorIsOpen) → passage béant, pas de mur devant.
     s.walls = [{ x: 6, y: 7, side: 'N', door: true }];
     expect(buildPovDrawList(s, cam, visible, LIGHT).some((it) => it.kind === 'wall')).toBe(false);
-    // Fermée → un vantail (mur) apparaît.
+    // Fermée → un VANTAIL (panneau + planches + poignée) apparaît, plus une embrasure béante.
     s.walls = [{ x: 6, y: 7, side: 'N', door: true, closed: true }];
-    expect(buildPovDrawList(s, cam, visible, LIGHT).some((it) => it.kind === 'wall')).toBe(true);
+    const keys = buildPovDrawList(s, cam, visible, LIGHT).filter((it) => it.kind === 'wall').map((it) => it.key);
+    expect(keys.some((k) => k.endsWith(':vantail'))).toBe(true);
+    expect(keys.some((k) => k.endsWith(':embrasure'))).toBe(false);
+  });
+
+  it('mur FENÊTRÉ : vitre rendue en POV ; NUIT → vitre AMBRÉE émissive (fill ≠ jour) + classe warm', () => {
+    const s = scene();
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>(['6,5,0', '6,6,0', '6,7,0', '6,8,0']);
+    s.walls = [{ x: 6, y: 5, side: 'N', window: true }];
+    const day = buildPovDrawList(s, cam, visible, LIGHT, false);
+    const dayGlass = day.find((it) => it.kind === 'wall' && it.key.endsWith(':vitre'));
+    expect(dayGlass).toBeTruthy();
+    expect(dayGlass!.cls).toBeUndefined(); // pas d'anim de jour
+    const night = buildPovDrawList(s, cam, visible, LIGHT, true);
+    const nightGlass = night.find((it) => it.kind === 'wall' && it.key.endsWith(':vitre'));
+    expect(nightGlass).toBeTruthy();
+    expect(nightGlass!.cls).toBe('warm'); // scintillement d'ambiance (anim.css global)
+    expect(nightGlass!.fill).not.toBe(dayGlass!.fill); // ambre allumé ≠ verre froid du jour
   });
 
   it('relief : une plateforme surélevée (rempart) produit des FACES VERTICALES (risers) → solide, pas de « voir à travers »', () => {

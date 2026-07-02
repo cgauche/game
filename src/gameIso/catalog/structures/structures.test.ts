@@ -50,6 +50,16 @@ describe('apparence de structure (JSON partagé iso/POV)', () => {
     expect(stone).toContain(structureAppearance('mur-en-pierre').face); // palette pierre UNIFIÉE (hex du JSON)
   });
 
+  it('mur FENÊTRÉ : wallSvg pose la croisée (verre froid le jour) ; NUIT → ambre émissif + class="warm"', () => {
+    const el = buildWalls(sceneWith({ x: 1, y: 1, side: 'E', window: true }))[0];
+    const day = wallSvg(el, DIMS);
+    expect(day).toContain(structureAppearance('plain').window!.glass); // verre froid du JOUR (hex de la def)
+    expect(day).not.toContain('class="warm"');
+    const night = wallSvg(el, DIMS, { night: true });
+    expect(night).toContain('class="warm"'); // vitre allumée scintillante (anim.css global)
+    expect(night).toContain(structureAppearance('plain').window!.lit); // ambre émissif de la def
+  });
+
   it('wallPartColor : couleur de base par PART depuis les champs de la def (source unique des 2 backends)', () => {
     const bois = structureAppearance('plain');
     expect(wallPartColor(bois, 'face')).toBe(bois.face);

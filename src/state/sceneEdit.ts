@@ -117,6 +117,7 @@ function normWall(w: WallSeg): WallSeg {
   if (w.door) out.door = true;
   if (w.door && w.closed) out.closed = true;
   if (w.structure) out.structure = w.structure;
+  if (w.window) out.window = true; // fenêtre décorative (champ significatif : préservé au patch)
   return out;
 }
 
@@ -377,38 +378,54 @@ export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: num
   return { ...scene, layers: [...others, layer].sort((a, b) => a.z - b.z) };
 }
 
+// ── Fenêtres du périmètre d'un bâtiment (décoratives) ──────────────────────────────────────────────
+/** Pas de pose : une fenêtre toutes les WIN_STEP cases le long d'un pan. */
+const WIN_STEP = 3;
+/** Phase dans le pas (≈ centre) : fenêtre à l'indice intérieur `i` quand `i % WIN_STEP === WIN_PHASE`. */
+const WIN_PHASE = 1;
+const range = (start: number, len: number): number[] => Array.from({ length: len }, (_, i) => start + i);
+
 /** BÂTIMENT COMPOSÉ = `Roof` (couverture cutaway) + périmètre de murs d'ARÊTE + une arête-porte franchissable
  *  + sol repeint. Source UNIQUE de la composition (partagée éditeur ⇄ `buildScene`), généralisant l'ancien
  *  `buildingToComposite` de l'arène : la structure réelle est faite de `WallSeg`, le toit n'est que du rendu.
  *  `wallStructure` (ex. `mur-en-bois`) rend les murs pleins DESTRUCTIBLES ; la porte n'en porte pas.
- *  `id`/`label` (déclaratif) : id d'auteur préservé sur le toit (sinon frais) + libellé de survol. */
+ *  `id`/`label` (déclaratif) : id d'auteur préservé sur le toit (sinon frais) + libellé de survol.
+ *  FENÊTRES (`windows`, défaut activé) : chaque pan reçoit des fenêtres DÉCORATIVES régulièrement espacées
+ *  (toutes ~WIN_STEP cases), en SAUTANT les coins et la porte — un mur fenêtré bloque comme un mur plein. */
 export function addBuilding(
   scene: Scene,
   style: string,
   foot: Rect,
-  opts: { id?: string; door?: { x: number; y: number; side: Edge4 }; floor?: Terrain; wallStructure?: string; z?: number; label?: string } = {},
+  opts: { id?: string; door?: { x: number; y: number; side: Edge4 }; floor?: Terrain; wallStructure?: string; z?: number; label?: string; windows?: boolean } = {},
 ): { scene: Scene; id: string } {
-  const { id: wantId, door, floor, wallStructure, z = 0, label } = opts;
+  const { id: wantId, door, floor, wallStructure, z = 0, label, windows = true } = opts;
   const roof = addRoof(scene, style, foot);
   const id = wantId ?? roof.id; // id d'auteur préservé (déclaratif) sinon frais (édition interactive)
   let s = (wantId || label)
     ? { ...roof.scene, roofs: (roof.scene.roofs ?? []).map((r) => (r.id === roof.id ? { ...r, id, ...(label ? { label } : {}) } : r)) }
     : roof.scene;
-  const edges: { x: number; y: number; side: Edge4 }[] = [];
-  for (let cx = foot.x; cx < foot.x + foot.w; cx++) {
-    edges.push({ x: cx, y: foot.y, side: 'N' }); // arête haute
-    edges.push({ x: cx, y: foot.y + foot.h - 1, side: 'S' }); // arête basse
-  }
-  for (let cy = foot.y; cy < foot.y + foot.h; cy++) {
-    edges.push({ x: foot.x, y: cy, side: 'O' }); // arête gauche
-    edges.push({ x: foot.x + foot.w - 1, y: cy, side: 'E' }); // arête droite
-  }
   const doorCanon = door ? canonEdge(door.x, door.y, door.side) : null;
-  for (const e of edges) {
-    const c = canonEdge(e.x, e.y, e.side);
-    const isDoor = !!doorCanon && c.x === doorCanon.x && c.y === doorCanon.y && c.side === doorCanon.side;
-    s = setEdgeWall(s, e.x, e.y, e.side, z, isDoor ? 'door' : 'wall');
-    if (!isDoor && wallStructure) s = patchWall(s, c.x, c.y, c.side, z, { structure: wallStructure });
+  // Les 4 PANS du périmètre, chacun DANS L'ORDRE de ses cases : les indices 0 et M−1 sont des COINS (deux
+  // murs s'y croisent → jamais fenêtrés), les intérieurs portent une fenêtre un cran sur WIN_STEP.
+  const sides: { x: number; y: number; side: Edge4 }[][] = [
+    range(foot.x, foot.w).map((cx) => ({ x: cx, y: foot.y, side: 'N' as Edge4 })), // pan haut
+    range(foot.x, foot.w).map((cx) => ({ x: cx, y: foot.y + foot.h - 1, side: 'S' as Edge4 })), // pan bas
+    range(foot.y, foot.h).map((cy) => ({ x: foot.x, y: cy, side: 'O' as Edge4 })), // pan gauche
+    range(foot.y, foot.h).map((cy) => ({ x: foot.x + foot.w - 1, y: cy, side: 'E' as Edge4 })), // pan droit
+  ];
+  for (const run of sides) {
+    const M = run.length;
+    run.forEach((e, i) => {
+      const c = canonEdge(e.x, e.y, e.side);
+      const isDoor = !!doorCanon && c.x === doorCanon.x && c.y === doorCanon.y && c.side === doorCanon.side;
+      s = setEdgeWall(s, e.x, e.y, e.side, z, isDoor ? 'door' : 'wall');
+      if (isDoor) return; // la porte ne porte ni structure ni fenêtre
+      const isWindow = windows && i > 0 && i < M - 1 && i % WIN_STEP === WIN_PHASE;
+      const patch: Partial<WallSeg> = {};
+      if (wallStructure) patch.structure = wallStructure;
+      if (isWindow) patch.window = true;
+      if (patch.structure || patch.window) s = patchWall(s, c.x, c.y, c.side, z, patch);
+    });
   }
   if (floor) s = fillTerrainRect(s, foot, floor, z);
   return { scene: s, id };

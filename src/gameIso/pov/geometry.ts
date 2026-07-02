@@ -56,7 +56,7 @@ import { TERRAIN_DEFS, terrainSolidHeightM } from '../../state/terrain';
 import { buildFloors, SIDES, NEIGHBOURS } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
-import { structureAppearance, wallPartColor, type WallPart } from '../catalog/structures';
+import { structureAppearance, wallPartColor, windowLit, type WallPart } from '../catalog/structures';
 import { reliefMaterial } from '../catalog/relief';
 import { roofMaterial } from '../catalog/roofs';
 import { AMBIANCE } from '../catalog/ambiance';
@@ -79,6 +79,8 @@ export type DrawItem = {
   depth: number;
   key: string;
   kind: 'floor' | 'wall' | 'ceiling' | 'riser' | 'roof' | 'detail';
+  /** Classe CSS d'ambiance (ex. `warm` pour une vitre allumée la nuit) — appliquée au nœud SVG rendu. */
+  cls?: string;
 };
 
 // Les SOLS suivent le `swatch` du terrain — donnée PARTAGÉE avec l'iso/l'éditeur : recolorer un terrain
@@ -470,6 +472,7 @@ export function buildPovDrawList(
   cam: CamPose,
   visible: Set<string>,
   light: LightField,
+  night = false,
 ): DrawItem[] {
   const mpt = sceneMetresPerTile(scene);
   const indoor = isIndoor(scene); // intérieur → plafond + brume sombre COURTE ; extérieur → ciel + perspective atmosphérique LONGUE
@@ -661,11 +664,15 @@ export function buildPovDrawList(
       if (f.poly.length < 3) return; // montant 2 points : hors POV (LOD minimal)
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
       const part = f.material.part as WallPart;
-      const base = wallPartColor(app, part);
+      // VITRE de fenêtre allumée la NUIT : ambre ÉMISSIF (lumière ~pleine, non assombrie par la nuit) +
+      // classe `warm` (scintillement) → une fenêtre éclairée dans le noir = signal de bâtiment fort.
+      const lit = part === 'vitre' && night;
+      const base = lit ? windowLit(app) : wallPartColor(app, part);
       // Peintre INTRA-mur : les faces s'empilent dans l'ordre du builder (détail PAR-DESSUS le fond) —
       // biais NÉGATIF croissant (plus proche), trop petit pour déclasser deux murs distincts.
-      const it = makeItem(corners, cam, farMetres, lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve);
+      const it = makeItem(corners, cam, farMetres, lit ? Math.max(lv, 0.95) : lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve);
       if (!it) return;
+      if (lit) it.cls = 'warm';
       items.push(it);
       if (!seen) return; // non vu : forme + matière, pas d'appareillage fin (réservé au vu)
       // APPAREILLAGE au LOD de distance en FONDU (parts maçonnées d'une def à recette — même aiguillage

@@ -66,6 +66,8 @@ export interface WallSpec {
   door?: boolean;
   /** Structure destructible posée sur l'arête (id de `structures.json`, ex. `porte-de-ville`). */
   structure?: string;
+  /** DÉCORATIF : l'arête porte une fenêtre au rendu (mur plein serti d'une vitre — ne change pas le combat). */
+  window?: boolean;
 }
 
 /** Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté par l'ASCII) : boîte
@@ -308,9 +310,9 @@ export function buildScene(spec: MapSpec): Scene {
       s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);
     } else {
       s = setEdgeWall(s, wall.x, wall.y, wall.side, z, wall.door ? 'door' : 'wall');
-      if (wall.structure) {
+      if (wall.structure || wall.window) {
         const c = canonEdge(wall.x, wall.y, wall.side);
-        s = patchWall(s, c.x, c.y, c.side, z, { structure: wall.structure });
+        s = patchWall(s, c.x, c.y, c.side, z, { ...(wall.structure ? { structure: wall.structure } : {}), ...(wall.window ? { window: true } : {}) });
       }
     }
   }
