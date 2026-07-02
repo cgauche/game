@@ -1,3 +1,132 @@
+/* ── Cadre de la fiche de personnage (modal, layout, portrait, vitalité) ── */
+/* Fiche de personnage / équipement */
+.sheet-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 880px;
+  max-width: 94vw;
+  height: 88vh; /* hauteur STABLE : changer d'onglet ne redimensionne plus la fenêtre (L1) — le corps scrolle */
+  overflow: hidden;
+  border-top: 4px solid var(--gold);
+  padding-top: 16px;
+}
+/* Overlay de la FICHE : panneau de référence PASSIF → reste SOUS les modales actives (jets, défense…
+   z-index 130) pour qu'un jet lancé DEPUIS la fiche s'affiche AU-DESSUS. Au-dessus de la victoire (120). B3. */
+.sheet-overlay {
+  z-index: 125;
+}
+.sheet-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+/* Layout : L'ESSENTIEL à gauche (permanent) · détail en onglets à droite. S'empile ≤700px. */
+.sheet-layout {
+  flex: 1;
+  min-height: 0; /* L1 : remplit la hauteur stable du modal, autorise le scroll interne des colonnes */
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+}
+.sheet-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-right: 1px solid var(--border);
+  padding-right: 16px;
+  min-height: 0;
+  overflow-y: auto; /* L1 : la colonne « essentiel » scrolle seule si elle dépasse */
+}
+/* Grand portrait + identité en tête de colonne (illustration du perso). */
+.sheet-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+.sheet-portrait .rig-portrait {
+  width: 112px;
+  height: 112px;
+  border-radius: 999px; /* médaillon rond, façon écu */
+  border-width: 3px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.sheet-portrait h3 {
+  margin: 6px 0 0;
+  font-size: 21px;
+  color: var(--gold2);
+  line-height: 1.05;
+}
+.sheet-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+/* Corps d'onglet : SEUL élément qui scrolle → la hauteur du modal ne bouge pas d'un onglet à l'autre (L1). */
+.sheet-tabbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* Vitalité + ressources : cartouches = primitive .stat-chip (components.css) ; ici, juste les grilles
+   et les accents propres à la fiche. */
+.sheet-vitals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* minmax(0,…) : empêche le débordement de grille (B2) */
+  gap: 6px;
+}
+.sheet-vitals .stat-chip.pv .sc-value {
+  color: var(--gold2);
+}
+.sheet-vitals .stat-chip.enc-over .sc-value {
+  color: var(--danger);
+}
+.sheet-resources {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+}
+.sheet-resources .stat-chip .sc-value {
+  color: var(--gold);
+  font-size: 14px;
+}
+.sheet-stats {
+  margin-bottom: 4px;
+}
+@media (max-width: 700px) {
+  .sheet-layout {
+    grid-template-columns: 1fr;
+  }
+  .sheet-aside {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 12px;
+  }
+  /* Mobile : portrait à gauche, identité à droite (compact, pas de grande zone vide). */
+  .sheet-portrait {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+  }
+  .sheet-portrait .rig-portrait {
+    width: 72px;
+    height: 72px;
+  }
+}
+/* Onglet Combat de la fiche : la surface = primitive .panel.stack (components.css). */
+.sheet-main > .panel {
+  margin-bottom: 14px;
+}
+.sheet-skills {
+  margin-bottom: 14px;
+}
+
 /* ── Fiche : onglets Fiche / Avancement ── */
 .sheet-tabs {
   display: flex;

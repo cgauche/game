@@ -2,7 +2,6 @@ import { useGame } from '../state/store';
 import type { Combatant, HitLocation, ItemInstance, QualityInstance } from '../engine/types';
 import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, loadoutLabel, isOffHandEligible, isUnarmed, type ArmourLayer } from '../engine/items';
 import { RigSprite } from '../gameIso/rig/composeRig';
-import { DEFS } from '../gameIso/sprites';
 import { defaultAppearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant } from '../gameIso/rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
@@ -209,7 +208,6 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
       {/* COLONNE CENTRE — mannequin (rig live, porte l'armure visible + les armes du set actif) */}
       <div className="equip-doll" title="Aperçu du héros avec l’équipement porté (la couche du dessus s’affiche : plate sur maille sur cuir)">
         <svg viewBox="0 0 120 150" className="equip-figure">
-          <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
           <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={6} />
           <RigSprite appearance={appearance} equip={equip} career={hero.career} overlays={combatantOverlays(hero)} />
         </svg>

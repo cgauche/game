@@ -8,7 +8,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Scene, tileAt, sceneMetresPerTile, Roof } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
-import { DEFS, terrainOverlay } from '../../gameIso/sprites';
+import { terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
@@ -344,7 +344,7 @@ export function EditorCanvas({
             resizeRef.current = null;
           }}
         >
-          <defs dangerouslySetInnerHTML={{ __html: DEFS + patternDefs }} />
+          <defs dangerouslySetInnerHTML={{ __html: patternDefs }} />
           <g>
             {floorRows.filter(inView).map((r) =>
               r.acc ? (

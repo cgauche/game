@@ -12,7 +12,6 @@ import { resolveRender, planById } from '../../gameIso/rig/bodyPlan';
 import { eyesArtFromKeys } from '../../gameIso/rig/parts/eyes';
 import { hashSeed } from '../../gameIso/appearance';
 import { findCreatureById } from '../../data';
-import { DEFS } from '../../gameIso/sprites';
 import type { View } from '../../gameIso/rig/facing';
 import type { Palette } from '../../gameIso/rig/palette';
 import type { EntityAppearance } from '../../state/scene';
@@ -45,7 +44,6 @@ export function CreaturePreview({ name, appearance }: { name: string; appearance
     <div className="creature-preview">
       {views.map(({ v, svg }) => (
         <svg key={v} viewBox="0 0 120 150" className="creature-preview-svg" aria-label={`${name} (${v})`}>
-          <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
           <g dangerouslySetInnerHTML={{ __html: svg }} />
         </svg>
       ))}

@@ -46,7 +46,6 @@ import { formatMoney } from '../../engine/money';
 import { makeRNG } from '../../engine/dice';
 import { generateName } from '../../engine/names';
 import { RigSprite } from '../../gameIso/rig/composeRig';
-import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
 import { BackgroundFields } from '../BackgroundFields';
 import { CodexRef } from '../compendium/CodexRef';
@@ -163,7 +162,6 @@ function Figure({ speciesLabel, career, sex = 'M', seed = 7, className = 'row-fi
   const appearance: Appearance = { species: speciesLabel, sex, build: 0.5, seed };
   return (
     <svg viewBox="14 6 92 138" className={className}>
-      <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
       <RigSprite appearance={appearance} equip={{ weapons: [], armour: [] }} career={career} />
     </svg>
   );

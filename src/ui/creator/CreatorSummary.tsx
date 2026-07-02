@@ -8,7 +8,6 @@ import { useMemo } from 'react';
 import { Combatant } from '../../engine/types';
 import { formatMoney } from '../../engine/money';
 import { RigSprite } from '../../gameIso/rig/composeRig';
-import { DEFS } from '../../gameIso/sprites';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { CharStatsGrid } from '../CharStatsGrid';
 import { SkillChip, TalentChip } from '../EntityChip';
@@ -35,7 +34,6 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
   return (
     <aside className="creator-summary">
       <svg viewBox="0 0 120 150" className="creator-figure">
-        <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
         <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={8} />
         <RigSprite appearance={appearance} equip={{ weapons: hero?.weapons ?? [], armour: [] }} career={careerLabel} />
       </svg>

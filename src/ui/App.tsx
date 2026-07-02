@@ -4,6 +4,7 @@ import { loadHouseRules } from '../state/houseRules';
 import { MainMenu } from './MainMenu';
 import { PartyScreen } from './PartyScreen';
 import { CharacterCreator } from './creator/CharacterCreator';
+import { GlobalSvgDefs } from './GlobalSvgDefs';
 
 // Le rendu de jeu (iso SVG + sprites du bestiaire) et l'éditeur d'authoring ne
 // sont pas nécessaires à l'écran menu : chunks async séparés (React.lazy) pour
@@ -42,6 +43,7 @@ export function App() {
   }, []);
   return (
     <div className="app">
+      <GlobalSvgDefs />
       <CoopBanner />
       <Suspense fallback={<div className="lazy-fallback" role="status"><span aria-hidden>⚜</span> Chargement…</div>}>
         {screen === 'menu' && <MainMenu />}

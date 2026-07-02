@@ -8,7 +8,6 @@
 import { useState, type ReactNode } from 'react';
 import { Scene, SceneEntity, Roof, RoofParams, Trigger, SceneEffectZone, WallSeg } from '../../state/scene';
 import type { Settlement } from '../../engine/disponibilite';
-import { DEFS } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { pickBackend } from '../../gameIso/pickBackend';
@@ -527,7 +526,6 @@ function EntityPanel({
     <>
       <div className="ent-preview">
         <svg viewBox="0 0 120 150" width="84" height="105">
-          <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
           {ent.kind === 'heroStart' ? (
             <text x="60" y="92" textAnchor="middle" fontSize="44" fill="#2ecc71">
               ★

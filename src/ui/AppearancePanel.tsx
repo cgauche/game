@@ -1,5 +1,4 @@
 import { RigSprite } from '../gameIso/rig/composeRig';
-import { DEFS } from '../gameIso/sprites';
 import type { Appearance } from '../gameIso/rig/appearance';
 import type { EquipCtx } from '../gameIso/rig/parts/equipment';
 import { ColorPalettePickers } from './ColorPalettePickers';
@@ -26,7 +25,6 @@ export function AppearancePanel({
   return (
     <div className="appear-panel">
       <svg viewBox="0 0 120 150" className="appear-figure">
-        <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
         <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={6} />
         <RigSprite appearance={value} equip={equip} career={career} />
       </svg>

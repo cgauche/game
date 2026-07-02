@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { listSaves } from '../state/saves';
 import { SaveLoadModal } from './SaveLoadModal';
 import { HouseRulesModal } from './HouseRulesModal';
+import { RuleDivider } from './Ornaments';
 import { t } from '../i18n';
 
 export function MainMenu() {
@@ -14,11 +15,11 @@ export function MainMenu() {
   const hasSaves = listSaves().some((m) => m != null);
 
   return (
-    <div className="menu">
+    <div className="menu tx-ink">
       <div className="menu-card">
         <h1 className="title">{t('menu.title')}</h1>
         <p className="subtitle">{t('menu.subtitle')}</p>
-        <div className="rule-fleur" aria-hidden>⚜</div>
+        <RuleDivider />
         <div className="menu-buttons">
           <button className="btn btn-primary" onClick={() => { setPendingCampaign(null); setScreen('party'); }}>
             {t('menu.newGame')}

@@ -11,6 +11,8 @@
      .stat-chip          cartouche « label + valeur » (PV, carac, ressource…)
      .listrow            rangée de liste : nom (flex:1) + méta + action
      .chip               badge/pastille (alias de .tag) ; .count = pastille numérique
+     .modal-overlay/.modal  cadre de modale partagé (+ .modal-actions/.btn-ghost/.rm-influence)
+     .charprev           aperçu « perso en pied » (CharacterPreview) : tailles + ambiances
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
 /* ── SURFACE ── */
@@ -171,4 +173,137 @@
   border-radius: 9px;
   background: var(--bg2);
   color: var(--muted);
+}
+
+/* ── MODALE (cadre partagé de TOUTES les modales) ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42); /* voile allégé : on garde le CHAMP visible derrière la modale (R2/R10) */
+  display: grid;
+  place-items: center;
+  z-index: 130; /* au-dessus de l'écran de victoire (120) : Évaluer/Détecter le butin ouvre une modale PAR-DESSUS */
+}
+/* Modales de COMBAT : ancrées plus bas et voile encore plus léger → on voit l'action au-dessus
+   (le bandeau du haut reste dégagé). Le `:has()` cible les overlays contenant une modale de jet. */
+.modal-overlay:has(.roll-modal) {
+  align-items: end;
+  padding-bottom: 96px;
+  background: rgba(0, 0, 0, 0.28);
+}
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  width: min(520px, 94vw); /* jamais plus large que l'écran (mobile : pas de débord horizontal) */
+  max-height: 86vh;
+  overflow: auto;
+}
+.modal.wide {
+  width: min(760px, 94vw);
+}
+.picker-title {
+  margin: 0 0 10px;
+  color: var(--gold2);
+  font-size: 20px;
+}
+/* Barre d'actions normée des modales : 2 boutons max — [Annuler/Subir discret à gauche] [primaire
+   à droite, largeur min fixe]. Les dépenses de ressources vivent dans `.rm-influence`, pas ici. */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.modal .modal-actions .btn-primary {
+  min-width: 132px;
+}
+/* Annuler/Subir : bouton discret, ancré à gauche de la barre. */
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--border);
+  background: var(--panel2);
+}
+.modal-actions .btn-ghost {
+  margin-right: auto;
+}
+/* Rangée « influencer le jet » : ressources contextuelles (Chance, Pacte, Résilience,
+   Détermination) en petits boutons normés de taille identique. Vide → invisible. */
+.rm-influence {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.rm-influence:empty {
+  display: none;
+}
+.btn.btn-resource {
+  padding: 5px 11px;
+  font-size: 12.5px;
+  border-radius: 14px;
+  line-height: 1.3;
+}
+@media (max-width: 560px) {
+  /* Mobile : ressources centrées sur leur rangée, primaire pleine largeur restante. */
+  .rm-influence {
+    justify-content: center;
+  }
+  .modal .modal-actions .btn-primary {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ── APERÇU PERSONNAGE (CharacterPreview) — perso en pied, cadre 120×150 ──
+   Tailles par modificateur ; ambiances optionnelles. Les textures `.tx-parchment`/`.tx-ink`
+   vivent dans ornaments.css — ici seulement le cadre et la lumière. */
+.charprev {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  aspect-ratio: 120 / 150;
+  overflow: hidden;
+}
+.charprev-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.charprev-xs { height: 40px; }
+.charprev-sm { height: 72px; }
+.charprev-md { height: 120px; }
+.charprev-lg { height: 190px; }
+.charprev-fill {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+.charprev-amb-panel {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.charprev-amb-parchment { /* fond texturé par .tx-parchment (posée par le composant) */
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.charprev-amb-spotlight { /* fond sombre .tx-ink + halo de lumière sur la figure */
+  border-radius: 10px;
+}
+.charprev-amb-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 62% 48% at 50% 60%, color-mix(in srgb, var(--gold2) 22%, transparent), transparent 72%);
+  pointer-events: none;
 }

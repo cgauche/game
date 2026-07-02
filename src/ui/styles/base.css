@@ -4,25 +4,25 @@
    (Grenze Gotisch, embarquée) — le CORPS de texte reste sans-serif.
    RÈGLE : aucune couleur en dur dans les écrans — composer ces tokens. */
 :root {
-  --bg: #16120d;
-  --bg2: #1e1812;
-  --panel: #251d14;
-  --panel2: #2e241a;
-  --border: #4a3b28;
-  --text: #e9dfc9;
+  --bg: #100e0b;
+  --bg2: #171410;
+  --panel: #1d1913;
+  --panel2: #272119;
+  --border: #443626;
+  --text: #e4dabf;
   --muted: #a3936f;
-  --gold: #c9a227;
-  --gold2: #e3c45a;
-  --accent: #8e2418; /* rouge sang — action primaire */
-  --accent2: #b3402e;
+  --gold: #b8912f;
+  --gold2: #d8b954;
+  --accent: #7c1d12; /* rouge sang — action primaire */
+  --accent2: #a13224;
   --danger: #d6543a; /* alerte (plus vif que l'accent, hover distinct) */
   --danger-soft: #e07a63; /* alerte douce (coral) — texte/bordure d'avertissement léger */
   --ok: #5d8a46; /* succès (vert mousse) */
   --ok-bright: #6fce8e; /* succès clair — texte/icône positif sur fond sombre */
-  --parchment: #e6d7ae; /* surface claire « document » (texte = --ink) */
-  --parchment2: #d9c897;
-  --ink: #2b2118;
-  --blood: #6e1a10;
+  --parchment: #decb9d; /* surface claire « document » (texte = --ink) */
+  --parchment2: #cbb478;
+  --ink: #221a11;
+  --blood: #5a120a;
   --copper: #c9905a; /* monnaie : sou de cuivre */
   --silver: #cdd6df; /* monnaie : pistole d'argent */
   --combat-walk: #4f8fe0; /* combat : portée de Marche */
@@ -135,7 +135,7 @@ body,
   margin: 0;
 }
 body {
-  background: radial-gradient(circle at 30% 0%, #2a2014, var(--bg));
+  background: radial-gradient(circle at 30% 0%, #1f180f, var(--bg));
   color: var(--text);
   font-family: 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
 }
@@ -145,7 +145,7 @@ h2,
 h3 {
   font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
 }
 .app {
   height: 100%;
@@ -617,6 +617,14 @@ h3 {
   letter-spacing: 1px;
   color: var(--muted);
   margin: 10px 0 4px;
+}
+/* Annotation de section (ADDITIF, charte grimdark) : libellé en petites capitales pour
+   titrer une rubrique sans passer par un Hn gothique ni les capitales dures de .mini-title. */
+.section-label {
+  font-variant-caps: small-caps;
+  letter-spacing: 1.6px;
+  font-size: 12px;
+  color: var(--muted);
 }
 .skill-tags {
   display: flex;
