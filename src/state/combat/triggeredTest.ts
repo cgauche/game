@@ -38,6 +38,7 @@ import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps
 import { registerCascadeApplier } from '../cascade';
 import { fireTriggers, recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
 import { roundTestInteractive } from './cadenceGate';
+import { campSpend } from './advantagePool';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
  *  un re-rendu React (clone des tableaux) — mirroir de `syncCombatant` des appliers d'upkeep. */
@@ -451,7 +452,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
   }
   // Ennemi / héros rapide-auto : décision INLINE (oui si payable). Dépense le coût puis joue la branche.
   const yes = choiceAffordable(decider, node.cost);
-  if (yes && node.cost && decider) decider.advantage = Math.max(0, (decider.advantage ?? 0) - node.cost.advantage);
+  if (yes && node.cost && decider) campSpend(ctx.get, decider, node.cost.advantage); // débite la réserve du camp (mode groupe) / le combattant (LDB)
   runCombatFlow({ ...ctx }, yes ? node.yes : (node.no ?? EMPTY_FLOW));
   if (after !== EMPTY_FLOW) runCombatFlow({ ...ctx }, after);
 }
@@ -472,7 +473,7 @@ registerCascadeApplier('triggeredChoice', (get, set, step, hero) => {
   const fa = step.meta?.freeAttack;
   const freeAttack = fa && typeof fa === 'object' && 'targetId' in fa ? fa : undefined;
   const can = yes && (cost == null || (hero.advantage ?? 0) >= cost);
-  if (yes && can && cost != null) { hero.advantage = Math.max(0, (hero.advantage ?? 0) - cost); syncCombatant(get, set); }
+  if (yes && can && cost != null) { campSpend(get, hero, cost); syncCombatant(get, set); } // débite la réserve du camp (mode groupe) / le combattant (LDB)
   // Le DÉCIDEUR (`hero`) est le `caster` (porteur). La branche vise `choiceTargetId` (la VICTIME, Déstabilisante)
   // si présent, sinon le décideur lui-même (Frappe réactive : Test sur soi). Reconstruit depuis get() — jamais capturé.
   const tid = typeof step.meta?.choiceTargetId === 'string' ? step.meta.choiceTargetId : undefined;

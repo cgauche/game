@@ -40,18 +40,40 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   Critiques AA par localisation + la règle d'Inconscient-à-0-PB sont câblées).
 
 ### Avantage de groupe Aux Armes (#39, sous toggle `combat-aa-avantage-groupe`)
-- **Dépenses d'Avantage en mode groupe** : les manœuvres de créature (Regard pétrifiant, souffle…),
-  le Désengagement-sacrifice et la Retraite stratégique / Porte-bouclier AA mutent la projection
-  `.advantage` mais ne DÉDUISENT pas de la réserve de camp (restaurée au prochain sync).
-- **Empoignade opposée** (`resolveGrappleOpposed`) : le +1 du vainqueur reste par-combattant, non
-  durablement crédité à la réserve.
-- **Op `grantAdvantage` hors début de tour** (un sort octroyant de l'Avantage) : réconciliée à la
-  réserve seulement au turn-start (Redoutable) ; ailleurs = edge non réconcilié.
+- ~~**Dépenses d'Avantage en mode groupe**~~ ✅ **RÉSOLU** : TOUTE dépense d'Avantage passe par le point
+  UNIQUE `campSpend(get, c, n)` (symétrique de `campGain`) — débite la RÉSERVE du camp en mode groupe,
+  l'Avantage individuel en LDB. Routés : manœuvres de créature (`resolveManeuver`), Piétinement (joueur +
+  IA), attaques gratuites de créature (mêlée + op `grantFreeAttack`), coût de Flow `choice.cost.advantage`
+  (Déstabilisante — joueur + IA), Rage (dépense TOUT). La **Retraite stratégique** (Désengagement) débite
+  aussi la réserve : coût FIXE 2 Avantages (AA l.4139), abaissé à 1 par *Impitoyable* (AA l.4418).
+- ~~**Empoignade opposée**~~ ✅ **RÉSOLU** : `resolveGrappleOpposed(get, …)` crédite le +1 du vainqueur via
+  `campGain` → réserve du camp en mode groupe (plus per-combattant).
+- **Op `gainAdvantage`/`spendAdvantage` hors début de tour** : `reconcileAdvantageToPool` est désormais
+  BIDIRECTIONNEL (relève ET abaisse la réserve selon l'écart projection↔réserve), mais reste appelé UNIQUEMENT
+  au turn-start (Redoutable). Aucune donnée n'émet ces ops ailleurs qu'au turn-start aujourd'hui (`gainAdvantage`
+  = Redoutable seul ; `spendAdvantage` op = inutilisé — Déstabilisante passe par le coût de Flow, routé). Si un
+  futur sort/effet émet un de ces ops MID-combat, ajouter un `reconcileAdvantageToPool(get, cible)` à CE site.
 - **Table d'Avantage initial** : auto-dérive Surnombre + Surprise ; Menace / Manœuvrabilité / Terrain
   attendent une entrée d'éditeur (la fonction les supporte, testée).
-- **Talents en mode groupe** : *Cavalier émérite* (le moteur ne décompose pas la Peur par cause →
-  Taille-vs-Peur non appliquée) ; *Battement / Distraire / Impitoyable* = `descAA` seul (manœuvres non
-  modélisées dans les DEUX modes).
+- **Talents en mode groupe** :
+  - ~~*Cavalier émérite*~~ ✅ **RÉSOLU** (AA l.4369) : `fearSourceFor(self, foe, selfSizeForSize?)` prend une
+    Taille effective ; `riderFearSize(battle, self)` la fournit = Taille de la MONTURE quand le porteur monté a
+    le Talent (mode groupe). Seul le versant **Taille** est immunisé — un `causesPeur`/`causesTerreur` de statbloc
+    (démon/mort-vivant) fait toujours peur (RAW « uniquement par la Taille »).
+  - ~~*Impitoyable*~~ ✅ **RÉSOLU** : LDB (l.591) modélisé — garde niveau Avantages au Sacrifice + Désengagement
+    possible sans supériorité stricte ; AA (l.4418) — coût de Retraite stratégique = 1.
+  - ~~*Battement*~~ ✅ **RÉSOLU** (effet) : `resolveBattement` retire de l'Avantage adverse — LDB « −1, −1 par DR »
+    (Avantage individuel du foe) ; AA « −1, +1 à 6 DR » (réserve du camp adverse). Wiring IA fait (un PNJ porteur,
+    Engagé, l'utilise quand l'adversaire a de l'Avantage à retirer). **RÉDUIT** : pas d'affordance HÉROS interactive
+    (déclaration + jet influençable en modale) — chantier UI dédié ; le héros porteur ne peut pas la déclarer.
+  - ~~*Distraire*~~ ✅ **RÉSOLU** (effet) : `resolveDistraire` (Test opposé Athlétisme/Calme) pose `distractedRounds`
+    → `campGain` refuse tout gain d'Avantage du distrait jusqu'à la fin du prochain Round (décrémenté au
+    franchissement). Wiring IA fait. **RÉDUIT** : idem Battement — pas d'affordance HÉROS interactive.
+  - **Porte-bouclier (variante AA active)** : la capacité AA l.4428 (dépenser 2 Avantages pour infliger des Dégâts
+    en défense OU repousser 2 m et se désengager, 1×/Round au bouclier) n'est PAS câblée (aucune réaction de
+    défense active correspondante n'existe) → `descAA` seul. Le GAIN LDB de *Porte-Bouclier* (`shieldAdvantage`)
+    reste géré et est neutralisé en mode groupe par la variante AA (`shieldAdvantageLevel`→0). Chantier : une
+    réaction défensive « dépenser N Avantages de la réserve pour un effet » (nouvelle brique de défense).
 
 ### Économie (#57)
 - **Recherche active de Disponibilité « journée entière + Ragot »** (LDB 59 l.50) : le bonus est

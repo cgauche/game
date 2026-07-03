@@ -279,6 +279,9 @@
     "max": {
       "bonusOf": "CC"
     },
+    "combat": {
+      "battement": true
+    },
     "test": {
       "raw": "Corps à corps pour effectuer une manœuvre de Battement",
       "matches": [
@@ -1089,6 +1092,9 @@
     "max": {
       "bonusOf": "Ag"
     },
+    "combat": {
+      "distraire": true
+    },
     "test": {
       "raw": "Athlétisme pour Distraire",
       "matches": [
@@ -1876,6 +1882,15 @@
       "bonusOf": "Ag"
     },
     "test": null,
+    "combat": {
+      "keepAdvantageOnDisengage": true,
+      "disengageWithLessAdvantage": true,
+      "aa": {
+        "keepAdvantageOnDisengage": false,
+        "disengageWithLessAdvantage": false,
+        "retreatCost": 1
+      }
+    },
     "desc": "Quand votre esprit est rivé sur une cible, personne ne peut vous empêcher de l'atteindre. Si vous utilisez des Avantages quand vous vous Désengagez, vous pouvez garder un nombre d'Avantages égal à votre Niveau d'Impitoyable. De plus, vous pouvez utiliser des Avantages pour vous Désengager même si vous avez moins d'Avantages que vos adversaires.",
     "descAA": "Quand votre esprit est rivé sur une cible, personne ne peut vous empêcher de l'atteindre. La dépense d'Avantages pour une Retraite stratégique tombe à 1 pour vous.",
     "specs": [],

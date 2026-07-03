@@ -90,6 +90,21 @@ export interface CombatFeature {
   /** Cavalier émérite — variante « Avantage de groupe » (AA l.4369) : Taille considérée égale à celle de
    *  la monture pour résister à la Peur/Terreur causée UNIQUEMENT par la Taille de l'adversaire. */
   fearSizeAsMount?: boolean;
+  /** Impitoyable — variante « Avantage de groupe » (AA l.4418) : le coût d'Avantage d'une Retraite
+   *  stratégique (Désengagement, défaut 2 Avantages, AA l.4139) tombe à cette valeur pour le porteur. */
+  retreatCost?: number;
+  /** Impitoyable (LDB 10 l.591) : au Désengagement « Sacrifier l'Avantage », GARDE niveau Avantages au
+   *  lieu de tomber à 0 (× niveau). */
+  keepAdvantageOnDisengage?: boolean;
+  /** Impitoyable (LDB 10 l.591) : peut Sacrifier l'Avantage pour se Désengager MÊME avec moins d'Avantage
+   *  que ses adversaires (relâche la garde de supériorité stricte). */
+  disengageWithLessAdvantage?: boolean;
+  /** Battement — variante « Avantage de groupe » (AA l.4361) : manœuvre d'Action retirant de l'Avantage
+   *  à la réserve ADVERSE (−1 sur Succès de Corps à corps, −1 de plus à 6 DR). Le porteur peut la déclarer. */
+  battement?: boolean;
+  /** Distraire (LDB 10 / AA l.4395) : manœuvre de Mouvement — Test opposé Athlétisme/Calme ; sur Succès,
+   *  la cible (mode groupe : sa réserve) ne gagne aucun Avantage jusqu'à la fin du prochain Round. */
+  distraire?: boolean;
   /** Maîtrise du combat : compte pour 1+niveau personnes au calcul du surnombre. */
   outnumberCount?: boolean;
   // (Mâchoires d'acier n'est PLUS une CombatFeature : c'est un effet `onGainCondition` data-driven —

@@ -1147,6 +1147,11 @@ export interface Combatant {
   initiative?: number;
   /** A gagné de l'Avantage durant le Round courant (upkeep de fin de Round, LDB Dépl. l.40). */
   gainedAdvThisRound?: boolean;
+  /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
+   *  (mode groupe : sa réserve) jusqu'à la FIN de ce Round de bataille. Compteur de Rounds restants
+   *  décrémenté au franchissement de Round (2 = « jusqu'à la fin du PROCHAIN Round » quand posé en cours
+   *  de Round courant). `campGain` refuse tout gain tant qu'il est > 0. */
+  distractedRounds?: number;
   /** « Sur la défensive » : +20 à tous les Tests de défense jusqu'au début du prochain tour (LDB Combat l.118). */
   defensiveStance?: boolean;
   /** Maniement de deux armes (LDB 10 l.638) : −10 à TOUTES ses défenses jusqu'au début de son prochain Tour. */

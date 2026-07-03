@@ -1,6 +1,8 @@
 import { useGame } from '../state/store';
 import { defenseValue, combatValue } from '../engine/combat';
 import { calmeValue } from '../engine/psychology';
+import { groupAdvantage } from '../engine/advantagePool';
+import { retreatAdvantageCost } from '../engine/combatFeatures/dispatch';
 import { canReroll } from '../engine/fortune';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
@@ -53,6 +55,14 @@ export function DisengageModal() {
   const calme = f?.calme;
   const calmeRerollable = !!calme && !calme.success && canReroll(true, !!pd.rerolled);
   const fleeOutcome = describeDisengageFlee(pd);
+  // « Avantage de groupe » (AA l.4139) : l'option A devient « Retraite stratégique » à coût FIXE (2 Av,
+  // 1 avec Impitoyable) débité de la réserve du camp ; sinon LDB « Sacrifier l'Avantage » (→ 0).
+  const groupMode = groupAdvantage();
+  const retreatCost = retreatAdvantageCost(mover);
+  const sacrificeLabel = groupMode ? `↩ Retraite stratégique (${retreatCost} Av)` : "Sacrifier l'Avantage";
+  const sacrificeTitle = groupMode
+    ? `Dépense ${retreatCost} Avantage(s) de la réserve du camp pour rompre le combat, sans coût d'Action`
+    : "Tu as l'Avantage supérieur : pars librement, sans coût d'Action";
 
   return (
     <Modal title="Se désengager" onClose={pd.phase === 'choice' ? cancel : undefined}>
@@ -65,13 +75,13 @@ export function DisengageModal() {
             <OptionChooser
               layout="grid"
               options={[
-                { key: 'sacrifice', label: "Sacrifier l'Avantage", hidden: !pd.canSacrifice, onSelect: sacrifice, title: "Tu as l'Avantage supérieur : pars librement, sans coût d'Action" },
+                { key: 'sacrifice', label: sacrificeLabel, hidden: !pd.canSacrifice, onSelect: sacrifice, title: sacrificeTitle },
                 { key: 'esquive', label: '🤸 Esquiver', value: defenseValue(mover, 'esquive'), hidden: pd.canEsquive === false, primary: true, onSelect: esquiver, title: "Test opposé d'Esquive — coûte ton Action" },
                 { key: 'fuir', label: '🏃 Fuir (coup dans le dos)', hidden: pd.canEsquive === false, onSelect: flee, title: 'Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours' },
               ]}
             />
             {pd.canEsquive === false && (
-              <p className="rm-log">Action déjà dépensée : seul « Sacrifier l'Avantage » (sans coût d'Action) reste possible.</p>
+              <p className="rm-log">Action déjà dépensée : seul « {groupMode ? 'Retraite stratégique' : "Sacrifier l'Avantage"} » (sans coût d'Action) reste possible.</p>
             )}
           </div>
           <div className="rm-influence">

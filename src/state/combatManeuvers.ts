@@ -43,6 +43,8 @@ import { canTakeAction } from '../engine/conditions';
 import { isEngagedWith, reachRank } from '../engine/engagement';
 import { areGrappling } from '../engine/grapple';
 import { rule } from '../engine/policy';
+import { campSpend } from './combat/advantagePool';
+import { groupAdvantage } from '../engine/advantagePool';
 import { bus, EVT } from './bus';
 import { t } from '../i18n';
 
@@ -321,7 +323,7 @@ export function resolveManeuver(
 ): void {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos) return;
-  attacker.advantage = Math.max(0, attacker.advantage - spent);
+  campSpend(get, attacker, spent); // dépense l'Avantage : réserve du camp (mode groupe AA l.4142) / le combattant (LDB)
   const rng = battleRng();
   // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
   // canonique du geste (`ATTACK_LABEL[def.kind]`). Aucune LOGIQUE sur le label — pur affichage.
@@ -391,4 +393,65 @@ export function resolveManeuver(
 export function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
   if (isBestial(defender.traits)) return 'esquive';
   return defenseValue(defender, 'esquive') > defenseValue(defender, 'parade') ? 'esquive' : 'parade';
+}
+
+// ---------------------------------------------------------------------------
+// Manœuvres de TALENT liées à l'Avantage (Battement / Distraire) — LDB 10 / AA
+// ---------------------------------------------------------------------------
+
+/** Battement (LDB 10 l.103 / AA l.4361) est-il déclarable par `attacker` contre `foe` ? Le porteur du
+ *  Talent doit être Engagé, `foe` doit PORTER une arme et ne pas être d'une Taille SUPÉRIEURE (l.103). */
+export function battementEligible(attacker: Combatant, foe: Combatant): boolean {
+  if (foe.kind === attacker.kind || isOutOfAction(foe)) return false;
+  const foeArmed = (foe.weapons ?? []).some((w) => w.type === 'melee' || w.type === 'ranged');
+  return foeArmed && sizeGap(foe.size, attacker.size) < 1 && isEngagedWith(attacker, foe.id);
+}
+
+/** Avantage retiré à l'adversaire par un Battement RÉUSSI de `dr` DR : LDB (l.103) « −1 et −1 par DR » ;
+ *  variante « Avantage de groupe » (AA l.4361) « −1, et −1 de plus si 6 DR ». PUR — SOURCE UNIQUE du barème. */
+export function battementRemoval(dr: number): number {
+  return groupAdvantage() ? 1 + (dr >= 6 ? 1 : 0) : 1 + Math.max(0, dr);
+}
+
+/**
+ * Résout un Battement (Action) de `attacker` contre `foe` — `atk` = jet de Corps à corps FIGÉ (NON opposé,
+ * influençable côté héros). Sur SUCCÈS, retire l'Avantage adverse via `campSpend` (débite l'individu en
+ * LDB, la réserve du camp adverse en mode groupe) selon `battementRemoval(DR)`. Renvoie la ligne de journal.
+ * MUTE `foe` (et la réserve). Ne consomme PAS l'Action (l'appelant pose `acted`). Ne touche pas `checkBattleOver`.
+ */
+export function resolveBattement(get: Get, attacker: Combatant, foe: Combatant, atk: TestResult): string {
+  if (!atk.success) return t('manv.battementFail', { name: attacker.name, foe: foe.name });
+  const removed = battementRemoval(atk.sl);
+  const before = groupAdvantage() ? undefined : foe.advantage;
+  campSpend(get, foe, removed); // retire de la réserve du camp adverse (mode groupe) / de l'Avantage du foe (LDB)
+  const n = before != null ? before - foe.advantage : removed;
+  return t('manv.battement', { name: attacker.name, foe: foe.name, n });
+}
+
+/** Distraire (LDB 10 l.364 / AA l.4395) est-il déclarable par `attacker` contre `foe` ? Un adversaire
+ *  vivant en Ligne de vue (l'appelant vérifie la LdV) ; ici : camp opposé, actif. */
+export function distraireEligible(attacker: Combatant, foe: Combatant): boolean {
+  return foe.kind !== attacker.kind && !isOutOfAction(foe);
+}
+
+/**
+ * Résout un Distraire (Mouvement) — Test OPPOSÉ Athlétisme (attaquant) vs Calme (défenseur). `atk` = jet
+ * d'Athlétisme FIGÉ (influençable côté héros), `defRoll` = jet de Calme du défenseur (subi). Sur victoire
+ * de l'attaquant, `foe` est DISTRAIT (`distractedRounds = 2`) → il ne génère aucun Avantage jusqu'à la fin
+ * du prochain Round (`campGain` le refuse). Renvoie la ligne de journal. MUTE `foe`. Ne touche pas `battle`.
+ */
+export function resolveDistraire(attacker: Combatant, foe: Combatant, atk: TestResult, defRoll: TestResult): string {
+  const opp = resolveOpposed(atk, defRoll);
+  if (!opp.attackerWins) return t('manv.distraireFail', { name: attacker.name, foe: foe.name });
+  foe.distractedRounds = 2; // jusqu'à la fin du PROCHAIN Round (2 franchissements de Round)
+  return t('manv.distraire', { name: attacker.name, foe: foe.name });
+}
+
+/** Valeur de Test d'Athlétisme (Distraire, attaquant) / de Calme (défenseur) — Force Mentale + avances de
+ *  la Compétence. SOURCE des jets de `resolveDistraire`. Pur. */
+export function distraireAttackValue(c: Combatant): number {
+  return effectiveChar(c, 'Ag') + (c.skills.find((s) => s.skillId === 'athletisme')?.advances ?? 0);
+}
+export function distraireDefenseValue(c: Combatant): number {
+  return effectiveChar(c, 'FM') + (c.skills.find((s) => s.skillId === 'calme')?.advances ?? 0);
 }

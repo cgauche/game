@@ -231,6 +231,37 @@ export function fearSizeAsMount(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.fearSizeAsMount);
 }
 
+/** Coût d'Avantage d'une Retraite stratégique (Désengagement, mode groupe AA l.4139 : 2 Avantages) pour
+ *  `c` : abaissé au `retreatCost` déclaré par un Talent (Impitoyable AA l.4418 → 1). Défaut 2. Lu par le
+ *  Désengagement en mode « Avantage de groupe ». */
+export function retreatAdvantageCost(c: Combatant): number {
+  return featuresOf(c).reduce((m, { def }) => (def.retreatCost != null ? Math.min(m, def.retreatCost) : m), 2);
+}
+
+/** Impitoyable (LDB 10 l.591) : au Désengagement « Sacrifier l'Avantage », le porteur GARDE niveau
+ *  Avantages au lieu de tomber à 0 (0 si le talent est absent). Mode Livre de base uniquement. */
+export function keptAdvantageOnDisengage(c: Combatant): number {
+  return levelSum(c, (d) => !!d.keepAdvantageOnDisengage);
+}
+
+/** Impitoyable (LDB 10 l.591) : le porteur peut se Désengager en Sacrifiant l'Avantage même sans être
+ *  strictement supérieur en Avantage à ses adversaires (Mode Livre de base). */
+export function canDisengageWithLessAdvantage(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.disengageWithLessAdvantage);
+}
+
+/** Battement — variante AA (l.4361) : le combattant porte le Talent qui l'autorise à déclarer une manœuvre
+ *  de Battement (Action, Test de Corps à corps NON opposé retirant de l'Avantage à la réserve adverse). */
+export function hasBattement(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.battement);
+}
+
+/** Distraire (LDB 10 / AA l.4395) : le combattant porte le Talent qui l'autorise à déclarer une manœuvre de
+ *  Distraction (Mouvement, Test opposé Athlétisme/Calme empêchant la cible de gagner de l'Avantage). */
+export function hasDistraire(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.distraire);
+}
+
 /** Cœur vaillant (LDB 10) : récupération du Brisé même Engagé. */
 export function hasBraveheart(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.braveheart);

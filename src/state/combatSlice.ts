@@ -31,7 +31,7 @@ import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '.
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
 import { groupAdvantage, mirrorPools } from '../engine/advantagePool';
-import { campGain, startAdvantagePools } from './combat/advantagePool';
+import { campGain, campSpend, startAdvantagePools } from './combat/advantagePool';
 import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
@@ -43,7 +43,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
-import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam } from '../engine/combatFeatures/dispatch';
+import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
@@ -284,7 +284,12 @@ export function createCombatSlice(get: Get, set: Set) {
       const foes = (mover.engagedWith ?? [])
         .map((id) => battle.combatants.find((c) => c.id === id))
         .filter((c): c is Combatant => !!c);
-      if (!groupAdvantage()) mover.advantage = 0; // « ramener votre Avantage à 0 » (l.87) — en mode groupe la réserve n'est pas dépensée ici (Retraite stratégique = dépense dédiée, non modélisée)
+      // « Ramener votre Avantage à 0 » (LDB 15-Dépl l.87) ; en mode « Avantage de groupe » c'est la
+      // Retraite stratégique (AA l.4139) : dépense FIXE de 2 Avantages de la réserve du camp (1 avec
+      // Impitoyable AA l.4418), débitée par `campSpend`. Mode LDB : Impitoyable (LDB 10 l.591) GARDE
+      // niveau Avantages au lieu de tomber à 0.
+      if (groupAdvantage()) campSpend(get, mover, retreatAdvantageCost(mover));
+      else mover.advantage = Math.min(mover.advantage, keptAdvantageOnDisengage(mover));
       for (const f of foes) disengageFrom(mover, f); // se place hors de portée de TOUS (l.87)
       set({
         pendingDisengage: null,
@@ -773,7 +778,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingTrample: null });
       if (!attacker || !target) return;
       const prevActed = battle.acted; // action GRATUITE : ne consomme pas l'Action
-      attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage (LDB 85 l.320)
+      campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
       applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, pt.result);
       set({ battle: { ...get().battle!, acted: prevActed } });
     },

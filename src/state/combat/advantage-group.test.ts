@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { campGain, reversalStealOne, reconcileAdvantageToPool, roundEndAdvantageTransfer, startAdvantagePools } from './advantagePool';
+import { campGain, campSpend, spendableAdvantage, reversalStealOne, reconcileAdvantageToPool, roundEndAdvantageTransfer, startAdvantagePools } from './advantagePool';
 import { setRule, resetRule } from '../../engine/policy';
 import { baseTestMods } from '../../engine/combat';
 import type { Combatant } from '../../engine/types';
@@ -63,6 +63,78 @@ describe('campGain — mode « Avantage de groupe » : réserve du camp (AA l.41
     reconcileAdvantageToPool(get, e); // …on relève la réserve adverse en conséquence
     expect(battle.advantagePools).toEqual({ allies: 0, foes: 3 });
     expect(e.advantage).toBe(3);
+  });
+});
+
+describe('campSpend — dépense d’Avantage (symétrique de campGain)', () => {
+  it('mode Livre de base : débite l’Avantage du SEUL combattant (aucune réserve)', () => {
+    const a = mk('h1', 'hero', { advantage: 3 });
+    const { get, battle } = makeGet([a]);
+    campSpend(get, a, 2);
+    expect(a.advantage).toBe(1);
+    expect(battle.advantagePools).toBeUndefined();
+  });
+
+  it('mode groupe : débite la RÉSERVE du camp et re-projette (jamais sous 0)', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const a = mk('h1', 'hero');
+    const b = mk('h2', 'hero');
+    const e = mk('e1', 'enemy');
+    const { get, battle } = makeGet([a, b, e], { allies: 3, foes: 1 });
+    campSpend(get, a, 2); // dépense côté alliés → mirror projette la réserve sur tout le monde
+    expect(battle.advantagePools).toEqual({ allies: 1, foes: 1 });
+    expect(a.advantage).toBe(1); // projection alliés
+    expect(b.advantage).toBe(1);
+    expect(e.advantage).toBe(1); // camp adverse intact
+    campSpend(get, a, 5); // sur-dépense → planché à 0
+    expect(battle.advantagePools).toEqual({ allies: 0, foes: 1 });
+  });
+
+  it('spendableAdvantage : réserve du camp (groupe) vs Avantage individuel (LDB)', () => {
+    const a = mk('h1', 'hero', { advantage: 4 });
+    const e = mk('e1', 'enemy');
+    const noPools = makeGet([a, e]);
+    expect(spendableAdvantage(noPools.get, a)).toBe(4); // LDB : individuel
+    setRule('combat-aa-avantage-groupe', true);
+    const { get } = makeGet([a, e], { allies: 2, foes: 5 });
+    expect(spendableAdvantage(get, a)).toBe(2); // réserve alliés
+    expect(spendableAdvantage(get, e)).toBe(5); // réserve adverses
+  });
+});
+
+describe('Distraire (LDB 10 l.364) — le distrait ne génère plus d’Avantage', () => {
+  it('campGain refuse tout gain tant que distractedRounds > 0', () => {
+    const a = mk('h1', 'hero', { distractedRounds: 2 });
+    const { get } = makeGet([a]);
+    campGain(get, a, 3);
+    expect(a.advantage).toBe(0); // aucun gain (LDB : ni pour lui, ni pour sa réserve)
+  });
+
+  it('mode groupe : un distrait ne crédite pas la réserve de son camp', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const a = mk('h1', 'hero', { distractedRounds: 1 });
+    const b = mk('h2', 'hero');
+    const { get, battle } = makeGet([a, b], { allies: 0, foes: 0 });
+    campGain(get, a, 2); // a est distrait → rien
+    expect(battle.advantagePools).toEqual({ allies: 0, foes: 0 });
+    campGain(get, b, 2); // b n’est pas distrait → crédite
+    expect(battle.advantagePools).toEqual({ allies: 2, foes: 0 });
+  });
+});
+
+describe('reconcileAdvantageToPool — bidirectionnel (octroi/dépense par op)', () => {
+  it('un spendAdvantage op (projection abaissée) ABAISSE la réserve du camp', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const a = mk('h1', 'hero');
+    const b = mk('h2', 'hero');
+    const { get, battle } = makeGet([a, b], { allies: 0, foes: 0 });
+    campGain(get, a, 4); // réserve alliés = 4, projetée sur a ET b
+    expect(a.advantage).toBe(4);
+    expect(b.advantage).toBe(4);
+    a.advantage = 1; // un op `spendAdvantage` a dépensé 3 DIRECTEMENT sur la projection d’un allié
+    reconcileAdvantageToPool(get, a);
+    expect(battle.advantagePools).toEqual({ allies: 1, foes: 0 }); // réserve abaissée
+    expect(b.advantage).toBe(1); // re-projeté sur tout le camp
   });
 });
 

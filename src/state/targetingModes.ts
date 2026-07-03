@@ -18,7 +18,7 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
 import { isOutOfAction, canTakeAction, hasCondition, COND } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
-import { campGain } from './combat/advantagePool';
+import { campGain, campSpend } from './combat/advantagePool';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzied } from '../engine/psychology';
 import { healableTargets, combatHealModes } from '../engine/healing';
@@ -413,7 +413,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   }
   // Avantage de la manœuvre dépensé UNE fois, à la frappe (après TOUS les portails — aperçu/monture/Peur/
   // ward) : gratuites de mêlée (Morsure/Caudale… coût RAW). L'Arme (cost.advantage 0) ne dépense rien.
-  if (option.cost.advantage) active.advantage = Math.max(0, active.advantage - option.cost.advantage);
+  if (option.cost.advantage) campSpend(get, active, option.cost.advantage); // réserve du camp en mode groupe (AA l.4142) / le combattant (LDB)
   // === Approche-puis-frappe : DEUX beats explicites ===
   let approachPath: { x: number; y: number }[] | null = null;
   let pa: GameState['pendingAttack'];

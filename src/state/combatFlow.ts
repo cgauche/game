@@ -53,12 +53,12 @@ import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, cle
 import { areGrappling, clearGrapple, grappleEnvMod } from '../engine/grapple';
 import { gainAdvantage } from '../engine/advantage';
 import { groupAdvantage } from '../engine/advantagePool';
-import { campGain, reversalStealOne, roundEndAdvantageTransfer } from './combat/advantagePool';
+import { campGain, campSpend, spendableAdvantage, reversalStealOne, roundEndAdvantageTransfer } from './combat/advantagePool';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
@@ -151,7 +151,7 @@ import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructure
 import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove, riderFearSize } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
@@ -214,6 +214,7 @@ export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, org
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, hasFreeWeaponAttack, availableFreeAttackOps,
+  resolveBattement, battementEligible, resolveDistraire, distraireEligible, distraireAttackValue, distraireDefenseValue,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, conditionCtx, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -792,8 +793,17 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
     set({ battle: { ...battle, action: null, reachable: moveReachFor(mover, get().scene!, mover.pos!, effectiveMovement(mover), moveEnv(battle, mover)) } });
     return;
   }
+  // Option A du menu de Désengagement : « Sacrifier l'Avantage » (LDB 15-Dépl l.87, Avantage STRICTEMENT
+  // supérieur → tombe à 0) OU, en mode « Avantage de groupe », « Retraite stratégique » (AA l.4139 : dépense
+  // FIXE de 2 Avantages de la réserve du camp, abaissée à 1 par Impitoyable AA l.4418). Un seul chemin d'UI.
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
-  const canSacrifice = mover.advantage > maxFoeAdv; // Avantage strictement supérieur (l.87)
+  // Impitoyable (LDB 10 l.591) : peut Sacrifier l'Avantage même sans supériorité stricte (mais il faut au
+  // moins 1 Avantage à dépenser). En mode groupe : Retraite stratégique = dépense FIXE de la réserve du camp.
+  const canSacrifice = groupAdvantage()
+    ? spendableAdvantage(get, mover) >= retreatAdvantageCost(mover)
+    : canDisengageWithLessAdvantage(mover)
+      ? mover.advantage > 0
+      : mover.advantage > maxFoeAdv; // Avantage strictement supérieur (l.87)
   // Après avoir agi, seule l'option A (Sacrifier l'Avantage) reste possible — sans Avantage supérieur
   // il n'y a RIEN à faire → no-op (pas de menu vide, et pas de relance d'Esquive : anti-boucle l.89).
   if (battle.acted && !canSacrifice) return;
@@ -860,13 +870,13 @@ export function resolveGrappleWin(actor: Combatant, foe: Combatant, mode: 'damag
  *  au lancer de Force, via `resolveGrappleWin`) ; sur échec → `foe` gagne +1 Avantage ; égalité → rien. Renvoie
  *  la ligne de journal. MUTE actor/foe ; ne touche NI `battle` NI `pending` (l'appelant orchestre — Action
  *  verrouillée vs Attaque gratuite de tentacule/langue). SOURCE UNIQUE de l'issue opposée IA. */
-export function resolveGrappleOpposed(actor: Combatant, foe: Combatant): string {
+export function resolveGrappleOpposed(get: Get, actor: Combatant, foe: Combatant): string {
   const actorRoll = rollGrappleForce(actor, battleRng());
   const foeRoll = rollGrappleForce(foe, battleRng());
   const opp = resolveOpposed(actorRoll, foeRoll);
   const result = disengageOutcome(opp.winner);
   if (result === 'success') return resolveGrappleWin(actor, foe, 'damage', Math.max(0, opp.netSL), actorRoll.roll);
-  if (result === 'failure') gainAdvantage(foe, 1); // l'adversaire l'emporte → +1 Avantage (l.161)
+  if (result === 'failure') campGain(get, foe, 1); // l'adversaire l'emporte → +1 Avantage (l.161) — réserve du camp en mode groupe (AA l.4114)
   return tr(result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie', { name: actor.name, foe: foe.name });
 }
 
@@ -2198,7 +2208,7 @@ export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', attack
  *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
 export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
-  attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage (LDB 85 l.320)
+  campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
   const res = resolveTrample(attacker, target, battleRng());
   applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res, false); // pose acted=true (attaque standard)… ; Piétinement = résolution instantanée (pas de modale)
   set({ battle: { ...get().battle!, acted: prevActed } }); // …qu'on restaure : le Piétinement est gratuit
@@ -2256,8 +2266,8 @@ function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extra
   if (op.perChargerOncePerRound && (uses[ck] ?? 0) >= 1) return; // 1 riposte par chargeur (Frappe réactive)
   if (op.cost?.advantage != null && actor.advantage < op.cost.advantage) return; // Avantage insuffisant
   if (op.cost?.advantageOrMovement && actor.advantage <= 0) return; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
-  if (op.cost?.advantage != null) actor.advantage = Math.max(0, actor.advantage - op.cost.advantage);
-  else if (op.cost?.advantageOrMovement) actor.advantage = Math.max(0, actor.advantage - 1);
+  if (op.cost?.advantage != null) campSpend(get, actor, op.cost.advantage); // réserve du camp en mode groupe (AA l.4142) / le combattant (LDB)
+  else if (op.cost?.advantageOrMovement) campSpend(get, actor, 1);
   actor.freeAttacksThisTurn = { ...uses, [fa.key]: (uses[fa.key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
   const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
   const r = resolveAttack(get, actor, target);
@@ -2353,7 +2363,7 @@ function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Comb
  *  Cornes/Tentacules 0, Morsure/Caudale/Piétinement 1). */
 function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Combatant, kind: string, bonus: number, cost = 1): boolean {
   const prevActed = get().battle?.acted ?? false;
-  attacker.advantage = Math.max(0, attacker.advantage - cost);
+  campSpend(get, attacker, cost); // réserve du camp en mode groupe (AA l.4142) / le combattant (LDB)
   const weapon = freeAttackWeapon(kind, bonus);
   if (maybeOpenDefense(get, set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
   const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
@@ -2457,7 +2467,51 @@ export function aiMaybeSpecialAction(get: Get, set: SetFn, enemy: Combatant): bo
   const atks = creatureAttacks(enemy.traits ?? []);
   if (atks.some((a) => a.kind === 'regard') && enemy.advantage >= 1) return applyGaze(get, set, enemy);
   if (atks.some((a) => a.kind === 'etreinte') && enemy.advantage >= 2) return applyChillGrasp(get, set, enemy);
+  // Battement (LDB 10 l.103 / AA l.4361) : un PNJ Engagé qui porte le Talent retire de l'Avantage à un
+  // adversaire ARMÉ pas plus grand que lui, quand la réserve/l'Avantage adverse est non nul (sinon inutile).
+  if (hasBattement(enemy)) {
+    const battle = get().battle;
+    const foe = battle?.combatants.find((c) => battementEligible(enemy, c) && spendableAdvantage(get, c) > 0);
+    if (foe) return aiBattement(get, set, enemy, foe);
+  }
+  // Distraire (LDB 10 l.364 / AA l.4395) : à défaut d'attaque productive, un PNJ qui porte le Talent nie
+  // l'Avantage d'un adversaire adjacent (Mouvement) — cible non déjà distraite, avec de l'Avantage à nier.
+  if (hasDistraire(enemy) && enemy.pos) {
+    const battle = get().battle;
+    const foe = battle?.combatants.find(
+      (c) => distraireEligible(enemy, c) && !c.distractedRounds && spendableAdvantage(get, c) > 0 && !!c.pos && combatDistance(enemy, c) <= 1,
+    );
+    if (foe) return aiDistraire(get, set, enemy, foe);
+  }
   return false;
+}
+
+/** L'IA exécute un Battement (Action, LDB 10 l.103) : jet de Corps à corps NON opposé (inline), retire de
+ *  l'Avantage adverse via `resolveBattement`. Consomme l'Action. Clôt par `checkBattleOver`. */
+function aiBattement(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): boolean {
+  const battle = get().battle;
+  if (!battle) return false;
+  const atk = rollManeuverAttacker(enemy, 'CC', battleRng());
+  const line = resolveBattement(get, enemy, foe, atk);
+  set({ battle: { ...get().battle!, acted: true, action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  return true;
+}
+
+/** L'IA exécute un Distraire (Mouvement, LDB 10 l.364) : Test OPPOSÉ Athlétisme vs Calme (inline). Sur
+ *  victoire, la cible est distraite (ne génère plus d'Avantage jusqu'à la fin du prochain Round). Consomme
+ *  l'Action (l'IA renonce à attaquer ce tour). Clôt par `checkBattleOver`. */
+function aiDistraire(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): boolean {
+  const battle = get().battle;
+  if (!battle) return false;
+  const atk = rollTest(distraireAttackValue(enemy), 'intermediaire', battleRng());
+  const def = rollTest(distraireDefenseValue(foe), 'intermediaire', battleRng());
+  const line = resolveDistraire(enemy, foe, atk, def);
+  set({ battle: { ...get().battle!, acted: true, action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  return true;
 }
 
 /** L'IA enchaîne ses attaques gratuites de créature après l'attaque principale (chacune 1 Avantage,
@@ -2531,7 +2585,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
       for (const fid of [...(enemy.grapplingWith ?? [])]) {
         const foe = battle.combatants.find((c) => c.id === fid);
         if (!foe || isOutOfAction(foe) || !areGrappling(enemy, foe)) continue;
-        const line = resolveGrappleOpposed(enemy, foe);
+        const line = resolveGrappleOpposed(get, enemy, foe);
         const b = get().battle; if (!b) break;
         set({ battle: { ...b, log: [...b.log, ev('attack', line, enemy.id, foe.id)] } });
         bus.emit(EVT.SCENE_DIRTY);
@@ -4363,6 +4417,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   for (const c of battle.combatants) {
     if (!groupAdvantage() && !isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
     c.gainedAdvThisRound = false;
+    if (c.distractedRounds) c.distractedRounds = c.distractedRounds > 1 ? c.distractedRounds - 1 : undefined; // Distraire (LDB 10 l.364) : expire en fin de Round
     c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.202)
   }
   // Nuée (LDB 85 l.200) : tout opposant ENGAGÉ avec une nuée perd 1 PB en fin de Round (submergé).
@@ -4491,7 +4546,7 @@ export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
     if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
-    const src = fearSourceFor(c, foe);
+    const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA l.4369) : Taille = monture face à la Peur de Taille
     if (!src || src.kind !== 'terreur' || state.some((p) => p.sourceId === foe.id)) continue;
     return { kind: 'terreur', sourceId: foe.id, sourceName: foe.name, indice: src.indice, prevDR: 0 };
   }
@@ -4518,7 +4573,7 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
     if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
-    const src = fearSourceFor(c, foe);
+    const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA l.4369) : Taille = monture face à la Peur de Taille
     if (!src || src.kind !== 'peur' || state.some((p) => p.sourceId === foe.id)) continue;
     return { kind: 'peur', sourceId: foe.id, sourceName: foe.name, indice: src.indice, prevDR: 0 };
   }
@@ -5032,7 +5087,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Politique IA : l'option DÉGÂTS (BF + DR, PA ignorés) — meilleure valeur garantie pour une créature qui
       // l'emporte (les options Empêtrer/Se libérer restent en DONNÉE, offertes au joueur). Test opposé PARTAGÉ
       // avec l'Attaque gratuite de tentacule/langue (`resolveGrappleOpposed`) ; ici il CONSOMME l'Action (l.161).
-      const line = resolveGrappleOpposed(enemy, foe);
+      const line = resolveGrappleOpposed(get, enemy, foe);
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('attack', line, enemy.id, foe.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);

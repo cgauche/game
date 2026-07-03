@@ -308,6 +308,10 @@ export const fr = {
   'manv.resists': '{name} résiste.',
   'manv.smoke': 'La zone se remplit de fumée — Lignes de vue bloquées {dur} Round(s).',
   'manv.smokeZone': 'Fumée',
+  'manv.battement': '{name} exécute un Battement sur {foe} : −{n} Avantage.',
+  'manv.battementFail': '{name} rate son Battement sur {foe}.',
+  'manv.distraire': '{name} distrait {foe} : plus d’Avantage jusqu’à la fin du prochain Round.',
+  'manv.distraireFail': '{name} ne parvient pas à distraire {foe}.',
   'fx.resists': 'Résiste',
   'fx.dodge': 'Esquive',
   // ── Phase C : narration des effets de scène/campagne au journal (state/combatEffects). ──

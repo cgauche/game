@@ -20,6 +20,14 @@ function poolsOf(battle: { advantagePools?: AdvantagePools }): AdvantagePools {
   return (battle.advantagePools ??= emptyPools());
 }
 
+/** Avantage DISPONIBLE pour dépense par `c` : en mode groupe, la réserve de SON camp (source de vérité) ;
+ *  sinon son Avantage individuel (LDB). SOURCE UNIQUE des gardes d'abordabilité d'une dépense de camp. */
+export function spendableAdvantage(get: Get, c: Combatant): number {
+  const battle = get().battle;
+  if (!groupAdvantage() || !battle) return c.advantage;
+  return poolsOf(battle)[advantageCampOf(c)];
+}
+
 /**
  * SEUL point de GAIN d'Avantage en combat. Mode groupe (AA l.4113-4115) : `n` Avantages sont crédités à
  * la réserve du camp de `c`, puis projetés sur tous les combattants. Mode Livre de base : `gainAdvantage`
@@ -27,6 +35,7 @@ function poolsOf(battle: { advantagePools?: AdvantagePools }): AdvantagePools {
  */
 export function campGain(get: Get, c: Combatant, n = 1): void {
   if (n <= 0) return; // (gainAdvantage ignore déjà n≤0 ; la réserve idem)
+  if ((c.distractedRounds ?? 0) > 0) return; // Distraire (LDB 10 l.364 / AA l.4395) : ce combattant ne génère aucun Avantage (ni pour lui, ni pour sa réserve)
   const battle = get().battle;
   if (!groupAdvantage() || !battle) {
     gainAdvantage(c, n);
@@ -34,6 +43,26 @@ export function campGain(get: Get, c: Combatant, n = 1): void {
   }
   const pools = poolsOf(battle);
   addToPool(pools, advantageCampOf(c), n);
+  mirrorPools(pools, battle.combatants);
+}
+
+/**
+ * SEUL point de DÉPENSE d'Avantage en combat — symétrique de `campGain`. Mode groupe (AA l.4132 : « Les
+ * Avantages des réserves d'Avantages des deux camps peuvent être dépensés… ») : `n` Avantages sont
+ * DÉBITÉS de la réserve du camp de `c` (jamais sous 0), puis re-projetés sur tous les combattants — la
+ * réserve reste la source de vérité (sans ça, `mirrorPools` restaurerait la projection au prochain sync).
+ * Mode Livre de base (défaut) : dépense per-combattant `c.advantage = max(0, c.advantage − n)`, INCHANGÉE.
+ * Sans bataille (tests unitaires du moteur), on retombe aussi sur la mutation per-combattant.
+ */
+export function campSpend(get: Get, c: Combatant, n: number): void {
+  if (n <= 0) return;
+  const battle = get().battle;
+  if (!groupAdvantage() || !battle) {
+    c.advantage = Math.max(0, c.advantage - n);
+    return;
+  }
+  const pools = poolsOf(battle);
+  addToPool(pools, advantageCampOf(c), -n);
   mirrorPools(pools, battle.combatants);
 }
 
@@ -60,18 +89,20 @@ export function reversalStealOne(get: Get, thief: Combatant, victim: Combatant):
 }
 
 /**
- * Réconcilie la réserve du camp de `c` avec son Avantage individuel après un octroi par OP (`gainAdvantage`
- * op — Redoutable, ZI : complète l'Avantage jusqu'à l'Indice au début du tour). L'op écrit sur le
- * combattant (la projection) sans atteindre la réserve ; on RELÈVE ici la réserve (jamais réduite) puis on
- * re-projette. No-op hors mode groupe.
+ * Réconcilie la réserve du camp de `c` avec son Avantage individuel après qu'un OP a écrit DIRECTEMENT sur
+ * la projection `c.advantage` sans passer par `campGain`/`campSpend` : `gainAdvantage` (Redoutable, ZI :
+ * complète jusqu'à l'Indice) RELÈVE la réserve du camp ; `spendAdvantage` (un futur effet dépensant de
+ * l'Avantage par op) l'ABAISSE. On reporte l'ÉCART (`c.advantage − réserve du camp`) sur la réserve puis on
+ * re-projette — la réserve reste la source de vérité. No-op hors mode groupe (l'op a déjà tout fait). Idempotent
+ * (après re-projection `c.advantage == réserve`, un 2ᵉ appel ne bouge rien).
  */
 export function reconcileAdvantageToPool(get: Get, c: Combatant): void {
   const battle = get().battle;
   if (!groupAdvantage() || !battle) return;
   const pools = poolsOf(battle);
   const camp = advantageCampOf(c);
-  if (c.advantage > pools[camp]) {
-    pools[camp] = c.advantage;
+  if (c.advantage !== pools[camp]) {
+    pools[camp] = Math.max(0, c.advantage);
     mirrorPools(pools, battle.combatants);
   }
 }

@@ -7,7 +7,8 @@
 import type { Combatant } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { effectiveMovement } from '../engine/encumbrance';
-import { sizeGap } from '../engine/size';
+import { sizeGap, type SizeCategory } from '../engine/size';
+import { fearSizeAsMount } from '../engine/combatFeatures/dispatch';
 import type { ModLine } from '../engine/combat';
 import { Scene, isWalkable } from './scene';
 import { occupiesTile, footprintN, combatDistance } from './footprint';
@@ -46,6 +47,16 @@ export const mountOf = (battle: BattleState, rider: Combatant): Combatant | unde
 /** Géométrie de COMBAT d'un combattant : sa MONTURE s'il est cavalier (le couple partage pos+empreinte,
  *  LDB 14), sinon lui-même. SOURCE UNIQUE pour mesurer reach/adjacence d'un couple monté. */
 export const combatGeomOf = (battle: BattleState, c: Combatant): Combatant => mountOf(battle, c) ?? c;
+
+/** Cavalier émérite (AA l.4369) : Taille EFFECTIVE de `self` face à la Peur/Terreur causée par la TAILLE
+ *  de l'adversaire. Le porteur du Talent, une fois monté, compte la Taille de sa MONTURE (« confiant une
+ *  fois monté »). `undefined` (→ l'appelant retombe sur `self.size`) s'il n'a pas le Talent ou n'est pas
+ *  monté. Passé à `fearSourceFor(self, foe, ⇐)` : seul le versant Taille est concerné, jamais un
+ *  `causesPeur`/`causesTerreur` de statbloc (un démon fait toujours peur, RAW). */
+export function riderFearSize(battle: BattleState, self: Combatant): SizeCategory | undefined {
+  if (!fearSizeAsMount(self)) return undefined;
+  return mountOf(battle, self)?.size;
+}
 
 /** Distance de COMBAT (Chebyshev d'empreinte) tenant compte des MONTURES : d'empreinte de monture à
  *  empreinte de monture (le cavalier suit). Sans monture = `combatDistance` normal. */

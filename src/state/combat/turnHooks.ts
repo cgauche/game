@@ -26,8 +26,8 @@ import { rollTest } from '../../engine/tests';
 import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
 import { roundTestInteractive } from './cadenceGate';
-import { reconcileAdvantageToPool } from './advantagePool';
-import { mountMovement } from '../mount';
+import { reconcileAdvantageToPool, campSpend } from './advantagePool';
+import { mountMovement, riderFearSize } from '../mount';
 import { losClear } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
@@ -183,7 +183,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   for (const foe of battle.combatants) {
     if (foe.kind === enemy.kind || isOutOfAction(foe) || !foe.pos) continue;
     if (!losClear(scene, enemy.pos, foe.pos, smokeOf(battle))) continue;
-    const src = fearSourceFor(enemy, foe);
+    const src = fearSourceFor(enemy, foe, riderFearSize(battle, enemy)); // Cavalier émérite (AA l.4369) : Taille = monture face à la Peur de Taille
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
     const sansPeur = sansPeurVs(enemy, foe); // Sans Peur (Ennemi, LDB 10 l.864) : Test de Calme +20 à la rencontre
     const res = psychResolution(src.kind);
@@ -257,7 +257,7 @@ registerCombatHook({
     if (!enemy || !hasRage(enemy.traits) || isFrenzied(enemy)) return;
     const adv = enemy.advantage ?? 0;
     if (adv >= 3) {
-      enemy.advantage = 0;
+      campSpend(get, enemy, adv); // dépense TOUS ses Avantages (LDB 85 l.281) — réserve du camp en mode groupe (AA l.4142)
       (enemy.psychState ??= []).push({ type: 'frenesie' });
       battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.name }), enemy.id));
       set({ battle: { ...battle } });
@@ -274,7 +274,7 @@ registerCombatHook({
     // n'est pas modélisable en Trait ciblé (groupMatch), on ne dépense pas pour lui.
     const cibles = [...new Set(uncovered.map((f) => f.groups?.[0]).filter((g): g is string => !!g))];
     if (!cibles.length) return;
-    enemy.advantage = 0;
+    campSpend(get, enemy, adv); // dépense TOUS ses Avantages (LDB 85 l.283) — réserve du camp en mode groupe (AA l.4142)
     enemy.psychState ??= [];
     for (const cible of cibles) {
       const src = uncovered.find((f) => f.groups?.[0] === cible)!;
