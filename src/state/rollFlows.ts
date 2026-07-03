@@ -38,7 +38,8 @@ import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
+import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll } from '../engine/tests';
+import { d100 } from '../engine/dice';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
@@ -1083,14 +1084,42 @@ export const FLOWS = {
     resolve: (_s, p, _actor, _get, forced) => {
       if (forced) {
         if (p.success) return null; // rien à forcer si déjà réussi
-        // Résilience « vous choisissez le résultat » (LDB 17 l.73) : 01 → DR MAXIMUM.
-        return { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1), forced: true };
+        // Résilience « vous choisissez le résultat » (LDB 17 l.73) : 01 → DR MAXIMUM. En Test COMBINÉ, le
+        // jet forcé 01 réussit les DEUX cibles → niveau `full` ; en tenue, le PJ l'emporte sur l'opposition.
+        const primary = { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1), forced: true };
+        if (p.target2 != null) return { ...primary, success2: true, sl2: Math.max(evaluateTest(1, p.target2).sl, 1), combinedLevel: 'full' as const };
+        if (p.purpose === 'hold') return { ...primary, enemySL: Math.min(-1, (p.enemySL ?? 0)) };
+        return primary;
+      }
+      // Test COMBINÉ (Infiltration/Repérage, l.75/102) : UN jet confronté aux DEUX valeurs (LDB 12 l.229).
+      if (p.target2 != null) {
+        const c = evaluateCombinedTest(d100(battleRng()), p.target, p.target2);
+        return { roll: c.roll, sl: c.a.sl, success: c.a.success, sl2: c.b.sl, success2: c.b.success, combinedLevel: c.level };
+      }
+      // Test OPPOSÉ de « Tenez votre position » (l.161) : le PJ jette, l'ennemi a un jet FIGÉ. Le DR net
+      // de l'ennemi (`enemySL`, positif = l'ennemi progresse) alimente le Point de rupture à la résolution.
+      if (p.purpose === 'hold' && p.enemyValue != null && p.enemyRoll != null) {
+        const pt = evaluateTest(d100(battleRng()), p.target);
+        const et = evaluateTest(p.enemyRoll, p.enemyValue);
+        return { roll: pt.roll, sl: pt.sl, success: pt.sl >= et.sl, enemySL: et.sl - pt.sl };
       }
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
-    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) },
+    bonus: {
+      // Chance « +1 DR » : re-dérive le PRIMAIRE ; en Test combiné, ré-évalue le NIVEAU (+1 DR sur la 1ʳᵉ
+      // cible peut faire basculer partial→full) ; en tenue, +1 DR au PJ réduit d'autant le DR net de l'ennemi.
+      derive: (_s, p) => {
+        const success = (p.roll ?? 0) <= p.target;
+        if (p.target2 != null) {
+          const passed = (success ? 1 : 0) + (p.success2 ? 1 : 0);
+          return { sl: p.sl + 1, success, combinedLevel: passed === 2 ? 'full' as const : passed === 1 ? 'partial' as const : 'fail' as const };
+        }
+        if (p.purpose === 'hold') return { sl: p.sl + 1, success: p.sl + 1 >= 0 && success, enemySL: (p.enemySL ?? 0) - 1 };
+        return { sl: p.sl + 1, success };
+      },
+    },
   }),
 
   /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance ou de Calme

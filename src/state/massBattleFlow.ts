@@ -23,7 +23,7 @@ import type { Get, Set } from './flowTypes';
 import type { PendingBase } from './rollFlow';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
-import { d10, type RNG } from '../engine/dice';
+import { d10, d100, type RNG } from '../engine/dice';
 import { partyBest } from '../engine/skills';
 import { testValue } from '../engine/skills';
 import { isStructure } from '../engine/structures';
@@ -32,10 +32,11 @@ import { refLabel } from '../data';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../engine/types';
 import {
   battleSceneById, battleActivityById, BATTLE_ACTIVITIES, inspireDifficulty, INSPIRE_BONUS, resolveClash,
-  sceneDeltas, sceneChains, testResolution, combatResolution, rallyHealAmount, activityOutcomes,
-  applyMightDelta, battleOutcome, isDestroyed, battleHazard, clampMight,
+  sceneDeltas, sceneChains, testResolution, combatResolution, combatLossResolution, rallyHealAmount,
+  activityOutcomes, applyMightDelta, battleOutcome, isDestroyed, battleHazard, clampMight,
+  initHoldState, resolveHoldRound, holdEnemyBonus,
   type BattleSceneDef, type BattleActivityDef, type ClashResult, type BattleOutcome,
-  type ActivityOutcome, type SceneResolution,
+  type ActivityOutcome, type SceneResolution, type HoldState,
 } from '../engine/massBattle';
 
 /** Une armée engagée dans la Puissance de Bataille. */
@@ -120,6 +121,9 @@ export interface MassBattleState {
   combatScene?: MassBattleCombatScene;
   /** Rencontres à démarrer pour les Scènes de COMBAT/MENACE (par id de Scène → id d'encounter). */
   sceneEncounters?: Record<string, string>;
+  /** État PERSISTANT par Scène entre Rounds (générique) — ex. Point de rupture d'une Scène « Tenez votre
+   *  position » (`HoldState`, l.161). Clé = id de Scène. */
+  sceneState: Record<string, HoldState>;
   /** Journal de bataille (une ligne par événement marquant). */
   log: string[];
 }
@@ -158,12 +162,31 @@ export interface PendingBattleTest extends PendingBase {
   char?: CharKey;
   skillValue: number;
   difficulty: Difficulty;
-  /** But du jet : Discours inspirant / Scène cinématique / Activité pré-combat / Rassemblement. */
-  purpose: 'inspire' | 'scene' | 'activity' | 'rally';
-  /** Scène concernée (`purpose:'scene'`). */
+  /** But du jet : Discours inspirant / Scène cinématique / Activité pré-combat / Rassemblement / Tenue. */
+  purpose: 'inspire' | 'scene' | 'activity' | 'rally' | 'hold';
+  /** Scène concernée (`purpose:'scene'`/`'hold'`). */
   sceneId?: string;
   /** Activité concernée (`purpose:'activity'`). */
   activityId?: string;
+  // ── Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences, LDB 12 l.229) ──
+  /** Libellé de la 2ᵈᵉ compétence (Test combiné). */
+  skill2?: string;
+  /** Valeur NUE de la 2ᵈᵉ compétence (Test combiné). */
+  skillValue2?: number;
+  /** Cible EFFECTIVE de la 2ᵈᵉ compétence (base + Difficulté + mod). */
+  target2?: number;
+  /** Résultat vs la 2ᵈᵉ compétence (Test combiné) — mémorisé pour l'affichage/la ré-influence. */
+  sl2?: number;
+  success2?: boolean;
+  /** Niveau du Test combiné : `full` = les deux réussies ; `partial` = une seule ; `fail` = aucune. */
+  combinedLevel?: 'full' | 'partial' | 'fail';
+  // ── Test OPPOSÉ de « Tenez votre position » (l.161) : l'ennemi oppose son jet FIGÉ ──
+  /** Valeur (cible effective) de l'ENNEMI au Test opposé de tenue. */
+  enemyValue?: number;
+  /** Jet FIGÉ de l'ennemi (opposé) — posé à l'ouverture, ré-utilisé à la résolution. */
+  enemyRoll?: number;
+  /** DR net de l'ennemi au Test opposé de tenue (positif = l'ennemi l'emporte). */
+  enemySL?: number;
   roll: number | null;
   target: number;
   sl: number;
@@ -257,6 +280,7 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
     sceneDeltas: [],
     // Rencontres des Scènes de combat (par id) — mémorisées pour `startBattleCombat`.
     sceneEncounters: spec.sceneEncounters,
+    sceneState: {},
     log: [`Bataille engagée : ${spec.allyName ?? 'les Personnages'} (Puissance ${allyMight}) contre ${spec.enemyName ?? 'l\'ennemi'} (Puissance ${enemyMight}).`],
   };
   set({ massBattle: mb, screen: 'massBattle' });
@@ -300,7 +324,8 @@ export function openMassBattleInspire(get: Get, set: Set): void {
   });
 }
 
-/** Ouvre le Test d'une Activité de bataille pré-combat (Planification/Infiltration/… l.79-106). */
+/** Ouvre le Test d'une Activité de bataille pré-combat (Planification/Infiltration/… l.79-106). Un Test
+ *  COMBINÉ (Infiltration/Repérage, `def.combined`) confronte UN jet aux DEUX compétences de l'acteur. */
 export function openMassBattleActivity(get: Get, set: Set, activityId: string): void {
   const mb = get().massBattle;
   const def = battleActivityById(activityId);
@@ -309,27 +334,57 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
   if (def.requires === 'planned' && !mb.planned) return;
   if (def.requires === 'scouted' && !mb.scouted) return;
   const party = get().party.filter((h) => !h.dead);
-  const picked = bestForSkills(party, def.skills, def.char);
-  if (!picked) return;
   // Le Repérage/Infiltration boostent le Test de Planification (`planningBonus`, l.75/100).
   const mod = activityId === 'planification' ? mb.planningBonus : 0;
+  if (def.combined && def.skills && def.skills.length >= 2) {
+    // Test COMBINÉ (l.75/102) : l'acteur maximisant le PLUS FAIBLE des deux (facteur limitant) décide ;
+    // les DEUX valeurs sont testées par un même jet (`evaluateCombinedTest` à la résolution).
+    const picked = bestForCombined(party, def.skills[0], def.skills[1], def.char);
+    if (!picked) return;
+    openBattleTest(get, set, {
+      actor: picked.actor, skillValue: picked.value1, skillId: def.skills[0].skillId, spec: def.skills[0].spec, char: def.char,
+      difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod,
+      combined: { skillId: def.skills[1].skillId, spec: def.skills[1].spec, value: picked.value2 },
+    });
+    return;
+  }
+  const picked = bestForSkills(party, def.skills, def.char);
+  if (!picked) return;
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
     difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod,
   });
 }
 
+/** Meilleur PJ pour un Test COMBINÉ de deux compétences (l.75/102) : celui dont le PLUS FAIBLE des deux
+ *  (le facteur limitant du Test combiné) est le plus élevé. Renvoie l'acteur + ses deux valeurs. */
+function bestForCombined(
+  party: Combatant[],
+  sk1: { skillId: string; spec?: string },
+  sk2: { skillId: string; spec?: string },
+  char: CharKey | undefined,
+): { actor: Combatant; value1: number; value2: number } | null {
+  let picked: { actor: Combatant; value1: number; value2: number } | null = null;
+  for (const c of party) {
+    const v1 = testValue(c, sk1.skillId, char, sk1.spec);
+    const v2 = testValue(c, sk2.skillId, char, sk2.spec);
+    if (!picked || Math.min(v1, v2) > Math.min(picked.value1, picked.value2)) picked = { actor: c, value1: v1, value2: v2 };
+  }
+  return picked;
+}
+
 // ── Scènes cinématiques (l.116-225) ──────────────────────────────────────────────────────────────
 
-/** Choisit une Scène de la SITUATION : 'test' → modale de jet ; 'combat'/'threat' → combat tactique.
- *  Une Scène par PJ (l.116-118) : le meilleur PJ N'AYANT PAS ENCORE AGI décide (les combats engagent
- *  tous les frappeurs). */
+/** Choisit une Scène de la SITUATION : 'test' → modale de jet ; 'hold' → Test opposé de tenue ;
+ *  'combat'/'threat' → combat tactique. Une Scène par PJ (l.116-118) : le meilleur PJ N'AYANT PAS ENCORE
+ *  AGI décide (les combats engagent tous les frappeurs). */
 export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   const mb = get().massBattle;
   const scene = battleSceneById(sceneId);
   if (!mb || mb.phase !== 'round' || mb.awaitingNext || !scene) return;
   if (!mb.situation.includes(sceneId) || mb.resolvedScenes.includes(sceneId)) return;
   if (scene.kind === 'combat' || scene.kind === 'threat') { startBattleCombat(get, set, scene); return; }
+  if (scene.kind === 'hold') { openHoldScene(get, set, scene); return; }
   // Scène 'test' : compétences AU CHOIX (l.151) → le meilleur PJ DISPONIBLE (pas déjà engagé ce Round).
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
@@ -339,6 +394,32 @@ export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
     difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'scene', sceneId: scene.id, mod,
+  });
+}
+
+/** Ouvre le Test OPPOSÉ d'une Scène « Tenez votre position » (l.161) : le meilleur PJ DISPONIBLE défend
+ *  la position ; l'ennemi oppose un jet FIGÉ (valeur = Puissance ennemie, abstraction de « des Compétences
+ *  adaptées à la situation ») augmenté du bonus cumulatif de tenue (`holdEnemyBonus` selon les Rounds déjà
+ *  tenus, l.163). Le DR net de l'ennemi alimente le Point de rupture à la résolution. */
+function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
+  const mb = get().massBattle;
+  if (!mb || !scene.hold) return;
+  const state = mb.sceneState[scene.id] ?? initHoldState();
+  if (state.broken) { get().log(`Scène « ${scene.label} » : la position a déjà cédé (déroute).`); return; }
+  const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
+  if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
+  const picked = bestForSkills(party, scene.skills, scene.char);
+  if (!picked) return;
+  const held = state.held;
+  const enemyBonus = holdEnemyBonus(scene.hold, held); // +10 cumulatif par Round déjà tenu (l.163).
+  const mod = massBattleThreatPenalty(mb);
+  // Jet FIGÉ de l'ennemi (Test opposé, l.161) : Puissance ennemie + bonus cumulatif de tenue, borné [1,99].
+  const enemyValue = Math.max(1, Math.min(99, mb.enemy.might + enemyBonus));
+  const enemyRoll = d100(battleRng());
+  openBattleTest(get, set, {
+    actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
+    difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'hold', sceneId: scene.id, mod,
+    enemyValue, enemyRoll,
   });
 }
 
@@ -374,19 +455,28 @@ export function openMassBattleRally(get: Get, set: Set): void {
 
 // ── Fabrique de modale + application des jets ────────────────────────────────────────────────────
 
-/** Fabrique commune d'une modale de jet de bataille (Discours/Scène/Activité/Rassemblement). */
+/** Fabrique commune d'une modale de jet de bataille (Discours/Scène/Activité/Rassemblement/Tenue). Porte
+ *  le Test COMBINÉ (`combined` : seconde compétence testée par le MÊME jet, l.75/102) et le Test OPPOSÉ de
+ *  tenue (`enemyValue`/`enemyRoll`, l.161 : jet ENNEMI figé). */
 function openBattleTest(get: Get, set: Set, o: {
   actor: Combatant; skillValue: number; skillId?: string; spec?: string; char?: CharKey;
   difficulty: Difficulty; label: string; purpose: PendingBattleTest['purpose']; sceneId?: string; activityId?: string; mod?: number;
+  combined?: { skillId: string; spec?: string; value: number };
+  enemyValue?: number; enemyRoll?: number;
 }): void {
   const skill = o.skillId ? refLabel('skills', { id: o.skillId, spec: o.spec }) : o.char ? CHAR_LABELS[o.char] : 'Test';
+  const diffMod = DIFFICULTY_MODIFIERS[o.difficulty] + (o.mod ?? 0);
   // Cible EFFECTIVE précalculée (base + Difficulté + modificateur de situation), bornée à [1, 99].
-  const target = Math.max(1, Math.min(99, o.skillValue + DIFFICULTY_MODIFIERS[o.difficulty] + (o.mod ?? 0)));
+  const target = Math.max(1, Math.min(99, o.skillValue + diffMod));
+  const combined = o.combined
+    ? { skill2: refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }), skillValue2: o.combined.value, target2: Math.max(1, Math.min(99, o.combined.value + diffMod)) }
+    : {};
   set({
     pendingBattleTest: {
       actorId: o.actor.id, actorName: o.actor.name, label: o.label, skill,
       skillId: o.skillId, spec: o.spec, char: o.char, skillValue: o.skillValue, difficulty: o.difficulty,
       purpose: o.purpose, sceneId: o.sceneId, activityId: o.activityId, roll: null, target, sl: 0, success: false,
+      enemyValue: o.enemyValue, enemyRoll: o.enemyRoll, ...combined,
     },
   });
 }
@@ -434,6 +524,46 @@ function sceneOutcomeLine(scene: BattleSceneDef, res: SceneResolution, deltas: {
   return `Scène « ${scene.label} » résolue : ${parts.join(' ; ')}.`;
 }
 
+/** Applique un Round de « Tenez votre position » (l.161-163) : accumule le Point de rupture depuis le DR
+ *  net de l'ennemi (`pt.enemySL`), persiste l'état de tenue dans `sceneState`, et — TANT QUE la position
+ *  TIENT — applique la réduction −2 de la Puissance ennemie (effet `success` de la Scène) et RÉIMPOSE la
+ *  Scène au Round suivant (elle recommence chaque Round). Rupture (Point de rupture ≥ seuil OU Rounds max)
+ *  → déroute : la Scène n'est plus réimposée. Le PJ engagé est consommé ce Round (une Scène par PJ). */
+function applyHoldResolution(
+  mb: MassBattleState, scene: BattleSceneDef, pt: PendingBattleTest, heroes: string[],
+): { mb: MassBattleState; lines: string[] } {
+  const hold = scene.hold!;
+  const prev = mb.sceneState[scene.id] ?? initHoldState();
+  const r = resolveHoldRound(prev, hold, pt.enemySL ?? 0);
+  const lines: string[] = [];
+  let next: MassBattleState = { ...mb, sceneState: { ...mb.sceneState, [scene.id]: r.next } };
+  const shown: SceneDelta[] = [];
+  if (r.held) {
+    // Tenu : −2 de Puissance ennemie (effet `success` de la Scène, gaté par la tenue), et la Scène se
+    // représente au Round suivant avec un bonus d'opposition accru (l.163).
+    const res = testResolution(true, pt.sl);
+    for (const d of sceneDeltas(scene, res)) {
+      next = applyDelta(next, d.side, d.amount);
+      shown.push({ side: d.side, amount: d.amount, label: scene.label });
+    }
+    lines.push(`Tenez votre position : la position tient (Point de rupture ${r.next.breakpoint}/${hold.breakpoint}) — Puissance ennemie −2. L'ennemi redoublera d'efforts (opposition +${holdEnemyBonus(hold, r.next.held)} au prochain Round).`);
+  }
+  if (r.next.broken) {
+    lines.push(`Tenez votre position : la position CÈDE (Point de rupture ${r.next.breakpoint}/${hold.breakpoint}) — les Personnages sont submergés, déroute.`);
+  } else {
+    // Non rompue : la Scène RECOMMENCE au Round suivant (réimposée), le Point de rupture PERSISTE.
+    next = { ...next, imposed: uniq([...next.imposed, scene.id]) };
+    if (!r.held) lines.push(`Tenez votre position : l'ennemi gagne du terrain (Point de rupture ${r.next.breakpoint}/${hold.breakpoint}).`);
+  }
+  next = {
+    ...next,
+    resolvedScenes: uniq([...next.resolvedScenes, scene.id]),
+    actedHeroes: uniq([...next.actedHeroes, ...heroes]),
+    sceneDeltas: [...next.sceneDeltas, ...shown],
+  };
+  return { mb: next, lines };
+}
+
 /** « Appliquer » d'un jet de bataille : consomme le résultat et applique l'effet selon le `purpose`. */
 export function battleTestConfirm(get: Get, set: Set): void {
   const pt = get().pendingBattleTest;
@@ -455,11 +585,22 @@ export function battleTestConfirm(get: Get, set: Set): void {
   } else if (pt.purpose === 'activity' && pt.activityId) {
     const def = battleActivityById(pt.activityId);
     if (def) {
-      const outcomes = activityOutcomes(def, pt.success, pt.sl);
+      // Test COMBINÉ (l.75/102) : l'Activité RÉUSSIT sur `full` (les deux compétences réussies) ; le DR qui
+      // décide du palier (Stupéfiant/normal/Échec Stupéfiant) est le PLUS FAIBLE des deux (facteur limitant).
+      const { success, sl } = activityTestResult(pt);
+      const outcomes = activityOutcomes(def, success, sl);
       next = applyActivityOutcomes(next, outcomes);
-      if (pt.success && def.grantsFlag) next = { ...next, [def.grantsFlag]: true } as MassBattleState;
+      if (success && def.grantsFlag) next = { ...next, [def.grantsFlag]: true } as MassBattleState;
       next = { ...next, activitiesDone: uniq([...next.activitiesDone, pt.activityId]) };
-      lines.push(activityOutcomeLine(pt.actorName, def, pt.success, pt.sl, outcomes));
+      lines.push(activityOutcomeLine(pt.actorName, def, success, sl, outcomes, pt.combinedLevel));
+    }
+
+  } else if (pt.purpose === 'hold' && pt.sceneId) {
+    const scene = battleSceneById(pt.sceneId);
+    if (scene?.hold) {
+      const applied = applyHoldResolution(next, scene, pt, [pt.actorId]);
+      next = applied.mb;
+      lines.push(...applied.lines);
     }
 
   } else if (pt.purpose === 'rally') {
@@ -516,8 +657,20 @@ function applyActivityOutcomes(mb: MassBattleState, outcomes: ActivityOutcome[])
   return next;
 }
 
-function activityOutcomeLine(actor: string, def: BattleActivityDef, success: boolean, sl: number, outcomes: ActivityOutcome[]): string {
-  if (!success && !outcomes.length) return `${actor} échoue à l'Activité « ${def.label} » — sans effet.`;
+/** Issue effective (Succès + DR de palier) d'une Activité, Test COMBINÉ compris (l.75/102) : un Test
+ *  combiné RÉUSSIT sur `full` (les deux compétences réussies) ; son DR de palier (Stupéfiant/Échec
+ *  Stupéfiant) = le PLUS FAIBLE des deux DR (facteur limitant). Un Test simple retourne son propre couple. */
+function activityTestResult(pt: PendingBattleTest): { success: boolean; sl: number } {
+  if (pt.combinedLevel) {
+    const sl = Math.min(pt.sl, pt.sl2 ?? pt.sl);
+    return { success: pt.combinedLevel === 'full', sl };
+  }
+  return { success: pt.success, sl: pt.sl };
+}
+
+function activityOutcomeLine(actor: string, def: BattleActivityDef, success: boolean, sl: number, outcomes: ActivityOutcome[], combinedLevel?: 'full' | 'partial' | 'fail'): string {
+  const combinedNote = combinedLevel === 'partial' ? ' (Test combiné : une seule Compétence réussie)' : '';
+  if (!success && !outcomes.length) return `${actor} échoue à l'Activité « ${def.label} »${combinedNote} — sans effet.`;
   if (!success) return `${actor} rate l'Activité « ${def.label} » (Échec Stupéfiant) : ${describeOutcomes(outcomes)}.`;
   const kind = sl >= 6 ? 'Succès Stupéfiant' : 'Succès';
   return `${actor} réussit l'Activité « ${def.label} » (${kind}) : ${describeOutcomes(outcomes)}.`;
@@ -564,9 +717,12 @@ export function massBattleTrackHit(get: Get, set: Set, attacker: Combatant, targ
   set({ massBattle: { ...mb, combatScene: { ...cs, hits: cs.hits + 1, hitters } } });
 }
 
-/** Reprise après une Scène de COMBAT gagnée (appelée par `dismissVictory`) : applique la réduction de
- *  Puissance (touches + kills, l.139) puis revient à la vue de bataille. `kills` = ennemis neutralisés. */
-export function massBattleResumeCombat(get: Get, set: Set, kills: number): void {
+/** Reprise après une Scène de COMBAT (appelée par `dismissVictory`/`dismissDefeat`) : applique la
+ *  réduction/malus de Puissance selon l'issue, puis revient à la vue de bataille. VICTOIRE (`won`) :
+ *  touches + kills (l.139), effets `combatWon`. DÉFAITE (`lost`) : effets `combatLost` (Duel l.223 : le
+ *  camp allié vaincu perd −20 ; Percée l.175 : échec→Charge) — la bataille CONTINUE (pas d'écran de
+ *  défaite). Les héros sont soignés (le combat de scène ne tue pas définitivement le groupe). */
+export function massBattleResumeCombat(get: Get, set: Set, kills: number, outcome: 'won' | 'lost' = 'won'): void {
   const mb = get().massBattle;
   if (!mb?.combatScene) return;
   const scene = battleSceneById(mb.combatScene.sceneId);
@@ -574,10 +730,14 @@ export function massBattleResumeCombat(get: Get, set: Set, kills: number): void 
   let next: MassBattleState = { ...mb, combatScene: undefined };
   const lines: string[] = [];
   if (scene) {
-    const res = combatResolution(cs.hits, kills, cs.hitters.length);
+    const res = outcome === 'won'
+      ? combatResolution(cs.hits, kills, cs.hitters.length)
+      : combatLossResolution(cs.hits, cs.hitters.length);
     const applied = applySceneResolution(next, scene, res, cs.hitters);
     next = applied.mb;
-    lines.push(`Combat « ${scene.label} » : ${cs.hits} touche(s), ${kills} ennemi(s) neutralisé(s).`);
+    lines.push(outcome === 'won'
+      ? `Combat « ${scene.label} » remporté : ${cs.hits} touche(s), ${kills} ennemi(s) neutralisé(s).`
+      : `Combat « ${scene.label} » perdu : les Personnages sont repoussés (${cs.hits} touche(s) portée(s)).`);
     lines.push(...applied.lines);
   }
   set({ massBattle: { ...next, log: [...next.log, ...lines] }, screen: 'massBattle' });

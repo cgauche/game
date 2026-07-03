@@ -185,20 +185,25 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
       <div className="mb-scenes">
         {scenes.map((sc) => {
           const resolved = mb.resolvedScenes.includes(sc.id);
-          const kindLabel = sc.kind === 'combat' ? 'Combat' : sc.kind === 'threat' ? 'Menace' : 'Compétence';
+          const kindLabel = sc.kind === 'combat' ? 'Combat' : sc.kind === 'threat' ? 'Menace' : sc.kind === 'hold' ? 'Tenue' : 'Compétence';
           return (
             <div key={sc.id} className={`mb-scene${resolved ? ' mb-scene-done' : ''}`}>
               <div className="bar mb-scene-head">
                 <button
                   className="btn small btn-primary"
-                  disabled={resolved || mb.awaitingNext || (sc.kind === 'test' && remaining === 0)}
+                  disabled={resolved || mb.awaitingNext || ((sc.kind === 'test' || sc.kind === 'hold') && remaining === 0) || (sc.kind === 'hold' && !!mb.sceneState[sc.id]?.broken)}
                   onClick={() => chooseScene(sc.id)}
-                  title={sc.kind === 'test' ? 'Test de Compétence' : 'Combat tactique — la victoire modifie la Puissance'}
+                  title={sc.kind === 'test' ? 'Test de Compétence' : sc.kind === 'hold' ? 'Test opposé — tenez la position (Point de rupture)' : 'Combat tactique — la victoire modifie la Puissance'}
                 >
                   {sc.label}
                 </button>
                 <span className="mb-scene-kind">{resolved ? 'Résolue' : kindLabel}</span>
                 <span className="mb-scene-eff">{sceneEffectLabel(sc)}</span>
+                {sc.kind === 'hold' && sc.hold && (
+                  <span className="mb-scene-kind">
+                    {mb.sceneState[sc.id]?.broken ? 'Position perdue' : `Point de rupture ${mb.sceneState[sc.id]?.breakpoint ?? 0}/${sc.hold.breakpoint}`}
+                  </span>
+                )}
                 <button className="btn small ghost" onClick={() => setOpenScene(openScene === sc.id ? null : sc.id)}>
                   {openScene === sc.id ? 'Masquer' : 'Détails'}
                 </button>

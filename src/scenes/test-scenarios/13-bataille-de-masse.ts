@@ -49,6 +49,11 @@ const scene = buildScene({
       { ref: 'mutant', pos: { x: 12, y: 7 } },
       { ref: 'mutant', pos: { x: 13, y: 9 } },
     ] },
+    { id: 'enc-percee', enemies: [
+      { ref: 'mutant', pos: { x: 12, y: 7 } },
+      { ref: 'mutant', pos: { x: 13, y: 9 } },
+      { ref: 'mutant', pos: { x: 14, y: 7 } },
+    ] },
   ],
 });
 
@@ -77,8 +82,8 @@ export const scenario: TestScenario = {
       'percee', 'ligne-de-mire', 'tuez-la-bete', 'survol', 'charge', 'duel', 'intrus',
     ],
     situations: [
-      ['pluie-de-fleches', 'ligne-de-mire', 'motivation'],
-      ['charge', 'compte-a-rebours', 'intrus'],
+      ['pluie-de-fleches', 'tenez-votre-position', 'motivation'],
+      ['percee', 'compte-a-rebours', 'intrus'],
       ['duel', 'tuez-la-bete', 'survol'],
     ],
     sceneEncounters: {
@@ -88,6 +93,7 @@ export const scenario: TestScenario = {
       duel: 'enc-duel',
       intrus: 'enc-intrus',
       protection: 'enc-protection',
+      percee: 'enc-percee',
     },
   },
 };

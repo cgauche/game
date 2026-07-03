@@ -422,6 +422,9 @@ export interface GameState extends RollFlowActionsMap {
   harvestCreature: (creatureId: string) => void;
   /** Ferme l'écran de victoire et revient à l'exploration. */
   dismissVictory: () => void;
+  /** Ferme l'écran de défaite ; dans une Scène de combat de bataille de masse, la bataille CONTINUE
+   *  (défaite tactique = `combatLost`, groupe repoussé mais relevé). */
+  dismissDefeat: () => void;
   /** Butin HORS combat (fouille/Test/dialogue/trigger) — fenêtre « qui l'emporte ? » (même brique). */
   pendingLoot: PendingLoot | null;
   /** Attribue une ligne de la fenêtre de loot au héros choisi. */
@@ -1679,6 +1682,24 @@ export const useGame = create<GameState>((set, get) => ({
     if (leftoverGear.length) applyEffects(get, set, leftoverGear);
     if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
     if (inMassBattleCombat) massBattleFlow.massBattleResumeCombat(get, set, kills);
+  },
+  /** Ferme l'écran de DÉFAITE. Dans une Scène de COMBAT de bataille de masse (ADE II 08), la défaite
+   *  tactique ne met PAS fin à la partie : les héros sont repoussés (soignés, le combat de scène est une
+   *  abstraction), l'issue `combatLost` alimente le camp allié (Duel l.223 : −20 ; Percée l.175 : Charge),
+   *  et la bataille CONTINUE. Hors bataille de masse : reprise standard (retour à la scène / redémarrage). */
+  dismissDefeat: () => {
+    const inMassBattleCombat = !!get().massBattle?.combatScene;
+    if (inMassBattleCombat) {
+      // Repoussés, pas anéantis : on relève le groupe (le combat de scène ne tue pas définitivement).
+      const heal = (c: import('../engine/types').Combatant): import('../engine/types').Combatant => ({
+        ...c, wounds: { ...c.wounds, current: c.wounds.max }, conditions: [], criticalWounds: 0, dead: false, outOfRencontre: false,
+      });
+      set({ party: get().party.map(heal), battle: null, mode: 'exploration' });
+      massBattleFlow.massBattleResumeCombat(get, set, 0, 'lost');
+      return;
+    }
+    const cur = get().scene;
+    if (cur) set({ mode: 'exploration', battle: null });
   },
   /** Ferme la fenêtre de loot — même contrat que la victoire : le non-attribué va au 1er héros. */
   dismissLoot: () => {

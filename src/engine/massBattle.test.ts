@@ -6,8 +6,9 @@ import {
   battleOutcome, isDestroyed, inspireDifficulty, difficultyFromModifier, roundToTen,
   battleHazard, battleSceneById, battleActivityById, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
   WAR_MACHINES, STRUCTURES, BATTLE_HAZARDS,
-  sceneDeltas, sceneChains, effectAmount, condMet, testResolution, combatResolution,
+  sceneDeltas, sceneChains, effectAmount, condMet, testResolution, combatResolution, combatLossResolution,
   rallyHealAmount, activityOutcomes,
+  initHoldState, resolveHoldRound, holdEnemyBonus,
 } from './massBattle';
 
 /** RNG déterministe : renvoie tour à tour les d100 fournis (bornés à [min,max]). */
@@ -145,14 +146,19 @@ describe('Scènes cinématiques (l.135-225)', () => {
     expect(sceneChains(survol, testResolution(false, -2))).toEqual([]);
   });
 
-  it('Duel (l.225) : −20 en solo, −10 + Charge si intervention', () => {
+  it('Duel (l.223-225) : −20 ennemi en solo, −10 + Charge si intervention, −20 ALLIÉ si le champion PERD', () => {
     const duel = battleSceneById('duel')!;
-    // Victoire solo (1 frappeur) → −20, pas de Charge.
+    // Victoire solo (1 frappeur) → ennemi −20, pas de Charge.
     expect(sceneDeltas(duel, combatResolution(3, 1, 1)).reduce((s, d) => s + d.amount, 0)).toBe(-20);
     expect(sceneChains(duel, combatResolution(3, 1, 1))).toEqual([]);
-    // Intervention (2 frappeurs) → −10 + Charge enchaînée.
+    // Intervention (2 frappeurs) → ennemi −10 + Charge enchaînée.
     expect(sceneDeltas(duel, combatResolution(4, 1, 2)).reduce((s, d) => s + d.amount, 0)).toBe(-10);
     expect(sceneChains(duel, combatResolution(4, 1, 2))).toEqual(['charge']);
+    // DÉFAITE du duel (le champion allié perd) → c'est le CAMP ALLIÉ qui perd −20 (l.223, vaut dans les
+    // deux sens) ; aucun effet ennemi, pas de Charge (pas d'intervention). La bataille CONTINUE.
+    const loss = sceneDeltas(duel, combatLossResolution(2, 1));
+    expect(loss).toEqual([{ side: 'ally', amount: -20 }]);
+    expect(sceneChains(duel, combatLossResolution(2, 1))).toEqual([]);
   });
 
   it('condMet : un effet sans `when` s\'applique sur Succès ; les `when` gatent le reste', () => {
@@ -163,12 +169,24 @@ describe('Scènes cinématiques (l.135-225)', () => {
     expect(condMet('stunningFailure', testResolution(false, -3))).toBe(false);
     expect(condMet('generalDown', testResolution(true, 6))).toBe(true);
     expect(condMet('generalDown', testResolution(true, 3))).toBe(false);
+    // combatWon / combatLost : seulement sur une résolution de COMBAT (pas un simple Test).
+    expect(condMet('combatWon', combatResolution(3, 1, 1))).toBe(true);
+    expect(condMet('combatWon', combatLossResolution(2, 1))).toBe(false);
+    expect(condMet('combatLost', combatLossResolution(2, 1))).toBe(true);
+    expect(condMet('combatLost', combatResolution(3, 1, 1))).toBe(false);
+    expect(condMet('combatLost', testResolution(false, -2))).toBe(false); // un échec de Test n'est PAS un combat perdu
   });
 
-  it('enchaînements sur échec : Compte à rebours → Motivation ; Percée → Charge', () => {
+  it('enchaînements : Compte à rebours (Test) échoué → Motivation ; Percée (COMBAT) perdue → Charge', () => {
     expect(sceneChains(battleSceneById('compte-a-rebours')!, testResolution(false, -2))).toEqual(['motivation']);
-    expect(sceneChains(battleSceneById('percee')!, testResolution(false, -2))).toEqual(['charge']);
-    expect(sceneChains(battleSceneById('percee')!, testResolution(true, 2))).toEqual([]);
+    // Percée est une Scène de COMBAT (l.173) : l'enchaînement Charge se déclenche sur une DÉFAITE tactique
+    // (`combatLost`), pas sur un simple échec de Test ; la VICTOIRE donne allié +10 (`combatWon`).
+    const percee = battleSceneById('percee')!;
+    expect(percee.kind).toBe('combat');
+    expect(sceneChains(percee, combatLossResolution(2, 1))).toEqual(['charge']);
+    expect(sceneDeltas(percee, combatLossResolution(2, 1))).toEqual([]); // pas de +10 sur défaite
+    expect(sceneChains(percee, combatResolution(4, 2, 1))).toEqual([]); // victoire → pas de Charge
+    expect(sceneDeltas(percee, combatResolution(4, 2, 1))).toEqual([{ side: 'ally', amount: 10 }]);
   });
 
   it('les gains d\'une Scène sont plafonnés à la Puissance de départ (l.135)', () => {
@@ -177,15 +195,65 @@ describe('Scènes cinématiques (l.135-225)', () => {
     expect(applyMightDelta(40, 60, 10)).toBe(50);
   });
 
-  it('catalogue de Scènes data-driven — 12 Scènes + menace Intrus', () => {
+  it('catalogue de Scènes data-driven — 12 Scènes + menace Intrus + tenue + percée en combat', () => {
     expect(battleSceneById('motivation')?.kind).toBe('test');
     expect(battleSceneById('charge')?.kind).toBe('combat');
     expect(battleSceneById('intrus')?.kind).toBe('threat');
     expect(battleSceneById('intrus')?.threat?.penalty).toBe(-20);
+    expect(battleSceneById('percee')?.kind).toBe('combat');
+    // « Tenez votre position » (l.161) : Scène de TENUE data-driven (Point de rupture 10 / 5 Rounds / +10).
+    expect(battleSceneById('tenez-votre-position')?.kind).toBe('hold');
+    expect(battleSceneById('tenez-votre-position')?.hold).toEqual({ breakpoint: 10, maxRounds: 5, enemyBonusPerHold: 10 });
     expect(battleSceneById('duel')?.effects).toEqual([
       { side: 'enemy', scale: 'fixed', amount: -20, when: 'noIntervention' },
       { side: 'enemy', scale: 'fixed', amount: -10, when: 'intervention' },
+      { side: 'ally', scale: 'fixed', amount: -20, when: 'combatLost' },
     ]);
+  });
+});
+
+describe('« Tenez votre position » — Point de rupture (l.161-163)', () => {
+  const hold = battleSceneById('tenez-votre-position')!.hold!;
+
+  it('bonus d\'opposition cumulatif : +10 par Round DÉJÀ tenu (l.163)', () => {
+    expect(holdEnemyBonus(hold, 0)).toBe(0);
+    expect(holdEnemyBonus(hold, 1)).toBe(10);
+    expect(holdEnemyBonus(hold, 3)).toBe(30);
+  });
+
+  it('un DR net d\'ennemi négatif/nul → la position TIENT ; le Point de rupture reste borné à 0', () => {
+    const r = resolveHoldRound(initHoldState(), hold, -2);
+    expect(r.held).toBe(true);
+    expect(r.next.breakpoint).toBe(0); // max(0, 0 + (−2))
+    expect(r.next.held).toBe(1);
+    expect(r.next.broken).toBe(false);
+    expect(r.nextEnemyBonus).toBe(10); // 1 Round tenu → +10 au suivant
+  });
+
+  it('le Point de rupture ACCUMULE les DR positifs de l\'ennemi entre Rounds', () => {
+    let st = initHoldState();
+    st = resolveHoldRound(st, hold, 3).next; // breakpoint 3, tenu
+    expect(st.breakpoint).toBe(3);
+    expect(st.held).toBe(1);
+    st = resolveHoldRound(st, hold, 4).next; // breakpoint 7, tenu
+    expect(st.breakpoint).toBe(7);
+    expect(st.held).toBe(2);
+    expect(st.broken).toBe(false);
+  });
+
+  it('Point de rupture ≥ 10 → la position CÈDE (déroute), ce Round n\'est PAS une tenue', () => {
+    const st = resolveHoldRound({ breakpoint: 7, held: 2, broken: false }, hold, 4); // 7 + 4 = 11 ≥ 10
+    expect(st.next.breakpoint).toBe(11);
+    expect(st.held).toBe(false);
+    expect(st.next.held).toBe(2); // pas d'incrément : la position a cédé, pas tenu
+    expect(st.next.broken).toBe(true);
+  });
+
+  it('5 Rounds écoulés → écrasement même si le Point de rupture n\'a pas atteint le seuil (l.163)', () => {
+    // 4 Rounds tenus à DR net 0 (breakpoint reste 0) ; le 5ᵉ Round franchit `maxRounds` → rupture.
+    const st = resolveHoldRound({ breakpoint: 0, held: 4, broken: false }, hold, 0);
+    expect(st.next.broken).toBe(true); // 5ᵉ Round (held+1 = 5 = maxRounds)
+    expect(st.next.breakpoint).toBe(0);
   });
 });
 

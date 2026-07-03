@@ -280,6 +280,127 @@ describe('Duel (l.225) — vraie Scène de combat + intervention', () => {
     expect(mbState().enemy.might).toBe(55 - 10);
     expect(mbState().imposed).toContain('charge');
   });
+
+  it('DÉFAITE du duel (le champion allié perd) → ALLIÉ −20 et la bataille CONTINUE (l.223)', () => {
+    start({ situations: [['duel']] });
+    useGame.getState().massBattleBegin();
+    const mb = mbState();
+    // Le combat de duel est PERDU (héros hors d'action) : combatScene actif + battle.over = 'defeat'.
+    useGame.setState({
+      massBattle: { ...mb, combatScene: { sceneId: 'duel', hits: 2, hitters: ['h1'] } },
+      battle: { over: 'defeat', combatants: [] } as any,
+    });
+    useGame.getState().dismissDefeat();
+    const after = mbState();
+    expect(after.ally.might).toBe(50 - 20);   // le camp allié perd −20 (l.223, symétrique)
+    expect(after.enemy.might).toBe(55);        // l'ennemi n'est PAS réduit
+    expect(after.phase).toBe('round');         // la bataille continue (pas d'écran de défaite)
+    expect(after.combatScene).toBeUndefined();
+    expect(after.resolvedScenes).toContain('duel');
+    expect(useGame.getState().screen).toBe('massBattle');
+    // Les héros sont repoussés mais relevés (le combat de scène est une abstraction).
+    expect(useGame.getState().party.every((h) => !h.dead)).toBe(true);
+  });
+});
+
+describe('Percée (l.173) — vraie Scène de COMBAT + enchaînement sur DÉFAITE', () => {
+  it('VICTOIRE : allié +10, pas de Charge imposée', () => {
+    start({ situations: [['percee']], sceneEncounters: { percee: 'enc-x' } });
+    useGame.getState().massBattleBegin();
+    const mb = mbState();
+    useGame.setState({
+      massBattle: { ...mb, combatScene: { sceneId: 'percee', hits: 4, hitters: ['h1'] } },
+      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ name: 'Garde', count: 3 }] } as any,
+      battle: null,
+    });
+    useGame.getState().dismissVictory();
+    expect(mbState().ally.might).toBe(Math.min(50 + 10, 50)); // +10 plafonné à la Puissance de départ (l.135)
+    expect(mbState().imposed).not.toContain('charge');
+  });
+
+  it('DÉFAITE : Scène de Charge imposée au Round suivant (combatLost), bataille continue', () => {
+    start({ situations: [['percee'], ['motivation']], sceneEncounters: { percee: 'enc-x' } });
+    useGame.getState().massBattleBegin();
+    const mb = mbState();
+    useGame.setState({
+      massBattle: { ...mb, combatScene: { sceneId: 'percee', hits: 1, hitters: ['h1'] } },
+      battle: { over: 'defeat', combatants: [] } as any,
+    });
+    useGame.getState().dismissDefeat();
+    expect(mbState().imposed).toContain('charge'); // enchaînement échec→Charge (l.175)
+    expect(mbState().ally.might).toBe(50);         // pas de +10 sur défaite
+    expect(mbState().phase).toBe('round');
+    // Le Round suivant présente bien la Charge imposée.
+    seedBattleRng(7);
+    useGame.getState().massBattleClash();
+    useGame.getState().massBattleAdvance();
+    expect(mbState().situation).toContain('charge');
+  });
+});
+
+describe('Tenez votre position (l.161) — Point de rupture + bonus cumulatif', () => {
+  it('tenir un Round : Puissance ennemie −2, opposition +10 au suivant, Scène réimposée', () => {
+    start({ situations: [['tenez-votre-position']] });
+    useGame.getState().massBattleBegin();
+    useGame.getState().massBattleScene('tenez-votre-position');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.purpose).toBe('hold');
+    expect(pt.enemyValue).toBeGreaterThan(0); // jet opposé de l'ennemi figé
+    // Le PJ l'emporte ce Round (DR net d'ennemi négatif) → la position tient.
+    resolveBattleTest({ roll: 10, success: true, sl: 3, enemySL: -2 } as any);
+    const mb = mbState();
+    expect(mb.enemy.might).toBe(55 - 2);                    // −2 par Round tenu (l.163)
+    expect(mb.sceneState['tenez-votre-position'].held).toBe(1);
+    expect(mb.sceneState['tenez-votre-position'].breakpoint).toBe(0);
+    expect(mb.imposed).toContain('tenez-votre-position');  // la Scène recommence au Round suivant
+    expect(mb.resolvedScenes).toContain('tenez-votre-position'); // consommée CE Round
+  });
+
+  it('le Point de rupture ≥ 10 conclut la Scène par une déroute (plus de réimposition)', () => {
+    start({ situations: [['tenez-votre-position']] });
+    useGame.getState().massBattleBegin();
+    // Pré-charge un Point de rupture proche du seuil (état persistant de Scène).
+    const mb0 = mbState();
+    useGame.setState({ massBattle: { ...mb0, sceneState: { 'tenez-votre-position': { breakpoint: 8, held: 2, broken: false } } } });
+    useGame.getState().massBattleScene('tenez-votre-position');
+    // L'ennemi l'emporte largement (DR net +4) → breakpoint 12 ≥ 10 → rupture.
+    resolveBattleTest({ roll: 60, success: false, sl: -1, enemySL: 4 } as any);
+    const mb = mbState();
+    expect(mb.sceneState['tenez-votre-position'].breakpoint).toBe(12);
+    expect(mb.sceneState['tenez-votre-position'].broken).toBe(true);
+    expect(mb.imposed).not.toContain('tenez-votre-position'); // plus réimposée (déroute)
+    expect(mb.enemy.might).toBe(55); // pas de −2 : la position n'a pas tenu ce Round
+  });
+});
+
+describe('Test combiné d\'Activité (l.75/102) — un jet vs deux compétences', () => {
+  it('Repérage combiné : full (les deux) réussit ; ouvre le bonus de Planification', () => {
+    start();
+    useGame.getState().massBattleActivity('reperage');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.activityId).toBe('reperage');
+    expect(pt.target2).toBeGreaterThan(0); // seconde cible (Perception) présente = Test combiné
+    // full : Chevaucher ✓ ET Perception ✓ → Succès → +10 au bonus de Planification, `scouted`.
+    resolveBattleTest({ roll: 10, success: true, sl: 3, success2: true, sl2: 2, combinedLevel: 'full' } as any);
+    expect(mbState().scouted).toBe(true);
+    expect(mbState().planningBonus).toBe(10);
+  });
+
+  it('Infiltration combinée : partial (une seule) NE réussit PAS l\'Activité', () => {
+    start();
+    // Débloque l'Infiltration (requiert la Planification).
+    useGame.getState().massBattleActivity('planification');
+    resolveBattleTest({ roll: 10, success: true, sl: 2 });
+    useGame.getState().massBattleActivity('infiltration');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.activityId).toBe('infiltration');
+    expect(pt.target2).toBeGreaterThan(0);
+    const modBefore = mbState().allyMod;
+    // partial : Discrétion ✓ mais Perception ✗ → l'Activité ÉCHOUE (pas de +10 aux Tests alliés).
+    resolveBattleTest({ roll: 40, success: true, sl: 1, success2: false, sl2: -1, combinedLevel: 'partial' } as any);
+    expect(mbState().allyMod).toBe(modBefore); // aucun gain
+    expect(mbState().activitiesDone).toContain('infiltration');
+  });
 });
 
 describe('Rassemblement (l.122)', () => {

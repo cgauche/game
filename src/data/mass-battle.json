@@ -368,7 +368,7 @@
     {
       "id": "tenez-votre-position",
       "label": "Tenez votre position",
-      "kind": "test",
+      "kind": "hold",
       "ref": "ADE II 08 l.161",
       "rounds": 5,
       "desc": "Les Personnages ont pris le contrôle d'une position avantageuse, mais l'ennemi est en train de les submerger. Chaque Round, l'ennemi effectue un Test opposé contre les Personnages en utilisant des Compétences adaptées à la situation. On nomme le nombre cumulé des DR : Point de rupture. Si le Point de rupture atteint 10 ou plus, ou si 5 Rounds se sont écoulés, les Personnages sont écrasés et la Scène se conclut par une déroute. Les Personnages vont devoir lutter pour s'enfuir s'ils ont essuyé une défaite cuisante au cours des Rounds précédents. Pour chaque Round où les Personnages ont tenu leur position avant que le Point de rupture n'atteigne 10, l'armée adverse perd –2 de Puissance, mais obtient un bonus cumulatif de +10 pour les Rounds successifs.",
@@ -381,6 +381,11 @@
         }
       ],
       "difficulty": "intermediaire",
+      "hold": {
+        "breakpoint": 10,
+        "maxRounds": 5,
+        "enemyBonusPerHold": 10
+      },
       "effects": [
         {
           "side": "enemy",
@@ -422,33 +427,23 @@
     {
       "id": "percee",
       "label": "Percée",
-      "kind": "test",
+      "kind": "combat",
       "ref": "ADE II 08 l.173",
+      "encounter": "enc-percee",
       "rounds": 3,
       "desc": "Qu'il s'agisse d'aborder un navire ennemi, ou charger les remparts d'un château à l'aide d'une tour de siège, une Scène de Percée nécessite qu'un Personnage prenne le contrôle d'une position ennemie en éliminant tous les soldats adverses ou en remplissant un objectif précis. Les Personnages disposent de 3 Rounds pour accomplir leur objectif, ce qui augmentera la Puissance de leur armée de +10. En cas d'échec, les Personnages peuvent décider de battre en retraite ou participer à une Scène de Charge si l'ennemi appelle des renforts.",
-      "skills": [
-        {
-          "skillId": "escalade"
-        },
-        {
-          "skillId": "corps-a-corps"
-        },
-        {
-          "skillId": "athletisme"
-        }
-      ],
-      "difficulty": "intermediaire",
       "effects": [
         {
           "side": "ally",
           "scale": "fixed",
-          "amount": 10
+          "amount": 10,
+          "when": "combatWon"
         }
       ],
       "chains": [
         {
           "sceneId": "charge",
-          "when": "failure"
+          "when": "combatLost"
         }
       ]
     },
@@ -567,6 +562,12 @@
           "scale": "fixed",
           "amount": -10,
           "when": "intervention"
+        },
+        {
+          "side": "ally",
+          "scale": "fixed",
+          "amount": -20,
+          "when": "combatLost"
         }
       ],
       "chains": [
@@ -622,9 +623,13 @@
       "ref": "ADE II 08 l.73",
       "requires": "planned",
       "desc": "Après une Activité Planification réussie, un Personnage peut infiltrer le camp adverse et voler ses plans en réussissant un Test combiné de Discrétion et de Perception dont la Difficulté est déterminée par le MJ. Il peut aussi tenter de se faire passer pour un soldat de l'armée ennemie en réussissant un Test combiné de Divertissement (Interprétation) et de Perception. D'autres options peuvent être disponibles en fonction des résultats de l'Activité Repérage. En cas de Succès, le Personnage obtient un bonus de +20 à l'Activité Planification. En cas d'Échec, le Personnage est obligé de fuir du camp ennemi sous peine d'être capturé.",
+      "combined": true,
       "skills": [
         {
           "skillId": "discretion"
+        },
+        {
+          "skillId": "perception"
         }
       ],
       "difficulty": "intermediaire",
@@ -677,6 +682,7 @@
       "ref": "ADE II 08 l.100",
       "grantsFlag": "scouted",
       "desc": "Un Personnage peut effectuer un Test combiné de Chevaucher et de Perception Intermédiaire (+0) pour obtenir des informations sur l'armée adverse : ses effectifs, la distance qui les sépare et les troupes dont elle dispose. Toutes ces informations sont précieuses pour un général. Un Test réussi permet de toutes les obtenir, y compris la Puissance de l'armée adverse, en plus d'un bonus de +10 à l'Activité Planification. En cas d'échec, le Personnage récupère de fausses informations ou met trop de temps à revenir, et n'obtient aucun bonus. En cas d'Échec Stupéfiant (–6), il risque même de devoir semer les éclaireurs ennemis ou de se faire capturer.",
+      "combined": true,
       "skills": [
         {
           "skillId": "chevaucher"

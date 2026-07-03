@@ -68,9 +68,20 @@ function describeBattleTest(pt: NonNullable<ReturnType<typeof useGame.getState>[
   if (pt.purpose === 'activity' && pt.activityId) {
     const def = battleActivityById(pt.activityId);
     if (!def) return pt.success ? 'Succès.' : 'Échec.';
-    const outcomes = activityOutcomes(def, pt.success, pt.sl);
-    if (!outcomes.length) return pt.success ? 'Succès — sans effet chiffré.' : 'Échec — sans effet.';
-    return `${pt.success ? (pt.sl >= 6 ? 'Succès Stupéfiant' : 'Succès') : 'Échec Stupéfiant'} : ${outcomes.map(activityOutcomeText).join(' ; ')}.`;
+    // Test COMBINÉ (l.75/102) : RÉUSSIT sur `full` ; DR de palier = le PLUS FAIBLE des deux.
+    const success = pt.combinedLevel ? pt.combinedLevel === 'full' : pt.success;
+    const sl = pt.combinedLevel ? Math.min(pt.sl, pt.sl2 ?? pt.sl) : pt.sl;
+    const combinedNote = pt.combinedLevel === 'partial'
+      ? ` (Test combiné : ${pt.skill} ${pt.success ? '✓' : '✗'}, ${pt.skill2} ${pt.success2 ? '✓' : '✗'} — une seule réussie)` : '';
+    const outcomes = activityOutcomes(def, success, sl);
+    if (!outcomes.length) return success ? 'Succès — sans effet chiffré.' : `Échec${combinedNote} — sans effet.`;
+    return `${success ? (sl >= 6 ? 'Succès Stupéfiant' : 'Succès') : 'Échec Stupéfiant'} : ${outcomes.map(activityOutcomeText).join(' ; ')}.`;
+  }
+  if (pt.purpose === 'hold') {
+    // Tenez votre position (l.161) : le PJ défend, l'ennemi fait monter le Point de rupture.
+    return pt.success
+      ? 'La position tient ce Round — Puissance ennemie −2 ; l\'ennemi redoublera d\'efforts.'
+      : 'L\'ennemi gagne du terrain — le Point de rupture monte.';
   }
   // Scène cinématique.
   if (!pt.success) return 'La Scène échoue — aucun effet sur la Puissance.';

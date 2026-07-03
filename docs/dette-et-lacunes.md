@@ -25,15 +25,25 @@
 Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui manque pour être fidèle.
 
 ### Combat de masse (#69, ADE II ch.8)
-- **« Tenez votre position »** : le sous-système Point-de-rupture / bonus cumulatif +10 n'est pas
-  modélisé (résolu en simple Test enemy −2/hold).
-- **« Percée »** : modélisée en Scène `test` et non `combat` (pour rendre la branche échec→Charge
-  atteignable).
-- **Duel** : pas de branche « le champion ALLIÉ perd → allié −20 » (une défaite tactique = écran de
-  défaite, hors périmètre du flux de bataille).
-- **Activités de bataille** : les Tests combinés (l.79-110) sont réduits à leur compétence primaire.
-- **Aléa de bataille** : appliqué en narratif (option RAW l.309), pas mécanisé.
-- **Coût / Horreurs de la guerre** (options ADE II) : non modélisés.
+- ~~**« Tenez votre position »**~~ ✅ **RÉSOLU** : Scène `kind:'hold'` data-driven (`hold: {breakpoint:10,
+  maxRounds:5, enemyBonusPerHold:10}`, l.161-163) + résolveur PUR `resolveHoldRound`/`holdEnemyBonus` +
+  état de Scène PERSISTANT générique (`MassBattleState.sceneState`). Chaque Round : Test OPPOSÉ (PJ vs jet
+  ennemi figé = Puissance ennemie + bonus cumulatif de tenue) → le DR net de l'ennemi ACCUMULE le Point de
+  rupture ; tenue (breakpoint < 10) = ennemi −2 + réimposition de la Scène + opposition +10 au Round
+  suivant ; Point de rupture ≥ 10 OU 5 Rounds = déroute (plus de réimposition).
+- ~~**« Percée »**~~ ✅ **RÉSOLU** : Scène `kind:'combat'` (startCombat générique, encounter `enc-percee`).
+  Victoire (`combatWon`) → allié +10 ; DÉFAITE (`combatLost`) → Scène de Charge imposée au Round suivant.
+  Le mécanisme `chains`+`when` sait déclencher sur une DÉFAITE de combat (`when:'combatLost'`, générique).
+- ~~**Duel — le champion ALLIÉ perd → allié −20**~~ ✅ **RÉSOLU** : la défaite tactique d'une Scène de
+  combat de bataille passe désormais par `dismissDefeat` (store) → `massBattleResumeCombat(..., 'lost')`
+  (symétrique de la victoire), qui applique les effets `combatLost` (Duel : ally −20, l.223 « vaut dans les
+  deux sens ») et FAIT CONTINUER la bataille (groupe repoussé mais relevé, pas d'écran de game-over).
+- ~~**Activités de bataille — Tests combinés (l.79-110)**~~ ✅ **RÉSOLU** : Infiltration (Discrétion +
+  Perception) & Repérage (Chevaucher + Perception) portent `combined:true` et réutilisent la primitive
+  existante `evaluateCombinedTest` (un jet vs deux valeurs, LDB 12 l.229) — RÉUSSITE sur `full` (les deux),
+  DR de palier = le plus faible des deux. Sabotage reste au CHOIX (« Discrétion OU Divertissement », RAW).
+- **Aléa de bataille** : appliqué en narratif (option RAW l.309), pas mécanisé. HORS PÉRIMÈTRE.
+- **Coût / Horreurs de la guerre** (options ADE II) : non modélisés. HORS PÉRIMÈTRE.
 
 ### Système alternatif Aux Armes — Blessures & Critiques (#38, sous toggle `combat-aa-blessures`)
 - **Variante +10/Blessure globale** d'Aux Armes : laissée hors périmètre (seules les tables de

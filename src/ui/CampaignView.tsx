@@ -255,23 +255,22 @@ export function CampaignView() {
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}
         {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
         {mode === 'battle' && battle && <ActionBar />}
-        {/* Défaite : overlay centré (la victoire a son écran plein, VictoryScreen). */}
+        {/* Défaite : overlay centré (la victoire a son écran plein, VictoryScreen). Dans une Scène de
+            combat de bataille de masse (ADE II 08), `dismissDefeat` fait CONTINUER la bataille (repli
+            tactique, pas game-over) ; hors bataille de masse, il rend la main à la scène. */}
         {mode === 'battle' && battle?.over === 'defeat' && (
           <div className="defeat-overlay">
             <div className="battle-result defeat">
-              <h2>Défaite…</h2>
+              <h2>{useGame.getState().massBattle?.combatScene ? 'Repoussés…' : 'Défaite…'}</h2>
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  const cur = useGame.getState().scene;
-                  if (cur) {
-                    useGame.setState({ mode: 'exploration', battle: null });
-                  } else {
-                    startScene(campaign[0].scene);
-                  }
+                  const g = useGame.getState();
+                  if (g.massBattle?.combatScene || g.scene) g.dismissDefeat();
+                  else startScene(campaign[0].scene);
                 }}
               >
-                Reprendre
+                {useGame.getState().massBattle?.combatScene ? 'Poursuivre la bataille' : 'Reprendre'}
               </button>
             </div>
           </div>
