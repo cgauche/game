@@ -778,6 +778,9 @@ export interface ShipPoste {
   /** Munition SÉLECTIONNÉE du poste (uid dans `ammo` — « boulet ou mitraille ? ») : le choix PERSISTANT de
    *  la pièce (fiche du navire), sous le choix ponctuel du héros-chef (`Combatant.ammoUid`, hotbar). */
   ammoUid?: string;
+  /** Ancre spatiale optionnelle de la pièce dans l'espace de la scène (authorable). Absente → dérivée
+   *  (emplacement au sol = pos de l'entité ; coque = empreinte décalée par l'arc). Index-only, aucun effet combat. */
+  anchor?: { x: number; y: number; z?: number };
 }
 
 /** Emplacement de POSTE sur un gabarit de pont (`ShipDeck`) — un MOUNT POINT authoré (pos + arc), PAS une

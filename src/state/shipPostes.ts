@@ -11,8 +11,10 @@ import { hasWeaponGroupSkill } from '../engine/combat';
 import { exposedCrew } from '../engine/shipCritical';
 import { isOutOfAction } from '../engine/conditions';
 import { combatDistance } from './footprint';
+import { rotateDir8 } from './dir8';
+import { DIR8_DELTA } from '../gameIso/rig/facing';
 import type { FireArc } from './fireArc';
-import type { Combatant, ShipPoste } from '../engine/types';
+import type { Combatant, ShipPoste, ShipDeck } from '../engine/types';
 import type { Dir8 } from './dir8';
 
 // Le TYPE `ShipPoste` vit en engine/types (pour que `Combatant` le porte sans dépendance engine→state) ;
@@ -132,6 +134,46 @@ export function mountedWeaponBears(weapon: { mountSide?: FireArc }, heading: Dir
   if (!weapon.mountSide) return true;
   if (!heading || !supportPos) return true;
   return inFireArc(weapon.mountSide, heading, supportPos, targetPos);
+}
+
+/** Cap-MONDE (Dir8) vers lequel pointe un `FireArc` relatif au cap `heading` de la coque. PUR. */
+function arcDir8(side: FireArc, heading: Dir8): Dir8 {
+  switch (side) {
+    case 'proue': return heading;
+    case 'poupe': return rotateDir8(heading, 4);
+    case 'tribord': return rotateDir8(heading, 2);
+    default: return rotateDir8(heading, -2); // babord
+  }
+}
+
+/**
+ * Position d'une pièce dans l'espace de la SCÈNE (index/rendu top-down uniquement, AUCUN effet combat — RAW :
+ * placement libre, pas de slot fixe). Ordre de résolution :
+ *   1. `poste.anchor` authoré (fait foi).
+ *   2. slot de pont (`opts.deck.postes`) de même `side`, MAIS seulement hors échelle mer (les coords du pont ne
+ *      valent que quand la scène rendue EST ce pont d'abordage, pas la coque à l'échelle mer).
+ *   3. sinon la position de la coque, décalée vers le BORD par l'arc quand l'empreinte > 1 et que `side`+`heading`
+ *      sont connus (FireArc → Dir8-monde via le cap, pas × ~empreinte/2 depuis le centre). Plusieurs pièces d'un
+ *      même bord peuvent partager une case (le composant les regroupe). Sinon la position de coque telle quelle.
+ * `undefined` si la coque n'a pas de position. PUR.
+ */
+export function posteAnchor(
+  hull: Combatant,
+  poste: ShipPoste,
+  opts?: { heading?: Dir8; deck?: ShipDeck; sea?: boolean },
+): { x: number; y: number; z?: number } | undefined {
+  if (poste.anchor) return poste.anchor;
+  if (opts?.deck && opts.sea !== true && poste.side) {
+    const slot = opts.deck.postes?.find((s) => s.side === poste.side);
+    if (slot) return { x: slot.pos.x, y: slot.pos.y };
+  }
+  if (!hull.pos) return undefined;
+  if (hull.footprint && hull.footprint > 1 && poste.side && opts?.heading) {
+    const d = DIR8_DELTA[arcDir8(poste.side, opts.heading)];
+    const step = Math.floor(hull.footprint / 2);
+    return { x: hull.pos.x + d.gx * step, y: hull.pos.y + d.gy * step, ...(hull.pos.z !== undefined ? { z: hull.pos.z } : {}) };
+  }
+  return { x: hull.pos.x, y: hull.pos.y, ...(hull.pos.z !== undefined ? { z: hull.pos.z } : {}) };
 }
 
 /**
