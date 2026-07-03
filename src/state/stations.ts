@@ -5,8 +5,10 @@
  * vérité mécanique reste la coque et ses `postes` (cf. `shipPostes.ts`). Module PUR (moteur + state pur, pas de store).
  */
 import { isPosteManned } from './shipPostes';
+import { battleSceneById } from '../engine/massBattle';
 import type { FireArc } from './fireArc';
 import type { Combatant, ShipPoste } from '../engine/types';
+import type { Scene } from './scene';
 
 export type StationKind = 'poste' | 'activity' | 'battleScene';
 
@@ -65,5 +67,49 @@ export function postesToStations(
       });
     }
   }
+  return out;
+}
+
+/**
+ * Indexe en Stations les Scènes cinématiques de la SITUATION d'un Round de Puissance de Bataille (S2) :
+ * chaque `sceneId` présent devient une Station spatiale posée sur le plan du champ de bataille. La position
+ * vient de l'ancre AUTHORÉE (`scene.stations`) ; à défaut, un repli DÉTERMINISTE l'étale (la démo reste
+ * jouable sans authoring d'ancres). L'AFFECTATION explicite (`assignment[sceneId]` = id du PJ posté, E3)
+ * alimente `assignedIds`/`manned` — une Scène postée s'affiche « servie ». Une Scène inconnue du catalogue
+ * (`battleSceneById` undefined) est ignorée. Faction : `enemy` pour une Scène MENACE (`threat`, elle
+ * s'impose au camp allié), `neutral` sinon (l'action se joue au contact, pas un camp fixe). PUR.
+ */
+export function battleScenesToStations(
+  situation: string[],
+  assignment: Record<string, string>,
+  scene: Scene | null | undefined,
+): Station[] {
+  const anchors = new Map((scene?.stations ?? []).map((a) => [a.sceneId, a.pos] as const));
+  const w = scene?.dimensions.w ?? 20;
+  const h = scene?.dimensions.h ?? 12;
+  const out: Station[] = [];
+  situation.forEach((sceneId, i) => {
+    const def = battleSceneById(sceneId);
+    if (!def) return;
+    // Ancre authorée prioritaire ; sinon étalement déterministe en grille sur le tiers droit du champ
+    // (côté ennemi) pour que la démo sans ancres reste lisible, borné dans les dimensions de la scène.
+    const anchor = anchors.get(sceneId);
+    const pos = anchor ?? {
+      x: Math.min(w - 1, Math.round(w * 0.5) + (i % 3) * 2),
+      y: Math.min(h - 1, 2 + Math.floor(i / 3) * 3),
+    };
+    const heroId = assignment[sceneId];
+    out.push({
+      id: `battleScene:${sceneId}`,
+      kind: 'battleScene',
+      pos,
+      label: def.label,
+      icon: 'action/attack',
+      faction: def.kind === 'threat' ? 'enemy' : 'neutral',
+      assignedIds: heroId ? [heroId] : [],
+      manned: !!heroId,
+      ref: { kind: 'battleScene', sceneId },
+    });
+  });
   return out;
 }

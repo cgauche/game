@@ -3,11 +3,15 @@ import { useGame } from '../state/store';
 import { Prose } from './Prose';
 import { RuleDivider } from './Ornaments';
 import { BattleTestModal } from './BattleTestModal';
+import { StationSheet } from './StationSheet';
+import { PortraitPicker } from './PortraitPicker';
+import { CharFrame } from './CharFrame';
+import { battleScenesToStations, type Station } from '../state/stations';
 import {
-  massBattleScenes, massBattleThreatPenalty, battleActivitiesAvailable, prepCount,
+  massBattleThreatPenalty, battleActivitiesAvailable, prepCount,
   type MassBattleState, type MassBattleArmy,
 } from '../state/massBattleFlow';
-import { BATTLE_HAZARDS, inspireDifficulty, type BattleSceneDef, type BattleActivityDef } from '../engine/massBattle';
+import { battleSceneById, BATTLE_HAZARDS, inspireDifficulty, type BattleSceneDef, type BattleActivityDef } from '../engine/massBattle';
 import { DIFFICULTY_LABELS } from '../engine/types';
 
 /**
@@ -149,19 +153,19 @@ const WHEN_LABEL: Record<string, string> = {
 };
 
 function RoundPanel({ mb }: { mb: MassBattleState }) {
-  const chooseScene = useGame((s) => s.massBattleScene);
   const rollHazard = useGame((s) => s.massBattleHazard);
   const clash = useGame((s) => s.massBattleClash);
   const rally = useGame((s) => s.massBattleRally);
   const advance = useGame((s) => s.massBattleAdvance);
+  const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
-  const scenes = massBattleScenes(mb);
-  const [openScene, setOpenScene] = useState<string | null>(null);
+  const [selectedStationId, setSelectedStationId] = useState<string | undefined>(undefined);
   const allyBonus = mb.allyMod + (mb.round === 1 ? mb.firstRoundBonus : 0);
   const threatPen = massBattleThreatPenalty(mb);
-  const livingHeroes = party.filter((h) => !h.dead);
-  const remaining = livingHeroes.filter((h) => !mb.actedHeroes.includes(h.id)).length;
-  const woundedRally = mb.awaitingNext && livingHeroes.some((h) => !mb.ralliedHeroes.includes(h.id) && h.wounds.current < h.wounds.max);
+  // Stations = les Scènes de la situation posées sur le plan (ancres authorées + affectation E3).
+  const battleStations = battleScenesToStations(mb.situation, mb.assignment, scene);
+  const woundedRally = mb.awaitingNext
+    && party.some((h) => !h.dead && !mb.ralliedHeroes.includes(h.id) && h.wounds.current < h.wounds.max);
   return (
     <section className="panel mb-phase">
       {mb.terrain && (
@@ -182,38 +186,14 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
         </p>
       )}
 
-      <h3>Scènes du moment {!mb.awaitingNext && <span className="mb-scene-kind">— {remaining} PJ disponible{remaining > 1 ? 's' : ''}</span>}</h3>
-      <div className="mb-scenes">
-        {scenes.map((sc) => {
-          const resolved = mb.resolvedScenes.includes(sc.id);
-          const kindLabel = sc.kind === 'combat' ? 'Combat' : sc.kind === 'threat' ? 'Menace' : sc.kind === 'hold' ? 'Tenue' : 'Compétence';
-          return (
-            <div key={sc.id} className={`mb-scene${resolved ? ' mb-scene-done' : ''}`}>
-              <div className="bar mb-scene-head">
-                <button
-                  className="btn small btn-primary"
-                  disabled={resolved || mb.awaitingNext || ((sc.kind === 'test' || sc.kind === 'hold') && remaining === 0) || (sc.kind === 'hold' && !!mb.sceneState[sc.id]?.broken)}
-                  onClick={() => chooseScene(sc.id)}
-                  title={sc.kind === 'test' ? 'Test de Compétence' : sc.kind === 'hold' ? 'Test opposé — tenez la position (Point de rupture)' : 'Combat tactique — la victoire modifie la Puissance'}
-                >
-                  {sc.label}
-                </button>
-                <span className="mb-scene-kind">{resolved ? 'Résolue' : kindLabel}</span>
-                <span className="mb-scene-eff">{sceneEffectLabel(sc)}</span>
-                {sc.kind === 'hold' && sc.hold && (
-                  <span className="mb-scene-kind">
-                    {mb.sceneState[sc.id]?.broken ? 'Position perdue' : `Point de rupture ${mb.sceneState[sc.id]?.breakpoint ?? 0}/${sc.hold.breakpoint}`}
-                  </span>
-                )}
-                <button className="btn small ghost" onClick={() => setOpenScene(openScene === sc.id ? null : sc.id)}>
-                  {openScene === sc.id ? 'Masquer' : 'Détails'}
-                </button>
-              </div>
-              {openScene === sc.id && <div className="mb-scene-desc"><Prose md={sc.desc} /></div>}
-            </div>
-          );
-        })}
-      </div>
+      <StationSheet
+        scene={scene}
+        stations={battleStations}
+        selectedStationId={selectedStationId}
+        onSelectStation={(s) => setSelectedStationId(s.id)}
+        detailTitle="Scènes du moment"
+        renderDetail={(s) => <SceneStationDetail mb={mb} station={s} />}
+      />
       {mb.sceneDeltas.length > 0 && (
         <p className="mb-detail mb-good">
           Ce Round : {mb.sceneDeltas.map((d) => `${d.label} (${d.side === 'ally' ? 'alliée' : 'ennemie'} ${d.amount >= 0 ? '+' : ''}${d.amount})`).join(', ')}.
@@ -257,6 +237,75 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * Détail d'une Station de Scène (colonne droite du `StationSheet`) : genre, effet chiffré, état de tenue,
+ * description VERBATIM, AFFECTATION explicite d'un PJ (portrait posté + picker des PJ encore disponibles +
+ * « retirer », E3), et bouton Résoudre. La logique de désactivation du Résoudre est IDENTIQUE à l'ancienne
+ * liste plate (résolue / Round figé / plus de PJ pour un Test·Tenue / position rompue).
+ */
+function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Station }) {
+  const chooseScene = useGame((s) => s.massBattleScene);
+  const assign = useGame((s) => s.assignMassBattleHero);
+  const party = useGame((s) => s.party);
+  if (station.ref.kind !== 'battleScene') return null;
+  const sceneId = station.ref.sceneId;
+  const sc = battleSceneById(sceneId);
+  if (!sc) return null;
+  const resolved = mb.resolvedScenes.includes(sceneId);
+  const kindLabel = sc.kind === 'combat' ? 'Combat' : sc.kind === 'threat' ? 'Menace' : sc.kind === 'hold' ? 'Tenue' : 'Compétence';
+  const hold = mb.sceneState[sceneId];
+  const living = party.filter((h) => !h.dead);
+  // PJ encore libres ce Round (le posté exclu du picker : il est déjà montré au-dessus).
+  const available = living.filter((h) => !mb.actedHeroes.includes(h.id));
+  const remaining = available.length;
+  const postedId = mb.assignment[sceneId];
+  const posted = postedId ? living.find((h) => h.id === postedId) : undefined;
+  const disabled = resolved || mb.awaitingNext
+    || ((sc.kind === 'test' || sc.kind === 'hold') && remaining === 0)
+    || (sc.kind === 'hold' && !!hold?.broken);
+  return (
+    <div className={`mb-scene${resolved ? ' mb-scene-done' : ''}`}>
+      <div className="bar mb-scene-head">
+        <span className="mb-scene-kind">{resolved ? 'Résolue' : kindLabel}</span>
+        <span className="mb-scene-eff">{sceneEffectLabel(sc)}</span>
+        {sc.kind === 'hold' && sc.hold && (
+          <span className="mb-scene-kind">
+            {hold?.broken ? 'Position perdue' : `Point de rupture ${hold?.breakpoint ?? 0}/${sc.hold.breakpoint}`}
+          </span>
+        )}
+      </div>
+      <div className="mb-scene-desc"><Prose md={sc.desc} /></div>
+      <div className="bar mb-scene-assign">
+        {posted ? (
+          <>
+            <CharFrame c={posted} variant="vital" size="sm" />
+            <button className="btn small ghost" onClick={() => assign(sceneId, null)}>Retirer</button>
+          </>
+        ) : (
+          <span className="mb-detail">Aucun PJ affecté — choisissez qui résout cette Scène.</span>
+        )}
+      </div>
+      {available.length > 0 && !resolved && !mb.awaitingNext && (
+        <PortraitPicker
+          choices={available.map((h) => ({ c: h, disabled: h.id === postedId }))}
+          selectedId={postedId}
+          onPick={(id) => assign(sceneId, id)}
+        />
+      )}
+      <div className="bar mb-actions">
+        <button
+          className="btn small btn-primary"
+          disabled={disabled}
+          onClick={() => chooseScene(sceneId)}
+          title={sc.kind === 'test' ? 'Test de Compétence' : sc.kind === 'hold' ? 'Test opposé — tenez la position (Point de rupture)' : 'Combat tactique — la victoire modifie la Puissance'}
+        >
+          {resolved ? 'Scène résolue' : 'Résoudre'}
+        </button>
+      </div>
+    </div>
   );
 }
 

@@ -27,6 +27,7 @@ import type {
   Dialogue,
   EncounterMember,
   EncounterDef,
+  SceneStationAnchor,
 } from './scene';
 import { emptyScene } from './scene';
 import type { Flow } from './flow';
@@ -208,6 +209,9 @@ export interface MapSpec {
   triggers?: Trigger[];
   dialogues?: Dialogue[];
   encounters?: EncounterSpec[];
+  /** Ancres AUTHORÉES des Scènes de bataille sur le plan (S2, Puissance de Bataille) — passées telles
+   *  quelles sur la Scène construite (`Scene.stations`), consommées par `battleScenesToStations`. */
+  stations?: SceneStationAnchor[];
 }
 
 /** Découpe une chaîne ASCII en lignes, en ne retirant QUE les lignes vides de tête/queue (une chaîne
@@ -499,6 +503,9 @@ export function buildScene(spec: MapSpec): Scene {
   }
   for (const [id, members] of orphans) encDefs.push({ id, members });
   s = { ...s, entities: [...s.entities, ...encEntities], encounters: encDefs };
+
+  // Ancres de Scènes de bataille (S2) : posées telles quelles sur la Scène (repli sur les postes navals).
+  if (spec.stations) s = { ...s, stations: spec.stations };
 
   return s;
 }

@@ -533,11 +533,26 @@ export interface Scene {
   dialogues: Dialogue[];
   triggers: Trigger[];
   encounters: EncounterDef[];
+  /** Ancres AUTHORÉES des Scènes de bataille sur le plan (S2) — chaque `sceneId` de la pioche de
+   *  Puissance de Bataille (`MassBattleState.pool`) reçoit un emplacement sur la carte. La PUISSANCE
+   *  des armées reste une abstraction NON rendue ; seul l'emplacement de l'ACTION cinématique (la
+   *  Scène du moment que résout un PJ) est posé, pour que `battleScenesToStations` en fasse des
+   *  Stations spatiales. Non peuplé = repli déterministe (le consommateur étale les Scènes). */
+  stations?: SceneStationAnchor[];
   flags: Record<string, boolean>;
   /** Points d'arrivée nommés (pour les transitions depuis une autre scène). */
   entryPoints?: Record<string, { x: number; y: number }>;
   /** Scène de départ pour la campagne enchaînée. */
   startMessage?: string;
+}
+
+/** Ancre AUTHORÉE d'une Scène de bataille sur le plan (S2) : `sceneId` (une entrée de
+ *  `MassBattleState.pool` = un `BattleSceneDef.id`) posée sur une case de la carte. La Puissance des
+ *  armées reste une abstraction NON rendue — seul l'emplacement de l'ACTION est posé. Consommé par
+ *  `battleScenesToStations` (state/stations.ts) ; absence d'ancre → repli déterministe côté consommateur. */
+export interface SceneStationAnchor {
+  sceneId: string;
+  pos: { x: number; y: number; z?: number };
 }
 
 /** Échelle métrique d'une case (m/case) — défaut 2 (person-scale, LDB). Source UNIQUE pour la couche Mer. PUR. */

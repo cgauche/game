@@ -63,7 +63,9 @@ export function StationSheet({
   subtitleOf,
   detailTitle,
 }: {
-  scene: Scene;
+  /** Plan top-down. OPTIONNEL : la vitrine `__wfrp.massBattle()` sans scène chargée n'a pas de champ à
+   *  rendre → on n'affiche alors que puces + détail (le maître-détail RTS reste utilisable sans carte). */
+  scene?: Scene | null;
   stations: Station[];
   selectedStationId?: string;
   onSelectStation: (s: Station) => void;
@@ -75,14 +77,16 @@ export function StationSheet({
   const selected = stations.find((s) => s.id === selectedStationId);
   return (
     <div className="poste-layout">
-      <div className="ship-section topo-panel">
-        <TopoScene
-          scene={scene}
-          stations={stations}
-          selectedStationId={selectedStationId}
-          onSelectStation={onSelectStation}
-        />
-      </div>
+      {scene && (
+        <div className="ship-section topo-panel">
+          <TopoScene
+            scene={scene}
+            stations={stations}
+            selectedStationId={selectedStationId}
+            onSelectStation={onSelectStation}
+          />
+        </div>
+      )}
       <div className="poste-detail-col">
         {detailTitle && <div className="mini-title">{detailTitle}</div>}
         <StationChips

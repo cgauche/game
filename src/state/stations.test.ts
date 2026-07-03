@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { postesToStations } from './stations';
+import { postesToStations, battleScenesToStations } from './stations';
 import { posteAnchor, applyShipPostes } from './shipPostes';
+import { battleSceneById } from '../engine/massBattle';
 import { itemFromTrappingById } from '../engine/items';
 import type { Combatant, ShipPoste, ShipDeck } from '../engine/types';
+import type { Scene } from './scene';
 import type { FireArc } from './fireArc';
 
 /**
@@ -80,6 +82,59 @@ describe('postesToStations — une Station par poste, ids/assignedIds/side/ref',
     const hull = mkHull('h', 'enemy', [mkPoste('baliste', ['g'])], undefined as never);
     delete (hull as { pos?: unknown }).pos; // coque sans position
     expect(postesToStations([hull], (h, p) => posteAnchor(h, p))).toHaveLength(0);
+  });
+});
+
+describe('battleScenesToStations — Scènes de la situation → Stations spatiales (S2)', () => {
+  const sceneWith = (stations: { sceneId: string; pos: { x: number; y: number } }[]): Scene =>
+    ({ dimensions: { w: 22, h: 16 }, stations } as unknown as Scene);
+
+  it('une Station par Scène connue, id/label/ref/kind depuis le catalogue + ancre authorée', () => {
+    const scene = sceneWith([{ sceneId: 'charge', pos: { x: 13, y: 6 } }]);
+    const st = battleScenesToStations(['charge'], {}, scene);
+    expect(st).toHaveLength(1);
+    expect(st[0].id).toBe('battleScene:charge');
+    expect(st[0].kind).toBe('battleScene');
+    expect(st[0].label).toBe(battleSceneById('charge')!.label);
+    expect(st[0].ref).toEqual({ kind: 'battleScene', sceneId: 'charge' });
+    expect(st[0].pos).toEqual({ x: 13, y: 6 }); // ancre authorée
+    expect(st[0].assignedIds).toEqual([]);
+    expect(st[0].manned).toBe(false);
+  });
+
+  it('faction : threat → enemy, sinon neutral', () => {
+    const scene = sceneWith([{ sceneId: 'intrus', pos: { x: 6, y: 8 } }, { sceneId: 'motivation', pos: { x: 4, y: 12 } }]);
+    const st = battleScenesToStations(['intrus', 'motivation'], {}, scene);
+    expect(st.find((s) => s.ref.kind === 'battleScene' && s.ref.sceneId === 'intrus')!.faction).toBe('enemy');
+    expect(st.find((s) => s.ref.kind === 'battleScene' && s.ref.sceneId === 'motivation')!.faction).toBe('neutral');
+  });
+
+  it('affectation E3 → assignedIds + manned', () => {
+    const scene = sceneWith([{ sceneId: 'motivation', pos: { x: 4, y: 12 } }]);
+    const st = battleScenesToStations(['motivation'], { motivation: 'hero-2' }, scene);
+    expect(st[0].assignedIds).toEqual(['hero-2']);
+    expect(st[0].manned).toBe(true);
+  });
+
+  it('Scène inconnue du catalogue → ignorée', () => {
+    const scene = sceneWith([]);
+    expect(battleScenesToStations(['pas-une-scene'], {}, scene)).toHaveLength(0);
+  });
+
+  it('sans ancre authorée → repli déterministe borné dans les dimensions de la scène', () => {
+    const scene = sceneWith([]); // aucune ancre
+    const st = battleScenesToStations(['charge'], {}, scene);
+    expect(st).toHaveLength(1);
+    expect(st[0].pos.x).toBeGreaterThanOrEqual(0);
+    expect(st[0].pos.x).toBeLessThan(22);
+    expect(st[0].pos.y).toBeGreaterThanOrEqual(0);
+    expect(st[0].pos.y).toBeLessThan(16);
+  });
+
+  it('scène null → repli déterministe (démo `__wfrp.massBattle()` sans carte)', () => {
+    const st = battleScenesToStations(['charge', 'motivation'], {}, null);
+    expect(st).toHaveLength(2);
+    expect(Number.isFinite(st[0].pos.x)).toBe(true);
   });
 });
 

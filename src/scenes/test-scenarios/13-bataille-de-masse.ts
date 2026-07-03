@@ -55,6 +55,23 @@ const scene = buildScene({
       { ref: 'mutant', pos: { x: 14, y: 7 } },
     ] },
   ],
+  // Ancres AUTHORÉES des Scènes cinématiques sur le plan (S2) : une par entrée de `massBattle.scenes`.
+  // Combats posés sur leurs grappes d'ennemis ; `intrus` (menace) sur la percée alliée ~x6-7 ; Scènes de
+  // soutien/tenue (motivation, tenez-votre-position, protection…) côté héros ~x4-8. Toutes hors de [3,8].
+  stations: [
+    { sceneId: 'motivation', pos: { x: 4, y: 12 } },
+    { sceneId: 'pluie-de-fleches', pos: { x: 16, y: 8 } },
+    { sceneId: 'protection', pos: { x: 12, y: 8 } },
+    { sceneId: 'tenez-votre-position', pos: { x: 5, y: 4 } },
+    { sceneId: 'compte-a-rebours', pos: { x: 8, y: 3 } },
+    { sceneId: 'percee', pos: { x: 13, y: 8 } },
+    { sceneId: 'ligne-de-mire', pos: { x: 18, y: 5 } },
+    { sceneId: 'tuez-la-bete', pos: { x: 14, y: 8 } },
+    { sceneId: 'survol', pos: { x: 17, y: 12 } },
+    { sceneId: 'charge', pos: { x: 13, y: 6 } },
+    { sceneId: 'duel', pos: { x: 15, y: 11 } },
+    { sceneId: 'intrus', pos: { x: 6, y: 8 } },
+  ],
 });
 
 export const scenario: TestScenario = {
