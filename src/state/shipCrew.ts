@@ -8,6 +8,8 @@ import type { Combatant } from '../engine/types';
 import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
 import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findSeaShantyById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
+import { partyBest } from '../engine/skills';
+import { maxBy } from '../engine/pick';
 import { applyOps } from '../engine/ops';
 import { removeActiveEffects, isOutOfAction } from '../engine/conditions';
 import { battleRng } from './battleRng';
@@ -47,13 +49,11 @@ export function shipDefaultRoles(crew: Combatant[], testTypeId: string): Map<str
   for (const roleId of specific) {
     if ([...out.values()].includes(roleId)) continue; // déjà tenu (épinglé)
     const role = findCrewRoleById(roleId)!;
-    let best: { id: string; val: number } | null = null;
-    for (const c of apte) {
-      if (!free.has(c.id) || !trainedForRole(c, roleId)) continue;
-      const v = crewRoleValue(c, role).value;
-      if (!best || v > best.val) best = { id: c.id, val: v };
-    }
-    if (best) { out.set(best.id, roleId); free.delete(best.id); }
+    // Meilleur marin FORMÉ encore libre : `partyBest` (skill/char indéfinis → `testValue`=0) score PUREMENT sur
+    // `crewRoleValue`. Le `.filter` préserve l'ordre d'`apte` → first-max identique à la boucle strict-`>` d'origine.
+    const candidates = apte.filter((c) => free.has(c.id) && trainedForRole(c, roleId));
+    const winner = partyBest(candidates, undefined, undefined, (c) => crewRoleValue(c, role).value)?.actor;
+    if (winner) { out.set(winner.id, roleId); free.delete(winner.id); }
   }
   // Le reste → Mousse (rôle par défaut, l.15) s'il sait Voile/Ramer.
   if (testType.roles.includes('mousse')) for (const id of free) if (trainedForRole(apte.find((x) => x.id === id)!, 'mousse')) out.set(id, 'mousse');
@@ -89,7 +89,7 @@ export function crewTestContributors(ship: Combatant, combatants: Combatant[], t
   for (const group of byRole.values()) {
     const pjs = group.filter((a) => partyIds.has(a.crew.id));
     if (pjs.length) out.push(...pjs); // chaque PJ du poste lance (l.9)
-    else out.push(group.reduce((b, a) => (roleVal(a) > roleVal(b) ? a : b))); // sinon UN marin représentant (l.39/41)
+    else out.push(maxBy(group, roleVal)!.item); // sinon UN marin représentant (l.39/41) — first-max = earlier item, `group` non-vide (else)
   }
   return out;
 }

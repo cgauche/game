@@ -16,7 +16,7 @@
 import { battleRng } from './battleRng';
 import { rollTest, evaluateTest, easeDifficulty } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
-import { testValue } from '../engine/skills';
+import { testValue, partyBest } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
 import { navalMoveMod, navalSkillTestDR } from '../engine/navalTraits';
 import { exposedCrew } from '../engine/shipCritical';
@@ -85,7 +85,9 @@ export function deriveManeuverFromCrew(ship: Combatant, crewTotal: number): Mane
 /** Le barreur : parmi l'équipage APTE (vivant + conscient — même prédicat que `exposedCrew`), celui qui a la
  *  MEILLEURE valeur de Test de `skillId` (Voile/Ramer). Un marin à terre / inconscient ne tient pas la barre. */
 function bestHelmsman(crew: Combatant[], skillId: string): Combatant | undefined {
-  return [...exposedCrew(crew)].sort((a, b) => testValue(b, skillId) - testValue(a, skillId))[0];
+  // Argmax sur l'axe ACTEUR (`partyBest` = maxBy sur `testValue`) : first-max strict, identique au tri desc stable
+  // qui rendait le PREMIER max en `[0]`. Filtre `exposedCrew` conservé (marins présents + conscients).
+  return partyBest(exposedCrew(crew), skillId)?.actor;
 }
 
 /** Le BARREUR effectif d'un navire à son tour (échelle Mer, navire-unité) : le meilleur de SON équipage présent en

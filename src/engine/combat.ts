@@ -16,6 +16,7 @@ import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { findTableEntry } from './tables';
+import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition, COND } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
@@ -813,7 +814,7 @@ export function bestRangedDefense(
   if (!modes.length) return undefined;
   const parryWeapon = rangedOpposeWeapon(defender.weapons) ?? defender.weapons[0];
   const valOf = (m: 'parade' | 'esquive') => defenseValue(defender, m, m === 'parade' ? parryWeapon : undefined);
-  const best = modes.reduce((a, b) => (valOf(b) > valOf(a) ? b : a));
+  const best = maxBy(modes, valOf)!.item; // `modes` non vide (garde ci-dessus) ; first-max = mode le plus défensif.
   return { mode: best, parryWeapon: best === 'parade' ? parryWeapon : undefined };
 }
 

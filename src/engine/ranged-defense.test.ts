@@ -8,10 +8,15 @@ const bow = (): Weapon => ({ name: 'Arc', type: 'ranged', damage: { plusBF: fals
 const shield = (indice: number): Weapon =>
   ({ name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: indice }] } as unknown as Weapon);
 
-const atk = (over: Partial<Combatant> = {}): Combatant =>
-  ({ id: 'a', name: 'Tireur', kind: 'hero', conditions: [], engagedWith: [], weapons: [], ...over } as unknown as Combatant);
-const def = (over: Partial<Combatant> = {}): Combatant =>
-  ({ id: 'd', name: 'Cible', kind: 'enemy', conditions: [], engagedWith: [], weapons: [], ...over } as unknown as Combatant);
+// Un combattant réel porte Caractéristiques + Compétences (CC/Parade, Ag/Esquive) : le stub est COMPLET pour
+// que la sélection de mode (`bestRangedDefense`) puisse scorer chaque mode — un défenseur creux n'existe pas.
+const chars = { CC: 35, CT: 35, F: 35, E: 35, I: 30, Ag: 45, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const combatant = (id: string, kind: 'hero' | 'enemy', over: Partial<Combatant>): Combatant =>
+  ({ id, name: id, kind, characteristics: chars, conditions: [], engagedWith: [], skills: [], talents: [],
+     weapons: [], advantage: 0, size: 'moyenne', wounds: { current: 20, max: 20 },
+     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, ...over } as unknown as Combatant);
+const atk = (over: Partial<Combatant> = {}): Combatant => combatant('a', 'hero', over);
+const def = (over: Partial<Combatant> = {}): Combatant => combatant('d', 'enemy', over);
 
 describe('rangedDefenseModes — RAW défense contre les attaques à distance', () => {
   const w = bow();
