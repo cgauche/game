@@ -231,7 +231,7 @@ export function IsoStage() {
       <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
-          fog={{ w: scene.dimensions.w, h: scene.dimensions.h, rot: shownRot, view: viewMode, edge: shownEdge, visible, explored: exploredSet, bounds: viewBounds, floorZAt: fogFloorZAt }} />
+          fog={{ w: scene.dimensions.w, h: scene.dimensions.h, visible, explored: exploredSet, bounds: viewBounds, floorZAt: fogFloorZAt }} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dims} activeZ={activeZ} visible={visible} />}
         <EnemyMoveTelegraph actorMove={actorMove} dims={dims} footN={activeMoveN} lift={liftOf} />

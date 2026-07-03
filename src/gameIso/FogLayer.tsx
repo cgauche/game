@@ -1,106 +1,58 @@
 /**
- * Brouillard de guerre — overlay de rendu (espace MONDE, même transform que les tokens). Couvre les
- * cases NON visibles d'un voile sombre : quasi-opaque sur l'INCONNU (rien ne transparaît, « même le
- * décor »), semi-transparent sur l'EXPLORÉ-hors-vue (décor mémorisé, grisé). Les cases EN VUE ne
- * reçoivent aucun voile. Bords ADOUCIS par flou SVG. Les créatures hors-vue sont coupées en amont
- * (IsoStage) ; ce voile gère le décor/terrain (qu'il recouvre) en un seul overlay.
+ * Brouillard de guerre — voile PAR CASE injecté DANS le flux trié par profondeur (≠ ancien overlay
+ * unique « sandwich »). Chaque case NON visible porte son voile à SA profondeur (juste au-dessus de son
+ * décor) : quasi-opaque sur l'INCONNU (rien ne transparaît, « même le décor »), semi-transparent sur
+ * l'EXPLORÉ-hors-vue (décor mémorisé, grisé). Les cases EN VUE ne reçoivent aucun voile.
  *
- * PERF (2 leviers) :
- *  1. CULLING au cadre visible (`bounds` + marge) → chemin borné par la FENÊTRE, pas par la scène.
- *  2. FUSION de blocs N×N PLEINEMENT uniformes (tout inconnu / tout mémorisé) en UN losange (union
- *     exacte, zéro changement visuel) → ~N² fois moins de polygones sur les grandes zones pleines (le
- *     coût = le RASTER de SVG par frame de caméra, ∝ nb de polygones). Les FRONTIÈRES restent par
- *     TUILE (précision conservée). Sans ça, l'Opéra plein noir = ~686 polygones re-rastérisés/frame ≈ 42 ms.
- * Bornes ENTIÈRES → le memo ne reconstruit qu'au changement de cadre-tuile (pas à chaque pixel de pan).
+ * POURQUOI par case et non un overlay unique : un overlay unique doit choisir « tout le caché SOUS le
+ * visible » (split vis/!vis) — ce qui INVERSE la profondeur (un mur VISIBLE derrière se peignait par-
+ * dessus une rampe CACHÉE devant). Un voile porté par chaque case, à sa vraie profondeur, respecte le
+ * tri per-case : un décor caché DEVANT masque bien un décor visible DERRIÈRE, et vice-versa.
+ *
+ * Bords FRANCS (le flou de groupe de l'ancien overlay est incompatible avec l'entrelacement en
+ * profondeur : il fusionnait tout le voile à un seul z). Screen-culling assuré par `CulledScene`
+ * (`onScreen`) — le coût reste borné par la FENÊTRE, jamais par la scène.
  */
-import React, { useMemo } from 'react';
-import { Dims, ViewMode, TW, TH, CELL, EDGE_W, EDGE_H, tileCenter, diamondPath } from './iso';
+import React from 'react';
+import { Dims, diamondPath, depth } from './iso';
+import type { StageObj } from './stage/objs';
 
-interface Bounds { minX: number; maxX: number; minY: number; maxY: number }
-interface FogLayerProps {
+/** Voile mémorisé (exploré, hors-vue) : semi-transparent → décor grisé mais lisible. */
+const REMEMBERED = { fill: '#06050d', op: 0.52 };
+/** Voile inconnu (jamais vu) : quasi-opaque → rien ne transparaît. */
+const UNKNOWN = { fill: '#04030a', op: 0.985 };
+/** Décalage de couche du voile : AU-DESSUS du décor de sa propre case (mur +0.45, jeton +0.5). */
+const VEIL_LAYER = 0.55;
+const MARGIN = 5; // cases autour du cadre : couvre le pan sous-tuile
+
+export interface FogParams {
   w: number;
   h: number;
-  z: number;
-  rot: 0 | 1 | 2 | 3;
-  view: ViewMode;
-  edge: boolean;
   visible: Set<string>;
   explored: Set<string>;
-  bounds: Bounds;
-  /** Étage de SOL effectif sous (x,y) à l'étage actif : si l'actif est PERCÉ (tuile `vide` = trou), on
-   *  retombe sur le premier sol en dessous → le voile reflète CE qu'on voit par le trou (l'étage du
-   *  dessous), pas un « inconnu » opaque qui masquerait le contrebas. Mono-niveau ⇒ rend toujours `z`. */
+  bounds: { minX: number; maxX: number; minY: number; maxY: number };
+  /** Étage de SOL effectif sous (x,y) à l'étage actif (retombe sur le sol du dessous à un trou `vide`). */
   floorZAt: (x: number, y: number) => number;
 }
 
-const MARGIN = 5; // tuiles autour du cadre : couvre le pan sous-tuile + l'étalement du flou
-const BLOCK = 4; // taille de fusion (un bloc BLOCK×BLOCK uniforme = 1 losange)
-
-/** Losange/carré couvrant un bloc N×N de tuiles ancré en (x0,y0) — union EXACTE des N² tuiles
- *  (rotation/vue gérées par `tileCenter`). N=1 ⇒ une tuile. */
-function blockPath(x0: number, y0: number, n: number, dims: Dims, view: ViewMode, edge: boolean): string {
-  const { cx, cy } = tileCenter(x0 + (n - 1) / 2, y0 + (n - 1) / 2, dims);
-  if (view === 'top') {
-    const hx = (n * CELL) / 2;
-    return `M${cx - hx},${cy - hx} L${cx + hx},${cy - hx} L${cx + hx},${cy + hx} L${cx - hx},${cy + hx}Z`;
-  }
-  if (edge) {
-    const hx = (n * EDGE_W) / 2, hy = (n * EDGE_H) / 2;
-    return `M${cx - hx},${cy - hy} L${cx + hx},${cy - hy} L${cx + hx},${cy + hy} L${cx - hx},${cy + hy}Z`;
-  }
-  const hx = (n * TW) / 2, hy = (n * TH) / 2;
-  return `M${cx},${cy - hy} L${cx + hx},${cy} L${cx},${cy + hy} L${cx - hx},${cy}Z`;
+/** StageObj de voile pour chaque case cachée du cadre (+ marge). À fusionner par profondeur dans le
+ *  flux de scène (`mergeByDepth`) puis rendu par `CulledScene` avec le reste. */
+export function fogVeilObjs(fog: FogParams, dims: Dims): StageObj[] {
+  const { w, h, visible, explored, bounds, floorZAt } = fog;
+  const x0 = Math.max(0, bounds.minX - MARGIN), x1 = Math.min(w - 1, bounds.maxX + MARGIN);
+  const y0 = Math.max(0, bounds.minY - MARGIN), y1 = Math.min(h - 1, bounds.maxY + MARGIN);
+  const objs: StageObj[] = [];
+  for (let y = y0; y <= y1; y++)
+    for (let x = x0; x <= x1; x++) {
+      const z = floorZAt(x, y);
+      const k = `${x},${y},${z}`;
+      if (visible.has(k)) continue; // en vue → pas de voile
+      const v = explored.has(k) ? REMEMBERED : UNKNOWN;
+      objs.push({
+        d: depth(x, y, dims, z) + VEIL_LAYER,
+        x, y, z, vis: false,
+        el: <path key={`fog:${k}`} d={diamondPath(x, y, dims)} fill={v.fill} opacity={v.op} pointerEvents="none" />,
+      });
+    }
+  return objs;
 }
-
-export const FogLayer = React.memo(function FogLayer({ w, h, z, rot, view, edge, visible, explored, bounds, floorZAt }: FogLayerProps) {
-  const { minX, maxX, minY, maxY } = bounds;
-  const { unknown, remembered } = useMemo(() => {
-    const dims: Dims = { w, h, rot, view, edge };
-    const x0 = Math.max(0, minX - MARGIN), x1 = Math.min(w - 1, maxX + MARGIN);
-    const y0 = Math.max(0, minY - MARGIN), y1 = Math.min(h - 1, maxY + MARGIN);
-    // 0 = visible (pas de voile), 1 = exploré-mémorisé (semi), 2 = inconnu (opaque). À un trou (`vide`)
-    // de l'étage actif, `floorZAt` retombe sur le sol du dessous → le voile suit la visibilité du contrebas
-    // (on regarde DANS le trou), au lieu de masquer l'étage inférieur d'un noir « inconnu ».
-    const stateAt = (x: number, y: number) => { const k = `${x},${y},${floorZAt(x, y)}`; return visible.has(k) ? 0 : explored.has(k) ? 1 : 2; };
-    let unknownP = '';
-    let rememberedP = '';
-    for (let by = y0; by <= y1; by += BLOCK)
-      for (let bx = x0; bx <= x1; bx += BLOCK) {
-        const ex = Math.min(bx + BLOCK - 1, x1), ey = Math.min(by + BLOCK - 1, y1);
-        const full = ex - bx + 1 === BLOCK && ey - by + 1 === BLOCK;
-        let uniform: number | -1 = -1, mixed = false;
-        for (let y = by; y <= ey && !mixed; y++)
-          for (let x = bx; x <= ex; x++) {
-            const s = stateAt(x, y);
-            if (uniform === -1) uniform = s; else if (s !== uniform) { mixed = true; break; }
-          }
-        if (!mixed && uniform === 0) continue; // bloc entièrement visible → aucun voile
-        if (full && !mixed && uniform === 2) unknownP += blockPath(bx, by, BLOCK, dims, view, edge);
-        else if (full && !mixed && uniform === 1) rememberedP += blockPath(bx, by, BLOCK, dims, view, edge);
-        else
-          for (let y = by; y <= ey; y++)
-            for (let x = bx; x <= ex; x++) {
-              const s = stateAt(x, y);
-              if (s === 2) unknownP += diamondPath(x, y, dims);
-              else if (s === 1) rememberedP += diamondPath(x, y, dims);
-            }
-      }
-    return { unknown: unknownP, remembered: rememberedP };
-    // Deps sur les ENTIERS du cadre (pas l'objet `bounds`) → pas de rebuild tant que le cadre-tuile est stable.
-  }, [w, h, z, rot, view, edge, visible, explored, minX, maxX, minY, maxY, floorZAt]);
-
-  if (!unknown && !remembered) return null;
-  return (
-    <g className="fog" pointerEvents="none">
-      <defs>
-        <filter id="fog-feather" x="-12%" y="-12%" width="124%" height="124%">
-          <feGaussianBlur stdDeviation={11} />
-        </filter>
-      </defs>
-      <g filter="url(#fog-feather)">
-        {remembered && <path d={remembered} fill="#06050d" opacity={0.52} />}
-        {unknown && <path d={unknown} fill="#04030a" opacity={0.985} />}
-      </g>
-    </g>
-  );
-});

@@ -5,9 +5,10 @@
  * centre tombe dans le rectangle écran (+ marge pour les corps/murs HAUTS). Le navigateur ne rastérise
  * alors que l'écran à chaque frame → fini le re-raster de toute la carte.
  */
-import { Dims, tileCenter, type Rot } from '../iso';
-import { FogLayer } from '../FogLayer';
-import type { StageObj } from './objs';
+import { useMemo } from 'react';
+import { Dims, tileCenter } from '../iso';
+import { fogVeilObjs, type FogParams } from '../FogLayer';
+import { mergeByDepth, type StageObj } from './objs';
 import { VW, VH } from './useStageCamera';
 
 export function CulledScene({
@@ -23,17 +24,7 @@ export function CulledScene({
   cam: { x: number; y: number };
   zoom: number;
   activeZ: number;
-  fog: {
-    w: number;
-    h: number;
-    rot: Rot;
-    view: 'iso' | 'top';
-    edge: boolean;
-    visible: Set<string>;
-    explored: Set<string>;
-    bounds: { minX: number; maxX: number; minY: number; maxY: number };
-    floorZAt: (x: number, y: number) => number;
-  };
+  fog: FogParams;
 }) {
   const hw = VW / (2 * zoom), hh = VH / (2 * zoom), M = 220;
   const cl = VW / 2 - cam.x - hw, cr = VW / 2 - cam.x + hw;
@@ -62,17 +53,16 @@ export function CulledScene({
       core
     );
   };
-  // BROUILLARD ENCADRÉ par le tri : le voile se glisse ENTRE le décor caché (sol, terrain, entités
-  // mémorisées/inconnues → `!vis`, DESSOUS, donc grisé/masqué) et le décor VISIBLE (murs/toits/tokens
-  // → `vis`, AU-DESSUS). Ainsi un bâtiment qu'on voit garde son VOLUME HAUT même là où il déborde dans
-  // les cases derrière (en ombre) : l'ombre ne mange plus son toit. `.filter().map()` (pas map→null) →
-  // React ne réconcilie que les ~centaines d'objets à l'écran, pas les milliers de la scène.
-  const shown = objs.filter(onScreen);
-  return (
-    <>
-      <g>{shown.filter((o) => !o.vis).map(draw)}</g>
-      <FogLayer w={fog.w} h={fog.h} z={activeZ} rot={fog.rot} view={fog.view} edge={fog.edge} visible={fog.visible} explored={fog.explored} bounds={fog.bounds} floorZAt={fog.floorZAt} />
-      <g>{shown.filter((o) => o.vis).map(draw)}</g>
-    </>
+  // BROUILLARD ENTRELACÉ par la PROFONDEUR : chaque case cachée porte son voile à SA profondeur
+  // (`fogVeilObjs`), fusionné dans le flux trié — plus de « sandwich » vis/!vis qui inversait le tri
+  // (un mur visible DERRIÈRE se peignait par-dessus une rampe cachée DEVANT). Ainsi un décor caché
+  // devant masque bien un visible derrière, et vice-versa. Mémoïsé sur les bornes ENTIÈRES du cadre +
+  // la vision → ne reconstruit qu'au changement de cadre-tuile, pas à chaque pixel de pan.
+  const veilObjs = useMemo(
+    () => fogVeilObjs(fog, dims),
+    [fog.visible, fog.explored, fog.bounds.minX, fog.bounds.maxX, fog.bounds.minY, fog.bounds.maxY, fog.floorZAt, dims],
   );
+  // `.filter().map()` (pas map→null) → React ne réconcilie que les ~centaines d'objets à l'écran.
+  const shown = mergeByDepth(objs, veilObjs).filter(onScreen);
+  return <g>{shown.map(draw)}</g>;
 }
