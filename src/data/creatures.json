@@ -50774,6 +50774,91 @@
     }
   },
   {
+    "id": "brochet-du-stir-fluvial",
+    "label": "Brochet du Stir",
+    "title": null,
+    "folder": "Bestiaire fluvial",
+    "char": {
+      "M": 8,
+      "CC": 55,
+      "CT": null,
+      "F": 55,
+      "E": 50,
+      "I": 40,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 10,
+      "FM": 50,
+      "Soc": null,
+      "B": 20
+    },
+    "traits": [
+      {
+        "id": "animosite",
+        "arg": "Tout"
+      },
+      {
+        "id": "aquatique"
+      },
+      {
+        "id": "a-sang-froid"
+      },
+      {
+        "id": "belliqueux"
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "immunite-psychologique"
+      },
+      {
+        "id": "morsure",
+        "value": 8
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Affamé"
+      },
+      {
+        "key": "Coriace"
+      },
+      {
+        "key": "Dur à Cuire"
+      },
+      {
+        "key": "Frénésie"
+      },
+      {
+        "key": "Haine",
+        "arg": "Tout"
+      },
+      {
+        "key": "Taille",
+        "arg": "Grande-Monstrueuse"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Bien que le « brochet du Stir », tacheté de gris et de vert, ait presque disparu du Stirland, on le trouve encore dans certains lacs et rivières ailleurs dans l'Empire. C'est l'un des plus grands prédateurs d'eau douce du Vieux Monde, capable d'atteindre une longueur de 6 mètres et un poids de plus de 1,8 tonne. Il dévore tous les êtres assez inconscients pour croiser son chemin, mais se nourrit principalement d'un mélange de poissons, d'anguilles et de sangsues. Les jeunes brochets du Stir, appelés brochetons, sont réputés pour leurs qualités médicinales et sont donc très recherchés.",
+    "source": {
+      "book": "T2C",
+      "page": 88
+    },
+    "appearance": {
+      "species": "brochet-du-stir"
+    }
+  },
+  {
     "id": "choses-du-bois-mort",
     "label": "Choses du Bois Mort",
     "title": null,

@@ -157,9 +157,12 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   **Forme de guerrière naïade** : socle FIDÈLE (`onCombatStart` → grantTrait Peur 2 + Armure 2) ; les **4 aspects
   tournants** (Déluge/Eau calme/Rapides/Sinueuse, un choix par Round) = RÉDUCTION documentée (choix par tour = hook
   d'IA de combat dans `combatFlow`/`ai`, verrouillé par la session // — laissés verbatim en `desc`).
-- **Brochet du Stir** : réconciliation ZI↔T2C **NON faite** (variante inter-livres = décision DIFFÉRÉE, cf.
-  [[game-collisions-variantes-livres-deferred]]) — l'entrée ZI curée (harvest « prédire l'avenir », 3 Points de
-  Chance, Queue agile) est PRÉSERVÉE. Un profil fluvial T2C distinct reste une décision de curation à trancher.
+- ~~**Brochet du Stir — réconciliation inter-livres**~~ ✅ **RÉSOLU (décision utilisateur : les deux ont le droit
+  d'exister)** : le même élément avec un profil DIFFÉRENT d'un livre à l'autre = DEUX entrées distinctes qui
+  coexistent (le jeu référence tout par `id`, pas par libellé — cf. `id-collisions.test.ts` « inoffensives à
+  l'exécution »). `brochet-du-stir` (ZI, dossier Zoo Impérial, harvest/3 Chance/Queue agile PRÉSERVÉ) **et**
+  `brochet-du-stir-fluvial` (T2C ch.13, dossier Bestiaire fluvial) coexistent, même libellé, ids distincts,
+  même rig (`appearance.species` partagé). Ni réconciliation ni écrasement : les deux versions sont valides.
 - ~~**Scénario jouable de combat fluvial**~~ ✅ **LIVRÉ** : `src/scenes/test-scenarios/16-embuscade-fluviale.ts`
   (menu « 🧪 Tests — scénarios » → « Embuscade fluviale ») — barge + barque fluviales (coques T2C), pirates
   (équipage exposé), Anguille du Reik. Test bout-en-bout `16-embuscade-fluviale.test.ts` : un Critique sur la
