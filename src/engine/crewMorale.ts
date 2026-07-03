@@ -18,7 +18,7 @@ import crewMoraleJson from '../data/crew-morale.json';
 import { findTableEntry } from './tables';
 import { rollExpr, type RNG, defaultRNG } from './dice';
 import { rollTest, easeDifficulty } from './tests';
-import { testValue } from './skills';
+import { bestForSkills, bestSkilledOption, actorHasSkill } from './skills';
 import { talentTestSLBonus } from './magic';
 import { skillDRBonus } from './ops';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
@@ -212,13 +212,8 @@ export function crewTestModOf(c: Combatant): number {
  *  PLUS le modificateur « Test d'équipage » de ses effets actifs (`crewTestModOf` — chansons de marin).
  *  SEUL point de valeur des Tests d'équipage (manœuvre, bordée, générique, fiche du navire). PUR. */
 export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: number; used?: { skillId: string; spec?: string } } {
-  let best = -Infinity;
-  let used: { skillId: string; spec?: string } | undefined;
-  for (const s of role.skills) {
-    const v = testValue(crew, s.skillId, undefined, s.spec);
-    if (v > best) { best = v; used = s; }
-  }
-  return { value: (Number.isFinite(best) ? best : 0) + crewTestModOf(crew), used };
+  const b = bestForSkills([crew], role.skills ?? [], undefined);
+  return { value: (b?.value ?? 0) + crewTestModOf(crew), used: b?.skillId ? { skillId: b.skillId, spec: b.spec } : undefined };
 }
 
 /** +DR de TALENT d'un membre sur SON jet de rôle RÉUSSI, en contexte TEST D'ÉQUIPAGE — règle UNIVERSELLE
@@ -234,23 +229,21 @@ export function crewTalentDR(crew: Combatant, role: CrewRoleData): number {
     + skillDRBonus(crew, used.skillId, used.spec);
 }
 
-/** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) :
- *  - SPÉCIALISTE → le rôle où il a le plus d'AVANCES (formation acquise au-delà de la Caractéristique).
- *  - GÉNÉRALISTE (aucune avance pertinente) → **Mousse**, « rôle par défaut » (ch.14 l.15), s'il sait Voile/Ramer.
- *  - sinon `null` : un héros sans compétence de marin n'a pas de rôle par défaut (le joueur l'assigne, ch.14 l.39).
- *  On se fonde sur les AVANCES, pas sur `crewRoleValue` (carac nue) : sinon un rôle à carac haute mais non formé —
- *  Capitaine/Soc — raflerait tout l'équipage (`testValue` rend la carac même sans formation, skills.ts). PUR. */
+/** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) — sur la COMPÉTENCE, comme le RAW :
+ *  - le rôle où sa MEILLEURE compétence POSSÉDÉE est la plus haute (« ou s'il est plus **compétent** », MDG 14
+ *    l.38-39) — `testValue` (carac + avances). Le membre ne concourt QUE pour les rôles dont il possède une
+ *    compétence (on ne rafle pas un poste sur la seule carac nue).
+ *  - à défaut → **Mousse**, « rôle par défaut » (MDG 14 l.15/35), s'il sait Voile OU Ramer.
+ *  - sinon `null` : un non-marin n'a pas de rôle par défaut, le joueur l'assigne (MDG 14 l.39). PUR. */
 export function defaultCrewRole(crew: Combatant): string | null {
-  let best: { id: string; adv: number } | null = null;
-  for (const role of crewRoles) {
-    for (const s of role.skills) {
-      const adv = (crew.skills ?? []).find((k) => k.skillId === s.skillId && (s.spec == null || k.spec === s.spec))?.advances ?? 0;
-      if (adv > 0 && (!best || adv > best.adv)) best = { id: role.id, adv };
-    }
-  }
-  if (best) return best.id;
+  // Chaque rôle réduit à ses compétences POSSÉDÉES ; on écarte les rôles sans aucune compétence connue.
+  const eligible = crewRoles
+    .map((role) => ({ id: role.id, skills: role.skills.filter((s) => actorHasSkill(crew, s.skillId, s.spec)) }))
+    .filter((r) => r.skills.length > 0);
+  const best = bestSkilledOption(crew, eligible);
+  if (best) return best.option.id;
   const mousse = findCrewRoleById('mousse');
-  if (mousse && mousse.skills.some((s) => (crew.skills ?? []).some((k) => k.skillId === s.skillId))) return 'mousse';
+  if (mousse && mousse.skills.some((s) => actorHasSkill(crew, s.skillId, s.spec))) return 'mousse';
   return null;
 }
 

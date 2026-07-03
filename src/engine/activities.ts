@@ -21,7 +21,7 @@ import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, PA_PER_SC, PA_PER_CO } from './money';
 import type { Combatant, Difficulty, SkillInstance, Availability } from './types';
 import type { GameOp } from './ops';
-import { testValue, resolveSkillBest, type SkillRef, type TestSpec } from './skills';
+import { resolveSkillBest, bestSkilledOption, type SkillRef, type TestSpec } from './skills';
 import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
 import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, splitLabel } from './careerSlots';
 import { talentCost } from './advancement';
@@ -284,13 +284,9 @@ export function aggregateActivityOutcomes(results: TravelActivityResult[]): Stag
  *  / sans Test), celle où SA meilleure compétence pertinente est la plus haute. Défaut quand le joueur
  *  n'a pas épinglé de `travelRole`. `null` si aucune Activité testable (catalogue vide). PUR. */
 export function defaultTravelRole(hero: Combatant): string | null {
-  let best: { id: string; value: number } | null = null;
-  for (const def of activitiesFor('voyage')) {
-    if (def.freeSkill || !(def.skills?.length)) continue; // Pratiquer (libre) / Récupérer (sans Test) : pas un défaut
-    const v = Math.max(...def.skills.map((s) => testValue(hero, s.skillId, undefined, s.spec)));
-    if (!best || v > best.value) best = { id: def.id, value: v };
-  }
-  return best?.id ?? null;
+  // Activités de voyage à Test fixe seulement (hors compétence libre / sans Test) → celle où la meilleure
+  // compétence du héros est la plus haute (`bestSkilledOption`, first-max sur le catalogue). PUR.
+  return bestSkilledOption(hero, activitiesFor('voyage').filter((d) => !d.freeSkill && d.skills?.length))?.option.id ?? null;
 }
 
 /** Assignation d'Étape initialisée depuis les RÔLES persistants : chaque héros tient son `travelRole`

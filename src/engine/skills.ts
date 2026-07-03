@@ -15,6 +15,7 @@ import { rule } from './policy';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { effectivePsychTraits } from './psychology';
+import { maxBy } from './pick';
 
 /** Règles optionnelles « caractéristique alternative » via policy (POINT UNIQUE de la famille) : Métier
  *  comme Savoir → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266). Renvoie la
@@ -208,12 +209,8 @@ export function partyBest(
   extraMod?: (c: Combatant) => number,
   spec?: string, // spécialisation ciblée (Métier (Serrurier)…) — transmise à `testValue` pour la bonne instance
 ): { actor: Combatant; value: number } | null {
-  let best: { actor: Combatant; value: number } | null = null;
-  for (const c of party) {
-    const v = testValue(c, skill, characteristic, spec) + (extraMod?.(c) ?? 0);
-    if (!best || v > best.value) best = { actor: c, value: v };
-  }
-  return best;
+  const r = maxBy(party, (c) => testValue(c, skill, characteristic, spec) + (extraMod?.(c) ?? 0));
+  return r ? { actor: r.item, value: r.value } : null;
 }
 
 /** Meilleur PJ pour une liste de compétences AU CHOIX (celle qui donne la plus haute valeur décide).
@@ -224,12 +221,13 @@ export function bestForSkills(
   char: CharKey | undefined,
 ): { actor: Combatant; value: number; skillId?: string; spec?: string } | null {
   const choices: SkillRef[] = skills?.length ? skills : [{ skillId: undefined as unknown as string, spec: undefined }];
-  let picked: { actor: Combatant; value: number; skillId?: string; spec?: string } | null = null;
-  for (const sk of choices) {
-    const b = partyBest(party, sk.skillId, char, undefined, sk.spec);
-    if (b && (!picked || b.value > picked.value)) picked = { actor: b.actor, value: b.value, skillId: sk.skillId, spec: sk.spec };
-  }
-  return picked;
+  // Le meilleur ACTEUR par option, puis argmax sur les options (first-max via `maxBy`). Une option
+  // ne concourt que si le groupe fournit un porteur (`partyBest` null ⇒ groupe vide ⇒ résultat null).
+  const perChoice = choices
+    .map((sk) => ({ sk, best: partyBest(party, sk.skillId, char, undefined, sk.spec) }))
+    .filter((x): x is { sk: SkillRef; best: { actor: Combatant; value: number } } => x.best !== null);
+  const r = maxBy(perChoice, (x) => x.best.value);
+  return r ? { actor: r.item.best.actor, value: r.item.best.value, skillId: r.item.sk.skillId, spec: r.item.sk.spec } : null;
 }
 
 /** Meilleur PJ pour un Test COMBINÉ de deux compétences (LDB 12 l.229) : celui dont le PLUS FAIBLE des
@@ -240,13 +238,21 @@ export function bestForCombined(
   sk2: SkillRef,
   char: CharKey | undefined,
 ): { actor: Combatant; value1: number; value2: number } | null {
-  let picked: { actor: Combatant; value1: number; value2: number } | null = null;
-  for (const c of party) {
-    const v1 = testValue(c, sk1.skillId, char, sk1.spec);
-    const v2 = testValue(c, sk2.skillId, char, sk2.spec);
-    if (!picked || Math.min(v1, v2) > Math.min(picked.value1, picked.value2)) picked = { actor: c, value1: v1, value2: v2 };
-  }
-  return picked;
+  const r = maxBy(party, (c) => Math.min(testValue(c, sk1.skillId, char, sk1.spec), testValue(c, sk2.skillId, char, sk2.spec)));
+  if (!r) return null;
+  return { actor: r.item, value1: testValue(r.item, sk1.skillId, char, sk1.spec), value2: testValue(r.item, sk2.skillId, char, sk2.spec) };
+}
+
+/** Meilleure OPTION pour un acteur parmi un catalogue d'options portant des `skills` : score d'une option =
+ *  la MEILLEURE compétence de l'acteur dedans (`bestForSkills([actor], opt.skills).value`), par `testValue`
+ *  (= compétence RAW). Argmax via `maxBy`. Le filtrage des options (possession, activités sans Test…) et les
+ *  replis restent à la charge de l'appelant. */
+export function bestSkilledOption<T extends { skills?: SkillRef[] }>(
+  actor: Combatant,
+  options: readonly T[],
+): { option: T; value: number } | null {
+  const r = maxBy(options, (opt) => bestForSkills([actor], opt.skills ?? [], undefined)?.value ?? -Infinity);
+  return r ? { option: r.item, value: r.value } : null;
 }
 
 /** Test de GROUPE avec SOUTIEN (LDB 12 l.214-225) — SOURCE UNIQUE de la coopération hors combat : le plus
