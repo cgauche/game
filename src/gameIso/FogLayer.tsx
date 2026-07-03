@@ -21,7 +21,7 @@ export interface FogParams {
 // des centaines d'éléments, là où un `<filter>` SVG re-rastérise au CPU par élément (= rame). `brightness`
 // est un multiplicateur : remembered = assombri + désaturé mais LISIBLE ; unknown = `brightness(0)` =
 // noir CONSTANT (le décor jamais vu et ses objets ne transparaissent plus, aucune silhouette).
-const FOG_REMEMBERED = 'brightness(0.42) saturate(0.5)';
+const FOG_REMEMBERED = 'brightness(0.62) saturate(0.7)';
 const FOG_UNKNOWN = 'brightness(0)';
 
 /** Valeur de CSS `filter` (voile de brouillard) à appliquer à un objet, ou `undefined` (en vue / non tagué). */
