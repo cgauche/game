@@ -24,8 +24,7 @@ import type { PendingBase } from './rollFlow';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
-import { partyBest } from '../engine/skills';
-import { testValue } from '../engine/skills';
+import { partyBest, testValue, bestForSkills, bestForCombined } from '../engine/skills';
 import { isStructure } from '../engine/structures';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { refLabel } from '../data';
@@ -356,23 +355,6 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
   });
 }
 
-/** Meilleur PJ pour un Test COMBINÉ de deux compétences (l.75/102) : celui dont le PLUS FAIBLE des deux
- *  (le facteur limitant du Test combiné) est le plus élevé. Renvoie l'acteur + ses deux valeurs. */
-function bestForCombined(
-  party: Combatant[],
-  sk1: { skillId: string; spec?: string },
-  sk2: { skillId: string; spec?: string },
-  char: CharKey | undefined,
-): { actor: Combatant; value1: number; value2: number } | null {
-  let picked: { actor: Combatant; value1: number; value2: number } | null = null;
-  for (const c of party) {
-    const v1 = testValue(c, sk1.skillId, char, sk1.spec);
-    const v2 = testValue(c, sk2.skillId, char, sk2.spec);
-    if (!picked || Math.min(v1, v2) > Math.min(picked.value1, picked.value2)) picked = { actor: c, value1: v1, value2: v2 };
-  }
-  return picked;
-}
-
 // ── Scènes cinématiques (l.116-225) ──────────────────────────────────────────────────────────────
 
 /** Choisit une Scène de la SITUATION : 'test' → modale de jet ; 'hold' → Test opposé de tenue ;
@@ -421,21 +403,6 @@ function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
     difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'hold', sceneId: scene.id, mod,
     enemyValue, enemyRoll,
   });
-}
-
-/** Meilleur PJ pour une liste de compétences AU CHOIX (celle qui donne la plus haute valeur décide). */
-function bestForSkills(
-  party: Combatant[],
-  skills: { skillId: string; spec?: string }[] | undefined,
-  char: CharKey | undefined,
-): { actor: Combatant; value: number; skillId?: string; spec?: string } | null {
-  const choices = skills?.length ? skills : [{ skillId: undefined as string | undefined, spec: undefined as string | undefined }];
-  let picked: { actor: Combatant; value: number; skillId?: string; spec?: string } | null = null;
-  for (const sk of choices) {
-    const b = partyBest(party, sk.skillId, char, undefined, sk.spec);
-    if (b && (!picked || b.value > picked.value)) picked = { actor: b.actor, value: b.value, skillId: sk.skillId, spec: sk.spec };
-  }
-  return picked;
 }
 
 // ── Rassemblement (l.122) ────────────────────────────────────────────────────────────────────────

@@ -161,6 +161,11 @@ export function isSocialTest(skill?: string, characteristic?: CharKey): boolean 
  *  d'équipage naval (Voile/Ramer, Navigation/Orientation…). */
 export interface SkillRef { skillId: string; spec?: string }
 
+/** Descripteur NEUTRE d'un Test « posté » (Activité de voyage/interlude, Scène ou Activité de bataille) :
+ *  compétence(s) AU CHOIX, caractéristique de repli, Difficulté, et Test COMBINÉ éventuel. Champs plats,
+ *  partagés tels quels par les données JSON — vocabulaire commun, sans logique de résolution attachée. */
+export interface TestSpec { skills?: SkillRef[]; char?: CharKey; difficulty?: Difficulty; combined?: boolean }
+
 /** Résultat d'un « Test du meilleur parmi N compétences » pour UN acteur (la compétence retenue + le jet). */
 export interface SkillBestResult {
   value: number;
@@ -209,6 +214,39 @@ export function partyBest(
     if (!best || v > best.value) best = { actor: c, value: v };
   }
   return best;
+}
+
+/** Meilleur PJ pour une liste de compétences AU CHOIX (celle qui donne la plus haute valeur décide).
+ *  `skills` vide/absent ⇒ une unique option de PURE Caractéristique (`skillId`/`spec` indéfinis). */
+export function bestForSkills(
+  party: Combatant[],
+  skills: SkillRef[] | undefined,
+  char: CharKey | undefined,
+): { actor: Combatant; value: number; skillId?: string; spec?: string } | null {
+  const choices: SkillRef[] = skills?.length ? skills : [{ skillId: undefined as unknown as string, spec: undefined }];
+  let picked: { actor: Combatant; value: number; skillId?: string; spec?: string } | null = null;
+  for (const sk of choices) {
+    const b = partyBest(party, sk.skillId, char, undefined, sk.spec);
+    if (b && (!picked || b.value > picked.value)) picked = { actor: b.actor, value: b.value, skillId: sk.skillId, spec: sk.spec };
+  }
+  return picked;
+}
+
+/** Meilleur PJ pour un Test COMBINÉ de deux compétences (LDB 12 l.229) : celui dont le PLUS FAIBLE des
+ *  deux (le facteur limitant du Test combiné) est le plus élevé. Renvoie l'acteur + ses deux valeurs. */
+export function bestForCombined(
+  party: Combatant[],
+  sk1: SkillRef,
+  sk2: SkillRef,
+  char: CharKey | undefined,
+): { actor: Combatant; value1: number; value2: number } | null {
+  let picked: { actor: Combatant; value1: number; value2: number } | null = null;
+  for (const c of party) {
+    const v1 = testValue(c, sk1.skillId, char, sk1.spec);
+    const v2 = testValue(c, sk2.skillId, char, sk2.spec);
+    if (!picked || Math.min(v1, v2) > Math.min(picked.value1, picked.value2)) picked = { actor: c, value1: v1, value2: v2 };
+  }
+  return picked;
 }
 
 /** Test de GROUPE avec SOUTIEN (LDB 12 l.214-225) — SOURCE UNIQUE de la coopération hors combat : le plus

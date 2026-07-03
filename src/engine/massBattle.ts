@@ -13,9 +13,10 @@
  */
 import data from '../data/mass-battle.json';
 import { rollTest, type TestResult } from './tests';
-import { DIFFICULTY_MODIFIERS, type Difficulty, type CharKey } from './types';
+import { DIFFICULTY_MODIFIERS, type Difficulty } from './types';
 import { RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
+import type { TestSpec } from './skills';
 
 // ── Tables verbatim (`mass-battle.json`) ─────────────────────────────────────────────────────────
 
@@ -64,18 +65,15 @@ export interface BattleHold { breakpoint: number; maxRounds: number; enemyBonusP
 /** Une Scène cinématique (l.133-225) : description VERBATIM + résolution `test`/`combat`/`threat`/`hold`.
  *  Les effets s'appliquent sur succès/victoire (ou selon leur `when`) ; les enchaînements imposent une
  *  Scène au Round suivant. Data-driven : `ref` cite la ligne source. */
-export interface BattleSceneDef {
+export interface BattleSceneDef extends TestSpec {
   id: string;
   label: string;
   kind: SceneKind;
   /** Référence canon (ADE II 08 l.NNN). */
   ref: string;
   desc: string;
-  /** Scène 'test'/'hold' : compétences AU CHOIX (la meilleure du PJ décide ; en 'hold' l'ennemi oppose la
-   *  même compétence, « des Compétences adaptées à la situation », l.161). */
-  skills?: { skillId: string; spec?: string }[];
-  char?: CharKey;
-  difficulty?: Difficulty;
+  /** `skills?` (Scène 'test'/'hold' : AU CHOIX ; en 'hold' l'ennemi oppose la même compétence, l.161),
+   *  `char?`, `difficulty?` viennent de `TestSpec`. */
   /** Scène 'combat'/'threat' : id de rencontre de la scène à démarrer (`startCombat`). */
   encounter?: string;
   /** Durée max en Rounds de Combat (l.139/157/175… — indicatif narratif). */
@@ -98,20 +96,15 @@ export interface ActivityOutcome { target: ActivityTarget; amount: number }
 /** Une Activité de bataille (l.79-106) : Test de Compétence dont l'issue alimente la Puissance/les
  *  modificateurs AVANT la bataille (max 3 Activités, l.65). `requires` = prérequis (Sabotage ⇐ Repérage
  *  réussi, Infiltration ⇐ Planification réussie). `grantsFlag` = débloque une Activité dépendante. */
-export interface BattleActivityDef {
+export interface BattleActivityDef extends TestSpec {
   id: string;
   label: string;
   ref: string;
   desc: string;
-  /** Compétences de l'Activité : au CHOIX par défaut (la meilleure du PJ décide) ; en Test COMBINÉ
-   *  (`combined:true`, l.75/102) les DEUX PREMIÈRES sont testées ENSEMBLE (un seul jet vs deux valeurs,
-   *  `evaluateCombinedTest`). Un Test combiné exige donc DEUX compétences. */
-  skills?: { skillId: string; spec?: string }[];
-  /** Test COMBINÉ de `skills[0]` ET `skills[1]` (l.75 Infiltration : Discrétion + Perception ; l.102
-   *  Repérage : Chevaucher + Perception) — un seul d100 confronté aux deux valeurs (LDB 12 l.229). */
-  combined?: boolean;
-  char?: CharKey;
-  difficulty?: Difficulty;
+  /** De `TestSpec` : `skills?` (au CHOIX par défaut ; en Test COMBINÉ `combined:true`, l.75/102, les DEUX
+   *  PREMIÈRES sont testées ENSEMBLE — un seul jet vs deux valeurs, un Test combiné exige donc DEUX
+   *  compétences), `char?`, `difficulty?`, `combined?` (l.75 Infiltration : Discrétion + Perception ;
+   *  l.102 Repérage : Chevaucher + Perception — un d100 confronté aux deux valeurs, LDB 12 l.229). */
   requires?: 'planned' | 'scouted';
   grantsFlag?: 'planned' | 'scouted';
   onSuccess: ActivityOutcome[];

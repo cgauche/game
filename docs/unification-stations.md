@@ -91,8 +91,9 @@ UN composant par-héros (picker d'activité + détail `<Prose>` + prérequis), r
   (`bataille-de-masse`).
 - **C1 — Composant d'affectation d'activité.** Dédup interlude/voyage/mer. Vérif navigateur (interlude + mer).
 
-Ordre : **E1 → S1 → E3 → S2 → C1** (S1 ne dépend que d'E1 ; S2 dépend d'E3+S1 ; C1 dépend d'E1). Plus de phase
-RAW-critique : le moteur de masse n'est pas touché.
+Ordre : **E1 → E3 → S1 → S2 → C1** (E3 pur remonté ; S1+S2 gardés ADJACENTS pour que `battleScene` façonne le
+registre `StationKind` en même temps que `poste`, évitant une abstraction spéculative à un seul implémenteur —
+§7 Q2). Dépendances : S1 ⇐ E1 ; S2 ⇐ E3+S1 ; C1 ⇐ E1. Plus de phase RAW-critique : le moteur de masse n'est pas touché.
 
 ## 4. Ce qui est SUPPRIMÉ (nettoyage POC, zéro dette)
 
@@ -136,13 +137,13 @@ couverts par les chemins normaux.)*
   (ADE II ch.8, absents du voyage). On partage `TestSpec` + primitives, PAS le modèle d'issue. Cf. mémoire
   `game-massbattle-activities-distinct`.
 - Le moteur de domaine masse (clash, normalisation, Hold, hasards, machines de guerre — ADE II ch.8 l.13-321)
-  garde ses FORMULES ; seule sa REPRÉSENTATION passe en `Combatant`/`GameOp`.
-- Gardes RAW après E2 : `node scripts/raw/coverage.mjs` + `reconcile.mjs`, + golden-values de Puissance.
+  garde ses FORMULES **et sa représentation** (modèle plat `MassBattleArmy` + moteur pur) — **INCHANGÉ** (§7bis).
+- Aucune donnée de règles touchée par ce chantier (E1 = types ; S2 `Scene.stations` = contenu de scène).
 
 ## 6. Vérification (par phase)
 
-- Moteur (Vitest) : golden-values de Puissance identiques (E2) ; `TestSpec`/« meilleur héros » purs (E1) ;
-  affectation → héros correct (E3).
+- Moteur (Vitest) : golden-values de Puissance identiques (moteur de masse intouché) ; `TestSpec`/« meilleur
+  héros » purs (E1) ; affectation → héros correct (E3).
 - Navigateur (preview) : `combat-naval`/`siege-enceinte` inchangés (S1) ; `bataille-de-masse` — scènes sur le
   plan + affectation explicite (S2) ; interlude + mer (C1). Piège preview : viewport se ré-réduit ;
   `preview_click` ne déclenche pas React → `b.click()` via eval, 2 appels séparés (closure-sync).

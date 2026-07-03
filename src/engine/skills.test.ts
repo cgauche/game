@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { testValue, partyBest, partyAssisted, skillCharKeyById, resolveSkillBest } from './skills';
+import { testValue, partyBest, partyAssisted, skillCharKeyById, resolveSkillBest, bestForSkills, bestForCombined } from './skills';
 import { makeRNG } from './dice';
 import { Combatant, SkillInstance } from './types';
 
@@ -90,5 +90,43 @@ describe('resolveSkillBest — Test du meilleur parmi N compétences (primitive 
     const b = resolveSkillBest(hero, [{ skillId: 'perception' }], 'intermediaire', makeRNG(7), -30);
     expect(a.target - b.target).toBe(30);
     expect(a.used).toEqual({ skillId: 'perception' });
+  });
+});
+
+describe('bestForSkills — meilleur PJ pour des compétences AU CHOIX', () => {
+  it('prend l’ACTEUR et l’option qui maximisent la valeur (spec-aware)', () => {
+    const a = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 50 }]), id: 'a' }; // discr 80, perc 30
+    const b = { ...mk({ I: 45 }, [{ skillId: 'perception', advances: 20 }]), id: 'b' }; // perc 65, discr 30
+    const r = bestForSkills([a, b], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;
+    expect(r.actor.id).toBe('a'); // 80 (Discrétion) est la plus haute de toutes les combinaisons acteur×option
+    expect(r.skillId).toBe('discretion');
+    expect(r.value).toBe(80);
+  });
+  it('skills vide/absent → chemin de PURE Caractéristique (skillId indéfini)', () => {
+    const a = { ...mk({ FM: 40 }), id: 'a' }, b = { ...mk({ FM: 55 }), id: 'b' };
+    const r = bestForSkills([a, b], undefined, 'FM')!;
+    expect(r.actor.id).toBe('b');
+    expect(r.value).toBe(55);
+    expect(r.skillId).toBeUndefined();
+    expect(r.spec).toBeUndefined();
+  });
+  it('groupe vide → null', () => {
+    expect(bestForSkills([], [{ skillId: 'perception' }], undefined)).toBeNull();
+  });
+});
+
+describe('bestForCombined — Test COMBINÉ : facteur limitant le plus élevé', () => {
+  it('choisit l’acteur maximisant min(v1,v2) (le maillon faible)', () => {
+    // a : 70/40 → min 40 ; b : 50/50 → min 50 (meilleur maillon faible) ; c : 90/20 → min 20.
+    const a = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 40 }, { skillId: 'perception', advances: 10 }]), id: 'a' };
+    const b = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 20 }, { skillId: 'perception', advances: 20 }]), id: 'b' };
+    const c = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 60 }, { skillId: 'perception', advances: 0 }]), id: 'c' };
+    const r = bestForCombined([a, b, c], { skillId: 'discretion' }, { skillId: 'perception' }, undefined)!;
+    expect(r.actor.id).toBe('b');
+    expect(r.value1).toBe(50);
+    expect(r.value2).toBe(50);
+  });
+  it('groupe vide → null', () => {
+    expect(bestForCombined([], { skillId: 'discretion' }, { skillId: 'perception' }, undefined)).toBeNull();
   });
 });

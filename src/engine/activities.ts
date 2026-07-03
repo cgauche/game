@@ -21,7 +21,7 @@ import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, PA_PER_SC, PA_PER_CO } from './money';
 import type { Combatant, Difficulty, SkillInstance, Availability } from './types';
 import type { GameOp } from './ops';
-import { testValue, resolveSkillBest, type SkillRef } from './skills';
+import { testValue, resolveSkillBest, type SkillRef, type TestSpec } from './skills';
 import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
 import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, splitLabel } from './careerSlots';
 import { talentCost } from './advancement';
@@ -99,7 +99,7 @@ export function activityAvailableAt(def: ActivityDef, placeId: string | null): b
  *  - `stageOutcome` pour les effets de portée Étape (voyage) que `GameOp` n'exprime pas ;
  *  - `resolver` (nom) pour réutiliser une logique existante (`'forage'`, `'masterWeapon'`, `'mecenat'`…).
  */
-export interface ActivityDef {
+export interface ActivityDef extends TestSpec {
   /** id STABLE (slug). */
   id: string;
   label: string;
@@ -108,11 +108,9 @@ export interface ActivityDef {
   icon: string;
   contexts: ActivityContext[];
   source: { book: string; page: number };
-  /** Compétence(s) du Test — « au choix » si plusieurs. Absent = Activité SANS Test (ex. Récupérer). */
-  skills?: SkillRef[];
+  /** `skills?` (au choix), `char?`, `difficulty?` viennent de `TestSpec`. Absent = Activité SANS Test. */
   /** Compétence LIBRE choisie par le joueur (Pratiquer une Compétence, EDOC l.172). */
   freeSkill?: boolean;
-  difficulty?: Difficulty;
   /** Test ÉTENDU (LDB 12) : DR requis = `drPerStage` × nombre d'Étapes (Établir des cartes, EDOC l.161). */
   extended?: { drPerStage: number };
   /** RAW EDOC l.133 : échouer le Test d'une Activité octroie un État Exténué. */
