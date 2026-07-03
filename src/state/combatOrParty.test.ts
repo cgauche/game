@@ -33,7 +33,7 @@ describe('combatOrParty — base des actions joueur combat ⇄ hors combat', () 
   });
 
   describe('combatantClickActs : décideur PARTAGÉ carte ⇄ frise/curseur — DÉRIVÉ du mode courant', () => {
-    beforeEach(() => { useGame.setState({ battle: null, party: [], inspectEnabled: true }); });
+    beforeEach(() => { useGame.setState({ battle: null, party: [], inspectEnabled: false }); }); // mode ACTION (Inspection OFF) par défaut
     function combat(over: Record<string, unknown> = {}) {
       const hero = makePregens()[0]; hero.id = 'h1'; hero.pos = { x: 6, y: 6 };
       const ally = makePregens()[1]; ally.id = 'h2'; ally.pos = { x: 5, y: 6 };
@@ -50,6 +50,12 @@ describe('combatOrParty — base des actions joueur combat ⇄ hors combat', () 
     it('ennemi en mode NEUTRE → action (attaque)', () => {
       const { enemy } = combat();
       expect(combatantClickActs(useGame.getState, enemy)).toBe(true);
+    });
+    it('MODE INSPECTION (Inspection ON) → aucun combattant n’agit (cliquer inspecte, jamais attaquer)', () => {
+      const { enemy, ally } = combat();
+      useGame.setState({ inspectEnabled: true });
+      expect(combatantClickActs(useGame.getState, enemy)).toBe(false); // même un ennemi attaquable
+      expect(combatantClickActs(useGame.getState, ally)).toBe(false);
     });
     it('allié en mode NEUTRE → pas d’action (→ inspection)', () => {
       const { ally } = combat();

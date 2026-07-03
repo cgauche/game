@@ -44,6 +44,11 @@ export function touchActors(state: GameState): Partial<GameState> {
 export function combatantClickActs(get: Get, combatant: Pick<Combatant, 'id'>): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return false;
+  // Mode INSPECTION (Inspection ON) : cliquer un combattant l'INSPECTE (carte, frise, curseur) — jamais une action.
+  // Sinon on ne peut pas REGARDER un ennemi sans l'attaquer (retour playtest : « je voulais voir le profil,
+  // mon perso a chargé »). Source UNIQUE des 3 surfaces → toutes basculent en lecture seule d'un coup.
+  // Pour agir, désactiver l'inspection (Inspection OFF).
+  if (get().inspectEnabled) return false;
   const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
   if (!active) return false;
   const mode = currentTargetingMode(get);

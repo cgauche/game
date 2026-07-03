@@ -62,7 +62,7 @@ describe('nextCursorTile — curseur écran-relatif', () => {
 });
 
 describe('cursorCommitIntent — parité performClick (mode-aware)', () => {
-  beforeEach(() => { useGame.setState({ battle: null, party: [], inspectEnabled: true }); });
+  beforeEach(() => { useGame.setState({ battle: null, party: [], inspectEnabled: false }); }); // ACTION par défaut (Inspection OFF)
   function makeState(over: Record<string, unknown> = {}) {
     const hero = makePregens()[0]; hero.id = 'h1'; hero.pos = { x: 6, y: 10 };
     const ally = makePregens()[1]; ally.id = 'h2'; ally.pos = { x: 5, y: 10 };
@@ -72,7 +72,7 @@ describe('cursorCommitIntent — parité performClick (mode-aware)', () => {
       turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
-    useGame.setState({ battle: battle as never, scene: arena(), party: [hero, ally], inspectEnabled: true, ...over });
+    useGame.setState({ battle: battle as never, scene: arena(), party: [hero, ally], inspectEnabled: false, ...over });
     return { hero, ally, enemy };
   }
 
@@ -87,8 +87,13 @@ describe('cursorCommitIntent — parité performClick (mode-aware)', () => {
   });
 
   it('curseur sur un allié, inspection activée → { inspect }', () => {
-    const { ally } = makeState();
+    const { ally } = makeState({ inspectEnabled: true });
     expect(cursorCommitIntent(useGame.getState, { tile: { x: 5, y: 10 } })).toEqual({ kind: 'inspect', id: ally.id });
+  });
+
+  it('MODE INSPECTION (Inspection ON) : curseur sur un ENNEMI → { inspect } (on regarde, on n’attaque pas)', () => {
+    const { enemy } = makeState({ inspectEnabled: true });
+    expect(cursorCommitIntent(useGame.getState, { tile: { x: 7, y: 10 } })).toEqual({ kind: 'inspect', id: enemy.id });
   });
 
   it('curseur sur un allié, inspection désactivée → null (no-op, jamais clic-case)', () => {
