@@ -44,8 +44,14 @@ export interface ReverseGroup {
 const REVERSE = new Map<string, Referrer[]>();
 const rkey = (cat: string, id: string): string => `${cat}:${id}`;
 
-/** Enregistre une arête inverse : `target` (cat,id) est référencée PAR `by` (referrer). */
-function addReverse(targetCat: string, targetId: string | null | undefined, by: Referrer): void {
+// Titres FR des sections inverses (display) — DÉCLARÉS AU SITE de chaque relation (4e argument
+// d'`addReverse`), clé `${targetCat}:${refCat}` ; sans titre déclaré, `GENERIC_PLURAL` en repli.
+const TITLES = new Map<string, string>();
+
+/** Enregistre une arête inverse : `target` (cat,id) est référencée PAR `by` (referrer).
+ *  `title` = titre FR de la section inverse pour cette paire (cible, catégorie du référant). */
+function addReverse(targetCat: string, targetId: string | null | undefined, by: Referrer, title?: string): void {
+  if (title) TITLES.set(`${targetCat}:${by.category}`, title);
   if (!targetId) return;
   const k = rkey(targetCat, targetId);
   const arr = REVERSE.get(k);
@@ -69,80 +75,80 @@ for (const s of species) {
   for (const id of advancementIds(s.skills)) addReverse('skills', id, by);
   for (const id of advancementIds(s.talents)) addReverse('talents', id, by);
   // Carrières accessibles à l'espèce (LDB 05) → inverse « Races y accédant » sur la carrière.
-  for (const c of careersForSpecies(s.refCareer)) addReverse('careers', c.id, by);
+  for (const c of careersForSpecies(s.refCareer)) addReverse('careers', c.id, by, 'Races y accédant');
 }
 
 // 2) Carrières (cat `careers`) → classe.
-for (const c of careers) addReverse('classes', c.class, { category: 'careers', label: c.label });
+for (const c of careers) addReverse('classes', c.class, { category: 'careers', label: c.label }, 'Carrières de la classe');
 
 // 3) Niveaux de carrière → compétences/talents/possessions/caractéristiques (référant = la CARRIÈRE, rang en détail).
 for (const lv of careerLevels) {
   const career = findCareerById(lv.career);
   if (!career) continue;
   const by: Referrer = { category: 'careers', label: career.label, detail: `N${lv.level}` };
-  for (const id of advancementIds(lv.skills)) addReverse('skills', id, by);
-  for (const id of advancementIds(lv.talents)) addReverse('talents', id, by);
-  for (const k of lv.characteristics) addReverse('characteristics', k, by);
-  for (const t of lv.trappings) if ('id' in t) addReverse('trappings', t.id, by);
+  for (const id of advancementIds(lv.skills)) addReverse('skills', id, by, 'Carrières (par rang)');
+  for (const id of advancementIds(lv.talents)) addReverse('talents', id, by, 'Carrières (par rang)');
+  for (const k of lv.characteristics) addReverse('characteristics', k, by, 'Carrières (avancée)');
+  for (const t of lv.trappings) if ('id' in t) addReverse('trappings', t.id, by, 'Carrières (par rang)');
 }
 
 // 4) Compétences → caractéristique de test.
-for (const s of skills) addReverse('characteristics', s.characteristic, { category: 'skills', label: s.label });
+for (const s of skills) addReverse('characteristics', s.characteristic, { category: 'skills', label: s.label }, 'Compétences liées');
 
 // 5) Talents → octrois de carrière (grantCareerSkill/Talent) + bonus de carac (charMod).
 for (const t of talents) {
   const by: Referrer = { category: 'talents', label: t.label };
   for (const op of t.passive ?? []) {
-    if (op.op === 'grantCareerSkill') addReverse('skills', op.skillId, by);
-    else if (op.op === 'grantCareerTalent') addReverse('talents', op.talentId, by);
-    else if (op.op === 'charMod') addReverse('characteristics', op.char, by);
+    if (op.op === 'grantCareerSkill') addReverse('skills', op.skillId, by, 'Talents le conférant');
+    else if (op.op === 'grantCareerTalent') addReverse('talents', op.talentId, by, 'Talents le conférant');
+    else if (op.op === 'charMod') addReverse('characteristics', op.char, by, 'Talents (bonus de départ)');
   }
 }
 
 // 6) Créatures → traits (+ facultatifs) · compétences · talents · sorts · possessions.
 for (const c of creatures) {
   const by: Referrer = { category: 'creatures', label: c.label };
-  for (const tr of c.traits) addReverse('traits', tr.id, by);
-  for (const tr of c.optionals) addReverse('traits', tr.id, { ...by, detail: 'facultatif' });
+  for (const tr of c.traits) addReverse('traits', tr.id, by, 'Créatures ayant ce trait');
+  for (const tr of c.optionals) addReverse('traits', tr.id, { ...by, detail: 'facultatif' }, 'Créatures ayant ce trait');
   for (const sk of c.skills) addReverse('skills', sk.id, by);
   for (const ta of c.talents) addReverse('talents', ta.id, by);
-  for (const sp of c.spells) addReverse('spells', sp.id, by);
-  for (const tp of c.trappings) if ('id' in tp) addReverse('trappings', tp.id, by);
+  for (const sp of c.spells) addReverse('spells', sp.id, by, 'Créatures la lançant');
+  for (const tp of c.trappings) if ('id' in tp) addReverse('trappings', tp.id, by, 'Créatures la possédant');
 }
 
 // 7) Possessions → qualités + groupe d'objet.
 for (const t of trappings) {
   const by: Referrer = { category: 'trappings', label: t.label };
-  for (const q of t.qualities) addReverse('qualities', q.id, by);
-  addReverse('weaponGroups', t.subType, by);
+  for (const q of t.qualities) addReverse('qualities', q.id, by, 'Équipements ayant cette qualité');
+  addReverse('weaponGroups', t.subType, by, 'Objets du groupe');
 }
 
 // 8) Classes → possessions de départ.
 for (const cl of classes) {
   const by: Referrer = { category: 'classes', label: cl.label };
-  for (const t of cl.trappings) if ('id' in t) addReverse('trappings', t.id, by);
+  for (const t of cl.trappings) if ('id' in t) addReverse('trappings', t.id, by, 'Possession de classe');
 }
 
 // 9) Traits → manœuvres conférées.
 for (const t of traits) {
   const by: Referrer = { category: 'traits', label: t.label };
-  for (const m of t.grantsManeuvers ?? []) addReverse('maneuvers', m.id, by);
+  for (const m of t.grantsManeuvers ?? []) addReverse('maneuvers', m.id, by, 'Traits l’accordant');
 }
 
 // 10) Mutations → traits conférés.
 for (const m of mutations) {
   const by: Referrer = { category: 'mutations', label: m.label };
-  for (const op of m.passive ?? []) if (op.op === 'grantTrait') addReverse('traits', op.traitId, by);
+  for (const op of m.passive ?? []) if (op.op === 'grantTrait') addReverse('traits', op.traitId, by, 'Mutations conférant ce trait');
 }
 
 // 11) Sorts → domaine.
-for (const s of spells) addReverse('domains', s.domainId, { category: 'spells', label: s.label });
+for (const s of spells) addReverse('domains', s.domainId, { category: 'spells', label: s.label }, 'Sorts du domaine');
 
 // 12) Dieux/Cultes → bénédictions + miracles.
 for (const g of gods) {
   const by: Referrer = { category: 'gods', label: g.key };
-  for (const b of g.blessings) addReverse('spells', b.id, { ...by, detail: 'Bénédiction' });
-  for (const mi of g.miracles) addReverse('spells', mi.id, { ...by, detail: 'Miracle' });
+  for (const b of g.blessings) addReverse('spells', b.id, { ...by, detail: 'Bénédiction' }, 'Cultes (Bénédictions / Miracles)');
+  for (const mi of g.miracles) addReverse('spells', mi.id, { ...by, detail: 'Miracle' }, 'Cultes (Bénédictions / Miracles)');
 }
 
 // 13) États INFLIGÉS — ops `condition` des effets (Sort = Flow ; Trait/Qualité/Talent/Domaine =
@@ -151,45 +157,27 @@ const conditionIdsInFlow = (flow: Flow | undefined): string[] =>
   spellEffectOps(flow).flatMap((o) => (o.op === 'condition' ? [o.name] : []));
 const conditionIdsInEffects = (effects: TriggeredEffect[] | undefined): string[] =>
   (effects ?? []).flatMap((e) => conditionIdsInFlow(e.flow));
-for (const s of spells) for (const id of conditionIdsInFlow(s.effects)) addReverse('etats', id, { category: 'spells', label: s.label });
-for (const t of traits) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'traits', label: t.label });
-for (const q of qualities) for (const id of conditionIdsInEffects(q.effects)) addReverse('etats', id, { category: 'qualities', label: q.label });
-for (const t of talents) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'talents', label: t.label });
-for (const d of domains) for (const id of conditionIdsInEffects(d.effects)) addReverse('etats', id, { category: 'domains', label: d.label });
+for (const s of spells) for (const id of conditionIdsInFlow(s.effects)) addReverse('etats', id, { category: 'spells', label: s.label }, 'Sorts l’infligeant');
+for (const t of traits) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'traits', label: t.label }, 'Traits l’infligeant');
+for (const q of qualities) for (const id of conditionIdsInEffects(q.effects)) addReverse('etats', id, { category: 'qualities', label: q.label }, 'Qualités d’arme l’infligeant');
+for (const t of talents) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'talents', label: t.label }, 'Talents l’infligeant');
+for (const d of domains) for (const id of conditionIdsInEffects(d.effects)) addReverse('etats', id, { category: 'domains', label: d.label }, 'Domaines l’infligeant');
 
 // 14) Mutation ← Table de Corruption qui la tire (inversion de mutationTable.ranges[].mutation).
-for (const tab of mutationTables) for (const r of tab.ranges) addReverse('mutations', r.mutation, { category: 'mutationTables', label: tab.label, detail: `${r.min}–${r.max}` });
+for (const tab of mutationTables) for (const r of tab.ranges) addReverse('mutations', r.mutation, { category: 'mutationTables', label: tab.label, detail: `${r.min}–${r.max}` }, 'Tables de Corruption la tirant');
 // 15) Lieu ← sous-lieux (inversion de location.parent, désormais un id de parent).
-for (const l of locations) if (l.parent) addReverse('locations', l.parent, { category: 'locations', label: l.label });
+for (const l of locations) if (l.parent) addReverse('locations', l.parent, { category: 'locations', label: l.label }, 'Sous-lieux');
 
-// ── Titres FR des sections inverses (display — couche UI, pas de sémantique de jeu) ──────────────
-// Clé `${targetCat}:${refCat}` ; repli = nom pluriel générique du référant.
+// ── Repli des titres (display) : nom pluriel générique du référant, quand l'arête n'a pas déclaré
+//    de titre (« Races », « Créatures »…). Les titres SPÉCIFIQUES vivent au site de chaque relation.
 const GENERIC_PLURAL: Record<string, string> = {
   races: 'Races', careers: 'Carrières', classes: 'Classes', skills: 'Compétences', talents: 'Talents',
   trappings: 'Équipements', qualities: 'Qualités', creatures: 'Créatures', traits: 'Traits',
   mutations: 'Mutations', spells: 'Sorts', domains: 'Domaines', gods: 'Cultes', maneuvers: 'Manœuvres',
   weaponGroups: 'Groupes d’objet', characteristics: 'Caractéristiques',
 };
-const REVERSE_TITLE: Record<string, string> = {
-  'traits:creatures': 'Créatures ayant ce trait',
-  'traits:mutations': 'Mutations conférant ce trait',
-  'skills:races': 'Races', 'skills:careers': 'Carrières (par rang)', 'skills:talents': 'Talents le conférant', 'skills:creatures': 'Créatures',
-  'talents:races': 'Races', 'talents:careers': 'Carrières (par rang)', 'talents:talents': 'Talents le conférant', 'talents:creatures': 'Créatures',
-  'characteristics:skills': 'Compétences liées', 'characteristics:careers': 'Carrières (avancée)', 'characteristics:talents': 'Talents (bonus de départ)',
-  'classes:careers': 'Carrières de la classe',
-  'careers:races': 'Races y accédant',
-  'trappings:creatures': 'Créatures la possédant', 'trappings:careers': 'Carrières (par rang)', 'trappings:classes': 'Possession de classe',
-  'qualities:trappings': 'Équipements ayant cette qualité',
-  'spells:gods': 'Cultes (Bénédictions / Miracles)', 'spells:creatures': 'Créatures la lançant',
-  'domains:spells': 'Sorts du domaine',
-  'maneuvers:traits': 'Traits l’accordant',
-  'weaponGroups:trappings': 'Objets du groupe',
-  'etats:spells': 'Sorts l’infligeant', 'etats:traits': 'Traits l’infligeant', 'etats:qualities': 'Qualités d’arme l’infligeant',
-  'etats:talents': 'Talents l’infligeant', 'etats:domains': 'Domaines l’infligeant',
-  'mutations:mutationTables': 'Tables de Corruption la tirant', 'locations:locations': 'Sous-lieux',
-};
 const reverseTitle = (targetCat: string, refCat: string): string =>
-  REVERSE_TITLE[`${targetCat}:${refCat}`] ?? GENERIC_PLURAL[refCat] ?? refCat;
+  TITLES.get(`${targetCat}:${refCat}`) ?? GENERIC_PLURAL[refCat] ?? refCat;
 
 /** Ordre stable des catégories (référants d'une fiche ET contenu d'un livre) — les plus parlantes
  *  d'abord ; une catégorie hors liste est repoussée en fin (via `orderOf`). */

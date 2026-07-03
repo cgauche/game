@@ -70,6 +70,13 @@ describe('relations — graphe inverse id-based', () => {
     expect(reverseGroups('traits', '___inexistant___')).toEqual([]);
   });
 
+  it('titre de section : déclaré AU SITE de la relation ; arête sans titre → repli GENERIC_PLURAL', () => {
+    // creature.skills est déclarée sans titre spécifique → le groupe inverse titre au pluriel générique.
+    const c = creatures.find((x) => x.skills.length > 0)!;
+    const groups = reverseGroups('skills', c.skills[0].id);
+    expect(groups.find((g) => g.category === 'creatures')?.title).toBe('Créatures');
+  });
+
   it('bookContents(LDB) groupe le contenu par catégorie', () => {
     const contents = bookContents('LDB');
     expect(contents.length).toBeGreaterThan(0);

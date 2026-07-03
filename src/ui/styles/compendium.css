@@ -350,6 +350,69 @@
 .codex-pop-foot .codex-src {
   margin-right: auto;
 }
+/* pied EXPLICITE : le déclencheur ouvre la fiche au clic (affordance nommée, plus un secret de survol) */
+.codex-pop-open {
+  margin-left: auto;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+}
+
+/* ── Statbloc bestiaire COMPACT (bande parchemin en tête de fiche créature) ──
+   `.tx-parchment` (ornaments.css) pose fond + `color: var(--ink)` — tout ici en encre/currentColor. */
+.codex-statblock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-x: auto; /* 12 colonnes : défile DANS la bande sur écran étroit */
+}
+.codex-statblock-profile {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.codex-statblock-profile th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+  padding: 1px 4px;
+  border-bottom: 1px solid currentColor;
+}
+.codex-statblock-profile td {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 3px 4px;
+}
+
+/* ── Facettes (chips multi-sélection au-dessus de la recherche, compteur live) ── */
+.codex-facets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 5px;
+  padding: 6px 8px 0;
+}
+.codex-facet-label {
+  margin-right: 2px;
+}
+.chip.codex-facet.on {
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+/* ── Aperçu créature encadré (OrnateFrame) dans l'en-tête de fiche ── */
+.codex-figure {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: 6px;
+}
 
 /* déclencheur-icône ℹ️ (ActionBar : à côté d'un bouton d'action) */
 .codex-ref.ab-codex-info {

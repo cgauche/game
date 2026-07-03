@@ -15,7 +15,7 @@ import { useGame } from '../../state/store';
 import { codexLookup } from './registry';
 import { mdToText } from '../Prose';
 
-const truncate = (s: string, n = 260): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
+const truncate = (s: string, n = 400): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
 const POP_W = 320;
 const GAP = 6;
@@ -135,9 +135,11 @@ export function CodexRef({
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
             {metaLine && <span className="codex-pop-meta">{metaLine}</span>}
             {body && <span className="codex-pop-body">{body}</span>}
-            {src && (
+            {(src || interactive) && (
               <span className="codex-pop-foot">
-                <span className="codex-src">{src.book} p.{src.page}</span>
+                {src && <span className="codex-src">{src.book} p.{src.page}</span>}
+                {/* affordance EXPLICITE : le déclencheur est cliquable → la fiche Codex s'ouvre */}
+                {interactive && <span className="codex-pop-open">Ouvrir la fiche</span>}
               </span>
             )}
           </span>,

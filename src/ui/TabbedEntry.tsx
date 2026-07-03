@@ -13,7 +13,9 @@ export interface EntryTab {
  * scroller un long pavé. SOURCE UNIQUE de la page d'espèce du créateur ET de la fiche du Codex
  * (réutilise les classes globales `.main-head`/`.zone-tabs`/`.zone-tab` de `creator.css`).
  *
- * `key` côté appelant (ex. `key={item.label}`) réinitialise l'onglet actif quand on change d'entité.
+ * L'onglet actif est mémorisé PAR NOM : au changement de fiche (les `tabs` changent), si un onglet
+ * du même nom existe on y reste (feuilleter les créatures garde « Caractéristiques » ouvert),
+ * sinon on retombe sur le 1er. Ne PAS remonter le composant via `key` côté appelant.
  */
 export function TabbedEntry({
   figure,
@@ -21,6 +23,7 @@ export function TabbedEntry({
   aside,
   blurb,
   meta,
+  band,
   tabs,
 }: {
   /** Figurine/aperçu à gauche du titre (rig, illustration…). */
@@ -32,10 +35,12 @@ export function TabbedEntry({
   blurb?: ReactNode;
   /** Faits-clés TOUJOURS visibles dans l'en-tête (jamais cachés dans un onglet). */
   meta?: ReactNode;
+  /** Bande PLEINE LARGEUR entre l'en-tête et les onglets (statbloc compact d'une créature…). */
+  band?: ReactNode;
   tabs: EntryTab[];
 }) {
-  const [active, setActive] = useState(tabs[0]?.id);
-  const current = tabs.find((t) => t.id === active) ?? tabs[0];
+  const [active, setActive] = useState(tabs[0]?.label);
+  const current = tabs.find((t) => t.label === active) ?? tabs[0];
   return (
     <>
       <div className="main-head">
@@ -49,10 +54,11 @@ export function TabbedEntry({
           {meta}
         </div>
       </div>
+      {band}
       {tabs.length > 1 && (
         <div className="zone-tabs">
           {tabs.map((t) => (
-            <button key={t.id} className={`zone-tab ${current?.id === t.id ? 'active' : ''}`} onClick={() => setActive(t.id)}>
+            <button key={t.id} className={`zone-tab ${current?.id === t.id ? 'active' : ''}`} onClick={() => setActive(t.label)}>
               {t.label}
             </button>
           ))}

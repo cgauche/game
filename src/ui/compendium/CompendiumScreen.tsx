@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../state/store';
 import { useModalA11y } from '../Modal';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, type CodexGroup, type CodexItem } from './registry';
-import { filterItems } from './search';
+import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
 
@@ -30,6 +30,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   const [catKey, setCatKey] = useState<string>(initialCat.key);
   const [picked, setPicked] = useState<string | null>(focus?.label ?? null);
   const [q, setQ] = useState('');
+  const [facetSel, setFacetSel] = useState<FacetSelection>({});
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -43,11 +44,30 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
     setCatKey(fc.key);
     setPicked(focus.label);
     setQ('');
+    setFacetSel({}); // une facette cochée pourrait masquer l'entrée ciblée
   }, [focus]);
 
   const cats = useMemo(() => categoriesIn(group), [group]);
   const cat = categoryByKey(catKey) ?? cats[0];
-  const list = useMemo(() => filterItems(cat?.items ?? [], q), [cat, q]);
+  const list = useMemo(() => filterItems(cat?.items ?? [], q, cat?.facets ?? [], facetSel), [cat, q, facetSel]);
+  // Facettes de la catégorie : valeurs dérivées des items, avec COMPTEUR LIVE — chaque compte est
+  // calculé sous la recherche + les AUTRES facettes (faceting standard) ; une facette à valeur
+  // unique n'apporte rien → masquée.
+  const facetRows = useMemo(
+    () =>
+      (cat?.facets ?? [])
+        .map((facet) => ({
+          facet,
+          values: facetValues(filterItems(cat!.items, q, cat!.facets ?? [], { ...facetSel, [facet.key]: [] }), facet),
+        }))
+        .filter((r) => r.values.length > 1),
+    [cat, q, facetSel],
+  );
+  const toggleFacet = (key: string, value: string) =>
+    setFacetSel((s) => {
+      const cur = s[key] ?? [];
+      return { ...s, [key]: cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value] };
+    });
   // Jamais d'état vide : à défaut de sélection valide dans la liste filtrée, on montre la 1re.
   const selected = list.find((it) => it.label === picked) ?? list[0] ?? null;
   // Instance paramétrée du lien d'ouverture (« 8 Tentacules +8 ») — seulement sur l'entrée ciblée.
@@ -74,11 +94,13 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
     setCatKey(categoriesIn(g)[0]?.key);
     setPicked(null);
     setQ('');
+    setFacetSel({});
   };
   const pickCat = (key: string) => {
     setCatKey(key);
     setPicked(null);
     setQ('');
+    setFacetSel({});
   };
 
   const renderRow = (it: CodexItem, key: string) => (
@@ -118,6 +140,20 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
 
       <div className="codex-grid">
         <aside className="codex-aside panel flush">
+          {facetRows.map(({ facet, values }) => (
+            <div className="codex-facets" key={facet.key}>
+              <span className="codex-facet-label section-label">{facet.label}</span>
+              {values.map(({ value, count }) => {
+                const on = (facetSel[facet.key] ?? []).includes(value);
+                return (
+                  <button key={value} className={`chip codex-facet${on ? ' on' : ''}`} onClick={() => toggleFacet(facet.key, value)}>
+                    {value}
+                    <span className="count">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
           <input
             className="codex-search"
             type="search"

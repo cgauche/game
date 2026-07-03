@@ -10,7 +10,7 @@ import { datasetArray, setDataset, datasetObject, setObjectDataset, type Dataset
 import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
-import { entryKey } from './registry';
+import { entryKey, invalidateCodexLookup } from './registry';
 import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
@@ -67,13 +67,53 @@ export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetK
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];
 export const isEditableCategory = (categoryKey: string): boolean => !!CATEGORY_DATASET[categoryKey] || !!OBJECT_CATEGORY[categoryKey];
 
-/** Champ-liste (string[]) → dataset dont on propose les libellés en autocomplétion. */
+/** Champ-réf → son dataset. Double usage : autocomplétion `<datalist>` des champs-listes ET
+ *  validation des refs (`validateEntry` : chaque `{id}` du champ doit résoudre dans ce dataset). */
 const REF_LIST_DATASET: Record<string, DatasetKey> = {
   traits: 'traits', optionals: 'traits', skills: 'skills', talents: 'talents',
   spells: 'spells', trappings: 'trappings', blessings: 'spells', miracles: 'spells',
 };
 
 type Entry = Record<string, unknown>;
+
+/** ids STRUCTURÉS (`{id}`) d'un champ-liste de refs — descend dans les branches `choice` des
+ *  `AdvancementRef` et les enveloppes `{ref:{id}}` ; ignore les `{text}` narratifs et jokers. */
+function refIdsIn(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const out: string[] = [];
+  for (const x of v) {
+    if (!x || typeof x !== 'object') continue;
+    const o = x as { choice?: unknown; ref?: { id?: unknown }; id?: unknown };
+    if (o.choice) out.push(...refIdsIn(o.choice));
+    else if (o.ref && typeof o.ref.id === 'string') out.push(o.ref.id);
+    else if (typeof o.id === 'string') out.push(o.id);
+  }
+  return out;
+}
+
+/** Valide une entrée AVANT persist (bouton Enregistrer bloqué tant que non vide) : identité
+ *  (id non vide + unique, libellé non vide) + refs `{id}` résolvables dans leur dataset. PUR.
+ *  `selfIndex` = position de l'entrée éditée dans `entries` (−1 pour une création). */
+export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[], selfIndex: number): string[] {
+  void categoryKey; // les champs-réfs sont détectés par nom de champ (table unique), pas par catégorie
+  const errors: string[] = [];
+  // id : requis + unique là où le dataset est id-based (toutes les entités migrées par-id).
+  if (entries.some((e) => typeof e.id === 'string')) {
+    const id = typeof entry.id === 'string' ? entry.id.trim() : '';
+    if (!id) errors.push('id vide — identifiant stable requis');
+    else if (entries.some((e, i) => i !== selfIndex && e.id === id)) errors.push(`id « ${id} » déjà pris par une autre entrée`);
+  }
+  // Libellé : la clé d'identité générique (label/name/key/id) ne peut pas être vide — c'est elle
+  // que le navigateur du Codex et l'éditeur utilisent pour retrouver l'entrée.
+  if (!entryKey(entry).trim()) errors.push('libellé vide');
+  // Refs résolvables : chaque `{id}` d'un champ-réf doit exister dans son dataset.
+  for (const [field, ds] of Object.entries(REF_LIST_DATASET)) {
+    if (!(field in entry)) continue;
+    const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
+    for (const id of refIdsIn(entry[field])) if (!known.has(id)) errors.push(`${field} : réf « ${id} » introuvable (${ds})`);
+  }
+  return errors;
+}
 
 /** Axes du PROFIL de manœuvre rendus par `ManeuverDefField` (selects/checkbox). */
 const MANEUVER_PROFILE_KEYS = ['kind', 'activation', 'advantageCost', 'advantageMode', 'stat', 'defense', 'targeting', 'range', 'blast', 'magic'];
@@ -129,19 +169,19 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const obj = editableObjectDataset(categoryKey);
   // `recordMode` : dataset-objet Record (`names`) — l'entrée est keyée par une CLÉ (la race) éditable
   // (création/renommage). `persist(entry, key)` écrit sous `key` (et purge l'ancienne si renommée).
-  const src = useMemo<{ entries: Entry[]; initial: Entry; file: string; recordMode: boolean; initialKey: string; persist: (entry: Entry, key: string) => void }>(() => {
+  const src = useMemo<{ entries: Entry[]; initial: Entry; index: number; file: string; recordMode: boolean; initialKey: string; persist: (entry: Entry, key: string) => void }>(() => {
     const entries = editableEntries(categoryKey);
     if (obj) {
       const data = datasetObject(obj.ds) as Record<string, unknown>;
       const file = `${obj.ds}.json`;
       if (obj.mode === 'single')
-        return { entries, initial: data as Entry, file, recordMode: false, initialKey: '', persist: (e) => setObjectDataset(obj.ds, e as never) };
+        return { entries, initial: data as Entry, index: -1, file, recordMode: false, initialKey: '', persist: (e) => setObjectDataset(obj.ds, e as never) };
       // record : une entrée par clé (le `label` du navigateur = la clé, ex. la race) ; inférence sur
       // TOUTES les valeurs (mêmes champs partout). `isNew` → clé vide à saisir dans le champ « Clé ».
       const initialKey = isNew ? '' : label;
       const initial = (data[initialKey] as Entry) ?? {};
       return {
-        entries, initial, file, recordMode: true, initialKey,
+        entries, initial, index: -1, file, recordMode: true, initialKey,
         persist: (e, key) => {
           const next = { ...data } as Record<string, unknown>;
           if (initialKey && initialKey !== key) delete next[initialKey]; // renommage : retire l'ancienne clé
@@ -158,6 +198,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
     return {
       entries: arr,
       initial: arr[index] ?? {},
+      index,
       file: `${dsKey}.json`, recordMode: false, initialKey: '',
       persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
     };
@@ -229,11 +270,15 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
     return inferFields(src.entries as Record<string, unknown>[]).filter((f) => !handled.has(f.key));
   }, [src.entries, categoryKey]);
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
+  // Erreurs BLOQUANTES avant persist (identité + refs résolvables) — pas de validation des
+  // datasets-objet (details/names : pas d'identité par entrée ; la clé du mode Record a sa garde).
+  const errors = useMemo(() => (obj ? [] : validateEntry(categoryKey, entry, src.entries, src.index)), [obj, categoryKey, entry, src]);
   // En mode Record, la clé (race) ne peut pas être vide (sinon entrée fantôme) — bloque l'enregistrement.
-  const canSave = dirty && (!src.recordMode || recordKey.trim().length > 0);
+  const canSave = dirty && errors.length === 0 && (!src.recordMode || recordKey.trim().length > 0);
 
   const save = async () => {
     src.persist(entry, recordKey.trim()); // preview mémoire (live) — mutation en place (tableau ou objet)
+    invalidateCodexLookup(); // l'index de `codexLookup` repart de la donnée persistée
     // Le texte écrit = la SOURCE entière (tableau ou objet-dataset), re-sérialisée byte-fidèle.
     const text = serializeDataset(obj ? datasetObject(obj.ds) : datasetArray(editableDataset(categoryKey)!));
     try {
@@ -255,6 +300,11 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         <button className="btn small" onClick={onClose}>Fermer</button>
         <button className="btn small btn-primary" disabled={!canSave} onClick={save}>Enregistrer{dirty ? ' •' : ''}</button>
       </div>
+      {dirty && errors.length > 0 && (
+        <ul className="codex-edit-errors">
+          {errors.map((e) => <li key={e}>{e}</li>)}
+        </ul>
+      )}
       <div className="codex-edit-form">
         {src.recordMode && (
           <label className="ed-field"><span>Clé (race) — identifiant de l'entrée</span>

@@ -5,6 +5,7 @@ import { EntityRef, ChoiceChips } from '../EntityChip';
 import { CodexRef } from './CodexRef';
 import { CreaturePreview } from './CreaturePreview';
 import { TabbedEntry, type EntryTab } from '../TabbedEntry';
+import { OrnateFrame } from '../Ornaments';
 import { Prose } from '../Prose';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
@@ -40,7 +41,7 @@ function CodexRowView({ row }: { row: CodexRow }) {
 function CodexSectionView({ section }: { section: CodexSection }) {
   return (
     <section className="codex-sec">
-      <h3 className="codex-sec-title">{section.title}</h3>
+      <h3 className="codex-sec-title section-label">{section.title}</h3>
       <div className={`codex-sec-body codex-${section.layout ?? 'list'}`}>
         {section.rows.map((row, i) => (
           <CodexRowView key={i} row={row} />
@@ -121,14 +122,27 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
           Cette occurrence : <b>{instance}</b>
         </div>
       )}
+      {/* PAS de `key={item.label}` : TabbedEntry conserve l'onglet actif (par nom) au changement de fiche. */}
       <TabbedEntry
-        key={item.label}
-        figure={item.appearance ? <CreaturePreview name={item.previewRef ?? item.label} appearance={item.appearance} /> : undefined}
+        figure={item.appearance ? <OrnateFrame className="codex-figure"><CreaturePreview name={item.previewRef ?? item.label} appearance={item.appearance} /></OrnateFrame> : undefined}
         title={item.label}
         aside={item.source ? <CodexSourceBadge source={item.source} /> : undefined}
         blurb={item.sub}
         meta={meta}
         tabs={tabs}
+        band={item.statblock && (
+          <div className="codex-statblock tx-parchment">
+            <table className="codex-statblock-profile">
+              <thead><tr>{item.statblock.profile.map((f) => <th key={f.label}>{f.label}</th>)}</tr></thead>
+              <tbody><tr>{item.statblock.profile.map((f) => <td key={f.label}>{f.value}</td>)}</tr></tbody>
+            </table>
+            {item.statblock.traits.length > 0 && (
+              <div className="codex-sec-body codex-chips">
+                {item.statblock.traits.map((row, i) => <CodexRowView key={i} row={row} />)}
+              </div>
+            )}
+          </div>
+        )}
       />
     </article>
   );

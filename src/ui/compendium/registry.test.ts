@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, type CodexItem } from './registry';
-import { codexMatch, deburr } from './search';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
+import { codexMatch, deburr, filterItems, facetValues } from './search';
 import { isEditableCategory } from './CodexEdit';
 import { creatures, findTraitById } from '../../data';
+import { CHAR_KEYS } from '../../engine/types';
 
 /** Toutes les lignes 'ref' (cross-réf) d'une fiche, sections + onglets confondus. */
 const refLabelsOf = (item: CodexItem): string[] =>
@@ -44,6 +45,23 @@ describe('Codex registry', () => {
     expect(codexLookup('etats', first.label.toUpperCase())).toBe(first);
     expect(codexLookup('etats', 'libellé inexistant')).toBeUndefined();
     expect(codexLookup('categorie-inexistante', first.label)).toBeUndefined();
+  });
+
+  it('codexLookup est INDEXÉ : figé après construction, invalidable (compteur de version bumpé)', () => {
+    const cat = categoryByKey('etats')!;
+    const tmp: CodexItem = { label: 'Entrée-test-invalidation' };
+    expect(codexLookup('etats', tmp.label)).toBeUndefined(); // construit l'index de la catégorie
+    cat.items.push(tmp); // simule un persist de CodexEdit (mutation de la donnée)
+    try {
+      expect(codexLookup('etats', tmp.label)).toBeUndefined(); // index figé tant que non invalidé
+      const v0 = codexLookupVersion();
+      invalidateCodexLookup();
+      expect(codexLookupVersion()).toBe(v0 + 1);
+      expect(codexLookup('etats', tmp.label)).toBe(tmp); // reconstruit depuis la donnée à jour
+    } finally {
+      cat.items.pop();
+      invalidateCodexLookup();
+    }
   });
 });
 
@@ -99,6 +117,62 @@ describe('Codex registry — références INVERSES (relations.ts → fiches)', (
     expect(peur!.group).toBe('Peur');
     // C'est un VIEW de traits (pas un dataset) → l'édition DEV passe par « Traits », pas ici.
     expect(isEditableCategory('psychologie')).toBe(false);
+  });
+});
+
+describe('Codex registry — statbloc bestiaire compact', () => {
+  it('chaque créature porte un statbloc (M + 10 caracs + Blessures, traits en chips cross-réf)', () => {
+    const items = categoryByKey('creatures')!.items;
+    for (const it of items) {
+      expect(it.statblock, it.label).toBeTruthy();
+      expect(it.statblock!.profile.map((f) => f.label)).toEqual(['M', ...CHAR_KEYS, 'B']);
+      for (const f of it.statblock!.profile) expect(f.value, `${it.label} ${f.label}`).toBeTruthy();
+    }
+    const withTraits = items.find((i) => i.statblock!.traits.length > 0)!;
+    expect(withTraits.statblock!.traits.every((r) => r.t === 'ref' && r.category === 'traits')).toBe(true);
+  });
+});
+
+describe('Codex — facettes', () => {
+  it('filterItems : ET entre facettes, OU à l’intérieur, item sans valeur écarté par une facette active', () => {
+    const items: CodexItem[] = [
+      { label: 'Averland', source: { book: 'LDB', page: 1 }, group: 'G1' },
+      { label: 'Barak', source: { book: 'ADE', page: 2 }, group: 'G1' },
+      { label: 'Carroburg', source: { book: 'LDB', page: 3 }, group: 'G2' },
+      { label: 'Dötern' },
+    ];
+    const facets: CodexFacet[] = [
+      { key: 'book', label: 'Livre', valueOf: (i) => i.source?.book },
+      { key: 'group', label: 'Groupe', valueOf: (i) => i.group },
+    ];
+    expect(filterItems(items, '', facets, {})).toHaveLength(4); // aucune facette active = tout passe
+    expect(filterItems(items, '', facets, { book: ['LDB'] }).map((i) => i.label)).toEqual(['Averland', 'Carroburg']);
+    expect(filterItems(items, '', facets, { book: ['LDB', 'ADE'] })).toHaveLength(3); // OU interne ; Dötern sans livre écarté
+    expect(filterItems(items, '', facets, { book: ['LDB'], group: ['G1'] }).map((i) => i.label)).toEqual(['Averland']); // ET entre facettes
+    expect(filterItems(items, 'carro', facets, { book: ['LDB'] }).map((i) => i.label)).toEqual(['Carroburg']); // recherche + facette
+  });
+
+  it('facetValues dérive les valeurs des items (comptées, triées FR)', () => {
+    const facet: CodexFacet = { key: 'book', label: 'Livre', valueOf: (i) => i.source?.book };
+    const items: CodexItem[] = [
+      { label: 'A', source: { book: 'LDB', page: 1 } },
+      { label: 'B', source: { book: 'ADE', page: 1 } },
+      { label: 'C', source: { book: 'LDB', page: 2 } },
+      { label: 'D' },
+    ];
+    expect(facetValues(items, facet)).toEqual([
+      { value: 'ADE', count: 1 },
+      { value: 'LDB', count: 2 },
+    ]);
+  });
+
+  it('chaque catégorie déclare ses facettes sur la donnée RÉELLE (livre / groupe ssi porté par des items)', () => {
+    for (const c of CODEX) {
+      const hasBook = c.items.some((i) => i.source?.book);
+      const hasGroup = c.items.some((i) => i.group);
+      expect(!!c.facets?.some((f) => f.key === 'book'), `${c.key} facette livre`).toBe(hasBook);
+      expect(!!c.facets?.some((f) => f.key === 'group'), `${c.key} facette groupe`).toBe(hasGroup);
+    }
   });
 });
 

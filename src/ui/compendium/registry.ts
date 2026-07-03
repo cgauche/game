@@ -26,7 +26,9 @@ import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
-import { SIZE_LABEL, effectiveSize } from '../../engine/size';
+import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
+import { bonus } from '../../engine/characteristics';
+import { sizeFromTraits } from '../../state/spawn';
 import { formatDice } from '../../engine/dice';
 import { formatDiseaseTime } from '../../engine/disease';
 import { costPerEnc } from '../../engine/harvest';
@@ -105,12 +107,24 @@ export interface CodexItem {
   appearance?: EntityAppearance;
   /** `id` de créature pour résoudre l'aperçu rig PAR ID (Nuées/non-bipèdes lisent leurs traits du record). */
   previewRef?: string;
+  /** Statbloc COMPACT (bande parchemin en tête de fiche) : profil imprimé (M + 10 caracs + Blessures)
+   *  + traits en chips cross-réf. Projection data-driven (catégorie créatures). */
+  statblock?: { profile: CodexFact[]; traits: CodexRow[] };
+}
+/** Facette de filtre d'une catégorie (chips multi-sélection au-dessus de la recherche) : lit UN
+ *  champ de l'item ; ses valeurs sont DÉRIVÉES des items au rendu (jamais une liste en dur). */
+export interface CodexFacet {
+  key: string;
+  label: string;
+  valueOf: (item: CodexItem) => string | undefined;
 }
 export interface CodexCategory {
   key: string;
   label: string;
   group: CodexGroup;
   items: CodexItem[];
+  /** Facettes de filtre — câblées APRÈS coup sur la donnée réelle (livre partout, groupe là où porté). */
+  facets?: CodexFacet[];
 }
 
 const src = (s: { book?: string; page?: number } | null | undefined): CodexSource | null =>
@@ -277,6 +291,21 @@ export function raceFicheTabs(s: (typeof species)[number]): CodexTab[] {
 /** SOURCE UNIQUE de la fiche d'un Trait (partagée par la catégorie « Traits » ET le filtre
  *  « Psychologie ») : manœuvres conférées + passifs + effets + réfs INVERSES (créatures/mutations) ;
  *  la capacité psy (LDB 21) remonte en méta (type + immunité + Indice fixe). */
+/** Statbloc compact d'une créature : profil IMPRIMÉ (M + les 10 caracs, « – » si inexistante —
+ *  LDB 76, Schéma des Profils) + Blessures (valeur livre `char.B` si imprimée, sinon formule
+ *  BF+2×BE+BFM × Taille, LDB 85) + traits en chips cross-réf. Zéro logique par-créature. */
+function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem['statblock']> {
+  const cell = (k: string, v: number | null | undefined): CodexFact => ({ label: k, value: v != null ? String(v) : '–' });
+  const size = sizeFromTraits(c.traits) ?? 'moyenne';
+  const wounds = typeof c.char.B === 'number'
+    ? c.char.B
+    : woundsForSize(bonus(c.char.F ?? 0), bonus(c.char.E ?? 0), bonus(c.char.FM ?? 0), size);
+  return {
+    profile: [cell('M', c.char.M), ...CHAR_KEYS.map((k) => cell(k, c.char[k])), { label: 'B', value: String(wounds) }],
+    traits: refRows('traits', traitLabels(c.traits)),
+  };
+}
+
 const traitItem = (t: (typeof traits)[number]): CodexItem => {
   const cap = t.capabilities;
   return {
@@ -573,6 +602,7 @@ export const CODEX: CodexCategory[] = [
     items: creatures.map((c) => ({
       label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, source: src(c.source),
       appearance: c.appearance, previewRef: c.id, // aperçu rig résolu par id (Nuées/non-bipèdes lisent leurs traits)
+      statblock: creatureStatblock(c),
       meta: facts(
         // pastille d'en-tête TOUJOURS visible : marque l'individu nommé (lu via `isNamed`, jamais via `title`).
         isNamed(c) ? fact('Type', 'Individu nommé') : null,
@@ -758,15 +788,59 @@ for (const b of books) {
   }));
 }
 
+// ── Facettes PAR catégorie, câblées APRÈS coup (comme l'index des livres) : une facette n'existe
+//    que si des items PORTENT le champ (livre source partout ; hiérarchie `group` — classe, famille,
+//    dossier, carrière… — là où la catégorie en a une). Valeurs dérivées des items (`facetValues`).
+const GROUP_FACET_LABEL: Record<string, string> = {
+  races: 'Famille', careers: 'Classe', mutations: 'Type', psychologie: 'Type',
+  creatures: 'Dossier', locations: 'Lieu parent', books: 'Dossier', careerLevels: 'Carrière',
+};
+for (const c of CODEX) {
+  const facets: CodexFacet[] = [];
+  if (c.items.some((i) => i.source?.book)) facets.push({ key: 'book', label: 'Livre', valueOf: (i) => i.source?.book });
+  if (c.items.some((i) => i.group)) facets.push({ key: 'group', label: GROUP_FACET_LABEL[c.key] ?? 'Groupe', valueOf: (i) => i.group });
+  if (facets.length) c.facets = facets;
+}
+
+// ── Index de lookup PARESSEUX (par catégorie) ────────────────────────────────────────────────────
+// `codexLookup` est appelé par CHAQUE `CodexRef` à CHAQUE rendu → un `items.find` linéaire ne scale
+// pas (des centaines de refs × des centaines d'items). L'index (label exact → item, + repli casse
+// pliée) se construit à la 1re résolution d'une catégorie et se ré-utilise ensuite. La 1re occurrence
+// gagne (même précédence que l'ancien `find`). Invalidé par `invalidateCodexLookup` (persist d'une
+// édition Codex) — le compteur de version permet aux consommateurs de réagir au changement.
+let LOOKUP: Map<string, { exact: Map<string, CodexItem>; folded: Map<string, CodexItem> }> | null = null;
+let LOOKUP_VERSION = 0;
+
+/** Version courante de l'index de lookup — bumpée à chaque invalidation. */
+export const codexLookupVersion = (): number => LOOKUP_VERSION;
+
+/** Invalide l'index (donnée modifiée — persist de `CodexEdit`) : le prochain `codexLookup` reconstruit. */
+export function invalidateCodexLookup(): void {
+  LOOKUP = null;
+  LOOKUP_VERSION++;
+}
+
 /** Résout une entrée (catégorie + libellé) → sa fiche, pour les liens `CodexRef`.
  *  Exact d'abord, puis casse ignorée (les libellés à spécialisation s'écrivent parfois autrement). */
 export function codexLookup(category: string, label: string): CodexItem | undefined {
-  const items = categoryByKey(category)?.items;
   // Robustesse : un libellé absent (entité sans nom — arme/compétence malformée) ou une entrée sans
   // label NE DOIT PAS crasher tout le rendu. Pas de fiche trouvée → le CodexRef se replie en texte.
-  if (!items || !label) return undefined;
-  const lower = label.toLowerCase();
-  return items.find((i) => i.label === label) ?? items.find((i) => i.label?.toLowerCase() === lower);
+  if (!label) return undefined;
+  if (!LOOKUP) LOOKUP = new Map();
+  let idx = LOOKUP.get(category);
+  if (!idx) {
+    const items = categoryByKey(category)?.items;
+    if (!items) return undefined; // catégorie inconnue : jamais mise en cache (répond undefined à chaque appel)
+    idx = { exact: new Map(), folded: new Map() };
+    for (const it of items) {
+      if (!it.label) continue; // entrée sans label (défensif) : non indexée
+      if (!idx.exact.has(it.label)) idx.exact.set(it.label, it);
+      const folded = it.label.toLowerCase();
+      if (!idx.folded.has(folded)) idx.folded.set(folded, it);
+    }
+    LOOKUP.set(category, idx);
+  }
+  return idx.exact.get(label) ?? idx.folded.get(label.toLowerCase());
 }
 
 const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG', 'jambeD'];
