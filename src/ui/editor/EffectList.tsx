@@ -93,6 +93,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'restoreFortune': return `${icon} Regagner la Chance`;
     case 'inflictNightmares': return `${icon} Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'inflictDisease': return `${icon} Maladie : ${e.disease || '?'}`;
+    case 'inflictHunger': return `${icon} Faim ×${e.days ?? 1} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
+    case 'exposureNight': return `${icon} Exposition ${e.kind === 'chaleur' ? 'chaleur' : 'froid'} ×${e.count ?? 2} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'inflictTrauma': return `${icon} Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
     case 'ambitionLost': return `${icon} Ambition anéantie → Trauma${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'ops': {
@@ -129,6 +131,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'openWorldMap': return `${icon} Carte du monde (voyage)`;
     case 'startDialogue': return `${icon} Dialogue : ${e.dialogue || '?'}`;
     case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
+    case 'openTavernGames': return `${icon} Jeux de taverne`;
     case 'medicalAid': return `${icon} Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
     case 'extendedTest': return `${icon} Test Étendu ${e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
     case 'forceDoor': return `${icon} Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
@@ -217,6 +220,34 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             </select>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>
+        )}
+        {effect.type === 'inflictHunger' && (
+          <div className="tf-row">
+            <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
+              <option value="party">Tout le groupe</option>
+              <option value="hero">Un héros</option>
+            </select>
+            {e.target === 'hero' && (
+              <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+            )}
+            <label className="dr">Jours affamés <input type="number" min={1} style={{ width: '3.2em' }} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+          </div>
+        )}
+        {effect.type === 'exposureNight' && (
+          <div className="tf-row">
+            <select value={e.kind ?? 'froid'} onChange={(ev) => upd({ kind: ev.target.value })}>
+              <option value="froid">Froid (négatives, blizzard)</option>
+              <option value="chaleur">Chaleur (désert, fournaise)</option>
+            </select>
+            <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
+              <option value="party">Tout le groupe</option>
+              <option value="hero">Un héros</option>
+            </select>
+            {e.target === 'hero' && (
+              <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+            )}
+            <label className="dr">Tests <input type="number" min={1} style={{ width: '3.2em' }} value={e.count ?? 2} onChange={(ev) => upd({ count: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+          </div>
         )}
         {effect.type === 'inflictTrauma' && (
           <>

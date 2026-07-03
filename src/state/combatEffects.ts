@@ -30,7 +30,8 @@ import { permanentAmputations } from '../engine/critical';
 import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
-import { feedFromMeal } from '../engine/provisions';
+import { feedFromMeal, applyFaimTest } from '../engine/provisions';
+import { exposureNight } from '../engine/exposure';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, setDoorOpen } from './scene';
@@ -835,6 +836,47 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       }
     },
   },
+  inflictHunger: {
+    group: '☠️ Afflictions', label: 'Imposer la Faim (LDB 18 — groupe affamé)', icon: '🍖',
+    make: () => ({ type: 'inflictHunger', days: 1, target: 'party' }),
+    apply: (e, env) => {
+      // Faim (LDB 18 l.417-422) posée par l'auteur (siège, cachot, traversée sans vivres) : `days`
+      // échecs de Test de Faim encaissés d'affilée, via la fonction PURE `applyFaimTest` (1ᵉʳ → −10 F/E ;
+      // 2ᵉ+ → −10 autres + 1d10 Dégâts ignorant les PA, min 1). Réutilise le moteur des provisions.
+      const heroes = env.targets(e.target ?? 'party', e.heroId);
+      const n = Math.max(1, e.days ?? 1);
+      const lines: string[] = [];
+      for (const c of heroes) {
+        c.hunger = c.hunger ?? { days: 0, tests: 0, failures: 0 };
+        c.hunger.days += n;
+        const be = Math.floor(effectiveChar(c, 'E') / 10);
+        let damage = 0;
+        for (let i = 0; i < n; i++) {
+          const r = applyFaimTest(c, false, be, battleRng());
+          lines.push(...r.log);
+          damage += r.damage;
+        }
+        if (damage > 0) loseWounds(c, damage);
+      }
+      if (heroes.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
+    },
+  },
+  exposureNight: {
+    group: '☠️ Afflictions', label: 'Exposition froid / chaleur (LDB 18)', icon: '🥶',
+    make: () => ({ type: 'exposureNight', kind: 'froid', count: 2, target: 'party' }),
+    apply: (e, env) => {
+      // Exposition (LDB 18 l.326-334) posée par l'auteur (nuit glaciale, désert, tempête) : `count` Tests
+      // de Résistance en cascade, échecs escaladés (froid/chaleur), via le moteur PUR `exposureNight`.
+      const heroes = env.targets(e.target ?? 'party', e.heroId);
+      const count = Math.max(1, e.count ?? 2);
+      const lines: string[] = [];
+      for (const c of heroes) {
+        const res = exposureNight(c, count, testValue(c, 'resistance', 'E'), battleRng(), { kind: e.kind });
+        lines.push(...res.log);
+      }
+      if (heroes.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
+    },
+  },
   inflictTrauma: {
     group: '☠️ Afflictions', label: 'Infliger une Blessure Critique (LDB 18)', icon: '🦴',
     make: () => ({ type: 'inflictTrauma', kind: 'fracture', severity: 'mineur', location: 'brasD', heroId: '' }),
@@ -1070,6 +1112,11 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: '⚔️ Combat & social', label: 'Ouvrir une boutique (marchand)', icon: '🛒',
     make: () => ({ type: 'openMerchant', entityId: '' }),
     apply: (e, env) => { env.get().openMerchant(e.entityId); }, // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
+  },
+  openTavernGames: {
+    group: '⚔️ Combat & social', label: 'Jeux de taverne (NADJ ch.16)', icon: '🎲',
+    make: () => ({ type: 'openTavernGames' }),
+    apply: (_e, env) => { if (rule('tavern-games')) env.get().openTavernGames(); }, // option facultative : sans effet si éteinte (comme interlude)
   },
   medicalAid: {
     group: '⚔️ Combat & social', label: 'Acte de soin payant (PNJ médecin/guérisseur)', icon: '🩺',

@@ -276,6 +276,15 @@ export type Effect =
   /** Inflige une Maladie (LDB 20) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
    *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
   | { type: 'inflictDisease'; disease: string; heroId?: string }
+  /** Impose la Faim (LDB 18 l.417-422) : `days` échecs de Test de Faim déjà encaissés — 1ᵉʳ → −10 F/E ;
+   *  2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1). Pour scénariser un groupe
+   *  affamé (siège, cachot, traversée sans vivres). Cible : `party` ou `hero` (+`heroId`, défaut le premier). */
+  | { type: 'inflictHunger'; days?: number; target?: 'party' | 'hero'; heroId?: string }
+  /** Exposition au froid ou à la chaleur (LDB 18 l.326-334) : `count` Tests de Résistance (Intermédiaire),
+   *  échecs en cascade (froid : −10 CT/Ag/Dex, puis −10 le reste, puis 1d10 Dégâts ignorant les PA, Inconscient
+   *  à 0 PB ; chaleur : −10 Int/FM + Exténué, puis −10 le reste + Exténué, puis 1d10). Pour une nuit glaciale,
+   *  un désert, une tempête. Cible : `party` ou `hero` (+`heroId`, défaut le premier). */
+  | { type: 'exposureNight'; kind: 'froid' | 'chaleur'; count?: number; target?: 'party' | 'hero'; heroId?: string }
   | { type: 'inflictTrauma'; kind: 'dechirure' | 'fracture' | 'amputation'; severity?: 'mineur' | 'majeur'; location: import('../engine/types').HitLocation; heroId?: string }
   /** Inflige des dégâts (Lot 3) à un héros (`hero` + `heroId`, défaut = 1er vivant) ou à TOUT le
    *  groupe (`party`) — piège, souffle scénarisé, tick… `amount` = Points de Blessure (0 PB → À Terre,
@@ -335,6 +344,9 @@ export type Effect =
    *  min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. À poser en fin
    *  de chapitre par l'auteur de campagne. */
   | { type: 'interlude'; weeks?: number }
+  /** Ouvre les JEUX DE TAVERNE (NADJ ch.16, option `tavern-games`) — à poser sur un choix de dialogue
+   *  d'aubergiste (« Une partie ? ») ou une entité de taverne. Sans effet si l'option est éteinte. */
+  | { type: 'openTavernGames' }
   /** Ouvre la CARTE DU MONDE (#T2) — à poser sur la porte/route d'un lieu (« partir en voyage »).
    *  Sans effet si le projet n'a pas de carte ou en combat. */
   | { type: 'openWorldMap' }

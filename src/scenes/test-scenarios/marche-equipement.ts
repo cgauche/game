@@ -82,6 +82,8 @@ const scene = buildScene({
     { id: 'armurier', kind: 'personnage', label: 'Armurier', pos: { x: 7, y: 2 }, merchant: { archetype: 'armurier' } },
     // Herboriste : DIALOGUE d'abord, puis un choix ouvre sa boutique via openMerchant (vend +25 % : village isolé).
     { id: 'herboriste', kind: 'personnage', label: 'Herboriste', pos: { x: 12, y: 6 }, dialogueId: 'dlg-herbo', merchant: { archetype: 'herboriste', buyMarkup: 1.25 } },
+    // Aubergiste : DIALOGUE d'abord, puis un choix ouvre les jeux de taverne via l'Effet openTavernGames.
+    { id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 3, y: 7 }, dialogueId: 'dlg-taverne' },
   ],
   dialogues: [
     {
@@ -95,6 +97,21 @@ const scene = buildScene({
           choices: [
             { text: 'Montrez-moi vos marchandises.', flow: flowFromEffects([{ type: 'openMerchant', entityId: 'herboriste' }]) },
             { text: 'Une autre fois. (Partir)' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'dlg-taverne',
+      start: 'accueil',
+      nodes: [
+        {
+          id: 'accueil',
+          speaker: 'Aubergiste',
+          text: 'La salle est chaude et les dés roulent. Une partie, l’ami ?',
+          choices: [
+            { text: 'Volontiers — proposez-nous une partie.', flow: flowFromEffects([{ type: 'openTavernGames' }]) },
+            { text: 'Plus tard. (Partir)' },
           ],
         },
       ],
@@ -115,8 +132,12 @@ export const scenario: TestScenario = {
   tests:
     'Acheter/Vendre + Marchander (Test opposé −10/−20 %) + Évaluer (révèle la qualité cachée) + Réparer (10 %/PA) ; ' +
     'deux archétypes (armurier direct + herboriste via dialogue, Effet openMerchant) ; écran d’EMPLACEMENTS (couches ' +
-    'd’armure LDB 63 souple/Flexible/rigide avec échange auto, cape cosmétique, 2 sets d’armes).',
+    'd’armure LDB 63 souple/Flexible/rigide avec échange auto, cape cosmétique, 2 sets d’armes) ; Troc (onglet du ' +
+    'panneau marchand : ratio de Disponibilité, échange objet↔objet sans argent) ; Aubergiste → jeux de taverne ' +
+    '(Effet openTavernGames, option `tavern-games` pré-activée, NADJ ch.16).',
   partyNote: 'Négociant (épée non identifiée + maille endommagée + dague) + Maître d’armes (sac garni)',
   makeParty: () => [negociant(), maitreArmes()],
+  // Jeux de taverne pré-activés (NADJ ch.16) — modifiable au panneau Règles maison, comme le Voyage par Étapes.
+  rules: { 'tavern-games': true },
   scene,
 };

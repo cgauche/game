@@ -148,10 +148,10 @@ Source : audit adversarial par domaine (juillet 2026). Statut = jouable (scénar
 |---|---|---|
 | ~~Commerce terrestre/fluvial T2C (`MapPlace.market`)~~ ✅ **RÉSOLU** (commit c77bc2cb) | Économie | Scénario `15-commerce-fluvial` (28 villes réelles du Reik, indices verbatim T2C ch.11) + section « Marché » éditable dans WorldMapEditor + boucle achat/barge/revente prouvée. |
 | Poursuites terrestres (`pursuit`) | Voyage | Flux de poursuite dans `travelFlow` (UI, sur le modèle `seaVoyageFlow`) + scénario + Effet `startPursuit`. `pursuit.ts` FAIT. |
-| Jeux de taverne | Économie | Effet `openTavernGames` + scénario + activer la règle `tavern-games`. Moteur (`tavernGame.ts`/`tavernFlow.ts`) FAIT. |
-| Troc (objet ↔ objet) | Économie | Brancher l'UI de troc au panneau marchand (action store `barterExchange` déjà là) + scénario. |
-| Suffocation (Souffle) | Santé | Effet `inflictSuffocation` + scénario (souterrain noyé/forge). `suffocation.ts` FAIT. |
-| Ivresse & alcool | Santé | Effet `intoxicate`/`inflictDrunkenness` + scénario (taverne). `drunkenness.ts` FAIT. |
+| ~~Jeux de taverne~~ ✅ **RÉSOLU** | Économie | Effet `openTavernGames` ajouté (union `Effect` + handler `combatEffects` gaté sur `rule('tavern-games')` + édition `EffectList` sans champ, comme `restoreFortune`). `TavernGameModal` monté dans `CampaignView` (plus seulement dans l'Interlude). Atteignable : scénario `marche-equipement` (Aubergiste → dialogue « Une partie ? », `rules: { 'tavern-games': true }`). Testé (`health-effects.test.ts`). |
+| ~~Troc (objet ↔ objet)~~ ⚪ **FAUX POSITIF** | Économie | L'UI de troc est DÉJÀ câblée : `renderBarter()` dans `MerchantPanel.tsx` (onglet « Troc » + sélecteurs Céder/Acquérir + devis de ratio de Disponibilité + bouton Échanger), et le connecteur `MerchantPanel()` passe bien `onBarter={barterExchange}` (store). Live en jeu dès l'ouverture du marchand (commit `0aa7f552`). Rien à faire. |
+| ~~Suffocation (Souffle)~~ ⚪ **FAUX POSITIF** | Santé | Authorable via l'Effet GÉNÉRIQUE `ops` : `op: 'suffocate'` (ops.ts, pose le drapeau `suffocates` → `suffocationTick` par Round) est SÉLECTIONNABLE dans le `GameOpEditor` (groupe « 🌫️ Divers »). Un Effet `inflictSuffocation` dédié ferait doublon. `suffocation.ts` + op FAITS. |
+| ~~Ivresse & alcool~~ ⚪ **FAUX POSITIF** | Santé | Authorable via l'Effet GÉNÉRIQUE `ops` : l'op `intoxicate` (ops.ts → `applyAlcoholTest`, déjà consommé par 2 boissons de `trappings.json`) est SÉLECTIONNABLE dans le `GameOpEditor`. Un Effet de scène dédié ferait doublon. `drunkenness.ts` + op FAITS. |
 | Trauma psy. (`ambitionLost`) | Santé | Champs d'édition dans `EffectList.tsx` + trigger de scénario. **Handler déjà présent.** |
 | Escalade hors-combat | Voyage | Trancher : « Test de compétence normal » (doc) OU Effet `climbTest`/`extendedTest` + scénario. |
 | Création de personnage | Progression | Effet `startCharacterCreator` (ouvre l'assistant en jeu) + scénario. `CharacterCreator.tsx` existe. |
@@ -170,8 +170,8 @@ Source : audit adversarial par domaine (juillet 2026). Statut = jouable (scénar
 | Disponibilité (LDB 59/60) | Économie | Exposer `market-guild`/`market-mode`/`market-tenir-comptes` comme champs du marchand. |
 | Marchandage / Évaluation / Réparation | Économie | Exposer en flags de l'entité marchand (déjà jouables via `openMerchant`). |
 | Commerce maritime/port | Économie | Effet `openPort` pour SCRIPTER l'accès (aujourd'hui auto à l'accostage). |
-| Exposition Froid/Chaleur | Santé | Effet `exposureNight` (severity/kind). `exposure.ts` FAIT. |
-| Faim & Soif (provisions) | Santé | Effet `inflictHunger`. `provisions.ts` FAIT. |
+| ~~Exposition Froid/Chaleur~~ ✅ **RÉSOLU** | Santé | Effet `exposureNight` ajouté (union + handler → moteur `exposureNight()` en cascade `count` Tests, kind froid/chaleur, cible party/hero + édition `EffectList`). Testé (`health-effects.test.ts`). |
+| ~~Faim & Soif (provisions)~~ ✅ **RÉSOLU** (Faim) | Santé | Effet `inflictHunger` ajouté (union + handler → `applyFaimTest` × `days`, cible party/hero + édition `EffectList`). La Soif partage le moteur (`applySoifTest`) — un `inflictThirst` symétrique s'ajouterait pareillement si un scénario le demande. Testé (`health-effects.test.ts`). |
 | Repas (`mealParty`) | Santé | Champs d'édition optionnels dans `EffectList`. |
 | Psychologie combat (Peur/Terreur/Frénésie) | Combat | Quasi-OK par design (hooks auto + Traits/États du Codex). Option : Effet `inflictPsychology` (source de peur scénique). |
 | Engagement/Désengagement, Empoignade | Combat | **OK par design** — actions de combat (choix modal). À DOCUMENTER, pas à coder. |

@@ -8,6 +8,7 @@ import { PovControls } from './PovControls';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
+import { TavernGameModal } from './TavernGameModal';
 import { ActionBar } from './ActionBar';
 import { ShipSheet } from './ShipSheet';
 import { isVehicle } from '../engine/vehicle';
@@ -246,6 +247,9 @@ export function CampaignView() {
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
+        {/* Jeux de taverne (NADJ ch.16) : la modale se rend seule quand `tavernGames` est ouvert
+            (Effet `openTavernGames` d'un dialogue d'aubergiste). Nulle sinon — mont inconditionnel. */}
+        <TavernGameModal />
         {worldMapOpen && mode === 'exploration' && <WorldMapView />}
         {port && mode === 'exploration' && <PortView />}
         {landMarket && mode === 'exploration' && <LandMarketView />}
