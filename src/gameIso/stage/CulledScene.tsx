@@ -40,8 +40,8 @@ export function CulledScene({
   //    HAUT est assombri sur toute sa silhouette (plus de triangle du losange plat), et un décor caché
   //    DEVANT reste devant (fini le sandwich vis/!vis qui écrasait le tri : mur visible sur rampe cachée).
   // ACCENTS matériaux v2 : le thunk `acc` ne s'étend qu'ICI (éléments à l'écran uniquement).
-  const draw = (o: StageObj) => {
-    const core = o.acc ? (
+  const coreOf = (o: StageObj) =>
+    o.acc ? (
       <g key={o.el.key}>
         {o.el}
         <g style={{ opacity: o.op ?? 1, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: o.acc() }} />
@@ -49,15 +49,29 @@ export function CulledScene({
     ) : (
       o.el
     );
-    const fogF = fogFilterFor(o, fog.explored);
-    const lower = o.z !== undefined && o.z < activeZ;
-    if (!fogF && !lower) return core;
-    let node = core;
-    if (fogF) node = <g filter={fogF}>{node}</g>;
-    if (lower) node = <g filter="url(#lower-floor-dim)">{node}</g>;
-    return <g key={o.el.key}>{node}</g>;
-  };
   // `.filter().map()` (pas map→null) → React ne réconcilie que les ~centaines d'objets à l'écran.
   const shown = objs.filter(onScreen);
-  return <g>{shown.map(draw)}</g>;
+  // COALESCENCE : un filtre SVG re-rastérise PAR élément → un filtre/objet caché = des centaines de
+  // passes = ça rame. Le fog étant spatialement groupé (périphérie), les objets CONSÉCUTIFS du flux trié
+  // partagent le même voile → on les regroupe sous UN SEUL <g filter> par RUN (le tri par profondeur est
+  // préservé : les runs sont contigus). Passe de ~centaines de filtres à une poignée.
+  const runs: { fogF: string | undefined; lower: boolean; items: JSX.Element[] }[] = [];
+  let run: (typeof runs)[number] | null = null;
+  for (const o of shown) {
+    const fogF = fogFilterFor(o, fog.explored);
+    const lower = o.z !== undefined && o.z < activeZ;
+    if (!run || run.fogF !== fogF || run.lower !== lower) { run = { fogF, lower, items: [] }; runs.push(run); }
+    run.items.push(coreOf(o));
+  }
+  return (
+    <g>
+      {runs.map((r, i) => {
+        if (!r.fogF && !r.lower) return <g key={i}>{r.items}</g>;
+        let node = <g>{r.items}</g>;
+        if (r.fogF) node = <g filter={r.fogF}>{node}</g>;
+        if (r.lower) node = <g filter="url(#lower-floor-dim)">{node}</g>;
+        return <g key={i}>{node}</g>;
+      })}
+    </g>
+  );
 }
