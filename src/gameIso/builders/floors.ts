@@ -58,6 +58,19 @@ export function isOverhang(scene: Scene, x: number, y: number, z: number): boole
   return false;
 }
 
+/** TOIT D'UN BLOC PLEIN : la case (x,y,z>0) coiffe-t-elle un terrain à BLOC PLEIN (mur) d'une couche
+ *  inférieure, à hauteur d'AFFICHAGE coïncidente ? (le chemin de ronde posé sur la masse du rempart). Alors
+ *  ce n'est PAS un surplomb flottant mais la surface SUPÉRIEURE d'une structure solide → il se voit d'un
+ *  étage inférieur exactement comme le bloc (opaque, jamais culé/fantôme), au lieu de disparaître et de
+ *  laisser le dessus BRUT du bloc à nu quand on regarde le mur d'en bas (activeZ sous z). GÉNÉRAL. */
+export function capsSolid(scene: Scene, x: number, y: number, z: number): boolean {
+  if (z <= 0) return false;
+  const top = displayHeightAt(scene, x, y, z);
+  for (let zz = z - 1; zz >= 0; zz--)
+    if (terrainSolidHeightM(tileAt(scene, x, y, zz)) > 0 && displayHeightAt(scene, x, y, zz) >= top - 0.01) return true;
+  return false;
+}
+
 /** Hauteur d'AFFICHAGE de la surface INFÉRIEURE sous un surplomb (1ʳᵉ couche marchable en dessous), ou null. */
 function overhangLowerHeight(scene: Scene, x: number, y: number, z: number): number | null {
   for (let zz = z - 1; zz >= 0; zz--) if (isWalkable(scene, x, y, zz)) return displayHeightAt(scene, x, y, zz);
@@ -196,11 +209,15 @@ export function buildFloors(scene: Scene, visible?: ReadonlySet<string>, view?: 
   const out: FloorEl[] = [];
   for (const lvl of scene.layers) {
     if (viewZ != null && lvl.z !== viewZ) continue; // isole : seule la couche isolée
-    const ghost = viewZ == null && lvl.z > activeZ; // tablier au-dessus de la zone active → fantôme
-    if (ghost && !multiLayer) continue;
+    const layerGhost = viewZ == null && lvl.z > activeZ; // couche au-dessus de la zone active
+    if (layerGhost && !multiLayer) continue;
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++) {
         const overhang = isOverhang(scene, x, y, lvl.z);
+        // Le TOIT d'un bloc plein (chemin de ronde sur le mur) n'est pas un surplomb flottant → jamais
+        // fantôme : dessiné opaque comme le bloc qu'il coiffe, même vu d'un étage inférieur.
+        const caps = capsSolid(scene, x, y, lvl.z);
+        const ghost = layerGhost && !caps; // tablier au-dessus de la zone active → fantôme ; pas un toit de bloc
         if (ghost && !overhang) continue; // au-dessus : SEULEMENT les surplombs
         const faces = floorFaces(scene, x, y, lvl.z, overhang);
         if (!faces) continue;
@@ -214,10 +231,13 @@ export function buildFloors(scene: Scene, visible?: ReadonlySet<string>, view?: 
         // `buildWalls`), on le dessine AU-DESSUS du voile — structure PERÇUE, opaque — dès qu'une case
         // OUVERTE qu'il borde est en vue ; sinon il serait grisé sous la brume alors qu'on le voit se
         // dresser devant soi. `!ghost` : au-dessus de la zone active, seul `solidOverhang` décide.
+        // Le TOIT d'un bloc plein (`caps`) suit la même règle : perçu (opaque, au-dessus du voile) dès
+        // qu'une case ouverte QU'IL BORDE — à son étage OU à celui du bloc en dessous (la cour au pied du
+        // mur) — est en vue, sinon le chemin de ronde serait grisé alors qu'on voit le rempart d'en bas.
         const perceivable =
           !ghost &&
-          terrainSolidHeightM(tileAt(scene, x, y, lvl.z)) > 0 &&
-          SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; return isVis(x + dx, y + dy, lvl.z); });
+          (terrainSolidHeightM(tileAt(scene, x, y, lvl.z)) > 0 || caps) &&
+          SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; return isVis(x + dx, y + dy, lvl.z) || (caps && isVis(x + dx, y + dy, lvl.z - 1)); });
         out.push({
           kind: 'floor',
           key: `floor:${x},${y},${lvl.z}`,

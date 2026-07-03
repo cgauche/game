@@ -67,15 +67,16 @@ function poly(pts: [number, number][], fill: string, op = 1): string {
   return `<polygon points="${s}" fill="${fill}"${op < 1 ? ` fill-opacity="${op}"` : ''} stroke="#0a0b10" stroke-width="0.35" stroke-opacity="0.55"/>`;
 }
 
-/** Panneau : chaque face en aplat, triée par sa VRAIE profondeur (tri STABLE → ordre intra-tuile préservé). */
-function occlusionPanel(scene: Scene, dims: Dims): { w: number; h: number; svg: string } {
+/** Panneau : chaque face en aplat, triée par sa VRAIE profondeur (tri STABLE → ordre intra-tuile préservé).
+ *  `activeZ` = étage de la zone active : `maxZ` (défaut) = tout plein ; `0` = VU DU SOL (l'émission des
+ *  couches change — un toit de bloc plein vu d'en bas, etc.), là où vivent les bugs de couches. */
+function occlusionPanel(scene: Scene, dims: Dims, activeZ: number): { w: number; h: number; svg: string } {
   const objs: { d: number; svg: string }[] = [];
-  const maxZ = Math.max(...scene.layers.map((l) => l.z));
-  for (const el of buildFloors(scene, undefined, { activeZ: maxZ }) as FloorEl[]) {
+  for (const el of buildFloors(scene, undefined, { activeZ }) as FloorEl[]) {
     const d = floorDepth(el, dims);
     for (const f of el.faces) objs.push({ d, svg: poly(f.poly.map((p) => projGP(p, dims)), floorColor(f, el), f.material.part === 'wedge' ? 0.7 : 1) });
   }
-  for (const el of buildWalls(scene) as WallEl[]) {
+  for (const el of buildWalls(scene, undefined, { activeZ }) as WallEl[]) {
     const d = wallDepth(el, dims);
     for (const f of el.faces) objs.push({ d, svg: poly(f.poly.map((p) => projGP(p, dims)), wallColor(f)) });
   }
@@ -105,9 +106,14 @@ const CELL_W = 1180, CELL_H = 820, PAD = 10, LABEL_H = 30, HEADER_H = 56, COLS =
 
 function renderSheet(scene: Scene) {
   const rots: Rot[] = [0, 1, 2, 3];
+  const maxZ = Math.max(...scene.layers.map((l) => l.z));
+  const multi = scene.layers.length > 1;
   const panels: { label: string; p: { w: number; h: number; svg: string } }[] = [
-    ...rots.map((rot) => ({ label: `iso rot${rot}`, p: occlusionPanel(scene, { ...scene.dimensions, rot }) })),
-    ...rots.map((rot) => ({ label: `edge rot${rot}`, p: occlusionPanel(scene, { ...scene.dimensions, rot, edge: true }) })),
+    ...rots.map((rot) => ({ label: `iso rot${rot}`, p: occlusionPanel(scene, { ...scene.dimensions, rot }, maxZ) })),
+    // VU DU SOL (activeZ=0) : couvre les bugs d'émission des couches (toit de bloc plein à nu, etc.) que la
+    // vue pleine masque. Seulement si multi-couches (sinon activeZ=0 ≡ maxZ).
+    ...(multi ? rots.map((rot) => ({ label: `iso rot${rot} — vu du sol (z0)`, p: occlusionPanel(scene, { ...scene.dimensions, rot }, 0) })) : []),
+    ...rots.map((rot) => ({ label: `edge rot${rot}`, p: occlusionPanel(scene, { ...scene.dimensions, rot, edge: true }, maxZ) })),
   ];
   const total = panels.length + 1; // + légende
   const rows = Math.ceil(total / COLS);

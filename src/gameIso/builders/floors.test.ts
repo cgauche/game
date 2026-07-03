@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildFloors, edgeBlends, isOverhang, fogFloorZ } from './floors';
+import { buildFloors, edgeBlends, isOverhang, capsSolid, fogFloorZ } from './floors';
 import type { Face, FloorEl } from './types';
 import { emptyScene, heightAt, type Scene } from '../../state/scene';
 import { gradeBetween, STEP_MAX_M } from '../../state/relief';
@@ -149,6 +149,48 @@ describe('buildFloors — bloc PLEIN d’un terrain (solidHeightM, ex. mur) : RE
     s.layers[0].height[1 * 3 + 1] = 4; // étage surélevé de 4 m SOUS le mur
     const base = buildFloors(s).find((e) => e.key === 'floor:1,1,0')!.faces.find(isBaseFace)!;
     expect(base.poly[0].h).toBeGreaterThan(4 + STEP_MAX_M); // dessus = 4 m (étage) + solidHeightM (bloc)
+  });
+});
+
+describe('buildFloors — TOIT d’un bloc plein (chemin de ronde sur le mur), vu d’un étage inférieur', () => {
+  /** Bloc `mur` en (1,1) à z0 (dessus 4 m) COIFFÉ d’un sol `pierre` en (1,1) à z1, hauteur 4 m coïncidente. */
+  function cappedWall(): Scene {
+    const s = emptyScene(3, 3); // z0 tout herbe (hauteur combat 0)
+    s.layers[0].tiles[1 * 3 + 1] = 'mur'; // masse pleine (solidHeightM) → dessus à 4 m
+    s.layers.push({ z: 1, tiles: new Array(9).fill('vide'), height: new Array(9).fill(0) });
+    s.layers[1].tiles[1 * 3 + 1] = 'pierre'; // chemin de ronde
+    s.layers[1].height![1 * 3 + 1] = 4;      // coïncide avec le dessus du bloc
+    return s;
+  }
+
+  it('capsSolid : vrai pour le sol qui coiffe le bloc plein ; faux pour z0 et pour un surplomb sur du marchable', () => {
+    const s = cappedWall();
+    expect(capsSolid(s, 1, 1, 1)).toBe(true);
+    expect(capsSolid(s, 1, 1, 0)).toBe(false); // z0 jamais
+    // un tablier au-dessus d’une surface MARCHABLE (plancher, pas un bloc plein) n’est PAS un toit de bloc
+    const deck = emptyScene(3, 3);
+    deck.layers[0].tiles = new Array(9).fill('plancher');
+    deck.layers.push({ z: 1, tiles: new Array(9).fill('vide'), height: new Array(9).fill(0) });
+    deck.layers[1].tiles[1 * 3 + 1] = 'planches';
+    deck.layers[1].height![1 * 3 + 1] = 4;
+    expect(capsSolid(deck, 1, 1, 1)).toBe(false);
+  });
+
+  it('vu du SOL (activeZ=0) le chemin de ronde est ÉMIS, OPAQUE (pas fantôme) et PERÇU — le dessus du mur n’est plus à nu', () => {
+    const el = elAt(buildFloors(cappedWall(), undefined, { activeZ: 0 }), 1, 1, 1);
+    expect(el).toBeDefined();                 // n’est PLUS culé comme un fantôme non-surplomb
+    expect(el!.states.ghost).toBe(false);     // opaque (toit de structure solide), pas translucide
+    expect(el!.states.visible).toBe(true);    // perçu au-dessus du voile, comme le bloc qu’il coiffe
+  });
+
+  it('non-régression : un vrai surplomb (tablier sur route marchable) reste FANTÔME vu d’en bas', () => {
+    const s = emptyScene(3, 3);
+    s.layers[0].tiles = new Array(9).fill('plancher');
+    s.layers.push({ z: 1, tiles: new Array(9).fill('vide'), height: new Array(9).fill(0) });
+    s.layers[1].tiles[1 * 3 + 1] = 'planches';
+    s.layers[1].height![1 * 3 + 1] = 4;
+    const el = elAt(buildFloors(s, undefined, { activeZ: 0 }), 1, 1, 1)!;
+    expect(el.states.ghost).toBe(true); // surplomb flottant → fantôme (comportement inchangé)
   });
 });
 
