@@ -76,6 +76,8 @@ export function PovStage() {
         {/* Fond : ciel dégradé dehors (plafond non dessiné), sombre en intérieur. */}
         <rect x={0} y={0} width={VW} height={VH} fill={indoor ? bg : 'url(#pov-sky)'} />
         {painted.map((p) => p.node)}
+        {/* Voile CHAUD (miroir de l'iso `g_warm`) — réconcilie la température des matériaux ; sous la nuit/vignette. */}
+        {!indoor && <rect x={0} y={0} width={VW} height={VH} fill="url(#pov-warm)" pointerEvents="none" />}
         {povVeil > 0.001 && <rect x={0} y={0} width={VW} height={VH} fill={AMBIANCE.iso.nightVeil} opacity={povVeil} pointerEvents="none" />}
         <rect x={0} y={0} width={VW} height={VH} fill="url(#pov-vignette)" pointerEvents="none" />
       </svg>

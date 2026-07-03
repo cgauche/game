@@ -13,6 +13,8 @@ import { metricToLift } from '../../state/relief';
 import { terrainGradient } from '../catalog/terrain';
 import { reliefMaterial } from '../catalog/relief';
 import { shade, ao, warm, spec } from '../shade';
+import { AMBIENT_FLOOR } from '../pov/camera';
+import type { LightField } from '../../state/vision';
 import { projGP, type Pt2 } from './project';
 import {
   detailOf,
@@ -108,18 +110,31 @@ function reliefFaceSvg(f: Face, el: FloorEl, dims: Dims, opts?: DetailOpts): str
   );
 }
 
+/** Alpha du voile d'OCCLUSION d'un sol éclairé par le CHAMP DE LUMIÈRE (torches / flaques de nuit / coins
+ *  ombrés) : un noir d'alpha `1 − light` sur la base ≡ `base × light` — le MÊME `tint(base, light)` que le
+ *  POV (miroir mathématique), avec le MÊME plancher `AMBIENT_FLOOR` (donnée partagée `ambiance.json`) → les
+ *  deux vues répondent d'un cran égal. `< EPS` (plein jour : `light = 1`) → aucun voile émis (no-op byte). */
+const OCCL_EPS = 0.003;
+function floorOcclusionSvg(d: string, light: LightField, x: number, y: number, z: number): string {
+  const a = 1 - Math.max(light.at(x, y, z), AMBIENT_FLOOR);
+  return a < OCCL_EPS ? '' : `<path d="${d}" fill="${ao(a)}"/>`;
+}
+
 /** Losange de base. Coins recomputés par `diamondCorners` (ordre ÉCRAN top→right→bot→left, invariant
  *  par rotation — le poly GRILLE tournerait son point de départ avec la caméra) : parité flottante
  *  exacte avec la projection historique ; les backends non-affines projettent `poly` directement.
  *  LOD ≥ 1 : le dégradé prend sa VARIANTE de teinte par tuile (recette `tintVar`) — même coût — et un
  *  terrain APPAREILLÉ (recette `courses` : pavés/dalles/lattes) pose PAR-DESSUS le motif de joints
- *  CONTINU du plan du sol (+1 nœud par tuile, les pierres coulent d'une tuile à l'autre). */
-function groundFaceSvg(f: Face, el: FloorEl, dims: Dims, opts?: DetailOpts): string {
+ *  CONTINU du plan du sol (+1 nœud par tuile, les pierres coulent d'une tuile à l'autre).
+ *  Le VOILE D'OCCLUSION du champ de lumière (`light`, optionnel : absent en éditeur/QC) s'intercale entre
+ *  la base et l'appareillage — la texture d'assises reste À SA TEINTE au-dessus. */
+function groundFaceSvg(f: Face, el: FloorEl, dims: Dims, opts?: DetailOpts, light?: LightField): string {
   const { top, right, bot, left } = diamondCorners(el.cell.x, el.cell.y, dims, metricToLift(f.poly[0].h));
   const { lod, mpt } = detailOf(opts);
   const grad = terrainFillGradient(f.material.id, el.cell, lod) ?? terrainGradient(f.material.id);
   const d = `M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z`;
   let svg = `<path d="${d}" fill="url(#${grad})" stroke="${ao(0.16)}"/>`;
+  if (light) svg += floorOcclusionSvg(d, light, el.cell.x, el.cell.y, el.cell.z);
   if (lod >= 1) {
     const pat = terrainCoursesPattern(f.material.id, dims, mpt);
     if (pat) svg += `<path d="${d}" fill="url(#${pat})"/>`;
@@ -143,12 +158,14 @@ function wedgeSvg(f: Face, el: FloorEl, dims: Dims): string {
   return `<path d="${d}" fill="url(#${terrainGradient(f.material.id)})" opacity="0.7"/>`;
 }
 
-/** SVG d'un élément de sol : faces dessinées DANS L'ORDRE du builder (piliers → parois → base → wedges). */
-export function floorSvg(el: FloorEl, dims: Dims, opts?: DetailOpts): string {
+/** SVG d'un élément de sol : faces dessinées DANS L'ORDRE du builder (piliers → parois → base → wedges).
+ *  `light` (optionnel) : le champ de lumière par tuile → voile d'occlusion sur le LOSANGE DE BASE (miroir
+ *  du POV) ; absent (éditeur/QC) = aucun voile, rendu HISTORIQUE inchangé. */
+export function floorSvg(el: FloorEl, dims: Dims, opts?: DetailOpts, light?: LightField): string {
   let svg = '';
   for (const f of el.faces) {
     if (f.material.domain === 'relief') svg += f.material.part === 'pillar' ? pillarSvg(f, dims) : reliefFaceSvg(f, el, dims, opts);
-    else svg += f.material.part === 'wedge' ? wedgeSvg(f, el, dims) : groundFaceSvg(f, el, dims, opts);
+    else svg += f.material.part === 'wedge' ? wedgeSvg(f, el, dims) : groundFaceSvg(f, el, dims, opts, light);
   }
   return svg;
 }

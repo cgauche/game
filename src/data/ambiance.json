@@ -1,4 +1,5 @@
 {
+  "ambientFloor": 0.12,
   "iso": {
     "warm": {
       "cx": "55%",
@@ -33,12 +34,21 @@
     "skyTop": "#5b83ac",
     "fogIndoor": "#0a0a10",
     "fogOutdoor": "#9fb2c6",
+    "fogOutdoorSurface": "#93887b",
     "ambientUnseen": 0.6,
+    "warm": {
+      "cx": "50%",
+      "cy": "60%",
+      "r": "85%",
+      "color": "#ffce78",
+      "alpha": 0.1
+    },
+    "floorOcclusion": 0.16,
     "depth": {
       "outdoor": {
         "farTiles": 32,
-        "fogStartT": 5,
-        "fogGamma": 1.5
+        "fogStartT": 8,
+        "fogGamma": 2
       },
       "indoor": {
         "farTiles": 14,

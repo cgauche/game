@@ -3,12 +3,17 @@
  *  nuit. Les stages (IsoStage/PovStage) et la QC headless consomment les MÊMES defs SVG assemblées ici —
  *  plus aucune de ces couleurs en dur dans un renderer. */
 import { ambiance } from '../../data';
+import { ao, spec } from '../shade';
 import type { Dims } from '../iso';
 
 /** Halo radial (voile chaud / vignette) : centre + rayon en %, couleur et alpha au bord utile. */
 export interface RadialVeilDef { cx: string; cy: string; r: string; color: string; alpha: number; innerOff?: string }
 
 export interface AmbianceDef {
+  /** Luminosité PLANCHER partagée : une surface éclairée à 0 n'est jamais totalement noire. Source UNIQUE
+   *  du clamp de lumière des DEUX vues — POV (`tint`, `pov/camera.ts`) et voile d'occlusion des sols iso
+   *  (`backends/affineFloors.ts`) → les deux répondent d'un cran égal. */
+  ambientFloor: number;
   iso: {
     /** Voile CHAUD (lumière dorée descendante) posé sur toute la scène. */
     warm: RadialVeilDef;
@@ -34,12 +39,24 @@ export interface AmbianceDef {
     skyTop: string;
     /** Brume de distance en INTÉRIEUR (sombre) — aussi le fond des scènes couvertes. */
     fogIndoor: string;
-    /** Brume de distance en EXTÉRIEUR (claire) — aussi l'horizon du ciel. */
+    /** Brume de distance du CIEL EXTÉRIEUR (claire) : bas du dégradé `pov-sky` = horizon. */
     fogOutdoor: string;
+    /** Brume de distance des SURFACES en extérieur (sol/mur/relief). DÉCOUPLÉE du ciel : plus chaude et
+     *  moins claire que `fogOutdoor` → les sols lointains se fondent dans une brume atmosphérique COHÉRENTE
+     *  avec l'iso (chaud/mat), plutôt que de se relever vers le ciel froid et clair (« délavé »). */
+    fogOutdoorSurface: string;
     /** Facteur de LUMIÈRE D'AMBIANCE d'une surface STATIQUE non encore VUE (brouillard de guerre) :
      *  multiplie la lumière ambiante de la scène (jour clair / nuit sombre) pour garder la matière
      *  lisible mais LÉGÈREMENT en retrait d'une case explorée — jamais du noir ni un aplat de brume. */
     ambientUnseen: number;
+    /** Voile CHAUD du POV (miroir de `iso.warm`) : réconcilie la TEMPÉRATURE des matériaux entre les deux
+     *  vues — le POV, sinon, reste froid (swatch neutre + brume de ciel froide) là où l'iso a `g_warm`. */
+    warm: RadialVeilDef;
+    /** OCCLUSION intra-tuile du sol POV : amplitude d'un dégradé vertical (spéculaire en haut/loin →
+     *  ombre de contact en bas/près) posé sur chaque losange — miroir du « creusé » que l'iso tire de son
+     *  dégradé de terrain (ex. `g_pave` 143→99). MOYENNE-neutre (highlight ET ombre) : on ajoute du relief,
+     *  pas du sombre. 0 = aplat plasticky (ancien). */
+    floorOcclusion: number;
     /** PROFONDEUR du POV — portées, courbes de brume et bandes de LOD, tout en DONNÉE. */
     depth: PovDepthDef;
     vignette: RadialVeilDef;
@@ -121,9 +138,20 @@ export function edgeDepthVeil(dims: Dims, w: number, h: number): string {
  *  tangage) et le reste sous l'horizon : tout ce qui est coupé en portée ou hors visibilité se fond
  *  dans cette nappe — plus de « trous » de ciel à travers le sol. */
 export function povAmbianceDefs(): string {
-  const { skyTop, fogOutdoor, vignette } = AMBIANCE.pov;
+  const { skyTop, fogOutdoor, vignette, warm, floorOcclusion: occl } = AMBIANCE.pov;
+  // OCCLUSION intra-tuile du sol : dégradé NEUTRE (spéculaire en haut/loin → transparent → ombre de contact
+  // en bas/près) en objectBoundingBox → chaque losange de sol reçoit le MÊME « creusé » vertical que l'iso,
+  // indépendamment de sa couleur (fog/lumière). Couleurs via `spec`/`ao` (shade.ts, sanctionnés).
+  const floorShade =
+    `<linearGradient id="pov-floor-shade" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0%" stop-color="${spec(occl)}"/>` +
+    `<stop offset="50%" stop-color="${ao(0)}"/>` +
+    `<stop offset="100%" stop-color="${ao(occl)}"/>` +
+    `</linearGradient>`;
   return (
     `<linearGradient id="pov-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${skyTop}"/><stop offset="50%" stop-color="${fogOutdoor}"/><stop offset="100%" stop-color="${fogOutdoor}"/></linearGradient>` +
+    floorShade +
+    radialVeil('pov-warm', warm, true) +
     radialVeil('pov-vignette', vignette, false)
   );
 }

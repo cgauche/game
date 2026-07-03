@@ -44,8 +44,9 @@ export function farTilesOf(indoor: boolean): number {
 }
 /** Brume de distance INTÉRIEURE (sombre) — identité en DONNÉE (`ambiance.json`), partagée avec l'iso. */
 export const FOG_COLOR = AMBIANCE.pov.fogIndoor;
-/** Luminosité plancher (une surface éclairée à 0 n'est jamais totalement noire). */
-export const AMBIENT_FLOOR = 0.12;
+/** Luminosité plancher (une surface éclairée à 0 n'est jamais totalement noire) — DONNÉE partagée
+ *  (`ambiance.json`), même plancher pour le POV et le voile d'occlusion des sols iso. */
+export const AMBIENT_FLOOR = AMBIANCE.ambientFloor;
 
 // — Types —
 /** Point métrique monde. */

@@ -13,7 +13,7 @@ import { useGame } from '../state/store';
 import { heightAt, sceneMetresPerTile } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
-import { computeStateVisible } from '../state/visionState';
+import { computeStateVisible, sceneLightField } from '../state/visionState';
 import { Combatant } from '../engine/types';
 import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
@@ -108,6 +108,12 @@ export function IsoStage() {
     () => computeStateVisible({ scene, battle, party, partyPos, gameTime, lightLevel }),
     [scene, battle, party, partyPos, gameTime, lightLevel],
   );
+  // CHAMP DE LUMIÈRE par tuile (MÊME source que la vue/perception) → voile d'occlusion des sols iso,
+  // miroir du POV (`base × light`). Memo STABLE (positions LOGIQUES) : recalcul au pas/pivot, pas par frame.
+  const light = useMemo(
+    () => (scene ? sceneLightField({ scene, battle, party, partyPos, gameTime, lightLevel }).light : undefined),
+    [scene, battle, party, partyPos, gameTime, lightLevel],
+  );
   const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
   // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu).
   useEffect(() => {
@@ -141,7 +147,7 @@ export function IsoStage() {
 
   // ── BACKENDS → couches STATIQUES pré-triées (fix du `objs.sort` à 60 Hz) ────────────────────────
   const occludesActor = useMemo(() => makeOccludesActor(scene, dims, { mode, battle, partyPos }), [scene, dims, mode, battle, partyPos]);
-  const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, { mode, battle, partyPos }, lod, detailOpts) : []), [scene, floorEls, dims, mode, battle, partyPos, lod, detailOpts]);
+  const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, { mode, battle, partyPos }, lod, detailOpts, light) : []), [scene, floorEls, dims, mode, battle, partyPos, lod, detailOpts, light]);
   const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, occludesActor, lod, detailOpts), [wallEls, dims, occludesActor, lod, detailOpts]);
   const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, occludesActor, viewMode === 'top', detailOpts), [roofEls, dims, occludesActor, viewMode, detailOpts]);
   const highlightObjs = useMemo(

@@ -39,11 +39,15 @@ describe('buildPovDrawList', () => {
     // trou de ciel), mais avec sa VRAIE matière sous une lumière d'ambiance : ni brume pure, ni noir, et
     // AUCUN détail d'appareillage (réservé au vu).
     const list = buildPovDrawList(s, cam, visible, LIGHT);
-    const fogRgb = 'rgb(159,178,198)'; // AMBIANCE.pov.fogOutdoor #9fb2c6
+    const fogRgb = 'rgb(147,136,123)'; // AMBIANCE.pov.fogOutdoorSurface #93887b (brume des SURFACES)
     const hidden = list.filter((it) => it.key.includes('6,2,0'));
     expect(hidden.length).toBeGreaterThan(0); // plus de trou de ciel à travers le sol
     for (const it of hidden) {
       expect(it.kind).not.toBe('detail'); // pas d'appareillage fin sur une case non vue
+      if (it.kind === 'occl') {
+        expect(it.fill).toBe('url(#pov-floor-shade)'); // voile de creusé NEUTRE (couleur-agnostique)
+        continue;
+      }
       expect(it.fill).not.toBe(fogRgb); // la matière se montre, pas un aplat de brume
       expect(it.fill).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
     }
@@ -114,11 +118,14 @@ describe('buildPovDrawList', () => {
         continue;
       }
       expect(it.points!.length).toBeGreaterThanOrEqual(3);
-      expect(it.fill).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
       for (const [px, py] of it.points!) {
         expect(Number.isFinite(px)).toBe(true);
         expect(Number.isFinite(py)).toBe(true);
       }
+      // Le voile d'OCCLUSION est un dégradé NEUTRE partagé (couleur-agnostique) ; tout autre losange
+      // PLEIN porte la couleur du MATÉRIAU (teinte `rgb(...)` calculée).
+      if (it.kind === 'occl') expect(it.fill).toBe('url(#pov-floor-shade)');
+      else expect(it.fill).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
     }
   });
 
@@ -337,6 +344,24 @@ describe('buildPovDrawList', () => {
     expect(gmesh.length).toBeGreaterThan(0);
     // …et jamais dans la zone d'entrée (≤ meshStartT cases) : l'herbe aux pieds reste nue.
     for (const it of gmesh) expect(it.depth / cam.mpt).toBeGreaterThan(2);
+  });
+
+  it('OCCLUSION SOL POV — chaque losange de sol porte un voile `occl` (creusé intra-tuile, `pov-floor-shade`)', () => {
+    const s = scene(); // sol plat, aucun wedge
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>();
+    for (let y = 0; y <= 11; y++) for (let x = 3; x <= 9; x++) visible.add(`${x},${y},0`);
+    const list = buildPovDrawList(s, cam, visible, LIGHT);
+    // Losanges de sol PLEINS (les raccords `wedge` ne portent pas le creusé — ils se peignent sur leur base).
+    const floors = list.filter((it) => it.kind === 'floor' && !it.key.includes('wedge'));
+    const occl = list.filter((it) => it.kind === 'occl');
+    expect(occl.length).toBeGreaterThan(0);
+    expect(occl.length).toBe(floors.length); // un voile d'occlusion par losange de sol plein
+    for (const it of occl) {
+      expect(it.fill).toBe('url(#pov-floor-shade)'); // dégradé NEUTRE partagé (couleur-agnostique)
+      expect(it.points?.length).toBeGreaterThanOrEqual(3);
+      expect(it.stroke).toBeUndefined();
+    }
   });
 
   it('DÉTAIL SOL POV — herbe : variance de teinte par tuile (tintVar) + TOUFFES au premier plan', () => {

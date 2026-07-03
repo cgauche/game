@@ -78,7 +78,7 @@ export type DrawItem = {
   strokeW?: number;
   depth: number;
   key: string;
-  kind: 'floor' | 'wall' | 'ceiling' | 'riser' | 'roof' | 'detail';
+  kind: 'floor' | 'wall' | 'ceiling' | 'riser' | 'roof' | 'detail' | 'occl';
   /** Classe CSS d'ambiance (ex. `warm` pour une vitre allumée la nuit) — appliquée au nœud SVG rendu. */
   cls?: string;
   /** Opacité < 1 (ex. VITRE de jour : verre TRANSPARENT → l'intérieur se voit derrière l'ouverture). */
@@ -498,7 +498,7 @@ export function buildPovDrawList(
   const indoor = isIndoor(scene); // intérieur → plafond + brume sombre COURTE ; extérieur → ciel + perspective atmosphérique LONGUE
   const curve = fogCurveOf(indoor);
   const farMetres = farTilesOf(indoor) * mpt;
-  const fog = indoor ? FOG_COLOR : AMBIANCE.pov.fogOutdoor;
+  const fog = indoor ? FOG_COLOR : AMBIANCE.pov.fogOutdoorSurface;
   const cols = visibleColumns(visible);
   const items: DrawItem[] = [];
 
@@ -573,6 +573,11 @@ export function buildPovDrawList(
         const it = makeItem(corners, cam, farMetres, fLv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, (wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS) - z * FLOOR_ZLIFT, fog, curve);
         if (!it) return;
         items.push(it);
+        // OCCLUSION intra-tuile : dégradé NEUTRE (`pov-floor-shade`, objectBoundingBox) posé sur le losange —
+        // « creusé » vertical miroir de l'iso, indépendant de la couleur du sol. Sous les joints/détails (biais
+        // plus proche pour eux). Un seul overlay par tuile (géométrie mémoïsée : coût au pas, pas par frame).
+        if (!wedge && AMBIANCE.pov.floorOcclusion > 0)
+          items.push({ points: it.points, fill: 'url(#pov-floor-shade)', depth: it.depth - 0.0002, key: `${el.key}:occl`, kind: 'occl' });
         if (!fSeen || wedge) return; // non vu (forme + matière seules) / wedge : pas de détail fin
         const depthTiles = (it.depth - FLOOR_BIAS) / cam.mpt;
         const h = f.poly[0].h;

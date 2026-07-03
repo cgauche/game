@@ -7,6 +7,7 @@
 import { Scene, heightAt } from '../../state/scene';
 import { metricToLift } from '../../state/relief';
 import { isOutOfAction } from '../../engine/conditions';
+import type { LightField } from '../../state/vision';
 import type { BattleState } from '../../state/store';
 import { TW, TH, EDGE_H, Dims, tileCenter, depth, makeOccludes } from '../iso';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
@@ -49,7 +50,7 @@ export function makeOccludesActor(scene: Scene | null, dims: Dims, ctx: LayerCtx
  *  `z` (depth) ; la position ÉCRAN et « qui est plus haut » passent par la HAUTEUR MÉTRIQUE (`heightAt`).
  *  ACCENTS (LOD 2) : thunk PARESSEUX — l'expansion seedée n'a lieu qu'au rendu, APRÈS le culling écran
  *  (jamais dans le memo pleine-carte), puis reste en cache dans la closure. */
-export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, ctx: LayerCtx, lod: number, detailOpts: DetailOpts): StageObj[] {
+export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, ctx: LayerCtx, lod: number, detailOpts: DetailOpts, light?: LightField): StageObj[] {
   // Acteurs à révéler : en combat tous les combattants debout ; en exploration le groupe + figurants.
   const actors: { x: number; y: number; z: number }[] = [];
   if (ctx.mode === 'battle' && ctx.battle) {
@@ -81,7 +82,7 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, ctx: 
     const op = ghost ? (el.states.solidOverhang ? 1 : OVERHANG_GHOST_OPACITY) : reveal ? 0.22 : 1;
     let accCache: string | null = null;
     const acc = lod === 2 && !ghost ? () => (accCache ??= floorAccentsSvg(el, d, detailOpts)) : undefined;
-    return { d: floorDepth(el, d), x, y, z, ...(el.states.visible ? { vis: true } : {}), op, ...(acc ? { acc } : {}), el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d, detailOpts) }} /> };
+    return { d: floorDepth(el, d), x, y, z, ...(el.states.visible ? { vis: true } : {}), op, ...(acc ? { acc } : {}), el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d, detailOpts, light) }} /> };
   });
 }
 
