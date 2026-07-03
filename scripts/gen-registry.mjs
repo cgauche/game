@@ -16,7 +16,9 @@ import { join } from 'node:path';
  * `importDir` : chemin (relatif au fichier `out`) d'où importer chaque entrée. Défaut `./defs`
  * (les entrées vivent dans un sous-dossier `defs/`). Mettre `.` quand les fichiers sont à plat
  * dans le même dossier que l'index (cas des scénarios).
- * @type {{ dir:string, out:string, exportName:string, arrayName:string, type:string, typeFrom:string, importDir?:string }[]}
+ * `idUnion` (option PAR registre) : émet AUSSI une union de littéraux `export type <typeName> =`
+ * extraite des champs `<field>: '…'` des defs — typage RÉEL des ids côté consommateurs TS.
+ * @type {{ dir:string, out:string, exportName:string, arrayName:string, type:string, typeFrom:string, importDir?:string, idUnion?:{ typeName:string, field:string } }[]}
  */
 export const REGISTRIES = [
   {
@@ -159,12 +161,14 @@ export const REGISTRIES = [
   },
   {
     // Icônes UI SVG maison (24×24, currentColor — remplacent les emojis) : 1 famille = 1 fichier defs/.
+    // + union `IconIdGenerated` des ids déclarés → `IconId` (types.ts) est un VRAI type fermé.
     dir: 'src/ui/icons/defs',
     out: 'src/ui/icons/_registry.generated.ts',
     exportName: 'icons',
     arrayName: 'ICON_FAMILIES',
     type: 'IconFamily',
     typeFrom: './types',
+    idUnion: { typeName: 'IconIdGenerated', field: 'id' },
   },
   {
     // Sons (assets CC0 Kenney dans public/audio) : 1 son (avec variantes) = 1 fichier defs/.
@@ -191,12 +195,24 @@ function genOne(r) {
     .sort();
   const imports = files.map((f, i) => `import { ${r.exportName} as e${i} } from '${importDir}/${f.replace(/\.ts$/, '')}';`);
   const arr = files.map((_, i) => `e${i}`);
+  // Union de littéraux des ids déclarés dans les defs (option `idUnion`) — triée, dédupliquée.
+  let unionDecl = '';
+  if (r.idUnion) {
+    const ids = files.flatMap((f) =>
+      [...readFileSync(join(r.dir, f), 'utf8').matchAll(new RegExp(`\\b${r.idUnion.field}:\\s*'([^']+)'`, 'g'))].map((m) => m[1]),
+    );
+    const uniq = [...new Set(ids)].sort();
+    unionDecl =
+      `\n/** Union GÉNÉRÉE des \`${r.idUnion.field}\` déclarés dans les defs — le typage réel des consommateurs. */\n` +
+      `export type ${r.idUnion.typeName} =\n  | '${uniq.join(`'\n  | '`)}';\n`;
+  }
   const body =
     `// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
     `// Ajouter une entrée = déposer un fichier dans ${importDir === '.' ? r.dir.split('/').pop() : importDir.replace('./', '')}/ puis \`npm run gen\`.\n` +
     `import type { ${r.type} } from '${r.typeFrom}';\n` +
     imports.join('\n') + '\n\n' +
-    `export const ${r.arrayName}: ${r.type}[] = [${arr.join(', ')}];\n`;
+    `export const ${r.arrayName}: ${r.type}[] = [${arr.join(', ')}];\n` +
+    unionDecl;
   // n'écrit que si le contenu change (évite de toucher le mtime → boucles de watch)
   let prev = '';
   try { prev = readFileSync(r.out, 'utf8'); } catch { /* nouveau */ }

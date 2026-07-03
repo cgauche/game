@@ -219,7 +219,8 @@ export interface HeroDetails {
   ambitionShort?: string;
   ambitionLong?: string;
   /** Astrologie (ADE2 ch.03, optionnel) — flavor pur : signe ascendant + demeures célestes
-   *  (le signe mécanique du Personnage vit sur `Combatant.star`). */
+   *  (le signe mécanique du Personnage vit sur `Combatant.star`). `house` = id de `celestialHouses` ;
+   *  `sign` = libellé lisible (flavor figé sur la fiche, aucune mécanique n'y référence un signe). */
   ascendant?: string;
   dwellings?: { house: string; sign: string }[];
 }

@@ -5,6 +5,7 @@ import { harvestProfileFor } from '../engine/harvest';
 import { Coins } from './Coins';
 import { TeamPortrait } from './TeamPortrait';
 import { GearAssignList } from './GearAssignList';
+import { RuleDivider } from './Ornaments';
 
 /** Beat de lisibilité avant l'écran plein écran : on laisse voir le COUP FATAL et la chute du dernier
  *  ennemi (le champ de bataille reste rendu sous l'overlay) avant de recouvrir la scène — sinon la victoire
@@ -55,7 +56,7 @@ export function VictoryScreen() {
     <div className="victory-overlay">
       <div className="victory-screen">
         <h1 className="victory-title">Victoire</h1>
-        <div className="rule-fleur" aria-hidden>⚜</div>
+        <RuleDivider />
 
         {/* #9 : messages de journal de la victoire (ex. annonce de l'arène) affichés ICI. */}
         {(pv?.messages?.length ?? 0) > 0 && (

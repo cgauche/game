@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { CoopRoomPanel, CoopSeatList, CoopAssignList } from './CoopPanels';
 import { SaveLoadModal } from './SaveLoadModal';
+import { RuleDivider } from './Ornaments';
 import { t } from '../i18n';
 
 /**
@@ -39,8 +40,8 @@ function CoopShell({
             {backLabel}
           </button>
         </div>
-        <h1 className="coop-title">🌐 {title}</h1>
-        <div className="rule-fleur" aria-hidden>⚜</div>
+        <h1 className="coop-title">{title}</h1>
+        <RuleDivider />
         {children}
       </div>
     </div>

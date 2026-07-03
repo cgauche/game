@@ -268,7 +268,7 @@ describe('signe astral (ADE2 ch.03) — étape, tirage, PX et effet', () => {
     const d = rollDraftAstrology(draft());
     expect(d.ascendant).toBeTruthy();
     expect(celestialHouses.length).toBe(5);
-    expect(d.dwellings!.map((w) => w.house)).toEqual(celestialHouses.map((h) => h.label));
+    expect(d.dwellings!.map((w) => w.house)).toEqual(celestialHouses.map((h) => h.id));
     for (const w of d.dwellings!) expect(w.sign).toBeTruthy();
     expect(rollDraftAstrology(draft()).dwellings).toEqual(d.dwellings); // figé par le seed
   });

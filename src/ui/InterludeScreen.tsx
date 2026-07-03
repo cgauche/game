@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
+import { interludeEventFor } from '../data/interludeEvents';
 import { formatMoney, fromBrass, toBrass, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
@@ -27,6 +27,7 @@ import { Coins } from './Coins';
 import { EffectChips } from './EffectChips';
 import { EntityRef } from './EntityChip';
 import { FxChip } from './FxChip';
+import { RuleDivider } from './Ornaments';
 import { GameDate } from './GameDate';
 import { Icon } from './Icon';
 import type { IconId } from './icons';
@@ -151,7 +152,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
           ownsHero={ownsHero}
           ownerName={ownerName}
         />
-        <div className="rule-fleur" aria-hidden>⚜</div>
+        <RuleDivider />
         {phase === 'events' ? (
           <EventsIntro heroes={heroes} interlude={interlude} onDone={() => setPhase('activities')} />
         ) : (
@@ -267,7 +268,8 @@ function TavernGamesEntry() {
 
 /** Conséquences mécaniques d'un événement, STRUCTURÉES (LDB 22) : les ops sont de la donnée, ceci
  *  est un RENDU — chaque conséquence porte son icône du registre (`<FxChip>`), aucun parsing. */
-function fxChips(fx: InterludeEventFx | undefined, weeks: number, hero: Combatant): { icon: IconId; label: string }[] {
+function fxChips(st: InterludeHeroState, hero: Combatant): { icon: IconId; label: string }[] {
+  const fx = st.fx;
   const chips: { icon: IconId; label: string }[] = [];
   if (fx?.moneyPct) chips.push({ icon: 'resource/gold-purse', label: `${fx.moneyPct} % sur la bourse du groupe (pire tirage appliqué une fois)` });
   if (fx?.loseActivity) chips.push({ icon: 'nav/activity', label: '−1 Activité' });
@@ -277,7 +279,8 @@ function fxChips(fx: InterludeEventFx | undefined, weeks: number, hero: Combatan
   if (fx?.bankPct) chips.push({ icon: 'resource/gold-purse', label: `${fx.bankPct} % sur l'argent placé en banque` });
   if (fx?.stashRaided) chips.push({ icon: 'ui/warning', label: 'Planque dévalisée !' });
   if (fx?.bankCrashCheck) chips.push({ icon: 'ui/warning', label: 'Les banques vérifient leur faillite immédiatement' });
-  if (weeks >= 3 && /elfe/i.test(hero.species ?? '')) chips.push({ icon: 'nav/activity', label: '−1 Activité (devoir elfique)' });
+  // Devoir elfique : conséquence APPLIQUÉE par le flow (règle optionnelle comprise) — jamais re-dérivée ici.
+  if (st.elfDuty) chips.push({ icon: 'nav/activity', label: '−1 Activité (devoir elfique)' });
   return chips;
 }
 
@@ -293,7 +296,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
         {heroes.map((h) => {
           const st = interlude.perHero[h.id];
           const ev = interludeEventFor(st.eventRoll);
-          const chips = fxChips(st.fx, interlude.weeks, h);
+          const chips = fxChips(st, h);
           return (
             <section key={h.id} className="interlude-hero panel">
               <h3>

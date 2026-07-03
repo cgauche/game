@@ -951,7 +951,7 @@ export interface StarData {
 /** Demeure céleste (ADE2 ch.03 l.502-512) : section du ciel gouvernée par un signe — thème astral
  *  facultatif de la création (flavor pur). `desc` = VERBATIM de la source ; `rand` = borne haute 1d10. */
 export interface CelestialHouseData {
-  /** id STABLE (slug du libellé) — `HeroDetails.dwellings[].house` stocke le LIBELLÉ (affichage pur). */
+  /** id STABLE (slug du libellé) — `HeroDetails.dwellings[].house` stocke cet ID (libellé à l'affichage). */
   id: string;
   label: string;
   rand: number;

@@ -50,6 +50,9 @@ export interface InterludeHeroState {
   fx?: InterludeEventFx;
   /** Activités restantes (min(3, semaines) − pertes d'événement/devoir elfique). */
   left: number;
+  /** Devoir elfique APPLIQUÉ (règle optionnelle `interlude-elf-duty` active + elfe + ≥3 semaines) —
+   *  source UNIQUE de la conséquence : l'UI rend ce drapeau, elle ne re-dérive jamais la règle. */
+  elfDuty?: boolean;
   /** A entrepris Revenus — maintient les Niveaux 3-4 (« Avec le pouvoir », ch.23 l.30). */
   didRevenus?: boolean;
   /** Gains de Revenus, crédités APRÈS le gaspillage (ch.23 l.179) — en sous de cuivre. */
@@ -116,7 +119,8 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
     if (ev.fx?.loseActivity) left -= 1;
     // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
     // Règle optionnelle (LDB 23 l.48) : le devoir elfique peut être ignoré (désactiver `interlude-elf-duty`).
-    if (rule('interlude-elf-duty') && /elfe/i.test(h.species ?? '') && w >= 3) {
+    const elfDuty = rule('interlude-elf-duty') && /elfe/i.test(h.species ?? '') && w >= 3;
+    if (elfDuty) {
       left -= 1;
       lines.push(`${h.name} consacre une Activité au contact des siens (devoir elfique).`);
     }
@@ -129,7 +133,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
       bank = bank.filter((b) => !(b.heroId === h.id && b.kind === 'stash'));
       lines.push(`${h.name} : sa planque a été dévalisée — tout l'argent caché a disparu (Mise à sac).`);
     }
-    perHero[h.id] = { eventRoll: roll, fx: ev.fx, left: Math.max(0, left), revenueBrass: 0 };
+    perHero[h.id] = { eventRoll: roll, fx: ev.fx, left: Math.max(0, left), revenueBrass: 0, ...(elfDuty && { elfDuty }) };
   }
   if (worstMoneyPct < 0) {
     const total = toBrass(get().money);

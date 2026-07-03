@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../state/store';
 import { useModalA11y } from '../Modal';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, type CodexGroup, type CodexItem } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, useCodexVersion, type CodexGroup, type CodexItem } from './registry';
 import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
@@ -47,9 +47,12 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
     setFacetSel({}); // une facette cochée pourrait masquer l'entrée ciblée
   }, [focus]);
 
+  // Fraîcheur : re-rend (et invalide les memos sur `cat.items`) après un persist de `CodexEdit`
+  // (`invalidateCodexLookup` → les getters `items`/`facets` re-projettent la donnée persistée).
+  const version = useCodexVersion();
   const cats = useMemo(() => categoriesIn(group), [group]);
   const cat = categoryByKey(catKey) ?? cats[0];
-  const list = useMemo(() => filterItems(cat?.items ?? [], q, cat?.facets ?? [], facetSel), [cat, q, facetSel]);
+  const list = useMemo(() => filterItems(cat?.items ?? [], q, cat?.facets ?? [], facetSel), [cat, q, facetSel, version]);
   // Facettes de la catégorie : valeurs dérivées des items, avec COMPTEUR LIVE — chaque compte est
   // calculé sous la recherche + les AUTRES facettes (faceting standard) ; une facette à valeur
   // unique n'apporte rien → masquée.
@@ -61,7 +64,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
           values: facetValues(filterItems(cat!.items, q, cat!.facets ?? [], { ...facetSel, [facet.key]: [] }), facet),
         }))
         .filter((r) => r.values.length > 1),
-    [cat, q, facetSel],
+    [cat, q, facetSel, version],
   );
   const toggleFacet = (key: string, value: string) =>
     setFacetSel((s) => {

@@ -38,7 +38,7 @@ export function MainMenu() {
             <Icon id="nav/compendium" /> {t('menu.compendium')}
           </button>
         </div>
-        <div className="rule-fleur menu-tools-rule" aria-hidden>{t('menu.workshop')}</div>
+        <RuleDivider className="menu-tools-rule" label={t('menu.workshop')} />
         <div className="menu-buttons menu-tools">
           <button className="btn" onClick={() => setScreen('editor')}>
             <Icon id="nav/editor" /> {t('menu.editor')}

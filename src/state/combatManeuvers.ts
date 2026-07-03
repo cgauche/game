@@ -28,8 +28,10 @@ import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
 import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
-import { findTalentById, findPsychologyById, type ManeuverDef, type ManeuverMeasure } from '../data';
+import { findTalentById, findPsychologyById, findManeuverById, traitById, type ManeuverDef, type ManeuverMeasure } from '../data';
+import { spellEffectOps } from './flow';
 import type { GameOp } from '../engine/ops';
+import type { IconId } from '../ui/icons';
 import { sizeGap } from '../engine/size';
 
 /** Op d'attaque gratuite (Frénésie/talent) — narrowing partagé. */
@@ -83,8 +85,9 @@ export function trampleTarget(battle: BattleState, c: Combatant, targetId?: stri
   );
 }
 
-/** Icône par type de manœuvre (id du registre `src/ui/icons/` — la hotbar rend `<Icon id>`). */
-export const MANEUVER_ICON: Record<AttackKind, string> = {
+/** Icône par type de manœuvre (id du registre `src/ui/icons/` — la hotbar rend `<Icon id>`).
+ *  Typé par l'union GÉNÉRÉE `IconId` (import type-only : aucun couplage runtime state→ui). */
+export const MANEUVER_ICON: Record<AttackKind, IconId> = {
   arme: 'action/attack', morsure: 'creature/bite', caudale: 'creature/tail', cornes: 'creature/horns',
   souffle: 'creature/breath', vomi: 'creature/vomit', tentacules: 'creature/tentacles',
   etreinte: 'creature/squeeze', regard: 'creature/gaze', langue: 'creature/tongue', hurlement: 'creature/scream',
@@ -106,7 +109,7 @@ export interface AttackOption {
   kind?: AttackKind;
   label: string;
   /** Id d'icône du registre `src/ui/icons/` (la hotbar rend `<Icon id>`). */
-  icon: string;
+  icon: IconId;
   targeting: 'melee' | 'zone' | 'trample' | 'aucontact' | 'grapple';
   reach?: number;
   forceMelee?: boolean;
@@ -376,6 +379,11 @@ export function resolveManeuver(
     const living = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !hasTraitKey(c.traits, 'mort-vivant'));
     emitAoe(get, attacker.pos, radius, def.kind, def.label);
     for (const tgt of living) hitOne(tgt);
+  } else if (def.targeting === 'self') {
+    // Capacité SUR SOI (transformation, mue, auto-buff) : aucune cible adverse ni opposition — les effets
+    // AUTHORÉS s'appliquent au PORTEUR (`on:'self'`). Les ops (transform/grantTrait…) recalent eux-mêmes
+    // leurs dérivés (refreshWounds, resync psy).
+    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: attacker, indice, rng, set }));
   } else {
     // melee / ranged : cible unique (clic joueur, ou la plus proche pour l'IA/auto).
     const foes = battle.combatants.filter(alive);

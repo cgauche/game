@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { Prose } from './Prose';
+import { RuleDivider } from './Ornaments';
 import { BattleTestModal } from './BattleTestModal';
 import {
   massBattleScenes, massBattleThreatPenalty, battleActivitiesAvailable, prepCount,
@@ -29,7 +30,7 @@ export function MassBattleView() {
               ? 'Préparatifs — Activités de bataille'
               : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
         </p>
-        <div className="rule-fleur" aria-hidden>⚜</div>
+        <RuleDivider />
         <ArmyBars mb={mb} />
         {mb.phase === 'inspire' && <PreBattle mb={mb} />}
         {mb.phase === 'round' && <RoundPanel mb={mb} />}

@@ -12,4 +12,13 @@ export interface IconDef {
 /** Un fichier defs/ = une famille (plusieurs icônes du même domaine). */
 export type IconFamily = IconDef[];
 
-export type IconId = string;
+import type { IconIdGenerated } from './_registry.generated';
+
+/** Id d'icône AUTHORÉ (tables TS, champs typés) : union GÉNÉRÉE depuis les defs
+ *  (`npm run gen`) — un id inventé ne compile pas. */
+export type IconId = IconIdGenerated;
+
+/** Id d'icône côté RENDU (`Icon`/`IconG`/`iconSvg`) : accepte AUSSI un id porté par la DONNÉE
+ *  (`string` JSON — activities.icon, calendarPhases.icon, vehicles.icon…), validé au runtime par
+ *  le throw DEV du rendu — pas de cast côté data, autocomplete conservée côté code. */
+export type IconIdInput = IconId | (string & {});

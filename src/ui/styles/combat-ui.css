@@ -420,7 +420,7 @@ textarea:focus {
   letter-spacing: 1px;
   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
 }
-.victory-screen .rule-fleur {
+.victory-screen .rule-divider {
   margin: 8px 0 18px;
 }
 .victory-rewards {

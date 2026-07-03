@@ -347,22 +347,6 @@ h3 {
   color: var(--muted);
   margin-top: 6px;
 }
-/* Séparateur de charte : filet ⚜ centré (menu, écrans de cérémonie). */
-.rule-fleur {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--gold);
-  margin: 18px 0 6px;
-  font-size: 13px;
-}
-.rule-fleur::before,
-.rule-fleur::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border) 30%, var(--gold) 50%, var(--border) 70%, transparent);
-}
 .menu-buttons {
   display: flex;
   flex-direction: column;

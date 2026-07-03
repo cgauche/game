@@ -76,7 +76,6 @@ const EXCEPTIONS = new Set<string>([
   'src/state/travelFlow.ts',
   'src/state/travelPostes.ts',
   'src/state/upkeep.ts', // session parallèle (ne pas toucher)
-  'src/state/worldMap.ts',
   // Rendu iso : commentaires ⚠ + libellés d'overlays non migrés.
   'src/gameIso/rig/anim/creatureAttackPoses.ts',
   'src/gameIso/rig/anim/handling.ts',
@@ -103,7 +102,6 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/CastModal.tsx',
   'src/ui/ChanceButtons.tsx',
   'src/ui/CharacterSheet.tsx',
-  'src/ui/CoopLobby.tsx',
   'src/ui/CoopPanels.tsx',
   'src/ui/CorruptionModal.tsx',
   'src/ui/CrewTestModal.tsx',
@@ -215,5 +213,18 @@ describe('garde-fou anti-emoji (affordances → registre d’icônes)', () => {
       if (hits.length) offenders.push(`${rel} → ${hits.join(' ')}`);
     }
     expect(offenders, 'Emoji d’affordance détecté — utiliser <Icon id> (src/ui/icons/) ou ajouter une exception JUSTIFIÉE').toEqual([]);
+  });
+
+  it('CLIQUET : toute exception dont le fichier est devenu propre (ou a disparu) doit être RETIRÉE', () => {
+    // Sans ce resserrage, la liste ne fond jamais : une exception nettoyée par un lot suivant resterait
+    // inerte. Ici elle devient rouge → la dette se rembourse mécaniquement au fil des migrations.
+    const stale: string[] = [];
+    for (const rel of EXCEPTIONS) {
+      let text: string;
+      try { text = readFileSync(join(ROOT, rel), 'utf8'); }
+      catch { stale.push(`${rel} → fichier disparu`); continue; }
+      if (emojisIn(text).length === 0) stale.push(`${rel} → plus aucun emoji`);
+    }
+    expect(stale, 'Exception(s) PÉRIMÉE(s) — retirer ces entrées de EXCEPTIONS').toEqual([]);
   });
 });

@@ -342,12 +342,13 @@ export function rollDraftStar(d: CreatorDraft): CreatorDraft {
 }
 
 /** Ascendant (ADE2 ch.03 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
- *  ADE2 l.504-512) — flavor pur, tirages figés par le seed. `rollStar` renvoie un `id` ; pour cette
- *  astrologie purement NARRATIVE on stocke le LIBELLÉ lisible. */
+ *  ADE2 l.504-512) — flavor pur, tirages figés par le seed. `dwellings[].house` = ID de la demeure
+ *  (ids internes, libellés à l'affichage) ; `sign` reste un libellé lisible (flavor stocké sur la
+ *  fiche, aucune mécanique n'y référence un signe). */
 export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
   const rng = makeRNG(d.seed ^ 0xa57e);
   const signLabel = (): string => findStarById(rollStar(rng))?.label ?? '';
-  return { ...d, ascendant: signLabel(), dwellings: celestialHouses.map((h) => ({ house: h.label, sign: signLabel() })) };
+  return { ...d, ascendant: signLabel(), dwellings: celestialHouses.map((h) => ({ house: h.id, sign: signLabel() })) };
 }
 
 // ── 4) Compétences & Talents ──
@@ -380,13 +381,21 @@ export function careerSkillEntries(d: CreatorDraft): string[] {
 }
 
 /** « Répartition simple » (étape 5) : « ajouter 5 Augmentations à chaque Compétence de Carrière »
- *  (LDB 05 l.535 — les 40 également réparties sur les 8 Compétences du Niveau). Keyé par LIBELLÉ —
+ *  (LDB 05 l.535 — les 40 également réparties sur les 8 Compétences du Niveau). Le RESTE d'une
+ *  division non entière est distribué aux premières Compétences (plafond 10/Compétence) : le bouton
+ *  produit TOUJOURS un total que `validateStep` accepte, jamais un état invalide. Keyé par LIBELLÉ —
  *  comme la grille, `careerAdvTotal` et `validateStep` ; une clé par objet `AdvancementRef`
  *  donnerait « [object Object] », illisible (jamais comptée). */
 export function evenCareerSkillAdvances(d: CreatorDraft): Record<string, number> {
   const entries = draftLevel(d)?.skills ?? [];
-  const each = Math.floor(CAREER_SKILL_ADVANCES / (entries.length || 1));
-  return Object.fromEntries(entries.map((a) => [advancementLabel('skills', a), each]));
+  if (!entries.length) return {};
+  const base = Math.min(MAX_ADV_PER_SKILL, Math.floor(CAREER_SKILL_ADVANCES / entries.length));
+  let rest = CAREER_SKILL_ADVANCES - base * entries.length;
+  return Object.fromEntries(entries.map((a) => {
+    const extra = rest > 0 && base < MAX_ADV_PER_SKILL ? 1 : 0;
+    rest -= extra;
+    return [advancementLabel('skills', a), base + extra];
+  }));
 }
 
 /** Options de spec d'une entrée « (Au choix) » (liste restreinte, sinon `wildcardSpecs` partagé). */

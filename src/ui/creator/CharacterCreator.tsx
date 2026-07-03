@@ -135,8 +135,8 @@ const WEAPON_CHOICES = allTrappings
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 /** Lookup id d'arme par libellé (le brouillon stocke le LIBELLÉ choisi) — Map module-scope, pas de `.find()` par rendu. */
 const WEAPON_ID_BY_LABEL = new Map(WEAPON_CHOICES.map((w) => [w.label, w.id]));
-/** Description RAW d'une demeure céleste par libellé (ADE2 ch.03 l.504-512) — tooltip du thème astral. */
-const HOUSE_DESC_BY_LABEL = new Map(celestialHouses.map((h) => [h.label, mdToText(h.desc)]));
+/** Demeure céleste par ID (ADE2 ch.03 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */
+const HOUSE_BY_ID = new Map(celestialHouses.map((h) => [h.id, h]));
 
 /** Texte de données (desc Markdown) → extrait lisible pour cartes et infobulles. */
 function blurb(md: string | null | undefined, max = 160): string {
@@ -173,8 +173,20 @@ function Stepper({ value, min = 0, max, onChange, disabled }: { value: number; m
 }
 
 /** Apparence de PRÉ-SÉLECTION (rail/entête, avant tout réglage) d'une espèce par `id` rules —
- *  mêmes briques que le brouillon (`rigSpeciesId`), rendue par la primitive `CharacterPreview`. */
-const pickAppearance = (speciesId: string, sex: 'M' | 'F'): Appearance => ({ species: rigSpeciesId(speciesId), sex, build: 0.5, seed: 7 });
+ *  mêmes briques que le brouillon (`rigSpeciesId`), rendue par la primitive `CharacterPreview`.
+ *  CACHE module-scope (entrées finies, objets immuables) : un objet STABLE par (espèce, sexe), sinon
+ *  le `React.memo` de CharacterPreview ne prend jamais et les ~25 lignes du rail re-résolvent le rig
+ *  à chaque rendu de l'étape. */
+const PICK_APPEARANCES = new Map<string, Appearance>();
+function pickAppearance(speciesId: string, sex: 'M' | 'F'): Appearance {
+  const key = `${speciesId}|${sex}`;
+  let a = PICK_APPEARANCES.get(key);
+  if (!a) {
+    a = { species: rigSpeciesId(speciesId), sex, build: 0.5, seed: 7 };
+    PICK_APPEARANCES.set(key, a);
+  }
+  return a;
+}
 
 function XpBadge({ value }: { value: number }) {
   return value > 0 ? <span className="xp-badge">+{value} PX</span> : null;
@@ -774,8 +786,8 @@ function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
             {d.dwellings?.length ? (
               <ul className="trapping-list">
                 {d.dwellings.map((h) => (
-                  <li key={h.house} title={HOUSE_DESC_BY_LABEL.get(h.house)}>
-                    <b>{h.house} :</b> {h.sign}
+                  <li key={h.house} title={mdToText(HOUSE_BY_ID.get(h.house)?.desc ?? '')}>
+                    <b>{HOUSE_BY_ID.get(h.house)?.label ?? h.house} :</b> {h.sign}
                   </li>
                 ))}
               </ul>

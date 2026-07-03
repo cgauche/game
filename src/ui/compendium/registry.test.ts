@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
 import { codexMatch, deburr, filterItems, facetValues } from './search';
 import { isEditableCategory } from './CodexEdit';
-import { creatures, findTraitById } from '../../data';
+import { creatures, etats, findTraitById } from '../../data';
+import { setDataset } from '../../data/overrides';
 import { CHAR_KEYS } from '../../engine/types';
 
 /** Toutes les lignes 'ref' (cross-réf) d'une fiche, sections + onglets confondus. */
@@ -47,19 +48,27 @@ describe('Codex registry', () => {
     expect(codexLookup('categorie-inexistante', first.label)).toBeUndefined();
   });
 
-  it('codexLookup est INDEXÉ : figé après construction, invalidable (compteur de version bumpé)', () => {
+  it('FRAÎCHEUR après persist : setDataset (mutation en place) + invalidate → items re-projetés + lookup à jour', () => {
+    // Simule le VRAI chemin de `CodexEdit.save` : le dataset source est muté EN PLACE
+    // (`overrides.ts::setDataset`), puis `invalidateCodexLookup()` — index figé AVANT, frais APRÈS.
     const cat = categoryByKey('etats')!;
-    const tmp: CodexItem = { label: 'Entrée-test-invalidation' };
-    expect(codexLookup('etats', tmp.label)).toBeUndefined(); // construit l'index de la catégorie
-    cat.items.push(tmp); // simule un persist de CodexEdit (mutation de la donnée)
+    const before = [...etats]; // snapshot (références d'origine) pour restauration
+    const original = etats[0];
+    const renamed = `${original.label} (renommé-test)`;
     try {
-      expect(codexLookup('etats', tmp.label)).toBeUndefined(); // index figé tant que non invalidé
+      expect(codexLookup('etats', renamed)).toBeUndefined(); // construit l'index de la catégorie
+      setDataset('etats', etats.map((e, i) => (i === 0 ? { ...e, label: renamed } : e)));
+      // Comportement défensif conservé : index ET projection figés tant que non invalidés.
+      expect(codexLookup('etats', renamed)).toBeUndefined();
       const v0 = codexLookupVersion();
       invalidateCodexLookup();
       expect(codexLookupVersion()).toBe(v0 + 1);
-      expect(codexLookup('etats', tmp.label)).toBe(tmp); // reconstruit depuis la donnée à jour
+      // Re-projection : la catégorie reflète le nouveau libellé, le lookup le résout.
+      expect(cat.items.some((i) => i.label === renamed)).toBe(true);
+      expect(codexLookup('etats', renamed)?.label).toBe(renamed);
+      expect(codexLookup('etats', original.label)).toBeUndefined(); // l'ancien libellé a disparu
     } finally {
-      cat.items.pop();
+      setDataset('etats', before);
       invalidateCodexLookup();
     }
   });
