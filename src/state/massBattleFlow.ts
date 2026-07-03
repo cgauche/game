@@ -320,11 +320,14 @@ function describeThreats(threats: string[]): string | null {
 export function openMassBattleInspire(get: Get, set: Set): void {
   const mb = get().massBattle;
   if (!mb || mb.phase !== 'inspire' || mb.inspired || prepCount(mb) >= 3) return;
-  const best = partyBest(get().party.filter((h) => !h.dead), 'commandement');
-  if (!best) return;
+  // Acteur = PJ posté au Discours (à défaut, SUGGESTION = meilleur en Commandement). Sans poste, l'acteur EST
+  // la suggestion et `testValue(chosen, 'commandement')` reproduit `partyBest(...).value` → byte-identique.
+  const party = get().party.filter((h) => !h.dead);
+  const chosen = assignedHeroFor(mb, party, 'inspire') ?? partyBest(party, 'commandement')?.actor;
+  if (!chosen) return;
   const difficulty = inspireDifficulty(mb.ally.might, mb.enemy.might);
   openBattleTest(get, set, {
-    actor: best.actor, skillValue: best.value, skillId: 'commandement', difficulty,
+    actor: chosen, skillValue: testValue(chosen, 'commandement'), skillId: 'commandement', difficulty,
     label: 'Discours inspirant', purpose: 'inspire',
   });
 }

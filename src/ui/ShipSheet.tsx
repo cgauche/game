@@ -7,7 +7,7 @@ import { shipMoraleScore, shipDefaultRoles, BENCHED } from '../state/shipCrew';
 import { useModalA11y } from './Modal';
 import { PortraitTile } from './PortraitTile';
 import { CharFrame } from './CharFrame';
-import { PortraitPicker } from './PortraitPicker';
+import { AssignRow } from './AssignRow';
 import { StationSheet } from './StationSheet';
 import { postesToStations } from '../state/stations';
 import { posteAnchor } from '../state/shipPostes';
@@ -67,8 +67,8 @@ export function PosteDetail({ hull, poste, combatants }: { hull: Combatant; post
 }
 
 /** Bloc « Rôles · manœuvre » (MDG ch.14) : par RÔLE, l'équipage qui le tient (PLUSIEURS possible, l.9 « plusieurs
- *  Personnages peuvent contribuer ») en portraits ; bouton « Assigner » → `PortraitPicker` (réutilisé) pour mettre
- *  un marin à ce poste (épingle son `shipRole`). Le rôle ESSENTIEL (DR ×2, l.19) est marqué d'une étoile. */
+ *  Personnages peuvent contribuer ») via l'`AssignRow` PARTAGÉ (max = Infinity) — portraits + picker des marins
+ *  éligibles ; l'assigner épingle son `shipRole`. Le rôle ESSENTIEL (DR ×2, l.19) est marqué d'une étoile. */
 export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (crewId: string, role: string | null) => void }) {
   const [editing, setEditing] = useState<string | null>(null);
   const testType = findCrewTestTypeById(MANOEUVRE);
@@ -99,21 +99,17 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
               <span className="ship-role-name">{role.label}{essential && <span className="ess" title="Rôle essentiel — son DR compte double (MDG ch.14)"> ★</span>}</span>
               <button className="btn small" onClick={() => setEditing(open ? null : roleId)}>{open ? 'Fermer' : '+ assigner'}</button>
             </div>
-            <div className="ship-crew-row">
-              {holders.length
-                ? holders.map((c) => (
-                    <span key={c.id} className="crew-remove" title={`${c.name} — retirer du poste`}>
-                      <CharFrame c={c} variant="identity" size="xs" onClick={() => onSet(c.id, BENCHED)} />
-                    </span>
-                  ))
-                : <span className="muted">— vacant —</span>}
-            </div>
-            {open && (
-              <PortraitPicker
-                choices={apte.filter((c) => roleOf(c) !== roleId).map((c) => ({ c, caption: crewRoleValue(c, role).value, title: `Mettre ${c.name} à ${role.label}` }))}
-                onPick={(id) => onSet(id, roleId)}
-              />
-            )}
+            <AssignRow
+              assigned={holders}
+              candidates={apte.filter((c) => roleOf(c) !== roleId)}
+              onAssign={(id) => onSet(id, roleId)}
+              onRemove={(id) => onSet(id, BENCHED)}
+              max={Infinity}
+              verb={`tient le rôle de ${role.label}`}
+              canPick={open}
+              captionOf={(c) => crewRoleValue(c, role).value}
+              titleOf={(c) => `Mettre ${c.name} à ${role.label}`}
+            />
           </div>
         );
       })}

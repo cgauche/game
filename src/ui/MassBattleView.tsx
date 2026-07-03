@@ -4,15 +4,14 @@ import { Prose } from './Prose';
 import { RuleDivider } from './Ornaments';
 import { BattleTestModal } from './BattleTestModal';
 import { StationSheet } from './StationSheet';
-import { PortraitPicker } from './PortraitPicker';
-import { CharFrame } from './CharFrame';
+import { AssignRow } from './AssignRow';
 import { battleScenesToStations, type Station } from '../state/stations';
 import {
   massBattleThreatPenalty, battleActivitiesAvailable, prepCount,
   type MassBattleState, type MassBattleArmy,
 } from '../state/massBattleFlow';
 import { battleSceneById, BATTLE_HAZARDS, inspireDifficulty, type BattleSceneDef, type BattleActivityDef } from '../engine/massBattle';
-import { DIFFICULTY_LABELS } from '../engine/types';
+import { DIFFICULTY_LABELS, type Combatant } from '../engine/types';
 
 /**
  * Écran de Combat de masse / Puissance de Bataille (ADE II 08). État des deux armées (Puissance
@@ -74,11 +73,19 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
   const inspire = useGame((s) => s.massBattleInspire);
   const activity = useGame((s) => s.massBattleActivity);
   const begin = useGame((s) => s.massBattleBegin);
+  const assignFn = useGame((s) => s.assignMassBattleHero);
+  const party = useGame((s) => s.party);
+  const living = party.filter((h) => !h.dead);
   const diff = inspireDifficulty(mb.ally.might, mb.enemy.might);
   const activities = battleActivitiesAvailable(mb);
   const count = prepCount(mb);
   const full = count >= 3;
   const [openAct, setOpenAct] = useState<string | null>(null);
+  // Le posté d'une action pré-combat, résolu en héros vivant (chaque Activité / le Discours = 1 PJ, l.79-110).
+  const postedOf = (id: string): Combatant[] => {
+    const h = living.find((x) => x.id === mb.assignment[id]);
+    return h ? [h] : [];
+  };
   return (
     <section className="panel mb-phase">
       <h3>Avant la bataille</h3>
@@ -99,22 +106,49 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
           {mb.planningBonus > 0 && <>Bonus de Planification : +{mb.planningBonus}.</>}
         </p>
       )}
-      <div className="bar mb-actions">
-        <button className="btn small" disabled={!!mb.inspired || full} onClick={inspire}>
-          {mb.inspired ? 'Discours prononcé' : `Discours inspirant (Commandement — ${DIFFICULTY_LABELS[diff]})`}
-        </button>
-      </div>
       <div className="mb-scenes">
+        <div className="mb-scene">
+          <div className="bar mb-scene-head">
+            <span className="mb-scene-kind">Discours inspirant</span>
+            <span className="mb-scene-eff">Commandement — {DIFFICULTY_LABELS[diff]}</span>
+          </div>
+          <AssignRow
+            assigned={postedOf('inspire')}
+            candidates={living}
+            onAssign={(id) => assignFn('inspire', id)}
+            onRemove={() => assignFn('inspire', null)}
+            max={1}
+            verb="prononce le Discours"
+            canPick={!full}
+          />
+          <div className="bar mb-actions">
+            <button className="btn small btn-primary" disabled={!!mb.inspired || full} onClick={inspire}>
+              {mb.inspired ? 'Discours prononcé' : 'Prononcer'}
+            </button>
+          </div>
+        </div>
         {activities.map((a) => (
           <div key={a.id} className="mb-scene">
             <div className="bar mb-scene-head">
-              <button className="btn small btn-primary" disabled={full} onClick={() => activity(a.id)}>{a.label}</button>
+              <span className="mb-scene-kind">{a.label}</span>
               <span className="mb-scene-eff">{activityEffectLabel(a)}</span>
               <button className="btn small ghost" onClick={() => setOpenAct(openAct === a.id ? null : a.id)}>
                 {openAct === a.id ? 'Masquer' : 'Détails'}
               </button>
             </div>
             {openAct === a.id && <div className="mb-scene-desc"><Prose md={a.desc} /></div>}
+            <AssignRow
+              assigned={postedOf(a.id)}
+              candidates={living}
+              onAssign={(id) => assignFn(a.id, id)}
+              onRemove={() => assignFn(a.id, null)}
+              max={1}
+              verb={`réalise « ${a.label} »`}
+              canPick={!full}
+            />
+            <div className="bar mb-actions">
+              <button className="btn small btn-primary" disabled={full} onClick={() => activity(a.id)}>Réaliser</button>
+            </div>
           </div>
         ))}
       </div>
@@ -242,8 +276,9 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
 
 /**
  * Détail d'une Station de Scène (colonne droite du `StationSheet`) : genre, effet chiffré, état de tenue,
- * description VERBATIM, AFFECTATION explicite d'un PJ (portrait posté + picker des PJ encore disponibles +
- * « retirer », E3), et bouton Résoudre. La logique de désactivation du Résoudre est IDENTIQUE à l'ancienne
+ * description VERBATIM, puis résolution. La CARDINALITÉ suit le RAW : une Scène de combat/menace engage
+ * TOUT le groupe (pas d'affectation par PJ) ; une Scène de Compétence/Tenue est « une Scène par PJ »
+ * (ADE II ch.8 l.116-118) → `AssignRow` (max 1). La désactivation du Résoudre reste IDENTIQUE à l'ancienne
  * liste plate (résolue / Round figé / plus de PJ pour un Test·Tenue / position rompue).
  */
 function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Station }) {
@@ -263,8 +298,10 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
   const remaining = available.length;
   const postedId = mb.assignment[sceneId];
   const posted = postedId ? living.find((h) => h.id === postedId) : undefined;
+  // Un combat (Scène 'combat'/'threat', incl. le Duel) engage tout le groupe → PAS de garde « plus de PJ libre ».
+  const isCombat = sc.kind === 'combat' || sc.kind === 'threat';
   const disabled = resolved || mb.awaitingNext
-    || ((sc.kind === 'test' || sc.kind === 'hold') && remaining === 0)
+    || (!isCombat && remaining === 0)
     || (sc.kind === 'hold' && !!hold?.broken);
   return (
     <div className={`mb-scene${resolved ? ' mb-scene-done' : ''}`}>
@@ -278,21 +315,17 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
         )}
       </div>
       <div className="mb-scene-desc"><Prose md={sc.desc} /></div>
-      <div className="bar mb-scene-assign">
-        {posted ? (
-          <>
-            <CharFrame c={posted} variant="vital" size="sm" />
-            <button className="btn small ghost" onClick={() => assign(sceneId, null)}>Retirer</button>
-          </>
-        ) : (
-          <span className="mb-detail">Aucun PJ affecté — choisissez qui résout cette Scène.</span>
-        )}
-      </div>
-      {available.length > 0 && !resolved && !mb.awaitingNext && (
-        <PortraitPicker
-          choices={available.map((h) => ({ c: h, disabled: h.id === postedId }))}
-          selectedId={postedId}
-          onPick={(id) => assign(sceneId, id)}
+      {isCombat ? (
+        <p className="mb-detail">Tout le groupe engage le combat.</p>
+      ) : (
+        <AssignRow
+          assigned={posted ? [posted] : []}
+          candidates={available}
+          onAssign={(id) => assign(sceneId, id)}
+          onRemove={() => assign(sceneId, null)}
+          max={1}
+          verb="résout cette Scène"
+          canPick={!resolved && !mb.awaitingNext}
         />
       )}
       <div className="bar mb-actions">
@@ -302,7 +335,7 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
           onClick={() => chooseScene(sceneId)}
           title={sc.kind === 'test' ? 'Test de Compétence' : sc.kind === 'hold' ? 'Test opposé — tenez la position (Point de rupture)' : 'Combat tactique — la victoire modifie la Puissance'}
         >
-          {resolved ? 'Scène résolue' : 'Résoudre'}
+          {resolved ? 'Scène résolue' : isCombat ? 'Engager le combat' : 'Résoudre'}
         </button>
       </div>
     </div>
