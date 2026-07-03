@@ -22,6 +22,7 @@ import { controlsActive } from '../state/netOwnership';
 import { Dims, tileCenter, depth } from './iso';
 import { DEFS } from './sprites';
 import { isoAmbianceDefs } from './catalog/ambiance';
+import { fogDefs } from './FogLayer';
 import { detailPatternDefs, lodOf, LOD_ZOOM } from './backends/affineDetail';
 import { getViewZ, subscribeViewZ } from './viewLevel';
 import { setVisibleTileBounds } from './viewport';
@@ -29,7 +30,7 @@ import { walkXY, STEP_MS } from './walkPath';
 import { useCombatFx } from './fx/useCombatFx';
 import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
-import { buildFloors, fogFloorZ } from './builders/floors';
+import { buildFloors } from './builders/floors';
 import { buildWalls } from './builders/walls';
 import { buildRoofs } from './builders/roofs';
 import { buildProps } from './builders/props';
@@ -102,9 +103,6 @@ export function IsoStage() {
   // LIFT vertical d'une case = sa HAUTEUR MÉTRIQUE en unités de niveau, DÉCOUPLÉ de l'index de couche
   // `z` (qui ne sert qu'au TRI). Sert au JETON (qui monte avec son sol) ET aux SURLIGNAGES de case.
   const liftAt = (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0);
-  // Étage de SOL effectif pour le BROUILLARD — `fogFloorZ`, la MÊME vérité que le surplomb PLEIN du
-  // builder → voile et sols pleins ne divergent jamais.
-  const fogFloorZAt = useMemo(() => (x: number, y: number): number => (scene ? fogFloorZ(scene, x, y, activeZ) : activeZ), [scene, activeZ]);
   // BROUILLARD DE GUERRE — cases visibles (union des alliés/groupe). Dérivé des positions LOGIQUES,
   // pas du glissement → memo STABLE pendant la marche.
   const visible = useMemo(
@@ -228,10 +226,10 @@ export function IsoStage() {
 
   return (
     <svg ref={svgRef} className="iso-stage" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
-      <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
+      <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + fogDefs() + patternDefs }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
-          fog={{ w: scene.dimensions.w, h: scene.dimensions.h, visible, explored: exploredSet, bounds: viewBounds, floorZAt: fogFloorZAt }} />
+          fog={{ explored: exploredSet }} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dims} activeZ={activeZ} visible={visible} />}
         <EnemyMoveTelegraph actorMove={actorMove} dims={dims} footN={activeMoveN} lift={liftOf} />

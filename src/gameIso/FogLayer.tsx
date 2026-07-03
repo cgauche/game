@@ -1,58 +1,39 @@
 /**
- * Brouillard de guerre — voile PAR CASE injecté DANS le flux trié par profondeur (≠ ancien overlay
- * unique « sandwich »). Chaque case NON visible porte son voile à SA profondeur (juste au-dessus de son
- * décor) : quasi-opaque sur l'INCONNU (rien ne transparaît, « même le décor »), semi-transparent sur
- * l'EXPLORÉ-hors-vue (décor mémorisé, grisé). Les cases EN VUE ne reçoivent aucun voile.
+ * Brouillard de guerre — assombrissement PAR OBJET, dans le flux trié par profondeur. Une case NON
+ * visible voit SON décor (sol, mur, décor) assombri SUR PLACE, à sa vraie profondeur : mémorisée
+ * (explorée, hors-vue) → grisée mais lisible ; inconnue (jamais vue) → quasi noire. Les cases en vue
+ * ne reçoivent aucun filtre.
  *
- * POURQUOI par case et non un overlay unique : un overlay unique doit choisir « tout le caché SOUS le
- * visible » (split vis/!vis) — ce qui INVERSE la profondeur (un mur VISIBLE derrière se peignait par-
- * dessus une rampe CACHÉE devant). Un voile porté par chaque case, à sa vraie profondeur, respecte le
- * tri per-case : un décor caché DEVANT masque bien un décor visible DERRIÈRE, et vice-versa.
- *
- * Bords FRANCS (le flou de groupe de l'ancien overlay est incompatible avec l'entrelacement en
- * profondeur : il fusionnait tout le voile à un seul z). Screen-culling assuré par `CulledScene`
- * (`onScreen`) — le coût reste borné par la FENÊTRE, jamais par la scène.
+ * POURQUOI par objet et non un voile-losange : un losange plat ne couvre QUE l'empreinte au sol → sur
+ * une structure HAUTE (mur 4 m), le quart supérieur du losange fait un triangle sombre au pied tandis
+ * que la face du mur reste éclairée au-dessus. Assombrir les PIXELS de l'objet couvre toute sa
+ * silhouette (mur compris), sans triangle, et respecte le tri (un décor caché DEVANT reste devant, à
+ * son étage, assombri). Assombrissement (pas opacité) → le décor reste OPAQUE (on ne voit pas à travers).
  */
-import React from 'react';
-import { Dims, diamondPath, depth } from './iso';
 import type { StageObj } from './stage/objs';
 
-/** Voile mémorisé (exploré, hors-vue) : semi-transparent → décor grisé mais lisible. */
-const REMEMBERED = { fill: '#06050d', op: 0.52 };
-/** Voile inconnu (jamais vu) : quasi-opaque → rien ne transparaît. */
-const UNKNOWN = { fill: '#04030a', op: 0.985 };
-/** Décalage de couche du voile : AU-DESSUS du décor de sa propre case (mur +0.45, jeton +0.5). */
-const VEIL_LAYER = 0.55;
-const MARGIN = 5; // cases autour du cadre : couvre le pan sous-tuile
-
 export interface FogParams {
-  w: number;
-  h: number;
-  visible: Set<string>;
+  /** Cases déjà vues (accumulées) : `"x,y,z"`. Hors-vue ∩ exploré ⇒ mémorisé ; hors-vue ∖ exploré ⇒ inconnu. */
   explored: Set<string>;
-  bounds: { minX: number; maxX: number; minY: number; maxY: number };
-  /** Étage de SOL effectif sous (x,y) à l'étage actif (retombe sur le sol du dessous à un trou `vide`). */
-  floorZAt: (x: number, y: number) => number;
 }
 
-/** StageObj de voile pour chaque case cachée du cadre (+ marge). À fusionner par profondeur dans le
- *  flux de scène (`mergeByDepth`) puis rendu par `CulledScene` avec le reste. */
-export function fogVeilObjs(fog: FogParams, dims: Dims): StageObj[] {
-  const { w, h, visible, explored, bounds, floorZAt } = fog;
-  const x0 = Math.max(0, bounds.minX - MARGIN), x1 = Math.min(w - 1, bounds.maxX + MARGIN);
-  const y0 = Math.max(0, bounds.minY - MARGIN), y1 = Math.min(h - 1, bounds.maxY + MARGIN);
-  const objs: StageObj[] = [];
-  for (let y = y0; y <= y1; y++)
-    for (let x = x0; x <= x1; x++) {
-      const z = floorZAt(x, y);
-      const k = `${x},${y},${z}`;
-      if (visible.has(k)) continue; // en vue → pas de voile
-      const v = explored.has(k) ? REMEMBERED : UNKNOWN;
-      objs.push({
-        d: depth(x, y, dims, z) + VEIL_LAYER,
-        x, y, z, vis: false,
-        el: <path key={`fog:${k}`} d={diamondPath(x, y, dims)} fill={v.fill} opacity={v.op} pointerEvents="none" />,
-      });
-    }
-  return objs;
+/** Defs SVG des filtres de brouillard (assombrissement + désaturation ; zéro couleur littérale).
+ *  Injectés dans le `<defs>` du stage, à côté de `lower-floor-dim`. */
+export function fogDefs(): string {
+  return (
+    // Mémorisé : assombri + désaturé, mais LISIBLE (on se souvient de la disposition explorée).
+    `<filter id="fog-remembered" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix type="saturate" values="0.5"/>` +
+    `<feComponentTransfer><feFuncR type="linear" slope="0.42"/><feFuncG type="linear" slope="0.42"/><feFuncB type="linear" slope="0.48"/></feComponentTransfer></filter>` +
+    // Inconnu : couleur CONSTANTE quasi noire (matrice qui IGNORE la luminance d'entrée, alpha conservé)
+    // → sol/mur/décor jamais vus deviennent une masse uniforme → le terrain adverse et ses OBJETS ne
+    //   transparaissent plus (un simple assombrissement laissait voir les silhouettes).
+    `<filter id="fog-unknown" x="-5%" y="-5%" width="110%" height="110%">` +
+    `<feColorMatrix type="matrix" values="0 0 0 0 0.015  0 0 0 0 0.015  0 0 0 0 0.022  0 0 0 1 0"/></filter>`
+  );
+}
+
+/** Filtre de brouillard à appliquer à un objet, ou `undefined` (en vue / non tagué). */
+export function fogFilterFor(o: StageObj, explored: Set<string>): string | undefined {
+  if (o.x === undefined || o.vis) return undefined; // tokens/FX ou décor en vue (ou perçu) → pas de voile
+  return explored.has(`${o.x},${o.y},${o.z ?? 0}`) ? 'url(#fog-remembered)' : 'url(#fog-unknown)';
 }

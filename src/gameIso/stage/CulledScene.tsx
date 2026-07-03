@@ -5,10 +5,9 @@
  * centre tombe dans le rectangle écran (+ marge pour les corps/murs HAUTS). Le navigateur ne rastérise
  * alors que l'écran à chaque frame → fini le re-raster de toute la carte.
  */
-import { useMemo } from 'react';
 import { Dims, tileCenter } from '../iso';
-import { fogVeilObjs, type FogParams } from '../FogLayer';
-import { mergeByDepth, type StageObj } from './objs';
+import { fogFilterFor, type FogParams } from '../FogLayer';
+import type { StageObj } from './objs';
 import { VW, VH } from './useStageCamera';
 
 export function CulledScene({
@@ -35,9 +34,12 @@ export function CulledScene({
     return c.cx >= cl - M && c.cx <= cr + M && c.cy >= ct - M && c.cy <= cb + M;
   };
   // Atténuer SANS opacité (sinon on verrait À TRAVERS les murs du dessous) : désaturation +
-  // assombrissement seuls (filtre `lower-floor-dim`) → l'étage inférieur recule, reste OPAQUE.
-  // ACCENTS matériaux v2 : le thunk `acc` ne s'étend qu'ICI (éléments à l'écran uniquement),
-  // rendu juste PAR-DESSUS son élément (même profondeur, même opacité), puis servi du cache.
+  // assombrissement seuls (filtres) → l'élément recule mais reste OPAQUE. Deux voiles composés :
+  //  - `lower-floor-dim` : étage SOUS la zone active (z < activeZ).
+  //  - BROUILLARD par objet (`fog-remembered`/`fog-unknown`) : case hors-vue, à SA profondeur → un mur
+  //    HAUT est assombri sur toute sa silhouette (plus de triangle du losange plat), et un décor caché
+  //    DEVANT reste devant (fini le sandwich vis/!vis qui écrasait le tri : mur visible sur rampe cachée).
+  // ACCENTS matériaux v2 : le thunk `acc` ne s'étend qu'ICI (éléments à l'écran uniquement).
   const draw = (o: StageObj) => {
     const core = o.acc ? (
       <g key={o.el.key}>
@@ -47,22 +49,15 @@ export function CulledScene({
     ) : (
       o.el
     );
-    return o.z !== undefined && o.z < activeZ ? (
-      <g key={o.el.key} filter="url(#lower-floor-dim)">{core}</g>
-    ) : (
-      core
-    );
+    const fogF = fogFilterFor(o, fog.explored);
+    const lower = o.z !== undefined && o.z < activeZ;
+    if (!fogF && !lower) return core;
+    let node = core;
+    if (fogF) node = <g filter={fogF}>{node}</g>;
+    if (lower) node = <g filter="url(#lower-floor-dim)">{node}</g>;
+    return <g key={o.el.key}>{node}</g>;
   };
-  // BROUILLARD ENTRELACÉ par la PROFONDEUR : chaque case cachée porte son voile à SA profondeur
-  // (`fogVeilObjs`), fusionné dans le flux trié — plus de « sandwich » vis/!vis qui inversait le tri
-  // (un mur visible DERRIÈRE se peignait par-dessus une rampe cachée DEVANT). Ainsi un décor caché
-  // devant masque bien un visible derrière, et vice-versa. Mémoïsé sur les bornes ENTIÈRES du cadre +
-  // la vision → ne reconstruit qu'au changement de cadre-tuile, pas à chaque pixel de pan.
-  const veilObjs = useMemo(
-    () => fogVeilObjs(fog, dims),
-    [fog.visible, fog.explored, fog.bounds.minX, fog.bounds.maxX, fog.bounds.minY, fog.bounds.maxY, fog.floorZAt, dims],
-  );
   // `.filter().map()` (pas map→null) → React ne réconcilie que les ~centaines d'objets à l'écran.
-  const shown = mergeByDepth(objs, veilObjs).filter(onScreen);
+  const shown = objs.filter(onScreen);
   return <g>{shown.map(draw)}</g>;
 }
