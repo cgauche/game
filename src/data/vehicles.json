@@ -2,7 +2,7 @@
   {
     "id": "diligence",
     "label": "Diligence",
-    "icon": "🚌",
+    "icon": "travel/coach",
     "source": {
       "book": "LDB",
       "page": 306
@@ -48,7 +48,7 @@
   {
     "id": "barge",
     "label": "Barge",
-    "icon": "🛶",
+    "icon": "travel/barge",
     "source": {
       "book": "LDB",
       "page": 306
@@ -104,6 +104,7 @@
   {
     "id": "barge-fluviale",
     "label": "Barge fluviale",
+    "icon": "travel/barge",
     "source": {
       "book": "T2C",
       "page": 33
@@ -162,6 +163,7 @@
   {
     "id": "barque-fluviale",
     "label": "Barque",
+    "icon": "travel/rowboat",
     "source": {
       "book": "T2C",
       "page": 33
@@ -201,7 +203,7 @@
   {
     "id": "charrette",
     "label": "Charrette",
-    "icon": "🛒",
+    "icon": "travel/cart",
     "source": {
       "book": "LDB",
       "page": 306
@@ -228,7 +230,7 @@
   {
     "id": "chariot",
     "label": "Chariot",
-    "icon": "🛒",
+    "icon": "travel/cart",
     "source": {
       "book": "LDB",
       "page": 306
@@ -247,7 +249,7 @@
   {
     "id": "barque",
     "label": "Barque",
-    "icon": "🛶",
+    "icon": "travel/rowboat",
     "source": {
       "book": "LDB",
       "page": 306
@@ -266,7 +268,7 @@
   {
     "id": "chaland",
     "label": "Chaland",
-    "icon": "🛶",
+    "icon": "travel/barge",
     "source": {
       "book": "LDB",
       "page": 306
@@ -285,7 +287,7 @@
   {
     "id": "coracle",
     "label": "Coracle",
-    "icon": "🛶",
+    "icon": "travel/rowboat",
     "source": {
       "book": "LDB",
       "page": 306
@@ -325,7 +327,7 @@
   {
     "id": "chaloupe",
     "label": "Chaloupe",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -362,7 +364,7 @@
   {
     "id": "esquif",
     "label": "Esquif",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -403,7 +405,7 @@
   {
     "id": "grande-barge",
     "label": "Grande barge",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -444,7 +446,7 @@
   {
     "id": "bateau-de-patrouille",
     "label": "Bateau de patrouille",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -497,7 +499,7 @@
   {
     "id": "knarr",
     "label": "Knarr",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -542,7 +544,7 @@
   {
     "id": "langskip",
     "label": "Langskip",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -583,7 +585,7 @@
   {
     "id": "cogue",
     "label": "Cogue",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -673,7 +675,7 @@
   {
     "id": "caraque",
     "label": "Caraque",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -714,7 +716,7 @@
   {
     "id": "galere-de-guerre",
     "label": "Galère de guerre",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -765,7 +767,7 @@
   {
     "id": "loup-imperial",
     "label": "Loup impérial",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -816,7 +818,7 @@
   {
     "id": "croiseur",
     "label": "Croiseur",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -860,7 +862,7 @@
   {
     "id": "galion-bretonnien",
     "label": "Galion bretonnien",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -904,7 +906,7 @@
   {
     "id": "caravelle-tileenne",
     "label": "Caravelle tiléenne",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -945,7 +947,7 @@
   {
     "id": "chebec-arabien",
     "label": "Chébec arabien",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -990,7 +992,7 @@
   {
     "id": "boutre-d-inja",
     "label": "Boutre d'Inja",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113
@@ -1027,7 +1029,7 @@
   {
     "id": "bateau-tresor-cathayen",
     "label": "Bateau-trésor cathayen",
-    "icon": "⛵",
+    "icon": "travel/sail-ship",
     "source": {
       "book": "MDG",
       "page": 113

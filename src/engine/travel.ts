@@ -57,12 +57,13 @@ export const TRAVEL_MODE_LABEL: Record<string, string> = {
   ...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),
 };
 
-/** Pictogramme d'un mode de voyage (donnée `vehicle.icon` ; `'pied'` → 🦶, défaut véhicule → 🚐). */
+/** `IconId` du pictogramme d'un mode de voyage (registre `src/ui/icons/`, famille `travel/*`) :
+ *  donnée `vehicle.icon` ; `'pied'`/`'monture'`/`'mer'` → id fixe, défaut véhicule → `travel/coach`. */
 export function travelModeIcon(mode: TravelMode): string {
-  if (mode === 'pied') return '🦶';
-  if (mode === 'monture') return '🐎';
-  if (mode === 'mer') return '⚓';
-  return VEHICLE_BY_ID.get(mode)?.icon ?? '🚐';
+  if (mode === 'pied') return 'travel/foot';
+  if (mode === 'monture') return 'travel/mount';
+  if (mode === 'mer') return 'travel/anchor';
+  return VEHICLE_BY_ID.get(mode)?.icon ?? 'travel/coach';
 }
 
 /** Défauts paramétrables (surchargés par la carte du monde / la route dans l'éditeur). */

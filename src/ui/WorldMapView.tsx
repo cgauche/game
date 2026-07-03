@@ -323,7 +323,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <div className="wm-modes">
               {modeChoices.map((m) => (
                 <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
-                  {travelModeIcon(m)} {TRAVEL_MODE_LABEL[m]}
+                  <Icon id={travelModeIcon(m)} /> {TRAVEL_MODE_LABEL[m]}
                 </button>
               ))}
             </div>

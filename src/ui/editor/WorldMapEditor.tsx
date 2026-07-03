@@ -5,6 +5,7 @@ import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travel
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
 import { EffectList } from './EffectList';
+import { Icon } from '../Icon';
 
 /** Libellés des Tailles de communauté (T2C ch.11 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
@@ -391,7 +392,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               {(['pied', ...TRAVEL_VEHICLES.map((v) => v.id)] as TravelMode[]).map((mode) => (
                 <label key={mode} className="ed-check">
                   <input type="checkbox" checked={selRoute.modes.includes(mode)} onChange={() => toggleMode(selRoute, mode)} />
-                  {travelModeIcon(mode)} {TRAVEL_MODE_LABEL[mode] ?? mode}
+                  <Icon id={travelModeIcon(mode)} /> {TRAVEL_MODE_LABEL[mode] ?? mode}
                 </label>
               ))}
               {TRAVEL_VEHICLES.filter((v) => selRoute.modes.includes(v.id)).map((v) => (

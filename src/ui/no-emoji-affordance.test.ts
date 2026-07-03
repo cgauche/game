@@ -47,7 +47,6 @@ const EXCEPTIONS = new Set<string>([
   'src/data/psychology.json',
   'src/data/qualities.json',
   'src/data/talents.json',
-  'src/data/vehicles.json',
   // Outillage console DEV (sortie texte de recette Playwright, jamais rendue dans l'UI).
   'src/state/devtools.ts',
   // Journaux/narration côté state : préfixes d'événements de log non migrés (LOT suivant).

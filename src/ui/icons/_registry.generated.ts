@@ -12,6 +12,7 @@ import { icons as e7 } from './defs/nav';
 import { icons as e8 } from './defs/resource';
 import { icons as e9 } from './defs/scenario';
 import { icons as e10 } from './defs/time';
-import { icons as e11 } from './defs/ui';
+import { icons as e11 } from './defs/travel';
+import { icons as e12 } from './defs/ui';
 
-export const ICON_FAMILIES: IconFamily[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11];
+export const ICON_FAMILIES: IconFamily[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12];
