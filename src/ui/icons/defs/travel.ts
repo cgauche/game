@@ -78,10 +78,11 @@ export const icons: IconFamily = [
   {
     id: 'travel/mount',
     label: 'En selle',
-    // Cheval de profil : tête baissée museau tendu, encolure, dos, croupe et quatre jambes campées.
+    // Tête et encolure de cheval en « cavalier d'échecs » : oreille dressée, chanfrein concave, museau
+    // saillant, encolure arquée et crinière, posée sur un socle. Silhouette monochrome NON ambiguë avec
+    // un sanglier (dont la tête basse groin-en-avant piégeait l'ancien dessin).
     svg:
-      `<path ${F} d="M3.2 8.6 C3.8 7.9 4.7 7.6 5.7 7.9 C5.5 7.1 5.7 6.4 6.3 5.9 C6.5 6.6 6.9 7.1 7.6 7.4 C8.5 6.4 9.7 5.9 11.1 5.9 C12.2 5.9 13 5.5 13.6 4.7 C14.4 5.5 15.7 6 17.4 6 C18.9 6 20 6.9 20.6 8.6 C21 9.8 21 11.2 20.6 12.8 C20.2 14.4 19.4 15.7 18.3 16.6 L18.3 12.9 C17 13.6 15.5 14 13.8 14 C12.4 14 11.1 13.7 9.9 13.1 C8.4 12.4 7.2 11.3 6.4 9.9 C5.1 10.2 4 9.8 3.2 8.6 Z"/>` +
-      `<path ${K} d="M7.3 13.9 V17.4 M10.6 14 V17.4 M14.9 14 V17.4 M18.3 14.4 V17.4"/>`,
+      `<path ${F} d="M10 3 C10.6 4.4 10.7 5.7 10.3 7 C11.7 6.6 12.9 7.1 13.7 8.1 C14.7 9.4 15.1 11.2 15.1 13.4 L15.1 16.5 C15.1 17.4 15.6 18.1 16.5 18.5 L16.5 19.7 L6.4 19.7 L6.4 18.5 C7.3 18.1 7.8 17.4 7.8 16.5 L7.8 13.4 C6.3 14.2 4.8 14.2 3.4 13.4 C4.3 11.5 5.5 9.9 7.2 8.8 L5 8.1 C5.7 7 6.7 6.3 8 6.1 C8 4.9 8.3 3.9 8.9 3 Z"/>`,
   },
   {
     id: 'travel/anchor',
