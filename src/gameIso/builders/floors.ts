@@ -160,7 +160,11 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
   // route du dessous reste visible ; une falaise de TERRAIN PLEIN garde sa face pleine.
   for (const side of SIDES) {
     const [dx, dy] = NEIGHBOURS[side];
-    const nb = displayHeightAt(scene, x + dx, y + dy, z); // voisin en hauteur d'AFFICHAGE (mur voisin = bloc plein)
+    // Voisin en hauteur d'AFFICHAGE : le SOMMET réel de la case voisine, TOUTES COUCHES confondues (mur voisin
+    // = bloc plein). CRUCIAL au raccord chemin-de-ronde ↔ rampe : le sol z1 (dessus du mur) ne doit PAS voir
+    // le `vide` z1 au-dessus de la rampe (row 39) mais la RAMPE z0 à 4 m → sinon il trace une falaise pleine
+    // 4→0 qui, dessinée après (z1 gagne le départage à base égale), RECOUVRE la rampe qui est DEVANT.
+    const nb = Math.max(...scene.layers.map((l) => displayHeightAt(scene, x + dx, y + dy, l.z)));
     if (self <= nb) continue; // la case HAUTE porte la paroi (plateau surélevé ET rebord de fosse)
     const grade = gradeBetween(self, nb);
     if (grade === 'flat') continue; // de niveau → aucune paroi
