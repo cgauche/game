@@ -89,7 +89,10 @@ UN composant par-héros (picker d'activité + détail `<Prose>` + prérequis), r
 - **S2 — kind `battleScene`.** `Scene.stations` + `battleScenesToStations` + embed dans `MassBattleView` +
   affectation explicite (via E3), **sur le modèle plat existant**. Remplace la liste plate. Vérif navigateur
   (`bataille-de-masse`).
-- **C1 — Composant d'affectation d'activité.** Dédup interlude/voyage/mer. Vérif navigateur (interlude + mer).
+- ~~**C1 — Composant d'affectation d'activité (fusion des 3 pickers)**~~ — **RAMENÉ À NÉANT** (mirage, §7ter).
+  L'unification était DÉJÀ livrée par E1 (`activitiesFor(ctx)` + `TestSpec`) ; les 3 surfaces sont
+  légitimement divergentes par CADENCE (interlude = panneaux bespoke + `CatalogPane` à jet immédiat ;
+  mer = batch hebdo `<Prose>`+mise ; voyage = rôle PERSISTANT engine-résolu par Étape, EDOC ch.5). Rien à fusionner.
 
 Ordre : **E1 → E3 → S1 → S2 → C1** (E3 pur remonté ; S1+S2 gardés ADJACENTS pour que `battleScene` façonne le
 registre `StationKind` en même temps que `poste`, évitant une abstraction spéculative à un seul implémenteur —
@@ -99,7 +102,7 @@ registre `StationKind` en même temps que `poste`, évitant une abstraction spé
 
 - `bestForSkills` comme MÉCANISME → défaut seulement (E3).
 - Liste de scènes/activités en boutons plats de `MassBattleView` → `StationSheet` (S2).
-- Les 3 pickers d'activité divergents → 1 composant (C1).
+- ~~Les 3 pickers d'activité divergents → 1 composant (C1)~~ — **abandonné** (mirage, §7ter) : déjà unifié en E1.
 - Triplication du descripteur de Test → `TestSpec` (E1).
 - ⚠ *Séparé, NON bundlé* : `BattleTestModal` (`openBattleTest`) parallèle à `RollFlowShell` — dedup candidate
   à évaluer APRÈS (l'exprimer en flux de jet partagé), hors de ce chantier.
@@ -127,9 +130,34 @@ catégorie**, prouvée dans le code :
   l'Avantage) sur une abstraction qui n'en a pas.
 
 Conclusion : le garde-fou « `GameOp` = langue des EFFETS » **ne s'applique pas** à une carac d'armée testable.
-Le modèle plat + moteur pur EST correct. **E2 supprimé ; S2/E3/C1 n'en dépendaient pas.** *(Les `GameOp` restent
+Le modèle plat + moteur pur EST correct. **E2 supprimé ; S2/E3 n'en dépendaient pas.** *(Les `GameOp` restent
 pertinents pour les effets sur les HÉROS d'une scène — soin de ralliement, dégâts d'un combat tactique — déjà
 couverts par les chemins normaux.)*
+
+## 7ter. Pourquoi C1 (fusion des 3 pickers d'activité) a été RAMENÉ À NÉANT (vérif directe du code)
+
+Prémisse initiale : « 3 pickers d'activité divergents (interlude/voyage/mer) → 1 composant ». **Mirage**, prouvé
+en lisant les trois UI :
+
+- **L'unification utile est DÉJÀ faite (E1).** Le catalogue est UNIQUE : `activitiesFor(ctx)` (`engine/activities`) ;
+  `interludeCatalog` = `activitiesFor('interlude')` + gate géo, `seaActivitiesCatalog` = `activitiesFor('mer')`
+  (alias trivial). `TestSpec` (E1) partage déjà le descripteur de Test. Il ne reste RIEN à mutualiser au niveau
+  catalogue/moteur.
+- **Les 3 UI divergent par CADENCE, pas par duplication.** *Interlude* (`InterludeScreen`) = 6 panneaux BESPOKE
+  codés (Revenus/Artisanat/Apprentissage/Commande/Banque/Identifier) + un `CatalogPane` riche par résolveur
+  (masterWeapon/identify/memorize, pré-jet, **jet immédiat** via `interludeActivity`). *Mer* (`SeaActivitiesModal`)
+  = batch hebdo (l.268), cartes par héros, `<Prose>` + mise, résolu au **confirm de fin de semaine**. *Voyage*
+  (`TravelRolesPanel`) = grille `OptionChooser` de **rôle PERSISTANT** (`travelRole`, EDOC ch.5 « les mêmes tiennent
+  toujours le même poste »), **engine-résolu par Étape** (`stageAssignmentFromRoles`→`resolveStageActivities`) — le
+  picker AFFECTE un rôle, il n'EXÉCUTE rien, donc ni détail ni jet au clic (correct, pas un manque accidentel).
+- **Aucune surface partagée au-delà de `<Prose>`** (déjà une primitive). `CatalogPane` (interlude, jet immédiat +
+  ciblage par résolveur) et le détail de `SeaActivitiesModal` (Prose + mise, batch) ne partagent que `<Prose md=…>`.
+  Extraire un « composant commun » fabriquerait une fausse communauté à branches de cadence — l'anti-pattern que
+  le garde-fou §3bis (orchestrateur/machinerie) proscrit.
+
+Conclusion : **la « colonne vertébrale » des activités est déjà partagée (E1) ; les 3 surfaces sont légitimement
+distinctes par cadence** (une-passe/jet immédiat · batch hebdo · rôle persistant). C1 ne construit rien — le
+forcer serait de la sur-ingénierie. Chantier livré = **E1 + E3 + S1 + S2**.
 
 ## 5. Ancrages RAW & garde-fous
 
