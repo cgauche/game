@@ -1,7 +1,8 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
 import { formatMoney, fromBrass, toBrass, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
+import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, interludeCatalog, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout,
@@ -11,14 +12,20 @@ import type { GameOp } from '../engine/ops';
 import { learnableSpells } from '../engine/grimoire';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { QUALITY_DESC, describeQuality } from '../engine/qualities/describe';
-import { findTalent, skillInstanceLabel, findTrappingById, qualities, refLabel, conditionLabel } from '../data';
-import type { Combatant } from '../engine/types';
+import { findTalent, findSkillById, skillInstanceLabel, findTrappingById, qualities, refLabel } from '../data';
+import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
 import { ActiveModal } from './ActiveModal';
 import { TavernGameModal } from './TavernGameModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
+import { Coins } from './Coins';
+import { EffectChips } from './EffectChips';
+import { EntityRef } from './EntityChip';
+import { FxChip } from './FxChip';
+import { GameDate } from './GameDate';
 import { Icon } from './Icon';
+import type { IconId } from './icons';
 import { Prose, mdToText } from './Prose';
 import { t } from '../i18n';
 
@@ -35,7 +42,11 @@ const FAMILY_LABEL: Record<string, string> = {
   armor: 'Armures', trapping: 'Équipement', vehicle: 'Véhicules',
 };
 
+/** Montant en TEXTE (attributs `title`, contenu d'`<option>` — HTML texte seul) ; tout AFFICHAGE
+ *  passe par `<Coins>` (source visuelle unique des montants, LOT 5). */
 const fmt = (brass: number) => formatMoney(fromBrass(brass));
+/** Montant AFFICHÉ : le rendu coloré unique. */
+const CoinsB = ({ brass }: { brass: number }) => <Coins money={fromBrass(brass)} />;
 
 /** Vue réseau minimale pour la possession (audit M7) — sous-ensemble de `GameState['net']`. */
 export interface InterludeNet {
@@ -105,7 +116,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
       <div className="menu-card interlude-card">
         <h1 className="title">{t('interlude.title')}</h1>
         <p className="subtitle">
-          {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} · Bourse du groupe {formatMoney(money)}
+          {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} · Bourse du groupe <Coins money={money} />
         </p>
         <div className="rule-fleur" aria-hidden>⚜</div>
         {phase === 'events' ? (
@@ -170,18 +181,19 @@ function TavernGamesEntry() {
   );
 }
 
-/** Conséquences mécaniques d'un événement, en clair (LDB 22). */
-function fxChips(fx: InterludeEventFx | undefined, weeks: number, hero: Combatant): string[] {
-  const chips: string[] = [];
-  if (fx?.moneyPct) chips.push(`${fx.moneyPct} % sur la bourse du groupe (pire tirage appliqué une fois)`);
-  if (fx?.loseActivity) chips.push('−1 Activité');
-  if (fx?.fortuneMaxDelta) chips.push(`+${fx.fortuneMaxDelta} Point de Chance`);
-  if (fx?.revenuePct) chips.push(`Revenus ${fx.revenuePct > 0 ? '+' : ''}${fx.revenuePct} %${fx.revenueClasses ? ` (${fx.revenueClasses.join(', ')})` : ''}`);
-  if (fx?.revenueBlockedClasses) chips.push(fx.revenueBlockedClasses.includes('*') || fx.revenueBlockedClasses.includes(heroClass(hero)) ? 'Revenus impossibles cette période' : `Revenus bloqués pour : ${fx.revenueBlockedClasses.join(', ')}`);
-  if (fx?.bankPct) chips.push(`${fx.bankPct} % sur l'argent placé en banque`);
-  if (fx?.stashRaided) chips.push('Planque dévalisée !');
-  if (fx?.bankCrashCheck) chips.push('Les banques vérifient leur faillite immédiatement');
-  if (weeks >= 3 && /elfe/i.test(hero.species ?? '')) chips.push('−1 Activité (devoir elfique)');
+/** Conséquences mécaniques d'un événement, STRUCTURÉES (LDB 22) : les ops sont de la donnée, ceci
+ *  est un RENDU — chaque conséquence porte son icône du registre (`<FxChip>`), aucun parsing. */
+function fxChips(fx: InterludeEventFx | undefined, weeks: number, hero: Combatant): { icon: IconId; label: string }[] {
+  const chips: { icon: IconId; label: string }[] = [];
+  if (fx?.moneyPct) chips.push({ icon: 'resource/gold-purse', label: `${fx.moneyPct} % sur la bourse du groupe (pire tirage appliqué une fois)` });
+  if (fx?.loseActivity) chips.push({ icon: 'nav/activity', label: '−1 Activité' });
+  if (fx?.fortuneMaxDelta) chips.push({ icon: 'resource/fortune', label: `+${fx.fortuneMaxDelta} Point de Chance` });
+  if (fx?.revenuePct) chips.push({ icon: 'resource/gold-purse', label: `Revenus ${fx.revenuePct > 0 ? '+' : ''}${fx.revenuePct} %${fx.revenueClasses ? ` (${fx.revenueClasses.join(', ')})` : ''}` });
+  if (fx?.revenueBlockedClasses) chips.push({ icon: 'resource/gold-purse', label: fx.revenueBlockedClasses.includes('*') || fx.revenueBlockedClasses.includes(heroClass(hero)) ? 'Revenus impossibles cette période' : `Revenus bloqués pour : ${fx.revenueBlockedClasses.join(', ')}` });
+  if (fx?.bankPct) chips.push({ icon: 'resource/gold-purse', label: `${fx.bankPct} % sur l'argent placé en banque` });
+  if (fx?.stashRaided) chips.push({ icon: 'ui/warning', label: 'Planque dévalisée !' });
+  if (fx?.bankCrashCheck) chips.push({ icon: 'ui/warning', label: 'Les banques vérifient leur faillite immédiatement' });
+  if (weeks >= 3 && /elfe/i.test(hero.species ?? '')) chips.push({ icon: 'nav/activity', label: '−1 Activité (devoir elfique)' });
   return chips;
 }
 
@@ -205,7 +217,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
               <p className="interlude-event"><strong>{ev.label}.</strong> {ev.text}</p>
               {chips.length > 0 && (
                 <div className="interlude-fx">
-                  {chips.map((c) => <span key={c} className="interlude-fx-chip">{c}</span>)}
+                  {chips.map((c) => <FxChip key={c.label} icon={c.icon} label={c.label} />)}
                 </div>
               )}
             </section>
@@ -256,6 +268,7 @@ function HeroCard({ hero, st, weeks, money, catalog, mecenat, canDrive, ownerNam
       : `${status.standing} couronne${status.standing > 1 ? 's' : ''} d'or`;
   const paneBtn = (key: Pane, label: ReactNode, title: string) => (
     <button
+      key={key}
       className={`btn small${pane === key ? ' btn-primary' : ''}`}
       disabled={!canDrive || (none && pane !== key)}
       onClick={() => setPane(pane === key ? null : key)}
@@ -342,9 +355,19 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     : null;
   const uid = targetUid || weapons[0]?.uid || artefacts[0]?.uid || '';
   const spell = spellId || spellOptions[0]?.spell.id || '';
-  const testLine = def.skills?.length
-    ? `Test de ${def.skills.map((s) => refLabel('skills', { id: s.skillId })).join(' ou ')} ${DIFFICULTY_LABELS[def.difficulty ?? 'intermediaire']}`
-    : null;
+  // Compétences du Test en chips Codex (popover desc + source) — plus de libellé texte nu.
+  const testLine = def.skills?.length ? (
+    <>
+      Test de{' '}
+      {def.skills.map((s, i) => (
+        <Fragment key={s.skillId}>
+          {i > 0 && ' ou '}
+          <EntityRef category="skills" label={refLabel('skills', { id: s.skillId })} />
+        </Fragment>
+      ))}{' '}
+      {DIFFICULTY_LABELS[def.difficulty ?? 'intermediaire']}
+    </>
+  ) : null;
   return (
     <div className="interlude-pane">
       {def.desc && <div className="interlude-pane-desc"><Prose md={def.desc} /></div>}
@@ -470,14 +493,20 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
   const affordable = !sel || toBrass(money) >= sel.materialsBrass;
   const toggle = (list: string[], setList: (v: string[]) => void, q: string) =>
     setList(list.includes(q) ? list.filter((x) => x !== q) : [...list, q]);
-  const blockedReason = !metier
+  // Titre (attribut texte) et message (affiché : montant en <Coins>) portent la même raison.
+  const blockedTitle = !metier
     ? 'Aucune Compétence Métier avec avances — impossible de fabriquer.'
     : !affordable && sel
       ? `Matériaux trop chers (${fmt(sel.materialsBrass)}) pour la bourse du groupe.`
       : null;
+  const blockedMsg = !metier
+    ? <>Aucune Compétence Métier avec avances — impossible de fabriquer.</>
+    : !affordable && sel
+      ? <>Matériaux trop chers (<CoinsB brass={sel.materialsBrass} />) pour la bourse du groupe.</>
+      : null;
   return (
     <div className="interlude-pane">
-      {!metier && <p className="interlude-blocked">{blockedReason}</p>}
+      {!metier && <p className="interlude-blocked">{blockedMsg}</p>}
       <TrappingSelect options={catalog} value={id} onChange={setId} />
       <div className="interlude-craft-q">
         {ATOUTS.map((q) => (
@@ -493,20 +522,22 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
       </div>
       {sel && target && (
         <p className="interlude-detail">
-          Matériaux <b>{fmt(sel.materialsBrass)}</b> (¼ du prix, payés à l'engagement) · Test étendu de{' '}
-          <b>{metier ? skillInstanceLabel(metier) : 'Métier'}</b> {DIFFICULTY_LABELS[target.difficulty]} · <b>{target.dr} DR</b> à cumuler
+          Matériaux <b><CoinsB brass={sel.materialsBrass} /></b> (¼ du prix, payés à l'engagement) · Test étendu de{' '}
+          {metier
+            ? <EntityRef category="skills" label={findSkillById(metier.skillId)?.label ?? metier.skillId} show={skillInstanceLabel(metier)} />
+            : <b>Métier</b>} {DIFFICULTY_LABELS[target.difficulty]} · <b>{target.dr} DR</b> à cumuler
           (1 lancer par Activité).
         </p>
       )}
       <button
         className="btn small btn-primary"
         disabled={disabled || !sel || !metier || !affordable}
-        title={blockedReason ?? 'Achète les matériaux et installe l’ouvrage (le travail inachevé se conserve)'}
+        title={blockedTitle ?? 'Achète les matériaux et installe l’ouvrage (le travail inachevé se conserve)'}
         onClick={() => sel && craftStart(hero.id, sel.id, atouts, defauts)}
       >
-        Engager l'ouvrage{sel ? ` (${fmt(sel.materialsBrass)})` : ''}
+        Engager l'ouvrage{sel && <> (<CoinsB brass={sel.materialsBrass} />)</>}
       </button>
-      {metier && !affordable && sel && <p className="interlude-blocked">{blockedReason}</p>}
+      {metier && !affordable && sel && <p className="interlude-blocked">{blockedMsg}</p>}
     </div>
   );
 }
@@ -525,7 +556,6 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
   const failCount = sel ? fails?.[sel.id] ?? 0 : 0;
   const xpOk = !sel || xp >= sel.xpCost;
   const purseOk = !sel || toBrass(money) >= sel.tutorMinBrass;
-  const desc = sel ? mdToText(findTalent(sel.label)?.desc ?? '') : '';
   return (
     <div className="interlude-pane">
       <input className="interlude-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔎 Filtrer les talents…" aria-label="Filtrer les talents" />
@@ -537,9 +567,9 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
         ))}
       </select>
       {sel && (
-        <p className="interlude-detail" title={desc}>
-          {desc ? `${desc.slice(0, 140)}${desc.length > 140 ? '…' : ''} — ` : ''}
-          Test <b>Difficile (−20)</b>{failCount ? <> (+{failCount * 10} d'acharnement)</> : null} · coût <b>{sel.xpCost} PX</b> (il vous en reste {xp})
+        <p className="interlude-detail">
+          {/* Le talent en chip Codex : la description vit dans le popover (plus d'extrait tronqué). */}
+          <EntityRef category="talents" label={sel.label} /> — Test <b>Difficile (−20)</b>{failCount ? <> (+{failCount * 10} d'acharnement)</> : null} · coût <b>{sel.xpCost} PX</b> (il vous en reste {xp})
           + tuteur <b>2d10 pa / 100 PX</b> — PX et argent perdus même sur un échec.
         </p>
       )}
@@ -567,7 +597,7 @@ function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
       <TrappingSelect options={catalog} value={id} onChange={setId} />
       {sel && (
         <p className="interlude-detail">
-          Payé <b>{fmt(sel.priceBrass)}</b> maintenant — « l'objet sera achevé après votre prochaine
+          Payé <b><CoinsB brass={sel.priceBrass} /></b> maintenant — « l'objet sera achevé après votre prochaine
           aventure » (livré à l'ouverture du prochain interlude).
         </p>
       )}
@@ -577,7 +607,7 @@ function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
         title={!affordable && sel ? `Commande trop chère (${fmt(sel.priceBrass)})` : 'Passer commande (1 objet par Activité)'}
         onClick={() => sel && order(hero.id, sel.id)}
       >
-        Commander{sel ? ` (${fmt(sel.priceBrass)})` : ''}
+        Commander{sel && <> (<CoinsB brass={sel.priceBrass} />)</>}
       </button>
       {sel && !affordable && <p className="interlude-blocked">La bourse du groupe ne couvre pas ce prix.</p>}
     </div>
@@ -604,7 +634,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
         <button className="btn small" onClick={() => quick(1)} title="Toute la bourse">Tout</button>
       </div>
       <p className="interlude-detail">
-        Bourse du groupe : <b>{formatMoney(money)}</b> · dépôt prévu : <b>{fmt(amountBrass)}</b>
+        Bourse du groupe : <b><Coins money={money} /></b> · dépôt prévu : <b><CoinsB brass={amountBrass} /></b>
         {amountBrass > purseBrass && <span className="interlude-blocked"> (au-delà de la bourse)</span>}
       </p>
       <div className="interlude-actions">
@@ -675,8 +705,8 @@ function BankList({ bank, party, interlude, canDrive }: {
                     ? 'Retirer (1 Activité) : Test d’Évaluation Intermédiaire (+0) — rendu de 120 % à la perte totale (Mécénat, ACE p.220)'
                     : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur 🎲 ≤ 10`}
           >
-            {b.kind === 'invest' ? '🏦' : b.kind === 'mecenat' ? '🎭' : '🕳️'} {owner?.name} : {fmt(b.brass)}
-            {b.kind === 'invest' ? ` → ${fmt(bankPayout('invest', b.brass, b.rate))} (Indice ${b.rate})` : ''} — Retirer
+            {b.kind === 'invest' ? '🏦' : b.kind === 'mecenat' ? '🎭' : '🕳️'} {owner?.name} : <CoinsB brass={b.brass} />
+            {b.kind === 'invest' && <> → <CoinsB brass={bankPayout('invest', b.brass, b.rate)} /> (Indice {b.rate})</>} — Retirer
           </button>
         );
       })}
@@ -694,6 +724,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
   onCancel: () => void;
 }) {
   const end = useGame((s) => s.interludeEnd);
+  const gameTime = useGame((s) => s.gameTime);
   const wasted = toBrass(money);
   const revenue = heroes.reduce((a, h) => a + (interlude.perHero[h.id]?.revenueBrass ?? 0), 0);
   const demoted = heroes.filter((h) => (h.careerLevel ?? 1) >= 3 && !interlude.perHero[h.id]?.didRevenus);
@@ -704,11 +735,11 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
       <ul className="interlude-recap-list">
         <li>
           💸 {wasted > 0
-            ? <><b>{fmt(wasted)}</b> seront dépensés, bus, pariés ou donnés — en totalité (« Argent à gaspiller »).</>
+            ? <><b><CoinsB brass={wasted} /></b> seront dépensés, bus, pariés ou donnés — en totalité (« Argent à gaspiller »).</>
             : 'La bourse est vide — rien à gaspiller.'}
         </li>
-        <li>💰 Revenus crédités à la reprise : <b>{revenue > 0 ? fmt(revenue) : 'aucun'}</b>.</li>
-        {kept > 0 && <li>🏦 Dépôts conservés : <b>{fmt(kept)}</b> (récupérables à un prochain interlude).</li>}
+        <li>💰 Revenus crédités à la reprise : <b>{revenue > 0 ? <CoinsB brass={revenue} /> : 'aucun'}</b>.</li>
+        {kept > 0 && <li>🏦 Dépôts conservés : <b><CoinsB brass={kept} /></b> (récupérables à un prochain interlude).</li>}
         {pendingOrders.length > 0 && (
           <li>📦 Commandes en cours : {pendingOrders.map((o) => findTrappingById(o.trappingId)?.label ?? o.trappingId).join(', ')} — livrées au prochain interlude.</li>
         )}
@@ -721,14 +752,23 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
             Carrière (« Avec le pouvoir »).
           </li>
         ))}
-        {heroes.filter((h) => interlude.perHero[h.id]?.closeOps?.length).map((h) => (
-          <li key={`close-${h.id}`} className="interlude-blocked">
-            😮‍💨 {h.name} : {(interlude.perHero[h.id]!.closeOps ?? [])
-              .map((o) => (o.op === 'condition' ? conditionLabel(o.name) : o.op)).join(', ')} au premier
-            jour de la prochaine aventure (Activité échouée).
-          </li>
-        ))}
-        <li><Icon id="time/night" size="sm" /> Le temps passe : {interlude.weeks * 7} jours (récupération et convalescence comprises).</li>
+        {heroes.filter((h) => interlude.perHero[h.id]?.closeOps?.length).map((h) => {
+          // Les ÉTATS réels de clôture passent par la primitive partagée (chips + popover Codex) ;
+          // une op non-État éventuelle reste en clair.
+          const ops = interlude.perHero[h.id]!.closeOps ?? [];
+          const conds = ops.filter((o) => o.op === 'condition').map((o) => ({ name: o.name as ConditionId, value: typeof o.value === 'number' ? o.value : 1 }));
+          const others = ops.filter((o) => o.op !== 'condition');
+          return (
+            <li key={`close-${h.id}`} className="interlude-blocked">
+              {h.name} : <EffectChips conditions={conds} />{others.length > 0 && ` ${others.map((o) => o.op).join(', ')}`} au premier
+              jour de la prochaine aventure (Activité échouée).
+            </li>
+          );
+        })}
+        <li>
+          <Icon id="time/night" size="sm" /> Le temps passe : {interlude.weeks * 7} jours (récupération et
+          convalescence comprises) — reprise <GameDate time={gameTime + interlude.weeks * 7 * MINUTES_PER_DAY} />.
+        </li>
       </ul>
       <div className="modal-actions">
         <button className="btn" onClick={onCancel}>{t('interlude.recap.cancel')}</button>

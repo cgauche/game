@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { evalCondition, conditionCtx } from '../state/flow';
-import { canAfford, formatMoney, toMoney } from '../engine/money';
+import { canAfford, toMoney } from '../engine/money';
+import { Coins } from './Coins';
 import { pickBackend } from '../gameIso/pickBackend';
 
 export function DialogueBox() {
@@ -53,7 +54,7 @@ export function DialogueBox() {
               onClick={() => choose(i)}
             >
               <span className="dlg-choice-text">{c.text}</span>
-              {cost && <span className="dlg-choice-cost">{formatMoney(cost)}</span>}
+              {cost && <span className="dlg-choice-cost"><Coins money={cost} /></span>}
             </button>
           );
         })}

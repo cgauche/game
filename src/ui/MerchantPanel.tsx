@@ -1,7 +1,7 @@
 import { useState, useMemo, Fragment } from 'react';
 import { useGame } from '../state/store';
 import { findTrappingById, weaponGroupLabel, type QualityRef } from '../data/index';
-import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, add as moneyAdd, type Money } from '../engine/money';
+import { priceToMoney, fromBrass, toBrass, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
@@ -73,10 +73,10 @@ function lineCost(id: string, factor: number): Money | null {
 }
 
 /** Coût de réparation d'un objet endommagé — armure (LDB 63 l.97-98) ou arme (LDB 62 l.135). */
-function repairPrice(item: ItemInstance): string {
+function repairCost(item: ItemInstance): Money {
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;
-  return formatMoney(fromBrass(itemRepairCostBrass(item, base)));
+  return fromBrass(itemRepairCostBrass(item, base));
 }
 
 const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', same: '' };
@@ -291,7 +291,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
               : <button className="btn small" onClick={onClearCart}>Vider le panier</button>}
             <button className="btn btn-primary" disabled={!affordCart} title={affordCart ? undefined : 'Bourse insuffisante'} onClick={onPay}>Payer <Coins money={cartTotal} /></button>
           </div>
-          {!affordCart && <p className="cart-warn">Bourse insuffisante ({formatMoney(money)}).</p>}
+          {!affordCart && <p className="cart-warn">Bourse insuffisante (<Coins money={money} />).</p>}
         </>
       )}
     </div>
@@ -306,7 +306,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       <div className="merch-tab">
         <div className="cart-bar">
           {cartCount > 0
-            ? <><span className="cart-info">🛒 {cartCount} article{cartCount > 1 ? 's' : ''} · {formatMoney(cartTotal)}</span><button className="btn small btn-primary" onClick={() => setBuyView('cart')}>Voir le panier →</button></>
+            ? <><span className="cart-info">🛒 {cartCount} article{cartCount > 1 ? 's' : ''} · <Coins money={cartTotal} /></span><button className="btn small btn-primary" onClick={() => setBuyView('cart')}>Voir le panier →</button></>
             : <span className="cart-info empty">🛒 Panier vide</span>}
           {onSearchAvailability && (
             <button className="btn small" onClick={onSearchAvailability} title="Passer une journée entière à écumer les étals (Test de Ragot) : réassort frais, Disponibilité +10 % si le Ragot réussit (LDB 59 l.50)">
@@ -415,7 +415,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       <>
         <div className="cart-bar">
           {sellCart.length > 0
-            ? <><span className="cart-info">🛒 {sellCart.length} à vendre · +{formatMoney(sellCartTotal)}</span><button className="btn small btn-primary" onClick={() => setSellView('cart')}>Voir le panier →</button></>
+            ? <><span className="cart-info">🛒 {sellCart.length} à vendre · +<Coins money={sellCartTotal} /></span><button className="btn small btn-primary" onClick={() => setSellView('cart')}>Voir le panier →</button></>
             : <span className="cart-info empty">🛒 Rien à vendre sélectionné</span>}
         </div>
         <div className="merch-subtabs" role="tablist">
@@ -583,7 +583,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
               {damaged.map(({ h, it }) => (
                 <div className="merch-row repair" key={it.uid}>
                   <span className="merch-name" title={h.name}><TeamPortrait combatant={h} size={20} /> {it.name}</span>
-                  <span className="merch-price">{repairPrice(it)}</span>
+                  <span className="merch-price"><Coins money={repairCost(it)} /></span>
                   <button className="btn small" onClick={() => onRepair(it.uid, h.id)}>Réparer</button>
                 </div>
               ))}

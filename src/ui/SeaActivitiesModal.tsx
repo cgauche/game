@@ -9,7 +9,8 @@ import {
 } from '../state/seaActivities';
 import { findVehicleById } from '../data';
 import { cargoTotalEnc } from '../engine/seaVoyage';
-import { formatMoney, toBrass, PA_PER_CO } from '../engine/money';
+import { toBrass, PA_PER_CO } from '../engine/money';
+import { Coins } from './Coins';
 
 /**
  * ACTIVITÉS EN MER (MDG 15 l.266-306) — modale hebdomadaire (semaine de 8 jours, l.268) : chaque
@@ -89,7 +90,7 @@ export function SeaActivitiesModal() {
           );
         })}
       </div>
-      <p className="sea-act-purse">Bourse du groupe : <b>{formatMoney(money)}</b> · Cale libre : <b>{freeEnc} Enc</b></p>
+      <p className="sea-act-purse">Bourse du groupe : <b><Coins money={money} /></b> · Cale libre : <b>{freeEnc} Enc</b></p>
       <div className="modal-actions">
         <button type="button" className="btn btn-primary" onClick={() => confirm(picks)}>Valider la semaine</button>
       </div>

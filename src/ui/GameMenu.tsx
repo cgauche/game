@@ -1,17 +1,20 @@
 import { useState, type ReactNode } from 'react';
-import { formatMoney, type Money } from '../engine/money';
+import { type Money } from '../engine/money';
+import { Coins } from './Coins';
+import { GameDate } from './GameDate';
 import { t } from '../i18n';
 
 /**
  * Menu ☰ du jeu (haut-gauche, COMBAT et EXPLORATION — mobile-first). Regroupe ce qui a quitté
- * l'écran : nom de la scène, Bourse, date complète du Calendrier Impérial, et « Quitter la partie »
- * (retour à l'écran de groupe — parité avec l'ancien bouton toujours visible). `initialOpen` = aide
- * de test. Pur à props.
+ * l'écran : nom de la scène, Bourse (`<Coins>`), date complète du Calendrier Impérial
+ * (`<GameDate>`), et « Quitter la partie » (retour à l'écran de groupe — parité avec l'ancien
+ * bouton toujours visible). `initialOpen` = aide de test. Pur à props.
  */
-export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onEndSession, onHouseRules, onOptions, coop, initialOpen = false }: {
+export function GameMenu({ sceneName, money, time, onQuit, onSaveLoad, onEndSession, onHouseRules, onOptions, coop, initialOpen = false }: {
   sceneName?: string;
   money: Money;
-  dateLine: string;
+  /** Horloge de campagne (minutes depuis l'époque) — rendue par `<GameDate>`. */
+  time: number;
   onQuit: () => void;
   /** Ouvre la modale Sauvegarder/Charger (Jalon 5) — absent en combat (sauvegarde refusée). */
   onSaveLoad?: () => void;
@@ -34,10 +37,10 @@ export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onEnd
       {open && (
         <div className="gm-panel">
           {sceneName && <h3 className="gm-scene">{sceneName}</h3>}
-          <div className="gm-date">{dateLine}</div>
+          <div className="gm-date"><GameDate time={time} /></div>
           <div className="gm-section">
             <span className="mini-title">{t('gameMenu.purse')}</span>
-            <span className="coins">{formatMoney(money)}</span>
+            <Coins money={money} />
           </div>
           {coop}
           {onSaveLoad && (

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { formatImperial, toDate, dayPhase } from '../engine/clock';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { IsoStage } from '../gameIso/IsoStage';
 import { PovStage } from '../gameIso/pov/PovStage';
@@ -99,11 +98,6 @@ export function CampaignView() {
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
   const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
   const [sessionOpen, setSessionOpen] = useState(false); // écran de fin de séance (Ambitions/Détermination)
-  const clockDate = toDate(gameTime);
-  const phase = dayPhase(gameTime);
-  // `phase.icon` est désormais un id d'icône (`time/*`, registre src/ui/icons) — GameMenu peut le
-  // rendre via <Icon> ; la ligne de date reste du texte pur.
-  const dateLine = `${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
   const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
   // Dock : version « vivante » des héros en combat (PB/effets à jour), sinon la party.
   // Le dock (portraits du haut) liste les héros PUIS les navires alliés (couche Mer) : cliquer un navire ouvre SA
@@ -176,7 +170,7 @@ export function CampaignView() {
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
             la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
         {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
-        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><AudioControls /></>} />
+        <GameMenu sceneName={scene?.nom} money={money} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><AudioControls /></>} />
         {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {sessionOpen && <SessionEndModal onClose={() => setSessionOpen(false)} />}
         {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}

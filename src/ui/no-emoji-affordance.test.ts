@@ -155,8 +155,6 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/compendium/CodexEdit.tsx',
   'src/ui/compendium/CodexRef.tsx',
   'src/ui/compendium/CompendiumScreen.tsx',
-  'src/ui/creator/CharacterCreator.tsx',
-  'src/ui/creator/CreatorSummary.tsx',
   'src/ui/jetProps/useAttackJetProps.tsx',
   'src/ui/jetProps/useExtendedTestJetProps.tsx',
   'src/ui/jetProps/useFumbleJetProps.tsx',

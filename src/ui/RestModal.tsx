@@ -9,7 +9,7 @@ import { lodgingOptions, foodOptions, restCost, type RestLodging, type RestFood 
 import { weatherExposure, exposureTestCount, partyHasTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
-import { formatImperial } from '../engine/clock';
+import { GameDate } from './GameDate';
 import { ownsLocally } from '../state/netFlow';
 import type { Combatant } from '../engine/types';
 
@@ -66,7 +66,7 @@ export function RestModal() {
       <Modal title={title} variant="plain" className="rest-modal" onClose={restContinue}>
         {p.slept && (
           <p className="rest-time">
-            🕐 {formatImperial(p.slept.from)} → {formatImperial(p.slept.to)}
+            <GameDate time={p.slept.from} /> → <GameDate time={p.slept.to} />
             <span className="rest-time-len"> · {Math.round((p.slept.to - p.slept.from) / 60)} h</span>
           </p>
         )}

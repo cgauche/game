@@ -45,7 +45,7 @@ import { bonus } from '../../engine/characteristics';
 import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
 import { formatSpellRange, formatSpellDuration } from '../../engine/spellRangeFormat';
-import { formatMoney } from '../../engine/money';
+import { Coins } from '../Coins';
 import { makeRNG } from '../../engine/dice';
 import { generateName } from '../../engine/names';
 import { CharacterPreview } from '../CharacterPreview';
@@ -1062,7 +1062,7 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
           Standing. Le jet est figé.
         </p>
         <p style={{ margin: 0 }}>
-          Bourse : <b>{formatMoney(wealth)}</b> (au groupe)
+          Bourse : <b><Coins money={wealth} /></b> (au groupe)
         </p>
       </Section>
       {careerTrappings.some((t) => 'text' in t && t.text === 'Arme (Au choix)') && (
@@ -1222,7 +1222,7 @@ export function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main:
             <p className="recap-meta">Ambitions : {d.ambitionShort || '—'} / {d.ambitionLong || '—'}</p>
           )}
           <p className="recap-meta">
-            Richesse initiale : <b>{formatMoney(wealth)}</b> (créditée au groupe).
+            Richesse initiale : <b><Coins money={wealth} /></b> (créditée au groupe).
           </p>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
 import { listSaves, readSlot, deleteSlot, exportSave, SAVE_SLOTS, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveMeta } from '../state/saves';
 import { downloadText } from '../state/fileIo';
-import { formatImperial } from '../engine/clock';
+import { GameDate } from './GameDate';
 import { Modal } from './Modal';
 import { t } from '../i18n';
 
@@ -45,7 +45,7 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
       <div className="save-slot-meta">
         <strong>{label}</strong>
         {m ? (
-          <span className="save-slot-info">{m.sceneLabel} · {formatImperial(m.gameTime)} · {new Date(m.savedAt).toLocaleString('fr-FR')}</span>
+          <span className="save-slot-info">{m.sceneLabel} · <GameDate time={m.gameTime} /> · {new Date(m.savedAt).toLocaleString('fr-FR')}</span>
         ) : (
           <span className="save-slot-info empty">{t('saveload.slot.empty')}</span>
         )}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { findLandCargoById } from '../engine/landCargo';
 import { cargoTotalEnc } from '../engine/cargo';
-import { formatMoney } from '../engine/money';
+import { Coins } from './Coins';
 
 /**
  * ÉCRAN MARCHÉ TERRESTRE (Mort sur le Reik Compagnon ch.11 « Règles du commerce ») — commerce de cargaison à
@@ -34,7 +34,7 @@ export function LandMarketView() {
         <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
       </div>
       <div className="port-tabs">
-        <span className="port-purse">Bourse : <b>{formatMoney(money)}</b></span>
+        <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
         <span className="port-purse">Convoi : <b>{carried} Enc</b></span>
       </div>
 

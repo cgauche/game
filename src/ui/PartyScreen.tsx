@@ -7,7 +7,8 @@ import { downloadText, fileSlug } from '../state/fileIo';
 import { campaign } from '../scenes/campaign';
 import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
-import { Money, formatMoney } from '../engine/money';
+import { Money } from '../engine/money';
+import { Coins } from './Coins';
 import { CharCard } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
 import { Icon } from './Icon';
@@ -473,7 +474,7 @@ export function PartyPicker({
             {roster.map(({ hero, wealth }) => (
               <div key={hero.id} className="pregen-row">
                 <CharCard hero={hero} compact />
-                <span className="hint">Bourse : {formatMoney(wealth)}</span>
+                <span className="hint">Bourse : <Coins money={wealth} /></span>
                 <button
                   className="btn small btn-primary"
                   disabled={inParty(hero.id)}

@@ -26,7 +26,10 @@ import { formatTrait } from '../engine/traits/dispatch';
 import { formatRemaining } from '../engine/disease';
 import { CodexRef } from './compendium/CodexRef';
 import { CharStatsGrid } from './CharStatsGrid';
+import { CharValue } from './CharValue';
+import { Coins } from './Coins';
 import { TalentChip } from './EntityChip';
+import { WoundsBadge } from './WoundsBadge';
 import { FateChips } from './FateChips';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { EquipmentPanel } from './EquipmentPanel';
@@ -326,7 +329,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                         title={afford ? `Acheter un composant pour ${sp.label} (${formatMoney(cost)})` : `Bourse insuffisante (${formatMoney(cost)})`}
                         onClick={() => buySpellComponent(hero.id, sp.id)}
                       >
-                        + {formatMoney(cost)}
+                        + <Coins money={cost} />
                       </button>
                     </span>
                   </div>
@@ -458,8 +461,8 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
       {section === 'profil' && (<>
         <div className="sheet-vitals">
           <div className="stat-chip pv">
-            <span className="sc-label"><CodexRef category="characteristics" label="Blessure">Blessures</CodexRef></span>
-            <span className="sc-value">{hero.wounds.current}/{hero.wounds.max}</span>
+            <span className="sc-label">Blessures</span>
+            <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
           </div>
           <div className="stat-chip">
             <span className="sc-label"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
@@ -858,7 +861,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
         {v.chars.map((c) => (
           <div className="adv-row" key={c.key}>
             <span className="adv-name">
-              {c.label} <em>{c.value}</em> {pill(c.inCareer)}
+              <CharValue charKey={c.key} value={c.value} /> {pill(c.inCareer)}
             </span>
             <span className="adv-meta">×{c.advances}</span>
             <button className="btn small" disabled={!afford(c.nextCost)} onClick={() => buyCharAdvance(hero.id, c.key)}>

@@ -8,6 +8,7 @@ import { combatantSections } from './compendium/registry';
 import { EffectChips } from './EffectChips';
 import { isFrenzied } from '../engine/psychology';
 import { Icon } from './Icon';
+import { WoundsBadge } from './WoundsBadge';
 
 /**
  * Panneau d'INSPECTION d'un combattant (clic sur l'ordre de bataille) : tête VIVANTE (portrait,
@@ -28,7 +29,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
           <CharFrame c={c} variant="vital" size="lg" />
           <div className="insp-id">
             <h3>{c.name}</h3>
-            <span className="insp-pv-num">{c.wounds.current}/{c.wounds.max} PB</span>
+            <span className="insp-pv-num"><WoundsBadge wounds={c.wounds} /></span>
           </div>
         </div>
 

@@ -7,7 +7,7 @@
  */
 import { useMemo } from 'react';
 import { Combatant } from '../../engine/types';
-import { formatMoney } from '../../engine/money';
+import { Coins } from '../Coins';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { CharacterPreview } from '../CharacterPreview';
 import { Icon } from '../Icon';
@@ -69,7 +69,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
           <Icon id="resource/resilience" size="sm" /> Résilience <b>{hero?.resilience ?? sp.fate.resilience}</b> · Déterm. <b>{hero?.resolve ?? '—'}</b>
         </span>
         <span>
-          <Icon id="resource/gold-purse" size="sm" /> Bourse <b>{formatMoney(wealth)}</b>
+          <Icon id="resource/gold-purse" size="sm" /> Bourse <b><Coins money={wealth} /></b>
         </span>
       </div>
 

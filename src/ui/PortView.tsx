@@ -5,7 +5,8 @@ import { findCargoById } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
-import { formatMoney, canAfford, toMoney } from '../engine/money';
+import { canAfford, toMoney } from '../engine/money';
+import { Coins } from './Coins';
 import { Prose } from './Prose';
 
 /**
@@ -62,7 +63,7 @@ export function PortView() {
       <div className="port-tabs">
         <button type="button" className={`btn small ${tab === 'coque' ? 'btn-primary' : ''}`} onClick={() => setTab('coque')}>🔧 Chantier</button>
         <button type="button" className={`btn small ${tab === 'cargaison' ? 'btn-primary' : ''}`} onClick={() => setTab('cargaison')}>📦 Cargaison</button>
-        <span className="port-purse">Bourse : <b>{formatMoney(money)}</b></span>
+        <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
       </div>
 
       <div className="port-body">

@@ -14,10 +14,11 @@ describe('InspectPanel', () => {
 
   const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Gunnar', rng: makeRNG(3) });
 
-  it('nom, PB et statbloc (caractéristiques partagées)', () => {
+  it('nom, PB (WoundsBadge courant/max) et statbloc (caractéristiques partagées)', () => {
     const html = render(hero);
     expect(html).toContain('Gunnar');
-    expect(html).toContain('PB');
+    expect(html).toContain('wounds-badge'); // PB via la primitive unifiée
+    expect(html).toContain(`${hero.wounds.current}/${hero.wounds.max}`);
     expect(html).toContain('Caractéristiques'); // titre de section partagé avec le Codex
     expect(html).toContain('CC'); // une caractéristique dans la grille
     expect(html).toContain('Taille');

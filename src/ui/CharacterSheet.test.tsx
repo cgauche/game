@@ -37,8 +37,10 @@ describe('AdvancementPanel (rendu)', () => {
     // Bandeau PX collant (total en tête de l'onglet Avancement)
     expect(html).toContain('Expérience disponibles');
     expect(html).toContain('1000');
-    // Caractéristiques : coût in-carrière (CT = 25) ET hors-carrière (CC = 50)
-    expect(html).toContain('Capacité de Combat');
+    // Caractéristiques : coût in-carrière (CT = 25) ET hors-carrière (CC = 50) — rangée en
+    // <CharValue> (libellé COURT + popover Codex de la caractéristique)
+    expect(html).toContain('char-value');
+    expect(html).toContain('CC');
     expect(html).toContain('25 PX');
     expect(html).toContain('50 PX');
     // Pastilles in/hors carrière

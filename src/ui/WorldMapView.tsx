@@ -11,6 +11,7 @@ import {
 import { rationCount } from '../engine/provisions';
 import { findVehicleById } from '../data';
 import { formatMoney, canAfford } from '../engine/money';
+import { Coins } from './Coins';
 import { rule } from '../engine/policy';
 import { forcePaceDifficulty } from '../engine/seaNavigation';
 import { shipHasNavalTrait } from '../engine/navalTraits';
@@ -399,7 +400,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             ) : kmh > 0 ? (
               <>
                 Allure {kmh} km/h · Durée {plan ? fmtDuration(plan) : '—'}
-                {cost && <> · Prix {formatMoney(cost)}{!affordable && ' (bourse insuffisante)'}</>}
+                {cost && <> · Prix <Coins money={cost} />{!affordable && ' (bourse insuffisante)'}</>}
                 {mode === 'pied' && plan && plan.days > 1 && (
                   <> · Rations pour les nuits : {rationsNeeded} (le groupe en porte {rationsOwned})</>
                 )}

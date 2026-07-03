@@ -235,11 +235,8 @@
 /* Refonte POC→produit (audit 2026-06-11) : phase Événements, volets d'Activité à sélecteurs */
 .interlude-phase-hint { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
 .interlude-fx { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-.interlude-fx-chip {
-  font-size: 11px; padding: 2px 8px; border-radius: 10px;
-  background: color-mix(in srgb, var(--gold) 16%, transparent);
-  border: 1px solid var(--border); color: var(--ink, inherit);
-}
+/* Chips d'États de clôture (EffectChips) posées DANS une phrase du récap → flux inline. */
+.interlude-recap-list .fx-chips { display: inline-flex; vertical-align: middle; }
 .interlude-hint { font-weight: normal; font-size: 11px; color: var(--muted); }
 .interlude-pane { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
 /* Description VERBATIM d'une Activité du catalogue (ACE Annexe I) — prose longue, défilable. */

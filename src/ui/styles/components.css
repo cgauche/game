@@ -315,3 +315,29 @@
   vertical-align: -0.18em; /* cale l'icône sur la ligne de base du texte adjacent */
   flex: none;
 }
+
+/* ── COMPOSANTS DE DONNÉE UNIFIÉS (LOT 5) — WoundsBadge / CharValue / GameDate / FxChip ── */
+.wounds-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.char-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.char-value em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted);
+}
+.game-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fx-chip-label {
+  font-size: 11px;
+}

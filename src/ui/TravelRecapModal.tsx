@@ -2,8 +2,8 @@ import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { MultiRollList } from './MultiRollList';
 import { TRAVEL_MODE_LABEL } from '../engine/travel';
-import { formatImperial, toDate } from '../engine/clock';
 import type { TravelRecap } from '../state/travelFlow';
+import { GameDate } from './GameDate';
 
 /** Corps PARTAGÉ du rapport d'une journée de route : péripéties/entretien en clair + JETS en
  *  multijet (MÊME brique que le bilan de nuit) — utilisé par la halte du soir (RestModal) et le
@@ -46,7 +46,6 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
         ? '🧭 Voyage interrompu !'
         : '🧭 Le convoi s\'arrête';
   const kmLeft = Math.max(0, Math.round(recap.km - recap.kmDone));
-  const clock = toDate(gameTime);
   const onContinue = () => { dismiss(); openWorldMap(); };
   return (
     <Modal title={title} variant="plain" className="travel-recap" onClose={dismiss} backdropClose={!ambush}>
@@ -66,7 +65,7 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
       </ol>
       {recap.status === 'arrived' && (
         <p className="travel-recap-foot">
-          Le groupe arrive {clock.weekday ? `${clock.weekday.toLowerCase()}, ` : ''}le {formatImperial(gameTime)}.
+          Le groupe arrive le <GameDate time={gameTime} />.
         </p>
       )}
       {ambush ? (

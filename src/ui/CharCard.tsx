@@ -10,6 +10,7 @@ import { ZONES } from './EquipmentPanel';
 import { SkillChip, TalentChip, EntityRef } from './EntityChip';
 import { FateChips } from './FateChips';
 import { CodexRef } from './compendium/CodexRef';
+import { WoundsBadge } from './WoundsBadge';
 
 /** Attributs de zone cliquable « ouvre la fiche complète » — partagés carte pleine / rangée compacte. */
 const openAttrs = (onOpen?: () => void) =>
@@ -54,9 +55,9 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       <div className={`char-card-row ${onOpen ? 'clickable' : ''}`} {...openAttrs(onOpen)}>
         <CharacterPreview hero={hero} size="xs" />
         <CharIdentity hero={hero} />
-        <span className="char-row-stats" title="Blessures · Mouvement">
-          <Icon id="resource/wounds" size="sm" /> {hero.wounds.max}
-          <Icon id="resource/movement" size="sm" /> {hero.movement}
+        <span className="char-row-stats">
+          <WoundsBadge wounds={hero.wounds} />
+          <span title="Mouvement"><Icon id="resource/movement" size="sm" /> {hero.movement}</span>
         </span>
       </div>
     );
@@ -75,8 +76,8 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       <CharStatsGrid value={(k) => hero.characteristics[k]} />
       <div className="char-vitals">
         <div className="stat-chip">
-          <span className="sc-label"><CodexRef category="characteristics" label="Blessure">Blessures</CodexRef></span>
-          <span className="sc-value">{hero.wounds.max}</span>
+          <span className="sc-label">Blessures</span>
+          <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
         </div>
         <div className="stat-chip">
           <span className="sc-label"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
