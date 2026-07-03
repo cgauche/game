@@ -2447,5 +2447,246 @@
         "mSet": 0
       }
     ]
+  },
+  {
+    "id": "s-accrocher-pour-se-nourrir",
+    "label": "S'accrocher pour se nourrir",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Si la créature réussit une attaque de Morsure, elle s'accroche à sa victime et y reste attachée avec une force surprenante. Ensuite, elle extrait du sang, provoquant la perte automatique d'1 Point de Blessure pour chaque Round où elle reste accrochée. Les victimes dont les Blessures sont réduites à zéro gagnent l'État *Inconscient* lorsqu'elles perdent connaissance à cause de la perte de sang.\n\nLa créature ne se détache qu'une fois rassasiée, ce qui se produit après qu'elle ait extrait son BE en Blessures ; elle se retire alors pour digérer son repas.\n\nLa créature peut être retirée avec un Test opposé de **Force** mais cela inflige 1 Blessure à la victime. Si la créature possède le Trait Effrayé approprié, tout ce qu'elle craint lui fait relâcher son emprise immédiatement.",
+    "source": {
+      "book": "T2C",
+      "page": 89
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "attackKind",
+            "is": "morsure"
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "empetre",
+                  "value": 1,
+                  "grapple": true,
+                  "unlessCondition": "empetre",
+                  "escapeStrength": {
+                    "charOf": "F"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "trigger": "onRoundStart",
+        "on": "grappled",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 1,
+                "ignoreTB": true,
+                "ignoreAP": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "capricieux",
+    "label": "Capricieux",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Le tempérament de la créature passe d'un extrême à l'autre. Lorsqu'un Personnage effectue un Test de Sociabilité en traitant avec la créature, lancez un dé selon le Tableau suivant :\n\n| 1d10 | Résultat               |\n|------|------------------------|\n| 1    | Soustraire 2 au DR     |\n| 2-3  | Soustraire 1 au DR     |\n| 4-7  | Utiliser le DR indiqué |\n| 8-9  | Ajouter 1 au DR        |\n| 10   | Ajouter 2 au DR        |",
+    "source": {
+      "book": "T2C",
+      "page": 89
+    }
+  },
+  {
+    "id": "engloutir",
+    "label": "Engloutir",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Si la créature est de taille suffisante, toute attaque réussie engloutit une victime, même si elle ne cause aucun Dégât, infligeant l'État *Empêtré* d'une Force égale à celle de la créature. Au début de chaque Round, les victimes englouties gagnent un État *Empêtré* supplémentaire et perdent automatiquement 1 Blessure alors que de puissantes enzymes commencent la digestion. Si la créature n'est pas de taille suffisante pour engloutir entièrement une victime, elle peut néanmoins être assez grande pour immobiliser un endroit du corps touché. La créature ne peut plus effectuer d'attaques contre les victimes entièrement englouties, mais elle peut encore en attaquer d'autres si elles sont suffisamment proches.",
+    "source": {
+      "book": "T2C",
+      "page": 89
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "empetre",
+                "value": {
+                  "charOf": "F"
+                },
+                "grapple": true,
+                "unlessCondition": "empetre",
+                "escapeStrength": {
+                  "charOf": "F"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "trigger": "onRoundStart",
+        "on": "grappled",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "empetre",
+                "value": 1
+              },
+              {
+                "op": "wounds",
+                "amount": 1,
+                "ignoreTB": true,
+                "ignoreAP": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "hallucinogene",
+    "label": "Hallucinogène",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature dégage un musc hallucinogène. Les victimes situées à moins de 2 mètres (plus, à la discrétion du MJ, si la victime est dans le sens du vent) doivent réussir un Test de **Force Mentale Accessible (+20)** ou succomber, gagnant un État *Sonné* pour chaque niveau d'échec.",
+    "source": {
+      "book": "T2C",
+      "page": 89
+    },
+    "effects": [
+      {
+        "trigger": "onRoundStart",
+        "on": {
+          "near": "self",
+          "radiusMeters": 2
+        },
+        "flow": {
+          "kind": "test",
+          "test": {
+            "characteristic": "FM",
+            "difficulty": "accessible",
+            "label": "Musc hallucinogène"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "sonne",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "rampant",
+    "label": "Rampant",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Cette créature est impitoyable, mais lente. Elle ne peut pas réaliser d'Action de Course.",
+    "source": {
+      "book": "T2C",
+      "page": 89
+    }
+  },
+  {
+    "id": "salive-analgesique",
+    "label": "Salive analgésique",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Les morsures de la créature ne provoquent aucune douleur, ce qui lui permet de s'accrocher à ses victimes endormies sans être détectée. Cet effet s'estompe au bout de 10 - Bonus d'Endurance Rounds après que la créature se soit détachée.",
+    "source": {
+      "book": "T2C",
+      "page": 89
+    }
+  },
+  {
+    "id": "salive-anticoagulante",
+    "label": "Salive anticoagulante",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La victime de la morsure de la créature gagne l'État *Hémorragique*.",
+    "source": {
+      "book": "T2C",
+      "page": 89
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "attackKind",
+            "is": "morsure"
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "hemorragique",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   }
 ]

@@ -129,10 +129,30 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   les Améliorations T2C dont l'effet ne se mappe PAS sur le canal plat (Coque de course = 2×M, Safran = Test
   de Force du barreur, Plat-bord = couvert PARTIEL ≠ total, Allégement, Gréement de course, avirons/Fourquines)
   — un `moveMod`/`deckCover` mentirait → à câbler quand un champ de domaine dédié existera (chantier ci-dessous).
-- **Naufrageurs / contrebandiers / pirates (ch.12) & bestiaire fluvial (ch.13)** : contenu de combat de
-  bateau (dégâts/localisation d100, Critiques rames/gouvernail, accidents Tangon/Gouvernail) + créatures —
-  non livrés (à ajouter AVEC leur consommateur, pas en donnée morte). C'est AUSSI le consommateur des
-  Améliorations T2C à effet non-plat et du déblayage manuel de barrage (choix mid-combat). RESTE (chantier).
+- ~~**Combat de bateau fluvial (ch.5 : dégâts/localisation d100, Critiques rames/gouvernail)**~~ ✅ **RÉSOLU**
+  (commit bd6d37ad) : le bateau fluvial est une coque endommageable en combat via le MÊME moteur naval (MDG),
+  sélectionné en DONNÉE (`hull.locationTable='navire-fluvial'` + `hull.criticalTable='river-criticals'`, champs
+  déjà typés désormais LUS). Table `navire-fluvial` + `river-criticals.json` (T2C verbatim, SOURCE UNIQUE
+  partagée avec le voyage) + États Dérive/Gouvernail brisé. `applyCrewHit` généralise le Test d'équipage
+  (poste MDG vs pont T2C). Zéro doublon.
+- **Bestiaire fluvial (ch.13) — 7 Traits** ✅ livrés en donnée (`traits.json`, T2C ch.13) avec RÉDUCTIONS documentées :
+  - `s-accrocher-pour-se-nourrir`, `engloutir` (corrige l'orphelin d'Amibe), `salive-anticoagulante`,
+    `hallucinogene` : cœur tactique FIDÈLE (drain/Empêtré/aura à Test). RÉDUCTIONS : détachement auto « après
+    BE Blessures extraites » (pas de compteur de PB drainées), « +1 Blessure quand la victime se dégage »,
+    relâche sur Effrayé (s-accrocher) ; gating de Taille + non-attaque de la victime engloutie (engloutir) ;
+    **Sonné « par niveau d'échec »** rendu comme **1 Sonné fixe** — l'op `condition.valuePerSL` n'échelonne pas
+    sur un DR NÉGATIF (branche `fail` d'un nœud `test`) ; généraliser `perDegreeOfFailure` (psychology) au nœud
+    `test` du Flow le corrigerait (chantier moteur, `flowCore`).
+  - `capricieux`, `rampant`, `salive-analgesique` : **desc verbatim seule** (canal manquant, PAS de donnée morte) —
+    `capricieux` : aucun canal ne module le DR d'un Test de Sociabilité d'un PJ *envers* une créature-cible
+    (niche : négociation Naïade) ; `rampant` : pas de capability `noRun` (interdire l'Action de Course exige un
+    drapeau + gating dans le mouvement de combat — `combatFlow`, verrouillé par la session //) ; `salive-analgesique` :
+    narratif hors-combat (morsure indolore sur cible endormie). RESTE (extensions de vocabulaire).
+- **Bestiaire fluvial (ch.13) — 4 créatures + rigs** : Anguille du Reik (serpentin), Sangsue Géante + variante
+  Arbres (amorphe), Naïade (bipède + « Forme de guerrière » = 4 aspects tournants) — EN COURS. Le Filet de
+  gobelin (`À distance (Filet)`, ZI) = attaque de créature à Empêtré au tir, à porter ICI (réutilise Immobilisante).
+- **Consommateur des Améliorations T2C à effet non-plat + déblayage manuel de barrage** (choix mid-combat) :
+  RESTE (à brancher sur le scénario de combat fluvial). C'est le scénario jouable qui exercera tout ce qui précède.
 - ~~**Maladies transmises par l'eau (ch.14)**~~ ✅ **RÉSOLU** : la descente `15-commerce-fluvial` EXERCE
   désormais l'Effet EXISTANT `waterExposure` — nouveau champ `MapRoute.riverExposure` (tirage d'étape à flot,
   source d'eau + mode ingestion/immersion) qui, via `applyEffects`, ouvre la cascade de Test de Résistance →
