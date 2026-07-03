@@ -8,10 +8,14 @@
  *     modificateurs permanents (`allyTestMod`) AVANT le premier Round.
  *   ROUND DE BATAILLE (l.114-124) : (1) configuration du terrain → composition d'une SITUATION (un
  *     SOUS-ENSEMBLE de Scènes du moment : tirage/authorées + Scènes IMPOSÉES par l'ennemi — menaces
- *     l.219 et enchaînements l.169/175/208/217/225), PAS tout le catalogue ; (2) Scènes cinématiques —
- *     UNE par PJ (l.116-118) : chaque PJ résout SA Scène (Test OU combat), les deltas plafonnés (l.135)
- *     se CUMULENT ; (3) Test spectaculaire de Puissance NON opposé (l.120) ; (4) Rassemblement (l.122) :
- *     Test de Résistance de guérison entre Rounds.
+ *     l.219 et enchaînements l.169/175/208/217/225), PAS tout le catalogue ; (2) Scènes cinématiques
+ *     MULTI-PJ (l.116-118 : « les Personnages peuvent choisir de participer à l'une des Scènes » ; le MJ
+ *     « inclut tous les Personnages dans au moins une Scène ») : plusieurs PJ peuvent s'engager dans UNE
+ *     Scène de Test/Tenue, résolue en SOUTIEN (LDB 12 ; l.153 « tous les Personnages engagés dans la
+ *     Scène », l.157 « en soutien », l.163 « Test opposé contre les Personnages ») — le meneur lance, les
+ *     assistants capables ajoutent +10 (plafonné) ; les deltas plafonnés (l.135) se CUMULENT entre Scènes.
+ *     Les Scènes de combat/menace engagent tout le groupe ; (3) Test spectaculaire de Puissance NON opposé
+ *     (l.120) ; (4) Rassemblement (l.122) : Test de Résistance de guérison entre Rounds.
  *
  * Les jets des PJ passent par une modale de jet différée (`pendingBattleTest`, même fabrique
  * `makeRollFlow` que tous les autres flux). Le Test spectaculaire NON opposé est un jet d'ARMÉE (sans
@@ -24,7 +28,7 @@ import type { PendingBase } from './rollFlow';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
-import { partyBest, testValue, bestForSkills, bestForCombined } from '../engine/skills';
+import { partyBest, testValue, bestForSkills, bestForCombined, bestAssistedOption } from '../engine/skills';
 import { isStructure } from '../engine/structures';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { refLabel } from '../data';
@@ -104,13 +108,17 @@ export interface MassBattleState {
   activeThreats: string[];
   /** Scènes résolues CE Round (une résolution par Scène). */
   resolvedScenes: string[];
-  /** PJ ayant agi CE Round (une Scène par PJ, l.116-118). */
+  /** PJ ayant agi CE Round : tout PJ engagé dans une Scène résolue (l.116-118). Une Scène de Test/Tenue
+   *  MULTI-PJ consomme TOUT son équipage engagé (Soutien, l.153/157) ; un combat consomme ses frappeurs. */
   actedHeroes: string[];
-  /** AFFECTATION explicite d'un PJ à une action (Scène OU Activité) CE Round — clé = id d'action, valeur =
-   *  id du PJ posté. C'est le POSTE choisi par le joueur : la résolution le HONORE (à défaut d'affectation,
-   *  ou si le PJ posté n'est plus disponible, on retombe sur la SUGGESTION `bestForSkills`/`bestForCombined`).
-   *  Réinitialisé à chaque Round (comme `actedHeroes`) : un poste ne survit PAS à un nouveau Round. */
-  assignment: Record<string, string>;
+  /** AFFECTATION explicite de PJ à une action CE Round — clé = id d'action (Scène OU Activité), valeur =
+   *  liste ordonnée des ids de PJ postés. Une Scène de Test/Tenue accepte PLUSIEURS PJ (ADE II ch.8
+   *  l.116-118 : Scènes MULTI-PJ), résolus en SOUTIEN (LDB 12 : le meneur lance, les assistants capables
+   *  ajoutent +10, plafonné — l.153/157/163). Les Activités pré-combat restent SOLO (un seul id honoré,
+   *  RAW l.71/75/102/106 « un Personnage »). C'est le POSTE choisi par le joueur : la résolution l'HONORE
+   *  (à défaut d'affectation, ou si les PJ postés ne sont plus disponibles, on retombe sur la SUGGESTION
+   *  `bestForSkills`/`bestForCombined`). Réinitialisé à chaque Round (comme `actedHeroes`). */
+  assignment: Record<string, string[]>;
   /** PJ ayant tenté le Rassemblement CE Round (l.122). */
   ralliedHeroes: string[];
   /** Deltas de Puissance appliqués CE Round (affichage, cumulés). */
@@ -172,6 +180,12 @@ export interface PendingBattleTest extends PendingBase {
   sceneId?: string;
   /** Activité concernée (`purpose:'activity'`). */
   activityId?: string;
+  /** TOUS les PJ engagés dans la Scène MULTI-PJ (Test/Tenue) — meneur `actorId` compris (ADE II ch.8
+   *  l.116-118). Tous sont marqués « ayant agi » à la résolution (l'équipage entier est consommé). */
+  heroIds?: string[];
+  /** Détail du SOUTIEN fondu dans `skillValue` (l.153/157, LDB 12) — informatif pour la modale : nombre
+   *  d'assistants capables et bonus cumulé (déjà inclus dans la cible). */
+  support?: { count: number; bonus: number };
   // ── Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences, LDB 12 l.229) ──
   /** Libellé de la 2ᵈᵉ compétence (Test combiné). */
   skill2?: string;
@@ -323,7 +337,7 @@ export function openMassBattleInspire(get: Get, set: Set): void {
   // Acteur = PJ posté au Discours (à défaut, SUGGESTION = meilleur en Commandement). Sans poste, l'acteur EST
   // la suggestion et `testValue(chosen, 'commandement')` reproduit `partyBest(...).value` → byte-identique.
   const party = get().party.filter((h) => !h.dead);
-  const chosen = assignedHeroFor(mb, party, 'inspire') ?? partyBest(party, 'commandement')?.actor;
+  const chosen = assignedHeroesFor(mb, party, 'inspire')[0] ?? partyBest(party, 'commandement')?.actor;
   if (!chosen) return;
   const difficulty = inspireDifficulty(mb.ally.might, mb.enemy.might);
   openBattleTest(get, set, {
@@ -332,26 +346,27 @@ export function openMassBattleInspire(get: Get, set: Set): void {
   });
 }
 
-/** Résout l'AFFECTATION explicite d'une action (`assignment[actionId]`) en un PJ effectivement DISPONIBLE :
- *  membre du groupe, vivant, non encore engagé ce Round (`actedHeroes`). Retourne `undefined` si aucun poste
- *  n'est enregistré ou si le PJ posté n'est plus jouable (mort/déjà agi) — l'appelant retombe alors sur la
- *  SUGGESTION (`bestForSkills`/`bestForCombined`). Pur : ne lit que l'état passé, ne mute rien. */
-export function assignedHeroFor(mb: MassBattleState, party: Combatant[], actionId: string): Combatant | undefined {
-  const heroId = mb.assignment[actionId];
-  if (!heroId) return undefined;
-  const hero = party.find((h) => h.id === heroId);
-  if (!hero || hero.dead || mb.actedHeroes.includes(hero.id)) return undefined;
-  return hero;
+/** Résout l'AFFECTATION explicite d'une action (`assignment[actionId]`) en la LISTE des PJ effectivement
+ *  DISPONIBLES : membres du groupe, vivants, non encore engagés ce Round (`actedHeroes`). Ordre des ids
+ *  postés préservé, entrées invalides (absent/mort/déjà agi) écartées. Tableau vide si aucun poste valable
+ *  — l'appelant retombe alors sur la SUGGESTION (`bestForSkills`/`bestForCombined`). Une Scène MULTI-PJ
+ *  (ADE II ch.8 l.116-118) est ainsi résolue en Soutien sur TOUT cet équipage. Pur : lit l'état, ne mute rien. */
+export function assignedHeroesFor(mb: MassBattleState, party: Combatant[], actionId: string): Combatant[] {
+  const ids = mb.assignment[actionId] ?? [];
+  return ids
+    .map((id) => party.find((h) => h.id === id))
+    .filter((h): h is Combatant => !!h && !h.dead && !mb.actedHeroes.includes(h.id));
 }
 
-/** Enregistre (ou efface, `heroId === null`) l'AFFECTATION d'un PJ à une action du Round (Scène/Activité).
- *  N'agit qu'en phase active ; ne valide PAS la disponibilité ici (la résolution la re-vérifie via
- *  `assignedHeroFor`, retombant sur la suggestion si le poste est devenu invalide). */
-export function assignMassBattleHero(get: Get, set: Set, actionId: string, heroId: string | null): void {
+/** Enregistre l'AFFECTATION de PJ à une action du Round (Scène MULTI-PJ / Activité SOLO) : remplace la
+ *  liste postée par `heroIds` (efface la clé si vide). N'agit qu'en présence d'une bataille ; ne valide PAS
+ *  la disponibilité ici (la résolution la re-vérifie via `assignedHeroesFor`, retombant sur la suggestion
+ *  si les postes sont devenus invalides). Le picker de l'UI compose la liste (ajout/retrait). */
+export function setMassBattleHero(get: Get, set: Set, actionId: string, heroIds: string[]): void {
   const mb = get().massBattle;
   if (!mb) return;
   const assignment = { ...mb.assignment };
-  if (heroId) assignment[actionId] = heroId; else delete assignment[actionId];
+  if (heroIds.length) assignment[actionId] = heroIds; else delete assignment[actionId];
   set({ massBattle: { ...mb, assignment } });
 }
 
@@ -371,7 +386,7 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     // Test COMBINÉ (l.75/102) : l'acteur posté décide (à défaut, SUGGESTION = celui maximisant le PLUS FAIBLE
     // des deux, le facteur limitant). Les DEUX valeurs de l'acteur RETENU sont dérivées via une passe
     // SINGLETON (`bestForCombined([chosen], …)`), puis testées par un même jet à la résolution.
-    const chosen = assignedHeroFor(mb, party, activityId) ?? bestForCombined(party, def.skills[0], def.skills[1], def.char)?.actor;
+    const chosen = assignedHeroesFor(mb, party, activityId)[0] ?? bestForCombined(party, def.skills[0], def.skills[1], def.char)?.actor;
     if (!chosen) return;
     const picked = bestForCombined([chosen], def.skills[0], def.skills[1], def.char);
     if (!picked) return;
@@ -382,9 +397,10 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     });
     return;
   }
-  // Acteur = PJ posté (à défaut, SUGGESTION = meilleur du groupe) ; ses valeurs de compétence sont dérivées
-  // par une passe SINGLETON `bestForSkills([chosen], …)` — sans poste, l'acteur EST la suggestion, byte-identique.
-  const chosen = assignedHeroFor(mb, party, activityId) ?? bestForSkills(party, def.skills, def.char)?.actor;
+  // Activité SOLO (RAW l.71/75/102/106 « un Personnage ») : acteur = PJ posté (à défaut, SUGGESTION = meilleur
+  // du groupe) ; ses valeurs de compétence dérivées par une passe SINGLETON `bestForSkills([chosen], …)` —
+  // sans poste, l'acteur EST la suggestion, byte-identique. PAS de Soutien pour une Activité pré-combat.
+  const chosen = assignedHeroesFor(mb, party, activityId)[0] ?? bestForSkills(party, def.skills, def.char)?.actor;
   if (!chosen) return;
   const picked = bestForSkills([chosen], def.skills, def.char);
   if (!picked) return;
@@ -397,8 +413,9 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
 // ── Scènes cinématiques (l.116-225) ──────────────────────────────────────────────────────────────
 
 /** Choisit une Scène de la SITUATION : 'test' → modale de jet ; 'hold' → Test opposé de tenue ;
- *  'combat'/'threat' → combat tactique. Une Scène par PJ (l.116-118) : le meilleur PJ N'AYANT PAS ENCORE
- *  AGI décide (les combats engagent tous les frappeurs). */
+ *  'combat'/'threat' → combat tactique. Scène MULTI-PJ (l.116-118) : plusieurs PJ peuvent s'engager dans
+ *  une Scène de Test/Tenue, résolue en SOUTIEN (LDB 12 ; l.153/157) — le meneur lance la valeur SOUTENUE ;
+ *  à défaut d'affectation, le meilleur PJ DISPONIBLE décide seul. Les combats engagent tous les frappeurs. */
 export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   const mb = get().massBattle;
   const scene = battleSceneById(sceneId);
@@ -406,25 +423,30 @@ export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   if (!mb.situation.includes(sceneId) || mb.resolvedScenes.includes(sceneId)) return;
   if (scene.kind === 'combat' || scene.kind === 'threat') { startBattleCombat(get, set, scene); return; }
   if (scene.kind === 'hold') { openHoldScene(get, set, scene); return; }
-  // Scène 'test' : compétences AU CHOIX (l.151). Acteur = PJ posté à cette Scène (à défaut, SUGGESTION = le
-  // meilleur PJ DISPONIBLE — pas déjà engagé ce Round). Ses valeurs de compétence dérivées par passe SINGLETON.
+  // Scène 'test' MULTI-PJ (l.116-118/151/153) : compétences AU CHOIX. Équipe = les PJ POSTÉS disponibles ;
+  // à défaut, la SUGGESTION = le meilleur PJ disponible SEUL (comportement inchangé sans affectation). La
+  // valeur SOUTENUE (`bestAssistedOption` : meneur + Soutien LDB 12) est jouée par le meneur (`picked.actor`).
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
-  const chosen = assignedHeroFor(mb, party, scene.id) ?? bestForSkills(party, scene.skills, scene.char)?.actor;
-  if (!chosen) return;
-  const picked = bestForSkills([chosen], scene.skills, scene.char);
+  const crew = assignedHeroesFor(mb, party, scene.id);
+  const solo = bestForSkills(party, scene.skills, scene.char)?.actor;
+  const team = crew.length ? crew : (solo ? [solo] : []);
+  if (!team.length) return;
+  const picked = bestAssistedOption(team, scene.skills, scene.char);
   if (!picked) return;
   const mod = massBattleThreatPenalty(mb); // Intrus l.219 : −20 aux Tests des autres Scènes.
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
     difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'scene', sceneId: scene.id, mod,
+    heroIds: team.map((h) => h.id), support: picked.support,
   });
 }
 
-/** Ouvre le Test OPPOSÉ d'une Scène « Tenez votre position » (l.161) : le meilleur PJ DISPONIBLE défend
- *  la position ; l'ennemi oppose un jet FIGÉ (valeur = Puissance ennemie, abstraction de « des Compétences
- *  adaptées à la situation ») augmenté du bonus cumulatif de tenue (`holdEnemyBonus` selon les Rounds déjà
- *  tenus, l.163). Le DR net de l'ennemi alimente le Point de rupture à la résolution. */
+/** Ouvre le Test OPPOSÉ d'une Scène « Tenez votre position » (l.161-163 : « l'ennemi effectue un Test opposé
+ *  contre les Personnages ») : les PJ engagés défendent la position en SOUTIEN (LDB 12 ; le meneur lance la
+ *  valeur soutenue) ; l'ennemi oppose un jet FIGÉ (valeur = Puissance ennemie, abstraction de « des
+ *  Compétences adaptées à la situation ») augmenté du bonus cumulatif de tenue (`holdEnemyBonus` selon les
+ *  Rounds déjà tenus, l.163). Le DR net de l'ennemi alimente le Point de rupture à la résolution. */
 function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
   const mb = get().massBattle;
   if (!mb || !scene.hold) return;
@@ -432,10 +454,13 @@ function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
   if (state.broken) { get().log(`Scène « ${scene.label} » : la position a déjà cédé (déroute).`); return; }
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
-  // Acteur = PJ posté à la Scène (à défaut, SUGGESTION = meilleur PJ disponible) ; valeurs par passe SINGLETON.
-  const chosen = assignedHeroFor(mb, party, scene.id) ?? bestForSkills(party, scene.skills, scene.char)?.actor;
-  if (!chosen) return;
-  const picked = bestForSkills([chosen], scene.skills, scene.char);
+  // Défenseurs = PJ postés disponibles ; à défaut, le meilleur PJ disponible SEUL. Résolution SOUTENUE
+  // (`bestAssistedOption`) : le meneur lance, les assistants capables ajoutent +10 (plafonné, l.153/157).
+  const crew = assignedHeroesFor(mb, party, scene.id);
+  const solo = bestForSkills(party, scene.skills, scene.char)?.actor;
+  const team = crew.length ? crew : (solo ? [solo] : []);
+  if (!team.length) return;
+  const picked = bestAssistedOption(team, scene.skills, scene.char);
   if (!picked) return;
   const held = state.held;
   const enemyBonus = holdEnemyBonus(scene.hold, held); // +10 cumulatif par Round déjà tenu (l.163).
@@ -446,7 +471,7 @@ function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
     difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'hold', sceneId: scene.id, mod,
-    enemyValue, enemyRoll,
+    enemyValue, enemyRoll, heroIds: team.map((h) => h.id), support: picked.support,
   });
 }
 
@@ -475,6 +500,10 @@ function openBattleTest(get: Get, set: Set, o: {
   difficulty: Difficulty; label: string; purpose: PendingBattleTest['purpose']; sceneId?: string; activityId?: string; mod?: number;
   combined?: { skillId: string; spec?: string; value: number };
   enemyValue?: number; enemyRoll?: number;
+  /** PJ engagés dans une Scène MULTI-PJ (meneur compris) — tous consommés à la résolution (l.116-118). */
+  heroIds?: string[];
+  /** Détail du Soutien fondu dans `skillValue` (informatif pour la modale). */
+  support?: { count: number; bonus: number };
 }): void {
   const skill = o.skillId ? refLabel('skills', { id: o.skillId, spec: o.spec }) : o.char ? CHAR_LABELS[o.char] : 'Test';
   const diffMod = DIFFICULTY_MODIFIERS[o.difficulty] + (o.mod ?? 0);
@@ -488,7 +517,7 @@ function openBattleTest(get: Get, set: Set, o: {
       actorId: o.actor.id, actorName: o.actor.name, label: o.label, skill,
       skillId: o.skillId, spec: o.spec, char: o.char, skillValue: o.skillValue, difficulty: o.difficulty,
       purpose: o.purpose, sceneId: o.sceneId, activityId: o.activityId, roll: null, target, sl: 0, success: false,
-      enemyValue: o.enemyValue, enemyRoll: o.enemyRoll, ...combined,
+      enemyValue: o.enemyValue, enemyRoll: o.enemyRoll, heroIds: o.heroIds, support: o.support, ...combined,
     },
   });
 }
@@ -540,7 +569,8 @@ function sceneOutcomeLine(scene: BattleSceneDef, res: SceneResolution, deltas: {
  *  net de l'ennemi (`pt.enemySL`), persiste l'état de tenue dans `sceneState`, et — TANT QUE la position
  *  TIENT — applique la réduction −2 de la Puissance ennemie (effet `success` de la Scène) et RÉIMPOSE la
  *  Scène au Round suivant (elle recommence chaque Round). Rupture (Point de rupture ≥ seuil OU Rounds max)
- *  → déroute : la Scène n'est plus réimposée. Le PJ engagé est consommé ce Round (une Scène par PJ). */
+ *  → déroute : la Scène n'est plus réimposée. Les PJ engagés (`heroes`) sont consommés ce Round (Scène
+ *  MULTI-PJ résolue en Soutien, ADE II ch.8 l.116-118/153/157/163). */
 function applyHoldResolution(
   mb: MassBattleState, scene: BattleSceneDef, pt: PendingBattleTest, heroes: string[],
 ): { mb: MassBattleState; lines: string[] } {
@@ -610,7 +640,8 @@ export function battleTestConfirm(get: Get, set: Set): void {
   } else if (pt.purpose === 'hold' && pt.sceneId) {
     const scene = battleSceneById(pt.sceneId);
     if (scene?.hold) {
-      const applied = applyHoldResolution(next, scene, pt, [pt.actorId]);
+      // Scène MULTI-PJ : TOUS les défenseurs engagés sont consommés ce Round (l.116-118), pas seulement le meneur.
+      const applied = applyHoldResolution(next, scene, pt, pt.heroIds ?? [pt.actorId]);
       next = applied.mb;
       lines.push(...applied.lines);
     }
@@ -633,7 +664,8 @@ export function battleTestConfirm(get: Get, set: Set): void {
     const scene = battleSceneById(pt.sceneId);
     if (scene) {
       const res = testResolution(pt.success, pt.sl);
-      const applied = applySceneResolution(next, scene, res, [pt.actorId]);
+      // Scène MULTI-PJ : TOUT l'équipage engagé est consommé ce Round (l.116-118), pas seulement le meneur.
+      const applied = applySceneResolution(next, scene, res, pt.heroIds ?? [pt.actorId]);
       next = applied.mb;
       lines.push(...applied.lines);
     }

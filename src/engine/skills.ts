@@ -283,3 +283,26 @@ export function soutienBonus(party: Combatant[], leader: Combatant, skill?: stri
   const ck = effectiveSkillCharKey(leader, skill, { explicit: characteristic, spec });
   return assistBonus(eligible, bonus(effectiveChar(leader, ck)));
 }
+
+/** Meilleur résultat SOUTENU d'un groupe pour une Scène à compétences AU CHOIX (ADE II ch.8) : pour chaque
+ *  option, `partyAssisted(crew, skill…)` (meneur + Soutien LDB 12) ; on garde l'option au plus haut score
+ *  soutenu (argmax `maxBy`). `crew` vide ⇒ null. Réutilise `partyAssisted` + `maxBy`. Miroir SOUTENU de
+ *  `bestForSkills` : là où celle-ci prend le meilleur PJ SEUL, celle-ci fait coopérer TOUT l'équipage
+ *  affecté (les Personnages engagés dans la Scène, ADE II ch.8 l.153/157) — le meneur lance, les assistants
+ *  capables ajoutent +10 chacun (plafonné). L'option de PURE Caractéristique (`skills` vide) reste possible. */
+export function bestAssistedOption(
+  crew: Combatant[],
+  skills: SkillRef[] | undefined,
+  char: CharKey | undefined,
+): { actor: Combatant; value: number; skillId?: string; spec?: string; support: { count: number; bonus: number } } | null {
+  // Options = les compétences AU CHOIX de la Scène, ou une unique option de PURE Caractéristique (repli
+  // char-only, calqué sur `bestForSkills`). Chaque option est résolue en Soutien sur TOUT l'équipage `crew`.
+  const options: SkillRef[] = skills?.length ? skills : [{ skillId: undefined as unknown as string, spec: undefined }];
+  const perOption = options
+    .map((opt) => ({ opt, res: partyAssisted(crew, opt.skillId, char, undefined, opt.spec) }))
+    .filter((x): x is { opt: SkillRef; res: NonNullable<ReturnType<typeof partyAssisted>> } => x.res !== null);
+  const r = maxBy(perOption, (x) => x.res.value);
+  return r
+    ? { actor: r.item.res.actor, value: r.item.res.value, skillId: r.item.opt.skillId, spec: r.item.opt.spec, support: r.item.res.support }
+    : null;
+}

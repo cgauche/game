@@ -16,8 +16,9 @@ import { DIFFICULTY_LABELS, type Combatant } from '../engine/types';
 /**
  * Écran de Combat de masse / Puissance de Bataille (ADE II 08). État des deux armées (Puissance
  * courante vs départ), phase de bataille, Activités pré-combat (Discours + Planification/Sabotage…),
- * SITUATION du Round (sous-ensemble de Scènes du moment + menaces imposées), Scènes cinématiques (une
- * par PJ), aléa environnemental, Test spectaculaire, Rassemblement, issue. Responsive.
+ * SITUATION du Round (sous-ensemble de Scènes du moment + menaces imposées), Scènes cinématiques
+ * MULTI-PJ (résolues en Soutien, ADE II ch.8 l.116-118), aléa environnemental, Test spectaculaire,
+ * Rassemblement, issue. Responsive.
  */
 export function MassBattleView() {
   const mb = useGame((s) => s.massBattle);
@@ -73,7 +74,7 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
   const inspire = useGame((s) => s.massBattleInspire);
   const activity = useGame((s) => s.massBattleActivity);
   const begin = useGame((s) => s.massBattleBegin);
-  const assignFn = useGame((s) => s.assignMassBattleHero);
+  const setHero = useGame((s) => s.setMassBattleHero);
   const party = useGame((s) => s.party);
   const living = party.filter((h) => !h.dead);
   const diff = inspireDifficulty(mb.ally.might, mb.enemy.might);
@@ -81,9 +82,10 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
   const count = prepCount(mb);
   const full = count >= 3;
   const [openAct, setOpenAct] = useState<string | null>(null);
-  // Le posté d'une action pré-combat, résolu en héros vivant (chaque Activité / le Discours = 1 PJ, l.79-110).
+  // Le posté d'une action pré-combat, résolu en héros vivant (chaque Activité / le Discours = 1 PJ SOLO,
+  // l.71/75/102/106 « un Personnage ») : premier id de la liste d'affectation.
   const postedOf = (id: string): Combatant[] => {
-    const h = living.find((x) => x.id === mb.assignment[id]);
+    const h = living.find((x) => x.id === mb.assignment[id]?.[0]);
     return h ? [h] : [];
   };
   return (
@@ -115,8 +117,8 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
           <AssignRow
             assigned={postedOf('inspire')}
             candidates={living}
-            onAssign={(id) => assignFn('inspire', id)}
-            onRemove={() => assignFn('inspire', null)}
+            onAssign={(id) => setHero('inspire', [id])}
+            onRemove={() => setHero('inspire', [])}
             max={1}
             verb="prononce le Discours"
             canPick={!full}
@@ -140,8 +142,8 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
             <AssignRow
               assigned={postedOf(a.id)}
               candidates={living}
-              onAssign={(id) => assignFn(a.id, id)}
-              onRemove={() => assignFn(a.id, null)}
+              onAssign={(id) => setHero(a.id, [id])}
+              onRemove={() => setHero(a.id, [])}
               max={1}
               verb={`réalise « ${a.label} »`}
               canPick={!full}
@@ -277,13 +279,14 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
 /**
  * Détail d'une Station de Scène (colonne droite du `StationSheet`) : genre, effet chiffré, état de tenue,
  * description VERBATIM, puis résolution. La CARDINALITÉ suit le RAW : une Scène de combat/menace engage
- * TOUT le groupe (pas d'affectation par PJ) ; une Scène de Compétence/Tenue est « une Scène par PJ »
- * (ADE II ch.8 l.116-118) → `AssignRow` (max 1). La désactivation du Résoudre reste IDENTIQUE à l'ancienne
- * liste plate (résolue / Round figé / plus de PJ pour un Test·Tenue / position rompue).
+ * TOUT le groupe (pas d'affectation par PJ) ; une Scène de Compétence/Tenue est MULTI-PJ (ADE II ch.8
+ * l.116-118 : « les Personnages peuvent choisir de participer à l'une des Scènes ») → `AssignRow`
+ * (max Infinity) : le joueur affecte N PJ, résolus en SOUTIEN (l.153/157). La désactivation du Résoudre
+ * reste IDENTIQUE à l'ancienne liste plate (résolue / Round figé / plus de PJ pour un Test·Tenue / rompue).
  */
 function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Station }) {
   const chooseScene = useGame((s) => s.massBattleScene);
-  const assign = useGame((s) => s.assignMassBattleHero);
+  const setHero = useGame((s) => s.setMassBattleHero);
   const party = useGame((s) => s.party);
   if (station.ref.kind !== 'battleScene') return null;
   const sceneId = station.ref.sceneId;
@@ -293,11 +296,12 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
   const kindLabel = sc.kind === 'combat' ? 'Combat' : sc.kind === 'threat' ? 'Menace' : sc.kind === 'hold' ? 'Tenue' : 'Compétence';
   const hold = mb.sceneState[sceneId];
   const living = party.filter((h) => !h.dead);
-  // PJ encore libres ce Round (le posté exclu du picker : il est déjà montré au-dessus).
+  // PJ encore libres ce Round.
   const available = living.filter((h) => !mb.actedHeroes.includes(h.id));
   const remaining = available.length;
-  const postedId = mb.assignment[sceneId];
-  const posted = postedId ? living.find((h) => h.id === postedId) : undefined;
+  // Équipage POSTÉ à cette Scène (Scène MULTI-PJ) — ids résolus en héros vivants, ordre préservé.
+  const postedIds = mb.assignment[sceneId] ?? [];
+  const posted = postedIds.map((id) => living.find((h) => h.id === id)).filter((h): h is Combatant => !!h);
   // Un combat (Scène 'combat'/'threat', incl. le Duel) engage tout le groupe → PAS de garde « plus de PJ libre ».
   const isCombat = sc.kind === 'combat' || sc.kind === 'threat';
   const disabled = resolved || mb.awaitingNext
@@ -318,13 +322,14 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
       {isCombat ? (
         <p className="mb-detail">Tout le groupe engage le combat.</p>
       ) : (
+        // Scène MULTI-PJ (l.116-118) : le joueur affecte N PJ (résolus en Soutien) — ajout/retrait sur la liste.
         <AssignRow
-          assigned={posted ? [posted] : []}
+          assigned={posted}
           candidates={available}
-          onAssign={(id) => assign(sceneId, id)}
-          onRemove={() => assign(sceneId, null)}
-          max={1}
-          verb="résout cette Scène"
+          onAssign={(id) => setHero(sceneId, [...postedIds, id])}
+          onRemove={(id) => setHero(sceneId, postedIds.filter((x) => x !== id))}
+          max={Infinity}
+          verb="rejoint cette Scène"
           canPick={!resolved && !mb.awaitingNext}
         />
       )}

@@ -489,9 +489,10 @@ export interface GameState extends RollFlowActionsMap {
   massBattleActivity: (activityId: string) => void;
   /** Choisit une Scène cinématique du Round (Test de Compétence ou combat tactique). */
   massBattleScene: (sceneId: string) => void;
-  /** Affecte (ou efface, `heroId === null`) un PJ à une action du Round (Scène/Activité, clé = id d'action) —
-   *  le POSTE que la résolution honorera à défaut de la suggestion. Réinitialisé à chaque Round. */
-  assignMassBattleHero: (actionId: string, heroId: string | null) => void;
+  /** Affecte la LISTE des PJ postés à une action du Round (Scène MULTI-PJ résolue en Soutien, ou Activité
+   *  SOLO ; clé = id d'action) — le POSTE que la résolution honorera à défaut de la suggestion. Liste vide =
+   *  efface l'affectation. Réinitialisé à chaque Round. */
+  setMassBattleHero: (actionId: string, heroIds: string[]) => void;
   /** Ouvre le Test de Résistance de guérison du Rassemblement (l.122). */
   massBattleRally: () => void;
   /** Tire/choisit le facteur environnemental du Round (l.309, 1d10). */
@@ -1355,7 +1356,7 @@ export const useGame = create<GameState>((set, get) => ({
   massBattleInspire: () => massBattleFlow.openMassBattleInspire(get, set),
   massBattleActivity: (activityId) => massBattleFlow.openMassBattleActivity(get, set, activityId),
   massBattleScene: (sceneId) => massBattleFlow.openMassBattleScene(get, set, sceneId),
-  assignMassBattleHero: (actionId, heroId) => massBattleFlow.assignMassBattleHero(get, set, actionId, heroId),
+  setMassBattleHero: (actionId, heroIds) => massBattleFlow.setMassBattleHero(get, set, actionId, heroIds),
   massBattleRally: () => massBattleFlow.openMassBattleRally(get, set),
   massBattleHazard: (roll) => massBattleFlow.massBattleSetHazard(get, set, roll),
   massBattleClash: () => massBattleFlow.massBattleClash(get, set),

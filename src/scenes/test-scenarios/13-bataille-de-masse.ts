@@ -8,8 +8,9 @@ import type { TestScenario } from './_shared';
  *
  * Avant la bataille : jusqu'à 3 Activités pré-combat (Discours, Planification, Repérage, Sabotage…).
  * Chaque Round présente une SITUATION — un SOUS-ENSEMBLE de Scènes du moment (pas tout le catalogue),
- * dont des Scènes ENNEMIES qui s'imposent (Intrus = menace −20 aux autres Scènes ; enchaînements). Une
- * Scène par PJ : chacun résout SA Scène (Test OU combat tactique), les deltas se cumulent, puis le Test
+ * dont des Scènes ENNEMIES qui s'imposent (Intrus = menace −20 aux autres Scènes ; enchaînements). Scènes
+ * MULTI-PJ (ADE II ch.8 l.116-118) : plusieurs PJ peuvent s'engager dans une Scène de Test/Tenue, résolue
+ * en Soutien (LDB 12) ; les combats engagent tout le groupe. Les deltas se cumulent, puis le Test
  * spectaculaire de Puissance résout l'affrontement, et le Rassemblement soigne entre les Rounds.
  */
 const scene = buildScene({
@@ -20,7 +21,7 @@ const scene = buildScene({
   heroStart: [3, 8],
   startMessage:
     'Deux armées se font face. Menez la bataille via l\'écran de Puissance de Bataille : préparez-vous ' +
-    '(Activités), puis Round après Round choisissez vos Scènes de la situation du moment (une par PJ), ' +
+    '(Activités), puis Round après Round choisissez vos Scènes de la situation du moment (plusieurs PJ par Scène, en soutien), ' +
     'résolvez le Test spectaculaire de Puissance et rassemblez vos forces. Les Scènes « Pluie de flèches », ' +
     '« Charge », « Tuez la bête ! », « Duel » et « Intrus » vous jettent dans une vraie mêlée.',
   encounters: [
@@ -82,7 +83,7 @@ export const scenario: TestScenario = {
   title: 'Bataille de masse',
   tests:
     'Puissance de Bataille (ADE II 08) : Activités pré-combat, SITUATION par Round (sous-ensemble + menace ' +
-    'Intrus qui s\'impose + enchaînements), une Scène par PJ (Test OU combat qui nourrit la Puissance en ' +
+    'Intrus qui s\'impose + enchaînements), Scènes MULTI-PJ en Soutien (Test OU combat qui nourrit la Puissance en ' +
     'touches + kills), Rassemblement (Résistance), Test spectaculaire de Puissance (10 + DR, min 5), issue.',
   partyNote: '4 pré-tirés (soldat, chasseur, sorcier, tueur)',
   makeParty: () => pregenParty(PREGEN.soldat, PREGEN.chasseur, PREGEN.sorcier, PREGEN.tueur),

@@ -27,12 +27,17 @@ export function BattleTestModal() {
   const actor = party.find((c) => c.id === pt.actorId);
   const rolled = pt.roll != null;
   const outcome = rolled ? describeBattleTest(pt) : undefined;
+  // Scène MULTI-PJ résolue en SOUTIEN (ADE II ch.8 l.153/157, LDB 12) : le bonus est DÉJÀ fondu dans
+  // `pt.skillValue`/la cible ; on l'expose seulement, en clair, pour que le joueur sache d'où vient le +N.
+  const support = pt.support && pt.support.count > 0
+    ? `Soutien +${pt.support.bonus} (${pt.support.count} assistant${pt.support.count > 1 ? 's' : ''})`
+    : null;
   return (
     <RollFlowShell
       variant="test"
       title={pt.label}
       actor={actor}
-      subtitle={null}
+      subtitle={support}
       rolled={rolled}
       onRoll={roll}
       onCancel={cancel}

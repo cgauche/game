@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { testValue, partyBest, partyAssisted, skillCharKeyById, resolveSkillBest, bestForSkills, bestForCombined } from './skills';
+import { testValue, partyBest, partyAssisted, skillCharKeyById, resolveSkillBest, bestForSkills, bestForCombined, bestAssistedOption } from './skills';
 import { makeRNG } from './dice';
 import { Combatant, SkillInstance } from './types';
 
@@ -112,6 +112,30 @@ describe('bestForSkills — meilleur PJ pour des compétences AU CHOIX', () => {
   });
   it('groupe vide → null', () => {
     expect(bestForSkills([], [{ skillId: 'perception' }], undefined)).toBeNull();
+  });
+});
+
+describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Soutien (ADE II ch.8)', () => {
+  it('un seul PJ (pas de soutien) → valeur == bestForSkills (aucun +10)', () => {
+    const a = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 50 }]), id: 'a' }; // discr 80
+    const solo = bestAssistedOption([a], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;
+    const ref = bestForSkills([a], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;
+    expect(solo.value).toBe(ref.value);        // 80, aucun soutien
+    expect(solo.skillId).toBe('discretion');
+    expect(solo.support).toEqual({ count: 0, bonus: 0 });
+  });
+  it('N PJ possédant la compétence → valeur = meneur + 10×assistants (plafonné BCarac)', () => {
+    // Meneur Discrétion 60 (BDex 3) ; deux autres la possèdent → +20 (2 soutiens, sous le plafond 3).
+    const lead = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 30 }]), id: 'L' }; // 60, BDex 3
+    const h1 = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 5 }]), id: 'h1' };
+    const h2 = { ...mk({ Dex: 30 }, [{ skillId: 'discretion', advances: 0 }]), id: 'h2' };
+    const r = bestAssistedOption([lead, h1, h2], [{ skillId: 'discretion' }], undefined)!;
+    expect(r.actor.id).toBe('L');
+    expect(r.support).toEqual({ count: 2, bonus: 20 });
+    expect(r.value).toBe(80); // 60 + 20
+  });
+  it('équipage vide → null', () => {
+    expect(bestAssistedOption([], [{ skillId: 'perception' }], undefined)).toBeNull();
   });
 });
 
