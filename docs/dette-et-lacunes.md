@@ -46,8 +46,16 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
 - **Coût / Horreurs de la guerre** (options ADE II) : non modélisés. HORS PÉRIMÈTRE.
 
 ### Système alternatif Aux Armes — Blessures & Critiques (#38, sous toggle `combat-aa-blessures`)
-- **Variante +10/Blessure globale** d'Aux Armes : laissée hors périmètre (seules les tables de
-  Critiques AA par localisation + la règle d'Inconscient-à-0-PB sont câblées).
+- ~~**Variante +10/Blessure globale** d'Aux Armes~~ ⚪ **FAUX POSITIF** : le « +10 par Blessure » d'Aux
+  Armes (AA l.2480 : « ajoutez +10 au résultat d'un jet de 1D100 par Blessure que vous infligez au-delà
+  de celles nécessaires pour faire tomber l'ennemi à 0 Blessure ») EST déjà entièrement câblé, PAS hors
+  périmètre. `aaCriticalOffset(overkill) = 10 × overkill` (`engine/aaCritical.ts` l.49-52) applique le
+  décalage sur le jet de Critique AA ; `rollCritical` bifurque vers `resolveAACritical(…, overkill)` sous
+  `combat-aa-blessures==='aa'` (l.105) ; `overkill` = `res.woundsLost − PB courants` est calculé et passé
+  à CHAQUE site de résolution (`applyCriticalToTarget`, mêlée & magie). Testé : `aa-critical.test.ts`
+  (`aaCriticalOffset(8)===80`, l'exemple canon l.2498 ; le décalage pousse vers la ligne LÉTALE) +
+  `aa-critical-wiring.test.ts` (bout en bout). L'ancien libellé « +10/Blessure globale » était un
+  malnom : la variante N'EST PAS un +10 aux Dégâts par palier, c'est CE décalage-là. Rien à câbler.
 
 ### Avantage de groupe Aux Armes (#39, sous toggle `combat-aa-avantage-groupe`)
 - ~~**Dépenses d'Avantage en mode groupe**~~ ✅ **RÉSOLU** : TOUTE dépense d'Avantage passe par le point
@@ -86,8 +94,17 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
     réaction défensive « dépenser N Avantages de la réserve pour un effet » (nouvelle brique de défense).
 
 ### Économie (#57)
-- **Recherche active de Disponibilité « journée entière + Ragot »** (LDB 59 l.50) : le bonus est
-  exposé au moteur mais non auto-déclenché (pas de sous-système « passer la journée aux marchés »).
+- ~~**Recherche active de Disponibilité « journée entière + Ragot »**~~ ✅ **RÉSOLU** (LDB 59 l.50 :
+  « Les pourcentages de Disponibilité peuvent être augmentés de +10 % ou +20 % si un Personnage […]
+  passe une journée entière à effectuer des achats et des Tests de Ragot ») : action `searchAvailability`
+  au marchand (bouton « 🔎 Chercher activement (1 journée) » dans l'onglet Acheter). Elle consacre UNE
+  JOURNÉE (`advanceTime(MINUTES_PER_DAY)` → cascade #T3), jette un Test de Ragot du groupe
+  (`partyAssisted(party,'ragot','Soc')` + `rollTest`, Soutien LDB 12) et, sur un succès, tire un RÉASSORT
+  FRAIS avec `gossipDay:true` → `availabilitySearchBonus` ajoute +10 % (cumulable avec la Carrière
+  cohérente Marchand/Receleur déjà câblée, jusqu'au plafond +20 %). Réutilise le tirage de stock EXISTANT
+  (helper `rollFreshStock`, partagé avec `openMerchant`) + l'horloge + `engine/disponibilite`. No-op en
+  marché simplifié (`market-mode` sans Test de Disponibilité). Testé : `search-availability.test.ts`
+  (journée avancée, réassort distinct succès≠échec, no-op simplifié).
 
 ### Commerce de cargaison terrestre T2C (#58)
 - **Rumeur commerciale cross-Lieu** : adaptée au Lieu courant ; la version « ce bien se vend le double

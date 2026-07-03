@@ -93,6 +93,7 @@ const JUSTIFIED: Record<string, string> = {
   resumeTravel: 'reprise du voyage interrompu — mêmes jets narrés dans le recap',
   continueTravelAfterNight: 'reprise après la halte de nuit — mêmes jets narrés dans le recap',
   openMerchant: 'ouverture de boutique : réassort/Disponibilité (LDB 59) — le monde tire, pas un Test de héros',
+  searchAvailability: 'recherche active de Disponibilité (LDB 59 l.50) : une JOURNÉE écoulée aux marchés — le Test de Ragot du groupe est un jet SUBI/RÉVÉLÉ (résultat journalisé « Ragot <roll> » la même action, comme le recap de Voyage) puis le réassort AMBIANT en découle ; pas une décision interactive différable',
   spawnEnemy: 'génération de créature (caractéristiques/PB) — ambiant, hors Test',
   gainCorruption: 'seuil de Corruption : Test DIFFÉRÉ en modale (pendingCorruption kind seuil, cycle Chance/Pacte) pour un héros ; repli auto-résolu + révélation témoin (PNJ, gains en rafale)',
   applyMutation: 'mutation tirée sur les Tableaux de Corruption (LDB 19) — RÉVÉLÉE (pendingReveals kind mutation, révélation 🧬)',

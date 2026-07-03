@@ -608,6 +608,9 @@ export interface GameState extends RollFlowActionsMap {
   closeDialogue: () => void;
   openMerchant: (entityId: string) => void;
   closeMerchant: () => void;
+  /** Recherche active de Disponibilité (LDB 59 l.50) : passer une journée entière + un Test de Ragot →
+   *  réassort frais avec +10 % de Disponibilité si le Ragot réussit (avance l'horloge d'une journée). */
+  searchAvailability: () => void;
   /** Jeux de taverne (option `tavern-games`, NADJ ch.16) : ouvrir la modale / jouer une partie
    *  (choisir un jeu + un adversaire, résolution par le moteur générique) / fermer. */
   openTavernGames: () => void;
@@ -1634,6 +1637,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ─── Marchand (#2) : délégué à merchantFlow ───
   openMerchant: (entityId) => merchantFlow.openMerchant(get, set, entityId),
   closeMerchant: () => merchantFlow.closeMerchant(get, set),
+  searchAvailability: () => merchantFlow.searchAvailability(get, set),
   buyItem: (label, heroId) => merchantFlow.buyItem(get, set, label, heroId),
   addToCart: (label) => merchantFlow.addToCart(get, set, label),
   decFromCart: (label) => merchantFlow.decFromCart(get, set, label),

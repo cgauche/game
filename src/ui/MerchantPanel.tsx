@@ -83,7 +83,7 @@ const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', sa
 const TREND_SYM: Record<string, string> = { up: '▲', down: '▼', same: '' };
 
 /** Présentationnel (props) — testable hors store. `initialTab`/`initialDetails`/`initialBuyView` = état de départ (SSR/test). */
-export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, onSellHalving, onBarter, initialTab, initialDetails, initialBuyView, initialSellView }: {
+export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, onSellHalving, onBarter, onSearchAvailability, initialTab, initialDetails, initialBuyView, initialSellView }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
@@ -108,6 +108,8 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   onSellHalving?: (uid: string, delta: number) => void;
   /** Troc (LDB 59 l.64-76) — optionnel : l'onglet Troc n'apparaît que s'il est fourni. */
   onBarter?: (opts: { giveHeroId: string; giveTrappingId: string; getStockId: string; getCount?: number }) => void;
+  /** Recherche active de Disponibilité (LDB 59 l.50) — optionnel : le bouton n'apparaît que s'il est fourni. */
+  onSearchAvailability?: () => void;
   initialTab?: 'buy' | 'sell' | 'repair' | 'barter';
   initialDetails?: string;
   initialBuyView?: 'browse' | 'cart';
@@ -306,6 +308,11 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           {cartCount > 0
             ? <><span className="cart-info">🛒 {cartCount} article{cartCount > 1 ? 's' : ''} · {formatMoney(cartTotal)}</span><button className="btn small btn-primary" onClick={() => setBuyView('cart')}>Voir le panier →</button></>
             : <span className="cart-info empty">🛒 Panier vide</span>}
+          {onSearchAvailability && (
+            <button className="btn small" onClick={onSearchAvailability} title="Passer une journée entière à écumer les étals (Test de Ragot) : réassort frais, Disponibilité +10 % si le Ragot réussit (LDB 59 l.50)">
+              🔎 Chercher activement (1 journée)
+            </button>
+          )}
         </div>
         {!cats.length ? (
           <p className="empty">— rien en stock —</p>
@@ -615,6 +622,7 @@ export function MerchantPanel() {
   const closeMerchant = useGame((s) => s.closeMerchant);
   const setSellHalving = useGame((s) => s.setSellHalving);
   const barterExchange = useGame((s) => s.barterExchange);
+  const searchAvailability = useGame((s) => s.searchAvailability);
   if (!merchant) return null;
   return (
     <MerchantPanelView
@@ -623,7 +631,7 @@ export function MerchantPanel() {
       onAssignDist={assignDistribution} onConfirmDist={confirmDistribution}
       onSell={sellItem} onAddToSellCart={addToSellCart} onRemoveSellCart={removeFromSellCart} onClearSellCart={clearSellCart} onConfirmSell={confirmSell}
       onRepair={repairItem} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
-      onSellHalving={setSellHalving} onBarter={barterExchange}
+      onSellHalving={setSellHalving} onBarter={barterExchange} onSearchAvailability={searchAvailability}
     />
   );
 }

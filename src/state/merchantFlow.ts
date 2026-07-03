@@ -8,7 +8,8 @@ import { Combatant, ItemInstance } from '../engine/types';
 import { recomputeLoadout, itemFromTrappingById, addItemToHero } from '../engine/items';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
-import { SL_ASTOUNDING } from '../engine/tests';
+import { SL_ASTOUNDING, rollTest } from '../engine/tests';
+import { battleRng } from './battleRng';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
 import { rule } from '../engine/policy';
 import { partyAssisted } from '../engine/skills';
@@ -89,12 +90,44 @@ function comptesFree(party: Combatant[], listedBrass: number): boolean {
 }
 
 /** Bonus de recherche de Disponibilité du groupe (LDB 59 l.50) : +10 si un héros a une Carrière
- *  cohérente (« Marchand ou Receleur », l.50). Le +10 « assidu » et le +10 « journée entière + Ragot »
- *  restent des circonstances de scène (non auto-déclenchées ici — pas de sous-système « passer la
- *  journée »). Renvoie le % à ajouter aux Tests de Disponibilité du stock. */
-function partyAvailabilityBonus(party: Combatant[]): number {
+ *  cohérente (« Marchand ou Receleur », l.50) ; +10 de plus si le groupe a passé une journée entière à
+ *  chercher activement (Test de Ragot réussi, `gossipDay`). Le RAW plafonne à +20 %
+ *  (`availabilitySearchBonus`). Renvoie le % à ajouter aux Tests de Disponibilité du stock. */
+function partyAvailabilityBonus(party: Combatant[], gossipDay = false): number {
   const coherent = party.some((h) => /marchand|receleur/i.test(findCareerById(h.career ?? '')?.label ?? ''));
-  return availabilitySearchBonus({ coherentCareer: coherent });
+  return availabilitySearchBonus({ coherentCareer: coherent, gossipDay });
+}
+
+/** Réassort d'un marchand : (re)tire le stock FRAIS d'un archétype à un instant `now`, avec un bonus de
+ *  Disponibilité (Carrière cohérente + éventuelle recherche active, LDB 59 l.50). SOURCE UNIQUE du tirage
+ *  de stock — partagée par l'ouverture (`openMerchant`) et la recherche active (`searchAvailability`).
+ *  Persiste le stock (`merchantStocks`) et journalise les articles trouvés. Retourne le stock tiré. */
+function rollFreshStock(
+  get: Get, set: Set,
+  entityId: string, arch: (typeof MERCHANTS)[string], settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean,
+): { id: string; qty: number }[] {
+  const guild = !!rule('market-guild');
+  const marketMode = rule('market-mode') as string;
+  const cat: CatalogItem[] = trappings
+    .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
+    .map((t) => {
+      const base = (t.availability as CatalogItem['availability']) ?? null;
+      const av = guild && base ? shiftAvailability(base, { qualities: t.qualities }, { guild: true }) : base;
+      return { id: t.id, label: t.label, availability: av };
+    });
+  // Seed dérivé de l'entité, de la PÉRIODE de réassort ET du bonus de recherche → une recherche active qui
+  // ré-ouvre un stock déjà tiré à la même période obtient un tirage DIFFÉRENT (l'effort change le résultat).
+  const period = Math.floor(now / restockPeriod);
+  const seed = [...`${entityId}:${period}:${gossipDay ? 'g' : ''}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
+  const dispoBonus = partyAvailabilityBonus(get().party, gossipDay);
+  const lines = marketMode === 'sans-disponibilite' || marketMode === 'simplifie'
+    ? fullStock(cat, settlement, makeRNG(seed))
+    : rollStock(cat, settlement, makeRNG(seed), arch.curated, dispoBonus);
+  const stock = lines.map((l) => ({ id: l.id, qty: l.qty }));
+  const tested = lines.filter((l) => l.test);
+  if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
+  set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock, rolledAt: now, bargainLocked: false } } })); // réassort → on peut de nouveau marchander
+  return stock;
 }
 
 export function openMerchant(get: Get, set: Set, entityId: string): void {
@@ -112,33 +145,40 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
   // FRAIS (nouvelle Disponibilité) que si `restockPeriod` s'est écoulé depuis le dernier tirage.
   // Règles optionnelles « Marché » (LDB 59/60) : Guildes d'Artisans (Atouts/Défauts inversent la
   // Disponibilité) ; système simplifié (pas de Test de Disponibilité) ; cf. `market-guild`/`market-mode`.
-  const guild = !!rule('market-guild');
-  const marketMode = rule('market-mode') as string;
   let stock = prev?.stock;
   if (!prev || now - prev.rolledAt >= restockPeriod) {
-    const cat: CatalogItem[] = trappings
-      .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
-      .map((t) => {
-        const base = (t.availability as CatalogItem['availability']) ?? null;
-        const av = guild && base ? shiftAvailability(base, { qualities: t.qualities }, { guild: true }) : base;
-        return { id: t.id, label: t.label, availability: av };
-      });
-    // Seed dérivé de l'entité ET de la PÉRIODE de réassort → chaque réassort a un stock frais déterministe.
-    const period = Math.floor(now / restockPeriod);
-    const seed = [...`${entityId}:${period}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
-    // Recherche active (LDB 59 l.50) : Carrière cohérente (Marchand/Receleur) du groupe → +10 % aux
-    // Tests de Disponibilité (sans effet sur le système simplifié « tout en stock »).
-    const dispoBonus = partyAvailabilityBonus(get().party);
-    const lines = marketMode === 'sans-disponibilite' || marketMode === 'simplifie'
-      ? fullStock(cat, settlement, makeRNG(seed))
-      : rollStock(cat, settlement, makeRNG(seed), arch.curated, dispoBonus);
-    stock = lines.map((l) => ({ id: l.id, qty: l.qty }));
-    const tested = lines.filter((l) => l.test);
-    if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
-    set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock: stock!, rolledAt: now, bargainLocked: false } } })); // réassort → on peut de nouveau marchander
+    stock = rollFreshStock(get, set, entityId, arch, settlement, now, restockPeriod, false);
   }
   const persisted = get().merchantStocks[entityId];
   set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock!, cart: [], bargainLocked: persisted?.bargainLocked ?? false } });
+}
+
+/** Recherche active de Disponibilité (LDB 59 l.50) : « passe une journée entière à effectuer des achats et
+ *  des Tests de Ragot ». Le groupe consacre UNE JOURNÉE (avance l'horloge) et jette un Test de Ragot ; sur
+ *  un succès, un RÉASSORT FRAIS est tiré avec +10 % (cumulable avec la Carrière cohérente jusqu'au plafond
+ *  +20 % du RAW). Sur un échec, la journée est perdue (réassort normal, sans le bonus de recherche). */
+export function searchAvailability(get: Get, set: Set): void {
+  const m = get().merchant;
+  if (!m) return;
+  const marketMode = rule('market-mode') as string;
+  if (marketMode === 'sans-disponibilite' || marketMode === 'simplifie') return; // pas de Test de Disponibilité → rien à améliorer
+  const arch = MERCHANTS[m.archetype];
+  if (!arch) return;
+  const ent = get().scene?.entities.find((e) => e.id === m.entityId);
+  const restockPeriod = (ent?.merchant?.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY;
+  // Test de Ragot du groupe (Soutien LDB 12) — Intermédiaire (+0), le RAW ne chiffre pas la difficulté.
+  const best = partyAssisted(get().party, 'ragot', 'Soc');
+  const res = best ? rollTest(best.value, 'intermediaire', battleRng()) : null;
+  const gossipDay = !!res?.success;
+  get().advanceTime(MINUTES_PER_DAY); // « journée entière » — l'horloge cascade normalement (#T3)
+  const now = get().gameTime;
+  const stock = rollFreshStock(get, set, m.entityId, arch, m.settlement, now, restockPeriod, gossipDay);
+  set((s) => (s.merchant ? { merchant: { ...s.merchant, stock, cart: [], bargainBuy: null, bargainSell: null, bargainLocked: false } } : {}));
+  get().log(res == null
+    ? 'Personne dans le groupe ne sait glaner un Ragot — une journée passée en vain aux étals.'
+    : gossipDay
+      ? `${best!.actor.name} — recherche active (Ragot ${res.roll}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`
+      : `${best!.actor.name} — recherche active (Ragot ${res.roll}) : une journée aux marchés sans glaner de piste utile.`);
 }
 
 export function closeMerchant(get: Get, set: Set): void {
