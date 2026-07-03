@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
+  PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -29,13 +29,13 @@ import { actorIn, touchActors } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
-  rollManeuverAttacker, maneuverAttackerDifficulty,
+  rollManeuverAttacker, maneuverAttackerDifficulty, distraireAttackValue,
 } from './combatFlow';
 import { domainEnvironmentBonus } from '../engine/domainAttributes';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
-import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, type AttackResult, type DefenseSub } from '../engine/combat';
+import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll } from '../engine/tests';
@@ -187,6 +187,8 @@ export type RollFlowActionsMap =
   & MonoRollActions<'test', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'battleTest', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'battement', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'distraire', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MultiRollActions<'counterspell', Exclude<RollVerb, 'resist'>>
   & MultiRollActions<'extendedTest', Exclude<RollVerb, 'resist'>>
   & MultiRollActions<'forceDoor', Exclude<RollVerb, 'resist'>>
@@ -777,6 +779,79 @@ export const FLOWS = {
         const ad = p.result!.attackerDetail!;
         const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
         return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
+      },
+    },
+  }),
+
+  /**
+   * Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé. CALQUE de
+   * `trample` (jet MONO d'attaquant influençable) — la seule différence est l'issue métier
+   * (`resolveBattement` dans `battementConfirm`, pas une attaque à Dégâts). Le jet de CC est figé ici ;
+   * `caps.forced` + `picker` autorisent la Résilience (dé choisi : un 01 → DR max retire le plus d'Avantage).
+   */
+  battement: makeRollFlow<PendingBattement>({
+    key: 'pendingBattement',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.attackerId),
+    caps: {
+      forced: true,
+      picker: (p) => (p.forced && p.result ? { roll: p.result.roll, target: p.result.target } : null),
+    },
+    resolve: (s, p, actor, _get, forced) => {
+      if (!actor) return null;
+      if (forced) {
+        const cur = p.result;
+        if (forced.roll != null) {
+          // Dé CHOISI (LDB 17 l.73) : doit RESTER une réussite ; le DR gagné retire plus d'Avantage.
+          if (cur && forced.roll > maxForcedRoll(cur.target)) return null;
+          const target = cur?.target ?? combatValue(actor, 'melee');
+          const e = evaluateTest(forced.roll, target);
+          return { result: { roll: forced.roll, target, success: true, sl: Math.max(e.sl, 1), isDouble: isDoubleRoll(forced.roll) } };
+        }
+        // Dé PAR DÉFAUT (01 → DR max), avant le jet ou après un échec.
+        if (cur?.success) return null;
+        const target = cur?.target ?? combatValue(actor, 'melee');
+        const e = evaluateTest(1, target);
+        return { result: { roll: 1, target, success: true, sl: Math.max(e.sl, 1), isDouble: isDoubleRoll(1) } };
+      }
+      return { result: rollManeuverAttacker(actor, 'CC', battleRng()) };
+    },
+    failed: (p) => !!p.result && !p.result.success,
+    bonus: {
+      // Chance « +1 DR » (LDB 17 l.26) : un DR de plus → un Avantage adverse de plus retiré (l.103).
+      guard: (p) => !!p.result,
+      derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1, success: true } } : null),
+    },
+  }),
+
+  /**
+   * Distraire (LDB 10 l.364 / AA l.4395) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme (foe).
+   * CALQUE EXACT du Désengagement/Au Contact : le jet de Calme du foe (`p.defRoll`) reste FIGÉ ; seul le
+   * jet d'Athlétisme du mover (`p.atk`) se (re)joue. Issue BINAIRE (success/tie/fail) → la Résilience fait
+   * simplement l'emporter. L'issue métier (`resolveDistraire` → `distractedRounds`) vit dans `distraireConfirm`.
+   */
+  distraire: makeRollFlow<PendingDistraire>({
+    key: 'pendingDistraire',
+    rolled: (p) => !!p.atk,
+    actor: (s, p) => actorIn(s, p.moverId),
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
+      if (!actor) return null;
+      if (forced) {
+        if (!p.atk || !p.result) return null; // (calque `disengage` : rien à forcer avant/hors jet)
+        return { result: 'success' as const }; // l'emporte (LDB ch.17 l.73)
+      }
+      const atk = rollTest(distraireAttackValue(actor), 'intermediaire', battleRng()); // mover = « attaquant » du Test opposé
+      const opp = resolveOpposed(atk, p.defRoll);
+      return { atk, result: disengageOutcome(opp.winner) };
+    },
+    failed: (p) => !!p.atk && !p.atk.success,
+    bonus: {
+      guard: (p) => !!p.atk,
+      derive: (_s, p) => {
+        const atk2 = bumpSL(p.atk!);
+        const opp = resolveOpposed(atk2, p.defRoll);
+        return { atk: atk2, result: disengageOutcome(opp.winner) };
       },
     },
   }),

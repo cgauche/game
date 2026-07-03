@@ -9,6 +9,8 @@ import { RenounceModal } from './RenounceModal';
 import { MountTargetModal } from './MountTargetModal';
 import { FateSaveModal } from './FateSaveModal';
 import { TrampleModal } from './TrampleModal';
+import { BattementModal } from './BattementModal';
+import { DistraireModal } from './DistraireModal';
 import { ManeuverModal } from './ManeuverModal';
 import { RunModal } from './RunModal';
 import { ShipManeuverModal } from './ShipManeuverModal';
@@ -39,7 +41,7 @@ import { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, renounce: RenounceModal,
-  trample: TrampleModal, maneuver: ManeuverModal, reveal: RevealModal,
+  trample: TrampleModal, battement: BattementModal, distraire: DistraireModal, maneuver: ManeuverModal, reveal: RevealModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, auContact: AuContactModal, grapple: GrappleModal, approach: ApproachModal, ward: WardModal, run: RunModal, shipManeuver: ShipManeuverModal, shipBattery: ShipBatteryModal, crewTest: CrewTestModal, shanty: ShantyModal, focus: FocusModal, dispel: DispelModal,
   medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
   corruption: CorruptionModal, activity: ActivityModal,

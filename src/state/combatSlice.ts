@@ -17,7 +17,10 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes } from './combatFlow';
+import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
+import { losClear } from './lineOfSight';
+import { smokeOf } from './combatGeometry';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
@@ -783,6 +786,88 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...get().battle!, acted: prevActed } });
     },
     trampleCancel: () => set({ pendingTrample: null }),
+
+    // ── Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé retirant de
+    //    l'Avantage adverse. Le jet passe par FLOWS.battement (Lancer/Chance/Pacte/Résilience) ;
+    //    « Appliquer » (`battementConfirm`) appelle `resolveBattement` et consomme l'Action. ──
+    battleBattement: (foeId?: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over || battle.acted) return; // l'Action de Battement est indisponible si déjà agi
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || !canTakeAction(active) || !hasBattement(active)) return;
+      const foes = battementFoes(active, battle);
+      const foe = foeId ? foes.find((c) => c.id === foeId) : foes[0]; // défaut = 1er éligible ; picker via `battementSetFoe`
+      if (!foe) return;
+      startBattement(get, set, active, foe);
+    },
+    // Change la cible du Battement AVANT le jet (picker OptionChooser de la modale) — re-ouvre sur le foe choisi.
+    battementSetFoe: (foeId: string) => {
+      const { battle, pendingBattement: pb } = get();
+      if (!battle || !pb || pb.result) return; // verrouillé une fois lancé
+      const active = battle.combatants.find((c) => c.id === pb.attackerId);
+      const foe = active && battementFoes(active, battle).find((c) => c.id === foeId);
+      if (!active || !foe) return;
+      startBattement(get, set, active, foe);
+    },
+    // Cycle Lancer/Chance/+1 DR/Pacte/Résilience (spec `battement`) : jet de CC de l'attaquant, non opposé.
+    ...rollFlowActions('battement', FLOWS.battement, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
+    // « Appliquer » : `resolveBattement` retire l'Avantage adverse (LDB 10 l.103) ; consomme l'Action.
+    battementConfirm: () => {
+      const { battle, pendingBattement: pb } = get();
+      if (!battle || !pb || !pb.result) return;
+      const attacker = battle.combatants.find((c) => c.id === pb.attackerId);
+      const foe = battle.combatants.find((c) => c.id === pb.foeId);
+      set({ pendingBattement: null });
+      if (!attacker || !foe) return;
+      const line = resolveBattement(get, attacker, foe, pb.result); // MUTE le foe (et la réserve du camp)
+      set({ battle: { ...get().battle!, acted: true, action: null, log: [...get().battle!.log, ev('attack', line, attacker.id, foe.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      checkBattleOver(get, set);
+    },
+    battementCancel: () => set({ pendingBattement: null }),
+
+    // ── Distraire (LDB 10 l.364 / AA l.4395) : MOUVEMENT, Test OPPOSÉ Athlétisme vs Calme. Le jet de
+    //    Calme du foe est figé à l'ouverture (`startDistraire`) ; l'Athlétisme du mover passe par
+    //    FLOWS.distraire (Lancer/Chance/Pacte/Résilience) ; « Appliquer » pose `distractedRounds` et
+    //    consomme le MOUVEMENT (pas l'Action). ──
+    battleDistraire: (foeId?: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const { battle, scene } = get();
+      if (!battle || !scene || battle.over || battle.movementUsed > 0) return; // le Distraire coûte le Mouvement
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || !active.pos || !hasDistraire(active)) return;
+      const foes = distraireFoes(active, battle, (c) => losClear(scene, active.pos!, c.pos!, smokeOf(battle)));
+      const foe = foeId ? foes.find((c) => c.id === foeId) : foes[0]; // défaut = 1er éligible ; picker via `distraireSetFoe`
+      if (!foe) return;
+      startDistraire(get, set, active, foe);
+    },
+    // Change la cible du Distraire AVANT le jet (picker OptionChooser) — re-fige le Calme du foe choisi.
+    distraireSetFoe: (foeId: string) => {
+      const { battle, scene, pendingDistraire: pd } = get();
+      if (!battle || !scene || !pd || pd.atk) return; // verrouillé une fois lancé
+      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const foe = mover && mover.pos && distraireFoes(mover, battle, (c) => losClear(scene, mover.pos!, c.pos!, smokeOf(battle))).find((c) => c.id === foeId);
+      if (!mover || !foe) return;
+      startDistraire(get, set, mover, foe);
+    },
+    // « Lancer » : jet d'Athlétisme du mover, opposé au jet de Calme figé du foe (spec `distraire`).
+    // Cycle Chance/+1 DR/Pacte/Résilience : foe (defRoll) figé, seul l'Athlétisme du mover se (re)joue.
+    ...rollFlowActions('distraire', FLOWS.distraire, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
+    // « Appliquer » : `resolveDistraire` pose `distractedRounds` sur une victoire ; consomme le MOUVEMENT.
+    distraireConfirm: () => {
+      const { battle, pendingDistraire: pd } = get();
+      if (!battle || !pd || !pd.atk || !pd.result) return;
+      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      set({ pendingDistraire: null });
+      if (!mover || !foe) return;
+      const line = resolveDistraire(mover, foe, pd.atk, pd.defRoll); // MUTE le foe (distractedRounds) sur une victoire
+      set({ battle: { ...get().battle!, action: null, movementUsed: mountMovement(get().battle!, mover), reachable: new Map(), log: [...get().battle!.log, ev('attack', line, mover.id, foe.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      checkBattleOver(get, set);
+    },
+    distraireCancel: () => set({ pendingDistraire: null }),
 
     // ── Manœuvre de créature par modale (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) : le jet de
     //    l'ATTAQUANT passe par FLOWS.maneuver (Lancer/Chance/Pacte/Résilience) ; « Appliquer » roule les

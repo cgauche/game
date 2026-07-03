@@ -455,3 +455,30 @@ export function distraireAttackValue(c: Combatant): number {
 export function distraireDefenseValue(c: Combatant): number {
   return effectiveChar(c, 'FM') + (c.skills.find((s) => s.skillId === 'calme')?.advances ?? 0);
 }
+
+/** Adversaires ÉLIGIBLES au Battement de `attacker` (LDB 10 l.103) — SOURCE UNIQUE : gate de la hotbar,
+ *  défaut de l'ouverture, picker de la modale. Pur. */
+export function battementFoes(attacker: Combatant, battle: BattleState): Combatant[] {
+  return battle.combatants.filter((c) => battementEligible(attacker, c));
+}
+
+/** Adversaires ÉLIGIBLES au Distraire de `mover` EN LIGNE DE VUE (LDB 10 l.364, « adversaire qu'il peut
+ *  voir ») — SOURCE UNIQUE : gate de la hotbar, défaut de l'ouverture, picker de la modale. `los` = prédicat
+ *  de Ligne de Vue injecté (le module ne connaît pas la scène/les fumées). Pur. */
+export function distraireFoes(mover: Combatant, battle: BattleState, los: (foe: Combatant) => boolean): Combatant[] {
+  return battle.combatants.filter((c) => distraireEligible(mover, c) && !!c.pos && los(c));
+}
+
+/** Ouvre la modale de Battement d'un héros (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps
+ *  NON opposé. AUCUN jet ici — il se fait au « Lancer » (`battementRoll`). Calque `battleTrample`. */
+export function startBattement(get: Get, set: SetFn, attacker: Combatant, foe: Combatant): void {
+  set({ pendingBattement: { attackerId: attacker.id, foeId: foe.id, result: null } });
+}
+
+/** Ouvre la modale de Distraire d'un héros (LDB 10 l.364 / AA l.4395) : Mouvement, Test OPPOSÉ
+ *  Athlétisme vs Calme. Le jet de Calme du foe est tiré et FIGÉ d'avance (pattern Désengagement/
+ *  Au Contact) ; seul l'Athlétisme du mover se (re)joue dans la modale. */
+export function startDistraire(get: Get, set: SetFn, mover: Combatant, foe: Combatant): void {
+  const defRoll = rollTest(distraireDefenseValue(foe), 'intermediaire', battleRng()); // Calme du foe, figé (jamais relancé)
+  set({ pendingDistraire: { moverId: mover.id, foeId: foe.id, atk: null, defRoll, result: null } });
+}

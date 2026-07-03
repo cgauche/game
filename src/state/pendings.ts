@@ -318,6 +318,32 @@ export interface PendingTrample {
   /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
 }
+/** Battement en attente (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé.
+ *  Modale MONO calquée sur `PendingTrample` — Lancer (jet de CC figé) → Chance/Pacte/Résilience →
+ *  Appliquer (`resolveBattement` retire de l'Avantage adverse). Consomme l'Action. */
+export interface PendingBattement {
+  attackerId: string;
+  foeId: string;
+  result: TestResult | null; // jet de Corps à corps de l'attaquant ; null = pas encore lancé
+  rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  forced?: boolean;
+}
+/** Distraire en attente (LDB 10 l.364 / AA l.4395) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs
+ *  Calme (foe). Modale OPPOSÉE calquée sur `PendingDisengage`/`PendingAuContact` : le jet de Calme du
+ *  foe (`defRoll`) est FIGÉ à l'ouverture ; seul le jet d'Athlétisme du mover (`atk`) se (re)joue.
+ *  Sur victoire, `resolveDistraire` pose `distractedRounds`. Consomme le MOUVEMENT (pas l'Action). */
+export interface PendingDistraire {
+  moverId: string; // héros qui distrait (actif)
+  foeId: string; // adversaire distrait
+  atk: TestResult | null; // jet d'Athlétisme du mover (mover = « attaquant » du Test opposé) — null = pas lancé
+  defRoll: TestResult; // jet de Calme du foe, figé à l'ouverture (jamais relancé)
+  result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover l'emporte ; 'tie' = statu quo
+  /** Relance par Chance de l'Athlétisme déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73) → l'emporte simplement (issue binaire). */
+  forced?: boolean;
+}
 /** Manœuvre de créature en attente (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) qu'un héros active.
  *  La modale n'influence QUE le jet de l'attaquant (`result` : son TestResult CC/CT figé) ; l'apply
  *  (`applyMan<X>`) roule les défenseurs et résout l'opposition dans le feed. `avantageSpent` = Avantage

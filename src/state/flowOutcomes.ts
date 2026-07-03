@@ -21,7 +21,10 @@ import type {
   PendingBargain,
   PendingAppraise,
   PendingDisengage,
+  PendingBattement,
+  PendingDistraire,
 } from './pendings';
+import { battementRemoval } from './combatManeuvers';
 import type { PendingEncounterPsych } from './encounterPsychFlow';
 import type { PendingActivity } from './interludeFlow';
 import { CIBLE_TYPES, CIBLE_LABEL } from '../engine/psychology';
@@ -227,6 +230,25 @@ export function describeFrenzy(pf: PendingFrenzy, name: string): string {
   return r.success
     ? t('out.frenzyEnter', { name })
     : t('out.frenzyNo', { name });
+}
+
+/** Battement (LDB 10 l.103) : succès → −(1 + DR) Avantage adverse (barème `battementRemoval`), échec →
+ *  rien. Popin = MÊME phrase que la ligne de journal (`manv.battement`/`manv.battementFail`). */
+export function describeBattement(pb: PendingBattement, attackerName: string, foeName: string): string {
+  const r = pb.result;
+  if (!r) return '';
+  return r.success
+    ? t('manv.battement', { name: attackerName, foe: foeName, n: battementRemoval(r.sl) })
+    : t('manv.battementFail', { name: attackerName, foe: foeName });
+}
+
+/** Distraire (LDB 10 l.364) : verdict du Test opposé Athlétisme vs Calme. Victoire (`success`) → le foe
+ *  est distrait ; 'tie'/'failure' → rien. Popin = MÊME phrase que la ligne de journal (`manv.distraire*`). */
+export function describeDistraire(pd: PendingDistraire, moverName: string, foeName: string): string {
+  if (pd.result == null) return '';
+  return pd.result === 'success'
+    ? t('manv.distraire', { name: moverName, foe: foeName })
+    : t('manv.distraireFail', { name: moverName, foe: foeName });
 }
 
 /** Désengagement (LDB 15-Dépl) — phase 'esquive' : verdict du Test opposé d'Esquive (popin). Le fil

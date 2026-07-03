@@ -29,7 +29,7 @@ type FieldKey =
   | 'pendingRenounce' | 'pendingMountTarget' | 'pendingDisengage' | 'pendingAuContact' | 'pendingGrapple' | 'pendingInteract' | 'pendingCast'
   | 'pendingCounterspell' | 'pendingExtendedTest' | 'pendingForceDoor' | 'pendingCascade'
   | 'pendingCastOpposition' | 'pendingHeal' | 'pendingSurgery' | 'medic' | 'pendingRest' | 'pendingCleave'
-  | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingManeuver'
+  | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingBattement' | 'pendingDistraire' | 'pendingManeuver'
   | 'pendingRun' | 'pendingShipManeuver' | 'pendingShipBattery' | 'pendingCrewTest' | 'pendingShanty' | 'pendingApproach' | 'pendingWard' | 'pendingFocus' | 'pendingDispel' | 'pendingFrenzy' | 'pendingRoundStart'
   | 'pendingFateSave' | 'pendingVictory' | 'pendingLoot' | 'document' | 'previousScene'
   | 'port' | 'pendingSeaActivities';
@@ -74,6 +74,8 @@ const STATE_FIELDS: Manifest = {
   pendingLogQueue: { init: [], resetOn: ['scene', 'combatStart'] },
   scheduledEffects: { init: [], resetOn: [] },
   pendingTrample: { init: null, resetOn: ['scene', 'combatStart'] },
+  pendingBattement: { init: null, resetOn: ['scene', 'combatStart'] },
+  pendingDistraire: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingManeuver: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingRun: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingShipManeuver: { init: null, resetOn: ['scene', 'combatStart'] },

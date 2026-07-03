@@ -29,7 +29,10 @@ import { aiDriven } from '../state/combatGate';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes } from '../state/combatFlow';
+import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
+import { losClear } from '../state/lineOfSight';
+import { smokeOf } from '../state/combatGeometry';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
@@ -58,6 +61,8 @@ export function ActionBar() {
   const endTurn = useGame((s) => s.battleEndTurn);
   const defendTotal = useGame((s) => s.battleDefendTotal);
   const disengage = useGame((s) => s.battleDisengage);
+  const battement = useGame((s) => s.battleBattement);
+  const distraire = useGame((s) => s.battleDistraire);
   const mountUp = useGame((s) => s.battleMount);
   const dismount = useGame((s) => s.battleDismount);
   const useItem = useGame((s) => s.battleUseItem);
@@ -358,6 +363,14 @@ export function ActionBar() {
   const canServePoste = isHero && !active.mannedPoste && servablePostes(active, battle.combatants).length > 0;
   // « Diriger l'équipe » (Commandant d'équipe, AA) : le héros porte le Talent ET ≥ 1 équipe d'Arme d'équipe est à portée de voix.
   const canAid = isHero && canAidTeam(active, battle.combatants);
+  // Battement (LDB 10 l.103 / AA l.4361) : Action, Test de CC non opposé. Dispo si le héros porte le
+  // Talent, l'Action n'est pas dépensée, et ≥ 1 adversaire ARMÉ pas plus grand est Engagé (battementFoes).
+  const canBattement = isHero && !frenzied && !battle.acted && hasBattement(active) && battementFoes(active, battle).length > 0;
+  // Distraire (LDB 10 l.364 / AA l.4395) : Mouvement, Test opposé Athlétisme vs Calme. Dispo si le héros
+  // porte le Talent, son Mouvement n'est pas dépensé, et ≥ 1 adversaire est éligible EN LIGNE DE VUE.
+  const canDistraire =
+    isHero && !frenzied && !moveStarted && !!active.pos && hasDistraire(active) && !!scene &&
+    distraireFoes(active, battle, (c) => losClear(scene, active.pos!, c.pos!, smokeOf(battle))).length > 0;
   const slots: HotbarSlot[] = [];
   if (isHero) {
     if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: <Icon id="ui/undo" />, label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
@@ -370,6 +383,8 @@ export function ActionBar() {
     if (entangled) slots.push({ id: 'free-entangle', disabled: battle.acted || stunned, icon: <Icon id="action/break-free" />, label: 'Se libérer', done: battle.acted, title: "Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)", run: () => recoverState('empetre') });
     if (canStandUp) slots.push({ id: 'stand', icon: <Icon id="action/stand-up" />, label: 'Se relever', title: "Se relever de l'État À Terre — utilise le Mouvement", run: standUp });
     if (engaged && !frenzied) slots.push({ id: 'disengage', disabled: battle.acted && !canFreeDisengage, icon: <Icon id="action/disengage" />, label: 'Se désengager', title: "Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)", run: disengage });
+    if (canBattement) slots.push({ id: 'battement', icon: <Icon id="action/attack" />, label: 'Battement', done: battle.acted, title: "Battement : Test de Corps à corps pour retirer de l'Avantage à un adversaire armé (coûte l'Action)", run: () => battement() });
+    if (canDistraire) slots.push({ id: 'distraire', icon: <Icon id="action/aim" />, label: 'Distraire', title: "Distraire : Test opposé d'Athlétisme contre le Calme d'un adversaire en vue — il ne gagne plus d'Avantage (coûte le Mouvement)", run: () => distraire() });
     if (mountCandidate) slots.push({ id: 'mount', disabled: moveStarted || broken, icon: <Icon id="action/mount" />, label: 'Monter', title: `Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`, run: mountUp });
     if (mounted) slots.push({ id: 'dismount', disabled: moveStarted || broken, icon: <Icon id="action/dismount" />, label: 'Descendre', title: 'Descendre de sa monture — coûte le Mouvement', run: dismount });
     if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });

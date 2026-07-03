@@ -77,7 +77,7 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import * as tavernFlow from './tavernFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
+  PendingAppraise, PendingAttack, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
@@ -383,6 +383,10 @@ export interface GameState extends RollFlowActionsMap {
   scheduledEffects: ScheduledEffect[];
   /** Piétinement en cours (modale interactive). */
   pendingTrample: PendingTrample | null;
+  /** Battement en cours (LDB 10 l.103 — modale de jet de CC non opposé retirant l'Avantage adverse). */
+  pendingBattement: PendingBattement | null;
+  /** Distraire en cours (LDB 10 l.364 — modale de Test opposé Athlétisme vs Calme). */
+  pendingDistraire: PendingDistraire | null;
   /** Manœuvre de créature en cours (Souffle/Vomi/Langue/Regard/Étreinte — modale de jet d'attaquant). */
   pendingManeuver: PendingManeuver | null;
   /** Course en cours (modale Test d'Athlétisme → déplacement étendu). */
@@ -888,6 +892,21 @@ export interface GameState extends RollFlowActionsMap {
   // trample{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   trampleConfirm: () => void;
   trampleCancel: () => void;
+  /** Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé retirant de
+   *  l'Avantage adverse. `foeId` absent = 1er éligible (picker via `battementSetFoe`). */
+  battleBattement: (foeId?: string) => void;
+  battementSetFoe: (foeId: string) => void;
+  // battement{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
+  battementConfirm: () => void;
+  battementCancel: () => void;
+  /** Distraire (LDB 10 l.364 / AA l.4395) : MOUVEMENT, Test opposé Athlétisme vs Calme. Sur victoire,
+   *  le foe est distrait (ne gagne plus d'Avantage). `foeId` absent = 1er éligible en Ligne de vue
+   *  (picker via `distraireSetFoe`). */
+  battleDistraire: (foeId?: string) => void;
+  distraireSetFoe: (foeId: string) => void;
+  // distraire{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
+  distraireConfirm: () => void;
+  distraireCancel: () => void;
   /** Manœuvre de créature par modale (LDB 85) : Lancer le jet d'ATTAQUANT (CC/CT), Chance/Pacte/
    *  Résilience l'influencent, Appliquer roule les défenseurs et résout l'opposition au feed. */
   // maneuver{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
