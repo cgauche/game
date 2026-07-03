@@ -18,6 +18,13 @@ import { slugId } from '../../data/slug';
 
 // Traits dont la mécanique vit AILLEURS que dans les helpers de `dispatch` (la raison est documentée).
 const COUVERT_AILLEURS = new Map<string, string>([
+  // Environnement aquatique (T2C p.90 / MDG p.140 / LDB p.338) — op passive `offTerrainMod` (terrain d’election `eau`) :
+  // (1) le drapeau positionnel `Combatant.offTerrain`, re-derive par `placeCombatant` selon la tuile, module le M
+  // (encumbrance) et le DR de TOUS les Tests (combat/magic/rollFlows) hors de l’eau ; (2) `eau` est TRAVERSABLE en
+  // pathing (`MoveEnv.swim` <- `requiredTerrains`, path.ts). Mecanise + teste (off-terrain.test.ts / path-swim.test.ts).
+  ['Aquatique', 'ne peut aller a terre (M->0, offTerrainMod mSet:0) + traverse l’eau a pleine vitesse (MoveEnv.swim)'],
+  ['Amphibie', 'full M en eau + eau traversable (offTerrainMod{eau} sans malus + MoveEnv.swim) ; +BAg au DR des Tests de Natation = residuel (pas de Test de Natation authore)'],
+  ['Créature marine', 'hors de l’eau M->1 + -2 DR a tous les Tests (offTerrainMod, positionnel via placeCombatant) + eau traversable (MoveEnv.swim) ; aspersion/suffocation narrees'],
   // Attaques naturelles et armement — engine/creatureAttacks.ts + spawn.weaponsFromTraits (grantsManeuvers)
   ['À distance', 'arme dérivée au spawn (weaponsFromTraits)'],
   ['Arme', 'arme dérivée au spawn (weaponsFromTraits)'],
@@ -74,7 +81,6 @@ const COUVERT_AILLEURS = new Map<string, string>([
 // Journal/MJ EN CONSCIENCE : pas d'effet moteur câblable sans système support — la desc (verbatim)
 // est affichée à l'inspecteur ; rien d'inventé.
 const JOURNAL_MJ = new Map<string, string>([
-  ['Amphibie', 'pas de coût de déplacement aquatique (terrain binaire walkable)'],
   ['Arboricole', 'bonus Escalade/Discrétion en forêt — pas de biome forêt mécanisé'],
   ['Limicole', 'pas de terrain marécageux à pénalité de Mouvement'],
   ['Grimpant', 'pas de système d’escalade (surfaces verticales)'],
@@ -105,9 +111,6 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Voleur de chair', 'revêt la peau d’un humain tué (trait de Gideon) — pas de système de déguisement (MJ)'],
   // Trait ZI sans système support (desc verbatim, MJ).
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
-  // Traits MDG (bestiaire marin) + T2C (bestiaire fluvial) — desc verbatim, environnement aquatique non mécanisé.
-  ['Créature marine', 'hors de l’eau : M→1, −2 DR à tous les Tests, suffocation (MDG 16 l.17-19) — environnement aquatique non modélisé (lot systèmes naval)'],
-  ['Aquatique', 'respire sous l’eau (T2C p.90). Le terrain Eau EXISTE (`terrain/defs/eau.ts`, walkable:false) + toute la couche navale ; il MANQUE le déplacement AQUATIQUE PAR-CRÉATURE (Aquatique traverse l’eau à pleine vitesse / ne peut pas aller à terre — override par-créature du walkable binaire). Gap NARROW, pas un sous-système absent'],
   ['Marque de Khorne', 'Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh + interdits + achats hors carrière (MDG 07 l.250-252) — même canal que Marque de Tzeentch (auteur/MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
   // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).

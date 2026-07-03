@@ -585,12 +585,16 @@ export function isCrenellated(scene: Scene, x: number, y: number, z = 0): boolea
   return crenellatedAt(scene, x, y, z) !== null;
 }
 
-export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
+export function isWalkable(scene: Scene, x: number, y: number, z = 0, swim?: ReadonlySet<string>): boolean {
   if (z > 0 && tileCollapsed(scene, x, y, z)) return false; // passerelle effondrée → plus marchable
   if (entityBlockedAt(scene, x, y)) return false; // empreinte multi-cases d'un décor (foot {w,h})
   // Impassabilité de la MASSE = le TERRAIN (bloc plein `mur` = walkable:false) ; le sol du TUNNEL (`pierre`)
   // reste marchable, la herse INTACTE barrant la bouche via `wallBetween`. Aucune règle « rempart » ici.
-  return terrainWalkable(tileAt(scene, x, y, z));
+  // `swim` : terrains d'ÉLECTION du mover (op passive `offTerrainMod` — `eau` pour Aquatique/Amphibie/
+  // Créature marine) qu'il TRAVERSE bien que globalement `walkable:false` (RAW « se déplace à sa pleine
+  // vitesse dans l'eau ») ; absent (exploration/décor) → walkabilité de terrain nue, byte-identique.
+  const t = tileAt(scene, x, y, z);
+  return terrainWalkable(t) || (swim !== undefined && swim.has(t));
 }
 
 /** Lien vertical entre deux cases ADJACENTES (Chebyshev : cardinale OU diagonale, grille 8-connexe cf.

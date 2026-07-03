@@ -13,6 +13,7 @@ import { Scene, isWalkable } from './scene';
 import { Pt, MoveEnv, tileKey } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
 import { sizeGap } from '../engine/size';
+import { requiredTerrains } from '../engine/ops';
 import { isOutOfAction } from '../engine/conditions';
 import { isStructure } from '../engine/structures';
 import { traitSeesInDark } from '../engine/traits/dispatch';
@@ -81,7 +82,13 @@ export function cannotStopOn(battle: BattleState, mover: Combatant): Set<string>
  * autre créature » ne peut plus être oublié par un appelant. (`jump` non fixé : le combat ne saute pas.)
  */
 export function moveEnv(battle: BattleState, mover: Combatant): MoveEnv {
-  return { blocked: occupied(battle, mover), foot: footprintN(mover), noStop: cannotStopOn(battle, mover) };
+  // `swim` : terrains d'élection du mover (op `offTerrainMod` — `eau` pour Aquatique/Amphibie/Créature
+  // marine) qu'il traverse bien que `walkable:false`. Omis si aucun (le sol byte-identique à l'ancien env).
+  const swim = requiredTerrains(mover);
+  return {
+    blocked: occupied(battle, mover), foot: footprintN(mover), noStop: cannotStopOn(battle, mover),
+    ...(swim.length ? { swim: new Set(swim) } : {}),
+  };
 }
 
 /**

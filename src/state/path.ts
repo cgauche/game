@@ -66,7 +66,7 @@ function walled(edges: Set<string>, ax: number, ay: number, bx: number, by: numb
  *  (à la couche de départ OU d'arrivée) coupant le passage. C'est l'auto-connexion du relief : un même
  *  pas peut changer de couche là où une rampe rejoint un tablier (hauteurs coïncidentes) — plus aucun
  *  escalier explicite. Une falaise (Δhauteur > STEP_MAX) n'est PAS un voisin à pied (chute/Escalade). */
-function neighborsOf(scene: Scene, p: Pt, edges: Set<string>): Pt[] {
+function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet<string>): Pt[] {
   const z = pz(p);
   const out: Pt[] = [];
   for (const [dx, dy] of NEIGHBORS) {
@@ -75,13 +75,13 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>): Pt[] {
     // franchissables depuis (p) au même étage (marchables ET non séparées par un mur). Empêche de se
     // faufiler en diagonale à travers un coin de mur ou entre deux obstacles.
     if (dx !== 0 && dy !== 0) {
-      const okA = isWalkable(scene, p.x + dx, p.y, z) && !walled(edges, p.x, p.y, p.x + dx, p.y, z);
-      const okB = isWalkable(scene, p.x, p.y + dy, z) && !walled(edges, p.x, p.y, p.x, p.y + dy, z);
+      const okA = isWalkable(scene, p.x + dx, p.y, z, swim) && !walled(edges, p.x, p.y, p.x + dx, p.y, z);
+      const okB = isWalkable(scene, p.x, p.y + dy, z, swim) && !walled(edges, p.x, p.y, p.x, p.y + dy, z);
       if (!okA || !okB) continue;
     }
     for (const layer of scene.layers) {
       const nz = layer.z;
-      if (!isWalkable(scene, nx, ny, nz)) continue; // pas de surface réelle sur cette couche ici
+      if (!isWalkable(scene, nx, ny, nz, swim)) continue; // pas de surface réelle sur cette couche ici
       if (walled(edges, p.x, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y, nx, ny, nz))) continue;
       const link = surfaceLink(scene, p, { x: nx, y: ny, z: nz });
       if (link && link.grade !== 'cliff') out.push(pt(nx, ny, nz));
@@ -104,7 +104,7 @@ export function walkNeighbors(scene: Scene, p: Pt): Pt[] {
  *  retournés sont DÉJÀ validés (atterrissage praticable et libre). `foot>1` ne saute pas ; `jump<2`
  *  = aucun saut (un pas d'1 case n'est jamais un saut). La portée libre (M/3 m) vs avec Test se
  *  décide à la couche déplacement — ici on ne fait que l'atteignabilité géométrique. */
-function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, foot: number, edges: Set<string>): Pt[] {
+function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, foot: number, edges: Set<string>, swim?: ReadonlySet<string>): Pt[] {
   if (jump < 2 || foot > 1) return [];
   const z = pz(p);
   const out: Pt[] = [];
@@ -112,10 +112,10 @@ function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, 
     if (walled(edges, p.x, p.y, p.x + dx, p.y + dy, z)) continue; // un mur au décollage interdit le saut
     for (let d = 2; d <= jump; d++) {
       let overGap = true; // les cases 1..d-1 doivent toutes être un gouffre (non-marchables)
-      for (let k = 1; k < d; k++) if (isWalkable(scene, p.x + dx * k, p.y + dy * k, z)) { overGap = false; break; }
+      for (let k = 1; k < d; k++) if (isWalkable(scene, p.x + dx * k, p.y + dy * k, z, swim)) { overGap = false; break; }
       if (!overGap) break; // une case marchable interrompt : pas de saut plus loin dans cette direction
       const lx = p.x + dx * d, ly = p.y + dy * d;
-      if (footFits(scene, lx, ly, z, foot, blocked)) out.push(z ? { x: lx, y: ly, z } : { x: lx, y: ly });
+      if (footFits(scene, lx, ly, z, foot, blocked, swim)) out.push(z ? { x: lx, y: ly, z } : { x: lx, y: ly });
     }
   }
   return out;
@@ -126,11 +126,11 @@ function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, 
  * doivent être walkable (terrain/bâtiment) ET non bloquées. Pour `foot=1`, vérifie juste la tuile.
  * Permet à une grande créature de NE PAS se faufiler dans un couloir d'1 tuile (LDB 15 l.55).
  */
-function footFits(scene: Scene, x: number, y: number, z: number, foot: number, blocked: Set<string>): boolean {
-  if (foot <= 1) return isWalkable(scene, x, y, z) && !blocked.has(key(x, y, z));
+function footFits(scene: Scene, x: number, y: number, z: number, foot: number, blocked: Set<string>, swim?: ReadonlySet<string>): boolean {
+  if (foot <= 1) return isWalkable(scene, x, y, z, swim) && !blocked.has(key(x, y, z));
   for (let dy = 0; dy < foot; dy++)
     for (let dx = 0; dx < foot; dx++) {
-      if (!isWalkable(scene, x + dx, y + dy, z) || blocked.has(key(x + dx, y + dy, z))) return false;
+      if (!isWalkable(scene, x + dx, y + dy, z, swim) || blocked.has(key(x + dx, y + dy, z))) return false;
     }
   return true;
 }
@@ -147,12 +147,17 @@ function footFits(scene: Scene, x: number, y: number, z: number, foot: number, b
  *               travers une créature plus petite sans finir sur sa case (LDB 85 l.373-374 vs « on ne
  *               finit jamais sur la case d'une autre créature »).
  * - `jump`    : portée de Saut LDB 15 (défaut 0) — `pathTo` seulement.
+ * - `swim`    : terrains d'ÉLECTION du mover (op `offTerrainMod` — `eau` pour Aquatique/Amphibie/Créature
+ *               marine) qu'il TRAVERSE bien que `walkable:false` (RAW « pleine vitesse dans l'eau ») —
+ *               toutes les fonctions de mouvement PROPRE (reachable/fly/pathTo) ; absent = terrain nu.
+ *               Assemblé par `moveEnv(battle, mover)` via `requiredTerrains(mover)`.
  */
 export interface MoveEnv {
   blocked: Set<string>;
   foot?: number;
   noStop?: Set<string>;
   jump?: number;
+  swim?: ReadonlySet<string>;
 }
 
 /**
@@ -160,7 +165,7 @@ export interface MoveEnv {
  * cases occupées par `env.blocked`. Retourne une map clé→distance.
  */
 export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv): Map<string, number> {
-  const { blocked, foot = 1, noStop } = env;
+  const { blocked, foot = 1, noStop, swim } = env;
   const edges = wallEdges(scene);
   const dist = new Map<string, number>();
   const sz = pz(start);
@@ -169,11 +174,11 @@ export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv):
   for (let step = 0; step < range; step++) {
     const next: Pt[] = [];
     for (const p of frontier) {
-      for (const n of neighborsOf(scene, p, edges)) {
+      for (const n of neighborsOf(scene, p, edges, swim)) {
         const nz = pz(n);
         const k = key(n.x, n.y, nz);
         if (dist.has(k)) continue;
-        if (!footFits(scene, n.x, n.y, nz, foot, blocked)) continue; // l'empreinte entière doit tenir (LDB 15 l.55)
+        if (!footFits(scene, n.x, n.y, nz, foot, blocked, swim)) continue; // l'empreinte entière doit tenir (LDB 15 l.55)
         dist.set(k, step + 1);
         next.push(n); // franchie pour l'expansion même si interdite à l'arrêt (`noStop`)
       }
@@ -190,7 +195,7 @@ export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv):
  * praticable et libre. Coût = distance de Tchebychev (déplacement libre dans les airs).
  */
 export function flyReachable(scene: Scene, start: Pt, range: number, env: MoveEnv): Map<string, number> {
-  const { blocked, foot = 1, noStop } = env;
+  const { blocked, foot = 1, noStop, swim } = env;
   const dist = new Map<string, number>();
   const sz = pz(start); // le vol reste à l'étage du voltigeur (l'atterrissage doit y tenir)
   dist.set(key(start.x, start.y, sz), 0);
@@ -199,7 +204,7 @@ export function flyReachable(scene: Scene, start: Pt, range: number, env: MoveEn
       if (!dx && !dy) continue;
       const nx = start.x + dx;
       const ny = start.y + dy;
-      if (!footFits(scene, nx, ny, sz, foot, blocked)) continue; // l'atterrissage doit tenir
+      if (!footFits(scene, nx, ny, sz, foot, blocked, swim)) continue; // l'atterrissage doit tenir
       if (noStop?.has(key(nx, ny, sz))) continue; // ne peut pas atterrir sur une autre créature
       dist.set(key(nx, ny, sz), Math.max(Math.abs(dx), Math.abs(dy)));
     }
@@ -283,7 +288,7 @@ export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, en
 
 /** Plus court chemin (BFS) de `start` à `goal`, ou null. (`env.noStop` ignoré : le but est validé en amont.) */
 export function pathTo(scene: Scene, start: Pt, goal: Pt, env: MoveEnv): Pt[] | null {
-  const { blocked, foot = 1, jump = 0 } = env;
+  const { blocked, foot = 1, jump = 0, swim } = env;
   const edges = wallEdges(scene);
   const gz = pz(goal);
   const came = new Map<string, string | null>();
@@ -301,21 +306,21 @@ export function pathTo(scene: Scene, start: Pt, goal: Pt, env: MoveEnv): Pt[] | 
       }
       return path;
     }
-    for (const n of neighborsOf(scene, p, edges)) {
+    for (const n of neighborsOf(scene, p, edges, swim)) {
       const nz = pz(n);
       const k = key(n.x, n.y, nz);
       if (came.has(k)) continue;
       const isGoal = n.x === goal.x && n.y === goal.y && nz === gz;
       // Empreinte > 1 : chaque pas (arrivée incluse) doit tenir entièrement. 1×1 : la cible peut être
       // une case occupée (on s'arrête au contact d'un ennemi), comportement historique.
-      if (foot > 1) { if (!footFits(scene, n.x, n.y, nz, foot, blocked)) continue; }
-      else if (!isGoal && (!isWalkable(scene, n.x, n.y, nz) || blocked.has(k))) continue;
+      if (foot > 1) { if (!footFits(scene, n.x, n.y, nz, foot, blocked, swim)) continue; }
+      else if (!isGoal && (!isWalkable(scene, n.x, n.y, nz, swim) || blocked.has(k))) continue;
       came.set(k, key(p.x, p.y, pz(p)));
       queue.push(n);
     }
     // Sauts par-dessus un gouffre : atterrissages déjà validés (praticables/libres) — n'altèrent jamais
     // le déplacement à pied (jumpNeighbors=[] sans gouffre), donc gratis quand jump=0.
-    for (const n of jumpNeighbors(scene, p, jump, blocked, foot, edges)) {
+    for (const n of jumpNeighbors(scene, p, jump, blocked, foot, edges, swim)) {
       const k = key(n.x, n.y, pz(n));
       if (came.has(k)) continue;
       came.set(k, key(p.x, p.y, pz(p)));

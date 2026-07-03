@@ -78,7 +78,13 @@
     "source": {
       "book": "LDB",
       "page": 338
-    }
+    },
+    "passive": [
+      {
+        "op": "offTerrainMod",
+        "terrain": "eau"
+      }
+    ]
   },
   {
     "id": "animosite",
