@@ -51,10 +51,12 @@ export function wedgePath(cx: number, cy: number, side: FireArc): string {
   return `M${bx + px},${by + py} L${tipX},${tipY} L${bx - px},${by - py} Z`;
 }
 
-/** Géométrie d'un marqueur de station : centre au `tileCenter` de sa case, teinte de faction, anneau de
- *  sélection si `selectedId` la désigne, badge = nombre d'équipiers, wedge d'arc si la station porte un `side`. */
-export function stationMarker(s: Station, dims: Dims, selectedId?: string): StationMarker {
-  const { cx, cy } = tileCenter(s.pos.x, s.pos.y, dims, s.pos.z ?? 0);
+/** Géométrie d'un marqueur de station : centre au `tileCenter` de sa case (+ `offset` d'évitement des
+ *  co-localisés), teinte de faction, anneau de sélection si `selectedId` la désigne, badge = nombre
+ *  d'équipiers, wedge d'arc si la station porte un `side`. */
+export function stationMarker(s: Station, dims: Dims, selectedId?: string, offset?: { dx: number; dy: number }): StationMarker {
+  const base = tileCenter(s.pos.x, s.pos.y, dims, s.pos.z ?? 0);
+  const cx = base.cx + (offset?.dx ?? 0), cy = base.cy + (offset?.dy ?? 0);
   return {
     cx,
     cy,
@@ -63,4 +65,26 @@ export function stationMarker(s: Station, dims: Dims, selectedId?: string): Stat
     ring: s.id === selectedId,
     ...(s.assignedIds.length ? { badge: s.assignedIds.length } : {}),
   };
+}
+
+/** Offsets d'ÉVITEMENT : plusieurs pièces d'un même bord tombent sur la MÊME case (RAW : placement libre
+ *  par bord). Pour qu'elles restent toutes VISIBLES et CLIQUABLES, on évente les stations co-localisées
+ *  (même centre écran) sur un petit cercle ; une station seule reste au centre. PUR. */
+export function colocationOffsets(stations: Station[], dims: Dims): Map<string, { dx: number; dy: number }> {
+  const groups = new Map<string, Station[]>();
+  for (const s of stations) {
+    const { cx, cy } = tileCenter(s.pos.x, s.pos.y, dims, s.pos.z ?? 0);
+    const key = `${Math.round(cx)},${Math.round(cy)}`;
+    (groups.get(key) ?? groups.set(key, []).get(key)!).push(s);
+  }
+  const out = new Map<string, { dx: number; dy: number }>();
+  for (const grp of groups.values()) {
+    if (grp.length === 1) { out.set(grp[0].id, { dx: 0, dy: 0 }); continue; }
+    const R = MARKER_R * 1.35;
+    grp.forEach((s, i) => {
+      const a = (i / grp.length) * Math.PI * 2 - Math.PI / 2; // départ en haut, sens horaire
+      out.set(s.id, { dx: Math.cos(a) * R, dy: Math.sin(a) * R });
+    });
+  }
+  return out;
 }

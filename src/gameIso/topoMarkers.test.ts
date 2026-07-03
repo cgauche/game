@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stationMarker, stationTint, wedgePath, MARKER_R } from './topoMarkers';
+import { stationMarker, stationTint, wedgePath, MARKER_R, colocationOffsets } from './topoMarkers';
 import { tileCenter, type Dims } from './iso';
 import { ALLY_TINT, ENEMY_TINT, NEUTRAL_TINT } from './teamColors';
 import type { Station } from '../state/stations';
@@ -83,5 +83,28 @@ describe('stationMarker / wedgePath — arc d’orientation par side', () => {
     // Les quatre pointes diffèrent.
     const all = (['proue', 'poupe', 'tribord', 'babord'] as FireArc[]).map((s) => tip(s).join(','));
     expect(new Set(all).size).toBe(4);
+  });
+});
+
+describe('colocationOffsets — évitement des stations d’une même case', () => {
+  it('station seule → offset nul (reste au centre)', () => {
+    const off = colocationOffsets([station({ id: 'a' })], dims);
+    expect(off.get('a')).toEqual({ dx: 0, dy: 0 });
+  });
+  it('deux pièces du même bord (même case) → deux offsets distincts et non nuls', () => {
+    const a = station({ id: 'a', pos: { x: 3, y: 2 }, side: 'tribord' });
+    const b = station({ id: 'b', pos: { x: 3, y: 2 }, side: 'tribord' });
+    const off = colocationOffsets([a, b], dims);
+    const oa = off.get('a')!, ob = off.get('b')!;
+    expect(oa).not.toEqual({ dx: 0, dy: 0 });
+    expect(oa).not.toEqual(ob);
+    // Appliqués, les deux marqueurs ne se superposent plus.
+    const ma = stationMarker(a, dims, undefined, oa), mb = stationMarker(b, dims, undefined, ob);
+    expect(ma.cx !== mb.cx || ma.cy !== mb.cy).toBe(true);
+  });
+  it('cases DISTINCTES → chacune à offset nul (pas d’éventail parasite)', () => {
+    const off = colocationOffsets([station({ id: 'a', pos: { x: 1, y: 1 } }), station({ id: 'b', pos: { x: 5, y: 5 } })], dims);
+    expect(off.get('a')).toEqual({ dx: 0, dy: 0 });
+    expect(off.get('b')).toEqual({ dx: 0, dy: 0 });
   });
 });

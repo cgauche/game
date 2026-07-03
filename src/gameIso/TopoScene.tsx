@@ -15,7 +15,7 @@ import { floorLayerObjs, wallLayerObjs } from './stage/layers';
 import { sortByDepth } from './stage/objs';
 import { stageSize, tileCenter, type Dims } from './iso';
 import { IconG } from '../ui/Icon';
-import { MARKER_R, stationMarker } from './topoMarkers';
+import { MARKER_R, stationMarker, colocationOffsets } from './topoMarkers';
 import { relationColor } from './teamColors';
 import type { BattleState } from '../state/store';
 import type { Scene } from '../state/scene';
@@ -66,11 +66,16 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, fog,
       width={viewport?.w ?? '100%'}
       height={viewport?.h}
       preserveAspectRatio="xMidYMid meet"
-      style={{ width: viewport ? undefined : '100%', height: 'auto', display: 'block' }}
+      // Sans viewport imposé : REMPLIT son conteneur (100 %×100 %) et se letterbox via `meet` → tout le
+      // plan tient dans la boîte bornée du consommateur, sans scroll ni effondrement à 0. Le conteneur
+      // porte la hauteur définie (cf. `.topo-panel`).
+      style={viewport ? { display: 'block' } : { width: '100%', height: '100%', display: 'block' }}
     >
       <g>{structuralObjs(scene, dims, fog).map((o) => o.el)}</g>
-      {stations.map((s) => {
-        const m = stationMarker(s, dims, selectedStationId);
+      {(() => {
+        const offsets = colocationOffsets(stations, dims);
+        return stations.map((s) => {
+        const m = stationMarker(s, dims, selectedStationId, offsets.get(s.id));
         return (
           <g
             key={s.id}
@@ -95,7 +100,8 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, fog,
             )}
           </g>
         );
-      })}
+        });
+      })()}
       {combatants?.map((c) => {
         if (!c.pos) return null;
         const { cx, cy } = tileCenter(c.pos.x, c.pos.y, dims, c.pos.z ?? 0);

@@ -397,7 +397,12 @@
 /* Fiche du NAVIRE (couche Mer) : sections « Armes/postes » + « Rôles · manœuvre », chacune listant l'équipage
    du poste en PORTRAITS (plusieurs par poste, MDG ch.14 l.9). */
 .ship-section { margin-bottom: 14px; }
+/* Plan TOP-DOWN (TopoScene) : hauteur DÉFINIE + non-shrink — sinon le parent flex `.sheet-main` l'écrase
+ * à ~0 et clippe le plan ; le SVG (100 %×100 %, letterbox `meet`) tient alors tout entier dans la boîte. */
+.topo-panel { flex: 0 0 auto; height: clamp(180px, 34vh, 320px); background: var(--bg2); border-radius: 6px; padding: 6px; }
 .ship-poste, .ship-role { padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+/* Rangée de poste sélectionnée (lien plan ⇄ équipage) : liseré or à gauche. */
+.ship-poste.selected { box-shadow: inset 3px 0 0 var(--gold); background: rgba(255, 255, 255, 0.04); }
 .ship-role-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ship-role-name, .ship-poste-name { font-weight: 600; }
 .ship-role-name .ess { color: var(--gold); }
