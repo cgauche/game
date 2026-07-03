@@ -3,13 +3,13 @@ import { isCapeItem } from '../../../engine/items';
 import { QUALITY_IDS } from '../../../engine/qualities/ids';
 import type { Slot } from '../bones';
 import type { PartArt } from './types';
-import { GENERATED_ARMOUR, ARMOUR_PALETTES } from './generated/armour';
+import { ARMOUR, ARMOUR_PALETTES } from './armour';
 import { WEAPON_DEFS } from './weapons/_registry.generated';
 import { SHIELD_DEFS } from './shields/_registry.generated';
 import { weaponGroupKey } from './weaponGroup';
 import { norm as wnorm } from './weaponForms';
 import { findTrappingById } from '../../../data';
-import { buildTokenMap, applyTokenMap, applyTokenMapArt } from '../palette';
+import { buildTokenMap, applyTokenMapArt } from '../palette';
 
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
 export interface EquipCtx {
@@ -133,8 +133,8 @@ export function armourPart(item: ItemInstance, slot: Slot): PartArt | null {
   const mat = armourMaterial(item);
   // Art dessiné par le workflow (matériau × emplacement) en priorité, COULEUR résolue contre la
   // palette du matériau (défaut sans perte) + le SKIN de l'objet (override par-objet, légendaire).
-  const gen = GENERATED_ARMOUR[mat]?.[slot as 'tete' | 'torse' | 'bras' | 'jambes'];
-  if (gen) return applyTokenMap(gen, buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, item.skin as Record<string, string> | undefined));
+  const art = ARMOUR[mat]?.[slot as 'tete' | 'torse' | 'bras' | 'jambes'];
+  if (art) return applyTokenMapArt(art, buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, item.skin as Record<string, string> | undefined));
   const fill = MATERIAL_FILL[mat];
   switch (slot) {
     case 'tete':   return `<path d="M-9 -2 Q0 -16 9 -2 L9 4 Q0 8 -9 4Z" fill="${fill}" stroke="#2a3038"/>`;

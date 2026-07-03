@@ -85,6 +85,15 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Armures (matériau × emplacement, art tokenisé) : 1 matériau = 1 fichier defs/ — MÊME pattern que les tenues.
+    dir: 'src/gameIso/rig/parts/armour/defs',
+    out: 'src/gameIso/rig/parts/armour/_registry.generated.ts',
+    exportName: 'armour',
+    arrayName: 'ARMOUR_DEFS',
+    type: 'ArmourDef',
+    typeFrom: './types',
+  },
+  {
     // Arts d'engin de siège (silhouette statique 3 vues, plan 'engin') : 1 engin = 1 fichier defs/ —
     // MÊME pattern que les armes/parts (routé par id d'espèce, JAMAIS de name-matcher ni de table à la main).
     dir: 'src/gameIso/rig/engin/defs',

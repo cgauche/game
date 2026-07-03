@@ -75,8 +75,8 @@ function dominantCloth(svg: string): string {
   }
   return best;
 }
-const hasProfileView = (p: PartArt | undefined): boolean => typeof p === 'object' && p != null && !!p.profile;
-const hasBackView = (p: PartArt | undefined): boolean => typeof p === 'object' && p != null && !!p.back;
+const hasProfileView = (p: PartArt | null | undefined): boolean => typeof p === 'object' && p != null && !!p.profile;
+const hasBackView = (p: PartArt | null | undefined): boolean => typeof p === 'object' && p != null && !!p.back;
 
 // Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
 // par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
@@ -131,33 +131,44 @@ export function resolveParts(
   out.cheveux = P(cosmeticPart('cheveux', species, sex, overrides.cheveux ?? (seed >> 2) % 3));
 
   // Corps : override → armure équipée → carrière → générique.
+  // art RÉEL par slot (pour gater la substitution profil/dos ci-dessous sur l'art effectif, pas la tenue).
+  let teteArt: PartArt | null | undefined;
+  let torseArt: PartArt | null | undefined;
+  let jambesArt: PartArt | null | undefined;
   for (const slot of BODY_SLOTS) {
     const tenuePart = tenue[slot as 'torse' | 'jambes' | 'bras' | 'tete'];
+    let art: PartArt | null | undefined;
     if (overrides[slot] != null) {
-      out[slot] = P(tenuePart ?? genericPart(slot));
-      continue;
+      art = tenuePart ?? genericPart(slot);
+    } else {
+      const armed = equip.armour.map((it) => armourPart(it, slot)).find((p) => p != null);
+      art = armed ?? tenuePart ?? (slot === 'tete' ? '' : genericPart(slot));
     }
-    const armed = equip.armour.map((it) => armourPart(it, slot)).find((p) => p != null);
-    if (armed != null) { out[slot] = P(armed); continue; }
-    out[slot] = P(tenuePart ?? (slot === 'tete' ? '' : genericPart(slot)));
+    if (slot === 'tete') teteArt = art;
+    else if (slot === 'torse') torseArt = art;
+    else if (slot === 'jambes') jambesArt = art;
+    out[slot] = P(art);
   }
 
   // Profil : remplace torse/jambes par la silhouette de côté EN TOKENS (sauf si la tenue
   // fournit déjà une vue `profile` détaillée). Suit le recoloriage de carrière.
   if (view === 'profile') {
-    if (!hasProfileView(tenue.torse) && out.torse?.svg) out.torse = { svg: PROFILE_TORSE(dominantCloth(out.torse.svg)) };
-    if (!hasProfileView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: PROFILE_JAMBE(dominantCloth(out.jambes.svg), bareFoot ? 'peau' : 'cuir') };
+    if (!hasProfileView(torseArt) && out.torse?.svg) out.torse = { svg: PROFILE_TORSE(dominantCloth(out.torse.svg)) };
+    if (!hasProfileView(jambesArt) && out.jambes?.svg) out.jambes = { svg: PROFILE_JAMBE(dominantCloth(out.jambes.svg), bareFoot ? 'peau' : 'cuir') };
     // Couvre-chef : silhouette de profil seulement s'il y en a un de face (sinon tête nue +
     // cheveux de profil cosmétiques). Évite l'art de face plaqué qui « s'enfonce » dans le crâne.
-    if (!hasProfileView(tenue.tete) && out.tete?.svg) out.tete = { svg: PROFILE_TETE(dominantCloth(out.tete.svg)) };
+    // On teste l'art RÉEL de la tête (teteArt), pas la tenue : l'armure équipée (art front-only
+    // historiquement, désormais directionnel) peut couvrir la tête à la place de la tenue.
+    if (!hasProfileView(teteArt) && out.tete?.svg) out.tete = { svg: PROFILE_TETE(dominantCloth(out.tete.svg)) };
   }
   // Dos : MÊME principe — sans art `back` dédié, l'art de FACE serait plaqué dans le dos
   // (lacets, boucles, emblèmes). Silhouette dorsale en tokens (couture, carrure, ceinture,
   // talons de botte) ; les 64 tenues de carrière générées ont leur vrai dos (prioritaire).
   if (view === 'back') {
-    if (!hasBackView(tenue.torse) && out.torse?.svg) out.torse = { svg: BACK_TORSE(dominantCloth(out.torse.svg)) };
-    if (!hasBackView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: BACK_JAMBE(dominantCloth(out.jambes.svg), bareFoot ? 'peau' : 'cuir') };
-    if (!hasBackView(tenue.tete) && out.tete?.svg) out.tete = { svg: BACK_TETE(dominantCloth(out.tete.svg)) };
+    if (!hasBackView(torseArt) && out.torse?.svg) out.torse = { svg: BACK_TORSE(dominantCloth(out.torse.svg)) };
+    if (!hasBackView(jambesArt) && out.jambes?.svg) out.jambes = { svg: BACK_JAMBE(dominantCloth(out.jambes.svg), bareFoot ? 'peau' : 'cuir') };
+    // Tête : art RÉEL (teteArt) et non la tenue — l'armure équipée porte désormais son propre dos.
+    if (!hasBackView(teteArt) && out.tete?.svg) out.tete = { svg: BACK_TETE(dominantCloth(out.tete.svg)) };
   }
 
   // Pieds : botte de cuir (habillés) ou pied nu griffu (bareFoot, calculé plus haut).

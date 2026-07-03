@@ -1,0 +1,20 @@
+import { ARMOUR_DEFS } from './_registry.generated';
+import type { ArmourSet } from './types';
+import type { StoredPalette } from '../../palette';
+
+export type { ArmourSet, ArmourDef } from './types';
+
+/**
+ * Table des armures DÉRIVÉE des fichiers `defs/` (plus de `GENERATED_ARMOUR` codé en dur).
+ * Ajouter/éditer une armure = déposer un fichier dans `defs/` (puis `npm run gen` hors dev).
+ * Clé = `name` du def (matériau minuscule : 'rembourre' | 'cuir' | 'maille' | 'plaque').
+ */
+export const ARMOUR: Record<string, ArmourSet> = Object.fromEntries(
+  ARMOUR_DEFS.map((d) => [d.name, d.set]),
+);
+
+/** Palette par DÉFAUT de chaque matériau (couleurs exactes des `@tokens` de son art) → rendu sans
+ *  perte + recoloriage cohérent par le skin d'objet. Clé = `name` du def. */
+export const ARMOUR_PALETTES: Record<string, StoredPalette> = Object.fromEntries(
+  ARMOUR_DEFS.filter((d) => d.palette).map((d) => [d.name, d.palette!]),
+);
