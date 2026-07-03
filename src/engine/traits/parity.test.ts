@@ -35,6 +35,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Frisson paralysant', 'attaque-Action de mêlée magique, 1 Sonné/DR sans dégât (creatureAttacks.ts + combatFlow)'],
   ['Venin', 'Empoisonné sur PB infligés — `effects` AUTHORÉ du trait (Test de Résistance paramétré par l’arg, fireTriggers onHit)'],
   ['Constricteur', 'Empêtré sur touche — `effects` AUTHORÉ du trait (condition empetre, escapeStrength=Force, fireTriggers onHit)'],
+  ['Absorption', 'engloutissement de fin de Round MÉCANISÉ 100% data-driven (`absorption.effects` : onRoundEnd Empêtré×BF + Empoigné + Digéré ; digestion drain BF ignore PA/BE + créature guérit ; redirection onWoundLoss ; un/Round ; purge à la mort) — dispatché par `fireTriggers`, cf. `absorption.test.ts` (EDO p.147)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects — gating « kind=morsure » sans Condition Flow)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
   // Bestiaire fluvial (T2C ch.13) — mécanique AUTHORÉE en `effects` (fireTriggers), comme Constricteur/Venin.
@@ -98,7 +99,6 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Dédoublement', 'scission en 2 horreurs bleues à la mort/Critique — pas de spawn-on-death dans le moteur (MJ/auteur)'],
   ['Feu de Tzeentch', 'aura de feu entre Horreurs du même type — pas de système d’aura inter-créatures (MJ)'],
   // Traits de créature EDO (Appendice 2) — desc verbatim, mécaniques complexes sans système support.
-  ['Absorption', 'absorbe un adversaire en fin de Round (Empêtré/Empoigné + drain) — pas de système d’absorption (MJ/auteur)'],
   ['Amorphe', 'demi-Blessures hors feu/froid/magie + immunité aux Critiques — pas de réduction de dégâts typée (MJ)'],
   ['Contagieux', 'transmet la maladie hébergée au toucher — pas câblé (MJ ; cf. Infecté/Maladie)'],
   ['Décérébré', 'sans I/Int/FM/Soc, joue toujours en dernier — pas de système « sans Initiative » (MJ)'],
@@ -107,7 +107,7 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
   // Traits MDG (bestiaire marin) + T2C (bestiaire fluvial) — desc verbatim, environnement aquatique non mécanisé.
   ['Créature marine', 'hors de l’eau : M→1, −2 DR à tous les Tests, suffocation (MDG 16 l.17-19) — environnement aquatique non modélisé (lot systèmes naval)'],
-  ['Aquatique', 'respire sous l’eau, aucun déplacement terrestre (T2C p.90) — terrain aquatique non mécanisé (MJ)'],
+  ['Aquatique', 'respire sous l’eau (T2C p.90). Le terrain Eau EXISTE (`terrain/defs/eau.ts`, walkable:false) + toute la couche navale ; il MANQUE le déplacement AQUATIQUE PAR-CRÉATURE (Aquatique traverse l’eau à pleine vitesse / ne peut pas aller à terre — override par-créature du walkable binaire). Gap NARROW, pas un sous-système absent'],
   ['Marque de Khorne', 'Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh + interdits + achats hors carrière (MDG 07 l.250-252) — même canal que Marque de Tzeentch (auteur/MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
   // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).
