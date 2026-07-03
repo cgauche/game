@@ -64,17 +64,28 @@ export function isOverhang(scene: Scene, x: number, y: number, z: number): boole
  *  étage inférieur exactement comme le bloc (opaque, jamais culé/fantôme), au lieu de disparaître et de
  *  laisser le dessus BRUT du bloc à nu quand on regarde le mur d'en bas (activeZ sous z). GÉNÉRAL. */
 export function capsSolid(scene: Scene, x: number, y: number, z: number): boolean {
+  if (capsSolidDirect(scene, x, y, z)) return true; // (a) posé DIRECTEMENT sur un bloc plein
   if (z <= 0 || tileAt(scene, x, y, z) === 'vide') return false;
   const top = displayHeightAt(scene, x, y, z);
   for (let zz = z - 1; zz >= 0; zz--) {
     if (tileAt(scene, x, y, zz) === 'vide') continue;
-    // (a) posé DIRECTEMENT sur un bloc plein (mur) : ce sol EST son dessus.
-    if (terrainSolidHeightM(tileAt(scene, x, y, zz)) > 0 && displayHeightAt(scene, x, y, zz) >= top - 0.01) return true;
     // (b) TOIT DE GATEHOUSE : le sol dessous est passable (TUNNEL de porte) mais BORDÉ par un bloc plein de
     //     même niveau montant jusqu'au dessus (le chemin de ronde ceinture la masse et coiffe le passage) →
     //     toit SOLIDE d'une structure, pas un tablier sur pilotis. Rend le rempart continu au-dessus de la porte.
     if (SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; return terrainSolidHeightM(tileAt(scene, x + dx, y + dy, zz)) > 0 && displayHeightAt(scene, x + dx, y + dy, zz) >= top - 0.01; })) return true;
   }
+  return false;
+}
+
+/** Cas (a) SEUL : la case (x,y,z>0) est-elle posée DIRECTEMENT sur un bloc plein (mur) de MÊME EMPREINTE, à
+ *  hauteur coïncidente ? Alors c'est le DESSUS de ce bloc — le bloc dessine déjà TOUTES ses parois → ce sol
+ *  ne redessine AUCUNE falaise (sinon redondance + à base égale la couche z1 gagne le tri et RECOUVRE une
+ *  rampe z0 de même hauteur posée devant). ⊥ du cas (b) « gatehouse » (tunnel : le sol DOIT border sa dalle). */
+export function capsSolidDirect(scene: Scene, x: number, y: number, z: number): boolean {
+  if (z <= 0 || tileAt(scene, x, y, z) === 'vide') return false;
+  const top = displayHeightAt(scene, x, y, z);
+  for (let zz = z - 1; zz >= 0; zz--)
+    if (tileAt(scene, x, y, zz) !== 'vide' && terrainSolidHeightM(tileAt(scene, x, y, zz)) > 0 && displayHeightAt(scene, x, y, zz) >= top - 0.01) return true;
   return false;
 }
 
@@ -158,13 +169,14 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
   // `flat` → rien, `ramp` → pente lisse, `cliff` → paroi verticale. Un bord de surplomb donnant sur le
   // VIDE se rend en DALLE FINE (`deck`, épaisseur DECK_THICKNESS_M) au lieu d'une falaise pleine → la
   // route du dessous reste visible ; une falaise de TERRAIN PLEIN garde sa face pleine.
-  for (const side of SIDES) {
+  // TOIT D'UN BLOC PLEIN (chemin de ronde posé DIRECTEMENT sur la masse `mur`) : le BLOC dessine déjà TOUTES
+  // ses parois (falaises) — celles du sol du dessus seraient REDONDANTES et, à base égale, la couche z1 gagne
+  // le départage de profondeur → ces falaises fantômes RECOUVRENT une rampe (z0, même hauteur) posée DEVANT.
+  // On ne dessine donc PAS les parois d'un tel toit ; le bloc en dessous s'en charge (à la bonne profondeur z0).
+  const roofOfSolid = capsSolidDirect(scene, x, y, z);
+  if (!roofOfSolid) for (const side of SIDES) {
     const [dx, dy] = NEIGHBOURS[side];
-    // Voisin en hauteur d'AFFICHAGE : le SOMMET réel de la case voisine, TOUTES COUCHES confondues (mur voisin
-    // = bloc plein). CRUCIAL au raccord chemin-de-ronde ↔ rampe : le sol z1 (dessus du mur) ne doit PAS voir
-    // le `vide` z1 au-dessus de la rampe (row 39) mais la RAMPE z0 à 4 m → sinon il trace une falaise pleine
-    // 4→0 qui, dessinée après (z1 gagne le départage à base égale), RECOUVRE la rampe qui est DEVANT.
-    const nb = Math.max(...scene.layers.map((l) => displayHeightAt(scene, x + dx, y + dy, l.z)));
+    const nb = displayHeightAt(scene, x + dx, y + dy, z); // voisin en hauteur d'AFFICHAGE (mur voisin = bloc plein)
     if (self <= nb) continue; // la case HAUTE porte la paroi (plateau surélevé ET rebord de fosse)
     const grade = gradeBetween(self, nb);
     if (grade === 'flat') continue; // de niveau → aucune paroi

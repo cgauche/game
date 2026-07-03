@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildFloors, edgeBlends, isOverhang, capsSolid, fogFloorZ } from './floors';
+import { buildFloors, edgeBlends, isOverhang, capsSolid, capsSolidDirect, fogFloorZ } from './floors';
 import type { Face, FloorEl } from './types';
 import { emptyScene, heightAt, type Scene } from '../../state/scene';
 import { gradeBetween, STEP_MAX_M } from '../../state/relief';
@@ -201,19 +201,20 @@ describe('buildFloors — TOIT d’un bloc plein (chemin de ronde sur le mur), v
     expect(walkway.faces.some(isBaseFace)).toBe(true);                          // le chemin de ronde fournit LA surface
   });
 
-  it('PAS de falaise vers un voisin dont une COUCHE INFÉRIEURE atteint la même hauteur (raccord chemin de ronde ↔ rampe)', () => {
-    // (1,0) = mur (bloc 4 m) coiffé z1 `pierre` 4 m (chemin de ronde) ; (1,1) = pavé z0 ÉLEVÉ à 4 m (sommet
-    // de rampe), z1 vide. Le chemin de ronde (1,0,z1) NE doit PAS voir le `vide` z1 au-dessus de la rampe :
-    // le voisin réel (1,1) culmine à 4 m (rampe z0) → aucune falaise sud (à niveau), sinon elle recouvre la rampe.
+  it('un sol posé DIRECTEMENT sur un bloc plein ne dessine AUCUNE paroi (le bloc s’en charge) → pas de falaise fantôme qui recouvre une rampe DEVANT', () => {
+    // (1,0) = mur (bloc 4 m) coiffé par un chemin de ronde `pierre` z1 4 m. Les parois de ce toit seraient
+    // REDONDANTES avec celles du bloc et, à base égale, la couche z1 gagne le tri → elles recouvriraient une
+    // rampe z0 de même hauteur posée devant. Donc : ZÉRO paroi sur le toit ; le bloc `mur` en dessous les porte.
     const s = emptyScene(3, 3);
-    s.layers[0].tiles[0 * 3 + 1] = 'mur';          // (1,0) bloc plein
-    s.layers[0].tiles[1 * 3 + 1] = 'pave';         // (1,1) sommet de rampe
-    s.layers[0].height = new Array(9).fill(0); s.layers[0].height[1 * 3 + 1] = 4;
+    s.layers[0].tiles[0 * 3 + 1] = 'mur';
     s.layers.push({ z: 1, tiles: new Array(9).fill('vide'), height: new Array(9).fill(0) });
-    s.layers[1].tiles[0 * 3 + 1] = 'pierre'; s.layers[1].height![0 * 3 + 1] = 4; // chemin de ronde
+    s.layers[1].tiles[0 * 3 + 1] = 'pierre'; s.layers[1].height![0 * 3 + 1] = 4;
+    expect(capsSolidDirect(s, 1, 0, 1)).toBe(true);
     const walkway = elAt(buildFloors(s, undefined, { activeZ: 0 }), 1, 0, 1)!;
-    expect(reliefParts(walkway).some((f) => f.side === 'S')).toBe(false); // à niveau avec la rampe → PAS de falaise
-    expect(reliefParts(walkway).some((f) => f.side === 'O' || f.side === 'E')).toBe(true); // bords vers le vide (0 m) → falaises
+    expect(reliefParts(walkway)).toHaveLength(0);          // AUCUNE paroi sur le toit du bloc
+    expect(walkway.faces.some(isBaseFace)).toBe(true);     // mais bien le dessus (chemin de ronde)
+    const mur = elAt(buildFloors(s, undefined, { activeZ: 0 }), 1, 0, 0)!;
+    expect(reliefParts(mur).length).toBeGreaterThan(0);    // c'est le BLOC qui porte les parois (vers l'herbe basse)
   });
 
   it('TOIT DE GATEHOUSE : chemin de ronde sur un TUNNEL passable bordé de bloc plein → caps, ZÉRO piloti', () => {
