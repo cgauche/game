@@ -674,6 +674,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Enfant d'Ulric (forme humaine)": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Enquêteur Chevronné": {
     "def": null,
     "plan": "biped",

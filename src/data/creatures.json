@@ -55001,9 +55001,6 @@
       },
       {
         "id": "vision-nocturne"
-      },
-      {
-        "id": "metamorphose"
       }
     ],
     "optionals": [
@@ -55043,6 +55040,47 @@
         "arg": "Grande"
       }
     ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "« Enfant d'Ulric » est un terme utilisé dans tout l'Empire pour désigner les humains capables de se transformer entièrement ou partiellement en loup. La plupart peuvent prendre la forme d'un hybride terrifiant : une puissante créature à tête de loup et couverte de fourrure, pourtant toujours capable de se tenir debout.\n\nLa nature de telles créatures est obscure, mais la plupart des habitants de l'Empire les considèrent comme des abominations du Chaos. C'est notamment le cas du culte de Sigmar, et leurs répurgateurs font tout leur possible pour les éradiquer. Pourtant, la transmission de leurs capacités par hérédité les rend différentes des mutants ordinaires. On ne croise que peu de ces créatures dans les Terres du Sud, mais elles sont moins rares au nord, où les traditions folkloriques les associent à la bénédiction d'Ulric. Certaines vivent même au sein de communautés humaines isolées dans les bois, où elles s'occupent de protéger la nature.\n\nMais il est indéniable que la corruption du Chaos peut causer ou exacerber la lycanthropie, et même les Enfants d'Ulric qui vivent au sein de communautés humaines peuvent avoir du mal à contrôler les accès de rage sanguinaire qui les assaillent lorsqu'ils se transforment. Même les plus fervents défenseurs des droits des lycanthropes font de leur mieux pour garder leurs distances.\n\nLes Enfants d'Ulric n'ont pas de profil défini. Le MJ doit créer un personnage humain, puis décider du degré de manifestation de ses capacités. Certains Enfants d'Ulric se transforment complètement en loups (voir **WFJDR**, p. 315). Ceux qui peuvent prendre la forme d'un hybride altèrent leur profil selon les règles suivantes lorsqu'ils se transforment. Le MJ peut aussi choisir si le personnage garde ses Compétences et ses Traits lorsqu'il adopte sa forme hybride.",
+    "source": {
+      "book": "Middenheim",
+      "page": 116
+    },
+    "appearance": {
+      "species": "humain",
+      "features": [
+        "tete-bestiale-loup"
+      ]
+    }
+  },
+  {
+    "id": "enfant-d-ulric-humain",
+    "label": "Enfant d'Ulric (forme humaine)",
+    "title": null,
+    "folder": "Bestiaire de Middenheim",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": 30,
+      "F": 30,
+      "E": 30,
+      "I": 30,
+      "Ag": 30,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 30,
+      "Soc": 30,
+      "B": 12
+    },
+    "traits": [
+      {
+        "id": "metamorphose"
+      }
+    ],
+    "optionals": [],
     "skills": [],
     "talents": [],
     "trappings": [],
