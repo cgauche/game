@@ -151,15 +151,23 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
 - **Bestiaire fluvial (ch.13) — 4 statblocs** ✅ livrés (`creatures.json`, VERBATIM T2C, vérifiés stat par stat) :
   Anguille du Reik, Sangsue géante + variante Arbres, Naïade. Le **Filet de gobelin** (ZI) est porté comme atout
   `filet` (ranged/entraves, Portée 6, qualité Immobilisante → Empêtré ; le « 3 » de « À distance (Filet 3) » non
-  modélisé — ni Dégâts (+0) ni Indice, rien inventé). **RIGS restants** (apparence) : serpentin/amorphe/bipède.
+  modélisé — ni Dégâts (+0) ni Indice, rien inventé). **Rigs** : réutilisent des espèces EXISTANTES (Serpent/
+  Sangsue/humain) — fonctionnel, la Taille de combat vient du Trait, pas du rig ; des rigs propres = polissage
+  d'art optionnel (pas d'art à l'aveugle).
   **Forme de guerrière naïade** : socle FIDÈLE (`onCombatStart` → grantTrait Peur 2 + Armure 2) ; les **4 aspects
   tournants** (Déluge/Eau calme/Rapides/Sinueuse, un choix par Round) = RÉDUCTION documentée (choix par tour = hook
   d'IA de combat dans `combatFlow`/`ai`, verrouillé par la session // — laissés verbatim en `desc`).
 - **Brochet du Stir** : réconciliation ZI↔T2C **NON faite** (variante inter-livres = décision DIFFÉRÉE, cf.
   [[game-collisions-variantes-livres-deferred]]) — l'entrée ZI curée (harvest « prédire l'avenir », 3 Points de
   Chance, Queue agile) est PRÉSERVÉE. Un profil fluvial T2C distinct reste une décision de curation à trancher.
-- **Consommateur des Améliorations T2C à effet non-plat + déblayage manuel de barrage** (choix mid-combat) :
-  RESTE (à brancher sur le scénario de combat fluvial). C'est le scénario jouable qui exercera tout ce qui précède.
+- ~~**Scénario jouable de combat fluvial**~~ ✅ **LIVRÉ** : `src/scenes/test-scenarios/16-embuscade-fluviale.ts`
+  (menu « 🧪 Tests — scénarios » → « Embuscade fluviale ») — barge + barque fluviales (coques T2C), pirates
+  (équipage exposé), Anguille du Reik. Test bout-en-bout `16-embuscade-fluviale.test.ts` : un Critique sur la
+  coque pose un État FLUVIAL (Dérive/Gouvernail brisé/Voie d'eau) et JAMAIS `en-flammes-navire` (table Cargaison
+  MDG absente) → prouve le routage par données de bout en bout.
+- **Améliorations T2C à effet non-plat + déblayage manuel de barrage** (choix mid-combat) : RESTE — le scénario
+  de combat démontre les Critiques de coque, mais pas encore le choix bélier-vs-déblayage ni les upgrades
+  Coque-de-course/Safran/Plat-bord (nécessitent un champ de domaine dédié + une affordance de choix mid-voyage).
 - ~~**Maladies transmises par l'eau (ch.14)**~~ ✅ **RÉSOLU** : la descente `15-commerce-fluvial` EXERCE
   désormais l'Effet EXISTANT `waterExposure` — nouveau champ `MapRoute.riverExposure` (tirage d'étape à flot,
   source d'eau + mode ingestion/immersion) qui, via `applyEffects`, ouvre la cascade de Test de Résistance →

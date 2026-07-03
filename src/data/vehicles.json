@@ -102,6 +102,103 @@
     }
   },
   {
+    "id": "barge-fluviale",
+    "label": "Barge fluviale",
+    "source": {
+      "book": "T2C",
+      "page": 33
+    },
+    "travel": {
+      "movement": 8,
+      "classes": [
+        {
+          "key": "cabine",
+          "label": "Cabine",
+          "brassPerKm": 5
+        },
+        {
+          "key": "pont",
+          "label": "Pont",
+          "brassPerKm": 2
+        }
+      ]
+    },
+    "hull": {
+      "char": {
+        "E": 45,
+        "B": 60
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "fluvial",
+      "rig": "mixte",
+      "locationTable": "navire-fluvial",
+      "criticalTable": "river-criticals"
+    },
+    "ship": {
+      "crew": 4,
+      "manoeuvre": 0,
+      "lengthM": 15,
+      "footprint": 2,
+      "capacity": 300,
+      "sail": {
+        "m": 3,
+        "crew": 3
+      },
+      "oars": {
+        "m": 3,
+        "crew": 4
+      },
+      "traits": []
+    },
+    "purchase": {
+      "price": {
+        "gold": 225,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Rare"
+    }
+  },
+  {
+    "id": "barque-fluviale",
+    "label": "Barque",
+    "source": {
+      "book": "T2C",
+      "page": 33
+    },
+    "hull": {
+      "char": {
+        "E": 35,
+        "B": 10
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "fluvial",
+      "rig": "avirons",
+      "locationTable": "navire-fluvial",
+      "criticalTable": "river-criticals"
+    },
+    "ship": {
+      "crew": 1,
+      "manoeuvre": 0,
+      "lengthM": 5,
+      "footprint": 1,
+      "capacity": 60,
+      "oars": {
+        "m": 4,
+        "crew": 1
+      },
+      "traits": []
+    },
+    "purchase": {
+      "price": {
+        "gold": 6,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Limité"
+    }
+  },
+  {
     "id": "charrette",
     "label": "Charrette",
     "icon": "🛒",
