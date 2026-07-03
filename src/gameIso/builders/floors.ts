@@ -66,13 +66,16 @@ export function isOverhang(scene: Scene, x: number, y: number, z: number): boole
 export function capsSolid(scene: Scene, x: number, y: number, z: number): boolean {
   if (capsSolidDirect(scene, x, y, z)) return true; // (a) posé DIRECTEMENT sur un bloc plein
   if (z <= 0 || tileAt(scene, x, y, z) === 'vide') return false;
+  const { w: W, h: H } = scene.dimensions;
   const top = displayHeightAt(scene, x, y, z);
   for (let zz = z - 1; zz >= 0; zz--) {
     if (tileAt(scene, x, y, zz) === 'vide') continue;
     // (b) TOIT DE GATEHOUSE : le sol dessous est passable (TUNNEL de porte) mais BORDÉ par un bloc plein de
     //     même niveau montant jusqu'au dessus (le chemin de ronde ceinture la masse et coiffe le passage) →
     //     toit SOLIDE d'une structure, pas un tablier sur pilotis. Rend le rempart continu au-dessus de la porte.
-    if (SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; return terrainSolidHeightM(tileAt(scene, x + dx, y + dy, zz)) > 0 && displayHeightAt(scene, x + dx, y + dy, zz) >= top - 0.01; })) return true;
+    //     Voisin HORS CARTE ignoré : `tileAt` y rend un « mur » implicite (bord de carte) — un tablier posé
+    //     en BORD de scène n'est pas pour autant un toit de gatehouse.
+    if (SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; const nx = x + dx, ny = y + dy; return nx >= 0 && nx < W && ny >= 0 && ny < H && terrainSolidHeightM(tileAt(scene, nx, ny, zz)) > 0 && displayHeightAt(scene, nx, ny, zz) >= top - 0.01; })) return true;
   }
   return false;
 }
