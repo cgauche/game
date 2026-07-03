@@ -964,5 +964,152 @@
       "book": "Middenheim",
       "page": 117
     }
+  },
+  {
+    "id": "forme-hybride-ulric",
+    "label": "Prendre forme hybride",
+    "kind": "hurlement",
+    "activation": "action",
+    "advantageCost": 0,
+    "targeting": "self",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "transform",
+                "tag": "ulric-hybride",
+                "morphRef": "enfant-d-ulric",
+                "ops": [
+                  {
+                    "op": "charMod",
+                    "char": "CC",
+                    "mod": 10
+                  },
+                  {
+                    "op": "charMod",
+                    "char": "F",
+                    "mod": 10
+                  },
+                  {
+                    "op": "charMod",
+                    "char": "E",
+                    "mod": 10
+                  },
+                  {
+                    "op": "charMod",
+                    "char": "I",
+                    "mod": 10
+                  },
+                  {
+                    "op": "charMod",
+                    "char": "Ag",
+                    "mod": 10
+                  },
+                  {
+                    "op": "charMod",
+                    "char": "Dex",
+                    "mod": -10
+                  },
+                  {
+                    "op": "charMod",
+                    "char": "Int",
+                    "mod": -10
+                  },
+                  {
+                    "op": "charMod",
+                    "char": "Soc",
+                    "mod": -20
+                  },
+                  {
+                    "op": "moveMod",
+                    "mod": 1
+                  },
+                  {
+                    "op": "grantTrait",
+                    "traitId": "arme",
+                    "indice": 4
+                  },
+                  {
+                    "op": "grantTrait",
+                    "traitId": "armure",
+                    "indice": 2
+                  },
+                  {
+                    "op": "grantTrait",
+                    "traitId": "morsure",
+                    "indice": 3
+                  },
+                  {
+                    "op": "grantTrait",
+                    "traitId": "peur",
+                    "indice": 2
+                  },
+                  {
+                    "op": "grantTrait",
+                    "traitId": "pisteur"
+                  },
+                  {
+                    "op": "grantTrait",
+                    "traitId": "vision-nocturne"
+                  }
+                ]
+              },
+              {
+                "op": "loseTurn",
+                "what": "action"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
+    "source": {
+      "book": "Middenheim",
+      "page": 116
+    }
+  },
+  {
+    "id": "forme-humaine-ulric",
+    "label": "Reprendre forme humaine",
+    "kind": "hurlement",
+    "activation": "action",
+    "advantageCost": 0,
+    "targeting": "self",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "endTransform",
+                "tag": "ulric-hybride"
+              },
+              {
+                "op": "loseTurn",
+                "what": "action"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
+    "source": {
+      "book": "Middenheim",
+      "page": 116
+    }
   }
 ]

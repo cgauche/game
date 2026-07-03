@@ -605,8 +605,9 @@ export interface ManeuverDef {
   stat?: 'CC' | 'CT';
   /** Défense opposée : Esquive / Parade, Initiative (Regard), Résistance/auto sans opposition. */
   defense?: 'esquive' | 'parade' | 'init' | 'resist' | 'auto';
-  /** Mode de ciblage (le résolveur en dérive la géométrie moteur). */
-  targeting: 'melee' | 'ranged' | 'zone' | 'allFoes';
+  /** Mode de ciblage (le résolveur en dérive la géométrie moteur). `self` = capacité SUR SOI (pas de
+   *  cible adverse ni d'opposition — transformation, mue, auto-buff) : les `effects` s'appliquent au porteur. */
+  targeting: 'melee' | 'ranged' | 'zone' | 'allFoes' | 'self';
   /** Portée / Souffle STRUCTURÉS (`ManeuverMeasure`) — mètres = `bonus(ref) + plus`. `range` résolu contre
    *  l'Attaquant, `blast` contre la cible au centre (RAW l.251). Remplace la formule-chaîne re-parsée au runtime. */
   range?: ManeuverMeasure;

@@ -20,7 +20,7 @@ import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, trait
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
-import { grantTrait } from './grantedTraits';
+import { grantTrait, dropExpiredGrantedTraits } from './grantedTraits';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
@@ -629,6 +629,16 @@ export type GameOp =
    *  créature du bestiaire (forme LIBRE — « les Bêtes du Reikland », pas l'Ours seul). Pure : expansée
    *  par `polymorphOps` (engine/polymorph) puis ré-appliquée. */
   | { op: 'polymorph'; ref: string }
+  /** TRANSFORMATION durable & réversible (≠ `polymorph`, buff temporaire de sort) — Métamorphose de
+   *  créature (Enfant d'Ulric humain↔hybride, Middenheim p.116) : applique un jeu de deltas AUTHORÉS
+   *  (`ops` — charMod/moveMod/grantTrait… du tableau RAW VERBATIM) sous un LABEL déterministe (`tag`) et
+   *  une durée PERMANENTE (jamais auto-restituée), + override d'APPARENCE (`morphRef`, couche rig). Le
+   *  `tag` groupe TOUS les effets posés → retrait ATOMIQUE par `endTransform`. Générique (toute forme
+   *  alternative authorée : lycanthrope, phase de démon…), zéro nom d'entité en dur. */
+  | { op: 'transform'; tag: string; ops: GameOp[]; morphRef?: string }
+  /** Fin de TRANSFORMATION (`transform`) : retire d'un coup tous les effets actifs portant le `tag` (deltas
+   *  de profil + traits accordés + apparence) et recale les Blessures — retour à la forme de base. */
+  | { op: 'endTransform'; tag: string }
   /** VOL DE VIE (LDB 48 — Caresse de Laniph, Vol de vie) : le lanceur (`ctx.caster`) regagne une
    *  fraction (`num/den`, arrondi `round`, défaut plancher) des Blessures RÉELLEMENT infligées ce
    *  lancement (`ctx.woundsDealt`, jamais plus que les PB perdus par la cible). */
@@ -1645,6 +1655,26 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(...applyOps(target, polymorphOps(target, o.ref), ctx));
         applyActiveEffect(target, { label: ctx.label ?? 'Métamorphose', morphRef: o.ref, bonus: 0, duration: durationFromCtx(ctx) });
         break;
+      case 'transform': {
+        // Applique les deltas AUTHORÉS sous le LABEL `tag` (déterministe → retrait atomique) et une durée
+        // PERMANENTE (forme durable ≠ buff de sort : on efface toute durée héritée du ctx). L'apparence
+        // (morphRef) porte le MÊME tag pour être retirée avec le reste par `endTransform`.
+        const inner: OpsCtx = { ...ctx, label: o.tag, defaultDurationRounds: undefined, defaultUntilTime: undefined };
+        lines.push(...applyOps(target, o.ops, inner));
+        if (o.morphRef) applyActiveEffect(target, { label: o.tag, morphRef: o.morphRef, bonus: 0, duration: { scale: 'permanent' } });
+        lines.push(t('op.transform', { name: target.name, tag: o.tag }));
+        break;
+      }
+      case 'endTransform': {
+        const eff = target.activeEffects ?? [];
+        const removed = eff.filter((e) => e.label === o.tag);
+        if (!removed.length) break; // pas dans cette forme → no-op
+        dropExpiredGrantedTraits(target, removed); // dé-accorde les Traits posés par la transformation
+        target.activeEffects = eff.filter((e) => e.label !== o.tag);
+        refreshWounds(target); // les deltas de profil (F/E/FM) retirés → PB max recalés
+        lines.push(t('op.endTransform', { name: target.name, tag: o.tag }));
+        break;
+      }
       case 'lifeSteal': {
         const who = ctx.caster ?? target;
         const dealt = Math.max(0, ctx.woundsDealt ?? 0);

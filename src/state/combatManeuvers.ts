@@ -245,6 +245,41 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
 }
 
+// ---------------------------------------------------------------------------
+// Capacités SUR SOI (targeting:'self') — transformation/mue/auto-buff octroyées par un trait
+// ---------------------------------------------------------------------------
+
+/** Manœuvres SUR SOI (targeting:'self') octroyées par les traits de `c` (Métamorphose de l'Enfant d'Ulric
+ *  humain↔hybride…). SÉPARÉ de `creatureAttacks` (orienté attaque, une seule manœuvre par trait). */
+export function selfManeuversOf(c: Combatant): ManeuverDef[] {
+  const out: ManeuverDef[] = [];
+  for (const tr of c.traits ?? [])
+    for (const r of traitById.get(tr.id)?.grantsManeuvers ?? []) {
+      const def = findManeuverById(r.id);
+      if (def?.targeting === 'self') out.push(def);
+    }
+  return out;
+}
+
+/** `tag` du 1er op `transform`/`endTransform` des effets d'une manœuvre self (gate d'applicabilité GÉNÉRIQUE
+ *  dérivé de la DONNÉE — aucun nom d'entité en dur). */
+function formTagOf(def: ManeuverDef, opName: 'transform' | 'endTransform'): string | undefined {
+  for (const e of def.effects ?? [])
+    for (const o of spellEffectOps(e.flow)) if (o.op === opName) return (o as Extract<GameOp, { op: 'transform' | 'endTransform' }>).tag;
+  return undefined;
+}
+
+/** Une manœuvre self est-elle APPLICABLE à `c` maintenant ? `transform` → hors de la forme (tag absent) ;
+ *  `endTransform` → dans la forme (tag présent, un `activeEffect` porte ce label). Autre self-buff → toujours. */
+export function selfManeuverApplicable(c: Combatant, def: ManeuverDef): boolean {
+  const inForm = (tag: string) => (c.activeEffects ?? []).some((e) => e.label === tag);
+  const tIn = formTagOf(def, 'transform');
+  if (tIn) return !inForm(tIn); // ne montrer « prendre la forme » que hors de la forme
+  const tOut = formTagOf(def, 'endTransform');
+  if (tOut) return inForm(tOut); // ne montrer « reprendre la forme de base » que dans la forme
+  return true;
+}
+
 /** Résout l'`AttackOption` à exécuter/prévisualiser : clic droit = `forceId` (première abordable) ; sinon
  *  l'attaque ARMÉE (`selectedAttack`, défaut 'arme', repli sur 'arme' si périmée). `undefined` = mode
  *  non-attaque (cast/heal/focus/…) ou aucune attaque abordable. SOURCE UNIQUE partagée par le clic (store)

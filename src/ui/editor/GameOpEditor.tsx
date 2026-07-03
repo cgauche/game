@@ -108,6 +108,8 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   scheduleRespawn: '⏳ Reconstitution différée (à la mort)', // marqueur de DONNÉE (op onSlain, non author-pickable)
   zone: '🌐 Zone persistante (mur / disque)',
   polymorph: '🦌 Métamorphose en créature',
+  transform: '🐺 Transformation durable (réversible)',
+  endTransform: '🔙 Fin de transformation',
   lifeSteal: '🩸 Vol de vie (drain de Blessures)',
   light: '💡 Émettre de la lumière (rayon)',
   skillMod: '🎯 Modif. d’une Compétence',
@@ -133,7 +135,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
+  ['🐾 Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
   ['🪄 Projection & téléportation', ['push', 'teleport', 'chain']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
@@ -314,6 +316,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'teleport': return { op: 'teleport', meters: { bonusOf: 'FM' } };
     case 'chain': return { op: 'chain', maxBounces: { bonusOf: 'FM' }, hopMeters: { bonusOf: 'FM' } };
     case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
+    case 'transform': return { op: 'transform', tag: 'forme', ops: [] };
+    case 'endTransform': return { op: 'endTransform', tag: 'forme' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'light': return { op: 'light', radiusTiles: 5 };
     case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
@@ -409,6 +413,8 @@ export function opSummary(o: GameOp): string {
     case 'teleport': return `${L} ${formulaSummary(o.meters)} m${o.perSL ? ` (+${formulaSummary(o.perSL.metersFormula)}/${o.perSL.every} DR)` : ''}`;
     case 'chain': return `${L} ${formulaSummary(o.maxBounces)} rebond(s), saut ${formulaSummary(o.hopMeters)} m`;
     case 'polymorph': return `${L} ${o.ref}`;
+    case 'transform': return `${L} « ${o.tag} » (${o.ops.length} effet(s)${o.morphRef ? `, apparence ${o.morphRef}` : ''})`;
+    case 'endTransform': return `${L} « ${o.tag} »`;
     case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;
     case 'loseTurn': return `${L} saute le tour`;
     case 'removeShipPoste': return `${L} retire un poste de navire`;

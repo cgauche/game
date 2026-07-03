@@ -29,7 +29,7 @@ import { aiDriven } from '../state/combatGate';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from '../state/combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from '../state/lineOfSight';
 import { smokeOf } from '../state/combatGeometry';
@@ -70,6 +70,7 @@ export function ActionBar() {
   const resolvePsychImmune = useGame((s) => s.battleResolvePsychImmune);
   const resolveIgnoreCrit = useGame((s) => s.battleResolveIgnoreCrit);
   const frenzy = useGame((s) => s.battleFrenzy);
+  const selfManeuver = useGame((s) => s.battleSelfManeuver);
   const standUp = useGame((s) => s.battleStandUp);
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
@@ -396,6 +397,10 @@ export function ActionBar() {
     if (needsReload && !frenzied) slots.push({ id: 'reload', cls: `ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`, disabled: battle.acted || stunned || broken, icon: <Icon id="journal/reload" />, label: `Recharger${active.reloadProgress ? ` (${active.reloadProgress}/${rangedW.reload})` : ''}`, title: "Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)", run: reload });
     if (ammoChoices.length > 1 && !frenzied) slots.push({ id: 'ammo', cls: battle.action === 'ammo' ? 'on' : '', icon: <Icon id="action/shoot" />, label: 'Munition ▾', title: 'Choisir la munition à tirer', run: () => selectAction(battle.action === 'ammo' ? null : 'ammo') });
     if (canFrenzy) slots.push({ id: 'frenzy', icon: <Icon id="flag/frenzy" />, label: 'Frénésie', title: "Entrer en Frénésie : Test de Force Mentale — coûte l'Action", run: frenzy });
+    // Capacités SUR SOI octroyées par un trait (Métamorphose humain↔hybride de l'Enfant d'Ulric) : la
+    // manœuvre APPLICABLE (prendre/reprendre la forme) — coûte deux Actions (celle-ci + le loseTurn suivant).
+    if (!frenzied) for (const m of selfManeuversOf(active).filter((mm) => selfManeuverApplicable(active, mm)))
+      slots.push({ id: `self-${m.id}`, disabled: battle.acted || stunned || broken, icon: <Icon id="flag/frenzy" />, label: m.label, done: battle.acted, title: `${m.label} — se métamorphoser (coûte deux Actions, RAW Métamorphose)`, run: () => selfManeuver(m.id) });
     if (attacks.length > 1) slots.push({ id: 'attacks', cls: showManeuvers || (battle.action === null && (battle.selectedAttack ?? 'arme') !== 'arme') ? 'on' : '', icon: <Icon id="action/attack" />, label: 'Attaque ▾', title: "Choisir l'attaque (arme ou attaque spéciale d'un trait de créature)", run: () => setShowManeuvers((v) => !v) });
     if (!frenzied) for (const g of usableGroups) {
       const it = active.items?.find((i) => i.uid === g.uids[0]);

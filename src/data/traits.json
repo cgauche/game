@@ -2409,6 +2409,14 @@
     "prefix": null,
     "suffix": null,
     "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
+    "grantsManeuvers": [
+      {
+        "id": "forme-hybride-ulric"
+      },
+      {
+        "id": "forme-humaine-ulric"
+      }
+    ],
     "source": {
       "book": "Middenheim",
       "page": 116

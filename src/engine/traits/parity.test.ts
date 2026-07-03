@@ -117,8 +117,6 @@ const JOURNAL_MJ = new Map<string, string>([
   // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est
   // pas exprimable (skillDRBonus n'est pas conditionnel au Domaine) → reste à bâtir.
   ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
-  // Traits du bestiaire de Middenheim (#60) — desc verbatim, mécaniques sans système support à ce jour.
-  ['Métamorphose', 'bascule forme humaine↔hybride ; la forme hybride EST le statbloc de combat ; op polymorph existe mais pas d’activation self de créature'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
@@ -140,6 +138,11 @@ const DISPATCH = new Set<string>([
   // NE réveille PAS une proie endormie (Inconscient magique) quand CETTE créature l'attaque (morsure indolore),
   // là où toute autre attaque la réveille. Dispatché (capability lue par le modifier).
   'Salive analgésique',
+  // Métamorphose (Enfant d'Ulric, Middenheim p.116) : le trait `grantsManeuvers` DEUX manœuvres `targeting:'self'`
+  // (forme hybride / forme humaine) portant les ops `transform`/`endTransform` — bascule de profil DELTA (tableau RAW
+  // VERBATIM), Traits hybrides et apparence, PERSISTANTE et réversible, au prix de DEUX Actions (loseTurn). Activée
+  // par le JOUEUR via `battleSelfManeuver` (hotbar). Dispatché (grantsManeuvers). Auto-transformation de l'IA à câbler.
+  'Métamorphose',
   // Redoutable (ZI) : Avantage min = Indice au début du tour — effet `onTurnStart` en donnée (op
   // gainAdvantage, indice baké via withArg, gardé Empêtré/Surpris). Dispatché comme tout `effects`.
   'Redoutable',

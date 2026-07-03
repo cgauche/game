@@ -256,6 +256,8 @@ export const fr = {
   'op.loseAction': '{name} perd sa prochaine Action.',
   'op.loseMovement': '{name} perd son prochain Mouvement.',
   'op.attrMod': '{name} : {mod} {attr} ({src}).',
+  'op.transform': '{name} se métamorphose ({tag}).',
+  'op.endTransform': '{name} reprend sa forme ({tag}).',
   'op.diseaseTestMod': '{name} : {mod} aux Tests liés à {what} ({src}).',
   'op.suppressSymptom': '{name} : le symptôme {symptom} est annulé pour la durée ({src}).',
   'op.actGate': '{name} devra réussir un Test de {char} à chaque Round pour agir pleinement ({src}).',
