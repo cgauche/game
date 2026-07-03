@@ -20,6 +20,8 @@
       "slope": 0.84
     },
     "nightVeil": "#05040a",
+    "nightVeilMax": 0.82,
+    "dayVignetteFloor": 0.5,
     "edgeDepth": {
       "color": "#0e131e",
       "alpha": 0.1,

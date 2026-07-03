@@ -3,6 +3,7 @@ import { useGame } from '../../state/store';
 import { isIndoor } from '../../state/scene';
 import { sceneIsDark } from '../../state/sceneRules';
 import { computeStateVisible, sceneLightField } from '../../state/visionState';
+import { ambientScalar } from '../../state/vision';
 import { makeCamera, VW, VH } from './camera';
 import { buildPovDrawList } from './geometry';
 import { AMBIANCE, povAmbianceDefs } from '../catalog/ambiance';
@@ -55,6 +56,10 @@ export function PovStage() {
   if (!scene || !view) return null;
   const indoor = isIndoor(scene);
   const bg = indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoor;
+  // Voile de nuit IDENTIQUE à l'iso (`AmbianceVeils`) : la MÊME luminosité de scène (`ambientScalar` →
+  // honore `scene.ambientLight`) assombrit les deux vues d'un cran égal → ISO et POV suivent le niveau
+  // ensemble (le POV, jusqu'ici, gardait son ciel clair même de nuit / à bas niveau).
+  const povVeil = (1 - ambientScalar(scene, gameTime, lightLevel ?? null)) * AMBIANCE.iso.nightVeilMax;
   // PEINTRE UNIQUE : la géométrie (`view.draw` → un polygone/tracé chacun) ET les billboards (créatures,
   // props) fusionnés dans UN tableau trié loin→près. Deux profondeurs dans le MÊME espace mètres-caméra
   // (DrawItem.depth ⇄ footAnchor.depth) → un mur à 5 m se peint après une créature à 8 m et avant une à 3 m.
@@ -71,6 +76,7 @@ export function PovStage() {
         {/* Fond : ciel dégradé dehors (plafond non dessiné), sombre en intérieur. */}
         <rect x={0} y={0} width={VW} height={VH} fill={indoor ? bg : 'url(#pov-sky)'} />
         {painted.map((p) => p.node)}
+        {povVeil > 0.001 && <rect x={0} y={0} width={VW} height={VH} fill={AMBIANCE.iso.nightVeil} opacity={povVeil} pointerEvents="none" />}
         <rect x={0} y={0} width={VW} height={VH} fill="url(#pov-vignette)" pointerEvents="none" />
       </svg>
     </div>

@@ -3,7 +3,7 @@
  * PAR-DESSUS la scène (lueur chaude, corbeau, vignette, rideau de nuit — hors groupe caméra).
  */
 import { Scene } from '../../state/scene';
-import { sceneIsDark } from '../../state/sceneRules';
+import { ambientScalar } from '../../state/vision';
 import { Dims, tileCenter } from '../iso';
 import { AMBIANCE, edgeDepthVeil } from '../catalog/ambiance';
 import { VW, VH } from './useStageCamera';
@@ -32,8 +32,11 @@ export function Flies({ scene, dims }: { scene: Scene; dims: Dims }) {
  *  ciel (extérieurs), vignette, puis l'assombrissement de mise en scène (Lot L) piloté par `lightLevel`,
  *  sinon l'obscurité d'horloge/ambiance. 1 = plein jour (aucun voile) → 0 = noir. Transition douce. */
 export function AmbianceVeils({ scene, dims, gameTime, lightLevel }: { scene: Scene; dims: Dims; gameTime: number; lightLevel: number | null | undefined }) {
-  const light = lightLevel ?? (scene && sceneIsDark(scene, gameTime) ? 0.4 : 1);
-  const veil = (1 - Math.max(0, Math.min(1, light))) * 0.82;
+  // Luminosité de la scène = MÊME source que la géométrie et que le POV (`ambientScalar` → honore
+  // `scene.ambientLight`). 1 = plein jour (voiles au minimum), 0 = noir. Voile de nuit + vignette dosés.
+  const light = ambientScalar(scene, gameTime, lightLevel ?? null);
+  const veil = (1 - light) * AMBIANCE.iso.nightVeilMax;
+  const vigOp = AMBIANCE.iso.dayVignetteFloor + (1 - AMBIANCE.iso.dayVignetteFloor) * (1 - light);
   return (
     <>
       {dims.edge && dims.view !== 'top' && <g dangerouslySetInnerHTML={{ __html: edgeDepthVeil(dims, VW, VH) }} pointerEvents="none" />}
@@ -46,7 +49,7 @@ export function AmbianceVeils({ scene, dims, gameTime, lightLevel }: { scene: Sc
           <circle cx={6} cy={-1} r={2.4} fill="var(--iso-fauna)" />
         </g>
       )}
-      <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" pointerEvents="none" />
+      <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" opacity={vigOp} pointerEvents="none" />
       {veil > 0.001 && (
         <rect x={0} y={0} width={VW} height={VH} fill={AMBIANCE.iso.nightVeil} opacity={veil} pointerEvents="none" style={{ transition: 'opacity 1.1s ease' }} />
       )}

@@ -18,6 +18,12 @@ export interface AmbianceDef {
     lowerFloorDim: { saturate: number; slope: number };
     /** Voile de NUIT (rect plein écran, alpha piloté par la lumière ambiante). */
     nightVeil: string;
+    /** Alpha MAX du voile de nuit (à luminosité 0). L'alpha effectif = `(1 − ambientScalar) × nightVeilMax`,
+     *  PARTAGÉ par l'iso ET le POV → les deux vues s'assombrissent à l'identique selon `scene.ambientLight`. */
+    nightVeilMax: number;
+    /** Opacité de la VIGNETTE à PLEINE lumière (jour). Elle monte vers 1 quand la luminosité baisse →
+     *  une scène « jour » n'est plus enfumée de grimdark ; on l'assombrit en baissant `ambientLight`. */
+    dayVignetteFloor: number;
     /** Ombrage de PROFONDEUR de la vue « de face » (edge-on) : les rangées écran LOINTAINES (haut de
      *  l'écran) s'assombrissent progressivement (perspective atmosphérique). Décoration de VUE, subtile
      *  (alpha ≈ 8-12 % max). `topFrac`/`bottomFrac` = bornes verticales écran du dégradé (0 = haut). */
