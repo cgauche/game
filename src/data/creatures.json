@@ -55051,8 +55051,10 @@
     },
     "appearance": {
       "species": "humain",
+      "monster": {
+        "tete": "chien"
+      },
       "features": [
-        "tete-bestiale-loup",
         "pelage-massif"
       ]
     }
