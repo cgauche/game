@@ -64,11 +64,27 @@ export function isOverhang(scene: Scene, x: number, y: number, z: number): boole
  *  étage inférieur exactement comme le bloc (opaque, jamais culé/fantôme), au lieu de disparaître et de
  *  laisser le dessus BRUT du bloc à nu quand on regarde le mur d'en bas (activeZ sous z). GÉNÉRAL. */
 export function capsSolid(scene: Scene, x: number, y: number, z: number): boolean {
-  if (z <= 0) return false;
+  if (z <= 0 || tileAt(scene, x, y, z) === 'vide') return false;
   const top = displayHeightAt(scene, x, y, z);
-  for (let zz = z - 1; zz >= 0; zz--)
+  for (let zz = z - 1; zz >= 0; zz--) {
+    if (tileAt(scene, x, y, zz) === 'vide') continue;
+    // (a) posé DIRECTEMENT sur un bloc plein (mur) : ce sol EST son dessus.
     if (terrainSolidHeightM(tileAt(scene, x, y, zz)) > 0 && displayHeightAt(scene, x, y, zz) >= top - 0.01) return true;
+    // (b) TOIT DE GATEHOUSE : le sol dessous est passable (TUNNEL de porte) mais BORDÉ par un bloc plein de
+    //     même niveau montant jusqu'au dessus (le chemin de ronde ceinture la masse et coiffe le passage) →
+    //     toit SOLIDE d'une structure, pas un tablier sur pilotis. Rend le rempart continu au-dessus de la porte.
+    if (SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; return terrainSolidHeightM(tileAt(scene, x + dx, y + dy, zz)) > 0 && displayHeightAt(scene, x + dx, y + dy, zz) >= top - 0.01; })) return true;
+  }
   return false;
+}
+
+/** Ce BLOC PLEIN (x,y,z) est-il COIFFÉ par un sol d'une couche supérieure à hauteur coïncidente ? Alors son
+ *  propre DESSUS est REDONDANT (le sol du dessus — chemin de ronde — EST la surface) → on ne le dessine pas :
+ *  deux dalles superposées « clignotent » selon le voile (l'une perçue, l'autre voilée laissant voir le
+ *  dessus brut du bloc). Miroir de `capsSolid`, côté bloc. */
+function cappedAbove(scene: Scene, x: number, y: number, z: number): boolean {
+  const top = displayHeightAt(scene, x, y, z);
+  return scene.layers.some((l) => l.z > z && tileAt(scene, x, y, l.z) !== 'vide' && displayHeightAt(scene, x, y, l.z) >= top - 0.01);
 }
 
 /** Hauteur d'AFFICHAGE de la surface INFÉRIEURE sous un surplomb (1ʳᵉ couche marchable en dessous), ou null. */
@@ -103,7 +119,7 @@ function edgeCorners(x: number, y: number, side: CellSide): [{ x: number; y: num
 /** Faces d'une tuile de sol, dans l'ORDRE DE PEINTURE (piliers — les plus en arrière, ils tombent sous
  *  la dalle — puis parois de relief qui descendent SOUS le sol, losange de base, wedges par-dessus).
  *  null si la tuile est `vide` (étage non construit → transparente, on voit le dessous). */
-function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boolean): Face[] | null {
+function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boolean, caps: boolean): Face[] | null {
   const terrain = tileAt(scene, x, y, z);
   if (terrain === 'vide') return null;
   const self = displayHeightAt(scene, x, y, z); // AFFICHAGE (bloc plein `solidHeightM` compris) — jamais lu par le combat
@@ -114,8 +130,11 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
   // aux coins de l'arête, du DESSOUS de la dalle jusqu'à la surface inférieure. Coins partagés dédupliqués.
   // Gaté sur `overhang` (≠ `lowerH != null`) : une ZONE REMPART solide (overhang forcé faux) descend en
   // falaise PLEINE, sans pilotis (`overhangLowerHeight` verrait pourtant le sol marchable dessous).
+  // `!caps` : un TOIT solide (dessus de bloc / gatehouse) n'a PAS de pilotis — la masse le porte. On garde
+  // les DALLES FINES (`deck`) sur ses arêtes ouvertes plus bas (la BOUCHE de la porte reste dégagée), mais
+  // AUCUN montant vertical dans le tunnel (ces pilotis n'existent pas en POV et ne devraient pas exister).
   const lowerH = overhangLowerHeight(scene, x, y, z);
-  if (overhang && lowerH != null) {
+  if (overhang && lowerH != null && !caps) {
     const topH = self - DECK_THICKNESS_M; // dessous de la dalle
     const seen = new Set<string>();
     for (const side of SIDES) {
@@ -160,16 +179,19 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
   }
 
   // LOSANGE de base (matériau = id du terrain), à la hauteur métrique de la surface. Coins en ordre
-  // horaire depuis le NO (= ordre écran top→right→bot→left au cran 0).
-  faces.push({
-    poly: [
-      { x: x - 0.5, y: y - 0.5, h: self },
-      { x: x + 0.5, y: y - 0.5, h: self },
-      { x: x + 0.5, y: y + 0.5, h: self },
-      { x: x - 0.5, y: y + 0.5, h: self },
-    ],
-    material: { domain: 'terrain', id: terrain },
-  });
+  // horaire depuis le NO (= ordre écran top→right→bot→left au cran 0). SAUF le dessus d'un BLOC PLEIN
+  // COIFFÉ par un sol supérieur (chemin de ronde) : ce dessus est redondant (le chemin de ronde EST la
+  // surface) et créerait la « double dalle » clignotante sous le voile → on ne le dessine pas.
+  if (!(solidBlock && cappedAbove(scene, x, y, z)))
+    faces.push({
+      poly: [
+        { x: x - 0.5, y: y - 0.5, h: self },
+        { x: x + 0.5, y: y - 0.5, h: self },
+        { x: x + 0.5, y: y + 0.5, h: self },
+        { x: x - 0.5, y: y + 0.5, h: self },
+      ],
+      material: { domain: 'terrain', id: terrain },
+    });
 
   // WEDGES de raccord de terrain : trapèze sur l'arête faisant face à chaque voisin de plus haute
   // précédence, inset de 0.4 vers le centre de la case.
@@ -219,7 +241,7 @@ export function buildFloors(scene: Scene, visible?: ReadonlySet<string>, view?: 
         const caps = capsSolid(scene, x, y, lvl.z);
         const ghost = layerGhost && !caps; // tablier au-dessus de la zone active → fantôme ; pas un toit de bloc
         if (ghost && !overhang) continue; // au-dessus : SEULEMENT les surplombs
-        const faces = floorFaces(scene, x, y, lvl.z, overhang);
+        const faces = floorFaces(scene, x, y, lvl.z, overhang, caps);
         if (!faces) continue;
         // RÈGLE GÉNÉRALE du surplomb : il ne s'efface (fantôme translucide) que pour ne pas masquer une
         // SURFACE VISIBLE en dessous. Là où l'étage du dessous n'est PAS visible (occulté/brouillard),

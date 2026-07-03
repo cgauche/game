@@ -192,6 +192,28 @@ describe('buildFloors — TOIT d’un bloc plein (chemin de ronde sur le mur), v
     const el = elAt(buildFloors(s, undefined, { activeZ: 0 }), 1, 1, 1)!;
     expect(el.states.ghost).toBe(true); // surplomb flottant → fantôme (comportement inchangé)
   });
+
+  it('le DESSUS d’un bloc coiffé n’est PAS dessiné (le chemin de ronde EST la surface — pas de « double dalle »)', () => {
+    const mur = elAt(buildFloors(cappedWall(), undefined, { activeZ: 0 }), 1, 1, 0)!;
+    expect(mur.faces.filter(isBaseFace)).toHaveLength(0);                       // dessus du bloc supprimé
+    expect(reliefParts(mur).length).toBeGreaterThan(0);                         // MAIS les flancs (mur) restent
+    const walkway = elAt(buildFloors(cappedWall(), undefined, { activeZ: 0 }), 1, 1, 1)!;
+    expect(walkway.faces.some(isBaseFace)).toBe(true);                          // le chemin de ronde fournit LA surface
+  });
+
+  it('TOIT DE GATEHOUSE : chemin de ronde sur un TUNNEL passable bordé de bloc plein → caps, ZÉRO piloti', () => {
+    // (1,1) z0 = tunnel passable (plancher) BORDÉ par deux murs (0,1)/(2,1) montant à 4 m ; coiffé z1 à 4 m.
+    const s = emptyScene(3, 3);
+    s.layers[0].tiles[1 * 3 + 0] = 'mur';
+    s.layers[0].tiles[1 * 3 + 2] = 'mur';
+    s.layers.push({ z: 1, tiles: new Array(9).fill('vide'), height: new Array(9).fill(0) });
+    s.layers[1].tiles[1 * 3 + 1] = 'pierre';
+    s.layers[1].height![1 * 3 + 1] = 4;
+    expect(capsSolid(s, 1, 1, 1)).toBe(true); // tunnel bordé de bloc plein = toit solide
+    const roof = elAt(buildFloors(s, undefined, { activeZ: 0 }), 1, 1, 1)!;
+    expect(roof.faces.filter((f) => f.material.part === 'pillar')).toHaveLength(0); // aucun montant dans le tunnel
+    expect(roof.states.ghost).toBe(false); // toit solide, opaque
+  });
 });
 
 describe('buildFloors — wedges de raccord de terrain', () => {
