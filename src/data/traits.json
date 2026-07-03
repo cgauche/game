@@ -83,6 +83,13 @@
       {
         "op": "offTerrainMod",
         "terrain": "eau"
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "natation",
+        "bonus": {
+          "bonusOf": "Ag"
+        }
       }
     ]
   },

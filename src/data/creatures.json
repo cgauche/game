@@ -55052,7 +55052,8 @@
     "appearance": {
       "species": "humain",
       "features": [
-        "tete-bestiale-loup"
+        "tete-bestiale-loup",
+        "pelage-massif"
       ]
     }
   },
