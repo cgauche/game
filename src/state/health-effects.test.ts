@@ -70,6 +70,33 @@ describe('Effet exposureNight (LDB 18 l.326-334)', () => {
   });
 });
 
+describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
+  beforeEach(() => useGame.setState({ vessel: undefined }));
+
+  it('dote le groupe du navire choisi (state.vessel posé, Moral par défaut, coque intacte)', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue' }]);
+    const v = useGame.getState().vessel;
+    expect(v?.vehicleId).toBe('cogue');
+    expect(v?.morale.score).toBe(75); // MORALE_BASE (nouvel équipage)
+    expect(v?.wounds).toBeUndefined(); // coque intacte (aucun hullMax authoré)
+    expect(useGame.getState().journal.some((l) => /navire|cogue/i.test(l))).toBe(true);
+  });
+
+  it('Moral et coque INITIAUX authorés sont appliqués', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', morale: 60, hullMax: 50, hullCurrent: 20 }]);
+    const v = useGame.getState().vessel;
+    expect(v?.morale.score).toBe(60);
+    expect(v?.wounds).toEqual({ current: 20, max: 50 });
+  });
+
+  it('ref invalide (véhicule non-navire / inexistant) → no-op (aucun navire posé)', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'charrette' }]); // pas de facette ship
+    expect(useGame.getState().vessel).toBeUndefined();
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'zzz-inconnu' }]);
+    expect(useGame.getState().vessel).toBeUndefined();
+  });
+});
+
 describe('Effet openTavernGames (NADJ ch.16)', () => {
   afterEach(() => resetRule('tavern-games'));
 

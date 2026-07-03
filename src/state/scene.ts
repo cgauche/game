@@ -350,6 +350,11 @@ export type Effect =
   /** Ouvre la CARTE DU MONDE (#T2) — à poser sur la porte/route d'un lieu (« partir en voyage »).
    *  Sans effet si le projet n'a pas de carte ou en combat. */
   | { type: 'openWorldMap' }
+  /** Dote le groupe d'un NAVIRE DE CAMPAGNE (`state.vessel`, MDG ch.13-15) — à poser quand le groupe
+   *  reçoit/achète un bateau (don d'un patron, chantier). `vehicleId` = un navire de `vehicles.json`
+   *  (facette `ship`) ; Moral et Blessures de coque INITIAUX authorés (coque neuve = pas de `wounds`).
+   *  Le navire survit aux jours et aux combats (le voyage maritime et le Port en repartent). */
+  | { type: 'setVessel'; vehicleId: string; morale?: number; hullCurrent?: number; hullMax?: number }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

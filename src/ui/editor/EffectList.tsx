@@ -11,7 +11,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE } from '../../data';
+import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById } from '../../data';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
@@ -23,6 +23,9 @@ import type { MassBattleSpec } from '../../state/massBattleFlow';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
+
+/** Navires dotables (`setVessel`) : véhicules à facette `ship` de `vehicles.json` (embarcations). */
+const SHIP_VEHICLES = vehicles.filter((v) => v.ship);
 
 /** Toutes les facettes d'AUTEUR (libellé/icône/groupe/fabrique) sont lues sur le REGISTRE unique
  *  `EFFECT_HANDLERS` (state/combatEffects) — fin des Records parallèles. Le `summary` (qui dépend
@@ -129,6 +132,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     }
     case 'transitionBack': return `${icon} Retour scène précédente`;
     case 'openWorldMap': return `${icon} Carte du monde (voyage)`;
+    case 'setVessel': return `${icon} Navire : ${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}`;
     case 'startDialogue': return `${icon} Dialogue : ${e.dialogue || '?'}`;
     case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
     case 'openTavernGames': return `${icon} Jeux de taverne`;
@@ -364,6 +368,21 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               ))}
             </select>
             <input placeholder="id du héros (vide = premier au Talent éligible)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'setVessel' && (
+          <>
+            <select value={e.vehicleId ?? ''} onChange={(ev) => upd({ vehicleId: ev.target.value })}>
+              <option value="">— navire de campagne —</option>
+              {SHIP_VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+            </select>
+            <div className="tf-row">
+              <label className="dr">Moral initial <input type="number" min={0} max={100} style={{ width: '3.6em' }} value={e.morale ?? 75} onChange={(ev) => upd({ morale: Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
+              <label className="dr">Coque max (vide = intacte) <input type="number" min={1} style={{ width: '3.6em' }} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
+              {e.hullMax != null && (
+                <label className="dr">Coque actuelle <input type="number" min={0} style={{ width: '3.6em' }} value={e.hullCurrent ?? e.hullMax} onChange={(ev) => upd({ hullCurrent: Math.max(0, Number(ev.target.value) || 0) })} /></label>
+              )}
+            </div>
           </>
         )}
         {effect.type === 'giveMoney' && (

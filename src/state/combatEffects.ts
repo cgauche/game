@@ -19,7 +19,8 @@ import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
-import { findCreatureById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
+import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
+import { MORALE_BASE } from '../engine/crewMorale';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { applySummon } from './summonFlow';
 import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
@@ -1090,6 +1091,30 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // « Partir en voyage » depuis une porte/route de la scène (#T2) — l'action est déjà gardée
       // (no-op sans carte ou en combat).
       env.get().openWorldMap();
+    },
+  },
+  setVessel: {
+    group: '🚪 Navigation', label: 'Doter le groupe d\'un navire (MDG ch.13-15)', icon: '⚓',
+    make: () => ({ type: 'setVessel', vehicleId: '', morale: MORALE_BASE }),
+    apply: (e, env) => {
+      // Pose le NAVIRE DE CAMPAGNE (`state.vessel`) — comme le champ de scénario `TestScenario.vessel`,
+      // mais authorable. Moral neuf par défaut (MORALE_BASE) ; coque intacte sauf `hull*` authoré.
+      const v = findVehicleById(e.vehicleId);
+      if (!v?.ship) return; // ref invalide (validée par `refs`) : no-op
+      env.set({
+        vessel: {
+          vehicleId: e.vehicleId,
+          morale: { score: e.morale ?? MORALE_BASE, lastMoraleWeek: 0, factors: [] },
+          ...(e.hullMax != null ? { wounds: { current: e.hullCurrent ?? e.hullMax, max: e.hullMax } } : {}),
+        },
+      });
+      env.log(t('eff.setVessel', { name: v.label }));
+    },
+    refs: (e) => {
+      const v = e.vehicleId ? findVehicleById(e.vehicleId) : undefined;
+      if (!v) return [{ level: 'error', message: `Effet → navire inexistant « ${e.vehicleId || '(vide)'} »` }];
+      if (!v.ship) return [{ level: 'error', message: `Effet → « ${v.label} » n'est pas un navire (pas de facette ship)` }];
+      return [];
     },
   },
 

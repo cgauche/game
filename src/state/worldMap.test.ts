@@ -39,4 +39,17 @@ describe('parseProject — validation du format projet v2', () => {
     expect(() => parseProject(scene('s1'))).toThrow(/Projet invalide/); // ancien : scène unique
     expect(() => parseProject(null)).toThrow(/Projet invalide/);
   });
+
+  it('MapPlace.port (Index des ports, MDG ch.15) survit au round-trip via parseProject', () => {
+    // Un Lieu-port complet : taille/richesse/production/surplus/demande/cosmopolite/lighthouse — édité
+    // par la section « Port » de WorldMapEditor, préservé tel quel par le round-trip du projet.
+    const port = {
+      taille: 4, richesse: 5, production: ['commerce', 'produits-de-luxe'],
+      surplus: { 'produits-de-luxe': 1 }, demande: { cereales: 2 }, cosmopolite: true, lighthouse: true,
+    };
+    const mapWithPort = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Marienburg', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
+    const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithPort as never };
+    const round = parseProject(JSON.parse(JSON.stringify(doc)));
+    expect(round.worldMap!.places[0].port).toEqual(port);
+  });
 });

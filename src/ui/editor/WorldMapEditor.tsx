@@ -3,6 +3,7 @@ import { Scene } from '../../state/scene';
 import { WorldMap, MapPlace, MapRoute, emptyWorldMap, placeById } from '../../state/worldMap';
 import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
+import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
 import { EffectList } from './EffectList';
 
 /** Libellés des Tailles de communauté (T2C ch.11 l.44-50, indices 1-4). */
@@ -13,6 +14,15 @@ const MARKET_PRODUITS: readonly { id: string; label: string }[] = [
   { id: 'commerce', label: 'Commerce (plaque tournante)' },
   { id: 'subsistance', label: 'Subsistance (rien à échanger)' },
 ];
+/** Production d'un port (Index des ports, MDG ch.15 l.439-506) : cargaisons maritimes + les MARQUEURS
+ *  « Commerce » (plaque tournante) / « Minimum vital » (rien à échanger). */
+const PORT_PRODUITS: readonly { id: string; label: string }[] = [
+  ...CARGOES.map((c) => ({ id: c.id, label: c.label })),
+  { id: 'commerce', label: 'Commerce (plaque tournante)' },
+  { id: 'minimum-vital', label: 'Minimum vital (rien à échanger)' },
+];
+/** Port MARITIME par défaut posé quand l'auteur coche « Port » (petit port de production côtière). */
+const DEFAULT_PORT: PortProfile & { lighthouse?: boolean } = { taille: 2, richesse: 2, production: [] };
 
 /**
  * Éditeur de la CARTE DU MONDE (#T2 Voyage) — overlay plein écran de l'éditeur de niveau.
@@ -276,6 +286,92 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                         onChange={(e) => updMarket({ wineBonusEchelons: e.target.value === '' ? undefined : Math.max(0, Math.min(5, Number(e.target.value))) })}
                       />
                     </label>
+                  </>
+                );
+              })()}
+
+              {/* ── Port maritime (Index des ports, MDG ch.15) : Taille + Richesse + Production/Surplus/Demande ── */}
+              <div className="mini-title">Port maritime (commerce d'escale, MDG ch.15)</div>
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={!!selPlace.port}
+                  onChange={(e) => updPlace(selPlace.id, { port: e.target.checked ? { ...DEFAULT_PORT } : undefined })}
+                />
+                ⚓ Port maritime (accostage, commerce, chantier)
+              </label>
+              {selPlace.port && (() => {
+                const pt = selPlace.port;
+                const updPort = (patch: Partial<PortProfile & { lighthouse?: boolean }>) => updPlace(selPlace.id, { port: { ...pt, ...patch } });
+                // Bascule d'une clé d'un Record<id, indice> (Surplus/Demande) : cocher = indice 1, décocher = retirer la clé.
+                const toggleTable = (key: 'surplus' | 'demande', id: string) => {
+                  const tbl = { ...(pt[key] ?? {}) };
+                  if (id in tbl) delete tbl[id]; else tbl[id] = 1;
+                  updPort({ [key]: Object.keys(tbl).length ? tbl : undefined });
+                };
+                const setTableLevel = (key: 'surplus' | 'demande', id: string, lvl: number) =>
+                  updPort({ [key]: { ...(pt[key] ?? {}), [id]: Math.max(1, lvl) } });
+                return (
+                  <>
+                    <label className="ed-field">Taille du port (1-4, l.439-506)
+                      <select value={pt.taille} onChange={(e) => updPort({ taille: Number(e.target.value) })}>
+                        {TAILLE_LABELS.map((label, i) => <option key={i} value={i + 1}>{i + 1} — {label}</option>)}
+                      </select>
+                    </label>
+                    <label className="ed-field">Richesse du port
+                      <select value={pt.richesse} onChange={(e) => updPort({ richesse: Number(e.target.value) })}>
+                        {LAND_RICHESSE_ROWS.map((r) => (
+                          <option key={r.richesse} value={r.richesse}>{r.richesse} — {r.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="ed-check">
+                      <input type="checkbox" checked={!!pt.cosmopolite} onChange={(e) => updPort({ cosmopolite: e.target.checked || undefined })} />
+                      🌍 Grand port cosmopolite (Marienburg/Lothern, l.343 — marchands supérieurs)
+                    </label>
+                    <label className="ed-check">
+                      <input type="checkbox" checked={!!pt.lighthouse} onChange={(e) => updPort({ lighthouse: e.target.checked || undefined })} />
+                      🗼 Phare à l'approche (Test de Perception de vigie à l'atterrage, MDG ch.13 l.333-351)
+                    </label>
+                    <div className="mini-title">Production (colonne Produits de l'Index)</div>
+                    {PORT_PRODUITS.map((p) => (
+                      <label key={p.id} className="ed-check">
+                        <input
+                          type="checkbox"
+                          checked={pt.production.includes(p.id)}
+                          onChange={() => updPort({ production: pt.production.includes(p.id) ? pt.production.filter((x) => x !== p.id) : [...pt.production, p.id] })}
+                        />
+                        {p.label}
+                      </label>
+                    ))}
+                    <div className="mini-title">Surplus (le port en regorge → vente locale facilitée)</div>
+                    {CARGOES.map((c) => (
+                      <label key={c.id} className="ed-check">
+                        <input type="checkbox" checked={c.id in (pt.surplus ?? {})} onChange={() => toggleTable('surplus', c.id)} />
+                        {c.label}
+                        {c.id in (pt.surplus ?? {}) && (
+                          <input
+                            type="number" min={1} max={3} style={{ width: '3.2em', marginLeft: '0.4em' }}
+                            value={pt.surplus![c.id]}
+                            onChange={(e) => setTableLevel('surplus', c.id, Number(e.target.value) || 1)}
+                          />
+                        )}
+                      </label>
+                    ))}
+                    <div className="mini-title">Demande (le port en manque → meilleur prix d'offre)</div>
+                    {CARGOES.map((c) => (
+                      <label key={c.id} className="ed-check">
+                        <input type="checkbox" checked={c.id in (pt.demande ?? {})} onChange={() => toggleTable('demande', c.id)} />
+                        {c.label}
+                        {c.id in (pt.demande ?? {}) && (
+                          <input
+                            type="number" min={1} max={3} style={{ width: '3.2em', marginLeft: '0.4em' }}
+                            value={pt.demande![c.id]}
+                            onChange={(e) => setTableLevel('demande', c.id, Number(e.target.value) || 1)}
+                          />
+                        )}
+                      </label>
+                    ))}
                   </>
                 );
               })()}

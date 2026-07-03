@@ -16,6 +16,7 @@ import { forcePaceDifficulty } from '../engine/seaNavigation';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
+import { ShipRolesPanel } from './ShipRolesPanel';
 import { Icon, IconG } from './Icon';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
@@ -407,7 +408,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               <>Le groupe ne peut pas avancer (surcharge) — allégez les sacs.</>
             )}
           </p>
-          {rule('travel-etapes') && <TravelRolesPanel />}
+          {mode === 'mer' && vessel ? <ShipRolesPanel /> : rule('travel-etapes') && <TravelRolesPanel />}
           <div className="modal-actions">
             <button type="button" className="btn" onClick={() => setSelId(null)}>Annuler</button>
             <button

@@ -163,10 +163,10 @@ Source : audit adversarial par domaine (juillet 2026). Statut = jouable (scénar
 
 | Système | Domaine | Ce qu'il manque |
 |---|---|---|
-| Ports maritimes (`PortProfile`) | Voyage | Section « Port » dans WorldMapEditor (taille/richesse/production/`lighthouse`/…). |
-| Voyage maritime (route `sea`) | Voyage | WorldMapEditor : checkbox `sea` + select `seaHeading`. |
-| Navire de campagne (`vessel`) | Voyage | Panneau UI `vessel` (véhicule/morale/coque/eau) + Effet `setVessel`. |
-| Postes d'équipage (`shipRole`) | Voyage | `ScenarioShipRolesPanel` (analogue `TravelRolesPanel`). |
+| ~~Ports maritimes (`PortProfile`)~~ ✅ **RÉSOLU** | Voyage | Section « Port » ajoutée dans `WorldMapEditor.tsx` (miroir de « Marché ») : checkbox Port → taille/richesse/production (cargaisons maritimes + Commerce/Minimum vital)/surplus/demande/`cosmopolite`/`lighthouse`. Round-trip stable (préservé par `parseProject`, testé). |
+| ~~Voyage maritime (route `sea`)~~ ✅ **DÉJÀ FAIT** | Voyage | WorldMapEditor porte déjà la checkbox `sea` + select `seaHeading` (passe antérieure). |
+| ~~Navire de campagne (`vessel`)~~ ✅ **RÉSOLU** | Voyage | Effet `setVessel` ajouté (union `Effect` + handler `combatEffects` groupe Navigation → pose `state.vessel` : navire de `vehicles.json` (facette `ship`) via select, Moral/coque initiaux authorés + édition `EffectList`, `refs` valident le navire). Testé (`health-effects.test.ts`). |
+| ~~Postes d'équipage (`shipRole`)~~ ✅ **RÉSOLU** | Voyage | `ShipRolesPanel` (analogue `TravelRolesPanel`, `OptionChooser` + `crewRoles` + `defaultCrewRole` + `setShipRole`) rendu à l'appareillage (route maritime + navire présent) dans `WorldMapView`. Édite `shipRole` sur le groupe AVANT le départ. Testé (`ShipRolesPanel.test.tsx`). |
 | Disponibilité (LDB 59/60) | Économie | Exposer `market-guild`/`market-mode`/`market-tenir-comptes` comme champs du marchand. |
 | Marchandage / Évaluation / Réparation | Économie | Exposer en flags de l'entité marchand (déjà jouables via `openMerchant`). |
 | Commerce maritime/port | Économie | Effet `openPort` pour SCRIPTER l'accès (aujourd'hui auto à l'accostage). |

@@ -324,6 +324,7 @@ export const fr = {
   'eff.xp': 'Groupe : +{amount} PX.',
   'eff.learnSpell': '{name} apprend {spell}.',
   'eff.restoreFortune': 'Début de session : Points de Chance regagnés (maximum = Destin).',
+  'eff.setVessel': '⚓ Le groupe prend possession du navire : {name}.',
   'eff.blast': '💥 Souffle de zone : {lines}.',
   'eff.fallTarget': '{name} {lost}{aterre}',
   'eff.fragATerre': ' (À Terre)',
