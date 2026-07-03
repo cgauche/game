@@ -16,16 +16,16 @@ Trois « choses auxquelles on affecte un héros et qui se résolvent par un Test
 | Issue | dégâts | `GameOp`/`stageOutcome` | **Puissance d'armée** |
 
 **Ce qui est commun = le Test + l'affectation + (pour poste/bataille) la position.** Ce qui diverge = **l'issue**
-et la **topologie** (N:1 vs 1:1). Deux constats vérifiés qui pilotent le design :
+et la **topologie** (N:1 vs 1:1). Deux constats qui pilotent le design :
 
-- **Les issues de masse DOIVENT être des `GameOp`.** `CLAUDE.md` : « `GameOp` = langue UNIQUE de tout effet ;
-  avant tout type ad hoc → l'exprimer en `GameOp[]` ». Or `ActivityOutcome {target:'allyMight',amount}`
-  (`massBattle.ts`) est précisément un type d'effet ad hoc. Un `GameOp` cible un `Combatant` ; une **coque
-  de navire** et une **structure de siège** SONT déjà des `Combatant` (via `inanimateCombatant`). → **une armée
-  doit être un `Combatant`** dont la Puissance est une ressource (PV). Vérifié : `ops.ts` a `wounds`/`heal`
-  (montant `Formula`, `ignoreTB/ignoreAP`) → un « −10 Puissance ennemie » = `{op:'wounds',
-  amount:{flat:10}, ignoreTB:true, ignoreAP:true}` sur l'armée-Combatant ; ralliement = `heal`. **Aucun op
-  nouveau nécessaire.**
+- **La Puissance N'EST PAS un effet `GameOp` — c'est une carac TESTABLE.** *(Piste initiale « armée = Combatant,
+  Puissance = PV, deltas = GameOp » ÉCARTÉE après revue adversariale + vérification directe — cf. §7bis.)*
+  Vérifié : `rollMightTest(might)` = `rollTest(might, …)` → **d100 ≤ Puissance courante** (`massBattle.ts` l.219-223) ;
+  `resolveClash` réduit l'adverse de `mightReduction(sl)=max(5,10+sl)` — logique **calculée** (`10+DR`, plancher 5),
+  pas un montant plat qu'un `GameOp wounds` pourrait porter (ADE II ch.8 l.120, non opposé, simultané). La Puissance
+  est donc une **stat d'armée abstraite qu'on TESTE**, pas une ressource de créature → le garde-fou « `GameOp` =
+  langue des EFFETS » **ne s'applique pas** ici. Le modèle plat `MassBattleArmy{might,startMight}` + moteur pur EST
+  correct ; on ne le migre PAS.
 - **`bestForSkills` (auto-choix du meilleur héros) en masse est une aberration** : le jeu joue à la place du
   joueur. L'affectation doit être **explicite** (comme un poste). `bestForSkills` ne survit qu'en *suggestion*
   par défaut, jamais comme mécanisme.
@@ -39,7 +39,7 @@ une abstraction fuyante. → **On NE fusionne PAS les activités dans la surface
 
 | Couche | Partagée par | Contenu |
 |---|---|---|
-| **A. Moteur** | postes + activités + bataille | `TestSpec` unique · issues `GameOp` (armée=`Combatant`) · affectation explicite |
+| **A. Moteur** | postes + activités + bataille | `TestSpec` unique · « meilleur héros » partagé · affectation explicite. **(PAS de migration Puissance→GameOp — cf. §7bis.)** |
 | **B. Surface Station SPATIALE** (plan + affectation) | postes + événements de bataille | `StationSheet` générique (ex-`PosteSheet`) + registre de kinds |
 | **C. Composant d'affectation d'ACTIVITÉ** (par-héros, sans plan) | interlude + voyage + mer | dédup des 3 pickers, réutilise `TestSpec` + rendu de détail |
 
@@ -47,20 +47,17 @@ une abstraction fuyante. → **On NE fusionne PAS les activités dans la surface
 
 - **`TestSpec` partagé** (`{ skills?: SkillRef[]; char?: CharKey; difficulty?: Difficulty; combined?: boolean }`) —
   aujourd'hui **triplé** dans `ActivityDef` (sans `char`/`combined`), `BattleActivityDef`, `BattleSceneDef`.
-  → un seul type, référencé par les trois. `ActivityDef` gagne `char`/`combined` (extension inoffensive).
-- **« meilleur héros pour un `TestSpec` »** — `bestForSkills` (`massBattleFlow`) et le chemin `partyBest`
-  (`resolveSkillBest`, `activities`) se recoupent → **une primitive unique** (avec variante combiné :
-  maximise le plus faible des deux, `bestForCombined`).
-- **Armée = `Combatant`** — `MassBattleArmy { name, might, startMight }` (objet plat) → construit via
-  `inanimateCombatant` (MÊME builder que coque/structure) avec `wounds = { current: might, max: startMight }`.
-  Le clash / la normalisation / le Point de rupture (Hold) opèrent sur ses `wounds`. **Valeurs & seuils RAW
-  restent en donnée** (ADE II ch.8) ; seule la **représentation** change (ressource + `GameOp`).
-- **Issues → `GameOp[]`** — `ActivityOutcome`/`BattleSceneEffect` (deltas de Puissance) ré-exprimés en
-  `GameOp[]` appliqués par `applyOps(armée, ops)`. `firstRoundBonus`/`planningBonus`/`allyTestMod` (modifs de
-  Test, pas de la Puissance) : soit `charMod`/`testMod` sur l'armée-Combatant, soit un petit champ d'état de
-  bataille — **à trancher en E2** (préférer `GameOp` si exprimable).
+  → un seul type, référencé par les trois. `ActivityDef` gagne `char`/`combined` (extension inoffensive :
+  `resolveTravelActivity`→`resolveSkillBest` les ignore).
+- **« meilleur héros pour un `TestSpec` »** — `bestForSkills` (`massBattleFlow`) et `partyBest`/`resolveSkillBest`
+  (`activities`/`skills`) se recoupent → **une FAMILLE de primitives** (3 formes réelles : meilleur ACTEUR du
+  groupe vs meilleure COMPÉTENCE d'un acteur × simple vs combiné). Mutualiser sans sur-vendre « 1 primitive ».
 - **Affectation explicite** — un enregistrement `Record<heroId, actionId>` (comme `StagePosting` /
   `poste.crewIds`) ; la résolution prend le héros AFFECTÉ. `bestForSkills` → défaut proposé, pas imposé.
+- **Puissance/issues de masse : INCHANGÉES** — le moteur pur (`resolveClash`/`mightReduction`/`normalizeMights`/
+  Hold/hasards/machines) reste tel quel ; il n'entre PAS dans le vocabulaire `GameOp` (§7bis). Les `GameOp`
+  restent la langue des effets sur les **héros** (une scène de combat/ralliement soigne/blesse un héros = déjà
+  des `GameOp` par les chemins normaux) — pas de la Puissance d'armée.
 
 ### B. Surface Station spatiale (postes + bataille)
 
@@ -81,32 +78,57 @@ UN composant par-héros (picker d'activité + détail `<Prose>` + prérequis), r
 
 ## 3. Phases (chacune laisse la suite verte — pas de dette intermédiaire)
 
-- **E1 — `TestSpec` + « meilleur héros » partagés (pur, testé).** Extraire le type + la primitive ; refactorer
-  les 3 defs. Aucune UI. Golden inchangés. Faible risque.
-- **E2 — Armée-`Combatant` + issues `GameOp` (⚠ RAW-critique).** Migrer `MassBattleArmy` en `Combatant`
-  (wounds=Puissance) ; ré-exprimer les deltas en `GameOp` ; clash/hold/hasards/machines opèrent sur les wounds.
-  **Golden-values** : Puissances finales identiques à l'ancien code. Re-lire ADE II ch.8 AVANT. Isolée, la plus
-  délicate.
-- **E3 — Affectation explicite (moteur/state).** Enregistrement d'affectation + résolution par le héros affecté ;
-  `bestForSkills` → suggestion. Tests de flux.
+- **E1 — `TestSpec` + « meilleur héros » partagés (pur, testé).** Extraire le type + la famille de primitives ;
+  refactorer les 3 defs. Aucune UI. Golden inchangés. Faible risque.
+- ~~**E2 — Armée-`Combatant` + issues `GameOp`**~~ — **SUPPRIMÉ** (erreur de catégorie, §7bis). Le modèle plat
+  `MassBattleArmy` + moteur pur reste. **N'était PAS une vraie dépendance de S2.**
+- **E3 — Affectation explicite (moteur/state).** Enregistrement `Record<heroId, actionId>` + résolution par le
+  héros affecté ; `bestForSkills` → suggestion. Tests de flux. **Ne dépend PAS d'E2.**
 - **S1 — `StationSheet` générique + registre de kinds.** Généraliser `PosteSheet` (poste = 1er kind,
   comportement CONSTANT). Vérif navire+siège inchangés (navigateur).
 - **S2 — kind `battleScene`.** `Scene.stations` + `battleScenesToStations` + embed dans `MassBattleView` +
-  affectation explicite (via E3). Remplace la liste plate. Vérif navigateur (`bataille-de-masse`).
+  affectation explicite (via E3), **sur le modèle plat existant**. Remplace la liste plate. Vérif navigateur
+  (`bataille-de-masse`).
 - **C1 — Composant d'affectation d'activité.** Dédup interlude/voyage/mer. Vérif navigateur (interlude + mer).
 
-Ordre : **E1 → S1 → E2 → E3 → S2 → C1** (S1 ne dépend que d'E1 ; S2 dépend d'E2+E3+S1).
+Ordre : **E1 → S1 → E3 → S2 → C1** (S1 ne dépend que d'E1 ; S2 dépend d'E3+S1 ; C1 dépend d'E1). Plus de phase
+RAW-critique : le moteur de masse n'est pas touché.
 
 ## 4. Ce qui est SUPPRIMÉ (nettoyage POC, zéro dette)
 
-- `ActivityOutcome`/`BattleSceneEffect` ad hoc → `GameOp[]` (E2).
-- `MassBattleArmy` plat → `Combatant` (E2).
 - `bestForSkills` comme MÉCANISME → défaut seulement (E3).
 - Liste de scènes/activités en boutons plats de `MassBattleView` → `StationSheet` (S2).
 - Les 3 pickers d'activité divergents → 1 composant (C1).
 - Triplication du descripteur de Test → `TestSpec` (E1).
 - ⚠ *Séparé, NON bundlé* : `BattleTestModal` (`openBattleTest`) parallèle à `RollFlowShell` — dedup candidate
   à évaluer APRÈS (l'exprimer en flux de jet partagé), hors de ce chantier.
+
+## 7bis. Pourquoi E2 (Puissance→`GameOp`) a été ÉCARTÉ (revue adversariale + vérif directe)
+
+Piste initiale : « armée = `Combatant`, Puissance = `wounds`, deltas de Puissance = `GameOp` ». **Erreur de
+catégorie**, prouvée dans le code :
+
+- **La Puissance est une CIBLE DE TEST**, pas un pool de PV : `rollMightTest(might)` = `rollTest(might, …)` →
+  d100 ≤ Puissance courante (`massBattle.ts` l.219-223 ; ADE II ch.8 l.120). Le Test de tenue (Hold) utilise
+  même la Puissance ENNEMIE comme valeur-cible d'un d100 (`massBattleFlow.ts` ~l.417). `wounds` n'est jamais
+  une cible de jet ici. Modéliser Puissance en `wounds` la dédoublerait (wounds + carac testable synchronisés).
+- **Le clash est du calcul, pas un montant** : `mightReduction(sl)=max(5,10+sl)` (non opposé, simultané) vit
+  dans `resolveClash` ; `applyOps` prend un montant PRÉ-calculé → ne peut pas héberger « jette, prends le DR,
+  10+DR planché à 5 ». La seule logique intéressante ne devient pas `GameOp`, elle se relocalise.
+- **`normalizeMights`** (−10 aux DEUX armées jusqu'à [0,100]) et **`decided`** (écart brut >100) sont des
+  opérations CROSS-armées sur des nombres bruts — pas un `GameOp` par-cible.
+- **`startMight` MUTE en cours** (Rassembler/Sabotage, `massBattleFlow.ts` l.645/651) → il faudrait RELEVER
+  `wounds.max` ; **aucun op ne le fait** (`heal` plafonne à max, ne l'élève pas) → contredit « aucun op nouveau ».
+- **`firstRoundBonus`/`planningBonus`/`allyTestMod`** sont des modifs de TEST (de l'armée ou d'un HÉROS), lues
+  par `resolveClash`/les jets de héros — PAS par `testValue` de l'armée (qui ne s'auto-teste pas via ce chemin) →
+  un `testMod`/`charMod` sur l'armée serait **lu par personne**. Ils RESTENT des scalaires d'état de bataille.
+- **`wounds`/`loseWounds` fuient** des sémantiques de créature (armure/TB, À Terre à 0, remise à zéro de
+  l'Avantage) sur une abstraction qui n'en a pas.
+
+Conclusion : le garde-fou « `GameOp` = langue des EFFETS » **ne s'applique pas** à une carac d'armée testable.
+Le modèle plat + moteur pur EST correct. **E2 supprimé ; S2/E3/C1 n'en dépendaient pas.** *(Les `GameOp` restent
+pertinents pour les effets sur les HÉROS d'une scène — soin de ralliement, dégâts d'un combat tactique — déjà
+couverts par les chemins normaux.)*
 
 ## 5. Ancrages RAW & garde-fous
 
@@ -127,12 +149,12 @@ Ordre : **E1 → S1 → E2 → E3 → S2 → C1** (S1 ne dépend que d'E1 ; S2 d
 
 ## 7. Risques / questions ouvertes
 
-1. **E2 est le point dur.** `firstRoundBonus`/`planningBonus`/`allyTestMod` sont des modifs de TEST, pas de
-   Puissance — exprimables en `GameOp` (`testMod`/`charMod` sur l'armée-Combatant) ? Sinon petit état de
-   bataille. À trancher en lisant le RAW l.75-106.
-2. L'armée-`Combatant` a-t-elle une position/rendu (jeton) sur la scène-minimap dédiée, ou reste-t-elle une
-   abstraction (barre de Puissance) ? — probablement une entité non-rendue, la scène ne montre que les
-   stations d'action. À confirmer en S2.
+1. *(ex-« E2 est le point dur » — RÉSOLU par suppression d'E2, cf. §7bis.)* Reste : la scène-minimap de masse ne
+   montre QUE les stations d'action (les armées restent des abstractions à barre de Puissance, non rendues). À
+   confirmer en S2.
+2. **Registre `StationKind` (S1)** : bien séparer les 3 responsabilités par kind (détail / affectation /
+   résolution) sans que la coquille connaisse un kind en dur. Risque de sur-généralisation → garder le poste
+   comme test de non-régression.
 3. Portée de C1 : réutilise-t-on la MÊME UI par-héros pour les 3 contextes malgré leurs cadences différentes
    (interlude = séquentiel/modale ; voyage = rôle persistant ; mer = batch hebdo) ? Le picker+détail se
    partage ; la CADENCE (quand ça se résout) reste propre au contexte.
