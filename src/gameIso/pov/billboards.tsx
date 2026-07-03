@@ -30,16 +30,16 @@ import {
   footAnchor,
   keepClosest,
 } from './billboardCore';
-import { entityRigProfile } from '../rig/enemyProfile';
+import { entityRigProfileFor } from '../rig/enemyProfile';
 import { RigSprite } from '../rig/composeRig';
 import { CLIPS, sampleClip } from '../rig/anim/clips';
 import { resolveRender, planById, type BodyPlan } from '../rig/bodyPlan';
 import { bonesToSvg } from '../rig/renderBones';
 import { eyesArtFromKeys } from '../rig/parts/eyes';
 import type { Palette } from '../rig/palette';
-import { hashSeed } from '../appearance';
 import { findCreatureById } from '../../data';
 import type { Scene } from '../../state/scene';
+import { enrolledEntityIds } from '../../state/scene';
 import { usePovIdle } from './usePovIdle';
 
 /** Période de l'anim de repos d'un gabarit (battement d'ailes/ondulation/dodelinement) — miroir de
@@ -75,7 +75,7 @@ function mirrored(sprite: JSX.Element, mirror: boolean): JSX.Element {
  *  = pose neutre `{}`, markup identique au rendu statique. */
 function PovPerson({ id, prof, view, mirror, a }: {
   id: string;
-  prof: NonNullable<ReturnType<typeof entityRigProfile>>;
+  prof: NonNullable<ReturnType<typeof entityRigProfileFor>>;
   view: 'front' | 'back' | 'profile';
   mirror: boolean;
   a: { sx: number; sy: number; o: number; s: number };
@@ -123,13 +123,13 @@ function PovCreature({ id, plan, species, view, mirror, colors, eyes, a }: {
  */
 export function buildPovBillboards(scene: Scene, cam: CamPose, visible: Set<string>): Painted[] {
   const persons: Painted[] = [];
+  const enrolledIds = enrolledEntityIds(scene); // membres de rencontre → équipement de combat (parité iso)
 
   for (const e of scene.entities) {
     if (e.kind !== 'personnage') continue; // les props passent par le noyau pur (ci-dessous)
     const z = e.z ?? 0;
     if (!visible.has(`${e.pos.x},${e.pos.y},${z}`)) continue; // 1) culling LdV/brouillard
     // Résolution de rendu UNIQUE (même dérivation que `pickBackend`) : rig humanoïde ou gabarit.
-    const seed = e.appearance?.seed ?? hashSeed(e.id);
     const refName = e.ref ?? e.label ?? 'villageois';
     const r = resolveRender(e.appearance?.species, findCreatureById(refName)?.traits, refName);
     const a = footAnchor(scene, cam, e.pos.x, e.pos.y, z, ENT_H_M, r.scale); // 2-3) ancre + échelle + culls
@@ -138,20 +138,8 @@ export function buildPovBillboards(scene: Scene, cam: CamPose, visible: Set<stri
 
     if (r.kind === 'rig') {
       // PERSONNAGE humanoïde : billboard ANIMÉ (idle bob de respiration), rAF isolé — cf. `PovPerson`.
-      const prof = entityRigProfile(refName, seed, {
-        species: e.appearance?.species,
-        tenue: e.appearance?.tenue,
-        monster: e.appearance?.monster,
-        features: e.appearance?.features,
-        weapon: e.weapon,
-        colors: e.appearance?.colors,
-        parts: e.appearance?.parts,
-        sex: e.appearance?.sex,
-        build: e.appearance?.build,
-        eyes: e.appearance?.eyes,
-        traits: e.statblock?.traits,
-        armour: e.statblock?.armour,
-      });
+      // Dérivation UNIQUE partagée avec l'iso (`entityRigProfileFor`) → même équipement (dont `enrolled`).
+      const prof = entityRigProfileFor(e, enrolledIds.has(e.id));
       if (prof) persons.push({ key: e.id, depth: a.depth, node: <PovPerson key={e.id} id={e.id} prof={prof} view={view} mirror={mirror} a={a} /> });
     } else {
       // Gabarit corporel (quadrupède/ailé/serpentin/…) : billboard ANIMÉ de son anim de repos

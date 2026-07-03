@@ -16,6 +16,7 @@ import { weaponGroupKey } from './parts/weaponGroup';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
+import type { SceneEntity } from '../../state/scene';
 import { bipedDef } from './creatures';
 import { resolveRender } from './bodyPlan';
 import { findCreatureById } from '../../data';
@@ -209,4 +210,19 @@ export function entityRigProfile(
     tenue: bipedTenue(opts?.tenue, cd, base.perso, base.race),
     equip: { weapons: [...labelWeapon, ...renderWeaponsFromTraits(traits)], armour: synthArmour(armourPA) },
   };
+}
+
+/** Profil rig d'une ENTITÉ de scène (perso), dérivation UNIQUE partagée par `pickBackend` (iso) et
+ *  `buildPovBillboards` (POV) : mêmes seed / refName / apparence / équipement. Avant, l'objet d'options
+ *  (12 champs) était RECOPIÉ à la main aux deux sites et POV avait oublié `enrolled` → un membre de
+ *  rencontre portait son équipement de combat en iso mais mains libres en POV. Une seule source. */
+export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): EnemyRigProfile | null {
+  const seed = ent.appearance?.seed ?? hashSeed(ent.id);
+  const refName = ent.ref ?? ent.label ?? 'villageois';
+  return entityRigProfile(refName, seed, {
+    species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster,
+    features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,
+    parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build,
+    eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled,
+  });
 }

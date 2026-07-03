@@ -6,7 +6,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
-import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
+import { enemyRigProfile, entityRigProfileFor } from './rig/enemyProfile';
 import { resolveRender, planById } from './rig/bodyPlan';
 import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
@@ -153,10 +153,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   // Un engin de siège (ref = trapping à art d'affût `siegeRig`) est résolu via la ref → pas un défaut perdu.
   if (import.meta.env.DEV && ent.kind === 'personnage' && ent.ref && !ent.appearance?.species && !findCreatureById(ent.ref) && !findTrappingById(ent.ref)?.siegeRig)
     console.warn(`[pickBackend] entité « ${ent.id} » : ref « ${ent.ref} » non résolue (pas un id de créature) et sans Espèce (rig) → bipède Humain par défaut. Choisis une Espèce (rig) ou une réf de créature valide.`);
-  const prof =
-    ent.kind === 'personnage'
-      ? entityRigProfile(refName, seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled: subject.enrolled })
-      : null;
+  const prof = ent.kind === 'personnage' ? entityRigProfileFor(ent, subject.enrolled) : null;
   if (prof) {
     if (top) {
       const f = faceFrame(prof.appearance, prof.equip, prof.tenue, []);

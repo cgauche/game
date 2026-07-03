@@ -558,6 +558,12 @@ export function layerTiles(scene: Scene, z = 0): Terrain[] {
   return (scene.layers.find((l) => l.z === z) ?? scene.layers[0]).tiles;
 }
 
+/** Ids des `SceneEntity` ENRÔLÉES dans une rencontre (membres d'un `EncounterDef`) — une entité enrôlée
+ *  est un combattant : elle affiche son équipement de combat. SOURCE UNIQUE (rendu iso ET POV). */
+export function enrolledEntityIds(scene: Scene): Set<string> {
+  return new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
+}
+
 export function tileAt(scene: Scene, x: number, y: number, z = 0): Terrain {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 'mur';
   return layerTiles(scene, z)[y * scene.dimensions.w + x] ?? 'sol';

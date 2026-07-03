@@ -7,7 +7,7 @@
  * `top` (pions-portraits : cavalier et monture séparés) est une vérité de MODE DE VUE, pas de pose.
  */
 import type { Scene } from '../../state/scene';
-import { isMerScene } from '../../state/scene';
+import { isMerScene, enrolledEntityIds } from '../../state/scene';
 import type { BattleState } from '../../state/store';
 import { combatantAtTile } from '../../state/combatGeometry';
 import { isPassengerInBattle } from '../../state/shipPostes';
@@ -34,7 +34,7 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: 
 
   // ── FIGURANTS (PNJ d'ambiance) : maintenus en combat — estompés, cases libres seulement. ──────────
   // Entités ENRÔLÉES (membres d'une rencontre) → équipement dérivé du record (parité avec le spawn).
-  const enrolledIds = new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
+  const enrolledIds = enrolledEntityIds(scene);
   // Un figurant dont la case est occupée par un combattant n'est pas dessiné (pas d'empilement de
   // corps) — figurants de décor = sol (z0) uniquement.
   const covered = (x: number, y: number) => inBattle && !!combatantAtTile(battle!.combatants, x, y, 0);
