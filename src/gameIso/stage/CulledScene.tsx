@@ -54,25 +54,30 @@ export function CulledScene({
     );
   // `.filter().map()` (pas map→null) → React ne réconcilie que les ~centaines d'objets à l'écran.
   const shown = objs.filter(onScreen);
-  // COALESCENCE : un filtre SVG re-rastérise PAR élément → un filtre/objet caché = des centaines de
-  // passes = ça rame. Le fog étant spatialement groupé (périphérie), les objets CONSÉCUTIFS du flux trié
-  // partagent le même voile → on les regroupe sous UN SEUL <g filter> par RUN (le tri par profondeur est
-  // préservé : les runs sont contigus). Passe de ~centaines de filtres à une poignée.
-  const runs: { fogF: string | undefined; lower: boolean; items: JSX.Element[] }[] = [];
-  let run: (typeof runs)[number] | null = null;
+  // COALESCENCE des VOILES : un filtre CSS crée une couche GPU par élément — regrouper les objets
+  // FILTRÉS consécutifs (fog/étage inférieur) sous UN SEUL <g filter> évite des centaines de couches.
+  // MAIS on ne regroupe QUE le décor filtré : un objet NON filtré (jeton animé) reste un ENFANT DIRECT,
+  // avec sa clé STABLE → React ne le RÉMONTE pas quand il change de profondeur (sinon son cycle de marche
+  // se réinitialise à chaque frame et le perso « glisse » sans animer les jambes). Tri par profondeur
+  // préservé : runs filtrés et jetons directs sont émis dans l'ordre trié.
+  const out: JSX.Element[] = [];
+  let runItems: JSX.Element[] | null = null;
+  let runFilt = '';
+  let runKey = 0;
+  const flush = () => { if (runItems) { out.push(<g key={`veil:${runKey++}`} style={{ filter: runFilt }}>{runItems}</g>); runItems = null; } };
   for (const o of shown) {
     const fogF = fogFilterFor(o, fog.explored);
     const lower = o.z !== undefined && o.z < activeZ;
-    if (!run || run.fogF !== fogF || run.lower !== lower) { run = { fogF, lower, items: [] }; runs.push(run); }
-    run.items.push(coreOf(o));
+    const filt = [lower ? LOWER_FLOOR_CSS : null, fogF].filter(Boolean).join(' ');
+    if (filt) {
+      if (runItems && runFilt !== filt) flush();
+      if (!runItems) { runItems = []; runFilt = filt; }
+      runItems.push(coreOf(o));
+    } else {
+      flush();
+      out.push(coreOf(o)); // jeton/décor NON filtré : enfant direct, clé stable (o.el.key)
+    }
   }
-  return (
-    <g>
-      {runs.map((r, i) => {
-        // fog + lower-floor = UN SEUL CSS `filter` (GPU) par run → plus aucun filtre SVG re-rastérisé.
-        const filt = [r.lower ? LOWER_FLOOR_CSS : null, r.fogF].filter(Boolean).join(' ');
-        return filt ? <g key={i} style={{ filter: filt }}>{r.items}</g> : <g key={i}>{r.items}</g>;
-      })}
-    </g>
-  );
+  flush();
+  return <g>{out}</g>;
 }
