@@ -2674,6 +2674,9 @@
     "source": {
       "book": "T2C",
       "page": 89
+    },
+    "capabilities": {
+      "noRun": true
     }
   },
   {

@@ -291,8 +291,16 @@ export function hasStride(traits: TraitList | undefined): boolean {
   return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.stride);
 }
 
-/** Multiplicateur de Mouvement de COURSE/CHARGE dû aux traits : Bond ×2 (prioritaire), Foulée ×1,5. */
+/** Rampant (T2C ch.13 p.89) : « Elle ne peut pas réaliser d'Action de Course. » Capacité NON exprimable
+ *  en GameOp → drapeau `capabilities.noRun`, interrogé par `runMultiplier`. */
+export function hasNoRun(traits: TraitList | undefined): boolean {
+  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.noRun);
+}
+
+/** Multiplicateur de Mouvement de COURSE/CHARGE dû aux traits : Rampant ×0 (aucune Course — le budget de
+ *  Course tombe à 0, la Marche reste intacte), Bond ×2 (prioritaire), Foulée ×1,5. */
 export function runMultiplier(traits: TraitList | undefined): number {
+  if (hasNoRun(traits)) return 0;
   if (hasLeap(traits)) return 2;
   if (hasStride(traits)) return 1.5;
   return 1;

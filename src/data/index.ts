@@ -678,6 +678,8 @@ export interface TraitCapabilities {
   fly?: boolean;
   leap?: boolean;
   stride?: boolean;
+  /** Rampant (T2C ch.13) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
+  noRun?: boolean;
   seesInDark?: boolean;
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */

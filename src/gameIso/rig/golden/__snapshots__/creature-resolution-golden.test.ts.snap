@@ -44,6 +44,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Anguille du Reik": {
+    "def": "Serpent",
+    "plan": "serpentine",
+    "scale": 1,
+    "species": "serpent",
+  },
   "Anguille mâcheprise": {
     "def": "Serpent",
     "plan": "serpentine",
@@ -1790,6 +1796,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "ogre",
   },
+  "Naïade": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Notable": {
     "def": null,
     "plan": "biped",
@@ -2253,6 +2265,18 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "sangsue",
   },
   "Sangsue des abysses": {
+    "def": "Sangsue",
+    "plan": "serpentine",
+    "scale": 0.92,
+    "species": "sangsue",
+  },
+  "Sangsue des arbres": {
+    "def": "Sangsue",
+    "plan": "serpentine",
+    "scale": 0.92,
+    "species": "sangsue",
+  },
+  "Sangsue géante": {
     "def": "Sangsue",
     "plan": "serpentine",
     "scale": 0.92,

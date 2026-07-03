@@ -70,6 +70,7 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(runMultiplier([{ id: 'bond' }])).toBe(2);
     expect(runMultiplier([{ id: 'foulee' }])).toBe(1.5);
     expect(runMultiplier([{ id: 'bond' }, { id: 'foulee' }])).toBe(2); // Bond prime
+    expect(runMultiplier([{ id: 'rampant' }])).toBe(0); // Rampant (T2C) : aucune Action de Course
     expect(traitSeesInDark([{ id: 'vision-nocturne' }])).toBe(true);
     expect(traitSeesInDark([{ id: 'infravision' }])).toBe(true);
     expect(mutationsAtSpawn([{ id: 'mutation' }, { id: 'corruption-mentale' }])).toEqual([{ kind: 'physique', mutationId: undefined }, { kind: 'mentale', mutationId: undefined }]);

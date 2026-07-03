@@ -3,7 +3,9 @@ import { VEHICLES_LIST } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
 import { shipHitLocation } from '../engine/combat';
 
-const ships = VEHICLES_LIST.filter((v) => v.ship);
+// MDG ch.12 = navires MARITIMES (18). Les bateaux FLUVIAUX T2C (propulsion:'fluvial') ont aussi une
+// facette `ship` mais relèvent de leur propre table (T2C ch.5) — couverts par `16-embuscade-fluviale`.
+const ships = VEHICLES_LIST.filter((v) => v.ship && v.hull?.propulsion === 'maritime');
 
 describe('Navires MDG (ch.12) — profils en donnée', () => {
   it('18 navires (table EXEMPLES DE BATEAUX complète), chacun avec coque (E/B/rig) + facette ship complète', () => {
