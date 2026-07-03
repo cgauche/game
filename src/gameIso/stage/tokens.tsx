@@ -130,6 +130,12 @@ export function interactHaloObjs(propEls: PropEl[], ctx: TokenCtx, flags: Record
  *  Memoïsés par IsoStage : réfs d'éléments stables → React saute ces sous-arbres ; chaque créature
  *  continue de s'auto-animer via SON rAF (usePlanAnim/useRigClip), indépendamment du re-rendu du stage.
  *  En combat : estompés + non interactifs (wrap), plus de spectateurs qui « dépop » à l'Initiative. */
+/** Décalage de couche d'un FIGURANT : > offset de MUR (0.45), comme le combattant (+0.5) → une unité
+ *  posée sur une case n'est JAMAIS masquée par une cloison/crête de SES arêtes (invariant « jeton > mur »).
+ *  Un mur DEVANT (arête sud/est → base voisine plus grande) la couvre toujours correctement. Avant, le
+ *  figurant était à +0.1 (< mur) → la crête du rempart passait par-dessus les défenseurs qu'elle borde. */
+export const FIGURANT_LIFT = 0.5;
+
 export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[] {
   const isTop = ctx.view === 'top';
   const discRfn = (sz: Combatant['size']) => discR(sizeFootprint(sz));
@@ -149,7 +155,7 @@ export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[
     const r = pickBackend({ kind: 'sceneEntity', ent, enrolled }, ctx.view);
     if (r.backend === 'sprite') {
       out.push({
-        d: depth(ent.pos.x, ent.pos.y, ctx.dims, ez),
+        d: depth(ent.pos.x, ent.pos.y, ctx.dims, ez) + FIGURANT_LIFT,
         z: ez,
         vis: true,
         el: wrap(
@@ -162,11 +168,10 @@ export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[
       });
     } else {
       const base = r.backend === 'rig' ? 0.58 : 0.55;
-      const dBoost = r.backend === 'rig' ? 0.1 : 0;
       const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
       const ex = ent.pos.x + off, ey = ent.pos.y + off;
       out.push({
-        d: depth(ex, ey, ctx.dims, ez) + dBoost,
+        d: depth(ex, ey, ctx.dims, ez) + FIGURANT_LIFT,
         z: ez,
         vis: true,
         el: wrap(
