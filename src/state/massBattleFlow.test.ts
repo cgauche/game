@@ -403,6 +403,75 @@ describe('Test combiné d\'Activité (l.75/102) — un jet vs deux compétences'
   });
 });
 
+describe('Affectation explicite d\'un PJ à une action (E3 — poste ≠ auto « meilleur »)', () => {
+  /** L'« autre » PJ disponible que la SUGGESTION `bestForSkills` — pour poster un NON-suggéré. */
+  function otherThanSuggested(actionId: string, opener: () => void): { suggested: string; other: string } {
+    opener();
+    const suggested = useGame.getState().pendingBattleTest!.actorId;
+    useGame.setState({ pendingBattleTest: null }); // referme la modale d'exploration
+    const other = useGame.getState().party.find((h) => !h.dead && h.id !== suggested)!.id;
+    return { suggested, other };
+  }
+
+  it('(a) poster un PJ NON suggéré à une Scène de Test → CE PJ résout la Scène', () => {
+    start({ situations: [['ligne-de-mire']] });
+    useGame.getState().massBattleBegin();
+    const { suggested, other } = otherThanSuggested('ligne-de-mire', () => useGame.getState().massBattleScene('ligne-de-mire'));
+    expect(other).not.toBe(suggested);
+    useGame.getState().assignMassBattleHero('ligne-de-mire', other);
+    useGame.getState().massBattleScene('ligne-de-mire');
+    expect(useGame.getState().pendingBattleTest!.actorId).toBe(other); // le POSTE est honoré
+  });
+
+  it('(b) sans affectation → la SUGGESTION (meilleur PJ disponible) résout — comportement inchangé', () => {
+    start({ situations: [['ligne-de-mire']] });
+    useGame.getState().massBattleBegin();
+    // Référence : suggestion pure (aucun poste).
+    useGame.getState().massBattleScene('ligne-de-mire');
+    const suggested = useGame.getState().pendingBattleTest!.actorId;
+    expect(mbState().assignment).toEqual({});
+    // La valeur de compétence servie est bien celle du suggéré, dérivée par la passe singleton.
+    expect(useGame.getState().pendingBattleTest!.skillValue).toBeGreaterThan(0);
+    expect(suggested).toBeTruthy();
+  });
+
+  it('(c) poster un PJ INDISPONIBLE (déjà engagé ce Round) → repli sur la suggestion', () => {
+    start({ situations: [['ligne-de-mire', 'compte-a-rebours']] });
+    useGame.getState().massBattleBegin();
+    // Un premier PJ agit (Ligne de mire) → il rejoint actedHeroes.
+    useGame.getState().massBattleScene('ligne-de-mire');
+    const acted = useGame.getState().pendingBattleTest!.actorId;
+    resolveBattleTest({ roll: 10, success: true, sl: 2 });
+    // On poste ce PJ DÉJÀ ENGAGÉ à une autre Scène : `assignedHeroFor` le rejette → suggestion.
+    useGame.getState().assignMassBattleHero('compte-a-rebours', acted);
+    useGame.getState().massBattleScene('compte-a-rebours');
+    const resolver = useGame.getState().pendingBattleTest!.actorId;
+    expect(resolver).not.toBe(acted); // le poste invalide est ignoré, un autre PJ disponible résout
+  });
+
+  it('(d) poster un PJ à une Activité combinée → CE PJ résout (poste honoré sur le chemin combiné)', () => {
+    start();
+    const { suggested, other } = otherThanSuggested('reperage', () => useGame.getState().massBattleActivity('reperage'));
+    expect(other).not.toBe(suggested);
+    useGame.getState().assignMassBattleHero('reperage', other);
+    useGame.getState().massBattleActivity('reperage');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.actorId).toBe(other);
+    expect(pt.target2).toBeGreaterThan(0); // toujours un Test combiné (deux compétences)
+  });
+
+  it('un nouveau Round efface les affectations (le poste ne survit pas)', () => {
+    start({ plannedRounds: 2, situations: [['motivation'], ['ligne-de-mire']] });
+    useGame.getState().massBattleBegin();
+    useGame.getState().assignMassBattleHero('ligne-de-mire', useGame.getState().party[0].id);
+    expect(Object.keys(mbState().assignment)).toHaveLength(1);
+    seedBattleRng(3);
+    useGame.getState().massBattleClash();
+    useGame.getState().massBattleAdvance();
+    expect(mbState().assignment).toEqual({}); // remis à zéro au Round suivant
+  });
+});
+
 describe('Rassemblement (l.122)', () => {
   it('un PJ blessé récupère DR + BE Blessures sur un Test de Résistance réussi', () => {
     start({ situations: [['motivation']] }, pregenParty(PREGEN.soldat, PREGEN.chasseur));

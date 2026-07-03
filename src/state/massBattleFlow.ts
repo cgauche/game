@@ -106,6 +106,11 @@ export interface MassBattleState {
   resolvedScenes: string[];
   /** PJ ayant agi CE Round (une Scène par PJ, l.116-118). */
   actedHeroes: string[];
+  /** AFFECTATION explicite d'un PJ à une action (Scène OU Activité) CE Round — clé = id d'action, valeur =
+   *  id du PJ posté. C'est le POSTE choisi par le joueur : la résolution le HONORE (à défaut d'affectation,
+   *  ou si le PJ posté n'est plus disponible, on retombe sur la SUGGESTION `bestForSkills`/`bestForCombined`).
+   *  Réinitialisé à chaque Round (comme `actedHeroes`) : un poste ne survit PAS à un nouveau Round. */
+  assignment: Record<string, string>;
   /** PJ ayant tenté le Rassemblement CE Round (l.122). */
   ralliedHeroes: string[];
   /** Deltas de Puissance appliqués CE Round (affichage, cumulés). */
@@ -275,6 +280,7 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
     activeThreats: [],
     resolvedScenes: [],
     actedHeroes: [],
+    assignment: {},
     ralliedHeroes: [],
     sceneDeltas: [],
     // Rencontres des Scènes de combat (par id) — mémorisées pour `startBattleCombat`.
@@ -323,6 +329,29 @@ export function openMassBattleInspire(get: Get, set: Set): void {
   });
 }
 
+/** Résout l'AFFECTATION explicite d'une action (`assignment[actionId]`) en un PJ effectivement DISPONIBLE :
+ *  membre du groupe, vivant, non encore engagé ce Round (`actedHeroes`). Retourne `undefined` si aucun poste
+ *  n'est enregistré ou si le PJ posté n'est plus jouable (mort/déjà agi) — l'appelant retombe alors sur la
+ *  SUGGESTION (`bestForSkills`/`bestForCombined`). Pur : ne lit que l'état passé, ne mute rien. */
+export function assignedHeroFor(mb: MassBattleState, party: Combatant[], actionId: string): Combatant | undefined {
+  const heroId = mb.assignment[actionId];
+  if (!heroId) return undefined;
+  const hero = party.find((h) => h.id === heroId);
+  if (!hero || hero.dead || mb.actedHeroes.includes(hero.id)) return undefined;
+  return hero;
+}
+
+/** Enregistre (ou efface, `heroId === null`) l'AFFECTATION d'un PJ à une action du Round (Scène/Activité).
+ *  N'agit qu'en phase active ; ne valide PAS la disponibilité ici (la résolution la re-vérifie via
+ *  `assignedHeroFor`, retombant sur la suggestion si le poste est devenu invalide). */
+export function assignMassBattleHero(get: Get, set: Set, actionId: string, heroId: string | null): void {
+  const mb = get().massBattle;
+  if (!mb) return;
+  const assignment = { ...mb.assignment };
+  if (heroId) assignment[actionId] = heroId; else delete assignment[actionId];
+  set({ massBattle: { ...mb, assignment } });
+}
+
 /** Ouvre le Test d'une Activité de bataille pré-combat (Planification/Infiltration/… l.79-106). Un Test
  *  COMBINÉ (Infiltration/Repérage, `def.combined`) confronte UN jet aux DEUX compétences de l'acteur. */
 export function openMassBattleActivity(get: Get, set: Set, activityId: string): void {
@@ -336,9 +365,12 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
   // Le Repérage/Infiltration boostent le Test de Planification (`planningBonus`, l.75/100).
   const mod = activityId === 'planification' ? mb.planningBonus : 0;
   if (def.combined && def.skills && def.skills.length >= 2) {
-    // Test COMBINÉ (l.75/102) : l'acteur maximisant le PLUS FAIBLE des deux (facteur limitant) décide ;
-    // les DEUX valeurs sont testées par un même jet (`evaluateCombinedTest` à la résolution).
-    const picked = bestForCombined(party, def.skills[0], def.skills[1], def.char);
+    // Test COMBINÉ (l.75/102) : l'acteur posté décide (à défaut, SUGGESTION = celui maximisant le PLUS FAIBLE
+    // des deux, le facteur limitant). Les DEUX valeurs de l'acteur RETENU sont dérivées via une passe
+    // SINGLETON (`bestForCombined([chosen], …)`), puis testées par un même jet à la résolution.
+    const chosen = assignedHeroFor(mb, party, activityId) ?? bestForCombined(party, def.skills[0], def.skills[1], def.char)?.actor;
+    if (!chosen) return;
+    const picked = bestForCombined([chosen], def.skills[0], def.skills[1], def.char);
     if (!picked) return;
     openBattleTest(get, set, {
       actor: picked.actor, skillValue: picked.value1, skillId: def.skills[0].skillId, spec: def.skills[0].spec, char: def.char,
@@ -347,7 +379,11 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     });
     return;
   }
-  const picked = bestForSkills(party, def.skills, def.char);
+  // Acteur = PJ posté (à défaut, SUGGESTION = meilleur du groupe) ; ses valeurs de compétence sont dérivées
+  // par une passe SINGLETON `bestForSkills([chosen], …)` — sans poste, l'acteur EST la suggestion, byte-identique.
+  const chosen = assignedHeroFor(mb, party, activityId) ?? bestForSkills(party, def.skills, def.char)?.actor;
+  if (!chosen) return;
+  const picked = bestForSkills([chosen], def.skills, def.char);
   if (!picked) return;
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
@@ -367,10 +403,13 @@ export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   if (!mb.situation.includes(sceneId) || mb.resolvedScenes.includes(sceneId)) return;
   if (scene.kind === 'combat' || scene.kind === 'threat') { startBattleCombat(get, set, scene); return; }
   if (scene.kind === 'hold') { openHoldScene(get, set, scene); return; }
-  // Scène 'test' : compétences AU CHOIX (l.151) → le meilleur PJ DISPONIBLE (pas déjà engagé ce Round).
+  // Scène 'test' : compétences AU CHOIX (l.151). Acteur = PJ posté à cette Scène (à défaut, SUGGESTION = le
+  // meilleur PJ DISPONIBLE — pas déjà engagé ce Round). Ses valeurs de compétence dérivées par passe SINGLETON.
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
-  const picked = bestForSkills(party, scene.skills, scene.char);
+  const chosen = assignedHeroFor(mb, party, scene.id) ?? bestForSkills(party, scene.skills, scene.char)?.actor;
+  if (!chosen) return;
+  const picked = bestForSkills([chosen], scene.skills, scene.char);
   if (!picked) return;
   const mod = massBattleThreatPenalty(mb); // Intrus l.219 : −20 aux Tests des autres Scènes.
   openBattleTest(get, set, {
@@ -390,7 +429,10 @@ function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
   if (state.broken) { get().log(`Scène « ${scene.label} » : la position a déjà cédé (déroute).`); return; }
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
-  const picked = bestForSkills(party, scene.skills, scene.char);
+  // Acteur = PJ posté à la Scène (à défaut, SUGGESTION = meilleur PJ disponible) ; valeurs par passe SINGLETON.
+  const chosen = assignedHeroFor(mb, party, scene.id) ?? bestForSkills(party, scene.skills, scene.char)?.actor;
+  if (!chosen) return;
+  const picked = bestForSkills([chosen], scene.skills, scene.char);
   if (!picked) return;
   const held = state.held;
   const enemyBonus = holdEnemyBonus(scene.hold, held); // +10 cumulatif par Round déjà tenu (l.163).
@@ -762,7 +804,7 @@ export function massBattleAdvance(get: Get, set: Set): void {
   const next: MassBattleState = {
     ...advanced,
     situation, activeThreats, imposed,
-    resolvedScenes: [], actedHeroes: [], ralliedHeroes: [], sceneDeltas: [],
+    resolvedScenes: [], actedHeroes: [], assignment: {}, ralliedHeroes: [], sceneDeltas: [],
     hazard: undefined, awaitingNext: false,
   };
   set({ massBattle: { ...next, log: threatLine ? [...next.log, threatLine] : next.log } });
