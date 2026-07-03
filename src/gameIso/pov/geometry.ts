@@ -123,6 +123,10 @@ const TUFT_BLADE_WM = 0.01;
 /** Biais de profondeur : donne aux sols un cran DERRIÈRE (plus loin) pour qu'ils ne z-fightent pas avec
  *  la base des murs à centroïde égal. */
 const FLOOR_BIAS = 0.01;
+/** Un sol d'ÉTAGE le REMONTE d'un cran DEVANT (par `z`) : une dalle z1 COIFFE un bloc plein z0 (chemin de
+ *  ronde sur le mur) — à centroïde ~égal, `FLOOR_BIAS` l'enterrait SOUS le flanc du mur. `> FLOOR_BIAS` +
+ *  bruit de centroïde, `≪` l'écart inter-tuile → ne départage QUE les ex æquo, jamais la vraie distance. */
+const FLOOR_ZLIFT = 0.04;
 
 /** Champ de lumière structurel (0..1). */
 type LightField = { at(x: number, y: number, z?: number): number };
@@ -566,7 +570,7 @@ export function buildPovDrawList(
         const wedge = f.material.part === 'wedge';
         const def = TERRAIN_BY_ID.get(f.material.id);
         const base = def?.swatch ?? FLOOR_FALLBACK;
-        const it = makeItem(corners, cam, farMetres, fLv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS, fog, curve);
+        const it = makeItem(corners, cam, farMetres, fLv, base, 'floor', wedge ? `${el.key}:${i}:wedge` : el.key, (wedge ? FLOOR_BIAS - 0.005 : FLOOR_BIAS) - z * FLOOR_ZLIFT, fog, curve);
         if (!it) return;
         items.push(it);
         if (!fSeen || wedge) return; // non vu (forme + matière seules) / wedge : pas de détail fin
