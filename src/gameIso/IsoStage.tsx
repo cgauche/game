@@ -22,7 +22,6 @@ import { controlsActive } from '../state/netOwnership';
 import { Dims, tileCenter, depth } from './iso';
 import { DEFS } from './sprites';
 import { isoAmbianceDefs } from './catalog/ambiance';
-import { fogDefs } from './FogLayer';
 import { detailPatternDefs, lodOf, LOD_ZOOM } from './backends/affineDetail';
 import { getViewZ, subscribeViewZ } from './viewLevel';
 import { setVisibleTileBounds } from './viewport';
@@ -226,7 +225,7 @@ export function IsoStage() {
 
   return (
     <svg ref={svgRef} className="iso-stage" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
-      <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + fogDefs() + patternDefs }} />
+      <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
           fog={{ explored: exploredSet }} />

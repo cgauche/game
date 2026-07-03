@@ -17,23 +17,15 @@ export interface FogParams {
   explored: Set<string>;
 }
 
-/** Defs SVG des filtres de brouillard (assombrissement + désaturation ; zéro couleur littérale).
- *  Injectés dans le `<defs>` du stage, à côté de `lower-floor-dim`. */
-export function fogDefs(): string {
-  return (
-    // Mémorisé : assombri + désaturé, mais LISIBLE (on se souvient de la disposition explorée).
-    `<filter id="fog-remembered" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix type="saturate" values="0.5"/>` +
-    `<feComponentTransfer><feFuncR type="linear" slope="0.42"/><feFuncG type="linear" slope="0.42"/><feFuncB type="linear" slope="0.48"/></feComponentTransfer></filter>` +
-    // Inconnu : couleur CONSTANTE quasi noire (matrice qui IGNORE la luminance d'entrée, alpha conservé)
-    // → sol/mur/décor jamais vus deviennent une masse uniforme → le terrain adverse et ses OBJETS ne
-    //   transparaissent plus (un simple assombrissement laissait voir les silhouettes).
-    `<filter id="fog-unknown" x="-5%" y="-5%" width="110%" height="110%">` +
-    `<feColorMatrix type="matrix" values="0 0 0 0 0.015  0 0 0 0 0.015  0 0 0 0 0.022  0 0 0 1 0"/></filter>`
-  );
-}
+// Voiles en CSS `filter` (≠ filtre SVG `url()`) : Chrome les composite au GPU → coût quasi nul même à
+// des centaines d'éléments, là où un `<filter>` SVG re-rastérise au CPU par élément (= rame). `brightness`
+// est un multiplicateur : remembered = assombri + désaturé mais LISIBLE ; unknown = `brightness(0)` =
+// noir CONSTANT (le décor jamais vu et ses objets ne transparaissent plus, aucune silhouette).
+const FOG_REMEMBERED = 'brightness(0.42) saturate(0.5)';
+const FOG_UNKNOWN = 'brightness(0)';
 
-/** Filtre de brouillard à appliquer à un objet, ou `undefined` (en vue / non tagué). */
+/** Valeur de CSS `filter` (voile de brouillard) à appliquer à un objet, ou `undefined` (en vue / non tagué). */
 export function fogFilterFor(o: StageObj, explored: Set<string>): string | undefined {
   if (o.x === undefined || o.vis) return undefined; // tokens/FX ou décor en vue (ou perçu) → pas de voile
-  return explored.has(`${o.x},${o.y},${o.z ?? 0}`) ? 'url(#fog-remembered)' : 'url(#fog-unknown)';
+  return explored.has(`${o.x},${o.y},${o.z ?? 0}`) ? FOG_REMEMBERED : FOG_UNKNOWN;
 }

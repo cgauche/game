@@ -7,8 +7,11 @@
  */
 import { Dims, tileCenter } from '../iso';
 import { fogFilterFor, type FogParams } from '../FogLayer';
+import { lowerFloorDimCss } from '../catalog/ambiance';
 import type { StageObj } from './objs';
 import { VW, VH } from './useStageCamera';
+
+const LOWER_FLOOR_CSS = lowerFloorDimCss();
 
 export function CulledScene({
   objs,
@@ -66,11 +69,9 @@ export function CulledScene({
   return (
     <g>
       {runs.map((r, i) => {
-        if (!r.fogF && !r.lower) return <g key={i}>{r.items}</g>;
-        let node = <g>{r.items}</g>;
-        if (r.fogF) node = <g filter={r.fogF}>{node}</g>;
-        if (r.lower) node = <g filter="url(#lower-floor-dim)">{node}</g>;
-        return <g key={i}>{node}</g>;
+        // fog + lower-floor = UN SEUL CSS `filter` (GPU) par run → plus aucun filtre SVG re-rastérisé.
+        const filt = [r.lower ? LOWER_FLOOR_CSS : null, r.fogF].filter(Boolean).join(' ');
+        return filt ? <g key={i} style={{ filter: filt }}>{r.items}</g> : <g key={i}>{r.items}</g>;
       })}
     </g>
   );

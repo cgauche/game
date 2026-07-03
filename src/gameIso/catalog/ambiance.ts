@@ -79,15 +79,18 @@ const radialVeil = (id: string, v: RadialVeilDef, fadeOut: boolean): string =>
     : `<stop offset="${v.innerOff ?? '50%'}" stop-color="${v.color}" stop-opacity="0"/><stop offset="100%" stop-color="${v.color}" stop-opacity="${v.alpha}"/>`) +
   `</radialGradient>`;
 
-/** Defs SVG de l'ambiance ISO (voile chaud `g_warm`, vignette `g_vig`, filtre `lower-floor-dim`). */
+/** Defs SVG de l'ambiance ISO (voile chaud `g_warm`, vignette `g_vig`). */
 export function isoAmbianceDefs(): string {
-  const { warm, vignette, lowerFloorDim: dim } = AMBIANCE.iso;
-  return (
-    radialVeil('g_warm', warm, true) +
-    radialVeil('g_vig', vignette, false) +
-    `<filter id="lower-floor-dim" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix type="saturate" values="${dim.saturate}"/>` +
-    `<feComponentTransfer><feFuncR type="linear" slope="${dim.slope}"/><feFuncG type="linear" slope="${dim.slope}"/><feFuncB type="linear" slope="${dim.slope}"/></feComponentTransfer></filter>`
-  );
+  const { warm, vignette } = AMBIANCE.iso;
+  return radialVeil('g_warm', warm, true) + radialVeil('g_vig', vignette, false);
+}
+
+/** Assombrissement de l'étage INFÉRIEUR (z < activeZ) en CSS `filter` (GPU-composité par le navigateur →
+ *  coût quasi nul, ≠ filtre SVG `url()` re-rastérisé au CPU par élément = rame). Même effet que l'ancien
+ *  `lower-floor-dim` : désaturation + assombrissement, SANS opacité (l'étage recule mais reste OPAQUE). */
+export function lowerFloorDimCss(): string {
+  const { lowerFloorDim: dim } = AMBIANCE.iso;
+  return `saturate(${dim.saturate}) brightness(${dim.slope})`;
 }
 
 /** Voile d'ASSOMBRISSEMENT de profondeur de la vue « de face » (edge-on) : les rangées écran lointaines
