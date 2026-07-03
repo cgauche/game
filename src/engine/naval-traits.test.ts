@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalSkillTestDR, hullArmourBonus, belierRam, hasDeckCover, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
-import { findVehicleById } from '../data';
+import { installCost } from './shipBuild';
+import { findVehicleById, findNavalTrait } from '../data';
 
 /**
  * EFFETS des Traits & Améliorations de navire (MDG ch.12) — DATA-DRIVEN : les valeurs vivent dans le catalogue
@@ -107,6 +108,26 @@ describe('Bélier dans la collision — valeurs data-driven (MDG ch.12 l.221)', 
     expect(r.victim.armorBonus).toBe(5); // victime à Bélier, frappée de face
     expect(r.causer.armorBonus).toBe(0); // causeur sans Bélier
     expect(r.victim.damage).toBe(5 + 7); // M frontal = M total des deux (l.462) → 4 + 3 = 7
+  });
+});
+
+describe('Améliorations T2C ch.10 (Personnalisation) — MÊME canal que MDG, entrées PROPRES au T2C', () => {
+  it('Bouteur → moveMod −1 sur le canal navalMoveMod (T2C ch.10 : « réduit la vitesse de Mouvement de –1 »)', () => {
+    expect(navalMoveMod([{ id: 'bouteur' }])).toBe(-1);
+    // combiné à Lissage (+1) : les moveMod se somment sur le canal unique.
+    expect(navalMoveMod([{ id: 'bouteur' }, { id: 'lissage' }])).toBe(0);
+  });
+  it('Murs blindés → deckCover (couverture totale, comme Sabord) sur le canal hasDeckCover', () => {
+    expect(hasDeckCover([{ id: 'murs-blindes' }])).toBe(true);
+    const postes = findVehicleById('cogue')!.deck!.postes!;
+    expect(effectiveDeckPostes(postes, hasDeckCover([{ id: 'murs-blindes' }])).every((p) => p.sabord === true)).toBe(true);
+  });
+  it('coût d’installation posé sur les bandes de Taille (canal installCost EXISTANT) — pas de duplication d’un chantier', () => {
+    // Une grande barge (25 m → petite) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C ch.10).
+    const bouteur = findNavalTrait('bouteur')!.install!;
+    const murs = findNavalTrait('murs-blindes')!.install!;
+    expect(installCost(bouteur, 25)).toEqual({ gold: 120, enc: 95 });
+    expect(installCost(murs, 25)).toEqual({ gold: 300, enc: 160 });
   });
 });
 

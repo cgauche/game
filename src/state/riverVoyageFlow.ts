@@ -15,8 +15,14 @@
  * (Forcer le rythme) : INLINE, meilleur pilote avec Soutien (LDB 12, `partyAssisted`), remonté dans le récap de
  * la halte de nuit — la même présentation que les jets de bord du voyage maritime. La table des vents, l'Agilité
  * de rame, le chavirage et les Critiques de bateau sont propres au fleuve (`engine/riverNavigation.ts`).
+ *
+ * EXPOSITION HYDRIQUE (T2C ch.14) : la descente EXERCE l'Effet EXISTANT `waterExposure` — un tirage d'auteur
+ * par étape (`MapRoute.riverExposure`) qui, via `applyEffects`, ouvre la cascade de Test de Résistance →
+ * maladie. RÉUTILISE le canal d'Effet (aucune mécanique neuve) : le moteur de tables hydriques et l'Effet
+ * étaient déjà là (`engine/waterExposure.ts`), seule leur MISE EN SCÈNE dans le voyage manquait.
  */
 import { battleRng } from './battleRng';
+import { applyEffects } from './combatEffects';
 import { openRest, placesOfKind } from './restFlow';
 import { runDailyUpkeep } from './upkeep';
 import { placeById, type MapRoute, type WorldMap } from './worldMap';
@@ -36,7 +42,7 @@ import {
   rowingAgilityFactor, ROWING_AGILITY_DIFFICULTY, riverDayKm, riverDriftKm, navDifficultyWithPenalty,
   riverControlKept, resolveCapsizeRighting, capsizeSinkTurns, holeSinkMinutes, riverCritical, findRiverPeril,
   resolveRiverImpact, rollBarrage, echouageDamage, NAV_BASE_DIFFICULTY, TACK_DIFFICULTY,
-  DRIFT_NAV_PENALTY, OUT_OF_CONTROL, CAPSIZE, TEMPORARY_REPAIR,
+  DRIFT_NAV_PENALTY, OUT_OF_CONTROL, CAPSIZE, TEMPORARY_REPAIR, difficultyFromModifier,
   type RiverWindForceId, type RiverWindDirId,
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
@@ -206,7 +212,23 @@ function resolveRiverDay(get: Get, set: Set, route: MapRoute, to: { scene: strin
     resolveRiverPeril(get, set, plan, river, spawn.perilId, pilot, tell, rng);
   }
 
+  // EXPOSITION HYDRIQUE de l'étape (T2C ch.14, l.5-13) : à flot, on boit/on est éclaboussé par l'eau du
+  // fleuve → tirage d'auteur (`MapRoute.riverExposure`) qui déclenche l'Effet EXISTANT `waterExposure`
+  // (Test de Résistance modifié → maladie contractée). RÉUTILISE le canal `applyEffects` (jamais une
+  // nouvelle mécanique) ; la cascade s'affiche à l'arrêt (halte de nuit/arrivée) comme tout jet de bord.
+  maybeRiverExposure(get, set, route, sunk);
+
   finishRiverDay(get, set, to, kmDay, lines);
+}
+
+/** EXPOSITION HYDRIQUE d'une étape (T2C ch.14, l.5-13) : tirage d'auteur (`MapRoute.riverExposure`) qui
+ *  déclenche l'Effet EXISTANT `waterExposure` sur TOUT le groupe (`applyEffects`) — aucune mécanique neuve.
+ *  Sauté si le bateau a coulé (plus de fleuve sous les pieds). L'Effet ouvre la cascade influençable. */
+function maybeRiverExposure(get: Get, set: Set, route: MapRoute, sunk: () => boolean): void {
+  const ex = route.riverExposure;
+  if (!ex || sunk()) return;
+  if (d100(battleRng()) > Math.max(0, Math.min(100, ex.chancePct))) return;
+  applyEffects(get, set, [{ type: 'waterExposure', mode: ex.mode, source: ex.source, target: 'party' }]);
 }
 
 function controlLabel(kept: boolean, success: boolean): string {
@@ -348,14 +370,21 @@ function resolveRiverPeril(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
   void river;
 }
 
-/** S'ÉCHOUER (l.97-99) : le bateau s'arrête, sa coque subit 12 Dégâts ; on le renfloue (Test de Force). */
+/** S'ÉCHOUER (l.97-99) : le bateau s'arrête, sa coque subit 12 Dégâts ; on le renfloue par un Test de Force
+ *  « avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison » (l.99). Le
+ *  malus est l'Encombrement PROPRE du bateau (champ réel `VehicleData.enc`), converti en difficulté (chaque
+ *  10 Enc ≈ un cran de −10 via `difficultyFromModifier`) ; degrade sur Intermédiaire si l'Enc du bateau est
+ *  inconnu (barges LDB : `enc` null). L'Enc de la CARGAISON n'est pas suivie pendant la descente → résidu noté. */
 function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
   const coque = get().travelPlan!.vehicle!;
   coque.wounds.current = Math.max(0, coque.wounds.current - echouageDamage());
+  const boatEnc = findVehicleById(coque.creatureId ?? '')?.enc ?? 0;
+  const difficulty = boatEnc > 0 ? difficultyFromModifier(-boatEnc) : 'intermediaire';
   const force = partyAssisted(get().party, undefined, 'F');
-  const t = force ? rollTest(force.value, 'intermediaire', battleRng()) : null;
+  const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
   set({ travelPlan: { ...get().travelPlan! } });
-  tell([`⚓ Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
+  const encTxt = boatEnc > 0 ? ` (malus −${boatEnc} Enc du bateau, l.99)` : '';
+  tell([`⚓ Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
 }
 
 /** Fin de journée : coque persistée (#30), horloge +24 h, entretien quotidien, arrivée ou halte de nuit. */

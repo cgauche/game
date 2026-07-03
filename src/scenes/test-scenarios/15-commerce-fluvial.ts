@@ -146,6 +146,10 @@ for (let i = 0; i < RIVER_ORDER.length - 1; i++) {
 const grunburgAltdorf = bargeRoute(START_ID, SELL_ID, 45, 'r-grunburg-altdorf');
 grunburgAltdorf.river = true;
 grunburgAltdorf.riverPerils = [{ perilId: 'debris', chancePct: 55 }];
+// Exposition hydrique de la descente (T2C ch.14, l.5) : l'équipage boit l'eau du Reik non bouillie en
+// approchant d'Altdorf (grande ville en aval → tableau 1 « Source d'eau », −20, l.23-33). Chaque étape à
+// flot, un tirage déclenche l'Effet EXISTANT `waterExposure` (Test de Résistance → maladie) — data-driven.
+grunburgAltdorf.riverExposure = { source: 'aval-grande-ville-8km', mode: 'ingestion', chancePct: 60 };
 routes.push(grunburgAltdorf);
 
 const carte: WorldMap = {
@@ -167,7 +171,8 @@ export const scenario: TestScenario = {
     'géographique l.185-270, indices Taille/Richesse/Produits verbatim), reliées par des routes de BARGE. ' +
     'Boucle du marchand : acheter une cargaison à Grünburg (R 2), descendre le fleuve en barge (le convoi ' +
     'persiste, caravanCargo), revendre à Altdorf (Florissant R 5, Mise à prix +10 %, l.156) — profit. ' +
-    'Marché à chaque ville, Marchandage/Évaluation du vin/rumeurs (Berta).',
+    'Marché à chaque ville, Marchandage/Évaluation du vin/rumeurs (Berta). La descente EXERCE aussi ' +
+    'l’exposition hydrique (T2C ch.14) : en approchant d’Altdorf, l’équipage risque une maladie de l’eau.',
   partyNote: 'Berta (Marchande — Marchandage/Ragot/Évaluation) · Gunnar (batelier) · Otto (garde) · Lise (scribe)',
   makeParty: traders,
   scene: scenes.find((s) => s.id === `quai-${START_ID}`)!,

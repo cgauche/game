@@ -128,6 +128,38 @@ describe('péril de rivière — débris flottants (l.123-125)', () => {
   });
 });
 
+describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExposure EXERCÉ', () => {
+  it('un tirage garanti (chance 100 %) ouvre la cascade de Test de Résistance (Exposition), source d\'eau créditée', () => {
+    launch(false, 45, { riverExposure: { source: 'aval-grande-ville-8km', mode: 'ingestion', chancePct: 100 } });
+    seedBattleRng(4);
+    get().startTravel('r-reik', 'barge');
+    // La cascade d'Exposition s'ouvre pendant la journée (une étape par héros vivant).
+    const pc = get().pendingCascade;
+    expect(pc?.purpose).toBe('test');
+    expect(pc?.participants.every((s) => s.kind === 'waterExposure')).toBe(true);
+    expect(pc?.participants.length).toBe(get().party.filter((h) => !h.dead).length);
+  });
+
+  it('un héros peut CONTRACTER la maladie sur échec du Test d\'Exposition (contraction directe, T2C ch.14)', () => {
+    launch(false, 45, { riverExposure: { source: 'grande-ville-marais', mode: 'ingestion', chancePct: 100 } });
+    // Groupe fragile face à l'eau souillée d'une grande ville (−30) : Résistance rabaissée pour garantir l'échec.
+    set({ party: get().party.map((h) => ({ ...h, characteristics: { ...h.characteristics, E: 1 } })) });
+    seedBattleRng(1);
+    get().startTravel('r-reik', 'barge');
+    // Déroule la cascade d'Exposition (chaque participant lance puis avance).
+    let g = 0;
+    while (get().pendingCascade && g++ < 40) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+      else get().cascadeNext();
+    }
+    // Au moins un héros a contracté une maladie transmise par l'eau (journal + instance de maladie).
+    const anyDiseased = get().party.some((h) => (h.diseases ?? []).length > 0);
+    expect(anyDiseased).toBe(true);
+  });
+});
+
 describe('descente end-to-end — le Reik jusqu\'à Altdorf', () => {
   beforeEach(() => launch(false, 120, { riverPerils: [{ perilId: 'debris', chancePct: 40 }] }));
 

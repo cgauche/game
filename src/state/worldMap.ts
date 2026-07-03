@@ -80,6 +80,12 @@ export interface MapRoute {
   /** Périls de rivière tirés chaque jour sur une route fluviale JOUÉE (T2C ch.5 l.119-166, `river-perils.json`) :
    *  `perilId` (débris/rochers/eaux-peu-profondes/barrage) tiré à `chancePct` %. Data-driven, éditable. */
   riverPerils?: { perilId: string; chancePct: number }[];
+  /** Exposition HYDRIQUE de la descente (T2C ch.14 « Maladies transmises par l'eau », l.5-13) : à chaque
+   *  étape à flot, un tirage à `chancePct` % déclenche l'Effet EXISTANT `waterExposure` (Test de Résistance
+   *  modifié → maladie contractée). `source` = id du tableau 1 « Source d'eau » (choix d'auteur de la
+   *  portion de fleuve : `grande-ville-marais`, `aval-grande-ville-8km`…), `mode` = `ingestion` (boire l'eau
+   *  du fleuve non bouillie, l.5) / `immersion` (chute\nage, blessures ouvertes, l.7-9). Data-driven, éditable. */
+  riverExposure?: { source?: string; mode: import('../data').WaterExposureMode; chancePct: number };
 }
 
 export interface WorldMapParams {

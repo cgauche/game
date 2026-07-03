@@ -84,6 +84,14 @@ describe('Navigation & rame (l.11-17)', () => {
     expect(navDifficultyWithPenalty(-20)).toBe('difficile');
     expect(difficultyFromModifier(20)).toBe('accessible');
   });
+
+  it('renflouage à l\'échouage (l.99) : Test de Force malus = Enc du bateau → cran de difficulté', () => {
+    // « un Test de Force avec un malus égal au nombre total de Points d'Encombrement du bateau » (l.99).
+    // Le malus (−Enc) se compose en difficulté par le MÊME helper que les malus de Navigation (crans de 10).
+    expect(difficultyFromModifier(-6)).toBe('complexe'); // coracle Enc 6 → −6 ≈ −10 (Complexe)
+    expect(difficultyFromModifier(-25)).toBe('difficile'); // barque Enc 25 → −25 ≈ −20 (Difficile)
+    expect(difficultyFromModifier(0)).toBe('intermediaire'); // Enc inconnu (barge LDB) → pas de malus
+  });
 });
 
 describe('Chavirage & naufrage (note 4 l.40 ; l.101-103)', () => {

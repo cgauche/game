@@ -612,5 +612,104 @@
       "page": 97
     },
     "desc": "Les Sabords sont des trappes refermables permettant à une arme à projectiles de tirer tout en restant derrière un couvert. Les grands Sabords peuvent laisser passer les canons ou les balistes tandis que les petits Sabords sont conçus pour les arquebuses, les arcs et les arbalètes.\n\nSi un navire ne dispose pas de Sabords, les tirs doivent nécessairement être effectués depuis le pont. Le pont ne fournit aucun couvert, alors qu'un Sabord donne une couverture totale. Ouvrir ou fermer un Sabord est considéré comme une seule action. Les Sabords ouverts peuvent représenter un danger si le navire commence à couler (voir page 117)."
+  },
+  {
+    "id": "bouteur",
+    "label": "Bouteur",
+    "kind": "amelioration",
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": -1
+      }
+    ],
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 30
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 60
+          },
+          {
+            "min": "petite",
+            "value": 120
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 35
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 55
+          },
+          {
+            "min": "petite",
+            "value": 95
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "T2C",
+      "page": 65
+    },
+    "desc": "Pour une maniabilité maximale, un gouvernail auxiliaire appelé bouteur peut être ajouté à la proue du bateau. Cet ajout réduit la vitesse de Mouvement du bateau de –1, mais avec deux barreurs bien entraînés assignés à chaque gouvernail, tous les Tests de **Navigation** réalisés pour diriger le bateau reçoivent un bonus de +20."
+  },
+  {
+    "id": "murs-blindes",
+    "label": "Murs blindés",
+    "kind": "amelioration",
+    "deckCover": true,
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 60
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 120
+          },
+          {
+            "min": "petite",
+            "value": 300
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 40
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 80
+          },
+          {
+            "min": "petite",
+            "value": 160
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "T2C",
+      "page": 65
+    },
+    "desc": "Les murs d'une cabine ou de toute autre superstructure sont blindés à l'aide de plaques de fer. Tout Personnage ou PNJ situé derrière un mur blindé bénéficie d'une couverture totale rendant les tirs de projectiles contre lui Très Difficile."
   }
 ]

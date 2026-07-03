@@ -66,14 +66,29 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
 - ~~**Navigation fluviale (ch.5)**~~ ✅ **RÉSOLU** (commit caa98539) : descente jouée jour par jour (Test de
   Navigation Voile/Ramer par étape, Savoir Voies fluviales +1 DR, Agilité de rame, vents, chavirage/naufrage
   en BE tours, périls Débris/Barrage/Rochers/Bas-fonds), réutilise la machinerie navale, câblée sur le Reik.
-  Résidus : présentation inline (pas de modale par jet), Force de renflouage à l'échouage non chiffrée,
-  option déblayage manuel du barrage non modélisée.
-- **Améliorations de bateau (ch.10 : Blindage, coque…)** : absent (ni éditable ni joué). RESTE.
+  Résidus : présentation inline (pas de modale par jet) ; **Force de renflouage à l'échouage** ✅ chiffrée
+  (malus = Enc PROPRE du bateau, `VehicleData.enc`, converti en cran de difficulté — actif pour tout bateau à
+  Enc chiffré, ex. coracle ; l'Enc de la CARGAISON reste non suivie pendant la descente → résidu) ; option
+  **déblayage manuel du barrage** (3d10 objets / 4d10 Enc) non modélisée — nécessite un choix mid-descente
+  (bélier vs déblayer) = affordance de combat de bateau (chantier ci-dessous). RESTE (partiel).
+- ~~**Améliorations de bateau (ch.10 : Blindage, coque…)**~~ ✅ **RÉSOLU** (majorité déjà couverte) : le
+  système d'Améliorations navales MDG ch.12 (`naval-traits.json` + `install`/`passive`) EST le MÊME mécanisme
+  que T2C ch.10. Blindage, Lissage, Sabord, Cabine de luxe, Clinfoc, Ralentisseurs latéraux, Propulsion à
+  vapeur, Bélier étaient DÉJÀ présents (recouvrement MDG/T2C) → ne PAS dupliquer. Ajoutées les entrées
+  PROPRES à T2C sur le canal EXISTANT : **Bouteur** (`moveMod −1`) et **Murs blindés** (`deckCover` = couverture
+  totale) — installables au chantier du Port (`installCost`) et mécaniquement actives (manœuvre/pont). RESTE :
+  les Améliorations T2C dont l'effet ne se mappe PAS sur le canal plat (Coque de course = 2×M, Safran = Test
+  de Force du barreur, Plat-bord = couvert PARTIEL ≠ total, Allégement, Gréement de course, avirons/Fourquines)
+  — un `moveMod`/`deckCover` mentirait → à câbler quand un champ de domaine dédié existera (chantier ci-dessous).
 - **Naufrageurs / contrebandiers / pirates (ch.12) & bestiaire fluvial (ch.13)** : contenu de combat de
   bateau (dégâts/localisation d100, Critiques rames/gouvernail, accidents Tangon/Gouvernail) + créatures —
-  non livrés (à ajouter AVEC leur consommateur, pas en donnée morte). RESTE.
-- **Maladies transmises par l'eau (ch.14)** : `waterExposure` existe et est éditable, mais aucun scénario ne
-  l'exerce — `15-commerce-fluvial` est le candidat naturel. RESTE.
+  non livrés (à ajouter AVEC leur consommateur, pas en donnée morte). C'est AUSSI le consommateur des
+  Améliorations T2C à effet non-plat et du déblayage manuel de barrage (choix mid-combat). RESTE (chantier).
+- ~~**Maladies transmises par l'eau (ch.14)**~~ ✅ **RÉSOLU** : la descente `15-commerce-fluvial` EXERCE
+  désormais l'Effet EXISTANT `waterExposure` — nouveau champ `MapRoute.riverExposure` (tirage d'étape à flot,
+  source d'eau + mode ingestion/immersion) qui, via `applyEffects`, ouvre la cascade de Test de Résistance →
+  maladie contractée. Réutilise le canal d'Effet + le moteur `engine/waterExposure.ts` (aucune mécanique
+  neuve), éditable en donnée (route). Testé (cascade ouverte + contraction sur échec).
 
 ### Naval (MDG)
 - **Artilleur haut-elfe** : la substitution de compétence par espèce (MDG 09) n'a aucun siège moteur
@@ -153,7 +168,7 @@ Malepierre). L'audit les a classés « SCÉNARIO-MANQUANT » sur preuve trop min
 |---|---|---|
 | Critiques & Traumatismes (`inflictTrauma`) | Santé | Trigger `inflictTrauma` dans un scénario (ex. `opera.ts`). Éditeur DÉJÀ là. **À CONFIRMER contre l'existant.** |
 | Soins & infirmerie (`medicalAid`) | Santé | Effet `medicalAid` dans un scénario (médecin). Éditeur DÉJÀ là. |
-| Exposition hydrique (`waterExposure`) | Santé | Scénario naval/port fluvial l'exerçant. Effet DÉJÀ éditable. |
+| ~~Exposition hydrique (`waterExposure`)~~ ✅ **RÉSOLU** | Santé | `15-commerce-fluvial` l'exerce : `MapRoute.riverExposure` déclenche l'Effet à chaque étape de descente. Effet éditable. |
 | Chute hors-combat (`fall`) | Voyage | Scénario (trappe/balcon effondré → `fall`). Effet DÉJÀ là. |
 | Activités d'Altdorf | Progression | Scénario `altdorf-interlude` (groupe à Altdorf, interlude → activités taguées `altdorf`). |
 
