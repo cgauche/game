@@ -8,9 +8,8 @@ import { useModalA11y } from './Modal';
 import { PortraitTile } from './PortraitTile';
 import { CharFrame } from './CharFrame';
 import { PortraitPicker } from './PortraitPicker';
-import { TopoScene } from '../gameIso/TopoScene';
+import { StationSheet } from './StationSheet';
 import { postesToStations } from '../state/stations';
-import type { Station } from '../state/stations';
 import { posteAnchor } from '../state/shipPostes';
 import { isVehicle } from '../engine/vehicle';
 import type { Combatant } from '../engine/types';
@@ -38,37 +37,6 @@ export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; c
 }
 
 type Poste = NonNullable<Combatant['postes']>[number];
-
-/** Bande de sélection RTS : une puce par pièce d'artillerie de l'ensemble (MDG ch.12) — navire (N postes d'une coque)
- *  OU batterie de siège (N emplacements). Bord + nom + badge d'effectif + point « servi ». Sélecteur secondaire du
- *  plan (`TopoScene`), synchronisé par `selectedUid` (= `ref.posteUid`, globalement unique). */
-function PosteChips({ stations, combatants, selectedUid, onSelect }: { stations: Station[]; combatants: Combatant[]; selectedUid: string | null; onSelect: (uid: string) => void }) {
-  if (!stations.length) return null;
-  return (
-    <div className="poste-chips">
-      {stations.map((s) => {
-        if (s.ref.kind !== 'poste') return null;
-        const uid = s.ref.posteUid;
-        const count = s.assignedIds.filter((id) => combatants.some((c) => c.id === id)).length;
-        const selected = selectedUid === uid;
-        const side = s.side ? SIDE_LABEL[s.side] ?? s.side : 'Omni';
-        return (
-          <button
-            key={uid}
-            className={`poste-chip${selected ? ' selected' : ''}`}
-            onClick={() => onSelect(uid)}
-            title={`${side} · ${s.label}`}
-          >
-            <span className={`poste-dot${count ? ' manned' : ''}`} aria-hidden />
-            <span className="poste-chip-side">{side}</span>
-            <span className="poste-chip-name">{s.label}</span>
-            <span className="poste-chip-badge">{count}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 /** Détail du poste SÉLECTIONNÉ (MDG ch.12) : son bord, son STOCK DE MUNITIONS (l.410-424, sélecteur qui persiste
  *  `ShipPoste.ammoUid`) et son équipage de pièce (PLUSIEURS servants possibles, ch.14 l.9) en portraits. */
@@ -164,10 +132,11 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
 /**
  * FICHE D'UN ENSEMBLE DE COQUES À POSTES (couche Mer / siège) — ouverte en cliquant un portrait, comme une fiche héros.
  * KIND-AGNOSTIQUE : un navire (`bodyShape:'vehicule'`, 1 coque à N postes) OU une batterie de siège
- * (`bodyShape:'engin'`, N emplacements séparés à 1 poste chacun). Le plan (`TopoScene`) montre TOUS les postes de
- * l'ensemble ; sélectionner une pièce fixe la coque ACTIVE (aside + détail). Réutilise la coquille modale `sheet-*` +
- * `useModalA11y` : aside = portrait + ÉTAT de la coque active ; main = MAÎTRE-DÉTAIL piloté par le plan (FTL/RTS) :
- * plan TOP-DOWN + bande de puces sélectionnent LE MÊME poste, dont le `PosteDetail` s'affiche seul. Les Rôles de
+ * (`bodyShape:'engin'`, N emplacements séparés à 1 poste chacun). Le corps maître-détail est la surface PARTAGÉE
+ * `StationSheet` (plan TOP-DOWN + puces, générique) ; sélectionner une pièce fixe la coque ACTIVE (aside + détail).
+ * Réutilise la coquille modale `sheet-*` + `useModalA11y` : aside = portrait + ÉTAT de la coque active ; main =
+ * MAÎTRE-DÉTAIL piloté par le plan (FTL/RTS) : plan + puces sélectionnent LE MÊME poste, dont le `PosteDetail`
+ * (injecté par `renderDetail`) s'affiche seul. Les Rôles de
  * manœuvre passent dans un onglet, UNIQUEMENT pour un navire (la manœuvre est navale). Sélection BIDIRECTIONNELLE :
  * plan ⇄ puces ⇄ détail via `selectedPosteUid`. `initialHullId` = coque d'ouverture (emplacement cliqué).
  */
@@ -180,14 +149,12 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
   const [tab, setTab] = useState<'postes' | 'manoeuvre'>('postes');
   const boxRef = useRef<HTMLDivElement>(null);
   useModalA11y(boxRef, onClose);
-  if (!battle) return null;
+  if (!battle || !scene) return null;
   const idSet = new Set(combatantIds);
   // Postes de TOUTES les coques de l'ensemble, ancrés au cap de chacune (posteAnchor). Un poste par pièce d'artillerie.
-  const stations = scene
-    ? postesToStations(battle.combatants, (h, p) => posteAnchor(h, p, { heading: facing[h.id] })).filter(
-        (s) => s.ref.kind === 'poste' && idSet.has(s.ref.hullId),
-      )
-    : [];
+  const stations = postesToStations(battle.combatants, (h, p) => posteAnchor(h, p, { heading: facing[h.id] })).filter(
+    (s) => s.ref.kind === 'poste' && idSet.has(s.ref.hullId),
+  );
   if (!stations.length) return null;
   // Sélection effective : choix explicite (plan/puces), sinon le 1er poste de la coque d'ouverture, sinon le 1er poste.
   const firstOfInitial = initialHullId
@@ -228,23 +195,15 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
               </div>
             )}
             {tab === 'postes' || !vehicle ? (
-              <div className="poste-layout">
-                {scene && (
-                  <div className="ship-section topo-panel">
-                    <TopoScene
-                      scene={scene}
-                      stations={stations}
-                      selectedStationId={selectedStationId}
-                      onSelectStation={(s) => setSelectedPosteUid(s.ref.kind === 'poste' ? s.ref.posteUid : null)}
-                    />
-                  </div>
-                )}
-                <div className="poste-detail-col">
-                  <div className="mini-title">Armes · postes</div>
-                  <PosteChips stations={stations} combatants={battle.combatants} selectedUid={selectedPosteUid} onSelect={setSelectedPosteUid} />
-                  {selectedPoste && <PosteDetail hull={hull} poste={selectedPoste} combatants={battle.combatants} />}
-                </div>
-              </div>
+              <StationSheet
+                scene={scene}
+                stations={stations}
+                selectedStationId={selectedStationId}
+                onSelectStation={(s) => setSelectedPosteUid(s.ref.kind === 'poste' ? s.ref.posteUid : null)}
+                renderDetail={() => (selectedPoste ? <PosteDetail hull={hull} poste={selectedPoste} combatants={battle.combatants} /> : null)}
+                subtitleOf={(s) => (s.side ? SIDE_LABEL[s.side] ?? s.side : 'Omni')}
+                detailTitle="Armes · postes"
+              />
             ) : (
               <ShipCrewByRole crew={maneuverCrew} onSet={setShipRole} />
             )}
