@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, type LightField } from './vision';
 import { Scene, WallSeg } from './scene';
+import { METRES_PER_LEVEL } from './relief';
 
 const DAY = 12 * 60; // 12:00 → jour
 const NIGHT = 23 * 60; // 23:00 → nuit (NIGHT_WINDOW 22:00-05:00)
@@ -41,6 +42,29 @@ describe('computeVisible — rayon de vue (plein jour)', () => {
   it('voit toujours sa propre case', () => {
     const v = computeVisible(scene(5, 1), [{ pos: { x: 2, y: 0 }, radiusTiles: 0, darkTiles: 0 }], DARK);
     expect(v.has('2,0,0')).toBe(true);
+  });
+});
+
+describe('computeVisible — vision cross-étage par HAUTEUR (sommet de rampe → chemin de ronde)', () => {
+  // z0 : (1,0) élevé à 1 niveau (sommet de rampe) ; z1 : (1,1) = chemin de ronde à la MÊME hauteur.
+  const H = METRES_PER_LEVEL;
+  const rampScene = (): Scene => {
+    const h0 = new Array(9).fill(0); h0[0 * 3 + 1] = H; // (1,0) élevé
+    const t1 = new Array(9).fill('vide'); t1[1 * 3 + 1] = 'pierre'; // (1,1) chemin z1
+    const h1 = new Array(9).fill(0); h1[1 * 3 + 1] = H;
+    return {
+      id: 's', name: 's', dimensions: { w: 3, h: 3 }, ambiance: 'jour',
+      layers: [{ z: 0, tiles: new Array(9).fill('herbe'), height: h0 }, { z: 1, tiles: t1, height: h1 }],
+      entities: [], dialogues: [], triggers: [], encounters: [],
+    } as unknown as Scene;
+  };
+  it('au SOMMET d’une rampe (z0 à hauteur d’un étage) on voit le chemin de ronde z1 d’à côté', () => {
+    const v = computeVisible(rampScene(), [{ pos: { x: 1, y: 0 }, z: 0, radiusTiles: 4, darkTiles: 0 }], BRIGHT);
+    expect(v.has('1,1,1')).toBe(true);
+  });
+  it('au SOL (z0 à 0 m) on ne voit PAS l’étage z1 au-dessus (pas de vision à travers un plancher)', () => {
+    const v = computeVisible(rampScene(), [{ pos: { x: 1, y: 2 }, z: 0, radiusTiles: 4, darkTiles: 0 }], BRIGHT);
+    expect(v.has('1,1,1')).toBe(false);
   });
 });
 

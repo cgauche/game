@@ -236,10 +236,15 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
   const { w, h } = scene.dimensions;
   const occ = buildOpaque(scene);
   const smokeSet = new Set(smoke.map((s) => `${s.x},${s.y}`));
+  const maxZ = scene.layers.reduce((m, l) => Math.max(m, l.z), 0);
   const vis = new Set<string>();
   for (const v of viewers) {
     const z = v.z ?? 0;
     const viewerH = heightAt(scene, v.pos.x, v.pos.y, z); // hauteur du viewer → voit par-dessus les masses plus basses
+    // Étage le plus HAUT révélé = celui que la HAUTEUR du viewer atteint (pas seulement son index d'étage) :
+    // au SOMMET d'une rampe (case z0 élevée à 4 m), on voit le chemin de ronde z1 d'à côté, à la même
+    // hauteur — sinon on reste aveugle à l'étage du dessus alors qu'on est physiquement à son niveau.
+    const zTop = Math.max(z, Math.min(maxZ, Math.floor(viewerH / METRES_PER_LEVEL + 0.01)));
     const R = Math.max(v.radiusTiles, v.darkTiles);
     const x0 = Math.max(0, v.pos.x - R), x1 = Math.min(w - 1, v.pos.x + R);
     const y0 = Math.max(0, v.pos.y - R), y1 = Math.min(h - 1, v.pos.y + R);
@@ -251,7 +256,7 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
         // Visibilité VERS LE BAS : le viewer révèle SON étage `z` ET tous les étages INFÉRIEURS (on voit
         // en contrebas depuis une hauteur, jamais à travers un plancher vers le haut). Mono-étage (z=0)
         // → boucle réduite à zr=0 : byte-identique à l'ancien marquage du seul étage du viewer.
-        for (let zr = z; zr >= 0; zr--) {
+        for (let zr = zTop; zr >= 0; zr--) {
           const k = `${x},${y},${zr}`;
           if (vis.has(k)) continue;
           const lit = d <= v.radiusTiles && light.at(x, y, zr) >= LIT_THRESHOLD;
