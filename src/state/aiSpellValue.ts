@@ -302,6 +302,14 @@ export function opValue(op: GameOp, caster: Combatant, subject: Combatant, ctx: 
     // INVOCATION — un démon « hors de contrôle » (allyOfCaster=false) ne vaut rien pour le lanceur.
     case 'summon':
       return op.allyOfCaster === false ? 0 : summonValue(op, caster, ctx);
+    // FORME DE COMBAT alternative (lycanthrope — op `transform`) : bénéfice = amélioration RÉELLE d'EV
+    // d'attaque de la forme (charMod, delta du clone transformé) × horizon + ~2 par Trait hybride accordé
+    // (attaque/Peur/armure). Le coût de 2 Actions est absorbé (buff PERSISTANT sur tout le combat) ; le gate
+    // d'applicabilité (déjà transformé) empêche le spam. `endTransform` (reprendre sa forme) → jamais un gain.
+    case 'transform':
+      return marginalBuff(caster, subject, op, ctx) + op.ops.filter((o) => o.op === 'grantTrait').length * 2;
+    case 'endTransform':
+      return 0;
     // DÉFAUT signé (longue traîne) — jamais de défaut faux silencieux.
     default:
       return opIsBeneficial(op) ? 2 : opIsHostileControl(op) ? 2 : 0;

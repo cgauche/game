@@ -119,7 +119,7 @@ import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily
 import { hasCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
-import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
+import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
 import { domainOnHitEffects, domainMissileMods, domainCasterOps, hasArcaneTalent, isSorceryDomain } from '../engine/domainAttributes';
@@ -4799,6 +4799,7 @@ function describeAiAction(a: EnemyAction): string {
     case 'spendResource': return `spend ${a.resource}→${a.name}`;
     case 'grapple': return `grapple ${a.resolution}→${a.targetId}`;
     case 'manPoste': return `manPoste ${a.hullId}/${a.posteUid}`;
+    case 'selfManeuver': return `selfManeuver ${a.maneuverId}`;
     case 'end': return 'end';
   }
 }
@@ -4989,6 +4990,18 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // bloquant, hors de portée…) → pas de modale → l'ennemi passe.
         if (!get().pendingCast) setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
       }, TEMPO.aimTelegraph);
+      return;
+    }
+    case 'selfManeuver': {
+      // Capacité SUR SOI (forme de combat lycanthrope, op transform) : résolution IMMÉDIATE sur le porteur
+      // (aucune cible adverse ni jet d'attaquant). Coûte l'Action ; la 2ᵉ vient du `loseTurn` de ses effets.
+      if (!canAct) return advanceTurn(get, set);
+      const def = selfManeuversOf(enemy).find((m) => m.id === action.maneuverId);
+      if (!def || !selfManeuverApplicable(enemy, def)) return advanceTurn(get, set);
+      resolveManeuver(get, set, enemy, def, 0, null, 0, enemy); // cible = soi
+      set({ battle: { ...get().battle!, acted: true } });
+      checkBattleOver(get, set);
+      setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
       return;
     }
     case 'castArea': {

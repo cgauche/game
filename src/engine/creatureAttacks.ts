@@ -12,7 +12,10 @@
 import { formatTrait } from './traits/dispatch';
 import { traitById, findManeuverById, type ManeuverDef } from '../data';
 import { norm } from '../lib/normalize';
+import { spellEffectOps } from './flowCore';
 import type { TraitList } from './statEntry';
+import type { Combatant } from './types';
+import type { GameOp } from './ops';
 
 /** Type d'attaque naturelle (geste + règle distincts). Sert UNIQUEMENT à l'anim/pose/icône. */
 export type AttackKind = 'arme' | 'morsure' | 'caudale' | 'cornes' | 'souffle' | 'vomi' | 'tentacules' | 'etreinte' | 'regard' | 'langue' | 'hurlement';
@@ -100,4 +103,39 @@ export function creatureAttacks(traits: TraitList): CreatureAttack[] {
     });
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Capacités SUR SOI (targeting:'self') — transformation/mue/auto-buff octroyées par un trait
+// ---------------------------------------------------------------------------
+
+/** Manœuvres SUR SOI (`targeting:'self'`) octroyées par les traits de `c` (Métamorphose humain↔hybride de
+ *  l'Enfant d'Ulric…). SÉPARÉ de `creatureAttacks` (orienté attaque : une manœuvre par trait). PUR. */
+export function selfManeuversOf(c: Combatant): ManeuverDef[] {
+  const out: ManeuverDef[] = [];
+  for (const tr of c.traits ?? [])
+    for (const r of traitById.get(tr.id)?.grantsManeuvers ?? []) {
+      const def = findManeuverById(r.id);
+      if (def?.targeting === 'self') out.push(def);
+    }
+  return out;
+}
+
+/** `tag` du 1ᵉʳ op `transform`/`endTransform` des effets d'une manœuvre self (gate d'applicabilité GÉNÉRIQUE
+ *  dérivé de la DONNÉE — aucun nom d'entité en dur). */
+function formTagOf(def: ManeuverDef, opName: 'transform' | 'endTransform'): string | undefined {
+  for (const e of def.effects ?? [])
+    for (const o of spellEffectOps(e.flow)) if (o.op === opName) return (o as Extract<GameOp, { op: 'transform' | 'endTransform' }>).tag;
+  return undefined;
+}
+
+/** Une manœuvre self est-elle APPLICABLE à `c` maintenant ? `transform` → hors de la forme (tag absent) ;
+ *  `endTransform` → dans la forme (un `activeEffect` porte ce label). Autre self-buff → toujours. PUR. */
+export function selfManeuverApplicable(c: Combatant, def: ManeuverDef): boolean {
+  const inForm = (tag: string) => (c.activeEffects ?? []).some((e) => e.label === tag);
+  const tIn = formTagOf(def, 'transform');
+  if (tIn) return !inForm(tIn); // « prendre la forme » : seulement hors de la forme
+  const tOut = formTagOf(def, 'endTransform');
+  if (tOut) return inForm(tOut); // « reprendre la forme de base » : seulement dans la forme
+  return true;
 }

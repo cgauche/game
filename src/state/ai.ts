@@ -34,7 +34,9 @@ import { effectiveWeaponRange } from '../engine/weaponDamage';
 import { selectedAmmo } from '../engine/items';
 import { structureImmune, structureAimCell } from '../engine/structures';
 import { bonus, effectiveChar } from '../engine/characteristics';
-import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, spellTargetHarm } from './aiSpellValue';
+import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, spellTargetHarm, opValue } from './aiSpellValue';
+import { selfManeuversOf, selfManeuverApplicable } from '../engine/creatureAttacks';
+import { spellEffectOps } from '../engine/flowCore';
 
 /** Aversion au TIR AMI d'une ZdE : blesser/incapaciter un allié pèse FOIS-CECI un gain ennemi équivalent
  *  (>1 → l'IA ne nuke jamais son camp pour un gain marginal). Ressenti, latitude IA. */
@@ -96,6 +98,7 @@ export type EnemyAction =
   | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; name: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-63)
   | { kind: 'grapple'; targetId: string; resolution: 'break' | 'test' } // Empoigné à son tour (LDB 14 l.161) : son Action EST le Test opposé de Force, OU « Briser » (Avantage supérieur) pour regagner sa liberté d'action puis re-décider
   | { kind: 'manPoste'; hullId: string; posteUid: string } // « Servir cette pièce » (MDG ch.12) : devenir chef d'un poste de siège NON servi adjacent (l'arme de siège est octroyée) — coûte l'Action
+  | { kind: 'selfManeuver'; maneuverId: string } // capacité SUR SOI (forme de combat lycanthrope, op transform) — coûte l'Action (2ᵉ via loseTurn)
   | { kind: 'end' }; // rien à faire, passe la main
 
 export interface EnemyTurnInput {
@@ -434,6 +437,7 @@ interface Candidate {
 const TIER = {
   castArea: 0, // ZdE couvrant ≥2 héros (LDB 47 l.44)
   focus: 1, // Focalisation d'un sort infaisable d'un jet (LDB 46)
+  selfManeuver: 2, // capacité SUR SOI (forme de combat lycanthrope) — self-buff, prioritaire comme un cast
   cast: 2, // sort offensif mono-cible
   reload: 3, // recharge d'une arme à Recharge
   shoot: 4, // tir à distance
@@ -840,6 +844,17 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // `committingPrep` : une action de PRÉPARATION (Focalisation/Recharge) est CHOISIE → on ne lui oppose pas
   // une APPROCHE de mêlée (le lanceur/tireur reste en place). MÊLÉE reste possible (un acculé se défend).
   let committingPrep = false;
+
+  // === FORME DE COMBAT (op `transform`) — capacité SUR SOI octroyée par un trait (Métamorphose lycanthrope,
+  // Middenheim p.116). La forme alternative est un buff PERSISTANT : utilité = Σ `opValue` de ses ops (le
+  // `transform` mesure le gain de combat réel du clone transformé). Le gate d'applicabilité (déjà dans la
+  // forme) empêche le spam ; l'argmax décide vs frapper. Data-driven, aucun nom d'entité en dur.
+  for (const def of selfManeuversOf(enemy)) {
+    if (!selfManeuverApplicable(enemy, def)) continue;
+    let v = 0;
+    for (const e of def.effects ?? []) for (const o of spellEffectOps(e.flow)) v += opValue(o, enemy, enemy, { refEnemy, horizon: HORIZON });
+    if (v > 0) candidates.push({ action: { kind: 'selfManeuver', maneuverId: def.id }, kind: 'selfManeuver', utility: v, targetId: enemy.id, coord: pos });
+  }
 
   // === SORTS (énumération UNIFIÉE, op-driven) — un évaluateur unique, plus de planner par-catégorie ====
   // Pour CHAQUE sort connu NON déjà actif (Unicité RAW, LDB 46 l.116-121 / 40 l.16-19), on dérive des
