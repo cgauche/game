@@ -69,7 +69,8 @@ export interface CombatFeature {
   /** Fuite ! : Mouvement +1 quand on Fuit. */
   fleeBonus?: boolean;
   // ── Défense / Avantage ─────────────────────────────────────────────────────
-  /** Porte-Bouclier : +niveau Avantage quand on se défend au Bouclier (défense gagnée). */
+  /** Porte-Bouclier (LDB 10 p.144) : +niveau Avantage quand on se défend au Bouclier et qu'on PERD le
+   *  Test opposé (consolation d'une situation désespérée — pas sur une défense gagnée). */
   shieldAdvantage?: boolean;
   /** Contre-attaque en gagnant un Test opposé de défense en mêlée (Champion LDB 85 sans condition d'arme ;
    *  Riposte LDB 10 avec `counterRequiresFastParry`). GÉNÉRIQUE : tout talent/trait qui le déclare contre. */

@@ -1749,19 +1749,25 @@ export function applyAttackResult(
     attacker.gainedAdvThisRound = true;
   }
   if (res.advantageTo === 'defender') {
-    // Renversement côté défenseur (même règle) ; Porte-Bouclier (LDB 10 → +niveau Avantage en défense
-    // gagnée au Bouclier ; en mode groupe la variante AA n'accorde plus ce gain — `shieldAdvantageLevel`→0).
+    // Renversement côté défenseur (même règle qu'à l'attaque : voler l'Avantage adverse, ou +1).
     if (weapon.type === 'melee' && stealsOneAdvantage(target)) {
       if (reversalStealOne(get, target, attacker)) critLog.push(tr('cf.reversal', { name: target.name }));
     } else if (weapon.type === 'melee' && hasStealAdvantage(target) && (attacker.advantage ?? 0) > 1) {
       gainAdvantage(target, attacker.advantage);
       critLog.push(tr('cf.reversal', { name: target.name }));
     } else campGain(get, target);
-    campGain(get, target, shieldAdvantageLevel(target, res.parryWeapon));
     target.gainedAdvThisRound = true;
     if (!groupAdvantage()) attacker.advantage = 0; // l'attaquant a échoué au Test opposé (LDB ; pas de perte per-combattant en mode groupe)
   }
   if (res.hit && res.woundsLost && !groupAdvantage()) target.advantage = 0; // perdre une Blessure → perte de tout Avantage (LDB ; inerte en mode groupe)
+  // Porte-Bouclier (LDB 10 p.144, VERBATIM) : « vous gagnez [niveau] Avantages SI VOUS PERDEZ le Test opposé »
+  // en vous défendant au Bouclier — consolation d'une « situation désespérée », APRÈS la perte d'Avantage due
+  // à la Blessure / au Test perdu. Défense PERDUE = l'attaquant a gagné (`advantageTo === 'attacker'`) et le
+  // défenseur a paré au Bouclier (`res.parryWeapon`). Variante groupe AA → `shieldAdvantageLevel` = 0.
+  if (res.advantageTo === 'attacker') {
+    const shieldAdv = shieldAdvantageLevel(target, res.parryWeapon);
+    if (shieldAdv) { campGain(get, target, shieldAdv); target.gainedAdvThisRound = true; }
+  }
   const kind = weapon.type === 'ranged' ? 'ranged' : 'melee';
   const defense = weapon.type === 'ranged' ? 'none' : bestDefenseMode(target);
   // Orientation : l'attaquant se tourne vers la cible, le défenseur vers l'attaquant (frappe offensive).
