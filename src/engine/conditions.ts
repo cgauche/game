@@ -137,6 +137,22 @@ export function hasCondition(c: Combatant, name: string): boolean {
   return c.conditions.some((x) => x.name === name);
 }
 
+/** Sommeil MAGIQUE (sort Sommeil → Inconscient À DURÉE ; Belladone/Fleur de lune → Inconscient d'horloge) :
+ *  le dormeur est Inconscient MAIS a des PB (≠ un KO à 0 PB). On le distingue par la présence d'une durée
+ *  d'État (`roundsLeft`/`untilTime`) sur son Inconscient ET `wounds.current > 0`. Lu par le modifier de
+ *  réveil-à-l'attaque (« bruits/bousculade la réveillent », sort Sommeil) — sans MJ, le moteur applique la règle. */
+export function isMagicallyAsleep(c: Combatant): boolean {
+  const inc = c.conditions.find((x) => x.name === COND.inconscient);
+  return !!inc && (inc.roundsLeft != null || inc.untilTime != null) && c.wounds.current > 0;
+}
+
+/** Réveille un dormeur magique : retire son Inconscient de sommeil. Le dormeur, désormais éveillé, encaisse
+ *  l'attaque qui l'a réveillé (il n'a pas pu la défendre — il dormait). */
+export function wakeSleeper(c: Combatant): void {
+  const inc = c.conditions.find((x) => x.name === COND.inconscient);
+  if (inc) removeCondition(c, COND.inconscient, inc.value);
+}
+
 /**
  * Pénalité aux Tests de COMBAT due aux États (LDB ch.16). Non-cumul (l.20) : on
  * applique la pénalité d'UN SEUL État (la plus forte), mais un même État empile

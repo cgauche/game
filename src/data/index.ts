@@ -684,6 +684,9 @@ export interface TraitCapabilities {
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
+  /** Salive analgésique (T2C ch.13) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
+   *  endormie (Inconscient magique) — elle s'y accroche sans être détectée. Lu par le modifier `wake-sleeper`. */
+  wakelessBite?: boolean;
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {

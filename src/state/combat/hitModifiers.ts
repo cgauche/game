@@ -26,9 +26,9 @@ import type { Combatant, Weapon } from '../../engine/types';
 import type { AttackResult } from '../../engine/combat';
 import { d10 } from '../../engine/dice';
 import { battleRng } from '../battleRng';
-import { wardSaves } from '../../engine/traits/dispatch';
+import { wardSaves, traitCapability } from '../../engine/traits/dispatch';
 import { canPushback } from '../../engine/qualities/dispatch';
-import { isOutOfAction, loseWounds, applyZeroWounds } from '../../engine/conditions';
+import { isOutOfAction, loseWounds, applyZeroWounds, isMagicallyAsleep, wakeSleeper } from '../../engine/conditions';
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import { combatDistance } from '../footprint';
 import { pushBackTiles } from '../combatGeometry';
@@ -116,6 +116,24 @@ export function hitModifiers(): readonly HitModifier[] {
 }
 
 // ── Sauvegardes post-touche (corps COPIÉS verbatim depuis applyAttackResult) ────────────────────────
+
+registerHitModifier({
+  // Sommeil (Magie mineure) / Belladone : un dormeur MAGIQUE (Inconscient À DURÉE, PB > 0) se RÉVEILLE
+  // quand on l'attaque — « les bruits forts, le fait de la déplacer ou de la bousculer la réveille
+  // instantanément » (sort Sommeil). Cette règle était laissée à un op `narrative` « arbitrage MJ » ; ici
+  // le MJ, c'est le MOTEUR, donc on l'applique. Le dormeur n'est PAS achevé (≠ coup de grâce d'un Inconscient
+  // à 0 PB, LDB 16 l.112 → `autoKill` annulé) : il encaisse une attaque normale et se relève. EXCEPTION :
+  // Salive analgésique (capability `wakelessBite`) — la morsure INDOLORE s'accroche à la proie sans la réveiller.
+  id: 'wake-sleeper',
+  order: 5,
+  apply: ({ attacker, target, res }) => {
+    if (res.hit && isMagicallyAsleep(target) && !traitCapability(attacker.traits, 'wakelessBite')) {
+      wakeSleeper(target);
+      res = { ...res, autoKill: false, log: `${res.log ? res.log + ' ' : ''}${attacker.name} réveille ${target.name} en l'attaquant — le sommeil se rompt.` };
+    }
+    return res;
+  },
+});
 
 registerHitModifier({
   // Démoniaque (Indice+) / Protection (Indice) — LDB 85 p.339/341 : « Lancez 1d10 après chaque coup

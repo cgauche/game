@@ -2688,6 +2688,9 @@
     "source": {
       "book": "T2C",
       "page": 89
+    },
+    "capabilities": {
+      "wakelessBite": true
     }
   },
   {

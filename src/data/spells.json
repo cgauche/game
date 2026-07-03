@@ -1919,7 +1919,7 @@
               },
               {
                 "op": "narrative",
-                "text": "Sommeil : bruits forts, déplacement ou bousculade réveillent instantanément — arbitrage MJ."
+                "text": "Sommeil : la cible se RÉVEILLE instantanément si on l'attaque (le coup la bouscule) — elle encaisse alors une attaque normale au lieu d'être achevée. Un bruit fort ou un allié qui la secoue peut aussi la tirer du sommeil."
               }
             ]
           }

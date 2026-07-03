@@ -107,7 +107,6 @@ const JOURNAL_MJ = new Map<string, string>([
   // Traits MDG (bestiaire marin) + T2C (bestiaire fluvial) — desc verbatim, environnement aquatique non mécanisé.
   ['Créature marine', 'hors de l’eau : M→1, −2 DR à tous les Tests, suffocation (MDG 16 l.17-19) — environnement aquatique non modélisé (lot systèmes naval)'],
   ['Aquatique', 'respire sous l’eau, aucun déplacement terrestre (T2C p.90) — terrain aquatique non mécanisé (MJ)'],
-  ['Salive analgésique', 'morsure indolore : s’accroche à une cible ENDORMIE sans la réveiller (T2C p.89). Le Sommeil EXISTE (sort `sommeil` → État Inconscient) MAIS son RÉVEIL (bruits/bousculade) est laissé à l’arbitrage MJ PAR LE SORT lui-même (op `narrative`) ; un Inconscient ne se réveille pas mécaniquement d’une attaque → l’exception « ne réveille pas » reste narrative comme le réveil qu’elle module (MJ)'],
   ['Capricieux', 'DR d’un Test de Sociabilité ENVERS la créature ±d10 (T2C p.89) — aucun canal ne module un test social ciblant un PNJ-cible ; niche (négociation Naïade), candidat à l’extension de vocabulaire'],
   ['Marque de Khorne', 'Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh + interdits + achats hors carrière (MDG 07 l.250-252) — même canal que Marque de Tzeentch (auteur/MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
@@ -134,6 +133,10 @@ const DISPATCH = new Set<string>([
   // Rampant (T2C ch.13) : capability `noRun` (donnée) → `runMultiplier`=0 (budget de Course nul), la Marche
   // reste intacte. Dispatché (capability lue par hasNoRun).
   'Rampant',
+  // Salive analgésique (T2C ch.13) : capability `wakelessBite` (donnée) → le modifier de touche `wake-sleeper`
+  // NE réveille PAS une proie endormie (Inconscient magique) quand CETTE créature l'attaque (morsure indolore),
+  // là où toute autre attaque la réveille. Dispatché (capability lue par le modifier).
+  'Salive analgésique',
   // Redoutable (ZI) : Avantage min = Indice au début du tour — effet `onTurnStart` en donnée (op
   // gainAdvantage, indice baké via withArg, gardé Empêtré/Surpris). Dispatché comme tout `effects`.
   'Redoutable',
