@@ -122,7 +122,6 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/GrappleModal.tsx',
   'src/ui/HealModal.tsx',
   'src/ui/HouseRulesModal.tsx',
-  'src/ui/InterludeScreen.tsx', // migration partielle (mandat LOT 4) — le reste au LOT 6 (refonte écran)
   'src/ui/LootModal.tsx',
   'src/ui/MediaSelect.tsx',
   'src/ui/MedicModal.tsx',

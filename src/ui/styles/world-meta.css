@@ -211,7 +211,8 @@
 .interlude-card { max-width: min(720px, 94vw); border-top: 4px solid var(--gold); }
 .interlude-heroes { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; text-align: left; }
 .interlude-hero.panel { padding: 8px 12px; } /* surface = primitive .panel ; padding resserré ici */
-.interlude-hero h3 { margin: 0 0 4px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.interlude-hero h3 { margin: 0 0 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.interlude-hero h3 .interlude-left { margin-left: auto; }
 .interlude-left { font-size: 12px; color: var(--muted); font-weight: normal; }
 .interlude-event { margin: 0; font-size: 13px; }
 .interlude-warning { font-size: 12px; color: var(--muted); margin: 0; cursor: help; }
@@ -227,8 +228,6 @@
 }
 .interlude-close .btn { margin-left: auto; }
 .interlude-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; align-items: center; }
-.interlude-craft, .interlude-bank { font-size: 13px; }
-.interlude-craft summary, .interlude-bank summary { cursor: pointer; }
 .interlude-craft-q { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; font-size: 12px; }
 .interlude-screen .menu-card { max-height: 92vh; overflow-y: auto; }
 
@@ -238,18 +237,57 @@
 /* Chips d'États de clôture (EffectChips) posées DANS une phrase du récap → flux inline. */
 .interlude-recap-list .fx-chips { display: inline-flex; vertical-align: middle; }
 .interlude-hint { font-weight: normal; font-size: 11px; color: var(--muted); }
-.interlude-pane { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
-/* Description VERBATIM d'une Activité du catalogue (ACE Annexe I) — prose longue, défilable. */
-.interlude-pane-desc { font-size: 12px; color: var(--muted); max-height: 180px; overflow-y: auto; text-align: left; }
-.interlude-pane-desc p { margin: 0 0 6px; }
 .interlude-search { max-width: 280px; }
 .interlude-select { width: 100%; font-size: 13px; }
 .interlude-select optgroup { font-style: normal; font-weight: 700; }
 .interlude-detail { font-size: 12px; color: var(--muted); margin: 0; }
 .interlude-detail b { color: inherit; }
-.interlude-blocked { font-size: 12px; color: #e36c6c; margin: 0; }
-.interlude-pane .btn-primary { align-self: flex-start; }
+.interlude-blocked { font-size: 12px; color: var(--danger-soft); margin: 0; }
 .interlude-amount input { width: 90px; }
+
+/* Refonte LOT 6 — bandeau de SYNTHÈSE persistant (sticky dans la carte, les 3 phases). */
+.interlude-synth {
+  display: flex; gap: 8px; align-items: stretch; overflow-x: auto;
+  position: sticky; top: 0; /* le scrollport = .menu-card (overflow-y) */
+  z-index: 3; background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 6px 8px; margin: 8px 0 4px; text-align: left;
+}
+.interlude-synth-hero {
+  display: flex; gap: 6px; align-items: center; padding: 2px 6px;
+  border: 1px solid transparent; border-radius: 8px; flex: 1 1 0; min-width: 0;
+}
+.interlude-synth-hero.active { border-color: var(--gold); background: var(--panel); }
+.interlude-synth-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-size: 12px; }
+.interlude-synth-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.interlude-synth-rev { white-space: nowrap; }
+.interlude-pips { color: var(--gold2); letter-spacing: 2px; font-size: 11px; white-space: nowrap; }
+.interlude-synth-purse {
+  margin-left: auto; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; font-size: 13px; padding: 0 6px; cursor: help;
+}
+.interlude-name { font-size: 14px; }
+
+/* Refonte LOT 6 — gabarit UNIQUE des volets : corps DÉFILABLE, pied FIXE (pré-jet + action). */
+.interlude-pane { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
+.interlude-pane-head { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.interlude-pane-body { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 38vh; min-height: 0; }
+/* Description VERBATIM d'une Activité du catalogue (ACE Annexe I) — prose dans le corps défilable. */
+.interlude-pane-desc { font-size: 12px; color: var(--muted); text-align: left; }
+.interlude-pane-desc p { margin: 0 0 6px; }
+.interlude-pane-foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  border-top: 1px solid var(--border); padding-top: 8px;
+}
+.interlude-pane-terms { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 220px; text-align: left; }
+.interlude-pane-terms .rm-roll { flex-wrap: wrap; }
+.interlude-pane-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+/* ≤700px : le bandeau défile horizontalement (vignettes non écrasées), volets pleine largeur. */
+@media (max-width: 700px) {
+  .interlude-synth-hero { flex: 0 0 auto; }
+  .interlude-synth-purse { flex: 0 0 auto; }
+  .interlude-pane-actions { margin-left: 0; width: 100%; }
+  .interlude-pane-actions .btn { flex: 1 1 auto; }
+}
 .interlude-recap { max-width: min(560px, 94vw); }
 .interlude-recap-list { text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 8px; margin: 10px 0; padding-left: 18px; }
 

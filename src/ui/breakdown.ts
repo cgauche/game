@@ -1,10 +1,12 @@
+import type { ReactNode } from 'react';
 import { combineMods, type ModLine, type RollBreakdown } from '../engine/combat';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { PendingRoll } from './RollLine';
 
 /** Chip du modificateur de Difficulté (« Accessible +20 ») quand il réconcilie le total — partagé
- *  par la ligne jetée (`testBreakdown`) ET le pré-jet (`testPending`), pas de copie. */
-function difficultyMods(difficulty?: Difficulty): ModLine[] | undefined {
+ *  par la ligne jetée (`testBreakdown`), le pré-jet (`testPending`) et les pieds de volet qui
+ *  composent leurs mods (`optionPending` + acharnement…), pas de copie. */
+export function difficultyMods(difficulty?: Difficulty): ModLine[] | undefined {
   return difficulty && DIFFICULTY_MODIFIERS[difficulty] !== 0
     // « Accessible » sans le suffixe « (+20) » du label canonique : la RollLine affiche déjà la valeur.
     ? [{ label: DIFFICULTY_LABELS[difficulty].replace(/\s*\(.*\)$/, ''), value: DIFFICULTY_MODIFIERS[difficulty] }]
@@ -39,7 +41,7 @@ export function testBreakdown(
 /** Ligne de jet EN ATTENTE (pré-jet) d'un Test simple — même base / cible / mods que `testBreakdown`,
  *  dé et DR vides : pour le panneau PRÉ-REMPLI des flux `RollFlowShell` (parité Attaque/Défense).
  *  `target` omis → dérivé `base + modificateur de Difficulté` (comme le calcule le jet). */
-export function testPending(label: string, base: number, target?: number, difficulty?: Difficulty): PendingRoll {
+export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty): PendingRoll {
   const t = target ?? base + (difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0);
   return { label, base, target: t, mods: difficultyMods(difficulty) };
 }
@@ -60,6 +62,6 @@ export function optionValue(base: number, mods: ModLine[]): number {
  * convergent `previewAttack`/`previewDefense`/`previewCast`/`testPending`/`calmePending` (cf. P6) :
  * un seul endroit assemble le pré-jet d'une option. Réutiliser ; ne pas refabriquer l'objet à la main.
  */
-export function optionPending(label: string, base: number, mods: ModLine[], target?: number): PendingRoll {
+export function optionPending(label: ReactNode, base: number, mods: ModLine[], target?: number): PendingRoll {
   return { label, base, mods, ...(target != null ? { target } : {}) };
 }

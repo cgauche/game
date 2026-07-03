@@ -1,8 +1,8 @@
 /**
- * Écran « Entre deux aventures » refondu (audit POC→produit 2026-06-11) : phase Événements,
- * Activités à SÉLECTEURS catalogue (fini la saisie du libellé exact — défauts B1/B2/B3),
- * clôture récapitulative confirmée (M3). Rendu statique : le store SSR sert l'état initial,
- * d'où le seam (même pattern que WorldMapView).
+ * Écran « Entre deux aventures » refondu (LOT 6) : bandeau de SYNTHÈSE persistant (vignettes héros
+ * + pips d'Activités + bourse du groupe, les 3 phases), volets homogènes au gabarit `ActivityPane`
+ * (pied FIXE : pré-jet visible AVANT « Entreprendre »), clôture récapitulative confirmée (M3).
+ * Rendu statique : le store SSR sert l'état initial, d'où le seam (même pattern que WorldMapView).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -29,7 +29,7 @@ function buildSeam(weeks = 3): InterludeSeam {
   return { interlude: s.interlude!, party: s.party, money: s.money, bank: s.bank, pendingOrders: s.pendingOrders };
 }
 
-describe('InterludeScreen — refonte produit', () => {
+describe('InterludeScreen — refonte LOT 6', () => {
   beforeEach(() => { vi.useFakeTimers(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -43,20 +43,69 @@ describe('InterludeScreen — refonte produit', () => {
     expect(html).not.toContain('Clore'); // pas de clôture sur la phase d'intro
   });
 
-  it('Activités : sélecteurs catalogue (B1/B2/B3) — Revenus avec formule, volets par héros', () => {
+  it('bandeau de SYNTHÈSE persistant : vignettes héros (pips ●○) + bourse du groupe, dès la phase Événements', () => {
+    const seam = buildSeam();
+    const html = renderToStaticMarkup(<InterludeScreen seam={seam} />);
+    expect(html).toContain('interlude-synth'); // le bandeau
+    expect(html).toContain('●'); // pips d'Activités restantes DANS le bandeau (phase 1 incluse)
+    expect(html).toContain('interlude-synth-purse'); // bourse du groupe (impact des événements visible)
+    expect(html).toContain('Vétéran');
+    expect(html).toContain('Forgeron');
+  });
+
+  it('Activités : boutons de volet par héros (gabarit commun) + clôture pour l’hôte', () => {
     const seam = buildSeam();
     const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities' }} />);
     // plus AUCUNE saisie de libellé exact héritée du POC
     expect(html).not.toContain('nom exact');
-    // les 4 volets d'Activité et la formule de Revenus (« N × 2d10 sous »…) sont affichés
+    expect(html).toContain('Revenus…'); // Revenus est un volet comme les autres (gabarit commun)
     expect(html).toContain('Artisanat…');
     expect(html).toContain('Apprentissage…');
     expect(html).toContain('Commande…');
     expect(html).toContain('Banque…');
-    expect(html).toMatch(/Revenus.*\d ×/);
-    // pips d'Activités restantes
-    expect(html).toContain('●');
+    expect(html).toContain('Identifier…');
+    expect(html).toContain('●'); // pips (bandeau)
     expect(html).toContain('Clore l&#x27;interlude…');
+  });
+
+  it('pied FIXE du volet : le PRÉ-JET (compétence + Difficulté) est visible AVANT « Entreprendre » (Revenus)', () => {
+    const seam = buildSeam();
+    const hero = seam.party[0]; // Vétéran
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'revenus' } }} />,
+    );
+    expect(html).toContain('interlude-pane-foot'); // le pied du gabarit
+    expect(html).toContain('rm-roll pending'); // la ligne de pré-jet (PendingRollLine)
+    expect(html).toContain('Accessible'); // la Difficulté du Test de Revenus (LDB 08)
+    expect(html).toContain('Entreprendre');
+    expect(html).toMatch(/\d ×/); // la formule de Revenus (« N × 2d10 sous »…)
+  });
+
+  it('pied FIXE d’une Activité du CATALOGUE : compétence en chip + Difficulté avant « Entreprendre » (Convalescence)', () => {
+    const seam = buildSeam();
+    useGame.setState({ worldMap: null });
+    const catalog = interludeCatalog(useGame.getState());
+    const hero = seam.party[0];
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{ ...seam, phase: 'activities', catalog, openPane: { heroId: hero.id, pane: 'convalescence' } }} />,
+    );
+    expect(html).toContain('interlude-pane-foot');
+    expect(html).toContain('Calme'); // la compétence du Test (chip Codex)
+    expect(html).toContain('Très difficile'); // la Difficulté (chip de mod du pré-jet)
+    expect(html).toContain('Entreprendre');
+  });
+
+  it('activité SANS jet (Banque) : formule/coût dans le même pied, sans ligne de pré-jet', () => {
+    const seam = buildSeam();
+    const hero = seam.party[0];
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'bank' } }} />,
+    );
+    expect(html).toContain('interlude-pane-foot');
+    expect(html).not.toContain('rm-roll pending'); // pas de Test : dépôt direct
+    expect(html).toContain('Sans jet');
+    expect(html).toContain('Investir');
+    expect(html).toContain('Planquer');
   });
 
   it('clôture : récapitulatif confirmé (argent gaspillé annoncé, temps qui passe)', () => {
@@ -72,7 +121,7 @@ describe('InterludeScreen — refonte produit', () => {
 describe('InterludeScreen — coop (audit M7) : chacun mène SES héros', () => {
   beforeEach(() => { vi.useFakeTimers(); });
 
-  it('invité : ses héros actifs, ceux des autres en lecture seule (🎮), pas de « Clore »', () => {
+  it('invité : ses héros actifs, ceux des autres en lecture seule (propriétaire affiché), pas de « Clore »', () => {
     const seam = buildSeam(2);
     const [a, b] = seam.party; // a = Vétéran, b = Forgeron
     const html = renderToStaticMarkup(
@@ -82,7 +131,8 @@ describe('InterludeScreen — coop (audit M7) : chacun mène SES héros', () => 
         net: { mode: 'guest', mySeat: 1, ownership: { [a.id]: 0, [b.id]: 1 }, seatNames: { 0: 'Hôte', 1: 'Moi' } },
       }} />,
     );
-    expect(html).toContain('🎮 Hôte'); // le héros de l'hôte est marqué « mené par »
+    expect(html).toContain('interlude-owner'); // le héros de l'hôte porte son propriétaire (vignette + carte)
+    expect(html).toContain('Hôte');
     expect(html).toContain('Mené par Hôte'); // … et ses volets sont désactivés (title)
     expect(html).not.toContain('Clore l&#x27;interlude…'); // la clôture appartient à l'hôte
     expect(html).toContain('L&#x27;hôte clôt l&#x27;interlude');
@@ -98,7 +148,8 @@ describe('InterludeScreen — coop (audit M7) : chacun mène SES héros', () => 
         net: { mode: 'host', mySeat: 0, ownership: { [a.id]: 0, [b.id]: 1 }, seatNames: { 0: 'Hôte', 1: 'Antoine' } },
       }} />,
     );
-    expect(html).toContain('🎮 Antoine');
+    expect(html).toContain('Antoine');
+    expect(html).toContain('interlude-owner');
     expect(html).toContain('Clore l&#x27;interlude…');
   });
 });

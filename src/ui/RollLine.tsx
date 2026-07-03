@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ModLine, RollBreakdown } from '../engine/combat';
 import { Dice } from './Dice';
 
@@ -57,7 +58,8 @@ export function RollLine({ d }: { d: RollBreakdown }) {
  *  est le même bloc que le résultat, pré-rempli. `hideValue` (ligne adverse) : compétence + chips
  *  de bonus/malus SANS total (on ne révèle pas le score de l'adversaire). */
 export interface PendingRoll {
-  label: string;
+  /** Libellé du jet — texte, ou nœud riche (ex. compétence en chip `EntityRef` d'un pied de volet). */
+  label: ReactNode;
   /** Valeur de compétence de base (absente si `hideValue`). */
   base?: number;
   /** Cible effective (base + modificateurs COMBINÉS, plafonds inclus) ; défaut : base + somme des chips. */

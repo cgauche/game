@@ -194,7 +194,7 @@ export function heroClass(h: Combatant): string {
 /** Compétence de carrière « qui permet de Gagner de l'argent » (LDB 08 l.135 : celle en italique
  *  du premier Niveau — l'italique n'est pas dans les données : on prend la première compétence du
  *  Niveau 1 que le héros POSSÈDE, sinon la première listée. Approximation documentée). */
-function incomeSkillOf(h: Combatant): string {
+export function incomeSkillOf(h: Combatant): string {
   const lvl1 = levelsForCareer(h.career ?? '')[0];
   const ids = (lvl1?.skills ?? []).map(advancementBaseId).filter((x): x is string => !!x); // AdvancementRef → skillId
   const owned = ids.find((id) => h.skills.some((k) => k.skillId === id));

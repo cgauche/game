@@ -26,6 +26,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isValidFormula } from '../engine/ops';
+import { ICON_DEFS } from '../ui/icons';
 import { findCreatureById, findCreature, findVehicleById, traitById, findConditionById, findDiseaseById, symptomById } from './index';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
@@ -142,5 +143,10 @@ describe('Intégrité des données src/data/*.json', () => {
     const species = JSON.parse(readFileSync(join(DIR, 'species.json'), 'utf8')) as { id: string; family?: string }[];
     const missing = species.filter((s) => typeof s.family !== 'string' || !s.family.trim()).map((s) => s.id);
     expect(missing, `Espèce(s) sans family :\n  ${missing.join('\n  ')}`).toEqual([]);
+  });
+  it("7 — activities.json : chaque Activité porte une icône du registre (ActivityDef.icon ∈ ICON_DEFS)", () => {
+    const activities = JSON.parse(readFileSync(join(DIR, 'activities.json'), 'utf8')) as { id: string; icon?: string }[];
+    const bad = activities.filter((a) => typeof a.icon !== 'string' || !(a.icon in ICON_DEFS)).map((a) => `${a.id} → ${JSON.stringify(a.icon)}`);
+    expect(bad, `Activité(s) sans icône du registre (src/ui/icons) :\n  ${bad.join('\n  ')}`).toEqual([]);
   });
 });

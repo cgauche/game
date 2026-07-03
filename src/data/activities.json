@@ -2,6 +2,7 @@
   {
     "id": "plein-air",
     "label": "Plein air",
+    "icon": "nav/activity",
     "contexts": [
       "voyage"
     ],
@@ -21,6 +22,7 @@
   {
     "id": "approvisionnement",
     "label": "Approvisionnement",
+    "icon": "action/consume",
     "contexts": [
       "voyage"
     ],
@@ -40,6 +42,7 @@
   {
     "id": "recueillir-informations",
     "label": "Recueillir des informations",
+    "icon": "char/soc",
     "contexts": [
       "voyage"
     ],
@@ -59,6 +62,7 @@
   {
     "id": "rester-aux-aguets",
     "label": "Rester aux aguets",
+    "icon": "action/aim",
     "contexts": [
       "voyage"
     ],
@@ -78,6 +82,7 @@
   {
     "id": "etablir-cartes",
     "label": "Établir des cartes",
+    "icon": "nav/campaign",
     "contexts": [
       "voyage"
     ],
@@ -105,6 +110,7 @@
   {
     "id": "pratiquer-competence",
     "label": "Pratiquer une Compétence",
+    "icon": "scenario/training",
     "contexts": [
       "voyage"
     ],
@@ -120,6 +126,7 @@
   {
     "id": "recuperer",
     "label": "Récupérer",
+    "icon": "nav/rest",
     "contexts": [
       "voyage"
     ],
@@ -133,6 +140,7 @@
   {
     "id": "monter-camp",
     "label": "Monter un camp",
+    "icon": "journal/heal",
     "contexts": [
       "voyage"
     ],
@@ -155,6 +163,7 @@
   {
     "id": "convalescence",
     "label": "Convalescence",
+    "icon": "resource/resolve",
     "contexts": [
       "interlude"
     ],
@@ -177,6 +186,7 @@
   {
     "id": "penitence",
     "label": "Pénitence",
+    "icon": "resource/fate",
     "contexts": [
       "interlude"
     ],
@@ -237,6 +247,7 @@
   {
     "id": "entrainement-arme-inhabituelle",
     "label": "Entraînement avec une arme inhabituelle",
+    "icon": "action/attack",
     "contexts": [
       "interlude"
     ],
@@ -273,6 +284,7 @@
   {
     "id": "tester-objets-magiques",
     "label": "Tester des objets magiques",
+    "icon": "nav/identify",
     "contexts": [
       "interlude"
     ],
@@ -325,6 +337,7 @@
   {
     "id": "mecenat",
     "label": "Mécénat",
+    "icon": "scenario/opera",
     "contexts": [
       "interlude"
     ],
@@ -391,6 +404,7 @@
   {
     "id": "recherche-universitaire",
     "label": "Recherche universitaire",
+    "icon": "nav/memorize",
     "contexts": [
       "interlude"
     ],
@@ -420,6 +434,7 @@
   {
     "id": "commerce-opportunite",
     "label": "Commerce d'opportunité",
+    "icon": "resource/gold-purse",
     "contexts": [
       "mer"
     ],
@@ -439,6 +454,7 @@
   {
     "id": "cartographie",
     "label": "Cartographie",
+    "icon": "nav/campaign",
     "contexts": [
       "mer"
     ],
@@ -459,6 +475,7 @@
   {
     "id": "entrainement-equipage",
     "label": "Entraînement d'équipage",
+    "icon": "action/lead",
     "contexts": [
       "mer"
     ],

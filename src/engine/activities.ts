@@ -103,6 +103,9 @@ export interface ActivityDef {
   /** id STABLE (slug). */
   id: string;
   label: string;
+  /** Icône du registre (`src/ui/icons`, id `famille/nom`) — affichée par les volets/boutons
+   *  d'Activité. REQUIS ; icône ∈ registre validé par `data-wellformed.test.ts`. */
+  icon: string;
   contexts: ActivityContext[];
   source: { book: string; page: number };
   /** Compétence(s) du Test — « au choix » si plusieurs. Absent = Activité SANS Test (ex. Récupérer). */
