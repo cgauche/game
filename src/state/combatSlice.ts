@@ -1929,8 +1929,21 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     attackCancel: () => {
       const pa = get().pendingAttack;
-      if (pa?.fromCharge) return; // après une Charge, l'attaque est obligatoire (LDB 15-Dépl l.75)
       if (pa?.dualSecond) return; // 2ᵉ frappe d'un dual : engagée dès que la cible est choisie (le jet est imposé)
+      // Charge : Annuler AVANT tout jet (`result===null`) DÉFAIT le misclic — comme annuler un déplacement,
+      // mais pour la manœuvre combinée « déplacement + attaque ». On restaure positions, orientation, Mouvement,
+      // Avantage (+1 de charge rendu) et `chargedThisTurn`. Une fois le dé lancé, la charge est ENGAGÉE (RAW LDB 15).
+      if (pa?.fromCharge) {
+        const battle = get().battle;
+        if (pa.result || !pa.chargeUndo || !battle) { if (!pa.result) set({ pendingAttack: null }); return; } // dé lancé → engagé (pas d'undo)
+        const u = pa.chargeUndo;
+        for (const c of battle.combatants) { const p = u.pos[c.id]; if (p) c.pos = { ...p }; } // restaure TOUS (un grand a pu en déplacer d'autres)
+        const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+        if (attacker) { attacker.gainedAdvThisRound = u.gainedAdvBefore; attacker.chargedThisTurn = u.chargedBefore; if (u.advGained) campSpend(get, attacker, u.advGained); } // rend le +1 Avantage de la charge
+        set({ facing: { ...u.facing }, battle: { ...battle, movementUsed: u.movementUsed, movedPreAction: u.movedPreAction, action: null, reachable: new Map(), preview: null }, pendingAttack: null });
+        bus.emit(EVT.SCENE_DIRTY);
+        return;
+      }
       if (pa?.cleave) { set({ pendingAttack: null }); return get().cleaveEnd(); } // annuler = terminer le balayage (cleaveEnd clôt la cascade)
       // Annuler ferme aussi la séquence-jet de combat (étape 0 non encore validée).
       const seq = get().pendingCascade;

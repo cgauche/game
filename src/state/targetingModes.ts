@@ -420,6 +420,13 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   if (plan.kind === 'charge') {
     // Charge (LDB 15-Dépl l.74-77) : se ruer au contact (portée de Course) puis attaquer — manœuvre
     // PLEINE (consomme tout le Mouvement). Combat monté : empreinte/Course de la MONTURE.
+    // Undo PRÉ-JET (retour playtest) : capture l'état d'AVANT la charge pour pouvoir Annuler un misclic
+    // tant qu'aucun dé n'est lancé (`attackCancel`) — positions, orientation, Mouvement, Avantage, chargé.
+    const chargeUndo = {
+      pos: Object.fromEntries(battle.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
+      facing: { ...get().facing }, movedPreAction: battle.movedPreAction, movementUsed: battle.movementUsed ?? 0,
+      advGained: plan.adv, gainedAdvBefore: active.gainedAdvThisRound ?? false, chargedBefore: active.chargedThisTurn ?? false,
+    };
     const geom = mountOf(battle, active) ?? active;
     approachPath = plan.path;
     active.pos = { ...plan.dest };
@@ -434,7 +441,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     if (plan.adv > 0) active.gainedAdvThisRound = true;
     active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
     set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', t('cs.charge', { name: active.name, target: target.name, adv: plan.adv ? t('cs.fragChargeAdv', { adv: plan.adv }) : '' }), active.id, target.id)] } });
-    pa = { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind } : {}), ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
+    pa = { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, chargeUndo, ...(option.freeKind ? { freeKind: option.freeKind } : {}), ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
   } else {
     if (plan.kind === 'moveAttack') {
       // Rejoindre la cible dans la Marche restante (pas une Charge → pas de bonus), puis attaquer.

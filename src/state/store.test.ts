@@ -930,7 +930,9 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingAttack).toBeNull();
   });
 
-  it('attackCancel est sans effet après une Charge (attaque obligatoire, LDB 15-Dépl l.75)', () => {
+  it('attackCancel après le JET d’une Charge est sans effet (charge engagée, LDB 15-Dépl l.75)', () => {
+    // Avant le jet, une charge s'annule (misclic — cf. charge-undo.test.ts) ; une fois le dé lancé
+    // (`result` posé), elle est ENGAGÉE : plus d'annulation.
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
@@ -939,9 +941,9 @@ describe('Boucle de jeu (store)', () => {
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
-    useGame.setState({ pendingAttack: { attackerId: H.id, targetId: E.id, location: null, result: null, fromCharge: true } });
+    useGame.setState({ pendingAttack: { attackerId: H.id, targetId: E.id, location: null, result: { hit: false } as never, fromCharge: true } });
     useGame.getState().attackCancel();
-    expect(useGame.getState().pendingAttack).not.toBeNull(); // toujours là (charge)
+    expect(useGame.getState().pendingAttack).not.toBeNull(); // dé lancé → engagé
   });
 
   it('Combat monté — cliquer un couple ouvre le choix cavalier/monture puis cible l’id choisi (LDB 14 l.219)', () => {

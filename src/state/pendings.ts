@@ -6,6 +6,7 @@
 import type { CharKey, Difficulty, HitLocation, Weapon, FireArc, Combatant } from '../engine/types';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
+import type { Dir8 } from './dir8';
 import type { Effect } from './scene';
 import type { Flow } from './flow';
 import type { GameOp } from '../engine/ops';
@@ -234,7 +235,12 @@ export interface PendingAttack {
   result: AttackResult | null; // null = pas encore lancé
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
-  fromCharge?: boolean; // issue d'une Charge → l'attaque est OBLIGATOIRE (LDB 15-Dépl l.75), Annuler interdit
+  fromCharge?: boolean; // issue d'une Charge → l'attaque est engagée dès le 1ᵉʳ jet (LDB 15-Dépl l.75)
+  /** Undo PRÉ-JET d'une Charge (jeu vidéo : annuler un misclic comme on annule un déplacement/une attaque) :
+   *  état d'AVANT la charge pour restaurer positions/orientation/Mouvement/Avantage/chargedThisTurn si on
+   *  Annule AVANT tout jet (`result === null`). Une fois le dé lancé, la charge est engagée (RAW). Capturé à
+   *  la déclaration de charge (targetingModes), rejoué par `attackCancel`. */
+  chargeUndo?: { pos: Record<string, Pt>; facing: Record<string, Dir8>; movedPreAction: boolean; movementUsed: number; advGained: number; gainedAdvBefore: boolean; chargedBefore: boolean };
   /** Victime réelle si le tir a dévié dans la mêlée vers un allié (LDB 14 l.136) — sinon = targetId. */
   victimId?: string;
   /** Attaque d'enchaînement d'un balayage (Frappe Mortelle) : son acquittement fait avancer le `pendingCleave`. */
