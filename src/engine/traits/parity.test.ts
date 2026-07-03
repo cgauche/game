@@ -43,6 +43,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Salive anticoagulante', 'Hémorragique sur Morsure — `effects` AUTHORÉ (condition hemorragique, fireTriggers onHit)'],
   ['Hallucinogène', 'aura 2 m au début du Round → Test de FM → Sonné — `effects` AUTHORÉ (déclencheur onRoundStart near, fireTriggers)'],
   ['Forme de guerrière naïade', 'socle Peur 2 + Armure 2 à onCombatStart (grantTrait, `effects`) ; les 4 aspects tournants restent en desc (choix par Round = hook IA à câbler)'],
+  ['Capricieux', 'DR d’un Test de Sociabilité ENVERS la créature ±d10 (T2C p.89) MÉCANISÉ : modulateur `vsCapricieux` du Test social → `capriciousMod` (±10 par DR, d10 seedé UNE fois) dans `openSkillTest` ; authoré sur le Test d’un dialogue mené avec la créature, comme vsGroups (Animosité) / vsStatus (Statut) le sont (le contexte social de l’interlocuteur est authoré, pas auto-injecté depuis l’entité)'],
   // Psychologie — engine/psychology.ts (parsePsychTraits)
   ['Peur', 'causesPeur (parsePsychTraits)'],
   ['Terreur', 'causesTerreur (parsePsychTraits)'],
@@ -107,7 +108,6 @@ const JOURNAL_MJ = new Map<string, string>([
   // Traits MDG (bestiaire marin) + T2C (bestiaire fluvial) — desc verbatim, environnement aquatique non mécanisé.
   ['Créature marine', 'hors de l’eau : M→1, −2 DR à tous les Tests, suffocation (MDG 16 l.17-19) — environnement aquatique non modélisé (lot systèmes naval)'],
   ['Aquatique', 'respire sous l’eau, aucun déplacement terrestre (T2C p.90) — terrain aquatique non mécanisé (MJ)'],
-  ['Capricieux', 'DR d’un Test de Sociabilité ENVERS la créature ±d10 (T2C p.89) — aucun canal ne module un test social ciblant un PNJ-cible ; niche (négociation Naïade), candidat à l’extension de vocabulaire'],
   ['Marque de Khorne', 'Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh + interdits + achats hors carrière (MDG 07 l.250-252) — même canal que Marque de Tzeentch (auteur/MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
   // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).

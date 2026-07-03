@@ -38,6 +38,18 @@ export function actorStatus(c: Combatant): Status {
   return parseStatus(lvl?.status ?? 'Bronze 1');
 }
 
+/** Capricieux (Trait de créature, T2C ch.13) : « Lorsqu'un Personnage effectue un Test de Sociabilité en
+ *  traitant avec la créature, lancez un dé selon le Tableau suivant » (1 → −2 DR, 2-3 → −1, 4-7 → 0, 8-9 → +1,
+ *  10 → +2). Exprimé en mod de VALEUR (±10 par DR, MÊME convention que la réaction de Statut `statusCharmMod`),
+ *  PUR : le `roll` d10 est tiré UNE fois par Test (RNG seedé) par l'appelant, comme `reactionRoll`. */
+export function capriciousMod(roll: number): number {
+  if (roll <= 1) return -20; // −2 DR
+  if (roll <= 3) return -10; // −1 DR
+  if (roll <= 7) return 0;
+  if (roll <= 9) return 10; // +1 DR
+  return 20; // +2 DR (10)
+}
+
 /** Mod social RAW (LDB 08) d'un `actor` envers une `target`, options de `policy.ts` comprises.
  *  - (a) inter-Échelon : actor > target → +10, < → −10, = → 0 (RAW de base, toujours actif).
  *  - (b) si même Échelon ET règle `social-charm-intra-tier` : ±10 selon le Standing.
