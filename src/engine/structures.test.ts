@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { findStructureById } from '../data';
 import { woundsFromHit } from './woundsCalc';
-import { isStructure, structureImmune, siegeMultiplier, structureCombatant } from './structures';
+import { isStructure, isEngin, structureImmune, siegeMultiplier, structureCombatant } from './structures';
 import type { Weapon, Combatant } from './types';
 
 /**
@@ -122,5 +122,13 @@ describe('isStructure', () => {
   it('vrai pour une structure, faux pour une créature', () => {
     expect(isStructure(struct('porte'))).toBe(true);
     expect(isStructure(creature)).toBe(false);
+  });
+});
+
+describe('isEngin', () => {
+  it('vrai pour un emplacement de siège (engin), faux pour mur/porte et créature', () => {
+    expect(isEngin({ bodyShape: 'engin' })).toBe(true);
+    expect(isEngin(struct('porte'))).toBe(false); // structure = mur/porte, PAS un affût
+    expect(isEngin(creature)).toBe(false);
   });
 });

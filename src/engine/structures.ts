@@ -30,6 +30,11 @@ export function isStructure(c: Pick<Combatant, 'bodyShape'>): boolean {
   return c.bodyShape === 'structure';
 }
 
+/** Emplacement d'artillerie de siège (`bodyShape:'engin'`) — affût servi par un équipage (≠ 'structure' = mur/porte). */
+export function isEngin(c: Pick<Combatant, 'bodyShape'>): boolean {
+  return c.bodyShape === 'engin';
+}
+
 /** Cette cible est-elle un OBJET INANIMÉ (pas une créature) — STRUCTURE de siège (ADE II ch.08), VÉHICULE-coque
  *  (navire/chariot/barge, MDG) ou pièce SERVIE explicitement inerte (`inert`, ex. un affût d'artillerie) ? Source
  *  UNIQUE et NOMMÉE du « c'est un objet » : aucune réaction de combat (ni Parade/Esquive, ni Localisation, ni

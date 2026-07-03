@@ -9,8 +9,9 @@ import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
 import { TavernGameModal } from './TavernGameModal';
 import { ActionBar } from './ActionBar';
-import { ShipSheet } from './ShipSheet';
+import { PosteSheet } from './ShipSheet';
 import { isVehicle } from '../engine/vehicle';
+import { isEngin } from '../engine/structures';
 import { CombatBanner } from './CombatBanner';
 import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { VictoryScreen } from './VictoryScreen';
@@ -104,7 +105,7 @@ export function CampaignView() {
   // fiche (état + équipage), comme une fiche héros. Le navire n'apparaît qu'en combat naval (sinon le filtre est vide).
   const dockHeroes = [
     ...party.map((h) => battle?.combatants.find((x) => x.id === h.id) ?? h),
-    ...(battle?.combatants.filter((c) => isVehicle(c) && c.kind === 'hero') ?? []),
+    ...(battle?.combatants.filter((c) => (isVehicle(c) || isEngin(c)) && c.kind === 'hero') ?? []),
   ];
   const activeId = battle && !battle.over ? battle.order[battle.turn] : null;
   // Pré-emption d'initiative (pause de début de Round) : héros éligibles (LDB ch.17 l.27).
@@ -284,9 +285,16 @@ export function CampaignView() {
       <BargainModal />
       <AppraiseModal />
       <DocumentModal />
-      {sheetId && (battle?.combatants.find((c) => c.id === sheetId && isVehicle(c))
-        ? <ShipSheet shipId={sheetId} onClose={() => setSheetId(null)} />
-        : <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />)}
+      {sheetId && (() => {
+        const c = battle?.combatants.find((x) => x.id === sheetId);
+        // Un navire ouvre SA seule coque ; un emplacement de siège ouvre TOUTE la batterie alliée, centrée sur le cliqué.
+        if (c && isVehicle(c)) return <PosteSheet combatantIds={[c.id]} onClose={() => setSheetId(null)} />;
+        if (c && isEngin(c)) {
+          const engins = battle!.combatants.filter((x) => isEngin(x) && x.kind === c.kind).map((x) => x.id);
+          return <PosteSheet combatantIds={engins} initialHullId={c.id} onClose={() => setSheetId(null)} />;
+        }
+        return <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />;
+      })()}
       {inspected && <InspectPanel combatant={inspected} onClose={() => setInspectId(null)} />}
     </div>
   );
