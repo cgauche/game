@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ShipStateBlock, ShipCrewByRole, ShipPostes } from './ShipSheet';
+import { ShipStateBlock, ShipCrewByRole, PosteDetail } from './ShipSheet';
 import type { Combatant, SkillInstance } from '../engine/types';
 
 const mk = (id: string, dex: number, skills: { skillId: string; advances: number; spec?: string }[] = [], shipRole?: string): Combatant =>
@@ -10,6 +10,10 @@ const mk = (id: string, dex: number, skills: { skillId: string; advances: number
     skills: skills.map((s) => ({ ...s, characteristic: 'Dex' }) as SkillInstance),
     conditions: [], talents: [], wounds: { current: 10, max: 10, base: 10 }, shipRole,
   }) as unknown as Combatant;
+
+type Poste = NonNullable<Combatant['postes']>[number];
+const poste = (name: string, uid: string, side: string, crewIds: string[]): Poste =>
+  ({ item: { name, uid }, side, crewIds }) as unknown as Poste;
 
 describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
   it('ShipStateBlock : coque, cap, Moral, effectif', () => {
@@ -34,12 +38,30 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
     expect(html).toContain('+ assigner');  // entrée de l'assignation par portrait
   });
 
-  it('ShipPostes : une pièce par bord + son servant', () => {
+  it('PosteDetail : le poste sélectionné affiche son bord + son nom + son servant', () => {
     const soldat = mk('Soldat', 50, [{ skillId: 'projectiles', advances: 20, spec: 'Poudre noire' }]);
-    const ship = { id: 'ship', name: 'La Cogue', conditions: [],
-      postes: [{ item: { name: 'Pierrier' }, side: 'tribord', crewIds: ['Soldat'] }] } as unknown as Combatant;
-    const html = renderToStaticMarkup(<ShipPostes ship={ship} combatants={[ship, soldat]} />);
+    const ship = { id: 'ship', name: 'La Cogue', conditions: [] } as unknown as Combatant;
+    const html = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Pierrier', 'p1', 'tribord', ['Soldat'])} combatants={[ship, soldat]} />);
     expect(html).toContain('Tribord');
     expect(html).toContain('Pierrier');
+    expect(html).toContain('Soldat');
+  });
+
+  it('PosteDetail : poste sans servant → « sans servant »', () => {
+    const ship = { id: 'ship', name: 'La Cogue', conditions: [] } as unknown as Combatant;
+    const html = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Couleuvrine', 'p2', 'babord', [])} combatants={[ship]} />);
+    expect(html).toContain('Bâbord');
+    expect(html).toContain('— sans servant —');
+  });
+
+  it('PosteDetail : le détail change avec le poste sélectionné (maître-détail)', () => {
+    const ship = { id: 'ship', name: 'La Cogue', conditions: [] } as unknown as Combatant;
+    // Le plan/les puces choisissent LE poste ; PosteDetail n'affiche QUE celui-là.
+    const p1 = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Pierrier', 'p1', 'tribord', [])} combatants={[ship]} />);
+    const p2 = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Couleuvrine', 'p2', 'babord', [])} combatants={[ship]} />);
+    expect(p1).toContain('Pierrier');
+    expect(p1).not.toContain('Couleuvrine');
+    expect(p2).toContain('Couleuvrine');
+    expect(p2).not.toContain('Pierrier');
   });
 });

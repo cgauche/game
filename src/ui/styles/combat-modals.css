@@ -407,6 +407,25 @@
 .ship-role-name, .ship-poste-name { font-weight: 600; }
 .ship-role-name .ess { color: var(--gold); }
 .ship-crew-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; align-items: center; min-height: 22px; }
+/* Maître-détail piloté par le plan (FTL/RTS) : plan à gauche, bande de puces + détail à droite ; s'empile ≤900px. */
+.poste-layout { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.poste-layout > .topo-panel { flex: 1 1 260px; }
+.poste-detail-col { flex: 1 1 260px; min-width: 0; }
+@media (max-width: 900px) { .poste-layout > .topo-panel { flex-basis: 100%; } }
+/* Bande de puces RTS (un poste = une carte-unité) : sélecteur secondaire du plan, s'enroule. */
+.poste-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.poste-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg2); color: var(--text); font: inherit; font-size: 12px; cursor: pointer;
+}
+.poste-chip.selected { box-shadow: inset 3px 0 0 var(--gold); background: rgba(255, 255, 255, 0.04); }
+.poste-chip-side { font-weight: 600; }
+.poste-chip-name { color: var(--muted); }
+.poste-chip-badge { min-width: 16px; text-align: center; padding: 0 4px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); font-size: 11px; }
+/* Point « servi » : plein (or) si au moins un servant, creux sinon. */
+.poste-dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--muted); }
+.poste-dot.manned { background: var(--gold); border-color: var(--gold); }
 /* Portrait d'un marin à un poste : survol → croix rouge ; clic → le retire du poste (équipage disponible). */
 .crew-remove { position: relative; padding: 0; border: none; background: none; cursor: pointer; line-height: 0; }
 .crew-remove::after {
