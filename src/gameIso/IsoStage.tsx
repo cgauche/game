@@ -13,7 +13,7 @@ import { useGame } from '../state/store';
 import { heightAt, sceneMetresPerTile } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
-import { computeStateVisible, sceneLightField } from '../state/visionState';
+import { computeStateVisibleAndLight } from '../state/visionState';
 import { Combatant } from '../engine/types';
 import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
@@ -102,18 +102,15 @@ export function IsoStage() {
   // LIFT vertical d'une case = sa HAUTEUR MÉTRIQUE en unités de niveau, DÉCOUPLÉ de l'index de couche
   // `z` (qui ne sert qu'au TRI). Sert au JETON (qui monte avec son sol) ET aux SURLIGNAGES de case.
   const liftAt = (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0);
-  // BROUILLARD DE GUERRE — cases visibles (union des alliés/groupe). Dérivé des positions LOGIQUES,
-  // pas du glissement → memo STABLE pendant la marche.
-  const visible = useMemo(
-    () => computeStateVisible({ scene, battle, party, partyPos, gameTime, lightLevel }),
+  // BROUILLARD DE GUERRE (cases visibles) + CHAMP DE LUMIÈRE par tuile en UN calcul (`sceneLightField`,
+  // potentiellement lourd, ne tourne qu'UNE fois par pas — la vue ET l'éclairage des sols le partagent).
+  // Dérivé des positions LOGIQUES, pas du glissement → memo STABLE pendant la marche.
+  const vl = useMemo(
+    () => (scene ? computeStateVisibleAndLight({ scene, battle, party, partyPos, gameTime, lightLevel }) : { visible: new Set<string>(), light: undefined, smoke: [] }),
     [scene, battle, party, partyPos, gameTime, lightLevel],
   );
-  // CHAMP DE LUMIÈRE par tuile (MÊME source que la vue/perception) → voile d'occlusion des sols iso,
-  // miroir du POV (`base × light`). Memo STABLE (positions LOGIQUES) : recalcul au pas/pivot, pas par frame.
-  const light = useMemo(
-    () => (scene ? sceneLightField({ scene, battle, party, partyPos, gameTime, lightLevel }).light : undefined),
-    [scene, battle, party, partyPos, gameTime, lightLevel],
-  );
+  const visible = vl.visible;
+  const light = vl.light;
   const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
   // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu).
   useEffect(() => {

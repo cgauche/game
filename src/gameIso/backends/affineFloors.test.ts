@@ -3,8 +3,6 @@ import { buildFloors } from '../builders/floors';
 import type { FloorEl } from '../builders/types';
 import { emptyScene, type Scene } from '../../state/scene';
 import { floorSvg, floorAccentsSvg, floorDepth } from './affineFloors';
-import { AMBIENT_FLOOR } from '../pov/camera';
-import type { LightField } from '../../state/vision';
 import { depth, diamondPath, tileCenter, type Dims } from '../iso';
 
 /**
@@ -58,53 +56,6 @@ describe('floorSvg — losange de base', () => {
     expect((svg.match(/<path /g) ?? []).length).toBe(2); // base + surcouche : 2 nœuds par tuile
     expect(floorSvg(elAt(s, 1, 1), dims, { zoom: 0.4 })).not.toContain('-g)');
     expect(floorSvg(elAt(s, 1, 1), { ...dims, view: 'top' })).toContain('-g)'); // le sol reste affine vu du dessus
-  });
-});
-
-describe('floorSvg — voile d’occlusion du champ de lumière (miroir POV base×light)', () => {
-  const constLight = (v: number): LightField => ({ at: () => v });
-  // Sur-chemins d'occlusion : un `<path … fill="rgba(0,0,0,α)"/>` (noir semi-transparent = ao()).
-  const occlPaths = (svg: string): string[] => svg.match(/<path [^>]*fill="rgba\(0,0,0,[^"]*\)"\s*\/>/g) ?? [];
-
-  it('PLEIN JOUR (light = 1 partout) : rendu BYTE-IDENTIQUE au sol sans lumière (aucun voile émis)', () => {
-    const s = emptyScene(4, 4);
-    for (const opts of [undefined, { zoom: 0.4 }] as const) {
-      const noLight = floorSvg(elAt(s, 1, 1), dims, opts);
-      const dayLight = floorSvg(elAt(s, 1, 1), dims, opts, constLight(1));
-      expect(dayLight).toBe(noLight); // 1 − max(1, floor) = 0 → skip < ε : zéro élément ajouté
-      expect(occlPaths(dayLight)).toHaveLength(0);
-    }
-  });
-
-  it('tuile OMBRÉE (light < 1) : un voile ao(1 − light) sur le MÊME losange, juste après le fill de base', () => {
-    const s = emptyScene(4, 4);
-    const L = 0.5;
-    const svg = floorSvg(elAt(s, 1, 1), dims, { zoom: 0.4 }, constLight(L)); // LOD 0 : base seule, pas d'appareillage
-    const d = diamondPath(1, 1, dims);
-    const alpha = 1 - L; // 0.5, au-dessus du plancher AMBIENT_FLOOR
-    expect(svg).toBe(
-      `<path d="${d}" fill="url(#g_grass)" stroke="rgba(0,0,0,0.16)"/>` +
-      `<path d="${d}" fill="rgba(0,0,0,${alpha})"/>`,
-    );
-    expect(occlPaths(svg)).toHaveLength(1);
-  });
-
-  it('lumière SOUS le plancher : l’alpha est CLAMPÉ à 1 − AMBIENT_FLOOR (jamais noir plein, comme le POV)', () => {
-    const s = emptyScene(4, 4);
-    const svg = floorSvg(elAt(s, 1, 1), dims, { zoom: 0.4 }, constLight(0)); // sol non éclairé
-    expect(svg).toContain(`fill="rgba(0,0,0,${1 - AMBIENT_FLOOR})"`);
-  });
-
-  it('appareillage (LOD ≥ 1) : le voile s’INTERCALE entre la base et la surcouche de joints', () => {
-    const s = emptyScene(4, 4);
-    s.layers[0].tiles = new Array(16).fill('pave');
-    const svg = floorSvg(elAt(s, 1, 1), dims, undefined, constLight(0.5));
-    const iBase = svg.indexOf('stroke="rgba(0,0,0,0.16)"'); // fill de base
-    const iOccl = svg.indexOf('fill="rgba(0,0,0,0.5)"'); // voile d'occlusion
-    const iCourses = svg.search(/fill="url\(#dt-/); // surcouche d'appareillage
-    expect(iBase).toBeGreaterThanOrEqual(0);
-    expect(iOccl).toBeGreaterThan(iBase);
-    expect(iCourses).toBeGreaterThan(iOccl); // joints PAR-DESSUS le voile (gardent leur teinte)
   });
 });
 

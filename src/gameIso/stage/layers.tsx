@@ -13,6 +13,7 @@ import { TW, TH, EDGE_H, Dims, tileCenter, depth, makeOccludes } from '../iso';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
 import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
 import { roofSvg, roofDepth } from '../backends/affineRoofs';
+import { AMBIANCE } from '../catalog/ambiance';
 import type { DetailOpts } from '../backends/affineDetail';
 import type { FloorEl, WallEl, RoofEl } from '../builders/types';
 import type { StageObj } from './objs';
@@ -20,6 +21,11 @@ import type { StageObj } from './objs';
 /** Opacité d'un tablier de SURPLOMB rendu AU-DESSUS de la zone active (FANTÔME) : on voit la silhouette
  *  du pont/de la loge sans qu'il masque le sol où l'on se tient. TUNABLE (ajusté à l'œil). */
 const OVERHANG_GHOST_OPACITY = 0.35;
+
+/** Pas de QUANTIFICATION de la luminosité par tuile (≈15 paliers) : on arrondit `light` à ce cran pour que
+ *  les tuiles voisines partagent la MÊME chaîne `brightness()` → coalescence sous un seul `<g filter>`
+ *  (CulledScene), pas un filtre GPU par case. */
+const LIGHT_STEP = 0.06;
 
 export interface LayerCtx {
   mode: string;
@@ -49,7 +55,10 @@ export function makeOccludesActor(scene: Scene | null, dims: Dims, ctx: LayerCtx
  *  semi-transparente au-dessus d'un combattant qui se tient EN DESSOUS — le TRI garde l'index de couche
  *  `z` (depth) ; la position ÉCRAN et « qui est plus haut » passent par la HAUTEUR MÉTRIQUE (`heightAt`).
  *  ACCENTS (LOD 2) : thunk PARESSEUX — l'expansion seedée n'a lieu qu'au rendu, APRÈS le culling écran
- *  (jamais dans le memo pleine-carte), puis reste en cache dans la closure. */
+ *  (jamais dans le memo pleine-carte), puis reste en cache dans la closure.
+ *  ÉCLAIRAGE par tuile (`light`, optionnel : absent en éditeur/QC) : posé comme fragment `brightness(L)`
+ *  (`dim`, GPU-composité par CulledScene) — miroir du `tint(base, light)` du POV, ZÉRO élément SVG en plus.
+ *  Quantifié (LIGHT_STEP) pour coalescer ; plein jour (`L ≥ 0.995`) = AUCUN `dim` (no-op byte, zéro filtre). */
 export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, ctx: LayerCtx, lod: number, detailOpts: DetailOpts, light?: LightField): StageObj[] {
   // Acteurs à révéler : en combat tous les combattants debout ; en exploration le groupe + figurants.
   const actors: { x: number; y: number; z: number }[] = [];
@@ -80,9 +89,13 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, ctx: 
     const ghost = !!el.states.ghost;
     const reveal = !ghost && coversActorBelow(x, y, z); // passerelle au-dessus d'un combattant → transparente
     const op = ghost ? (el.states.solidOverhang ? 1 : OVERHANG_GHOST_OPACITY) : reveal ? 0.22 : 1;
+    // ÉCLAIRAGE : `base × light` clampé au plancher partagé, arrondi au cran → chaîne stable coalescente.
+    const L = light ? Math.max(light.at(x, y, z), AMBIANCE.ambientFloor) : 1;
+    const qL = Math.round(L / LIGHT_STEP) * LIGHT_STEP;
+    const dim = L >= 0.995 ? undefined : `brightness(${qL.toFixed(2)})`; // plein jour = aucun filtre (no-op)
     let accCache: string | null = null;
     const acc = lod === 2 && !ghost ? () => (accCache ??= floorAccentsSvg(el, d, detailOpts)) : undefined;
-    return { d: floorDepth(el, d), x, y, z, ...(el.states.visible ? { vis: true } : {}), op, ...(acc ? { acc } : {}), el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d, detailOpts, light) }} /> };
+    return { d: floorDepth(el, d), x, y, z, ...(el.states.visible ? { vis: true } : {}), op, ...(dim ? { dim } : {}), ...(acc ? { acc } : {}), el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d, detailOpts) }} /> };
   });
 }
 

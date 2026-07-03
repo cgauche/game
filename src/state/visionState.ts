@@ -53,19 +53,16 @@ export function sceneLightField(s: VisionInput): { light: ReturnType<typeof comp
 let REVEAL_ALL = false;
 export const setRevealAll = (v: boolean): void => { REVEAL_ALL = v; };
 
-/** Ensemble des cases (`"x,y,z"`) actuellement visibles par le groupe : union des alliés vivants en
- *  combat, sinon depuis la position du groupe en exploration. PUR (dérivé de l'état). */
-export function computeStateVisible(s: VisionInput): Set<string> {
-  const scene = s.scene;
-  if (!scene) return new Set();
-  if (REVEAL_ALL) { // brouillard OFF (recette) : toutes les cases construites de tous les étages sont visibles
-    const all = new Set<string>();
-    const { w, h } = scene.dimensions;
-    for (const lvl of scene.layers) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) all.add(`${x},${y},${lvl.z}`);
-    return all;
-  }
+/** Champ de lumière PLAT (plein jour) : le repli pour REVEAL_ALL / `!scene`, où aucune occlusion iso n'a
+ *  de sens mais un consommateur attend un `LightField` valide. */
+const FLAT_LIGHT = { at: () => 1 };
+
+type StateLight = ReturnType<typeof sceneLightField>['light'];
+
+/** Cases visibles pour un champ de lumière DÉJÀ calculé (le corps commun de `computeStateVisible` et
+ *  `computeStateVisibleAndLight`) : union des alliés vivants en combat, sinon la position du groupe. PUR. */
+function visibleFrom(scene: Scene, s: VisionInput, light: StateLight, smoke: Pt[]): Set<string> {
   const baseR = baseSightTiles(scene, s.gameTime);
-  const { light, smoke } = sceneLightField(s);
   const viewers = [];
   if (s.battle) {
     for (const c of s.battle.combatants) {
@@ -84,6 +81,35 @@ export function computeStateVisible(s: VisionInput): Set<string> {
     viewers.push({ pos: s.partyPos, z: s.partyPos.z, radiusTiles: baseR, darkTiles: dark });
   }
   return computeVisible(scene, viewers, light, smoke);
+}
+
+/** Toutes les cases construites (tous les étages) — repli REVEAL_ALL (recette : brouillard OFF). */
+function allTiles(scene: Scene): Set<string> {
+  const all = new Set<string>();
+  const { w, h } = scene.dimensions;
+  for (const lvl of scene.layers) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) all.add(`${x},${y},${lvl.z}`);
+  return all;
+}
+
+/** Ensemble des cases (`"x,y,z"`) actuellement visibles par le groupe : union des alliés vivants en
+ *  combat, sinon depuis la position du groupe en exploration. PUR (dérivé de l'état). */
+export function computeStateVisible(s: VisionInput): Set<string> {
+  const scene = s.scene;
+  if (!scene) return new Set();
+  if (REVEAL_ALL) return allTiles(scene); // brouillard OFF (recette) : tout est visible, pas de lumière à calculer
+  const { light, smoke } = sceneLightField(s);
+  return visibleFrom(scene, s, light, smoke);
+}
+
+/** `computeStateVisible` + champ de LUMIÈRE en UN calcul : `sceneLightField` (potentiellement lourd) ne
+ *  tourne qu'UNE fois par pas (l'iso a besoin des deux — vue ET voile d'éclairage des sols). REVEAL_ALL /
+ *  `!scene` retournent un champ PLAT (plein jour) valide pour ne jamais casser le consommateur. */
+export function computeStateVisibleAndLight(s: VisionInput): { visible: Set<string>; light: StateLight; smoke: Pt[] } {
+  const scene = s.scene;
+  if (!scene) return { visible: new Set(), light: FLAT_LIGHT, smoke: [] };
+  if (REVEAL_ALL) return { visible: allTiles(scene), light: FLAT_LIGHT, smoke: [] };
+  const { light, smoke } = sceneLightField(s);
+  return { visible: visibleFrom(scene, s, light, smoke), light, smoke };
 }
 
 /** Cases qu'un combattant donné PERÇOIT (Ligne de Vue + lumière, vision nocturne incluse), avec le MÊME

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeStateVisible, recordExplored } from './visionState';
+import { computeStateVisible, computeStateVisibleAndLight, recordExplored } from './visionState';
 import { Scene, WallSeg } from './scene';
 import type { Combatant } from '../engine/types';
 
@@ -48,6 +48,23 @@ describe('computeStateVisible — combat (union des héros vivants)', () => {
     const battle = { combatants: [hero(0, 0), down] } as any;
     const vis = computeStateVisible({ scene: s, battle, party: [], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null });
     expect(vis.has('3,0,0')).toBe(false); // le seul à voir derrière le mur est à terre
+  });
+});
+
+describe('computeStateVisibleAndLight — vue + lumière en un seul calcul (mutualise sceneLightField)', () => {
+  it('le `visible` est IDENTIQUE à computeStateVisible pour la même entrée, + un champ de lumière utilisable', () => {
+    const s = scene(6, 1, [{ x: 2, y: 0, side: 'E' }]);
+    const input = { scene: s, battle: null, party: [hero(0, 0)], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null };
+    const only = computeStateVisible(input);
+    const both = computeStateVisibleAndLight(input);
+    expect([...both.visible].sort()).toEqual([...only].sort());
+    expect(typeof both.light.at(0, 0)).toBe('number'); // lumière exploitable (voile d'éclairage des sols)
+  });
+
+  it('scène absente : `visible` vide + lumière PLATE valide (jamais undefined)', () => {
+    const both = computeStateVisibleAndLight({ scene: null, battle: null, party: [], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null });
+    expect(both.visible.size).toBe(0);
+    expect(both.light.at(0, 0)).toBe(1);
   });
 });
 

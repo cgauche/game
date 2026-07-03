@@ -68,7 +68,9 @@ export function CulledScene({
   for (const o of shown) {
     const fogF = fogFilterFor(o, fog.explored);
     const lower = o.z !== undefined && o.z < activeZ;
-    const filt = [lower ? LOWER_FLOOR_CSS : null, fogF].filter(Boolean).join(' ');
+    // `o.dim` = éclairage par tuile (`brightness(L)`) fondu dans le MÊME <g filter> — quantifié → les
+    // tuiles de même luminosité coalescent (pas un filtre GPU par case).
+    const filt = [lower ? LOWER_FLOOR_CSS : null, fogF, o.dim].filter(Boolean).join(' ');
     if (filt) {
       if (runItems && runFilt !== filt) flush();
       if (!runItems) { runItems = []; runFilt = filt; }

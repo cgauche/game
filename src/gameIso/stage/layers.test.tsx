@@ -3,6 +3,8 @@ import { emptyScene } from '../../state/scene';
 import { buildFloors } from '../builders/floors';
 import { buildProps } from '../builders/props';
 import { buildWalls } from '../builders/walls';
+import type { LightField } from '../../state/vision';
+import { AMBIANCE } from '../catalog/ambiance';
 import type { Dims } from '../iso';
 import { floorLayerObjs, wallLayerObjs } from './layers';
 
@@ -72,5 +74,36 @@ describe('couches statiques du stage — vérités de VUE décorées au dessin',
     expect(objs).toHaveLength(1);
     expect(objs[0].op).toBe(0.4);
     expect(objs[0].vis).toBe(true); // sans set de visibilité : tout visible (builder)
+  });
+});
+
+describe('floorLayerObjs — éclairage par tuile via filtre CSS brightness (miroir POV base×light)', () => {
+  const constLight = (v: number): LightField => ({ at: () => v });
+
+  it('plein jour (light = 1) OU sans champ de lumière : AUCUN dim (no-op, zéro filtre)', () => {
+    const s = emptyScene(3, 3);
+    const noLight = floorLayerObjs(buildFloors(s), s, DIMS(s), EXPLO({ x: 0, y: 0 }), 0, OPTS);
+    const dayLight = floorLayerObjs(buildFloors(s), s, DIMS(s), EXPLO({ x: 0, y: 0 }), 0, OPTS, constLight(1));
+    for (const o of [...noLight, ...dayLight]) expect(o.dim).toBeUndefined();
+  });
+
+  it('tuile ombrée (light < 1) : dim = brightness(qL) QUANTIFIÉ au cran ~0.06', () => {
+    const s = emptyScene(3, 3);
+    const objs = floorLayerObjs(buildFloors(s), s, DIMS(s), EXPLO({ x: 0, y: 0 }), 0, OPTS, constLight(0.5));
+    for (const o of objs) expect(o.dim).toBe('brightness(0.48)'); // round(0.5/0.06)*0.06 = 8*0.06 = 0.48
+  });
+
+  it('lumière SOUS le plancher : clampée au plancher partagé AMBIANCE.ambientFloor (jamais noir plein)', () => {
+    const s = emptyScene(3, 3);
+    const objs = floorLayerObjs(buildFloors(s), s, DIMS(s), EXPLO({ x: 0, y: 0 }), 0, OPTS, constLight(0));
+    const floor = AMBIANCE.ambientFloor;
+    const qFloor = Math.round(floor / 0.06) * 0.06;
+    for (const o of objs) expect(o.dim).toBe(`brightness(${qFloor.toFixed(2)})`); // pas brightness(0.00)
+  });
+
+  it('coalescence : la MÊME luminosité produit une chaîne dim IDENTIQUE (tuiles regroupées sous 1 <g filter>)', () => {
+    const s = emptyScene(3, 3);
+    const objs = floorLayerObjs(buildFloors(s), s, DIMS(s), EXPLO({ x: 0, y: 0 }), 0, OPTS, constLight(0.62));
+    expect(new Set(objs.map((o) => o.dim))).toEqual(new Set(['brightness(0.60)'])); // une seule clé → un seul run
   });
 });
