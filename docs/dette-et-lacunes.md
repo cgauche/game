@@ -148,9 +148,16 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
     (niche : négociation Naïade) ; `rampant` : pas de capability `noRun` (interdire l'Action de Course exige un
     drapeau + gating dans le mouvement de combat — `combatFlow`, verrouillé par la session //) ; `salive-analgesique` :
     narratif hors-combat (morsure indolore sur cible endormie). RESTE (extensions de vocabulaire).
-- **Bestiaire fluvial (ch.13) — 4 créatures + rigs** : Anguille du Reik (serpentin), Sangsue Géante + variante
-  Arbres (amorphe), Naïade (bipède + « Forme de guerrière » = 4 aspects tournants) — EN COURS. Le Filet de
-  gobelin (`À distance (Filet)`, ZI) = attaque de créature à Empêtré au tir, à porter ICI (réutilise Immobilisante).
+- **Bestiaire fluvial (ch.13) — 4 statblocs** ✅ livrés (`creatures.json`, VERBATIM T2C, vérifiés stat par stat) :
+  Anguille du Reik, Sangsue géante + variante Arbres, Naïade. Le **Filet de gobelin** (ZI) est porté comme atout
+  `filet` (ranged/entraves, Portée 6, qualité Immobilisante → Empêtré ; le « 3 » de « À distance (Filet 3) » non
+  modélisé — ni Dégâts (+0) ni Indice, rien inventé). **RIGS restants** (apparence) : serpentin/amorphe/bipède.
+  **Forme de guerrière naïade** : socle FIDÈLE (`onCombatStart` → grantTrait Peur 2 + Armure 2) ; les **4 aspects
+  tournants** (Déluge/Eau calme/Rapides/Sinueuse, un choix par Round) = RÉDUCTION documentée (choix par tour = hook
+  d'IA de combat dans `combatFlow`/`ai`, verrouillé par la session // — laissés verbatim en `desc`).
+- **Brochet du Stir** : réconciliation ZI↔T2C **NON faite** (variante inter-livres = décision DIFFÉRÉE, cf.
+  [[game-collisions-variantes-livres-deferred]]) — l'entrée ZI curée (harvest « prédire l'avenir », 3 Points de
+  Chance, Queue agile) est PRÉSERVÉE. Un profil fluvial T2C distinct reste une décision de curation à trancher.
 - **Consommateur des Améliorations T2C à effet non-plat + déblayage manuel de barrage** (choix mid-combat) :
   RESTE (à brancher sur le scénario de combat fluvial). C'est le scénario jouable qui exercera tout ce qui précède.
 - ~~**Maladies transmises par l'eau (ch.14)**~~ ✅ **RÉSOLU** : la descente `15-commerce-fluvial` EXERCE

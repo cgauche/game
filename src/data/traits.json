@@ -673,6 +673,42 @@
     }
   },
   {
+    "id": "forme-de-guerriere-naiade",
+    "label": "Forme de guerrière naïade",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Les naïades peuvent se transformer en de redoutables créatures d'eau vive, personnification de la malice des rivières. Il s'agit d'une action libre qui confère les Traits Peur 2 et Armure 2. Ce dernier Trait représente davantage le fait que les armes traversent le corps aquatique de la naïade, plutôt qu'une armure physique.\n\nLorsqu'elles sont sous forme de guerrière, les naïades fluctuent énormément : d'immobiles, elles se transforment en une masse d'écume agressive et enragée. À chaque Round, une naïade peut choisir l'un des aspects suivants, qui change toujours à chaque nouveau Round.\n\n**Déluge :** le corps aqueux de la naïade gonfle et ondule, comme s'il allait éclater. La naïade gagne +1 DR pour tout test impliquant la Force ou l'Endurance, et les dégâts de son Trait Arme passent à +10.\n\n**Eau calme :** la chair aqueuse de la naïade s'apaise et adopte un aspect presque lisse, tandis qu'elle devient froide et perd sa passion. La naïade gagne le Trait Immunité Psychologique.\n\n**Rapides :** de l'écume blanche fouette la surface de la naïade qui se transforme en un tourbillon d'écume. Le Mouvement de la naïade passe à 10 et elle gagne +1 DR lorsqu'elle utilise son score d'Agilité pour esquiver les attaques.\n\n**Sinueuse :** la naïade se déplace de manière imprévisible de gauche à droite, ce qui rend ses mouvements très difficiles à prévoir. La naïade gagne +2 DR pour tout lancer impliquant sa CC.",
+    "source": {
+      "book": "T2C",
+      "page": 87
+    },
+    "effects": [
+      {
+        "trigger": "onCombatStart",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "grantTrait",
+                "traitId": "peur",
+                "indice": 2
+              },
+              {
+                "op": "grantTrait",
+                "traitId": "armure",
+                "indice": 2
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
     "id": "frenesie",
     "label": "Frénésie",
     "prefix": null,

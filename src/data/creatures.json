@@ -62528,5 +62528,333 @@
       "species": "humain",
       "tenue": "marin"
     }
+  },
+  {
+    "id": "anguille-du-reik",
+    "label": "Anguille du Reik",
+    "title": null,
+    "folder": "Bestiaire fluvial",
+    "char": {
+      "M": 6,
+      "CC": 55,
+      "CT": null,
+      "F": 65,
+      "E": 40,
+      "I": 30,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 5,
+      "FM": 45,
+      "Soc": null,
+      "B": 36
+    },
+    "traits": [
+      {
+        "id": "a-sang-froid"
+      },
+      {
+        "id": "aquatique"
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "constricteur"
+      },
+      {
+        "id": "limicole"
+      },
+      {
+        "id": "taille",
+        "arg": "Grande"
+      },
+      {
+        "id": "vision-nocturne"
+      },
+      {
+        "id": "arme",
+        "value": 10,
+        "arg": "Dents aiguisées comme des rasoirs",
+        "natural": true
+      },
+      {
+        "id": "morsure",
+        "value": 8
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Affamé"
+      },
+      {
+        "key": "Taille",
+        "arg": "Énorme"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "L'anguille du Reik se trouve dans le Reik et ses nombreux affluents. Elle atteint généralement une longueur de 3 à 5 mètres et possède une crête sur toute la longueur de son dos vert-gris. Certaines peuvent atteindre des tailles vraiment terrifiantes, et il existe des récits, à peine exagérés, d'anguilles du Reik avalant des barques entières.\n\nLes Anguilles du Reik de Taille Énorme étoufferont généralement leurs victimes (**WFJDR**, p. 342) avant de tenter de les entraîner sous l'eau pour les noyer.",
+    "source": {
+      "book": "T2C",
+      "page": 85
+    },
+    "appearance": {
+      "species": "serpent"
+    }
+  },
+  {
+    "id": "sangsue-geante",
+    "label": "Sangsue géante",
+    "title": null,
+    "folder": "Bestiaire fluvial",
+    "char": {
+      "M": 6,
+      "CC": 45,
+      "CT": null,
+      "F": 20,
+      "E": 20,
+      "I": 30,
+      "Ag": 10,
+      "Dex": null,
+      "Int": null,
+      "FM": 14,
+      "Soc": null,
+      "B": 5
+    },
+    "traits": [
+      {
+        "id": "affame"
+      },
+      {
+        "id": "aquatique"
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "effraye",
+        "arg": "Sel"
+      },
+      {
+        "id": "immunite-psychologique"
+      },
+      {
+        "id": "perturbant"
+      },
+      {
+        "id": "rampant"
+      },
+      {
+        "id": "s-accrocher-pour-se-nourrir"
+      },
+      {
+        "id": "salive-analgesique"
+      },
+      {
+        "id": "salive-anticoagulante"
+      },
+      {
+        "id": "taille",
+        "arg": "Très Petite"
+      },
+      {
+        "id": "arme",
+        "value": 3,
+        "arg": "Dents",
+        "natural": true
+      },
+      {
+        "id": "morsure",
+        "value": 4
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Furtif"
+      },
+      {
+        "key": "Hallucinogène"
+      },
+      {
+        "key": "Increvable"
+      },
+      {
+        "key": "Taille",
+        "arg": "Petite-Moyenne"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les sangsues géantes chassent dans les marais et près des rivières. Elles atteignent généralement une longueur de 30 à 90 cm. Elles peuvent détecter les vibrations, la chaleur et la lumière grâce à des organes sensoriels situés sur leur tête. Ce sont des prédateurs agressifs lorsqu'elles ne sont pas rassasiées.\n\nLa salive analgésique d'une sangsue géante peut être récoltée (avec précaution) sur un spécimen vivant. Transformée en Cataplasme (voir page 10), elle accorde +1 DR à tout Test de Guérison effectué pour traiter une blessure critique.",
+    "source": {
+      "book": "T2C",
+      "page": 86
+    },
+    "appearance": {
+      "species": "sangsue"
+    }
+  },
+  {
+    "id": "sangsue-des-arbres",
+    "label": "Sangsue des arbres",
+    "title": null,
+    "folder": "Bestiaire fluvial",
+    "char": {
+      "M": 6,
+      "CC": 45,
+      "CT": null,
+      "F": 20,
+      "E": 20,
+      "I": 30,
+      "Ag": 10,
+      "Dex": null,
+      "Int": null,
+      "FM": 14,
+      "Soc": null,
+      "B": 5
+    },
+    "traits": [
+      {
+        "id": "affame"
+      },
+      {
+        "id": "amphibie"
+      },
+      {
+        "id": "arboricole"
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "effraye",
+        "arg": "Sel"
+      },
+      {
+        "id": "immunite-psychologique"
+      },
+      {
+        "id": "perturbant"
+      },
+      {
+        "id": "rampant"
+      },
+      {
+        "id": "s-accrocher-pour-se-nourrir"
+      },
+      {
+        "id": "salive-analgesique"
+      },
+      {
+        "id": "salive-anticoagulante"
+      },
+      {
+        "id": "taille",
+        "arg": "Très Petite"
+      },
+      {
+        "id": "arme",
+        "value": 3,
+        "arg": "Dents",
+        "natural": true
+      },
+      {
+        "id": "morsure",
+        "value": 4
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Furtif"
+      },
+      {
+        "key": "Hallucinogène"
+      },
+      {
+        "key": "Increvable"
+      },
+      {
+        "key": "Taille",
+        "arg": "Petite-Moyenne"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Ces créatures possèdent les Traits Amphibie et Arboricole plutôt qu'Aquatique. Elles se dissimulent parmi les vignes et les feuillages suspendus des zones humides, attendant de tomber sur une source de chaleur corporelle qui passe par là.",
+    "source": {
+      "book": "T2C",
+      "page": 86
+    },
+    "appearance": {
+      "species": "sangsue"
+    }
+  },
+  {
+    "id": "naiade",
+    "label": "Naïade",
+    "title": null,
+    "folder": "Bestiaire fluvial",
+    "char": {
+      "M": 8,
+      "CC": 45,
+      "CT": 30,
+      "F": 40,
+      "E": 35,
+      "I": 40,
+      "Ag": 65,
+      "Dex": 40,
+      "Int": 60,
+      "FM": 45,
+      "Soc": 60,
+      "B": 14
+    },
+    "traits": [
+      {
+        "id": "amphibie"
+      },
+      {
+        "id": "arme",
+        "value": 8,
+        "natural": true
+      },
+      {
+        "id": "capricieux"
+      },
+      {
+        "id": "forme-de-guerriere-naiade"
+      },
+      {
+        "id": "vision-nocturne"
+      }
+    ],
+    "optionals": [
+      {
+        "key": "Étreinte glaciale"
+      },
+      {
+        "key": "Magique"
+      },
+      {
+        "key": "Rusé"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les naïades sont des esprits de la nature, belles et insaisissables, qui habitent certaines rivières du Vieux Monde. Elles se présentent généralement sous la forme de femmes élancées, à l'allure elfique, au teint pâle et bleuté, aux cheveux et aux yeux blancs ou bleus, mais elles sont naturellement métamorphes et peuvent prendre la forme de guerrières terrifiantes. Les naïades préfèrent l'isolement et défendent férocement leur territoire contre les menaces perçues. Ce sont des créatures impénétrables aux passions profondes qui se déchaînent sans prévenir.",
+    "source": {
+      "book": "T2C",
+      "page": 87
+    },
+    "appearance": {
+      "species": "humain"
+    }
   }
 ]

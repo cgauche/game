@@ -1362,6 +1362,33 @@
     "shape": "lasso"
   },
   {
+    "id": "filet",
+    "label": "Filet",
+    "type": "ranged",
+    "subType": "entraves",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "range": 6,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "flat": 0
+    },
+    "qualities": [
+      {
+        "id": "immobilisante"
+      }
+    ],
+    "desc": "Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis afin que leurs congénères les passent à tabac et les torturent plus tard. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).",
+    "price": null,
+    "source": {
+      "book": "ZI",
+      "page": 31
+    },
+    "shape": "filet_leste"
+  },
+  {
     "id": "bombe",
     "label": "Bombe",
     "type": "ranged",
