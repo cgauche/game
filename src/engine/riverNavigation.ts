@@ -26,6 +26,7 @@
  *  - **Dangers** (l.119-166) : Débris, Barrage, Rochers, Eaux peu profondes — cf. `river-perils.json`.
  */
 import riverNavJson from '../data/river-navigation.json';
+import riverCriticalsJson from '../data/river-criticals.json';
 import riverPerilsJson from '../data/river-perils.json';
 import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
@@ -72,7 +73,6 @@ const DATA = riverNavJson as unknown as {
   rowingAgility: { difficulty: Difficulty; failSpeedPct: number; spectacularSL: number; spectacularSpeedFactor: number };
   capsize: { removeSailDifficulty: Difficulty; rightDifficulty: Difficulty; rightCumulativePenalty: number };
   outOfControl: { navPenalty: number };
-  criticals: Record<string, CritDef>;
   echouage: { hullDamage: number };
   temporaryRepair: { difficulty: Difficulty; charpentierPenalty: number; woundsPerRepair: string };
 };
@@ -226,9 +226,30 @@ export function holeSinkMinutes(hullEndurance: number): number {
 
 // ── Critiques de bateau (l.72-94) ────────────────────────────────────────────────────────────────
 
-/** Définition d'un Coup Critique de bateau par localisation (l.72-94). PUR. */
+type RiverCritEntry = {
+  ops?: { op: string; name?: string }[];
+  crewTest?: { skillId?: string; onFail: { op: string; name?: string; amount?: number }[] };
+  shrapnel?: number;
+};
+const RIVER_CRIT_TABLES = riverCriticalsJson.tables as Record<string, RiverCritEntry[]>;
+const RIVER_SPLINTER = (riverCriticalsJson.shrapnelHit as { op: string; amount?: number }[]).find((o) => o.op === 'wounds')?.amount;
+
+/** Vue « voyage » d'un Coup Critique de bateau fluvial (l.72-94), DÉRIVÉE de l'unique source
+ *  `river-criticals.json` (la même que le combat lit via `RIVER_CRIT_SET`) — un seul fait RAW, deux vues.
+ *  Chaque table T2C n'a qu'une entrée (effet déterministe par Localisation, pas de sous-jet d10). PUR. */
 export function riverCritical(location: string): CritDef | undefined {
-  return DATA.criticals[location];
+  const e = RIVER_CRIT_TABLES[location]?.[0];
+  if (!e) return undefined;
+  const hasCond = (name: string) => e.ops?.some((o) => o.op === 'condition' && o.name === name) ?? false;
+  const splinter = e.crewTest?.onFail?.find((o) => o.op === 'wounds')?.amount ?? (e.shrapnel ? RIVER_SPLINTER : undefined);
+  return {
+    splinterDamage: splinter,
+    initiativeTest: e.crewTest?.skillId === 'initiative' || undefined,
+    conditionId: e.crewTest?.onFail?.some((o) => o.op === 'condition' && o.name === 'empetre') ? 'empetre' : undefined,
+    driftUntilRepair: hasCond('derive') || undefined,
+    navDifficulty: hasCond('gouvernail-brise') ? 'tresDifficile' : undefined,
+    hole: hasCond('voie-d-eau') || undefined,
+  };
 }
 
 // ── Dangers (l.119-166) ──────────────────────────────────────────────────────────────────────────

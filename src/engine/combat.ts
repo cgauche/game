@@ -51,13 +51,20 @@ export function reverseRoll(r: number): number {
 
 /** Gréement d'un bateau — choisit la colonne de Localisation (MDG ch.13). */
 export type ShipRig = 'avirons' | 'voile' | 'mixte';
-/** Localisation d'un coup sur un bateau (MDG ch.13) — DISTINCTE de la `HitLocation` humaine. */
-export type ShipLocation = 'equipage' | 'avirons' | 'greement' | 'coque' | 'equipements' | 'cargaison';
+/** Localisation d'un coup sur un bateau — DISTINCTE de la `HitLocation` humaine. `equipements`/`cargaison`
+ *  sont navales (MDG ch.13) ; `gouvernail`/`superstructure` sont fluviales (T2C ch.5). `avirons` couvre
+ *  aussi les « Rames » du bateau fluvial (mêmes avirons). */
+export type ShipLocation = 'equipage' | 'avirons' | 'greement' | 'coque' | 'equipements' | 'cargaison' | 'gouvernail' | 'superstructure';
 
 interface BodyLocEntry { min: number; max: number; loc: HitLocation }
 interface ShipLocEntry { min: number; max: number; avirons: ShipLocation; voile: ShipLocation; mixte: ShipLocation }
 const BODY_SHAPES = (locJson as { personnage: { shapes: Record<string, BodyLocEntry[]> } }).personnage.shapes;
-const SHIP_LOC = (locJson as { navire: { entries: ShipLocEntry[] } }).navire.entries;
+const SHIP_LOC_ALL = locJson as unknown as { navire: { entries: ShipLocEntry[] }; 'navire-fluvial': { entries: ShipLocEntry[] } };
+/** Tables de Localisation des coups au bateau, par id : `navire` (MDG ch.13) / `navire-fluvial` (T2C ch.5). */
+const SHIP_LOC_TABLES: Record<string, ShipLocEntry[]> = {
+  navire: SHIP_LOC_ALL.navire.entries,
+  'navire-fluvial': SHIP_LOC_ALL['navire-fluvial'].entries,
+};
 
 /** Tableau de Localisation humanoïde (LDB p.159) — un dé déjà INVERSÉ (1..100). */
 export function hitLocation(reversed: number): HitLocation {
@@ -73,9 +80,11 @@ export function hitLocationByShape(reversed: number, shape: BodyShape = 'humanoi
   return findTableEntry(BODY_SHAPES[shape] ?? BODY_SHAPES.humanoide, reversed).loc;
 }
 
-/** Localisation d'un coup (d100) sur un BATEAU du gréement donné (MDG ch.13) — `ShipLocation`. */
-export function shipHitLocation(rig: ShipRig, roll: number): ShipLocation {
-  return findTableEntry(SHIP_LOC, roll)[rig];
+/** Localisation d'un coup (d100) sur un BATEAU du gréement donné — `ShipLocation`. `tableId` choisit la
+ *  table : `navire` (MDG ch.13, défaut) ou `navire-fluvial` (T2C ch.5). Table inconnue → `navire`. */
+export function shipHitLocation(rig: ShipRig, roll: number, tableId: string = 'navire'): ShipLocation {
+  const table = SHIP_LOC_TABLES[tableId] ?? SHIP_LOC_TABLES.navire;
+  return findTableEntry(table, roll)[rig];
 }
 
 /** Étiquette FR d'une localisation pour une forme de corps (LDB p.312). Forme inconnue/absente de

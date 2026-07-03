@@ -20,7 +20,11 @@ import { rollCritical, type CriticalResolved } from './critical';
 import { rollTest } from './tests';
 import { testValue } from './skills';
 import type { Combatant } from './types';
-import { SHIP_CRITICAL_TABLES, SHRAPNEL_HIT, type ShipCritKey, type ShipCrewTest } from '../data/shipCriticals';
+import { SHIP_CRIT_SET, shipCritSet, type ShipCritSet, type ShipCritKey, type ShipCrewTest } from '../data/shipCriticals';
+
+/** Réfs de tables data-driven d'une coque (MDG naval par défaut / T2C fluvial) — `hull.locationTable` (colonne
+ *  de Localisation) + `hull.criticalTable` (jeu de Critiques). Absentes → jeu naval MDG (comportement historique). */
+export interface HullCritOpts { locationTable?: string | null; criticalTable?: string | null }
 
 export interface ShipCriticalResolved {
   location: ShipCritKey;
@@ -31,8 +35,8 @@ export interface ShipCriticalResolved {
   roll: number;
   /** Effets « État » à appliquer AU NAVIRE (En flammes / Voie d'eau) — langue unique `GameOp`. */
   ops: GameOp[];
-  /** Éclats (Indice) : `shrapnel` membres d'équipage subissent l'effet data `SHRAPNEL_HIT` (9 Dégâts, MDG
-   *  ch.13) — appliqué par la boucle de combat. Seul l'Indice (le NOMBRE de marins) est per-entry. */
+  /** Éclats (Indice) : `shrapnel` membres d'équipage subissent l'effet Éclats du jeu (`set.shrapnelHit` — 9
+   *  Dégâts en mer MDG, +5 en fleuve T2C) — appliqué par la boucle de combat. Seul l'Indice est per-entry. */
   shrapnel: number;
   /** Critiques de Coque SUPPLÉMENTAIRES (déjà tirés depuis `hullCrits`, ex. « 1d10 » → un nombre). */
   extraHullCrits: number;
@@ -45,9 +49,14 @@ export interface ShipCriticalResolved {
 
 /** Résout un Critique de navire sur la `location` touchée (Localisation déterminée en amont via
  *  `shipHitLocation` ; l'Équipage, lui, passe par `rollCritical`). `forcedRoll` = d10 imposé (tests). PUR. */
-export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, forcedRoll?: number): ShipCriticalResolved {
+export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, forcedRoll?: number, set: ShipCritSet = SHIP_CRIT_SET): ShipCriticalResolved {
   const roll = forcedRoll ?? d10(rng);
-  const entry = findTableEntry(SHIP_CRITICAL_TABLES[location], roll);
+  const table = set.tables[location];
+  if (!table) {
+    // La table de Localisation appariée à ce jeu ne produit jamais une Localisation absente du jeu ; garde-fou.
+    return { location, id: 'aucun', name: '—', roll, ops: [], shrapnel: 0, extraHullCrits: 0, note: '', log: `Aucune table de Critique pour la Localisation « ${location} ».` };
+  }
+  const entry = findTableEntry(table, roll);
   // Effets « État » : AUTHORÉS en donnée (`entry.ops`, GameOp) — le résolveur n'a plus aucun couplage nom-d'État.
   const ops: GameOp[] = entry.ops ?? [];
   const extraHullCrits = entry.hullCrits ? rollDice(parseDice(entry.hullCrits)!, rng) : 0;
@@ -83,11 +92,12 @@ export interface ShipCriticalHit {
  * l'équipage exposé). PUR — `forcedLocRoll`/`forcedCritRoll` figent les d100/d10 pour les tests.
  */
 export function resolveShipCriticalHit(
-  rig: ShipRig, rng: RNG = defaultRNG, forcedLocRoll?: number, forcedCritRoll?: number,
+  rig: ShipRig, rng: RNG = defaultRNG, forcedLocRoll?: number, forcedCritRoll?: number, opts?: HullCritOpts,
 ): ShipCriticalHit {
-  const location = shipHitLocation(rig, forcedLocRoll ?? d100(rng));
+  const set = shipCritSet(opts?.criticalTable);
+  const location = shipHitLocation(rig, forcedLocRoll ?? d100(rng), opts?.locationTable ?? 'navire');
   if (location === 'equipage') return { location, crewHit: true };
-  return { location, crewHit: false, crit: rollShipCritical(location, rng, forcedCritRoll) };
+  return { location, crewHit: false, crit: rollShipCritical(location, rng, forcedCritRoll, set) };
 }
 
 /** Membres d'équipage EXPOSÉS (vivants, conscients) pouvant encaisser une touche (Équipage / Éclats). PUR. */
@@ -112,24 +122,36 @@ export interface HullCriticalOutcome {
   lines: string[];
 }
 
-/**
- * « Canon détaché » (MDG ch.13 l.763-764) : « Les cordages fixant l'un des canons se rompent… L'équipage du
- * canon doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir un coup infligeant 12 Dégâts. »
- * Chaque servant EXPOSÉ du poste tiré au sort encourt `crewTest` (compétence + difficulté en DONNÉE) ; un échec
- * applique `crewTest.onFail` (GameOp — ex. 12 Dégâts). PUR (mute les marins touchés, RNG injecté). `[]` si la
- * coque n'a aucun poste. Le canon RESTE à bord (≠ « Canon perdu », qui passe par l'op `removeShipPoste`).
- */
-export function detachPosteCrewHit(hull: Combatant, crew: Combatant[], crewTest: ShipCrewTest, rng: RNG = defaultRNG): { crewId: string }[] {
+/** Équipage EXPOSÉ d'un poste tiré au sort (MDG « Canon détaché »). PUR. `[]` si la coque n'a aucun poste. */
+function posteCrew(hull: Combatant, crew: Combatant[], rng: RNG): Combatant[] {
   const postes = hull.postes;
   if (!postes?.length) return [];
   const poste = postes[rng.int(0, postes.length - 1)];
+  return (poste.crewIds ?? [])
+    .map((id) => crew.find((c) => c.id === id))
+    .filter((c): c is Combatant => !!c && !c.dead && (c.wounds?.current ?? 0) > 0);
+}
+
+/**
+ * Coup à l'ÉQUIPAGE consécutif à un Critique de coque, data-driven (`ShipCrewTest`) :
+ *  - `crewTarget` : `poste` (équipage d'un poste tiré au sort — MDG « Canon détaché » ch.13 l.763-764, défaut)
+ *    ou `deck` (toute personne EXPOSÉE sur le pont — T2C gréement/superstructure « Toute personne présente sur
+ *    le pont doit faire un Test… ») ;
+ *  - `skillId`/`difficulty` PRÉSENTS → chaque cible encourt le Test ; un échec applique `crewTest.onFail` (GameOp) ;
+ *  - `skillId`/`difficulty` ABSENTS → `onFail` s'applique AUTOMATIQUEMENT (T2C « les échardes infligent +5 Dégâts
+ *    aux rameurs », sans Test).
+ * PUR (mute les marins touchés via `applyOps`, RNG injecté).
+ */
+export function applyCrewHit(hull: Combatant, crew: Combatant[], crewTest: ShipCrewTest, rng: RNG = defaultRNG): { crewId: string }[] {
+  const victims = crewTest.crewTarget === 'deck' ? exposedCrew(crew) : posteCrew(hull, crew, rng);
   const hits: { crewId: string }[] = [];
-  for (const id of poste.crewIds ?? []) {
-    const sailor = crew.find((c) => c.id === id);
-    if (!sailor || sailor.dead || (sailor.wounds?.current ?? 0) <= 0) continue;
-    if (!rollTest(testValue(sailor, crewTest.skillId), crewTest.difficulty, rng).success) {
+  for (const sailor of victims) {
+    const fails = crewTest.skillId && crewTest.difficulty
+      ? !rollTest(testValue(sailor, crewTest.skillId), crewTest.difficulty, rng).success
+      : true; // pas de Test → dégâts automatiques (T2C rames)
+    if (fails) {
       applyOps(sailor, crewTest.onFail, { rng });
-      hits.push({ crewId: id });
+      hits.push({ crewId: sailor.id });
     }
   }
   return hits;
@@ -145,9 +167,10 @@ export function detachPosteCrewHit(hull: Combatant, crew: Combatant[], crewTest:
  *    autant de marins exposés ; les Critiques de Coque supplémentaires (1d10…) sont résolus sur la coque.
  */
 export function applyHullCritical(
-  hull: Combatant, crew: Combatant[], rig: ShipRig, rng: RNG = defaultRNG, forcedLocRoll?: number, forcedCritRoll?: number,
+  hull: Combatant, crew: Combatant[], rig: ShipRig, rng: RNG = defaultRNG, forcedLocRoll?: number, forcedCritRoll?: number, opts?: HullCritOpts,
 ): HullCriticalOutcome {
-  const hit = resolveShipCriticalHit(rig, rng, forcedLocRoll, forcedCritRoll);
+  const set = shipCritSet(opts?.criticalTable);
+  const hit = resolveShipCriticalHit(rig, rng, forcedLocRoll, forcedCritRoll, opts);
   const lines: string[] = [];
   const exposed = exposedCrew(crew);
 
@@ -171,23 +194,24 @@ export function applyHullCritical(
   // `removeShipPoste`, qui démancipe le chef via `crew`). On capte leurs lignes de journal.
   lines.push(...applyOps(hull, crit.ops, { rng, crew }));
 
-  // « Canon détaché » (MDG ch.13 l.763-764) : l'équipage du poste encourt le Test data-driven `crewTest`
-  // (compétence/difficulté/`onFail` en donnée — plus aucune valeur en dur). Le canon reste à bord.
+  // Coup à l'équipage consécutif au Critique (`crewTest` data-driven) : poste tiré au sort (MDG « Canon
+  // détaché », Test) ou toute personne EXPOSÉE sur le pont (T2C gréement/superstructure, Test — ou rames,
+  // automatique). Le canon reste à bord (≠ « Canon perdu », op `removeShipPoste`).
   let detachedPoste: { hits: { crewId: string }[] } | undefined;
   if (crit.crewTest) {
-    const hits = detachPosteCrewHit(hull, crew, crit.crewTest, rng);
+    const hits = applyCrewHit(hull, crew, crit.crewTest, rng);
     detachedPoste = { hits };
-    if (hits.length) lines.push(`Canon détaché : ${hits.length} servant(s) ratent le Test et encaissent le coup.`);
+    if (hits.length) lines.push(`${hits.length} membre(s) d'équipage encaisse(nt) le Critique (${crit.name}).`);
   }
 
-  // Éclats → effet data `SHRAPNEL_HIT` (op `wounds`, MDG ch.13) à autant de marins exposés que l'Indice
-  // (plafonné au nombre de marins). L'op JOURNALISE elle-même le Dégât réel (mitigé BE/PA) → on capte ses
-  // lignes (comme les ops de coque ci-dessus), aucun littéral ni réintrospection de la valeur.
+  // Éclats → effet data `set.shrapnelHit` (op `wounds` : 9 Dégâts en mer MDG / +5 en fleuve T2C) à autant de
+  // marins exposés que l'Indice (plafonné au nombre de marins). L'op JOURNALISE elle-même le Dégât réel
+  // (mitigé BE/PA) → on capte ses lignes (comme les ops de coque ci-dessus), aucun littéral ni réintrospection.
   const shrapnel: { crewId: string }[] = [];
   const shrapnelLines: string[] = [];
   for (let i = 0; i < crit.shrapnel && i < exposed.length; i++) {
     const sailor = exposed[i];
-    shrapnelLines.push(...applyOps(sailor, SHRAPNEL_HIT, { rng }));
+    shrapnelLines.push(...applyOps(sailor, set.shrapnelHit, { rng }));
     shrapnel.push({ crewId: sailor.id });
   }
   if (shrapnel.length) {

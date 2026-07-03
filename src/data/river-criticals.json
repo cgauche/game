@@ -1,0 +1,134 @@
+{
+  "id": "river-criticals",
+  "label": "Coups Critiques sur un bateau fluvial",
+  "source": {
+    "book": "T2C",
+    "page": 29
+  },
+  "shrapnelHit": [
+    {
+      "op": "wounds",
+      "amount": 5,
+      "ignoreTB": false,
+      "ignoreAP": false
+    }
+  ],
+  "tables": {
+    "greement": [
+      {
+        "min": 1,
+        "max": 10,
+        "id": "greement-fluvial",
+        "name": "Gréement",
+        "ops": [
+          {
+            "op": "condition",
+            "name": "derive",
+            "value": 1
+          }
+        ],
+        "crewTest": {
+          "skillId": "initiative",
+          "difficulty": "intermediaire",
+          "crewTarget": "deck",
+          "onFail": [
+            {
+              "op": "wounds",
+              "amount": 5,
+              "ignoreTB": false,
+              "ignoreAP": false
+            },
+            {
+              "op": "condition",
+              "name": "empetre",
+              "value": 1
+            }
+          ]
+        },
+        "note": "La voile lâche et entraîne avec elle cordes et palans. Toute personne présente sur le pont doit faire un Test d'Initiative ou subir +5 Dégâts, et gagner un État *Empêtré*. Tant que le gréement n'est pas réparé, le bateau ne peut que se laisser dériver."
+      }
+    ],
+    "avirons": [
+      {
+        "min": 1,
+        "max": 10,
+        "id": "rames-fluvial",
+        "name": "Rames",
+        "ops": [
+          {
+            "op": "condition",
+            "name": "derive",
+            "value": 1
+          }
+        ],
+        "crewTest": {
+          "crewTarget": "deck",
+          "onFail": [
+            {
+              "op": "wounds",
+              "amount": 5,
+              "ignoreTB": false,
+              "ignoreAP": false
+            }
+          ]
+        },
+        "note": "Les rames volent en éclat, et les échardes infligent +5 Dégâts aux rameurs. Tant que les rames ne sont pas remplacées, le bateau ne peut que se laisser dériver. Ou alors, un coup critique aux rames n'en détruit qu'une seule, selon la direction de l'attaque. Quelques Rounds sont nécessaires pour y parvenir, mais avec un Test de **Métier (Construction de bateaux** ou **Charpentier) Complexe (–10)**, un Personnage peut utiliser la rame cassée comme une godille improvisée, et la placer à la poupe du bateau pour le diriger et le faire avancer à 50 % de sa vitesse normale. Diriger un bateau grâce à une godille nécessite un Test de **Navigation Intermédiaire (+0)**."
+      }
+    ],
+    "gouvernail": [
+      {
+        "min": 1,
+        "max": 10,
+        "id": "gouvernail-fluvial",
+        "name": "Gouvernail",
+        "ops": [
+          {
+            "op": "condition",
+            "name": "gouvernail-brise",
+            "value": 1
+          }
+        ],
+        "shrapnel": 1,
+        "note": "Le gouvernail vole en éclat, et les échardes infligent +5 Dégâts au timonier. Tant qu'il n'est pas réparé, tous les Tests de **Navigation** pour diriger le bateau sont **Très Difficiles (–30)**."
+      }
+    ],
+    "coque": [
+      {
+        "min": 1,
+        "max": 10,
+        "id": "coque-fluvial",
+        "name": "Coque",
+        "ops": [
+          {
+            "op": "condition",
+            "name": "voie-d-eau",
+            "value": 1
+          }
+        ],
+        "note": "Il y a un trou dans le bateau, qui commence à prendre l'eau. Il coule en un nombre de minutes égal à son Endurance (voir *Il y a un trou*, plus bas). S'il y a des marchandises à bord, l'eau peut les endommager, voire les détruire."
+      }
+    ],
+    "superstructure": [
+      {
+        "min": 1,
+        "max": 10,
+        "id": "superstructure-fluvial",
+        "name": "Superstructure",
+        "crewTest": {
+          "skillId": "initiative",
+          "difficulty": "intermediaire",
+          "crewTarget": "deck",
+          "onFail": [
+            {
+              "op": "wounds",
+              "amount": 5,
+              "ignoreTB": false,
+              "ignoreAP": false
+            }
+          ]
+        },
+        "note": "Si le bateau dispose d'une cale, et que cette dernière est touchée, tous les Personnages qui s'y trouvent doivent faire un Test d'**Initiative** ou subir +5 Dégâts à cause des éclats d'échardes. À part ça, le bateau n'est pas affecté."
+      }
+    ]
+  }
+}

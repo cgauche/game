@@ -851,6 +851,24 @@
     "desc": "L'Inondation a atteint l'Endurance du navire : le vaisseau COULE (MDG ch.13)."
   },
   {
+    "id": "derive",
+    "label": "Dérive",
+    "source": {
+      "book": "T2C",
+      "page": 29
+    },
+    "desc": "Le gréement ou les rames sont hors d'usage (Critique de bateau fluvial, T2C ch.5) : tant qu'ils ne sont pas réparés ou remplacés, le bateau ne peut que se laisser dériver."
+  },
+  {
+    "id": "gouvernail-brise",
+    "label": "Gouvernail brisé",
+    "source": {
+      "book": "T2C",
+      "page": 29
+    },
+    "desc": "Le gouvernail a volé en éclat (Critique de bateau fluvial, T2C ch.5) : tant qu'il n'est pas réparé, tous les Tests de Navigation pour diriger le bateau sont Très Difficiles (–30)."
+  },
+  {
     "id": "digere",
     "label": "Digéré",
     "source": {

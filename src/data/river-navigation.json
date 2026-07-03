@@ -133,17 +133,6 @@
   "outOfControl": {
     "navPenalty": -20
   },
-  "criticals": {
-    "greement": {
-      "splinterDamage": 5,
-      "initiativeTest": true,
-      "conditionId": "empetre",
-      "driftUntilRepair": true
-    },
-    "coque": {
-      "hole": true
-    }
-  },
   "echouage": {
     "hullDamage": 12
   },

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detachPosteCrewHit } from './shipCritical';
+import { applyCrewHit } from './shipCritical';
 import { applyOps } from './ops';
 import type { Combatant, ShipPoste } from './types';
 import type { ShipCrewTest } from '../data/shipCriticals';
@@ -59,7 +59,7 @@ const detachTest: ShipCrewTest = {
  * « Canon détaché » (MDG ch.13 l.763-764) : l'équipage du poste encourt `crewTest` (data-driven) ; un échec
  * applique `onFail`. Le canon RESTE à bord (≠ « Canon perdu »). Plus aucune valeur (12 / Athlétisme) en dur.
  */
-describe('detachPosteCrewHit — Canon détaché (data-driven, MDG ch.13 l.763-764)', () => {
+describe('applyCrewHit — Canon détaché (data-driven, MDG ch.13 l.763-764)', () => {
   const hullWith = (crewIds: string[]) => {
     const poste: ShipPoste = { item: { uid: 'p1', name: 'Canon' } as never, side: 'tribord', crewIds };
     return { hull: { id: 'hull', postes: [poste] } as unknown as Combatant, poste };
@@ -71,7 +71,7 @@ describe('detachPosteCrewHit — Canon détaché (data-driven, MDG ch.13 l.763-7
   it('servant qui RATE → `onFail` appliqué (12 Dégâts mitigés BE/PA)', () => {
     const { hull } = hullWith(['m1']);
     const m1 = sailor('m1');
-    const hits = detachPosteCrewHit(hull, [m1], detachTest, rngFail);
+    const hits = applyCrewHit(hull, [m1], detachTest, rngFail);
     expect(hits).toEqual([{ crewId: 'm1' }]);
     expect(m1.wounds.current).toBe(13 - (12 - 3)); // 12 − BE(3) − PA(0) = 9 PB perdus → 4
   });
@@ -79,19 +79,19 @@ describe('detachPosteCrewHit — Canon détaché (data-driven, MDG ch.13 l.763-7
   it('servant qui RÉUSSIT → indemne', () => {
     const { hull } = hullWith(['m1']);
     const m1 = sailor('m1');
-    expect(detachPosteCrewHit(hull, [m1], detachTest, rngPass)).toHaveLength(0);
+    expect(applyCrewHit(hull, [m1], detachTest, rngPass)).toHaveLength(0);
     expect(m1.wounds.current).toBe(13);
   });
 
   it('coque sans poste → [] (rien à détacher)', () => {
     const hull = { id: 'hull', postes: [] } as unknown as Combatant;
-    expect(detachPosteCrewHit(hull, [], detachTest, rngFail)).toEqual([]);
+    expect(applyCrewHit(hull, [], detachTest, rngFail)).toEqual([]);
   });
 
   it('servants déjà hors de combat (mort / 0 PB) ignorés', () => {
     const { hull } = hullWith(['mort', 'ko']);
     const mort = sailor('mort', { dead: true });
     const ko = sailor('ko', { wounds: { current: 0, max: 13, base: 13 } as never });
-    expect(detachPosteCrewHit(hull, [mort, ko], detachTest, rngFail)).toHaveLength(0);
+    expect(applyCrewHit(hull, [mort, ko], detachTest, rngFail)).toHaveLength(0);
   });
 });

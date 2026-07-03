@@ -1220,11 +1220,15 @@ function applyHullCriticalToTarget(
   opts?: { ctx?: DeviationCtx; suppressReveal?: boolean; get?: Get },
 ): boolean {
   const { ctx, suppressReveal, get } = opts ?? {};
-  const rig: ShipRig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
+  const hull = findVehicleById(target.creatureId ?? '')?.hull;
+  const rig: ShipRig = hull?.rig ?? 'mixte';
   const crew = get && target.crewIds
     ? (target.crewIds.map((id) => actorIn(get(), id)).filter(Boolean) as Combatant[])
     : [];
-  const outcome = applyHullCritical(target, crew, rig, battleRng());
+  // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (T2C ch.5).
+  const outcome = applyHullCritical(target, crew, rig, battleRng(), undefined, undefined, {
+    locationTable: hull?.locationTable, criticalTable: hull?.criticalTable,
+  });
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   for (const l of outcome.lines) log.push(l);
   const heroConcerned = target.kind === 'hero' || ctx?.attackerKind === 'hero'
