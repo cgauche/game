@@ -281,8 +281,12 @@ export function CascadeModal() {
     <RollShell
       title={`${p.icon ?? '🎲'} ${p.title}`}
       subtitle={<><strong>{cur.icon ?? '🎲'} {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
-      /* Peur de COMBAT = Test ÉTENDU : barre de DR cumulé vers l'Indice (prevDR + DR du jet après coup). */
-      extra={peur ? <DrBar cum={peur.prevDR + (res?.success ? Math.max(0, res.sl) : 0)} target={peur.indice} /> : undefined}
+      /* Test ÉTENDU = barre de DR cumulé (prevDR + DR du jet après coup) : Peur de COMBAT (vers l'Indice)
+         OU cartographie de voyage (Établir des cartes, vers `drTarget` = 2 × Étapes — porté par le poste). */
+      extra={peur ? <DrBar cum={peur.prevDR + (res?.success ? Math.max(0, res.sl) : 0)} target={peur.indice} />
+        : cur.meta?.extendedDrTarget != null
+          ? <DrBar cum={Number(cur.meta.extendedDrDone ?? 0) + (res?.success ? Math.max(0, res.sl) : 0)} target={Number(cur.meta.extendedDrTarget)} />
+          : undefined}
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue). */
       rows={[...witnessRows(doneRows), curRow]}

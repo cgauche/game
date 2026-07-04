@@ -21,6 +21,7 @@ import {
   type ActivityDef, type TravelActivityResult,
 } from '../engine/activities';
 import type { SkillRef } from '../engine/skills';
+import { refLabel } from '../data';
 import { stageEncounterCategory } from '../engine/travelEncounter';
 import { rollEncounter, type EncounterCategory } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
@@ -102,12 +103,19 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     const spec = travelActivitySpec(hero, def, { skillMod: weatherModOf(def, weather), stages, freeSkill: posting.freeSkill });
     const meta: CascadeStepMeta = { activityId: def.id };
     if (posting.freeSkill?.skillId) { meta.freeSkillId = posting.freeSkill.skillId; if (posting.freeSkill.spec) meta.freeSkillSpec = posting.freeSkill.spec; }
+    // Test ÉTENDU inter-Étapes (Établir des cartes, EDOC l.161) : le poste porte sa progression cumulée
+    // (barre de DR côté cascade) — ce N'EST PAS un test simple. drDone = progression AVANT ce jet ;
+    // drTarget = 2 × Étapes (`spec.drTarget`).
+    if (spec.drTarget != null) { meta.extendedDrDone = plan.extendedProgress ?? 0; meta.extendedDrTarget = spec.drTarget; }
     if (spec.target == null) {
       // Activité SANS Test (Récupérer) : pas d'étape-jet — un pas d'affichage dont l'applier applique l'issue.
       steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? '🧭', label: def.label, interactive: true, meta });
     } else {
+      // rollLabel = la Compétence RÉELLEMENT utilisée, LABEL résolu AVEC sa spec (« Métier (Cartographe) »)
+      // via `refLabel` comme tous les flux — plus jamais l'id brut ni `def.skills[0]` (qui perdait la spec).
       steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? '🧭', label: def.label,
-        rollLabel: def.skills?.[0]?.skillId, base: spec.value, target: spec.target, result: null, interactive: true, meta });
+        rollLabel: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
+        base: spec.value, target: spec.target, result: null, interactive: true, meta });
     }
   }
   // Pas d'agrégation de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + insertion des Expositions.
