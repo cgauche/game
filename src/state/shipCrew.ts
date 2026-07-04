@@ -163,8 +163,9 @@ export function applyShantyToCrew(get: Get, ship: Combatant, singer: Combatant, 
 }
 
 /** FIN DE CHANT (MDG 09 l.38 : « Si le Personnage subit des Dégâts ou rate un Test opposé, sa Chanson de
- *  marin prend fin ») : retire l'effet de la chanson de TOUS les combattants (retrait par IDENTITÉ de
- *  label, même chemin que l'expiration — `removeActiveEffects`). Renvoie une ligne de journal, ou []. */
+ *  marin prend fin ») : retire l'effet de la chanson de TOUS les combattants (retrait par IDENTITÉ
+ *  d'`effectId` = `shantyId` stable, ≠ libellé FR ; même chemin que l'expiration — `removeActiveEffects`).
+ *  Renvoie une ligne de journal, ou []. */
 export function endShanty(get: Get, singer: Combatant): string[] {
   const song = singer.singingShanty;
   if (!song) return [];
