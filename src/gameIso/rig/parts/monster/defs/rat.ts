@@ -1,9 +1,11 @@
 import type { MonsterPartDef } from '../types';
+import { OV_QUEUE_RAT } from '../../monsterOverlays';
 import { ratEye } from '../eyes';
 
 export const part: MonsterPartDef = {
   slot: 'tete',
   key: 'rat',
+  queue: OV_QUEUE_RAT,
   label: "Rat / skaven",
   order: 5,
   art: {

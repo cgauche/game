@@ -1,9 +1,11 @@
 import type { MonsterPartDef } from '../types';
 import { goatEye } from '../eyes';
+import { OV_CORNES_TAUREAU } from '../../monsterOverlays';
 
 export const part: MonsterPartDef = {
   slot: 'tete',
   key: 'taureau',
+  cornes: OV_CORNES_TAUREAU,
   label: "Taureau (minotaure)",
   order: 9,
   art: {
