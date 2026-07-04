@@ -2,7 +2,8 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown, testPending } from './breakdown';
+import { testBreakdown, testPending, soutienMod } from './breakdown';
+import type { ModLine } from '../engine/combat';
 import {
   battleSceneById, battleActivityById, sceneDeltas, testResolution, activityOutcomes, INSPIRE_BONUS,
 } from '../engine/massBattle';
@@ -27,22 +28,24 @@ export function BattleTestModal() {
   const actor = party.find((c) => c.id === pt.actorId);
   const rolled = pt.roll != null;
   const outcome = rolled ? describeBattleTest(pt) : undefined;
-  // Scène MULTI-PJ résolue en SOUTIEN (ADE II ch.8 l.153/157, LDB 12) : le bonus est DÉJÀ fondu dans
-  // `pt.skillValue`/la cible ; on l'expose seulement, en clair, pour que le joueur sache d'où vient le +N.
-  const support = pt.support && pt.support.count > 0
-    ? `Soutien +${pt.support.bonus} (${pt.support.count} assistant${pt.support.count > 1 ? 's' : ''})`
-    : null;
+  // Tous les modificateurs en LIGNES (comme partout) : le Soutien (l.153/157, LDB 12, fondu dans `skillValue`)
+  // ET le mod de SITUATION (Menace l.219 / Préparation) — la base est montrée SANS le Soutien, et les lignes
+  // se réconcilient avec le total (RollLine n'affiche les chips que si leur somme = modificateur).
+  const supMod = soutienMod(pt.support);
+  const sitMod = pt.mod ? { label: pt.modLabel ?? 'Situation', value: pt.mod } : undefined;
+  const extraMods = [supMod, sitMod].filter((m): m is ModLine => !!m);
+  const base = pt.skillValue - (supMod?.value ?? 0);
   return (
     <RollFlowShell
       variant="test"
       title={pt.label}
+      subtitle={null}
       actor={actor}
-      subtitle={support}
       rolled={rolled}
       onRoll={roll}
       onCancel={cancel}
-      breakdown={rolled ? testBreakdown(pt.skill, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) : undefined}
-      pending={testPending(pt.skill, pt.skillValue, pt.roll != null ? pt.target : undefined, pt.difficulty)}
+      breakdown={rolled ? testBreakdown(pt.skill, base, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty, extraMods.length ? extraMods : undefined) : undefined}
+      pending={testPending(pt.skill, base, pt.roll != null ? pt.target : undefined, pt.difficulty, extraMods.length ? extraMods : undefined)}
       outcome={outcome && <p className="rm-journal">{outcome}</p>}
       fortune={actor?.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}

@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown, testPending } from './breakdown';
+import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
@@ -29,6 +29,9 @@ export function DispelModal() {
   const prev = caster.dispel?.spellId === pd.spellId && caster.dispel.spellCasterId === pd.spellCasterId ? caster.dispel.total : 0;
   const r = pd.result;
   const cum = Math.min(pd.ni, prev + (r?.sl ?? 0));
+  // Soutien de dissipation à plusieurs (LDB 12) : ligne de mod comme tout bonus, base SANS le Soutien.
+  const supMod = soutienMod(pd.support);
+  const base = pd.value - (supMod?.value ?? 0);
 
   return (
     <RollFlowShell
@@ -36,7 +39,6 @@ export function DispelModal() {
       subtitle={
         <>
           <strong>{caster.name}</strong> dissipe <strong>{pd.label}</strong> ({prev}/{pd.ni} DR)
-          {pd.support && pd.support.count > 0 && <> · Soutien +{pd.support.bonus} ({pd.support.count})</>}
         </>
       }
       /* Test ÉTENDU : barre de DR cumulé vers le NI du sort. */
@@ -45,8 +47,8 @@ export function DispelModal() {
       onRoll={roll}
       onCancel={cancel}
       cancelAfterRoll
-      breakdown={r ? testBreakdown('Langue (Magick)', pd.value, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined}
-      pending={testPending('Langue (Magick)', pd.value)}
+      breakdown={r ? testBreakdown('Langue (Magick)', base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, undefined, supMod ? [supMod] : undefined) : undefined}
+      pending={testPending('Langue (Magick)', base, undefined, undefined, supMod ? [supMod] : undefined)}
       outcome={r && (
         <JournalLine
           className="rm-journal"

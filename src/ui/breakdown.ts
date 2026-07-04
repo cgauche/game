@@ -13,6 +13,13 @@ export function difficultyMods(difficulty?: Difficulty): ModLine[] | undefined {
     : undefined;
 }
 
+/** Ligne de mod « Soutien » (LDB 12) — SOURCE UNIQUE : le bonus d'un jet de GROUPE soutenu s'affiche comme
+ *  TOUT autre modificateur (ligne du breakdown, verte si +), pas fondu dans la base ni relégué en sous-titre.
+ *  Partagé par la masse (Scène/Activité), le rechargement d'Arme d'équipe et la Dissipation à plusieurs. */
+export function soutienMod(support?: { count: number; bonus: number }): ModLine | undefined {
+  return support && support.count > 0 ? { label: 'Soutien', value: support.bonus } : undefined;
+}
+
 /**
  * Ligne de jet (RollLine) d'un Test simple : base + modificateurs = cible · d100 · DR — la même
  * présentation que l'Attaque/Défense, pour TOUS les flux de jet (fin du verdict legacy `.test-result`).
@@ -24,13 +31,15 @@ export function testBreakdown(
   base: number,
   r: { roll: number; target?: number; sl?: number; success?: boolean },
   difficulty?: Difficulty,
+  extraMods?: ModLine[],
 ): RollBreakdown {
   const target = r.target ?? base;
+  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty) ?? [])];
   return {
     label,
     base,
     modifier: target - base,
-    mods: difficultyMods(difficulty),
+    mods: mods.length ? mods : undefined,
     target,
     roll: r.roll,
     success: r.success ?? r.roll <= target,
@@ -41,9 +50,10 @@ export function testBreakdown(
 /** Ligne de jet EN ATTENTE (pré-jet) d'un Test simple — même base / cible / mods que `testBreakdown`,
  *  dé et DR vides : pour le panneau PRÉ-REMPLI des flux `RollFlowShell` (parité Attaque/Défense).
  *  `target` omis → dérivé `base + modificateur de Difficulté` (comme le calcule le jet). */
-export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty): PendingRoll {
-  const t = target ?? base + (difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0);
-  return { label, base, target: t, mods: difficultyMods(difficulty) };
+export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty, extraMods?: ModLine[]): PendingRoll {
+  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty) ?? [])];
+  const t = target ?? base + (difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0) + combineMods(extraMods ?? []);
+  return { label, base, target: t, mods: mods.length ? mods : undefined };
 }
 
 /**

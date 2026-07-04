@@ -3,7 +3,7 @@ import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown, testPending } from './breakdown';
+import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeReload } from '../state/flowOutcomes';
@@ -37,6 +37,9 @@ export function ReloadModalView({
   const rolled = pr.roll != null;
   const after = Math.max(0, pr.progressBefore + pr.sl);
   const weaponName = actor?.weapons.find((w) => w.uid === pr.weaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
+  // Soutien des servants (Arme d'équipe, MDG ch.12 l.462) : ligne de mod comme tout bonus, base SANS le Soutien.
+  const supMod = soutienMod(pr.soutien);
+  const base = pr.skillValue - (supMod?.value ?? 0);
 
   return (
     <RollFlowShell
@@ -44,15 +47,14 @@ export function ReloadModalView({
       title={`Recharger — ${weaponName}`}
       /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */
       actor={actor}
-      /* Soutien d'équipage d'une Arme d'équipe servie (MDG ch.12 l.462) — déjà fondu dans Projectiles. */
-      subtitle={pr.soutien?.count ? `Soutien : +${pr.soutien.bonus} (${pr.soutien.count} servant${pr.soutien.count > 1 ? 's' : ''})` : null}
+      subtitle={null}
       /* Test ÉTENDU (#23) : barre de DR cumulé vers l'Indice de Recharge. */
       extra={<DrBar cum={rolled ? after : pr.progressBefore} target={pr.reload} />}
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
-      breakdown={rolled ? testBreakdown('Projectiles', pr.skillValue, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty) : undefined}
-      pending={testPending('Projectiles', pr.skillValue, pr.target, pr.difficulty)}
+      breakdown={rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, supMod ? [supMod] : undefined) : undefined}
+      pending={testPending('Projectiles', base, pr.target, pr.difficulty, supMod ? [supMod] : undefined)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"

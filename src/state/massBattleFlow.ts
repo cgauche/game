@@ -183,9 +183,12 @@ export interface PendingBattleTest extends PendingBase {
   /** TOUS les PJ engagés dans la Scène MULTI-PJ (Test/Tenue) — meneur `actorId` compris (ADE II ch.8
    *  l.116-118). Tous sont marqués « ayant agi » à la résolution (l'équipage entier est consommé). */
   heroIds?: string[];
-  /** Détail du SOUTIEN fondu dans `skillValue` (l.153/157, LDB 12) — informatif pour la modale : nombre
-   *  d'assistants capables et bonus cumulé (déjà inclus dans la cible). */
+  /** Détail du SOUTIEN fondu dans `skillValue` (l.153/157, LDB 12) — la modale l'affiche en LIGNE de mod. */
   support?: { count: number; bonus: number };
+  /** Modificateur de SITUATION (fondu dans la cible) + son libellé — la modale l'affiche en LIGNE de mod pour
+   *  que le breakdown se réconcilie (Menace −20 l.219 ; bonus de Planification l.75/100). Absent = aucun. */
+  mod?: number;
+  modLabel?: string;
   // ── Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences, LDB 12 l.229) ──
   /** Libellé de la 2ᵈᵉ compétence (Test combiné). */
   skill2?: string;
@@ -411,7 +414,7 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     if (!picked) return;
     openBattleTest(get, set, {
       actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
-      difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod,
+      difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod, modLabel: 'Préparation',
       heroIds: team.map((h) => h.id), support: picked.support,
     });
     return;
@@ -456,7 +459,7 @@ export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   const mod = massBattleThreatPenalty(mb); // Intrus l.219 : −20 aux Tests des autres Scènes.
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
-    difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'scene', sceneId: scene.id, mod,
+    difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'scene', sceneId: scene.id, mod, modLabel: 'Menace',
     heroIds: team.map((h) => h.id), support: picked.support,
   });
 }
@@ -489,7 +492,7 @@ function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
   const enemyRoll = d100(battleRng());
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
-    difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'hold', sceneId: scene.id, mod,
+    difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'hold', sceneId: scene.id, mod, modLabel: 'Menace',
     enemyValue, enemyRoll, heroIds: team.map((h) => h.id), support: picked.support,
   });
 }
@@ -516,7 +519,7 @@ export function openMassBattleRally(get: Get, set: Set): void {
  *  tenue (`enemyValue`/`enemyRoll`, l.161 : jet ENNEMI figé). */
 function openBattleTest(get: Get, set: Set, o: {
   actor: Combatant; skillValue: number; skillId?: string; spec?: string; char?: CharKey;
-  difficulty: Difficulty; label: string; purpose: PendingBattleTest['purpose']; sceneId?: string; activityId?: string; mod?: number;
+  difficulty: Difficulty; label: string; purpose: PendingBattleTest['purpose']; sceneId?: string; activityId?: string; mod?: number; modLabel?: string;
   combined?: { skillId: string; spec?: string; value: number };
   enemyValue?: number; enemyRoll?: number;
   /** PJ engagés dans une Scène MULTI-PJ (meneur compris) — tous consommés à la résolution (l.116-118). */
@@ -536,7 +539,8 @@ function openBattleTest(get: Get, set: Set, o: {
       actorId: o.actor.id, actorName: o.actor.name, label: o.label, skill,
       skillId: o.skillId, spec: o.spec, char: o.char, skillValue: o.skillValue, difficulty: o.difficulty,
       purpose: o.purpose, sceneId: o.sceneId, activityId: o.activityId, roll: null, target, sl: 0, success: false,
-      enemyValue: o.enemyValue, enemyRoll: o.enemyRoll, heroIds: o.heroIds, support: o.support, ...combined,
+      enemyValue: o.enemyValue, enemyRoll: o.enemyRoll, heroIds: o.heroIds, support: o.support,
+      mod: o.mod, modLabel: o.modLabel, ...combined,
     },
   });
 }
