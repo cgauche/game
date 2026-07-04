@@ -76,6 +76,15 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Formes de nuée (silhouette d'1 constituant + palette) : 1 forme = 1 fichier defs/.
+    dir: 'src/gameIso/rig/swarm/defs',
+    out: 'src/gameIso/rig/swarm/_registry.generated.ts',
+    exportName: 'swarmForm',
+    arrayName: 'SWARM_FORM_DEFS',
+    type: 'SwarmFormDef',
+    typeFrom: './formDef',
+  },
+  {
     // Éléments d'apparence (catalogue unifié — traits de corps réutilisables) : 1 élément = 1 fichier defs/.
     dir: 'src/gameIso/rig/parts/elements/defs',
     out: 'src/gameIso/rig/parts/elements/_registry.generated.ts',
