@@ -60,6 +60,16 @@ export const REGISTRIES = [
     idUnion: { typeName: 'AppendageId', field: 'id' },
   },
   {
+    // Prothèses/amputations (art dans defs) : 1 prothèse = 1 fichier.
+    dir: 'src/gameIso/rig/parts/prosthesis/defs',
+    out: 'src/gameIso/rig/parts/prosthesis/_registry.generated.ts',
+    exportName: 'prosthesis',
+    arrayName: 'PROSTHESIS_DEFS',
+    type: 'ProsthesisDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'ProsthesisId', field: 'id' },
+  },
+  {
     // Yeux peints (art d'orbite, remplacé en place) : 1 œil = 1 fichier defs/. Blessures/mutations/éditeur.
     dir: 'src/gameIso/rig/parts/eyes/defs',
     out: 'src/gameIso/rig/parts/eyes/_registry.generated.ts',
