@@ -354,8 +354,10 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
             if (L.forceWin) return L.forceWin(loc.slot, actor!, cur);
             const tgt = L.dieTarget?.(loc.slot, actor!); if (tgt == null) return null;
             const floor = L.floorSL?.(loc.slot, actor!) ?? 1;
-            const sl = Math.max(cur ? cur.sl : evaluateTest(1, tgt).sl, floor, 1);
-            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(cur?.roll ?? 1, tgt, sl), p);
+            // Dé 01 (slMode différence → DR MAX) planché : « vous choisissez le résultat » = le meilleur
+            // (LDB 17 l.68) ; opposé : `floorSL` garantit d'emporter (oppSL+1). Réussite forcée ≥ 1 (LDB 12 l.147).
+            const sl = Math.max(evaluateTest(1, tgt).sl, floor, 1);
+            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl), p);
           }
         : () => spec.resolve(s, loc.slot, actor, get, {}, p);
       opForceSuccess(actor, resolveForced, loc.commit);

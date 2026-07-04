@@ -919,16 +919,20 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.singerId),
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (s, p, actor) => {
       if (!actor || !p.shantyId) return null; // chanson non choisie → pas de jet
       const value = testValue(actor, 'divertissement', undefined, 'Chant'); // Intermédiaire (+0) → cible = valeur
-      if (forced) return { result: { roll: 1, target: value, success: true, sl: evaluateTest(1, value).sl } };
       const t = rollTest(value, 'intermediaire', battleRng());
       return { result: { roll: t.roll, target: t.target, success: t.success, sl: t.sl } };
     },
     failed: (p) => !!p.result && !p.result.success,
-    // Chance « +1 DR » : +1 minute de chant (MDG 09 l.38 — la durée suit le DR).
-    bonus: { derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1 } } : null) },
+    // Chance/Résilience GLOBALES via la lentille (LDB 17) : +1 DR = +1 min de chant (MDG 09 l.38, durée ∝ DR) ;
+    // Résilience « Je ne faillirai pas ! » → dé 01 = durée MAX. Le +1 DR passe par `bumpSL` (success intact).
+    lens: {
+      actorTR: (p) => p.result ? { ...p.result, isDouble: isDoubleRoll(p.result.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: { roll: tr.roll, target: tr.target, success: tr.success, sl: tr.sl } }),
+      dieTarget: (_slot, actor) => testValue(actor, 'divertissement', undefined, 'Chant'),
+    },
   }),
 
   /** Focalisation (Test étendu de magie) — vaut en combat ET hors combat (`actorIn`). */
