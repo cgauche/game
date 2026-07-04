@@ -85,7 +85,7 @@
       },
       {
         "id": "haine",
-        "arg": "peaux-vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "prejuge",
@@ -283,8 +283,7 @@
         "arg": "Peau 1"
       },
       {
-        "id": "prejuge",
-        "arg": "Maigrichons"
+        "id": "prejuge"
       },
       {
         "id": "taille",
@@ -346,8 +345,11 @@
         "range": 50
       },
       {
+        "id": "animosite"
+      },
+      {
         "id": "animosite",
-        "arg": "Les riches, Les hommes-bêtes"
+        "arg": "homme-bete"
       },
       {
         "id": "arboricole"
@@ -367,8 +369,7 @@
         "id": "endurant"
       },
       {
-        "id": "prejuge",
-        "arg": "Baillis, Juristes"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -423,7 +424,7 @@
       },
       {
         "id": "prejuge",
-        "arg": "sigmarites"
+        "arg": "sigmarite"
       },
       {
         "id": "ruse"
@@ -466,8 +467,7 @@
     },
     "traits": [
       {
-        "id": "animosite",
-        "arg": "Tiléens"
+        "id": "animosite"
       },
       {
         "id": "arme",
@@ -1899,8 +1899,7 @@
     },
     "traits": [
       {
-        "id": "animosite",
-        "arg": "Tout"
+        "id": "animosite"
       },
       {
         "id": "arme",
@@ -2615,7 +2614,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "peaux-vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "arme",
@@ -2688,7 +2687,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "peaux-vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "arme",
@@ -2700,7 +2699,7 @@
       },
       {
         "id": "effraye",
-        "arg": "elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -2916,8 +2915,7 @@
         "id": "bestial"
       },
       {
-        "id": "haine",
-        "arg": "Vivant"
+        "id": "haine"
       },
       {
         "id": "infravision"
@@ -39950,11 +39948,11 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -40092,11 +40090,11 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -40237,11 +40235,11 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -40387,11 +40385,11 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -40537,14 +40535,14 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "ruse"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -40688,11 +40686,11 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Peaux-Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -40810,12 +40808,11 @@
     },
     "traits": [
       {
-        "id": "animosite",
-        "arg": "toutes les créatures !!!"
+        "id": "animosite"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -40938,14 +40935,14 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "ruse"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -41115,7 +41112,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "elite"
@@ -41125,7 +41122,7 @@
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -41317,14 +41314,14 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "ruse"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -41495,14 +41492,14 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "ruse"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -41709,14 +41706,14 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux-Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "ruse"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "infecte"
@@ -41985,7 +41982,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -42123,7 +42120,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -42275,7 +42272,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux-Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -42432,7 +42429,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -42580,7 +42577,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux-Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -42764,7 +42761,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux-Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -42980,7 +42977,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -43179,7 +43176,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux-Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -43387,7 +43384,7 @@
       },
       {
         "id": "animosite",
-        "arg": "Peaux- Vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "belliqueux"
@@ -48313,8 +48310,7 @@
         "id": "rage"
       },
       {
-        "id": "haine",
-        "arg": "Êtres Vivants"
+        "id": "haine"
       },
       {
         "id": "infecte"
@@ -49423,7 +49419,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Peaux-vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "arboricole"
@@ -49434,7 +49430,7 @@
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "vision-nocturne"
@@ -49494,7 +49490,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Peaux-vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "arboricole"
@@ -50225,15 +50221,15 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Peaux-vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "effraye",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "haine",
-        "arg": "Nains"
+        "arg": "nain"
       },
       {
         "id": "infecte"
@@ -50551,7 +50547,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Peaux-vertes"
+        "arg": "peau-verte"
       },
       {
         "id": "arme",
@@ -50794,8 +50790,7 @@
     },
     "traits": [
       {
-        "id": "animosite",
-        "arg": "Tout"
+        "id": "animosite"
       },
       {
         "id": "aquatique"
@@ -51479,8 +51474,7 @@
         "id": "amphibie"
       },
       {
-        "id": "effraye",
-        "arg": "Feu"
+        "id": "effraye"
       },
       {
         "id": "furtif"
@@ -52144,8 +52138,7 @@
     },
     "traits": [
       {
-        "id": "effraye",
-        "arg": "Lumière"
+        "id": "effraye"
       },
       {
         "id": "infravision"
@@ -55901,8 +55894,7 @@
         "id": "ethere"
       },
       {
-        "id": "haine",
-        "arg": "Teutogens"
+        "id": "haine"
       },
       {
         "id": "increvable"
@@ -56025,8 +56017,7 @@
         "id": "ethere"
       },
       {
-        "id": "prejuge",
-        "arg": "Créatures mortelles"
+        "id": "prejuge"
       },
       {
         "id": "taille",
@@ -56600,7 +56591,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Sigmarites"
+        "arg": "sigmarite"
       },
       {
         "id": "arme",
@@ -56618,8 +56609,7 @@
         "arg": "Plastron et heaume"
       },
       {
-        "id": "prejuge",
-        "arg": "Étrangers"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -57020,8 +57010,7 @@
         "arg": "Veste de cuir"
       },
       {
-        "id": "prejuge",
-        "arg": "Ceux qu'elle considère faibles"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -57545,7 +57534,7 @@
     "traits": [
       {
         "id": "prejuge",
-        "arg": "Sigmarites"
+        "arg": "sigmarite"
       }
     ],
     "optionals": [],
@@ -57862,8 +57851,7 @@
     },
     "traits": [
       {
-        "id": "prejuge",
-        "arg": "Mauvais auditeurs"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -58284,7 +58272,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "arme",
@@ -58293,11 +58281,10 @@
       },
       {
         "id": "haine",
-        "arg": "Peaux-vertes"
+        "arg": "peau-verte"
       },
       {
-        "id": "prejuge",
-        "arg": "Étrangers"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -58413,7 +58400,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Elfes"
+        "arg": "elfe"
       },
       {
         "id": "arme",
@@ -58427,11 +58414,10 @@
       },
       {
         "id": "haine",
-        "arg": "Peaux-vertes"
+        "arg": "peau-verte"
       },
       {
-        "id": "prejuge",
-        "arg": "Ces nains lâches qui rechignent à guerroyer pour restaurer le Royaume éternel"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -58543,8 +58529,7 @@
         "arg": "Chemise de mailles"
       },
       {
-        "id": "prejuge",
-        "arg": "Ceux qui ne savent pas apprécier un bon match de Middenball"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -58655,12 +58640,10 @@
     },
     "traits": [
       {
-        "id": "animosite",
-        "arg": "Menteurs, trompeurs, sophistes"
+        "id": "animosite"
       },
       {
-        "id": "prejuge",
-        "arg": "Acteurs, amateurs de théâtre"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -58732,8 +58715,7 @@
     },
     "traits": [
       {
-        "id": "prejuge",
-        "arg": "Les artistes qui ne sont pas aussi doués qu'ils le pensent"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -58977,7 +58959,7 @@
     "traits": [
       {
         "id": "animosite",
-        "arg": "Sigmarites"
+        "arg": "sigmarite"
       },
       {
         "id": "arme",
@@ -58986,11 +58968,10 @@
       },
       {
         "id": "haine",
-        "arg": "Orcs et Gobelins"
+        "arg": "peau-verte"
       },
       {
-        "id": "prejuge",
-        "arg": "Ulricains pas assez zélés"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -59367,12 +59348,10 @@
     },
     "traits": [
       {
-        "id": "effraye",
-        "arg": "créanciers"
+        "id": "effraye"
       },
       {
-        "id": "prejuge",
-        "arg": "aristocrates, réactionnaires, miliciens, nantis, utilisateurs de mystracine"
+        "id": "prejuge"
       }
     ],
     "optionals": [],
@@ -60983,8 +60962,7 @@
     },
     "traits": [
       {
-        "id": "animosite",
-        "arg": "Elfes noirs"
+        "id": "animosite"
       },
       {
         "id": "armure",
@@ -62760,8 +62738,7 @@
         "id": "bestial"
       },
       {
-        "id": "effraye",
-        "arg": "Sel"
+        "id": "effraye"
       },
       {
         "id": "immunite-psychologique"
@@ -62857,8 +62834,7 @@
         "id": "bestial"
       },
       {
-        "id": "effraye",
-        "arg": "Sel"
+        "id": "effraye"
       },
       {
         "id": "immunite-psychologique"

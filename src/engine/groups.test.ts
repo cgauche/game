@@ -1,58 +1,58 @@
 import { describe, it, expect } from 'vitest';
 import { groupsFor, groupMatch } from './groups';
 
-describe('Groupes — dérivation & matching (LDB 21, P3)', () => {
-  it('folder créature → catégorie (règles ordonnées, la plus spécifique d’abord)', () => {
-    expect(groupsFor({ folder: 'Les hordes de peaux-vertes' })).toContain('Peau-Verte');
-    expect(groupsFor({ folder: 'Les morts sans repos' })).toContain('Mort-vivant');
-    expect(groupsFor({ folder: 'Hommes-bêtes, les enfants du Chaos' })).toContain('Homme-bête');
-    expect(groupsFor({ folder: 'Les bêtes du Reikland' })).toContain('Bête');
-    expect(groupsFor({ folder: 'Hommes-bêtes, les enfants du Chaos' })).not.toContain('Bête'); // spécificité
-    expect(groupsFor({ folder: 'Démons, les armées baragouinantes' })).toContain('Démon');
-    expect(groupsFor({ folder: 'Princes démons' })).toContain('Démon');
-    expect(groupsFor({ folder: 'Les ignobles hommes-rats' })).toContain('Skaven');
+describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3)', () => {
+  it('folder créature → id de catégorie (règles ordonnées, la plus spécifique d’abord)', () => {
+    expect(groupsFor({ folder: 'Les hordes de peaux-vertes' })).toContain('peau-verte');
+    expect(groupsFor({ folder: 'Les morts sans repos' })).toContain('mort-vivant');
+    expect(groupsFor({ folder: 'Hommes-bêtes, les enfants du Chaos' })).toContain('homme-bete');
+    expect(groupsFor({ folder: 'Les bêtes du Reikland' })).toContain('bete');
+    expect(groupsFor({ folder: 'Hommes-bêtes, les enfants du Chaos' })).not.toContain('bete'); // spécificité
+    expect(groupsFor({ folder: 'Démons, les armées baragouinantes' })).toContain('demon');
+    expect(groupsFor({ folder: 'Princes démons' })).toContain('demon');
+    expect(groupsFor({ folder: 'Les ignobles hommes-rats' })).toContain('skaven');
     expect(groupsFor({ folder: 'Les peuples du Reikland' })).toEqual([]); // pas de catégorie de monstre
   });
 
-  it('espèce → racial + carrière + extras (dédup, normalisé)', () => {
-    const g = groupsFor({ species: 'Humains (Reiklander)', careerId: 'soldat', extras: ['Sigmarite'] });
-    expect(g).toEqual(expect.arrayContaining(['Humain', 'Soldat', 'Sigmarite']));
+  it('espèce → id racial + carrière + extras (dédup, ids)', () => {
+    const g = groupsFor({ species: 'Humains (Reiklander)', careerId: 'soldat', extras: ['sigmarite'] });
+    expect(g).toEqual(expect.arrayContaining(['humain', 'soldat', 'sigmarite']));
   });
 
-  it('dédup : un même groupe n’apparaît qu’une fois', () => {
+  it('dédup : un même id n’apparaît qu’une fois', () => {
     const g = groupsFor({ careerId: 'humain', species: 'Humains (Reiklander)' });
-    expect(g.filter((x) => x === 'Humain').length).toBe(1);
+    expect(g.filter((x) => x === 'humain').length).toBe(1);
   });
 
-  it('classe « Roublards » → Groupe « Criminel » auto-dérivé (Épée de justice / Traits psy ciblés)', () => {
-    for (const c of [{ id: 'voleur', label: 'Voleur' }, { id: 'hors-la-loi', label: 'Hors-la-loi' }, { id: 'charlatan', label: 'Charlatan' }, { id: 'receleur', label: 'Receleur' }]) {
-      expect(groupsFor({ careerId: c.id })).toEqual(expect.arrayContaining([c.label, 'Criminel']));
+  it('Trait (mort-vivant/demoniaque) → id de Groupe, même hors folder (unifie avec domainAttributes)', () => {
+    expect(groupsFor({ traits: [{ id: 'mort-vivant' }] })).toEqual(['mort-vivant']);
+    expect(groupsFor({ traits: [{ id: 'demoniaque' }] })).toEqual(['demon']);
+    expect(groupsFor({ traits: [{ id: 'vol' }] })).toEqual([]); // trait sans règle → aucun Groupe
+  });
+
+  it('classe « Roublards » → Groupe « criminel » auto-dérivé (Épée de justice / Traits psy ciblés)', () => {
+    for (const id of ['voleur', 'hors-la-loi', 'charlatan', 'receleur']) {
+      expect(groupsFor({ careerId: id })).toContain('criminel');
     }
-    expect(groupsFor({ careerId: 'soldat' })).not.toContain('Criminel'); // classe Guerriers
-    expect(groupMatch('Criminel', groupsFor({ careerId: 'voleur' }))).toBe(true);
+    expect(groupsFor({ careerId: 'soldat' })).not.toContain('criminel'); // classe Guerriers
+    expect(groupMatch('criminel', groupsFor({ careerId: 'voleur' }))).toBe(true);
   });
 
-  it('groupMatch : insensible casse/accents + tolérance pluriel', () => {
-    expect(groupMatch('Elfes', ['Elfe'])).toBe(true); // Cible pluriel vs groupe singulier
-    expect(groupMatch('mort-vivant', ['Mort-vivant'])).toBe(true);
-    expect(groupMatch('Peau-Verte', ['peau-verte'])).toBe(true);
-    expect(groupMatch('Nains', ['Humain'])).toBe(false);
+  it('carrières MILITAIRES précises (soldat/garde/chevalier) → leur propre id — pas toute la classe Guerriers', () => {
+    expect(groupsFor({ careerId: 'soldat' })).toContain('soldat');
+    expect(groupsFor({ careerId: 'garde' })).toContain('garde');
+    expect(groupsFor({ careerId: 'chevalier' })).toContain('chevalier');
+    // Cavalier est aussi classe Guerriers mais N'EST PAS une des 3 carrières militaires ciblées.
+    expect(groupsFor({ careerId: 'cavalier' })).toEqual([]);
   });
 
-  it('groupMatch : pluriel COMPOSÉ (jeton par jeton, pas un seul « s » final)', () => {
-    expect(groupMatch('Hommes-bêtes', ['Homme-bête'])).toBe(true); // bug #3 (sous-match silencieux)
-    expect(groupMatch('Morts-vivants', ['Mort-vivant'])).toBe(true);
-    expect(groupMatch('Peaux-Vertes', ['Peau-Verte'])).toBe(true);
-  });
-
-  it('groupMatch : un radical court ne sur-matche PAS un mot non lié (bug #1)', () => {
-    expect(groupMatch('Rat', ['Pirate'])).toBe(false); // 'pirate'.includes('rat') ne doit plus matcher
-    expect(groupMatch('Rats', ['Aristocrate'])).toBe(false);
-    expect(groupMatch('Or', ['Sorcier'])).toBe(false);
-  });
-
-  it('groupMatch : raffinement de sous-type conservé (Cible générique ⊆ groupe spécifique)', () => {
-    expect(groupMatch('Elfe', ['Haut Elfe'])).toBe(true); // un anti-Elfe hait aussi les Hauts Elfes
-    expect(groupMatch('Haut Elfe', ['Elfe'])).toBe(false); // mais une Cible spécifique ne matche pas le groupe générique
+  it('groupMatch : appartenance STRICTE par id (plus de tolérance pluriel/casse/sous-type)', () => {
+    expect(groupMatch('elfe', ['elfe'])).toBe(true);
+    expect(groupMatch('mort-vivant', ['mort-vivant'])).toBe(true);
+    expect(groupMatch('peau-verte', ['peau-verte'])).toBe(true);
+    expect(groupMatch('nain', ['humain'])).toBe(false);
+    expect(groupMatch('Elfe', ['elfe'])).toBe(false); // casse différente → id DIFFÉRENT (pas de normalisation)
+    expect(groupMatch('elfe', ['Elfe'])).toBe(false);
+    expect(groupMatch('elfe', ['elfe-noir'])).toBe(false); // pas de raffinement de sous-type (YAGNI)
   });
 });

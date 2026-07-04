@@ -5015,8 +5015,8 @@
                 "op": "grantTrait",
                 "traitId": "instable",
                 "onlyGroups": [
-                  "Mort-vivant",
-                  "Démon"
+                  "mort-vivant",
+                  "demon"
                 ]
               },
               {
@@ -5122,7 +5122,7 @@
               {
                 "op": "banish",
                 "onlyGroups": [
-                  "Démon"
+                  "demon"
                 ],
                 "narration": "unravel"
               },
@@ -7898,7 +7898,7 @@
                   "bonusOf": "FM"
                 },
                 "onlyGroups": [
-                  "Démons"
+                  "demon"
                 ]
               },
               {
@@ -10041,7 +10041,7 @@
                   }
                 },
                 "onlyGroups": [
-                  "Morts-vivants"
+                  "mort-vivant"
                 ]
               },
               {
@@ -12027,8 +12027,8 @@
                 "op": "condition",
                 "name": "en-flammes",
                 "onlyGroups": [
-                  "Mort-vivant",
-                  "Démon"
+                  "mort-vivant",
+                  "demon"
                 ]
               },
               {
@@ -12266,17 +12266,17 @@
               {
                 "op": "grantTrait",
                 "traitId": "haine",
-                "arg": "Peaux-Vertes"
+                "arg": "peau-verte"
               },
               {
                 "op": "grantTrait",
                 "traitId": "haine",
-                "arg": "Morts-vivants"
+                "arg": "mort-vivant"
               },
               {
                 "op": "grantTrait",
                 "traitId": "haine",
-                "arg": "Démons"
+                "arg": "demon"
               }
             ]
           }
@@ -12893,8 +12893,8 @@
                         "skill": "resistance",
                         "difficulty": "intermediaire",
                         "exceptGroups": [
-                          "Mort-vivant",
-                          "Démon"
+                          "mort-vivant",
+                          "demon"
                         ]
                       },
                       "success": {
@@ -13080,7 +13080,7 @@
                         "skill": "resistance",
                         "difficulty": "accessible",
                         "onlyGroups": [
-                          "Criminel"
+                          "criminel"
                         ]
                       },
                       "success": {

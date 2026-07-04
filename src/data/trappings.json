@@ -6041,7 +6041,7 @@
             "skill": "resistance",
             "difficulty": "intermediaire",
             "exceptGroups": [
-              "Peau-Verte"
+              "peau-verte"
             ],
             "label": "Bonnet de fou"
           },
@@ -6241,7 +6241,7 @@
         "kind": "has",
         "who": "target",
         "what": "group",
-        "value": "Elfe"
+        "value": "elfe"
       },
       "then": {
         "kind": "do",
@@ -6971,7 +6971,7 @@
                       "skill": "resistance",
                       "difficulty": "complexe",
                       "onlyGroups": [
-                        "Mort-vivant"
+                        "mort-vivant"
                       ],
                       "unlessImmune": "poison",
                       "menace": "Poison"
@@ -6991,7 +6991,7 @@
                             "name": "empoisonne",
                             "value": 1,
                             "onlyGroups": [
-                              "Mort-vivant"
+                              "mort-vivant"
                             ]
                           }
                         ]

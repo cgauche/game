@@ -32,7 +32,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
     const enemies = b.combatants.filter((c) => c.kind === 'enemy');
     enemies.slice(1).forEach((e) => (e.dead = true));
     const E = enemies[0];
-    E.groups = ['Démon']; // cible Démoniaque (le gate `onlyGroups` de Fauche-démon)
+    E.groups = ['demon']; // cible Démoniaque (le gate `onlyGroups` de Fauche-démon)
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 12, y: 10 };
     useGame.setState({ battle: { ...b } });

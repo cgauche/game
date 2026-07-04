@@ -16,19 +16,19 @@ describe('encounterPsych — Psychologie à la rencontre, HORS COMBAT (Peur/Terr
     expect(encounterPsych(hero({}), [npc('spectre', { causesPeur: 3 })])).toBeNull();
   });
 
-  it('héros avec Animosité (Elfes) face à un Elfe présent → trait ciblé SOCIAL (taverne, l.16)', () => {
-    const t = encounterPsych(hero({ psychTraits: [{ type: 'animosite', cible: 'Elfes' }] }), [npc('elfe', { groups: ['Elfe'] })]);
-    expect(t).toEqual({ kind: 'animosite', sourceId: 'elfe', indice: 0, cible: 'Elfes' });
+  it('héros avec Animosité (elfe) face à un Elfe présent → trait ciblé SOCIAL (taverne, l.16)', () => {
+    const t = encounterPsych(hero({ psychTraits: [{ type: 'animosite', cible: 'elfe' }] }), [npc('elfe', { groups: ['elfe'] })]);
+    expect(t).toEqual({ kind: 'animosite', sourceId: 'elfe', indice: 0, cible: 'elfe' });
   });
 
   it('PNJ de même Taille, aucun trait → aucun Test', () => {
-    expect(encounterPsych(hero({}), [npc('paysan', { groups: ['Humain'] })])).toBeNull();
+    expect(encounterPsych(hero({}), [npc('paysan', { groups: ['humain'] })])).toBeNull();
   });
 
   it('Immunité (Psychologie) bloque même un Trait social ; Frénésie aussi', () => {
-    const immune = hero({ psychImmune: true, psychTraits: [{ type: 'animosite', cible: 'Elfes' }] });
-    expect(encounterPsych(immune, [npc('elfe', { groups: ['Elfe'] })])).toBeNull();
-    const frenzied = hero({ psychState: [{ type: 'frenesie' }], psychTraits: [{ type: 'animosite', cible: 'Elfes' }] });
-    expect(encounterPsych(frenzied, [npc('elfe', { groups: ['Elfe'] })])).toBeNull();
+    const immune = hero({ psychImmune: true, psychTraits: [{ type: 'animosite', cible: 'elfe' }] });
+    expect(encounterPsych(immune, [npc('elfe', { groups: ['elfe'] })])).toBeNull();
+    const frenzied = hero({ psychState: [{ type: 'frenesie' }], psychTraits: [{ type: 'animosite', cible: 'elfe' }] });
+    expect(encounterPsych(frenzied, [npc('elfe', { groups: ['elfe'] })])).toBeNull();
   });
 });

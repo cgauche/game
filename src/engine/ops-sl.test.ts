@@ -63,11 +63,11 @@ describe('PerSL — échelle « par +N DR » (OpsCtx.sl)', () => {
 
 describe('onlyGroups — ops gatées par Groupe de la cible (Feu de l’âme, LDB 42)', () => {
   it('un Mort-vivant gagne l’État, un Humain non ; les wounds non gatées touchent les deux', () => {
-    const zombie = dummy({ groups: ['Mort-vivant'] });
-    const villageois = dummy({ groups: ['Humain'] });
+    const zombie = dummy({ groups: ['mort-vivant'] });
+    const villageois = dummy({ groups: ['humain'] });
     const ops = [
       { op: 'wounds' as const, amount: 3 },
-      { op: 'condition' as const, name: 'en-flammes', onlyGroups: ['Mort-vivant', 'Démon'] },
+      { op: 'condition' as const, name: 'en-flammes', onlyGroups: ['mort-vivant', 'demon'] },
     ];
     applyOps(zombie, ops, { sl: 0 });
     applyOps(villageois, ops, { sl: 0 });
@@ -77,9 +77,9 @@ describe('onlyGroups — ops gatées par Groupe de la cible (Feu de l’âme, LD
     expect(stacks(villageois, 'en-flammes')).toBe(0);
   });
 
-  it('groupMatch tolère le pluriel de la spec (« Morts-vivants » matche le groupe Mort-vivant)', () => {
-    const zombie = dummy({ groups: ['Mort-vivant'] });
+  it('groupMatch : appartenance STRICTE par id — plus de tolérance de pluriel (« Morts-vivants » ne matche PAS l’id « mort-vivant »)', () => {
+    const zombie = dummy({ groups: ['mort-vivant'] });
     applyOps(zombie, [{ op: 'condition', name: 'en-flammes', onlyGroups: ['Morts-vivants'] }], {});
-    expect(stacks(zombie, 'en-flammes')).toBe(1);
+    expect(stacks(zombie, 'en-flammes')).toBe(0);
   });
 });

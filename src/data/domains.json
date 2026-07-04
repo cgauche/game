@@ -130,13 +130,13 @@
                 "kind": "has",
                 "who": "target",
                 "what": "group",
-                "value": "Morts-vivants"
+                "value": "mort-vivant"
               },
               {
                 "kind": "has",
                 "who": "target",
                 "what": "group",
-                "value": "Démons"
+                "value": "demon"
               }
             ]
           },
@@ -202,13 +202,13 @@
                       "kind": "has",
                       "who": "target",
                       "what": "group",
-                      "value": "Morts-vivants"
+                      "value": "mort-vivant"
                     },
                     {
                       "kind": "has",
                       "who": "target",
                       "what": "group",
-                      "value": "Démons"
+                      "value": "demon"
                     }
                   ]
                 }
@@ -286,13 +286,13 @@
                   "kind": "has",
                   "who": "target",
                   "what": "group",
-                  "value": "Morts-vivants"
+                  "value": "mort-vivant"
                 },
                 {
                   "kind": "has",
                   "who": "target",
                   "what": "group",
-                  "value": "Démons"
+                  "value": "demon"
                 }
               ]
             }
@@ -336,7 +336,7 @@
                 "kind": "has",
                 "who": "target",
                 "what": "group",
-                "value": "Morts-vivants"
+                "value": "mort-vivant"
               }
             ]
           },

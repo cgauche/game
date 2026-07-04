@@ -252,7 +252,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     ...(extras?.spells?.length
       ? { spells: extras.spells.filter((id) => !!findSpellById(id)) }
       : creature.spells.length ? { spells: creature.spells.map((s) => s.id) } : {}),
-    groups: groupsFor({ folder: creature.folder, group: creature.group }), // catégorie de Groupe (folder, ou surcharge `group` éditable) (P3)
+    groups: groupsFor({ folder: creature.folder, group: creature.group, traits }), // catégorie de Groupe (folder/traits, ou surcharge `group` éditable) (P3)
     traits, // conservés (facultatifs inclus) → attaques gratuites de créature en combat
     skills,
     talents,
@@ -307,7 +307,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     ...(sb.spells?.length ? { spells: sb.spells.filter((id) => !!findSpellById(id)) } : {}), // ids d'auteur (filtrés valides)
-    groups: groupsFor({ extras: sb.groups }), // extras manuels (Sigmarite…) — espèce/carrière non portées par le statbloc (P3)
+    groups: groupsFor({ extras: sb.groups, traits }), // extras manuels (déjà des ids) + traits (Mort-vivant…) — espèce/carrière non portées par le statbloc (P3)
     traits, // structurés → attaques gratuites + lecture sans re-parsing
     skills,
     talents,

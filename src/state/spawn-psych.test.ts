@@ -24,21 +24,21 @@ describe('spawn — propriétés psychologiques', () => {
 });
 
 describe('spawn — Groupes & traits psy ciblés (P3)', () => {
-  it('creatureToCombatant : groups dérivés du folder', () => {
+  it('creatureToCombatant : groups dérivés du folder (id canonique)', () => {
     const orc = findCreature('Orc')!; // folder « Les hordes de peaux-vertes »
     const c = creatureToCombatant(orc, 'e1', { x: 0, y: 0 });
-    expect(c.groups).toContain('Peau-Verte');
+    expect(c.groups).toContain('peau-verte');
   });
   it('statblockToCombatant : extras manuels conservés dans groups', () => {
-    const c = statblockToCombatant({ name: 'Fanatique', char: { B: 10 }, groups: ['Sigmarite', 'Cultiste'] }, 'e2', { x: 0, y: 0 });
-    expect(c.groups).toEqual(expect.arrayContaining(['Sigmarite', 'Cultiste']));
+    const c = statblockToCombatant({ name: 'Fanatique', char: { B: 10 }, groups: ['sigmarite', 'cultiste'] }, 'e2', { x: 0, y: 0 });
+    expect(c.groups).toEqual(expect.arrayContaining(['sigmarite', 'cultiste']));
   });
-  it('statblockToCombatant : trait « Animosité (Elfes) » → psychTraits', () => {
-    const c = statblockToCombatant({ name: 'Nain', char: { B: 10 }, traits: [{ id: 'animosite', arg: 'Elfes' }] }, 'e3', { x: 0, y: 0 });
-    expect(c.psychTraits).toEqual([{ type: 'animosite', cible: 'Elfes' }]);
+  it('statblockToCombatant : trait « Animosité (elfe) » → psychTraits (Cible = id de Groupe)', () => {
+    const c = statblockToCombatant({ name: 'Nain', char: { B: 10 }, traits: [{ id: 'animosite', arg: 'elfe' }] }, 'e3', { x: 0, y: 0 });
+    expect(c.psychTraits).toEqual([{ type: 'animosite', cible: 'elfe' }]);
   });
-  it('createHero : groups = racial(espèce) + carrière', () => {
+  it('createHero : groups = racial(espèce) + carrière (ids)', () => {
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
-    expect(h.groups).toEqual(expect.arrayContaining(['Humain', 'Soldat']));
+    expect(h.groups).toEqual(expect.arrayContaining(['humain', 'soldat']));
   });
 });

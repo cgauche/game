@@ -296,24 +296,26 @@ export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = []): Doctri
   const hasRangedWeapon = enemy.weapons.some((w) => w.type === 'ranged');
   const ag = finite(effectiveChar(enemy, 'Ag'), NaN);
   // SIGNAL « groupe » data-driven (≠ folder.includes fragile, ≠ nom en dur) : on matche les `groups`
-  // (auto-dérivés en donnée : racial, carrière, catégorie bestiaire) contre des CATÉGORIES, via `groupMatch`
-  // (tolérant pluriel/sous-type). Un combattant martial appartient à un groupe militaire ; un humanoïde
-  // « racaille » à un groupe racial/criminel. ABSENCE de groupe ⇒ pas de signal (fixtures génériques → standard).
+  // (ids auto-dérivés en donnée : racial, carrière, catégorie bestiaire) contre des CATÉGORIES d'id, via
+  // `groupMatch` (appartenance STRICTE par id). Un combattant martial appartient à un groupe militaire ;
+  // un humanoïde « racaille » à un groupe racial/criminel. ABSENCE de groupe ⇒ pas de signal (fixtures
+  // génériques → standard).
   const groups = enemy.groups ?? [];
   const inGroup = (cats: string[]) => cats.some((cat) => groupMatch(cat, groups));
-  // Signaux MILITAIRE et RACAILLE — UNIQUEMENT des jetons qui matchent VRAIMENT un Groupe émis par
+  // Signaux MILITAIRE et RACAILLE — UNIQUEMENT des ids qui matchent VRAIMENT un Groupe émis par
   // `groupsFor` (`engine/groups.ts`), pour une classification HONNÊTE (relecture L6). Deux familles de
   // signaux réels :
-  //  • Catégories de Groupe dérivées du folder bestiaire : `Cultiste`, `Peau-Verte`, `Skaven` (FOLDER_RULES).
-  //  • Libellés de CARRIÈRE poussés tels quels par `groupsFor` (`career.label`) : `Soldat`, `Garde`,
-  //    `Chevalier` sont de vraies carrières (`careers.json`). `Criminel` est auto-dérivé de la CLASSE
+  //  • Catégories de Groupe dérivées du folder bestiaire : `cultiste`, `peau-verte`, `skaven` (FOLDER_RULES).
+  //  • Carrières PRÉCISES poussées par `groupsFor` (CAREER_RULES) : `soldat`, `garde`, `chevalier` sont de
+  //    vraies carrières (`careers.json`) — PAS la classe `guerriers` entière (trop large : Cavalier,
+  //    Gladiateur, Archer, Tueur… n'en font pas partie). `criminel` est auto-dérivé de la CLASSE
   //    `roublards` (Hors-la-loi, Voleur, Receleur, Pilleur de tombes…) → couvre toute la racaille criminelle.
   // RETIRÉ comme ENTRÉES MORTES (aucune dérivation correspondante, cf. relecture) : `Militaire` et
   // `Mercenaire` (pas de carrière/catégorie de ce nom) côté militaire ; `Bandit` côté racaille (« Bandit »
   // est un NIVEAU de la carrière Hors-la-loi, pas un libellé de carrière poussé en Groupe — déjà couvert
   // par `Criminel`). Le levier fin reste l'override `aiDoctrine` (et les `extras` manuels de l'éditeur).
-  const MILITARY = ['Soldat', 'Garde', 'Chevalier'];
-  const RABBLE = ['Criminel', 'Cultiste', 'Peau-Verte', 'Skaven'];
+  const MILITARY = ['soldat', 'garde', 'chevalier'];
+  const RABBLE = ['criminel', 'cultiste', 'peau-verte', 'skaven'];
   const isMilitary = inGroup(MILITARY);
   const isRabble = inGroup(RABBLE);
 

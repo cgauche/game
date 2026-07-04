@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest';
 import type { Combatant, ItemInstance } from './types';
 import type { RNG } from './dice';
 import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainCasterOps, isLiving } from './domainAttributes';
+import { groupsFor } from './groups';
 import { evaluateMissile } from './magic';
 import { hasCondition, stacks, addCondition } from './conditions';
 import { runSpellFlowLines } from '../state/combatEffects';
@@ -107,7 +108,9 @@ describe('Riders « à la touche » data-driven (Feu / Lumière / Mort / Vie) �
     applyDomain(w, t, 'mort');
     applyDomain(w, t, 'mort');
     expect(stacks(t, 'extenue')).toBe(1);
-    const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }] });
+    // `groups` = ce que le spawn dériverait via TRAIT_RULES (engine/groups.ts) pour une créature
+    // trait-only SANS folder — `isUndead`/`isLiving` lisent PUREMENT `c.groups` (plus de repli hasTraitKey).
+    const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }], groups: groupsFor({ traits: [{ id: 'mort-vivant' }] }) });
     expect(isLiving(z)).toBe(false);
     applyDomain(w, z, 'mort');
     expect(stacks(z, 'extenue')).toBe(0); // « cible vivante » seulement

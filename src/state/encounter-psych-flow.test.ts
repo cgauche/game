@@ -12,7 +12,7 @@ import type { Scene, SceneEntity, CustomStatblock } from './scene';
  * (une par héros concerné, `kind:'encounterPsych'`) — plus N modales enchaînées. On vérifie ce contrat.
  */
 const TERREUR2: CustomStatblock = { name: 'Spectre', char: { F: 30, E: 30, FM: 30 }, traits: [{ id: 'terreur', value: 2 }] };
-const ELFE: CustomStatblock = { name: 'Elfe', char: { B: 10 }, groups: ['Elfe'] };
+const ELFE: CustomStatblock = { name: 'Elfe', char: { B: 10 }, groups: ['elfe'] };
 
 function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity {
   return { kind: 'personnage', pos: { x: 1, y: 1 }, ...over } as SceneEntity;
@@ -33,10 +33,10 @@ function timoreux(name: string, fm = 1) {
   h.skills = []; // pas d'avance de Calme → calmeValue = FM brut
   return h;
 }
-/** Héros timoré portant une Animosité (Elfes) — le Trait social qui se déclenche hors combat. */
+/** Héros timoré portant une Animosité (Elfe) — le Trait social qui se déclenche hors combat. */
 function animosite(name: string) {
   const h = timoreux(name);
-  h.psychTraits = [{ type: 'animosite', cible: 'Elfes' }];
+  h.psychTraits = [{ type: 'animosite', cible: 'elfe' }];
   return h;
 }
 
@@ -73,7 +73,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (cascad
     const step = c.participants[0];
     expect(step.kind).toBe('encounterPsych');
     expect(step.encounterPsych?.kind).toBe('animosite');
-    expect(step.encounterPsych?.cible).toBe('Elfes');
+    expect(step.encounterPsych?.cible).toBe('elfe');
     expect(step.result).toBeFalsy();
   });
 
@@ -84,7 +84,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (cascad
     useGame.getState().cascadeRoll(`psych-${h.id}`);
     useGame.getState().cascadeNext();
     const hero = useGame.getState().party[0];
-    expect((hero.psychState ?? []).some((p) => p.type === 'animosite' && p.cible === 'Elfes' && p.active === true)).toBe(true);
+    expect((hero.psychState ?? []).some((p) => p.type === 'animosite' && p.cible === 'elfe' && p.active === true)).toBe(true);
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 

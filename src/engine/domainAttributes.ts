@@ -36,7 +36,6 @@ import type { TriggeredEffect } from './flowCore';
 import { RNG, defaultRNG } from './dice';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
-import { hasTraitKey } from './traits/dispatch';
 import { findDomainById } from '../data';
 import { arcaneDomainOf } from './combatFeatures/dispatch';
 import { applyOps } from './ops';
@@ -69,10 +68,8 @@ export function domainMissileMods(
   return { apIgnored: ignored, bonusDamage: missile.bonusFromBypass ? ignored : 0 };
 }
 
-const isUndead = (c: Combatant): boolean =>
-  groupMatch('Morts-vivants', c.groups ?? []) || hasTraitKey(c.traits, 'mort-vivant');
-const isDaemon = (c: Combatant): boolean =>
-  groupMatch('Démons', c.groups ?? []) || hasTraitKey(c.traits, 'demoniaque');
+const isUndead = (c: Combatant): boolean => groupMatch('mort-vivant', c.groups ?? []);
+const isDaemon = (c: Combatant): boolean => groupMatch('demon', c.groups ?? []);
 /** « cible vivante » (Mort/Vie) : ni Mort-vivant ni Démon. */
 export const isLiving = (c: Combatant): boolean => !isUndead(c) && !isDaemon(c);
 

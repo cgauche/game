@@ -18,27 +18,27 @@ function mk(opts: Partial<Combatant>): Combatant {
  */
 describe('psychDRAdjust — Traits psy modulent le DR de l’attaque (LDB 21)', () => {
   it('Animosité active vs un membre du groupe Cible → +1 DR', () => {
-    const att = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: true }] });
-    const tgt = mk({ id: 't', groups: ['Elfe', 'Soldat'] });
+    const att = mk({ psychState: [{ type: 'animosite', cible: 'elfe', active: true }] });
+    const tgt = mk({ id: 't', groups: ['elfe', 'soldat'] });
     expect(psychDRAdjust(att, tgt)).toBe(1);
   });
 
   it('Animosité active vs un NON-membre → aucun bonus', () => {
-    const att = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: true }] });
-    expect(psychDRAdjust(att, mk({ id: 't', groups: ['Humain'] }))).toBe(0);
+    const att = mk({ psychState: [{ type: 'animosite', cible: 'elfe', active: true }] });
+    expect(psychDRAdjust(att, mk({ id: 't', groups: ['humain'] }))).toBe(0);
   });
 
   it('Animosité INACTIVE (résistée) → aucun bonus', () => {
-    const att = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: false }] });
-    expect(psychDRAdjust(att, mk({ id: 't', groups: ['Elfe'] }))).toBe(0);
+    const att = mk({ psychState: [{ type: 'animosite', cible: 'elfe', active: false }] });
+    expect(psychDRAdjust(att, mk({ id: 't', groups: ['elfe'] }))).toBe(0);
   });
 
   it('Haine active vs le groupe haï → immunité à la Peur de cette source (pas de −1) + bonus → +1 DR net', () => {
-    const tgt = mk({ id: 't', groups: ['Skaven'] });
+    const tgt = mk({ id: 't', groups: ['skaven'] });
     const att = mk({
       psychState: [
         { type: 'peur', sourceId: 't', indice: 2, calmeDR: 0 },
-        { type: 'haine', cible: 'Skavens', active: true },
+        { type: 'haine', cible: 'skaven', active: true },
       ],
     });
     expect(psychDRAdjust(att, tgt)).toBe(1); // Peur annulée par Haine (l.41), +1 DR du groupe haï

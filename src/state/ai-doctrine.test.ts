@@ -60,7 +60,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   });
 
   it('un SOLDAT (groupe militaire, ni Bestial ni Stupide) → soldats', () => {
-    const soldat = mk('soldat', 'enemy', { x: 0, y: 0 }, { groups: ['Soldats'], weapons: [MELEE] });
+    const soldat = mk('soldat', 'enemy', { x: 0, y: 0 }, { groups: ['soldat'], weapons: [MELEE] });
     expect(pickDoctrine(soldat, [])).toBe('soldats');
   });
 
@@ -85,7 +85,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   });
 
   it('une RACAILLE (groupe criminel, sans signal militaire/magique) → racaille', () => {
-    const brigand = mk('brigand', 'enemy', { x: 0, y: 0 }, { groups: ['Criminel'], weapons: [MELEE] });
+    const brigand = mk('brigand', 'enemy', { x: 0, y: 0 }, { groups: ['criminel'], weapons: [MELEE] });
     expect(pickDoctrine(brigand, [])).toBe('racaille');
   });
 
@@ -188,7 +188,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     // (Mouvement 0) `fleeMove` renverrait `end` (tour perdu). La garde `!empetre` la laisse atteindre le
     // fallback `recover empetre` (se libérer, LDB 16 l.61). (Fix L6 — point B.)
     const rab = mk('rab', 'enemy', { x: 5, y: 5 }, {
-      groups: ['Criminel'], weapons: [MELEE], movement: 0,
+      groups: ['criminel'], weapons: [MELEE], movement: 0,
       wounds: { current: 2, max: 12 }, // < 1/3
       conditions: [{ name: 'empetre', value: 1, sourceId: 'h' } as never],
     });
@@ -201,7 +201,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     // Même fixture très entamée et NON Engagée : la racaille (retreatBelow 1/3) FUIT ; l’embuscade (aucun
     // macro de repli, override-only) reste à l’attaque. Prouve un comportement DISTINCT (≠ identité nominale).
     const lowHP = { current: 2, max: 12 };
-    const rab = mk('rab', 'enemy', { x: 5, y: 5 }, { groups: ['Criminel'], weapons: [MELEE], wounds: { ...lowHP }, movement: 5 });
+    const rab = mk('rab', 'enemy', { x: 5, y: 5 }, { groups: ['criminel'], weapons: [MELEE], wounds: { ...lowHP }, movement: 5 });
     const amb = mk('amb', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE], wounds: { ...lowHP }, movement: 5, aiDoctrine: 'embuscade' });
     const h = mk('h', 'hero', { x: 5, y: 9 }); // à portée d’approche, pas au contact
     expect(pickDoctrine(rab, [])).toBe('racaille');
@@ -225,7 +225,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     // fait pencher pour la case en formation, là où le standard (cohésion faible) prend la case par défaut.
     const prey = mk('prey', 'hero', { x: 10, y: 15 }, { weapons: [] });
     const ally = mk('ally', 'enemy', { x: 6, y: 15 }); // à l'OUEST de la proie → la case de contact ouest reste près de l'allié
-    const soldat = mk('soldat', 'enemy', { x: 10, y: 10 }, { groups: ['Soldats'], weapons: [MELEE], movement: 5 });
+    const soldat = mk('soldat', 'enemy', { x: 10, y: 10 }, { groups: ['soldat'], weapons: [MELEE], movement: 5 });
     expect(pickDoctrine(soldat, [soldat])).toBe('soldats');
     const a = chooseEnemyAction(input(soldat, [prey], { squad: [ally] }));
     expect(a.kind).toBe('move');

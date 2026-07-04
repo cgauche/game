@@ -11,15 +11,15 @@ describe('Psychologie (pur)', () => {
     expect(parsePsychTraits([{ id: 'immunite-psychologique' }])).toEqual({ psychImmune: true });
     expect(parsePsychTraits([{ id: 'arme', value: 7 }])).toEqual({});
   });
-  it('parsePsychTraits : traits ciblés → psychTraits (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie)', () => {
-    const r = parsePsychTraits([{ id: 'animosite', arg: 'Elfes' }, { id: 'haine', arg: 'Skavens' }, { id: 'prejuge', arg: 'Nains' }, { id: 'amour', arg: 'Famille' }, { id: 'camaraderie', arg: 'Soldats' }, { id: 'phobie', arg: 'Araignées' }]);
+  it('parsePsychTraits : traits ciblés → psychTraits (Cible = id de Groupe reconnu, sinon inerte)', () => {
+    const r = parsePsychTraits([{ id: 'animosite', arg: 'elfe' }, { id: 'haine', arg: 'skaven' }, { id: 'prejuge', arg: 'nain' }, { id: 'amour', arg: 'Famille' }, { id: 'camaraderie', arg: 'soldat' }, { id: 'phobie', arg: 'Araignées' }]);
     expect(r.psychTraits).toEqual(expect.arrayContaining([
-      { type: 'animosite', cible: 'Elfes' },
-      { type: 'haine', cible: 'Skavens' },
-      { type: 'prejuge', cible: 'Nains' },
-      { type: 'amour', cible: 'Famille' },
-      { type: 'camaraderie', cible: 'Soldats' },
-      { type: 'phobie', cible: 'Araignées', indice: 1 }, // Phobie = Peur 1 sur la source (LDB 21 l.84-87)
+      { type: 'animosite', cible: 'elfe' },
+      { type: 'haine', cible: 'skaven' },
+      { type: 'prejuge', cible: 'nain' },
+      { type: 'amour', cible: undefined }, // « Famille » n'est pas un id de Groupe (groups.json) → inerte
+      { type: 'camaraderie', cible: 'soldat' },
+      { type: 'phobie', cible: undefined, indice: 1 }, // « Araignées » non plus (Phobie = Peur 1 sur la source, LDB 21 l.84-87)
     ]));
   });
   it('parsePsychTraits : « un au choix » → Cible indéfinie (inerte)', () => {
@@ -53,11 +53,11 @@ describe('Psychologie (pur)', () => {
     expect(typeof r.roll).toBe('number');
     expect(r.target).toBe(80); // cible exposée pour la RollLine : FM, Intermédiaire +0
   });
-  it('targetedTrigger : Animosité (Elfes) se déclenche sur un ENNEMI du groupe Elfe visible', () => {
-    const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: 'Elfes' }], psychState: [] } as unknown as Combatant;
-    const foe = { id: 'f', kind: 'hero', groups: ['Elfe', 'Soldat'] } as unknown as Combatant;
-    const other = { id: 'o', kind: 'hero', groups: ['Humain'] } as unknown as Combatant;
-    expect(targetedTrigger(self, [other, foe])).toEqual({ type: 'animosite', cible: 'Elfes', sourceId: 'f' });
+  it('targetedTrigger : Animosité (elfe) se déclenche sur un ENNEMI du groupe elfe visible', () => {
+    const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: 'elfe' }], psychState: [] } as unknown as Combatant;
+    const foe = { id: 'f', kind: 'hero', groups: ['elfe', 'soldat'] } as unknown as Combatant;
+    const other = { id: 'o', kind: 'hero', groups: ['humain'] } as unknown as Combatant;
+    expect(targetedTrigger(self, [other, foe])).toEqual({ type: 'animosite', cible: 'elfe', sourceId: 'f' });
     expect(targetedTrigger(self, [other])).toBeNull(); // aucun membre du groupe visible
   });
   it('targetedTrigger : Amour cible un ALLIÉ du groupe ; déjà en psychState → pas re-déclenché', () => {

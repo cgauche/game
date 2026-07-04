@@ -125,7 +125,7 @@ describe('bonnet-de-fou (LDB 71 l.20)', () => {
   it('« Tous ceux qui ne sont pas des peaux-vertes » : Test de Résistance (+0) gaté exceptGroups → Infection mineure', () => {
     const f = itemFromTrappingById('bonnet-de-fou')!.consumable! as Extract<Flow, { kind: 'seq' }>;
     const test = f.steps.find((s) => s.kind === 'test') as Extract<Flow, { kind: 'test' }>;
-    expect(test.test.exceptGroups).toEqual(['Peau-Verte']);
+    expect(test.test.exceptGroups).toEqual(['peau-verte']);
     expect(test.test.difficulty).toBe('intermediaire');
     expect(consumableOps(test.fail)).toEqual([{ op: 'contractDisease', disease: 'infection-mineure' }]);
   });
@@ -149,9 +149,9 @@ describe('delice-de-ranald (LDB 71 l.24)', () => {
 });
 
 describe('fleur-de-lune (LDB 71 l.26-29)', () => {
-  it('Elfes : « +30 à tous les Tests associés pour résister à la [Peste noire] » (branche if has group Elfe)', () => {
+  it('Elfes : « +30 à tous les Tests associés pour résister à la [Peste noire] » (branche if has group elfe)', () => {
     const f = itemFromTrappingById('fleur-de-lune')!.consumable! as Extract<Flow, { kind: 'if' }>;
-    expect(f.cond).toEqual({ kind: 'has', who: 'target', what: 'group', value: 'Elfe' });
+    expect(f.cond).toEqual({ kind: 'has', who: 'target', what: 'group', value: 'elfe' });
     expect(consumableOps(f.then)).toEqual([{ op: 'diseaseTestMod', diseases: ['peste-noire'], amount: 30 }]);
   });
   it('autres races : Test de FM Très difficile — raté → Inconscient (1d10+5 h) ; réussi → +20 Calme + 1 Exténué', () => {
@@ -264,7 +264,7 @@ describe('racine-des-tombes (T2C p.14) — enduit anti-mort-vivant', () => {
     const then = onHitVeninThen('racine-des-tombes');
     expect(then.test.skill).toBe('resistance');
     expect(then.test.difficulty).toBe('complexe');
-    expect(then.test.onlyGroups).toContain('Mort-vivant');
+    expect(then.test.onlyGroups).toContain('mort-vivant');
   });
 });
 

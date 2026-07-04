@@ -121,9 +121,9 @@ describe('op grantTalent — talents temporisés (Flambeau de Vertu / Cœurs ard
 
   it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
     const { fearImmuneVs } = await import('../engine/combatFeatures/dispatch');
-    const c = dummy({ talents: [{ talentId: 'sans-peur', spec: 'Morts-vivants', times: 1 }] });
-    expect(fearImmuneVs(c, { groups: ['Mort-vivant'] })).toBe(true);
-    expect(fearImmuneVs(c, { groups: ['Ogre'] })).toBe(false); // pas l'Ennemi du talent
+    const c = dummy({ talents: [{ talentId: 'sans-peur', spec: 'mort-vivant', times: 1 }] });
+    expect(fearImmuneVs(c, { groups: ['mort-vivant'] })).toBe(true);
+    expect(fearImmuneVs(c, { groups: ['ogre'] })).toBe(false); // pas l'Ennemi du talent
   });
 
   it('Cœur vaillant accordé (Cœurs ardents) : la capacité braveheart est active via featuresOf', async () => {

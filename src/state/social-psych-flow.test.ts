@@ -19,7 +19,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
   }
 
   it('un Test de Charme vs « Elfes » : le PJ haineux subit −20, target réduite', () => {
-    const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]);
+    const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfe' }]);
     useGame.setState({ party: [a] });
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'charme', difficulty: 'intermediaire', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
@@ -31,7 +31,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
   });
 
   it('choisit le meilleur PJ EFFECTIF (malus intégré au choix)', () => {
-    const haineux = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]); // 50 − 20 = 30
+    const haineux = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfe' }]); // 50 − 20 = 30
     const neutre = hero('Felix', 40); // 40, pas de malus
     useGame.setState({ party: [haineux, neutre] });
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'charme', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
@@ -41,7 +41,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
   });
 
   it('Test NON-social (Force) vs un groupe → aucun malus psy', () => {
-    const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]);
+    const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfe' }]);
     useGame.setState({ party: [a] });
     runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'F', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
@@ -49,8 +49,8 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
   });
 
   it('Animosité ACTIVE (Test de Psy échoué) → pas de malus social « contenu » (compulsion, LDB 21 l.24)', () => {
-    const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]);
-    a.psychState = [{ type: 'animosite', cible: 'Elfes', active: true }] as never; // état actif (échec)
+    const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfe' }]);
+    a.psychState = [{ type: 'animosite', cible: 'Elfe', active: true }] as never; // état actif (échec)
     useGame.setState({ party: [a] });
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'charme', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
