@@ -49,6 +49,17 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Appendices (cornes/queue, art multi-vues) : 1 appendice = 1 fichier defs/. Source UNIQUE de
+    // l'art de corne/queue, référencé par id (monster.cornes / appendageFeature / traitVisuals).
+    dir: 'src/gameIso/rig/parts/appendages/defs',
+    out: 'src/gameIso/rig/parts/appendages/_registry.generated.ts',
+    exportName: 'appendage',
+    arrayName: 'APPENDAGE_DEFS',
+    type: 'AppendageDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'AppendageId', field: 'id' },
+  },
+  {
     // Tenues (archétypes de classe + Nu) : 1 tenue = 1 fichier defs/.
     dir: 'src/gameIso/rig/parts/tenues/defs',
     out: 'src/gameIso/rig/parts/tenues/_registry.generated.ts',

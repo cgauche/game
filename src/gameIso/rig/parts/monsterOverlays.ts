@@ -1,66 +1,12 @@
 /**
- * Calques (overlays) d'apparence monstrueuse — art SVG PUR (zéro dépendance), dessiné dans le repère
- * LOCAL de l'os porteur. LEAF partagé sans cycle : `monstrous.ts` (compositeur), `elements/defs`
- * (cornes/queue comme éléments), `creatures/defs` (features), et les `monster/defs` de TÊTE (cornes/
- * queue portées PAR la tête → plus de name-matcher). `monstrous.ts` les RÉ-EXPORTE, donc les
- * importeurs existants (`from './monstrous'`) restent valides.
+ * Calques (overlays) d'apparence monstrueuse NON-appendice — art SVG PUR (zéro dépendance), dessiné
+ * dans le repère LOCAL de l'os porteur. Griffes / plaie / verrues / crocs / membres démon / stries :
+ * consommés par `monsterInjection` et ré-exportés par `monstrous.ts` pour les `creatures/defs`.
+ *
+ * Les CORNES/QUEUE ne vivent PLUS ici : leur art MULTI-VUES a été déplacé dans le registre `defs/`
+ * `appendages/` (1 appendice = 1 fichier), référencé PAR ID (monster.cornes / appendageFeature).
  */
 
-// Cornes de mutant génériques (petites, droites) — repli quand la tête ne déclare pas ses cornes.
-export const OV_CORNES = `<path d="M-5 -1 q-2 -9 -8 -12 q2 7 4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M5 -1 q2 -9 8 -12 q-2 7 -4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/>`;
-// PROFIL du repli générique : petites cornes balayées haut-arrière (proche devant lointaine).
-export const OV_CORNES_PROFILE = `<path d="M-2 -2 q-3 -8 -8 -11 q4 6 6 12 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M1 -3 q-2 -7 -6 -10 q3 6 5 11 z" fill="#bcb19f" stroke="#3a3026" stroke-width="0.5"/>`;
-// Grandes cornes ivoire de chèvre balayées vers l'arrière (Gor/Ungor/Chamane).
-export const OV_CORNES_CAPRIN = `<path d="M-6 -4 Q-12 -10 -10 -20 Q-7 -13 -3 -7 Z" fill="#e8e0c8" stroke="#3a3026" stroke-width="0.5"/><path d="M6 -4 Q12 -10 10 -20 Q7 -13 3 -7 Z" fill="#e8e0c8" stroke="#3a3026" stroke-width="0.5"/>`;
-// PROFIL (tête tournée vers +x) : les cornes balaient vers le HAUT-ARRIÈRE (-x), pas en éventail L/R.
-// Corne proche (grande, claire) + corne lointaine (plus petite, teinte cassée) = profondeur.
-export const OV_CORNES_CAPRIN_PROFILE = `<path d="M-1 -5 Q-9 -10 -12 -19 Q-7 -13 0 -7 Z" fill="#e8e0c8" stroke="#3a3026" stroke-width="0.5"/><path d="M3 -6 Q-2 -10 -5 -17 Q-1 -13 4 -8 Z" fill="#d9d0b6" stroke="#3a3026" stroke-width="0.5"/>`;
-
-// GRANDE paire de cornes du Gor (LDB 83 : « les plus grandes sont les meilleures » — statut) :
-// larges croissants annelés qui s'évasent puis se recourbent vers l'avant, base épaisse.
-export const OV_CORNES_GOR =
-  `<path d="M-5 -3 Q-15 -8 -18 -19 Q-19 -28 -12 -33 Q-16 -26 -13 -19 Q-10 -11 -2 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.6"/>`
-  + `<path d="M-14 -14 q-2.5 -1.4 -3.4 -3.4 M-16 -20 q-2 -1.2 -2.6 -3 M-15.5 -26 q-1.8 -0.8 -2.3 -2.4" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`
-  + `<path d="M5 -3 Q15 -8 18 -19 Q19 -28 12 -33 Q16 -26 13 -19 Q10 -11 2 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.6"/>`
-  + `<path d="M14 -14 q2.5 -1.4 3.4 -3.4 M16 -20 q2 -1.2 2.6 -3 M15.5 -26 q1.8 -0.8 2.3 -2.4" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`;
-// PROFIL : grands croissants du Gor balayés haut-arrière, corne proche devant la lointaine.
-export const OV_CORNES_GOR_PROFILE =
-  `<path d="M-2 -4 Q-13 -8 -16 -19 Q-17 -28 -10 -33 Q-14 -26 -11 -19 Q-8 -11 0 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.6"/>`
-  + `<path d="M-12 -14 q-2.2 -1.3 -3 -3.2 M-14 -20 q-1.8 -1.1 -2.4 -2.8" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`
-  + `<path d="M2 -5 Q-6 -9 -9 -18 Q-10 -25 -4 -29 Q-8 -23 -6 -18 Q-4 -12 3 -8 Z" fill="#cabf9f" stroke="#3a3026" stroke-width="0.6"/>`;
-
-// Cornes VESTIGIALES de l'ungor (LDB 83 : « cornes vestigiales ou très courtes ») : moignons.
-export const OV_CORNES_VESTIGIALES =
-  `<path d="M-5.5 -6 Q-7.5 -9 -6.5 -12 Q-4.5 -9.5 -3.5 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`
-  + `<path d="M5.5 -6 Q7.5 -9 6.5 -12 Q4.5 -9.5 3.5 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`;
-// PROFIL : deux moignons rapprochés, balayés haut-arrière.
-export const OV_CORNES_VESTIGIALES_PROFILE =
-  `<path d="M-1 -6 Q-3.5 -9 -3 -12.5 Q-1 -10 0 -7.5 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`
-  + `<path d="M1.6 -6.5 Q-0.4 -9 -0.1 -12 Q1.4 -10 2.4 -8 Z" fill="#cfc4a8" stroke="#3a3026" stroke-width="0.5"/>`;
-// Grandes cornes bovines crème en V (Minotaure/Taureau) — plus écartées.
-export const OV_CORNES_TAUREAU = `<path d="M-7 -5 Q-16 -10 -16 -22 Q-11 -15 -4 -8 Z" fill="#dcd2b4" stroke="#3a3026" stroke-width="0.6"/><path d="M7 -5 Q16 -10 16 -22 Q11 -15 4 -8 Z" fill="#dcd2b4" stroke="#3a3026" stroke-width="0.6"/>`;
-// PROFIL : les deux cornes bovines balaient vers le haut-arrière, corne proche devant la lointaine.
-export const OV_CORNES_TAUREAU_PROFILE = `<path d="M-1 -6 Q-10 -11 -13 -21 Q-8 -14 0 -8 Z" fill="#dcd2b4" stroke="#3a3026" stroke-width="0.6"/><path d="M3 -7 Q-3 -11 -6 -19 Q-2 -14 4 -9 Z" fill="#cbc1a3" stroke="#3a3026" stroke-width="0.6"/>`;
-// Longues cornes noires lisses recourbées vers l'arrière (démon de Khorne).
-// Cornes de SANGUINAIRE (LDB 84 : « monstrueux visage cornu ») : croissants noirs épais qui
-// s'évasent sur les côtés puis se RECOURBENT vers l'avant — plus d'oreilles de lapin droites.
-export const OV_CORNES_DEMON =
-  `<path d="M-4 -7 Q-13 -9 -16 -17 Q-18 -25 -12 -30 Q-9 -32 -6 -31 Q-11 -28 -12 -23 Q-12 -16 -8 -12 Q-6 -10 -2 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/>`
-  + `<path d="M-13 -16 q-1.8 -1.2 -2.4 -3 M-13.5 -22 q-1.4 -1 -1.6 -2.6" stroke="#3a3026" stroke-width="0.6" fill="none"/>`
-  + `<path d="M4 -7 Q13 -9 16 -17 Q18 -25 12 -30 Q9 -32 6 -31 Q11 -28 12 -23 Q12 -16 8 -12 Q6 -10 2 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/>`
-  + `<path d="M13 -16 q1.8 -1.2 2.4 -3 M13.5 -22 q1.4 -1 1.6 -2.6" stroke="#3a3026" stroke-width="0.6" fill="none"/>`;
-// PROFIL : cornes noires recourbées balayant vers le haut-arrière (proche devant lointaine).
-export const OV_CORNES_DEMON_PROFILE =
-  `<path d="M-1 -8 Q-11 -11 -14 -19 Q-16 -27 -10 -30 Q-12 -25 -11 -19 Q-9 -13 -1 -10 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/>`
-  + `<path d="M3 -9 Q-4 -11 -7 -18 Q-9 -25 -4 -27 Q-6 -22 -6 -17 Q-4 -13 3 -11 Z" fill="#0f0b08" stroke="#000" stroke-width="0.5"/>`;
-export const OV_QUEUE = `<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`;
-// PROFIL du repli générique : la queue traîne derrière (-x), miroir de la face.
-export const OV_QUEUE_PROFILE = `<path d="M0 2 Q-13 9 -17 24 Q-11 23 -7 15 Q-3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`;
-// Queue de RAT (skaven) — longue, NUE, ROSE, en S, traînant au sol : c'est LE tell de
-// silhouette du skaven (sans elle il lit comme un nain trapu brun). Repère os `bassin`.
-export const OV_QUEUE_RAT = `<path d="M0 3 Q16 6 22 18 Q26 28 20 34 Q24 26 17 21 Q9 17 1 14 Z" fill="#d39a8e" stroke="#9a6a60" stroke-width="0.7"/><path d="M2 5 Q15 8 20 18" fill="none" stroke="#b87f74" stroke-width="0.6" opacity="0.6"/><path d="M6 9 q1 1 0 2 M11 12 q1 1 0 2 M16 16 q1 1 0 2" stroke="#9a6a60" stroke-width="0.5" fill="none" opacity="0.6"/>`;
-// PROFIL (tête vers +x) : la queue TRAÎNE derrière (-x), miroir de la vue de face.
-export const OV_QUEUE_RAT_PROFILE = `<path d="M0 3 Q-16 6 -22 18 Q-26 28 -20 34 Q-24 26 -17 21 Q-9 17 -1 14 Z" fill="#d39a8e" stroke="#9a6a60" stroke-width="0.7"/><path d="M-2 5 Q-15 8 -20 18" fill="none" stroke="#b87f74" stroke-width="0.6" opacity="0.6"/><path d="M-6 9 q-1 1 0 2 M-11 12 q-1 1 0 2 M-16 16 q-1 1 0 2" stroke="#9a6a60" stroke-width="0.5" fill="none" opacity="0.6"/>`;
 // Longues griffes recourbées aux mains (goule) — calque sur l'os `main` (poignet origine,
 // doigts vers +y). Griffes sombres dépassant des doigts.
 export const OV_GRIFFES = `<path d="M-2.6 3.4 q-1.4 3 -1.2 6 M-0.9 4.4 q-0.5 3.4 -0.2 6.4 M0.9 4.4 q0.5 3.4 0.2 6.4 M2.6 3.4 q1.4 3 1.2 6" stroke="#241a12" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
