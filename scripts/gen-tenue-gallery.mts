@@ -1,14 +1,14 @@
-/** Galerie des 64 tenues de carrière (rig, art tokenisé + palette par défaut), GRANDES vignettes.
+/** Galerie des tenues SPÉCIFIQUES (rig, art tokenisé + palette par défaut), GRANDES vignettes.
  *  Inline SVG self-contained (DEFS par vignette). Lancer : npx tsx scripts/gen-tenue-gallery.mts → public/tenue-gallery.html */
 import { writeFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import { GENERATED_CAREER_TENUES_AUTO } from '../src/gameIso/rig/parts/generated/careerTenuesAuto';
+import { SPECIFIC_TENUE_NAMES } from '../src/gameIso/rig/parts/tenues';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 
-const careers = Object.keys(GENERATED_CAREER_TENUES_AUTO).sort((a, b) => a.localeCompare(b, 'fr'));
+const careers = SPECIFIC_TENUE_NAMES.slice().sort((a, b) => a.localeCompare(b, 'fr'));
 const SC = 1.85; // sprite natif ~120×150 → ~222×278
 const CW = Math.round(120 * SC + 24);
 const CH = Math.round(150 * SC + 16);

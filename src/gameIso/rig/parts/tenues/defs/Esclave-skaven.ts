@@ -4,7 +4,6 @@ import type { TenueDef } from '../types';
 // loqueteux. Bras et tête NUS (fourrure de la race).
 export const tenue: TenueDef = {
   name: 'Esclave skaven',
-  career: true,
   palette: { vet1: '#6e5f4a', cuir: '#4a3c2c' },
   set: {
     torse: `<g stroke-linejoin="round">`

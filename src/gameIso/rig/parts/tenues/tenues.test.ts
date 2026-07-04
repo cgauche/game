@@ -1,22 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { TENUES, TENUE_NUE, CAREER_TENUE_DEFS } from './index';
+import { TENUE_NUE, CLASS_TENUE_BY_ID, TENUE_BY_ID, TENUE_BAREFOOT } from './index';
 import { TENUE_DEFS } from './_registry.generated';
 import { pickView } from '../types';
 import { tenueFor, tenuePaletteFor } from '../career';
 
-describe('registre des tenues (auto-découverte defs/)', () => {
-  it('dérive TENUES des fichiers defs/ : 8 archétypes de classe + Nu (+ tenues de carrière career:true)', () => {
-    for (const c of ['Guerriers', 'Lettrés', 'Roublards', 'Ruraux', 'Citadins', 'Courtisans', 'Itinérants', 'Riverains', 'Nu']) {
-      expect(TENUES[c], `tenue manquante : ${c}`).toBeDefined();
+describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
+  it('8 archétypes de classe dérivés des defs/ (taxonomie careers.json, sans flag)', () => {
+    for (const c of ['guerriers', 'lettres', 'roublards', 'ruraux', 'citadins', 'courtisans', 'itinerants', 'riverains']) {
+      expect(CLASS_TENUE_BY_ID[c], `archétype de classe manquant : ${c}`).toBeDefined();
     }
-    expect(TENUE_DEFS.filter((d) => !d.career).length).toBe(9);
+    expect(Object.keys(CLASS_TENUE_BY_ID).length).toBe(8);
   });
 
-  it("une tenue de CARRIÈRE déposée en defs/ (career:true) est consommée par tenueFor — un fichier, zéro édition d'existant", () => {
-    expect(CAREER_TENUE_DEFS['Guerrier du Chaos']).toBeDefined();
+  it("une tenue SPÉCIFIQUE déposée en defs/ est consommée par tenueFor — un fichier, zéro merge", () => {
+    expect(TENUE_BY_ID['guerrier-du-chaos']).toBeDefined();
     const t = tenueFor('Guerrier du Chaos');
     expect(pickView(t.tete, 'profile')).toContain('@metal'); // heaume cornu, vue dédiée
-    expect(tenuePaletteFor('Guerrier du Chaos').metal).toBe('#3a3a46'); // palette du def
+    expect(tenuePaletteFor('Guerrier du Chaos').metal).toBe('#3a3a46'); // palette portée par le def
   });
 
   it('chaque def expose torse + jambes non vides', () => {
@@ -26,15 +26,17 @@ describe('registre des tenues (auto-découverte defs/)', () => {
     }
   });
 
-  it('la tenue Nu utilise le token de peau (@peau) — suit la palette d’espèce', () => {
-    expect(pickView(TENUE_NUE.torse, 'front')).toContain('@peau');
+  it('barefoot = SOURCE UNIQUE (flag du def) : Nu + Squelette, plus de hardcode par id', () => {
+    expect(pickView(TENUE_NUE.torse, 'front')).toContain('@peau'); // suit la palette d'espèce
+    expect(TENUE_BAREFOOT.has('nu')).toBe(true);
+    expect(TENUE_BAREFOOT.has('squelette')).toBe(true);
   });
 
   it('tenueFor("Nu") renvoie le corps nu', () => {
     expect(tenueFor('Nu')).toBe(TENUE_NUE);
   });
 
-  it('tenueFor(carrière inconnue) retombe sur un archétype de classe (Citadins)', () => {
-    expect(tenueFor('Carrière imaginaire')).toBe(TENUES.Citadins);
+  it("tenueFor(carrière inconnue) retombe sur l'archétype de classe Citadins", () => {
+    expect(tenueFor('Carrière imaginaire')).toBe(CLASS_TENUE_BY_ID.citadins);
   });
 });

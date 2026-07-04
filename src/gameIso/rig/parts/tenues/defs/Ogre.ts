@@ -5,7 +5,6 @@ import type { TenueDef } from '../types';
 // la race ; un Ogre en career 'Nu' est réellement nu, un PNJ ogre peut porter autre chose.
 export const tenue: TenueDef = {
   name: 'Ogre',
-  career: true,
   palette: { cuir: '#5a3f24', metal: '#8b94a6', vet1: '#7a6a4a' },
   set: {
     // torse de CHAIR (le slot remplace le « Nu ») + plaque-bedaine par-dessus la panse

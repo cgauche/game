@@ -6,7 +6,6 @@ import { NU_TORSE_FRONT, NU_TORSE_BACK, NU_TORSE_PROFILE, NU_JAMBE } from '../nu
 // bareFoot : pattes griffues, pas de bottes.
 export const tenue: TenueDef = {
   name: 'Rat ogre',
-  career: true,
   bareFoot: true,
   palette: { vet1: '#9a8a6a', cuir: '#4a3a28' },
   set: {

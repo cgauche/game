@@ -1,0 +1,103 @@
+import type { TenueDef } from '../types';
+
+export const tenue: TenueDef = {
+  name: "Intendant",
+  palette: {"vet1":"#e7dab6","vet1O":"#9c855a","vet2":"#a83030","vet1H":"#d9c79c","vet2H":"#3f7a3c","vet2O":"#27521f","cuirO":"#3e2c15","cuir":"#6a4a22","metal":"#d8a83a","metalH":"#e0b440","metalO":"#7a5a1c"},
+  set: {
+    torse: { front: `<!-- Intendant: pourpoint creme matelasse bouffant, echarpe verte, rosettes rouges, large ceinture d'intendant garnie d'etuis a parchemin -->
+<defs><linearGradient id="g_int_cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="@vet1H"/><stop offset="55%" stop-color="@vet1H"/><stop offset="100%" stop-color="@vet1O"/></linearGradient><linearGradient id="g_int_belt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="@vet1O"/><stop offset="100%" stop-color="@vet1O"/></linearGradient></defs>
+<!-- corps du pourpoint, ventre rebondi -->
+<path d="M-15 -27 Q0 -32 15 -27 L14 6 Q15 24 11 33 Q0 39 -11 33 Q-15 24 -14 6 Z" fill="url(#g_int_cream)" stroke="@vet1O" stroke-width="0.8"/>
+<!-- epaules bouffantes matelassees (puff) -->
+<path d="M-15 -27 Q-22 -24 -19 -14 Q-13 -16 -10 -22 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
+<path d="M15 -27 Q22 -24 19 -14 Q13 -16 10 -22 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
+<!-- crevettes / fentes matelassees du plastron -->
+<path d="M-8 -22 Q-9 -8 -8 6" fill="none" stroke="@vet1O" stroke-width="0.8" stroke-linecap="round"/>
+<path d="M0 -24 L0 4" fill="none" stroke="@vet1O" stroke-width="0.8" stroke-linecap="round"/>
+<path d="M8 -22 Q9 -8 8 6" fill="none" stroke="@vet1O" stroke-width="0.8" stroke-linecap="round"/>
+<!-- echarpe / col vert en travers de la poitrine -->
+<path d="M-13 -24 Q-2 -16 13 -25 L12 -19 Q-1 -10 -13 -18 Z" fill="@vet2H" stroke="@vet2O" stroke-width="0.6"/>
+<path d="M-11 -16 Q-4 -8 6 0 L4 4 Q-6 -4 -12 -11 Z" fill="@vet2" stroke="@vet2O" stroke-width="0.5"/>
+<!-- rosette rouge a l'epaule droite -->
+<g transform="translate(9,-21)"><circle r="3.4" fill="@vet2"/><circle r="1.4" fill="@metal"/><path d="M-3 -3 L-1 -5 M3 -3 L5 -4 M-3 3 L-5 5" stroke="@vet2O" stroke-width="1" stroke-linecap="round"/></g>
+<!-- petite rosette rouge centre-poitrine -->
+<g transform="translate(-3,-4)"><circle r="2.3" fill="@vet2"/><circle r="0.9" fill="@metalH"/></g>
+<!-- large ceinture d'intendant -->
+<rect x="-14" y="5" width="28" height="7" rx="2" fill="url(#g_int_belt)" stroke="@cuirO" stroke-width="0.7"/>
+<rect x="-3" y="5.5" width="6" height="6" rx="1" fill="@metal" stroke="@metalO" stroke-width="0.6"/>
+<!-- etuis a parchemin / rouleaux pendus a la ceinture (attribut de l'intendant) -->
+<g stroke="@cuir" stroke-width="0.6"><rect x="-11" y="11" width="3.4" height="13" rx="1.4" fill="@vet1H"/><rect x="-6.7" y="11" width="3.4" height="15" rx="1.4" fill="@vet1H"/><rect x="-2.4" y="11" width="3.4" height="12" rx="1.4" fill="@vet1"/></g>
+<!-- bourse a clefs a droite -->
+<path d="M5 11 Q11 11 11 18 Q11 24 6 24 Q3 22 4 16 Q3 12 5 11 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.7"/>
+<!-- basque matelassee rouge sous la ceinture -->
+<path d="M-13 12 Q0 16 13 12 L11 33 Q0 38 -11 33 Z" fill="@vet2" stroke="@vet2O" stroke-width="0.7"/>
+<path d="M-7 14 L-7 32 M0 15 L0 35 M7 14 L7 32" stroke="@vet2O" stroke-width="0.7"/>`, back: `<!-- Intendant DOS: pourpoint creme matelasse, echarpe verte nouee dans le dos, ceinture d'intendant, basque rouge, etuis a parchemin de cote -->
+<defs><linearGradient id="g_int_cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#efe4c4"/><stop offset="55%" stop-color="#d9c79c"/><stop offset="100%" stop-color="#b39d6e"/></linearGradient><linearGradient id="g_int_belt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a07840"/><stop offset="100%" stop-color="#5e4322"/></linearGradient></defs>
+<!-- corps du pourpoint vu de dos, meme silhouette -->
+<path d="M-15 -27 Q0 -32 15 -27 L14 6 Q15 24 11 33 Q0 39 -11 33 Q-15 24 -14 6 Z" fill="url(#g_int_cream)" stroke="#8a734a" stroke-width="0.8"/>
+<!-- epaules bouffantes matelassees (puff) -->
+<path d="M-15 -27 Q-22 -24 -19 -14 Q-13 -16 -10 -22 Z" fill="#e7dab6" stroke="#9c855a" stroke-width="0.7"/>
+<path d="M15 -27 Q22 -24 19 -14 Q13 -16 10 -22 Z" fill="#e7dab6" stroke="#9c855a" stroke-width="0.7"/>
+<!-- couture dorsale centrale + omoplates -->
+<path d="M0 -26 L0 5" fill="none" stroke="#a8946a" stroke-width="1" stroke-linecap="round"/>
+<path d="M-7 -22 Q-9 -8 -7 5" fill="none" stroke="#b8a578" stroke-width="0.7" stroke-linecap="round"/>
+<path d="M7 -22 Q9 -8 7 5" fill="none" stroke="#b8a578" stroke-width="0.7" stroke-linecap="round"/>
+<!-- pli d'omoplate -->
+<path d="M-12 -22 Q-6 -19 -3 -23" fill="none" stroke="#c2b083" stroke-width="0.6"/>
+<path d="M12 -22 Q6 -19 3 -23" fill="none" stroke="#c2b083" stroke-width="0.6"/>
+<!-- echarpe verte croisant le haut du dos -->
+<path d="M-13 -24 Q0 -19 13 -25 L12 -19 Q0 -13 -13 -18 Z" fill="#356b34" stroke="#234f1d" stroke-width="0.6"/>
+<!-- ceinture d'intendant (dos, sans boucle) -->
+<rect x="-14" y="5" width="28" height="7" rx="2" fill="url(#g_int_belt)" stroke="#3e2c15" stroke-width="0.7"/>
+<path d="M-14 8.5 L14 8.5" stroke="#7a5a2c" stroke-width="0.5" opacity="0.6"/>
+<!-- noeud de l'echarpe verte pendant dans le dos -->
+<path d="M-2 6 Q-5 10 -3 16 Q0 12 0 8 Q0 12 3 16 Q5 10 2 6 Z" fill="#3f7a3c" stroke="#27521f" stroke-width="0.6"/>
+<!-- etuis a parchemin entrevus de cote a la hanche gauche -->
+<g stroke="#6a4a22" stroke-width="0.6"><rect x="-12" y="11" width="3.2" height="12" rx="1.4" fill="#cdb682"/><rect x="-8" y="11" width="3.2" height="13" rx="1.4" fill="#c6ad77"/></g>
+<!-- basque matelassee rouge sous la ceinture (dos) -->
+<path d="M-13 12 Q0 16 13 12 L11 33 Q0 38 -11 33 Z" fill="#a23230" stroke="#6e1d1c" stroke-width="0.7"/>
+<path d="M-6 14 L-6 32 M0 15 L0 35 M6 14 L6 32" stroke="#7d2120" stroke-width="0.7"/>`, profile: `<!-- Intendant PROFIL (tourne a droite): torse etroit vu de cote, une epaule bouffante, echarpe verte en diagonale, ceinture laterale, basque rouge drapee -->
+<!-- corps du pourpoint, silhouette etroite de profil, ventre proeminent vers l'avant (droite) -->
+<path d="M-7 -27 Q2 -31 9 -26 Q12 -10 11 6 Q12 22 9 33 Q1 38 -6 33 Q-8 22 -7 6 Z" fill="url(#g_int_cream)" stroke="#8a734a" stroke-width="0.8"/>
+<!-- epaule bouffante matelassee unique (de profil) -->
+<path d="M-6 -27 Q-13 -24 -10 -14 Q-3 -16 1 -23 Z" fill="#e7dab6" stroke="#9c855a" stroke-width="0.7"/>
+<!-- bras de profil le long du flanc -->
+<path d="M-7 -20 Q-11 -8 -9 8 Q-6 12 -3 8 Q-5 -6 -2 -19 Z" fill="#ddcca0" stroke="#9c855a" stroke-width="0.6"/>
+<!-- drape lateral / pli vertical du plastron -->
+<path d="M3 -24 Q4 -8 3 6" fill="none" stroke="#b8a578" stroke-width="0.8" stroke-linecap="round"/>
+<!-- echarpe verte en diagonale sur l'epaule visible -->
+<path d="M-6 -25 Q3 -20 9 -23 L8 -17 Q2 -14 -6 -19 Z" fill="#3f7a3c" stroke="#27521f" stroke-width="0.6"/>
+<path d="M-5 -17 Q1 -11 6 -4 L4 0 Q-1 -7 -6 -12 Z" fill="#356b34" stroke="#234f1d" stroke-width="0.5"/>
+<!-- ceinture d'intendant vue de cote -->
+<path d="M-7 5 Q2 4 11 6 L11 12 Q2 11 -7 12 Z" fill="url(#g_int_belt)" stroke="#3e2c15" stroke-width="0.7"/>
+<!-- un etui a parchemin pendu au flanc -->
+<rect x="-3" y="11" width="3.2" height="14" rx="1.4" fill="#d7c28e" stroke="#6a4a22" stroke-width="0.6"/>
+<!-- basque matelassee rouge, drapee de cote -->
+<path d="M-7 12 Q2 15 11 12 L9 33 Q1 38 -6 33 Z" fill="#a23230" stroke="#6e1d1c" stroke-width="0.7"/>
+<path d="M2 14 L2 35 M-3 14 L-3 32" stroke="#7d2120" stroke-width="0.7"/>` },
+    jambes: `<!-- Intendant: haut-de-chausses bouffant raye rouge/creme (pluderhosen) puis bas de chausse uni, botte brune. Cote gauche, miroite a droite. -->
+<!-- pluderhosen bouffant (cuisse) raye rouge et creme -->
+<path d="M-5 0 Q-9 2 -8 12 Q-9 22 -3 24 Q3 24 4 14 Q5 4 3 0 Z" fill="@vet1H" stroke="@vet1O" stroke-width="0.7"/>
+<path d="M-7 4 Q-8 12 -5 20" fill="none" stroke="@vet2" stroke-width="2" stroke-linecap="round"/>
+<path d="M-2 2 Q-1 12 -1 22" fill="none" stroke="@vet2" stroke-width="2" stroke-linecap="round"/>
+<path d="M3 3 Q3 12 1 21" fill="none" stroke="@vet2" stroke-width="1.6" stroke-linecap="round"/>
+<!-- jarretiere a la base du pluderhosen -->
+<path d="M-7 22 Q-2 26 4 22 L4 25 Q-2 28 -7 25 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.6"/>
+<!-- bas de chausse uni (mollet) -->
+<path d="M-4 25 Q-5 36 -3 42 L3 42 Q4 34 3 25 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.6"/>
+<!-- botte brune souple -->
+<path d="M-4 41 Q-5 47 -3 50 L5 50 Q6 46 4 41 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.8"/>
+<path d="M-4 43 Q0 44 4 43" fill="none" stroke="@cuirO" stroke-width="0.6"/>`,
+    bras: `<!-- Intendant: manche creme bouffante matelassee + gant vert. Bras gauche, miroite a droite. -->
+<!-- haut de manche bouffant (epaule->coude) -->
+<path d="M-4 -2 Q-9 0 -8 9 Q-9 17 -3 18 Q3 18 4 10 Q5 2 3 -2 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
+<path d="M-5 1 Q-6 9 -4 16 M1 0 Q2 9 1 16" fill="none" stroke="@vet1O" stroke-width="0.7" stroke-linecap="round"/>
+<!-- crevee laissant voir le tissu interieur clair -->
+<path d="M-2 4 Q-3 10 -1 14" fill="none" stroke="@vet1H" stroke-width="1.4" stroke-linecap="round"/>
+<!-- avant-bras: manche serree creme -->
+<path d="M-3 17 Q-4 23 -3 27 L3 27 Q4 22 3 17 Z" fill="@vet1H" stroke="@vet1O" stroke-width="0.6"/>
+<!-- gant vert -->
+<path d="M-3 26 Q-4 31 -2 34 Q1 35 3 33 Q4 29 3 26 Z" fill="@vet2H" stroke="@vet2O" stroke-width="0.7"/>
+<path d="M-2 33 L-2 34 M0 34 L0 35 M2 33 L2 34" stroke="@vet2O" stroke-width="0.6" stroke-linecap="round"/>`,
+  },
+};

@@ -7,7 +7,6 @@ import { NU_TORSE_FRONT, NU_TORSE_BACK, NU_TORSE_PROFILE, NU_JAMBE } from '../nu
 // (l'ivoire d'os n'est pas une étoffe), cordon en @cuir.
 export const tenue: TenueDef = {
   name: 'Chamane-Bray',
-  career: true,
   bareFoot: true,
   palette: { cuir: '#3a2a1a' },
   set: {

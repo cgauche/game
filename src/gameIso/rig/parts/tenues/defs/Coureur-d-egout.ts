@@ -4,7 +4,6 @@ import type { TenueDef } from '../types';
 // bandages, capuche pointue (museau libre), ceinture à fioles de poison.
 export const tenue: TenueDef = {
   name: "Coureur d'égout",
-  career: true,
   palette: { vet1: '#2e2a30', vet2: '#1d1a20', cuir: '#3c3026' },
   set: {
     torse: `<g stroke-linejoin="round">`

@@ -7,7 +7,6 @@ import { NU_TORSE_FRONT, NU_TORSE_BACK, NU_TORSE_PROFILE, NU_JAMBE } from '../nu
 // features du def — le slot bras serait écrasé par les bras-pinces monstrueux.
 export const tenue: TenueDef = {
   name: 'Démonette',
-  career: true,
   bareFoot: true,
   palette: { vet1: '#1f1c30', vet2: '#c8a23c' },
   set: {

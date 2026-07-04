@@ -1,6 +1,6 @@
 /**
- * Galerie QC des vues de TENUE (E·7) : rend le RIG COMPLET en front/profil/dos pour
- * chaque carrière ayant des vues générées, pour valider le torse dos/profil en contexte.
+ * Galerie QC des vues de TENUE : rend le RIG COMPLET en front/profil/dos pour chaque tenue
+ * SPÉCIFIQUE du registre `defs/`, pour valider le torse dos/profil en contexte.
  * Lancer : npx tsx scripts/gen-tenue-views-gallery.mts → public/tenue-views.html
  */
 import { writeFileSync } from 'node:fs';
@@ -8,11 +8,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import tenueViews from '../src/gameIso/rig/parts/generated/tenueViews.json';
+import { SPECIFIC_TENUE_NAMES } from '../src/gameIso/rig/parts/tenues';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 
 const app: Appearance = { species: 'Humain', sex: 'M', build: 0.55, seed: 4 };
-const careers = Object.keys(tenueViews as Record<string, unknown>).sort();
+const careers = SPECIFIC_TENUE_NAMES.slice().sort((a, b) => a.localeCompare(b, 'fr'));
 
 function cell(career: string, view: 'front' | 'profile' | 'back') {
   const svg = renderToStaticMarkup(
@@ -34,7 +34,7 @@ const rows = careers.map((c) =>
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Tenues — vues</title></head>
 <body style="background:#11141c;padding:16px">
-<h1 style="color:#eee;font:18px sans-serif">Tenues — vues dos/profil (E·7) — ${careers.length} carrières</h1>
+<h1 style="color:#eee;font:18px sans-serif">Tenues — vues dos/profil — ${careers.length} tenues</h1>
 <p style="color:#9ab;font:12px sans-serif">Rig complet (Humain M) en face/profil/dos. Le torse de dos doit être cohérent (sans détails de face), le profil plus étroit.</p>
 ${rows.join('')}
 </body></html>`;

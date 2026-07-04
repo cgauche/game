@@ -5,24 +5,21 @@ import type { StoredPalette } from '../../palette';
 export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', PartArt>>;
 
 /**
- * Une tenue = un fichier `defs/<Nom>.ts`. `name` = la CLÉ de lookup :
- *   - nom de CLASSE WFRP (Guerriers, Lettrés, Roublards…) pour les archétypes de classe
- *     (fallback quand une carrière n'a pas d'art dédié, cf. careerTenueFor) ;
- *   - 'Nu' pour le corps de chair sans vêtement (monstres : trolls, goules, snotlings ;
- *     torse/jambes peints en @peau, le token suit la palette d'espèce) ;
- *   - avec `career: true` : une TENUE DE CARRIÈRE complète (PNJ nommé, armure de faction…) —
- *     injectée dans `GENERATED_CAREER_TENUES` (PRIORITAIRE sur l'auto et le MANUAL legacy).
- *     Les slots peuvent porter les 3 vues `{front, back, profile}`. Ajouter un humanoïde à
- *     tenue dédiée = DÉPOSER ce fichier + un def de race/PNJ qui pointe `career: '<name>'` —
- *     ZÉRO édition de fichier existant.
+ * Une tenue = un fichier `defs/<Nom>.ts`. SEULE source (plus d'AUTO/MANUAL/merge). `name` = la
+ * CLÉ de lookup, résolue par id (slug) dans `tenueFor` :
+ *   - nom d'une CLASSE WFRP (Guerriers, Lettrés, Roublards…) → archétype de classe, repli quand
+ *     une carrière n'a pas de tenue dédiée. La taxonomie des classes (careers.json) discrimine
+ *     seule « archétype de classe » vs « tenue spécifique » — aucun flag à porter ;
+ *   - nom d'une CARRIÈRE / CRÉATURE / PNJ → tenue spécifique (prioritaire par id) ;
+ *   - 'Nu' pour le corps de chair sans vêtement (torse/jambes en @peau, le token suit l'espèce).
+ * Les slots portent une string (FRONT) ou les 3 vues `{front, back, profile}`. Ajouter un
+ * humanoïde habillé = DÉPOSER ce fichier (+ un def de race/PNJ pointant `tenue: '<name>'`).
  *
  * `palette` : couleurs par défaut des `@tokens` de l'art (StoredPalette = hex exact) → rendu
- * sans perte + recoloriage cohérent, comme `CAREER_PALETTES` pour les tenues de carrière.
- * Résolue par `tenuePaletteFor` (carrière dédiée > def `career` > archétype de classe).
- * Absente pour 'Nu' (la peau suit la palette d'espèce).
+ * sans perte + recoloriage cohérent. Résolue par `tenuePaletteFor` (tenue > classe).
  *
- * `bareFoot` : tenue de MONSTRE qui ne chausse pas (pagne du Sanguinaire, corset de la
- * Démonette…) — le pied reste nu griffu (CLAWFOOT) et les silhouettes dos/profil substituées
- * restent en chair, comme pour 'Nu'. Sans ce flag, toute carrière ≠ Nu reçoit des bottes.
+ * `bareFoot` : tenue qui ne chausse pas (corps 'Nu', squelette décharné, pagne du Sanguinaire…) —
+ * pied nu griffu (CLAWFOOT), silhouettes dos/profil substituées restent en chair. SOURCE UNIQUE
+ * du barefoot (plus de hardcode par id dans resolve).
  */
-export type TenueDef = { name: string; set: TenueSet; palette?: StoredPalette; career?: boolean; bareFoot?: boolean };
+export type TenueDef = { name: string; set: TenueSet; palette?: StoredPalette; bareFoot?: boolean };
