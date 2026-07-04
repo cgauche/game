@@ -28,6 +28,7 @@ import { touchActors } from './combatOrParty';
 import { gainCorruption } from './corruptionFlow';
 
 import type { Get, Set } from './flowTypes';
+import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, type TestResult } from '../engine/tests';
 
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
 export interface PendingBase {
@@ -72,6 +73,30 @@ export interface ForcedPick {
   critable?: boolean;
 }
 
+/**
+ * Lentille de DÉRIVATION des verbes d'influence (Chance +1 DR / Résilience « Je ne faillirai pas ! » /
+ * Résistance Menace). Ces règles sont GLOBALES (LDB 17 l.68/83-84) : quand un flux fournit sa lentille,
+ * la fabrique compose `bonusSL`/`forceSuccess`/`setForcedRoll`/`resist` DEPUIS elle — la mécanique ne vit
+ * plus qu'ICI, le flux ne déclare que SA FORME. Un flux sans lentille retombe sur le chemin `resolve(forced)`
+ * / `bonus.derive` (repli). Le `+1 DR` passe TOUJOURS par `bumpSL` (ne touche pas `success` — LDB 17 l.84 :
+ * un Degré de plus ne transforme pas un échec en réussite).
+ */
+export interface RollFlowLens<P extends PendingBase, Slot extends PendingBase = P> {
+  /** TestResult ACTEUR courant du slot (post-jet), ou `null` (pas encore lancé / rien à re-dériver). */
+  actorTR: (slot: Slot) => TestResult | null;
+  /** Re-dérive le patch du slot depuis un TestResult acteur canonique — FINISHER PUR (aucun RNG) : re-oppose
+   *  contre le figé si opposé, projette vers la forme concrète. `null` = cas interdit (pas de dépense). */
+  applyRoll: (s: GameState, slot: Slot, actor: Combatant, get: Get, tr: TestResult, p: P) => Partial<Slot> | null;
+  /** Cible du dé de l'acteur (valeur ≤ = réussite) → source de `maxForcedRoll`/`evaluateTest`. ABSENT ⇒ le
+   *  flux ne construit jamais de dé forcé (opposé binaire → `forceWin` ; pas de picker → pas de setForcedRoll). */
+  dieTarget?: (slot: Slot, actor: Combatant) => number | null;
+  /** Plancher de DR d'une réussite forcée (défaut 1 ; opposé attaque/défense : DR de l'opposant + 1). */
+  floorSL?: (slot: Slot, actor: Combatant) => number;
+  /** forceSuccess « sans re-dériver le dé » : opposé BINAIRE (→ issue « success ») ou flip-success simple.
+   *  PRÉSENT ⇒ forceSuccess l'utilise au lieu de `applyRoll(forcedTR(…))`. `null` = interdit / déjà réussi. */
+  forceWin?: (slot: Slot, actor: Combatant, tr: TestResult | null) => Partial<Slot> | null;
+}
+
 export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = P> {
   /** Clé du pending dans le store (ex. `'pendingTrample'`). */
   key: keyof GameState & string;
@@ -100,6 +125,10 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
   failed: (slot: Slot) => boolean;
   /** Chance « +1 DR » (absent → le flux ne l'offre pas). `guard` → cas interdits (ex. Test binaire). */
   bonus?: { guard?: (slot: Slot) => boolean; derive: (s: GameState, slot: Slot, actor: Combatant, p?: P) => Partial<Slot> | null };
+  /** Lentille de dérivation des verbes d'influence (cf. `RollFlowLens`). PRÉSENTE ⇒ la fabrique compose
+   *  bonusSL/forceSuccess/setForcedRoll/resist depuis elle (le `bonus` et la branche `if(forced)` de
+   *  `resolve` deviennent inutiles pour ce flux). ABSENTE ⇒ repli byte-identique sur le chemin actuel. */
+  lens?: RollFlowLens<P, Slot>;
   /**
    * Traits déclaratifs du flux. `forced` : ce flux offre la Résilience (LDB 17 l.73, GLOBALE),
    * résolue DANS `resolve(…, forced)` — un seul résolveur porte les trois cas (jet normal,
@@ -284,6 +313,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
   const passive = (slot: Slot) => !!spec.multi && (slot as Partial<RollParticipant>).interactive === false;
   const reresolveOf = (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) =>
     spec.reresolve ? spec.reresolve(s, slot, actor, get, p) : spec.resolve(s, slot, actor, get, undefined, p);
+  const L = spec.lens; // lentille de dérivation des verbes d'influence (Chance/Résilience/Résistance)
   return {
     picker: spec.caps?.picker as RollFlowHandlers['picker'],
     roll(get, set, pid) {
@@ -299,24 +329,51 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       opReroll(loc.slot, actor, spec.rolled(loc.slot), spec.failed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, loc.commit);
     },
     bonusSL(get, set, pid) {
-      if (!spec.bonus) return;
+      if (!spec.bonus && !L) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc) return;
       const actor = spec.actor(s, loc.slot, p);
-      const allowed = !spec.bonus.guard || spec.bonus.guard(loc.slot);
-      opBonusSL(actor, spec.rolled(loc.slot), allowed, () => spec.bonus!.derive(s, loc.slot, actor!, p), loc.commit);
+      const allowed = L ? true : (!spec.bonus!.guard || spec.bonus!.guard(loc.slot));
+      // +1 DR de Chance (LDB 17 l.84) : lentille = `applyRoll(bumpSL)` — `bumpSL` ne touche PAS `success`
+      // (un Degré de plus ne transforme pas un échec en réussite). Repli = le `bonus.derive` du flux.
+      const derive = L
+        ? () => { const cur = L.actorTR(loc.slot); return cur ? L.applyRoll(s, loc.slot, actor!, get, bumpSL(cur), p) : null; }
+        : () => spec.bonus!.derive(s, loc.slot, actor!, p);
+      opBonusSL(actor, spec.rolled(loc.slot), allowed, derive, loc.commit);
     },
     forceSuccess(get, set, pid) {
       if (!spec.caps?.forced) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
-      opForceSuccess(spec.actor(s, loc.slot, p), () => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, {}, p), loc.commit);
+      const actor = spec.actor(s, loc.slot, p);
+      // Résilience « Je ne faillirai pas ! » (LDB 17 l.68) : réussite MINIMALE forcée (DR planché). Lentille :
+      // opposé binaire/flip → `forceWin` ; sinon `applyRoll(forcedTR au plancher)`. Repli = `resolve(…,{})`.
+      const resolveForced = L
+        ? () => {
+            const cur = L.actorTR(loc.slot);
+            if (L.forceWin) return L.forceWin(loc.slot, actor!, cur);
+            const tgt = L.dieTarget?.(loc.slot, actor!); if (tgt == null) return null;
+            const floor = L.floorSL?.(loc.slot, actor!) ?? 1;
+            const sl = Math.max(cur ? cur.sl : evaluateTest(1, tgt).sl, floor, 1);
+            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(cur?.roll ?? 1, tgt, sl), p);
+          }
+        : () => spec.resolve(s, loc.slot, actor, get, {}, p);
+      opForceSuccess(actor, resolveForced, loc.commit);
     },
     setForcedRoll(get, set, roll, pid) {
       if (!spec.caps?.forced) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc) return;
-      opSetForcedRoll(loc.slot, spec.actor(s, loc.slot, p), roll, (r) => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, { roll: r }, p), loc.commit);
+      const actor = spec.actor(s, loc.slot, p);
+      // Dé CHOISI (LDB 17 l.68) — lentille SEULEMENT si `dieTarget` (⇔ picker). Repli = `resolve(…,{roll})`.
+      const resolveChosen = (L && L.dieTarget)
+        ? (r: number) => {
+            const tgt = L.dieTarget!(loc.slot, actor!); if (tgt == null || r > maxForcedRoll(tgt)) return null;
+            const floor = L.floorSL?.(loc.slot, actor!) ?? 1;
+            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(r, tgt, Math.max(evaluateTest(r, tgt).sl, floor, 1)), p);
+          }
+        : (r: number) => spec.resolve(s, loc.slot, actor, get, { roll: r }, p);
+      opSetForcedRoll(loc.slot, actor, roll, resolveChosen, loc.commit);
     },
     resist(get, set, pid) {
       if (!spec.caps?.resist) return;
@@ -324,8 +381,12 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
       // Le tag `menace` vit sur le SLOT (étape de cascade) ou sur le PENDING entier (opposition de sort).
       const slot = loc.slot.menace != null ? loc.slot : { ...loc.slot, menace: (p as PendingBase).menace } as Slot;
-      opResist(slot, spec.actor(s, loc.slot, p), spec.rolled(loc.slot), spec.failed(loc.slot),
-        (sl) => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, { sl }, p), loc.commit);
+      const actor = spec.actor(s, loc.slot, p);
+      // Résistance (Menace) : réussite forcée à DR = Bonus d'Endurance (LDB 10). Repli = `resolve(…,{sl})`.
+      const resolveResist = L
+        ? (sl: number) => { const tgt = L.dieTarget?.(loc.slot, actor!) ?? 0; return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl), p); }
+        : (sl: number) => spec.resolve(s, loc.slot, actor, get, { sl }, p);
+      opResist(slot, actor, spec.rolled(loc.slot), spec.failed(loc.slot), resolveResist, loc.commit);
     },
     cancel(get, set) {
       const p = pendingOf(get());

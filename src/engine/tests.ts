@@ -176,6 +176,13 @@ export function bumpSL(t: TestResult, by = 1): TestResult {
   return { ...t, sl: t.sl + by };
 }
 
+/** `TestResult` d'une réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.73 / Résistance
+ *  Menace LDB 10) au dé `roll`, DR `sl` imposé. Collapse le littéral `{ roll, target, success: true,
+ *  sl, isDouble: isDoubleRoll(roll) }` recopié dans chaque résolveur forcé — atome PARTAGÉ, voisin de `bumpSL`. */
+export function forcedTR(roll: number, target: number, sl: number): TestResult {
+  return { roll, target, success: true, sl, isDouble: isDoubleRoll(roll) };
+}
+
 /** Test Soutenu (LDB 12 l.214-225) — BONUS de coopération : chaque soutien octroie +10 au Test, MAIS le
  *  meneur ne peut être soutenu par plus de Personnages que son propre Bonus de Caractéristique de la carac
  *  testée (`cap`, l.225). Primitive PURE et GÉNÉRALE de la coopération : le « plus compétent lance » est
