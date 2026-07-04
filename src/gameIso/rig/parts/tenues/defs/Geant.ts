@@ -1,5 +1,5 @@
 import type { TenueDef } from '../types';
-import { NU_TORSE_FRONT, NU_TORSE_BACK, NU_TORSE_PROFILE, NU_JAMBE } from '../nuViews';
+import { BODIES } from '../../bodies';
 
 // Tenue du GÉANT (« vêtu d'habits dépareillés marqués de plusieurs blasons différents » — Halagrundsor,
 // ZI) : pagne loqueteux ceinturé + baudrier de cuir + rapiéçages héraldiques DÉPAREILLÉS cousus sur
@@ -22,14 +22,14 @@ export const tenue: TenueDef = {
   palette: { vet1: '#6e6450', cuir: '#4a3424' },
   set: {
     torse: {
-      front: `<g stroke-linejoin="round">${NU_TORSE_FRONT}${BALDRIC}${BLASONS}${PAGNE}${CEINTURE}</g>`,
-      back: `<g stroke-linejoin="round">${NU_TORSE_BACK}${PAGNE}${CEINTURE}`
+      front: `<g stroke-linejoin="round">${BODIES.nu.torseFront}${BALDRIC}${BLASONS}${PAGNE}${CEINTURE}</g>`,
+      back: `<g stroke-linejoin="round">${BODIES.nu.torseBack}${PAGNE}${CEINTURE}`
         + `<path d="M-8 -12 L-1 -10.5 L-2 -2.5 L-9 -4 Z" fill="#5a5240" stroke="#241410" stroke-width="0.6"/></g>`, // pièce cousue dans le dos
-      profile: `<g stroke-linejoin="round">${NU_TORSE_PROFILE}`
+      profile: `<g stroke-linejoin="round">${BODIES.nu.torseProfile}`
         + `<path d="M-5.5 9 Q1 11 6.5 9 L6 18 L7 28 L4 24 L2 30 L0 24 L-2 29 L-4.5 23 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>`
         + `<path d="M-5.5 8 Q1 10 6.5 8 L6.5 11 Q1 13 -5.5 11 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.6"/>`
         + `<path d="M-1 -10 L5 -8.5 L4 -1 L-2 -2.5 Z" fill="#7a3b34" stroke="#241410" stroke-width="0.6"/></g>`,
     },
-    jambes: NU_JAMBE,
+    jambes: BODIES.nu.jambe,
   },
 };

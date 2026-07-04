@@ -70,6 +70,16 @@ export const REGISTRIES = [
     idUnion: { typeName: 'ProsthesisId', field: 'id' },
   },
   {
+    // Corps de base (chair nue, pour composer les tenues de monstres) : 1 corps = 1 fichier defs/.
+    dir: 'src/gameIso/rig/parts/bodies/defs',
+    out: 'src/gameIso/rig/parts/bodies/_registry.generated.ts',
+    exportName: 'body',
+    arrayName: 'BODY_DEFS',
+    type: 'BodyDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'BodyId', field: 'id' },
+  },
+  {
     // Yeux peints (art d'orbite, remplacé en place) : 1 œil = 1 fichier defs/. Blessures/mutations/éditeur.
     dir: 'src/gameIso/rig/parts/eyes/defs',
     out: 'src/gameIso/rig/parts/eyes/_registry.generated.ts',
