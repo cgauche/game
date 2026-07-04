@@ -66,7 +66,7 @@ import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
-import { FLOWS, rollFlowActions, rollFlowActionsMulti, type RollFlowActionsMap } from './rollFlowSpecs';
+import { FLOWS, buildRollFlowActions, type RollFlowActionsMap } from './rollFlowSpecs';
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import * as partyFlow from './partyFlow';
@@ -1345,7 +1345,8 @@ export const useGame = create<GameState>((set, get) => ({
   // logique — même case que le début de session, qui appelle `engine/fortune.restoreFortune`).
   restoreFortuneNow: () => applyEffects(get, set, [{ type: 'restoreFortune' }]),
   pendingActivity: null,
-  ...rollFlowActions('activity', FLOWS.activity, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
+  // TOUS les délégués de jet (mono+multi, 36 flux) en UN spread — dérivés de FLOW_WIRING (fin des 40 spreads épars).
+  ...buildRollFlowActions(get, set),
   activityCancel: () => FLOWS.activity.cancel(get, set),
   activityConfirm: () => interludeFlow.confirmActivity(get, set),
   // Combat de masse / Puissance de Bataille (ADE II 08) — flux d'orchestration + jet de PJ différé.
@@ -1362,7 +1363,6 @@ export const useGame = create<GameState>((set, get) => ({
   massBattleClash: () => massBattleFlow.massBattleClash(get, set),
   massBattleAdvance: () => massBattleFlow.massBattleAdvance(get, set),
   endMassBattle: () => massBattleFlow.endMassBattle(get, set),
-  ...rollFlowActions('battleTest', FLOWS.battleTest, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
   battleTestConfirm: () => massBattleFlow.battleTestConfirm(get, set),
   battleTestCancel: () => FLOWS.battleTest.cancel(get, set),
   interludeRevenus: (heroId) => interludeFlow.openRevenus(get, set, heroId),
@@ -1681,13 +1681,11 @@ export const useGame = create<GameState>((set, get) => ({
   confirmSell: () => merchantFlow.confirmSell(get, set),
   repairItem: (uid, heroId) => merchantFlow.repairItem(get, set, uid, heroId),
   startBargain: (mode) => merchantFlow.startBargain(get, set, mode),
-  ...rollFlowActions('bargain', FLOWS.bargain, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   bargainConfirm: () => merchantFlow.bargainConfirm(get, set),
   bargainCancel: () => set({ pendingBargain: null }),
 
   appraiseItem: (uid, heroId, mode) => merchantFlow.appraiseItem(get, set, uid, heroId, mode),
   appraiseGear: (scope, index, mode) => merchantFlow.appraiseGear(get, set, scope, index, mode),
-  ...rollFlowActions('appraise', FLOWS.appraise, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   resolveAppraise: () => merchantFlow.resolveAppraise(get, set),
   appraiseCancel: () => set({ pendingAppraise: null }),
 
@@ -1787,7 +1785,6 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingExtendedTest: { ...opts, total: 0, rounds: [{ id: 'round-1', interactive: true, result: null }] } });
     startCascade(get, set, { title: opts.label, icon: '🗝️', purpose: 'test', steps: [{ id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }] });
   },
-  ...rollFlowActionsMulti('extendedTest', FLOWS.extendedTest, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   extendedTestNext: () => {
     const p = get().pendingExtendedTest;
     if (!p) return;
@@ -1823,7 +1820,6 @@ export const useGame = create<GameState>((set, get) => ({
     // '*' (action de GROUPE : chacun pilote ses héros), faute d'acteur unique sur l'étape.
     startCascade(get, set, { title: 'Enfoncer la porte', icon: '🔨', purpose: 'combat', steps: [{ id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }] });
   },
-  ...rollFlowActionsMulti('forceDoor', FLOWS.forceDoor, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   forceDoorConfirm: () => {
     const p = get().pendingForceDoor;
     if (!p) return;
@@ -1844,7 +1840,6 @@ export const useGame = create<GameState>((set, get) => ({
 
   // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) sur un Test de scène (hors combat) — cycle
   // UNIFIÉ par la fabrique rollFlow (les variantes combat attack/defense/cast vivent dans combatSlice).
-  ...rollFlowActions('test', FLOWS.test, get, set, ['forceSuccess']),
 
   /** Choix du lanceur (avant le jet) : re-cible le Test sur le candidat `id` du groupe. */
   testSetActor: (id) => {
@@ -1862,7 +1857,6 @@ export const useGame = create<GameState>((set, get) => ({
   },
   // Test de scène (hors combat) : Lancer / Chance (relance / +1 DR) / Pacte — Résilience plus haut.
   // `cancel` : referme la cascade quand le test est annulable (action de combat, `pendingTest.cancellable`).
-  ...rollFlowActions('test', FLOWS.test, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'cancel']),
   testDetermination: () => {
     const pt = get().pendingTest;
     if (!pt || pt.roll != null || !pt.psychMod) return; // AVANT le jet, et seulement si un malus psy pèse
@@ -1878,7 +1872,6 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
-  ...rollFlowActions('corruption', FLOWS.corruption, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist']),
   corruptionSetSkill: (skill) => {
     const pc = get().pendingCorruption;
     // Pré-jet uniquement, et JAMAIS si la compétence est déterminée en amont (source ou seuil).

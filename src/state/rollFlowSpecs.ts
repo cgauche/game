@@ -1339,3 +1339,74 @@ export const FLOWS = {
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) }, // +1 DR (LDB 17 l.26) — la passe scale avec le DR
   }),
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOURCE UNIQUE du câblage des flux de jet différé.
+//
+// Une entrée par flux (clé = PRÉFIXE des délégués `<prefix><Verbe>` du store) : le flow (handlers), son
+// type (mono/multi), et le SOUS-ENSEMBLE de verbes exposés. `buildRollFlowActions` en dérive les ~113
+// délégués du store en UN spread (fin des 40 appels `rollFlowActions` éparpillés dans store/combatSlice),
+// et `RollFlowActionsMap` (plus haut) en dérive le TYPE (fin de la recopie à la main). `coop:true` =
+// verbes exposés comme intents invité (dérivés dans `net/intents.ts`, `resist` toujours exclu). Le
+// préfixe est DÉCORRÉLÉ de la clé `FLOWS` (2 cas : shipBattery→FLOWS.battery, opposition→FLOWS.castOpposition).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface FlowWiring {
+  flow: RollFlowHandlers;
+  kind: 'mono' | 'multi';
+  verbs: readonly RollVerb[];
+  /** Verbes exposés comme intents coop invité (dérivés ; `resist` toujours exclu). Défaut : false. */
+  coop?: boolean;
+}
+
+export const FLOW_WIRING = {
+  attack:       { flow: FLOWS.attack,         kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll'], coop: true },
+  defense:      { flow: FLOWS.defense,        kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  cast:         { flow: FLOWS.cast,           kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  disengage:    { flow: FLOWS.disengage,      kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  flee:         { flow: FLOWS.flee,           kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
+  auContact:    { flow: FLOWS.auContact,      kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  grapple:      { flow: FLOWS.grapple,        kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  trample:      { flow: FLOWS.trample,        kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  battement:    { flow: FLOWS.battement,      kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
+  distraire:    { flow: FLOWS.distraire,      kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
+  maneuver:     { flow: FLOWS.maneuver,       kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  run:          { flow: FLOWS.run,            kind: 'mono',  verbs: ['roll', 'reroll', 'forceSuccess', 'darkPact'], coop: true },
+  reload:       { flow: FLOWS.reload,         kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'], coop: true },
+  recover:      { flow: FLOWS.recover,        kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'], coop: true },
+  focus:        { flow: FLOWS.focus,          kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  dispel:       { flow: FLOWS.dispel,         kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
+  frenzy:       { flow: FLOWS.frenzy,         kind: 'mono',  verbs: ['roll', 'reroll', 'forceSuccess', 'darkPact'], coop: true },
+  approach:     { flow: FLOWS.approach,       kind: 'mono',  verbs: ['roll', 'reroll', 'forceSuccess', 'darkPact'] },
+  ward:         { flow: FLOWS.ward,           kind: 'mono',  verbs: ['roll', 'reroll', 'forceSuccess', 'darkPact'], coop: true },
+  heal:         { flow: FLOWS.heal,           kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  surgery:      { flow: FLOWS.surgery,        kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  corruption:   { flow: FLOWS.corruption,     kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist'], coop: true },
+  test:         { flow: FLOWS.test,           kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'cancel'] },
+  battleTest:   { flow: FLOWS.battleTest,     kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
+  activity:     { flow: FLOWS.activity,       kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
+  bargain:      { flow: FLOWS.bargain,        kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
+  appraise:     { flow: FLOWS.appraise,       kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
+  shanty:       { flow: FLOWS.shanty,         kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
+  counterspell: { flow: FLOWS.counterspell,   kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  cascade:      { flow: FLOWS.cascade,        kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true },
+  opposition:   { flow: FLOWS.castOpposition, kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'] },
+  extendedTest: { flow: FLOWS.extendedTest,   kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  forceDoor:    { flow: FLOWS.forceDoor,      kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  shipManeuver: { flow: FLOWS.shipManeuver,   kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
+  shipBattery:  { flow: FLOWS.battery,        kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
+  crewTest:     { flow: FLOWS.crewTest,       kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
+} as const satisfies Record<string, FlowWiring>;
+
+/** Assemble les ~113 délégués de jet du store (`<prefix><Verbe>`) depuis `FLOW_WIRING` — remplace les
+ *  40 spreads `rollFlowActions(Multi)` éparpillés dans le store. Neutre : les délégués ne dépendent que
+ *  de `(get, set)`. */
+export function buildRollFlowActions(get: Get, set: Set): RollFlowActionsMap {
+  const out: Record<string, unknown> = {};
+  for (const [prefix, w] of Object.entries(FLOW_WIRING)) {
+    Object.assign(out, w.kind === 'multi'
+      ? rollFlowActionsMulti(prefix, w.flow, get, set, w.verbs)
+      : rollFlowActions(prefix, w.flow, get, set, w.verbs));
+  }
+  return out as RollFlowActionsMap;
+}

@@ -82,7 +82,6 @@ import { nextCursorTile, cursorCommitIntent, type ScreenDir } from './combatCurs
 import { cycleTarget, cyclePrevTarget } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
-import { FLOWS, rollFlowActions, rollFlowActionsMulti } from './rollFlowSpecs';
 import { resolveRenounce } from './corruptionFlow';
 import { add as moneyAdd, toMoney } from '../engine/money';
 import type {
@@ -329,7 +328,6 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingDisengage: { ...pd, phase: 'esquive', def, result: disengageOutcome(opp.winner) } });
     },
     // Cycle Chance/Pacte UNIFIÉ (spec `disengage`) : foe (atk) figé, seule l'Esquive du mover se (re)joue.
-    ...rollFlowActions('disengage', FLOWS.disengage, get, set, ['reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
 
     // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).
     disengageConfirm: () => {
@@ -419,7 +417,6 @@ export function createCombatSlice(get: Get, set: Set) {
     // ── « Fuir » : Test de Calme du fuyard, INFLUENÇABLE (flux `flee`, calqué sur `approach`). « Lancer »
     //    (fleeRoll) → Chance (relance / +1 DR) / Pacte / Résilience → « Appliquer » (fleeConfirm) applique le
     //    Brisé + complète la fuite. Le +1 DR réduit le nombre d'États Brisés (broken = 1 + max(0,-sl)). ──
-    ...rollFlowActions('flee', FLOWS.flee, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     fleeConfirm: () => {
       const { battle, scene, pendingDisengage: pd } = get();
       if (!battle || !scene || !pd || !pd.fuir?.calme) return;
@@ -466,7 +463,6 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingAuContact: { ...pd, def, result: disengageOutcome(opp.winner) } });
     },
     // Cycle Chance/+1 DR/Pacte/Résilience (spec `auContact`) : foe (atk) figé, seul le jet du mover se (re)joue.
-    ...rollFlowActions('auContact', FLOWS.auContact, get, set, ['reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
     // « Appliquer » : le Test opposé EST l'Action. Le mover (héros) gagne → IL choisit (phase 'choice') ;
     // le foe gagne → l'IA tranche par heuristique (arme la plus courte = au contact) ; égalité → statu quo.
     auContactConfirm: () => {
@@ -530,7 +526,6 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingGrapple: { ...pd, def, result: disengageOutcome(opp.winner) } });
     },
     // Cycle Chance/+1 DR/Pacte/Résilience (spec `grapple`) : foe (atk) figé, seul le jet de l'acteur se (re)joue.
-    ...rollFlowActions('grapple', FLOWS.grapple, get, set, ['reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
     // « Appliquer » : le Test opposé EST l'Action. Succès → l'acteur choisit (phase 'options') ; échec →
     // +1 Avantage au foe (l.161) ; égalité → statu quo.
     grappleConfirm: () => {
@@ -797,7 +792,6 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...get().battle!, acted: true } }); // Action consommée
       checkBattleOver(get, set);
     },
-    ...rollFlowActions('trample', FLOWS.trample, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
     trampleConfirm: () => {
       const { battle, pendingTrample: pt } = get();
       if (!battle || !pt || !pt.result) return;
@@ -836,7 +830,6 @@ export function createCombatSlice(get: Get, set: Set) {
       startBattement(get, set, active, foe);
     },
     // Cycle Lancer/Chance/+1 DR/Pacte/Résilience (spec `battement`) : jet de CC de l'attaquant, non opposé.
-    ...rollFlowActions('battement', FLOWS.battement, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
     // « Appliquer » : `resolveBattement` retire l'Avantage adverse (LDB 10 l.103) ; consomme l'Action.
     battementConfirm: () => {
       const { battle, pendingBattement: pb } = get();
@@ -878,7 +871,6 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // « Lancer » : jet d'Athlétisme du mover, opposé au jet de Calme figé du foe (spec `distraire`).
     // Cycle Chance/+1 DR/Pacte/Résilience : foe (defRoll) figé, seul l'Athlétisme du mover se (re)joue.
-    ...rollFlowActions('distraire', FLOWS.distraire, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
     // « Appliquer » : `resolveDistraire` pose `distractedRounds` sur une victoire ; consomme le MOUVEMENT.
     distraireConfirm: () => {
       const { battle, pendingDistraire: pd } = get();
@@ -897,7 +889,6 @@ export function createCombatSlice(get: Get, set: Set) {
     // ── Manœuvre de créature par modale (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) : le jet de
     //    l'ATTAQUANT passe par FLOWS.maneuver (Lancer/Chance/Pacte/Résilience) ; « Appliquer » roule les
     //    défenseurs et résout l'opposition au feed via le RÉSOLVEUR GÉNÉRIQUE `resolveManeuver`. ──
-    ...rollFlowActions('maneuver', FLOWS.maneuver, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
     maneuverConfirm: () => {
       const { battle, pendingManeuver: pm } = get();
       if (!battle || !pm || !pm.result) return;
@@ -942,7 +933,6 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
       set({ pendingRun: { combatantId: active.id, dest, result: null }, battle: { ...battle, action: null, preview: null } });
     },
-    ...rollFlowActions('run', FLOWS.run, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
     runConfirm: () => {
       const { battle, scene, pendingRun: pr } = get();
       if (!battle || !scene || !pr || !pr.result || !pr.dest) return;
@@ -1015,7 +1005,6 @@ export function createCombatSlice(get: Get, set: Set) {
       const p = get().pendingShipManeuver;
       if (p) set({ pendingShipManeuver: { ...p, turnSteps: steps } }); // virage ⟂ jet (le Test ne dépend pas du sens)
     },
-    ...rollFlowActionsMulti('shipManeuver', FLOWS.shipManeuver, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     shipManeuverConfirm: () => {
       const { battle, pendingShipManeuver: p } = get();
       if (!battle || !p) return;
@@ -1052,7 +1041,6 @@ export function createCombatSlice(get: Get, set: Set) {
       });
       for (const part of opened.participants) if (!part.interactive) get().shipBatteryRoll(part.id); // témoins (marins PNJ) auto-roulés
     },
-    ...rollFlowActionsMulti('shipBattery', FLOWS.battery, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     shipBatteryConfirm: () => {
       const { battle, pendingShipBattery: p } = get();
       if (!battle || !p) return;
@@ -1121,7 +1109,6 @@ export function createCombatSlice(get: Get, set: Set) {
       });
       for (const part of opened.participants) if (!part.interactive) get().crewTestRoll(part.id); // témoins auto-roulés
     },
-    ...rollFlowActionsMulti('crewTest', FLOWS.crewTest, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     crewTestConfirm: () => {
       const { battle, pendingCrewTest: p } = get();
       if (!p) return;
@@ -1179,7 +1166,6 @@ export function createCombatSlice(get: Get, set: Set) {
       const p = get().pendingShanty;
       if (p && !p.result) set({ pendingShanty: { ...p, shantyId } }); // choix pré-jet (chanson ⟂ dé)
     },
-    ...rollFlowActions('shanty', FLOWS.shanty, get, set, ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact']),
     shantyConfirm: () => {
       const { battle, pendingShanty: p } = get();
       if (!battle || !p || !p.result || !p.shantyId) return;
@@ -1201,7 +1187,6 @@ export function createCombatSlice(get: Get, set: Set) {
     // ── Approche d'une source de Peur (LDB 21 l.29) : Test de Calme Intermédiaire (+0) qui DIFFÈRE le
     //    clic d'approche. Succès → fearGate 'passed' (approches libres ce Tour) + l'intention est relancée ;
     //    échec → fearGate 'failed' (aucune approche ce Tour). « Un jet = une modale ». ──
-    ...rollFlowActions('approach', FLOWS.approach, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
     approachConfirm: () => {
       const { battle, pendingApproach: pa } = get();
       if (!battle || !pa || !pa.result) return;
@@ -1226,7 +1211,6 @@ export function createCombatSlice(get: Get, set: Set) {
     // ── Bénédiction de Protection (LDB 41 l.105) : Test de FM Accessible (+20) qui DIFFÈRE la déclaration
     //    d'attaque sur une cible bénie. Succès → l'attaque est relancée (`wardCleared` saute ce gate) ;
     //    échec → l'attaque n'a pas lieu (rien n'est consommé). « Un jet = une modale ». ──
-    ...rollFlowActions('ward', FLOWS.ward, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
     wardConfirm: () => {
       const { battle, pendingWard: pw } = get();
       if (!battle || !pw || !pw.result) return;
@@ -1558,7 +1542,6 @@ export function createCombatSlice(get: Get, set: Set) {
         },
       });
     },
-    ...rollFlowActions('reload', FLOWS.reload, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
     reloadConfirm: () => {
       const { battle, pendingReload: pr } = get();
       if (!battle || !pr || pr.roll == null) return;
@@ -1626,7 +1609,6 @@ export function createCombatSlice(get: Get, set: Set) {
         },
       });
     },
-    ...rollFlowActions('recover', FLOWS.recover, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
     recoverConfirm: () => {
       const { battle, pendingStateRecovery: sr } = get();
       if (!battle || !sr || sr.roll == null) return;
@@ -1833,7 +1815,6 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // Cycle Chance/Pacte UNIFIÉ (spec `attack`) — Résilience (forceSuccess/setForcedRoll) plus bas.
     // `cancel` = « Annuler » unifié (défaire-charge dans `FLOWS.attack.onCancel`) — regénère `attackCancel`.
-    ...rollFlowActions('attack', FLOWS.attack, get, set, ['reroll', 'bonusSL', 'darkPact', 'cancel']),
     attackConfirm: () => {
       const { battle, pendingAttack: pa } = get();
       if (!battle || !pa || !pa.result) return;
@@ -2019,7 +2000,6 @@ export function createCombatSlice(get: Get, set: Set) {
     // Cycle unifié (spec `defense`) : jet initial = résolution pure (`atk` figé) ; Chance/Pacte ici,
     // Résilience (forceSuccess/setForcedRoll) plus bas. PAS de `cancel` : le RAW n'offre aucun « Subir »
     // volontaire (mêlée = Test opposé, LDB 13 l.123) → une fois offerte, la défense est obligatoire.
-    ...rollFlowActions('defense', FLOWS.defense, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
     defenseConfirm: () => {
       // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
       const { battle, pendingDefense: pd } = get();
@@ -2070,8 +2050,6 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
 
-    ...rollFlowActions('attack', FLOWS.attack, get, set, ['forceSuccess', 'setForcedRoll']),
-    ...rollFlowActions('defense', FLOWS.defense, get, set, ['forceSuccess', 'setForcedRoll']),
 
     startCombat: (encounterId: string, onVictory?: Flow, opts?: { noSurprise?: boolean }) => {
       const { scene, party, partyPos } = get();
@@ -2303,10 +2281,8 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // ── Infirmerie (hors combat) : modale de soins PERSISTANTE — cf. state/medicFlow ──
 
-    ...rollFlowActions('heal', FLOWS.heal, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
     // Chirurgie : jet INFLUENÇABLE d'une passe (le chirurgien peut être un héros) — surgeryNext applique
     // (medicFlow), surgeryCancel annule. openSurgeryPass POSE la passe (cf. délégations medic, store.ts).
-    ...rollFlowActions('surgery', FLOWS.surgery, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
 
     /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. L'infirmerie
      *  (`medic`) n'est PAS touchée : la modale persistante reste ouverte pour l'acte suivant. */
@@ -2410,7 +2386,6 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     /** Contre-sort d'un HÉROS contre l'incantation ennemie figée (Dissipation, LDB 46 l.201-202). */
     // Cycle Chance/Pacte UNIFIÉ (spec `cast`) — Résilience (forceSuccess/setForcedRoll) plus bas.
-    ...rollFlowActions('cast', FLOWS.cast, get, set, ['reroll', 'bonusSL', 'darkPact']),
     castConfirm: () => {
       const { pendingCast: pc } = get();
       if (!pc || !pc.result) return;
@@ -2578,7 +2553,6 @@ export function createCombatSlice(get: Get, set: Set) {
       if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
     },
     // Contre-sort à plusieurs (flux multi) : chaque verbe cible un participant via `pid` (fabrique unique).
-    ...rollFlowActionsMulti('counterspell', FLOWS.counterspell, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
     counterspellConfirm: () => {
       const pcs = get().pendingCounterspell;
       if (!pcs) return;
@@ -2603,7 +2577,6 @@ export function createCombatSlice(get: Get, set: Set) {
     // rendue par `CascadeModal` (via `useExtendedTestJetProps`). `pendingExtendedTest` coexiste comme
     // porteur de données (les Rounds y vivent) ; `extendedTestNext` ferme les deux à la réussite.
 
-    ...rollFlowActionsMulti('cascade', FLOWS.cascade, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist']),
     cascadeChoose: (pid: string, key: string) => setCascadeChoice(get, set, pid, key),
     cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
     cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
@@ -2635,7 +2608,6 @@ export function createCombatSlice(get: Get, set: Set) {
     // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
     // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
     // Préfixe store `opposition` ≠ clé de flux `castOpposition` (handler passé explicitement).
-    ...rollFlowActionsMulti('opposition', FLOWS.castOpposition, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist']),
     oppositionConfirm: () => {
       const pco = get().pendingCastOpposition;
       const pc = get().pendingCast;
@@ -2686,7 +2658,6 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingFocus: { casterId: active.id, spellId: spell.id, result: null } });
     },
     // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `actorIn`, sortie journal hors combat.
-    ...rollFlowActions('focus', FLOWS.focus, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
     focusConfirm: () => {
       const { pendingFocus: pf } = get();
       if (!pf || !pf.result) return;
@@ -2750,7 +2721,6 @@ export function createCombatSlice(get: Get, set: Set) {
         result: null,
       } });
     },
-    ...rollFlowActions('dispel', FLOWS.dispel, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
     dispelConfirm: () => {
       const { pendingDispel: pd } = get();
       if (!pd || !pd.result) return;
@@ -2811,7 +2781,6 @@ export function createCombatSlice(get: Get, set: Set) {
       // OUVRE la modale — le Test de FM se fait au clic « Lancer ».
       set({ pendingFrenzy: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
     },
-    ...rollFlowActions('frenzy', FLOWS.frenzy, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
     frenzyConfirm: () => {
       const { battle, pendingFrenzy: pf } = get();
       if (!battle || !pf || !pf.result) return;
@@ -2858,6 +2827,5 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) du flux `cast` (forceSuccess/dé choisi) —
     // cycle UNIFIÉ par la fabrique rollFlow. (`attack`/`defense` plus haut ; `test` reste côté store.)
-    ...rollFlowActions('cast', FLOWS.cast, get, set, ['forceSuccess', 'setForcedRoll']),
   };
 }
