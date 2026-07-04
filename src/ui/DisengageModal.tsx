@@ -47,7 +47,6 @@ export function DisengageModal() {
   const mover = battle.combatants.find((c) => c.id === pd.moverId);
   const foe = battle.combatants.find((c) => c.id === pd.foeId);
   if (!mover || !foe) return null;
-  const fortune = mover.fortune ?? 0;
   const rerollable = pd.phase === 'esquive' && canReroll(!pd.def?.success, !!pd.rerolled);
   const outcome = describeDisengage(pd);
   const f = pd.fuir;

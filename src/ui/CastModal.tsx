@@ -14,19 +14,19 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { rule } from '../engine/policy';
 import { CharFrame } from './CharFrame';
 import { OptionChooser } from './OptionChooser';
-import { RollFlowShell } from './RollFlowShell';
-import { RollPanel } from './RollPanel';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { RollRow } from './RollRow';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { testBreakdown, testPending } from './breakdown';
 
 /**
- * Modale d'incantation — paramétrage de la coquille PARTAGÉE `RollFlowShell` (comme Attaque/Défense) :
- * on sélectionne un sort + une cible, « Lancer » fait le jet, on voit le résultat (réussite DR ≥ NI,
- * échec, ou Maladresse), Chance/Pacte/Résilience en rangée d'influence, puis « Appliquer ». Le métier
- * propre à l'incantation (Surincantation, Contre-sort, choix du Critique, pose de zone) passe par les
- * slots `setup`/`postRollExtra` ; toute la mécanique générique vit dans la coquille.
+ * Modale d'incantation — paramétrage de la coquille PARTAGÉE `RollShell` (comme Attaque/Défense) :
+ * on sélectionne un sort + une cible, « Lancer » (rangée mono) fait le jet, on voit le résultat
+ * (réussite DR ≥ NI, échec, ou Maladresse), Chance/Pacte/Résilience DANS la rangée, puis « Appliquer ».
+ * Le métier propre à l'incantation (Surincantation, Contre-sort, Opposition, choix du Critique, pose de
+ * zone) passe par les slots `setup`/`postRollExtra` ; toute la mécanique générique vit dans la coquille.
  *
  * Surincantation « +Cible » : EN COMBAT, le choix des cibles supplémentaires se fait SUR LE CHAMP
  * DE BATAILLE (`castPickTargets` efface la modale, bandeau TargetPrompt + clic carte) ; hors
@@ -35,7 +35,6 @@ import { ev } from '../state/combatLog';
 export function CastModal() {
   const pc = useGame((s) => s.pendingCast);
   const battle = useGame((s) => s.battle);
-  const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
   const roll = useGame((s) => s.castRoll);
   const reroll = useGame((s) => s.castReroll);
@@ -109,10 +108,61 @@ export function CastModal() {
           ? `Réussite trop faible : DR ${res.sl} < NI ${ni}`
           : 'Incantation échouée';
 
+  // Rangée MONO d'incantation = le jet du lanceur, porteur de son cycle d'influence (Lancer → Chance/
+  // +1 DR/Pacte/Résilience → Appliquer). Pré-jet : ligne en attente (base+mods=cible, dé/DR vides) via
+  // `testPending`, dérivée du même `previewCast` que le panneau (parité Attaque/Défense). Post-jet :
+  // `testBreakdown` (base = cible du Test, aucun mod post-hoc — parité avec l'ancien littéral inline).
+  const preview = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused });
+  const castLabel = isPrayer ? 'Prière' : `Incantation / NI ${ni}`; // le jet reste Langue (Magick) ; un Projectile magique ne change que Localisation/Dégâts post-réussite
+  const castRow: RollRowData = {
+    actor: caster,
+    row: res
+      ? { combatant: caster, d: testBreakdown(castLabel, res.target, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }) }
+      : { combatant: caster, pending: testPending(castLabel, preview.base, preview.target, undefined, preview.mods) },
+    rolled: !!res,
+    onRoll: roll,
+    rerollable,
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: caster.kind === 'hero' && res != null && res.roll > 0 && res.roll > res.target,
+    onDarkPact: darkPact,
+    fortune: caster.fortune ?? 0,
+    freeReroll: freeRerollOf(caster),
+    resilience: caster.resilience ?? 0,
+    onForce: forceSuccess,
+    preRollForce: () => { roll(); forceSuccess(); },
+    forceShow: !!res && !res.cast,
+    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
+  };
+
+  const journal = res && (
+    <JournalLine
+      className="rm-journal"
+      event={ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id)}
+      combatants={pool}
+    />
+  );
+
+  const actions: RollAction[] = [
+    // Annuler : « Laisser passer » (Contre-sort) sinon Renoncer (héros lanceur) — pré-jet uniquement.
+    ...(csp
+      ? [{ key: 'cancel', label: 'Laisser passer', kind: 'ghost', onClick: cspCancel, when: 'pre' } as RollAction]
+      : caster.kind !== 'enemy'
+        ? [{ key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' } as RollAction]
+        : []),
+    {
+      key: 'confirm',
+      label: csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? '📍 Poser la zone' : 'Appliquer',
+      title: placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
+      kind: 'primary',
+      onClick: csp ? cspConfirm : pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm,
+      when: 'post',
+    },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       title={isPrayer ? 'Prière' : 'Incantation'}
-      subtitle={null}
       extra={
         <>
           <VsHeader
@@ -143,10 +193,9 @@ export function CastModal() {
           )}
         </>
       }
+      rows={[castRow]}
       rolled={!!res}
-      onRoll={roll}
-      onCancel={csp ? cspCancel : caster.kind !== 'enemy' ? cancel : undefined}
-      cancelLabel={csp ? 'Laisser passer' : undefined}
+      outcome={journal}
       setup={
         <>
           {/* « Prêchez, ma sœur ! » (LDB 40 l.40-42) : entonner la Prière à voix haute (Intermédiaire)
@@ -179,30 +228,8 @@ export function CastModal() {
               </div>
             </div>
           )}
-          {/* Panneau de jet PRÉ-REMPLI (même géométrie qu'après le jet) : ma ligne en attente, dé/DR
-              vides — exactement comme l'Attaque (previewAttack) et la Défense (previewDefense). */}
-          <RollPanel rows={[{ combatant: caster, pending: previewCast(caster, spell, { missile: pc.missile, focused: pc.focused }) }]} />
         </>
       }
-      rows={res ? [{
-        combatant: caster,
-        d: {
-          label: isPrayer ? 'Prière' : `Incantation / NI ${ni}`, // jet = Test de Langue (Magick) ; un Projectile magique ne change que Localisation/Dégâts post-réussite
-          base: res.target,
-          modifier: 0,
-          target: res.target,
-          roll: res.roll,
-          success: res.cast,
-          sl: res.sl,
-        },
-      }] : undefined}
-      outcome={res && (
-        <JournalLine
-          className="rm-journal"
-          event={ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id)}
-          combatants={pool}
-        />
-      )}
       postRollExtra={res && (
         <>
           {/* Surincantation : un STEPPER +/− par axe (Portée/ZdE/Durée/Cible), borné au budget (+2 DR/pas ;
@@ -297,8 +324,8 @@ export function CastModal() {
                 const r = part.result;
                 const lab = pcs.char ?? pcs.skill ?? 'Opposition';
                 const row = r
-                  ? { combatant: actor, d: { label: lab, base: r.oppose.target, modifier: 0, target: r.oppose.target, roll: r.oppose.roll, success: r.oppose.success, sl: r.oppose.sl } }
-                  : { combatant: actor, pending: { label: lab, base: testValue(actor, pcs.skill, pcs.char), mods: [] } };
+                  ? { combatant: actor, d: testBreakdown(lab, testValue(actor, pcs.skill, pcs.char), r.oppose) }
+                  : { combatant: actor, pending: testPending(lab, testValue(actor, pcs.skill, pcs.char)) };
                 return (
                   <RollRow
                     key={part.id}
@@ -337,8 +364,8 @@ export function CastModal() {
                 const r = part.result;
                 const val = castingValue(actor, 'langue', 'Magick');
                 const row = r
-                  ? { combatant: actor, d: { label: 'Langue (Magick)', base: r.counter.target, modifier: 0, target: r.counter.target, roll: r.counter.roll, success: r.counter.success, sl: r.counter.sl } }
-                  : { combatant: actor, pending: { label: 'Langue (Magick)', base: val, mods: [] } };
+                  ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter) }
+                  : { combatant: actor, pending: testPending('Langue (Magick)', val) };
                 return (
                   <RollRow
                     key={part.id}
@@ -363,21 +390,9 @@ export function CastModal() {
           )}
         </>
       )}
-      forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
-      fortune={caster.fortune ?? 0}
-      freeReroll={freeRerollOf(caster)}
-      rerollable={rerollable}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={caster.kind === 'hero' && res != null && res.roll > 0 && res.roll > res.target}
-      onDarkPact={darkPact}
-      resilience={caster.resilience ?? 0}
-      onForce={forceSuccess}
-      preRollForce={() => { roll(); forceSuccess(); }}
-      forceShow={!!res && !res.cast}
-      confirmLabel={csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? '📍 Poser la zone' : 'Appliquer'}
-      confirmTitle={placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined}
-      onConfirm={csp ? cspConfirm : pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm}
+      actions={actions}
+      /* Échap = Annuler : RollShell le neutralise dès qu'un jet est lancé (`!rolled ? onCancel`). */
+      onCancel={csp ? cspCancel : caster.kind !== 'enemy' ? cancel : undefined}
     />
   );
 }
