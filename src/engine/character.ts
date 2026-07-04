@@ -42,19 +42,6 @@ import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSl
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 import { applyStarEffect } from './creation';
 
-const SKILL_CHAR: Record<string, CharKey> = {
-  'Capacité de Combat': 'CC',
-  'Capacité de Tir': 'CT',
-  Force: 'F',
-  Endurance: 'E',
-  Initiative: 'I',
-  Agilité: 'Ag',
-  Dextérité: 'Dex',
-  Intelligence: 'Int',
-  'Force Mentale': 'FM',
-  Sociabilité: 'Soc',
-};
-
 /** Caractéristique d'une Compétence (skills.json) par `id` STABLE — LDB 09 : valeur de Test =
  *  Caractéristique + avances. (≠ re-lookup par libellé — multilangue-safe.) */
 export function skillCharacteristicById(id: string): CharKey {

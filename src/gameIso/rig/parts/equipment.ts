@@ -115,10 +115,6 @@ export function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'mail
   return pa >= 4 ? 'plaque' : pa >= 2 ? 'maille' : pa >= 1 ? 'cuir' : 'rembourre';
 }
 
-const MATERIAL_FILL: Record<string, string> = {
-  rembourre: '#9a8a6a', cuir: '#6a4a2a', maille: 'url(#g_steelD)', plaque: 'url(#g_steel)',
-};
-
 /** Slot de corps couvert par cet item (via ses locs WFRP4) — false si pas ce slot. */
 function coversSlot(item: ItemInstance, slot: Slot): boolean {
   const map: Partial<Record<Slot, HitLocation[]>> = {
@@ -134,13 +130,8 @@ export function armourPart(item: ItemInstance, slot: Slot): PartArt | null {
   // Art dessiné par le workflow (matériau × emplacement) en priorité, COULEUR résolue contre la
   // palette du matériau (défaut sans perte) + le SKIN de l'objet (override par-objet, légendaire).
   const art = ARMOUR[mat]?.[slot as 'tete' | 'torse' | 'bras' | 'jambes'];
-  if (art) return applyTokenMapArt(art, buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, item.skin as Record<string, string> | undefined));
-  const fill = MATERIAL_FILL[mat];
-  switch (slot) {
-    case 'tete':   return `<path d="M-9 -2 Q0 -16 9 -2 L9 4 Q0 8 -9 4Z" fill="${fill}" stroke="#2a3038"/>`;
-    case 'torse':  return `<path d="M-14 -28 Q0 -33 14 -28 L13 4 L11 34 Q0 38 -11 34 L-13 4 Z" fill="${fill}" stroke="#2a3038" stroke-width="0.8"/>`;
-    case 'bras':   return `<rect x="-3.7" y="-2" width="7.4" height="30" rx="3" fill="${fill}"/>`;
-    case 'jambes': return `<rect x="-4.5" y="0" width="9" height="46" rx="3" fill="${fill}"/>`;
-    default:       return null;
-  }
+  // Les 4 matériaux d'armour/defs couvrent les 4 slots → art toujours résolu ici (null = jamais atteint).
+  return art
+    ? applyTokenMapArt(art, buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, item.skin as Record<string, string> | undefined))
+    : null;
 }
