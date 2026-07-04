@@ -208,6 +208,17 @@ export function createCombatSlice(get: Get, set: Set) {
   // Hook `breakBlade` (op IMPURE) : conséquence d'un Test opposé de Piège-lame GAGNÉ (désarme/brise la lame,
   // LDB 62 l.295) — appelée par `runCombatFlow` sur le `do`/`breakBlade`.
   setBladeTrapHook(applyBladeTrap);
+  // Clôture d'une cascade du JOUR de voyage (`purpose:'travelDay'`) : ROUTAGE par domaine — fluvial
+  // (recalcul des km puis halte/arrivée) OU terrestre (marche forcée eager/nuit + halte/arrivée). Le
+  // domaine se lit sur le plan (`river` présent = descente fluviale), pas par deux chemins ad hoc.
+  // Partagé par `cascadeNext` (avance) et `cascadeFinish` (« Tout résoudre »).
+  const dispatchCascadeDone = (done: ReturnType<typeof advanceCascade>) => {
+    if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+    else if (done?.purpose === 'travelDay') { if (get().travelPlan?.river) continueRiverDayAfterCascade(get, set); else travelFlow.continueTravelDayAfterCascade(get, set); }
+    else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
+    else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
+    else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // séquence de conséquences close → reprendre l'IA
+  };
   return {
     // Peek du planificateur IA exposé au store (convention feuille « tout via get().xxx ») : le hook de
     // Frénésie (`turnHooks`, module feuille) y lit la meilleure action sans importer `combatFlow` (pas de
@@ -2645,23 +2656,9 @@ export function createCombatSlice(get: Get, set: Set) {
 
     ...rollFlowActionsMulti('cascade', FLOWS.cascade, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist']),
     cascadeChoose: (pid: string, key: string) => setCascadeChoice(get, set, pid, key),
-    cascadeNext: () => {
-      const done = advanceCascade(get, set);
-      if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
-      else if (done?.purpose === 'travelDay') continueRiverDayAfterCascade(get, set); // jets du JOUR fluvial clos → km + halte/arrivée
-      else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
-      else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
-      else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // séquence de conséquences close → reprendre l'IA
-    },
+    cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
     cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
-    cascadeFinish: () => {
-      const done = finalizeCascade(get, set);
-      if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
-      else if (done?.purpose === 'travelDay') continueRiverDayAfterCascade(get, set); // « Tout résoudre » du jour fluvial → km + halte/arrivée
-      else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
-      else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary)
-      else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // bilan clos → reprendre l'IA suspendue
-    },
+    cascadeFinish: () => dispatchCascadeDone(finalizeCascade(get, set)),
     // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE (combat/rencontre) : immunité TEMPORAIRE,
     // PAS une réussite forcée. On dépense 1 point de Détermination (`spendResolveForPsychImmunity` →
     // `psychImmuneRoundsLeft = 2`) et on MARQUE l'étape `immune` ; l'applier psy lit ce flag pour NE PAS

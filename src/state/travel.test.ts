@@ -63,18 +63,25 @@ function setup(worldMap: WorldMap, party: Combatant[] = [hero({ items: [ration('
   useGame.getState().loadProject([sceneA(), sceneB()], 'lieu-a-scene', worldMap);
 }
 
+/** Déroule la cascade OUVERTE (jour `travelDay` OU nuit) : roule chaque étape-jet puis avance jusqu'à
+ *  sa clôture. Depuis la Phase B, les jets du JOUR de voyage (Activités d'Étape, Exposition, péripéties
+ *  Survie/Perception) sont une cascade influençable qui SUSPEND la journée → il faut la drainer. */
+function drainCascade(): void {
+  let guard = 0;
+  while (useGame.getState().pendingCascade && guard++ < 200) {
+    const p = useGame.getState().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (cur && cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+    else useGame.getState().cascadeNext();
+  }
+}
+
 /** Dort à une halte de nuit : « Dormir » puis déroule la CASCADE séquentielle (lance + valide chaque
  *  jet) s'il y en a une — sinon (rien à influencer) la route a déjà repris. La fin de cascade reprend
  *  le voyage (purpose 'travel'). Remplace l'ancien restSleep→bilan→restContinue. */
 function sleepThroughHalt(): void {
   useGame.getState().restSleep();
-  let guard = 0;
-  while (useGame.getState().pendingCascade && guard++ < 60) {
-    const p = useGame.getState().pendingCascade!;
-    const cur = p.participants[p.cursor];
-    if (cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
-    useGame.getState().cascadeNext();
-  }
+  drainCascade();
 }
 
 beforeEach(() => {
@@ -194,6 +201,7 @@ describe('péripéties d’auteur — interruption et reprise', () => {
       perils: [{ label: 'Brigands sur la route !', chancePct: 100, effects: [{ type: 'startCombat', encounter: 'enc-test' }] }],
     }));
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // la péripétie du jour est une étape de la cascade travelDay → la drainer
     let st = useGame.getState();
     // DIFFÉRÉ derrière le récit : pas de combat tant que le recap n'est pas acquitté
     // (sinon on se retrouve en combat sans comprendre ce qui arrive).
@@ -226,6 +234,7 @@ describe('péripéties d’auteur — interruption et reprise', () => {
     // la péripétie (sinon une péripétie à 100 % boucle indéfiniment).
     setup(map({ perils: [{ label: 'Toujours là !', chancePct: 100, effects: [{ type: 'startCombat', encounter: 'enc-test' }] }] }));
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // péripétie du jour en cascade → drainer pour l'interruption
     expect(useGame.getState().travelPlan?.interrupted).toBe(true);
     expect(useGame.getState().travelPlan?.kmDone).toBeCloseTo(12);
     useGame.getState().dismissTravelRecap(); // « Faire face » → le combat démarre
@@ -254,6 +263,7 @@ describe('péripéties d’auteur — interruption et reprise', () => {
   it('péripétie purement narrative (journal) : le voyage continue', () => {
     setup(map({ perils: [{ label: 'Un colporteur partage la route.', chancePct: 100, effects: [{ type: 'journal', text: 'Il vend des amulettes.' }] }] }));
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // péripétie narrative en cascade travelDay → drainer, puis arrivée
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene'); // arrivé malgré la péripétie
     expect(st.journal.some((l) => l.includes('colporteur'))).toBe(true);
@@ -288,6 +298,7 @@ describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interru
   it('arrivée : recap « arrived » avec ses journées et les lignes de péripétie', () => {
     setup(map({ perils: [{ label: 'Un colporteur partage la route.', chancePct: 100, effects: [{ type: 'journal', text: 'Il vend des amulettes.' }] }] }));
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // péripétie du jour en cascade travelDay → drainer, puis recap d'arrivée
     const r = useGame.getState().travelRecap!;
     expect(r.status).toBe('arrived');
     expect(r.fromLabel).toBe('Village A');
@@ -305,6 +316,7 @@ describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interru
       perils: [{ label: 'Brigands sur la route !', chancePct: 100, effects: [{ type: 'startCombat', encounter: 'enc-test' }] }],
     }));
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // péripétie du jour en cascade travelDay → drainer pour l'interruption
     let r = useGame.getState().travelRecap!;
     expect(r.status).toBe('interrupted');
     expect(r.kmDone).toBeLessThan(30);
@@ -362,6 +374,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     setRule('travel-etapes', true);
     setup(map({ km: 12, perilDie: 0 }));
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // cascade travelDay (postes/Météo) → drainer, puis arrivée
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene'); // arrive toujours (l'enrichissement ne bloque pas la route)
     expect(st.journal.some((l) => l.includes("Météo de l'Étape"))).toBe(true);
@@ -374,6 +387,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     const h = hero({ travelRole: 'recuperer', items: [ration('r1')] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // cascade travelDay (poste Récupérer) → drainer
     const st = useGame.getState();
     expect(st.journal.some((l) => l.includes("Exposition de fin d'Étape"))).toBe(false);
     // Le poste assigné (Récupérer) a bien été résolu pour l'Étape (EDOC l.131 : un héros = une Activité).
@@ -385,6 +399,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // cascade travelDay (poste Approvisionnement) → drainer
     const st = useGame.getState();
     expect(st.journal.some((l) => l.includes('Approvisionnement'))).toBe(true);
   });
@@ -402,6 +417,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
       setup(map({ km: 12, perilDie: 0 }), [hero({ travelRole: 'recuperer' })]);
       useGame.setState({ gameTime: winter });
       useGame.getState().startTravel('r1', 'pied');
+      drainCascade(); // cascade travelDay (poste + Exposition insérée) → drainer
       if (useGame.getState().journal.some((l) => l.includes("Exposition de fin d'Étape"))) exposed = true;
     }
     expect(exposed).toBe(true);
@@ -418,6 +434,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
       setup(map({ km: 12, perilDie: 0 }), [h]);
       useGame.setState({ gameTime: CAMPAIGN_START });
       useGame.getState().startTravel('r1', 'pied');
+      drainCascade(); // cascade travelDay (Plein air, l'Exposition sautée si réussi) → drainer
       const j = useGame.getState().journal;
       // Plein air joué et réussi, et aucune Exposition cette Étape.
       if (j.some((l) => l.includes('Plein air') && l.includes('réussi')) && !j.some((l) => l.includes("Exposition de fin d'Étape"))) suppressed = true;
@@ -430,6 +447,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     const h = hero({ travelRole: 'etablir-cartes', skills: [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // cascade travelDay (poste Établir des cartes, Test étendu) → drainer
     const j = useGame.getState().journal;
     expect(j.some((l) => l.includes('Cartographie') || l.includes("carte de l'itinéraire est ACHEVÉE"))).toBe(true);
   });
@@ -450,6 +468,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     setRule('travel-etapes', true);
     setup(map({ km: 12, perilDie: 0 }));
     useGame.getState().startTravel('r1', 'pied');
+    drainCascade(); // cascade travelDay éventuelle (poste par défaut) → drainer, puis arrivée
     // Trajet bouclé le jour même → plan purgé ; le départ n'aura de toute façon créé aucune coque.
     expect(useGame.getState().travelPlan).toBeNull();
   });
@@ -463,6 +482,7 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
       const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 0 } as any] });
       setup(map({ km: 12, perilDie: 0 }), [h]);
       useGame.getState().startTravel('r1', 'pied');
+      drainCascade(); // cascade travelDay (échec de poste → Rencontre à l'agrégation) → drainer
       if (useGame.getState().journal.some((l) => l.includes('Rencontre'))) met = true;
     }
     expect(met).toBe(true);

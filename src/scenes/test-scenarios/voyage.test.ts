@@ -58,6 +58,15 @@ describe('16-voyage — intégration Voyage par Étapes', () => {
     useGame.getState().startTravel('r-longue', 'diligence', { classKey: 'exterieur' });
     const plan = useGame.getState().travelPlan;
     expect(plan?.vehicle?.bodyShape).toBe('vehicule'); // diligence E45/B50
+    // Les jets d'Étape du jour sont une cascade influençable (`travelDay`) : la drainer pour que les
+    // lignes de postes/Exposition arrivent au journal (comme la halte de nuit du fluvial).
+    let guard = 0;
+    while (useGame.getState().pendingCascade && guard++ < 200) {
+      const p = useGame.getState().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (cur && cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+      else useGame.getState().cascadeNext();
+    }
     const j = useGame.getState().journal;
     expect(j.some((l) => l.includes('Météo'))).toBe(true);
     expect(j.some((l) => l.includes('Plein air') || l.includes('Aux aguets') || l.includes('Cartographie') || l.includes('Approvisionnement'))).toBe(true);

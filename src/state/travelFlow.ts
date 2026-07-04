@@ -20,7 +20,6 @@
  * Une péripétie qui déclenche un combat/une transition INTERROMPT le voyage : `travelPlan` mémorise
  * la progression (`kmDone`) et la carte propose « Reprendre le voyage » (`resumeTravel`).
  */
-import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { applyEffectsLoot } from './combatFlow';
@@ -46,19 +45,14 @@ import { subtract as moneySub, canAfford, formatMoney } from '../engine/money';
 import { d10, d100 } from '../engine/dice';
 import { rule } from '../engine/policy';
 import { toDate } from '../engine/clock';
-import { testValue } from '../engine/skills';
-import {
-  seasonOfMonth, rollStageWeather, stageExposureDifficulty, isColdSeason,
-  pleinAirModifier, forageWeatherModifier, forageYield, WEATHER_LABEL, type Weather, type Season,
-} from '../engine/travelStages';
-import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
-import { rationCount } from '../engine/provisions';
-import { itemFromGive } from '../engine/items';
+import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../engine/travelStages';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
-import { resolveStagePostes } from './travelPostes';
+import { buildStageSteps, type StageContext } from './travelPostes';
+import { startCascade, registerCascadeApplier } from './cascade';
+import type { CascadeStep } from './pendings';
 import { buildSeaPlan, runSeaDays } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
-import type { Combatant } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
 
@@ -130,6 +124,39 @@ export interface TravelPlan {
   /** État FLUVIAL du trajet (route `river`, mode barge — T2C ch.5) : vent, dérive/chavirage, jours à flot.
    *  Présent = la résolution du jour est déléguée à `riverVoyageFlow.runRiverDays`. */
   river?: import('./riverVoyageFlow').RiverVoyageState;
+  /** CONTEXTE TRANSITOIRE de l'Étape EDOC en cours (météo/saison/postes accumulés) — posé par
+   *  `buildStageSteps`, lu par les appliers de poste/exposition, effacé à la clôture du jour. Jamais
+   *  persisté au-delà d'une journée. */
+  stage?: StageContext;
+  /** CONTEXTE TRANSITOIRE du JOUR terrestre EN COURS (posé par `buildTravelDayCascade`, lu et effacé par
+   *  `continueTravelDayAfterCascade`) : ce que la clôture de la cascade `travelDay` relit pour enchaîner
+   *  la halte de nuit / l'arrivée. Recopie de variables du jour, aucune règle neuve. Jamais persisté. */
+  land?: LandDayContext;
+  /** Récapitulatif du SEGMENT en cours (audit M4), stocké sur le plan quand la journée SUSPEND sur la
+   *  cascade `travelDay` : `continueTravelDayAfterCascade` le relit et le finalise (le `recap` local du
+   *  `while` de `runTravelDays` ne survit pas à la suspension). Transitoire — effacé à la finalisation. */
+  recap?: TravelRecap;
+}
+
+/** Entrées d'une journée de route terrestre, figées au build de la cascade `travelDay` : l'horloge/les
+ *  km avancent AVANT la cascade (marche terrestre déterministe — heures × vitesse, comportement
+ *  conservé ; seuls les JETS d'Étape/péripétie sont influençables), donc la clôture n'a plus qu'à
+ *  enchaîner. Porte la destination, les héros en marche forcée (→ cascade de NUIT), le résultat
+ *  d'INTERRUPTION d'une péripétie (combat/embuscade différé), et `arrived`. Jamais persisté au-delà d'une
+ *  journée. La ligne de récap du jour vit dans `plan.recap.days[dernier]` (le `while` la relit). */
+export interface LandDayContext {
+  arrived: boolean;
+  toScene: string;
+  toEntry?: string;
+  toLabel: string;
+  destLabel: string;
+  marchHeroes: string[];
+  /** Longueur du journal au DÉBUT de la cascade du jour : le récap du jour (`recapDay.lines`, affiché
+   *  dans la halte de nuit / au recap d'arrivée) reçoit la tranche écrite depuis là (jets d'Étape,
+   *  Exposition, péripéties) — les lignes de la cascade n'y vont pas d'elles-mêmes. */
+  journalMark: number;
+  /** INTERRUPTION posée par une péripétie (le voyage s'arrête, le combat/l'embuscade attend le recap). */
+  interrupt?: TravelThen;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -357,47 +384,28 @@ function runTravelDays(get: Get, set: Set): void {
     // (EDOC 07 l.148-174), chute du cavalier, bête perdue — puis dégradation à pied si le groupe
     // n'est plus monté au complet (les cavaliers ne marchent pas : ni fatigue ni marche forcée).
     if (plan.mode === 'monture') resolveMountedTravelDay(get, set, hoursToday, plan.allure ?? 'pas', recapDay);
-    const rollMarchEager = () => {
-      if (!marchHeroes.length) return;
-      const lines: string[] = [];
-      for (const id of marchHeroes) {
-        const h = get().party.find((x) => x.id === id);
-        if (!h) continue;
-        const r = forcedMarchTest(h, battleRng());
-        if (r) { lines.push(r.line); recapDay.entries!.push({ actorId: id, icon: '🥾', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' }); }
-      }
-      set({ party: [...get().party] });
-      log(get, set, lines);
-    };
 
-    // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5, parent `travel-etapes`). Quand il est
-    // ÉTEINT (défaut), ce bloc est entièrement court-circuité → le chemin jour-par-jour du LdB reste
-    // BYTE-IDENTIQUE. Quand il est allumé, chaque journée de route EST une Étape : jet de Météo (l.42),
-    // puis les POSTES d'Activité (l.131, dont l'Approvisionnement) et l'Exposition de fin d'Étape
-    // (l.73, si `travel-attraper-froid` et hors « Plein air »). Ordre RAW (l.10) : Météo → activités → péripéties.
-    if (rule('travel-etapes')) resolveStage(get, set, recapDay);
-
-    // Péripéties du jour (d'auteur puis table d10 RAW). Peut interrompre le voyage — une
-    // EMBUSCADE est alors DIFFÉRÉE derrière le récit (`recap.then`) : le joueur lit d'abord
-    // ce qui lui arrive, le combat démarre à l'acquittement du recap.
-    const out: { then?: TravelThen } = {};
-    if (resolvePerils(get, set, route, to.label, recapDay, out)) { rollMarchEager(); finishRecap('interrupted', out.then); return; }
-
-    if (arrived) {
-      rollMarchEager();
-      set({ travelPlan: null });
-      const care = travelArrivalCare(get, set);
-      recapDay.lines.push(...care);
-      log(get, set, [`— Arrivée à ${to.label} —`, ...care]);
-      finishRecap('arrived');
-      get().transitionTo(to.scene, to.entry);
-      return;
+    // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5, parent `travel-etapes`) + PÉRIPÉTIES du
+    // jour (d'auteur puis table d10 RAW). TOUS les JETS du jour (Activités d'Étape, Exposition de fin
+    // d'Étape, Survie/Perception des péripéties) sont désormais des ÉTAPES d'une CASCADE influençable
+    // (`purpose:'travelDay'`, Chance/Pacte/Résilience) — plus d'auto-résolution inline. Ordre RAW (l.10)
+    // : Météo (tirée ici, ambiance) → activités → péripéties. Quand aucun jet n'est produit (règle
+    // Étapes éteinte ET pas de péripétie testable), la cascade est VIDE → on finalise directement (le
+    // chemin jour-par-jour du LdB reste BYTE-IDENTIQUE).
+    const daySteps = buildTravelDayCascade(get, set, route, recapDay, marchHeroes, {
+      arrived, toScene: to.scene, toEntry: to.entry, toLabel: to.label, destLabel: to.label,
+    });
+    // Récap du SEGMENT posé sur le plan : la cascade suspend le `while`, donc son `recap`/`recapDay`
+    // locaux ne survivent pas — `continueTravelDayAfterCascade` les relit depuis `plan.recap`.
+    if (recap) set({ travelPlan: { ...get().travelPlan!, recap } });
+    if (daySteps.length) {
+      startCascade(get, set, { title: '🧭 Journée de route', icon: '🧭', purpose: 'travelDay', steps: daySteps });
+      return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
     }
-    // Nuit en route : HALTE — modale de Repos (auberge de relais si la route en a, sinon
-    // campement). Le voyage se suspend ; « Continuer » du bilan reprend la route au matin.
-    // La MARCHE FORCÉE du jour ouvre la cascade de la nuit (influençable) via `travelMarch`.
-    openRest(get, set, { places: placesOfKind(route.inns ? 'auberge' : 'camp'), travelHalt: true, travelMarch: marchHeroes, travelDay: { ...recapDay, lines: [...recapDay.lines], entries: [...(recapDay.entries ?? [])] } });
-    return; // au matin, runTravelDays repart sur un recap NEUF (segment suivant)
+    // Aucun jet influençable : finalisation immédiate (arrivée / halte de nuit) — comme la cascade le
+    // ferait à sa clôture. Chaque journée finalise le segment (halte/arrivée) → une seule itération.
+    continueTravelDayAfterCascade(get, set);
+    return;
   }
 }
 
@@ -410,160 +418,219 @@ export function continueTravelAfterNight(get: Get, set: Set): void {
   runTravelDays(get, set);
 }
 
-/** Tire et résout les péripéties du jour. Renvoie `true` si le voyage est INTERROMPU.
- *  `out.then` : suite DIFFÉRÉE (embuscade) — le combat ne démarre qu'à l'acquittement du recap. */
-function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, day: TravelRecapDay | undefined, out: { then?: TravelThen }): boolean {
-  const before = { sceneId: get().scene?.id, inBattle: !!get().battle };
-  const interrupted = () => !!get().battle || get().scene?.id !== before.sceneId;
-  // Journal ET récapitulatif du jour (audit M4) : les mêmes lignes, une seule écriture.
-  const tell = (lines: string[]) => { log(get, set, lines); day?.lines.push(...lines); };
-  const markInterrupted = () => {
-    const plan = get().travelPlan;
-    if (plan) set({ travelPlan: { ...plan, interrupted: true } });
-    tell([`(Voyage vers ${destLabel} interrompu — il pourra reprendre depuis la carte.)`]);
-  };
-
-  // 1. Péripéties d'AUTEUR (probabilité par jour, effets d'éditeur). Une péripétie qui DÉCLENCHE
-  // un combat/une transition est DIFFÉRÉE derrière le récit (recap d'abord, combat ensuite —
-  // sinon le joueur se retrouve en combat sans savoir pourquoi).
-  for (const peril of route.perils ?? []) {
-    if (d100(battleRng()) > Math.max(0, Math.min(100, peril.chancePct))) continue;
-    tell([`Péripétie : ${peril.label}`]);
-    if ((peril.effects ?? []).some((e) => e.type === 'startCombat' || e.type === 'transition')) {
-      out.then = { kind: 'effects', effects: peril.effects };
-      markInterrupted();
-      return true;
-    }
-    applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur en route → fenêtre d'attribution
-    if (interrupted()) { markInterrupted(); return true; } // repli : un effet a surpris (dialogue…)
-  }
-
-  // 2. Table d10 RAW (l.237 : « 1d10 par jour … événement sur un résultat de 8 », seuil paramétrable).
-  const die = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
-  if (die >= 1 && d10(battleRng()) === die) {
-    const entry = PERIPETIES[d10(battleRng()) - 1];
-    tell([`Péripétie de voyage (🎲 ${entry.roll}) — ${entry.label} : ${entry.text}`]);
-    const party = get().party;
-    switch (entry.kind) {
-      case 'reposant': {
-        // Texte explicite : soin de TOUTES les Blessures + retrait de TOUS les Exténué.
-        const lines: string[] = [];
-        for (const h of party) {
-          if (h.dead) continue;
-          if (h.wounds.current < h.wounds.max) { h.wounds.current = h.wounds.max; lines.push(`${h.name} récupère toutes ses Blessures.`); }
-          const n = stacks(h, 'extenue');
-          if (n > 0) { removeCondition(h, 'extenue', n); lines.push(`${h.name} n’est plus Exténué.`); }
-        }
-        set({ party: [...party] });
-        tell(lines);
-        break;
-      }
-      case 'ereintant': {
-        // Test de Survie en extérieur Accessible (+20), sinon +1 jour de retard et +1 Exténué chacun.
-        const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12) : le groupe œuvre de concert
-        const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
-        if (t && best) {
-          log(get, set, [`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
-          // Recap : LIGNE DE JET structurée (multijet), pas du texte.
-          day?.entries?.push({ actorId: best.actor.id, icon: '🧭', label: 'Survie en extérieur', d: testDetail('Survie en extérieur', best.value, t), text: t.success ? 'itinéraire de substitution trouvé' : 'le groupe erre un jour de plus', tone: t.success ? 'ok' : 'bad' });
-        }
-        if (!t?.success) day?.lines.push(...applyEreintant(get, set));
-        break;
-      }
-      case 'attaque': {
-        // Test de Perception Accessible (+20) raté → EMBUSCADE (rencontre d'auteur sur la route) ;
-        // réussi → le combat a quand même lieu, mais SANS surprise (« le groupe les voit venir »).
-        const configured = !!(route.ambush?.scene && route.ambush.encounter);
-        const best = partyAssisted(party, 'perception'); // Soutien (LDB 12) : le groupe guette de concert
-        const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
-        if (t && best) {
-          log(get, set, [`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`]);
-          day?.entries?.push({ actorId: best.actor.id, icon: '👁️', label: 'Perception', d: testDetail('Perception', best.value, t), text: t.success ? 'le groupe les voit venir !' : configured ? 'embuscade !' : 'ÉCHEC', tone: t.success ? 'ok' : 'bad' });
-        }
-        if (configured) {
-          // DIFFÉRÉ derrière le récit : le recap s'affiche d'abord, le combat démarre à
-          // son acquittement (dismissTravelRecap) — on comprend ce qui arrive AVANT de se battre.
-          out.then = { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: !!t?.success };
-          markInterrupted();
-          return true;
-        }
-        // Pas de rencontre configurée sur la route : rien d'inventé — on le DIT (sinon le texte
-        // promet une embuscade qui n'arrive jamais).
-        tell(['(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)']);
-        break;
-      }
-      default:
-        break; // narratif : le texte au journal suffit
-    }
-  }
-  return false;
-}
-
 /** Saison courante (table de Météo EDOC ch.5 l.44) depuis l'horloge du jeu. */
 function currentSeason(get: Get): Season {
   return seasonOfMonth(toDate(get().gameTime).month);
 }
 
 /**
- * Résout UNE Étape de voyage (EDOC ch.5) — appelée par jour de route quand `travel-etapes` est on.
- * Ordre RAW (l.10) : jet de Météo → activités (Approvisionnement, l.108) → Exposition de fin
- * d'Étape (option « Attraper Froid », l.73). Écrit dans le journal ET le recap du jour (mêmes lignes).
- * Mute le groupe (rations gagnées par l'Approvisionnement, pénalités/Blessures d'Exposition).
+ * Construit les ÉTAPES influençables du JOUR terrestre (cascade `purpose:'travelDay'`) — la MISE EN
+ * SCÈNE des jets du jour, dans l'ORDRE de résolution RAW (l.10) : (Étape EDOC) Météo tirée ici
+ * (ambiance, 1 tirage), puis les postes d'Activité (l.131) + l'agrégation qui INSÈRE l'Exposition de
+ * fin d'Étape (l.73) ; enfin les PÉRIPÉTIES (l.237) — un pas `landPeril` qui, à sa validation, tire les
+ * péripéties d'auteur (d100) puis la table d10 et INSÈRE le jet influençable (Survie/Perception) quand
+ * la péripétie en demande un. Zéro RNG consommé au build hormis la Météo (les jets vivent dans les
+ * étapes / appliers) → parité RNG avec l'ancien chemin inline. Renvoie `[]` s'il n'y a AUCUN jet
+ * (règle Étapes éteinte ET pas de péripétie testable) : l'appelant finalise alors directement.
  */
-function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
-  const season = currentSeason(get);
-  const tell = (lines: string[]) => { log(get, set, lines); day.lines.push(...lines); };
+function buildTravelDayCascade(
+  get: Get, set: Set, route: MapRoute, recapDay: TravelRecapDay, marchHeroes: string[],
+  dest: { arrived: boolean; toScene: string; toEntry?: string; toLabel: string; destLabel: string },
+): CascadeStep[] {
+  const steps: CascadeStep[] = [];
+  // Repère de journal : le récap du jour (recapDay.lines) = la tranche écrite pendant la cascade.
+  const journalMark = get().journal.length;
 
-  // 1. Jet de Météo de l'Étape (l.42 : « au début de chaque étape »).
-  const w = rollStageWeather(battleRng(), season);
-  const weather: Weather = w.weather;
-  tell([`Météo de l'Étape (🎲 ${w.roll}) : ${WEATHER_LABEL[weather]}.`]);
-
-  const party = get().party;
-  const livingHeroes = party.filter((h) => !h.dead && !h.outOfRencontre);
-
-  // 2. POSTES d'Activité de l'Étape (EDOC ch.5 l.131) — résolus et appliqués par le module feuille
-  //    `travelPostes`. L'Approvisionnement est désormais un POSTE (plus un flag) : un héros par poste,
-  //    son Test, son Exténué ; agrégation porte/cumul/individuel. La porte « Plein air »
-  //    (`suppressExposure`, l.141) dispense le groupe du Test d'Exposition ci-dessous.
-  const postes = resolveStagePostes(get, set, weather);
-  if (postes.entries.length) day.entries?.push(...postes.entries);
-  if (postes.lines.length) tell(postes.lines);
-
-  // 3. Exposition de fin d'Étape — option « Attraper Froid » (l.73, règle optionnelle RAW), SAUTÉE si
-  // un héros a réussi « Plein air » (porte `suppressExposure`, l.141). Réutilise le mécanisme de FROID
-  // EXISTANT (`applyExposureFailure`, engine/exposure.ts — escalade cumulative l.415 : 1ᵉʳ échec −10
-  // CT/Ag/Dex, 2ᵉ −10 le reste, 3ᵉ+ Blessures). Un SEUL Test de Résistance par Étape (l.73), difficulté
-  // (Complexe −10 / Difficile −20 selon manteau/tente) via `stageExposureDifficulty`. Test roulé ICI
-  // (pas via `exposureNight`) pour ne PAS cumuler le malus de manteau LdB avec celui d'EDOC.
-  if (rule('travel-attraper-froid') && !postes.suppressExposure && livingHeroes.length) {
-    const tent = partyHasTent(party);
-    const lines: string[] = [];
-    let anyExposed = false;
-    for (const h of livingHeroes) {
-      const diff = stageExposureDifficulty(weather, hasCoat(h), tent);
-      if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
-      if (isWeatherWarded(h)) { lines.push(`${h.name} ignore le froid et les intempéries (protection magique).`); anyExposed = true; continue; }
-      const resVal = testValue(h, 'resistance', 'E');
-      const t = rollTest(resVal, diff, battleRng()); // Test de Résistance de fin d'Étape (l.73)
-      anyExposed = true;
-      lines.push(`${h.name} — Exposition de fin d'Étape (${WEATHER_LABEL[weather]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'tient le coup.' : 'transi par le froid.'}`);
-      if (!t.success) {
-        // Escalade cumulative (l.415) : le rang d'échec = nombre de paliers de froid déjà subis + 1.
-        const prior = (h.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
-        // Distinct des deux paliers d'effet : 0 effet = 1ᵉʳ échec ; 3 effets (CT/Ag/Dex) = 2ᵉ ; 10 = 3ᵉ+.
-        const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;
-        lines.push(...applyExposureFailure(h, rank, battleRng()).log);
-        // Saison froide (l.75) : « tout Personnage ayant souffert de cette exposition … contracte un
-        // rhume ». Aucune maladie « rhume » n'existe dans `maladies.json` (LDB 20 ne la liste pas) → on
-        // n'INVENTE pas de maladie : on le RACONTE (le froid mécanique est déjà appliqué ci-dessus).
-        if (isColdSeason(season)) lines.push(`${h.name} grelotte et tousse — un rhume couve (saison froide).`);
-      }
-      day.entries?.push({ actorId: h.id, icon: '🥶', label: 'Exposition', d: testDetail('Résistance', resVal, t), text: t.success ? 'tient' : 'froid', tone: t.success ? 'ok' : 'bad' });
-    }
-    if (anyExposed) { set({ party: [...get().party] }); tell(lines); }
+  // Étape EDOC (l.10) : jet de Météo « au début de chaque étape » (l.42) — ambiance, posée ici (1
+  // tirage), puis les postes + l'agrégation (fourrage/camp/carte/Rencontre) qui insère l'Exposition.
+  if (rule('travel-etapes')) {
+    const season = currentSeason(get);
+    const w = rollStageWeather(battleRng(), season);
+    log(get, set, [`Météo de l'Étape (🎲 ${w.roll}) : ${WEATHER_LABEL[w.weather]}.`]);
+    steps.push(...buildStageSteps(get, set, w.weather, season));
   }
+
+  // PÉRIPÉTIES du jour (l.237) : un pas de VÉRIFICATION dont l'applier tire les péripéties d'auteur
+  // (d100) puis la table d10 (MÊME ordre RNG qu'inline — APRÈS les jets d'Étape) et, si la péripétie
+  // propose un Test (Survie/Perception), INSÈRE le jet influençable juste après. N'est ajouté que s'il
+  // y a des péripéties À TIRER (auteur ou table d10) — sinon le jour n'a pas de pas de péripétie (le
+  // chemin de base sans péripétie reste sans cascade quand la règle Étapes est éteinte).
+  const perilDie = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
+  if ((route.perils ?? []).length > 0 || perilDie >= 1) {
+    steps.push({ id: 'land-peril', kind: 'landPeril', icon: '⚠️', label: 'Péripéties de la route', interactive: true,
+      meta: { destLabel: dest.destLabel } });
+  }
+
+  // Contexte du jour relu par la clôture (arrivée/halte). L'interruption d'une péripétie s'y posera.
+  set({ travelPlan: { ...get().travelPlan!, land: {
+    arrived: dest.arrived, toScene: dest.toScene, toEntry: dest.toEntry, toLabel: dest.toLabel,
+    destLabel: dest.destLabel, marchHeroes: [...marchHeroes], journalMark,
+  } } });
+  void recapDay; // le récap du jour (plan.recap.days[dernier]) reçoit la tranche de journal à la clôture
+  return steps;
 }
+
+/**
+ * Clôture de la cascade du jour terrestre (`purpose:'travelDay'`, appelée par le store) : le jour est
+ * fini de se JOUER (postes/exposition/péripéties validés) — reste à enchaîner. Roule la marche forcée
+ * EAGER si le jour n'aboutit PAS sur une halte de nuit (arrivée/interruption : pas de nuit où la
+ * présenter), sinon la DIFFÈRE à la cascade de nuit (`travelMarch`). Puis : interruption (péripétie) →
+ * recap `interrupted` + suite différée ; arrivée → transition ; sinon → halte de nuit (`openRest`).
+ * Efface le contexte transitoire du jour. Renvoie `true` (le segment est toujours clos ici).
+ */
+export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
+  const plan = get().travelPlan;
+  if (!plan) return true;
+  const worldMap = get().worldMap;
+  const route = worldMap?.routes.find((r) => r.id === plan.routeId);
+  const ctx = plan.land;
+  const recap = plan.recap;
+  const recapDay = recap?.days[recap.days.length - 1];
+  // Récap du jour : la tranche de journal écrite pendant la cascade (météo, postes, Exposition,
+  // péripéties) — les lignes de la cascade ne vont pas d'elles-mêmes dans `recapDay.lines`.
+  if (recapDay && ctx) recapDay.lines.push(...get().journal.slice(ctx.journalMark));
+  // Efface les contextes transitoires du jour (jamais persistés au-delà de la journée).
+  set({ travelPlan: { ...get().travelPlan!, land: undefined, stage: undefined, recap: undefined } });
+
+  const finishRecap = (status: TravelRecap['status'], then?: TravelThen) => {
+    if (!recap) return;
+    recap.status = status;
+    recap.kmDone = get().travelPlan?.kmDone ?? recap.km;
+    set({ travelRecap: { ...recap, days: [...recap.days], then } });
+  };
+  // Marche forcée du jour (l.224) : DIFFÉRÉE à la nuit si halte ; sinon roulée EAGER (arrivée/interruption).
+  const rollMarchEager = () => {
+    for (const id of ctx?.marchHeroes ?? []) {
+      const h = get().party.find((x) => x.id === id);
+      if (!h) continue;
+      const r = forcedMarchTest(h, battleRng());
+      if (r) { log(get, set, [r.line]); recapDay?.entries?.push({ actorId: id, icon: '🥾', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' }); }
+    }
+    set({ party: [...get().party] });
+  };
+
+  // INTERRUPTION par une péripétie (combat/embuscade différé) : le voyage s'arrête sur le récit.
+  if (ctx?.interrupt) {
+    rollMarchEager();
+    set({ travelPlan: { ...get().travelPlan!, interrupted: true } });
+    finishRecap('interrupted', ctx.interrupt);
+    return true;
+  }
+  if (!route || !ctx) { set({ travelPlan: null }); return true; }
+
+  if (ctx.arrived) {
+    rollMarchEager();
+    set({ travelPlan: null });
+    const care = travelArrivalCare(get, set);
+    if (recapDay) recapDay.lines.push(...care);
+    log(get, set, [`— Arrivée à ${ctx.toLabel} —`, ...care]);
+    finishRecap('arrived');
+    get().transitionTo(ctx.toScene, ctx.toEntry);
+    return true;
+  }
+  // Nuit en route : HALTE — modale de Repos (auberge de relais si la route en a, sinon campement). Le
+  // voyage se suspend ; « Continuer » du bilan reprend la route au matin. La MARCHE FORCÉE du jour
+  // ouvre la cascade de la nuit (influençable) via `travelMarch` — pas de roulé eager ici.
+  const travelDay: TravelRecapDay | undefined = recapDay ? { ...recapDay, lines: [...recapDay.lines], entries: [...(recapDay.entries ?? [])] } : undefined;
+  openRest(get, set, { places: placesOfKind(route.inns ? 'auberge' : 'camp'), travelHalt: true, travelMarch: ctx.marchHeroes, travelDay });
+  return true;
+}
+
+// ── APPLIER des PÉRIPÉTIES du jour terrestre (cascade `travelDay`) : tire les péripéties d'auteur
+//    (d100) puis la table d10 RAW, résout les kinds sans jet joueur inline, et INSÈRE le jet
+//    influençable (Survie « éreintant » / Perception « attaque ») quand la péripétie en demande un —
+//    l'ORDRE RNG (d100 auteur → d10 seuil → d10 table → jet) est IDENTIQUE à l'ancien `resolvePerils`.
+
+/** Pose l'INTERRUPTION du jour sur le contexte terrestre (relue par `continueTravelDayAfterCascade`). */
+function markLandInterrupt(get: Get, set: Set, then: TravelThen, destLabel: string): string[] {
+  const plan = get().travelPlan;
+  if (plan?.land) set({ travelPlan: { ...plan, land: { ...plan.land, interrupt: then } } });
+  return [`(Voyage vers ${destLabel} interrompu — il pourra reprendre depuis la carte.)`];
+}
+
+registerCascadeApplier('landPeril', (get, set, step) => {
+  const worldMap = get().worldMap;
+  const route = worldMap?.routes.find((r) => r.id === get().travelPlan?.routeId);
+  if (!route) return;
+  const destLabel = String(step.meta?.destLabel ?? '');
+  const j: string[] = [];
+  const before = { sceneId: get().scene?.id };
+  const interrupted = () => get().scene?.id !== before.sceneId;
+
+  // 1. Péripéties d'AUTEUR (probabilité par jour, effets d'éditeur). startCombat/transition → DIFFÉRÉ.
+  for (const peril of route.perils ?? []) {
+    if (d100(battleRng()) > Math.max(0, Math.min(100, peril.chancePct))) continue;
+    j.push(`Péripétie : ${peril.label}`);
+    if ((peril.effects ?? []).some((e) => e.type === 'startCombat' || e.type === 'transition')) {
+      j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel));
+      return { journal: j };
+    }
+    applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur → fenêtre d'attribution
+    if (interrupted()) { j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel)); return { journal: j }; }
+  }
+
+  // 2. Table d10 RAW (l.237). L'entrée à Test (éreintant/attaque) INSÈRE un jet influençable ; les kinds
+  //    sans jet (reposant/narratif) sont résolus inline (mêmes sous-jets, même ordre).
+  const die = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
+  if (die >= 1 && d10(battleRng()) === die) {
+    const entry = PERIPETIES[d10(battleRng()) - 1];
+    j.push(`Péripétie de voyage (🎲 ${entry.roll}) — ${entry.label} : ${entry.text}`);
+    const party = get().party;
+    if (entry.kind === 'reposant') {
+      for (const h of party) {
+        if (h.dead) continue;
+        if (h.wounds.current < h.wounds.max) { h.wounds.current = h.wounds.max; j.push(`${h.name} récupère toutes ses Blessures.`); }
+        const n = stacks(h, 'extenue');
+        if (n > 0) { removeCondition(h, 'extenue', n); j.push(`${h.name} n’est plus Exténué.`); }
+      }
+      set({ party: [...party] });
+    } else if (entry.kind === 'ereintant') {
+      // Survie en extérieur Accessible (+20) INFLUENÇABLE → étape-jet insérée (échec = retard + Exténué).
+      const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
+      if (best) return { journal: j, insert: [{
+        id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: '🧭', label: 'Survie en extérieur',
+        rollLabel: 'Survie en extérieur', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+      }] };
+      j.push(...applyEreintant(get, set)); // personne pour tester : retard direct
+    } else if (entry.kind === 'attaque') {
+      // Perception Accessible (+20) INFLUENÇABLE → étape-jet insérée ; son applier pose l'embuscade
+      // différée (le `noSurprise` suit le jet). Sans tester (aucun héros vivant) : interruption directe.
+      const configured = !!(route.ambush?.scene && route.ambush.encounter);
+      const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
+      if (best) return { journal: j, insert: [{
+        id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: '👁️', label: 'Perception',
+        rollLabel: 'Perception', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+        meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' } }] };
+      if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { journal: j }; }
+      j.push('(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)');
+    }
+    // narratif (default) : le texte au journal suffit.
+  }
+  return { journal: j };
+});
+
+/** « Voyage éreintant » (l.237) : Survie en extérieur (+20) INFLUENÇABLE ; échec → +1 jour de retard et
+ *  +1 Exténué chacun (`applyEreintant`). */
+registerCascadeApplier('landPerilSurvie', (get, set, step, hero) => {
+  if (!step.result) return;
+  const j = [`${hero?.name ?? 'Le groupe'} — Survie en extérieur (+20) : 🎲 ${step.result.roll}/${step.result.target} → ${step.result.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`];
+  if (!step.result.success) j.push(...applyEreintant(get, set));
+  return { journal: j };
+});
+
+/** « Attaqués ! » (l.237) : Perception (+20) INFLUENÇABLE ; réussie → le groupe les voit venir (sans
+ *  surprise) ; l'embuscade configurée est DIFFÉRÉE derrière le récit (le `noSurprise` suit le jet). */
+registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
+  if (!step.result) return;
+  const configured = !!step.meta?.configured;
+  const destLabel = String(step.meta?.destLabel ?? '');
+  const j = [`${hero?.name ?? 'Le groupe'} — Perception (+20) : 🎲 ${step.result.roll}/${step.result.target} → ${step.result.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`];
+  if (configured) j.push(...markLandInterrupt(get, set, {
+    kind: 'ambush', scene: String(step.meta?.ambushScene ?? ''), entry: String(step.meta?.ambushEntry ?? '') || undefined,
+    encounter: String(step.meta?.ambushEnc ?? ''), noSurprise: step.result.success,
+  }, destLabel));
+  return { journal: j };
+});
 
 /**
  * Applique la journée EN SELLE (EDOC 07 l.142-146) : le moteur PUR `resolveMountedDay` rend la fatigue

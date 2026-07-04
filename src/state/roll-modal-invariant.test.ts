@@ -92,6 +92,7 @@ const JUSTIFIED: Record<string, string> = {
   startTravel: 'voyage #T2 : Tests de route (marche forcée, Survie, Perception) NARRÉS jour par jour dans le TravelRecapModal (🎲 jet/cible affichés)',
   resumeTravel: 'reprise du voyage interrompu — mêmes jets narrés dans le recap',
   continueTravelAfterNight: 'reprise après la halte de nuit — mêmes jets narrés dans le recap',
+  continueTravelDayAfterCascade: 'clôture de la cascade du JOUR terrestre : la marche forcée EAGER (arrivée/interruption, pas de halte où la présenter) est le MÊME jet narré dans le recap qu’avant — les jets d’Étape/péripétie du jour, eux, sont désormais des étapes influençables de la cascade `travelDay` (pending*)',
   openMerchant: 'ouverture de boutique : réassort/Disponibilité (LDB 59) — le monde tire, pas un Test de héros',
   searchAvailability: 'recherche active de Disponibilité (LDB 59 l.50) : une JOURNÉE écoulée aux marchés — le Test de Ragot du groupe est un jet SUBI/RÉVÉLÉ (résultat journalisé « Ragot <roll> » la même action, comme le recap de Voyage) puis le réassort AMBIANT en découle ; pas une décision interactive différable',
   spawnEnemy: 'génération de créature (caractéristiques/PB) — ambiant, hors Test',
