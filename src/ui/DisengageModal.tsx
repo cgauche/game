@@ -4,10 +4,9 @@ import { calmeValue } from '../engine/psychology';
 import { groupAdvantage } from '../engine/advantagePool';
 import { retreatAdvantageCost } from '../engine/combatFeatures/dispatch';
 import { canReroll } from '../engine/fortune';
-import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
 import { OptionChooser } from './OptionChooser';
-import { RollPanel } from './RollPanel';
+import { RollRow } from './RollRow';
 import { TableRollLine } from './RollLine';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
@@ -106,37 +105,27 @@ export function DisengageModal() {
           />
           {f && f.woundsLost > 0 ? (
             <>
-              {/* Test de Calme INFLUENÇABLE (LDB 15-Dépl l.105-107) — calqué sur l'Esquive influençable. */}
-              <RollPanel
-                rows={[{ combatant: mover, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined }]}
+              {/* Test de Calme INFLUENÇABLE (LDB 15-Dépl l.105-107) — mono `RollRow` : « Lancer » +
+                  Résilience pré-jet (LDB 17 l.73) puis cycle d'influence (Chance/Pacte/Résilience). */}
+              <RollRow
+                actor={mover}
+                row={{ combatant: mover, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined }}
+                rolled={!!calme}
+                rollLabel="🎲 Lancer le Test de Calme"
+                onRoll={fleeRoll}
+                rerollable={calmeRerollable}
+                onReroll={fleeReroll}
+                onBonusSL={fleeBonusSL}
+                darkPactable={mover.kind === 'hero' && !!calme && !calme.success}
+                onDarkPact={fleeDarkPact}
+                onForce={fleeForce}
+                // Résilience AVANT le jet (LDB 17 l.73) : Calme forcé en réussite.
+                preRollForce={() => { fleeRoll(); fleeForce(); }}
+                forceShow={!!calme && !calme.success}
               />
               {calme && (
-                <JournalLine className="rm-journal" event={ev('fear', fleeOutcome, mover.id, foe.id)} combatants={battle.combatants} />
-              )}
-              {!calme ? (
                 <>
-                  <div className="rm-influence">
-                    {/* Résilience AVANT le jet (LDB 17 l.73) : Calme forcé en réussite. */}
-                    <ResilienceButton resilience={mover.resilience ?? 0} show={(mover.resilience ?? 0) > 0} onForce={() => { fleeRoll(); fleeForce(); }} />
-                  </div>
-                  <div className="modal-actions">
-                    <button className="btn btn-primary" onClick={fleeRoll}>
-                      Lancer le Test de Calme
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <InfluenceRow
-                    actor={mover}
-                    rerollable={calmeRerollable}
-                    onReroll={fleeReroll}
-                    onBonusSL={fleeBonusSL}
-                    darkPactable={mover.kind === 'hero' && !calme.success}
-                    onDarkPact={fleeDarkPact}
-                    onForce={fleeForce}
-                    forceShow={!calme.success}
-                  />
+                  <JournalLine className="rm-journal" event={ev('fear', fleeOutcome, mover.id, foe.id)} combatants={battle.combatants} />
                   <div className="modal-actions">
                     <button className="btn btn-primary" onClick={fleeConfirm}>
                       Appliquer
@@ -159,21 +148,19 @@ export function DisengageModal() {
         </>
       ) : (
         <>
-          {/* Test opposé sur le panneau unique : Corps à corps du foe (figé) vs Esquive du mover. */}
-          <RollPanel
-            rows={[
-              { combatant: foe, d: pd.atk ? testBreakdown('Corps à corps', combatValue(foe, 'melee'), pd.atk) : undefined },
-              { combatant: mover, d: pd.def ? testBreakdown('Esquive', defenseValue(mover, 'esquive'), pd.def) : undefined },
-            ]}
-            winnerIndex={pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null}
+          {/* Test opposé (2 rangées) : [0] Corps à corps du foe FIGÉ (témoin) vs [1] Esquive du mover
+              INTERACTIVE, porteuse de son cycle d'influence (le jet est déjà lancé en entrant ici). */}
+          <RollRow
+            row={{ combatant: foe, d: pd.atk ? testBreakdown('Corps à corps', combatValue(foe, 'melee'), pd.atk) : undefined }}
+            rolled
+            interactive={false}
+            winner={pd.result === 'failure' ? 'win' : pd.result === 'success' ? 'lose' : null}
           />
-          <JournalLine
-            className="rm-journal"
-            event={ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, mover.id, foe.id)}
-            combatants={battle.combatants}
-          />
-          <InfluenceRow
+          <RollRow
             actor={mover}
+            row={{ combatant: mover, d: pd.def ? testBreakdown('Esquive', defenseValue(mover, 'esquive'), pd.def) : undefined }}
+            rolled
+            winner={pd.result === 'success' ? 'win' : pd.result === 'failure' ? 'lose' : null}
             rerollable={rerollable}
             onReroll={reroll}
             onBonusSL={bonusSL}
@@ -181,6 +168,11 @@ export function DisengageModal() {
             onDarkPact={darkPact}
             onForce={forceSuccess}
             forceShow={pd.result !== 'success'}
+          />
+          <JournalLine
+            className="rm-journal"
+            event={ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, mover.id, foe.id)}
+            combatants={battle.combatants}
           />
           <div className="modal-actions">
             <button className="btn btn-primary" onClick={confirm}>
