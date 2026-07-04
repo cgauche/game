@@ -19,7 +19,7 @@ import { buildTokenMap, applyTokenMap, type Palette } from './palette';
 import { tenuePaletteFor } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
 import { dorsalOverlays } from './parts/dorsal';
-import { CAPE_ART } from './parts/cape';
+import { CAPES } from './parts/capes';
 import type { View } from './facing';
 import { VIEW_POSE } from './viewPose';
 
@@ -182,7 +182,7 @@ export function resolveRig(
   }
   // Cape portée (emplacement Cape — cosmétique) : appendice dorsal accroché au torse, mêmes
   // règles de profondeur que les ailes. Suit l'EquipCtx → visible partout (token, portraits…).
-  if (equip.cape) queue.push(...dorsalOverlays('torse', CAPE_ART));
+  if (equip.cape) queue.push(...dorsalOverlays('torse', CAPES.voyage));
   queue.push(...overlays);
 
   // Calques cosmétiques (mutations, blessures, traits, parts monstrueuses…) dans le repère de

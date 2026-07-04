@@ -60,6 +60,16 @@ export const REGISTRIES = [
     idUnion: { typeName: 'AppendageId', field: 'id' },
   },
   {
+    // Capes (art dorsal 3 vues) : 1 cape = 1 fichier defs/. Emplacement Cape (equip.cape), dorsalOverlays.
+    dir: 'src/gameIso/rig/parts/capes/defs',
+    out: 'src/gameIso/rig/parts/capes/_registry.generated.ts',
+    exportName: 'cape',
+    arrayName: 'CAPE_DEFS',
+    type: 'CapeDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'CapeId', field: 'id' },
+  },
+  {
     // Ailes (art dorsal 3 vues, emplumées/cuir) : 1 paire = 1 fichier defs/. Servi par le trait Vol,
     // l'élément 'ailes' et monster.ailes ; référencé par id.
     dir: 'src/gameIso/rig/parts/wings/defs',
