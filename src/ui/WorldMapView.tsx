@@ -441,7 +441,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 onPointerEnter={() => setHoveredId(p.id)}
                 onPointerLeave={() => setHoveredId((h) => (h === p.id ? null : h))}
                 style={clickable || !isHere ? { cursor: clickable ? 'pointer' : 'help' } : undefined}
-                opacity={clickable || isHere ? 1 : 0.6}
+                opacity={clickable || isHere ? 1 : 0.55}
               >
                 {/* cible de clic/survol généreuse (taille écran constante) */}
                 <circle r="3.4" fill="#000" fillOpacity="0" />
