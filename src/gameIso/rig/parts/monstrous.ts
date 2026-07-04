@@ -11,7 +11,7 @@
 import type { BoneId, RigOverlay } from '../bones';
 import { pickView, type PartArt } from './types';
 import { HEADS, ARMS, LEGS, HEAD_CORNES, HEAD_QUEUE } from './monster';
-import { AILES_FRONT, AILES_BACK, AILES_PROFILE, AILES_CUIR_FRONT, AILES_CUIR_BACK, AILES_CUIR_PROFILE } from './wings';
+import { WINGS } from './wings';
 import { dorsalOverlays } from './dorsal';
 import { appendageArt } from './appendages';
 // Art des calques NON-appendice : chacun est OWNED par son élément (`elements/defs/`), plus aucune
@@ -87,9 +87,7 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   // Ailes : appendice DORSAL (règles de vue/profondeur codifiées par dorsalOverlays) —
   // monsterInjection composant PAR vue, on ne garde que le calque de la vue courante.
   if (m.ailes) {
-    const set = m.ailes === 'cuir'
-      ? { front: AILES_CUIR_FRONT, back: AILES_CUIR_BACK, profile: AILES_CUIR_PROFILE }
-      : { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE };
+    const set = m.ailes === 'cuir' ? WINGS.cuir : WINGS.plumes;
     overlays.push(...dorsalOverlays('torse', set).filter((o) => !o.view || o.view === view));
   }
   return { replace, overlays };

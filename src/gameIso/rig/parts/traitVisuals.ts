@@ -13,7 +13,7 @@ import type { RigOverlay, BoneId } from '../bones';
 import { appendageArt } from './appendages';
 import { ARMS } from './monster';
 import { pickView } from './types';
-import { AILES_FRONT, AILES_BACK, AILES_PROFILE } from './wings';
+import { WINGS } from './wings';
 import { dorsalOverlays } from './dorsal';
 import { raceById } from '../races';
 import { bipedDef } from '../creatures';
@@ -55,7 +55,7 @@ export function traitOverlaysFor(c: Combatant): RigOverlay[] {
   // Vol : sauté si la créature porte déjà des ailes monstrueuses (Furie : ailes de cuir).
   const monsterWings = !!(c.appearance?.monster?.ailes ?? d?.perso?.monster?.ailes);
   if (has('vol') && !monsterWings) {
-    out.push(...dorsalOverlays('torse', { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE }));
+    out.push(...dorsalOverlays('torse', WINGS.plumes));
   }
   return out;
 }

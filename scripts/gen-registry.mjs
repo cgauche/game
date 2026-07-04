@@ -60,6 +60,17 @@ export const REGISTRIES = [
     idUnion: { typeName: 'AppendageId', field: 'id' },
   },
   {
+    // Ailes (art dorsal 3 vues, emplumées/cuir) : 1 paire = 1 fichier defs/. Servi par le trait Vol,
+    // l'élément 'ailes' et monster.ailes ; référencé par id.
+    dir: 'src/gameIso/rig/parts/wings/defs',
+    out: 'src/gameIso/rig/parts/wings/_registry.generated.ts',
+    exportName: 'wing',
+    arrayName: 'WING_DEFS',
+    type: 'WingDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'WingId', field: 'id' },
+  },
+  {
     // Tenues (archétypes de classe + Nu) : 1 tenue = 1 fichier defs/.
     dir: 'src/gameIso/rig/parts/tenues/defs',
     out: 'src/gameIso/rig/parts/tenues/_registry.generated.ts',
