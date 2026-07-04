@@ -13,7 +13,7 @@
 import type { Combatant, Trauma } from '../../../engine/types';
 import type { RigOverlay, BoneId } from '../bones';
 import type { Appearance } from '../appearance';
-import { OEIL_PERDU as OEIL_PERDU_ART, OEIL_DE_VERRE as OEIL_DE_VERRE_ART, CACHE_OEIL as CACHE_OEIL_ART } from './eyes';
+import { EYES } from './eyes';
 
 const g = (slug: string, svg: string) => `<g data-injury="${slug}">${svg}</g>`;
 
@@ -97,6 +97,6 @@ export function injuryOverlaysFor(c: Combatant): RigOverlay[] {
 export function injuryAppearance(a: Appearance, c: Combatant): Appearance {
   const traumas = c.traumas ?? [];
   if (!traumas.some((t) => t.label === 'Œil perdu') || traumas.some((t) => t.label === 'Cécité')) return a;
-  const art = worn(c, 'cache-oeil') ? CACHE_OEIL_ART : worn(c, 'oeil-de-verre') ? OEIL_DE_VERRE_ART : OEIL_PERDU_ART;
+  const art = worn(c, 'cache-oeil') ? EYES['cache-oeil'] : worn(c, 'oeil-de-verre') ? EYES.verre : EYES.perdu;
   return { ...a, eyes: { ...a.eyes, G: art } };
 }

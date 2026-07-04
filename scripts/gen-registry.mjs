@@ -60,6 +60,16 @@ export const REGISTRIES = [
     idUnion: { typeName: 'AppendageId', field: 'id' },
   },
   {
+    // Yeux peints (art d'orbite, remplacé en place) : 1 œil = 1 fichier defs/. Blessures/mutations/éditeur.
+    dir: 'src/gameIso/rig/parts/eyes/defs',
+    out: 'src/gameIso/rig/parts/eyes/_registry.generated.ts',
+    exportName: 'eye',
+    arrayName: 'EYE_DEFS',
+    type: 'EyeDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'EyeId', field: 'id' },
+  },
+  {
     // Capes (art dorsal 3 vues) : 1 cape = 1 fichier defs/. Emplacement Cape (equip.cape), dorsalOverlays.
     dir: 'src/gameIso/rig/parts/capes/defs',
     out: 'src/gameIso/rig/parts/capes/_registry.generated.ts',
