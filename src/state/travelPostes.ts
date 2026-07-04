@@ -257,5 +257,5 @@ registerCascadeApplier('stageExposure', (_get, _set, step, hero, ctx) => {
   return { journal: j };
 }, (ok, n) => (ok ? `${n} tient le coup.` : `${n} souffre du froid.`));
 
-void log; void NightEntry;
+void log;
 export type { NightEntry };
