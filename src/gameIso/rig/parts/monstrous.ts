@@ -9,7 +9,7 @@
  * Aucune arme ici : l'arme reste de l'ÉQUIPEMENT (rendue par le rig si équipée).
  */
 import type { BoneId, RigOverlay } from '../bones';
-import type { PartArt } from './types';
+import { pickView, type PartArt } from './types';
 import { HEADS, ARMS, LEGS, HEAD_CORNES, HEAD_QUEUE } from './monster';
 import { AILES_FRONT, AILES_BACK, AILES_PROFILE, AILES_CUIR_FRONT, AILES_CUIR_BACK, AILES_CUIR_PROFILE } from './wings';
 import { dorsalOverlays } from './dorsal';
@@ -72,8 +72,8 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   // Cornes/queue : la FORME est DÉCLARÉE PAR la tête (monster/defs : `cornes`/`queue`) — bovine en V
   // pour taureau, noire de démon, ivoire de chèvre pour caprin/gobelin, rose de rat pour la queue —
   // sinon le calque GÉNÉRIQUE. Plus de name-matcher `m.tete === '…'` : donnée sur la part de tête.
-  if (m.cornes) overlays.push({ bone: 'tete', svg: HEAD_CORNES[m.tete ?? ''] ?? OV_CORNES, behind: true });
-  if (m.queue) overlays.push({ bone: 'bassin', svg: HEAD_QUEUE[m.tete ?? ''] ?? OV_QUEUE, behind: true });
+  if (m.cornes) overlays.push({ bone: 'tete', svg: pickView(HEAD_CORNES[m.tete ?? ''] ?? OV_CORNES, view), behind: true });
+  if (m.queue) overlays.push({ bone: 'bassin', svg: pickView(HEAD_QUEUE[m.tete ?? ''] ?? OV_QUEUE, view), behind: true });
   if (m.griffes) { overlays.push({ bone: 'mainG', svg: OV_GRIFFES }); overlays.push({ bone: 'mainD', svg: OV_GRIFFES }); }
   if (m.plaie) overlays.push({ bone: 'torse', svg: OV_PLAIE });
   if (m.verrues) overlays.push({ bone: 'torse', svg: OV_VERRUES });
