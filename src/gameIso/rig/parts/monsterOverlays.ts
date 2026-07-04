@@ -8,6 +8,8 @@
 
 // Cornes de mutant génériques (petites, droites) — repli quand la tête ne déclare pas ses cornes.
 export const OV_CORNES = `<path d="M-5 -1 q-2 -9 -8 -12 q2 7 4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M5 -1 q2 -9 8 -12 q-2 7 -4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/>`;
+// PROFIL du repli générique : petites cornes balayées haut-arrière (proche devant lointaine).
+export const OV_CORNES_PROFILE = `<path d="M-2 -2 q-3 -8 -8 -11 q4 6 6 12 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M1 -3 q-2 -7 -6 -10 q3 6 5 11 z" fill="#bcb19f" stroke="#3a3026" stroke-width="0.5"/>`;
 // Grandes cornes ivoire de chèvre balayées vers l'arrière (Gor/Ungor/Chamane).
 export const OV_CORNES_CAPRIN = `<path d="M-6 -4 Q-12 -10 -10 -20 Q-7 -13 -3 -7 Z" fill="#e8e0c8" stroke="#3a3026" stroke-width="0.5"/><path d="M6 -4 Q12 -10 10 -20 Q7 -13 3 -7 Z" fill="#e8e0c8" stroke="#3a3026" stroke-width="0.5"/>`;
 // PROFIL (tête tournée vers +x) : les cornes balaient vers le HAUT-ARRIÈRE (-x), pas en éventail L/R.
@@ -43,6 +45,8 @@ export const OV_CORNES_DEMON_PROFILE =
   `<path d="M-1 -8 Q-11 -11 -14 -19 Q-16 -27 -10 -30 Q-12 -25 -11 -19 Q-9 -13 -1 -10 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/>`
   + `<path d="M3 -9 Q-4 -11 -7 -18 Q-9 -25 -4 -27 Q-6 -22 -6 -17 Q-4 -13 3 -11 Z" fill="#0f0b08" stroke="#000" stroke-width="0.5"/>`;
 export const OV_QUEUE = `<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`;
+// PROFIL du repli générique : la queue traîne derrière (-x), miroir de la face.
+export const OV_QUEUE_PROFILE = `<path d="M0 2 Q-13 9 -17 24 Q-11 23 -7 15 Q-3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`;
 // Queue de RAT (skaven) — longue, NUE, ROSE, en S, traînant au sol : c'est LE tell de
 // silhouette du skaven (sans elle il lit comme un nain trapu brun). Repère os `bassin`.
 export const OV_QUEUE_RAT = `<path d="M0 3 Q16 6 22 18 Q26 28 20 34 Q24 26 17 21 Q9 17 1 14 Z" fill="#d39a8e" stroke="#9a6a60" stroke-width="0.7"/><path d="M2 5 Q15 8 20 18" fill="none" stroke="#b87f74" stroke-width="0.6" opacity="0.6"/><path d="M6 9 q1 1 0 2 M11 12 q1 1 0 2 M16 16 q1 1 0 2" stroke="#9a6a60" stroke-width="0.5" fill="none" opacity="0.6"/>`;

@@ -14,8 +14,15 @@ import { HEADS, ARMS, LEGS, HEAD_CORNES, HEAD_QUEUE } from './monster';
 import { AILES_FRONT, AILES_BACK, AILES_PROFILE, AILES_CUIR_FRONT, AILES_CUIR_BACK, AILES_CUIR_PROFILE } from './wings';
 import { dorsalOverlays } from './dorsal';
 import {
-  OV_CORNES, OV_QUEUE, OV_GRIFFES, OV_PLAIE, OV_VERRUES, OV_CROCS, OV_BRAS_ROUGE, OV_CUISSE_ROUGE, OV_STRIES,
+  OV_CORNES, OV_CORNES_PROFILE, OV_QUEUE, OV_QUEUE_PROFILE,
+  OV_GRIFFES, OV_PLAIE, OV_VERRUES, OV_CROCS, OV_BRAS_ROUGE, OV_CUISSE_ROUGE, OV_STRIES,
 } from './monsterOverlays';
+
+// Repli GÉNÉRIQUE multi-vues (tête sans cornes/queue déclarées + mutation `cornes`/`queue`) : back =
+// front (cornes symétriques), profile dédié. Les constantes brutes OV_CORNES/OV_QUEUE restent des
+// primitives 1-vue pour les appelants view-aware (Furie, elements/queue, traitVisuals).
+const GENERIC_CORNES: PartArt = { front: OV_CORNES, back: OV_CORNES, profile: OV_CORNES_PROFILE };
+const GENERIC_QUEUE: PartArt = { front: OV_QUEUE, back: OV_QUEUE, profile: OV_QUEUE_PROFILE };
 
 // Calques d'overlay : art PUR déplacé dans `monsterOverlays.ts` (LEAF sans cycle : partagé par les
 // head defs qui DÉCLARENT leurs cornes/queue). Ré-exportés ici → les importeurs existants
@@ -72,8 +79,8 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   // Cornes/queue : la FORME est DÉCLARÉE PAR la tête (monster/defs : `cornes`/`queue`) — bovine en V
   // pour taureau, noire de démon, ivoire de chèvre pour caprin/gobelin, rose de rat pour la queue —
   // sinon le calque GÉNÉRIQUE. Plus de name-matcher `m.tete === '…'` : donnée sur la part de tête.
-  if (m.cornes) overlays.push({ bone: 'tete', svg: pickView(HEAD_CORNES[m.tete ?? ''] ?? OV_CORNES, view), behind: true });
-  if (m.queue) overlays.push({ bone: 'bassin', svg: pickView(HEAD_QUEUE[m.tete ?? ''] ?? OV_QUEUE, view), behind: true });
+  if (m.cornes) overlays.push({ bone: 'tete', svg: pickView(HEAD_CORNES[m.tete ?? ''] ?? GENERIC_CORNES, view), behind: true });
+  if (m.queue) overlays.push({ bone: 'bassin', svg: pickView(HEAD_QUEUE[m.tete ?? ''] ?? GENERIC_QUEUE, view), behind: true });
   if (m.griffes) { overlays.push({ bone: 'mainG', svg: OV_GRIFFES }); overlays.push({ bone: 'mainD', svg: OV_GRIFFES }); }
   if (m.plaie) overlays.push({ bone: 'torse', svg: OV_PLAIE });
   if (m.verrues) overlays.push({ bone: 'torse', svg: OV_VERRUES });

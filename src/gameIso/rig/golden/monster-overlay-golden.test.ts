@@ -20,6 +20,8 @@ const CASES: [string, MonsterParts][] = [
   ['caprin+cornes', { tete: 'caprin', cornes: true }],
   ['gobelin+cornes', { tete: 'gobelin', cornes: true }],
   ['rat+queue', { tete: 'rat', queue: true }],
+  ['générique+cornes', { cornes: true }], // tête sans cornes déclarées → repli GENERIC_CORNES multi-vues
+  ['générique+queue', { queue: true }],
 ];
 
 describe('golden — calques monstrueux cornes/queue multi-vues (front/back/profile)', () => {
