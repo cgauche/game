@@ -1,5 +1,5 @@
 import type { CreatureDef } from '../types';
-import { OV_GRIFFES } from '../../parts/monstrous';
+import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 import { appendageFeature } from '../../parts/appendages';
 import { scalesPatch } from '../../parts/textures';
 
@@ -18,8 +18,8 @@ export const creature: CreatureDef = {
     colors: { peau: '#7d6f55', cheveux: '#46392a' }, // pelage terne de vieille bête malade
     features: [
       appendageFeature('cornes-gor'),
-      { bone: 'mainG', svg: OV_GRIFFES },
-      { bone: 'mainD', svg: OV_GRIFFES },
+      { bone: 'mainG', svg: GRIFFES_ART },
+      { bone: 'mainD', svg: GRIFFES_ART },
       // plaques cornées de tatou (bandes d'écailles sur le torse et les épaules)
       { bone: 'torse', svg: scalesPatch(-9, 9, -14, 6, 4.2), scale: 'bone', layer: 62 },
       { bone: 'epauleG', svg: scalesPatch(-3, 3, 0, 18, 3.4), scale: 'bone', layer: 62 },

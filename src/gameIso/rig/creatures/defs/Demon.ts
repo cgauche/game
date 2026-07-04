@@ -1,5 +1,5 @@
 import type { CreatureDef } from '../types';
-import { OV_GRIFFES } from '../../parts/monstrous';
+import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 
 // Sanguinaire de Khorne (LDB 84 + illustration p.337) : « dents pointues et acérées […]
 // monstrueux visage cornu ; peau rouge-sang dure comme l'airain » + trait Arme (griffes).
@@ -12,8 +12,8 @@ export const creature: CreatureDef = {
   perso: {
     tenue: 'Sanguinaire',
     features: [
-      { bone: 'mainG', svg: OV_GRIFFES },
-      { bone: 'mainD', svg: OV_GRIFFES },
+      { bone: 'mainG', svg: GRIFFES_ART },
+      { bone: 'mainD', svg: GRIFFES_ART },
     ],
   },
 };

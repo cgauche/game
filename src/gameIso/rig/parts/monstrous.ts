@@ -13,17 +13,14 @@ import { pickView, type PartArt } from './types';
 import { HEADS, ARMS, LEGS, HEAD_CORNES, HEAD_QUEUE } from './monster';
 import { AILES_FRONT, AILES_BACK, AILES_PROFILE, AILES_CUIR_FRONT, AILES_CUIR_BACK, AILES_CUIR_PROFILE } from './wings';
 import { dorsalOverlays } from './dorsal';
-import {
-  OV_GRIFFES, OV_PLAIE, OV_VERRUES, OV_CROCS, OV_BRAS_ROUGE, OV_CUISSE_ROUGE, OV_STRIES,
-} from './monsterOverlays';
 import { appendageArt } from './appendages';
-
-// Calques d'overlay NON-appendice (griffes/plaie/verrues/crocs/membres démon) ré-exportés pour les
-// `creatures/defs` qui les composent. Cornes/queue ne sont PLUS ré-exportées : elles vivent dans le
-// registre UNIQUE `appendages.ts` (multi-vues), référencé par id (`appendageFeature` / `monster.cornes`).
-export {
-  OV_GRIFFES, OV_PLAIE, OV_VERRUES, OV_CROCS, OV_BRAS_ROUGE, OV_CUISSE_ROUGE, OV_STRIES,
-} from './monsterOverlays';
+// Art des calques NON-appendice : chacun est OWNED par son élément (`elements/defs/`), plus aucune
+// string SVG inline. monsterInjection (flags m.griffes/plaie/verrues/cape/membresRouges) le compose.
+import { GRIFFES_ART } from './elements/defs/griffes';
+import { CROCS_ART } from './elements/defs/crocs';
+import { PLAIE_ART } from './elements/defs/plaie';
+import { VERRUES_ART } from './elements/defs/verrues';
+import { BRAS_ROUGE_ART, CUISSE_ROUGE_ART, STRIES_ART } from './elements/defs/membres-rouges';
 
 /** Sélection monstrueuse par slot (sur Appearance.monster). Tout est optionnel.
  *  Champs en `string` (libellés libres venant de la scène/éditeur) ; les lookups
@@ -73,19 +70,19 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   // sinon le calque GÉNÉRIQUE. Plus de name-matcher `m.tete === '…'` : donnée sur la part de tête.
   if (m.cornes) overlays.push({ bone: 'tete', svg: pickView(appendageArt(HEAD_CORNES[m.tete ?? ''] ?? 'cornes-generique'), view), behind: true });
   if (m.queue) overlays.push({ bone: 'bassin', svg: pickView(appendageArt(HEAD_QUEUE[m.tete ?? ''] ?? 'queue-generique'), view), behind: true });
-  if (m.griffes) { overlays.push({ bone: 'mainG', svg: OV_GRIFFES }); overlays.push({ bone: 'mainD', svg: OV_GRIFFES }); }
-  if (m.plaie) overlays.push({ bone: 'torse', svg: OV_PLAIE });
-  if (m.verrues) overlays.push({ bone: 'torse', svg: OV_VERRUES });
+  if (m.griffes) { overlays.push({ bone: 'mainG', svg: GRIFFES_ART }); overlays.push({ bone: 'mainD', svg: GRIFFES_ART }); }
+  if (m.plaie) overlays.push({ bone: 'torse', svg: PLAIE_ART });
+  if (m.verrues) overlays.push({ bone: 'torse', svg: VERRUES_ART });
   // Cape : le col haut est désormais dans la TENUE Vampire (réutilisable) ; ici on ne garde que
   // les CROCS, détail de visage propre au vampire, en vue de FACE seulement (sinon ils flottaient
   // sur la nuque de dos / hors du museau de profil).
-  if (m.cape && view === 'front') overlays.push({ bone: 'tete', svg: OV_CROCS });
+  if (m.cape && view === 'front') overlays.push({ bone: 'tete', svg: CROCS_ART });
   if (m.membresRouges) {
-    overlays.push({ bone: 'epauleG', svg: OV_BRAS_ROUGE });
-    overlays.push({ bone: 'epauleD', svg: OV_BRAS_ROUGE });
-    overlays.push({ bone: 'cuisseG', svg: OV_CUISSE_ROUGE });
-    overlays.push({ bone: 'cuisseD', svg: OV_CUISSE_ROUGE });
-    overlays.push({ bone: 'torse', svg: OV_STRIES });
+    overlays.push({ bone: 'epauleG', svg: BRAS_ROUGE_ART });
+    overlays.push({ bone: 'epauleD', svg: BRAS_ROUGE_ART });
+    overlays.push({ bone: 'cuisseG', svg: CUISSE_ROUGE_ART });
+    overlays.push({ bone: 'cuisseD', svg: CUISSE_ROUGE_ART });
+    overlays.push({ bone: 'torse', svg: STRIES_ART });
   }
   // Ailes : appendice DORSAL (règles de vue/profondeur codifiées par dorsalOverlays) —
   // monsterInjection composant PAR vue, on ne garde que le calque de la vue courante.
