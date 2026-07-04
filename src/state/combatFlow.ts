@@ -4948,7 +4948,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // normale si la créature en a le trait + l'Avantage ; sinon attaque normale (opposée).
       const suspended = aiMaybeSpecialAction(get, set, enemy) ? false : doAttack(get, set, enemy, target);
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
-      // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
+      // est portée par defenseConfirm → resumeEnemyTurn (anti double-advance).
       if (!suspended) {
         aiAvailableFreeAttack(get, set, enemy); // attaque(s) d'Arme GRATUITE(S) « disponible(s) » après l'attaque principale (Frénésie LDB 21 l.34 = seule source en donnée)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque

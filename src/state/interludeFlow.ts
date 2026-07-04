@@ -39,7 +39,7 @@ import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement'
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
 import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
 import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
-import type { PendingBase } from './rollFlow';
+import type { PendingBase } from './rollFlowFactory';
 
 import type { Get, Set } from './flowTypes';
 

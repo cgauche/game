@@ -23,14 +23,13 @@ import type { PendingActivity } from './interludeFlow';
 import type { PendingBattleTest } from './massBattleFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
-import { makeRollFlow, type RollFlowHandlers } from './rollFlow';
+import { makeRollFlow, type RollFlowHandlers } from './rollFlowFactory';
 import { battleRng } from './battleRng';
 import { actorIn, touchActors } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
   rollManeuverAttacker, maneuverAttackerDifficulty, distraireAttackValue,
-  applyAttackResult, autoCleave, aiAvailableFreeAttack, aiCreatureFreeAttacks, applyFreeAttackEffects, resumeEnemyTurn,
 } from './combatFlow';
 import { bus, EVT } from './bus';
 import { campSpend } from './combat/advantagePool';
@@ -38,7 +37,7 @@ import { domainEnvironmentBonus } from '../engine/domainAttributes';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
-import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, resolveMeleePassive, type AttackResult, type DefenseSub } from '../engine/combat';
+import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll } from '../engine/tests';
@@ -174,7 +173,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'bargain', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'cast', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'corruption', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'resist'>
-  & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'cancel'>
+  & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'disengage', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'auContact', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'grapple', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
@@ -206,9 +205,9 @@ export type RollFlowActionsMap =
 /** Spec PARTAGÉE des Tests d'équipage MULTI (MDG ch.14) : un jet PAR RÔLE tenu (`rollCrewRole`), Résilience
  *  = DR max du contributeur (`forceCrewRole`), Chance « +1 DR » sur SON jet. Consommée par les 3 flux jumeaux
  *  (manœuvre / bordée / Test d'équipage générique) — la spec n'est écrite qu'UNE fois. */
-function crewRoleFlowSpec<P extends import('./rollFlow').PendingBase & { participants: ShipManeuverParticipant[] }>(
+function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { participants: ShipManeuverParticipant[] }>(
   key: 'pendingShipManeuver' | 'pendingShipBattery' | 'pendingCrewTest',
-): import('./rollFlow').RollFlowSpec<P, ShipManeuverParticipant> {
+): import('./rollFlowFactory').RollFlowSpec<P, ShipManeuverParticipant> {
   return {
     key,
     multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
@@ -241,7 +240,6 @@ export const FLOWS = {
     // Dé choisi (`picker`) : le d100 de l'attaquant — son inverse donne la localisation (LDB 13 l.142).
     caps: {
       forced: true,
-      cancellable: true, // « Annuler » offert pré-jet (charge : défaire-charge dans `onCancel`)
       picker: (p) => (p.forced && p.result?.attackerDetail ? { roll: p.result.attackerRoll, target: p.result.attackerDetail.target } : null),
     },
     resolve: (s, p, actor, get, forced) => {
@@ -308,9 +306,10 @@ export const FLOWS = {
   }),
 
   /**
-   * Défense réactive (héros attaqué par l'IA) : le jet d'attaque (`p.atk`) reste FIGÉ dans tous
-   * les cas — seul le jet du défenseur se (re)joue. `defenseConfirm`/`defenseCancel` (métier :
-   * reprise du tour IA, « Subir ») restent au store.
+   * Défense réactive (héros attaqué par l'IA) : le jet d'attaque (`p.atk`) reste FIGÉ ; seul le jet
+   * du défenseur se (re)joue. `defenseConfirm` (reprise du tour IA) reste au store. PAS de « Subir » :
+   * le RAW n'offre aucune non-défense volontaire (mêlée = Test opposé, LDB 13 l.123) — la résolution
+   * non opposée est réservée aux cas IMPOSÉS (Surpris/Inconscient/Fuir/inanimé), traités hors de ce flux.
    */
   defense: makeRollFlow<PendingDefense>({
     key: 'pendingDefense',
@@ -319,7 +318,6 @@ export const FLOWS = {
     // Résolveur UNIQUE (`caps.forced`) : seul le jet du défenseur se (re)joue (`p.atk` figé).
     caps: {
       forced: true,
-      cancellable: true, // « Subir » : la défense passive est offerte (métier dans `onCancel`)
       picker: (p) => (p.forced && p.def ? { roll: p.def.roll, target: p.def.target } : null),
     },
     resolve: (s, p, actor, _get, forced) => {
@@ -356,41 +354,6 @@ export const FLOWS = {
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
         return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry) };
       },
-    },
-    // « Subir » (ex-`defenseCancel`, migré verbatim) : défense passive (aucune réaction), résolution
-    // de la touche subie, puis reprise du tour IA (via `cascadeNext` si étape de cascade, sinon
-    // `resumeEnemyTurn`). NB : ce n'est PAS un simple « fermer le pending » — la cascade est AVANCÉE,
-    // jamais nullée (d'où la délégation totale à `onCancel`, sans teardown par défaut de la fabrique).
-    onCancel: (get, set) => {
-      const { battle, pendingDefense: pd } = get();
-      if (!pd) return;
-      const attacker = battle?.combatants.find((c) => c.id === pd.attackerId);
-      const defender = battle?.combatants.find((c) => c.id === pd.defenderId);
-      set({ pendingDefense: null });
-      if (attacker && defender) {
-        const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
-        const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, res);
-        if (suspended) {
-          // Déviation Critique (même après « Subir ») : avancer le curseur hors de l'étape défense
-          // orpheline (cf. defenseConfirm) — anti soft-lock du pilote Auto-combat. Garde idempotente.
-          const casc = get().pendingCascade;
-          if (casc?.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
-          return; // l'étape 'deviation' (resolveDeviation) reprend la suite
-        }
-        if (pd.free) {
-          set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
-          applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…
-        } else autoCleave(get, set, attacker, defender, res); // Frappe Mortelle (attaque principale)
-      }
-      // Attaque(s) d'Arme GRATUITE(S) « disponible(s) » de l'attaquant après l'attaque PRINCIPALE (jamais après
-      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.34 = seule en donnée.
-      if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
-      // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
-      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
-      // la défense est l'étape de SA cascade combat → enchaîner le curseur.
-      const seq = get().pendingCascade;
-      if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
-      else resumeEnemyTurn(get, set);
     },
   }),
 

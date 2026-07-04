@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
-import { RollPanel, type RollRowData } from './RollPanel';
+import { RollPanel, type PanelRowData } from './RollPanel';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
@@ -110,7 +110,7 @@ export interface RollRowProps {
   fortune?: number;
   freeReroll?: boolean;
   resilience?: number;
-  row: RollRowData;
+  row: PanelRowData;
   rolled: boolean;
   interactive?: boolean;
   rollLabel?: string;

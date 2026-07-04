@@ -14,7 +14,7 @@ import { TeamPortrait } from './TeamPortrait';
  * - Test opposé post-jet : `winnerIndex` accentue la ligne gagnante (`.rr-win`) et atténue la
  *   perdante (`.rr-lose`) — le vainqueur saute aux yeux ; `netSL` ajoute le badge « DR net ».
  */
-export interface RollRowData {
+export interface PanelRowData {
   combatant?: Combatant;
   d?: RollBreakdown;
   pending?: PendingRoll;
@@ -28,7 +28,7 @@ export function RollPanel({
   winnerIndex,
   netSL,
 }: {
-  rows: RollRowData[];
+  rows: PanelRowData[];
   /** Index de la ligne qui REMPORTE le Test opposé (post-jet) ; null/absent = pas d'opposition tranchée. */
   winnerIndex?: number | null;
   /** DR net du Test opposé — badge sous les lignes. */

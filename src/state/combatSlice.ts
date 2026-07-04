@@ -82,7 +82,7 @@ import { nextCursorTile, cursorCommitIntent, type ScreenDir } from './combatCurs
 import { cycleTarget, cyclePrevTarget } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
-import { FLOWS, rollFlowActions, rollFlowActionsMulti } from './rollFlows';
+import { FLOWS, rollFlowActions, rollFlowActionsMulti } from './rollFlowSpecs';
 import { resolveRenounce } from './corruptionFlow';
 import { add as moneyAdd, toMoney } from '../engine/money';
 import type {
@@ -2017,9 +2017,9 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingDefense: { ...pd, parryWeaponUid: uid ?? undefined } });
     },
     // Cycle unifié (spec `defense`) : jet initial = résolution pure (`atk` figé) ; Chance/Pacte ici,
-    // Résilience (forceSuccess/setForcedRoll) plus bas. `cancel` = « Subir » (métier dans
-    // `FLOWS.defense.onCancel`) — regénère `defenseCancel`.
-    ...rollFlowActions('defense', FLOWS.defense, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'cancel']),
+    // Résilience (forceSuccess/setForcedRoll) plus bas. PAS de `cancel` : le RAW n'offre aucun « Subir »
+    // volontaire (mêlée = Test opposé, LDB 13 l.123) → une fois offerte, la défense est obligatoire.
+    ...rollFlowActions('defense', FLOWS.defense, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
     defenseConfirm: () => {
       // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
       const { battle, pendingDefense: pd } = get();
@@ -2068,8 +2068,6 @@ export function createCombatSlice(get: Get, set: Set) {
       if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
       else resumeEnemyTurn(get, set);
     },
-    // `defenseCancel` (« Subir » : défense passive + reprise IA) est désormais GÉNÉRÉ par la fabrique
-    // (`FLOWS.defense.onCancel`, cf. la liste de verbes ci-dessus) — plus d'action bespoke ici.
     renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
 
     ...rollFlowActions('attack', FLOWS.attack, get, set, ['forceSuccess', 'setForcedRoll']),

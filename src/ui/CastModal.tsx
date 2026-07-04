@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
-import { FLOWS } from '../state/rollFlows';
+import { FLOWS } from '../state/rollFlowSpecs';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';

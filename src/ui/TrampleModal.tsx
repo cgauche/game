@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { FLOWS } from '../state/rollFlows';
+import { FLOWS } from '../state/rollFlowSpecs';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';

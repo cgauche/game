@@ -696,8 +696,9 @@ function helplessTest(atk: TestResult, kind: 'melee' | 'ranged'): TestResult {
   return { ...atk, success: true, isDouble: true, sl: dr };
 }
 
-/** Issue d'une attaque de mêlée SANS défense (Surpris, ou « Subir ») à partir
- *  d'un jet d'attaque déjà obtenu : un simple succès suffit à toucher. */
+/** Issue d'une attaque de mêlée SANS défense — cas IMPOSÉS par le RAW (Surpris/Inconscient/Fuir dos
+ *  tourné/objet inanimé ; jamais un choix volontaire) — à partir d'un jet d'attaque déjà obtenu :
+ *  un simple succès suffit à toucher. */
 export function resolveMeleePassive(
   attacker: Combatant,
   defender: Combatant,

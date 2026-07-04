@@ -286,13 +286,13 @@ une créature = **Plan × Gabarit (carrure) × Race (peau/tête/traits/posture +
 Refacto **iso-comportement** (suite complète = harnais, zéro assertion modifiée) ciblant la dette
 structurelle accumulée par l'empilement des jalons. Tout est committé par phase, suite verte entre chaque.
 
-- **Fabrique des flux de jet différé** (`state/rollFlow.ts` + specs `state/rollFlows.ts`) : le cycle
+- **Fabrique des flux de jet différé** (`state/rollFlowFactory.ts` + specs `state/rollFlowSpecs.ts`) : le cycle
   Lancer → Chance (relance 1× sur jet propre raté / +1 DR) → Résilience → Appliquer était copié-collé
   par flux (~60 actions quasi identiques). **11 flux migrés** (trample, run, focus, psych, frenzy,
   reload, recover, test, appraise, bargain, heal) — un nouveau jet = **1 spec + 1 `xConfirm`** (le
   métier reste manuscrit). Les flux multi-phases (attack/defense/cast/disengage/fumble) restent
   dédiés (sur-abstraction refusée). Garde-fou `roll-modal-invariant` étendu (`FLOWS.*` = primitive).
-- **Coquille de modale partagée** (`ui/RollFlowShell.tsx` + `<Dice>`) : les 11 modales de jet ne
+- **Coquille de modale partagée** (`ui/RollShell.tsx` + `<Dice>`) : les 11 modales de jet ne
   portent plus que leur contenu (titre/sous-titre/verdict) — DOM rendu inchangé ; la Chirurgie
   (Test étendu multi-passes) garde son flux dédié.
 - ✅ **Panneau de jet unique** *(2026-06-11, merge bundle `7bf1b5c`)* : refonte pro des modales —
@@ -1105,7 +1105,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
 - ✅ **Accessibilité des modales** *(2026-06-11)* : cadre `Modal` partagé = `role=dialog`/`aria-modal`,
   focus déplacé à l'ouverture, **piège de focus** (Tab/Shift+Tab bouclent dans la boîte) et **Échap**
   mappé sur le bouton Annuler/Fermer **exactement quand il est visible** (rien sinon — un jet posé doit
-  être résolu, invariant « une situation = une modale » ; seule la modale du dessus réagit). RollFlowShell
+  être résolu, invariant « une situation = une modale » ; seule la modale du dessus réagit). RollShell
   (les 11 flux) + SaveLoad + Attaque suivent ; **CastModal et MountTargetModal convertis au cadre
   partagé** (ils roulaient leur propre overlay sans `role=dialog`). Aria-labels des boutons-icônes
   (menu ☰, carte) livrés au commit précédent. Recette navigateur : Tab boucle dans les deux sens,
@@ -1260,7 +1260,7 @@ des modules livrés aux jalons 1.6→8.7, puis correction par lots (1 lot = suit
   UI verrouillée 🎮, clôture hôte seul, modale d'Activité à l'arbitre) ; carte du monde en
   consultation chez l'invité. **Bug GÉNÉRAL trouvé et corrigé** : `onClick={onConfirm}` faisait fuir
   l'événement React dans les args d'intent (JSON circulaire → intent PERDU en silence) — tous les
-  « Appliquer » d'invité étaient muets ; fix RollFlowShell + `sanitizeIntentArgs` testé.
+  « Appliquer » d'invité étaient muets ; fix RollShell + `sanitizeIntentArgs` testé.
 - **Lot 5 — Éditeur** : selects guidés (sorts en optgroups, scènes du projet + points d'entrée,
   entités marchandes) sur learnSpell/transition/openMerchant via `effectCtxOf` ; boucle
   Enregistrer→publier→« Mes campagnes »→jouer rejouée.
@@ -1305,7 +1305,7 @@ pilote = **menu principal + écran de groupe**, validé à l'œil avant généra
 - **Inventaire (audit de départ)** : 8 écrans racine (MainMenu, PartyScreen, CharacterCreator,
   CampaignView+HUD, Editor, TestScenariosScreen, InterludeScreen, CoopLobby) + 4 panneaux
   pleins (CharacterSheet, VictoryScreen, WorldMapView, MerchantPanel) + ~30 modales déjà sur
-  la coquille `Modal`/`RollFlowShell` (héritent de la charte par construction).
+  la coquille `Modal`/`RollShell` (héritent de la charte par construction).
 - ✅ **Éditeur « produit final » (2026-06-11)** : édition de tout élément (zone trigger /
   ennemi de rencontre / bâtiment / entité) en **modale partagée** `<Modal>` — fin de la
   colonne étroite ; le volet droit ne garde que la **navigation** (liste d'entités + bâtiments

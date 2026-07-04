@@ -24,7 +24,7 @@
  */
 import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';
-import type { PendingBase } from './rollFlow';
+import type { PendingBase } from './rollFlowFactory';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';

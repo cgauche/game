@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
-import { FLOWS } from '../../state/rollFlows';
+import { FLOWS } from '../../state/rollFlowSpecs';
 import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL, type DefenseMode } from '../../engine/combat';
 import { combatSubstitute } from '../../engine/skillCombatApps';
 import { findSkillById } from '../../data/index';
@@ -20,8 +20,9 @@ import { ev } from '../../state/combatLog';
  * `DefenseModal` pour être rendu à l'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet
  * `jet:'defense'` via ce hook, sans démonter la coquille → la défense ET son Critique/Maladresse vivent
  * dans UNE seule fenêtre). Renvoie les props de `RollShell`, ou `null` si aucune défense en attente.
- * La rangée de l'ATTAQUANT est FIGÉE (`interactive:false`) ; MA rangée porte le cycle d'influence ;
- * « Subir » = passif. AUCUNE mécanique générique (frisson, influence, pickers) réécrite : que du métier.
+ * La rangée de l'ATTAQUANT est FIGÉE (`interactive:false`) ; MA rangée porte le cycle d'influence.
+ * PAS de « Subir » : le RAW n'offre aucune non-défense volontaire (mêlée = Test opposé, LDB 13 l.123)
+ * — la défense est obligatoire une fois la modale ouverte. AUCUNE mécanique générique réécrite : que du métier.
  */
 export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const pd = useGame((s) => s.pendingDefense);
@@ -35,7 +36,6 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const forceSuccess = useGame((s) => s.defenseForceSuccess);
   const setForcedRoll = useGame((s) => s.defenseSetForcedRoll);
   const confirm = useGame((s) => s.defenseConfirm);
-  const subir = useGame((s) => s.defenseCancel);
   const spendResolve = useGame((s) => s.spendResolveCondition);
   if (!pd || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
@@ -108,7 +108,6 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   };
 
   const actions: RollAction[] = [
-    { key: 'subir', label: 'Subir', kind: 'ghost', onClick: subir, title: 'Subir l’attaque sans te défendre', when: 'pre' },
     { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
   ];
 

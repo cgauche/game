@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { openRoundStartPsych, openRoundEndCascade } from './combatFlow';
-import { FLOWS } from './rollFlows';
+import { FLOWS } from './rollFlowSpecs';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';

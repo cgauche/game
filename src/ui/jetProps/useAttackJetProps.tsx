@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useGame, movementRemaining } from '../../state/store';
-import { FLOWS } from '../../state/rollFlows';
+import { FLOWS } from '../../state/rollFlowSpecs';
 import { HitLocation } from '../../engine/types';
 import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';

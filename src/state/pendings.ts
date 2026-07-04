@@ -18,7 +18,7 @@ import type { OupsResolved } from '../engine/oups';
 import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
-import type { RollParticipant, MultiPending, PendingBase } from './rollFlow';
+import type { RollParticipant, MultiPending, PendingBase } from './rollFlowFactory';
 import type { Money } from '../engine/money';
 import type { CrewRoleRoll } from './shipManeuver';
 

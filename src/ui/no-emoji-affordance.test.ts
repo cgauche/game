@@ -63,7 +63,7 @@ const EXCEPTIONS = new Set<string>([
   'src/state/portFlow.ts',
   'src/state/restFlow.ts', // session parallèle (ne pas toucher)
   'src/state/riverVoyageFlow.ts', // journaux de navigation fluviale (même LOT que seaVoyageFlow)
-  'src/state/rollFlows.ts',
+  'src/state/rollFlowSpecs.ts',
   'src/state/scene.ts',
   'src/state/sceneEdit.ts',
   'src/state/seaActivities.ts',

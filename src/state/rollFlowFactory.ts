@@ -116,13 +116,9 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
     /** Ce flux accepte l'auto-succès du talent Résistance (Menace) (LDB 10) : son `resolve` porte la
      *  branche `forced.sl` (DR = Bonus d'Endurance). Offert seulement sur un slot tagué `menace`. */
     resist?: boolean;
-    /** Ce flux expose « Annuler » (le bouton se rend pré-jet côté UI). Purement déclaratif : la
-     *  mécanique d'annulation vit dans `cancel`/`onCancel` — un flux sans `cancellable` n'affiche
-     *  simplement pas le bouton. */
-    cancellable?: boolean;
   };
   /**
-   * Undo MÉTIER optionnel de l'annulation (défaire-charge de l'attaque, « Subir » de la défense…).
+   * Undo MÉTIER optionnel de l'annulation (ex. défaire-charge de l'attaque…).
    * PRÉSENT ⇒ il OWN la fermeture (il fait lui-même tous les `set`, y compris nuller le pending et
    * avancer/nuller la cascade-hôte selon les cas) : `cancel` lui délègue tout et ne touche à rien
    * d'autre — byte-identique aux anciennes actions bespoke. ABSENT ⇒ `cancel` applique le teardown

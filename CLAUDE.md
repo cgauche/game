@@ -210,7 +210,7 @@ src/state/
                               butin attribuable, checkTriggers, pushReveal). NE PAS extraire le preview
                               (previewAttack/Defense) : il partage attackEnv/bestDefenseMode avec la
                               résolution → cycle. La cohésion preview↔résolution est voulue.
-  rollFlow.ts / rollFlows.ts  FABRIQUE générique des flux de jet différé (« une situation = une modale ») +
+  rollFlowFactory.ts / rollFlowSpecs.ts  FABRIQUE générique des flux de jet différé (« une situation = une modale ») +
                               specs des flux (attack/defense/cast/disengage/trample/run/focus/psych/
                               frenzy/approach/test/heal + reload/recover/activity/corruption/appraise/
                               bargain) — un nouveau jet = 1 spec + 1 xConfirm. Résilience « Je ne
@@ -247,11 +247,12 @@ src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
 src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, modales
   creator/                    assistant de création multi-étapes (LDB 04/05) : CharacterCreator.tsx
                               (rendu) + draft.ts (état pur : tirages figés, bonus PX, validation)
-  RollFlowShell.tsx           coquille PARTAGÉE et UNIQUE des modales de jet (Lancer→Chance→Pacte→
-                              Résilience→Appliquer) + frisson + pickers (dé forcé `caps.picker` /
-                              localisation du Critique) + <Dice>. TOUTE modale de jet la PARAMÈTRE :
-                              contrôles en props, métier en slots (setup/preInfluence/postRollExtra/
-                              forcedExtra) — calquée sur PsychModal ; aucune mécanique générique
+  RollShell.tsx               coquille PARTAGÉE et UNIQUE des modales de jet (mono, opposé, ou N
+                              contributeurs — le mono = N=1) : Lancer→Chance→Pacte→Résilience→Appliquer
+                              + frisson + pickers (dé forcé `caps.picker` / localisation du Critique) +
+                              <Dice>. TOUTE modale de jet la PARAMÈTRE : contrôles en props, métier en
+                              slots (setup/preInfluence/postRollExtra/forcedExtra) — cf. les hooks
+                              `jetProps/*` (ex. useDefenseJetProps) ; aucune mécanique générique
                               réécrite par modale. (Désengagement : pré-jet = MENU d'options via
                               <OptionChooser>, pas un « preview + Lancer » ; le coup dans le dos de
                               « Fuir » est montré INLINE dans la modale, plus de popin RevealModal.)
@@ -324,8 +325,8 @@ fait DANS la primitive, pas dans une nième copie.
 
 | Besoin | Primitive (source unique) | Fichier |
 |---|---|---|
-| Modale de jet (Lancer→Chance→Pacte→Résilience→Appliquer) | `RollFlowShell` (props=contrôles, slots=métier) | `src/ui/RollFlowShell.tsx` |
-| Modale de jet **MULTI** (N contributeurs, influence PAR participant, coop) — *réflexe avant toute « 2e modale multi-jets »* | coquille `MultiRollShell` (enveloppe Modal+actions PARTAGÉE) + une `ParticipantRow`/jet + `makeRollFlow` mode `spec.multi` (`RollParticipant` `interactive`/témoin) ; ex. `ForceDoorModal`/Manœuvre. Le **mono = N=1** (pendant : `RollFlowShell`) | `src/ui/MultiRollShell.tsx`, `src/ui/ParticipantRow.tsx`, `src/state/rollFlow.ts` |
+| Modale de jet (Lancer→Chance→Pacte→Résilience→Appliquer) | `RollShell` (props=contrôles, slots=métier) | `src/ui/RollShell.tsx` |
+| Modale de jet **MULTI** (N contributeurs, influence PAR participant, coop) — *réflexe avant toute « 2e modale multi-jets »* | la MÊME coquille `RollShell` (le **mono = N=1** : plusieurs `RollRow`) + `makeRollFlow` mode `spec.multi` (`RollParticipant` `interactive`/témoin) ; ex. `ForceDoorModal`/Manœuvre | `src/ui/RollShell.tsx`, `src/ui/RollRow.tsx`, `src/state/rollFlowFactory.ts` |
 | Choix d'**options de jet** (Parade/Esquive, menu de désengagement, Calme/Résistance) | `OptionChooser` (`seg`/`grid`/`actions`) | `src/ui/OptionChooser.tsx` |
 | Paire/triplet de **boutons de décision** (Renoncer, Destin, Piège à lame…) | `ChoiceButtons` (= `OptionChooser layout='actions'`) | `src/ui/OptionChooser.tsx` |
 | Valeur effective d'une option (`base + mods` plafonné) | `optionValue` | `src/ui/breakdown.ts` |

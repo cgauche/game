@@ -12,7 +12,7 @@ import { useExtendedTestJetProps } from './jetProps/useExtendedTestJetProps';
 import { DisengageModal } from './DisengageModal';
 import { ForceDoorModal } from './ForceDoorModal';
 import { CastModal } from './CastModal';
-import { type RollRowData as PanelRow } from './RollPanel';
+import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
 import { DrBar } from './DrBar';
 import { CIBLE_TYPES } from '../engine/psychology';
@@ -20,7 +20,7 @@ import { CriticalBody } from './RevealModal';
 import { JournalLine } from './NarratedLine';
 import { ev, type CombatEventKind } from '../state/combatLog';
 import { cascadeAppliers, stepInteraction } from '../state/cascade';
-import { FLOWS } from '../state/rollFlows';
+import { FLOWS } from '../state/rollFlowSpecs';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 
@@ -121,7 +121,7 @@ export function CascadeModal() {
   // restée montée → le jet et ses conséquences vivent dans UNE seule fenêtre, jusqu'à « Terminer ».
   if (cur.jet === 'attack') return attackProps ? <RollShell {...attackProps} /> : null;
   // ÉTAPE-JET de défense réactive : rendue via son hook dans la MÊME coquille → la défense ET son
-  // Critique/Maladresse vivent dans UNE seule fenêtre (`defenseConfirm`/`defenseCancel` enchaînent le curseur).
+  // Critique/Maladresse vivent dans UNE seule fenêtre (`defenseConfirm` enchaîne le curseur).
   if (cur.jet === 'defense') return defenseProps ? <RollShell {...defenseProps} /> : null;
   // ÉTAPE-JET de Maladresse : conséquence d'un Test raté sur un double, rendue via son hook dans la MÊME
   // coquille (comme le Critique) → plus de modale d'arbitre séparée ; `fumbleConfirm` enchaîne le curseur.

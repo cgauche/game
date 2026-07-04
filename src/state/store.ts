@@ -66,7 +66,7 @@ import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
-import { FLOWS, rollFlowActions, rollFlowActionsMulti, type RollFlowActionsMap } from './rollFlows';
+import { FLOWS, rollFlowActions, rollFlowActionsMulti, type RollFlowActionsMap } from './rollFlowSpecs';
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import * as partyFlow from './partyFlow';
@@ -992,12 +992,12 @@ export interface GameState extends RollFlowActionsMap {
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
   /** Flux de défense réactive (héros attaqué par l'IA) : choisir Parade/Esquive, défendre,
-   *  dépenser une Chance, appliquer ; « Subir » = défense passive. */
+   *  dépenser une Chance, appliquer. PAS de « Subir » : le RAW n'offre aucune non-défense volontaire
+   *  (mêlée = Test opposé, LDB 13 l.123) ; la résolution non opposée est réservée aux cas imposés. */
   defenseSetMode: (mode: DefenseMode, subSkillId?: string) => void;
   /** Choisit l'arme de parade (uid d'ItemInstance ; null = main principale) — avant le jet de défense. */
   defenseSetParryWeapon: (uid: string | null) => void;
-  // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Cancel} : générés (RollFlowActionsMap).
-  // `defenseCancel()` : « Subir » (défense passive + reprise IA via `FLOWS.defense.onCancel`) — cf. RollFlowActionsMap.
+  // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   defenseConfirm: () => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
   renounceResolve: (renounce: boolean) => void;

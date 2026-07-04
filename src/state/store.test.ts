@@ -11,7 +11,7 @@ import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { applyAttackResult, applyEffects, applyEffectsLoot, runFlow, computeMoveReach } from './combatFlow';
 import { mountUp } from './mount';
-import { combatValue } from '../engine/combat';
+import { combatValue, resolveMeleePassive } from '../engine/combat';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
@@ -2121,12 +2121,11 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
   it('overkill sur un HÉROS → Blessure critique (compteur++), tombe à 0 PB', () => {
     const { H, E } = combat({ wounds: { current: 2, max: 12 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } });
     useGame.getState().seedRng(2);
-    // L'IA (E) a frappé H en mêlée : jet d'attaque figé (réussi, fort DR) ; H « Subit ».
-    useGame.setState({
-      pendingDefense: { attackerId: E.id, defenderId: H.id, weapon: E.weapons[0], location: null,
-        atk: { roll: 5, target: 80, success: true, sl: 7, isDouble: false }, mode: 'parade', def: null, result: null },
-    });
-    useGame.getState().defenseCancel(); // « Subir » → applyAttackResult (overkill car 2 PB < dégâts)
+    // L'IA (E) frappe H en mêlée SANS défense opposable (cible sans réaction, cas imposé RAW) :
+    // résolution non opposée, DR d'attaque plein → overkill car 2 PB < dégâts.
+    const atk = { roll: 5, target: 80, success: true, sl: 7, isDouble: false };
+    const res = resolveMeleePassive(E, H, E.weapons[0], atk);
+    applyAttackResult(useGame.getState, useGame.setState, E, H, E.weapons[0], res);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.criticalWounds).toBe(1); // une Blessure critique encaissée
     expect(h.wounds.current).toBe(0); // tombé à 0 (ne passe jamais négatif)
@@ -2407,14 +2406,10 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     E.pos = { x: 0, y: 0 }; // adjacents
     E.characteristics.F = 60; // gros frappeur → la touche inflige des Blessures
     const atk = { roll: 5, target: 80, success: true, sl: 7, isDouble: false };
-    useGame.setState({
-      pendingDefense: {
-        attackerId: E.id, defenderId: H.id,
-        weapon: { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] },
-        location: 'corps', atk, mode: 'esquive', def: null, result: null,
-      },
-    });
-    useGame.getState().defenseCancel(); // « Subir » → resolveMeleePassive + applyAttackResult
+    const weapon: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] } as Weapon;
+    // Touche subie SANS défense opposable (cas imposé RAW) → doit interrompre le rechargement.
+    const res = resolveMeleePassive(E, H, weapon, atk, 'corps');
+    applyAttackResult(useGame.getState, useGame.setState, E, H, weapon, res);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.wounds.current).toBeLessThan(h.wounds.max); // a bien encaissé une touche
     expect(h.reloadProgress).toBe(0); // rechargement interrompu

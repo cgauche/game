@@ -28,7 +28,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'attackCancel',
   // défense réactive
   'defenseSetMode', 'defenseSetParryWeapon', 'defenseRoll', 'defenseReroll', 'defenseBonusSL',
-  'defenseDarkPact', 'defenseForceSuccess', 'defenseSetForcedRoll', 'defenseConfirm', 'defenseCancel',
+  'defenseDarkPact', 'defenseForceSuccess', 'defenseSetForcedRoll', 'defenseConfirm',
   // incantation / prière
   'castRoll', 'castReroll', 'castBonusSL', 'castDarkPact', 'castSetCritChoice', 'castSetForcedRoll',
   'castAllocOvercast', 'castToggleExtraTarget', 'castPickTargets', 'castPlaceZone', 'castForceSuccess',
