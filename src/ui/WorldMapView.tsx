@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { useGame } from '../state/store';
-import { placeOfScene, placeById, routesFrom, otherEnd, MapRoute, MapPlace } from '../state/worldMap';
+import { placeOfScene, placeById, routesFrom, otherEnd, declutterPositions, MapRoute, MapPlace } from '../state/worldMap';
 import { baseHoursPerDay, maxHoursPerDay } from '../state/travelFlow';
 import {
   TravelMode, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon, travelSpeed, travelPlanCalc, transportCost,
@@ -64,6 +65,34 @@ function CompassRose({ x, y }: { x: number; y: number }) {
   );
 }
 
+// ── Cadre logique de la carte (unités du viewBox) ────────────────────────────────────────────
+const VB_W = 100, VB_H = 64;
+const Z_MIN = 1, Z_MAX = 4;
+/** Écart mini visé entre deux médaillons (unités viewBox) — un médaillon fait r≈2.9 + cartouche,
+ *  ~8 les sépare confortablement sans les coller. */
+const DECLUTTER_MIN = 8;
+
+/** Vue caméra de la carte : zoom `z` + translation `panX/panY` (unités viewBox). Le CONTENU est
+ *  transformé par `translate(panX panY) scale(z)` ; le parchemin reste plein cadre. */
+interface Viewport { z: number; panX: number; panY: number }
+
+/** Borne le pan pour garder le contenu à l'écran : à `z`, le contenu couvre `VB_*·z` ; on autorise
+ *  un débordement translaté dans `[VB_*·(1−z), 0]` (jamais de vide d'un côté au-delà du cadre). */
+function clampViewport(v: Viewport): Viewport {
+  const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z));
+  const minX = VB_W * (1 - z), minY = VB_H * (1 - z);
+  return {
+    z,
+    panX: Math.min(0, Math.max(minX, v.panX)),
+    panY: Math.min(0, Math.max(minY, v.panY)),
+  };
+}
+
+/** Vue centrée+zoomée sur un point logique `(cx, cy)` (unités viewBox) à un zoom donné. */
+function viewOn(cx: number, cy: number, z: number): Viewport {
+  return clampViewport({ z, panX: VB_W / 2 - cx * z, panY: VB_H / 2 - cy * z });
+}
+
 /**
  * Carte du monde (#T2 Voyage) — overlay plein écran en exploration : carte au PARCHEMIN dessinée
  * (texture vieillie, cadre orné, routes en chemins, lieux en médaillons, rose des vents), lieux et
@@ -99,6 +128,111 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   const here = placeOfScene(map, hereSceneId ?? scene?.id);
   const routes = useMemo(() => (map && here ? routesFrom(map, here.id) : []), [map, here]);
+
+  // Anti-chevauchement : positions de RENDU décluttérées (les `pos` d'authoring restent intacts).
+  // Le repère de rendu est celui du viewBox (y aplati par 0.64) → l'écartement travaille dessus.
+  const layout = useMemo(() => {
+    if (!map) return new Map<string, { x: number; y: number }>();
+    const pts = map.places.map((p) => ({ id: p.id, x: p.pos.x, y: p.pos.y * 0.64 }));
+    return declutterPositions(pts, DECLUTTER_MIN, 80, { w: VB_W, h: VB_H });
+  }, [map]);
+  /** Position de rendu décluttérée d'un lieu (repli sur `pos` brut si absent). */
+  const posOf = (p: MapPlace) => layout.get(p.id) ?? { x: p.pos.x, y: p.pos.y * 0.64 };
+
+  // Caméra : à l'ouverture, on part du lieu courant (le voyage démarre d'ici) à un zoom modéré.
+  const hereRender = here ? posOf(here) : { x: VB_W / 2, y: VB_H / 2 };
+  const [view, setView] = useState<Viewport>(() => viewOn(hereRender.x, hereRender.y, 2));
+
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  // Pointeurs actifs (souris/tactile) → glisser (1 doigt) & pinch (2 doigts).
+  const ptrs = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ dist: number; cx: number; cy: number } | null>(null);
+  const draggedRef = useRef(false);
+
+  /** Convertit un point ÉCRAN (clientX/Y) en coordonnées logiques du viewBox (avant transform). */
+  const screenToVb = (clientX: number, clientY: number) => {
+    const el = svgRef.current;
+    if (!el) return { x: 0, y: 0 };
+    const r = el.getBoundingClientRect();
+    // La carte utilise preserveAspectRatio meet → letterboxing possible : on calcule l'échelle réelle.
+    const s = Math.min(r.width / VB_W, r.height / VB_H);
+    const offX = (r.width - VB_W * s) / 2, offY = (r.height - VB_H * s) / 2;
+    return { x: (clientX - r.left - offX) / s, y: (clientY - r.top - offY) / s };
+  };
+
+  // Molette : listener natif NON PASSIF (React pose `onWheel` en passif → `preventDefault` invalide),
+  // pour bloquer le défilement de la page pendant le zoom-vers-le-curseur.
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const p = screenToVb(e.clientX, e.clientY);
+      setView((v) => {
+        const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
+        // Zoom VERS le curseur : le point logique sous le curseur reste immobile à l'écran.
+        const wx = (p.x - v.panX) / v.z, wy = (p.y - v.panY) / v.z;
+        return clampViewport({ z, panX: p.x - wx * z, panY: p.y - wy * z });
+      });
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
+  const onPointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
+    // Capture pour suivre le doigt hors de l'élément ; sans pointeur actif réel (ex. event synthétique) → no-op.
+    try { (e.target as Element).setPointerCapture?.(e.pointerId); } catch { /* pas de pointeur actif */ }
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    draggedRef.current = false;
+    if (ptrs.current.size === 2) {
+      const [a, b] = [...ptrs.current.values()];
+      pinchRef.current = { dist: Math.hypot(b.x - a.x, b.y - a.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+    }
+  };
+  const onPointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
+    const prev = ptrs.current.get(e.pointerId);
+    if (!prev) return;
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const el = svgRef.current;
+    const r = el?.getBoundingClientRect();
+    const s = r ? Math.min(r.width / VB_W, r.height / VB_H) : 1;
+    if (ptrs.current.size === 2 && pinchRef.current) {
+      // Pinch : le rapport des écarts entre doigts pilote le zoom, centré sur le milieu des doigts.
+      const [a, b] = [...ptrs.current.values()];
+      const dist = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+      const p = screenToVb((a.x + b.x) / 2, (b.y + a.y) / 2);
+      setView((v) => {
+        const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * (dist / (pinchRef.current!.dist || dist))));
+        const wx = (p.x - v.panX) / v.z, wy = (p.y - v.panY) / v.z;
+        return clampViewport({ z, panX: p.x - wx * z, panY: p.y - wy * z });
+      });
+      pinchRef.current.dist = dist;
+      draggedRef.current = true;
+    } else if (ptrs.current.size === 1) {
+      // Glisser : déplacer la vue de la même distance logique que le doigt/souris.
+      const dx = (e.clientX - prev.x) / (s || 1), dy = (e.clientY - prev.y) / (s || 1);
+      if (Math.abs(e.clientX - prev.x) + Math.abs(e.clientY - prev.y) > 2) draggedRef.current = true;
+      setView((v) => clampViewport({ ...v, panX: v.panX + dx, panY: v.panY + dy }));
+    }
+  };
+  const onPointerUp = (e: ReactPointerEvent<SVGSVGElement>) => {
+    ptrs.current.delete(e.pointerId);
+    if (ptrs.current.size < 2) pinchRef.current = null;
+  };
+  // Après un glisser réel, absorber le clic « fantôme » qui suit (sinon on sélectionnerait un lieu).
+  const swallowClickAfterDrag = (e: ReactMouseEvent) => {
+    if (draggedRef.current) { e.stopPropagation(); draggedRef.current = false; }
+  };
+
+  const zoomBy = (factor: number) =>
+    setView((v) => {
+      const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * factor));
+      // Zoom bouton : centré sur le milieu du cadre.
+      const wx = (VB_W / 2 - v.panX) / v.z, wy = (VB_H / 2 - v.panY) / v.z;
+      return clampViewport({ z, panX: VB_W / 2 - wx * z, panY: VB_H / 2 - wy * z });
+    });
+  const recenterHere = () => setView(viewOn(hereRender.x, hereRender.y, 2));
+
   if (!map) return null;
   const selRoute: MapRoute | null = routes.find((r) => r.id === selId) ?? null;
   const dest: MapPlace | undefined = selRoute && here ? placeById(map, otherEnd(selRoute, here.id)) : undefined;
@@ -171,7 +305,18 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       </div>
 
       <div className="worldmap-canvas">
-        <svg viewBox="0 0 100 64" preserveAspectRatio="xMidYMid meet" className="wm-map">
+        <svg
+          ref={svgRef}
+          viewBox="0 0 100 64"
+          preserveAspectRatio="xMidYMid meet"
+          className="wm-map"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onClickCapture={swallowClickAfterDrag}
+          style={{ touchAction: 'none', cursor: ptrs.current.size ? 'grabbing' : 'grab' }}
+        >
           <defs>
             <radialGradient id="wm-parch" cx="50%" cy="40%" r="78%">
               <stop offset="0%" stopColor="#efe1bb" />
@@ -214,12 +359,16 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <text key={i} x={fx} y={fy} textAnchor="middle" fontSize="4" fill="#8a6c2f" opacity="0.8">⚜</text>
           ))}
 
+          {/* Contenu cartographique ZOOMABLE/PANORAMABLE (routes + lieux + rose) — le parchemin de
+              fond, lui, reste plein cadre. Les positions sont DÉCLUTTÉRÉES (posOf), pas `pos` brut. */}
+          <g transform={`translate(${view.panX} ${view.panY}) scale(${view.z})`}>
           {/* Routes (chemins courbes) — CLIQUABLES depuis le lieu courant (large zone invisible) */}
           {map.routes.map((r) => {
             const a = placeById(map, r.a);
             const b = placeById(map, r.b);
             if (!a || !b) return null;
-            const c = routeCurve(a.pos.x, a.pos.y * 0.64, b.pos.x, b.pos.y * 0.64, r.id);
+            const pa = posOf(a), pb = posOf(b);
+            const c = routeCurve(pa.x, pa.y, pb.x, pb.y, r.id);
             const sel = r.id === selId;
             const fromHere = !!here && (r.a === here.id || r.b === here.id);
             const water = r.modes.includes('barge') && !r.modes.includes('pied');
@@ -265,10 +414,11 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             const route = here ? routes.find((r) => otherEnd(r, here.id) === p.id) : undefined;
             const clickable = !!route;
             const w = Math.max(11, p.label.length * 1.35 + 4);
+            const pr = posOf(p);
             return (
               <g
                 key={p.id}
-                transform={`translate(${p.pos.x} ${p.pos.y * 0.64})`}
+                transform={`translate(${pr.x} ${pr.y})`}
                 onClick={clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined}
                 style={clickable || !isHere ? { cursor: clickable ? 'pointer' : 'help' } : undefined}
                 opacity={clickable || isHere ? 1 : 0.55}
@@ -297,7 +447,14 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           })}
 
           <CompassRose x={13} y={52} />
+          </g>
         </svg>
+        {/* Commandes de zoom (souris ET tactile) — le pincement/molette marchent aussi directement. */}
+        <div className="wm-zoom" role="group" aria-label="Zoom de la carte">
+          <button type="button" className="wm-zoom-btn" onClick={() => zoomBy(1.3)} title="Zoomer" aria-label="Zoomer">＋</button>
+          <button type="button" className="wm-zoom-btn" onClick={() => zoomBy(1 / 1.3)} title="Dézoomer" aria-label="Dézoomer">－</button>
+          <button type="button" className="wm-zoom-btn" onClick={recenterHere} title="Recentrer sur votre position" aria-label="Recentrer">✦</button>
+        </div>
       </div>
 
       {/* Voyage interrompu : reprise */}

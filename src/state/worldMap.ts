@@ -129,6 +129,72 @@ export function otherEnd(route: MapRoute, placeId: string): string {
   return route.a === placeId ? route.b : route.a;
 }
 
+// ── Anti-chevauchement des médaillons (rendu seulement — n'affecte JAMAIS `pos`) ─────────────
+/** Point de rendu d'un lieu : id + position en unités du viewBox de la carte (x 0..100, y 0..64). */
+export interface RenderPoint { id: string; x: number; y: number }
+
+/** Hash déterministe d'un id → angle de séparation stable (aucun Math.random : la carte ne « bouge »
+ *  pas d'un rendu à l'autre, même contrainte que `routeCurve` côté vue). */
+function hashAngle(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return ((h >>> 0) % 360) * (Math.PI / 180);
+}
+
+/**
+ * Écarte les médaillons trop proches, de façon PURE et DÉTERMINISTE, pour rendre lisibles les
+ * grandes cartes où 27+ lieux se chevauchent au centre (ex. le Reik). Répulsion itérative des
+ * PAIRES dont la distance est < `minDist` : chaque paire est repoussée le long de son axe de la
+ * moitié du déficit de chaque côté (les deux bougent symétriquement) ; deux points EXACTEMENT
+ * confondus sont séparés selon un angle dérivé de la somme de leurs id (déterministe, pas de RNG).
+ * Le résultat est borné dans le cadre `[0..w] × [0..h]`. N'affecte QUE les positions de rendu —
+ * les `pos` d'authoring restent intacts (la donnée n'est pas mutée).
+ *
+ * @param points   positions de rendu `{id, x, y}` (l'ordre d'entrée fixe l'ordre de résolution des paires)
+ * @param minDist  distance minimale visée entre deux médaillons (unités viewBox)
+ * @param iterations passes de relaxation (chaque passe rapproche du minimum sans jamais « exploser »)
+ * @param frame    cadre de bornage (défaut : le viewBox de la carte, 100 × 64)
+ * @returns une `Map<id, {x, y}>` des positions écartées, dans le MÊME repère que l'entrée.
+ */
+export function declutterPositions(
+  points: RenderPoint[],
+  minDist: number,
+  iterations = 60,
+  frame: { w: number; h: number } = { w: 100, h: 64 },
+): Map<string, { x: number; y: number }> {
+  // Copie de travail (on ne mute pas l'entrée) ; l'ordre est celui de `points` → déterministe.
+  const pts = points.map((p) => ({ id: p.id, x: p.x, y: p.y }));
+  const clamp = (v: number, max: number) => (v < 0 ? 0 : v > max ? max : v);
+
+  for (let it = 0; it < iterations; it++) {
+    let moved = false;
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i], b = pts[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let dist = Math.hypot(dx, dy);
+        if (dist >= minDist) continue;
+        if (dist < 1e-6) {
+          // Points confondus : séparer selon un angle dérivé des id (stable, sans RNG).
+          const ang = hashAngle(a.id + '|' + b.id);
+          dx = Math.cos(ang); dy = Math.sin(ang); dist = 1;
+        }
+        // Décalage : chaque point s'éloigne de la moitié du déficit le long de l'axe de la paire.
+        const push = (minDist - dist) / 2;
+        const ux = dx / dist, uy = dy / dist;
+        a.x = clamp(a.x - ux * push, frame.w); a.y = clamp(a.y - uy * push, frame.h);
+        b.x = clamp(b.x + ux * push, frame.w); b.y = clamp(b.y + uy * push, frame.h);
+        moved = true;
+      }
+    }
+    if (!moved) break; // convergé : toutes les paires respectent déjà `minDist`.
+  }
+
+  const out = new Map<string, { x: number; y: number }>();
+  for (const p of pts) out.set(p.id, { x: p.x, y: p.y });
+  return out;
+}
+
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
 // Format unique : `{ schema: 2, scenes, worldMap? }`.
 import type { Scene } from './scene';

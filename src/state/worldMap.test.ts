@@ -4,7 +4,7 @@
  * amont : l'éditeur affiche « JSON invalide », pas un crash), jamais être parsé en silence.
  */
 import { describe, it, expect } from 'vitest';
-import { parseProject, type ProjectDoc } from './worldMap';
+import { parseProject, declutterPositions, type ProjectDoc, type RenderPoint } from './worldMap';
 import type { Scene } from './scene';
 
 const scene = (id: string) => ({ id } as Scene);
@@ -51,5 +51,74 @@ describe('parseProject — validation du format projet v2', () => {
     const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithPort as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.places[0].port).toEqual(port);
+  });
+});
+
+/**
+ * declutterPositions — écartement déterministe des médaillons trop proches (RENDU seulement).
+ * Rend lisibles les grandes cartes où les lieux se chevauchent au centre (ex. le Reik) sans jamais
+ * toucher la donnée `pos` d'authoring.
+ */
+describe('declutterPositions — anti-chevauchement pur & déterministe', () => {
+  const minPairDist = (m: Map<string, { x: number; y: number }>) => {
+    const arr = [...m.values()];
+    let min = Infinity;
+    for (let i = 0; i < arr.length; i++)
+      for (let j = i + 1; j < arr.length; j++)
+        min = Math.min(min, Math.hypot(arr[j].x - arr[i].x, arr[j].y - arr[i].y));
+    return min;
+  };
+
+  it('des lieux superposés/trop proches → après la passe, toutes les paires sont ≥ minDist', () => {
+    // 6 lieux empilés quasi au même point (le cas « le Reik » : 27+ médaillons au centre).
+    const pts: RenderPoint[] = Array.from({ length: 6 }, (_, i) => ({ id: `p${i}`, x: 50 + i * 0.01, y: 32 }));
+    const out = declutterPositions(pts, 6, 200);
+    // Tolérance numérique : la relaxation converge vers minDist par le dessous à ε près.
+    expect(minPairDist(out)).toBeGreaterThanOrEqual(6 - 1e-3);
+  });
+
+  it('deux points EXACTEMENT confondus sont séparés (angle dérivé des id, pas de RNG)', () => {
+    const pts: RenderPoint[] = [{ id: 'a', x: 50, y: 32 }, { id: 'b', x: 50, y: 32 }];
+    const out = declutterPositions(pts, 8, 100);
+    expect(minPairDist(out)).toBeGreaterThanOrEqual(8 - 1e-3);
+  });
+
+  it('déterministe : même entrée → même sortie (aucun Math.random)', () => {
+    const mk = (): RenderPoint[] => [
+      { id: 'a', x: 50, y: 32 }, { id: 'b', x: 50.2, y: 32.1 },
+      { id: 'c', x: 49.8, y: 31.9 }, { id: 'd', x: 50, y: 32 },
+    ];
+    const a = declutterPositions(mk(), 7, 120);
+    const b = declutterPositions(mk(), 7, 120);
+    expect([...a.entries()]).toEqual([...b.entries()]);
+  });
+
+  it('les positions restent DANS le cadre 0..100 × 0..64', () => {
+    // Amas collé au coin : le bornage doit empêcher toute fuite hors cadre.
+    const pts: RenderPoint[] = Array.from({ length: 8 }, (_, i) => ({ id: `p${i}`, x: 0.1, y: 0.1 + i * 0.01 }));
+    const out = declutterPositions(pts, 10, 200);
+    for (const { x, y } of out.values()) {
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(x).toBeLessThanOrEqual(100);
+      expect(y).toBeGreaterThanOrEqual(0);
+      expect(y).toBeLessThanOrEqual(64);
+    }
+  });
+
+  it('n\'AMÉLIORE jamais au pire : des lieux déjà espacés ne sont pas rapprochés', () => {
+    const pts: RenderPoint[] = [
+      { id: 'a', x: 10, y: 10 }, { id: 'b', x: 90, y: 10 }, { id: 'c', x: 50, y: 55 },
+    ];
+    const before = minPairDist(new Map(pts.map((p) => [p.id, { x: p.x, y: p.y }])));
+    const out = declutterPositions(pts, 6, 60);
+    // Déjà au-dessus du seuil → convergence immédiate, positions inchangées.
+    expect(minPairDist(out)).toBeGreaterThanOrEqual(before - 1e-9);
+    expect(out.get('a')).toEqual({ x: 10, y: 10 });
+  });
+
+  it('ne mute pas le tableau d\'entrée', () => {
+    const pts: RenderPoint[] = [{ id: 'a', x: 50, y: 32 }, { id: 'b', x: 50.1, y: 32 }];
+    declutterPositions(pts, 8, 50);
+    expect(pts).toEqual([{ id: 'a', x: 50, y: 32 }, { id: 'b', x: 50.1, y: 32 }]);
   });
 });
