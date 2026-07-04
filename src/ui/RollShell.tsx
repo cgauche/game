@@ -3,9 +3,9 @@ import { Modal } from './Modal';
 import { RollRow, type RollRowProps } from './RollRow';
 
 /**
- * RollShell — LA coquille UNIQUE des modales de jet différé : surensemble strict de `RollFlowShell`
- * (mono / opposé) ET de `MultiRollShell` (N contributeurs). Une seule enveloppe (`Modal` ou zone
- * embarquée), un ORDRE de zones fixe, et une barre d'actions DATA-DRIVEN filtrée par phase.
+ * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
+ * Une seule enveloppe (`Modal` ou zone embarquée), un ORDRE de zones fixe, et une barre d'actions
+ * DATA-DRIVEN filtrée par phase.
  *
  *   overlay → titre → sous-titre → instruction → extra → setup (pré-jet) → rangées (`RollRow`)
  *   → outcome/summary → postRollExtra → forcedExtra → `.modal-actions`

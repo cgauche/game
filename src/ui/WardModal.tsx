@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -28,20 +28,41 @@ export function WardModal() {
   const target = battle.combatants.find((x) => x.id === pw.targetId);
   if (!attacker) return null;
   const r = pw.result;
+  const rolled = !!r;
+
+  const actorRow: RollRowData = {
+    actor: attacker,
+    row: {
+      combatant: attacker,
+      d: r ? testBreakdown('Force Mentale', effectiveChar(attacker, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'accessible') : undefined,
+      pending: testPending('Force Mentale', effectiveChar(attacker, 'FM'), undefined, 'accessible'),
+    },
+    rolled,
+    freeReroll: freeRerollOf(attacker),
+    onRoll: roll,
+    rerollable: !!r && !r.success && canReroll(true, !!pw.rerolled),
+    onReroll: reroll,
+    darkPactable: !!r && !r.success && attacker.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    forceShow: !r?.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       title="🛡️ Bénédiction de Protection"
       subtitle={
         <>
           <strong>{attacker.name}</strong> ose frapper {target?.name ?? 'la cible bénie'} (Test de FM +20)
         </>
       }
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      breakdown={r ? testBreakdown('Force Mentale', effectiveChar(attacker, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'accessible') : undefined}
-      pending={testPending('Force Mentale', effectiveChar(attacker, 'FM'), undefined, 'accessible')}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && (
         <JournalLine
           className="rm-journal"
@@ -49,16 +70,8 @@ export function WardModal() {
           combatants={battle.combatants}
         />
       )}
-      fortune={attacker.fortune ?? 0}
-      freeReroll={freeRerollOf(attacker)}
-      rerollable={!!r && !r.success && canReroll(true, !!pw.rerolled)}
-      onReroll={reroll}
-      darkPactable={!!r && !r.success && attacker.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={attacker.resilience ?? 0}
-      onForce={force}
-      forceShow={!r?.success}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }

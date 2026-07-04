@@ -74,7 +74,7 @@ export function RollRow({
         ) : (
           <div className="prow-act">
             {/* Résilience PRÉ-jet (LDB 17 l.73 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
-                seulement après un échec, comme dans `RollFlowShell`. */}
+                seulement après un échec, comme la coquille `RollShell`. */}
             {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} />}
             {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
             {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}

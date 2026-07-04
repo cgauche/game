@@ -3,7 +3,7 @@ import { FLOWS } from '../state/rollFlows';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -29,42 +29,51 @@ export function TrampleModal() {
   const target = battle.combatants.find((c) => c.id === pt.targetId);
   if (!attacker || !target) return null;
   const r = pt.result;
+  const rolled = !!r;
   // Dé choisi (« Je ne faillirai pas ! ») : source UNIQUE = `caps.picker` du flux (cf. rollFlows).
   const forcedDie = FLOWS.trample.picker?.(pt, attacker);
 
+  const actorRow: RollRowData = {
+    actor: attacker,
+    row: {
+      combatant: attacker,
+      d: r?.attackerDetail,
+      pending: testPending('Bagarre', combatValue(attacker, 'melee')),
+    },
+    rolled,
+    freeReroll: freeRerollOf(attacker),
+    onRoll: roll,
+    rerollable: !!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled),
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: !!r && !r.attackerDetail?.success && attacker.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    // Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite.
+    preRollForce: () => { roll(); force(); },
+    forceShow: !r?.hit,
+    // LDB 17 l.73 : Piétinement forcé = attaque → le dé se choisit (11 → Coup Critique).
+    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       title="🦶 Piétinement"
       subtitle={
         <>
           <strong>{attacker.name}</strong> écrase <strong>{target.name}</strong> (coûte 1 Avantage)
         </>
       }
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      cancelAfterRoll
-      breakdown={r?.attackerDetail}
-      pending={testPending('Bagarre', combatValue(attacker, 'melee'))}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && <JournalLine className="rm-journal" event={ev('attack', r.log, attacker.id, target.id)} combatants={battle.combatants} />}
-      fortune={attacker.fortune ?? 0}
-      freeReroll={freeRerollOf(attacker)}
-      rerollable={!!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={!!r && !r.attackerDetail?.success && attacker.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={attacker.resilience ?? 0}
-      onForce={force}
-      /* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite. */
-      preRollForce={() => {
-        roll();
-        force();
-      }}
-      forceShow={!r?.hit}
-      /* LDB 17 l.73 : Piétinement forcé = attaque → le dé se choisit (11 → Coup Critique). */
-      forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={cancel}
     />
   );
 }

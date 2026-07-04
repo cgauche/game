@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { refLabel } from '../data';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -30,20 +30,41 @@ export function RunModal() {
   // À cheval, la Course se teste sur Chevaucher (LDB 14 l.215) — même compétence que le flux `run`.
   const skillId = c.mountId ? 'chevaucher' : 'athletisme';
   const skillLabel = refLabel('skills', { id: skillId });
+  const rolled = !!r;
+
+  const actorRow: RollRowData = {
+    actor: c,
+    row: {
+      combatant: c,
+      d: r ? testBreakdown(skillLabel, testValue(c, skillId), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined,
+      pending: testPending(skillLabel, testValue(c, skillId), undefined, 'accessible'),
+    },
+    rolled,
+    freeReroll: freeRerollOf(c),
+    onRoll: roll,
+    rerollable: !!r && !r.success && canReroll(true, !!pr.rerolled),
+    onReroll: reroll,
+    darkPactable: !!r && !r.success && c.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    forceShow: !r?.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       title="🏃 Course"
       subtitle={
         <>
           <strong>{c.name}</strong> s'élance (Test {c.mountId ? 'de Chevaucher' : "d'Athlétisme"} +20)
         </>
       }
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      breakdown={r ? testBreakdown(skillLabel, testValue(c, skillId), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined}
-      pending={testPending(skillLabel, testValue(c, skillId), undefined, 'accessible')}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && (
         <JournalLine
           className="rm-journal"
@@ -51,16 +72,8 @@ export function RunModal() {
           combatants={battle.combatants}
         />
       )}
-      fortune={c.fortune ?? 0}
-      freeReroll={freeRerollOf(c)}
-      rerollable={!!r && !r.success && canReroll(true, !!pr.rerolled)}
-      onReroll={reroll}
-      darkPactable={!!r && !r.success && c.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={c.resilience ?? 0}
-      onForce={force}
-      forceShow={!r?.success}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }

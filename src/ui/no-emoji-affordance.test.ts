@@ -131,7 +131,6 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/ResilienceButton.tsx',
   'src/ui/ResistButton.tsx',
   'src/ui/RestModal.tsx',
-  'src/ui/RollFlowShell.tsx',
   'src/ui/RollLine.tsx',
   'src/ui/RollPanel.tsx',
   'src/ui/RollRow.tsx',

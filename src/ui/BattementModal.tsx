@@ -4,7 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
 import { battementFoes } from '../state/combatFlow';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -35,22 +35,47 @@ export function BattementModal() {
   const foe = battle.combatants.find((c) => c.id === pb.foeId);
   if (!attacker || !foe) return null;
   const r = pb.result;
+  const rolled = !!r;
   const foes = battementFoes(attacker, battle);
   // Dé choisi (« Je ne faillirai pas ! ») : source UNIQUE = `caps.picker` du flux (cf. rollFlows).
   const forcedDie = FLOWS.battement.picker?.(pb, attacker);
 
+  const actorRow: RollRowData = {
+    actor: attacker,
+    row: {
+      combatant: attacker,
+      d: r ? testBreakdown('Corps à corps', combatValue(attacker, 'melee'), r) : undefined,
+      pending: testPending('Corps à corps', combatValue(attacker, 'melee')),
+    },
+    rolled,
+    freeReroll: freeRerollOf(attacker),
+    onRoll: roll,
+    rerollable: !!r && canReroll(!r.success, !!pb.rerolled),
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: !!r && !r.success && attacker.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    // Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite.
+    preRollForce: () => { roll(); force(); },
+    forceShow: !r?.success,
+    // LDB 17 l.73 : Battement forcé = jet de CC → le dé se choisit (01 → DR max → plus d'Avantage retiré).
+    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       title={<><Icon id="action/attack" /> Battement</>}
       subtitle={
         <>
           <strong>{attacker.name}</strong> bat l'arme de <strong>{foe.name}</strong> pour lui retirer de l'Avantage (coûte l'Action)
         </>
       }
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      cancelAfterRoll
       /* Choix de la cible AVANT le jet (plusieurs adversaires éligibles) — OptionChooser partagé. */
       setup={
         foes.length > 1 ? (
@@ -61,27 +86,11 @@ export function BattementModal() {
           />
         ) : undefined
       }
-      breakdown={r ? testBreakdown('Corps à corps', combatValue(attacker, 'melee'), r) : undefined}
-      pending={testPending('Corps à corps', combatValue(attacker, 'melee'))}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && <JournalLine className="rm-journal" event={ev('attack', describeBattement(pb, attacker.name, foe.name), attacker.id, foe.id)} combatants={battle.combatants} />}
-      fortune={attacker.fortune ?? 0}
-      freeReroll={freeRerollOf(attacker)}
-      rerollable={!!r && canReroll(!r.success, !!pb.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={!!r && !r.success && attacker.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={attacker.resilience ?? 0}
-      onForce={force}
-      /* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite. */
-      preRollForce={() => {
-        roll();
-        force();
-      }}
-      forceShow={!r?.success}
-      /* LDB 17 l.73 : Battement forcé = jet de CC → le dé se choisit (01 → DR max → plus d'Avantage retiré). */
-      forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={cancel}
     />
   );
 }

@@ -26,7 +26,7 @@ export function InfluenceRow({
   children,
 }: {
   /** Le héros qui jette : Chance/relance gratuite/Résilience en sont DÉRIVÉES (passé une fois, plus
-   *  d'oubli). Les vues présentationnelles `*View` et `RollFlowShell` passent plutôt les primitives
+   *  d'oubli). Les vues présentationnelles `*View` passent plutôt les primitives
    *  ci-dessous (testables sans `Combatant`). */
   actor?: Combatant | null;
   /** Primitives — PRIORITAIRES sur `actor` quand fournies (vues sans `Combatant`). */

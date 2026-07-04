@@ -5,7 +5,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
 import { refLabel } from '../data';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -42,12 +42,34 @@ export function CorruptionModal() {
   const resistAvail = pc.menace != null && hero != null && availableResistance(hero, pc.menace) != null
     && (!rolled || pc.success === false);
   // Pré-jet (audit M6) : `pc.target` n'existe qu'après resolve → base réelle du Test affichée
-  // AVANT le jet (même parité que les autres flux RollFlowShell).
+  // AVANT le jet (même parité que les autres flux).
   const base = hero ? testValue(hero, pc.skill) : 0;
   const skillLabel = refLabel('skills', { id: pc.skill }); // 'Résistance' / 'Calme' (affichage)
 
+  const actorRow: RollRowData = {
+    actor: hero,
+    row: {
+      combatant: hero,
+      d: rolled ? testBreakdown(`Test de ${skillLabel}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined,
+      pending: testPending(`Test de ${skillLabel}`, base, undefined, 'intermediaire'),
+    },
+    rolled,
+    freeReroll: freeRerollOf(hero),
+    onRoll: roll,
+    rerollable: rolled && canReroll(pc.roll! > (pc.target ?? 0), !!pc.rerolled),
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: rolled && pc.roll! > (pc.target ?? 0),
+    onDarkPact: darkPact,
+    resist: resistAvail ? { menace: pc.menace!, onResist: resistAct } : undefined,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'confirm', label: 'Continuer', kind: 'primary', onClick: resolve, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       variant="test"
       title={seuil ? <>🧬 Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <>🕯️ Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={
@@ -55,8 +77,6 @@ export function CorruptionModal() {
           <strong>{hero?.name ?? '?'}</strong> — Test de {skillLabel} Intermédiaire (+0)
         </>
       }
-      rolled={rolled}
-      onRoll={roll}
       setup={
         // Compétence indéterminée en amont (LDB 19 l.26) → le joueur tranche Résistance/Calme (cf.
         // Défense). Déterminée par la source (`skillLocked`) ou au seuil → pas de choix.
@@ -73,19 +93,10 @@ export function CorruptionModal() {
           </div>
         ) : undefined
       }
-      breakdown={rolled ? testBreakdown(`Test de ${skillLabel}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined}
-      pending={testPending(`Test de ${skillLabel}`, base, undefined, 'intermediaire')}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeCorruption(pc, hero?.name ?? '?'), pc.heroId)} combatants={pool} />}
-      fortune={hero?.fortune ?? 0}
-      freeReroll={freeRerollOf(hero)}
-      rerollable={rolled && canReroll(pc.roll! > (pc.target ?? 0), !!pc.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={rolled && pc.roll! > (pc.target ?? 0)}
-      onDarkPact={darkPact}
-      resist={resistAvail ? { menace: pc.menace!, onResist: resistAct } : undefined}
-      confirmLabel="Continuer"
-      onConfirm={resolve}
+      actions={actions}
     />
   );
 }

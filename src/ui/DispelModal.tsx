@@ -1,7 +1,7 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -32,9 +32,34 @@ export function DispelModal() {
   // Soutien de dissipation à plusieurs (LDB 12) : ligne de mod comme tout bonus, base SANS le Soutien.
   const supMod = soutienMod(pd.support);
   const base = pd.value - (supMod?.value ?? 0);
+  const rolled = !!r;
+
+  const actorRow: RollRowData = {
+    actor: caster,
+    row: {
+      combatant: caster,
+      d: r ? testBreakdown('Langue (Magick)', base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, undefined, supMod ? [supMod] : undefined) : undefined,
+      pending: testPending('Langue (Magick)', base, undefined, undefined, supMod ? [supMod] : undefined),
+    },
+    rolled,
+    freeReroll: freeRerollOf(caster),
+    onRoll: roll,
+    rerollable: !!r && canReroll(!r.success, !!pd.rerolled),
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: !!r && !r.success && caster.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    forceShow: !r?.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       title="🌀 Dissipation"
       subtitle={
         <>
@@ -43,12 +68,8 @@ export function DispelModal() {
       }
       /* Test ÉTENDU : barre de DR cumulé vers le NI du sort. */
       extra={<DrBar cum={cum} target={pd.ni} />}
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      cancelAfterRoll
-      breakdown={r ? testBreakdown('Langue (Magick)', base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, undefined, supMod ? [supMod] : undefined) : undefined}
-      pending={testPending('Langue (Magick)', base, undefined, undefined, supMod ? [supMod] : undefined)}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && (
         <JournalLine
           className="rm-journal"
@@ -56,17 +77,8 @@ export function DispelModal() {
           combatants={battle?.combatants ?? party}
         />
       )}
-      fortune={caster.fortune ?? 0}
-      freeReroll={freeRerollOf(caster)}
-      rerollable={!!r && canReroll(!r.success, !!pd.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={!!r && !r.success && caster.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={caster.resilience ?? 0}
-      onForce={force}
-      forceShow={!r?.success}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={cancel}
     />
   );
 }

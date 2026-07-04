@@ -2,7 +2,7 @@ import { useGame, type PendingAppraise } from '../state/store';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -36,32 +36,46 @@ export function AppraiseModalView({
   const rolled = pa.roll != null;
   const detect = pa.mode === 'detect';
   const skill = pa.skillLabel ?? (detect ? 'Intuition' : 'Évaluation');
+
+  const actorRow: RollRowData = {
+    actor,
+    row: {
+      combatant: actor,
+      d: rolled ? testBreakdown(skill, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined,
+      pending: testPending(skill, pa.skillValue, pa.target, pa.difficulty),
+    },
+    rolled,
+    fortune,
+    freeReroll,
+    rerollable: rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled),
+    onRoll,
+    onReroll,
+    onBonusSL,
+    darkPactable: rolled && pa.roll! > pa.target,
+    onDarkPact,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: onCancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: onConfirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       variant="test"
       title={detect ? `Détecter l'aura — ${pa.itemName}` : `Évaluer — ${pa.itemName}`}
       /* QUI évalue → portrait dans la ligne de jet (plus de nom en clair) ; la cible/DR vit dans le cadre. */
-      actor={actor}
       subtitle={null}
+      rows={[actorRow]}
       rolled={rolled}
-      onRoll={onRoll}
-      onCancel={onCancel}
-      breakdown={rolled ? testBreakdown(skill, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
-      pending={testPending(skill, pa.skillValue, pa.target, pa.difficulty)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
           event={ev('info', describeAppraise(pa))}
         />
       )}
-      fortune={fortune}
-      freeReroll={freeReroll}
-      rerollable={rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled)}
-      onReroll={onReroll}
-      onBonusSL={onBonusSL}
-      darkPactable={rolled && pa.roll! > pa.target}
-      onDarkPact={onDarkPact}
-      onConfirm={onConfirm}
+      actions={actions}
+      onCancel={rolled ? undefined : onCancel}
     />
   );
 }

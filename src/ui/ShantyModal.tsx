@@ -4,7 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById, findSeaShantyByLabel } from '../data';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 
@@ -31,12 +31,37 @@ export function ShantyModal() {
   const r = p.result;
   const chosen = p.shantyId ? findSeaShantyById(p.shantyId) : undefined;
   const value = testValue(singer, 'divertissement', undefined, 'Chant');
+  const rolled = !!r;
+
+  const actorRow: RollRowData = {
+    actor: singer,
+    row: {
+      combatant: singer,
+      d: r ? testBreakdown('Divertissement (Chant)', value, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined,
+      pending: testPending('Divertissement (Chant)', value, undefined, 'intermediaire'),
+    },
+    rolled,
+    freeReroll: freeRerollOf(singer),
+    onRoll: roll,
+    rerollable: !!r && !r.success && canReroll(true, !!p.rerolled),
+    onReroll: reroll,
+    onBonusSL: r?.success ? bonus : undefined,
+    darkPactable: !!r && !r.success && singer.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    forceShow: !r?.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       title="🎶 Chanson de marin"
       subtitle={<><strong>{singer.name}</strong> entonne pour l'équipage (Test de Divertissement (Chant), MDG 09)</>}
-      setup={!r && (
+      setup={
         <OptionChooser
           layout="seg"
           groupLabel="Chanson"
@@ -48,12 +73,9 @@ export function ShantyModal() {
             };
           })}
         />
-      )}
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      breakdown={r ? testBreakdown('Divertissement (Chant)', value, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined}
-      pending={testPending('Divertissement (Chant)', value, undefined, 'intermediaire')}
+      }
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && chosen && (
         <div className="rm-journal">
           {r.success
@@ -61,17 +83,8 @@ export function ShantyModal() {
             : <>La chanson tombe à plat — aucun effet (le quart est consommé).</>}
         </div>
       )}
-      fortune={singer.fortune ?? 0}
-      freeReroll={freeRerollOf(singer)}
-      rerollable={!!r && !r.success && canReroll(true, !!p.rerolled)}
-      onReroll={reroll}
-      onBonusSL={r?.success ? bonus : undefined}
-      darkPactable={!!r && !r.success && singer.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={singer.resilience ?? 0}
-      onForce={force}
-      forceShow={!r?.success}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }

@@ -4,7 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
 import { creatureAttacks, ATTACK_LABEL } from '../engine/creatureAttacks';
 import { MANEUVER_ICON } from '../state/combatFlow';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { Icon } from './Icon';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
@@ -36,6 +36,7 @@ export function ManeuverModal() {
   const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === pm.kind);
   if (!a) return null;
   const r = pm.result;
+  const rolled = !!r;
   // Jet d'attaquant : CC (mêlée) ou CT (distance/zone) ; Vomi → Facile (+40) à courte distance (l.376).
   const stat = a.stat ?? 'CT';
   const base = combatValue(attacker, stat === 'CC' ? 'melee' : 'ranged');
@@ -49,8 +50,34 @@ export function ManeuverModal() {
       }))
     : [];
 
+  const actorRow: RollRowData = {
+    actor: attacker,
+    row: {
+      combatant: attacker,
+      d: r ? testBreakdown(label, base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, difficulty) : undefined,
+      pending: testPending(label, base, undefined, difficulty),
+    },
+    rolled,
+    freeReroll: freeRerollOf(attacker),
+    onRoll: roll,
+    rerollable: !!r && !r.success && canReroll(true, !!pm.rerolled),
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: !!r && !r.success && attacker.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    forceShow: !!r && !r.success,
+    // LDB 17 l.73 : la réussite forcée choisit le dé (mais sans enjeu de double pour le jet d'attaquant).
+    forcedRoll: pm.forced && r ? { roll: r.roll, target: r.target, onSet: setForcedRoll } : undefined,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       title={<><Icon id={MANEUVER_ICON[pm.kind]} /> {ATTACK_LABEL[pm.kind]}</>}
       subtitle={
         <>
@@ -59,27 +86,12 @@ export function ManeuverModal() {
         </>
       }
       /* Regard : choix de l'Avantage AVANT le jet (fixe le DR). Masqué une fois lancé. */
-      setup={variable && !r ? <OptionChooser layout="seg" groupLabel="Avantage" options={avOptions} /> : undefined}
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      cancelAfterRoll
-      breakdown={r ? testBreakdown(label, base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, difficulty) : undefined}
-      pending={testPending(label, base, undefined, difficulty)}
+      setup={variable ? <OptionChooser layout="seg" groupLabel="Avantage" options={avOptions} /> : undefined}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && <JournalLine className="rm-journal" event={ev('attack', `${attacker.name} : jet ${r.success ? 'réussi' : 'raté'} (DR ${r.sl}).`, attacker.id)} combatants={battle.combatants} />}
-      fortune={attacker.fortune ?? 0}
-      freeReroll={freeRerollOf(attacker)}
-      rerollable={!!r && !r.success && canReroll(true, !!pm.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={!!r && !r.success && attacker.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={attacker.resilience ?? 0}
-      onForce={force}
-      forceShow={!!r && !r.success}
-      /* LDB 17 l.73 : la réussite forcée choisit le dé (mais sans enjeu de double pour le jet d'attaquant). */
-      forcedRoll={pm.forced && r ? { roll: r.roll, target: r.target, onSet: setForcedRoll } : undefined}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={cancel}
     />
   );
 }

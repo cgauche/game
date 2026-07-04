@@ -3,7 +3,7 @@ import { findSpellById } from '../data/index';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -32,9 +32,34 @@ export function FocusModal() {
   const ni = spell?.cn ?? 0;
   const prev = caster.focus?.spell === pf.spellId ? caster.focus.dr : 0;
   const r = pf.result;
+  const rolled = !!r;
+
+  const actorRow: RollRowData = {
+    actor: caster,
+    row: {
+      combatant: caster,
+      d: r ? testBreakdown('Focalisation', castingValue(caster, 'focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }) : undefined,
+      pending: testPending('Focalisation', castingValue(caster, 'focalisation')),
+    },
+    rolled,
+    freeReroll: freeRerollOf(caster),
+    onRoll: roll,
+    rerollable: !!r && canReroll(r.dr === 0, !!pf.rerolled),
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: !!r && r.dr === 0 && caster.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    forceShow: r?.dr === 0,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       title="✨ Focalisation"
       subtitle={
         <>
@@ -43,12 +68,8 @@ export function FocusModal() {
       }
       /* Test ÉTENDU (#23) : barre de DR cumulé vers le NI du sort. */
       extra={<DrBar cum={Math.min(ni, prev + (r?.dr ?? 0))} target={ni} />}
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      cancelAfterRoll
-      breakdown={r ? testBreakdown('Focalisation', castingValue(caster, 'focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }) : undefined}
-      pending={testPending('Focalisation', castingValue(caster, 'focalisation'))}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && (
         <JournalLine
           className="rm-journal"
@@ -56,17 +77,8 @@ export function FocusModal() {
           combatants={battle?.combatants ?? party}
         />
       )}
-      fortune={caster.fortune ?? 0}
-      freeReroll={freeRerollOf(caster)}
-      rerollable={!!r && canReroll(r.dr === 0, !!pf.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={!!r && r.dr === 0 && caster.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={caster.resilience ?? 0}
-      onForce={force}
-      forceShow={r?.dr === 0}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={cancel}
     />
   );
 }

@@ -1,7 +1,7 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -47,8 +47,36 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
     ? combatHealModes(target)
     : [];
   const bleed = target?.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
+
+  const freeReroll = freeRerollOf(healer);
+  const actorRow: RollRowData = {
+    actor: healer,
+    row: {
+      combatant: healer,
+      d: rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined,
+      pending: testPending('Guérison', ph.skillValue, ph.target, ph.difficulty),
+    },
+    rolled,
+    fortune,
+    freeReroll,
+    rerollable: rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && (fortune > 0 || freeReroll),
+    onRoll: roll,
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: rolled && ph.roll! > ph.target && healer?.kind === 'hero',
+    onDarkPact: darkPact,
+    resilience: healer?.resilience ?? 0,
+    onForce: force,
+    forceShow: !ph.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       embedded={embedded}
       title={wounds ? '🩹 Soigner les Blessures' : trauma ? '🦵 Soigner une déchirure' : '🩸 Arrêter l’Hémorragie'}
       subtitle={
@@ -70,23 +98,11 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
           }))}
         />
       ) : undefined}
+      rows={[actorRow]}
       rolled={rolled}
-      onRoll={roll}
-      onCancel={cancel}
-      breakdown={rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined}
-      pending={testPending('Guérison', ph.skillValue, ph.target, ph.difficulty)}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', describeHeal(ph), ph.healerId, ph.targetId)} combatants={pool} />}
-      fortune={fortune}
-      freeReroll={freeRerollOf(healer)}
-      rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && (fortune > 0 || freeRerollOf(healer))}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={rolled && ph.roll! > ph.target && healer?.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={healer?.resilience ?? 0}
-      onForce={force}
-      forceShow={!ph.success}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }

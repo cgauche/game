@@ -3,7 +3,7 @@ import type { Combatant } from '../engine/types';
 import { spawnEnemy } from '../state/spawn';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -38,41 +38,56 @@ export function BargainModalView({
   onCancel: () => void;
 }) {
   const rolled = pb.roll != null && pb.result != null;
-  const playerD = pb.roll ? testBreakdown('Marchandage', pb.playerSkill, pb.roll) : null;
+  const playerD = pb.roll ? testBreakdown('Marchandage', pb.playerSkill, pb.roll) : undefined;
   // Jet OPPOSÉ rendu façon Défense : 2 lignes à portrait (joueur + marchand), vainqueur accentué. Le
   // Marchandage du marchand reste OPAQUE → ligne `hideValue` (portrait + dé + DR, sans base/cible).
   const merchantD = rolled && pb.merchantRoll
     ? { label: 'Marchandage', base: pb.merchantValue, modifier: 0, target: pb.merchantRoll.target, roll: pb.merchantRoll.roll, success: pb.merchantRoll.success, sl: pb.merchantRoll.sl, hideValue: true }
     : null;
-  const oppRows = rolled && actor && merchant && playerD && merchantD
-    ? [{ combatant: actor, d: playerD }, { combatant: merchant, d: merchantD }]
+  const opposed = rolled && !!actor && !!merchant && !!playerD && !!merchantD;
+
+  // Rangée INTERACTIVE du négociateur (pré-jet en attente puis résultat), porteuse de son influence.
+  const actorRow: RollRowData = {
+    actor,
+    row: {
+      combatant: actor,
+      d: playerD,
+      pending: testPending('Marchandage', pb.playerSkill),
+    },
+    rolled,
+    fortune,
+    freeReroll,
+    rerollable: rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled),
+    onRoll,
+    onReroll,
+    onBonusSL,
+    darkPactable: rolled && pb.roll!.roll > pb.roll!.target,
+    onDarkPact,
+  };
+  // Rangée TÉMOIN du marchand (Marchandage opaque), figée post-jet.
+  const merchantRow: RollRowData | undefined = opposed
+    ? { row: { combatant: merchant, d: merchantD! }, rolled, interactive: false }
     : undefined;
+  const winnerIndex = opposed ? (pb.result!.attackerWins ? 0 : 1) : null;
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: onCancel, when: 'pre' },
+    { key: 'confirm', label: 'Conclure', kind: 'primary', onClick: onConfirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       variant="test"
       title={`Marchander ${pb.mode === 'buy' ? 'l’achat' : 'la vente'} — ${pb.merchantName}`}
-      /* Pré-jet (1 ligne) : portrait du négociateur injecté ; post-jet opposé : `rows` portent les 2. */
-      actor={actor}
+      /* Pré-jet (1 ligne) : portrait du négociateur injecté ; post-jet opposé : 2 lignes à portrait. */
       subtitle={pb.negotiator ? <span>· Négociateur</span> : null}
+      rows={merchantRow ? [actorRow, merchantRow] : [actorRow]}
       rolled={rolled}
-      onRoll={onRoll}
-      onCancel={onCancel}
-      rows={oppRows}
-      breakdown={!oppRows && rolled && playerD ? playerD : undefined}
-      pending={testPending('Marchandage', pb.playerSkill)}
-      winnerIndex={oppRows ? (pb.result!.attackerWins ? 0 : 1) : undefined}
-      netSL={oppRows ? pb.result!.netSL : undefined}
+      winnerIndex={winnerIndex}
+      netSL={opposed ? pb.result!.netSL : undefined}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeBargain(pb))} />}
-      fortune={fortune}
-      freeReroll={freeReroll}
-      rerollable={rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)}
-      onReroll={onReroll}
-      onBonusSL={onBonusSL}
-      darkPactable={rolled && pb.roll!.roll > pb.roll!.target}
-      onDarkPact={onDarkPact}
-      confirmLabel="Conclure"
-      onConfirm={onConfirm}
+      actions={actions}
+      onCancel={rolled ? undefined : onCancel}
     />
   );
 }

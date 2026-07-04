@@ -2,7 +2,7 @@ import { useGame, type PendingStateRecovery } from '../state/store';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -40,39 +40,53 @@ export function StateRecoveryModalView({
     ? `${sr.skillLabel} (opposé) contre ${sr.opponentName}`
     : `${sr.skillLabel}, cible ${sr.roll?.target ?? sr.skillValue}`;
 
+  // Rangée INTERACTIVE du joueur (pré-jet en attente puis résultat), porteuse de son cycle d'influence.
+  const actorRow: RollRowData = {
+    actor,
+    row: {
+      combatant: actor,
+      d: rolled ? testBreakdown(sr.skillLabel, sr.skillValue, sr.roll!) : undefined,
+      pending: testPending(sr.skillLabel, sr.skillValue),
+    },
+    rolled,
+    fortune,
+    freeReroll,
+    rerollable: rolled && canReroll(!sr.success, !!sr.rerolled),
+    onRoll,
+    onReroll,
+    onBonusSL,
+    darkPactable: rolled && !sr.success,
+    onDarkPact,
+  };
+  // Test opposé : rangée TÉMOIN de la source (Force), figée post-jet.
+  const witness: RollRowData | undefined = rolled && sr.opposed && sr.opponentRoll && sr.opponentValue != null
+    ? {
+        row: { d: testBreakdown(`${sr.opponentName ?? 'Source'} — Force`, sr.opponentValue, sr.opponentRoll) },
+        rolled,
+        interactive: false,
+      }
+    : undefined;
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: onCancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: onConfirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       variant="test"
       title={`${sr.state === 'empetre' ? 'Se libérer' : 'Se rouler au sol'} — ${sr.state}`}
-      actor={actor}
       subtitle={<>{sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}</>}
+      rows={witness ? [actorRow, witness] : [actorRow]}
       rolled={rolled}
-      onRoll={onRoll}
-      onCancel={onCancel}
-      /* Test opposé : deux lignes de jet (acteur puis source), comme Attaque/Défense. */
-      breakdown={rolled
-        ? [
-            testBreakdown(sr.skillLabel, sr.skillValue, sr.roll!),
-            ...(sr.opposed && sr.opponentRoll && sr.opponentValue != null
-              ? [testBreakdown(`${sr.opponentName ?? 'Source'} — Force`, sr.opponentValue, sr.opponentRoll)]
-              : []),
-          ]
-        : undefined}
-      pending={testPending(sr.skillLabel, sr.skillValue)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
           event={ev('condition', describeStateRecovery(sr, sr.actorName), sr.actorId)}
         />
       )}
-      fortune={fortune}
-      freeReroll={freeReroll}
-      rerollable={rolled && canReroll(!sr.success, !!sr.rerolled)}
-      onReroll={onReroll}
-      onBonusSL={onBonusSL}
-      darkPactable={rolled && !sr.success}
-      onDarkPact={onDarkPact}
-      onConfirm={onConfirm}
+      actions={actions}
+      onCancel={rolled ? undefined : onCancel}
     />
   );
 }

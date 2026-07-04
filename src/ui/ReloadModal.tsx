@@ -2,7 +2,7 @@ import { useGame, type PendingReload } from '../state/store';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -41,34 +41,46 @@ export function ReloadModalView({
   const supMod = soutienMod(pr.soutien);
   const base = pr.skillValue - (supMod?.value ?? 0);
 
+  const actorRow: RollRowData = {
+    actor,
+    row: {
+      combatant: actor,
+      d: rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, supMod ? [supMod] : undefined) : undefined,
+      pending: testPending('Projectiles', base, pr.target, pr.difficulty, supMod ? [supMod] : undefined),
+    },
+    rolled,
+    fortune,
+    freeReroll,
+    rerollable: rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled),
+    onRoll,
+    onReroll,
+    onBonusSL,
+    darkPactable: rolled && pr.roll! > pr.target,
+    onDarkPact,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: onCancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: onConfirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       variant="test"
       title={`Recharger — ${weaponName}`}
       /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */
-      actor={actor}
-      subtitle={null}
       /* Test ÉTENDU (#23) : barre de DR cumulé vers l'Indice de Recharge. */
       extra={<DrBar cum={rolled ? after : pr.progressBefore} target={pr.reload} />}
+      rows={[actorRow]}
       rolled={rolled}
-      onRoll={onRoll}
-      onCancel={onCancel}
-      breakdown={rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, supMod ? [supMod] : undefined) : undefined}
-      pending={testPending('Projectiles', base, pr.target, pr.difficulty, supMod ? [supMod] : undefined)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
           event={ev('reload', describeReload(pr, after, weaponName), pr.actorId)}
         />
       )}
-      fortune={fortune}
-      freeReroll={freeReroll}
-      rerollable={rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled)}
-      onReroll={onReroll}
-      onBonusSL={onBonusSL}
-      darkPactable={rolled && pr.roll! > pr.target}
-      onDarkPact={onDarkPact}
-      onConfirm={onConfirm}
+      actions={actions}
+      onCancel={rolled ? undefined : onCancel}
     />
   );
 }

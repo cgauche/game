@@ -1,7 +1,7 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, soutienMod } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import {
@@ -35,30 +35,40 @@ export function BattleTestModal() {
   const sitMod = pt.mod ? { label: pt.modLabel ?? 'Situation', value: pt.mod } : undefined;
   const extraMods = [supMod, sitMod].filter((m): m is ModLine => !!m);
   const base = pt.skillValue - (supMod?.value ?? 0);
+
+  const actorRow: RollRowData = {
+    actor,
+    row: {
+      combatant: actor,
+      d: rolled ? testBreakdown(pt.skill, base, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty, extraMods.length ? extraMods : undefined) : undefined,
+      pending: testPending(pt.skill, base, pt.roll != null ? pt.target : undefined, pt.difficulty, extraMods.length ? extraMods : undefined),
+    },
+    rolled,
+    freeReroll: freeRerollOf(actor),
+    onRoll: roll,
+    rerollable: rolled && canReroll(pt.roll! > pt.target, !!pt.rerolled),
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: rolled && pt.roll! > pt.target && actor?.kind === 'hero',
+    onDarkPact: darkPact,
+    onForce: force,
+    forceShow: rolled && !pt.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
+
   return (
-    <RollFlowShell
+    <RollShell
       variant="test"
       title={pt.label}
-      subtitle={null}
-      actor={actor}
+      rows={[actorRow]}
       rolled={rolled}
-      onRoll={roll}
-      onCancel={cancel}
-      breakdown={rolled ? testBreakdown(pt.skill, base, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty, extraMods.length ? extraMods : undefined) : undefined}
-      pending={testPending(pt.skill, base, pt.roll != null ? pt.target : undefined, pt.difficulty, extraMods.length ? extraMods : undefined)}
       outcome={outcome && <p className="rm-journal">{outcome}</p>}
-      fortune={actor?.fortune ?? 0}
-      freeReroll={freeRerollOf(actor)}
-      rerollable={rolled && canReroll(pt.roll! > pt.target, !!pt.rerolled)}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={rolled && pt.roll! > pt.target && actor?.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={actor?.resilience ?? 0}
-      onForce={force}
-      forceShow={rolled && !pt.success}
-      confirmLabel="Appliquer"
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }

@@ -48,7 +48,7 @@ export function testBreakdown(
 }
 
 /** Ligne de jet EN ATTENTE (pré-jet) d'un Test simple — même base / cible / mods que `testBreakdown`,
- *  dé et DR vides : pour le panneau PRÉ-REMPLI des flux `RollFlowShell` (parité Attaque/Défense).
+ *  dé et DR vides : pour le panneau PRÉ-REMPLI des flux `RollShell` (parité Attaque/Défense).
  *  `target` omis → dérivé `base + modificateur de Difficulté` (comme le calcule le jet). */
 export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty, extraMods?: ModLine[]): PendingRoll {
   const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty) ?? [])];

@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { calmeValue } from '../engine/psychology';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -27,20 +27,43 @@ export function ApproachModal() {
   const src = battle.combatants.find((x) => x.id === pa.sourceId);
   if (!c) return null;
   const r = pa.result;
+  const rolled = !!r;
+
+  const actorRow: RollRowData = {
+    actor: c,
+    row: {
+      combatant: c,
+      d: r ? testBreakdown('Calme', calmeValue(c), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined,
+      pending: testPending('Calme', calmeValue(c), undefined, 'intermediaire'),
+    },
+    rolled,
+    fortune: c.fortune ?? 0,
+    freeReroll: freeRerollOf(c),
+    rerollable: !!r && !r.success && canReroll(true, !!pa.rerolled),
+    onRoll: roll,
+    onReroll: reroll,
+    darkPactable: !!r && !r.success && c.kind === 'hero',
+    onDarkPact: darkPact,
+    resilience: c.resilience ?? 0,
+    onForce: force,
+    forceShow: !r?.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       title="😨 Affronter sa Peur"
       subtitle={
         <>
           <strong>{c.name}</strong> ose approcher {src?.name ?? 'la source de sa Peur'} (Test de Calme +0)
         </>
       }
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      breakdown={r ? testBreakdown('Calme', calmeValue(c), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined}
-      pending={testPending('Calme', calmeValue(c), undefined, 'intermediaire')}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && (
         <JournalLine
           className="rm-journal"
@@ -48,16 +71,8 @@ export function ApproachModal() {
           combatants={battle.combatants}
         />
       )}
-      fortune={c.fortune ?? 0}
-      freeReroll={freeRerollOf(c)}
-      rerollable={!!r && !r.success && canReroll(true, !!pa.rerolled)}
-      onReroll={reroll}
-      darkPactable={!!r && !r.success && c.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={c.resilience ?? 0}
-      onForce={force}
-      forceShow={!r?.success}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }

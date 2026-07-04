@@ -545,7 +545,7 @@
   background: rgba(0, 0, 0, 0.18);
 }
 .medic-wound-pick { justify-content: center; }
-/* Zone de JET embarquée (RollFlowShell `embedded`) : encart dans la modale persistante —
+/* Zone de JET embarquée (RollShell `embedded`) : encart dans la modale persistante —
    neutralise le min-width des classes de modale autonome. */
 .rfs-embedded {
   border: 1px solid var(--border);
@@ -586,7 +586,7 @@
 .mrl-row.ok .mrl-label, .mrl-row.ok .mrl-text { color: var(--ok-bright); }
 
 /* Cascade séquentielle (jets de nuit/voyage) : le bilan empilé réutilise `.mrl` (MultiRollList) dans
-   le slot `extra` de RollFlowShell ; l'étape courante = un jet standard du flot de base. Marge sous
+   le slot `extra` de RollShell ; l'étape courante = un jet standard du flot de base. Marge sous
    la pile pour la séparer du jet actif. */
 .roll-modal .mrl { margin-bottom: 10px; }
 

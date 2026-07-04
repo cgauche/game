@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -26,20 +26,43 @@ export function FrenzyModal() {
   const c = battle.combatants.find((x) => x.id === pf.combatantId);
   if (!c) return null;
   const r = pf.result;
+  const rolled = !!r;
+
+  const actorRow: RollRowData = {
+    actor: c,
+    row: {
+      combatant: c,
+      d: r ? testBreakdown('Force Mentale', effectiveChar(c, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined,
+      pending: testPending('Force Mentale', effectiveChar(c, 'FM')),
+    },
+    rolled,
+    fortune: c.fortune ?? 0,
+    freeReroll: freeRerollOf(c),
+    rerollable: !!r && !r.success && canReroll(true, !!pf.rerolled),
+    onRoll: roll,
+    onReroll: reroll,
+    darkPactable: !!r && !r.success && c.kind === 'hero',
+    onDarkPact: darkPact,
+    resilience: c.resilience ?? 0,
+    onForce: force,
+    forceShow: !r?.success,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
 
   return (
-    <RollFlowShell
+    <RollShell
       title="🐗 Frénésie"
       subtitle={
         <>
           <strong>{c.name}</strong> tente d'entrer en Frénésie (Test de Force Mentale)
         </>
       }
-      rolled={!!r}
-      onRoll={roll}
-      onCancel={cancel}
-      breakdown={r ? testBreakdown('Force Mentale', effectiveChar(c, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined}
-      pending={testPending('Force Mentale', effectiveChar(c, 'FM'))}
+      rows={[actorRow]}
+      rolled={rolled}
       outcome={r && (
         <JournalLine
           className="rm-journal"
@@ -47,16 +70,8 @@ export function FrenzyModal() {
           combatants={battle.combatants}
         />
       )}
-      fortune={c.fortune ?? 0}
-      freeReroll={freeRerollOf(c)}
-      rerollable={!!r && !r.success && canReroll(true, !!pf.rerolled)}
-      onReroll={reroll}
-      darkPactable={!!r && !r.success && c.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={c.resilience ?? 0}
-      onForce={force}
-      forceShow={!r?.success}
-      onConfirm={confirm}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }

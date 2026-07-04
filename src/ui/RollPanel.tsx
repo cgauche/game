@@ -8,7 +8,7 @@ import { TeamPortrait } from './TeamPortrait';
  * LE panneau de jet unique — même géométrie AVANT et APRÈS le jet (l'avant-jet est le même bloc
  * que le résultat, pré-rempli). Une ligne par participant : portrait d'équipe · compétence ·
  * base+mods=cible · 🎲 dé · DR. Utilisé par TOUTES les modales de jet (attaque, défense, tests,
- * flux `RollFlowShell`…).
+ * flux `RollShell`…).
  *
  * - `d` rempli → `RollLine` ; sinon `pending` → `PendingRollLine` (dé/DR vides).
  * - Test opposé post-jet : `winnerIndex` accentue la ligne gagnante (`.rr-win`) et atténue la

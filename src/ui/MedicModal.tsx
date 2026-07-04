@@ -5,11 +5,11 @@ import { TeamPortrait } from './TeamPortrait';
 import { Coins } from './Coins';
 import { DrBar } from './DrBar';
 import { HealRollFlow } from './HealModal';
-import { RollFlowShell } from './RollFlowShell';
+import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { isHealable, availableHealModes, type HealMode } from '../engine/healing';
+import { isHealable, type HealMode } from '../engine/healing';
 import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas } from '../engine/trauma';
 import { bestHealerFor } from '../state/medicFlow';
 import { toMoney } from '../engine/money';
@@ -60,8 +60,33 @@ function SurgeryRollFlow() {
   const surgeon = party.find((c) => c.id === ps.healerId); // absent (PNJ médecin) → Chance/Résilience à 0
   const fortune = surgeon?.fortune ?? 0;
   const rolled = ps.roll != null;
+  const freeReroll = freeRerollOf(surgeon);
+  const actorRow: RollRowData = {
+    actor: surgeon,
+    row: {
+      combatant: surgeon,
+      d: rolled ? testBreakdown('Guérison', ps.skillValue, { roll: ps.roll!, target: ps.target, sl: ps.sl, success: ps.success }, ps.difficulty) : undefined,
+      pending: testPending('Guérison', ps.skillValue, ps.target, ps.difficulty),
+    },
+    rolled,
+    fortune,
+    freeReroll,
+    rerollable: rolled && canReroll(ps.roll! > ps.target, !!ps.rerolled) && (fortune > 0 || freeReroll),
+    onRoll: roll,
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: rolled && ps.roll! > ps.target && surgeon?.kind === 'hero',
+    onDarkPact: darkPact,
+    resilience: surgeon?.resilience ?? 0,
+    onForce: force,
+    forceShow: !ps.success,
+  };
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Arrêter l’opération', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer la passe', kind: 'primary', onClick: next, when: 'post' },
+  ];
   return (
-    <RollFlowShell
+    <RollShell
       embedded
       title="🔪 Opérer (une passe)"
       subtitle={
@@ -70,24 +95,10 @@ function SurgeryRollFlow() {
           <span className="rm-weapon">(Guérison, Intermédiaire +0)</span>
         </>
       }
+      rows={[actorRow]}
       rolled={rolled}
-      onRoll={roll}
-      onCancel={cancel}
-      cancelLabel="Arrêter l’opération"
-      breakdown={rolled ? testBreakdown('Guérison', ps.skillValue, { roll: ps.roll!, target: ps.target, sl: ps.sl, success: ps.success }, ps.difficulty) : undefined}
-      pending={testPending('Guérison', ps.skillValue, ps.target, ps.difficulty)}
-      fortune={fortune}
-      freeReroll={freeRerollOf(surgeon)}
-      rerollable={rolled && canReroll(ps.roll! > ps.target, !!ps.rerolled) && (fortune > 0 || freeRerollOf(surgeon))}
-      onReroll={reroll}
-      onBonusSL={bonusSL}
-      darkPactable={rolled && ps.roll! > ps.target && surgeon?.kind === 'hero'}
-      onDarkPact={darkPact}
-      resilience={surgeon?.resilience ?? 0}
-      onForce={force}
-      forceShow={!ps.success}
-      confirmLabel="Appliquer la passe"
-      onConfirm={next}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
     />
   );
 }
