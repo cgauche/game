@@ -12,8 +12,7 @@ import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../..
 import { attackModesFor } from '../../engine/combatFeatures/dispatch';
 import { CritLocationPicker } from '../ForcedRollPicker';
 import { DeterminationButton } from '../DeterminationButton';
-import { RollFlowShell } from '../RollFlowShell';
-import { RollPanel } from '../RollPanel';
+import { RollShell, type RollRowData, type RollAction } from '../RollShell';
 import { VsHeader } from '../VsHeader';
 import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
@@ -21,12 +20,14 @@ import { ev } from '../../state/combatLog';
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
 /**
- * PARAMÉTRAGE de la coquille partagée `RollFlowShell` pour le JET d'attaque — extrait de `RollModal`
+ * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'attaque — extrait de `RollModal`
  * pour être réutilisé à l'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet via ce
- * hook, sans démonter la coquille → une seule fenêtre). Renvoie les props de `RollFlowShell`, ou
+ * hook, sans démonter la coquille → une seule fenêtre). Renvoie les props de `RollShell`, ou
  * `null` si aucune attaque en attente. AUCUNE mécanique générique réécrite : que du métier d'attaque.
+ * La rangée [0] = MON attaque (interactive, cycle d'influence) ; la rangée [1] éventuelle = défense
+ * adverse (aperçu pré-jet / résultat témoin) — figée (`interactive:false`).
  */
-export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null {
+export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const pa = useGame((s) => s.pendingAttack);
   const battle = useGame((s) => s.battle);
   const setLocation = useGame((s) => s.attackSetLocation);
@@ -54,6 +55,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   // Armes choisissables du loadout actif (hors Mains nues) : ≥2 → sélecteur d'arme d'attaque (main secondaire -20).
   const pickable = attacker.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const res = pa.result;
+  const rolled = !!res;
   // Maniement de deux armes (LDB 10 l.638) : proposé seulement à un héros qui a le talent ET tient 2 armes de
   // MÊLÉE à 1 main, sur l'attaque-ACTION (jamais une frappe gratuite/enchaînée — ni cleave, ni 2ᵉ frappe).
   const dualEligible = !res && attacker.kind === 'hero' && attackModesFor(attacker).includes('dual-wield')
@@ -89,6 +91,48 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
       ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon) } : undefined)
       : isInanimate(target) ? undefined : previewDefense(target); // OBJET INANIMÉ (structure/véhicule/affût) : aucune Parade/Esquive → pas de ligne de défense
   const forcedDie = FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
+
+  // Bloqué (pas de ligne de vue / hors de portée) : pas de jet possible → rangée sans ligne, message seul.
+  const blocked = preview && (preview.blocked || !preview.inRange);
+
+  // Rangée [0] = MON attaque (interactive, cycle d'influence).
+  const attackerRow: RollRowData = {
+    actor: attacker,
+    row: res
+      ? { combatant: attacker, d: res.attackerDetail }
+      : blocked
+        ? { combatant: attacker }
+        : {
+            combatant: attacker,
+            pending: {
+              label: preview!.kind === 'ranged' ? 'Projectiles' : 'Corps à corps',
+              base: combatValue(attacker, preview!.kind, weapon),
+              target: Math.max(0, Math.min(100, preview!.target)),
+              mods: preview!.mods,
+            },
+          },
+    rolled,
+    rollFrisson: true,
+    fortune: attacker.fortune ?? 0,
+    freeReroll: freeRerollOf(attacker),
+    rerollable,
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success,
+    onDarkPact: darkPact,
+    resilience: attacker.resilience ?? 0,
+    onForce: forceSuccess,
+    preRollForce: () => { roll(); forceSuccess(); },
+    forceShow: !!res && !res.hit,
+    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
+    onRoll: roll,
+  };
+  // Rangée [1] éventuelle = défense adverse : aperçu pré-jet (compétence + mods, sans valeur) ou résultat témoin.
+  const defenderRow: RollRowData | null = res
+    ? (res.defenderDetail ? { row: { combatant: target, d: res.defenderDetail }, rolled, interactive: false } : null)
+    : (!blocked && defenderPending ? { row: { combatant: target, pending: { ...defenderPending, hideValue: true } }, rolled, interactive: false } : null);
+  const rows = [attackerRow, ...(defenderRow ? [defenderRow] : [])];
+
   return {
     title: 'Attaque',
     subtitle: null,
@@ -99,10 +143,9 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
         label={<>{weapon?.name ?? 'Mains nues'}{preview ? <> · Dégâts +{preview.dmg}</> : null}</>}
       />
     ),
-    rolled: !!res,
-    onRoll: roll,
-    rollFrisson: true,
+    rolled,
     onCancel: cancel,
+    /* Options d'attaque + aperçu de la défense adverse + bouton Détermination (retirer un État), pré-jet. */
     setup: (
       <>
         <div className="rm-options">
@@ -203,52 +246,29 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
             </div>
           )}
         </div>
-        {preview && (preview.blocked || !preview.inRange ? (
-          <div className="rm-blocked">⛔ {preview.blocked ? 'Pas de ligne de vue' : 'Hors de portée'}</div>
-        ) : (
-          <RollPanel
-            rows={[
-              {
-                combatant: attacker,
-                pending: {
-                  label: preview.kind === 'ranged' ? 'Projectiles' : 'Corps à corps',
-                  base: combatValue(attacker, preview.kind, weapon),
-                  target: Math.max(0, Math.min(100, preview.target)),
-                  mods: preview.mods,
-                },
-              },
-              ...(defenderPending ? [{ combatant: target, pending: { ...defenderPending, hideValue: true } }] : []),
-            ]}
-          />
-        ))}
+        {blocked && (
+          <div className="rm-blocked">⛔ {preview!.blocked ? 'Pas de ligne de vue' : 'Hors de portée'}</div>
+        )}
+        <DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />
       </>
     ),
-    preInfluence: <DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />,
-    rows: res ? [{ combatant: attacker, d: res.attackerDetail }, ...(res.defenderDetail ? [{ combatant: target, d: res.defenderDetail }] : [])] : undefined,
+    rows,
     winnerIndex: res?.defenderDetail ? (res.hit ? 0 : 1) : undefined,
     netSL: res?.defenderDetail ? res.netSL : undefined,
     // Issue = LA ligne de journal du moteur (`res.log` : « X touche Y (loc) : N − (BE+PA) = Z Blessures »),
     // pas une ligne condensée dupliquée. Source unique, le calcul des Dégâts est visible dans la popin.
-    outcome: res ? (
+    // Rendue en `postRollExtra` (2 rangées possibles → `outcome` du shell ne s'affiche qu'en mono).
+    postRollExtra: res ? (
       <JournalLine
         className="rm-journal"
         event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
         combatants={battle.combatants}
       />
     ) : undefined,
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
     forcedExtra: res?.critical && pa.forced ? <CritLocationPicker current={res.critLocation} onSet={setCritLocation} shape={target.bodyShape} /> : undefined,
-    fortune: attacker.fortune ?? 0,
-    freeReroll: freeRerollOf(attacker),
-    rerollable,
-    onReroll: reroll,
-    onBonusSL: bonusSL,
-    darkPactable: attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success,
-    onDarkPact: darkPact,
-    resilience: attacker.resilience ?? 0,
-    onForce: forceSuccess,
-    preRollForce: () => { roll(); forceSuccess(); },
-    forceShow: !!res && !res.hit,
-    onConfirm: confirm,
+    actions: [
+      { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' } as RollAction,
+      { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+    ],
   };
 }

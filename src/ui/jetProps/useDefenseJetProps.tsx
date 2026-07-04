@@ -7,24 +7,23 @@ import { findSkillById } from '../../data/index';
 import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
-import { RollFlowShell } from '../RollFlowShell';
+import { RollShell, type RollAction } from '../RollShell';
 import { OptionChooser } from '../OptionChooser';
 import { optionValue } from '../breakdown';
-import { RollPanel } from '../RollPanel';
 import { VsHeader } from '../VsHeader';
 import { DeterminationButton } from '../DeterminationButton';
 import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
 
 /**
- * PARAMÉTRAGE de la coquille partagée `RollFlowShell` pour le JET de défense réactive — extrait de
+ * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de défense réactive — extrait de
  * `DefenseModal` pour être rendu à l'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet
  * `jet:'defense'` via ce hook, sans démonter la coquille → la défense ET son Critique/Maladresse vivent
- * dans UNE seule fenêtre). Renvoie les props de `RollFlowShell`, ou `null` si aucune défense en attente.
- * La ligne de l'ATTAQUANT est FIGÉE ; MA ligne se met à jour selon Parade/Esquive ; « Subir » = passif.
- * AUCUNE mécanique générique (frisson, influence, pickers) réécrite : que du métier de défense.
+ * dans UNE seule fenêtre). Renvoie les props de `RollShell`, ou `null` si aucune défense en attente.
+ * La rangée de l'ATTAQUANT est FIGÉE (`interactive:false`) ; MA rangée porte le cycle d'influence ;
+ * « Subir » = passif. AUCUNE mécanique générique (frisson, influence, pickers) réécrite : que du métier.
  */
-export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | null {
+export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const pd = useGame((s) => s.pendingDefense);
   const battle = useGame((s) => s.battle);
   const setMode = useGame((s) => s.defenseSetMode);
@@ -43,6 +42,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | nul
   const defender = battle.combatants.find((c) => c.id === pd.defenderId);
   if (!attacker || !defender) return null;
   const res = pd.result;
+  const rolled = !!res;
   const rerollable = !!res && canReroll(!pd.def?.success, !!pd.rerolled);
   // Armes pouvant parer (hors Mains nues) ; arme de parade choisie (défaut = main principale).
   const parryPickable = defender.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
@@ -65,17 +65,60 @@ export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | nul
   // `pd.modes` (tir) limite les réactions proposées ; absent = mêlée (Parade + Esquive). Filtre seul.
   const allowMode = (m: 'parade' | 'esquive') => !pd.modes || pd.modes.includes(m);
 
+  // Rangée [0] = TÉMOIN : l'attaque FIGÉE (jet déjà eu lieu, aucun bouton).
+  const attackerRow = {
+    row: {
+      combatant: attacker,
+      d: res
+        ? res.attackerDetail
+        : {
+            label: pd.freeKind ? FREE_ATTACK_LABEL[pd.freeKind] ?? 'Attaque gratuite' : 'Attaque',
+            base: pd.atk.target,
+            modifier: 0,
+            target: pd.atk.target,
+            roll: pd.atk.roll,
+            success: pd.atk.success,
+            sl: pd.atk.sl,
+          },
+    },
+    rolled,
+    interactive: false as const,
+  };
+  // Rangée [1] = INTERACTIVE : MA défense (pré-remplie puis résolue), porteuse du cycle d'influence.
+  const defenderRow = {
+    actor: defender,
+    row: res
+      ? { combatant: defender, d: res.defenderDetail }
+      : { combatant: defender, pending: { label: myLabel, base: myBase, mods: myMods } },
+    rolled,
+    onRoll: roll,
+    rollFrisson: true,
+    fortune: defender.fortune ?? 0,
+    freeReroll: freeRerollOf(defender),
+    rerollable,
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: defender.kind === 'hero' && !pd.def?.success,
+    onDarkPact: darkPact,
+    resilience: defender.resilience ?? 0,
+    onForce: forceSuccess,
+    preRollForce: () => { roll(); forceSuccess(); },
+    forceShow: !!res && res.hit,
+    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
+  };
+
+  const actions: RollAction[] = [
+    { key: 'subir', label: 'Subir', kind: 'ghost', onClick: subir, title: 'Subir l’attaque sans te défendre', when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
+
   return {
     title: 'Défense',
     subtitle: null,
     extra: <VsHeader actor={attacker} target={defender} label={pd.weapon?.name ?? 'Mains nues'} verb="attaque →" />,
-    rolled: !!res,
-    onRoll: roll,
-    rollFrisson: true,
-    onCancel: subir,
-    cancelLabel: 'Subir',
-    cancelTitle: 'Subir l’attaque sans te défendre',
     disableEscClose: true,
+    rolled,
+    /* Options pré-jet (Parade/Esquive/social + arme de parade) + bouton Détermination (retirer un État). */
     setup: (
       <>
         <div className="rm-options">
@@ -105,49 +148,19 @@ export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | nul
             </div>
           )}
         </div>
-        {/* Le panneau pré-rempli : ligne attaquant FIGÉE (jet déjà eu lieu), ma ligne en attente. */}
-        <RollPanel
-          rows={[
-            {
-              combatant: attacker,
-              d: {
-                label: pd.freeKind ? FREE_ATTACK_LABEL[pd.freeKind] ?? 'Attaque gratuite' : 'Attaque',
-                base: pd.atk.target,
-                modifier: 0,
-                target: pd.atk.target,
-                roll: pd.atk.roll,
-                success: pd.atk.success,
-                sl: pd.atk.sl,
-              },
-            },
-            { combatant: defender, pending: { label: myLabel, base: myBase, mods: myMods } },
-          ]}
-        />
+        <DeterminationButton combatant={defender} onSpend={(name) => spendResolve(defender.id, name)} />
       </>
     ),
-    preInfluence: <DeterminationButton combatant={defender} onSpend={(name) => spendResolve(defender.id, name)} />,
-    rows: res ? [{ combatant: attacker, d: res.attackerDetail }, { combatant: defender, d: res.defenderDetail }] : undefined,
+    rows: [attackerRow, defenderRow],
     winnerIndex: res?.defenderDetail ? (res.hit ? 0 : 1) : undefined,
     netSL: res?.defenderDetail ? res.netSL : undefined,
-    outcome: res && (
+    postRollExtra: res ? (
       <JournalLine
         className="rm-journal"
         event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', res.log, attacker.id, defender.id)}
         combatants={battle.combatants}
       />
-    ),
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
-    fortune: defender.fortune ?? 0,
-    freeReroll: freeRerollOf(defender),
-    rerollable,
-    onReroll: reroll,
-    onBonusSL: bonusSL,
-    darkPactable: defender.kind === 'hero' && !pd.def?.success,
-    onDarkPact: darkPact,
-    resilience: defender.resilience ?? 0,
-    onForce: forceSuccess,
-    preRollForce: () => { roll(); forceSuccess(); },
-    forceShow: !!res && res.hit,
-    onConfirm: confirm,
+    ) : undefined,
+    actions,
   };
 }
