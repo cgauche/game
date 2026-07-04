@@ -2851,6 +2851,7 @@ export function createCombatSlice(get: Get, set: Set) {
           target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS.intermediaire)),
           isDouble: false, roll: null, success: false, sl: 0,
           combatAdvantage: { combatantId: active.id, cap },
+          cancellable: true, // action de combat : annulable pré-jet (Action pas encore dépensée)
         },
         battle: { ...battle, action: null },
       });

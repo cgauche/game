@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
-import { RollShell } from '../RollShell';
+import { RollShell, type RollAction } from '../RollShell';
 import { PortraitPicker } from '../PortraitPicker';
 import { testBreakdown, testPending } from '../breakdown';
 import { JournalLine } from '../NarratedLine';
@@ -32,6 +32,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const forceSuccess = useGame((s) => s.testForceSuccess);
   const setActor = useGame((s) => s.testSetActor);
   const resolve = useGame((s) => s.resolveTest);
+  const cancel = useGame((s) => s.testCancel);
   if (!pt) return null;
   const rolled = pt.roll != null;
   const actor = party.find((c) => c.id === pt.actorId);
@@ -40,6 +41,10 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const pendingLine = testPending(skillLabel, pt.skillValue, pt.target, pt.difficulty);
   // Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double, pilotée par la règle.
   const amazing = rule('test-critiques-doubles') ? amazingTestLabel(pt) : null;
+  // Barre : « Continuer » post-jet + « Annuler » pré-jet SI le test est annulable (action de COMBAT ;
+  // referme la cascade sans dépenser l'Action). Les tests de dialogue/scène n'ont pas `cancellable`.
+  const actions: RollAction[] = [{ key: 'confirm', label: 'Continuer', kind: 'primary', onClick: resolve, when: 'post' }];
+  if (pt.cancellable) actions.unshift({ key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' });
 
   return {
     variant: 'test',
@@ -101,6 +106,8 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         </span>
       </div>
     ) : undefined,
-    actions: [{ key: 'confirm', label: 'Continuer', kind: 'primary', onClick: resolve, when: 'post' }],
+    actions,
+    /* Échap = Annuler, seulement si le test est annulable (pré-jet ; RollShell ne l'attache pas post-jet). */
+    onCancel: pt.cancellable ? cancel : undefined,
   };
 }

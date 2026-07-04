@@ -127,6 +127,10 @@ export interface PendingTest {
    *  (via `gainAdvantage`, qui respecte AUSSI le plafond général d'Avantage). Consomme l'Action, réussi
    *  ou non (« Chaque Round que vous passez à… »). Absent = Test ordinaire. */
   combatAdvantage?: { combatantId: string; cap: number };
+  /** Test initié en COMBAT (Cumuler l'Avantage…) : annulable pré-jet (« Annuler » referme la cascade ;
+   *  l'Action n'est pas encore dépensée, rien à rembourser). Absent = test de dialogue/scène → NON
+   *  annulable (la branche onSuccess/onFailure doit se résoudre). */
+  cancellable?: boolean;
 }
 /** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
  *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */

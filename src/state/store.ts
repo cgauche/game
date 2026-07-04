@@ -1861,7 +1861,8 @@ export const useGame = create<GameState>((set, get) => ({
     });
   },
   // Test de scène (hors combat) : Lancer / Chance (relance / +1 DR) / Pacte — Résilience plus haut.
-  ...rollFlowActions('test', FLOWS.test, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
+  // `cancel` : referme la cascade quand le test est annulable (action de combat, `pendingTest.cancellable`).
+  ...rollFlowActions('test', FLOWS.test, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'cancel']),
   testDetermination: () => {
     const pt = get().pendingTest;
     if (!pt || pt.roll != null || !pt.psychMod) return; // AVANT le jet, et seulement si un malus psy pèse
