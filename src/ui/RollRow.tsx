@@ -1,12 +1,11 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
-import { bus, EVT } from '../state/bus';
 import { RollPanel, type RollRowData } from './RollPanel';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
 import { ForcedRollPicker } from './ForcedRollPicker';
+import { useRollFrisson } from './useRollFrisson';
 
 /**
  * Une RANGÉE de jet (mono OU participant d'un flux MULTI), pendant UI de la fabrique `makeRollFlow`
@@ -39,19 +38,12 @@ export function RollRow({
   determination,
   resist,
   rollFrisson = false,
+  rollInBar = false,
   winner,
   extra,
 }: RollRowProps) {
-  const [rolling, setRolling] = useState(false);
-  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  // Frisson du jet : beat cosmétique avant le jet réel (seeded). Sans `rollFrisson` → immédiat.
-  const doRoll = () => {
-    bus.emit(EVT.DICE_ROLL);
-    if (!onRoll) return;
-    if (!rollFrisson || reduceMotion) return onRoll();
-    setRolling(true);
-    window.setTimeout(() => { setRolling(false); onRoll(); }, 480);
-  };
+  // Frisson du jet (helper partagé avec le bouton « Lancer » hissé dans la barre du RollShell).
+  const { rolling, trigger: doRoll } = useRollFrisson(onRoll, { frisson: rollFrisson });
   const resil = resilience ?? actor?.resilience ?? 0;
   const determineBtn = determination && determination.resolve > 0 && (
     <button
@@ -69,7 +61,9 @@ export function RollRow({
       <RollPanel rows={[row]} winnerIndex={winner === 'win' ? 0 : winner === 'lose' ? 1 : null} />
       {extra}
       {interactive && !rolled && (
-        rolling ? (
+        // `rollInBar` : la coquille (RollShell) rend le « Lancer » ET son spinner dans `.modal-actions`
+        // (cas mono, une seule rangée à lancer) → la rangée n'affiche plus que ses contrôles pré-jet.
+        rolling && !rollInBar ? (
           <div className="rm-rolling"><span className="rm-die">🎲</span></div>
         ) : (
           <div className="prow-act">
@@ -79,7 +73,7 @@ export function RollRow({
             {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
             {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
             {determineBtn}
-            {onRoll && <button className="btn small btn-primary" onClick={doRoll}>{rollLabel}</button>}
+            {onRoll && !rollInBar && <button className="btn small btn-primary" onClick={doRoll}>{rollLabel}</button>}
           </div>
         )
       )}
@@ -140,6 +134,10 @@ export interface RollRowProps {
   resist?: { menace: string; onResist: () => void };
   /** Anime le jet (« frisson » ~480 ms) avant de résoudre. Honore reduced-motion. */
   rollFrisson?: boolean;
+  /** La coquille (`RollShell`, cas mono) rend « Lancer » + son spinner dans `.modal-actions` :
+   *  la rangée n'affiche alors NI le bouton inline NI le spinner (le reste — influence, Résilience
+   *  pré-jet, résistance — inchangé). Le shell le pose lui-même ; les hooks/modales n'y touchent pas. */
+  rollInBar?: boolean;
   /** Test opposé : accent de CETTE rangée (`'win'` = gagnante accentuée, `'lose'` = perdante atténuée).
    *  Traduit en `winnerIndex` du panneau mono. Absent/`null` → pas d'accent (jet non opposé). */
   winner?: 'win' | 'lose' | null;

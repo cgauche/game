@@ -30,9 +30,10 @@ const rolledRow = (over: Partial<RollRowData> = {}): RollRowData => ({
   ...over,
 });
 
+// Les hooks/modales NE fournissent PLUS de « Lancer » : la coquille le hisse dans `.modal-actions`
+// pour le cas mono. Les actions sont donc seulement Annuler (pré) + Appliquer (post).
 const actions: RollAction[] = [
   { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: noop, when: 'pre' },
-  { key: 'roll', label: '🎲 Lancer', kind: 'primary', onClick: noop, when: 'pre' },
   { key: 'apply', label: 'Appliquer', kind: 'primary', onClick: noop, when: 'post' },
 ];
 
@@ -40,8 +41,24 @@ function render(node: React.ReactElement) {
   return renderToStaticMarkup(node);
 }
 
+/** Extrait le contenu de la barre `.modal-actions` (div à profondeur équilibrée) pour vérifier OÙ est un bouton. */
+function actionsBar(html: string): string {
+  const start = html.indexOf('<div class="modal-actions">');
+  if (start < 0) return '';
+  const contentStart = start + '<div class="modal-actions">'.length;
+  let depth = 1;
+  const re = /<div\b|<\/div>/g;
+  re.lastIndex = contentStart;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) {
+    depth += m[0] === '</div>' ? -1 : 1;
+    if (depth === 0) return html.slice(contentStart, m.index);
+  }
+  return html.slice(contentStart);
+}
+
 describe('RollShell — coquille de jet unifiée', () => {
-  it('(a) mono : 1 rangée interactive pré-jet → boutons d’influence (Lancer) présents', () => {
+  it('(a) mono : 1 rangée interactive pré-jet → « Lancer » HISSÉ dans la barre `.modal-actions`', () => {
     const html = render(
       <RollShell
         title="Test mono"
@@ -53,9 +70,38 @@ describe('RollShell — coquille de jet unifiée', () => {
       />,
     );
     expect(html).toContain('Un jet');
-    expect(html).toContain('Lancer'); // bouton de jet de la rangée interactive
     expect(html).toContain('45'); // cible pré-jet
     expect(html).not.toContain('Appliquer'); // action 'post' masquée pré-jet
+    // Le « Lancer » vit désormais dans `.modal-actions` (même niveau qu'Annuler), plus dans la rangée.
+    const bar = actionsBar(html);
+    expect(bar).toContain('Lancer'); // Lancer hissé DANS la barre
+    expect(bar).toContain('Annuler'); // à côté d'Annuler (pré-jet)
+    // La rangée (`prow-act`) ne rend plus le bouton Lancer inline.
+    const beforeBar = html.slice(0, html.indexOf('<div class="modal-actions">'));
+    expect(beforeBar).not.toContain('Lancer');
+  });
+
+  it('(f) mono : « Lancer » dans la barre, pré-jet — masqué après le jet', () => {
+    const pre = render(<RollShell title="T" rows={[pendingRow()]} rolled={false} actions={actions} onCancel={noop} />);
+    const post = render(<RollShell title="T" rows={[rolledRow()]} rolled actions={actions} onCancel={noop} />);
+    expect(actionsBar(pre)).toContain('Lancer'); // hissé pré-jet
+    expect(post).not.toContain('🎲 Lancer'); // rien à hisser post-jet (rangée déjà lancée)
+  });
+
+  it('(g) multi : 2 rangées interactives non lancées → « Lancer » PAR RANGÉE, PAS hissé dans la barre', () => {
+    const html = render(
+      <RollShell
+        title="Multi"
+        rows={[pendingRow(), pendingRow({ row: { pending: testPending('Voile', 50) } })]}
+        rolled={false}
+        actions={actions}
+        onCancel={noop}
+      />,
+    );
+    // ≥2 rangées à lancer → aucun hissage : le Lancer reste dans les rangées (`prow-act`), pas dans la barre.
+    expect(actionsBar(html)).not.toContain('Lancer');
+    const beforeBar = html.slice(0, html.indexOf('<div class="modal-actions">'));
+    expect(beforeBar).toContain('Lancer'); // les deux boutons de rangée
   });
 
   it('(b) multi : 2 rangées + summary rendu', () => {
@@ -112,16 +158,19 @@ describe('RollShell — coquille de jet unifiée', () => {
     expect(html.match(/rm-netsl/g)?.length).toBe(1);
   });
 
-  it('(d) actions filtrées par phase : when=pre disparaît après jet, when=post apparaît', () => {
+  it('(d) actions filtrées par phase : Annuler (pre) disparaît après jet, Appliquer (post) apparaît', () => {
     const pre = render(
       <RollShell title="T" rows={[pendingRow()]} rolled={false} actions={actions} onCancel={noop} />,
     );
     const post = render(
       <RollShell title="T" rows={[rolledRow()]} rolled actions={actions} onCancel={noop} />,
     );
-    expect(pre).toContain('🎲 Lancer'); // when:'pre'
+    expect(pre).toContain('Annuler'); // when:'pre'
     expect(pre).not.toContain('Appliquer'); // when:'post' masqué
     expect(post).toContain('Appliquer'); // when:'post'
-    expect(post).not.toContain('🎲 Lancer'); // when:'pre' masqué (l'action, pas le bouton de rangée)
+    expect(post).not.toContain('Annuler'); // when:'pre' masqué
+    // Le « Lancer » hissé (mono) suit la même phase : présent pré-jet, absent post-jet.
+    expect(pre).toContain('🎲 Lancer');
+    expect(post).not.toContain('🎲 Lancer');
   });
 });

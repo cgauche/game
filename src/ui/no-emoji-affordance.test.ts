@@ -134,6 +134,7 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/RollLine.tsx',
   'src/ui/RollPanel.tsx',
   'src/ui/RollRow.tsx',
+  'src/ui/RollShell.tsx', // 🎲 du « Lancer » hissé dans la barre (cas mono) — même affordance que RollRow
   'src/ui/RunModal.tsx',
   'src/ui/SeaActivitiesModal.tsx',
   'src/ui/ShantyModal.tsx',

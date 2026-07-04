@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Modal } from './Modal';
 import { RollRow, type RollRowProps } from './RollRow';
+import { useRollFrisson } from './useRollFrisson';
 
 /**
  * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
@@ -95,6 +96,15 @@ export function RollShell({
 }) {
   const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
   const single = rows.length === 1;
+  // « Lancer » hissé dans la barre (cas MONO). On hisse quand EXACTEMENT UNE rangée est à lancer :
+  // interactive (≠ false), non lancée, et porteuse d'un `onRoll`. Le multi (≥2 rangées à lancer)
+  // garde son « Lancer » par rangée + « Tout lancer » → 0 hissé. Opposé (1 interactive + 1 témoin
+  // sans onRoll) → 1 seule à lancer → hissé, correct.
+  const rollableIdx = rows.map((r, i) => (r.interactive !== false && !(r.rolled ?? rolled) && r.onRoll ? i : -1)).filter((i) => i >= 0);
+  const hoistIdx = rollableIdx.length === 1 ? rollableIdx[0] : -1;
+  const hoistRow = hoistIdx >= 0 ? rows[hoistIdx] : undefined;
+  // Hook appelé INCONDITIONNELLEMENT (règles des hooks) : no-op quand rien à hisser.
+  const hoist = useRollFrisson(hoistRow?.onRoll, { frisson: hoistRow?.rollFrisson });
   // Échap = annuler seulement pré-jet. JAMAIS pendant le frisson : le frisson est LOCAL à la rangée
   // (RollRow), l'enveloppe n'a pas à l'attendre ; un bouton Annuler post-jet porte sa visibilité via `when`.
   const escClose = disableEscClose ? undefined : (!rolled ? onCancel : undefined);
@@ -111,7 +121,7 @@ export function RollShell({
           // Test opposé (≥2 rangées, post-jet) : la rangée `winnerIndex` est accentuée, les autres atténuées.
           // Une rangée qui porte déjà son propre `winner` reste prioritaire.
           const winner = rolled && winnerIndex != null && rows.length > 1 ? (i === winnerIndex ? 'win' : 'lose') : null;
-          return <RollRow key={key ?? i} {...rest} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} />;
+          return <RollRow key={key ?? i} {...rest} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} />;
         })}
       </div>
       {single && outcome}
@@ -125,6 +135,17 @@ export function RollShell({
       {postRollExtra}
       {forcedExtra}
       <div className="modal-actions">
+        {/* « Lancer » HISSÉ (mono) : au MÊME niveau qu'Annuler/Appliquer, en TÊTE des actions pré-jet.
+            Pendant le frisson, le spinner remplace le bouton (même markup qu'en rangée, juste déplacé). */}
+        {hoistIdx >= 0 && !rolled && (
+          hoist.rolling ? (
+            <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+          ) : (
+            <button key="roll" className="btn btn-primary" onClick={() => hoist.trigger()}>
+              {hoistRow?.rollLabel ?? '🎲 Lancer'}
+            </button>
+          )
+        )}
         {shownActions.map((a) => (
           <button
             key={a.key}
