@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { injuryOverlaysFor, injuryAppearance } from './injuries';
+import { traumaById } from '../../../engine/trauma';
 import type { Combatant, Trauma, ItemInstance } from '../../../engine/types';
 import type { Appearance } from '../appearance';
 
@@ -11,7 +12,8 @@ const item = (trappingId: string, equipped = true): ItemInstance =>
   ({ uid: trappingId, trappingId, name: trappingId, kind: 'misc', qualities: [], enc: 0, equipped }) as unknown as ItemInstance;
 
 const MAIN_D = t({ label: 'Main/bras amputé (brasD)', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] });
-const JAMBE_G = t({ label: 'Membre inférieur amputé (jambeG)', location: 'jambeG', ops: [{ op: 'moveScale', num: 1, den: 2 }] });
+// Fiches réelles (traumas.json) via traumaById() : label + traumaId + ops COHÉRENTS avec le catalogue.
+const JAMBE_G = traumaById('membre-inferieur-ampute', undefined, 'jambeG');
 
 describe('visuels des amputations/prothèses (injuries)', () => {
   it('sans trauma → rien', () => {
@@ -36,7 +38,7 @@ describe('visuels des amputations/prothèses (injuries)', () => {
 
   it('œil perdu : REMPLACE l’œil peint en place (cicatrice → cache-œil → œil de verre)', () => {
     const APP = { species: 'Humain', sex: 'M', build: 0.5 } as Appearance;
-    const eye = t({ label: 'Œil perdu' });
+    const eye = traumaById('oeil-perdu', undefined, 'tete');
     expect(injuryAppearance(APP, mk([eye])).eyes?.G).toContain('data-injury="oeil-perdu"');
     expect(injuryAppearance(APP, mk([eye], [item('cache-oeil')])).eyes?.G).toContain('data-injury="cache-oeil"');
     expect(injuryAppearance(APP, mk([eye], [item('oeil-de-verre')])).eyes?.G).toContain('data-injury="oeil-de-verre"');
@@ -46,7 +48,8 @@ describe('visuels des amputations/prothèses (injuries)', () => {
 
   it('Cécité : bandage sur le visage (et pas de remplacement d’œil)', () => {
     const APP = { species: 'Humain', sex: 'M', build: 0.5 } as Appearance;
-    const blindT = [t({ label: 'Œil perdu' }), t({ label: 'Œil perdu' }), t({ label: 'Cécité' })];
+    const eye = traumaById('oeil-perdu', undefined, 'tete');
+    const blindT = [eye, eye, traumaById('cecite', undefined, 'tete')];
     const blind = injuryOverlaysFor(mk(blindT));
     expect(blind.filter((o) => o.bone === 'tete').length).toBe(1);
     expect(blind[0].svg).toContain('data-injury="cecite"');
@@ -55,8 +58,30 @@ describe('visuels des amputations/prothèses (injuries)', () => {
   });
 
   it('nez : trou sombre, ou nez doré si porté', () => {
-    const nez = t({ label: 'Nez amputé' });
+    const nez = traumaById('nez-ampute', undefined, 'tete');
     expect(injuryOverlaysFor(mk([nez]))[0].svg).toContain('data-injury="nez-ampute"');
     expect(injuryOverlaysFor(mk([nez], [item('nez-dore')]))[0].svg).toContain('data-injury="nez-dore"');
+  });
+
+  it('pilotage par `traumaId`, PAS par le libellé (garde anti-régression i18n)', () => {
+    // DÉCOY : libellé bidon/anglais, traumaId correct → l'overlay/apparence doit quand même sortir.
+    const decoyJambe: Trauma = { ...traumaById('membre-inferieur-ampute', undefined, 'jambeD'), label: 'GARBAGE_LEG_LABEL' };
+    const ovs = injuryOverlaysFor(mk([decoyJambe], [item('fausse-jambe')]));
+    expect(ovs.some((o) => o.bone === 'cuisseD' && o.svg.includes('data-injury="jambe-de-bois"'))).toBe(true);
+
+    const decoyNez: Trauma = { ...traumaById('nez-ampute', undefined, 'tete'), label: 'NOT_A_REAL_LABEL' };
+    expect(injuryOverlaysFor(mk([decoyNez]))[0].svg).toContain('data-injury="nez-ampute"');
+
+    const decoyOeil: Trauma = { ...traumaById('oeil-perdu', undefined, 'tete'), label: 'WRONG_LABEL_EYE' };
+    const APP = { species: 'Humain', sex: 'M', build: 0.5 } as Appearance;
+    expect(injuryAppearance(APP, mk([decoyOeil])).eyes?.G).toContain('data-injury="oeil-perdu"');
+
+    const decoyCecite: Trauma = { ...traumaById('cecite', undefined, 'tete'), label: 'WRONG_LABEL_BLIND' };
+    const blindOverlay = injuryOverlaysFor(mk([decoyCecite]));
+    expect(blindOverlay.some((o) => o.svg.includes('data-injury="cecite"'))).toBe(true);
+
+    // Inverse : libellé FR correct mais SANS traumaId → ne doit PLUS suffire (pas de repli sur le libellé).
+    const rightLabelNoId = t({ label: 'Nez amputé', location: 'tete' });
+    expect(injuryOverlaysFor(mk([rightLabelNoId]))).toEqual([]);
   });
 });
