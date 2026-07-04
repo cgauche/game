@@ -135,17 +135,6 @@ export function RollShell({
       {postRollExtra}
       {forcedExtra}
       <div className="modal-actions">
-        {/* « Lancer » HISSÉ (mono) : au MÊME niveau qu'Annuler/Appliquer, en TÊTE des actions pré-jet.
-            Pendant le frisson, le spinner remplace le bouton (même markup qu'en rangée, juste déplacé). */}
-        {hoistIdx >= 0 && !rolled && (
-          hoist.rolling ? (
-            <div className="rm-rolling"><span className="rm-die">🎲</span></div>
-          ) : (
-            <button key="roll" className="btn btn-primary" onClick={() => hoist.trigger()}>
-              {hoistRow?.rollLabel ?? '🎲 Lancer'}
-            </button>
-          )
-        )}
         {shownActions.map((a) => (
           <button
             key={a.key}
@@ -158,6 +147,18 @@ export function RollShell({
             {a.label}
           </button>
         ))}
+        {/* « Lancer » HISSÉ (mono) : au MÊME niveau qu'Annuler/Appliquer, en DERNIER (à DROITE) — action
+            PRIMAIRE à droite, « Annuler » à gauche (convention de la coquille). Pendant le frisson, le
+            spinner remplace le bouton (même markup qu'en rangée, juste déplacé). */}
+        {hoistIdx >= 0 && !rolled && (
+          hoist.rolling ? (
+            <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+          ) : (
+            <button key="roll" className="btn btn-primary" onClick={() => hoist.trigger()}>
+              {hoistRow?.rollLabel ?? '🎲 Lancer'}
+            </button>
+          )
+        )}
       </div>
     </>
   );
