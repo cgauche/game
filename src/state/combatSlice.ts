@@ -30,7 +30,7 @@ import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, resolveMeleePassive, type DefenseMode } from '../engine/combat';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
@@ -1832,7 +1832,8 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id } });
     },
     // Cycle Chance/Pacte UNIFIÉ (spec `attack`) — Résilience (forceSuccess/setForcedRoll) plus bas.
-    ...rollFlowActions('attack', FLOWS.attack, get, set, ['reroll', 'bonusSL', 'darkPact']),
+    // `cancel` = « Annuler » unifié (défaire-charge dans `FLOWS.attack.onCancel`) — regénère `attackCancel`.
+    ...rollFlowActions('attack', FLOWS.attack, get, set, ['reroll', 'bonusSL', 'darkPact', 'cancel']),
     attackConfirm: () => {
       const { battle, pendingAttack: pa } = get();
       if (!battle || !pa || !pa.result) return;
@@ -1939,29 +1940,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // étape `attack` (`pendingAttack` mis à jour par cleaveAttack/dualStrikeAttack) ; on n'avance qu'au bout.
       advanceCombatJet(get);
     },
-    attackCancel: () => {
-      const pa = get().pendingAttack;
-      if (pa?.dualSecond) return; // 2ᵉ frappe d'un dual : engagée dès que la cible est choisie (le jet est imposé)
-      // Charge : Annuler AVANT tout jet (`result===null`) DÉFAIT le misclic — comme annuler un déplacement,
-      // mais pour la manœuvre combinée « déplacement + attaque ». On restaure positions, orientation, Mouvement,
-      // Avantage (+1 de charge rendu) et `chargedThisTurn`. Une fois le dé lancé, la charge est ENGAGÉE (RAW LDB 15).
-      if (pa?.fromCharge) {
-        const battle = get().battle;
-        if (pa.result || !pa.chargeUndo || !battle) { if (!pa.result) set({ pendingAttack: null }); return; } // dé lancé → engagé (pas d'undo)
-        const u = pa.chargeUndo;
-        for (const c of battle.combatants) { const p = u.pos[c.id]; if (p) c.pos = { ...p }; } // restaure TOUS (un grand a pu en déplacer d'autres)
-        const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-        if (attacker) { attacker.gainedAdvThisRound = u.gainedAdvBefore; attacker.chargedThisTurn = u.chargedBefore; if (u.advGained) campSpend(get, attacker, u.advGained); } // rend le +1 Avantage de la charge
-        set({ facing: { ...u.facing }, battle: { ...battle, movementUsed: u.movementUsed, movedPreAction: u.movedPreAction, action: null, reachable: new Map(), preview: null }, pendingAttack: null });
-        bus.emit(EVT.SCENE_DIRTY);
-        return;
-      }
-      if (pa?.cleave) { set({ pendingAttack: null }); return get().cleaveEnd(); } // annuler = terminer le balayage (cleaveEnd clôt la cascade)
-      // Annuler ferme aussi la séquence-jet de combat (étape 0 non encore validée).
-      const seq = get().pendingCascade;
-      const closeSeq = seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack';
-      set({ pendingAttack: null, ...(closeSeq ? { pendingCascade: null } : {}) });
-    },
+    // `attackCancel` (« Annuler » / défaire-charge) est désormais GÉNÉRÉ par la fabrique
+    // (`FLOWS.attack.onCancel`, cf. la liste de verbes ci-dessus) — plus d'action bespoke ici.
     // PILONNAGE INDIRECT (« viser une case », AA p.122-123) : la case d'impact est déposée par le placeur
     // ('siege', commitPlacedZone). Ouvre la modale de tir de la pièce indirecte servie (`pendingAttack` siège) :
     // le JET de tir (DR) reste l'attaque NORMALE (Chance/Résilience par la cascade), mais la touche DÉTONE sur
@@ -2037,8 +2017,9 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingDefense: { ...pd, parryWeaponUid: uid ?? undefined } });
     },
     // Cycle unifié (spec `defense`) : jet initial = résolution pure (`atk` figé) ; Chance/Pacte ici,
-    // Résilience (forceSuccess/setForcedRoll) plus bas.
-    ...rollFlowActions('defense', FLOWS.defense, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
+    // Résilience (forceSuccess/setForcedRoll) plus bas. `cancel` = « Subir » (métier dans
+    // `FLOWS.defense.onCancel`) — regénère `defenseCancel`.
+    ...rollFlowActions('defense', FLOWS.defense, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'cancel']),
     defenseConfirm: () => {
       // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
       const { battle, pendingDefense: pd } = get();
@@ -2087,38 +2068,8 @@ export function createCombatSlice(get: Get, set: Set) {
       if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
       else resumeEnemyTurn(get, set);
     },
-    defenseCancel: () => {
-      // « Subir » : défense passive (aucune réaction), puis reprise du tour de l'IA.
-      const { battle, pendingDefense: pd } = get();
-      if (!pd) return;
-      const attacker = battle?.combatants.find((c) => c.id === pd.attackerId);
-      const defender = battle?.combatants.find((c) => c.id === pd.defenderId);
-      set({ pendingDefense: null });
-      if (attacker && defender) {
-        const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
-        const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, res);
-        if (suspended) {
-          // Déviation Critique (même après « Subir ») : avancer le curseur hors de l'étape défense
-          // orpheline (cf. defenseConfirm) — anti soft-lock du pilote Auto-combat. Garde idempotente.
-          const casc = get().pendingCascade;
-          if (casc?.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
-          return; // l'étape 'deviation' (resolveDeviation) reprend la suite
-        }
-        if (pd.free) {
-          set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
-          applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…
-        } else autoCleave(get, set, attacker, defender, res); // Frappe Mortelle (attaque principale)
-      }
-      // Attaque(s) d'Arme GRATUITE(S) « disponible(s) » de l'attaquant après l'attaque PRINCIPALE (jamais après
-      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.34 = seule en donnée.
-      if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
-      // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
-      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
-      // la défense est l'étape de SA cascade combat → enchaîner le curseur.
-      const seq = get().pendingCascade;
-      if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
-      else resumeEnemyTurn(get, set);
-    },
+    // `defenseCancel` (« Subir » : défense passive + reprise IA) est désormais GÉNÉRÉ par la fabrique
+    // (`FLOWS.defense.onCancel`, cf. la liste de verbes ci-dessus) — plus d'action bespoke ici.
     renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
 
     ...rollFlowActions('attack', FLOWS.attack, get, set, ['forceSuccess', 'setForcedRoll']),

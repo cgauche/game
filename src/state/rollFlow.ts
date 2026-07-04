@@ -116,7 +116,18 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
     /** Ce flux accepte l'auto-succès du talent Résistance (Menace) (LDB 10) : son `resolve` porte la
      *  branche `forced.sl` (DR = Bonus d'Endurance). Offert seulement sur un slot tagué `menace`. */
     resist?: boolean;
+    /** Ce flux expose « Annuler » (le bouton se rend pré-jet côté UI). Purement déclaratif : la
+     *  mécanique d'annulation vit dans `cancel`/`onCancel` — un flux sans `cancellable` n'affiche
+     *  simplement pas le bouton. */
+    cancellable?: boolean;
   };
+  /**
+   * Undo MÉTIER optionnel de l'annulation (défaire-charge de l'attaque, « Subir » de la défense…).
+   * PRÉSENT ⇒ il OWN la fermeture (il fait lui-même tous les `set`, y compris nuller le pending et
+   * avancer/nuller la cascade-hôte selon les cas) : `cancel` lui délègue tout et ne touche à rien
+   * d'autre — byte-identique aux anciennes actions bespoke. ABSENT ⇒ `cancel` applique le teardown
+   * par défaut (nulle le pending ET la cascade-hôte, cf. `cancel`). */
+  onCancel?: (get: Get, set: Set, p: P) => void;
   /** Patch de re-rendu après mutation en place de l'acteur. Défaut : `touchActors` (combat ⇄ groupe). */
   touch?: (s: GameState) => Partial<GameState>;
 }
@@ -320,8 +331,15 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       opResist(slot, spec.actor(s, loc.slot, p), spec.rolled(loc.slot), spec.failed(loc.slot),
         (sl) => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, { sl }, p), loc.commit);
     },
-    cancel(_get, set) {
-      set({ [spec.key]: null } as Partial<GameState>);
+    cancel(get, set) {
+      const p = pendingOf(get());
+      if (!p) return; // rien d'ouvert : no-op (pas d'undo à jouer, pas de cascade à toucher)
+      // Undo métier présent ⇒ il OWN toute la fermeture (nulle le pending, avance/nulle la cascade
+      // selon les cas). SINON teardown par défaut, CASCADE-AWARE : nuller `pendingCascade` est un
+      // no-op quand le flux est autonome (pending seul) et correct quand il est l'étape d'une cascade
+      // (l'arbitre garantit une seule modale active → toute `pendingCascade` présente est SON hôte).
+      if (spec.onCancel) { spec.onCancel(get, set, p); return; }
+      set({ [spec.key]: null, pendingCascade: null } as Partial<GameState>);
     },
     darkPact(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;

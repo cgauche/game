@@ -30,12 +30,15 @@ import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
   rollManeuverAttacker, maneuverAttackerDifficulty, distraireAttackValue,
+  applyAttackResult, autoCleave, aiAvailableFreeAttack, aiCreatureFreeAttacks, applyFreeAttackEffects, resumeEnemyTurn,
 } from './combatFlow';
+import { bus, EVT } from './bus';
+import { campSpend } from './combat/advantagePool';
 import { domainEnvironmentBonus } from '../engine/domainAttributes';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
-import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
+import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, resolveMeleePassive, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll } from '../engine/tests';
@@ -106,9 +109,11 @@ function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bon
 // EXACTEMENT le même ensemble de clés (le store passe la liste des verbes voulus) sans rien
 // recopier ; le runtime est byte-identique (mêmes appels `FLOWS.<x>.<m>(get, set[, …])`).
 
-/** Les 7 verbes du cycle de jet différé (cf. `RollFlowHandlers`). `resist` = Résistance (Menace),
- *  LDB 10 — exposé par les seuls flux à `caps.resist` (Tests qui « résistent à une menace »). */
-export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist';
+/** Les verbes du cycle de jet différé (cf. `RollFlowHandlers`). `resist` = Résistance (Menace),
+ *  LDB 10 — exposé par les seuls flux à `caps.resist` (Tests qui « résistent à une menace »).
+ *  `cancel` = « Annuler » unifié (cascade-aware + `onCancel` métier) — exposé par les flux annulables ;
+ *  sans `pid` (annuler ferme la modale/cascade entière, pas un slot). */
+export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist' | 'cancel';
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
@@ -117,9 +122,10 @@ const capitalize = <S extends string>(s: S): Capitalize<S> =>
 export type MonoRollActions<P extends string, A extends RollVerb> = {
   [K in A as `${P}${Capitalize<K>}`]: K extends 'setForcedRoll' ? (roll: number) => void : () => void;
 };
-/** Délégués MULTI : `pid` en tête (slot ciblé) ; `setForcedRoll` prend `(pid, roll)`. */
+/** Délégués MULTI : `pid` en tête (slot ciblé) ; `setForcedRoll` prend `(pid, roll)` ; `cancel` reste
+ *  sans argument (il ferme la situation entière, pas un participant). */
 export type MultiRollActions<P extends string, A extends RollVerb> = {
-  [K in A as `${P}${Capitalize<K>}`]: K extends 'setForcedRoll' ? (pid: string, roll: number) => void : (pid: string) => void;
+  [K in A as `${P}${Capitalize<K>}`]: K extends 'setForcedRoll' ? (pid: string, roll: number) => void : K extends 'cancel' ? () => void : (pid: string) => void;
 };
 
 /** Délégués MONO d'un flux : les verbes listés, byte-identiques aux anciens `() => FLOWS.x.m(get, set)`. */
@@ -143,7 +149,9 @@ export function rollFlowActionsMulti<P extends string, const A extends readonly 
   for (const v of verbs) {
     out[`${prefix}${capitalize(v)}`] = v === 'setForcedRoll'
       ? (pid?: string | number, roll?: number) => flow.setForcedRoll(get, set, roll as number, pid as string)
-      : (pid?: string | number) => flow[v](get, set, pid as string);
+      : v === 'cancel'
+        ? () => flow.cancel(get, set) // « Annuler » ferme la situation entière (pas de `pid`)
+        : (pid?: string | number) => flow[v](get, set, pid as string);
   }
   return out as MultiRollActions<P, A[number]>;
 }
@@ -162,11 +170,11 @@ export type RollFlowActionsMap =
   & MonoRollActions<'appraise', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'approach', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'ward', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
-  & MonoRollActions<'attack', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'attack', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'cancel'>
   & MonoRollActions<'bargain', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'cast', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'corruption', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'resist'>
-  & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'cancel'>
   & MonoRollActions<'disengage', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'auContact', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'grapple', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
@@ -189,11 +197,11 @@ export type RollFlowActionsMap =
   & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'battement', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'distraire', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
-  & MultiRollActions<'counterspell', Exclude<RollVerb, 'resist'>>
-  & MultiRollActions<'extendedTest', Exclude<RollVerb, 'resist'>>
-  & MultiRollActions<'forceDoor', Exclude<RollVerb, 'resist'>>
-  & MultiRollActions<'cascade', RollVerb>
-  & MultiRollActions<'opposition', RollVerb>;
+  & MultiRollActions<'counterspell', Exclude<RollVerb, 'resist' | 'cancel'>>
+  & MultiRollActions<'extendedTest', Exclude<RollVerb, 'resist' | 'cancel'>>
+  & MultiRollActions<'forceDoor', Exclude<RollVerb, 'resist' | 'cancel'>>
+  & MultiRollActions<'cascade', Exclude<RollVerb, 'cancel'>>
+  & MultiRollActions<'opposition', Exclude<RollVerb, 'cancel'>>;
 
 /** Spec PARTAGÉE des Tests d'équipage MULTI (MDG ch.14) : un jet PAR RÔLE tenu (`rollCrewRole`), Résilience
  *  = DR max du contributeur (`forceCrewRole`), Chance « +1 DR » sur SON jet. Consommée par les 3 flux jumeaux
@@ -233,6 +241,7 @@ export const FLOWS = {
     // Dé choisi (`picker`) : le d100 de l'attaquant — son inverse donne la localisation (LDB 13 l.142).
     caps: {
       forced: true,
+      cancellable: true, // « Annuler » offert pré-jet (charge : défaire-charge dans `onCancel`)
       picker: (p) => (p.forced && p.result?.attackerDetail ? { roll: p.result.attackerRoll, target: p.result.attackerDetail.target } : null),
     },
     resolve: (s, p, actor, get, forced) => {
@@ -270,6 +279,32 @@ export const FLOWS = {
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       },
     },
+    // « Annuler » (ex-`attackCancel`, migré verbatim) : défaire la charge misclic AVANT le jet
+    // (positions/orientation/Mouvement/Avantage +1 rendu/chargedThisTurn), no-op sur une 2ᵉ frappe
+    // imposée, fin de balayage pour un cleave, sinon fermeture (+ cascade combat étape 0).
+    onCancel: (get, set) => {
+      const pa = get().pendingAttack;
+      if (pa?.dualSecond) return; // 2ᵉ frappe d'un dual : engagée dès que la cible est choisie (le jet est imposé)
+      // Charge : Annuler AVANT tout jet (`result===null`) DÉFAIT le misclic — comme annuler un déplacement,
+      // mais pour la manœuvre combinée « déplacement + attaque ». On restaure positions, orientation, Mouvement,
+      // Avantage (+1 de charge rendu) et `chargedThisTurn`. Une fois le dé lancé, la charge est ENGAGÉE (RAW LDB 15).
+      if (pa?.fromCharge) {
+        const battle = get().battle;
+        if (pa.result || !pa.chargeUndo || !battle) { if (!pa.result) set({ pendingAttack: null }); return; } // dé lancé → engagé (pas d'undo)
+        const u = pa.chargeUndo;
+        for (const c of battle.combatants) { const p = u.pos[c.id]; if (p) c.pos = { ...p }; } // restaure TOUS (un grand a pu en déplacer d'autres)
+        const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+        if (attacker) { attacker.gainedAdvThisRound = u.gainedAdvBefore; attacker.chargedThisTurn = u.chargedBefore; if (u.advGained) campSpend(get, attacker, u.advGained); } // rend le +1 Avantage de la charge
+        set({ facing: { ...u.facing }, battle: { ...battle, movementUsed: u.movementUsed, movedPreAction: u.movedPreAction, action: null, reachable: new Map(), preview: null }, pendingAttack: null });
+        bus.emit(EVT.SCENE_DIRTY);
+        return;
+      }
+      if (pa?.cleave) { set({ pendingAttack: null }); return get().cleaveEnd(); } // annuler = terminer le balayage (cleaveEnd clôt la cascade)
+      // Annuler ferme aussi la séquence-jet de combat (étape 0 non encore validée).
+      const seq = get().pendingCascade;
+      const closeSeq = seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack';
+      set({ pendingAttack: null, ...(closeSeq ? { pendingCascade: null } : {}) });
+    },
   }),
 
   /**
@@ -284,6 +319,7 @@ export const FLOWS = {
     // Résolveur UNIQUE (`caps.forced`) : seul le jet du défenseur se (re)joue (`p.atk` figé).
     caps: {
       forced: true,
+      cancellable: true, // « Subir » : la défense passive est offerte (métier dans `onCancel`)
       picker: (p) => (p.forced && p.def ? { roll: p.def.roll, target: p.def.target } : null),
     },
     resolve: (s, p, actor, _get, forced) => {
@@ -320,6 +356,41 @@ export const FLOWS = {
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
         return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry) };
       },
+    },
+    // « Subir » (ex-`defenseCancel`, migré verbatim) : défense passive (aucune réaction), résolution
+    // de la touche subie, puis reprise du tour IA (via `cascadeNext` si étape de cascade, sinon
+    // `resumeEnemyTurn`). NB : ce n'est PAS un simple « fermer le pending » — la cascade est AVANCÉE,
+    // jamais nullée (d'où la délégation totale à `onCancel`, sans teardown par défaut de la fabrique).
+    onCancel: (get, set) => {
+      const { battle, pendingDefense: pd } = get();
+      if (!pd) return;
+      const attacker = battle?.combatants.find((c) => c.id === pd.attackerId);
+      const defender = battle?.combatants.find((c) => c.id === pd.defenderId);
+      set({ pendingDefense: null });
+      if (attacker && defender) {
+        const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
+        const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, res);
+        if (suspended) {
+          // Déviation Critique (même après « Subir ») : avancer le curseur hors de l'étape défense
+          // orpheline (cf. defenseConfirm) — anti soft-lock du pilote Auto-combat. Garde idempotente.
+          const casc = get().pendingCascade;
+          if (casc?.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
+          return; // l'étape 'deviation' (resolveDeviation) reprend la suite
+        }
+        if (pd.free) {
+          set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
+          applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…
+        } else autoCleave(get, set, attacker, defender, res); // Frappe Mortelle (attaque principale)
+      }
+      // Attaque(s) d'Arme GRATUITE(S) « disponible(s) » de l'attaquant après l'attaque PRINCIPALE (jamais après
+      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.34 = seule en donnée.
+      if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
+      // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
+      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
+      // la défense est l'étape de SA cascade combat → enchaîner le curseur.
+      const seq = get().pendingCascade;
+      if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
+      else resumeEnemyTurn(get, set);
     },
   }),
 

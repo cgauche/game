@@ -863,11 +863,11 @@ export interface GameState extends RollFlowActionsMap {
   /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.73) : choisit la Localisation d'un Coup Critique forcé. */
   attackSetCritLocation: (loc: HitLocation) => void;
   attackRoll: () => void;
-  // attack{Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
+  // attack{Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Cancel} : générés (RollFlowActionsMap).
   // `attackSetForcedRoll(roll)` (LDB 17 l.73 « vous choisissez le résultat ») : valeur du dé d'un succès
   //  forcé (un double ≤ cible → Coup Critique, ex. Salundra l.75) ; re-dérive l'attaque, refusé si raté.
+  // `attackCancel()` : « Annuler » unifié (défaire-charge via `FLOWS.attack.onCancel`) — cf. RollFlowActionsMap.
   attackConfirm: () => void;
-  attackCancel: () => void;
   /** Pilonnage INDIRECT : dépose le point d'impact choisi (clic-case du placeur 'siege') et ouvre la modale
    *  de tir de la pièce indirecte servie (`pendingAttack` siège). Cf. `siegeAimCommit` (combatSlice). */
   siegeAimCommit: (pt: Pt) => void;
@@ -996,9 +996,9 @@ export interface GameState extends RollFlowActionsMap {
   defenseSetMode: (mode: DefenseMode, subSkillId?: string) => void;
   /** Choisit l'arme de parade (uid d'ItemInstance ; null = main principale) — avant le jet de défense. */
   defenseSetParryWeapon: (uid: string | null) => void;
-  // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
+  // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Cancel} : générés (RollFlowActionsMap).
+  // `defenseCancel()` : « Subir » (défense passive + reprise IA via `FLOWS.defense.onCancel`) — cf. RollFlowActionsMap.
   defenseConfirm: () => void;
-  defenseCancel: () => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
   renounceResolve: (renounce: boolean) => void;
   /** Peek du planificateur IA (déterministe, sans RNG ni mutation) : la meilleure action du combattant `id`
