@@ -34,7 +34,7 @@ describe('chooseEnemyAction — auto-transformation (forme de combat lycanthrope
   it('DÉJÀ dans la forme (activeEffect « ulric-hybride ») → gate : ne re-transforme pas, il frappe', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, {
       traits: [{ id: 'metamorphose' }],
-      activeEffects: [{ label: 'ulric-hybride', bonus: 0, duration: { scale: 'permanent' } }] as never,
+      activeEffects: [{ label: 'ulric-hybride', effectId: 'ulric-hybride', bonus: 0, duration: { scale: 'permanent' } }] as never,
     });
     const h = mk('h', 'hero', { x: 6, y: 5 });
     const a = chooseEnemyAction(input(e, [h]));

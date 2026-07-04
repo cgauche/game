@@ -132,7 +132,7 @@ function formTagOf(def: ManeuverDef, opName: 'transform' | 'endTransform'): stri
 /** Une manœuvre self est-elle APPLICABLE à `c` maintenant ? `transform` → hors de la forme (tag absent) ;
  *  `endTransform` → dans la forme (un `activeEffect` porte ce label). Autre self-buff → toujours. PUR. */
 export function selfManeuverApplicable(c: Combatant, def: ManeuverDef): boolean {
-  const inForm = (tag: string) => (c.activeEffects ?? []).some((e) => e.label === tag);
+  const inForm = (tag: string) => (c.activeEffects ?? []).some((e) => e.effectId === tag);
   const tIn = formTagOf(def, 'transform');
   if (tIn) return !inForm(tIn); // « prendre la forme » : seulement hors de la forme
   const tOut = formTagOf(def, 'endTransform');

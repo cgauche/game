@@ -116,6 +116,26 @@ describe('Flux « Chanson de marin » (Talent, MDG 09 l.32-40)', () => {
     expect(bard.singingShanty).toBeUndefined();
   });
 
+  it('les effets de chant portent effectId === shantyId ; endShanty retire PAR effectId (pas par libellé)', () => {
+    openShanty();
+    useGame.getState().shantyForceSuccess();
+    useGame.getState().shantyConfirm();
+    const st = useGame.getState();
+    const bard = st.battle!.combatants.find((c) => c.id === 'barde')!;
+    const marinC = st.battle!.combatants.find((c) => c.id === 'marin')!;
+    const shantyId = bard.singingShanty!.shantyId;
+    const label = bard.singingShanty!.label;
+    for (const c of [bard, marinC]) {
+      expect((c.activeEffects ?? []).length).toBeGreaterThan(0);
+      expect((c.activeEffects ?? []).every((e) => e.effectId === shantyId)).toBe(true);
+    }
+    // DÉCOY : effet ÉTRANGER dont le LIBELLÉ collisionne avec celui de la chanson mais SANS le bon effectId.
+    marinC.activeEffects = [...(marinC.activeEffects ?? []), { label, bonus: 3, char: 'FM', duration: { scale: 'permanent' } } as never];
+    endShanty(useGame.getState, bard);
+    expect((marinC.activeEffects ?? []).some((e) => e.label === label && e.bonus === 3)).toBe(true); // le décoy survit
+    expect((marinC.activeEffects ?? []).some((e) => e.effectId === shantyId)).toBe(false); // le vrai effet de chant est parti
+  });
+
   it('QUART = 4 h : au quart suivant, on peut de nouveau chanter', () => {
     openShanty();
     useGame.getState().shantyForceSuccess();

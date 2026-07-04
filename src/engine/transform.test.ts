@@ -5,6 +5,8 @@ import { effectiveMovement } from './encumbrance';
 import { endOfRound } from './conditions';
 import { liveMorphRef } from './polymorph';
 import { hasTraitKey } from './traits/dispatch';
+import { selfManeuverApplicable } from './creatureAttacks';
+import { findManeuverById } from '../data';
 import type { Combatant } from './types';
 
 /**
@@ -79,5 +81,38 @@ describe('transform / endTransform — Métamorphose Enfant d’Ulric (delta RAW
     applyOps(c, [{ op: 'endTransform', tag: TAG }], {});
     expect(effectiveChar(c, 'F')).toBe(30);
     expect(liveMorphRef(c)).toBeUndefined();
+  });
+
+  it('effectId (pas le libellé) porte l’IDENTITÉ de la transformation — pose ET retrait complets, robustes à une collision de libellé', () => {
+    const c = human();
+    // Effet ÉTRANGER pré-existant dont le LIBELLÉ collisionne avec le tag (décoy) — jamais touché par transform/endTransform.
+    const decoy = { label: TAG, bonus: 5, char: 'FM' as const, duration: { scale: 'permanent' as const } };
+    c.activeEffects = [decoy];
+
+    applyOps(c, [{ op: 'transform', tag: TAG, ops: HYBRIDE_ULRIC, morphRef: 'enfant-d-ulric' }], {});
+    const posed = (c.activeEffects ?? []).filter((e) => e !== decoy);
+    expect(posed.length).toBeGreaterThan(0); // 8 charMod + 1 moveMod + 5 grantTrait + 1 morphRef
+    expect(posed.every((e) => e.effectId === TAG)).toBe(true); // TOUT effet posé, y compris les charMod du profil
+
+    applyOps(c, [{ op: 'endTransform', tag: TAG }], {});
+    expect(c.activeEffects).toEqual([decoy]); // retrait EXACT des effets taggés — le décoy (même libellé) survit
+    expect(effectiveChar(c, 'F')).toBe(30); // bien retourné à la forme de base
+  });
+
+  it('selfManeuverApplicable : gate DANS/HORS forme piloté par effectId (pas le libellé)', () => {
+    const enter = findManeuverById('forme-hybride-ulric')!;
+    const exit = findManeuverById('forme-humaine-ulric')!;
+    const c = human();
+    expect(selfManeuverApplicable(c, enter)).toBe(true); // hors forme → peut entrer
+    expect(selfManeuverApplicable(c, exit)).toBe(false); // hors forme → ne peut PAS (déjà) en sortir
+
+    applyOps(c, [{ op: 'transform', tag: TAG, ops: HYBRIDE_ULRIC, morphRef: 'enfant-d-ulric' }], {});
+    expect(selfManeuverApplicable(c, enter)).toBe(false); // dans la forme → ne peut plus (re)entrer
+    expect(selfManeuverApplicable(c, exit)).toBe(true); // dans la forme → peut en sortir
+
+    // DÉCOY : un activeEffect au LIBELLÉ collisionnant avec le tag mais SANS effectId ne doit PAS suffire au gate.
+    const d = human();
+    d.activeEffects = [{ label: TAG, bonus: 0, duration: { scale: 'permanent' } }] as never;
+    expect(selfManeuverApplicable(d, exit)).toBe(false);
   });
 });

@@ -825,6 +825,11 @@ export interface OpsCtx {
   onCorruptionExposure?: (level: ExposureLevel, skill?: 'resistance' | 'calme') => string[];
   /** Libellé de la source (sort/table) — ActiveEffect.label + journal. */
   label?: string;
+  /** id STABLE de l'effet en cours (langue-indépendant) — marqué sur TOUT `ActiveEffect` posé par cet
+   *  `applyOps` (`ActiveEffect.effectId`), même mécanisme que `sourceSpell`/`sourceSpellId` ci-dessus.
+   *  Sert l'identité de retrait/détection (`transform`/`endTransform`, chansons de marin…) — JAMAIS le `label`
+   *  (affichage, non stable/traductible). */
+  effectId?: string;
   /** Durée (en Rounds) des `charMod` sans durée propre — celle du sort. */
   defaultDurationRounds?: number;
   /** Échéance d'HORLOGE (minutes `gameTime`) des effets actifs d'un sort à durée en
@@ -944,7 +949,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   const lines: string[] = [];
   // DISSIPATION (LDB 46) : on retient les ActiveEffect PRÉ-EXISTANTS (par référence) pour ne marquer,
   // en fin d'op, QUE ceux posés par CE sort source (robuste au dédoublonnage en place de `applyActiveEffect`).
-  const preEffects = (ctx.sourceSpell || ctx.sourceSpellId) ? new Set(target.activeEffects ?? []) : null;
+  const preEffects = (ctx.sourceSpell || ctx.sourceSpellId || ctx.effectId) ? new Set(target.activeEffects ?? []) : null;
   // Agrégation des charMod (une ligne par source, façon « Écorce (-10 Ag, -10 Dex, 6 rounds) »).
   const charParts: string[] = [];
   let charRounds: number | null = null;
@@ -1659,18 +1664,18 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Applique les deltas AUTHORÉS sous le LABEL `tag` (déterministe → retrait atomique) et une durée
         // PERMANENTE (forme durable ≠ buff de sort : on efface toute durée héritée du ctx). L'apparence
         // (morphRef) porte le MÊME tag pour être retirée avec le reste par `endTransform`.
-        const inner: OpsCtx = { ...ctx, label: o.tag, defaultDurationRounds: undefined, defaultUntilTime: undefined };
+        const inner: OpsCtx = { ...ctx, label: o.tag, effectId: o.tag, defaultDurationRounds: undefined, defaultUntilTime: undefined };
         lines.push(...applyOps(target, o.ops, inner));
-        if (o.morphRef) applyActiveEffect(target, { label: o.tag, morphRef: o.morphRef, bonus: 0, duration: { scale: 'permanent' } });
+        if (o.morphRef) applyActiveEffect(target, { label: o.tag, effectId: o.tag, morphRef: o.morphRef, bonus: 0, duration: { scale: 'permanent' } });
         lines.push(t('op.transform', { name: target.name, tag: o.tag }));
         break;
       }
       case 'endTransform': {
         const eff = target.activeEffects ?? [];
-        const removed = eff.filter((e) => e.label === o.tag);
+        const removed = eff.filter((e) => e.effectId === o.tag);
         if (!removed.length) break; // pas dans cette forme → no-op
         dropExpiredGrantedTraits(target, removed); // dé-accorde les Traits posés par la transformation
-        target.activeEffects = eff.filter((e) => e.label !== o.tag);
+        target.activeEffects = eff.filter((e) => e.effectId !== o.tag);
         refreshWounds(target); // les deltas de profil (F/E/FM) retirés → PB max recalés
         lines.push(t('op.endTransform', { name: target.name, tag: o.tag }));
         break;
@@ -1811,12 +1816,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   }
   flushCharMods();
   // Marque les effets actifs POSÉS par ce sort source (durables) : identité + NI → Dissipation (Sorts
-  // seulement, `sourceSpell`) ET id du sort → anti-spam IA (TOUT lancement, Prières comprises, `sourceSpellId`).
-  if ((ctx.sourceSpell || ctx.sourceSpellId) && target.activeEffects) {
+  // seulement, `sourceSpell`) ET id du sort → anti-spam IA (TOUT lancement, Prières comprises, `sourceSpellId`)
+  // ET id STABLE de l'effet en cours (`effectId` — transform/chansons de marin…, retrait par IDENTITÉ).
+  if ((ctx.sourceSpell || ctx.sourceSpellId || ctx.effectId) && target.activeEffects) {
     for (const e of target.activeEffects) {
       if (preEffects!.has(e)) continue;
       if (ctx.sourceSpell && !e.spell) e.spell = ctx.sourceSpell;
       if (ctx.sourceSpellId && !e.sourceSpellId) e.sourceSpellId = ctx.sourceSpellId;
+      if (ctx.effectId && !e.effectId) e.effectId = ctx.effectId;
     }
   }
   return lines;
