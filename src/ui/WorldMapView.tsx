@@ -125,6 +125,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const [seaPace, setSeaPace] = useState(0);
   /** Lieu cliqué SANS route directe depuis ici → on l'explique au lieu de rester muet. */
   const [farId, setFarId] = useState<string | null>(null);
+  /** Lieu survolé — révèle son nom sur une carte dense (les non-pertinents n'ont pas de cartouche fixe). */
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const here = placeOfScene(map, hereSceneId ?? scene?.id);
   const routes = useMemo(() => (map && here ? routesFrom(map, here.id) : []), [map, here]);
@@ -413,17 +415,18 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             const isDest = dest?.id === p.id;
             const route = here ? routes.find((r) => otherEnd(r, here.id) === p.id) : undefined;
             const clickable = !!route;
-            const w = Math.max(11, p.label.length * 1.35 + 4);
             const pr = posOf(p);
             return (
               <g
                 key={p.id}
                 transform={`translate(${pr.x} ${pr.y})`}
                 onClick={clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined}
+                onPointerEnter={() => setHoveredId(p.id)}
+                onPointerLeave={() => setHoveredId((h) => (h === p.id ? null : h))}
                 style={clickable || !isHere ? { cursor: clickable ? 'pointer' : 'help' } : undefined}
                 opacity={clickable || isHere ? 1 : 0.55}
               >
-                {/* cible de clic généreuse (médaillon + cartouche) */}
+                {/* cible de clic/survol généreuse */}
                 <circle r="6.5" fill="#000" fillOpacity="0" />
                 {isHere && <text y="-4.4" textAnchor="middle" fontSize="2.2" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
                 {(isHere || isDest) && (
@@ -437,11 +440,25 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 <g style={{ color: '#4a3517' }}>
                   <IconG id={p.icon ?? 'nav/entry-point'} x={-1.8} y={-1.8} size={3.6} />
                 </g>
-                {/* cartouche de nom */}
-                <g transform="translate(0 6.2)">
-                  <rect x={-w / 2} y="-2.3" width={w} height="3.6" rx="1.8" fill="#33240f" opacity={isHere ? 0.9 : 0.72} />
-                  <text y="0.3" textAnchor="middle" fontSize="2.5" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
-                </g>
+              </g>
+            );
+          })}
+
+          {/* Cartouches de nom — peints APRÈS les médaillons (donc AU-DESSUS de tous). Sur une carte
+              dense, seuls les lieux PERTINENTS sont nommés en permanence (position courante + destinations
+              reliées) ; les autres révèlent leur nom au SURVOL — évite l'illisibilité des 27 étiquettes
+              larges empilées. `pointer-events:none` : le cartouche ne vole pas le survol du médaillon. */}
+          {map.places.map((p) => {
+            const isHere = here?.id === p.id;
+            const clickable = here ? routes.some((r) => otherEnd(r, here.id) === p.id) : false;
+            const hovered = hoveredId === p.id;
+            if (!isHere && !clickable && !hovered) return null;
+            const w = Math.max(11, p.label.length * 1.35 + 4);
+            const pr = posOf(p);
+            return (
+              <g key={`lbl-${p.id}`} transform={`translate(${pr.x} ${pr.y + 6.2})`} style={{ pointerEvents: 'none' }}>
+                <rect x={-w / 2} y="-2.3" width={w} height="3.6" rx="1.8" fill="#33240f" opacity={0.9} stroke={hovered && !isHere && !clickable ? 'var(--gold2)' : 'none'} strokeWidth="0.25" />
+                <text y="0.3" textAnchor="middle" fontSize="2.5" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
               </g>
             );
           })}
