@@ -11,12 +11,12 @@ Trois « choses auxquelles on affecte un héros et qui se résolvent par un Test
 | | Poste (canon/affût) | Activité (interlude/voyage/mer) | Événement de bataille (masse) |
 |---|---|---|---|
 | Position | sur la coque/le rempart | **aucune scène** | sur le champ (à spatialiser) |
-| Affectation | N héros → 1 slot | 1 héros → 1 action | 1 héros → 1 scène |
-| Test | tir (arme) | compétence | compétence (+ combiné/caract) |
+| Affectation | N héros → 1 slot | 1 héros → 1 action | N héros → 1 scène (test/tenue, Soutien) · groupe (combat) |
+| Test | tir (arme) | compétence | compétence (+ combiné/caract, Soutien LDB 12) |
 | Issue | dégâts | `GameOp`/`stageOutcome` | **Puissance d'armée** |
 
 **Ce qui est commun = le Test + l'affectation + (pour poste/bataille) la position.** Ce qui diverge = **l'issue**
-et la **topologie** (N:1 vs 1:1). Deux constats qui pilotent le design :
+et la **topologie** (N:1 poste/scène vs 1:1 activité). Deux constats qui pilotent le design :
 
 - **La Puissance N'EST PAS un effet `GameOp` — c'est une carac TESTABLE.** *(Piste initiale « armée = Combatant,
   Puissance = PV, deltas = GameOp » ÉCARTÉE après revue adversariale + vérification directe — cf. §7bis.)*

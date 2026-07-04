@@ -32,7 +32,7 @@ export function AssignRow({
   const showPicker = canPick && candidates.length > 0 && (single || assigned.length < max);
   return (
     <>
-      <div className="bar mb-scene-assign">
+      <div className="bar assign-row">
         {assigned.length ? (
           assigned.map((h) => (
             <span key={h.id} className="crew-remove" title={`${h.name} — retirer`}>
