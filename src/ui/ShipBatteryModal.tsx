@@ -5,11 +5,11 @@ import { findCrewRoleById } from '../data';
 import { crewRoleValue } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import { MultiRollShell } from './MultiRollShell';
-import { ParticipantRow } from './ParticipantRow';
+import { RollRow } from './RollRow';
 
 /**
  * Modale du TIR DE BATTERIE (« bordée », MDG ch.14 l.128) — JUMEAU de `ShipManeuverModal` (flux MULTI,
- * `MultiRollShell` + `ParticipantRow`). Chaque Artilleur tenu = une rangée (PJ influençable / marin témoin) ;
+ * `MultiRollShell` + `RollRow`). Chaque Artilleur tenu = une rangée (PJ influençable / marin témoin) ;
  * le bandeau somme les DR (essentiel ×2) + Moral → le **DR PARTAGÉ** qui s'applique à TOUTES les pièces du bord
  * (l.128). Pas de virage : `extra` montre la cible + les pièces qui tirent. « Feu ! » résout la volée (`shipBatteryConfirm`).
  */
@@ -67,7 +67,7 @@ export function ShipBatteryModal() {
           ? { combatant: actor, d: { label, base: val, modifier: 0, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
           : { combatant: actor, pending: { label, base: val, mods: [] } };
         return (
-          <ParticipantRow
+          <RollRow
             key={part.id}
             actor={actor}
             row={row}

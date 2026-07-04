@@ -17,7 +17,7 @@ import { OptionChooser } from './OptionChooser';
 import { RollFlowShell } from './RollFlowShell';
 import { RollPanel } from './RollPanel';
 import { VsHeader } from './VsHeader';
-import { ParticipantRow } from './ParticipantRow';
+import { RollRow } from './RollRow';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -63,7 +63,7 @@ export function CastModal() {
   const oppConfirm = useGame((s) => s.oppositionConfirm);
   // Contre-sort (Dissipation) : RÉACTION au Sort ENNEMI figé dans `pendingCast` — plus de modale
   // séparée (« le contre-sort, c'est le lancement d'un sort qui peut être opposé »). Chaque héros
-  // contre-lanceur a SA rangée (`ParticipantRow`), DANS cette modale d'incantation, exactement comme
+  // contre-lanceur a SA rangée (`RollRow`), DANS cette modale d'incantation, exactement comme
   // l'opposition de cible ci-dessus. « Laisser passer »/« Appliquer » agrègent via `counterspellConfirm`.
   const csp = useGame((s) => s.pendingCounterspell);
   const cspRoll = useGame((s) => s.counterspellRoll);
@@ -300,7 +300,7 @@ export function CastModal() {
                   ? { combatant: actor, d: { label: lab, base: r.oppose.target, modifier: 0, target: r.oppose.target, roll: r.oppose.roll, success: r.oppose.success, sl: r.oppose.sl } }
                   : { combatant: actor, pending: { label: lab, base: testValue(actor, pcs.skill, pcs.char), mods: [] } };
                 return (
-                  <ParticipantRow
+                  <RollRow
                     key={part.id}
                     actor={actor}
                     row={row}
@@ -340,7 +340,7 @@ export function CastModal() {
                   ? { combatant: actor, d: { label: 'Langue (Magick)', base: r.counter.target, modifier: 0, target: r.counter.target, roll: r.counter.roll, success: r.counter.success, sl: r.counter.sl } }
                   : { combatant: actor, pending: { label: 'Langue (Magick)', base: val, mods: [] } };
                 return (
-                  <ParticipantRow
+                  <RollRow
                     key={part.id}
                     actor={actor}
                     row={row}

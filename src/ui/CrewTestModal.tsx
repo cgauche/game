@@ -5,11 +5,11 @@ import { findCrewRoleById, findCrewTestTypeById } from '../data';
 import { crewRoleValue, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import { MultiRollShell } from './MultiRollShell';
-import { ParticipantRow } from './ParticipantRow';
+import { RollRow } from './RollRow';
 
 /**
  * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — JUMEAU de
- * `ShipBatteryModal`/`ShipManeuverModal` (flux MULTI, `MultiRollShell` + `ParticipantRow`), paramétrée par le
+ * `ShipBatteryModal`/`ShipManeuverModal` (flux MULTI, `MultiRollShell` + `RollRow`), paramétrée par le
  * TYPE (`pendingCrewTest.testTypeId`). Chaque rôle tenu = une rangée ; le bandeau somme les DR (essentiel ×2)
  * + Moral + Manque de bras + sabotage. **Rude épreuve** (l.106-114) : un total NÉGATIF réduit le Moral d'autant
  * (l.110) — la perte est prévisualisée dans le bandeau avant « Appliquer ».
@@ -69,7 +69,7 @@ export function CrewTestModal() {
           ? { combatant: actor, d: { label, base: val, modifier: 0, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
           : { combatant: actor, pending: { label, base: val, mods: [] } };
         return (
-          <ParticipantRow
+          <RollRow
             key={part.id}
             actor={actor}
             row={row}

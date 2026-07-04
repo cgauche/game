@@ -3,7 +3,7 @@ import { ownsLocally } from '../state/netFlow';
 import { testValue } from '../engine/skills';
 import { canReroll } from '../engine/fortune';
 import { MultiRollShell } from './MultiRollShell';
-import { ParticipantRow } from './ParticipantRow';
+import { RollRow } from './RollRow';
 
 /**
  * Modale « Enfoncer une porte à PLUSIEURS » (EDO Appendice 2) — flux MULTI PARALLÈLE, pendant exact
@@ -52,7 +52,7 @@ export function ForceDoorModal() {
             ? { combatant: actor, d: { label: 'Bagarre', base: res.target, modifier: 0, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
             : { combatant: actor, pending: { label: 'Bagarre', base: val, mods: [] } };
           return (
-            <ParticipantRow
+            <RollRow
               key={part.id}
               actor={actor}
               row={row}

@@ -2,10 +2,10 @@ import type { ReactNode } from 'react';
 import { Modal } from './Modal';
 
 /**
- * Coquille PARTAGÉE et UNIQUE des modales de jet MULTI (N contributeurs en `ParticipantRow`) — pendant de
+ * Coquille PARTAGÉE et UNIQUE des modales de jet MULTI (N contributeurs en `RollRow`) — pendant de
  * `RollFlowShell` pour le mono. Centralise l'enveloppe `Modal`, le sous-titre, la zone de rangées (`cs-rows`),
  * le bandeau d'ISSUE et la barre d'actions (Annuler · primaire). La modale concrète ne fournit QUE ses
- * `ParticipantRow` (métier) en `children` + son issue (`summary`) ; tout le reste (style/structure/Échap) vit ICI,
+ * `RollRow` (métier) en `children` + son issue (`summary`) ; tout le reste (style/structure/Échap) vit ICI,
  * donc restyler ou changer le comportement des modales multi se fait à UN endroit. Réutilisée par « Enfoncer la
  * porte », « Manœuvre » (Test d'équipage), etc.
  */
@@ -33,7 +33,7 @@ export function MultiRollShell({
   instruction?: ReactNode;
   /** Contenu PRÉ-rangées (ex. choix du virage de la manœuvre). */
   extra?: ReactNode;
-  /** Les `ParticipantRow` (métier de la modale). */
+  /** Les `RollRow` (métier de la modale). */
   children: ReactNode;
   /** Bandeau d'ISSUE sous les rangées (total, succès…) — encapsulé en `rm-vs`. */
   summary?: ReactNode;

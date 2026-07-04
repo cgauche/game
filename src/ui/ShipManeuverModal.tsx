@@ -5,7 +5,7 @@ import { findCrewRoleById } from '../data';
 import { crewRoleValue } from '../engine/crewMorale';
 import { maneuverCrewTotal, deriveManeuverFromCrew } from '../state/shipManeuver';
 import { MultiRollShell } from './MultiRollShell';
-import { ParticipantRow } from './ParticipantRow';
+import { RollRow } from './RollRow';
 import { OptionChooser, type RollOption } from './OptionChooser';
 
 /** Virages proposés (MDG ch.13 — angle abstrait, choix d'UX) : crans d'octant signés (±1 = 45°, ±2 = 90°). */
@@ -19,7 +19,7 @@ const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
 
 /**
  * Modale de MANŒUVRE navale = TEST D'ÉQUIPAGE (MDG ch.13-14) — flux MULTI, patron `ForceDoorModal`. Pré-jet : choix
- * du virage (`OptionChooser` → `shipManeuverSetTurn`, ⟂ jet). Chaque rôle tenu = une `ParticipantRow` : un PJ lance
+ * du virage (`OptionChooser` → `shipManeuverSetTurn`, ⟂ jet). Chaque rôle tenu = une `RollRow` : un PJ lance
  * SON Test (Chance/+1 DR/Pacte/Résilience sur SON jet, gated `ownsLocally`) ; un marin PNJ est un TÉMOIN auto-roulé.
  * Le bandeau somme les DR (essentiel ×2) + Moral → DR final ; « Manœuvrer » vire le cap + avance (`…Confirm`).
  */
@@ -78,7 +78,7 @@ export function ShipManeuverModal() {
           ? { combatant: actor, d: { label, base: val, modifier: 0, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
           : { combatant: actor, pending: { label, base: val, mods: [] } };
         return (
-          <ParticipantRow
+          <RollRow
             key={part.id}
             actor={actor}
             row={row}
