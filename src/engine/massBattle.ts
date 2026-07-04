@@ -107,6 +107,12 @@ export interface BattleActivityDef extends TestSpec {
    *  l.102 Repérage : Chevaucher + Perception — un d100 confronté aux deux valeurs, LDB 12 l.229). */
   requires?: 'planned' | 'scouted';
   grantsFlag?: 'planned' | 'scouted';
+  /** SEULE Activité pré-combat que le RAW autorise à SOUTENIR (ADE II ch.8 l.81, Planification : « Un
+   *  Personnage avec au moins une Augmentation en Savoir (Guerre) peut aider au Test ») → résolution en
+   *  SOUTIEN (LDB 12 : un assistant capable ajoute +10, plafonné) comme une Scène de Round, plutôt que
+   *  SOLO. Les autres Activités (Repérage/Sabotage/Infiltration/Rassembler des forces…) restent SOLO
+   *  (RAW « un Personnage »). Incompatible avec `combined` (RAW n'accorde d'aide à aucun Test combiné). */
+  assisted?: boolean;
   onSuccess: ActivityOutcome[];
   /** Succès Stupéfiant (DR ≥ 6) — REMPLACE `onSuccess`. */
   onStunning?: ActivityOutcome[];

@@ -604,6 +604,7 @@
       ],
       "difficulty": "intermediaire",
       "grantsFlag": "planned",
+      "assisted": true,
       "onSuccess": [
         {
           "target": "allyTestMod",

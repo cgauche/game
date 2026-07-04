@@ -397,9 +397,28 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     });
     return;
   }
-  // Activité SOLO (RAW l.71/75/102/106 « un Personnage ») : acteur = PJ posté (à défaut, SUGGESTION = meilleur
-  // du groupe) ; ses valeurs de compétence dérivées par une passe SINGLETON `bestForSkills([chosen], …)` —
-  // sans poste, l'acteur EST la suggestion, byte-identique. PAS de Soutien pour une Activité pré-combat.
+  if (def.assisted) {
+    // Activité SOUTENABLE (Planification l.81 : « un Personnage avec au moins une Augmentation en Savoir
+    // (Guerre) peut aider au Test ») : résolue comme une Scène de Round. Équipe = les PJ POSTÉS disponibles ;
+    // à défaut, la SUGGESTION = le meilleur PJ SEUL (comportement byte-identique au chemin solo sans poste).
+    // La valeur SOUTENUE (`bestAssistedOption` : meneur + Soutien LDB 12, assistants CAPABLES = qui possèdent
+    // la compétence — posséder l'Avancée Savoir (Guerre) équivaut à « ≥1 Augmentation » : règle générale).
+    const crew = assignedHeroesFor(mb, party, activityId);
+    const solo = bestForSkills(party, def.skills, def.char)?.actor;
+    const team = crew.length ? crew : (solo ? [solo] : []);
+    if (!team.length) return;
+    const picked = bestAssistedOption(team, def.skills, def.char);
+    if (!picked) return;
+    openBattleTest(get, set, {
+      actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
+      difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod,
+      heroIds: team.map((h) => h.id), support: picked.support,
+    });
+    return;
+  }
+  // Activité SOLO (RAW l.75/102/106 « un Personnage », sans aide) : acteur = PJ posté (à défaut, SUGGESTION =
+  // meilleur du groupe) ; ses valeurs de compétence dérivées par une passe SINGLETON `bestForSkills([chosen], …)`
+  // — sans poste, l'acteur EST la suggestion, byte-identique. PAS de Soutien.
   const chosen = assignedHeroesFor(mb, party, activityId)[0] ?? bestForSkills(party, def.skills, def.char)?.actor;
   if (!chosen) return;
   const picked = bestForSkills([chosen], def.skills, def.char);

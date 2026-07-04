@@ -82,12 +82,17 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
   const count = prepCount(mb);
   const full = count >= 3;
   const [openAct, setOpenAct] = useState<string | null>(null);
-  // Le posté d'une action pré-combat, résolu en héros vivant (chaque Activité / le Discours = 1 PJ SOLO,
-  // l.71/75/102/106 « un Personnage ») : premier id de la liste d'affectation.
+  // Le posté d'une action pré-combat SOLO (Discours l.71 / la plupart des Activités « un Personnage »),
+  // résolu en héros vivant : premier id de la liste d'affectation.
   const postedOf = (id: string): Combatant[] => {
     const h = living.find((x) => x.id === mb.assignment[id]?.[0]);
     return h ? [h] : [];
   };
+  // Équipage COMPLET posté à une action SOUTENABLE (Planification l.81, plusieurs PJ), résolu en héros
+  // vivants dans l'ordre d'affectation (miroir UI-side de `assignedHeroesFor`, sans filtre `actedHeroes` :
+  // en pré-bataille aucun PJ n'a encore « agi »).
+  const crewOf = (id: string): Combatant[] =>
+    (mb.assignment[id] ?? []).map((hid) => living.find((x) => x.id === hid)).filter((h): h is Combatant => !!h);
   return (
     <section className="panel mb-phase">
       <h3>Avant la bataille</h3>
@@ -140,11 +145,12 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
             </div>
             {openAct === a.id && <div className="mb-scene-desc"><Prose md={a.desc} /></div>}
             <AssignRow
-              assigned={postedOf(a.id)}
+              assigned={a.assisted ? crewOf(a.id) : postedOf(a.id)}
               candidates={living}
-              onAssign={(id) => setHero(a.id, [id])}
-              onRemove={() => setHero(a.id, [])}
-              max={1}
+              // Soutenable (Planification l.81) : le picker AJOUTE un assistant ; sinon il REMPLACE le posté SOLO.
+              onAssign={(id) => setHero(a.id, a.assisted ? [...(mb.assignment[a.id] ?? []), id] : [id])}
+              onRemove={(id) => setHero(a.id, a.assisted ? (mb.assignment[a.id] ?? []).filter((x) => x !== id) : [])}
+              max={a.assisted ? Infinity : 1}
               verb={`réalise « ${a.label} »`}
               canPick={!full}
             />
