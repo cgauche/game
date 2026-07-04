@@ -299,7 +299,7 @@ export function runSeaDays(get: Get, set: Set): void {
           // Encalminé (l.296) ou voiles affalées (l.294) : ancre si le navire en a une, sinon dérive à 25 %.
           const anchored = shipHasNavalTrait(hullTraits(plan.vehicle!), 'ancre');
           const drift = anchored ? 0 : Math.round(seaMilesPerDay(4, true) * (AFFALER_RULES.driftPctOfSpeed / 100));
-          tell(get, set, [eff.label === 'Encalminé'
+          tell(get, set, [!sea.sailsDown
             ? `⛵ Encalminé — le bateau ne peut pas se déplacer grâce à ses voiles (MDG ch.13 l.296).${anchored ? ' L\'ancre est jetée.' : ` Le courant l'entraîne (${drift} milles).`}`
             : `⛵ Voiles affalées — ${anchored ? 'ancre jetée en attendant l\'accalmie.' : `le vent pousse le navire (${drift} milles, 25 % de la vitesse — l.294).`}`]);
           patchSea(get, set, { milesToday: 0, step: 'crise' });

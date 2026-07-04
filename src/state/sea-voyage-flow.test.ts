@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
-import { buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade } from './seaVoyageFlow';
+import { buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade, runSeaDays } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import type { WorldMap } from './worldMap';
 
@@ -114,6 +114,34 @@ describe('resolveVoyageCrewTest — issues par type', () => {
     // Le tableau Changement de cap (d10+2) peut donner « sans conséquence » (1-3 impossible ici : min 3),
     // retard (+10/25 %), 90° ou demi-tour — dans TOUS les cas le voyage continue et km ≥ avant (jamais réduit).
     expect(get().travelPlan!.km).toBeGreaterThanOrEqual(before);
+  });
+});
+
+describe('progression — message « Encalminé »/« Voiles affalées » piloté par la STRUCTURE (sailsDown / m===null), pas par le libellé FR du vent', () => {
+  beforeEach(freshState);
+
+  // Mer calme (calme-plat → cellule `encalmine` sur TOUS les aspects, ch.13 l.276) → eff.m === null,
+  // indépendamment de `sailsDown` (posé par un jour de vent violent PRÉCÉDENT, ne dépend pas de la météo courante).
+  function planAtProgression(sailsDown: boolean) {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    const sea = { ...plan.sea!, step: 'progression' as const, weather: { ...plan.sea!.weather, vent: 'calme-plat' as const }, sailsDown };
+    set({ travelPlan: { ...plan, sea } });
+  }
+
+  it('mer calme (eff.m === null), voiles NON affalées → message « Encalminé »', () => {
+    planAtProgression(false);
+    runSeaDays(get, set);
+    const journal = get().journal;
+    expect(journal.some((l) => l.includes('Encalminé'))).toBe(true);
+    expect(journal.some((l) => l.includes('affalées'))).toBe(false);
+  });
+
+  it('voiles affalées (sailsDown), MÊME mer calme → message « Voiles affalées » (la structure prime sur le libellé du vent)', () => {
+    planAtProgression(true);
+    runSeaDays(get, set);
+    const journal = get().journal;
+    expect(journal.some((l) => l.includes('affalées'))).toBe(true);
+    expect(journal.some((l) => l.includes('Encalminé'))).toBe(false);
   });
 });
 
