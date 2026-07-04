@@ -395,24 +395,30 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                   d={c.d}
                   fill="none"
                   stroke={sel ? 'var(--accent)' : fromHere ? '#6d4f24' : '#9b8255'}
-                  strokeWidth={sel ? 1.1 : 0.65}
+                  strokeWidth={sel ? 1.4 : 0.9}
                   strokeLinecap="round"
-                  strokeDasharray={water ? '0.4 1.7' : '1.7 1.2'}
+                  strokeDasharray={water ? '0.6 2.4' : '2.4 1.7'}
                   opacity={sel || fromHere ? 1 : 0.7}
                   pointerEvents="none"
+                  vectorEffect="non-scaling-stroke"
                 />
-                <g transform={`translate(${c.lx} ${c.ly})`}>
-                  <rect x="-5.4" y="-2.2" width="10.8" height="3.2" rx="1.6" fill="#efe2bd" opacity="0.82" />
-                  <text y="0.2" textAnchor="middle" fontSize="2.3" fill="#5d4520">
-                    {r.km} km
-                  </text>
-                  {/* Badge de mode (véhicule possible) : barque (voie d'eau) / compas (route carrossable). */}
-                  {r.modes.some((m) => m !== 'pied') && (
-                    <g style={{ color: '#5d4520' }}>
-                      <IconG id={water ? 'scenario/naval' : 'scenario/travel'} x={5.8} y={-1.5} size={2.8} />
-                    </g>
-                  )}
-                </g>
+                {/* Étiquette de distance — taille écran CONSTANTE (scale 1/z), et seulement pour les
+                    routes partant d'ICI (celles qu'on peut prendre) : les autres restent des traits
+                    propres, pas une nuée de « 30 km » sur chaque segment. */}
+                {fromHere && (
+                  <g transform={`translate(${c.lx} ${c.ly}) scale(${1 / view.z})`} style={{ pointerEvents: 'none' }}>
+                    <rect x="-5" y="-2" width="10" height="3" rx="1.5" fill="#efe2bd" opacity="0.88" />
+                    <text y="0.15" textAnchor="middle" fontSize="2.1" fill="#5d4520">
+                      {r.km} km
+                    </text>
+                    {/* Badge de mode (véhicule possible) : barque (voie d'eau) / compas (route carrossable). */}
+                    {r.modes.some((m) => m !== 'pied') && (
+                      <g style={{ color: '#5d4520' }}>
+                        <IconG id={water ? 'scenario/naval' : 'scenario/travel'} x={5.4} y={-1.35} size={2.5} />
+                      </g>
+                    )}
+                  </g>
+                )}
               </g>
             );
           })}
@@ -428,26 +434,28 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             return (
               <g
                 key={p.id}
-                transform={`translate(${pr.x} ${pr.y})`}
+                // `scale(1/z)` : marqueur à TAILLE ÉCRAN CONSTANTE (la POSITION suit le zoom, la TAILLE non
+                // — comme un pin de carte pro : ne gonfle pas au zoom, ne s'empile pas en gros pâtés).
+                transform={`translate(${pr.x} ${pr.y}) scale(${1 / view.z})`}
                 onClick={clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined}
                 onPointerEnter={() => setHoveredId(p.id)}
                 onPointerLeave={() => setHoveredId((h) => (h === p.id ? null : h))}
                 style={clickable || !isHere ? { cursor: clickable ? 'pointer' : 'help' } : undefined}
-                opacity={clickable || isHere ? 1 : 0.55}
+                opacity={clickable || isHere ? 1 : 0.6}
               >
-                {/* cible de clic/survol généreuse */}
-                <circle r="6.5" fill="#000" fillOpacity="0" />
-                {isHere && <text y="-4.4" textAnchor="middle" fontSize="2.2" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
+                {/* cible de clic/survol généreuse (taille écran constante) */}
+                <circle r="3.4" fill="#000" fillOpacity="0" />
+                {isHere && <text y="-2.6" textAnchor="middle" fontSize="1.5" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
                 {(isHere || isDest) && (
-                  <circle r="3.7" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.55" opacity="0.9" />
+                  <circle r="2.1" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.4" opacity="0.95" />
                 )}
                 {clickable && !isDest && (
-                  <circle r="3.7" fill="none" stroke="var(--accent)" strokeWidth="0.4" strokeDasharray="0.9 0.7" opacity="0.85" />
+                  <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="0.7 0.55" opacity="0.9" />
                 )}
-                <circle r="2.9" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.35" filter="url(#wm-drop)" />
+                <circle r="1.5" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.22" filter="url(#wm-drop)" />
                 {/* `p.icon` = id d'icône (registre src/ui/icons) ; sans icône, drapeau de lieu. */}
                 <g style={{ color: '#4a3517' }}>
-                  <IconG id={p.icon ?? 'nav/entry-point'} x={-1.8} y={-1.8} size={3.6} />
+                  <IconG id={p.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
                 </g>
               </g>
             );
@@ -462,12 +470,14 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             const clickable = here ? routes.some((r) => otherEnd(r, here.id) === p.id) : false;
             const hovered = hoveredId === p.id;
             if (!isHere && !clickable && !hovered) return null;
-            const w = Math.max(11, p.label.length * 1.35 + 4);
+            const w = Math.max(8, p.label.length * 1.15 + 3);
             const pr = posOf(p);
             return (
-              <g key={`lbl-${p.id}`} transform={`translate(${pr.x} ${pr.y + 6.2})`} style={{ pointerEvents: 'none' }}>
-                <rect x={-w / 2} y="-2.3" width={w} height="3.6" rx="1.8" fill="#33240f" opacity={0.9} stroke={hovered && !isHere && !clickable ? 'var(--gold2)' : 'none'} strokeWidth="0.25" />
-                <text y="0.3" textAnchor="middle" fontSize="2.5" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
+              <g key={`lbl-${p.id}`} transform={`translate(${pr.x} ${pr.y}) scale(${1 / view.z})`} style={{ pointerEvents: 'none' }}>
+                <g transform="translate(0 3.6)">
+                  <rect x={-w / 2} y="-1.9" width={w} height="3" rx="1.5" fill="#33240f" opacity={0.9} stroke={hovered && !isHere && !clickable ? 'var(--gold2)' : 'none'} strokeWidth="0.2" />
+                  <text y="0.25" textAnchor="middle" fontSize="2.1" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
+                </g>
               </g>
             );
           })}
