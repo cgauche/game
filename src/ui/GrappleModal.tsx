@@ -1,20 +1,17 @@
 import { useGame } from '../state/store';
 import { effectiveChar } from '../engine/characteristics';
 import { canReroll } from '../engine/fortune';
-import { InfluenceRow } from './InfluenceRow';
-import { ResilienceButton } from './ResilienceButton';
 import { OptionChooser } from './OptionChooser';
-import { RollPanel } from './RollPanel';
+import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
-import { Modal } from './Modal';
 import { testBreakdown } from './breakdown';
 
 /**
- * Modale « Empoignade » (LDB 14 l.161) — calque de la modale « Au Contact » :
- * - phase 'roll' : Test opposé de FORCE sur le panneau unique — le jet du foe est FIGÉ (ligne adverse),
- *   seul le jet de l'acteur se (re)joue (« Lancer » → Chance/+1 DR/Pacte/Résilience → « Appliquer »).
+ * Modale « Empoignade » (LDB 14 l.161) — Test OPPOSÉ de FORCE sur `RollShell` (opposé = 2 rangées) :
+ * - rangée [0] = TÉMOIN : le jet de Force du foe, FIGÉ (`interactive:false`) ;
+ * - rangée [1] = INTERACTIVE : le jet de Force de l'acteur, porteur de son cycle d'influence.
  *   Un bouton « Briser l'Empoignade » (gratuit) apparaît AVANT le jet si l'acteur a un Avantage supérieur.
  * - phase 'options' : le VAINQUEUR tranche via `OptionChooser` — Dégâts (BF + DR, PA ignorés) / Empêtrer
  *   l'adversaire / Se libérer (retire son *Empêtré* + 1 par DR).
@@ -35,86 +32,95 @@ export function GrappleModal() {
   const actor = battle.combatants.find((c) => c.id === pd.actorId);
   const foe = battle.combatants.find((c) => c.id === pd.foeId);
   if (!actor || !foe) return null;
+  const rolled = !!pd.def;
   const rerollable = !!pd.def && !pd.def.success && canReroll(!pd.def.success, !!pd.rerolled);
+  const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
   const outcome =
     pd.result === 'success' ? `${actor.name} l'emporte — à toi de choisir.`
     : pd.result === 'failure' ? `${foe.name} l'emporte : +1 Avantage.`
     : 'Égalité parfaite : l’Empoignade se poursuit.';
 
-  return (
-    <Modal title="Empoignade" onClose={pd.phase === 'roll' && !pd.def ? cancel : undefined}>
-      <VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb="🤼" />
+  // Rangée TÉMOIN : Force du foe, figée (jamais relancée).
+  const foeRow = {
+    combatant: foe,
+    row: { combatant: foe, d: pd.atk ? testBreakdown('Force', effectiveChar(foe, 'F'), pd.atk) : undefined },
+    rolled,
+    interactive: false as const,
+  };
+  // Rangée INTERACTIVE : Force de l'acteur, porteur de son cycle d'influence.
+  const actorRow = {
+    combatant: actor,
+    actor,
+    row: { combatant: actor, d: pd.def ? testBreakdown('Force', effectiveChar(actor, 'F'), pd.def) : undefined },
+    rolled,
+    rollLabel: 'Lancer (Force)',
+    onRoll: roll,
+    rerollable,
+    onReroll: reroll,
+    onBonusSL: bonusSL,
+    darkPactable: actor.kind === 'hero' && !!pd.def && !pd.def.success,
+    onDarkPact: darkPact,
+    onForce: force,
+    // Résilience AVANT le jet (LDB 17 l.73) : Force forcée à l'emporter.
+    preRollForce: () => { roll(); force(); },
+    forceShow: pd.result !== 'success',
+  };
 
-      {pd.phase === 'options' ? (
-        <>
-          <p className="rm-log">Tu l'emportes : choisis l'issue de l'Empoignade.</p>
-          <OptionChooser
-            layout="actions"
-            options={[
-              { key: 'damage', label: '💥 Dégâts', primary: true, onSelect: () => choose('damage'), title: 'BF + DR Dégâts, en IGNORANT tous les Points d’Armure (Localisation au lancer de Force).' },
-              { key: 'entangle', label: '🪢 Empêtrer', onSelect: () => choose('entangle'), title: 'Conférer l’État Empêtré à l’adversaire.' },
-              { key: 'free', label: '🤸 Se libérer', onSelect: () => choose('free'), title: 'Te défaire de ton État Empêtré, et en retirer 1 de plus par DR obtenu.' },
-            ]}
-          />
-        </>
-      ) : (
-        <>
-          {/* Test opposé : Force du foe (figée) vs Force de l'acteur. */}
-          <RollPanel
-            rows={[
-              { combatant: foe, d: pd.atk ? testBreakdown('Force', effectiveChar(foe, 'F'), pd.atk) : undefined },
-              { combatant: actor, d: pd.def ? testBreakdown('Force', effectiveChar(actor, 'F'), pd.def) : undefined },
-            ]}
-            winnerIndex={pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null}
-          />
-          {pd.def && (
-            <JournalLine
-              className="rm-journal"
-              event={ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, actor.id, foe.id)}
-              combatants={battle.combatants}
+  const journal = pd.def && (
+    <JournalLine
+      className="rm-journal"
+      event={ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, actor.id, foe.id)}
+      combatants={battle.combatants}
+    />
+  );
+
+  if (pd.phase === 'options') {
+    // Le VAINQUEUR tranche l'issue de l'Empoignade. Panneau résolu conservé.
+    return (
+      <RollShell
+        title="Empoignade"
+        extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb="🤼" />}
+        rows={[foeRow, actorRow]}
+        rolled
+        winnerIndex={winnerIndex}
+        postRollExtra={
+          <>
+            {journal}
+            <p className="rm-log">Tu l'emportes : choisis l'issue de l'Empoignade.</p>
+            <OptionChooser
+              layout="actions"
+              options={[
+                { key: 'damage', label: '💥 Dégâts', primary: true, onSelect: () => choose('damage'), title: 'BF + DR Dégâts, en IGNORANT tous les Points d’Armure (Localisation au lancer de Force).' },
+                { key: 'entangle', label: '🪢 Empêtrer', onSelect: () => choose('entangle'), title: 'Conférer l’État Empêtré à l’adversaire.' },
+                { key: 'free', label: '🤸 Se libérer', onSelect: () => choose('free'), title: 'Te défaire de ton État Empêtré, et en retirer 1 de plus par DR obtenu.' },
+              ]}
             />
-          )}
-          {!pd.def ? (
-            <>
-              <div className="rm-influence">
-                {/* Résilience AVANT le jet (LDB 17 l.73) : Force forcée à l'emporter. */}
-                <ResilienceButton resilience={actor.resilience ?? 0} show={(actor.resilience ?? 0) > 0} onForce={() => { roll(); force(); }} />
-              </div>
-              <div className="modal-actions">
-                <button className="btn btn-ghost" onClick={cancel}>
-                  Renoncer
-                </button>
-                {pd.canBreak && (
-                  <button className="btn" onClick={breakGrapple} title="Avantage supérieur : briser l’Empoignade gratuitement (par ton Mouvement).">
-                    Briser l'Empoignade
-                  </button>
-                )}
-                <button className="btn btn-primary" onClick={roll}>
-                  Lancer (Force)
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <InfluenceRow
-                actor={actor}
-                rerollable={rerollable}
-                onReroll={reroll}
-                onBonusSL={bonusSL}
-                darkPactable={actor.kind === 'hero' && !pd.def.success}
-                onDarkPact={darkPact}
-                onForce={force}
-                forceShow={pd.result !== 'success'}
-              />
-              <div className="modal-actions">
-                <button className="btn btn-primary" onClick={confirm}>
-                  Appliquer
-                </button>
-              </div>
-            </>
-          )}
-        </>
-      )}
-    </Modal>
+          </>
+        }
+        actions={[]}
+      />
+    );
+  }
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Renoncer', kind: 'ghost', onClick: cancel, when: 'pre' },
+    // Avantage supérieur : briser l'Empoignade gratuitement (par son Mouvement) — pré-jet uniquement.
+    ...(pd.canBreak
+      ? [{ key: 'break', label: "Briser l'Empoignade", kind: 'ghost', onClick: breakGrapple, title: 'Avantage supérieur : briser l’Empoignade gratuitement (par ton Mouvement).', when: 'pre' } as RollAction]
+      : []),
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+  ];
+
+  return (
+    <RollShell
+      title="Empoignade"
+      extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb="🤼" />}
+      rows={[foeRow, actorRow]}
+      rolled={rolled}
+      winnerIndex={winnerIndex}
+      postRollExtra={journal}
+      actions={actions}
+      onCancel={rolled ? undefined : cancel}
+    />
   );
 }
