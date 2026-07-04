@@ -12,7 +12,7 @@ import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
 import { findCreatureById, findCareerById, findTrappingById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
-import { entitySprite, pnjSprite } from './sprites';
+import { entitySprite } from './sprites';
 import { hashSeed } from './appearance';
 import { resolveRig, RigSprite } from './rig/composeRig';
 import { defaultAppearance, type Appearance } from './rig/appearance';
@@ -138,7 +138,9 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
       }
       return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={leader} /> };
     }
-    return { backend: 'sprite', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: pnjSprite() }} /> };
+    // Groupe VIDE (aucun meneur) — cas défensif inatteignable en exploration (party.find ?? party[0]
+    // renvoie toujours un membre tant que le groupe existe) : jeton vide, plus de sprite « villageois ».
+    return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g /> };
   }
 
   // sceneEntity (exploration + éditeur)

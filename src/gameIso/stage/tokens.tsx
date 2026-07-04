@@ -16,7 +16,7 @@ import { metricToLift } from '../../state/relief';
 import { BodyToken } from '../BodyToken';
 import { MountedToken } from '../MountedToken';
 import { pickBackend } from '../pickBackend';
-import { entitySprite, propSprite, pnjSprite } from '../sprites';
+import { entitySprite, propSprite } from '../sprites';
 import { propDepth } from '../backends/affineProps';
 import { sizeTokenScale, footprintTokenScale } from '../sizeScale';
 import { sizeFootprint, footprintN, footprintTiles } from '../../state/footprint';
@@ -41,8 +41,8 @@ export interface TokenCtx {
 }
 
 // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
-// unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
-// bakée (CORPSE_POSE / pose effondrée) → pas de bascule externe (bakedDeath).
+// unique). token() = corps SVG string (props/décor) ; tokenNode() = enfant React (rig) dont la mort
+// est déjà bakée (CORPSE_POSE / pose effondrée) → pas de bascule externe (bakedDeath).
 function token(ctx: TokenCtx, id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean, z = 0) {
   return (
     <BodyToken key={id} x={x} y={y} z={ctx.liftAt(x, y, z)} dims={ctx.dims} scale={scale} ring={ringColor} dim={dim} walking={walking} fx={fx} bakedDeath={bakedDeath}>
@@ -250,11 +250,10 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
 export function partyLeaderObj(ctx: TokenCtx, partyPos: Pt, partyLeader: Combatant | undefined, walkPosOf: WalkPos): StageObj {
   const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y, partyPos.z ?? 0) : { x: partyPos.x, y: partyPos.y, walking: false, sortPt: { x: partyPos.x, y: partyPos.y } };
   const pZ = partyPos.z ?? 0; // le groupe se rend à son étage (loge) — token soulevé + trié au bon niveau
+  // Le jeton de groupe rend TOUJOURS le rig (AnimatedRigToken du meneur, ou jeton vide si groupe vide) :
+  // pickBackend('partyLeader') ne renvoie plus de backend 'sprite'.
   const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, ctx.view);
-  const el =
-    r.backend === 'sprite'
-      ? token(ctx, r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0], false, undefined, false, false, pZ)
-      : tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1) }, pZ);
+  const el = tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1) }, pZ);
   return { d: depth(wp.sortPt.x, wp.sortPt.y, ctx.dims, pZ) + 0.5, z: pZ, vis: true, el }; // le groupe est toujours en vue → au-dessus du voile
 }
 

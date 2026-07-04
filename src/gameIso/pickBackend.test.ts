@@ -5,9 +5,9 @@ import type { SceneEntity } from '../state/scene';
 const ent = (over: Partial<SceneEntity>): SceneEntity => ({ id: 'x', kind: 'prop', pos: { x: 0, y: 0 }, ...over });
 
 describe('pickBackend — classifieur de backend (rig / plan / sprite)', () => {
-  it('leader absent → sprite, id __party', () => {
+  it('leader absent (groupe vide) → jeton VIDE (rig), id __party — plus de sprite villageois', () => {
     const r = pickBackend({ kind: 'partyLeader', leader: undefined });
-    expect(r.backend).toBe('sprite');
+    expect(r.backend).toBe('rig');
     expect(r.id).toBe('__party');
   });
 

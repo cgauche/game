@@ -7,30 +7,12 @@ import type { Rot } from './iso';
 import { propSvg } from './catalog/decor';
 import type { Dir8 } from '../state/dir8';
 import { TERRAIN_DEFS } from '../state/terrain';
-import { P } from './catalog/decorPalette';
 import { rigFxGradients } from './rig/fxGradients';
-
-const e = (cx: number, cy: number, r = 2) =>
-  `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="${P.villageoisPupille}"/>`;
 
 // Le DÉCOR en billboard (arbre du terrain `bois`, tonneaux…) passe désormais par `propSvg` (catalogue),
 // et le MUR PLEIN par le relief data-driven de `buildFloors` (`TerrainDef.solidHeightM`) — plus aucun
-// overlay codé en dur ici. Ce module ne fournit que les sprites de PNJ/props et les DEFS de dégradés.
-
-// --- PNJ / props / objets --------------------------------------------------
-function villager() {
-  return `<g class="bob"><path d="M44 80 Q60 70 76 80 L82 150 L38 150 Z" fill="${P.villageoisEtoffe}"/>
-    <path d="M44 78 Q60 70 76 78 L80 110 Q60 118 40 110 Z" fill="${P.villageoisEtoffeClaire}"/>
-    <path d="M44 82 Q32 92 34 112" stroke="${P.villageoisEtoffe}" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <path d="M76 82 Q88 92 86 112" stroke="${P.villageoisEtoffe}" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <circle cx="60" cy="56" r="14" fill="${P.villageoisPeau}"/>
-    <path d="M46 52 Q60 36 74 52 Q70 44 60 44 Q50 44 46 52 Z" fill="${P.villageoisCheveux}"/>${e(55, 56, 1.6)}${e(65, 56, 1.6)}
-    <path d="M54 64 q6 4 12 0" stroke="${P.villageoisBouche}" stroke-width="1.5" fill="none"/></g>`;
-}
-
-export function pnjSprite(): string {
-  return villager();
-}
+// overlay codé en dur ici. Ce module ne fournit que les sprites de props/décor et les DEFS de dégradés.
+// (Le sprite « villageois » du jeton de groupe a été retiré : ce jeton affiche le RIG réel du meneur.)
 
 /** Vue minimale d'une entité pour le rendu (type structurel : pas d'import scene). */
 export interface EntityViz {
