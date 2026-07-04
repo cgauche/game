@@ -176,6 +176,9 @@ export function CampaignView() {
         {sessionOpen && <SessionEndModal onClose={() => setSessionOpen(false)} />}
         {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
         {optionsOpen && <OptionsModal onClose={() => setOptionsOpen(false)} />}
+        {/* Barre d'actions de lieu : carte / port / marché / repos — rangée qui s'auto-empile
+            (aucune se recouvre, quel que soit le sous-ensemble affiché). */}
+        <div className="worldmap-actions">
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (
@@ -225,6 +228,7 @@ export function CampaignView() {
             <Icon id="nav/rest" size="lg" />
           </button>
         )}
+        </div>
         <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />
         <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
         <ViewControls
