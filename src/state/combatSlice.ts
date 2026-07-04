@@ -14,6 +14,7 @@ import type { GameState, BattleState } from './store';
 import type { CounterParticipant } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
+import { continueRiverDayAfterCascade } from './riverVoyageFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
@@ -2647,6 +2648,7 @@ export function createCombatSlice(get: Get, set: Set) {
     cascadeNext: () => {
       const done = advanceCascade(get, set);
       if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+      else if (done?.purpose === 'travelDay') continueRiverDayAfterCascade(get, set); // jets du JOUR fluvial clos → km + halte/arrivée
       else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
       else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
       else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // séquence de conséquences close → reprendre l'IA
@@ -2655,6 +2657,7 @@ export function createCombatSlice(get: Get, set: Set) {
     cascadeFinish: () => {
       const done = finalizeCascade(get, set);
       if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+      else if (done?.purpose === 'travelDay') continueRiverDayAfterCascade(get, set); // « Tout résoudre » du jour fluvial → km + halte/arrivée
       else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
       else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary)
       else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // bilan clos → reprendre l'IA suspendue

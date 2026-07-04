@@ -9,16 +9,16 @@ import type { Combatant, SkillInstance } from '../engine/types';
 import type { MapRoute, WorldMap } from './worldMap';
 
 /**
- * VOYAGE FLUVIAL (T2C ch.5) — la descente du Reik en barge JOUÉE jour par jour : Test de Navigation par
- * étape (Voile/Ramer), Agilité de rame, table des vents, chavirage, périls. Réutilise la machinerie de
- * voyage (halte de nuit `openRest`, entretien quotidien, coque persistée) sans la dupliquer.
+ * VOYAGE FLUVIAL (T2C ch.5) — la descente du Reik en barge JOUÉE jour par jour. Depuis la Phase B, TOUS
+ * les jets du JOUR (Agilité de rame, Navigation, Louvoyage, sauvegardes de vent, évitement des périls)
+ * passent par la MÊME cascade influençable (Chance/Pacte/Résilience) que la nuit — plus d'auto-résolution
+ * inline. La cascade du jour (`purpose:'travelDay'`) se clôt sur le calcul des km (IDENTIQUE à l'ancien
+ * chemin) puis enchaîne la halte de nuit / l'arrivée ; la nuit reste la cascade de repos (Phase A).
  */
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 function skill(c: Combatant, skillId: string, advances: number, spec?: string): void {
-  // find-or-update : la carrière batelier possède déjà Voile/Ramer — on RELÈVE l'avance de la Compétence
-  // EXISTANTE (spec null/undefined équivalents) au lieu d'ajouter un doublon shadowé par `testValue`.
   const ex = c.skills.find((s) => s.skillId === skillId && (s.spec ?? null) === (spec ?? null));
   if (ex) ex.advances = Math.max(ex.advances, advances);
   else c.skills.push({ skillId, spec, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
@@ -33,8 +33,6 @@ function crew(withSavoir = false): Combatant[] {
   const otto = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', name: 'Otto', motivation: 'x', rng: makeRNG(12), id: 'r-otto' });
   const lise = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Lise', motivation: 'x', rng: makeRNG(13), id: 'r-lise' });
   const trio = [gunnar, otto, lise];
-  // Équipage aguerri du Reik : tous connaissent les Voies fluviales → le pilote (quel qu'il soit) crédite
-  // le +1 DR (l.13). Sinon le pilote résolu (meilleure valeur de Voile/Ramer) pourrait ne pas l'avoir.
   if (withSavoir) for (const h of trio) skill(h, 'savoir', 40, 'Voies fluviales');
   return trio;
 }
@@ -65,6 +63,18 @@ function launch(withSavoir = false, km = 45, extra: Partial<MapRoute> = {}): voi
   set({ money: { gold: 500, silver: 0, brass: 0 }, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
 }
 
+/** Déroule la cascade OUVERTE (jour ou nuit) : roule chaque étape-jet puis avance jusqu'à sa clôture.
+ *  S'arrête dès qu'un pendingRest apparaît (halte de nuit) ou que la cascade se ferme. */
+function drainCascade(): void {
+  let g = 0;
+  while (get().pendingCascade && g++ < 200) {
+    const p = get().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+    else get().cascadeNext();
+  }
+}
+
 describe('buildRiverPlan — la descente exige un batelier et une embarcation', () => {
   beforeEach(() => launch());
 
@@ -84,56 +94,121 @@ describe('buildRiverPlan — la descente exige un batelier et une embarcation', 
   });
 });
 
-describe('une journée de descente — Navigation, Agilité, vent (l.11-33)', () => {
+describe('cascade du JOUR fluvial — tous les jets sont influençables (purpose travelDay)', () => {
   beforeEach(() => launch());
 
-  it('startTravel(barge) sur une route fluviale JOUE la journée (Navigation + Agilité + progression)', () => {
+  it('startTravel(barge) OUVRE une cascade travelDay dont les étapes-jet sont influençables', () => {
     get().startTravel('r-reik', 'barge');
+    const pc = get().pendingCascade;
+    expect(pc?.purpose).toBe('travelDay'); // le jour ne s'auto-résout plus : il ouvre la cascade
+    // Au moins une étape-jet influençable (Agilité, Navigation) est présente dans les participants.
+    const jetSteps = pc!.participants.filter((s) => s.target != null);
+    expect(jetSteps.length).toBeGreaterThan(0);
+    expect(pc!.participants.some((s) => s.kind === 'riverAgility')).toBe(true);
+    expect(pc!.participants.some((s) => s.kind === 'riverNav')).toBe(true);
+    // La 1ʳᵉ étape porte un jet à lancer (result null tant qu'on n'a pas roulé) → INFLUENÇABLE.
+    const cur = pc!.participants[pc!.cursor];
+    expect(cur.target).not.toBeNull();
+    expect(cur.result ?? null).toBeNull();
+  });
+
+  it('le jour affiche le vent + les Tests de Navigation/Agilité une fois la cascade déroulée', () => {
+    get().startTravel('r-reik', 'barge');
+    drainCascade();
     const j = get().journal.join('\n');
     expect(j).toContain('Vent du jour'); // table des vents (l.21)
-    expect(j).toMatch(/Navigation \((Voile|Ramer)/); // Test de Navigation de l'étape (l.15)
+    expect(j).toMatch(/Navigation/); // Test de Navigation de l'étape (l.15)
     expect(j).toContain('Agilité de rame'); // Test d'Agilité de début de jour (l.17)
     expect(j).toContain('Progression du jour');
-    // La journée s'achève sur une halte de nuit OU l'arrivée (45 km ≈ une journée de barge).
+    // ENCHAÎNEMENT : la journée s'achève sur une halte de nuit OU l'arrivée (45 km ≈ une journée de barge).
     expect(get().pendingRest || get().scene?.id === 'quai-b').toBeTruthy();
   });
 
   it('un pilote doté de Savoir (Voies fluviales) le voit crédité au Test de Navigation (+1 DR, l.13)', () => {
     launch(true);
     get().startTravel('r-reik', 'barge');
+    drainCascade();
     expect(get().journal.join('\n')).toContain('Savoir Voies fluviales +1 DR');
   });
 });
 
-describe('chavirage — Très fort de côté (note 4, l.40)', () => {
-  beforeEach(() => launch());
-
-  it('déclenche la séquence « retirer la voile / chavirer »', () => {
-    seedBattleRng(3);
-    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
-    set({ travelPlan: { ...plan, river: { ...plan.river!, windForce: 'tres-fort', windDir: 'cote' } }, journal: [] });
-    runRiverDays(get, set);
-    const j = get().journal.join('\n');
-    expect(j).toContain('retirer la voile avant de chavirer'); // Navigation Accessible (+20), note 4
+/**
+ * PARITÉ RNG (à graine fixe) : la mise en scène en cascade ne change RIEN aux issues RAW — mêmes km
+ * parcourus, mêmes Dégâts de coque, même état fluvial qu'AVANT la Phase B. Valeurs golden capturées sur
+ * l'ancien chemin inline (probe) : seed 7/45km → 12 km, coque 60/60 ; seed 5 + débris → 12 km, coque 40/60 ;
+ * seed 3 + Très fort de côté (chavirage) → 12 km (dérive), coque 60/60, non coulé.
+ */
+describe('PARITÉ — km / Dégâts de coque IDENTIQUES à l\'ancien chemin inline (graine égale)', () => {
+  it('seed 7 / 45 km / sans Savoir → 12 km, coque intacte, halte de nuit', () => {
+    launch(false, 45);
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    drainCascade();
+    const plan = get().travelPlan!;
+    expect(plan.kmDone).toBe(12);
+    expect(plan.vehicle!.wounds.current).toBe(60);
+    expect(plan.river!.daysAfloat).toBe(1);
+    expect(get().pendingRest).toBeTruthy(); // halte de nuit (45 km non atteints en un jour)
   });
-});
 
-describe('péril de rivière — débris flottants (l.123-125)', () => {
-  beforeEach(() => launch(false, 45, { riverPerils: [{ perilId: 'debris', chancePct: 100 }] }));
-
-  it('un péril garanti (chance 100 %) est joué : manœuvre d\'évitement (Navigation)', () => {
+  it('seed 5 / débris (chance 100 %) → 12 km, coque 40/60 (20 Dégâts de collision)', () => {
+    launch(false, 45, { riverPerils: [{ perilId: 'debris', chancePct: 100 }] });
     seedBattleRng(5);
     get().startTravel('r-reik', 'barge');
+    drainCascade();
+    const plan = get().travelPlan!;
+    expect(plan.kmDone).toBe(12);
+    expect(plan.vehicle!.wounds.current).toBe(40); // débris : 20 Dégâts (parité inline)
     expect(get().journal.join('\n')).toContain('Débris flottants en aval');
+  });
+
+  it('seed 3 / Très fort de côté → chavirage joué, dérive 12 km, coque 60/60, non coulé', () => {
+    launch(false, 45);
+    seedBattleRng(3);
+    const plan0 = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    set({ travelPlan: { ...plan0, river: { ...plan0.river!, windForce: 'tres-fort', windDir: 'cote' } }, journal: [] });
+    runRiverDays(get, set);
+    drainCascade();
+    const plan = get().travelPlan!;
+    expect(plan.river!.sunk).toBeFalsy();
+    expect(plan.kmDone).toBe(12); // dérive = 25 % de la vitesse de base
+    expect(plan.vehicle!.wounds.current).toBe(60);
+    expect(get().journal.join('\n')).toContain('retirer la voile avant de chavirer'); // Navigation Accessible (+20), note 4
   });
 });
 
-describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExposure EXERCÉ', () => {
-  it('un tirage garanti (chance 100 %) ouvre la cascade de Test de Résistance (Exposition), source d\'eau créditée', () => {
+describe('influence effective — Résilience sur un jet du jour fluvial', () => {
+  it('la Résilience force la réussite d\'un jet du jour (le mécanisme UNIQUE de cascade s\'applique)', () => {
+    launch();
+    // Un héros doté de points de Résilience à dépenser sur son jet du jour.
+    set({ party: get().party.map((h) => (h.id === 'r-gunnar' ? { ...h, resilience: 2 } : h)) });
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    const pc = get().pendingCascade!;
+    expect(pc.purpose).toBe('travelDay');
+    // La 1ʳᵉ étape-jet est bien un participant influençable de la cascade.
+    const cur = pc.participants[pc.cursor];
+    expect(cur.target).not.toBeNull();
+    // On force la réussite (forceSuccess) AVANT de rouler : l'API de cascade l'accepte (mécanisme partagé).
+    get().cascadeForceSuccess(cur.id);
+    const after = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    expect(after.result?.success).toBe(true);
+  });
+});
+
+describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExposure EXERCÉ après le jour', () => {
+  it('un tirage garanti (chance 100 %) ouvre la cascade de Test de Résistance (Exposition) à la clôture du jour', () => {
     launch(false, 45, { riverExposure: { source: 'aval-grande-ville-8km', mode: 'ingestion', chancePct: 100 } });
     seedBattleRng(4);
     get().startTravel('r-reik', 'barge');
-    // La cascade d'Exposition s'ouvre pendant la journée (une étape par héros vivant).
+    // On draine d'abord la cascade du JOUR (travelDay) ; sa clôture ouvre la cascade d'Exposition (test).
+    let g = 0;
+    while (get().pendingCascade?.purpose === 'travelDay' && g++ < 200) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+      else get().cascadeNext();
+    }
     const pc = get().pendingCascade;
     expect(pc?.purpose).toBe('test');
     expect(pc?.participants.every((s) => s.kind === 'waterExposure')).toBe(true);
@@ -142,49 +217,25 @@ describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExpos
 
   it('un héros peut CONTRACTER la maladie sur échec du Test d\'Exposition (contraction directe, T2C ch.14)', () => {
     launch(false, 45, { riverExposure: { source: 'grande-ville-marais', mode: 'ingestion', chancePct: 100 } });
-    // Groupe fragile face à l'eau souillée d'une grande ville (−30) : Résistance rabaissée pour garantir l'échec.
     set({ party: get().party.map((h) => ({ ...h, characteristics: { ...h.characteristics, E: 1 } })) });
     seedBattleRng(1);
     get().startTravel('r-reik', 'barge');
-    // Déroule la cascade d'Exposition (chaque participant lance puis avance).
-    let g = 0;
-    while (get().pendingCascade && g++ < 40) {
-      const p = get().pendingCascade!;
-      const cur = p.participants[p.cursor];
-      if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
-      else get().cascadeNext();
-    }
-    // Au moins un héros a contracté une maladie transmise par l'eau (journal + instance de maladie).
+    drainCascade(); // draine le jour PUIS l'exposition (chaînés)
     const anyDiseased = get().party.some((h) => (h.diseases ?? []).length > 0);
     expect(anyDiseased).toBe(true);
   });
 });
 
 describe('entretien du jour de voyage — la Faim se résout À LA HALTE, après le repas (LDB 18 l.417-422)', () => {
-  // Le groupe SANS ration : sans correctif, l'entretien EAGER de fin de jour installe la Faim
-  // AVANT que la halte ne serve le repas → héros affamé malgré l'auberge. Invariant : un jour de
-  // voyage ne roule JAMAIS l'entretien en eager ; il se résout dans la cascade de nuit, après le repas.
   const stripRations = () => set({ party: get().party.map((h) => ({ ...h, items: (h.items ?? []).filter((i) => i.trappingId !== 'ration'), hunger: undefined })) });
 
-  /** Déroule la cascade de nuit ouverte par `restSleep` (roule chaque étape puis avance). */
-  const drainCascade = () => {
-    let g = 0;
-    while (get().pendingCascade && g++ < 80) {
-      const p = get().pendingCascade!;
-      const cur = p.participants[p.cursor];
-      if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
-      get().cascadeNext();
-    }
-  };
-
   it('AUCUN Test de Faim n\'est roulé EAGER pendant le jour de descente (avant la halte)', () => {
-    launch(false, 45); // 45 km ≈ une journée → halte de nuit
+    launch(false, 45);
     stripRations();
     seedBattleRng(7);
     get().startTravel('r-reik', 'barge');
-    // La journée s'achève sur une halte de nuit (pas d'arrivée à 45 km).
+    drainCascade(); // draine la cascade du jour → halte de nuit
     expect(get().pendingRest).toBeTruthy();
-    // Rien de faim n'a été résolu pendant le jour : ni jet dans le journal, ni État de faim installé.
     expect(get().journal.join('\n')).not.toMatch(/Faim : Test de Résistance/);
     for (const h of get().party) expect(h.hunger?.days ?? 0).toBe(0);
   });
@@ -194,12 +245,11 @@ describe('entretien du jour de voyage — la Faim se résout À LA HALTE, après
     stripRations();
     seedBattleRng(7);
     get().startTravel('r-reik', 'barge');
+    drainCascade();
     expect(get().pendingRest).toBeTruthy();
-    // Repas d'auberge pour tous (défaut de la halte sur une route à relais) — puis la nuit.
     for (const h of get().party) get().restSet(h.id, { food: 'repas' });
     get().restSleep();
     drainCascade();
-    // Au réveil, la Faim ne s'est jamais installée : le repas de la halte a couvert le jour.
     for (const h of get().party) {
       expect(h.hunger?.days ?? 0).toBe(0);
       expect(h.hunger?.failures ?? 0).toBe(0);
@@ -211,35 +261,25 @@ describe('entretien du jour de voyage — la Faim se résout À LA HALTE, après
     stripRations();
     seedBattleRng(7);
     get().startTravel('r-reik', 'barge');
+    drainCascade();
     expect(get().pendingRest).toBeTruthy();
-    // Personne ne mange à la halte (dehors + ventre vide).
     for (const h of get().party) get().restSet(h.id, { lodging: 'dehors', food: 'rien' });
-    // La Faim tombe le 2ᵉ jour sans manger (l.422) : un seul jour ici → l'État s'installe (days=1) sans Test encore dû.
     get().restSleep();
     drainCascade();
     for (const h of get().party) expect(h.hunger?.days ?? 0).toBe(1);
   });
 });
 
-describe('descente end-to-end — le Reik jusqu\'à Altdorf', () => {
+describe('descente end-to-end — le Reik jusqu\'à Altdorf (cascades jour + nuit enchaînées)', () => {
   beforeEach(() => launch(false, 120, { riverPerils: [{ perilId: 'debris', chancePct: 40 }] }));
 
-  it('la barge descend jusqu\'à destination (haltes de nuit traversées), le voyage retombe à null', () => {
+  it('la barge descend jusqu\'à destination (jours + haltes traversés), le voyage retombe à null', () => {
     seedBattleRng(9);
     get().startTravel('r-reik', 'barge');
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 120; i++) {
       if (!get().travelPlan && get().scene?.id === 'quai-b') break;
-      if (get().pendingRest) {
-        get().restSleep();
-        let g = 0;
-        while (get().pendingCascade && g++ < 80) {
-          const p = get().pendingCascade!;
-          const cur = p.participants[p.cursor];
-          if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
-          get().cascadeNext();
-        }
-        continue;
-      }
+      if (get().pendingCascade) { drainCascade(); continue; }
+      if (get().pendingRest) { get().restSleep(); drainCascade(); continue; }
       if (!get().travelPlan) break;
     }
     expect(get().travelPlan).toBeNull();

@@ -24,11 +24,22 @@ function launch() {
 
 /** Descend le fleuve par une route de barge jusqu'à l'arrivée (travelPlan retombé à null). Route directe
  *  ≤ 48 km → une seule journée, pas de halte ; on gère quand même une éventuelle nuit de relais. */
+function drainCascade(): void {
+  let g = 0;
+  while (get().pendingCascade && g++ < 200) {
+    const p = get().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+    else get().cascadeNext();
+  }
+}
 function bargeTo(routeId: string, destSceneId: string, maxSteps = 60): void {
   get().startTravel(routeId, 'barge');
   for (let i = 0; i < maxSteps; i++) {
     if (!get().travelPlan && get().scene?.id === destSceneId) return;
-    if (get().pendingRest) { get().restSleep(); let g = 0; while (get().pendingCascade && g++ < 80) { const p = get().pendingCascade!; const cur = p.participants[p.cursor]; if (cur.target != null && !cur.result) get().cascadeRoll(cur.id); get().cascadeNext(); } continue; }
+    // Les jets du JOUR fluvial (et l'exposition) sont désormais une cascade influençable : la drainer.
+    if (get().pendingCascade) { drainCascade(); continue; }
+    if (get().pendingRest) { get().restSleep(); drainCascade(); continue; }
     if (!get().travelPlan) return;
   }
 }
