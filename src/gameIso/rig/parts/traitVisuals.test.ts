@@ -11,9 +11,10 @@ describe('visuels dérivés des traits de créature (statbloc éditeur, sorts gr
     expect(traitOverlaysFor(mk([]))).toEqual([]);
   });
 
-  it('Cornes → cornes derrière la tête ; Attaque caudale → queue dorsale (3 vues, profil vers −x)', () => {
+  it('Cornes → cornes derrière la tête (3 vues) ; Attaque caudale → queue dorsale (3 vues, profil vers −x)', () => {
     const ovs = traitOverlaysFor(mk([{ id: 'cornes', value: 6 }, { id: 'attaque-caudale', value: 8 }]));
-    expect(ovs.some((o) => o.bone === 'tete' && o.behind && o.svg.includes('data-trait="cornes"'))).toBe(true);
+    const cornes = ovs.filter((o) => o.bone === 'tete' && o.behind && o.svg.includes('data-trait="cornes"'));
+    expect(cornes.map((o) => o.view).sort()).toEqual(['back', 'front', 'profile']); // cornes MULTI-VUES (registre)
     const queue = ovs.filter((o) => o.svg.includes('data-trait="queue"'));
     expect(queue.map((o) => o.view).sort()).toEqual(['back', 'front', 'profile']);
     expect(queue.find((o) => o.view === 'profile')?.plane).toBeUndefined(); // racine posée SUR le dos
@@ -23,8 +24,9 @@ describe('visuels dérivés des traits de créature (statbloc éditeur, sorts gr
   it('anti-doublon : la race qui fournit déjà cornes/queue (feature behind) fait foi', () => {
     expect(traitOverlaysFor(mk([{ id: 'cornes', value: 6 }], 'homme-bete'))).toEqual([]); // cornes caprines de race
     expect(traitOverlaysFor(mk([{ id: 'attaque-caudale', value: 8 }], 'skaven'))).toEqual([]); // queue de rat de race
-    // un Nain (barbe en layer positif) garde ses cornes de trait
-    expect(traitOverlaysFor(mk([{ id: 'cornes', value: 6 }], 'nain')).length).toBe(1);
+    // un Nain (barbe en layer positif) garde ses cornes de trait — désormais MULTI-VUES (3 calques)
+    expect(traitOverlaysFor(mk([{ id: 'cornes', value: 6 }], 'nain')).map((o) => o.view).sort())
+      .toEqual(['back', 'front', 'profile']);
   });
 
   it('Tentacules → bras gauche remplacé (poing effacé)', () => {

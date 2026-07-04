@@ -1,5 +1,5 @@
 import type { CreatureDef } from '../types';
-import { OV_CORNES_GOR } from '../../parts/monstrous';
+import { appendageFeature } from '../../parts/appendages';
 
 // Gor (LDB 83) : « tête et jambes d'un bouc, torse et bras d'un humain […] une GRANDE paire
 // de cornes — les plus grandes sont les meilleures — trait qui les différencie des ungors ».
@@ -8,6 +8,6 @@ export const creature: CreatureDef = {
   plan: 'biped',
   race: 'Homme-bête',
   perso: {
-    features: [{ bone: 'tete', svg: OV_CORNES_GOR, layer: -2 }],
+    features: [appendageFeature('cornes-gor')],
   },
 };

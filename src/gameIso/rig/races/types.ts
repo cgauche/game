@@ -6,7 +6,9 @@ import type { GabaritDef } from '../gabarits/types';
 /** Trait de corps d'une race, ancré à un os, éventuellement échelonné à la taille de l'os. */
 export interface RaceFeature {
   bone: BoneId;
-  svg: string;                  // tokens @peau/@metal… (palette partagée)
+  svg: string;                  // art brut 1-vue (tokens @peau/@metal…). Vide '' si `appendage` fournit l'art.
+  appendage?: string;           // id du registre APPENDAGES (cornes/queue MULTI-VUES) — quand présent,
+                                // REMPLACE `svg`, résolu par `pickView` selon la vue (cf. `appendageFeature`).
   layer?: number;               // ordre peintre (défaut: derrière la part de l'os si négatif)
   scale?: 'bone' | 'fixed';     // 'bone' = suit (thickness,length) de l'os ; 'fixed' = taille fixe (défaut)
   view?: View;                  // limite la feature à une vue (ex. crocs vampire = 'front' seul)

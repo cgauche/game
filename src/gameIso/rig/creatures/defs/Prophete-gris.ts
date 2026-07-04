@@ -1,5 +1,5 @@
 import type { CreatureDef } from '../types';
-import { OV_CORNES_CAPRIN } from '../../parts/monstrous';
+import { appendageFeature } from '../../parts/appendages';
 
 // Prophète gris : sorcier-prêtre skaven — fourrure GRISE (le tell canon), CORNES caprines
 // (signe du Rat Cornu) en feature ADDITIVE (garde tête de rat + queue rose de la race)
@@ -10,7 +10,7 @@ export const creature: CreatureDef = {
   race: 'Skaven',
   perso: {
     tenue: 'Prophète gris',
-    features: [{ bone: 'tete', svg: OV_CORNES_CAPRIN, layer: -2 }], // cornes derrière le crâne
+    features: [appendageFeature('cornes-caprin')], // cornes derrière le crâne
     colors: { peau: '#b3aca0', cheveux: '#8a8478' }, // fourrure grise
   },
 };

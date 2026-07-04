@@ -23,11 +23,20 @@ export const OV_CORNES_GOR =
   + `<path d="M-14 -14 q-2.5 -1.4 -3.4 -3.4 M-16 -20 q-2 -1.2 -2.6 -3 M-15.5 -26 q-1.8 -0.8 -2.3 -2.4" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`
   + `<path d="M5 -3 Q15 -8 18 -19 Q19 -28 12 -33 Q16 -26 13 -19 Q10 -11 2 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.6"/>`
   + `<path d="M14 -14 q2.5 -1.4 3.4 -3.4 M16 -20 q2 -1.2 2.6 -3 M15.5 -26 q1.8 -0.8 2.3 -2.4" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`;
+// PROFIL : grands croissants du Gor balayés haut-arrière, corne proche devant la lointaine.
+export const OV_CORNES_GOR_PROFILE =
+  `<path d="M-2 -4 Q-13 -8 -16 -19 Q-17 -28 -10 -33 Q-14 -26 -11 -19 Q-8 -11 0 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.6"/>`
+  + `<path d="M-12 -14 q-2.2 -1.3 -3 -3.2 M-14 -20 q-1.8 -1.1 -2.4 -2.8" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`
+  + `<path d="M2 -5 Q-6 -9 -9 -18 Q-10 -25 -4 -29 Q-8 -23 -6 -18 Q-4 -12 3 -8 Z" fill="#cabf9f" stroke="#3a3026" stroke-width="0.6"/>`;
 
 // Cornes VESTIGIALES de l'ungor (LDB 83 : « cornes vestigiales ou très courtes ») : moignons.
 export const OV_CORNES_VESTIGIALES =
   `<path d="M-5.5 -6 Q-7.5 -9 -6.5 -12 Q-4.5 -9.5 -3.5 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`
   + `<path d="M5.5 -6 Q7.5 -9 6.5 -12 Q4.5 -9.5 3.5 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`;
+// PROFIL : deux moignons rapprochés, balayés haut-arrière.
+export const OV_CORNES_VESTIGIALES_PROFILE =
+  `<path d="M-1 -6 Q-3.5 -9 -3 -12.5 Q-1 -10 0 -7.5 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`
+  + `<path d="M1.6 -6.5 Q-0.4 -9 -0.1 -12 Q1.4 -10 2.4 -8 Z" fill="#cfc4a8" stroke="#3a3026" stroke-width="0.5"/>`;
 // Grandes cornes bovines crème en V (Minotaure/Taureau) — plus écartées.
 export const OV_CORNES_TAUREAU = `<path d="M-7 -5 Q-16 -10 -16 -22 Q-11 -15 -4 -8 Z" fill="#dcd2b4" stroke="#3a3026" stroke-width="0.6"/><path d="M7 -5 Q16 -10 16 -22 Q11 -15 4 -8 Z" fill="#dcd2b4" stroke="#3a3026" stroke-width="0.6"/>`;
 // PROFIL : les deux cornes bovines balaient vers le haut-arrière, corne proche devant la lointaine.

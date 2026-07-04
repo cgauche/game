@@ -1,5 +1,5 @@
 import type { CreatureDef } from '../types';
-import { OV_CORNES_GOR } from '../../parts/monstrous';
+import { appendageFeature } from '../../parts/appendages';
 
 // Chamane-Bray (LDB 83, « Chamane-Brey » en data) : sorcier de la horde — « ils représentent
 // la volonté des Dieux Sombres » (+ trait Cornes). Grandes cornes de gor (statut) = MORPHO ;
@@ -12,7 +12,7 @@ export const creature: CreatureDef = {
   perso: {
     tenue: 'Chamane-Bray',
     features: [
-      { bone: 'tete', svg: OV_CORNES_GOR, layer: -2 },
+      appendageFeature('cornes-gor'),
     ],
   },
 };

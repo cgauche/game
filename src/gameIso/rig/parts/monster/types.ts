@@ -20,8 +20,8 @@ export type MonsterPartDef = {
   label: string;
   order?: number;
   art: PartArt;
-  /** Cornes/queue = calque OVERLAY, art multi-vues comme tout le rig (`PartArt`) — résolu PAR VUE via
-   *  `pickView` dans monsterInjection (une string simple = même art pour front/back/profile). */
-  cornes?: PartArt;
-  queue?: PartArt;
+  /** Cornes/queue = id du registre UNIQUE `APPENDAGES` (art multi-vues) — résolu PAR VUE via `pickView`
+   *  dans monsterInjection. Même source que les cornes de `features` de créature (aucun art inline). */
+  cornes?: string;
+  queue?: string;
 };

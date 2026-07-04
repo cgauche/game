@@ -20,10 +20,10 @@ export const LEGS: Record<string, PartArt> = toMap('jambe');
 
 /** Cornes/queue DÉCLARÉES par la part de tête (clé de tête → calque) — remplace le name-matcher
  *  `m.tete === 'taureau'` de monsterInjection : la forme vit sur la donnée de la tête. */
-export const HEAD_CORNES: Record<string, PartArt> = Object.fromEntries(
+export const HEAD_CORNES: Record<string, string> = Object.fromEntries(
   MONSTER_PARTS.filter((p) => p.slot === 'tete' && p.cornes != null).map((p) => [p.key, p.cornes!]),
 );
-export const HEAD_QUEUE: Record<string, PartArt> = Object.fromEntries(
+export const HEAD_QUEUE: Record<string, string> = Object.fromEntries(
   MONSTER_PARTS.filter((p) => p.slot === 'tete' && p.queue != null).map((p) => [p.key, p.queue!]),
 );
 

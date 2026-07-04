@@ -1,5 +1,6 @@
 import type { CreatureDef } from '../types';
-import { OV_CORNES_GOR, OV_GRIFFES } from '../../parts/monstrous';
+import { OV_GRIFFES } from '../../parts/monstrous';
+import { appendageFeature } from '../../parts/appendages';
 
 // Hommes-bêtes de Khorne (Compagnon T1 ch.12, cage 3) : fourrure ROUGE FONCÉ, « cornes
 // extrêmement aiguisées, longs crocs, mains et pieds griffus », marque du dieu du sang —
@@ -18,7 +19,7 @@ export const creature: CreatureDef = {
   perso: {
     colors: { peau: '#6e2a20', cheveux: '#38140e' }, // fourrure rouge sombre
     features: [
-      { bone: 'tete', svg: OV_CORNES_GOR, layer: -2 },
+      appendageFeature('cornes-gor'),
       { bone: 'mainG', svg: OV_GRIFFES },
       { bone: 'mainD', svg: OV_GRIFFES },
       { bone: 'torse', svg: OV_RUNE_KHORNE, scale: 'bone', layer: 62, view: 'front' },

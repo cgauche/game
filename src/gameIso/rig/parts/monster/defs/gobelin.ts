@@ -1,11 +1,10 @@
 import type { MonsterPartDef } from '../types';
-import { OV_CORNES_CAPRIN, OV_CORNES_CAPRIN_PROFILE } from '../../monsterOverlays';
 import { beastEye } from '../eyes';
 
 export const part: MonsterPartDef = {
   slot: 'tete',
   key: 'gobelin',
-  cornes: { front: OV_CORNES_CAPRIN, back: OV_CORNES_CAPRIN, profile: OV_CORNES_CAPRIN_PROFILE },
+  cornes: 'cornes-caprin',
   label: "Gobelin",
   order: 7,
   art: {

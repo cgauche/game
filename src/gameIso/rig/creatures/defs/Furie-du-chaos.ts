@@ -1,5 +1,5 @@
 import type { CreatureDef } from '../types';
-import { OV_CORNES } from '../../parts/monstrous';
+import { appendageFeature } from '../../parts/appendages';
 
 // Furie du Chaos (Compagnon T1 ch.9) : « silhouette grossière d'HOMME-BÊTE AILÉ ; long museau
 // canin ; cornes courtes et pointues ; yeux jaunes brûlants ; peau parsemée de fourrure sombre
@@ -20,10 +20,8 @@ export const creature: CreatureDef = {
     monster: { tete: 'chien', ailes: 'cuir', griffes: true, queue: true },
     colors: { peau: '#3a2c22' }, // fourrure sombre (les ailes-cuir @peauO suivent)
     features: [
-      // cornes PAR VUE (les génériques toutes-vues flottaient au-dessus du museau de profil)
-      { bone: 'tete', svg: OV_CORNES, layer: -2, view: 'front' },
-      { bone: 'tete', svg: OV_CORNES, layer: -2, view: 'back' },
-      { bone: 'tete', svg: `<path d="M1 -2 q-3 -8 -9 -11 q2.6 6.6 4.8 12.6 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/>`, layer: -2, view: 'profile' },
+      // « cornes courtes et pointues » — repli générique MULTI-VUES du registre (plus de hack par-vue)
+      appendageFeature('cornes-generique'),
       // plaques DISPERSÉES (pas alignées : une diagonale lisait « bandoulière »)
       { bone: 'torse', svg: OV_ECAILLES(-6, -16, 0.9), scale: 'bone', layer: 60 },
       { bone: 'torse', svg: OV_ECAILLES(7, -7, 0.75), scale: 'bone', layer: 60 },

@@ -1,5 +1,6 @@
 import type { CreatureDef } from '../types';
-import { OV_CORNES_GOR, OV_GRIFFES } from '../../parts/monstrous';
+import { OV_GRIFFES } from '../../parts/monstrous';
+import { appendageFeature } from '../../parts/appendages';
 import { scalesPatch } from '../../parts/textures';
 
 // Urzo (Compagnon T1 ch.12, cage 1) : homme-bête massif « presque de la taille d'un ogre »,
@@ -16,7 +17,7 @@ export const creature: CreatureDef = {
     scale: 1.25, // presque ogre (+ trait Taille (Grande) au statbloc)
     colors: { peau: '#7d6f55', cheveux: '#46392a' }, // pelage terne de vieille bête malade
     features: [
-      { bone: 'tete', svg: OV_CORNES_GOR, layer: -2 },
+      appendageFeature('cornes-gor'),
       { bone: 'mainG', svg: OV_GRIFFES },
       { bone: 'mainD', svg: OV_GRIFFES },
       // plaques cornées de tatou (bandes d'écailles sur le torse et les épaules)

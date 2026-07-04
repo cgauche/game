@@ -1,11 +1,10 @@
 import type { MonsterPartDef } from '../types';
-import { OV_CORNES_DEMON, OV_CORNES_DEMON_PROFILE } from '../../monsterOverlays';
 import { emberEye } from '../eyes';
 
 export const part: MonsterPartDef = {
   slot: 'tete',
   key: 'demon',
-  cornes: { front: OV_CORNES_DEMON, back: OV_CORNES_DEMON, profile: OV_CORNES_DEMON_PROFILE },
+  cornes: 'cornes-demon',
   label: "Démon (cornu, gueule)",
   order: 15,
   art: {

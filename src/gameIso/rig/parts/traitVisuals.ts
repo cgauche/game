@@ -10,7 +10,7 @@
  */
 import type { Combatant } from '../../../engine/types';
 import type { RigOverlay, BoneId } from '../bones';
-import { OV_CORNES } from './monstrous';
+import { appendageArt } from './appendages';
 import { ARMS } from './monster';
 import { pickView } from './types';
 import { AILES_FRONT, AILES_BACK, AILES_PROFILE } from './wings';
@@ -20,7 +20,11 @@ import { bipedDef } from '../creatures';
 import { baseSpeciesOf } from '../skeletons';
 import { hasTraitKey } from '../../../engine/traits/dispatch';
 
-const CORNES = `<g data-trait="cornes">${OV_CORNES}</g>`;
+// Cornes de trait = MÊME registre multi-vues que features/monster (repli générique), rendues en 3
+// calques view-taggés (comme queue/ailes via dorsalOverlays) → profil balayé, plus de cornes de face.
+const CORNES3 = appendageArt('cornes-generique');
+const corneOverlay = (v: 'front' | 'back' | 'profile'): RigOverlay =>
+  ({ bone: 'tete', svg: `<g data-trait="cornes">${pickView(CORNES3, v)}</g>`, behind: true, view: v });
 // Queue de trait : LONGUE et débordant la hanche (sinon, cachée derrière le bassin, elle
 // est invisible de face) — fouet de chair terminé par une touffe de poils. De PROFIL elle
 // part vers −x (le dos), pas toujours à droite.
@@ -48,7 +52,7 @@ export function traitOverlaysFor(c: Combatant): RigOverlay[] {
   const hasBehind = (bone: BoneId) => behindFeats.some((f) => f.bone === bone && (f.layer ?? 50) < 0);
   const has = (key: string) => hasTraitKey(traits, key);
   const out: RigOverlay[] = [];
-  if (has('cornes') && !hasBehind('tete')) out.push({ bone: 'tete', svg: CORNES, behind: true });
+  if (has('cornes') && !hasBehind('tete')) out.push(corneOverlay('front'), corneOverlay('back'), corneOverlay('profile'));
   // Queue et ailes = appendices DORSAUX : règles de vue/profondeur codifiées par dorsalOverlays.
   if (has('attaque-caudale') && !hasBehind('bassin')) {
     out.push(...dorsalOverlays('bassin', { front: QUEUE, back: QUEUE, profile: QUEUE_PROFILE }));

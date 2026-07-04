@@ -12,6 +12,7 @@ import { resolveParts } from './parts/resolve';
 import { applyEyes, eyesArtFromKeys } from './parts/eyes';
 import { feat as catalogFeatures, featureMorpho } from './parts/elements';
 import { pickView } from './parts/types';
+import { appendageArt } from './parts/appendages';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
@@ -25,13 +26,16 @@ import { VIEW_POSE } from './viewPose';
 /** Convertit une RaceFeature en part d'os.
  *  'bone' (défaut) = telle quelle : l'os l'échelonne automatiquement via son transform scale.
  *  'fixed' = enveloppe d'échelle inverse pour annuler l'échelle de l'os (taille constante). */
-export function featureToPart(f: RaceFeature, boneScale: [number, number]): { svg: string; layer: number } {
+export function featureToPart(f: RaceFeature, boneScale: [number, number], view: View): { svg: string; layer: number } {
   const layer = f.layer ?? 50;
+  // Appendice (cornes/queue) = art MULTI-VUES du registre, résolu par vue via pickView (comme têtes/
+  // tenues) ; sinon art brut 1-vue. Un seul mécanisme de résolution partout.
+  const raw = f.appendage ? pickView(appendageArt(f.appendage), view) : f.svg;
   if (f.scale === 'fixed' && (Math.abs(boneScale[0] - 1) > 1e-4 || Math.abs(boneScale[1] - 1) > 1e-4)) {
-    const inv = `<g transform="scale(${(1 / boneScale[0]).toFixed(4)},${(1 / boneScale[1]).toFixed(4)})">${f.svg}</g>`;
+    const inv = `<g transform="scale(${(1 / boneScale[0]).toFixed(4)},${(1 / boneScale[1]).toFixed(4)})">${raw}</g>`;
     return { svg: inv, layer };
   }
-  return { svg: f.svg, layer };
+  return { svg: raw, layer };
 }
 
 export interface ResolvedBone {
@@ -188,13 +192,16 @@ export function resolveRig(
   const planeExtras: { bone: BoneId; svg: string; z: number }[] = [];
   for (const ov of queue) {
     if (ov.view && ov.view !== view) continue;
+    // Appendice (cornes/queue) = art MULTI-VUES du registre, résolu par vue — même mécanisme que
+    // featureToPart, pour que TOUT chemin d'overlay (état/combat inclus) soit multi-vues.
+    const ovSvg = ov.appendage ? pickView(appendageArt(ov.appendage), view) : ov.svg;
     if (ov.plane) {
-      if (ov.svg) planeExtras.push({ bone: ov.bone, svg: ov.svg, z: ov.plane === 'fond' ? -10 : 99 });
+      if (ovSvg) planeExtras.push({ bone: ov.bone, svg: ovSvg, z: ov.plane === 'fond' ? -10 : 99 });
       continue;
     }
-    if (ov.replace) { boneParts[ov.bone] = ov.svg ? [{ svg: ov.svg, layer: 5 }] : []; continue; }
-    if (!ov.svg) continue;
-    boneParts[ov.bone].push({ svg: ov.svg, layer: ov.behind ? -2 : 99 });
+    if (ov.replace) { boneParts[ov.bone] = ovSvg ? [{ svg: ovSvg, layer: 5 }] : []; continue; }
+    if (!ovSvg) continue;
+    boneParts[ov.bone].push({ svg: ovSvg, layer: ov.behind ? -2 : 99 });
   }
 
   // Traits de corps de RACE (cornes, queue, crocs, verrues…). Injectés AVANT la résolution
@@ -203,7 +210,7 @@ export function resolveRig(
   if (!hasPersoMonster) {
     for (const feat of race.features ?? []) {
       if (feat.view && feat.view !== view) continue;   // feature limitée à une vue (ex. crocs front)
-      const part = featureToPart(feat, scaleOf[feat.bone]);
+      const part = featureToPart(feat, scaleOf[feat.bone], view);
       boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
     }
   }
@@ -212,7 +219,7 @@ export function resolveRig(
   // sans basculer dans l'override complet perso.monster.
   for (const feat of bDef?.perso?.features ?? []) {
     if (feat.view && feat.view !== view) continue;
-    const part = featureToPart(feat, scaleOf[feat.bone]);
+    const part = featureToPart(feat, scaleOf[feat.bone], view);
     boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
   }
   // Traits ADDITIFS d'INSTANCE — `appearance.features` (clés du catalogue) : n'importe quel PNJ pioche
@@ -222,7 +229,7 @@ export function resolveRig(
   for (const f of catalogFeatures(...(appearance.features ?? []))) {
     if (f.view && f.view !== view) continue;
     if (f.replace) { boneParts[f.bone] = f.svg ? [{ svg: f.svg, layer: 5 }] : []; continue; }
-    if (f.scale) { const part = featureToPart(f, scaleOf[f.bone]); boneParts[f.bone].push({ svg: part.svg, layer: part.layer }); }
+    if (f.scale) { const part = featureToPart(f, scaleOf[f.bone], view); boneParts[f.bone].push({ svg: part.svg, layer: part.layer }); }
     else boneParts[f.bone].push({ svg: f.svg, layer: f.behind ? -2 : 99 });
   }
 
