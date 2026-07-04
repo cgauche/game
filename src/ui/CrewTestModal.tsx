@@ -1,15 +1,16 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { canReroll } from '../engine/fortune';
+import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById, findCrewTestTypeById } from '../data';
 import { crewRoleValue, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
-import { MultiRollShell } from './MultiRollShell';
-import { RollRow } from './RollRow';
+import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { testBreakdown, testPending } from './breakdown';
 
 /**
  * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — JUMEAU de
- * `ShipBatteryModal`/`ShipManeuverModal` (flux MULTI, `MultiRollShell` + `RollRow`), paramétrée par le
+ * `ShipBatteryModal`/`ShipManeuverModal` (flux MULTI, `RollShell` + `RollRow`), paramétrée par le
  * TYPE (`pendingCrewTest.testTypeId`). Chaque rôle tenu = une rangée ; le bandeau somme les DR (essentiel ×2)
  * + Moral + Manque de bras + sabotage. **Rude épreuve** (l.106-114) : un total NÉGATIF réduit le Moral d'autant
  * (l.110) — la perte est prévisualisée dans le bandeau avant « Appliquer ».
@@ -41,52 +42,57 @@ export function CrewTestModal() {
   const moraleLoss = p.testTypeId === 'rude-epreuve' ? rudeEpreuveMoraleDelta(total) : 0;
   const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
 
+  const rows: RollRowData[] = p.participants.flatMap((part) => {
+    const actor = pool.find((c) => c.id === part.id);
+    if (!actor) return [];
+    const res = part.result;
+    const role = findCrewRoleById(part.roleId);
+    const val = role ? crewRoleValue(actor, role).value : 0;
+    const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
+    // Manque de bras (MDG ch.14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
+    const difficulty = part.cumul ? easeDifficulty('intermediaire', -2) : undefined;
+    const row = res
+      ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
+      : { combatant: actor, pending: testPending(label, val, undefined, difficulty) };
+    return [{
+      key: part.id,
+      actor,
+      row,
+      rolled: !!res,
+      interactive: part.interactive && owns(part.id),
+      onRoll: () => roll(part.id),
+      rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
+      onReroll: () => reroll(part.id),
+      onBonusSL: () => bonus(part.id),
+      darkPactable: actor.kind === 'hero' && !!res && res.roll > res.target,
+      onDarkPact: () => darkPact(part.id),
+      onForce: () => force(part.id),
+      forceShow: !!res,
+      extra: res && <div className="cs-outcome ok-text">{part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`}</div>,
+    }];
+  });
+
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
+    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: '🎲 Tout lancer', kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
+  ];
+
   return (
-    <MultiRollShell
+    <RollShell
       title={`⚓ ${testType.label} — Test d’équipage`}
       variant="test"
       subtitle={<><strong>{ship.name}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''} (MDG ch.14)</>}
       extra={p.extraDR
         ? <div className="rm-threat">⚠ Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage, MDG ch.14).</div>
         : undefined}
+      rows={rows}
+      rolled={allRolled}
       summary={allRolled
         ? <>DR total <b>{sign(total)}</b> — {total >= 1 ? 'succès' : 'échec'} (l.13).{moraleLoss ? <> Rude épreuve : <b>{moraleLoss}</b> Moral (l.110).</> : null}</>
         : undefined}
-      onRollAll={unrolled.length >= 2 ? () => unrolled.forEach((x) => roll(x.id)) : undefined}
+      actions={actions}
       onCancel={cancel}
-      onConfirm={confirm}
-      confirmLabel="Appliquer"
-      confirmDisabled={!allRolled}
-    >
-      {p.participants.map((part) => {
-        const actor = pool.find((c) => c.id === part.id);
-        if (!actor) return null;
-        const res = part.result;
-        const role = findCrewRoleById(part.roleId);
-        const val = role ? crewRoleValue(actor, role).value : 0;
-        const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
-        const row = res
-          ? { combatant: actor, d: { label, base: val, modifier: 0, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
-          : { combatant: actor, pending: { label, base: val, mods: [] } };
-        return (
-          <RollRow
-            key={part.id}
-            actor={actor}
-            row={row}
-            rolled={!!res}
-            interactive={part.interactive && owns(part.id)}
-            onRoll={() => roll(part.id)}
-            rerollable={!!res && canReroll(res.roll > res.target, !!part.rerolled)}
-            onReroll={() => reroll(part.id)}
-            onBonusSL={() => bonus(part.id)}
-            darkPactable={actor.kind === 'hero' && !!res && res.roll > res.target}
-            onDarkPact={() => darkPact(part.id)}
-            onForce={() => force(part.id)}
-            forceShow={!!res}
-            extra={res && <div className="cs-outcome ok-text">{part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`}</div>}
-          />
-        );
-      })}
-    </MultiRollShell>
+    />
   );
 }

@@ -124,7 +124,6 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/MedicModal.tsx',
   'src/ui/MerchantPanel.tsx',
   'src/ui/MountTargetModal.tsx',
-  'src/ui/MultiRollShell.tsx',
   'src/ui/PortView.tsx',
   'src/ui/PortraitPicker.tsx',
   'src/ui/PortraitTile.tsx',
