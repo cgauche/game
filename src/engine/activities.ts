@@ -21,8 +21,7 @@ import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, PA_PER_SC, PA_PER_CO } from './money';
 import type { Combatant, Difficulty, SkillInstance, Availability } from './types';
 import type { GameOp } from './ops';
-import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
-import { DIFFICULTY_MODIFIERS } from './types';
+import { resolveSkillBest, bestSkilledOption, type SkillRef, type TestSpec } from './skills';
 import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
 import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, splitLabel } from './careerSlots';
 import { talentCost } from './advancement';
@@ -204,66 +203,6 @@ export function resolveTravelActivity(
   out.success = res.success;
   out.ops = res.success ? (def.onSuccess ?? []) : [];
   out.extenue = !res.success && !!def.failExtenue;
-  return out;
-}
-
-/** SPEC influençable d'une Activité de voyage tenue par un acteur, SANS lancer le dé : la compétence
- *  retenue (meilleure de l'acteur), sa valeur brute et la CIBLE effective (Difficulté + `skillMod` déjà
- *  appliqués, bornée 1..99 — comme `rollTest`). Sert à bâtir une ÉTAPE de cascade influençable ; la
- *  résolution du dé (RNG ou influence) vit dans la cascade, l'issue s'obtient ensuite par
- *  `applyTravelActivityResult`. Une Activité SANS Test (Récupérer) renvoie `target: null`. PUR. */
-export interface TravelActivitySpec {
-  activityId: string;
-  actorId: string;
-  used?: SkillRef;
-  value: number;
-  /** Cible effective (Difficulté + mod, bornée) — `null` pour une Activité sans Test. */
-  target: number | null;
-  skillMod: number;
-  drTarget?: number;
-}
-
-export function travelActivitySpec(
-  actor: Combatant,
-  def: ActivityDef,
-  opts: { skillMod?: number; stages?: number; freeSkill?: SkillRef } = {},
-): TravelActivitySpec {
-  const skillRefs = def.freeSkill ? (opts.freeSkill ? [opts.freeSkill] : []) : (def.skills ?? []);
-  const drTarget = def.extended && opts.stages != null ? def.extended.drPerStage * opts.stages : undefined;
-  // Activité SANS Test (Récupérer) : pas d'étape-jet.
-  if (!skillRefs.length) return { activityId: def.id, actorId: actor.id, value: 0, target: null, skillMod: opts.skillMod ?? 0, drTarget };
-  // MÊME choix que `resolveSkillBest` : meilleure valeur de l'acteur (first-max), Difficulté + mod bornés.
-  let bestVal = -Infinity;
-  let used: SkillRef | undefined;
-  for (const ref of skillRefs) {
-    const v = testValue(actor, ref.skillId, undefined, ref.spec);
-    if (v > bestVal) { bestVal = v; used = ref; }
-  }
-  const value = Number.isFinite(bestVal) ? bestVal : 0;
-  const target = Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire'] + (opts.skillMod ?? 0)));
-  return { activityId: def.id, actorId: actor.id, used, value, target, skillMod: opts.skillMod ?? 0, drTarget };
-}
-
-/** Issue d'une Activité de voyage à partir d'un JET DÉJÀ résolu (cascade influençable) — jumeau PUR de
- *  `resolveTravelActivity` mais sans RNG : `success`/`sl` viennent de l'étape. `roll==null` (Activité sans
- *  Test) → issue directe (Récupérer). Même déclaration d'effets (`ops`/`stageOutcome`/`extenue`). PUR. */
-export function applyTravelActivityResult(
-  spec: TravelActivitySpec,
-  def: ActivityDef,
-  roll: { roll: number; target: number; sl: number; success: boolean } | null,
-): TravelActivityResult {
-  const out: TravelActivityResult = {
-    activityId: def.id, actorId: spec.actorId, sl: 0, success: true, ops: [], extenue: false,
-    stageOutcome: def.stageOutcome, resolver: def.resolver, drTarget: spec.drTarget,
-  };
-  if (!roll) { out.ops = def.onSuccess ?? []; return out; } // Activité sans Test
-  out.value = spec.value;
-  out.roll = roll.roll;
-  out.target = roll.target;
-  out.sl = roll.sl;
-  out.success = roll.success;
-  out.ops = roll.success ? (def.onSuccess ?? []) : [];
-  out.extenue = !roll.success && !!def.failExtenue;
   return out;
 }
 
