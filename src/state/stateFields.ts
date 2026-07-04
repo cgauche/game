@@ -22,23 +22,11 @@ import type { GameState } from './store';
  *  `combatStart` = ouverture de combat (`startCombat`). */
 export type ResetScope = 'scene' | 'combatStart';
 
-/** Champs transitoires couverts par le manifeste (= le bloc contigu de l'état initial). */
-type FieldKey =
-  | 'pendingTest' | 'pendingCorruption' | 'pendingBargain' | 'pendingAppraise' | 'pendingAttack' | 'pendingSiegeAim'
-  | 'actorAim' | 'actorMove' | 'actorAoe' | 'hoverDelta' | 'pendingReload' | 'pendingStateRecovery' | 'pendingDefense'
-  | 'pendingRenounce' | 'pendingMountTarget' | 'pendingDisengage' | 'pendingAuContact' | 'pendingGrapple' | 'pendingInteract' | 'pendingCast'
-  | 'pendingCounterspell' | 'pendingExtendedTest' | 'pendingForceDoor' | 'pendingCascade'
-  | 'pendingCastOpposition' | 'pendingHeal' | 'pendingSurgery' | 'medic' | 'pendingRest' | 'pendingCleave'
-  | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingBattement' | 'pendingDistraire' | 'pendingManeuver'
-  | 'pendingRun' | 'pendingShipManeuver' | 'pendingShipBattery' | 'pendingCrewTest' | 'pendingShanty' | 'pendingApproach' | 'pendingWard' | 'pendingFocus' | 'pendingDispel' | 'pendingFrenzy' | 'pendingRoundStart'
-  | 'pendingFateSave' | 'pendingVictory' | 'pendingLoot' | 'document' | 'previousScene'
-  | 'port' | 'pendingSeaActivities';
-
-type FieldSpec<K extends FieldKey> = { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] };
-type Manifest = { readonly [K in FieldKey]: FieldSpec<K> };
-
-/** Le manifeste : pour chaque champ, sa valeur initiale et les contextes qui le réinitialisent. */
-const STATE_FIELDS: Manifest = {
+/** Le manifeste : pour chaque champ transitoire, sa valeur initiale et les contextes qui le
+ *  réinitialisent. SOURCE UNIQUE des clés — `FieldKey` en est DÉRIVÉ (fin de la double-liste). Le
+ *  `satisfies` borne chaque clé à `keyof GameState` ET lie `init` au type du champ : bidirectionnel
+ *  (clé fantôme ou `init` mal typé = compile rouge). */
+const STATE_FIELDS = {
   pendingTest: { init: null, resetOn: ['scene'] },
   pendingCorruption: { init: null, resetOn: ['scene'] },
   pendingBargain: { init: null, resetOn: [] },
@@ -97,7 +85,10 @@ const STATE_FIELDS: Manifest = {
   // transient de voyage (ne survit à rien d'autre que la confirmation → halte de nuit).
   port: { init: null, resetOn: ['scene'] },
   pendingSeaActivities: { init: null, resetOn: [] },
-};
+} satisfies { [K in keyof GameState]?: { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] } };
+
+/** Clés du manifeste — SOURCE des champs transitoires, dérivée de `STATE_FIELDS` (plus de double-liste). */
+type FieldKey = keyof typeof STATE_FIELDS;
 
 const FIELD_KEYS = Object.keys(STATE_FIELDS) as FieldKey[];
 
@@ -117,7 +108,8 @@ export function initialFields(): Pick<GameState, FieldKey> {
 export function resetFields(scope: ResetScope): Partial<Pick<GameState, FieldKey>> {
   const out: Partial<Record<FieldKey, unknown>> = {};
   for (const k of FIELD_KEYS) {
-    if (!STATE_FIELDS[k].resetOn.includes(scope)) continue;
+    // `satisfies` narrowit les `resetOn: []` en `never[]` → on relit via le type garanti par le satisfies.
+    if (!(STATE_FIELDS[k].resetOn as readonly ResetScope[]).includes(scope)) continue;
     const v = STATE_FIELDS[k].init;
     out[k] = Array.isArray(v) ? [...v] : v;
   }
