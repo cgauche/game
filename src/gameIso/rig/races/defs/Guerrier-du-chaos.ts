@@ -1,5 +1,5 @@
 // Guerrier du Chaos : humanoïde massif en armure de plates du Chaos — TENUE DÉDIÉE
-// « Guerrier du Chaos » (careerTenues MANUAL : cuirasse à étoile du Chaos, épaulières à
+// « Guerrier du Chaos » (def tenues/defs : cuirasse à étoile du Chaos, épaulières à
 // pointes, heaume intégral cornu, 3 vues). Fini l'ex-bricolage « tenue Soldat recolorée +
 // plastron plaqué en overlay » (retour utilisateur : le Vampire a sa tenue, lui aussi).
 import type { RaceDef } from '../types';
