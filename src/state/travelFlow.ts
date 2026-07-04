@@ -25,7 +25,6 @@ import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { applyEffectsLoot } from './combatFlow';
 import { openRest, placesOfKind } from './restFlow';
-import { runDailyUpkeep } from './upkeep';
 import { placeById, placeOfScene, otherEnd, type MapRoute, type WorldMap } from './worldMap';
 import {
   TravelMode, TRAVEL_DEFAULTS, TRAVEL_MODE_LABEL, travelSpeed, transportCost, forcedMarchTest, applyTravelFatigue,
@@ -312,14 +311,16 @@ function runTravelDays(get: Get, set: Set): void {
     const hoursToday = forced ? forced.hours : Math.min(plan.hoursPerDay, kmLeft / kmh);
     set({ gameTime: get().gameTime + Math.round(hoursToday * 60) });
     bus.emit(EVT.TIME_ADVANCED, { minutes: Math.round(hoursToday * 60) });
-    const upkeepLines = runDailyUpkeep(get, set); // au cas où la marche franchit minuit
+    // L'ENTRETIEN du jour (rations/faim, maladies, convalescence) n'est PAS roulé ici : il se résout
+    // dans la cascade de la halte de nuit (`buildNightCascade`), APRÈS le repas — sinon la Faim
+    // s'installerait avant que le groupe ne mange. À l'ARRIVÉE (pas de nuit), le prochain
+    // `runDailyUpkeep` (repos/advanceTime) le rattrape via la garde `lastUpkeepDay`.
     const kmDone = Math.min(plan.km, plan.kmDone + (forced ? forced.km : hoursToday * kmh));
     set({ travelPlan: { ...get().travelPlan!, kmDone } });
     const arrived = plan.km - kmDone < 1e-9;
-    // L'entretien quotidien (rations/faim, maladies, convalescence) fait partie du RÉCIT du jour.
     const recapDay: TravelRecapDay = {
       kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday,
-      lines: [...(forced?.lines ?? []), ...upkeepLines], entries: [...(forced?.entries ?? [])],
+      lines: [...(forced?.lines ?? [])], entries: [...(forced?.entries ?? [])],
     };
     recap?.days.push(recapDay);
     if (forced) {
@@ -750,7 +751,9 @@ function applyEreintant(get: Get, set: Set): string[] {
   }
   set({ party: [...party], gameTime: get().gameTime + 24 * 60 }); // un jour de plus sur la route
   bus.emit(EVT.TIME_ADVANCED, { minutes: 24 * 60 });
-  lines.push(...runDailyUpkeep(get, set)); // l'entretien du jour perdu se RACONTE aussi
+  // Le jour de retard NE roule PAS l'entretien en eager (sinon Faim avant le repas de la halte) :
+  // ce franchissement supplémentaire est décompté dans la cascade de nuit (`buildNightCascade`), qui
+  // couvre tous les jours écoulés depuis `lastUpkeepDay` — donc ce détour aussi (non nourri : pas de repas ce jour-là).
   lines.push('Le détour coûte une journée entière au groupe.');
   log(get, set, lines);
   return lines;

@@ -160,6 +160,67 @@ describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExpos
   });
 });
 
+describe('entretien du jour de voyage — la Faim se résout À LA HALTE, après le repas (LDB 18 l.417-422)', () => {
+  // Le groupe SANS ration : sans correctif, l'entretien EAGER de fin de jour installe la Faim
+  // AVANT que la halte ne serve le repas → héros affamé malgré l'auberge. Invariant : un jour de
+  // voyage ne roule JAMAIS l'entretien en eager ; il se résout dans la cascade de nuit, après le repas.
+  const stripRations = () => set({ party: get().party.map((h) => ({ ...h, items: (h.items ?? []).filter((i) => i.trappingId !== 'ration'), hunger: undefined })) });
+
+  /** Déroule la cascade de nuit ouverte par `restSleep` (roule chaque étape puis avance). */
+  const drainCascade = () => {
+    let g = 0;
+    while (get().pendingCascade && g++ < 80) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+      get().cascadeNext();
+    }
+  };
+
+  it('AUCUN Test de Faim n\'est roulé EAGER pendant le jour de descente (avant la halte)', () => {
+    launch(false, 45); // 45 km ≈ une journée → halte de nuit
+    stripRations();
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    // La journée s'achève sur une halte de nuit (pas d'arrivée à 45 km).
+    expect(get().pendingRest).toBeTruthy();
+    // Rien de faim n'a été résolu pendant le jour : ni jet dans le journal, ni État de faim installé.
+    expect(get().journal.join('\n')).not.toMatch(/Faim : Test de Résistance/);
+    for (const h of get().party) expect(h.hunger?.days ?? 0).toBe(0);
+  });
+
+  it('le repas d\'auberge à la halte couvre la journée → PERSONNE n\'est affamé au réveil', () => {
+    launch(false, 45);
+    stripRations();
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    expect(get().pendingRest).toBeTruthy();
+    // Repas d'auberge pour tous (défaut de la halte sur une route à relais) — puis la nuit.
+    for (const h of get().party) get().restSet(h.id, { food: 'repas' });
+    get().restSleep();
+    drainCascade();
+    // Au réveil, la Faim ne s'est jamais installée : le repas de la halte a couvert le jour.
+    for (const h of get().party) {
+      expect(h.hunger?.days ?? 0).toBe(0);
+      expect(h.hunger?.failures ?? 0).toBe(0);
+    }
+  });
+
+  it('SANS repas ni ration (belle étoile, ventre vide), la Faim suit son cours — étape de cascade, pas de régression', () => {
+    launch(false, 45);
+    stripRations();
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    expect(get().pendingRest).toBeTruthy();
+    // Personne ne mange à la halte (dehors + ventre vide).
+    for (const h of get().party) get().restSet(h.id, { lodging: 'dehors', food: 'rien' });
+    // La Faim tombe le 2ᵉ jour sans manger (l.422) : un seul jour ici → l'État s'installe (days=1) sans Test encore dû.
+    get().restSleep();
+    drainCascade();
+    for (const h of get().party) expect(h.hunger?.days ?? 0).toBe(1);
+  });
+});
+
 describe('descente end-to-end — le Reik jusqu\'à Altdorf', () => {
   beforeEach(() => launch(false, 120, { riverPerils: [{ perilId: 'debris', chancePct: 40 }] }));
 

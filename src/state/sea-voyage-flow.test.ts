@@ -77,7 +77,9 @@ describe('journée en mer — Tests d’équipage de VOYAGE en modales (#65)', (
     expect(kinds).toContain('orientation'); // « un Test par jour de voyage » (MDG ch.13 l.311)
     expect(get().pendingRest).toBeTruthy(); // halte de nuit — machinerie de repos EXISTANTE
     expect(get().travelPlan!.sea!.daysAtSea).toBe(1);
-    expect(get().gameTime).toBeGreaterThanOrEqual(24 * 60); // la journée entière est passée
+    // La journée de mer s'arrête au CRÉPUSCULE (18:00) : la nuit de sommeil (halte) enjambe minuit —
+    // un seul franchissement de jour par cycle jour+nuit (l'entretien s'y résout, après le repas).
+    expect(get().gameTime).toBe(18 * 60); // départ 08:00 jour 0 → crépuscule du même jour
   });
 });
 

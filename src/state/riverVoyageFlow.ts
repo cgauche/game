@@ -22,9 +22,9 @@
  * étaient déjà là (`engine/waterExposure.ts`), seule leur MISE EN SCÈNE dans le voyage manquait.
  */
 import { battleRng } from './battleRng';
+import { minutesUntilNext, DUSK_MINUTE } from '../engine/clock';
 import { applyEffects } from './combatEffects';
 import { openRest, placesOfKind } from './restFlow';
-import { runDailyUpkeep } from './upkeep';
 import { placeById, type MapRoute, type WorldMap } from './worldMap';
 import { persistHullWounds } from './seaVoyageFlow';
 import { baseHoursPerDay } from './travelFlow';
@@ -387,7 +387,8 @@ function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
   tell([`⚓ Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
 }
 
-/** Fin de journée : coque persistée (#30), horloge +24 h, entretien quotidien, arrivée ou halte de nuit. */
+/** Fin de journée : coque persistée (#30), horloge avancée (arrivée = +24 h ; halte = jusqu'au
+ *  crépuscule), puis arrivée ou halte de nuit. L'entretien du jour se résout dans la cascade de nuit. */
 function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string; label: string }, kmDay: number, dayLines: string[]): void {
   const plan = get().travelPlan!;
   const river = plan.river!;
@@ -402,8 +403,13 @@ function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string;
   // Vent de demain : 4 tirages (aube/midi/crépuscule/minuit, l.21).
   const nextForce = tickRiverWindDay(river.windForce, battleRng());
   const kmDone = Math.min(plan.km, plan.kmDone + kmDay);
-  set({ gameTime: get().gameTime + 24 * 60 });
-  const upkeep = runDailyUpkeep(get, set);
+  const arrived = plan.km - kmDone < 1e-9;
+  // Horloge : à l'ARRIVÉE, la journée entière passe (+24 h) — l'entretien du jour est rattrapé par le
+  // prochain `runDailyUpkeep`. Sinon (HALTE de nuit) la navigation s'arrête au crépuscule et la nuit de
+  // sommeil enjambe minuit : UN SEUL franchissement de jour par cycle jour+nuit (comme le voyage terrestre).
+  // L'ENTRETIEN n'est jamais roulé ici (sinon la Faim s'installe avant le repas) : il se résout dans la
+  // cascade de nuit (`buildNightCascade`), APRÈS `feedFromMeal`.
+  set({ gameTime: get().gameTime + (arrived ? 24 * 60 : minutesUntilNext(get().gameTime, DUSK_MINUTE)) });
   set({
     travelPlan: {
       ...get().travelPlan!, kmDone,
@@ -412,9 +418,9 @@ function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string;
   });
   persistHullWounds(get, set);
 
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...dayLines, ...upkeep] };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...dayLines] };
 
-  if (plan.km - kmDone < 1e-9) { arriveRiver(get, set, to); return; }
+  if (arrived) { arriveRiver(get, set, to); return; }
   const route = (get().worldMap as WorldMap)?.routes.find((r) => r.id === plan.routeId);
   openRest(get, set, { places: placesOfKind(route?.inns ? 'auberge' : 'camp'), travelHalt: true, travelDay: recapDay });
 }

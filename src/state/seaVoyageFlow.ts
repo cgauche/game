@@ -31,7 +31,7 @@
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { openRest, placesOfKind } from './restFlow';
-import { runDailyUpkeep, dayIndex } from './upkeep';
+import { dayIndex } from './upkeep';
 import { placeById, type WorldMap } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
@@ -46,7 +46,7 @@ import { testValue, partyAssisted } from '../engine/skills';
 import { applyOps } from '../engine/ops';
 import { itemCapability } from '../engine/capabilities';
 import { isRation } from '../engine/provisions';
-import { toDate, MINUTES_PER_DAY } from '../engine/clock';
+import { toDate, MINUTES_PER_DAY, minutesUntilNext, DUSK_MINUTE } from '../engine/clock';
 import { seasonOfMonth } from '../engine/travelStages';
 import {
   rollSeaWeather, rollWindDirection, windAspect, tickWindForce, windEffect, windAdjustedM,
@@ -467,10 +467,16 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     if (r.gained) lines.push(`🦪 Salissures : la coque s'encrasse (niveau ${r.level} — ${foulingEffects(r.level).desc})`);
   }
 
-  // Horloge : la journée entière passe (navigation par quarts) + entretien quotidien (rations, maladies).
-  set({ gameTime: get().gameTime + 24 * 60 });
-  bus.emit(EVT.TIME_ADVANCED, { minutes: 24 * 60 });
-  const upkeep = runDailyUpkeep(get, set);
+  // Horloge : à l'ARRIVÉE au port, la journée entière passe (+24 h) — l'entretien du jour est rattrapé
+  // par le prochain `runDailyUpkeep` (garde `lastUpkeepDay`). Sinon (HALTE de nuit / activités en mer)
+  // la traversée s'arrête au crépuscule et la nuit de sommeil enjambe minuit : UN SEUL franchissement de
+  // jour par cycle jour+nuit (comme le voyage terrestre). L'ENTRETIEN (rations/faim, maladies,
+  // convalescence) n'est jamais roulé ici (sinon la Faim s'installe avant le repas) : il se résout dans
+  // la cascade de nuit (`buildNightCascade`), APRÈS `feedFromMeal`.
+  const arrived = plan.km - Math.min(plan.km, plan.kmDone + sea.milesToday) < 1e-9;
+  const dayMinutes = arrived ? 24 * 60 : minutesUntilNext(get().gameTime, DUSK_MINUTE);
+  set({ gameTime: get().gameTime + dayMinutes });
+  bus.emit(EVT.TIME_ADVANCED, { minutes: dayMinutes });
   const evening: string[] = [];
 
   // TEMPÉRATURE (MDG 13 l.203-225) : Tests d'Exposition du jour à la cadence de la bande. Le jour de
@@ -517,7 +523,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
 
   const worldMap = get().worldMap as WorldMap;
   const to = placeById(worldMap, plan.toPlaceId);
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...upkeep, ...evening] };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...evening] };
 
   if (plan.km - kmDone < 1e-9 && to) {
     // ARRIVÉE : événement de port (2d10 ± Humeur, ch.15 l.127-129) puis transition. La distance de la

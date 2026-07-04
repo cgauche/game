@@ -161,3 +161,8 @@ export function minutesUntilNext(currentMinutes: number, targetMinuteOfDay: numb
 
 /** Heure de l'aube (minutes-de-jour) — fin d'une nuit de sommeil ; cible du « Dormir ». */
 export const DAWN_MINUTE = DAY_PHASES[0].start; // 'aube' = 05:00
+
+/** Heure du crépuscule (minutes-de-jour) — fin d'une journée de voyage AVANT la halte de nuit : le
+ *  jour de navigation (fluvial/maritime) s'arrête ici, puis la nuit de sommeil enjambe minuit jusqu'à
+ *  l'aube — un seul franchissement de jour par cycle voyage+nuit (aligné sur le voyage terrestre). */
+export const DUSK_MINUTE = (DAY_PHASES.find((p) => p.key === 'crepuscule') ?? DAY_PHASES[DAY_PHASES.length - 2]).start; // 'crépuscule' = 18:00
