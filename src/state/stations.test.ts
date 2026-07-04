@@ -109,10 +109,10 @@ describe('battleScenesToStations — Scènes de la situation → Stations spatia
     expect(st.find((s) => s.ref.kind === 'battleScene' && s.ref.sceneId === 'motivation')!.faction).toBe('neutral');
   });
 
-  it('affectation E3 → assignedIds + manned', () => {
+  it('affectation MULTI-PJ → assignedIds (liste ordonnée) + manned', () => {
     const scene = sceneWith([{ sceneId: 'motivation', pos: { x: 4, y: 12 } }]);
-    const st = battleScenesToStations(['motivation'], { motivation: 'hero-2' }, scene);
-    expect(st[0].assignedIds).toEqual(['hero-2']);
+    const st = battleScenesToStations(['motivation'], { motivation: ['hero-2', 'hero-3'] }, scene);
+    expect(st[0].assignedIds).toEqual(['hero-2', 'hero-3']);
     expect(st[0].manned).toBe(true);
   });
 

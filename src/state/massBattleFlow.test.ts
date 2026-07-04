@@ -122,7 +122,7 @@ describe('Activités de bataille pré-combat (l.79-106)', () => {
   });
 });
 
-describe('Scènes cinématiques — une par PJ (l.116-118)', () => {
+describe('Scènes cinématiques — MULTI-PJ en Soutien (l.116-118)', () => {
   it('deux PJ résolvent deux Scènes ; les deltas se CUMULENT avant le clash', () => {
     start({ situations: [['ligne-de-mire', 'compte-a-rebours']] }, pregenParty(PREGEN.soldat, PREGEN.chasseur));
     useGame.getState().massBattleBegin();
@@ -413,26 +413,47 @@ describe('Affectation explicite d\'un PJ à une action (E3 — poste ≠ auto «
     return { suggested, other };
   }
 
-  it('(a) poster un PJ NON suggéré à une Scène de Test → CE PJ résout la Scène', () => {
+  it('(a) poster un PJ NON suggéré à une Scène de Test → CE PJ (meneur) résout la Scène', () => {
     start({ situations: [['ligne-de-mire']] });
     useGame.getState().massBattleBegin();
     const { suggested, other } = otherThanSuggested('ligne-de-mire', () => useGame.getState().massBattleScene('ligne-de-mire'));
     expect(other).not.toBe(suggested);
-    useGame.getState().assignMassBattleHero('ligne-de-mire', other);
+    useGame.getState().setMassBattleHero('ligne-de-mire', [other]); // un seul posté → il est le meneur, sans soutien
     useGame.getState().massBattleScene('ligne-de-mire');
-    expect(useGame.getState().pendingBattleTest!.actorId).toBe(other); // le POSTE est honoré
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.actorId).toBe(other); // le POSTE est honoré
+    expect(pt.heroIds).toEqual([other]); // équipage engagé = le seul posté
+    expect(pt.support).toEqual({ count: 0, bonus: 0 }); // pas d'assistant
   });
 
-  it('(b) sans affectation → la SUGGESTION (meilleur PJ disponible) résout — comportement inchangé', () => {
+  it('(a-bis) poster DEUX PJ à une Scène de Test → résolution en SOUTIEN (meneur + assistant), les DEUX consommés', () => {
+    start({ situations: [['ligne-de-mire']] }, pregenParty(PREGEN.soldat, PREGEN.chasseur));
+    useGame.getState().massBattleBegin();
+    const [a, b] = useGame.getState().party.map((h) => h.id);
+    useGame.getState().setMassBattleHero('ligne-de-mire', [a, b]);
+    useGame.getState().massBattleScene('ligne-de-mire');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.heroIds).toEqual(expect.arrayContaining([a, b]));
+    expect(pt.heroIds).toHaveLength(2);
+    // Ligne de mire = Balistique (CT), compétence commune : l'autre PJ soutient s'il la possède.
+    expect(pt.support!.count).toBeGreaterThanOrEqual(0);
+    resolveBattleTest({ roll: 10, success: true, sl: 2 });
+    // TOUT l'équipage engagé est consommé ce Round (pas seulement le meneur).
+    expect(mbState().actedHeroes).toEqual(expect.arrayContaining([a, b]));
+    expect(mbState().actedHeroes).toHaveLength(2);
+  });
+
+  it('(b) sans affectation → la SUGGESTION (meilleur PJ disponible) résout SEUL — comportement inchangé (pas de soutien)', () => {
     start({ situations: [['ligne-de-mire']] });
     useGame.getState().massBattleBegin();
     // Référence : suggestion pure (aucun poste).
     useGame.getState().massBattleScene('ligne-de-mire');
-    const suggested = useGame.getState().pendingBattleTest!.actorId;
+    const pt = useGame.getState().pendingBattleTest!;
     expect(mbState().assignment).toEqual({});
-    // La valeur de compétence servie est bien celle du suggéré, dérivée par la passe singleton.
-    expect(useGame.getState().pendingBattleTest!.skillValue).toBeGreaterThan(0);
-    expect(suggested).toBeTruthy();
+    // La valeur de compétence servie est bien celle du suggéré, résolu SEUL (aucun soutien).
+    expect(pt.skillValue).toBeGreaterThan(0);
+    expect(pt.support).toEqual({ count: 0, bonus: 0 });
+    expect(pt.heroIds).toEqual([pt.actorId]); // seul le meneur suggéré est engagé
   });
 
   it('(c) poster un PJ INDISPONIBLE (déjà engagé ce Round) → repli sur la suggestion', () => {
@@ -442,33 +463,97 @@ describe('Affectation explicite d\'un PJ à une action (E3 — poste ≠ auto «
     useGame.getState().massBattleScene('ligne-de-mire');
     const acted = useGame.getState().pendingBattleTest!.actorId;
     resolveBattleTest({ roll: 10, success: true, sl: 2 });
-    // On poste ce PJ DÉJÀ ENGAGÉ à une autre Scène : `assignedHeroFor` le rejette → suggestion.
-    useGame.getState().assignMassBattleHero('compte-a-rebours', acted);
+    // On poste ce PJ DÉJÀ ENGAGÉ à une autre Scène : `assignedHeroesFor` le rejette → suggestion.
+    useGame.getState().setMassBattleHero('compte-a-rebours', [acted]);
     useGame.getState().massBattleScene('compte-a-rebours');
     const resolver = useGame.getState().pendingBattleTest!.actorId;
     expect(resolver).not.toBe(acted); // le poste invalide est ignoré, un autre PJ disponible résout
   });
 
-  it('(d) poster un PJ à une Activité combinée → CE PJ résout (poste honoré sur le chemin combiné)', () => {
+  it('(d) poster un PJ à une Activité combinée → CE PJ résout SOLO (poste honoré sur le chemin combiné)', () => {
     start();
     const { suggested, other } = otherThanSuggested('reperage', () => useGame.getState().massBattleActivity('reperage'));
     expect(other).not.toBe(suggested);
-    useGame.getState().assignMassBattleHero('reperage', other);
+    useGame.getState().setMassBattleHero('reperage', [other]);
     useGame.getState().massBattleActivity('reperage');
     const pt = useGame.getState().pendingBattleTest!;
     expect(pt.actorId).toBe(other);
     expect(pt.target2).toBeGreaterThan(0); // toujours un Test combiné (deux compétences)
+    expect(pt.support).toBeUndefined(); // Activité SOLO : pas de Soutien
   });
 
   it('un nouveau Round efface les affectations (le poste ne survit pas)', () => {
     start({ plannedRounds: 2, situations: [['motivation'], ['ligne-de-mire']] });
     useGame.getState().massBattleBegin();
-    useGame.getState().assignMassBattleHero('ligne-de-mire', useGame.getState().party[0].id);
+    useGame.getState().setMassBattleHero('ligne-de-mire', [useGame.getState().party[0].id]);
     expect(Object.keys(mbState().assignment)).toHaveLength(1);
+    expect(mbState().assignment['ligne-de-mire']).toEqual([useGame.getState().party[0].id]); // liste d'ids
     seedBattleRng(3);
     useGame.getState().massBattleClash();
     useGame.getState().massBattleAdvance();
     expect(mbState().assignment).toEqual({}); // remis à zéro au Round suivant
+  });
+});
+
+describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test »)', () => {
+  /** Garantit que les deux PJ POSSÈDENT Savoir (Guerre) — l'assistant est alors « capable » quels que
+   *  soient les tirages de carrière (ADE II l.81 : « au moins une Augmentation en Savoir (Guerre) »). */
+  function partyWithWarLore(): Combatant[] {
+    return pregenParty(PREGEN.soldat, PREGEN.chasseur).map((h) =>
+      h.skills.some((s) => s.skillId === 'savoir' && s.spec === 'Guerre')
+        ? h
+        : { ...h, skills: [...h.skills, { skillId: 'savoir', spec: 'Guerre', characteristic: 'Int' as const, advances: 5 }] });
+  }
+
+  it('deux PJ postés à la Planification → résolution en SOUTIEN (heroIds=2, support.count ≥ 1)', () => {
+    // Deux PJ capables (Savoir (Guerre)) → l'assistant soutient le meneur (+10, plafonné BFM ; LDB 12).
+    start({}, partyWithWarLore());
+    const [a, b] = useGame.getState().party.map((h) => h.id);
+    useGame.getState().setMassBattleHero('planification', [a, b]);
+    useGame.getState().massBattleActivity('planification');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.activityId).toBe('planification');
+    expect(pt.heroIds).toEqual(expect.arrayContaining([a, b]));
+    expect(pt.heroIds).toHaveLength(2);
+    expect(pt.support!.count).toBeGreaterThanOrEqual(1); // au moins un assistant capable
+    expect(pt.support!.bonus).toBeGreaterThanOrEqual(10);
+    expect(pt.target2).toBeUndefined(); // Test simple (pas combiné)
+  });
+
+  it('un seul PJ posté → meneur SEUL, aucun assistant (support.count 0)', () => {
+    start({}, pregenParty(PREGEN.soldat, PREGEN.chasseur));
+    const [a] = useGame.getState().party.map((h) => h.id);
+    useGame.getState().setMassBattleHero('planification', [a]);
+    useGame.getState().massBattleActivity('planification');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.actorId).toBe(a);
+    expect(pt.heroIds).toEqual([a]);
+    expect(pt.support).toEqual({ count: 0, bonus: 0 });
+  });
+
+  it('sans affectation → SUGGESTION résout SEUL, byte-identique au solo (support.count 0)', () => {
+    start({}, pregenParty(PREGEN.soldat, PREGEN.chasseur));
+    useGame.getState().massBattleActivity('planification');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(mbState().assignment).toEqual({});
+    expect(pt.heroIds).toEqual([pt.actorId]);
+    expect(pt.support).toEqual({ count: 0, bonus: 0 });
+    // La résolution reste correcte (Planification réussie → +10 permanent).
+    resolveBattleTest({ roll: 10, success: true, sl: 2 });
+    expect(mbState().allyMod).toBe(10);
+    expect(mbState().planned).toBe(true);
+  });
+
+  it('une Activité SOLO (Repérage/Sabotage) reste solo — pas de Soutien (support undefined)', () => {
+    start({}, pregenParty(PREGEN.soldat, PREGEN.chasseur));
+    // Repérage est combiné/solo : le poste ne fournit PAS de soutien.
+    const [a, b] = useGame.getState().party.map((h) => h.id);
+    useGame.getState().setMassBattleHero('reperage', [a, b]);
+    useGame.getState().massBattleActivity('reperage');
+    const pt = useGame.getState().pendingBattleTest!;
+    expect(pt.activityId).toBe('reperage');
+    expect(pt.support).toBeUndefined(); // Activité solo : aucun Soutien
+    expect(pt.actorId).toBe(a); // premier posté honoré, seul
   });
 });
 
