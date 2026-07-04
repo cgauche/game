@@ -4,7 +4,7 @@
  * soin / buff marginal / contrôle / invocation / défaut signé) + escompte d'opposition. PUR, déterministe.
  */
 import { describe, it, expect } from 'vitest';
-import { opValue, oppositionDiscount, CONDITION_THREAT, type OpEvalCtx } from './aiSpellValue';
+import { opValue, oppositionDiscount, type OpEvalCtx } from './aiSpellValue';
 import type { SpellData } from '../data';
 import type { Combatant, Weapon } from '../engine/types';
 
@@ -60,9 +60,9 @@ describe('opValue — BUFF de combat = bénéfice marginal (armé > 0, désarmé
   });
 });
 
-describe('opValue — CONTRÔLE (condition) = CONDITION_THREAT par nom', () => {
-  it('Étourdi → CONDITION_THREAT["etourdi"]', () => {
-    expect(opValue(op({ op: 'condition', name: 'etourdi' }), combatant(), combatant({ id: 'h' }), ctxOf())).toBe(CONDITION_THREAT['etourdi']);
+describe('opValue — CONTRÔLE (condition) = aiThreat de etats.json', () => {
+  it('Sonné (op:condition) → aiThreat lu en donnée sur etats.json (6)', () => {
+    expect(opValue(op({ op: 'condition', name: 'sonne' }), combatant(), combatant({ id: 'h' }), ctxOf())).toBe(6);
   });
   it('État inconnu → 1 (contrôle mineur, jamais 0)', () => {
     expect(opValue(op({ op: 'condition', name: 'inexistant' }), combatant(), combatant({ id: 'h' }), ctxOf())).toBe(1);

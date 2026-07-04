@@ -5,7 +5,8 @@
  */
 import type { ConditionInstance, ActiveEffect, CharKey, Combatant } from '../engine/types';
 import type { IconId } from '../ui/icons';
-import { conditionLabel } from '../data';
+import { conditionLabel, findConditionById } from '../data';
+import { slugId } from '../data/slug';
 import { isFrenzied } from '../engine/psychology';
 
 export interface EffectChip {
@@ -27,30 +28,22 @@ export interface EffectChip {
 
 interface CondMeta { icon: IconId; severity: number; important: boolean; }
 
-/** Table des États (LDB ch.16) → icône + sévérité. `important` = incapacitant/dangereux
- *  (affiché dans le créneau unique de l'ordre de bataille). Seuil : sévérité ≥ 50. */
-// Keyé par `id` d'État (slug etats.json) — `conditionMeta` reçoit `ConditionInstance.name` (un id).
-const CONDITION_TABLE: Record<string, { icon: IconId; severity: number }> = {
-  inconscient: { icon: 'condition/unconscious', severity: 100 },
+/** Marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. data-wellformed.test) : Pétrifié
+ *  (LDB 85). Icône/sévérité d'affichage portées ICI faute d'entrée etats.json (unique exception). */
+const NARRATIVE_MARKERS: Record<string, { icon: IconId; severity: number }> = {
   petrifie: { icon: 'condition/petrified', severity: 95 },
-  sonne: { icon: 'condition/stunned', severity: 80 },
-  'a-terre': { icon: 'condition/prone', severity: 75 },
-  brise: { icon: 'condition/broken', severity: 70 },
-  aveugle: { icon: 'condition/blinded', severity: 65 },
-  empetre: { icon: 'condition/entangled', severity: 60 },
-  'en-flammes': { icon: 'condition/ablaze', severity: 58 },
-  empoisonne: { icon: 'condition/poisoned', severity: 55 },
-  hemorragique: { icon: 'condition/bleeding', severity: 52 },
-  surpris: { icon: 'condition/surprised', severity: 40 },
-  assourdi: { icon: 'condition/deafened', severity: 30 },
-  extenue: { icon: 'condition/fatigued', severity: 20 },
 };
 const UNKNOWN: CondMeta = { icon: 'journal/info', severity: 10, important: false };
 
+/** Icône + sévérité d'AFFICHAGE d'un État — lues en DONNÉE (`etats.json` : `icon`/`severity`) ou, à
+ *  défaut, sur un marqueur narratif. `important` = sévérité ≥ 50 (incapacitant, créneau unique de
+ *  l'ordre de bataille). Clé SLUGIFIÉE → tolère un libellé ('Pétrifié' → 'petrifie'). */
 export function conditionMeta(name: string): CondMeta {
-  const t = CONDITION_TABLE[name];
-  if (!t) return UNKNOWN;
-  return { icon: t.icon, severity: t.severity, important: t.severity >= 50 };
+  const id = slugId(name);
+  const et = findConditionById(id);
+  const src = et?.icon != null ? { icon: et.icon as IconId, severity: et.severity ?? 10 } : NARRATIVE_MARKERS[id];
+  if (!src) return UNKNOWN;
+  return { icon: src.icon, severity: src.severity, important: src.severity >= 50 };
 }
 
 const BUFF_CHAR_ICON: Partial<Record<CharKey, IconId>> = {

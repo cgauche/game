@@ -20,7 +20,8 @@ import { formulaExpectation, slBonus, applyOps, type GameOp } from '../engine/op
 import type { RNG } from '../engine/dice';
 import { groupMatch } from '../engine/groups';
 import { spellOps } from './flow';
-import { type SpellData, findCreatureById } from '../data';
+import { type SpellData, findCreatureById, findConditionById } from '../data';
+import { slugId } from '../data/slug';
 import { creatureToCombatant } from './spawn';
 
 /** DR moyen prudent injecté dans l'espérance d'une touche (l'espérance d'un DR ≥ 0 sur une réussite). */
@@ -68,24 +69,10 @@ export function safeWounds(weapon: Weapon, target: Combatant, totalDamage: numbe
   return finite(woundsFromHit(weapon, safe, 'corps', totalDamage), 0);
 }
 
-/**
- * Dangerosité d'un ÉTAT infligé (LDB 16), en « Blessures espérées équivalentes ». LU EN DONNÉE par nom
- * d'État (clé = `name` du `op:'condition'`). Un État qui SUPPRIME l'Action ou tue à petit feu vaut plus
- * qu'un simple malus. Valeurs de RESSENTI (latitude IA). États inconnus → 1 (contrôle mineur).
- */
-export const CONDITION_THREAT: Record<string, number> = {
-  inconscient: 8, // hors de combat
-  'a-terre': 3, // vulnérable + perd son prochain mouvement
-  etourdi: 6, // ne peut pas agir (LDB 16 l.123)
-  'en-flammes': 5, // 1d10/Round, force le « se rouler »
-  empoisonne: 4, // dégâts récurrents
-  hemorragie: 4, // dégâts récurrents
-  empetre: 5, // Mouvement nul + Action perdue à se libérer
-  aveugle: 4, // −10 et ne peut viser
-  assourdi: 2,
-  ensanglante: 2,
-  surpris: 4, // pas de réaction (LDB 16 l.132)
-};
+// Dangerosité d'un ÉTAT infligé (« Blessures espérées ») : lue en DONNÉE sur `etats.json` (`aiThreat`,
+// clé slugifiée du `name` de l'op:'condition'). États inconnus / sans aiThreat → 1 (contrôle mineur).
+// (Ex-table CONDITION_THREAT retirée : ses clés `etourdi`/`hemorragie` étaient PÉRIMÉES — les vraies
+//  conditions sont `sonne`/`hemorragique` → l'IA sous-valorisait l'étourdissement.)
 
 /**
  * Une cible est NEUTRALISÉE (au sol/inconsciente/0 PB encore là) : aucun intérêt tactique à s'acharner
@@ -285,7 +272,7 @@ export function opValue(op: GameOp, caster: Combatant, subject: Combatant, ctx: 
       return marginalBuff(caster, subject, op, ctx);
     // CONTRÔLE hostile.
     case 'condition':
-      return CONDITION_THREAT[op.name] ?? 1;
+      return findConditionById(slugId(op.name))?.aiThreat ?? 1;
     case 'testMod':
       return op.amount < 0 ? Math.abs(op.amount) / 10 : 0;
     case 'castPenalty': case 'suffocate': case 'damageArmour':

@@ -500,6 +500,13 @@ export interface EtatData extends StatusData {
    *  partagé par le gate de hotbar (`battleSelectAction`) ET l'IA (dépense PROACTIVE de Détermination pour se
    *  ressaisir) — plus de nom d'État en dur. */
   restrictsAction?: boolean;
+  /** AFFICHAGE (couche UI, hors RAW LDB 16) : icône du registre `<Icon>` (id `famille/nom`) + sévérité
+   *  0-100 (≥50 = incapacitant → créneau unique de l'ordre de bataille). Lus par `effectIcons.conditionMeta`. */
+  icon?: string;
+  severity?: number;
+  /** Dangerosité IA de l'État infligé, en « Blessures espérées » (contrôle > simple malus) — lue par
+   *  `aiSpellValue.opValue` (`op:'condition'`). Absente → menace mineure (1). */
+  aiThreat?: number;
 }
 
 /** État PSYCHOLOGIQUE en DONNÉES (LDB 21) — `id` = `PsychType` (`frenesie`, à terme `peur`/`terreur`/…).

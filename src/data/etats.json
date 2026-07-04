@@ -38,7 +38,10 @@
           }
         }
       }
-    ]
+    ],
+    "icon": "condition/deafened",
+    "severity": 30,
+    "aiThreat": 2
   },
   {
     "id": "a-terre",
@@ -62,7 +65,10 @@
     ],
     "gating": {
       "movement": "half"
-    }
+    },
+    "icon": "condition/prone",
+    "severity": 75,
+    "aiThreat": 3
   },
   {
     "id": "aveugle",
@@ -102,7 +108,10 @@
           }
         }
       }
-    ]
+    ],
+    "icon": "condition/blinded",
+    "severity": 65,
+    "aiThreat": 4
   },
   {
     "id": "brise",
@@ -287,7 +296,9 @@
           }
         }
       }
-    ]
+    ],
+    "icon": "condition/broken",
+    "severity": 70
   },
   {
     "id": "empetre",
@@ -310,7 +321,10 @@
     },
     "gating": {
       "movement": "none"
-    }
+    },
+    "icon": "condition/entangled",
+    "severity": 60,
+    "aiThreat": 5
   },
   {
     "id": "empoisonne",
@@ -410,7 +424,10 @@
           }
         }
       }
-    ]
+    ],
+    "icon": "condition/poisoned",
+    "severity": 55,
+    "aiThreat": 4
   },
   {
     "id": "en-flammes",
@@ -458,7 +475,10 @@
     ],
     "recover": {
       "skill": "athletisme"
-    }
+    },
+    "icon": "condition/ablaze",
+    "severity": 58,
+    "aiThreat": 5
   },
   {
     "id": "extenue",
@@ -474,7 +494,9 @@
         "amount": -10
       }
     ],
-    "perStack": true
+    "perStack": true,
+    "icon": "condition/fatigued",
+    "severity": 20
   },
   {
     "id": "hemorragique",
@@ -505,7 +527,10 @@
         }
       }
     ],
-    "stacksReducedBy": "bleedIgnore"
+    "stacksReducedBy": "bleedIgnore",
+    "icon": "condition/bleeding",
+    "severity": 52,
+    "aiThreat": 4
   },
   {
     "id": "inconscient",
@@ -519,7 +544,10 @@
       "action": "none",
       "movement": "none",
       "cannotDefend": true
-    }
+    },
+    "icon": "condition/unconscious",
+    "severity": 100,
+    "aiThreat": 8
   },
   {
     "id": "sonne",
@@ -623,7 +651,10 @@
     "gating": {
       "action": "none",
       "movement": "half"
-    }
+    },
+    "icon": "condition/stunned",
+    "severity": 80,
+    "aiThreat": 6
   },
   {
     "id": "surpris",
@@ -663,7 +694,10 @@
       "action": "none",
       "movement": "none",
       "cannotDefend": true
-    }
+    },
+    "icon": "condition/surprised",
+    "severity": 40,
+    "aiThreat": 4
   },
   {
     "id": "en-flammes-navire",
