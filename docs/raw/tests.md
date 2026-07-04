@@ -11,6 +11,7 @@
 - [Relance et inversion du dé](#relance-et-inversion-du-dé)
 - [Modificateurs de test](#modificateurs-de-test)
 - [Difficulté — table complète](#difficulté--table-complète)
+- [Combiner les Difficultés — cumul et plafonds](#combiner-les-difficultés--cumul-et-plafonds)
 - [Extensions de Difficulté : Presque Impossible et Impossible (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
 - [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 - [Table des Résultats](#table-des-résultats)
@@ -150,11 +151,17 @@ Ils s'appliquent *à la valeur cible*, non au résultat du dé. Un modificateur 
 
 Le MJ peut décider d'appliquer des pénalités ou des bonus supérieurs à ceux indiqués dans le Tableau de Difficulté, mais de tels modificateurs ne doivent être utilisés que dans des situations exceptionnelles.
 
+**Deux sources alimentent la valeur cible** (au-delà de la Base = Compétence ou Caractéristique) :
+1. La **Difficulté** proprement dite — une entrée de la [table de Difficulté](#difficulté--table-complète) choisie par le MJ.
+2. Les **modificateurs circonstanciels** — facteurs situationnels additionnés à la Difficulté. Hors combat, le MJ les traduit en une Difficulté ; **en combat, ils sont codifiés** (Avantage ×10, viser, portée, taille, supériorité numérique, couverture, États…) dans [`combat.md` § Difficultés de Combat](combat.md).
+
+Ainsi : **valeur cible = Base + Difficulté + Σ modificateurs circonstanciels**. Quand plusieurs modificateurs s'appliquent, ils se **cumulent avec des plafonds** — voir [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds).
+
 **Sources RAW** :
 - `LDB 12 l.43` — définition des modificateurs
 - `LDB 12 l.133-137` — application des modificateurs par le MJ
 
-**Voir aussi** : [Difficulté](#difficulté--table-complète)
+**Voir aussi** : [Difficulté](#difficulté--table-complète), [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds)
 **Implémente** : `src/engine/tests.ts` — `rollTest` (paramètre `modifier` additionnel + `DIFFICULTY_MODIFIERS[difficulty]`) ; `src/engine/types.ts` — `DIFFICULTY_MODIFIERS`
 
 ---
@@ -184,6 +191,33 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
 **Implémente** : `src/engine/types.ts` — `Difficulty` (type), `DIFFICULTY_MODIFIERS` (mapping clé→valeur) ; `src/engine/tests.ts` — `DIFFICULTY_LADDER`, `difficultyFromLabel`, `easeDifficulty`
+
+---
+
+## Combiner les Difficultés — cumul et plafonds
+
+Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modificateurs, mais chaque sens est **plafonné** :
+
+- La somme des **pénalités** ne peut dépasser **Très Difficile (−30)**.
+- La somme des **bonus** ne peut dépasser **Très Facile (+60)**.
+- Une pénalité et un bonus simultanés se somment **algébriquement** (chaque sens est plafonné, puis on additionne les deux totaux).
+
+**Exemples** (extraits des règles) :
+- Brouillard (−20) + Localisation précise (−20) = −40 → plafonné à **Très Difficile (−30)**.
+- Neige jusqu'à la taille (−30) + adversaire *À Terre* (+20) = **Difficile (−10)** (−30 + 20).
+
+> « Si la situation nécessite l'ajout de deux pénalités ou plus, contentez-vous de faire la somme des différents modificateurs sans dépasser **Très Difficile -30**. […] si la situation implique l'addition de deux bonus, faites la somme des modificateurs jusqu'à un maximum de **+60** ou **Très Facile**. » — `LDB 14 l.95`
+
+**Extension EDO** : dans *L'Ennemi Intérieur*, le plafond des pénalités cumulées passe à **−50** (Impossible) — voir [Extensions de Difficulté](#extensions-de-difficulté--presque-impossible-et-impossible-edo).
+
+**Portée de la règle** : bien qu'énoncée au chapitre Combat, elle régit le cumul de **toute** Difficulté. La **liste codifiée des modificateurs circonstanciels de combat** (Avantage ×10, viser, portée, taille, supériorité numérique, couverture, États…) est dans [`combat.md` § Difficultés de Combat](combat.md). Note d'implémentation : l'Avantage est traité **hors plafond** (`uncapped`) car il n'est pas une entrée de la table de Difficulté.
+
+**Sources RAW** :
+- `LDB 14 l.91-96` — Combiner les Difficultés (somme, plafonds par sens, mélange algébrique)
+- `EDO App.2 l.157-165` (rappel) — plafond des pénalités cumulées porté à −50
+
+**Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
+**Implémente** : `src/engine/combat.ts` — `combineMods` (somme plafonnée par sens ; lignes `uncapped` — Avantage — hors plafond ; plafonds = règles optionnelles `combat-diff-cap-bonus` / `combat-diff-cap-malus`)
 
 ---
 

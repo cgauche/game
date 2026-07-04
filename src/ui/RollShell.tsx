@@ -142,7 +142,7 @@ export function RollShell({
   );
   if (embedded) {
     return (
-      <div className={`rfs-embedded ${variant === 'test' ? 'test-modal' : 'roll-modal'}`}>
+      <div className={`rs-embedded ${variant === 'test' ? 'test-modal' : 'roll-modal'}`}>
         <div className="mini-title">{title}</div>
         {body}
       </div>

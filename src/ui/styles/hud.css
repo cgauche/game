@@ -547,15 +547,15 @@
 .medic-wound-pick { justify-content: center; }
 /* Zone de JET embarquée (RollShell `embedded`) : encart dans la modale persistante —
    neutralise le min-width des classes de modale autonome. */
-.rfs-embedded {
+.rs-embedded {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 10px;
   margin: 6px 0;
   background: rgba(0, 0, 0, 0.18);
 }
-.rfs-embedded.roll-modal,
-.rfs-embedded.test-modal { min-width: 0; }
+.rs-embedded.roll-modal,
+.rs-embedded.test-modal { min-width: 0; }
 
 /* ── Modale de REPOS (nuit) ── */
 .rest-modal { min-width: min(520px, 94vw); }

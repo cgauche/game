@@ -17,6 +17,16 @@
 - Backlog GitHub d'audit de conformité : **39/39 issues fermées** (juillet 2026).
 - Chantiers de fiabilisation post-backlog : combat de masse #69 (fidélité + éditabilité), combat naval
   (abordage), audit jouabilité/éditabilité — cf. sections ci-dessous.
+- **Audit du fichier lui-même (2026-07-04)** : contre-échantillon RAW des claims chiffrés (AA l.2480/2523/4139/4418,
+  T2C ch.13 l.167) → tous fidèles au livre. Les entrées OUVERTES ci-dessous sont désormais suivies en **issues
+  GitHub** (le fichier = index, l'issue = tracker). Nouvelles : **#87** hallucinogène/`perDegreeOfFailure` ·
+  **#88** Battement/Distraire héros · **#89** réaction défensive N Avantages (Porte-bouclier AA) · **#90**
+  améliorations navales non-plat · **#91** descente fluviale résidus · **#92** Avantage initial éditeur ·
+  **#93** flags marchand + `openPort` · **#94** Effets santé éditables · **#95** poursuites terrestres ·
+  **#96** scénarios santé Vague 1 · **#97** reliquats magie · **#98** `castSpell` (design) · **#99** rumeur
+  cross-Lieu · **#100** purge branches `legacy`/rétro-compat (dette de code, hors périmètre historique de ce
+  fichier). Pré-existantes : **#82** escalade · **#83** méta-flux + roster · **#84** filets ZI · **#85**
+  équipage/désertion.
 
 ---
 
@@ -143,11 +153,11 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
     **Sonné « par niveau d'échec »** rendu comme **1 Sonné fixe** — l'op `condition.valuePerSL` n'échelonne pas
     sur un DR NÉGATIF (branche `fail` d'un nœud `test`) ; généraliser `perDegreeOfFailure` (psychology) au nœud
     `test` du Flow le corrigerait (chantier moteur, `flowCore`).
-  - `capricieux`, `rampant`, `salive-analgesique` : **desc verbatim seule** (canal manquant, PAS de donnée morte) —
-    `capricieux` : aucun canal ne module le DR d'un Test de Sociabilité d'un PJ *envers* une créature-cible
-    (niche : négociation Naïade) ; `rampant` : pas de capability `noRun` (interdire l'Action de Course exige un
-    drapeau + gating dans le mouvement de combat — `combatFlow`, verrouillé par la session //) ; `salive-analgesique` :
-    narratif hors-combat (morsure indolore sur cible endormie). RESTE (extensions de vocabulaire).
+  - ~~`rampant`, `salive-analgesique`~~ ✅ **RÉSOLU** (câblés + testés) : `rampant` porte la capability `noRun`
+    (`traits.json`, consommée par `runMultiplier=0` dans `engine/traits/dispatch.ts`, testée `traits/parity.test.ts`) ;
+    `salive-analgesique` porte `wakelessBite` (consommée `state/combat/hitModifiers.ts`, testée). Seul `capricieux`
+    reste **desc verbatim seule** — aucun canal ne module le DR d'un Test de Sociabilité d'un PJ *envers* une
+    créature-cible (niche : négociation Naïade). RESTE (`capricieux` seul, extension de vocabulaire).
 - **Bestiaire fluvial (ch.13) — 4 statblocs** ✅ livrés (`creatures.json`, VERBATIM T2C, vérifiés stat par stat) :
   Anguille du Reik, Sangsue géante + variante Arbres, Naïade. Le **Filet de gobelin** (ZI) est porté comme atout
   `filet` (ranged/entraves, Portée 6, qualité Immobilisante → Empêtré ; le « 3 » de « À distance (Filet 3) » non

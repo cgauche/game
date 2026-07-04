@@ -5,7 +5,7 @@
 > hors du code. Tolérance ligne = ±20.
 
 **Sens A — code → Atlas** : 0 chapitre(s) cités par le code & absents de l'Atlas · 4 chapitre(s) couverts avec des lignes non pinées.
-**Sens B — Atlas → code** : 161 marqueur(s) « (non implémenté) » · 27 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
+**Sens B — Atlas → code** : 161 marqueur(s) « (non implémenté) » · 25 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
 
 ## A1 — Chapitres appelés par le CODE, ABSENTS de l'Atlas (trous durs)
 
@@ -13,31 +13,32 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ## A2 — Lignes appelées par le CODE non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
-### LDB 46 — 10/28 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
-- l.185 — `src/state/combatSlice.ts:2474` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
-- l.188 — `src/data/index.ts:378` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
-- l.193 — `src/state/combatFlow.ts:1776` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
-- l.194 — `src/engine/ops.ts:487` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
-- l.199 — `src/engine/magic.ts:144` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
+### LDB 46 — 10/29 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
+- l.185 — `src/state/combatSlice.ts:2756` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+- l.188 — `src/data/index.ts:412` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+- l.193 — `src/state/combatFlow.ts:1819` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+- l.194 — `src/engine/ops.ts:557` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+- l.199 — `src/engine/magic.ts:165` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
-- l.202 — `src/engine/magic.ts:490` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
-- l.204 — `src/engine/conditions.ts:324` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-- l.205 — `src/state/combatSlice.ts:2535` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+- l.202 — `src/engine/magic.ts:538` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
+- l.204 — `src/engine/conditions.ts:380` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
+- l.205 — `src/state/combatSlice.ts:2817` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
 - l.207 — `src/engine/tests.ts:183` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
-### LDB 10 — 5/18 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.310 — `src/engine/types.ts:681` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+### LDB 10 — 6/20 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+- l.310 — `src/engine/types.ts:710` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+- l.364 — `src/engine/types.ts:1157` — /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
 - l.365 — `src/state/medicFlow.ts:173` — *  (LDB 10 l.365) RÉVÉLÉ témoin (jet SUBI, pas influençable — comme toute contraction de maladie). Patient
 - l.569 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
-- l.859 — `src/engine/combatFeatures/dispatch.ts:53` — /** Sans peur (LDB 10 l.859) : `c` ignore la Peur/Terreur que `foe` inspire — talent possédé
+- l.859 — `src/engine/combatFeatures/dispatch.ts:62` — /** Sans peur (LDB 10 l.859) : `c` ignore la Peur/Terreur que `foe` inspire — talent possédé
 - l.864 — `src/engine/psychology.ts:73` — *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
 
 ### LDB 11 — 2/2 ligne(s) code hors couverture (propriétaire : docs\raw\equipement.md)
 - l.143 — `src/state/vision.ts:11` — * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
-- l.147 — `src/data/index.ts:648` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
+- l.147 — `src/data/index.ts:685` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
 
 ### LDB 12 — 1/19 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.229 — `src/engine/tests.test.ts:64` — describe('evaluateCombinedTest — Test Combiné (LDB 12 l.229) : un jet vs DEUX valeurs', () => {
+- l.229 — `src/engine/massBattle.ts:107` — *  l.102 Repérage : Chevaucher + Perception — un d100 confronté aux deux valeurs, LDB 12 l.229). */
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) »
 
@@ -201,13 +202,13 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\religion.md** L44 — - **Implémenté vs non implémenté** — effets purement navals (Humeur de Manann, Indice M, Indice de Voie d'eau, vent, IC, ne-peut-couler) hors moteur actuel → (non implémenté) ; effets sur personnages/
 - **docs\raw\talents.md** L1583 — - `commandant-d-equipe` (AA) : logique score Projectiles partagé non implémentée (donnée présente, logique absente)
 - **docs\raw\talents.md** L1585 — - Mises à jour AA (Battement -1 si 6 DR, Cavalier émérite Taille monture, Porte-Bouclier 2 Avantages/2m, Renversement prendre 1 seul Avantage) : le code suit la version LDB — divergences AA non implém
-- **docs\raw\tests.md** L324 — **Implémente** : (non implémenté dans `src/engine/` — le bonus de soutien de +10 par participant est une logique à gérer côté état/UI)
+- **docs\raw\tests.md** L358 — **Implémente** : (non implémenté dans `src/engine/` — le bonus de soutien de +10 par participant est une logique à gérer côté état/UI)
 
 ## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code
 
-LDB 06 · LDB 6 · LDB 7 · LDB 8 · LDB 25 · LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39 · LDB 43 · LDB 44 · LDB 49 · LDB 50 · LDB 65 · LDB 66 · LDB 68 · LDB 69 · LDB 70 · LDB 80
+LDB 06 · LDB 6 · LDB 7 · LDB 8 · LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39 · LDB 43 · LDB 44 · LDB 50 · LDB 65 · LDB 66 · LDB 68 · LDB 69 · LDB 70 · LDB 80
 
 ## Autres livres
 
-Code : AA, ADE II, ADE2, EDOC
+Code : AA, ADE II, ADE2, EDOC, T2C
 Atlas : AA, ADE I, ADE II, EDO, EDOC, NADAJ, NADJ, T2C, T3, Ubersreik, ZI
