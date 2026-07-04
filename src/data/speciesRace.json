@@ -1,0 +1,139 @@
+{
+  "_doc": "Espèce (slug/libellé) → RACE-ID du rig (carrure/palette/features/posture). Règles ORDONNÉES, première qui matche gagne ; sinon `default`. op: prefix (startsWith un des tokens) / includes (contient un des tokens) / all+any (contient TOUS les `all` ET un des `any`). Ajouter un mapping = une ligne. Consommé par baseSpeciesOf (skeletons.ts). Entrée déjà en minuscules.",
+  "default": "Humain",
+  "rules": [
+    {
+      "prefix": [
+        "haut"
+      ],
+      "race": "Haut-Elfe"
+    },
+    {
+      "includes": [
+        "sylvain"
+      ],
+      "race": "Elfe sylvain"
+    },
+    {
+      "prefix": [
+        "elf"
+      ],
+      "race": "Elfe sylvain"
+    },
+    {
+      "prefix": [
+        "nain"
+      ],
+      "race": "Nain"
+    },
+    {
+      "prefix": [
+        "halfling"
+      ],
+      "race": "Halfling"
+    },
+    {
+      "prefix": [
+        "gnome"
+      ],
+      "race": "Gnome"
+    },
+    {
+      "prefix": [
+        "ogre"
+      ],
+      "race": "Ogre"
+    },
+    {
+      "prefix": [
+        "skaven"
+      ],
+      "race": "Skaven"
+    },
+    {
+      "prefix": [
+        "orc"
+      ],
+      "race": "Orc"
+    },
+    {
+      "prefix": [
+        "gobelin"
+      ],
+      "race": "Gobelin"
+    },
+    {
+      "prefix": [
+        "snotling"
+      ],
+      "race": "Snotling"
+    },
+    {
+      "prefix": [
+        "minotaure"
+      ],
+      "race": "Minotaure"
+    },
+    {
+      "prefix": [
+        "homme"
+      ],
+      "race": "Homme-bête"
+    },
+    {
+      "prefix": [
+        "squelette"
+      ],
+      "race": "Squelette"
+    },
+    {
+      "prefix": [
+        "zombie"
+      ],
+      "race": "Zombie"
+    },
+    {
+      "prefix": [
+        "goule"
+      ],
+      "race": "Goule"
+    },
+    {
+      "prefix": [
+        "troll"
+      ],
+      "race": "Troll"
+    },
+    {
+      "prefix": [
+        "vampire"
+      ],
+      "race": "Vampire"
+    },
+    {
+      "prefix": [
+        "démon",
+        "demon"
+      ],
+      "race": "Démon"
+    },
+    {
+      "prefix": [
+        "fimir"
+      ],
+      "race": "Fimir"
+    },
+    {
+      "all": [
+        "chaos"
+      ],
+      "any": [
+        "guerrier",
+        "elu",
+        "chevalier",
+        "champion"
+      ],
+      "race": "Guerrier du Chaos"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { BONE_IDS, type BoneId, type Bone, type Skeleton } from './bones';
 import { worldTransforms, apply } from './kinematics';
 import { gabaritById, type GabaritDef } from './gabarits';
+import speciesRaceJson from '../../data/speciesRace.json';
 
 function mk(spec: Record<BoneId, Omit<Bone, 'id'>>): Skeleton {
   const sk = {} as Skeleton;
@@ -54,35 +55,22 @@ function scaleSkeleton(sk: Skeleton, sl: number, st: number): Skeleton {
   return out;
 }
 
-/** Espèce (id slug rig OU slug rules non-canonique : `humains-reiklander`…) → RACE-ID (libellé, espace
- *  de noms de la couche race, HORS migration slug). Règles `startsWith/includes` slug-stables (les
- *  préfixes sont des mono-tokens dé-accentués → `homme` matche `homme-bete`, `haut` matche `haut-elfe`).
- *  Garde-fou : `creatures.unique.test.ts` vérifie que chaque slug d'espèce mappe vers une race EXISTANTE. */
+type SpeciesRule = { prefix?: string[]; includes?: string[]; all?: string[]; any?: string[]; race: string };
+const SPECIES_RACE = speciesRaceJson as { default: string; rules: SpeciesRule[] };
+
+/** Espèce (slug/libellé) → RACE-ID du rig (carrure/palette/features/posture). Règles ORDONNÉES
+ *  pilotées par `data/speciesRace.json` (ajouter un mapping = une ligne JSON, plus d'if-chain) ;
+ *  première qui matche gagne, sinon `default`. `s` déjà en minuscules (préfixes ASCII → `homme`
+ *  matche `homme-bete`). Garde-fou : `creatures.unique.test.ts` vérifie que chaque slug mappe vers
+ *  une race EXISTANTE. */
 export function baseSpeciesOf(species: string): string {
   const s = species.toLowerCase();
-  if (s.startsWith('haut')) return 'Haut-Elfe';
-  if (s.includes('sylvain')) return 'Elfe sylvain';
-  if (s.startsWith('elf')) return 'Elfe sylvain';
-  if (s.startsWith('nain')) return 'Nain';
-  if (s.startsWith('halfling')) return 'Halfling';
-  if (s.startsWith('gnome')) return 'Gnome';
-  if (s.startsWith('ogre')) return 'Ogre';
-  if (s.startsWith('skaven')) return 'Skaven';
-  // Phase B : familles monstrueuses bipèdes (carrure dédiée dans PROPS).
-  if (s.startsWith('orc')) return 'Orc';
-  if (s.startsWith('gobelin')) return 'Gobelin';
-  if (s.startsWith('snotling')) return 'Snotling';
-  if (s.startsWith('minotaure')) return 'Minotaure';
-  if (s.startsWith('homme')) return 'Homme-bête';
-  if (s.startsWith('squelette')) return 'Squelette';
-  if (s.startsWith('zombie')) return 'Zombie';
-  if (s.startsWith('goule')) return 'Goule';
-  if (s.startsWith('troll')) return 'Troll';
-  if (s.startsWith('vampire')) return 'Vampire';
-  if (s.startsWith('démon') || s.startsWith('demon')) return 'Démon';
-  if (s.startsWith('fimir')) return 'Fimir'; // brute hulking à œil unique — race dédiée (gabarit brute, sans features Ogre)
-  if (s.includes('chaos') && (s.includes('guerrier') || s.includes('elu') || s.includes('chevalier') || s.includes('champion'))) return 'Guerrier du Chaos';
-  return 'Humain';
+  for (const r of SPECIES_RACE.rules) {
+    if (r.prefix && r.prefix.some((t) => s.startsWith(t))) return r.race;
+    if (r.includes && r.includes.some((t) => s.includes(t))) return r.race;
+    if (r.all && r.all.every((t) => s.includes(t)) && (r.any ?? []).some((t) => s.includes(t))) return r.race;
+  }
+  return SPECIES_RACE.default;
 }
 
 
