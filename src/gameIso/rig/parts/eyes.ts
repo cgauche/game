@@ -1,6 +1,6 @@
 /**
  * YEUX PERSONNALISABLES du visage — l'œil peint est un élément ADRESSABLE des têtes
- * générées (`<g data-eye="G/D" data-ec="x y">…</g>`, cf. generated/heads.ts) : on le
+ * (`<g data-eye="G/D" data-ec="x y">…</g>`, cf. heads/defs + cosmetic.ts) : on le
  * REMPLACE en place, à la vraie position de l'orbite de chaque espèce/sexe.
  * Consommé par les blessures (œil de verre, cache-œil), les mutations (Œil énorme)
  * et ouvert aux créatures/éditeur (yeux d'animaux : chat, caprin, reptilien…).

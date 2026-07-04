@@ -6,7 +6,7 @@
 import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS, MONSTER_LEG_OPTIONS } from '../../gameIso/rig/parts/monstrous';
 import { EYE_OPTIONS } from '../../gameIso/rig/parts/eyes';
 import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers';
-import { HAIRSTYLES } from '../../gameIso/rig/parts/generated/hairstyles';
+import { hairstylesForSex } from '../../gameIso/rig/parts/hairstyles';
 import { tenueOptions } from '../../gameIso/rig/parts/career';
 import { elementsOf } from '../../gameIso/rig/parts/elements';
 import type { MonsterPartsSel, ColorsSel } from '../../state/scene';
@@ -76,7 +76,7 @@ export function MonsterPartsFields({
           Coiffure
           <select value={parts?.cheveux ?? 0} onChange={(e) => onParts?.({ cheveux: Number(e.target.value) })}>
             <option value={0}>Défaut (espèce)</option>
-            {HAIRSTYLES[sex ?? 'M'].map((h, i) => (
+            {hairstylesForSex(sex ?? 'M').map((h, i) => (
               <option key={i} value={i + 1}>{h.name}</option>
             ))}
           </select>

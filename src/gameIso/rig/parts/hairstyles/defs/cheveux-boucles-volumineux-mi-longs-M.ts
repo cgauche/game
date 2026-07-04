@@ -1,0 +1,10 @@
+import type { HairstyleDef } from '../types';
+
+export const hairstyle: HairstyleDef = {
+  name: "cheveux bouclés volumineux, mi-longs",
+  sex: 'M',
+  order: 4,
+  front: `<path d="M-9.4 7 Q-10.4 -9 0 -9.6 Q10.4 -9 9.4 7 Q9 -1 6 -2.4 Q0 -4 -6 -2.4 Q-9 -1 -9.4 7Z" fill="@cheveuxO"/><g><path d="M-11 4 C-13 -3 -12 -9 -7 -12 C-3 -15 4 -15 8 -12 C13 -9 13 -2 11 5 C13 9 12 15 9 19 C8 22 6 22 5 19 C5 15 7 12 6 9 C4 12 2 13 0 12 C-2 13 -4 12 -6 9 C-5 12 -3 15 -3 19 C-4 22 -6 22 -7 19 C-10 15 -11 9 -9 5 Z" fill="@cheveuxO"/><path d="M-10 2 C-12 -4 -10 -10 -5 -12 C-1 -14 3 -14 7 -12 C12 -9 12 -3 10 3 C11 7 10 13 7 17 C7 19 5 19 5 17 C5 13 7 11 6 7 C4 10 1 11 -1 9 C-3 11 -6 10 -8 7 C-7 11 -5 13 -5 17 C-5 19 -7 19 -7 17 C-10 13 -11 7 -10 2 Z" fill="@cheveux"/><path d="M-9 -3 C-10 -7 -7 -11 -3 -12 C-1 -13 1 -13 3 -12 C-1 -10 0 -7 -3 -6 C0 -5 1 -8 4 -8 C6 -9 9 -7 9 -3 C7 -4 5 -3 4 -1 C6 0 8 1 8 4 C6 3 4 3 3 5 C4 6 4 8 3 9 C2 7 1 6 0 7 C-2 6 -3 7 -4 9 C-5 8 -5 6 -4 5 C-6 4 -8 4 -9 5 C-9 2 -7 0 -5 0 C-7 -1 -9 0 -9 -3 Z" fill="@cheveuxH"/><path d="M-8 -1 C-6 -3 -4 -2 -3 -3 C-2 -1 0 -2 1 -3 C2 -1 4 -2 6 -1 C5 1 3 0 2 1 C0 0 -2 1 -3 1 C-5 0 -7 1 -8 -1 Z" fill="@cheveux"/></g>`,
+  profile: `<path d="M7 -4 Q6 -12 -2 -12.4 Q-11 -12 -12 -1 Q-13 7 -10.5 15 Q-8.8 18 -6 17.4 Q-8 13 -7.6 6 Q-7.6 -2 -3.4 -5.2 Q0.2 -7.6 4.6 -6.4 Q6.4 -5.8 7 -4Z" fill="@cheveux"/><g fill="@cheveuxH" opacity="0.55"><circle cx="-2" cy="-10" r="2.6"/><circle cx="-8" cy="-5" r="2.6"/><circle cx="5" cy="-5" r="2.2"/></g><g fill="@cheveuxO" opacity="0.5"><circle cx="-10" cy="3" r="2.4"/><circle cx="-9" cy="11" r="2.2"/></g>`,
+  back: `<path d="M-11 6 Q-13 -10 0 -11 Q13 -10 11 6 Q11.5 12 9.5 17 Q8 19 6 18 Q0 15 -6 18 Q-8 19 -9.5 17 Q-11.5 12 -11 6Z" fill="@cheveux"/><g fill="@cheveuxH" opacity="0.55"><circle cx="-6" cy="-8" r="3"/><circle cx="2" cy="-9" r="3"/><circle cx="8" cy="-3" r="2.6"/><circle cx="-9" cy="-2" r="2.6"/></g><g fill="@cheveuxO" opacity="0.5"><circle cx="-8" cy="9" r="2.6"/><circle cx="8" cy="9" r="2.6"/><circle cx="0" cy="12" r="2.6"/></g>`,
+};

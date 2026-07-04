@@ -2,7 +2,7 @@ import { RigSprite } from '../gameIso/rig/composeRig';
 import type { Appearance } from '../gameIso/rig/appearance';
 import type { EquipCtx } from '../gameIso/rig/parts/equipment';
 import { ColorPalettePickers } from './ColorPalettePickers';
-import { HAIRSTYLES } from '../gameIso/rig/parts/generated/hairstyles';
+import { hairstylesForSex } from '../gameIso/rig/parts/hairstyles';
 
 /**
  * Panneau d'apparence réutilisable (créateur de personnage). GRAND aperçu live du rig (c'est la
@@ -44,7 +44,7 @@ export function AppearancePanel({
               onChange={(e) => set({ parts: { ...value.parts, cheveux: Number(e.target.value) } })}
             >
               <option value={0}>Défaut (espèce)</option>
-              {HAIRSTYLES[value.sex].map((h, i) => (
+              {hairstylesForSex(value.sex).map((h, i) => (
                 <option key={i} value={i + 1}>
                   {h.name}
                 </option>

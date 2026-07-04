@@ -58,6 +58,24 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Têtes (visage + coiffure défaut par Race:Sexe, art tokenisé) : 1 tête = 1 fichier defs/.
+    dir: 'src/gameIso/rig/parts/heads/defs',
+    out: 'src/gameIso/rig/parts/heads/_registry.generated.ts',
+    exportName: 'head',
+    arrayName: 'HEAD_DEFS',
+    type: 'HeadDef',
+    typeFrom: './types',
+  },
+  {
+    // Coiffures (pool partagé par sexe, 3 vues) : 1 coiffure = 1 fichier defs/.
+    dir: 'src/gameIso/rig/parts/hairstyles/defs',
+    out: 'src/gameIso/rig/parts/hairstyles/_registry.generated.ts',
+    exportName: 'hairstyle',
+    arrayName: 'HAIRSTYLE_DEFS',
+    type: 'HairstyleDef',
+    typeFrom: './types',
+  },
+  {
     // Éléments d'apparence (catalogue unifié — traits de corps réutilisables) : 1 élément = 1 fichier defs/.
     dir: 'src/gameIso/rig/parts/elements/defs',
     out: 'src/gameIso/rig/parts/elements/_registry.generated.ts',
