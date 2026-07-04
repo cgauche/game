@@ -134,7 +134,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   // Anti-chevauchement : positions de RENDU décluttérées (les `pos` d'authoring restent intacts).
   // Le repère de rendu est celui du viewBox (y aplati par 0.64) → l'écartement travaille dessus.
   const layout = useMemo(() => {
-    if (!map) return new Map<string, { x: number; y: number }>();
+    // Vraie carte de fond ⇒ les lieux restent à leurs `pos` EXACTS (l'auteur les a posés sur la carte) :
+    // pas de déchevauchement, qui les décalerait de leur vraie position géographique.
+    if (!map || map.background) return new Map<string, { x: number; y: number }>();
     const pts = map.places.map((p) => ({ id: p.id, x: p.pos.x, y: p.pos.y * 0.64 }));
     return declutterPositions(pts, DECLUTTER_MIN, 80, { w: VB_W, h: VB_H });
   }, [map]);
@@ -343,6 +345,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               <stop offset="0%" stopColor="#f4e8c6" />
               <stop offset="100%" stopColor="#d2b87e" />
             </radialGradient>
+            {/* Coins arrondis pour la carte de fond (mêmes rayon/cadre que le parchemin). */}
+            <clipPath id="wm-frame-clip"><rect x="0" y="0" width="100" height="64" rx="2.5" /></clipPath>
           </defs>
 
           {/* Parchemin + grain + vignette */}
@@ -364,6 +368,11 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           {/* Contenu cartographique ZOOMABLE/PANORAMABLE (routes + lieux + rose) — le parchemin de
               fond, lui, reste plein cadre. Les positions sont DÉCLUTTÉRÉES (posOf), pas `pos` brut. */}
           <g transform={`translate(${view.panX} ${view.panY}) scale(${view.z})`}>
+          {/* Vraie carte en fond (si `map.background`) : DANS le <g> zoomable → elle suit les lieux
+              (posés à leurs coords EXACTES). « Cover » (slice) : remplit le cadre sans déformer. */}
+          {map.background && (
+            <image href={map.background} x="0" y="0" width="100" height="64" preserveAspectRatio="xMidYMid slice" clipPath="url(#wm-frame-clip)" style={{ pointerEvents: 'none' }} />
+          )}
           {/* Routes (chemins courbes) — CLIQUABLES depuis le lieu courant (large zone invisible) */}
           {map.routes.map((r) => {
             const a = placeById(map, r.a);

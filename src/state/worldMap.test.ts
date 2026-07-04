@@ -52,6 +52,16 @@ describe('parseProject — validation du format projet v2', () => {
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.places[0].port).toEqual(port);
   });
+
+  it('WorldMap.background (vraie carte de fond) survit au round-trip via parseProject', () => {
+    // Édité par la section « Carte » de WorldMapEditor : image de fond (URL / data URI) préservée telle
+    // quelle. Sa présence désactive le déchevauchement (les lieux restent à leurs pos EXACTES).
+    const bg = 'data:image/svg+xml;utf8,%3Csvg%2F%3E';
+    const mapWithBg = { id: 'm', nom: 'Reikland', background: bg, places: [{ id: 'l1', label: 'Altdorf', pos: { x: 60, y: 30 }, scene: 's1' }], routes: [] };
+    const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithBg as never };
+    const round = parseProject(JSON.parse(JSON.stringify(doc)));
+    expect(round.worldMap!.background).toBe(bg);
+  });
 });
 
 /**

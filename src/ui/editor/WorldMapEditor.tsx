@@ -199,6 +199,16 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               <label className="ed-field">Nom
                 <input value={m.nom} onChange={(e) => upd({ nom: e.target.value })} />
               </label>
+              <label className="ed-field">Image de fond — vraie carte (URL, chemin d'asset public, ou data URI)
+                <input
+                  value={m.background ?? ''}
+                  placeholder="vide = parchemin + déchevauchement ; renseigné = vraie carte, lieux à leurs positions exactes"
+                  onChange={(e) => upd({ background: e.target.value.trim() || undefined })}
+                />
+              </label>
+              {m.background && (
+                <img src={m.background} alt="Aperçu du fond de carte" style={{ maxWidth: '100%', maxHeight: 96, borderRadius: 6, border: '1px solid var(--border)', margin: '2px 0 6px' }} />
+              )}
               <label className="ed-field">Heures de voyage/jour sans Test (RAW : 6)
                 <input
                   type="number" min={1} max={24}

@@ -101,6 +101,11 @@ export interface WorldMap {
   id: string;
   nom: string;
   params?: WorldMapParams;
+  /** Image de fond (URL, chemin d'asset public, ou data URI) : une VRAIE carte derrière les lieux.
+   *  Présente ⇒ les lieux sont rendus à leurs `pos` EXACTS (pas de déchevauchement — la carte a sa
+   *  propre échelle et des points dispersés). Absente ⇒ fond au parchemin + déchevauchement (schématique).
+   *  `km` reste authoré par route (la position sur la carte est purement visuelle). */
+  background?: string;
   places: MapPlace[];
   routes: MapRoute[];
 }
