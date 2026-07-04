@@ -31,6 +31,7 @@ import seaShantiesJson from './sea-shanties.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
 import weaponGroupsJson from './weaponGroups.json';
+import groupsJson from './groups.json';
 import creaturesJson from './creatures.json';
 import spellsJson from './spells.json';
 import maneuversJson from './maneuvers.json';
@@ -411,6 +412,13 @@ export interface WeaponGroupData {
   /** Matériau d'une armure (groupes `kind:'armour'`) — source TYPÉE des exemptions de Magie des Arcanes
    *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
   material?: 'metal' | 'leather';
+}
+/** Groupe d'APPARTENANCE (WFRP4, Traits psy ciblés — LDB 21) : identité CANONIQUE i18n-safe.
+ *  `id` STABLE (jamais traduit) ; `label` = rendu FR localisable. Registre SSOT (`groups.json`),
+ *  référencé par les cibles de Traits psy et les filtres `onlyGroups`/`exceptGroups`/zones. */
+export interface GroupData {
+  id: string;
+  label: string;
 }
 /** Rareté de récolte/trophée = `Availability` (LDB 59) ÉTENDUE de `'Unique'` (pièce de bestiaire singulière). */
 export type HarvestRarity = Availability | 'Unique';
@@ -1199,6 +1207,7 @@ const crewTestTypeById = new Map(crewTestTypes.map((t) => [t.id, t]));
 export const findCrewTestTypeById = (id: string): CrewTestTypeData | undefined => crewTestTypeById.get(id);
 /** Groupes d'objet app-owned (taxonomie `subType` id-ifiée) — éditable au Codex. */
 export const weaponGroups = weaponGroupsJson as WeaponGroupData[];
+export const groups = groupsJson as GroupData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json
 // (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.
 export const creatures = creaturesJson as CreatureData[];
@@ -1433,6 +1442,15 @@ export function weaponGroupIdByLabel(label: string | null | undefined): string |
   if (WEAPON_GROUP_BY_ID.has(label)) return label; // déjà un id
   return WEAPON_GROUP_ID_BY_LABEL.get(label.toLowerCase());
 }
+const GROUP_BY_ID = new Map(groups.map((g) => [g.id, g]));
+/** Résout un Groupe d'APPARTENANCE par son `id` STABLE (cible de Trait psy, filtre onlyGroups/exceptGroups). */
+export function findGroupById(id: string | null | undefined): GroupData | undefined {
+  return id ? GROUP_BY_ID.get(id) : undefined;
+}
+/** Libellé d'affichage d'un Groupe d'appartenance par son id (repli sur l'id). SOURCE UNIQUE du nom de Groupe. */
+export function groupLabel(id: string | null | undefined): string {
+  return id ? (GROUP_BY_ID.get(id)?.label ?? id) : '';
+}
 const CREATURE_BY_ID = new Map(creatures.map((c) => [c.id, c]));
 /** Résout une créature par son `id` STABLE — référence runtime/données (scènes, encounters, rig). */
 export function findCreatureById(id: string | undefined): CreatureData | undefined {
@@ -1527,6 +1545,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'talents': return findTalentById(id);
     case 'trappings': return findTrappingById(id);
     case 'weaponGroups': return findWeaponGroupById(id);
+    case 'groups': return findGroupById(id);
     case 'qualities': return findQualityById(id);
     case 'spells': return findSpellById(id);
     case 'maneuvers': return findManeuverById(id);

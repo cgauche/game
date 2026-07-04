@@ -1,0 +1,74 @@
+[
+  {
+    "id": "humain",
+    "label": "Humain"
+  },
+  {
+    "id": "nain",
+    "label": "Nain"
+  },
+  {
+    "id": "elfe",
+    "label": "Elfe"
+  },
+  {
+    "id": "halfling",
+    "label": "Halfling"
+  },
+  {
+    "id": "gnome",
+    "label": "Gnome"
+  },
+  {
+    "id": "ogre",
+    "label": "Ogre"
+  },
+  {
+    "id": "mort-vivant",
+    "label": "Mort-vivant"
+  },
+  {
+    "id": "demon",
+    "label": "Démon"
+  },
+  {
+    "id": "peau-verte",
+    "label": "Peau-Verte"
+  },
+  {
+    "id": "homme-bete",
+    "label": "Homme-bête"
+  },
+  {
+    "id": "bete",
+    "label": "Bête"
+  },
+  {
+    "id": "skaven",
+    "label": "Skaven"
+  },
+  {
+    "id": "cultiste",
+    "label": "Cultiste"
+  },
+  {
+    "id": "criminel",
+    "label": "Criminel"
+  },
+  {
+    "id": "soldat",
+    "label": "Soldat"
+  },
+  {
+    "id": "garde",
+    "label": "Garde"
+  },
+  {
+    "id": "chevalier",
+    "label": "Chevalier"
+  },
+  {
+    "id": "sigmarite",
+    "label": "Sigmarite"
+  }
+]
