@@ -20,7 +20,7 @@ import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition, COND } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
-import { traumaDodgePenalty, damageSBBonus } from './trauma';
+import { traumaDodgePenalty, damageSBBonus, amputationCombatPenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt, selectedAmmo } from './items';
@@ -361,6 +361,9 @@ export function attackModifiers(
   const pen = combatTestPenalty(attacker);
   if (pen) out.push({ label: 'État', value: pen });
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
+  // Amputation (LDB 18 l.251/263) : pénalité CONTEXTUELLE à l'arme — s'applique ssi l'arme implique la main blessée.
+  const amp = amputationCombatPenalty(attacker, weapon);
+  if (amp) out.push({ label: 'Amputation', value: amp });
   // Psychologie (LDB 21) : Peur/Haine/Amour modulent le DR du jet (±1 DR, l.29/22/41/77/82), PAS la valeur
   // cible — appliqué à `atkSL` via `psychDRAdjust` au moment de la résolution (cœur opposé + passes non
   // opposées), jamais ici (un ±10 sur la cible fausserait la probabilité ET le DR, contra RAW).
@@ -467,6 +470,9 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   if (mode === 'parade') {
     const pp = parryPenalty(defender, weapon);
     if (pp) out.push({ label: 'Main secondaire', value: pp });
+    // Amputation (LDB 18) : la parade est un Test d'ARME → même pénalité contextuelle que l'attaque (ssi l'arme de parade implique la main blessée).
+    const amp = weapon ? amputationCombatPenalty(defender, weapon) : 0;
+    if (amp) out.push({ label: 'Amputation', value: amp });
   }
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.

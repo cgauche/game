@@ -5,10 +5,12 @@
  *   - Déchirure musculaire sur Jambe → Mouvement ÷2 (l.315).
  *   - Fracture Torse → Force/Agilité −30 + Mouvement ÷2 (l.298).
  *   - Fracture Jambe → Mouvement ÷2 (règle du Pied, l.298).
- * Bras/Tête et Amputations : effet de combat journalisé (latéralité non modélisée ; amputation =
- * post-combat/Chirurgie → Jalon 5). Le trauma est enregistré (label+note) même sans effet modélisé.
+ * Fracture/Déchirure de Bras/Tête : latéralité non modélisée (effet journalisé). Amputations de MAIN/DOIGTS :
+ * la pénalité (LDB 18 l.251/263) est CONTEXTUELLE À L'ARME — `amputationCombatPenalty`, lue par attack/
+ * defenseModifiers — et ne s'applique qu'aux jets d'arme qui IMPLIQUENT la main blessée (jamais un charMod
+ * CC/CT global). Le trauma est enregistré (label+note) même sans effet modélisé.
  */
-import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } from './types';
+import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest, Weapon } from './types';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
@@ -227,14 +229,42 @@ export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);
 }
 
+/** Une arme IMPLIQUE-t-elle la main `side` (LDB 18) ? Arme à 2 mains → les DEUX ; arme à 1 main → sa main de
+ *  tenue seulement (`hand:'off'` = gauche/secondaire, sinon droite/principale). Base de la pénalité d'amputation
+ *  CONTEXTUELLE : une amputation ne grève un jet d'arme que si l'arme tient la main blessée. Pur. */
+export function weaponUsesHand(weapon: Weapon, side: 'left' | 'right'): boolean {
+  if ((weapon.hands ?? 1) >= 2) return true;
+  const inLeft = weapon.hand === 'off';
+  return side === 'left' ? inLeft : !inLeft;
+}
+
+/** Pénalité d'amputation à un JET D'ARME (attaque/parade) — LDB 18 l.251 (Doigts : −5/doigt aux Tests qui
+ *  IMPLIQUENT cette main) / l.263 (Main : −20 aux Tests qui UTILISENT cette main ; + −20 additionnel aux Tests
+ *  d'Arme de la main SECONDAIRE si la main PRINCIPALE est perdue). Ne s'applique qu'aux mains que `weapon` tient
+ *  (`weaponUsesHand`) — hypothèse de jeu DROITIER (main principale = brasD). ≤ 0. Lue par attack/defenseModifiers. */
+export function amputationCombatPenalty(c: Combatant, weapon: Weapon): number {
+  const traumas = c.traumas ?? [];
+  const handAmputated = (loc: HitLocation) => traumas.some((t) => t.traumaId === 'main-bras-ampute' && t.location === loc);
+  const fingersLost = (loc: HitLocation) => traumas.filter((t) => t.traumaId === 'doigt-ampute' && t.location === loc).reduce((s, t) => s + (t.count ?? 1), 0);
+  let penalty = 0;
+  for (const [side, loc] of [['left', 'brasG'], ['right', 'brasD']] as const) {
+    if (!weaponUsesHand(weapon, side)) continue;
+    if (handAmputated(loc)) penalty -= 20;
+    else penalty -= 5 * fingersLost(loc);
+  }
+  if (handAmputated('brasD') && weaponUsesHand(weapon, 'left')) penalty -= 20; // clause l.263 : main principale perdue → main secondaire à −20
+  return penalty;
+}
+
 /**
  * Fusionne les séquelles CUMULATIVES par comptage (LDB 18) en UN trauma agrégé (≠ modèle non-cumul : ici le
  * RAW est explicitement cumulatif). Mute `c.traumas`, renvoie le journal. Idempotent. Appelé après l'ajout
  * d'une séquelle d'amputation (combat) :
- *  - Doigts par bras (l.341) : −5 aux Tests d'Arme PAR doigt (main principale = brasD) ; **4+ doigts → règle
- *    de la main tranchée** (l.344 : `noTwoHanded` + −20).
+ *  - Doigts par bras (l.251) : compte cumulé PAR bras ; **4+ doigts → règle de la main tranchée** (`maxWeaponHands`).
+ *    La pénalité −5/doigt (et −20/main) est CONTEXTUELLE À L'ARME (`amputationCombatPenalty`), PAS un charMod ici.
  *  - Dents (l.338) : −1 Sociabilité PAR PAIRE perdue (1 dent = 0, 3 = −1, 4 = −2…).
- * `dominant = brasD` (tout le monde droitier). Prothèses : Merveille (doigts/main), Dents en bois (dents).
+ * Latéralité portée par `location` (brasG/brasD) ; DROITIER (main principale = brasD). Prothèses : Merveille
+ * (doigts/main), Dents en bois (dents).
  */
 export function consolidateAmputations(c: Combatant): string[] {
   const log: string[] = [];
@@ -250,17 +280,15 @@ export function consolidateAmputations(c: Combatant): string[] {
     const grp = traumas.filter((t) => isFinger(t) && t.location === loc);
     if (!grp.length) continue;
     const total = grp.reduce((s, t) => s + (t.count ?? 1), 0);
-    const dominant = loc === 'brasD';
+    // La pénalité de combat (−5/doigt, −20/main) est CONTEXTUELLE À L'ARME (`amputationCombatPenalty`) — lue par
+    // attack/defenseModifiers depuis `traumaId`+`location`+`count` ci-dessous ; on ne pose PLUS de charMod CC/CT ici.
     if (total >= 4) {
       if (grp.length > 1) log.push(`${c.name} : 4+ doigts perdus (${loc}) → règle de la main tranchée.`);
       if (!kept.some((t) => t.traumaId === 'main-bras-ampute' && t.location === loc)) {
-        const ops: GameOp[] = [{ op: 'maxWeaponHands', hands: 1 }];
-        if (dominant) ops.push({ op: 'charMod', char: 'CC', mod: -20 }, { op: 'charMod', char: 'CT', mod: -20 });
-        kept.push({ label: `${handFiche.label} (${loc})`, traumaId: handFiche.id, location: loc, ops, prosthesis: handFiche.prosthesis!.map((p) => ({ ...p })), desc: handFiche.desc });
+        kept.push({ label: `${handFiche.label} (${loc})`, traumaId: handFiche.id, location: loc, ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: handFiche.prosthesis!.map((p) => ({ ...p })), desc: handFiche.desc });
       }
     } else {
-      const ops: GameOp[] = dominant ? [{ op: 'charMod', char: 'CC', mod: -5 * total }, { op: 'charMod', char: 'CT', mod: -5 * total }] : [];
-      kept.push({ label: `${fingerFiche.label} (${loc})`, traumaId: fingerFiche.id, location: loc, count: total, ...(ops.length ? { ops } : {}), prosthesis: fingerFiche.prosthesis!.map((p) => ({ ...p })), desc: fingerFiche.desc });
+      kept.push({ label: `${fingerFiche.label} (${loc})`, traumaId: fingerFiche.id, location: loc, count: total, prosthesis: fingerFiche.prosthesis!.map((p) => ({ ...p })), desc: fingerFiche.desc });
     }
   }
   const teeth = traumas.filter(isTeeth);

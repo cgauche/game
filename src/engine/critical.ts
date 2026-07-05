@@ -25,17 +25,15 @@ import type { GameOp } from './ops';
  * `consolidateAmputations`) ; la perte du SECOND œil/oreille est agrégée par `escalateSensoryLoss`.
  */
 export function permanentAmputations(sequels: string[], location: HitLocation, rng: RNG = defaultRNG): Trauma[] {
-  const dominant = location === 'brasD'; // droitier
   return sequels.map((id) => {
     const t = traumaById(id, undefined, location);
     if (id === 'doigt-ampute') {
-      // 1 doigt par critique. Effet (main principale −5/doigt) posé ICI ; cumulé par consolidateAmputations.
+      // 1 doigt par critique ; cumulé par consolidateAmputations. Pénalité −5/doigt = CONTEXTUELLE À L'ARME
+      // (`amputationCombatPenalty`, LDB 18 l.251) — plus de charMod CC/CT global ici.
       t.count = 1;
-      if (dominant) t.ops = [{ op: 'charMod', char: 'CC', mod: -5 }, { op: 'charMod', char: 'CT', mod: -5 }];
     } else if (id === 'main-bras-ampute') {
-      const ops: GameOp[] = [{ op: 'maxWeaponHands', hands: 1 }];
-      if (dominant) ops.push({ op: 'charMod', char: 'CC', mod: -20 }, { op: 'charMod', char: 'CT', mod: -20 });
-      t.ops = ops;
+      // −20 (LDB 18 l.263) = contextuel à l'arme (`amputationCombatPenalty`) ; ICI seul l'interdit d'arme à 2 mains.
+      t.ops = [{ op: 'maxWeaponHands', hands: 1 }];
     } else if (id === 'dents-perdues') {
       const n = location === 'tete' ? d10(rng) : 1; // « 1d10 dents » (la perte structurelle est multiple ; sinon 1).
       t.count = n;

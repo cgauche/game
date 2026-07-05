@@ -104,39 +104,37 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   });
 });
 
-describe('consolidateAmputations — cumul doigts (l.341/344) & dents (l.338)', () => {
-  const finger = (loc: 'brasG' | 'brasD', count = 1): Trauma => ({ label: `Doigts amputés (${loc})`, traumaId: 'doigt-ampute', location: loc, count, ops: loc === 'brasD' ? [{ op: 'charMod', char: 'CC', mod: -5 * count }, { op: 'charMod', char: 'CT', mod: -5 * count }] : undefined });
+describe('consolidateAmputations — cumul doigts (l.251) & dents (l.338) ; pénalité de combat CONTEXTUELLE à l’arme (#101)', () => {
+  const finger = (loc: 'brasG' | 'brasD', count = 1): Trauma => ({ label: `Doigts amputés (${loc})`, traumaId: 'doigt-ampute', location: loc, count });
   const teeth = (count: number): Trauma => ({ label: 'Dents perdues', traumaId: 'dents-perdues', location: 'tete', count });
 
-  it('cas réel : 1 doigt (main droite) + 3 dents → −5 CC/CT et −1 Soc (3 dents = 1 paire)', () => {
+  it('cas réel : 1 doigt (main droite) + 3 dents → doigt count 1 SANS charMod (−5 = weapon-context) ; −1 Soc dents', () => {
     const c = fullCombatant({ traumas: [finger('brasD', 1), teeth(3)] });
     consolidateAmputations(c);
     const f = (c.traumas ?? []).find((t) => t.traumaId === 'doigt-ampute')!;
-    expect(f.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -5 });
-    expect(f.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -5 });
+    expect(f.count).toBe(1);
+    expect(f.ops?.some((o) => o.op === 'charMod')).toBeFalsy(); // pénalité −5/doigt portée par amputationCombatPenalty
     const d = (c.traumas ?? []).find((t) => t.traumaId === 'dents-perdues')!;
     expect(d.count).toBe(3);
     expect(d.ops).toContainEqual({ op: 'charMod', char: 'Soc', mod: -1 }); // floor(3/2) = 1 paire
   });
 
-  it('deux pertes de doigts (même main) fusionnent : −10 CC/CT (count 2)', () => {
+  it('deux pertes de doigts (même main) fusionnent en count 2, SANS charMod', () => {
     const c = fullCombatant({ traumas: [finger('brasD', 1), finger('brasD', 1)] });
     consolidateAmputations(c);
     const fingers = (c.traumas ?? []).filter((t) => t.traumaId === 'doigt-ampute');
     expect(fingers).toHaveLength(1); // fusionné en un seul
     expect(fingers[0].count).toBe(2);
-    expect(fingers[0].ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -10 });
-    expect(fingers[0].ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -10 });
+    expect(fingers[0].ops?.some((o) => o.op === 'charMod')).toBeFalsy();
   });
 
-  it('4 doigts perdus → règle de la main tranchée (pas d’arme à 2 mains + −20)', () => {
+  it('4 doigts perdus → règle de la main tranchée (maxWeaponHands, SANS charMod : −20 = weapon-context)', () => {
     const c = fullCombatant({ traumas: [finger('brasD', 3), finger('brasD', 1)] });
     consolidateAmputations(c);
     expect((c.traumas ?? []).some((t) => t.traumaId === 'doigt-ampute')).toBe(false); // plus de « doigts »
     const hand = (c.traumas ?? []).find((t) => t.traumaId === 'main-bras-ampute')!;
     expect(hand.ops?.some((o) => o.op === 'maxWeaponHands')).toBe(true);
-    expect(hand.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -20 });
-    expect(hand.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -20 });
+    expect(hand.ops?.some((o) => o.op === 'charMod')).toBeFalsy();
   });
 
   it('idempotent : reconsolider ne change rien', () => {

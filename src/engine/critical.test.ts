@@ -112,21 +112,18 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
     expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -1 });
     expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -1 });
   });
-  it('bras DROIT (dominant) main : pas d’arme à 2 mains + −20 CC/CT ; bras GAUCHE : juste pas de 2 mains', () => {
-    const [mainD] = permanentAmputations(['main-bras-ampute'], 'brasD');
-    expect(mainD.ops?.some((o) => o.op === 'maxWeaponHands')).toBe(true);
-    expect(mainD.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -20 });
-    expect(mainD.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -20 });
-    const [mainG] = permanentAmputations(['main-bras-ampute'], 'brasG');
-    expect(mainG.ops?.some((o) => o.op === 'maxWeaponHands')).toBe(true);
-    expect(mainG.ops?.some((o) => o.op === 'charMod')).toBeFalsy();
+  it('bras (DROIT ou GAUCHE) main amputée : interdit d’arme à 2 mains, AUCUN charMod (−20 = contextuel à l’arme, #101 LDB 18 l.263)', () => {
+    for (const loc of ['brasD', 'brasG'] as const) {
+      const [main] = permanentAmputations(['main-bras-ampute'], loc);
+      expect(main.ops?.some((o) => o.op === 'maxWeaponHands')).toBe(true);
+      expect(main.ops?.some((o) => o.op === 'charMod')).toBeFalsy(); // la pénalité −20 est portée par amputationCombatPenalty
+    }
   });
-  it('bras : doigt (perte d’UN doigt) → doigt −5 CC/CT (droitier), pas la règle de la main', () => {
+  it('bras : doigt (perte d’UN doigt) → count 1, AUCUN charMod (−5/doigt = contextuel à l’arme, #101 LDB 18 l.251), pas la règle de la main', () => {
     const [doigt] = permanentAmputations(['doigt-ampute'], 'brasD');
     expect(doigt.traumaId).toBe('doigt-ampute');
     expect(doigt.count).toBe(1);
-    expect(doigt.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -5 });
-    expect(doigt.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -5 });
+    expect(doigt.ops?.some((o) => o.op === 'charMod')).toBeFalsy();
     expect(doigt.ops?.some((o) => o.op === 'maxWeaponHands')).toBeFalsy();
   });
   it('tête : « Coup défigurant » cumule œil (−5 Soc) + nez (−20 Soc)', () => {
