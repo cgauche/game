@@ -10,6 +10,7 @@ import { CHAR_LABELS, HitLocation, ItemInstance, Combatant } from '../engine/typ
 import { locationLabel } from '../engine/combat';
 import { effectiveChar, charBonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
+import { refKey, parseRefKey } from '../engine/careerSlots';
 import { weaponStatParts } from './weaponStats';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
@@ -20,7 +21,7 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, findSkill, specLabel, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel, qualityRefLabel, findTrappingById } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel, qualityRefLabel, findTrappingById } from '../data';
 import { weaponFormLabel } from '../gameIso/rig/parts/weaponForms';
 import { formatTrait } from '../engine/traits/dispatch';
 import { formatRemaining } from '../engine/disease';
@@ -878,43 +879,38 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
       <AdvSection title="Compétences" count={v.skills.length + v.skillSlotsOpen.length}>
       <div className="adv-grid">
         {v.skills.map((s) => (
-          <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={skillLabel(s.name, s.spec)}>
+          <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={`${s.skillId}|${s.spec ?? ''}`}>
             <span className="adv-name">
               {skillLabel(s.name, s.spec)} <em>{baseWithTalents(hero, s.characteristic) + s.advances}</em> {pill(s.inCareer)}
               {s.known ? '' : <span className="acquire-tag">à apprendre</span>}
             </span>
             <span className="adv-meta">+{s.advances}</span>
-            <button className="btn small" disabled={!afford(s.nextCost)} onClick={() => buySkillAdvance(hero.id, s.name, s.spec)}>
+            <button className="btn small" disabled={!afford(s.nextCost)} onClick={() => buySkillAdvance(hero.id, s.skillId, s.spec)}>
               {s.known ? '+1' : 'Apprendre'} · {s.nextCost} PX
             </button>
           </div>
         ))}
         {/* Emplacements de Compétence « (Au choix) » non désignés (LDB 09 l.38) */}
-        {v.skillSlotsOpen.map((slot) => {
-          const groupSkillId = findSkill(slot.group)?.id ?? slot.group;
-          return (
+        {v.skillSlotsOpen.map((slot) => (
           <SlotChoiceRow
             key={slot.slotKey}
             entry={slot.entry}
             acquireCost={slot.nextCost}
             afford={afford}
             options={slot.options.map((o) => ({
-              label: `${slot.group} (${o.spec})`,
-              display: `${slot.group} (${specLabel('skills', groupSkillId, o.spec)})`,
+              label: refKey(slot.groupId, o.spec), // clé de câblage OPAQUE (id+spec), jamais affichée
+              display: `${slot.group} (${o.display})`,
               owned: o.ownedAdvances > 0,
               hint: o.ownedAdvances > 0 ? `+${o.ownedAdvances}` : undefined,
             }))}
-            onPick={(label, owned) => {
-              if (owned) designateCareerSlot(hero.id, slot.slotKey, label);
-              else {
-                // Acheter la 1re Augmentation désigne l'emplacement (LDB 09 l.38).
-                const spec = label.slice(slot.group.length).replace(/^\s*\(/, '').replace(/\)\s*$/, '');
-                buySkillAdvance(hero.id, slot.group, spec);
-              }
+            onPick={(key, owned) => {
+              const { id, spec } = parseRefKey(key);
+              if (owned) designateCareerSlot(hero.id, slot.slotKey, id, spec);
+              // Acheter la 1re Augmentation désigne l'emplacement (LDB 09 l.38).
+              else buySkillAdvance(hero.id, id, spec);
             }}
           />
-          );
-        })}
+        ))}
       </div>
       </AdvSection>
 
@@ -922,14 +918,14 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
       <div className="adv-grid">
         {v.talents.length === 0 && <span className="muted">Aucun Talent de carrière disponible.</span>}
         {v.talents.map((t) =>
-          t.label ? (
+          t.talentId ? (
             <div className={`adv-row ${t.times > 0 ? '' : 'acquire'}`} key={t.slotKey}>
               <span className="adv-name">
                 {t.label}
                 {t.times > 0 ? ` ×${t.times}` : ''} {pill(true)}
               </span>
               <span className="adv-meta">{t.maxReached ? 'Maxi atteint' : ''}</span>
-              <button className="btn small" disabled={t.maxReached || !afford(t.nextCost)} onClick={() => buyTalent(hero.id, t.label!)}>
+              <button className="btn small" disabled={t.maxReached || !afford(t.nextCost)} onClick={() => buyTalent(hero.id, t.talentId!, t.spec)}>
                 {t.times > 0 ? '+1' : 'Acquérir'} · {t.nextCost} PX
               </button>
             </div>
@@ -940,9 +936,10 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
               acquireCost={t.nextCost}
               afford={afford}
               options={t.options ?? []}
-              onPick={(label, owned) => {
-                if (owned) designateCareerSlot(hero.id, t.slotKey, label);
-                else buyTalent(hero.id, label);
+              onPick={(key, owned) => {
+                const { id, spec } = parseRefKey(key);
+                if (owned) designateCareerSlot(hero.id, t.slotKey, id, spec);
+                else buyTalent(hero.id, id, spec);
               }}
             />
           ),

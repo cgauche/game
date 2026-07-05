@@ -6,7 +6,7 @@
  * VERBATIM du Tableau de Coût des Augmentations (l.45-62) — aucune invention.
  */
 import { Combatant, CharKey } from './types';
-import { CareerSlot, slotCovers, concreteLabel, splitLabel } from './careerSlots';
+import { CareerSlot, splitLabel, parseRefKey } from './careerSlots';
 import { findSkill, findTalent } from '../data';
 import { slugId } from '../data/slug';
 import advancementCostsJson from '../data/advancementCosts.json';
@@ -105,11 +105,17 @@ export function careerCompletionAdvances(level: number): number {
   return 5 * level;
 }
 
-/** La valeur concrète d'un slot SANS choix (entrée explicite), sinon null. */
-function explicitLabel(slot: CareerSlot): string | null {
-  if (slot.needsChoice) return null;
-  const o = slot.options[0];
-  return concreteLabel(o.name, o.spec);
+/** Référence `(id, spec)` couverte par un slot : l'option UNIQUE d'un slot EXPLICITE, ou — pour un
+ *  slot À CHOIX — la désignation du héros (clé `refKey` décodée par `parseRefKey`, JAMAIS un
+ *  libellé re-parsé). null = rien ne couvre ce slot (pas encore désigné, ou tirage aléatoire sans
+ *  identité réelle). */
+function slotRef(slot: CareerSlot, designations: Record<string, string>): { id: string; spec?: string } | null {
+  if (!slot.needsChoice) {
+    const o = slot.options[0];
+    return o.optionId ? { id: o.optionId, spec: o.spec } : null;
+  }
+  const key = designations[slot.key];
+  return key ? parseRefKey(key) : null;
 }
 
 /**
@@ -138,24 +144,19 @@ export function isCareerLevelComplete(
   const charKeys = opts.careerChars; // déjà des CharKey
   if (!charKeys.length || !charKeys.every((k) => (hero.charAdvances?.[k] ?? 0) >= req)) return false;
 
-  const skillAdv = (label: string): number => {
-    const { name, spec } = splitLabel(label);
-    const id = findSkill(name)?.id ?? slugId(name);
-    return hero.skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''))?.advances ?? 0;
-  };
   let held = 0;
   for (const slot of opts.skillSlots) {
-    const label = explicitLabel(slot) ?? opts.designations[slot.key];
-    if (label && skillAdv(label) >= req) held += 1;
+    const ref = slotRef(slot, opts.designations);
+    if (!ref) continue;
+    const adv = hero.skills.find((s) => s.skillId === ref.id && (s.spec ?? '') === (ref.spec ?? ''))?.advances ?? 0;
+    if (adv >= req) held += 1;
   }
   if (held < 8) return false;
 
   return opts.talentSlots.some((slot) => {
-    const label = explicitLabel(slot) ?? opts.designations[slot.key];
-    if (label == null) return false;
-    const { name, spec } = splitLabel(label);
-    const id = findTalent(name)?.id ?? slugId(name);
-    return hero.talents.some((t) => t.talentId === id && (t.spec ?? '') === (spec ?? '') && t.times > 0);
+    const ref = slotRef(slot, opts.designations);
+    if (!ref) return false;
+    return hero.talents.some((t) => t.talentId === ref.id && (t.spec ?? '') === (ref.spec ?? '') && t.times > 0);
   });
 }
 

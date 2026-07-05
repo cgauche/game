@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { RNG } from './dice';
 import {
   mightFromRelation, estimateMightFromAspects, warMachineMight, normalizeMights,
-  mightReduction, rollMightTest, resolveClash, applyMightDelta,
+  mightReduction, rollMightTest, resolveClash,
   battleOutcome, isDestroyed, inspireDifficulty, difficultyFromModifier, roundToTen,
   battleHazard, battleSceneById, battleActivityById, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
   WAR_MACHINES, STRUCTURES, BATTLE_HAZARDS,
@@ -78,18 +78,12 @@ describe('Test spectaculaire de Puissance (l.120)', () => {
 
   it('affrontement simultané : chaque armée réduit l\'adverse de 10 + son DR (min 5)', () => {
     // Allié 60 → jette 34 (DR +3) ; Ennemi 40 → jette 55 (échec, DR −1 : dizaines 4 − 5).
+    // `resolveClash` ne retourne QUE les pertes (les Puissances après sont appliquées en Blessures côté flux).
     const c = resolveClash(60, 40, { rng: seqRNG(34, 55) });
     expect(c.allyTest.sl).toBe(3);
     expect(c.enemyTest.sl).toBe(-1);
     expect(c.enemyLoss).toBe(13); // 10 + 3
     expect(c.allyLoss).toBe(9); // 10 − 1
-    expect(c.enemyMight).toBe(40 - 13); // 27
-    expect(c.allyMight).toBe(60 - 9); // 51
-  });
-
-  it('les Puissances ne descendent jamais sous 0', () => {
-    const c = resolveClash(4, 100, { rng: seqRNG(1, 1) });
-    expect(c.allyMight).toBe(0); // 4 − (10 + DRmax) plancher 0
   });
 });
 
@@ -187,12 +181,6 @@ describe('Scènes cinématiques (l.135-225)', () => {
     expect(sceneDeltas(percee, combatLossResolution(2, 1))).toEqual([]); // pas de +10 sur défaite
     expect(sceneChains(percee, combatResolution(4, 2, 1))).toEqual([]); // victoire → pas de Charge
     expect(sceneDeltas(percee, combatResolution(4, 2, 1))).toEqual([{ side: 'ally', amount: 10 }]);
-  });
-
-  it('les gains d\'une Scène sont plafonnés à la Puissance de départ (l.135)', () => {
-    expect(applyMightDelta(55, 60, 10)).toBe(60);
-    expect(applyMightDelta(6, 60, -10)).toBe(0);
-    expect(applyMightDelta(40, 60, 10)).toBe(50);
   });
 
   it('catalogue de Scènes data-driven — 12 Scènes + menace Intrus + tenue + percée en combat', () => {

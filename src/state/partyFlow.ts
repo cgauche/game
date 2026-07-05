@@ -26,7 +26,6 @@ import {
   freeSlotFor,
   designateSlot,
   talentMaxReached,
-  splitLabel,
 } from '../engine/careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
 import { heroSessionXp, regainDetermination } from '../engine/session';
@@ -36,8 +35,7 @@ import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { add as moneyAdd, subtract as moneySub, canAfford, toMoney, Money, formatMoney } from '../engine/money';
 import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
-import { levelsForCareer, findSkill, findTalent, findCareerById, findSpellById, findTrappingById } from '../data/index';
-import { slugId } from '../data/slug';
+import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrappingById, refLabel } from '../data/index';
 import { seatSlotsRemaining } from './netOwnership';
 import { rosterUpdate } from './roster';
 import { bus, EVT } from './bus';
@@ -266,33 +264,30 @@ function lbl(name: string, spec?: string): string {
   return spec ? `${name} (${spec})` : name;
 }
 
-/** Achète une Augmentation de Compétence — identité (name, spec), LDB 09 l.42. L'achat via un
+/** Achète une Augmentation de Compétence — identité (skillId, spec), LDB 09 l.42. L'achat via un
  *  emplacement « (Au choix) » libre DÉSIGNE l'emplacement (LDB 09 l.38 : la Spécialisation se
  *  choisit à l'allocation). Remise −5 PX si la Compétence est ajoutée par un talent ET déjà
  *  dans la carrière (LDB 10 Maître artisan…). */
-export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: string, spec?: string): void {
+export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: string, spec?: string): void {
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
       const ctx = careerCtx(clone);
-      const skillId = findSkill(skillName)?.id ?? slugId(skillName);
+      const skillLabel = findSkillById(skillId)?.label ?? skillId; // AFFICHAGE (messages) + conversion pour le moteur
       const known = clone.skills.some((sk) => sk.skillId === skillId && (sk.spec ?? '') === (spec ?? ''));
-      const status = inCareerStatus(ctx.sSlots, ctx.designations, skillName, spec);
+      const status = inCareerStatus(ctx.sSlots, ctx.designations, skillId, spec);
       const additions = careerSkillAdditions(clone);
-      const added = additions.some((a) => {
-        const p = splitLabel(a);
-        return p.name === skillName && (!p.spec || /au choix/i.test(p.spec) || (p.spec ?? '') === (spec ?? ''));
-      });
+      const added = additions.some((a) => a.id === skillId && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (spec ?? '')));
       const inC = status != null || added;
       if (known && mentorBlocks(inC, rule('advancement-mentor') === true, !!get().flags['mentor'])) {
-        msg = `${clone.name} : ${lbl(skillName, spec)} hors carrière — un mentor est requis (LDB 07 l.89).`;
+        msg = `${clone.name} : ${lbl(skillLabel, spec)} hors carrière — un mentor est requis (LDB 07 l.89).`;
         return h;
       }
       if (!known) {
         if (!inC) {
-          msg = `${clone.name} : « ${lbl(skillName, spec)} » hors carrière, non acquérable.`;
+          msg = `${clone.name} : « ${lbl(skillLabel, spec)} » hors carrière, non acquérable.`;
           return h;
         }
         // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
@@ -300,27 +295,27 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: s
         clone.skills.push({ skillId, spec, characteristic, advances: 0 });
       }
       const discount = added && status != null ? 5 : 0;
-      const r = engineBuySkillAdvance(clone, skillName, spec, inC, discount);
+      const r = engineBuySkillAdvance(clone, skillLabel, spec, inC, discount);
       if (!r.ok) {
-        msg = `${clone.name} : ${lbl(skillName, spec)} — ${r.reason}.`;
+        msg = `${clone.name} : ${lbl(skillLabel, spec)} — ${r.reason}.`;
         return h;
       }
       // Première allocation via un slot joker libre → désignation automatique (LDB 09 l.38).
       if (status === 'free') {
-        const slot = freeSlotFor(ctx.sSlots, ctx.designations, skillName, spec);
-        if (slot) designateSlot(clone, ctx.career, slot, lbl(skillName, spec), [...ctx.sSlots, ...ctx.tSlots]);
+        const slot = freeSlotFor(ctx.sSlots, ctx.designations, skillId, spec);
+        if (slot) designateSlot(clone, ctx.career, slot, skillId, spec, [...ctx.sSlots, ...ctx.tSlots]);
       }
-      msg = `${clone.name} : ${lbl(skillName, spec)} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
+      msg = `${clone.name} : ${lbl(skillLabel, spec)} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
       return clone;
     }),
   }));
   if (msg) get().log(msg);
 }
 
-/** Désigne GRATUITEMENT un emplacement « (Au choix) » de la carrière courante sur un libellé
- *  concret (éventuellement déjà possédé via l'espèce) — il devient in-carrière et montable en
+/** Désigne GRATUITEMENT un emplacement « (Au choix) » de la carrière courante sur une (id, spec)
+ *  concrète (éventuellement déjà possédée via l'espèce) — il devient in-carrière et montable en
  *  PX. Arbitrage RAW : specs distinctes par carrière, désignations par carrière. */
-export function designateCareerSlot(get: Get, set: Set, heroId: string, slotKey: string, label: string): void {
+export function designateCareerSlot(get: Get, set: Set, heroId: string, slotKey: string, optionId: string, spec?: string): void {
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
@@ -333,11 +328,12 @@ export function designateCareerSlot(get: Get, set: Set, heroId: string, slotKey:
         msg = `${clone.name} : emplacement de carrière inconnu.`;
         return h;
       }
-      const r = designateSlot(clone, ctx.career, slot, label, all);
+      const r = designateSlot(clone, ctx.career, slot, optionId, spec, all);
       if (!r.ok) {
         msg = `${clone.name} : désignation refusée (${r.reason}).`;
         return h;
       }
+      const label = refLabel(slot.kind === 'skill' ? 'skills' : 'talents', { id: optionId, spec }); // AFFICHAGE seul
       msg = `${clone.name} : « ${label} » devient le choix de carrière de l'emplacement (0 PX).`;
       return clone;
     }),
@@ -345,45 +341,44 @@ export function designateCareerSlot(get: Get, set: Set, heroId: string, slotKey:
   if (msg) get().log(msg);
 }
 
-/** Achète une Augmentation de Talent (libellé CONCRET). In-carrière = un emplacement du niveau
- *  COURANT le couvre (explicite, désigné, ou libre → désignation automatique) ; hors carrière
- *  interdit (LDB 07 l.97) ; Maxi respecté (LDB 10). Applique les effets d'acquisition
+/** Achète une Augmentation de Talent — identité (talentId, spec). In-carrière = un emplacement du
+ *  niveau COURANT le couvre (explicite, désigné, ou libre → désignation automatique) ; hors
+ *  carrière interdit (LDB 07 l.97) ; Maxi respecté (LDB 10). Applique les effets d'acquisition
  *  (+5 Caractéristique de départ, Véloce) et recale Blessures/Chance/Détermination. */
-export function buyTalent(get: Get, set: Set, heroId: string, talentName: string): void {
+export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, spec?: string): void {
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
       const ctx = careerCtx(clone);
-      const { name, spec } = splitLabel(talentName);
-      const status = inCareerStatus(ctx.tSlots, ctx.designations, name, spec, [...ctx.sSlots, ...ctx.tSlots]);
+      const talentLabel = refLabel('talents', { id: talentId, spec }); // AFFICHAGE + conversion pour le moteur
+      const status = inCareerStatus(ctx.tSlots, ctx.designations, talentId, spec, [...ctx.sSlots, ...ctx.tSlots]);
       if (!status) {
-        msg = `${clone.name} : Talent « ${talentName} » hors carrière.`;
+        msg = `${clone.name} : Talent « ${talentLabel} » hors carrière.`;
         return h;
       }
-      if (talentMaxReached(clone, talentName)) {
-        msg = `${clone.name} : ${talentName} — Maxi atteint.`;
+      if (talentMaxReached(clone, talentId, spec)) {
+        msg = `${clone.name} : ${talentLabel} — Maxi atteint.`;
         return h;
       }
       const fortuneBefore = fortuneMax(clone);
       const resolveBefore = resolveMax(clone);
-      const r = engineBuyTalent(clone, talentName);
+      const r = engineBuyTalent(clone, talentLabel);
       if (!r.ok) {
-        msg = `${clone.name} : ${talentName} — ${r.reason}.`;
+        msg = `${clone.name} : ${talentLabel} — ${r.reason}.`;
         return h;
       }
       if (status === 'free') {
-        const slot = freeSlotFor(ctx.tSlots, ctx.designations, name, spec);
-        if (slot) designateSlot(clone, ctx.career, slot, talentName, [...ctx.sSlots, ...ctx.tSlots]);
+        const slot = freeSlotFor(ctx.tSlots, ctx.designations, talentId, spec);
+        if (slot) designateSlot(clone, ctx.career, slot, talentId, spec, [...ctx.sSlots, ...ctx.tSlots]);
       }
       // Effets d'acquisition (+5 Caractéristique de départ, Véloce) + attributs dérivés.
-      const talentId = findTalent(name)?.id ?? slugId(name);
       applyTalentAcquisition(clone, talentId, spec);
       recomputeWounds(clone); // Dur à cuire / Très résistant (BE)
       clone.fortune = (clone.fortune ?? 0) + (fortuneMax(clone) - fortuneBefore); // Chanceux
       clone.resolve = (clone.resolve ?? 0) + (resolveMax(clone) - resolveBefore); // Obstiné
-      msg = `${clone.name} : Talent ${talentName} (−${r.cost} PX).`;
+      msg = `${clone.name} : Talent ${talentLabel} (−${r.cost} PX).`;
       // Magie mineure (LDB 10 l.587) : BFM sorts inclus au Talent — à choisir (0 PX, Avancement).
       if (castingKindOf(talentId) === 'mineure') {
         const q = bonus(effectiveChar(clone, 'FM'));

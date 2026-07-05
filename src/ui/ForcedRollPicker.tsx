@@ -1,6 +1,7 @@
 import type { HitLocation, BodyShape } from '../engine/types';
 import { locationLabel } from '../engine/combat';
 import { maxForcedRoll } from '../engine/tests';
+import { OptionChooser, type RollOption } from './OptionChooser';
 
 /** Les 6 localisations d'un Coup Critique (ordre du tableau LDB). */
 const CRIT_LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
@@ -8,7 +9,8 @@ const CRIT_LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', '
 /**
  * Grille PARTAGÉE de la localisation d'un Coup Critique FORCÉ (RAW-2, LDB 17 l.73 : sur un Critique
  * obtenu via « Je ne faillirai pas ! », le joueur CHOISIT la localisation atteinte). Un seul endroit
- * d'affichage — les modales qui en ont besoin la posent (attaque), elles ne la recopient plus.
+ * d'affichage — les modales qui en ont besoin la posent (attaque), elles ne la recopient plus. La grille
+ * elle-même EST `OptionChooser layout="grid"` (source unique des grilles de boutons `.rm-loc-grid`).
  */
 export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
   current?: HitLocation | null;
@@ -16,16 +18,13 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
   /** Forme du corps de la cible → libellés de localisation adaptés (patte/aile… vs bras/jambe). */
   shape?: BodyShape;
 }) {
+  const options: RollOption[] = CRIT_LOCS.map((l) => ({
+    key: l, label: locationLabel(l, shape), primary: current === l, onSelect: () => onSet(l),
+  }));
   return (
     <div className="rm-options">
       <span className="mini-title">🔥 Localisation du Coup Critique (Je ne faillirai pas !)</span>
-      <div className="rm-loc-grid">
-        {CRIT_LOCS.map((l) => (
-          <button key={l} className={`btn small ${current === l ? 'btn-primary' : ''}`} onClick={() => onSet(l)}>
-            {locationLabel(l, shape)}
-          </button>
-        ))}
-      </div>
+      <OptionChooser options={options} layout="grid" />
     </div>
   );
 }

@@ -566,13 +566,13 @@ export interface GameState extends RollFlowActionsMap {
   grantXp: (heroId: string, amount: number) => void;
   /** Achète une Augmentation de Caractéristique (coût in/hors-carrière auto, recalc Blessures). */
   buyCharAdvance: (heroId: string, char: CharKey) => void;
-  /** Achète une Augmentation de Compétence (identité name+spec) ; acquiert la Compétence de
+  /** Achète une Augmentation de Compétence (identité skillId+spec) ; acquiert la Compétence de
    *  carrière non connue à 0 ; l'achat via un slot « (Au choix) » libre le désigne. */
-  buySkillAdvance: (heroId: string, skillName: string, spec?: string) => void;
-  /** Achète/augmente un Talent (libellé concret ; refusé hors carrière l.97 / Maxi atteint). */
-  buyTalent: (heroId: string, talentName: string) => void;
+  buySkillAdvance: (heroId: string, skillId: string, spec?: string) => void;
+  /** Achète/augmente un Talent (identité talentId+spec ; refusé hors carrière l.97 / Maxi atteint). */
+  buyTalent: (heroId: string, talentId: string, spec?: string) => void;
   /** Désigne GRATUITEMENT un emplacement « (Au choix) » de la carrière courante (LDB 09 l.38). */
-  designateCareerSlot: (heroId: string, slotKey: string, label: string) => void;
+  designateCareerSlot: (heroId: string, slotKey: string, optionId: string, spec?: string) => void;
   /** Apprentissage/mémorisation d'un sort (LDB 46/10) — coût PX via engine/grimoire. */
   buySpell: (heroId: string, spellId: string) => void;
   /** Achète un composant d'incantation pour un Sort d'Arcane/Domaine connu (LDB 46 l.163 — NI pistoles). */
@@ -1420,9 +1420,9 @@ export const useGame = create<GameState>((set, get) => ({
   setItemShape: (heroId, uid, shape) => partyFlow.setItemShape(get, set, heroId, uid, shape),
   grantXp: (heroId, amount) => partyFlow.grantXp(get, set, heroId, amount),
   buyCharAdvance: (heroId, char) => partyFlow.buyCharAdvance(get, set, heroId, char),
-  buySkillAdvance: (heroId, skillName, spec) => partyFlow.buySkillAdvance(get, set, heroId, skillName, spec),
-  buyTalent: (heroId, talentName) => partyFlow.buyTalent(get, set, heroId, talentName),
-  designateCareerSlot: (heroId, slotKey, label) => partyFlow.designateCareerSlot(get, set, heroId, slotKey, label),
+  buySkillAdvance: (heroId, skillId, spec) => partyFlow.buySkillAdvance(get, set, heroId, skillId, spec),
+  buyTalent: (heroId, talentId, spec) => partyFlow.buyTalent(get, set, heroId, talentId, spec),
+  designateCareerSlot: (heroId, slotKey, optionId, spec) => partyFlow.designateCareerSlot(get, set, heroId, slotKey, optionId, spec),
   /** Mémorise un sort (PX selon le Talent, LDB 46/10) ; un sort du Chaos corrompt (+1, seuil → mutation). */
   buySpell: (heroId, spellId) => {
     const r = partyFlow.buySpell(get, set, heroId, spellId);

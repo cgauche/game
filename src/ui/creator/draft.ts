@@ -39,7 +39,8 @@ import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLeve
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpeciesById, rigSpeciesId, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, rigSpeciesId, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
+import { slugId } from '../../data/slug';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -374,10 +375,12 @@ export function probeHero(d: CreatorDraft, withCareerTalent = true): Combatant {
   return { characteristics: draftChars(d), talents, skills: [], movement: draftSpecies(d).movement } as unknown as Combatant;
 }
 
-/** Entrées de compétences de carrière allouables : les 8 du Niveau + ajouts de talents (LDB 10). */
+/** Entrées de compétences de carrière allouables : les 8 du Niveau + ajouts de talents (LDB 10).
+ *  Libellés (clés de `d.skillAdvances`, authoring) — `careerSkillAdditions` renvoie des refs
+ *  structurées, résolues ici en libellé via `refLabel` (bord authoring, pas un chemin de résolution). */
 export function careerSkillEntries(d: CreatorDraft): string[] {
   const base = (draftLevel(d)?.skills ?? []).map((a) => advancementLabel('skills', a));
-  return [...base, ...careerSkillAdditions(probeHero(d))];
+  return [...base, ...careerSkillAdditions(probeHero(d)).map((a) => refLabel('skills', a))];
 }
 
 /** « Répartition simple » (étape 5) : « ajouter 5 Augmentations à chaque Compétence de Carrière »
@@ -437,7 +440,13 @@ export function careerTalentOptions(d: CreatorDraft): { entry: string; choices: 
     const entry = advancementLabel('talents', ref);
     const choices = talentEntryChoices(entry);
     const selected = choices ? (d.specChoices[entry] && choices.includes(d.specChoices[entry]) ? d.specChoices[entry] : null) : entry;
-    return { entry, choices, selected, maxed: selected ? talentMaxReached(probe, selected) : false };
+    let maxed = false;
+    if (selected) {
+      const { name, spec } = splitLabel(selected);
+      const talentId = findTalent(name)?.id ?? slugId(name);
+      maxed = talentMaxReached(probe, talentId, spec);
+    }
+    return { entry, choices, selected, maxed };
   });
 }
 
@@ -512,7 +521,11 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
         if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} ».`;
       }
       if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
-      if (talentMaxReached(probeHero(d, false), d.careerTalent)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
+      {
+        const { name, spec } = splitLabel(d.careerTalent);
+        const talentId = findTalent(name)?.id ?? slugId(name);
+        if (talentMaxReached(probeHero(d, false), talentId, spec)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
+      }
       const quota = pettySpellQuota(d);
       if (quota && d.pettySpells.length !== quota) {
         return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;

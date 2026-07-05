@@ -140,13 +140,16 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
 
 describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08 l.7-11)', () => {
   // Carrière factice à 2 niveaux : 9 compétences au Niveau 1 (dont un joker), 2 talents.
+  // NB : `A()`/`parseAdvancement` (parseur de TEST) garde la chaîne telle quelle comme `optionId`
+  // (pas de résolution vers un id réel) — les fixtures ci-dessous utilisent donc directement les
+  // MÊMES ids ('s1'…, 't1'…) que `completedHero`, pour que la comparaison par id soit cohérente.
   const LEVELS: CareerLevelData[] = [
     {
       label: 'Niv1',
       career: 'Test',
       level: 1,
-      skills: A(['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9']),
-      talents: A(['T1', 'T2']),
+      skills: A(['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9']),
+      talents: A(['t1', 't2']),
       trappings: [],
       characteristics: ['CC', 'F', 'E'],
       status: 'Bronze 1',
@@ -155,8 +158,8 @@ describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08
       label: 'Niv2',
       career: 'Test',
       level: 2,
-      skills: A(['S10', 'S11']),
-      talents: A(['T3']),
+      skills: A(['s10', 's11']),
+      talents: A(['t3']),
       trappings: [],
       characteristics: ['Ag'],
       status: 'Bronze 2',

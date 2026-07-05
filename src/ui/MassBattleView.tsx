@@ -7,7 +7,7 @@ import { StationSheet } from './StationSheet';
 import { AssignRow } from './AssignRow';
 import { battleScenesToStations, type Station } from '../state/stations';
 import {
-  massBattleThreatPenalty, battleActivitiesAvailable, prepCount,
+  massBattleThreatPenalty, battleActivitiesAvailable, prepCount, armyMight, armyStartMight,
   type MassBattleState, type MassBattleArmy,
 } from '../state/massBattleFlow';
 import { battleSceneById, BATTLE_HAZARDS, inspireDifficulty, type BattleSceneDef, type BattleActivityDef } from '../engine/massBattle';
@@ -56,16 +56,17 @@ function ArmyBars({ mb }: { mb: MassBattleState }) {
 }
 
 function ArmyBar({ army, side }: { army: MassBattleArmy; side: 'ally' | 'enemy' }) {
+  const might = armyMight(army);
   return (
     <div className={`mb-army mb-${side} panel`}>
       <div className="mb-army-head">
         <strong>{army.name}</strong>
-        <span className="mb-might">{army.might}</span>
+        <span className="mb-might">{might}</span>
       </div>
       <div className="mb-meter">
-        <div className="mb-meter-fill" style={{ width: `${army.might}%` }} />
+        <div className="mb-meter-fill" style={{ width: `${might}%` }} />
       </div>
-      <div className="mb-army-sub">Puissance de départ {army.startMight}</div>
+      <div className="mb-army-sub">Puissance de départ {armyStartMight(army)}</div>
     </div>
   );
 }
@@ -77,7 +78,7 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
   const setHero = useGame((s) => s.setMassBattleHero);
   const party = useGame((s) => s.party);
   const living = party.filter((h) => !h.dead);
-  const diff = inspireDifficulty(mb.ally.might, mb.enemy.might);
+  const diff = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
   const activities = battleActivitiesAvailable(mb);
   const count = prepCount(mb);
   const full = count >= 3;
@@ -365,7 +366,7 @@ function OverPanel({ mb }: { mb: MassBattleState }) {
       <h3>Issue de la bataille</h3>
       <p className="mb-outcome">{outcomeText}</p>
       <p className="mb-detail">
-        Puissance finale — {mb.ally.name} : <b>{mb.ally.might}</b> · {mb.enemy.name} : <b>{mb.enemy.might}</b>.
+        Puissance finale — {mb.ally.name} : <b>{armyMight(mb.ally)}</b> · {mb.enemy.name} : <b>{armyMight(mb.enemy)}</b>.
         L'armée vaincue doit fuir sous peine d'être détruite.
       </p>
       <div className="bar mb-actions">

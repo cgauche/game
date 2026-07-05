@@ -17,7 +17,7 @@ import {
   wildcardSpecs,
   parseAdvancement,
 } from './careerSlots';
-import { CareerLevelData } from '../data';
+import { CareerLevelData, levelsForCareer, specLabel } from '../data';
 
 /** Fixtures : libellés d'avancement → `AdvancementRef[]` (la donnée est structurée). */
 const A = (xs: string[]) => xs.map(parseAdvancement);
@@ -99,39 +99,42 @@ describe('disponibilité par niveaux (LDB 07 l.67/78/100)', () => {
 });
 
 describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix) » par carrière', () => {
+  // NB : `A()`/`parseAdvancement` (parseur de TEST) garde le nom brut comme `optionId` (pas de
+  // résolution vers un id réel de données — cf. sa doc) ; les héros de fixture utilisent donc le
+  // même `talentId: 'Sens aiguisé'` pour rester cohérents avec les slots construits ci-dessus.
   it('1) désignation GRATUITE de la spec déjà possédée → in-carrière, montable (200 PX au ×2)', () => {
-    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'Sens aiguisé', spec: 'Goût', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     // Avant désignation : le slot libre couvre Goût.
     expect(inCareerStatus(slots1, {}, 'Sens aiguisé', 'Goût')).toBe('free');
     const slot = freeSlotFor(slots1, {}, 'Sens aiguisé', 'Goût')!;
-    expect(designateSlot(h, 'C1', slot, 'Sens aiguisé (Goût)', slots1).ok).toBe(true);
+    expect(designateSlot(h, 'C1', slot, 'Sens aiguisé', 'Goût', slots1).ok).toBe(true);
     expect(inCareerStatus(slots1, designationsFor(h, 'C1'), 'Sens aiguisé', 'Goût')).toBe('designated');
     // Une AUTRE spec n'est plus couverte par ce slot (désigné).
     expect(inCareerStatus(slots1, designationsFor(h, 'C1'), 'Sens aiguisé', 'Ouïe')).toBe(null);
   });
 
   it('2) au niveau 2, le NOUVEAU slot ne peut pas re-désigner la spec prise au niveau 1', () => {
-    const h = hero({ careerLevel: 2, talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }, { talentId: 'sens-aiguise', spec: 'Ouïe', times: 1 }] });
+    const h = hero({ careerLevel: 2, talents: [{ talentId: 'Sens aiguisé', spec: 'Goût', times: 1 }, { talentId: 'Sens aiguisé', spec: 'Ouïe', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     const slots2 = talentSlots(C1, 2);
     const all = [...slots1, ...slots2];
     // Niveau 1 : Ouïe avait été désignée (achat à 100 PX à l'époque).
-    designateSlot(h, 'C1', slots1[0], 'Sens aiguisé (Ouïe)', all);
+    designateSlot(h, 'C1', slots1[0], 'Sens aiguisé', 'Ouïe', all);
     const des = designationsFor(h, 'C1');
     // Le slot du niveau 2 ne peut PAS reprendre Ouïe…
-    expect(designateSlot(h, 'C1', slots2[0], 'Sens aiguisé (Ouïe)', all).ok).toBe(false);
+    expect(designateSlot(h, 'C1', slots2[0], 'Sens aiguisé', 'Ouïe', all).ok).toBe(false);
     expect(inCareerStatus(slots2, des, 'Sens aiguisé', 'Ouïe', all)).toBe(null);
     // …mais peut désigner Goût (gratuit, déjà possédé) ou Toucher (achat 100 PX).
     expect(inCareerStatus(slots2, des, 'Sens aiguisé', 'Goût', all)).toBe('free');
     expect(inCareerStatus(slots2, des, 'Sens aiguisé', 'Toucher', all)).toBe('free');
-    expect(designateSlot(h, 'C1', slots2[0], 'Sens aiguisé (Goût)', all).ok).toBe(true);
+    expect(designateSlot(h, 'C1', slots2[0], 'Sens aiguisé', 'Goût', all).ok).toBe(true);
   });
 
   it('3) changement de carrière : les désignations sont PAR carrière — tout sens redevient désignable', () => {
-    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }, { talentId: 'sens-aiguise', spec: 'Ouïe', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'Sens aiguisé', spec: 'Goût', times: 1 }, { talentId: 'Sens aiguisé', spec: 'Ouïe', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
-    designateSlot(h, 'C1', slots1[0], 'Sens aiguisé (Ouïe)', slots1);
+    designateSlot(h, 'C1', slots1[0], 'Sens aiguisé', 'Ouïe', slots1);
     // Carrière C2 (autre carrière, même type de slot) : aucune désignation → tout est libre.
     const C2: CareerLevelData[] = [{ ...C1[0], career: 'C2' }];
     const slots = talentSlots(C2, 1);
@@ -149,8 +152,8 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
     }];
     const h = hero();
     const slots = talentSlots(LV, 1);
-    expect(designateSlot(h, 'C1', slots[1], 'Sens aiguisé (Vue)', slots).ok).toBe(false);
-    expect(designateSlot(h, 'C1', slots[1], 'Sens aiguisé (Odorat)', slots).ok).toBe(true);
+    expect(designateSlot(h, 'C1', slots[1], 'Sens aiguisé', 'Vue', slots).ok).toBe(false);
+    expect(designateSlot(h, 'C1', slots[1], 'Sens aiguisé', 'Odorat', slots).ok).toBe(true);
   });
 
   it('5) joker RESTREINT « (Goût ou Toucher) » : limité à la liste', () => {
@@ -165,15 +168,31 @@ describe('Maxi des Talents (LDB 10 « Schéma des Talents »)', () => {
   it('Maxi 1 (Lire/Écrire) : atteint dès la 1re acquisition', () => {
     const h = hero({ talents: [{ talentId: 'lire-ecrire', times: 1 }] });
     expect(talentMax(h, 'Lire/Écrire')).toBe(1);
-    expect(talentMaxReached(h, 'Lire/Écrire')).toBe(true);
-    expect(talentMaxReached(h, 'Baratiner')).toBe(false);
+    expect(talentMaxReached(h, 'lire-ecrire')).toBe(true);
+    expect(talentMaxReached(h, 'baratiner')).toBe(false);
   });
   it('Maxi « Bonus de Caractéristique » : par spécialisation, recalculé sur la valeur courante', () => {
     // Sens aiguisé : Maxi = Bonus d'Initiative (I 30 → 3).
     const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 3 }, { talentId: 'sens-aiguise', spec: 'Ouïe', times: 1 }] });
     expect(talentMax(h, 'Sens aiguisé (Goût)')).toBe(3);
-    expect(talentMaxReached(h, 'Sens aiguisé (Goût)')).toBe(true);
-    expect(talentMaxReached(h, 'Sens aiguisé (Ouïe)')).toBe(false); // spec distincte
+    expect(talentMaxReached(h, 'sens-aiguise', 'Goût')).toBe(true);
+    expect(talentMaxReached(h, 'sens-aiguise', 'Ouïe')).toBe(false); // spec distincte
+  });
+});
+
+describe('désignation d\'un emplacement de Groupe d\'arme par specId (données réelles, Phase 3 weapon-groups)', () => {
+  it('Gladiateur N2 « Corps à corps (Fléau ou À deux mains) » : désigne par specId réel, affichage via specLabel', () => {
+    const levels = levelsForCareer('gladiateur');
+    const sSlots = skillSlots(levels, 2);
+    const slot = sSlots.find((s) => s.level === 2 && s.options[0]?.optionId === 'corps-a-corps' && s.options[0]?.specOptions)!;
+    expect(slot).toBeTruthy();
+    expect(slot.options[0].specOptions).toEqual(['fleau', 'deux-mains']); // specs = ids de Groupe d'arme, pas des libellés FR
+    const h = hero({ career: 'gladiateur', careerLevel: 2 });
+    // Désignation par (optionId, specId) — jamais un libellé reparsé.
+    expect(designateSlot(h, 'gladiateur', slot, 'corps-a-corps', 'deux-mains', sSlots).ok).toBe(true);
+    expect(inCareerStatus(sSlots, designationsFor(h, 'gladiateur'), 'corps-a-corps', 'deux-mains')).toBe('designated');
+    // L'affichage résout l'id de Groupe d'arme en libellé FR (jamais l'id brut à l'écran).
+    expect(specLabel('skills', 'corps-a-corps', 'deux-mains')).toBe('Deux-mains');
   });
 });
 

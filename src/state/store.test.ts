@@ -1338,14 +1338,14 @@ describe('Avancement par PX (store) — câblage moteur', () => {
 
   it('buySkillAdvance : Compétence connue in-carrière (Charme) +1, coût 10', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().buySkillAdvance('h', 'Charme');
+    useGame.getState().buySkillAdvance('h', 'charme');
     expect(h0().skills.find((s) => s.skillId === 'charme')!.advances).toBe(1);
     expect(h0().xp).toBe(990);
   });
 
   it('buySkillAdvance : acquiert une Compétence de carrière non connue (Ragot) à advances 1', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().buySkillAdvance('h', 'Ragot');
+    useGame.getState().buySkillAdvance('h', 'ragot');
     const ragot = h0().skills.find((s) => s.skillId === 'ragot');
     expect(ragot).toBeTruthy();
     expect(ragot!.advances).toBe(1);
@@ -1354,21 +1354,21 @@ describe('Avancement par PX (store) — câblage moteur', () => {
 
   it('buySkillAdvance : refuse une Compétence hors-carrière non connue', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().buySkillAdvance('h', 'Natation'); // ni connue, ni in-carrière
+    useGame.getState().buySkillAdvance('h', 'natation'); // ni connue, ni in-carrière
     expect(h0().skills.find((s) => s.skillId === 'natation')).toBeUndefined();
     expect(h0().xp).toBe(1000);
   });
 
   it('buyTalent in-carrière (Sociable) : créé à times 1, coût 100', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().buyTalent('h', 'Sociable');
+    useGame.getState().buyTalent('h', 'sociable');
     expect(h0().talents.find((t) => t.talentId === 'sociable')!.times).toBe(1);
     expect(h0().xp).toBe(900);
   });
 
   it('buyTalent hors-carrière : refusé (LDB l.97)', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().buyTalent('h', 'Castagneur'); // hors Niveau Agitateur
+    useGame.getState().buyTalent('h', 'castagneur'); // hors Niveau Agitateur
     expect(h0().talents.find((t) => t.talentId === 'castagneur')).toBeUndefined();
     expect(h0().xp).toBe(1000);
   });
@@ -1400,16 +1400,16 @@ describe('Avancement par PX (store) — câblage moteur', () => {
 
   it('buyTalent : Maxi 1 respecté (Lire/Écrire ×2 refusé, LDB 10)', () => {
     set1(mkHero({ xp: 1000 })); // Pamphlétaire : Lire/Écrire in-carrière
-    useGame.getState().buyTalent('h', 'Lire/Écrire');
+    useGame.getState().buyTalent('h', 'lire-ecrire');
     expect(h0().talents.find((t) => t.talentId === 'lire-ecrire')!.times).toBe(1);
-    useGame.getState().buyTalent('h', 'Lire/Écrire');
+    useGame.getState().buyTalent('h', 'lire-ecrire');
     expect(h0().talents.find((t) => t.talentId === 'lire-ecrire')!.times).toBe(1); // Maxi atteint
     expect(h0().xp).toBe(900);
   });
 
   it('buyTalent : « +5 Caractéristique de départ » passif à l\'achat (Guerrier né, LDB 10)', () => {
     set1(mkHero({ xp: 1000, career: 'soldat' })); // Recrue : Guerrier né in-carrière
-    useGame.getState().buyTalent('h', 'Guerrier né');
+    useGame.getState().buyTalent('h', 'guerrier-ne');
     // La valeur brute reste inchangée (passif non cuit) ; baseWithTalents lit le charMod du talent.
     expect(h0().characteristics.CC).toBe(30); // base INCHANGÉE
     expect(baseWithTalents(h0(), 'CC')).toBe(35); // base + passif Guerrier né = 35
@@ -1423,27 +1423,28 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     set1(mkHero({ xp: 1000, career: 'conseiller', talents: [{ talentId: 'savoir-vivre', spec: 'Criminels', times: 1 }] }));
     const view = buildAdvancementView(h0());
     const slot = view.talents.find((t) => t.entry === 'Savoir-vivre (Au choix)')!;
-    expect(slot.options!.some((o) => o.label === 'Savoir-vivre (Criminels)' && o.owned)).toBe(true);
+    // `option.label` est la clé de câblage OPAQUE (refKey) ; `display` porte le texte.
+    expect(slot.options!.some((o) => o.display === 'Savoir-vivre (Criminels)' && o.owned)).toBe(true);
     // Avant désignation : l'achat direct passe par le slot libre (auto-désignation) — ici on
     // teste la DÉSIGNATION explicite (0 PX) puis la montée.
-    useGame.getState().designateCareerSlot('h', slot.slotKey, 'Savoir-vivre (Criminels)');
-    expect(h0().careerSlotChoices?.['conseiller']?.[slot.slotKey]).toBe('Savoir-vivre (Criminels)');
+    useGame.getState().designateCareerSlot('h', slot.slotKey, 'savoir-vivre', 'Criminels');
+    expect(h0().careerSlotChoices?.['conseiller']?.[slot.slotKey]).toBe('savoir-vivre|Criminels');
     expect(h0().xp).toBe(1000); // gratuit
-    useGame.getState().buyTalent('h', 'Savoir-vivre (Criminels)');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'Criminels');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')!.times).toBe(2);
     expect(h0().xp).toBe(800); // 2ᵉ acquisition = 200 PX (LDB 07 l.102)
     // Le slot étant désigné, une AUTRE spec est hors carrière → refusée (l.97).
-    useGame.getState().buyTalent('h', 'Savoir-vivre (Nobles)');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'Nobles');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')).toBeUndefined();
   });
 
   it('emplacement « (Au choix) » : l\'achat via un slot libre le DÉSIGNE automatiquement', () => {
     set1(mkHero({ xp: 1000, career: 'conseiller' }));
-    useGame.getState().buyTalent('h', 'Savoir-vivre (Nobles)');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'Nobles');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')!.times).toBe(1);
-    expect(Object.values(h0().careerSlotChoices?.['conseiller'] ?? {})).toContain('Savoir-vivre (Nobles)');
+    expect(Object.values(h0().careerSlotChoices?.['conseiller'] ?? {})).toContain('savoir-vivre|Nobles');
     // Slot consommé : une autre spec n'est plus achetable dans CETTE carrière.
-    useGame.getState().buyTalent('h', 'Savoir-vivre (Criminels)');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'Criminels');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')).toBeUndefined();
   });
 

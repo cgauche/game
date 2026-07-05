@@ -36,6 +36,7 @@ import {
   findTalent,
   talentConcrete,
   advancementLabel,
+  refLabel,
   talents as talentTable,
 } from '../data';
 import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
@@ -215,13 +216,15 @@ export function rollCharacteristics(sp: SpeciesData, rng: RNG = defaultRNG): Cha
   return chars;
 }
 
-/** Résout une entrée brute en libellé concret : `specChoices`, sinon 1re spec proposée par les
- *  données (skills.json / talents.json / liste restreinte « (A ou B) »). */
+/** Résout une entrée brute en libellé concret : `specChoices[raw]` porte la VALEUR DE SPEC seule
+ *  (un id de Groupe d'arme ou un texte FR — jamais un libellé complet re-parsé), combinée au nom de
+ *  base tiré de `raw` ; sinon 1re spec proposée par les données (skills.json / talents.json /
+ *  liste restreinte « (A ou B) »). */
 function resolveEntry(raw: string, specChoices?: Record<string, string>): string {
-  const choice = specChoices?.[raw];
-  if (choice && !isUnresolvedChoice(choice)) return choice;
   if (!isUnresolvedChoice(raw)) return raw;
   const { name, spec } = splitLabel(raw);
+  const choice = specChoices?.[raw];
+  if (choice) return concreteLabel(name, choice);
   const options = /\sou\s/i.test(spec!)
     ? spec!.split(/\s+ou\s+/i).map((s) => s.trim())
     : wildcardSpecs(name);
@@ -272,7 +275,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     for (const ref of talentEntries) {
       const candidate = resolveEntry(advancementLabel('talents', ref), opts.specChoices);
       const probe: Combatant = { characteristics: chars, talents } as Combatant;
-      if (!talentMaxReached(probe, candidate)) {
+      const { name, spec } = splitLabel(candidate);
+      const candidateId = findTalent(name)?.id ?? slugId(name);
+      if (!talentMaxReached(probe, candidateId, spec)) {
         chosenTalent = candidate;
         break;
       }
@@ -309,7 +314,8 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     addSkill(label, adv);
     if (adv > 0) advancedEntries.push({ raw, label });
   }
-  for (const raw of careerSkillAdditions(heroSoFar)) {
+  for (const add of careerSkillAdditions(heroSoFar)) {
+    const raw = refLabel('skills', add); // ref structurée → libellé d'AUTHORING (clé de opts.skillAdvances)
     const adv = opts.skillAdvances?.[raw] ?? 0; // les compétences ajoutées ne reçoivent rien par défaut
     addSkill(resolveEntry(raw, opts.specChoices), adv);
   }
@@ -379,16 +385,22 @@ export function createHero(opts: CreateHeroOptions): Combatant {
 
   // Désignations des emplacements de carrière utilisés à la création (cf. careerSlots) :
   // compétences « (Au choix) » ayant reçu des augmentations + talent de carrière à choix.
+  // Résolution (nom → id) FAITE ICI, au bord authoring — careerSlots ne reçoit que du (id, spec).
   const sSlots = skillSlots(levels, 1);
   const tSlots = talentSlots(levels, 1);
   for (const { raw, label } of advancedEntries) {
     const slot = sSlots.find((s) => s.needsChoice && s.entry === raw);
-    if (slot) designateSlot(hero, opts.careerId, slot, label, sSlots);
+    if (slot) {
+      const { name, spec } = splitLabel(label);
+      const optionId = findSkill(name)?.id ?? slugId(name);
+      designateSlot(hero, opts.careerId, slot, optionId, spec, sSlots);
+    }
   }
   if (chosenTalent) {
     const { name, spec } = splitLabel(chosenTalent);
-    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), name, spec);
-    if (slot) designateSlot(hero, opts.careerId, slot, chosenTalent, [...sSlots, ...tSlots]);
+    const talentOptionId = findTalent(name)?.id ?? slugId(name);
+    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), talentOptionId, spec);
+    if (slot) designateSlot(hero, opts.careerId, slot, talentOptionId, spec, [...sSlots, ...tSlots]);
   }
 
   recomputeLoadout(hero); // dérive weapons/armure/encombrement ; auto-génère le loadout par défaut (Mêlée/Distance)

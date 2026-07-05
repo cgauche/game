@@ -30,25 +30,79 @@ import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
 import { partyBest, testValue, bestForSkills, bestForCombined, bestAssistedOption } from '../engine/skills';
 import { isStructure } from '../engine/structures';
+import { inanimateCombatant } from '../engine/inanimate';
+import { applyOps } from '../engine/ops';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { refLabel } from '../data';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../engine/types';
 import {
   battleSceneById, battleActivityById, BATTLE_ACTIVITIES, inspireDifficulty, INSPIRE_BONUS, resolveClash,
   sceneDeltas, sceneChains, testResolution, combatResolution, combatLossResolution, rallyHealAmount,
-  activityOutcomes, applyMightDelta, battleOutcome, isDestroyed, battleHazard, clampMight,
+  activityOutcomes, battleOutcome, isDestroyed, battleHazard, clampMight,
   initHoldState, resolveHoldRound, holdEnemyBonus,
   type BattleSceneDef, type BattleActivityDef, type ClashResult, type BattleOutcome,
   type ActivityOutcome, type SceneResolution, type HoldState,
 } from '../engine/massBattle';
 
-/** Une armée engagée dans la Puissance de Bataille. */
+/** Une armée engagée dans la Puissance de Bataille, modélisée comme un COMBATTANT INANIMÉ à Blessures
+ *  (même patron que les structures de siège `structureCombatant`) : `combatant.wounds.current` = Puissance
+ *  courante (0-100, recalculée chaque Round, l.19), `combatant.wounds.max` = Puissance de DÉPART (plafond
+ *  des gains d'une Scène, l.135). Les deltas de Puissance sont de purs `GameOp` (`heal`/`wounds`) exécutés
+ *  par `applyOps` — le plafond « pas au-dessus du départ » est celui, NATUREL, de `heal` à `wounds.max`. */
 export interface MassBattleArmy {
   name: string;
-  /** Puissance courante (0-100), recalculée à la fin de chaque Round (l.19). */
-  might: number;
-  /** Puissance de DÉPART — plafond des gains d'une Scène (l.135). */
-  startMight: number;
+  /** Combattant inanimé porteur de la Puissance (Blessures courantes/max). */
+  combatant: Combatant;
+}
+
+/** Puissance COURANTE d'une armée (= Blessures restantes du Combattant, 0-100). */
+export function armyMight(a: MassBattleArmy): number {
+  return a.combatant.wounds.current;
+}
+
+/** Puissance de DÉPART d'une armée (= Blessures max du Combattant) — plafond des gains d'une Scène (l.135). */
+export function armyStartMight(a: MassBattleArmy): number {
+  return a.combatant.wounds.max;
+}
+
+/** Construit le Combattant inanimé d'une armée depuis sa Puissance de départ (`wounds.current = wounds.max
+ *  = startMight`). `inert:true` : la perte de Blessures ne déclenche AUCUNE conséquence de créature (ni
+ *  Avantage perdu, ni À Terre — `applyZeroWounds` sort tôt). Une armée à 0 PB est « détruite » (l.124),
+ *  détecté par `isDestroyed` sur `armyMight`. */
+function makeArmy(name: string, startMight: number): MassBattleArmy {
+  const m = clampMight(startMight);
+  return {
+    name,
+    combatant: inanimateCombatant({ id: `army-${name}`, name, refId: 'mass-army', bodyShape: 'structure', hull: { e: 0, woundsB: m }, inert: true }),
+  };
+}
+
+/** Clone une armée en appliquant un delta de Puissance COURANTE par `GameOp` (langue unique des effets) :
+ *  gain → `heal` (plafonné NATURELLEMENT à `wounds.max` = départ, l.135) ; perte → `wounds` (mitigation nulle
+ *  — E:0, ignoreTB/ignoreAP par défaut → soustraction exacte, plancher 0). Pur : ne mute pas l'entrée. */
+function armyWithMightDelta(a: MassBattleArmy, delta: number): MassBattleArmy {
+  if (delta === 0) return a;
+  const combatant = cloneArmyCombatant(a.combatant);
+  applyOps(combatant, [delta > 0 ? { op: 'heal', amount: delta } : { op: 'wounds', amount: -delta }]);
+  return { ...a, combatant };
+}
+
+/** Clone une armée en ajustant sa Puissance de DÉPART (`wounds.max`) du delta — Sabotage/Rassembler des
+ *  forces (l.96/106 : renfort/affaiblissement AVANT la bataille). La Puissance courante suit le même delta
+ *  (patron `refreshWounds` : on gagne/perd des PB avec le max), bornée [0, nouveau max]. Pur. */
+function armyWithStartMightDelta(a: MassBattleArmy, delta: number): MassBattleArmy {
+  if (delta === 0) return a;
+  const combatant = cloneArmyCombatant(a.combatant);
+  const newMax = clampMight(combatant.wounds.max + delta);
+  combatant.wounds.max = newMax;
+  if (combatant.wounds.base != null) combatant.wounds.base = newMax;
+  combatant.wounds.current = Math.max(0, Math.min(newMax, combatant.wounds.current + delta));
+  return { ...a, combatant };
+}
+
+/** Clone profond (suffisant) du Combattant-armée pour muter les Blessures hors de l'état Zustand. */
+function cloneArmyCombatant(c: Combatant): Combatant {
+  return { ...c, wounds: { ...c.wounds } };
 }
 
 /** Delta de Puissance d'une Scène résolue (affichage). */
@@ -279,8 +333,8 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
   const enemyMight = clampMight(spec.enemyMight);
   const pool = (spec.scenes && spec.scenes.length ? spec.scenes : DEFAULT_POOL).filter((id) => !!battleSceneById(id));
   const mb: MassBattleState = {
-    ally: { name: spec.allyName ?? 'Armée des Personnages', might: allyMight, startMight: allyMight },
-    enemy: { name: spec.enemyName ?? 'Armée ennemie', might: enemyMight, startMight: enemyMight },
+    ally: makeArmy(spec.allyName ?? 'Armée des Personnages', allyMight),
+    enemy: makeArmy(spec.enemyName ?? 'Armée ennemie', enemyMight),
     plannedRounds: Math.max(1, Math.floor(spec.plannedRounds ?? 1)),
     round: 1,
     phase: 'inspire',
@@ -342,7 +396,7 @@ export function openMassBattleInspire(get: Get, set: Set): void {
   const party = get().party.filter((h) => !h.dead);
   const chosen = assignedHeroesFor(mb, party, 'inspire')[0] ?? partyBest(party, 'commandement')?.actor;
   if (!chosen) return;
-  const difficulty = inspireDifficulty(mb.ally.might, mb.enemy.might);
+  const difficulty = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
   openBattleTest(get, set, {
     actor: chosen, skillValue: testValue(chosen, 'commandement'), skillId: 'commandement', difficulty,
     label: 'Discours inspirant', purpose: 'inspire',
@@ -488,7 +542,7 @@ function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
   const enemyBonus = holdEnemyBonus(scene.hold, held); // +10 cumulatif par Round déjà tenu (l.163).
   const mod = massBattleThreatPenalty(mb);
   // Jet FIGÉ de l'ennemi (Test opposé, l.161) : Puissance ennemie + bonus cumulatif de tenue, borné [1,99].
-  const enemyValue = Math.max(1, Math.min(99, mb.enemy.might + enemyBonus));
+  const enemyValue = Math.max(1, Math.min(99, armyMight(mb.enemy) + enemyBonus));
   const enemyRoll = d100(battleRng());
   openBattleTest(get, set, {
     actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
@@ -545,11 +599,10 @@ function openBattleTest(get: Get, set: Set, o: {
   });
 }
 
-/** Applique un delta de Puissance à un camp (plafonné à la Puissance de départ pour un gain, l.135). */
+/** Applique un delta de Puissance COURANTE à un camp par `GameOp` (`heal`/`wounds`) : le gain est plafonné
+ *  NATURELLEMENT à la Puissance de départ (`heal` vers `wounds.max`, l.135), la perte va jusqu'à 0. */
 function applyDelta(mb: MassBattleState, side: 'ally' | 'enemy', delta: number): MassBattleState {
-  const army = mb[side];
-  const might = applyMightDelta(army.might, army.startMight, delta);
-  return { ...mb, [side]: { ...army, might } };
+  return { ...mb, [side]: armyWithMightDelta(mb[side], delta) };
 }
 
 /** Applique les deltas + enchaînements d'une Scène résolue, met à jour situation/menaces/agissants. */
@@ -706,19 +759,10 @@ function applyActivityOutcomes(mb: MassBattleState, outcomes: ActivityOutcome[])
       case 'allyTestMod': next = { ...next, allyMod: next.allyMod + o.amount }; break;
       case 'firstRoundBonus': next = { ...next, firstRoundBonus: next.firstRoundBonus + o.amount }; break;
       case 'planningBonus': next = { ...next, planningBonus: next.planningBonus + o.amount }; break;
-      case 'allyMight': {
-        // Pré-bataille : ajuste la Puissance ALLIÉE de départ ET courante (plafond l.135 recalé).
-        const might = clampMight(Math.max(0, next.ally.might + o.amount));
-        const startMight = clampMight(Math.max(0, next.ally.startMight + o.amount));
-        next = { ...next, ally: { ...next.ally, might, startMight } };
-        break;
-      }
-      case 'enemyMight': {
-        const might = clampMight(Math.max(0, next.enemy.might + o.amount));
-        const startMight = clampMight(Math.max(0, next.enemy.startMight + o.amount));
-        next = { ...next, enemy: { ...next.enemy, might, startMight } };
-        break;
-      }
+      // Pré-bataille : Rassembler des forces (l.96) / Sabotage (l.106) ajustent la Puissance de DÉPART
+      // (`wounds.max`), la courante suivant le même delta (patron `refreshWounds`).
+      case 'allyMight': next = { ...next, ally: armyWithStartMightDelta(next.ally, o.amount) }; break;
+      case 'enemyMight': next = { ...next, enemy: armyWithStartMightDelta(next.enemy, o.amount) }; break;
     }
   }
   return next;
@@ -828,20 +872,20 @@ export function massBattleClash(get: Get, set: Set): void {
   const mb = get().massBattle;
   if (!mb || mb.phase !== 'round' || mb.awaitingNext) return;
   const allyMod = mb.allyMod + (mb.round === 1 ? mb.firstRoundBonus : 0);
-  const clash = resolveClash(mb.ally.might, mb.enemy.might, { allyMod, enemyMod: 0, rng: battleRng() });
+  // Test spectaculaire NON opposé (l.120) : chaque armée jette sa Puissance courante et réduit l'adverse de
+  // 10 + DR (min 5), SIMULTANÉMENT — les deux DR figés AVANT réduction. Les pertes sont appliquées aux
+  // Combattants-armées par l'op `wounds` (langue unique), pas par un recalcul numérique de champ.
+  const clash = resolveClash(armyMight(mb.ally), armyMight(mb.enemy), { allyMod, enemyMod: 0, rng: battleRng() });
+  const ally = armyWithMightDelta(mb.ally, -clash.allyLoss);
+  const enemy = armyWithMightDelta(mb.enemy, -clash.enemyLoss);
   const lines: string[] = [
     `Round ${mb.round}/${mb.plannedRounds} — Test spectaculaire de Puissance : les Personnages réduisent l'ennemi de ${clash.enemyLoss}, l'ennemi réduit les Personnages de ${clash.allyLoss}.`,
-    `Puissance : ${mb.ally.name} ${clash.allyMight} · ${mb.enemy.name} ${clash.enemyMight}.`,
+    `Puissance : ${ally.name} ${armyMight(ally)} · ${enemy.name} ${armyMight(enemy)}.`,
   ];
-  let next: MassBattleState = {
-    ...mb,
-    ally: { ...mb.ally, might: clash.allyMight },
-    enemy: { ...mb.enemy, might: clash.enemyMight },
-    lastClash: clash,
-  };
-  const destroyed = isDestroyed(clash.allyMight) || isDestroyed(clash.enemyMight);
+  let next: MassBattleState = { ...mb, ally, enemy, lastClash: clash };
+  const destroyed = isDestroyed(armyMight(ally)) || isDestroyed(armyMight(enemy));
   if (destroyed || mb.round >= mb.plannedRounds) {
-    const outcome = battleOutcome(clash.allyMight, clash.enemyMight);
+    const outcome = battleOutcome(armyMight(ally), armyMight(enemy));
     next = { ...next, phase: 'over', outcome };
     lines.push(outcomeLine(next, outcome, destroyed));
   } else {

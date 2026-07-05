@@ -133,10 +133,11 @@ describe('buildAdvancementView — match d\'entité possédée par id+spec (Issu
 
   it('Talent à spec wildcard possédé : owned lu par id+spec (Sens aiguisé (Goût) ≠ (Toucher))', () => {
     const v = buildAdvancementView(hero({ career: 'artisan', careerLevel: 3, talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }] }));
-    const slot = v.talents.find((t) => t.options?.some((o) => o.label.startsWith('Sens aiguisé')));
+    // `option.label` est désormais une clé de câblage OPAQUE (refKey) ; `display` porte le texte.
+    const slot = v.talents.find((t) => t.options?.some((o) => o.display.startsWith('Sens aiguisé')));
     expect(slot).toBeTruthy();
-    const gout = slot!.options!.find((o) => o.label === 'Sens aiguisé (Goût)')!;
-    const toucher = slot!.options!.find((o) => o.label === 'Sens aiguisé (Toucher)')!;
+    const gout = slot!.options!.find((o) => o.display === 'Sens aiguisé (Goût)')!;
+    const toucher = slot!.options!.find((o) => o.display === 'Sens aiguisé (Toucher)')!;
     expect(gout.owned).toBe(true); // possédé avec la bonne spec
     expect(toucher.owned).toBe(false); // même talent, autre spec → non possédé
   });

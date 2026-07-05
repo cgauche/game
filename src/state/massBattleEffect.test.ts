@@ -4,7 +4,7 @@ import { seedBattleRng } from './battleRng';
 import { pregenParty, PREGEN } from '../data/pregens';
 import { applyEffects, EFFECT_HANDLERS, type EffectRefCtx } from './combatEffects';
 import type { Effect } from './scene';
-import type { MassBattleSpec } from './massBattleFlow';
+import { armyMight, armyStartMight, type MassBattleSpec } from './massBattleFlow';
 
 /** Effet `startMassBattle` authoré typique (armées + situations par Round + rencontres de combat). */
 function battleEffect(spec: Partial<MassBattleSpec> = {}): Extract<Effect, { type: 'startMassBattle' }> {
@@ -62,9 +62,10 @@ describe('Effet startMassBattle — appliqué par applyEffects', () => {
     const mb = s.massBattle!;
     expect(mb.ally.name).toBe('Ost du Reikland');
     expect(mb.enemy.name).toBe('Horde de Khorne');
-    expect(mb.ally.might).toBe(60);
-    expect(mb.ally.startMight).toBe(60);
-    expect(mb.enemy.might).toBe(40);
+    // L'armée = un Combattant inanimé à Blessures : PB courantes = Puissance, PB max = Puissance de départ.
+    expect(armyMight(mb.ally)).toBe(60);
+    expect(armyStartMight(mb.ally)).toBe(60);
+    expect(armyMight(mb.enemy)).toBe(40);
     expect(mb.plannedRounds).toBe(2);
     expect(mb.allyMod).toBe(10);          // Modif. permanent (Planification) authoré
     expect(mb.situationSize).toBe(2);

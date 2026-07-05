@@ -143,21 +143,27 @@ export function resolveMax(hero: Combatant): number {
   return (hero.resilience ?? 0) + talentAttrSum(hero, 'resolve') + activeAttrSum(hero, 'resolve');
 }
 
+/** Référence STRUCTURÉE `(id, spec?)` — remplace le libellé concret comme sortie des additions de
+ *  carrière. L'affichage se fait au point d'usage via `refLabel`/`specLabel`, jamais ici. */
+export interface SkillTalentRef {
+  id: string;
+  spec?: string;
+}
+
 /**
  * Compétences ajoutées aux listes de carrière par les talents possédés (« Ajoutez X à n'importe
  * quelle Carrière que vous entamez », LDB 10). La spec choisie à l'acquisition du talent
  * (« Maître artisan (Forgeron) ») se reporte sur la compétence ajoutée (« Métier (Forgeron) ») ;
  * un addSkill « (Au choix) » sans spec sur le talent reste un joker de groupe.
  */
-export function careerSkillAdditions(hero: Combatant): string[] {
-  const out: string[] = [];
+export function careerSkillAdditions(hero: Combatant): SkillTalentRef[] {
+  const out: SkillTalentRef[] = [];
   for (const t of hero.talents) {
     for (const op of findTalentById(t.talentId)?.passive ?? []) {
       if (op.op !== 'grantCareerSkill') continue;
-      const base = refLabel('skills', { id: op.skillId }); // id → libellé de base (sans spec)
       // Spec « Au choix » de l'op reportée sur la spec concrète choisie du talent (Maître artisan (Forgeron)).
-      if (t.spec && op.spec && /au choix/i.test(op.spec)) out.push(concreteLabel(base, t.spec));
-      else out.push(refLabel('skills', { id: op.skillId, spec: op.spec }));
+      if (t.spec && op.spec && /au choix/i.test(op.spec)) out.push({ id: op.skillId, spec: t.spec });
+      else out.push({ id: op.skillId, spec: op.spec });
     }
   }
   return out;
@@ -168,12 +174,12 @@ export function careerSkillAdditions(hero: Combatant): string[] {
  * liste des Talents de n'importe laquelle de vos Carrières », LDB 10 — Flagellant → Frénésie).
  * Analogue Talent de `careerSkillAdditions` : lit l'op `grantCareerTalent` (data-driven, par id).
  */
-export function careerTalentAdditions(hero: Combatant): string[] {
-  const out: string[] = [];
+export function careerTalentAdditions(hero: Combatant): SkillTalentRef[] {
+  const out: SkillTalentRef[] = [];
   for (const t of hero.talents) {
     for (const op of findTalentById(t.talentId)?.passive ?? []) {
       if (op.op !== 'grantCareerTalent') continue;
-      out.push(refLabel('talents', { id: op.talentId, spec: op.spec }));
+      out.push({ id: op.talentId, spec: op.spec });
     }
   }
   return out;

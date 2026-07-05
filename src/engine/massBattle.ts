@@ -221,7 +221,9 @@ export function rollMightTest(might: number, modifier = 0, rng: RNG = defaultRNG
   return rollTest(might, 'intermediaire', rng, modifier);
 }
 
-/** Issue de l'affrontement d'un Round : les deux Tests + les pertes infligées + les Puissances après. */
+/** Issue de l'affrontement d'un Round : les deux Tests + les pertes de Puissance infligées de part et
+ *  d'autre. Les pertes sont ensuite APPLIQUÉES aux Combattants-armées par l'op `wounds` (côté flux), pas
+ *  ici : ce résolveur reste PUR et ne connaît pas les Blessures. */
 export interface ClashResult {
   allyTest: TestResult;
   enemyTest: TestResult;
@@ -229,12 +231,11 @@ export interface ClashResult {
   enemyLoss: number;
   /** Puissance perdue par l'allié (= `mightReduction` du DR ennemi). */
   allyLoss: number;
-  allyMight: number;
-  enemyMight: number;
 }
 
 /** Résout l'affrontement d'un Round de bataille (l.120) : chaque armée teste sa Puissance courante et
- *  réduit celle de l'adverse de 10 + DR (min 5), simultanément (les deux DR sont figés AVANT réduction). */
+ *  réduit celle de l'adverse de 10 + DR (min 5), simultanément (les deux DR sont figés AVANT réduction).
+ *  Ne retourne QUE les pertes ; le flux les applique en Blessures sur chaque Combattant-armée. */
 export function resolveClash(
   allyMight: number,
   enemyMight: number,
@@ -243,15 +244,11 @@ export function resolveClash(
   const rng = opts.rng ?? defaultRNG;
   const allyTest = rollMightTest(allyMight, opts.allyMod ?? 0, rng);
   const enemyTest = rollMightTest(enemyMight, opts.enemyMod ?? 0, rng);
-  const enemyLoss = mightReduction(allyTest.sl);
-  const allyLoss = mightReduction(enemyTest.sl);
   return {
     allyTest,
     enemyTest,
-    enemyLoss,
-    allyLoss,
-    allyMight: clampMight(Math.max(0, allyMight - allyLoss)),
-    enemyMight: clampMight(Math.max(0, enemyMight - enemyLoss)),
+    enemyLoss: mightReduction(allyTest.sl),
+    allyLoss: mightReduction(enemyTest.sl),
   };
 }
 
@@ -424,14 +421,6 @@ export function resolveHoldRound(prev: HoldState, hold: BattleHold, enemySL: num
     enemySL,
     nextEnemyBonus: holdEnemyBonus(hold, nextHeld),
   };
-}
-
-/** Applique un delta de Puissance à une armée. Les GAINS d'une Scène sont plafonnés à la Puissance de
- *  DÉPART (l.135 : « Les Scènes cinématiques ne peuvent pas augmenter votre Puissance au-delà de sa
- *  valeur de départ ») ; les pertes vont jusqu'à 0. */
-export function applyMightDelta(might: number, startMight: number, delta: number): number {
-  const next = might + delta;
-  return clampMight(delta > 0 ? Math.min(next, startMight) : next);
 }
 
 // ── Rassemblement (l.122) ────────────────────────────────────────────────────────────────────────

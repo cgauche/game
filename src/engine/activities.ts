@@ -24,7 +24,7 @@ import type { GameOp } from './ops';
 import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
 import { DIFFICULTY_MODIFIERS } from './types';
 import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
-import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, splitLabel } from './careerSlots';
+import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached } from './careerSlots';
 import { talentCost } from './advancement';
 import activitiesJson from '../data/activities.json';
 
@@ -487,9 +487,10 @@ export function learnableTalents(hero: Combatant): LearnOption[] {
   const desig = designationsFor(hero, hero.career ?? '');
   return talents
     .filter((t) => {
-      const { name, spec } = splitLabel(t.label);
-      if (inCareerStatus(slots, desig, name, spec) != null) return false; // de carrière → Avancement
-      if (talentMaxReached(hero, t.label)) return false;
+      // Le catalogue n'a pas de spec concrète ici (t.label = nom de base seul, comme avant migration) :
+      // même limitation que `splitLabel(t.label)` précédemment (spec toujours absente à ce point).
+      if (inCareerStatus(slots, desig, t.id) != null) return false; // de carrière → Avancement
+      if (talentMaxReached(hero, t.id)) return false;
       return true;
     })
     .map((t) => {
