@@ -177,7 +177,7 @@ function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { 
     },
     outcome: (r) => cleanRollOutcome(r.result), // d100 propre réussi (roll ≤ cible)
     // Chance « +1 DR » sur CE contributeur (LDB 17 l.26).
-    bonus: { derive: (s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null) },
+    bonus: { derive: (_s, r) => bumpResultSL(r) },
   };
 }
 
@@ -214,6 +214,20 @@ const cleanRollOutcome = (r: { roll: number; target: number; sl?: number } | nul
  *  par Frénésie/Approche/Bénédiction (sur `p.result`) et Fuir (sur son sous-jet `p.fuir.calme`). */
 const forcedBinarySuccess = (r: { success?: boolean; roll?: number; target?: number; sl?: number } | null | undefined) =>
   r?.success ? null : { success: true, roll: r?.roll ?? 1, target: r?.target, sl: Math.max(r?.sl ?? 0, 0) };
+
+/** Réussite forcée BINAIRE d'un flux dont le jet vit sous `result` (Frénésie/Approche/Bénédiction) :
+ *  `{ result }` ou `null` si le Test est DÉJÀ réussi — l'emballage `result` partagé par les 3 branches `if (forced)`. */
+const forcedBinaryResult = (r: { success?: boolean; roll?: number; target?: number; sl?: number } | null | undefined) => {
+  const f = forcedBinarySuccess(r);
+  return f ? { result: f } : null;
+};
+
+/** Chance « +1 DR » d'un slot dont le jet vit sous `result` (`{ …, sl }`, jamais opposé) : `bumpSL` du seul
+ *  DR, `success`/`roll` INTACTS (LDB 17 l.84 : un Degré de plus ne transforme pas un échec en réussite).
+ *  `null` = pas encore lancé (rien à améliorer). Partagé par les flux `result` NON opposés (Test d'équipage /
+ *  Test Étendu / cascade simple) dont le `bonus.derive` répétait `{ result: { ...r.result, sl: r.result.sl + 1 } }`. */
+const bumpResultSL = <R extends { sl: number }>(slot: { result?: R | null }): { result: R } | null =>
+  slot.result ? { result: { ...slot.result, sl: slot.result.sl + 1 } } : null;
 
 /** Lentille PARTAGÉE des Tests PLATS (le jet vit au niveau du pending : `roll`/`target`/`sl`/`success`) —
  *  `actorTR` reconstruit le TestResult, `applyRoll` re-projette roll/sl/success (identiques d'un flux à
@@ -591,7 +605,7 @@ export const FLOWS = {
         // Résistance (Magie), LDB 10 l.1015-1021 : le Test pour résister au Sort réussit d'office —
         // la cible RÉSISTE (interprétation : « réussir le Test pour résister » = l'opposition est
         // tenue), DR imposé = Bonus d'Endurance (nourrit la marge).
-        const oppose: TestResult = { roll: 1, target: oppVal, success: true, sl: forced.sl, isDouble: false };
+        const oppose = forcedTR(1, oppVal, forced.sl); // isDoubleRoll(1) === false → identique au littéral
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - forced.sl) } };
       }
       if (forced) {
@@ -648,7 +662,7 @@ export const FLOWS = {
     outcome: (r) => testOutcome(r.result),
     caps: { forced: true },
     bonus: {
-      derive: (_s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null),
+      derive: (_s, r) => bumpResultSL(r),
     },
   }),
 
@@ -733,7 +747,7 @@ export const FLOWS = {
           const o = resolveOpposed(opp.aT, bumpSL(def2, opp.bonusSL ?? 0));
           return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
         }
-        return { result: { ...st.result, sl: st.result.sl + 1 } };
+        return bumpResultSL(st);
       },
     },
   }),
@@ -938,25 +952,23 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.attackerId),
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor) => {
       if (!actor) return null;
       const stat = creatureAttacks(actor.traits ?? []).find((a) => a.kind === p.kind)?.stat ?? 'CT';
-      if (forced) {
-        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, DR MAX (01 → cible
-        // connue post-jet) ou plancher DR 1 pré-jet. Mirroir de `focus`/`disengage` forcés.
-        if (p.result?.success) return null;
-        const base = p.result;
-        const die = base?.target != null ? bestForcedRoll(base.target) : 1;
-        const sl = base?.target != null ? Math.max(evaluateTest(die, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
-        return { result: forcedTR(die, base?.target ?? 0, sl) };
-      }
       return { result: rollManeuverAttacker(actor, stat, battleRng(), maneuverAttackerDifficulty(p.kind)) };
     },
     outcome: (p) => testOutcome(p.result),
-    bonus: {
-      guard: (p) => !!p.result,
-      // Chance « +1 DR » (LDB 17 l.26) : +1 Degré ne transforme PAS un échec en réussite (LDB 17 l.84).
-      derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1, success: p.result.roll <= p.result.target } } : null),
+    // Test de CC/CT NON opposé (le dé ne nourrit que le DR d'OPPOSITION, aucun Critique). Résilience (dé PAR
+    // DÉFAUT = DR max, l.73) + Chance « +1 DR » par `bumpSL` (success intact — LDB 17 l.84) via la lentille —
+    // CALQUE `battement`. La cible du dé forcé = combatValue(stat) + Difficulté de la manœuvre (pré-jet correct).
+    lens: {
+      actorTR: (p) => p.result ?? null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: tr }),
+      dieTarget: (p, actor) => {
+        if (p.result?.target != null) return p.result.target;
+        const stat = creatureAttacks(actor.traits ?? []).find((a) => a.kind === p.kind)?.stat ?? 'CT';
+        return combatValue(actor, stat === 'CC' ? 'melee' : 'ranged') + DIFFICULTY_MODIFIERS[maneuverAttackerDifficulty(p.kind)];
+      },
     },
   }),
 
@@ -1078,7 +1090,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (s, p, actor, _get, forced) => {
       if (!s.battle || !actor) return null;
-      if (forced) { const f = forcedBinarySuccess(p.result); return f ? { result: f } : null; } // Résilience (LDB 17 l.73)
+      if (forced) return forcedBinaryResult(p.result); // Résilience (LDB 17 l.73)
       return { result: resolveFrenzyEntry(effectiveChar(actor, 'FM'), battleRng()) };
     },
     outcome: (p) => testOutcome(p.result),
@@ -1093,7 +1105,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (s, p, actor, _get, forced) => {
       if (!actor) return null;
-      if (forced) { const f = forcedBinarySuccess(p.result); return f ? { result: f } : null; } // Résilience (LDB 17 l.73)
+      if (forced) return forcedBinaryResult(p.result); // Résilience (LDB 17 l.73)
       return simpleTestResultResolve((_p, a) => calmeValue(a), 'intermediaire')(s, p, actor);
     },
     outcome: (p) => testOutcome(p.result),
@@ -1110,7 +1122,7 @@ export const FLOWS = {
     resolve: (s, p, actor, _get, forced) => {
       if (!actor) return null;
       // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : avant le jet (choisit 01) OU après un échec.
-      if (forced) { const f = forcedBinarySuccess(p.result); return f ? { result: f } : null; }
+      if (forced) return forcedBinaryResult(p.result);
       return simpleTestResultResolve((_p, a) => effectiveChar(a, 'FM'), 'accessible')(s, p, actor);
     },
     outcome: (p) => testOutcome(p.result),
