@@ -1449,11 +1449,11 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // ── Changer de set d'armes en combat (Action gratuite, 1/tour, AUTORISÉ même Engagé — LDB 13 l.116) ──
+    // ── Changer de set d'armes en combat (Action gratuite LDB 13 l.106 ; plafond MAISON 1×/tour, AUTORISÉ même Engagé) ──
     battleSwitchLoadout: (loadoutId: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
-      if (!battle || battle.over || battle.loadoutSwapped) return; // 1 switch gratuit / tour
+      if (!battle || battle.over || battle.loadoutSwapped) return; // plafond maison 1×/tour
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero' || active.activeLoadoutId === loadoutId) return;
       loadoutSetActive(active, loadoutId);

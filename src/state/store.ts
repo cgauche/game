@@ -153,7 +153,8 @@ export interface BattleState {
    *  Mouvement (pas de « Mouvement → Action → Mouvement », règle maison). Cf. `canMove`. */
   movedPreAction: boolean;
   acted: boolean;
-  /** Le set d'armes a-t-il déjà été changé ce Tour ? (1 switch gratuit/tour — LDB 13 l.116). Reset au tour. */
+  /** Le set d'armes a-t-il déjà été changé ce Tour ? Plafond MAISON 1×/tour (dégainer = Action gratuite,
+   *  cadence laissée au MJ, LDB 13 l.106). Reset au tour. */
   loadoutSwapped?: boolean;
   log: CombatEvent[];
   over: null | 'victory' | 'defeat';
@@ -828,7 +829,7 @@ export interface GameState extends RollFlowActionsMap {
   fateAccept: () => void;
   /** « Sur la défensive » : utilise l'Action pour +20 en défense jusqu'au prochain tour. */
   battleDefendTotal: () => void;
-  /** Bascule le set d'armes actif du combattant actif (Action gratuite, 1/tour, même Engagé — LDB 13 l.116). */
+  /** Bascule le set d'armes actif du combattant actif (Action gratuite, LDB 13 l.106 ; plafond MAISON 1×/tour, même Engagé). */
   battleSwitchLoadout: (loadoutId: string) => void;
   /** Action « Viser » (sans jet) : +20 (Accessible) au prochain tir tant que c'est la dernière action. */
   battleAim: () => void;
