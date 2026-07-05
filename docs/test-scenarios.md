@@ -50,7 +50,7 @@ mécanique (un terrain bien agencé, des mannequins bien placés).
 
 | Section | Scénario | Vérifie |
 |---|---|---|
-| ⚔️ Combat | 🎯 Terrain d'entraînement | sandbox : tir/rechargement, ciblage & LdV (muret), brouillard/vision (lanterne/vision nocturne/Lumière), Engagé/charge/désengagement & deux armes, forme d'arme, combat monté, Explosion en zone |
+| ⚔️ Combat | 🎯 Terrain d'entraînement | sandbox : tir/rechargement, **Tir rapide** (interruption à distance à la pause de début de Round : badge de la frise → cible), ciblage & LdV (muret), brouillard/vision (lanterne/vision nocturne/Lumière), Engagé/charge/désengagement & deux armes, forme d'arme, combat monté, Explosion en zone |
 | ⚔️ Combat | 🩸 L'Embuscade | combat complet exploration → dialogue → 5 mutants ; y surviennent Critiques & mort (héros fragile), sauvetage par le Destin/Résilience, Action Soigner |
 | ⚔️ Combat | 🏰 Siège — défendre la muraille | siège à grande échelle (30×46, 2 couches) : champ d'approche profond (~76 m) + camp & BATTERIE assaillante (canon direct + catapulte indirecte) qui BRÈCHE la porte de loin (IA cible la structure, Atout Siège) ; rivière + pont canalisant l'assaut ; enceinte à porte brèchable ; chemin de ronde (couche 1 à 4 m) rejoint par une rampe au flanc gauche, parapet z1 ; pièces servies + archers PNJ alliés-IA ; combat VERTICAL (LdV plongeante, mêlée refusée à travers le vide) |
 | ✨ Magie | ✨ Magie en combat | concile (toutes familles) + duel de lanceurs (casters 2 camps, Contre-sort/dissipation) + Jalon 2 (Péché/Colère, Corruption, ZdE, mémorisation) |

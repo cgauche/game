@@ -68,7 +68,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // Tir IMMOBILE (LDB 14 l.101) : proposé au TIR d'un héros qui n'a pas encore bougé ET qui PEUT encore se
   // déplacer (sinon il est immobile d'office, pas de −10 à annuler) — annule le −10 « Tir en bougeant » au
   // prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
-  const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
+  const canHoldGround = !res && !pa.interrupt && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
   // « Retenir ses coups » (Aux Armes l.2503-2505) : maîtriser sans tuer. Proposé seulement quand c'est légal —
   // attaque de MÊLÉE (jamais tir/sort), arme qui n'inflige PAS *En flammes* (l.2505), avant le jet.
   const canWithhold = !res && weapon?.type === 'melee' && attacker.kind === 'hero' && !weaponInflictsFlames(weapon);

@@ -76,6 +76,7 @@ const STATE_FIELDS = {
   pendingDispel: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingFrenzy: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingRoundStart: { init: null, resetOn: [] },
+  preemptAiming: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingFateSave: { init: null, resetOn: [] },
   pendingVictory: { init: null, resetOn: ['combatStart'] },
   pendingLoot: { init: null, resetOn: [] },

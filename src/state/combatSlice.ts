@@ -724,6 +724,14 @@ export function createCombatSlice(get: Get, set: Set) {
     battleClickEntity: (id: string, opts?: BattleClickOpts) => {
       const battle = get().battle;
       if (!battle || battle.over) return;
+      // Tir rapide ARMÉ (pause de début de Round, LDB 10) : cliquer un adversaire — token de carte OU portrait
+      // de frise, tous deux passent ICI — déclenche l'interruption hors du tour (le tireur n'est pas l'actif).
+      const aiming = get().preemptAiming;
+      if (aiming) {
+        set({ preemptAiming: null });
+        get().preemptRangedShot(aiming, id);
+        return;
+      }
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
       // Le MODE de ciblage courant possède le commit-COMBATTANT (attaque/cast/soin/bordée, ou flux
@@ -1351,7 +1359,20 @@ export function createCombatSlice(get: Get, set: Set) {
       if (weapon.type !== 'ranged' || !inFiringBand(hero, target, weapon) || blocked) { get().log(t('cf.noLoSMasked')); return; }
       // Le tir se résout par la modale de jet NORMALE (attackRoll/attackConfirm) ; le tireur n'est PAS actif.
       // `pendingAttack.interrupt` → attackConfirm applique le tir sans avancer le tour + épuise son tour normal.
-      set({ pendingAttack: { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true } });
+      // La modale d'attaque est rendue par la CASCADE (CascadeModal → useAttackJetProps), comme TOUTE attaque :
+      // on ouvre donc une cascade à une étape `jet:'attack'` pour le tireur (refermée par attackConfirm).
+      // `heldGround: true` : l'interruption est un tir IMMOBILE d'office (elle coûte le Mouvement du tour) → pas
+      // de pénalité « Tir en bougeant » (LDB 14), qui n'aurait aucun sens hors du tour du tireur.
+      set({ pendingAttack: { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true, heldGround: true } });
+      startCascade(get, set, { title: 'Tir rapide', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: hero.id }] });
+    },
+    // ── Tir rapide : ARMER/DÉSARMER la visée d'un héros pendant la pause (badge de la frise → clic adversaire) ──
+    armPreempt: (heroId: string | null) => {
+      const { battle, pendingRoundStart } = get();
+      if (!battle || !pendingRoundStart || heroId === null) { set({ preemptAiming: null }); return; }
+      const hero = battle.combatants.find((c) => c.id === heroId);
+      if (!hero || !controlsCombatant(get(), hero) || !canPreemptRanged(hero) || hero.loseNextAction) { set({ preemptAiming: null }); return; }
+      set({ preemptAiming: get().preemptAiming === heroId ? null : heroId }); // bascule
     },
     roundStartReady: (seat: number) => {
       const prs = get().pendingRoundStart;
@@ -1370,7 +1391,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if ([...required].every((st) => readyBySeat[st])) get().confirmRoundStart();
     },
     confirmRoundStart: () => {
-      set({ pendingRoundStart: null });
+      set({ pendingRoundStart: null, preemptAiming: null }); // la pause se ferme → toute visée Tir rapide armée retombe
       runPreemptShots(get, set); // Tir rapide de l'IA (LDB 10) : tirs d'interruption AVANT les tours du Round — tous Rounds, tous modes
       const battle = get().battle;
       if (!battle || battle.over) return; // un tir d'interruption a pu clore le combat
@@ -1872,7 +1893,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const weapon = firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
         applyAttackResult(get, set, attacker, victim, weapon, pa.result);
         attacker.loseNextAction = true; attacker.loseNextMovement = true;
-        set({ battle: { ...get().battle! } });
+        set({ battle: { ...get().battle! }, pendingCascade: null }); // referme la cascade-hôte du tir SANS avancer le tour (le tireur n'est pas actif)
         bus.emit(EVT.SCENE_DIRTY);
         checkBattleOver(get, set);
         return;

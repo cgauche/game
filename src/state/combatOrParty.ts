@@ -19,6 +19,7 @@ import type { GameState } from './store';
 import type { Get } from './flowTypes';
 import { currentTargetingMode } from './targetingModes';
 import { hoverTargeting } from './targeting';
+import { isOutOfAction } from '../engine/conditions';
 
 /** Acteur d'une action joueur résolu dans le bon ensemble : file de combat si en combat, sinon le groupe. */
 export function actorIn(state: GameState, id: string): Combatant | undefined {
@@ -49,6 +50,15 @@ export function combatantClickActs(get: Get, combatant: Pick<Combatant, 'id'>): 
   // mon perso a chargé »). Source UNIQUE des 3 surfaces → toutes basculent en lecture seule d'un coup.
   // Pour agir, désactiver l'inspection (Inspection OFF).
   if (get().inspectEnabled) return false;
+  // Tir rapide ARMÉ (pause de début de Round, LDB 10) : cliquer un adversaire DÉCLENCHE l'interruption — même
+  // prédicat partagé carte ⇄ frise, donc les DEUX surfaces l'honorent (sinon la carte serait inerte hors tour).
+  // Le store (`preemptRangedShot`) valide portée/Ligne de Vue/état ; ici on n'ouvre l'affordance que sur un adversaire.
+  const aiming = get().preemptAiming;
+  if (aiming) {
+    const shooter = battle.combatants.find((c) => c.id === aiming);
+    const target = battle.combatants.find((c) => c.id === combatant.id);
+    return !!shooter && !!target && target.kind !== shooter.kind && !isOutOfAction(target);
+  }
   const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
   if (!active) return false;
   const mode = currentTargetingMode(get);

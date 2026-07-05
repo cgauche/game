@@ -79,6 +79,7 @@ export function IsoStage() {
   const pendingSiegeAim = useGame((s) => s.pendingSiegeAim); // pilonnage indirect : placeur de CASE
   const pendingCleave = useGame((s) => s.pendingCleave);
   const pendingDualStrike = useGame((s) => s.pendingDualStrike);
+  const preemptAiming = useGame((s) => s.preemptAiming); // Tir rapide armé (pause) : cible par la carte hors tour
   const pendingTrample = useGame((s) => s.pendingTrample);
   const pendingHeal = useGame((s) => s.pendingHeal);
   const pendingDefense = useGame((s) => s.pendingDefense);
@@ -166,6 +167,7 @@ export function IsoStage() {
   const hoverTracking =
     mode === 'battle' && !!battle && !battle.over &&
     (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
+      !!preemptAiming || // Tir rapide armé pendant la pause : on suit le survol (réticule + trait de visée) alors qu'il n'y a AUCUN actif
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
   // Leader VISIBLE du groupe (#27b) — partagé entre le token d'exploration, ANIM_MOVE et la caméra.
   const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];

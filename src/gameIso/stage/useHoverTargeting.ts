@@ -33,6 +33,15 @@ export interface HoverAim {
   reticle: boolean;
 }
 
+/** Libellé d'erreur ⛔ d'un survol de cible INVALIDE (source UNIQUE : ciblage normal ET Tir rapide). */
+function hoverErrText(reason: string): string {
+  return reason === 'los' ? '⛔ pas de ligne de vue'
+    : reason === 'engaged' ? '⛔ Engagé — se désengager'
+    : reason === 'unloaded' ? '⛔ Arme déchargée — recharger'
+    : reason === 'noammo' ? '⛔ Plus de munitions'
+    : '⛔ hors de portée';
+}
+
 export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn: boolean) {
   const mode = useGame((s) => s.mode);
   const battle = useGame((s) => s.battle);
@@ -49,6 +58,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
   const pendingTrample = useGame((s) => s.pendingTrample);
   const pendingHeal = useGame((s) => s.pendingHeal);
   const pendingDefense = useGame((s) => s.pendingDefense);
+  const preemptAiming = useGame((s) => s.preemptAiming);
 
   // Signaux de survol EFFECTIFS : le curseur clavier/manette PRIME sur la souris locale (hover) ET sur
   // le survol de frise — la souris reprend la main dès qu'elle bouge (onPointerMove → clearCursor()).
@@ -68,7 +78,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
 
   // Ciblage du JOUEUR au survol — rejoue les MÊMES prédicats que le clic : réticule présent = clic valide.
   const hoverAim = useMemo<HoverAim | null>(() => {
-    if (mode !== 'battle' || !battle || battle.over || (!effHover && !effFocusId) || !myTurn) return null;
+    if (mode !== 'battle' || !battle || battle.over || (!effHover && !effFocusId)) return null;
     // Un jet à cible est déjà en cours (modale) : le réticule PERSISTANT prend le relais au rendu.
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || (pendingCast && !pendingCast.pickingTargets)) return null;
     // Source du survol EFFECTIF : la cible aimantée du curseur (effFocusId) ou un PORTRAIT de frise
@@ -78,6 +88,17 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
       : effHover ? combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0) : null;
     if (!occ) return null;
     const st = useGame.getState;
+    // Tir rapide ARMÉ (interruption hors tour, LDB 10) : la visée suit le TIREUR (`preemptAiming`), pas l'actif —
+    // MÊME `hoverTargeting` que le ciblage normal (réticule + ligne + infobulle + erreurs LdV/portée). Précède
+    // le verrou « Mon Tour » (la pré-emption a lieu pendant la pause, où il n'y a AUCUN combattant actif).
+    if (preemptAiming) {
+      const shooter = battle.combatants.find((c) => c.id === preemptAiming);
+      if (!shooter?.pos) return null;
+      const ht = hoverTargeting(st, shooter, occ);
+      if (ht.kind === 'none') return null;
+      if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht.reason) }, reticle: false };
+      return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
+    }
     // Flux différés (bandeau TargetPrompt — Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible) : le
     // réticule vient du MODE courant (targetingModes via hoverTargeting), AVANT les verrous acted/
     // Frénésie (ces ciblages surviennent APRÈS l'attaque-Action).
@@ -87,6 +108,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
       const ht = hoverTargeting(st, actor, occ);
       return ht.kind === 'ok' ? { fromId: actor.id, toId: occ.id, line: ht.line, tip: null, reticle: true } : null;
     }
+    if (!myTurn) return null; // le ciblage NORMAL (ci-dessous) exige Mon Tour ; la pré-emption (ci-dessus) non
     const activeH = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
     if (!activeH || !controlsCombatant(st(), activeH) || !activeH.pos) return null;
     // Mêmes verrous que battleClickEntity : Action consommée (sauf attaque libre de Frénésie),
@@ -102,17 +124,9 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
     // qui lit l'`AttackOption` armée (selectedAttack) — plus de branche par mode.
     const ht = hoverTargeting(st, activeH, occ);
     if (ht.kind === 'none') return null;
-    if (ht.kind === 'invalid') {
-      const text =
-        ht.reason === 'los' ? '⛔ pas de ligne de vue'
-        : ht.reason === 'engaged' ? '⛔ Engagé — se désengager'
-        : ht.reason === 'unloaded' ? '⛔ Arme déchargée — recharger'
-        : ht.reason === 'noammo' ? '⛔ Plus de munitions'
-        : '⛔ hors de portée';
-      return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
-    }
+    if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht.reason) }, reticle: false };
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
-  }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+  }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, preemptAiming, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Combattant SOUS le focus (tuile survolée OU portrait de frise/Tab) — INDÉPENDANT du ciblage
   // (hoverAim exige Mon Tour + cible valide). Pilote le halo de focus du token ET, synchronisé au

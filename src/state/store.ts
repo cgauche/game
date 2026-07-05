@@ -412,6 +412,11 @@ export interface GameState extends RollFlowActionsMap {
   pendingFrenzy: PendingFrenzy | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
   pendingRoundStart: { round: number; readyBySeat?: Record<number, boolean> } | null;
+  /** Tir rapide (LDB 10) : id du héros dont la visée d'interruption est ARMÉE pendant la pause (badge de la
+   *  frise) — le prochain clic sur un adversaire (carte OU frise) déclenche `preemptRangedShot`. `null` = aucune. */
+  preemptAiming: string | null;
+  /** Arme/désarme (bascule) la visée Tir rapide d'un héros pendant la pause de début de Round. */
+  armPreempt: (heroId: string | null) => void;
   /** Coop : marque le siège PRÊT au ready-check d'ouverture (round 1) ; l'hôte lance quand tous ✓. */
   roundStartReady: (seat: number) => void;
   /** Sauvetage par le Destin en attente (LDB ch.17 l.31-35). */

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGame } from '../state/store';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
@@ -62,7 +62,6 @@ export function CampaignView() {
   const toggleInspect = useGame((s) => s.toggleInspectEnabled);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const roundStartPromote = useGame((s) => s.roundStartPromote);
-  const preemptRangedShot = useGame((s) => s.preemptRangedShot);
   const gameTime = useGame((s) => s.gameTime);
   const worldMap = useGame((s) => s.worldMap);
   const worldMapOpen = useGame((s) => s.worldMapOpen);
@@ -124,18 +123,16 @@ export function CampaignView() {
     return !!c && freeActFirst(c);
   });
   // Tir rapide (talent, LDB 10) : héros CONTRÔLÉS localement pouvant interrompre à distance pendant la pause
-  // (arme chargée + pas encore tiré ce Round). Le badge arme une visée (`preemptShooter`) ; l'ennemi cliqué = cible.
-  const [preemptShooter, setPreemptShooter] = useState<string | null>(null);
+  // (arme chargée + pas encore tiré ce Round). La visée ARMÉE (`preemptAiming`) vit dans le STORE → le clic
+  // adversaire route par `battleClickEntity` (source unique carte ⇄ frise), comme toute action de ciblage.
+  const preemptAiming = useGame((s) => s.preemptAiming);
+  const armPreempt = useGame((s) => s.armPreempt);
   const canPreemptIds = battle && pendingRoundStart
     ? battle.order.filter((id) => {
         const c = battle.combatants.find((x) => x.id === id);
         return !!c && controlsCombatant(useGame.getState(), c) && canPreemptRanged(c) && !c.loseNextAction;
       })
     : [];
-  // La visée armée retombe dès que la pause se ferme ou que le tireur n'est plus éligible (a tiré / KO).
-  useEffect(() => {
-    if (preemptShooter && !canPreemptIds.includes(preemptShooter)) setPreemptShooter(null);
-  }, [preemptShooter, canPreemptIds]);
   // #21 : pendant une action de CIBLAGE (attaque/incantation/charge/piétinement), cliquer un PORTRAIT
   // (frise ou dock) cible ce combattant — même validation/portée que cliquer son pion sur le champ.
   // COOP : seulement quand le combattant actif est À SOI (le tour d'un autre joueur est inerte).
@@ -143,15 +140,11 @@ export function CampaignView() {
   const targetingAction = battle && !battle.over ? battle.action : null;
   const isTargeting = controls && !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
   // Tir rapide (LDB 10) : le badge arme/désarme la visée d'un héros pendant la pause de début de Round.
-  const onPreempt = (id: string) => setPreemptShooter((cur) => (cur === id ? null : id));
   const onStripPortrait = (id: string) => {
     const c = battle?.combatants.find((x) => x.id === id);
-    // Tir rapide armé : cliquer un adversaire le prend pour cible de l'interruption (le store valide portée/LdV).
-    if (preemptShooter && c && c.kind !== 'hero') {
-      preemptRangedShot(preemptShooter, id);
-      setPreemptShooter(null);
-      return;
-    }
+    // Tir rapide armé : router le clic vers `battleClickEntity` (source UNIQUE carte ⇄ frise) — il déclenche
+    // l'interruption sur un adversaire valide, même pendant la pause où il n'y a pas de combattant actif.
+    if (preemptAiming) { battleClickEntity(id); return; }
     // MÊME comportement que cliquer le token sur la carte (IsoStage) : action de combat si la cible est
     // actionnable ET qu'on contrôle l'actif (coop : ton tour), sinon inspection (read-only, tout joueur).
     // `combatantClickActs` = condition PARTAGÉE carte ⇄ frise — elles ne peuvent plus diverger.
@@ -181,15 +174,15 @@ export function CampaignView() {
               canFirstIds={canFirstIds}
               freeFirstIds={freeFirstIds}
               inspectEnabled={inspectEnabled}
-              targeting={isTargeting || !!preemptShooter}
+              targeting={isTargeting || !!preemptAiming}
               onToggleInspect={toggleInspect}
               onActivate={onStripPortrait}
               onHover={setHoverCombatant}
               hoveredId={hovered}
               onPromote={roundStartPromote}
               canPreemptIds={canPreemptIds}
-              preemptArmedId={preemptShooter}
-              onPreempt={onPreempt}
+              preemptArmedId={preemptAiming}
+              onPreempt={armPreempt}
             />
             <CombatStartSplash />
           </>
