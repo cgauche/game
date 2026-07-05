@@ -2581,33 +2581,9 @@ export function createCombatSlice(get: Get, set: Set) {
     cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
     cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
     cascadeFinish: () => dispatchCascadeDone(finalizeCascade(get, set)),
-    // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE (combat/rencontre) : immunité TEMPORAIRE,
-    // PAS une réussite forcée. On dépense 1 point de Détermination (`spendResolveForPsychImmunity` →
-    // `psychImmuneRoundsLeft = 2`) et on MARQUE l'étape `immune` ; l'applier psy lit ce flag pour NE PAS
-    // cumuler le DR (Peur) ni poser le Brisé (Terreur) — la source est IGNORÉE ce Round, pas vaincue, et
-    // reprend à l'expiration. Le `result` synthétique (success) ne sert qu'à faire avancer la cascade :
-    // c'est `step.immune` (pas le succès) qui gouverne la conséquence côté applier. Réservé aux étapes psy.
-    cascadeDetermine: (pid: string) => {
-      const p = get().pendingCascade;
-      if (!p) return;
-      const idx = p.participants.findIndex((s) => s.id === pid);
-      const step = idx >= 0 ? p.participants[idx] : undefined;
-      if (!step || step.result || step.target == null || !step.actorId) return;
-      if (!step.combatPsych && !step.encounterPsych) return; // Détermination = immunité PSYCHOLOGIQUE seulement
-      const actor = actorIn(get(), step.actorId);
-      if (!actor || (actor.resolve ?? 0) <= 0) return;
-      const msg = spendResolveForPsychImmunity(actor); // dépense la Détermination + pose psychImmuneRoundsLeft
-      if (!msg) return;
-      // Détermination ≠ Résistance : elle ne fait PAS RÉUSSIR un jet (ça, c'est la Résistance à une Menace) —
-      // elle rend IMMUNE temporairement (psychImmuneRoundsLeft), sans test ni DR. Le `result` n'est donc PAS
-      // une réussite du système de jet : c'est un MARQUEUR NEUTRE (DR 0, aucun dé forcé) qui fait avancer la
-      // cascade ; `step.immune` gouverne la conséquence (source IGNORÉE ce Round, pas vaincue).
-      set({
-        pendingCascade: { ...p, participants: p.participants.map((s, k) => (k === idx ? { ...s, immune: true, result: { roll: step.target!, target: step.target!, sl: 0, success: true } } : s)) },
-        party: [...get().party],
-      });
-      get().log(msg);
-    },
+    // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE : `cascadeDetermine` est désormais GÉNÉRÉ
+    // par la fabrique (verbe `determine` de `FLOWS.cascade`, corps dans `rollFlowSpecs.ts`) — même nom,
+    // même comportement (immunité temporaire, `step.immune`), plus de snowflake hand-codé ici.
     // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
     // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
     // Préfixe store `opposition` ≠ clé de flux `castOpposition` (handler passé explicitement).

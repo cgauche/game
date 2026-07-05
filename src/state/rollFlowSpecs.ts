@@ -49,7 +49,7 @@ import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, cast
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { resolveFrenzyEntry, calmeValue, psychResolution } from '../engine/psychology';
+import { resolveFrenzyEntry, calmeValue, psychResolution, spendResolveForPsychImmunity } from '../engine/psychology';
 import { findSpellById, findSkillById } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
@@ -111,7 +111,7 @@ function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bon
  *  LDB 10 — exposé par les seuls flux à `caps.resist` (Tests qui « résistent à une menace »).
  *  `cancel` = « Annuler » unifié (cascade-aware + `onCancel` métier) — exposé par les flux annulables ;
  *  sans `pid` (annuler ferme la modale/cascade entière, pas un slot). */
-export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist' | 'cancel';
+export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist' | 'determine' | 'cancel';
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
@@ -555,6 +555,23 @@ export const FLOWS = {
         return st.forced && isExtendedPeur && st.target != null && st.result
           ? { roll: st.result.roll, target: st.target, critable: false }
           : null;
+      },
+      // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE (combat/rencontre) : immunité TEMPORAIRE,
+      // PAS une réussite forcée. Dépense 1 point de Détermination (`spendResolveForPsychImmunity` →
+      // psychImmuneRoundsLeft) et MARQUE l'étape `immune` ; l'applier psy lit ce flag pour NE PAS cumuler
+      // le DR (Peur) ni poser le Brisé (Terreur) — la source est IGNORÉE ce Round, pas vaincue, et reprend
+      // à l'expiration. Le `result` synthétique (DR 0) ne sert qu'à faire avancer la cascade : c'est
+      // `step.immune` (pas le succès) qui gouverne la conséquence côté applier. Réservé aux étapes psy.
+      determine: (slot, actor, get, _set, commit) => {
+        if (slot.result || slot.target == null) return; // jamais sur une étape déjà résolue / sans jet
+        if (!slot.combatPsych && !slot.encounterPsych) return; // Détermination = immunité PSYCHOLOGIQUE seulement
+        if ((actor.resolve ?? 0) <= 0) return;
+        const msg = spendResolveForPsychImmunity(actor); // dépense + psychImmuneRoundsLeft (ActiveEffect 2 Rounds)
+        if (!msg) return;
+        // Marqueur NEUTRE (DR 0, aucun dé forcé) pour avancer la cascade ; `commit(..,{touch})` rafraîchit
+        // les combattants (combat ⇄ groupe), comme tous les autres verbes de ce flux.
+        commit({ immune: true, result: { roll: slot.target, target: slot.target, sl: 0, success: true } }, { touch: true });
+        get().log(msg);
       },
     },
     bonus: {
@@ -1345,7 +1362,7 @@ export const FLOW_VERBS = {
   appraise:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   shanty:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   counterspell: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  cascade:      { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true },
+  cascade:      { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist', 'determine'], coop: true },
   opposition:   { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'] },
   extendedTest: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   forceDoor:    { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },

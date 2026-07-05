@@ -786,8 +786,9 @@ export interface GameState extends RollFlowActionsMap {
   forceDoorConfirm: () => void;
   forceDoorCancel: () => void;
   /** CASCADE séquentielle (`FLOWS.cascade`) : jet de l'étape courante + cycle Chance/+1 DR/Pacte/
-   *  Résilience (ciblé par `pid` = id d'étape).
-   *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}` : générés (RollFlowActionsMap, MULTI). */
+   *  Résilience (ciblé par `pid` = id d'étape). `Resist` = Résistance (Menace, LDB 10) ; `Determine` =
+   *  Détermination (immunité PSY temporaire, LDB 17 l.62) sur une étape de Psychologie.
+   *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Resist,Determine}` : générés (RollFlowActionsMap, MULTI). */
   /** « Choix » d'une étape de séquence (analogue de cascadeRoll côté jet) : pose l'option retenue. */
   cascadeChoose: (pid: string, key: string) => void;
   /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
@@ -798,8 +799,6 @@ export interface GameState extends RollFlowActionsMap {
   cascadeResolveAll: () => void;
   /** « Terminer » du bilan : ferme la cascade et enchaîne la suite (reprise de voyage…). */
   cascadeFinish: () => void;
-  /** Détermination (LDB 17 l.62) : immunité Psychologie sur l'étape `pid` (dépense 1 Détermination). */
-  cascadeDetermine: (pid: string) => void;
   /** Incantation OPPOSÉE (`FLOWS.castOpposition`) : chaque CIBLE oppose son Test (FM/Int) — son jet
    *  + cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). Cible IA = rangée témoin auto-roulée.
    *  Délégués `opposition{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}` : générés (RollFlowActionsMap, MULTI). */

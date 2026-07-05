@@ -145,6 +145,12 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
     /** Ce flux accepte l'auto-succès du talent Résistance (Menace) (LDB 10) : son `resolve` porte la
      *  branche `forced.sl` (DR = Bonus d'Endurance). Offert seulement sur un slot tagué `menace`. */
     resist?: boolean;
+    /** Détermination (immunité PSY temporaire, LDB 17 l.62) : MÊME catégorie que `resist` (dépenser une
+     *  ressource pour infléchir un Test psy), PAS une réussite forcée. Le flux DÉCLARE l'effet SPÉCIFIQUE
+     *  (dépense de Détermination + marqueur `immune` sur l'étape psy), la fabrique fournit le CÂBLAGE
+     *  (interface store/intent/modale via le verbe `determine` → action `<prefix>Determine`, le handler
+     *  ci-dessous GATE `actor` puis dispatche). Exposé par les seuls flux à `caps.determine`. */
+    determine?: (slot: Slot, actor: Combatant, get: Get, set: Set, commit: Commit<Slot>) => void;
   };
   /**
    * Undo MÉTIER optionnel de l'annulation (ex. défaire-charge de l'attaque…).
@@ -169,6 +175,11 @@ export interface RollFlowHandlers {
    *  taguée sur le slot (`menace`), DR = Bonus d'Endurance, 1× par spec et par séance. No-op sans
    *  `caps.resist`, sans tag, sans talent disponible, ou si le Test est déjà réussi. */
   resist: (get: Get, set: Set, pid?: string) => void;
+  /** Détermination (immunité PSY temporaire, LDB 17 l.62) : dépense 1 Détermination pour rendre l'acteur
+   *  IMMUNISÉ ce Round sur l'étape psy ciblée (marqueur `immune`) — PAS une réussite forcée (≠ `resist`).
+   *  No-op sans `caps.determine`, sans acteur. La fabrique GATE `actor` + dispatche ; la garde d'éligibilité
+   *  fine (étape psy, non résolue) + la dépense vivent dans le handler du spec (`caps.determine`). */
+  determine: (get: Get, set: Set, pid?: string) => void;
   /** Sélecteur du dé choisi pour le picker partagé (cf. `caps.picker`) — absent si le flux n'en a pas.
    *  `slot` est le pending/participant CONCRET ; `any` ici (les handlers ne portent pas `Slot`). */
   picker?: (slot: any, actor: Combatant | undefined) => ForcedPick | null;
@@ -391,6 +402,14 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
         ? (sl: number) => { const tgt = L.dieTarget?.(loc.slot, actor!) ?? 0; return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl), p); }
         : (sl: number) => spec.resolve(s, loc.slot, actor, get, { sl }, p);
       opResist(slot, actor, spec.rolled(loc.slot), spec.failed(loc.slot), resolveResist, loc.commit);
+    },
+    determine(get, set, pid) {
+      const s = get(); const p = pendingOf(s); if (!p) return;
+      const loc = locate(set, get, p, pid); if (!loc) return;
+      const actor = spec.actor(s, loc.slot, p);
+      // La fabrique GATE `actor` + dispatche ; l'éligibilité fine (étape psy/non résolue) + la dépense
+      // (Détermination) vivent dans le handler du spec (`caps.determine`).
+      if (actor) spec.caps?.determine?.(loc.slot, actor, get, set, loc.commit);
     },
     cancel(get, set) {
       const p = pendingOf(get());
