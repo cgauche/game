@@ -72,13 +72,29 @@ describe('Anti-dérive du système de jet — tout passe par la fabrique + les a
     ).toEqual([]);
   });
 
-  it('les atomes partagés du système sont bien la source (bumpSL / bestForcedRoll présents dans rollFlowSpecs)', () => {
+  it('Réussite FORCÉE : passe par forcedTR (jamais le littéral { …, success: true, …, isDouble: isDoubleRoll(r) } recopié)', () => {
+    // `forcedTR(roll, target, sl)` = { roll, target, success: true, sl, isDouble: isDoubleRoll(roll) } : l'atome
+    // UNIQUE d'un TestResult de réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.73 / dé choisi).
+    // Recopier ce littéral dans un résolveur forcé = dérive → on l'exige via l'atome. Portée du scan : `success:
+    // true` COMBINÉ à `isDoubleRoll(` sur la MÊME construction (le littéral forcé). Faux positifs exclus PAR
+    // CONSTRUCTION du motif (comme demandé) : la Résistance (Menace) écrit `isDouble: false` — PAS `isDoubleRoll(`
+    // — et les lentilles `actorTR` lisent la réussite NATURELLE (`success: p.…`), jamais `success: true`. Le SEUL
+    // site légitime qui reste est le CORPS de `forcedTR` lui-même (engine/tests.ts, forme abrégée `{ roll, … }`) —
+    // on l'exclut nommément (c'est la définition de l'atome, pas un recodage).
+    const hits = scan(/success:\s*true\b[^}\n]*isDoubleRoll\(/g).filter((h) => !h.startsWith('src/engine/tests.ts:'));
+    expect(
+      hits,
+      `Réussite forcée recopiée à la main (${hits.join(', ')}) — construis-la avec forcedTR(roll, target, sl) (atome partagé, engine/tests.ts).`,
+    ).toEqual([]);
+  });
+
+  it('les atomes partagés du système sont bien la source (bumpSL / bestForcedRoll / forcedTR présents dans rollFlowSpecs)', () => {
     // Preuve POSITIVE minimale : les atomes du système sont présents dans le registre des flux. Si un
-    // refactor les retire au profit d'un recodage local, ce test tombe (avec les 2 gardes ci-dessus).
-    // `forcedTR` REJOINDRA cette liste quand le balayage « zéro copie » aura remplacé les littéraux
-    // TestResult inline des flux opposés (attack/defense/cast/trample) par l'atome partagé.
+    // refactor les retire au profit d'un recodage local, ce test tombe (avec les gardes ci-dessus).
+    // `forcedTR` a REJOINT la liste depuis le balayage « zéro copie » : les littéraux TestResult de réussite
+    // forcée des flux opposés (attack/defense/counterspell/castOpposition/trample/maneuver) passent par l'atome.
     const specs = readFileSync(join(STATE_DIR, 'rollFlowSpecs.ts'), 'utf8');
-    for (const atom of ['bumpSL', 'bestForcedRoll']) {
+    for (const atom of ['bumpSL', 'bestForcedRoll', 'forcedTR']) {
       expect(specs.includes(atom), `atome partagé « ${atom} » absent de rollFlowSpecs.ts — le système de jet a-t-il été contourné ?`).toBe(true);
     }
   });

@@ -22,7 +22,7 @@ import type {
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
-import { makeRollFlow, type RollFlowHandlers, type RollOutcome, type RollFlowLens } from './rollFlowFactory';
+import { makeRollFlow, type RollFlowHandlers, type RollOutcome, type RollFlowLens, type PendingBase } from './rollFlowFactory';
 import { battleRng } from './battleRng';
 import { actorIn, touchActors } from './combatOrParty';
 import {
@@ -40,7 +40,7 @@ import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollM
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR } from '../engine/tests';
-import { DIFFICULTY_MODIFIERS } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100 } from '../engine/dice';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
@@ -274,6 +274,38 @@ function opposedBinaryFlow<P extends import('./rollFlowFactory').PendingBase & {
   });
 }
 
+/**
+ * Résolveur PARTAGÉ du chemin NORMAL d'un Test SIMPLE (jet vs cible unique, LDB 12) — la forme que
+ * chaque flux recopiait à la main (`rollTest(valeur, difficulté, battleRng())` → pose du TestResult
+ * APLATI `{roll,target,sl,success}`). `value` lit le pending + l'acteur ; `difficulty` est fixe ou
+ * fonction du pending (défaut Intermédiaire, +0). Un Test n'a PAS à re-définir sa résolution : il
+ * DÉCLARE sa valeur et sa Difficulté. Réservé aux flux qui GARDENT DÉJÀ l'acteur et tirent sur
+ * `battleRng()` (sinon la mutualisation ne serait pas byte-identique). Un flux à branche `forced`/
+ * `bonus` garde ces branches et ne délègue QUE son chemin normal. Cf. `simpleTestResultResolve` pour
+ * la variante dont le jet vit sous `result` (même distinction FLAT vs `result` que `flatRollLens`/
+ * `resultRollLens`), et `opposedBinaryFlow` pour les Tests OPPOSÉS.
+ */
+const simpleTestResolve = <P extends PendingBase>(
+  value: (p: P, actor: Combatant) => number,
+  difficulty: Difficulty | ((p: P) => Difficulty) = 'intermediaire',
+) => (_s: GameState, p: P, actor: Combatant | undefined): Partial<P> | null => {
+  if (!actor) return null;
+  const t = rollTest(value(p, actor), typeof difficulty === 'function' ? difficulty(p) : difficulty, battleRng());
+  // Cast large : les pendings simples portent ces champs sous des formes hétérogènes (certains `target`/`sl`
+  // optionnels — PendingCorruption) → un `P` étroit les exclurait ; la contrainte de forme est portée par le flux.
+  return { roll: t.roll, target: t.target, sl: t.sl, success: t.success } as unknown as Partial<P>;
+};
+
+/** Idem `simpleTestResolve` mais le jet vit sous `result` (`{ result: { roll, target, sl, success } }`). */
+const simpleTestResultResolve = <P extends PendingBase>(
+  value: (p: P, actor: Combatant) => number,
+  difficulty: Difficulty | ((p: P) => Difficulty) = 'intermediaire',
+) => (_s: GameState, p: P, actor: Combatant | undefined): Partial<P> | null => {
+  if (!actor) return null;
+  const t = rollTest(value(p, actor), typeof difficulty === 'function' ? difficulty(p) : difficulty, battleRng());
+  return { result: { roll: t.roll, target: t.target, sl: t.sl, success: t.success } } as unknown as Partial<P>;
+};
+
 export const FLOWS = {
   /**
    * Attaque (modale différée). Le JET INITIAL reste métier (`attackRoll` : +1 Avantage si cible
@@ -304,11 +336,11 @@ export const FLOWS = {
           // nourrissent Percutante/Dévastatrice et la localisation inversée. Doit RESTER une réussite.
           if (forced.roll > maxForcedRoll(ad.target)) return null;
           const sl = Math.max(evaluateTest(forced.roll, ad.target).sl, defSL + 1, 1);
-          const atk2: TestResult = { roll: forced.roll, target: ad.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
+          const atk2 = forcedTR(forced.roll, ad.target, sl);
           return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
         }
         // Dé PAR DÉFAUT : on garde le jet courant, forcé à l'emporter.
-        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
+        const atk2 = forcedTR(ad.roll, ad.target, Math.max(ad.sl, defSL + 1, 1));
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       }
       const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid, p.withhold);
@@ -323,7 +355,7 @@ export const FLOWS = {
         const target = actorIn(s, p.targetId);
         if (!target) return null;
         const ad = p.result!.attackerDetail!;
-        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
+        const atk2 = bumpSL({ roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl, isDouble: isDoubleRoll(ad.roll) });
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       },
     },
@@ -380,11 +412,11 @@ export const FLOWS = {
           // Dé CHOISI — doit RESTER une réussite.
           if (forced.roll > maxForcedRoll(p.def.target)) return null;
           const sl = Math.max(evaluateTest(forced.roll, p.def.target).sl, p.atk.sl + 1, 1);
-          const def2: TestResult = { roll: forced.roll, target: p.def.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
+          const def2 = forcedTR(forced.roll, p.def.target, sl);
           return { def: def2, result: finishDefenseResult(attacker, actor, p, def2) };
         }
         // Dé PAR DÉFAUT : Test opposé « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
-        const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, p.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
+        const def2 = forcedTR(dd.roll, dd.target, Math.max(dd.sl, p.atk.sl + 1, 1));
         return { def: def2, result: finishDefenseResult(attacker, actor, p, def2) };
       }
       // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
@@ -400,7 +432,7 @@ export const FLOWS = {
         const attacker = actorIn(s, p.attackerId);
         if (!attacker) return null;
         const dd = p.result!.defenderDetail!;
-        const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: isDoubleRoll(dd.roll) };
+        const def2 = bumpSL({ roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) });
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
         return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry) };
       },
@@ -499,7 +531,7 @@ export const FLOWS = {
         const value = castingValue(actor, 'langue', 'magick');
         const roll = cur ? cur.counter.roll : 1; // 01 = jet propre garanti (LDB 17 l.73)
         const sl = Math.max(cur?.counter.sl ?? 1, castT.sl + 1, 1);
-        const counterT: TestResult = { roll, target: value, success: true, sl, isDouble: isDoubleRoll(roll) };
+        const counterT = forcedTR(roll, value, sl);
         return { result: counterspellOutcomeFrom(actor, counterT, castT) };
       }
       return { result: resolveCounterspell(actor, castT, battleRng()) };
@@ -548,7 +580,7 @@ export const FLOWS = {
         const cur = part.result;
         const roll = cur ? cur.oppose.roll : 1; // 01 = jet propre garanti (LDB 17 l.73)
         const sl = Math.max(cur?.oppose.sl ?? 1, castT.sl + 1, 1);
-        const oppose: TestResult = { roll, target: oppVal, success: true, sl, isDouble: isDoubleRoll(roll) };
+        const oppose = forcedTR(roll, oppVal, sl);
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - sl) } };
       }
       const oppose = rollTest(oppVal, 'intermediaire', battleRng());
@@ -678,7 +710,7 @@ export const FLOWS = {
         // `bonusSL` (Piège-lame, LDB 62 l.295) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
         // `sl` reporté, qui reste le DR propre +1).
         if (opp) {
-          const def2: TestResult = { roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl + 1, isDouble: isDoubleRoll(st.result.roll) };
+          const def2 = bumpSL({ roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl, isDouble: isDoubleRoll(st.result.roll) });
           const o = resolveOpposed(opp.aT, bumpSL(def2, opp.bonusSL ?? 0));
           return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
         }
@@ -812,10 +844,10 @@ export const FLOWS = {
           // « vous choisissez le résultat » (LDB 17 l.73) : un Piétinement est une attaque — un
           // double choisi (11) inflige un Coup Critique, comme l'exemple Salundra (l.75). Doit RESTER réussi.
           if (forced.roll > maxForcedRoll(ad.target)) return null;
-          const atk2: TestResult = { roll: forced.roll, target: ad.target, success: true, sl: Math.max(evaluateTest(forced.roll, ad.target).sl, 1), isDouble: isDoubleRoll(forced.roll) };
+          const atk2 = forcedTR(forced.roll, ad.target, Math.max(evaluateTest(forced.roll, ad.target).sl, 1));
           return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
         }
-        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, 1), isDouble: isDoubleRoll(ad.roll) };
+        const atk2 = forcedTR(ad.roll, ad.target, Math.max(ad.sl, 1));
         return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
       }
       return { result: resolveTrample(actor, target, battleRng()) };
@@ -827,7 +859,7 @@ export const FLOWS = {
         const target = actorIn(s, p.targetId);
         if (!target) return null;
         const ad = p.result!.attackerDetail!;
-        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
+        const atk2 = bumpSL({ roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl, isDouble: isDoubleRoll(ad.roll) });
         return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
       },
     },
@@ -894,7 +926,7 @@ export const FLOWS = {
         const base = p.result;
         const die = base?.target != null ? bestForcedRoll(base.target) : 1;
         const sl = base?.target != null ? Math.max(evaluateTest(die, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
-        return { result: { roll: die, target: base?.target ?? 0, success: true, sl, isDouble: isDoubleRoll(die) } };
+        return { result: forcedTR(die, base?.target ?? 0, sl) };
       }
       return { result: rollManeuverAttacker(actor, stat, battleRng(), maneuverAttackerDifficulty(p.kind)) };
     },
@@ -964,12 +996,9 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.singerId),
     caps: { forced: true },
-    resolve: (s, p, actor) => {
-      if (!actor || !p.shantyId) return null; // chanson non choisie → pas de jet
-      const value = testValue(actor, 'divertissement', undefined, 'chant'); // Intermédiaire (+0) → cible = valeur
-      const t = rollTest(value, 'intermediaire', battleRng());
-      return { result: { roll: t.roll, target: t.target, success: t.success, sl: t.sl } };
-    },
+    resolve: (s, p, actor) => p.shantyId // chanson non choisie → pas de jet
+      ? simpleTestResultResolve((_p, a) => testValue(a, 'divertissement', undefined, 'chant'), 'intermediaire')(s, p, actor)
+      : null,
     outcome: (p) => testOutcome(p.result),
     // Chance/Résilience GLOBALES via la lentille `result` (LDB 17) : +1 DR = +1 min de chant (MDG 09 l.38, durée ∝ DR).
     lens: resultRollLens((_p, actor) => testValue(actor, 'divertissement', undefined, 'chant')),
@@ -1009,11 +1038,7 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
     caps: { forced: true },
-    resolve: (_s, p, actor) => {
-      if (!actor) return null;
-      const r = rollTest(p.value, 'intermediaire', battleRng());
-      return { result: { roll: r.roll, target: r.target, sl: r.sl, success: r.success } };
-    },
+    resolve: simpleTestResultResolve((p) => p.value, 'intermediaire'),
     outcome: (p) => testOutcome(p.result), // Round réussi → pas de Chance ; le cumul gère le DR négatif
     // Chance « +1 DR » (`bumpSL`) + Résilience GLOBALES via la lentille `result` (LDB 17) ; cible = valeur de Langue (Magick).
     lens: resultRollLens((p) => p.value),
@@ -1044,11 +1069,10 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.combatantId),
     caps: { forced: true },
-    resolve: (_s, p, actor, _get, forced) => {
+    resolve: (s, p, actor, _get, forced) => {
       if (!actor) return null;
       if (forced) { const f = forcedBinarySuccess(p.result); return f ? { result: f } : null; } // Résilience (LDB 17 l.73)
-      const t = rollTest(calmeValue(actor), 'intermediaire', battleRng());
-      return { result: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } };
+      return simpleTestResultResolve((_p, a) => calmeValue(a), 'intermediaire')(s, p, actor);
     },
     outcome: (p) => testOutcome(p.result),
   }),
@@ -1061,12 +1085,11 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.attackerId),
     caps: { forced: true },
-    resolve: (_s, p, actor, _get, forced) => {
+    resolve: (s, p, actor, _get, forced) => {
       if (!actor) return null;
       // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : avant le jet (choisit 01) OU après un échec.
       if (forced) { const f = forcedBinarySuccess(p.result); return f ? { result: f } : null; }
-      const t = rollTest(effectiveChar(actor, 'FM'), 'accessible', battleRng());
-      return { result: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } };
+      return simpleTestResultResolve((_p, a) => effectiveChar(a, 'FM'), 'accessible')(s, p, actor);
     },
     outcome: (p) => testOutcome(p.result),
   }),
@@ -1269,12 +1292,7 @@ export const FLOWS = {
     // Résistance (Menace) (LDB 10, `caps.resist`) : exposition → menace 'Corruption' ; seuil (échec =
     // mutation) → menace 'Mutation'. Pas de Résilience sur ce flux (inchangé : pas de `caps.forced`).
     caps: { resist: true },
-    resolve: (s, p, actor) => {
-      const a = actor ?? actorIn(s, p.heroId);
-      if (!a) return null;
-      const t = rollTest(testValue(a, p.skill), 'intermediaire', battleRng());
-      return { roll: t.roll, target: t.target, sl: t.sl, success: t.success };
-    },
+    resolve: simpleTestResolve((p, actor) => testValue(actor, p.skill), 'intermediaire'),
     outcome: (p) => rollOutcome(p.roll, p.target ?? 0, p.sl),
     // Chance « +1 DR » (`bumpSL`, success intact) + Résistance (Menace) GLOBALES via la lentille : le
     // resist force l'auto-succès à DR = Bonus d'Endurance (LDB 10 l.1015-1021), cible = valeur du Test.
