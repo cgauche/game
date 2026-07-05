@@ -1,3 +1,6 @@
+> ⚠️ **ARCHIVE (2026-07-05)** — document DATÉ : constat/plan d'époque, ne décrit PAS l'état courant du code.
+> Conservé pour l'historique du raisonnement. Ne JAMAIS s'appuyer dessus pour juger l'architecture ou l'état actuel.
+
 # Catalogue des règles optionnelles WFRP4 — source de vérité du chantier
 
 > Reconstruit (2026-06-18) par un workflow multi-agents lisant **LDB + AA + ZI + Compagnon T1 (C1) +

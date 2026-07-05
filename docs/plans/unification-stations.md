@@ -1,3 +1,6 @@
+> ⚠️ **ARCHIVE (2026-07-05)** — document DATÉ : constat/plan d'époque, ne décrit PAS l'état courant du code.
+> Conservé pour l'historique du raisonnement. Ne JAMAIS s'appuyer dessus pour juger l'architecture ou l'état actuel.
+
 # Unification « postes / activités / événements de bataille » — conception phasée
 
 > Statut : **conception** (pré-exécution). Fait suite au chantier minimap/`TopoScene` (P1-P4 livrés :

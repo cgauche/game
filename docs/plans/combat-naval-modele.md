@@ -1,5 +1,8 @@
 # Modèle de combat naval tactique (MDG ch.12-14)
 
+> **Plan encore OUVERT (déplacé vers `docs/plans/` le 2026-07-05, noms de fonctions corrigés contre le code réel)** —
+> les jalons ⏳ restent à faire ; suivre le découpage §7 pour l'état courant.
+
 > Spec d'architecture du combat naval. But : qu'on construise **la bonne chose une fois** — postes/équipage/
 > tir/manœuvre cohérents, zéro système parallèle, zéro contenu en dur. Toute règle est RAW citable
 > (`MDG ch.N l.X`). **Modèle à DEUX échelles** (§1bis) : couche **Mer** opérationnelle (jetons-navires,
@@ -211,10 +214,11 @@ dans l'éditeur, jouables via le menu 🧪.
    **Bélier**→`resolveCollision`, **Sabord**→`effectiveDeckPostes`) ; ⏳ reste des améliorations (Blindage/Lissage/
    Clinfoc/Nid-de-pie/Figure de proue/Vapeur) + catalogue DATA éditable au Codex + `upgrades[]` par instance.
 8. ⏳ **Composition du Pont + abordage** (collision → `engage` → coudre les ponts). **Critiques canon** :
-   ✅ « Canon perdu » (`ch.13 l.765`) mécanisé — `loseRandomPoste` retire un poste de `hull.postes` +
-   démancipe son chef (`mannedPoste`/arme) ; ✅ « Canon détaché » (`l.763-764`) mécanisé — `detachPosteCrewHit` :
-   l'équipage du poste teste l'Athlétisme Intermédiaire (+0) sous peine de 12 Dégâts (le canon reste à bord).
+   ✅ « Canon perdu » (`ch.13 l.765`) mécanisé — l'op `removeShipPoste` (`engine/ops.ts`) retire un poste de
+   `hull.postes`, appliquée via `applyHullCritical` (`engine/shipCritical.ts`) ; ✅ « Canon détaché »
+   (`l.763-764`) mécanisé — `applyCrewHit` (même fichier, `crewTarget:'poste'`) : l'équipage du poste teste
+   l'Athlétisme Intermédiaire (+0) sous peine de 12 Dégâts (le canon reste à bord).
 9. ⏳ **Scène Mer + dispatch de tour à vue commutée** (navire acteur d'initiative ; vue Mer⇄Pont selon l'acteur).
 
 Recette navigateur à chaque étape jouable (`__wfrp`, combat manuel) : servir un poste → aligner une bordée →
-batterie → éperonner → aborder ; 0 erreur console ; scénario 🧪 dédié à côté de `25-bataille-navale`.
+batterie → éperonner → aborder ; 0 erreur console ; scénario 🧪 dédié `combat-naval` (`src/scenes/test-scenarios/combat-naval.ts`).

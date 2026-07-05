@@ -1,3 +1,6 @@
+> ⚠️ **ARCHIVE (2026-07-05)** — document DATÉ : constat/plan d'époque, ne décrit PAS l'état courant du code.
+> Conservé pour l'historique du raisonnement. Ne JAMAIS s'appuyer dessus pour juger l'architecture ou l'état actuel.
+
 # Audit — sous-systèmes d'INTERACTION (entrée joueur, ciblage, modales)
 
 *2026-06-29. Périmètre : ce qui a émergé du chantier « jouer au clavier/manette » — les couches par

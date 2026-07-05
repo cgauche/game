@@ -17,11 +17,17 @@ les images).
 ## Pipeline
 
 ### 1. Rendre le bestiaire en PNG
+Le rastériseur batch (`scripts/_qc-creatures-rig.mts`, produisait `public/qc/creatures-rig/c*.png` +
+`manifest.json`) a été **supprimé** (refactor « rendu 100% data-driven », le name-matcher flou qu'il
+dépendait a été dissous). Le remplaçant est **mono-créature** :
 ```powershell
-npx tsx scripts/_qc-creatures-rig.mts    # → public/qc/creatures-rig/c*.png + manifest.json
+npx tsx scripts/qc/render-creature.mts --list                    # JSON des créatures riguées (nom/plan/alias)
+npx tsx scripts/qc/render-creature.mts "<Nom du def>" [dossier] [prefixe]
+# → public/qc/creatures/<slug>-front.png + <slug>-profile.png (défauts)
 ```
-Le manifest mappe `id → {kind, intended, plan}` (pour la comparaison ; **jamais montré aux juges**).
-Front, pose de repos, à l'échelle de la boîte 120×150 (grandes espèces pré-réduites).
+Pour un audit en LOT (cf. étape 2), pré-rendre chaque créature à la main sous `public/qc/<id>.png`
+(pas de manifest — les juges reçoivent un nom de fichier neutre `cNN.png`, l'appariement `id →
+intended` reste dans le script d'audit, jamais montré aux juges). Front, pose de repos.
 
 ### 2. Audit aveugle (par LOTS de ≤5 agents)
 Dispatcher des subagents qui `Read` un PNG **sans le nom** et répondent : *meilleure hypothèse +
@@ -76,7 +82,9 @@ Re-rendre (étape 1), refaire l'audit aveugle (étape 2) sur les créatures corr
 - **Fait (SP1, bipèdes)** : registres Gabarit + Race ; features échelonnées à l'os ; pilote Ogre
   (réparé) ; tells Nain/Elfe/Guerrier du Chaos/Mutant. Audits aveugles : Ogre 4/5, Nain 5/5,
   Elfe 4/5, Chaos 4/5, Mutant 5/5.
+- **Fait depuis (2026-07-04)** : hommes-bêtes Gor/Ungor + Chamane-Brey ont désormais leurs propres
+  defs riguées (`src/gameIso/rig/creatures/defs/`).
 - **À faire (SP2/SP3)** : quadrupèdes (longueur de pattes + corps par espèce + vue profil + tête de
-  loup) ; rollout des sous-espèces (skaven clanrat/stormvermin, hommes-bêtes gor/ungor) ; migrer les
-  ~12 races encore en `monster` vers `head`+`features` quand on veut les enrichir.
+  loup) ; rollout des sous-espèces skaven (clanrat/stormvermin — `Skaven.ts` reste un def générique
+  unique) ; migrer les ~12 races encore en `monster` vers `head`+`features` quand on veut les enrichir.
 ```

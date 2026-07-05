@@ -1244,7 +1244,7 @@ L'arène passe de 14 petites scènes (~15×11, 13 effets utilisés, 0 bâtiment,
 
 ## ✅ Jalon 8.8 — Audit « POC → produit » des modules récents *(2026-06-12 — demande utilisateur « modules POC inutilisables »)*
 
-Audit navigateur systématique (Playwright + `__wfrp`, grille B/M/m dans **`docs/audit-poc-modules.md`**)
+Audit navigateur systématique (Playwright + `__wfrp`, grille B/M/m dans **`docs/plans/audit-poc-modules.md`** — archivé)
 des modules livrés aux jalons 1.6→8.7, puis correction par lots (1 lot = suite verte + recette + commit) :
 
 - **Lot 1 — Interlude/Activités** (le vrai POC : saisie du libellé EXACT — « Épée » n'existe pas) :

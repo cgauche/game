@@ -1,5 +1,8 @@
 # Retours playtest Jinashi — consolidation & confrontation au code/RAW
 
+> ⚠️ **ARCHIVE (2026-07-05)** — document DATÉ : constat/plan d'époque, ne décrit PAS l'état courant du code.
+> Conservé pour l'historique du raisonnement. Ne JAMAIS s'appuyer dessus pour juger l'architecture ou l'état actuel.
+
 > Source : `retours_warhammer_tactic_jinashi.odt` (beta-test du combat + flux pré-combat).
 > Méthode : chaque point investigué (code réel + RAW relu dans `Source/`) puis **re-vérifié de façon adverse**.
 > Statut décisionnel : 3 bifurcations d'archi **tranchées** (voir ci-dessous) ; les autres `🗳` sont sur la **reco par défaut** sauf veto.

@@ -1,3 +1,6 @@
+> **Statut (2026-07-05)** : plan de suivi encore ouvert (pistes cosmétiques restantes) ; corrigé après
+> audit — les mentions de `resolveByName` (fonction supprimée) remplacées par `resolveById`/`resolveRender`.
+
 # Bestiaire — rendu des créatures (suivi)
 
 Suivi des créatures dont le **rendu** demandait un gabarit/une pièce dédiés. Cf.
@@ -34,11 +37,11 @@ Gabarits créés : `src/gameIso/rig/crustace/composeCrab.ts` (plan `crustace`),
 ('bois'/'cornes') rendue par `quadParts.headgear()` près de l'os tete (vaut pour quad ET winged).
 
 Bugfix en cours de route : `entityRigProfile` résout désormais l'espèce **label-aware** (id→label→def,
-comme `resolveByName`) → un record dont l'id (kebab) ≠ le nom de def (libellé) résout enfin vers son def.
+comme `resolveById`/`resolveRender`) → un record dont l'id (kebab) ≠ le nom de def (libellé) résout enfin vers son def.
 
 ## Balayage frenchy/import terminé
 
-Vérifié (diagnostic sur `resolveByName`) : il ne reste **aucune** créature rendue en bipède Humain
+Vérifié (diagnostic sur `resolveById`/`resolveRender`) : il ne reste **aucune** créature rendue en bipède Humain
 par défaut **à tort**. Les 3 derniers candidats ont été tranchés :
 - **« L'abominable » Halagrundsor** = géant errant (ZI) → `appearance.species:"Géant"`.
 - **Choses du Bois Mort** = humains mutés → reste bipède (correct).

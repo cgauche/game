@@ -45,8 +45,8 @@ export const creature: CreatureDef = {
 
 - **`race`** (`races/defs/`) porte les défauts partagés : palette de peau, `gabarit` (carrure,
   `gabarits/defs/`), `head`/`legs` monstrueux (remplacent visage/jambes), `features` de corps
-  (queue, fourrure, panse…), `pose` (voûté — PROFIL uniquement), `career` par défaut, `eyes`.
-- **`perso`** (CreaturePerso) surcharge par-dessus : `career`, `sex`, `colors`
+  (queue, fourrure, panse…), `pose` (voûté — PROFIL uniquement), `tenue` par défaut, `eyes`.
+- **`perso`** (CreaturePerso) surcharge par-dessus : `tenue`, `sex`, `colors`
   (⚠ couleurs de BASE seulement : `peau`/`cheveux`… — les nuances O/H sont dérivées, tsc
   refuse `peauO`), `gabarit`, `scale` (toise : art ∈ [0.5, 1.35]), `parts` (coiffure/visage
   épinglés), `eyes` (clés du catalogue `EYE_OPTIONS` : noir, rouge, chat…), `monster`,
@@ -66,26 +66,28 @@ export const creature: CreatureDef = {
 
 **Morphologie** (fourrure, cornes, queue, panse, musculature, cicatrices, épines) → `race.features`
 ou `perso.features`. **Équipement** (pagne, corset, fétiches, plaque-bedaine, armure) →
-**tenue de carrière au registre** : `tenues/defs/<Nom>.ts` avec `career: true`, et le def
-pointe `perso.career: '<Nom>'`. Un monstre mis en career `'Nu'` doit être RÉELLEMENT nu.
+**tenue au registre** : `src/gameIso/rig/parts/tenues/defs/<Nom>.ts`, et le def de créature
+pointe `perso.tenue: '<Nom>'` (ou `race.tenue` pour la tenue par défaut de la race). Un monstre
+mis en tenue `'Nu'` doit être RÉELLEMENT nu.
 
 ```ts
-// tenues/defs/Ma-tenue.ts
-import { NU_TORSE_FRONT, NU_TORSE_BACK, NU_TORSE_PROFILE, NU_JAMBE } from '../nuViews';
+// src/gameIso/rig/parts/tenues/defs/Ma-tenue.ts
+import type { TenueDef } from '../types';
+import { BODIES } from '../../bodies';
+
 export const tenue: TenueDef = {
-  name: 'Ma créature',     // = la career pointée par le def
-  career: true,
+  name: 'Ma créature',     // = la tenue pointée par le def (perso.tenue / race.tenue)
   bareFoot: true,          // MONSTRE : pied nu griffu + substitutions dos/profil en chair
   palette: { vet1: '#9a8a6a', cuir: '#4a3a28' },   // tokens recolorables par l'éditeur
   set: {
-    // le slot REMPLACE le « Nu » : inclure la CHAIR (nuViews) sous l'équipement, par vue
-    torse: { front: `<g>${NU_TORSE_FRONT}…pagne…</g>`, back: …, profile: … },
-    jambes: NU_JAMBE,
+    // le slot REMPLACE le « Nu » : inclure la CHAIR (BODIES.nu.*) sous l'équipement, par vue
+    torse: { front: `<g>${BODIES.nu.torseFront}…pagne…</g>`, back: …, profile: … },
+    jambes: BODIES.nu.jambe,
   },
 };
 ```
 
-- Sans `bareFoot`, toute carrière ≠ Nu reçoit des **bottes** (voulu pour l'Ogre, pas pour un démon).
+- Sans `bareFoot`, toute tenue ≠ Nu reçoit des **bottes** (voulu pour l'Ogre, pas pour un démon).
 - Exception documentée : un équipement porté par un **membre monstrueux** (brassards de la
   Démonette sur ses bras-pinces) reste en `features` — le slot `bras` de la tenue serait
   écrasé par le remplacement monster.

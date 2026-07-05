@@ -1,3 +1,6 @@
+> ⚠️ **ARCHIVE (2026-07-05)** — document DATÉ : constat/plan d'époque, ne décrit PAS l'état courant du code.
+> Conservé pour l'historique du raisonnement. Ne JAMAIS s'appuyer dessus pour juger l'architecture ou l'état actuel.
+
 # Audit & recensement des systèmes — RPG WFRP4 (web)
 
 > Vision globale de TOUS les systèmes de l'application : couche, rôle, consommateurs, et dette.

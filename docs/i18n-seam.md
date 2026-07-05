@@ -5,10 +5,15 @@
 > de la session parallèle (qui unifie `flowOutcomes`/`result.log`). À brancher **par phases**.
 > Ancré sur l'audit multi-agents du 2026-06-20 (symboles réels du dépôt).
 
-**État (2026-06-20)** : **Phase A ✅** (primitive `src/i18n/` livrée) + **Phase B ✅** pour les **7 maps de
-labels du moteur** (`CHAR_LABELS`/`DIFFICULTY_LABELS`/`HIT_LOCATION_LABELS`/`DEFENSE_LABEL`/`FREE_ATTACK_LABEL`/
-`BODY_SHAPE_LOC_LABELS`/`CIBLE_LABEL` → catalogue, parité verbatim, suite verte). Restent : `refLabel`
-locale-aware · **Phase D** (UI) · **Phase C** (narration de combat, *gated* sur la session //).
+**État (mise à jour 2026-07-05)** : **Phase A ✅** (primitive `src/i18n/` livrée) + **Phase B ✅** pour les
+**7 maps de labels du moteur** (`CHAR_LABELS`/`DIFFICULTY_LABELS`/`HIT_LOCATION_LABELS`/`DEFENSE_LABEL`/
+`FREE_ATTACK_LABEL`/`BODY_SHAPE_LOC_LABELS`/`CIBLE_LABEL` → catalogue, parité verbatim, suite verte) +
+**Phase C ✅ substantiellement livrée** : `describeTestRoll` (`engine/ops.ts`) et ~9 fichiers de narration
+(`engine/ops.ts`, `engine/psychology.ts`, `engine/conditions.ts`, `state/combatFlow.ts`,
+`state/combatSlice.ts`, `state/flowOutcomes.ts`, `state/combatManeuvers.ts`,
+`state/combat/turnHooks.ts`, `state/outOfCombatUpkeep.ts`) sont passés au catalogue (`t(key, params)`),
+gardés à baseline ZÉRO littéral par `src/state/i18n-narration-guard.test.ts`. Restent : `refLabel`
+locale-aware · **Phase D** (UI, libellés menus/boutons).
 
 ## But & contraintes
 
@@ -58,30 +63,27 @@ locale-aware · **Phase D** (UI) · **Phase C** (narration de combat, *gated* su
 |---|---|---|
 | **A — primitive** | `src/i18n/` (t / catalogue / MsgKey / locale) + garde-fou + test | **SÛRE maintenant** (additif, zéro consommateur imposé) |
 | **B — maps de labels stables** | router `CHAR_LABELS`/`HIT_LOCATION_LABELS`/`DIFFICULTY_LABELS`/`DEFENSE_LABEL`/`FREE_ATTACK_LABEL`/`CIBLE_LABEL` sur le catalogue (définitions stables) + `refLabel` locale-aware | **SÛRE** — ⚠️ NE PAS toucher les BUILDERS qui les consomment (`describeTestRoll`/`applyOps` = lane //) |
-| **C — narration** | chaque ligne `flowOutcomes`/`result.log` → `t(key, params)` (ou `result.log: MsgRef`) | **APRÈS** l'unification de la session // (RIDE dessus = 1 refacto au lieu de 2) |
+| **C — narration** | chaque ligne `flowOutcomes`/`result.log` → `t(key, params)` (ou `result.log: MsgRef`) | **✅ livrée** (9 fichiers migrés, cf. État en tête de doc) |
 | **D — UI** | libellés menus/boutons (`src/ui`) → `t()` | hors lane // — à tout moment |
 | **E — données desc** | fichiers de locale | quand 2ᵉ langue concrète |
 
-## Coordination avec la session // (la synergie)
+## Coordination avec la session // — RÉSOLU
 
-La session // pose `result.log: string` (FR composé) comme **source unique** de narration de combat.
-**Proposition** : que ce `result.log` soit construit via `t(key, params)` (ou typé `MsgRef`), de sorte que :
-- leur **unification de narration** ET le **seam i18n** soient **le même geste** (chaque `describe*` / ligne = un `t()`) ;
-- le moteur **émette des clés**, l'UI **résolve** → pureté + traduisibilité **d'un coup**, zéro duplication.
-
-Si elles préfèrent garder `string` pour l'instant : la Phase C se fait **après**, en remplaçant les littéraux
-par `t()` **au point unique** `flowOutcomes` (déjà centralisé par elles → aucune dispersion).
+La narration de combat passe par `t(key, params)` au point unique `flowOutcomes` : l'unification de
+narration et le seam i18n ont été le même geste (Phase C livrée, cf. tableau — 9 fichiers migrés,
+garde `i18n-narration-guard.test.ts` à baseline zéro).
 
 ## Garde-fou (anti-régression)
 
-- Test statique `no-new-hardcoded-labels` : interdit les **littéraux de texte utilisateur NEUFS** dans
-  `engine/` + `state/` hors catalogue (**baseline** = l'existant, on n'en AJOUTE pas) + règle ESLint ciblée.
-  Incrémental : la dette existante est tolérée (liste de référence), seules les **nouveautés** sont bloquées.
+- Garde-fou implémenté : `src/state/i18n-narration-guard.test.ts` (test Vitest, pas une règle ESLint).
+  Baseline **ZÉRO** sur la liste `MIGRATED` (9 fichiers, cf. État en tête de doc) : aucun littéral FR de
+  narration toléré dans ces fichiers, pas de dette existante autorisée. Étendre `MIGRATED` au fur et à
+  mesure que d'autres fichiers passent au catalogue.
 
 ## Non-objectifs (maintenant)
 
 - Livrer une 2ᵉ langue (contenu de traduction).
-- Extraire les ~40 littéraux `applyOps` **avant** que la narration soit unifiée (on attend la session //).
+- Extraire les ~40 littéraux `applyOps` (hors liste `MIGRATED` du garde à ce jour).
 - Re-rendu live au **changement** de locale en cours de partie (locale figée au lancement suffit en v1).
 
 ## Fichiers

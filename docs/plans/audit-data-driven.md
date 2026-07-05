@@ -1,3 +1,6 @@
+> ⚠️ **ARCHIVE (2026-07-05)** — document DATÉ : constat/plan d'époque, ne décrit PAS l'état courant du code.
+> Conservé pour l'historique du raisonnement. Ne JAMAIS s'appuyer dessus pour juger l'architecture ou l'état actuel.
+
 # Audit data-driven — îlots de code (sémantique de jeu en TS au lieu de JSON)
 
 Exigence : **toute sémantique/contenu de jeu vit dans le JSON** (`src/data/*.json`), le moteur ne

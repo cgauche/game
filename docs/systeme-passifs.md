@@ -100,16 +100,17 @@ sont déjà cuits dans le profil imprimé (FINAL) → PAS dans `liveTraits` → 
 
 Une **mutation** (entité) = identité + effets (`passive`, `apAll`/`apLocations` armure naturelle,
 `derivedWeapon`, `traits`, `psychTraits`, `note`), SANS plage de tirage. `src/data/mutations.json` =
-`[{label, kind, passive, …}]`.
+`[{id, label, kind, passive, …}]` (`id` STABLE langue-indépendant, `label` = affichage).
 
-Une **Table de Corruption** = des plages d100 qui RÉFÉRENCENT des mutations par label.
-`src/data/mutationTables.json` = `[{label:'physique', ranges:[{min,max,mutation}]}, …]`. **Plusieurs tables
+Une **Table de Corruption** = des plages d100 qui RÉFÉRENCENT des mutations par **id** (plus de label).
+`src/data/mutationTables.json` = `[{id:'physique', label:'…', ranges:[{min,max,mutation}]}, …]` (la table
+elle-même est aussi indexée par son propre `id`, ex. `physique`/`mentale`/`khorne`…). **Plusieurs tables
 peuvent pointer la même mutation** (LDB : physique/mentale ; Compagnon T1 : une table par dieu du Chaos
 rejoue les mêmes mutations à d'autres plages — pas de collision).
 
-`src/data/mutations.ts` : `rollMutation(table, rng)` (table → plage → réf → entité), `mutationByLabel`,
-`LABELS_PHYSIQUES`/`LABELS_MENTALES`. Le `kind` (physique/mentale) reste sur la mutation (nature, pour les
-limites de Corruption `mutationLimitExceeded`), indépendant de la table qui l'a tirée.
+`src/data/mutations.ts` : `rollMutation(table, rng)` (id de table → plage → réf par id → entité),
+`mutationById`, `IDS_PHYSIQUES`/`IDS_MENTALES`. Le `kind` (physique/mentale) reste sur la mutation (nature,
+pour les limites de Corruption `mutationLimitExceeded`), indépendant de la table qui l'a tirée.
 
 ## 6. Éditer / créer — au Codex
 
@@ -144,7 +145,7 @@ ne pas écrire de widget de liste d'ops à la main, ne pas dupliquer le vocabula
 - **Créer une mutation** : Codex → catégorie « Mutations » → label/kind + `passive` (ops). L'armure naturelle
   (`apAll`) reste un champ. (Apparence custom : cf. chantier apparence, pas encore en données.)
 - **Ajouter une table de Corruption (dieu du Chaos)** : Codex → « Tables de Corruption » → nouvelle entrée
-  `{label:'Khorne', ranges:[…]}` référençant des mutations existantes. `rollMutation('Khorne', rng)`.
+  `{id:'khorne', label:'Khorne', ranges:[…]}` référençant des mutations existantes par `id`. `rollMutation('khorne', rng)`.
 
 ## Fichiers clés
 - `src/engine/ops.ts` — `GameOp`, `PassiveMod`, `PassiveKind`.

@@ -162,7 +162,7 @@ prédicat unique « neutralisé » lu par l'IA.
 
 ## 5. Liens
 - Plan de chantier (séquencé) : `~/.claude/plans/` (session) — à reporter ici si on le matérialise.
-- Voir aussi : `docs/audit-systemes.md`, `docs/systeme-passifs.md`, `docs/i18n-seam.md`.
+- Voir aussi : `docs/plans/audit-systemes.md` (archivé), `docs/systeme-passifs.md`, `docs/i18n-seam.md`.
 
 ## 6. Recensement Lot 0 (la liste « tout migrer » — baseline gelée)
 
@@ -182,18 +182,31 @@ prédicat unique « neutralisé » lu par l'IA.
 - **Restent machinerie** (prédicats génériques, hors compte) : `isOutOfAction` L377, `inDeathCondition`
   L388, gating L177/183, `applyZeroWounds` L408, `tickDeath` L427.
 
-### Lot 4bis — `state/combat/roundHooks.ts` (11 sites) — contenu d'entité masqué en hook
-- `unstable` L89-94 → trait Instable `effects:onRoundEnd` ; `bestial-fire-fear` L109-116 → trait Bestial ;
-  `perturbing-aura` L122-127 → passif trait Perturbant ; `determination-*` L157-163 → talent Détermination ;
-  `suffocation-tick` L244-247 → **nouvel État interne suffocation** (`etats.json`).
-- **Restent machinerie** : `refresh-wounds`, `outnumbered` (règle), `tick-death`, `zones-round-tick`,
-  `clear-psych-of-dead`, `purge-expired-summons`, dispatchers `fire-round-start/end-triggers`.
-- NB `broken-recovery`/`poison-resist` (Brisé/Empoisonné) = États → relèvent du Lot 4.
+### Lot 4bis — `state/combat/roundHooks.ts` — FAIT (baseline 0, garde `combat-hardcode-guard.test.ts`)
+- `unstable` → MIGRÉ : trait `instable` `effects:onRoundEnd` (perte de la différence d'Avantage puis
+  `banish` si vidé) — plus de hook dédié (roundHooks.ts l.80-82).
+- `bestial-fire-fear` → MIGRÉ : trait `bestial` `effects:onRoundEnd` (En Flammes ∧ pas déjà Brisé →
+  condition Brisé), dispatché par le dispatcher unique (roundHooks.ts l.83-84).
+- `perturbing-aura` → MIGRÉ : passif du trait `Perturbant` projeté par la machinerie GÉNÉRIQUE
+  `recompute-auras` (aucun trait nommé en dur, roundHooks.ts l.85-108).
+- `determination-*` → MIGRÉ sur le système de Durée UNIFIÉ (`ActiveEffect` `psychImmune`/
+  `ignoreCritMods` à `duration` Rounds, décrémentés par `tickDurations`) — plus de compteur/hook dédié
+  (roundHooks.ts l.131-134).
+- `suffocation-tick` → RECLASSÉ machinerie légitime (pas un candidat data-driven) : règle
+  environnementale UNIVERSELLE gatée par le drapeau d'effet `suffocates`/`noBreath` (la donnée
+  éditable), ne nomme aucune entité (trait/talent/État) — comme `tick-death`/`tick-durations`
+  (roundHooks.ts l.215-224).
+- **Restent machinerie** : `refresh-wounds`, `outnumbered` (règle), `tick-death`, `bleed-death`,
+  `aa-bleed-unconscious`, `zones-round-tick`, `clear-psych-of-dead`, `purge-expired-summons`,
+  dispatchers `fire-round-start/end-triggers`.
+- NB `broken-recovery`/`poison-resist` (Brisé/Empoisonné) = États → relevaient déjà du Lot 4 (fait).
 
-### Lot 6 — `state/combatFlow.ts` (14 sites) — réactions hardcodées
-- `applySonneMeleeAdvantage` L190 (appels L1622/1663) ; Riposte L1238-1245 (`hasRiposte`/`hasChampionDefense`) ;
-  infection L1257-1259 (`hasTraitKey 'infecte'/'rongeur'`) ; atouts `Bacle` L1023/1524 & `Salve` L1398 ;
-  `autoCleave`/`maybeHeroCleave` L1673/1696/1735/2021 ; `banishedAtZero` (démoniaque) ; `nerveux` L4002.
+### Lot 6 — `state/combatFlow.ts` — réactions hardcodées (partiellement migré, vérifié 2026-07-05)
+- MIGRÉS (0 occurrence dans combatFlow) : `applySonneMeleeAdvantage`, `banishedAtZero`, et la Riposte/Défense
+  du champion — désormais capacité `canCounterOnDefenseWin` déclarée en donnée (`engine/combatFeatures/dispatch.ts`),
+  plus de prédicat par-nom.
+- RESTENT (vérifié par grep) : infection (`hasTraitKey 'infecte'/'rongeur'`), atouts `Bacle` & `Salve`,
+  `autoCleave`/`maybeHeroCleave`, `nerveux`.
 - Cibles + extensions de vocabulaire requises : cf. plan « Table de migration des réactions (Lot 6) ».
 
 ### Bug différé (cf. §4) — bénéficiaire du Lot 1+IA

@@ -1,3 +1,6 @@
+> ⚠️ **ARCHIVE (2026-07-05)** — document DATÉ : constat/plan d'époque, ne décrit PAS l'état courant du code.
+> Conservé pour l'historique du raisonnement. Ne JAMAIS s'appuyer dessus pour juger l'architecture ou l'état actuel.
+
 # Audit « POC → produit » des modules récents (Phase 0 — 2026-06-11)
 
 Recette navigateur (Playwright headless + `window.__wfrp`, dev server, hard-reload avant chaque
