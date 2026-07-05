@@ -34,6 +34,8 @@ import weaponGroupsJson from './weaponGroups.json';
 import qualitySubtypesJson from './qualitySubtypes.json';
 import qualityTypesJson from './qualityTypes.json';
 import groupsJson from './groups.json';
+import breathTypesJson from './breath-types.json';
+import damageTypesJson from './damage-types.json';
 import creaturesJson from './creatures.json';
 import spellsJson from './spells.json';
 import maneuversJson from './maneuvers.json';
@@ -66,6 +68,7 @@ import { CharKey, Weapon, VehicleData, StructureData, Availability } from '../en
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import { type DiceSpec, formatDice } from '../engine/dice';
+import { SIZE_LABEL } from '../engine/size'; // runtime : registre feuille (data/sizes.json + engine/qualities/ids), sans cycle vers data/index
 import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
 import type { OupsEntry } from './oups';
 import type { InterludeEvent } from './interludeEvents';
@@ -207,8 +210,12 @@ export function specEntryLabel(e: SpecEntry): string {
  *  Domaines à `wind` de `domains.json`, AFFICHE le Vent), `arcaneDomains` (Magie des Arcanes — Domaines
  *  `arcane` de `domains.json`, AFFICHE le Lore), `cultBlessings`/`cultMiracles`/`cultChaos` (Béni /
  *  Invocation / Magie du Chaos — `gods.key` filtrés par `blessings`/`miracles`/`chaosSpells`, AFFICHE le
- *  nom du dieu), `seaShanties` (Chanson de marin — ids de `sea-shanties.json`). Absent = specs inline
- *  (`SpecEntry[]`). */
+ *  nom du dieu), `seaShanties` (Chanson de marin — ids de `sea-shanties.json`). Sources d'ARGUMENT de Trait
+ *  (Immunité, Peur, Vulnérabilité, Mutation, Souffle…) : `groups` (Groupe d'appartenance — `groups.json`),
+ *  `diseases` (Maladie — `maladies.json`), `sizes` (catégorie de Taille — `engine/size`), `mutations`
+ *  (Mutation — `mutations.json`), `breathTypes` (Type de Souffle — `breath-types.json`), `damageTypes`
+ *  (Immunité aux Dégâts — `damage-types.json`, matché aussi par `unlessImmune` des Flows). Absent = specs
+ *  inline (`SpecEntry[]`). */
 export type SpecsSource =
   | 'weaponGroupsMelee'
   | 'weaponGroupsRanged'
@@ -217,7 +224,13 @@ export type SpecsSource =
   | 'cultBlessings'
   | 'cultMiracles'
   | 'cultChaos'
-  | 'seaShanties';
+  | 'seaShanties'
+  | 'groups'
+  | 'diseases'
+  | 'sizes'
+  | 'mutations'
+  | 'breathTypes'
+  | 'damageTypes';
 export interface SkillData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findSkillById`. */
@@ -770,6 +783,20 @@ export interface TraitData {
   label: string;
   /** Squelette d'arguments du libellé (« (Indice) (Portée) »…), null si aucun. */
   prefix: string | null;
+  /** Sens de la valeur NUMÉRIQUE `value` de l'instance (Difficulté, Indice, Degré…) — `label` affiché
+   *  devant/autour du nombre. Absent = le trait ne porte pas de valeur numérique. */
+  indice?: { label: string };
+  /** L'instance porte-t-elle un champ `range` (portée en mètres/cases : Souffle, Aura…) ? Absent/`false` = non. */
+  range?: boolean;
+  /** Registre de l'ARGUMENT `arg` du trait (catalogue `SPEC_SOURCES` : `groups`/`diseases`/`sizes`/
+   *  `mutations`/`breathTypes`/`weaponGroups*`…). Le pool DÉRIVE alors du registre — plus de liste en dur. */
+  specsSource?: SpecsSource;
+  /** L'`arg` accepte un TEXTE LIBRE (argument authentiquement descriptif, hors registre). Absent/`false`
+   *  = FERMÉ (l'`arg` DOIT être un id du pool `specsSource`). */
+  specsOpen?: boolean;
+  /** L'`arg` peut être une LISTE d'ids jointe par virgules (« Immunité (Feu, Poison) »). Absent/`false`
+   *  = un seul id. */
+  specsMulti?: boolean;
   desc: string;
   source: { book: string; page: number };
   /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Traits « effet sur événement » (Toile,
@@ -1144,6 +1171,16 @@ export const symptomLabel = (id: string): string => symptomById.get(id)?.label ?
  *  app-owned éditables au Codex. Le runtime du tirage (`rollMutation`) vit dans `mutations.ts`. */
 export const mutations = mutationsJson as MutationData[];
 export const mutationTables = mutationTablesJson as MutationTable[];
+const MUTATION_BY_ID = new Map(mutations.map((m) => [m.id, m]));
+/** Résout une Mutation (entité) par son `id` STABLE — lookup DONNÉE sans cycle (le résolveur de tirage
+ *  `mutationById` de `data/mutations` importe le moteur → réservé au runtime de corruption). */
+export function findMutationById(id: string | null | undefined): MutationData | undefined {
+  return id ? MUTATION_BY_ID.get(id) : undefined;
+}
+/** Libellé d'affichage d'une Mutation par son id (repli sur l'id). SOURCE UNIQUE du nom. */
+export function mutationLabel(id: string | null | undefined): string {
+  return id ? (MUTATION_BY_ID.get(id)?.label ?? id) : '';
+}
 export const trappings = trappingsJson as TrappingData[];
 /** Engins de siège POSABLES = trappings portant un art d'affût (`siegeRig`). FOYER UNIQUE du filtre,
  *  partagé par l'outil emplacement de l'éditeur (`SIEGE_ENGINES`) ET la catégorie Codex « Engins de siège »
@@ -1547,6 +1584,33 @@ export function findGroupById(id: string | null | undefined): GroupData | undefi
 export function groupLabel(id: string | null | undefined): string {
   return id ? (GROUP_BY_ID.get(id)?.label ?? id) : '';
 }
+/** Type de Souffle d'une créature (Feu/Froid/Corrosif/Électrique/Poison/Fumée) — argument du Trait Souffle,
+ *  aligné sur les manœuvres `souffle-*`. Registre SSOT (`breath-types.json`). */
+export interface BreathTypeData { id: string; label: string; }
+export const breathTypes = breathTypesJson as BreathTypeData[];
+const BREATH_TYPE_BY_ID = new Map(breathTypes.map((b) => [b.id, b]));
+/** Résout un Type de Souffle par son `id` STABLE. */
+export function findBreathTypeById(id: string | null | undefined): BreathTypeData | undefined {
+  return id ? BREATH_TYPE_BY_ID.get(id) : undefined;
+}
+/** Libellé d'affichage d'un Type de Souffle par son id (repli sur l'id). SOURCE UNIQUE du nom. */
+export function breathTypeLabel(id: string | null | undefined): string {
+  return id ? (BREATH_TYPE_BY_ID.get(id)?.label ?? id) : '';
+}
+/** Type de Dégâts ignoré par le Trait Immunité (LDB 85 : « poison, magiques ou électriques ») — argument du
+ *  Trait Immunité (multi-valeurs) ET référent des `unlessImmune` des Flows (Venin (Poison)…). Registre SSOT
+ *  (`damage-types.json`, éditable). */
+export interface DamageTypeData { id: string; label: string; }
+export const damageTypes = damageTypesJson as DamageTypeData[];
+const DAMAGE_TYPE_BY_ID = new Map(damageTypes.map((t) => [t.id, t]));
+/** Résout un Type de Dégâts par son `id` STABLE. */
+export function findDamageTypeById(id: string | null | undefined): DamageTypeData | undefined {
+  return id ? DAMAGE_TYPE_BY_ID.get(id) : undefined;
+}
+/** Libellé d'affichage d'un Type de Dégâts par son id (repli sur l'id). SOURCE UNIQUE du nom. */
+export function damageTypeLabel(id: string | null | undefined): string {
+  return id ? (DAMAGE_TYPE_BY_ID.get(id)?.label ?? id) : '';
+}
 const CREATURE_BY_ID = new Map(creatures.map((c) => [c.id, c]));
 /** Résout une créature par son `id` STABLE — référence runtime/données (scènes, encounters, rig). */
 export function findCreatureById(id: string | undefined): CreatureData | undefined {
@@ -1646,6 +1710,8 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'trappings': return findTrappingById(id);
     case 'weaponGroups': return findWeaponGroupById(id);
     case 'qualitySubtypes': return findQualitySubtypeById(id);
+    case 'breathTypes': return findBreathTypeById(id);
+    case 'damageTypes': return findDamageTypeById(id);
     case 'qualityTypes': return findQualityTypeById(id);
     case 'groups': return findGroupById(id);
     case 'qualities': return findQualityById(id);
@@ -1677,6 +1743,12 @@ export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: str
   cultMiracles:  { pool: () => gods.filter((g) => g.miracles.length).map((g) => g.key).sort(),   label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
   cultChaos:     { pool: () => gods.filter((g) => (g.chaosSpells?.length ?? 0) > 0).map((g) => g.key).sort(), label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
   seaShanties:   { pool: () => seaShanties.map((s) => s.id), label: (id) => findSeaShantyById(id)?.label ?? id, resolves: (id) => !!findSeaShantyById(id) },
+  groups:        { pool: () => groups.map((g) => g.id),       label: (id) => groupLabel(id),       resolves: (id) => !!findGroupById(id) },
+  diseases:      { pool: () => maladies.map((m) => m.id),     label: (id) => diseaseLabel(id),     resolves: (id) => !!findDiseaseById(id) },
+  sizes:         { pool: () => Object.keys(SIZE_LABEL),       label: (id) => (SIZE_LABEL as Record<string, string>)[id] ?? id, resolves: (id) => id in SIZE_LABEL },
+  mutations:     { pool: () => mutations.map((m) => m.id),    label: (id) => mutationLabel(id),    resolves: (id) => !!findMutationById(id) },
+  breathTypes:   { pool: () => breathTypes.map((b) => b.id),  label: (id) => breathTypeLabel(id),  resolves: (id) => !!findBreathTypeById(id) },
+  damageTypes:   { pool: () => damageTypes.map((t) => t.id),  label: (id) => damageTypeLabel(id),  resolves: (id) => !!findDamageTypeById(id) },
 };
 /** Ids de spéc d'une def (Compétence/Talent) : pool DÉRIVÉ du registre partagé si `specsSource` (SSOT
  *  `SPEC_SOURCES`), sinon les ids de ses `specs[]` inline. SOURCE UNIQUE du pool — consommée par

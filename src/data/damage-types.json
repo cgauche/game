@@ -1,0 +1,18 @@
+[
+  {
+    "id": "poison",
+    "label": "Poison"
+  },
+  {
+    "id": "feu",
+    "label": "Feu"
+  },
+  {
+    "id": "electrique",
+    "label": "Électrique"
+  },
+  {
+    "id": "magique",
+    "label": "Magique"
+  }
+]

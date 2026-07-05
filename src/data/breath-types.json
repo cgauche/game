@@ -1,0 +1,26 @@
+[
+  {
+    "id": "feu",
+    "label": "Feu"
+  },
+  {
+    "id": "froid",
+    "label": "Froid"
+  },
+  {
+    "id": "corrosif",
+    "label": "Corrosif"
+  },
+  {
+    "id": "electrique",
+    "label": "Électrique"
+  },
+  {
+    "id": "poison",
+    "label": "Poison"
+  },
+  {
+    "id": "fumee",
+    "label": "Fumée"
+  }
+]
