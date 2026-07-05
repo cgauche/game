@@ -496,7 +496,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       if (pa.success) {
         const fortuneBefore = fortuneMax(h);
         const resolveBefore = resolveMax(h);
-        const r = engineBuyTalent(h, talentLabel); // débite les PX + acquiert le Talent
+        const r = engineBuyTalent(h, talentId); // débite les PX + acquiert le Talent
         if (r.ok) {
           applyTalentAcquisition(h, talentId);
           h.wounds.max = heroMaxWounds(h); // Dur à cuire & co

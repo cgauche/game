@@ -6,9 +6,7 @@
  * VERBATIM du Tableau de Coût des Augmentations (l.45-62) — aucune invention.
  */
 import { Combatant, CharKey } from './types';
-import { CareerSlot, splitLabel, parseRefKey } from './careerSlots';
-import { findSkill, findTalent } from '../data';
-import { slugId } from '../data/slug';
+import { CareerSlot, parseRefKey } from './careerSlots';
 import advancementCostsJson from '../data/advancementCosts.json';
 
 /**
@@ -69,9 +67,8 @@ export function buyCharAdvance(hero: Combatant, char: CharKey, inCareer = true):
 
 /** Achète UNE Augmentation pour une Compétence DÉJÀ connue — identité (name, spec) : chaque
  *  Spécialisation est une Compétence distincte (LDB 09 l.42). */
-export function buySkillAdvance(hero: Combatant, skillName: string, spec: string | undefined, inCareer = true, discount = 0): AdvanceResult {
-  const id = findSkill(skillName)?.id ?? slugId(skillName);
-  const skill = hero.skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''));
+export function buySkillAdvance(hero: Combatant, skillId: string, spec: string | undefined, inCareer = true, discount = 0): AdvanceResult {
+  const skill = hero.skills.find((s) => s.skillId === skillId && (s.spec ?? '') === (spec ?? ''));
   if (!skill) return { ok: false, cost: 0, reason: 'Compétence inconnue' };
   const cost = advanceCost(skill.advances, 'skill', inCareer, discount);
   if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
@@ -81,25 +78,17 @@ export function buySkillAdvance(hero: Combatant, skillName: string, spec: string
 }
 
 /** Achète UNE Augmentation de Talent (le crée à `times` 1 s'il est absent, sinon +1) si les PX
- *  suffisent. `talentName` = libellé CONCRET (spec résolue) — utilisé pour résoudre le NOM→id
- *  (`findTalent`) et les messages ; `rawSpec`, s'il est fourni, est l'identité PERSISTÉE réelle
- *  (id d'un domaine migré, ou texte libre d'un domaine non migré/ouvert) — ne JAMAIS re-dériver la
- *  spec depuis `talentName` re-parsé (`splitLabel` ne renvoie que le LIBELLÉ d'affichage entre
- *  parenthèses, ex. « Chaos » au lieu de l'id `chaos` — cf. `wildcardSpecs`). Sans `rawSpec` (appel
- *  direct legacy sans spec, ou Talent non spécialisé), repli sur la spec re-parsée. Les Talents hors
- *  carrière ne sont pas achetables (l.97) et le Maxi doit être respecté (LDB 10) — vérifiés par
- *  l'appelant (`talentMaxReached`) ; ici on applique le coût standard. */
-export function buyTalent(hero: Combatant, talentName: string, rawSpec?: string): AdvanceResult {
-  const { name, spec: parsedSpec } = splitLabel(talentName);
-  const spec = rawSpec ?? parsedSpec;
-  const id = findTalent(name)?.id ?? slugId(name);
-  const existing = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
+ *  suffisent. Identité STABLE par `talentId` + `spec` (déjà résolus par l'appelant ; jamais un
+ *  libellé). Les Talents hors carrière ne sont pas achetables (l.97) et le Maxi doit être respecté
+ *  (LDB 10) — vérifiés par l'appelant (`talentMaxReached`) ; ici on applique le coût standard. */
+export function buyTalent(hero: Combatant, talentId: string, spec?: string): AdvanceResult {
+  const existing = hero.talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''));
   const already = existing?.times ?? 0;
   const cost = talentCost(already);
   if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
   hero.xp = (hero.xp ?? 0) - cost;
   if (existing) existing.times += 1;
-  else hero.talents.push({ talentId: id, spec, times: 1 });
+  else hero.talents.push({ talentId, spec, times: 1 });
   return { ok: true, cost };
 }
 

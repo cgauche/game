@@ -295,7 +295,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
         clone.skills.push({ skillId, spec, characteristic, advances: 0 });
       }
       const discount = added && status != null ? 5 : 0;
-      const r = engineBuySkillAdvance(clone, skillLabel, spec, inC, discount);
+      const r = engineBuySkillAdvance(clone, skillId, spec, inC, discount);
       if (!r.ok) {
         msg = `${clone.name} : ${lbl(skillLabel, spec)} — ${r.reason}.`;
         return h;
@@ -364,7 +364,7 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, 
       }
       const fortuneBefore = fortuneMax(clone);
       const resolveBefore = resolveMax(clone);
-      const r = engineBuyTalent(clone, talentLabel, spec); // spec = identité PERSISTÉE (id si migré), jamais re-dérivée du libellé
+      const r = engineBuyTalent(clone, talentId, spec); // spec = identité PERSISTÉE (id si migré), jamais re-dérivée du libellé
       if (!r.ok) {
         msg = `${clone.name} : ${talentLabel} — ${r.reason}.`;
         return h;
