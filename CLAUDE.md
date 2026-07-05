@@ -27,6 +27,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Toucher les triggers / événements de combat | `docs/combat-events-coherence.md` |
 | Ajouter une créature (rig) | `docs/creer-une-creature.md` |
 | Authoring de map | `docs/map-authoring.md` |
+| Créer ou retoucher un écran UI (CSS, densité, responsive) | `docs/charte-ui.md` + règle stricte 4 |
 
 > **Politique `docs/`** : ce dossier ne contient que des **références vivantes**, maintenues au fil
 > du code. Les plans de refonte / sorties de brainstorming sont des artefacts **DATÉS** : ils vont
@@ -66,6 +67,12 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
    pour l'instant », « exception assumée ») : sans validation utilisateur traçable, c'est de la
    dette signalée, pas une autorisation ni un précédent. (c) La *pierre tombale* (« déplacé vers
    X », rappel de l'ancien état) : à supprimer à vue, git porte l'historique.
+7. **Pas de MJ — tout se modélise.** Le jeu tourne sans arbitre humain : tout point que le RAW
+   laisse « au MJ » reçoit un arbitrage EXPLICITE (donnée éditable taguée maison, ou choix
+   joueur) — jamais un contournement silencieux. Si une règle/table EST dans la source (Blessures
+   critiques par localisation, Maladresses/Colère, Corruption/mutations…), elle doit être
+   IMPLÉMENTÉE, pas reportée. Ce qui n'est vraiment pas dans la source → CustomStatblock ou
+   omission assumée et documentée, jamais « le MJ décide » (cf. credo : house-rule ≠ lacune).
 
 ## Sources VF — l'essentiel
 

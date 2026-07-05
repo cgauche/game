@@ -164,3 +164,19 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   widget de liste d'ops). **Mutation découplée de sa table** : `mutations.json` (entités) ⊥
   `mutationTables.json` (plages d100 → réf mutation) → plusieurs tables (une par dieu du Chaos, Compagnon T1)
   sans collision. L'APPARENCE d'une mutation (cornes/peau…) reste couche **rig** (≠ GameOp).
+
+## Direction visuelle & apparence
+
+- **Isométrique 2.5D « à la Baldur's Gate »** (vue 3/4), PAS de vue top-down ni de carrés de
+  couleur générés par code. Art SVG dessiné/calculé à la main, scènes détaillées et ANIMÉES
+  (idle, marche, attaque, mort). Le rendu vit dans `src/gameIso/` (projection `iso.ts`, gabarits
+  corporels `rig/`, décor `sprites.ts`) et réutilise le moteur de règles pur (`src/engine`), le
+  store et le schéma de Scène — direction posée après le rejet net d'un premier jet top-down
+  générique jugé « jeu 2D des années 1980 ».
+- **Toute apparence (couleur/matériau/géométrie SVG) vit dans un registre `defs/`**, consommée
+  par TOUS les renderers — jamais codée en dur dans un renderer, jamais choisie par regex/label
+  sur l'id (ban total du regex). Un même élément rendu par deux vues (iso `walls.ts` + POV
+  `geometry.ts`) partage UNE def. Avant de colorer/dessiner une entité : chercher ou créer sa def
+  (`structureAppearance(id)`, `TerrainDef`, etc.), classer par CHAMP DONNÉE (`kind`/`fortified`/…),
+  jamais par pattern d'id. Nouveau type de rendu ⇒ étendre la def + le registre `gen-registry.mjs`,
+  pas un `if` dans le renderer.
