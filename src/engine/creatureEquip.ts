@@ -2,8 +2,7 @@
  * Dérivation PURE « traits → équipement » (armes jouables + armure en PA) d'une créature/statbloc.
  * SOURCE UNIQUE, partagée par le SPAWN de combat (`state/spawn`) ET le RENDU d'exploration (`gameIso`).
  * Vit dans `engine` (pur, ne dépend de rien d'en haut) → importable par le rendu SANS cycle de couches
- * (`state/spawn` importe déjà `gameIso`, donc `gameIso` ne peut pas importer `state/spawn`). Avant, ces
- * fonctions vivaient dans `state/spawn` → inaccessibles au rendu → l'exploration n'affichait pas l'équipement.
+ * (`state/spawn` importe déjà `gameIso`, donc `gameIso` ne peut pas importer `state/spawn`).
  */
 import type { Weapon, ArmourPoints } from './types';
 import type { TraitInstance, TraitList } from './statEntry';

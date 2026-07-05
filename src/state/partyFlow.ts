@@ -614,5 +614,5 @@ export function partyReplaceHero(get: Get, set: Set, oldId: string, hero: Combat
 }
 
 
-// (usePartyItem — consommable hors combat — vit désormais dans `state/consumableFlow.ts` : le Flow du
+// (usePartyItem — consommable hors combat — vit dans `state/consumableFlow.ts` : le Flow du
 //  consommable peut porter un nœud `test` → modale restreinte au buveur, hors de portée de ce module.)

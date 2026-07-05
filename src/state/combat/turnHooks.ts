@@ -1,8 +1,7 @@
 /**
  * Hooks de DÉBUT DE TOUR ENNEMI (`turnStart`) enregistrés sur la couture `combatHooks`. Module FEUILLE
  * chargé par effet de bord depuis combatFlow (comme roundHooks/restFlow peuplent leurs registres) : la
- * séquence de début de tour de l'IA (anciennement 4 appels inline en tête de `runEnemyAI`) vit ICI,
- * chaque étape étant un hook ordonné par `order`. N'importe RIEN de combatFlow → pas de cycle (les
+ * séquence de début de tour de l'IA vit ICI, chaque étape étant un hook ordonné par `order`. N'importe RIEN de combatFlow → pas de cycle (les
  * fonctions déplacées ne dépendent que des modules feuilles `engine/*`, `combatLog`, `combatGeometry`,
  * `lineOfSight`, `battleRng`). combatFlow ré-exporte ces fonctions (baril) pour les tests existants.
  *

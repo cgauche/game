@@ -392,7 +392,7 @@ export const FLOWS = {
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       },
     },
-    // « Annuler » (ex-`attackCancel`, migré verbatim) : défaire la charge misclic AVANT le jet
+    // « Annuler » : défaire la charge misclic AVANT le jet
     // (positions/orientation/Mouvement/Avantage +1 rendu/chargedThisTurn), no-op sur une 2ᵉ frappe
     // imposée, fin de balayage pour un cleave, sinon fermeture (+ cascade combat étape 0).
     onCancel: (get, set) => {
@@ -1273,7 +1273,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (s, p, actor, _get, forced) => {
       // +DR de Talent (LDB 10) sur un Test RÉUSSI — règle UNIVERSELLE `talentTestSLBonus` (matcher
-      // STRUCTURÉ `test.matches`, par id ; subsume l'ex-`talentTestDR`). Le contexte `when` n'est pas
+      // STRUCTURÉ `test.matches`, par id). Le contexte `when` n'est pas
       // évalué ici (défaut conservateur ; cf. plan). PLUS les +DR d'effet actif/trait : par Compétence
       // (`skillDRBonus` — chanson « De toutes les terreurs » : +1 DR Calme, MDG 09 l.232) et par
       // Caractéristique (`charDRBonusOf` — « Camarades d'équipage » : +1 DR Sociabilité, l.236).

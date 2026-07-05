@@ -26,15 +26,15 @@ export function castingKindOf(talentId: string): CastingKind | undefined {
 }
 
 /** Domaine d'Arcane du lanceur (LDB 46) : la spécialisation du talent à `castingKind:'arcane'` (Magie des
- *  Arcanes — Métal, Bêtes…), ou undefined. Source DONNÉE (`combat.castingKind`) — remplace les checks en dur
- *  `talentId === 'magie-des-arcanes'` (exemptions d'armure, domaine d'incantation, Souffle de breathType). */
+ *  Arcanes — Métal, Bêtes…), ou undefined. Source DONNÉE (`combat.castingKind`), consommée pour les
+ *  exemptions d'armure, le domaine d'incantation, le Souffle de breathType. */
 export function arcaneDomainOf(c: Combatant): string | undefined {
   for (const t of c.talents ?? []) if (findTalentById(t.talentId)?.combat?.castingKind === 'arcane') return t.spec;
   return undefined;
 }
 
-/** `id` STABLE du Domaine d'Arcane du lanceur : la spec du Talent Magie des Arcanes EST désormais un id de
- *  `domains.json` (fin de l'incohérence Vent/Lore — plus de round-trip `domainByLabel`). Le RUNTIME en aval
+/** `id` STABLE du Domaine d'Arcane du lanceur : la spec du Talent Magie des Arcanes EST un id de
+ *  `domains.json`. Le RUNTIME en aval
  *  (breathType, attributs de Domaine) lit par `findDomainById`. undefined si pas de Domaine / non spécialisé. */
 export function arcaneDomainIdOf(c: Combatant): string | undefined {
   return arcaneDomainOf(c);
@@ -181,8 +181,7 @@ export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefin
 
 /** Contre-attaque sur Test opposé de DÉFENSE gagné en mêlée — lue en DONNÉES, traits ET talents
  *  confondus (capacité GÉNÉRIQUE `counterOnDefenseWin`). Champion (LDB 85) : sans condition d'arme.
- *  Riposte (LDB 10) : exige une arme de PARADE Rapide (`counterRequiresFastParry`). Tout trait/talent
- *  qui déclare la capacité contre — plus de branche par-nom `hasChampionDefense`/`hasRiposte`. */
+ *  Riposte (LDB 10) : exige une arme de PARADE Rapide (`counterRequiresFastParry`). */
 export function canCounterOnDefenseWin(c: Combatant, parryWeapon: Weapon | undefined): boolean {
   const fast = canStrikeFirst(parryWeapon ? [parryWeapon] : []);
   for (const t of c.traits ?? []) {
@@ -303,14 +302,14 @@ export function talentFearIndice(c: Combatant): number {
 }
 
 /** Négociateur (LDB 60 l.12) : un Marchandage gagné réduit le prix de 20 % même sans Succès
- *  Stupéfiant. Lu par merchantFlow à la conclusion (remplace le name-match `=== 'Négociateur'`). */
+ *  Stupéfiant. Lu par merchantFlow à la conclusion. */
 export function hasBargainBonus(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.bargainBonus);
 }
 
 /** Inversion d'un Test RATÉ de la Compétence `{ skill, spec }` (Sociable → Ragot, Pharmacologie →
  *  Métier (Apothicaire)…) : renvoie le plafond de DR éventuel (`capDR`), `null` si aucun talent ne
- *  s'applique. Réf STRUCTURÉE par id (plus de match par libellé). LDB 10. */
+ *  s'applique. Réf STRUCTURÉE par id. LDB 10. */
 export function talentReverseFailed(c: Combatant, q: { skill?: string; spec?: string }): { capDR?: number } | null {
   if (!q.skill) return null;
   for (const { def } of featuresOf(c)) {

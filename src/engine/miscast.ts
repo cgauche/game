@@ -67,7 +67,7 @@ interface NestedTest {
 /**
  * Dice descriptor as it appears in the JSON. Extends the engine's `{ n, sides, plus? }` shape
  * with an optional `sinPlus` flag: when `true`, the resolved `plus` is the caller's `sinPoints`
- * value (e.g. `d(1,10,sin)` in the old inline code → `{ n:1, sides:10, sinPlus:true }` in JSON).
+ * value (`{ n:1, sides:10, sinPlus:true }` in JSON).
  */
 interface JsonDice extends DiceSpec {
   /** When true, `plus` = sinPoints at resolution time (replaces the old closure `d(n,s,sin)`). */
@@ -76,8 +76,7 @@ interface JsonDice extends DiceSpec {
 
 /**
  * Formula as it appears in the JSON.  A plain number stays a plain number; a dice descriptor
- * uses `JsonDice` (with optional `sinPlus`); `{ sinPlus1: true }` encodes the pattern `1 + sin`
- * (old inline: `amount: 1 + sin`).
+ * uses `JsonDice` (with optional `sinPlus`); `{ sinPlus1: true }` encodes the pattern `1 + sin`.
  */
 type JsonFormula =
   | number
@@ -87,8 +86,7 @@ type JsonFormula =
 /**
  * A single GameOp as stored in the JSON.  Mirrors the runtime `GameOp` union but with
  * `JsonFormula` in place of `Formula`, and two extra optional fields:
- * - `sinPlus1Value`: when true the `value` of a `condition` op is `1 + sinPoints` at runtime
- *   (old inline: `cond('name', 1 + sin)`).
+ * - `sinPlus1Value`: when true the `value` of a `condition` op is `1 + sinPoints` at runtime.
  * - `durationRounds`: a `JsonFormula` for the `durationRounds` field of a timed-condition op
  *   (old inline: `{ op:'condition', name:'sonne', durationRounds: d(1,10) }`).
  */

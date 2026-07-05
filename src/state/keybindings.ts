@@ -1,7 +1,7 @@
 /**
  * Registre UNIQUE des raccourcis clavier de JEU. Source de vérité du hook `useGameKeyboard` ET du
- * remap de l'écran Options — zéro handler éparpillé (la rotation caméra + Échap, jadis dans le keydown
- * d'IsoStage, vivent désormais ICI : remappables comme le reste).
+ * remap de l'écran Options — zéro handler éparpillé (la rotation caméra + Échap vivent ICI :
+ * remappables comme le reste).
  *
  * 100 % `e.code` = POSITION physique de la touche, pas le caractère → AZERTY-safe d'office (la touche
  * au même ENDROIT que Q/E/C sur QWERTY est A/Z/E/C sur AZERTY). Les handlers LOCAUX corrects restent

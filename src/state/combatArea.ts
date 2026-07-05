@@ -5,7 +5,7 @@
  *
  * Lit GÉNÉRIQUEMENT les capacités d'arme (`resolveQualities` → `caps`) — aucun id d'arme ni chemin naval bespoke :
  *  - **Tir de zone (Indice)** (Aux Armes p.89 / MDG ch.12 l.466-472) : selon la bande de portée —
- *      · Bout portant → la cible seule, **+Indice aux Dégâts** (RAW ; ≠ l'ancien « +Indice Blessures » brut) ;
+ *      · Bout portant → la cible seule, **+Indice aux Dégâts** (RAW) ;
  *      · Courte à Longue → la cible **+ les Indice cibles les plus proches** ;
  *      · Extrême → comme Courte-Longue mais **−Indice aux Dégâts** (bande jadis manquante).
  *  - **Explosion (Indice)** (LDB p.298) : « Tous les Personnages situés à Indice mètres du point cible frappé

@@ -20,7 +20,7 @@
  * « Guide fluvial ou Bonnes jambes ».
  *
  * MOTEUR : `slotsOfLevel` construit ses `SlotOption[]` DIRECTEMENT depuis l'`AdvancementRef` structuré
- * (`slotOptionsFromRef`) — plus de round-trip `advancementLabel→parseEntry` au runtime. `parseAdvancement`
+ * (`slotOptionsFromRef`). `parseAdvancement`
  * (prose→ref) et `parseEntry`/`parseOption`/`splitTopLevelOu` restent les helpers d'AUTHORING/CRÉATION :
  * l'assistant de création (`draft`/`CharacterCreator`) travaille sur des LIBELLÉS concrets (clés de
  * `specChoices`), le Codex sur la prose — c'est leur modèle, pas un chemin de résolution de règle.
@@ -317,7 +317,7 @@ export function designateSlot(
  */
 export function talentMaxById(hero: Combatant, talentId: string): number | null {
   const max = findTalentById(talentId)?.max;
-  if (max == null) return null; // sans limite (ex-« Aucun »)
+  if (max == null) return null; // sans limite
   if (typeof max === 'number') return max;
   return bonus(hero.characteristics[max.bonusOf]); // Maxi = Bonus de carac (valeur de base du héros)
 }

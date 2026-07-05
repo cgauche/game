@@ -343,10 +343,10 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // Empoisonné : dégâts par-round (« 1 PB/pion, en ignorant les modificateurs ») MIGRÉS en DONNÉES —
   // `etats.json` empoisonne `effects: onRoundEnd → wounds {stacks:'self'}` (le défaut de `wounds` ignore
   // BE+PA), joués par `fireConditionEffects` au hook order-10. Le Test de Résistance qui élimine l'État
-  // reste le hook `poison-resist` (cadence-aware). Plus de branche par-nom de DÉGÂTS de poison ici.
+  // reste le hook `poison-resist` (cadence-aware).
   // En Flammes : dégâts par-round MIGRÉS en données (etats.json `effects: onRoundEnd → wounds`,
   // amount {sum:[1d10, pions, −1]} − BE − PA de la Localisation la moins protégée, min 1 ; LDB 16 l.77),
-  // joués par fireConditionEffects. Plus de branche by-name de DÉGÂTS d'En Flammes ici.
+  // joués par fireConditionEffects.
   // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round (retire 1+DR ; vidé → 1 Exténué « si pas
   // déjà », LDB 16 l.123-127) MIGRÉ en DONNÉES — `etats.json` sonne `effects: onRoundEnd → {test → removeCondition
   // 1+DR, `if` sonne∧extenue vidés → condition extenue}`, résolu par le DISPATCHER UNIQUE (cadence-aware en
@@ -521,9 +521,9 @@ export function loseWounds(c: Combatant, amount: number): number {
  * Variante Aux Armes (l.2449) : le système alternatif REMPLACE ce décompte déterministe → à 0 PB, on ne
  * tombe PAS automatiquement Inconscient ; la chute Inconscient passe par le Test de Résistance de l'État
  * Hémorragique (hook `aa-bleed-unconscious`). On garde le compteur `roundsAtZero` (info) mais on n'applique
- * pas l'Inconscient en mode AA. Retourne le journal. (`_rng` réservé pour de futurs Tests ; non utilisé ici.)
+ * pas l'Inconscient en mode AA. Retourne le journal.
  */
-export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
+export function tickDeath(c: Combatant): string[] {
   const log: string[] = [];
   if (c.dead || c.outOfRencontre || c.inert || usesSuddenDeath(c) || c.bodyShape === 'vehicule') return log; // un OBJET INERTE (affût, 0 PB permanent) et une coque ne « meurent » pas par la cascade Inconscient→mort (cf. isOutOfAction)
   const be = bonus(effectiveChar(c, 'E'));

@@ -5,9 +5,6 @@
  * nombres (mètres, cases). Le modèle « A1 » : chaque case d'une couche porte une hauteur RÉELLE en
  * mètres (échelle RAW 2 m/case, LDB 15 l.12 — portée par `scene.metresPerTile`). La hauteur est
  * PORTEUSE (marchabilité / combat / chute), plus cosmétique.
- *
- * Remplace les deux forfaits dispersés de l'ancien modèle : `FALL_METRES_PER_LEVEL` (jumpMove) et
- * `TILES_PER_LEVEL` (footprint) — leurs lecteurs migrent vers les helpers d'ici.
  */
 
 /**
@@ -55,7 +52,7 @@ export const isWalkableGrade = (g: Grade): boolean => g !== 'cliff';
 /**
  * Composante VERTICALE d'une distance de combat, exprimée en CASES : Δhauteur ÷ échelle métrique de la
  * case. RAW : 1 case = `metresPerTile` m (LDB 15 l.12, défaut 2) → un dénivelé de 4 m (un « niveau »)
- * vaut 2 cases, identique à l'ancien forfait `TILES_PER_LEVEL=2`, mais exact pour toute hauteur.
+ * vaut 2 cases, exact pour toute hauteur.
  */
 export function verticalTiles(hA: number, hB: number, metresPerTile: number): number {
   return Math.abs(hA - hB) / metresPerTile;

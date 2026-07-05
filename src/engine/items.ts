@@ -673,7 +673,7 @@ export function damageScore(d?: WeaponDamageSpec): number {
 /** Construit l'inventaire d'un héros depuis des `TrappingRef[]` (possessions de Classe + niveau de
  *  carrière — déjà des refs par id). Un ref `{id}` à stats devient un objet ; le `count` d'une munition
  *  donne sa quantité. Les refs `{text}` (flavor hors catalogue : « Réseau d'informateurs ») n'ont pas
- *  de stats → ignorées (comme l'ancien runtime). */
+ *  de stats → ignorées. */
 export function buildInventory(refs: TrappingRef[]): ItemInstance[] {
   const items: ItemInstance[] = [];
   for (const ref of refs) {

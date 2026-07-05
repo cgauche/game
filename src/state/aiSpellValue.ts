@@ -71,8 +71,6 @@ export function safeWounds(weapon: Weapon, target: Combatant, totalDamage: numbe
 
 // Dangerosité d'un ÉTAT infligé (« Blessures espérées ») : lue en DONNÉE sur `etats.json` (`aiThreat`,
 // clé slugifiée du `name` de l'op:'condition'). États inconnus / sans aiThreat → 1 (contrôle mineur).
-// (Ex-table CONDITION_THREAT retirée : ses clés `etourdi`/`hemorragie` étaient PÉRIMÉES — les vraies
-//  conditions sont `sonne`/`hemorragique` → l'IA sous-valorisait l'étourdissement.)
 
 /**
  * Une cible est NEUTRALISÉE (au sol/inconsciente/0 PB encore là) : aucun intérêt tactique à s'acharner

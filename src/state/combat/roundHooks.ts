@@ -123,10 +123,10 @@ registerCombatHook({
     }
   },
 });
-// Mâchoires d'acier (LDB 10) NE vit PLUS comme un hook de franchissement de Round : c'est un effet
+// Mâchoires d'acier (LDB 10) : un effet
 // DÉCLENCHÉ `onGainCondition` data-driven (talents.json) — « chaque fois que vous gagnez un État Sonné »,
 // résolu cadence-aware par la brique `combat/triggeredTest` (héros manuel → cascade influençable ;
-// ennemi/auto → jet inline). L'ordre 60 du franchissement de Round est désormais libre.
+// ennemi/auto → jet inline).
 
 // Détermination (LDB 17 l.62/64) MIGRÉE sur le système de Durée UNIFIÉ : l'immunité psychologique (2
 // Rounds) et l'ignorance des modifs de Critique (1 Round) sont portées par des `ActiveEffect`
@@ -139,7 +139,7 @@ registerCombatHook({
 // circonstances (`difficultyBy` : caché → Accessible, ennemi à ≤3 → Très difficile), succès retire 1 + DR, vidé
 // → Exténué (l.80). Dispatché par le DISPATCHER UNIQUE (hook `end-of-round`) : ennemi/auto inline, héros manuel
 // → étape de cascade collectée par `collectRoundEndTestSteps`. La géométrie d'arène est calculée par
-// `recoveryGeometry` (triggeredEffects). Plus de hook `broken-recovery` ni de `brokenContext`/`brokenRecoveryApply`.
+// `recoveryGeometry` (triggeredEffects).
 
 /** Aux Armes (l.2449) : un combattant à 0 PB porteur de l'État Hémorragique (et pas déjà Inconscient / hors
  *  d'action) doit tester sa Résistance chaque Round sous peine de tomber Inconscient. Prédicat PARTAGÉ par le
@@ -162,7 +162,7 @@ registerCombatHook({
   id: 'tick-death', // 0 PB → Inconscient après BE Rounds (LDB 18 l.15) — désactivé en mode AA (cf. tickDeath)
   phase: 'onRoundEnd',
   order: 76,
-  run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => sink(l, c)); },
+  run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   // Aux Armes (l.2449) : dans le système ALTERNATIF de Blessures, on ne tombe PAS Inconscient d'office à
@@ -338,11 +338,11 @@ function syncCombatant(get: Get, set: SetFn): void {
 
 // (La Résistance à l'Empoisonné n'a PLUS d'applier dédié : son étape est de kind `triggeredTest` (générique),
 //  résolue par l'applier `triggeredTest` de la brique cadence-aware — la branche `success`/`fail` de la donnée
-//  (retire 1+DR, puis Exténué si vidé) y est rejouée. Plus de `poisonResistApply` par-nom.)
+//  (retire 1+DR, puis Exténué si vidé) y est rejouée.)
 
 // (La récupération du Brisé n'a PLUS d'applier dédié : son étape est de kind `triggeredTest` (générique),
 //  résolue par l'applier `triggeredTest` de la brique cadence-aware — la branche `success`/`fail` de la donnée
-//  (retire 1+DR, puis Exténué si vidé) y est rejouée. Plus de `brokenRecoveryApply` par-nom.)
+//  (retire 1+DR, puis Exténué si vidé) y est rejouée.)
 
 registerCascadeApplier('fatigue', (get, set, step, hero) => {
   if (!hero || !step.result) return;

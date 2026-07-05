@@ -52,7 +52,7 @@ import { bus, EVT } from './bus';
 import { t } from '../i18n';
 
 // ---------------------------------------------------------------------------
-// Émission d'animation + énumération (déplacées de combatFlow)
+// Émission d'animation + énumération
 // ---------------------------------------------------------------------------
 
 /** Émet l'animation d'attaque d'une attaque SPÉCIALE de créature → AnimatedPlanToken joue la pose

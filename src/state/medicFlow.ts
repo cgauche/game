@@ -1,8 +1,7 @@
 /**
  * INFIRMERIE — flux de soins HORS COMBAT unifié (Guérison / Hémorragie / Déchirure / Chirurgie) :
  * une modale PERSISTANTE (MedicModal) — bandeau patients → dossier (actes) → zone de jet — qui ne
- * se ferme pas entre deux actes. Remplace le POC à trois flux (HealModal hors combat, medicalAid
- * mono-acte, chirurgie autonome). Le RAW vit dans engine/healing + engine/trauma (sources uniques),
+ * se ferme pas entre deux actes. Le RAW vit dans engine/healing + engine/trauma (sources uniques),
  * ici : orchestration seulement. En combat, le flux ActionBar reste (un acte = une Action).
  *
  * La CHIRURGIE (Test ÉTENDU, LDB 10 l.154 / 12 l.200) est « armée » sur l'infirmerie (`medic.surgery` :

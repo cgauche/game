@@ -52,7 +52,7 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
         }
         continue;
       }
-      tickDeath(c, rng).forEach((l) => log.push(l)); // 0 PB → Inconscient après BE Rounds (LDB 18 l.28)
+      tickDeath(c).forEach((l) => log.push(l)); // 0 PB → Inconscient après BE Rounds (LDB 18 l.28)
     }
     if (!active) break;
   }

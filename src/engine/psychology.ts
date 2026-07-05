@@ -238,7 +238,7 @@ export function isFrenzyCapable(c: Combatant): boolean {
 }
 
 /** Le combattant est-il EN Frénésie (LDB 21 l.34) ? État psychologique porté `frenesie` (`psychState`,
- *  posé par l'entrée — Action héros / décision IA / Rage) — remplace l'ancien drapeau `Combatant.frenzied`.
+ *  posé par l'entrée — Action héros / décision IA / Rage).
  *  Lu par le combat (charge, gating, +1 BF via données, immunité psy, attaque libre). */
 export function isFrenzied(c: Combatant): boolean {
   return (c.psychState ?? []).some((p) => p.type === 'frenesie');
@@ -323,7 +323,7 @@ export function resolveCalmeSimple(calme: number, rng: RNG = defaultRNG): { succ
  *  `base` (l'Indice de l'affliction via `'indice'`, ou un nombre FIXE) + `perDegreeOfFailure` × DR négatifs.
  *  Défauts `{ base:'indice', perDegreeOfFailure:1 }` = la règle Terreur (Indice + |DR|, LDB 21 l.57) — un
  *  nouvel État/Psy peut infliger une quantité propre (fixe, ou par DR seul) sans code. L'appelant n'invoque
- *  ce calcul que sur un ÉCHEC (le succès n'inflige rien) : SOURCE UNIQUE, ex-`terreurBrise` généralisée. */
+ *  ce calcul que sur un ÉCHEC (le succès n'inflige rien) : SOURCE UNIQUE. */
 export function failConditionAmount(
   spec: { base?: 'indice' | number; perDegreeOfFailure?: number } | undefined,
   indice: number,

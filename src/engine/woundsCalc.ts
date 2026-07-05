@@ -2,8 +2,7 @@
  * Résolveur de Blessures d'un COUP D'ARME — `woundsFromHit`. Module FEUILLE extrait de `combat.ts`
  * (pour être réutilisable SANS cycle par `ops.ts` : `op:'wounds'` en « mode coup d'arme » y délègue, et
  * `combat.ts` le ré-exporte pour ses importeurs). N'importe QUE des modules feuilles (characteristics,
- * combatFeatures, qualities, armourBypass) — aucune dépendance vers `ops`/`combat`. Comportement IDENTIQUE
- * à l'ancien `combat.woundsFromHit` (refacto pure).
+ * combatFeatures, qualities, armourBypass) — aucune dépendance vers `ops`/`combat`.
  */
 import type { Weapon, Combatant, HitLocation } from './types';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';

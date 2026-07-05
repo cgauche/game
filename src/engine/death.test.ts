@@ -1,7 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { isOutOfAction, usesSuddenDeath, applyZeroWounds, tickDeath, hasCondition, inDeathCondition } from './conditions';
 import { setRule, resetRule } from './policy';
-import { makeRNG } from './dice';
 import type { Combatant } from './types';
 
 const mk = (over: Partial<Combatant> = {}): Combatant =>
@@ -55,27 +54,27 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
   });
   it('tickDeath : à 0 PB, Inconscient après BE rounds', () => {
     const h = mk({ wounds: { current: 0, max: 12 }, roundsAtZero: 3 }); // BE=3 ; 3→4 > 3
-    tickDeath(h, makeRNG(1));
+    tickDeath(h);
     expect(hasCondition(h, 'inconscient')).toBe(true);
   });
   it('tickDeath : mode AA (l.2449) — PAS d’Inconscient auto à 0 PB (remplacé par le Test de Résistance Hémorragique)', () => {
     setRule('combat-aa-blessures', 'aa');
     try {
       const h = mk({ wounds: { current: 0, max: 12 }, roundsAtZero: 9 }); // très au-delà de BE : LDB tomberait Inconscient
-      tickDeath(h, makeRNG(1));
+      tickDeath(h);
       expect(hasCondition(h, 'inconscient')).toBe(false); // AA : le décompte déterministe est neutralisé
       expect(h.roundsAtZero).toBe(10); // compteur toujours suivi (info)
     } finally { resetRule('combat-aa-blessures'); }
   });
   it('tickDeath : à 0 PB Inconscient + critiques > BE → condition de mort remplie (finalisée par le store)', () => {
     const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
-    tickDeath(h, makeRNG(1));
+    tickDeath(h);
     expect(h.dead ?? false).toBe(false); // tickDeath ne tue plus
     expect(inDeathCondition(h)).toBe(true); // mais la condition est remplie
   });
   it('tickDeath : un combattant guéri (PB>0) remet roundsAtZero à 0', () => {
     const h = mk({ wounds: { current: 5, max: 12 }, roundsAtZero: 2 });
-    tickDeath(h, makeRNG(1));
+    tickDeath(h);
     expect(h.roundsAtZero).toBe(0);
   });
 });
@@ -91,12 +90,12 @@ describe("OBJET INERTE (affût d'artillerie) — immune à la cascade de Blessur
   });
   it("inert allié : tickDeath ne pose PAS Inconscient même après plusieurs rounds (BE=0)", () => {
     const e = engin({ kind: 'hero', roundsAtZero: 5 } as Partial<Combatant>);
-    tickDeath(e, makeRNG(1));
+    tickDeath(e);
     expect(hasCondition(e, 'inconscient')).toBe(false);
   });
   it("inert ennemi (kind:'enemy') : ni À Terre ni Inconscient", () => {
     const e = engin({ kind: 'enemy', roundsAtZero: 5 } as Partial<Combatant>);
-    applyZeroWounds(e); tickDeath(e, makeRNG(1));
+    applyZeroWounds(e); tickDeath(e);
     expect(hasCondition(e, 'a-terre')).toBe(false);
     expect(hasCondition(e, 'inconscient')).toBe(false);
   });
@@ -123,7 +122,7 @@ describe('Destin — états dérivés', () => {
   });
   it('tickDeath ne finalise plus la mort (seulement 0 PB→Inconscient)', () => {
     const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 });
-    tickDeath(h, makeRNG(1));
+    tickDeath(h);
     expect(h.dead ?? false).toBe(false); // la finalisation est désormais portée par le store
   });
 });
