@@ -2598,9 +2598,12 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!actor || (actor.resolve ?? 0) <= 0) return;
       const msg = spendResolveForPsychImmunity(actor); // dépense la Détermination + pose psychImmuneRoundsLeft
       if (!msg) return;
-      const e = evaluateTest(1, step.target);
+      // Détermination ≠ Résistance : elle ne fait PAS RÉUSSIR un jet (ça, c'est la Résistance à une Menace) —
+      // elle rend IMMUNE temporairement (psychImmuneRoundsLeft), sans test ni DR. Le `result` n'est donc PAS
+      // une réussite du système de jet : c'est un MARQUEUR NEUTRE (DR 0, aucun dé forcé) qui fait avancer la
+      // cascade ; `step.immune` gouverne la conséquence (source IGNORÉE ce Round, pas vaincue).
       set({
-        pendingCascade: { ...p, participants: p.participants.map((s, k) => (k === idx ? { ...s, immune: true, result: { roll: 1, target: step.target!, sl: e.sl, success: true } } : s)) },
+        pendingCascade: { ...p, participants: p.participants.map((s, k) => (k === idx ? { ...s, immune: true, result: { roll: step.target!, target: step.target!, sl: 0, success: true } } : s)) },
         party: [...get().party],
       });
       get().log(msg);

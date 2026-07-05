@@ -12,13 +12,15 @@ import { describeRun } from '../state/flowOutcomes';
 /**
  * Modale de Course (LDB 15-Déplacement l.79-82) : « Lancer » jette le Test d'Athlétisme (+20),
  * « Relancer »/« Réussite garantie » dépensent Chance/Résilience, « Appliquer » ouvre le déplacement
- * étendu (Marche + Course + DR). Test binaire → pas de « +1 DR ».
+ * étendu (Marche + Course + DR). La Course N'EST PAS binaire : « +1 DR » (Chance, LDB 17 l.26) allonge
+ * la distance parcourue (DR en mètres → cases, cf. le flux `run`).
  */
 export function RunModal() {
   const pr = useGame((s) => s.pendingRun);
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.runRoll);
   const reroll = useGame((s) => s.runReroll);
+  const bonusSL = useGame((s) => s.runBonusSL);
   const darkPact = useGame((s) => s.runDarkPact);
   const force = useGame((s) => s.runForceSuccess);
   const confirm = useGame((s) => s.runConfirm);
@@ -44,6 +46,7 @@ export function RunModal() {
     onRoll: roll,
     rerollable: !!r && !r.success && canReroll(true, !!pr.rerolled),
     onReroll: reroll,
+    onBonusSL: bonusSL, // Chance « +1 DR » = +distance de Course (LDB 17 l.26) — offert dès le jet réussi OU raté
     darkPactable: !!r && !r.success && c.kind === 'hero',
     onDarkPact: darkPact,
     onForce: force,

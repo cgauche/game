@@ -14,7 +14,7 @@
  * (`vehicleCombatant` met `movement:0`) → on les relit via `creatureId` (`shipManeuverParams`).
  */
 import { battleRng } from './battleRng';
-import { rollTest, evaluateTest, easeDifficulty } from '../engine/tests';
+import { rollTest, evaluateTest, easeDifficulty, bestForcedRoll } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { testValue, partyBest } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
@@ -42,13 +42,17 @@ export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG, cumul = 
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? crewTalentDR(crew, role) : 0) };
 }
 
-/** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL (dé 01) à son rôle (LDB 17 l.73). PUR. */
+/** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL à son rôle (LDB 17 l.73). PUR. */
 export function forceCrewRole(crew: Combatant, roleId: string, cumul = false): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
-  // Résilience à DR max ; cible abaissée de +2 crans si cumul (Manque de bras, l.53).
+  // Résilience à DR max ; cible abaissée de +2 crans si cumul (Manque de bras, l.53). Le dé forcé est
+  // POLICY-AWARE (`bestForcedRoll` : standard → 01 = DR max ; Fast DR → dé le plus haut, LDB 12 l.128) —
+  // un 01 en dur DONNERAIT DR 0 en Fast DR (dizaines du jet). `crewTalentDR` (Commandant émérite, MDG 09 l.54)
+  // PRÉSERVÉ, ajouté au DR (jamais double-compté).
   const target = crewRoleValue(crew, role).value + (cumul ? DIFFICULTY_MODIFIERS[easeDifficulty('intermediaire', -2)] : 0);
-  return { roll: 1, target, sl: evaluateTest(1, target).sl + crewTalentDR(crew, role) };
+  const die = bestForcedRoll(target);
+  return { roll: die, target, sl: evaluateTest(die, target).sl + crewTalentDR(crew, role) };
 }
 
 /** Total du Test d'équipage de MANŒUVRE (MDG ch.14 l.13) : Σ des DR des contributeurs, le rôle ESSENTIEL compté

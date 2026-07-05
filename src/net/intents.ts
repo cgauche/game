@@ -63,7 +63,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel',
   'maneuverRoll', 'maneuverReroll', 'maneuverBonusSL', 'maneuverDarkPact', 'maneuverForceSuccess',
   'maneuverSetForcedRoll', 'maneuverConfirm', 'maneuverCancel', 'maneuverSetAvantage',
-  'runRoll', 'runReroll', 'runDarkPact', 'runForceSuccess',
+  'runRoll', 'runReroll', 'runBonusSL', 'runDarkPact', 'runForceSuccess',
   'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
   'focusForceSuccess', 'focusConfirm', 'focusCancel',
   // Bénédiction de Protection : Test de FM différant la déclaration d'attaque (cible bénie)

@@ -859,6 +859,20 @@ export const FLOWS = {
       return { result: resolveRun(testValue(actor, actor.mountId ? 'chevaucher' : 'athletisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
     },
     failed: (p) => !p.result?.success,
+    // Chance « +1 DR » (LDB 17 l.26) s'applique à TOUT Test : sur une Course, +1 DR ALLONGE la distance.
+    // Le porteur du DR est `dr`/`bonusCases` (PAS `sl`) → dérive BESPOKE (pas lentillée). Le DR de Course est
+    // en MÈTRES (LDB 15 l.82), converti en cases comme `resolveRun` (÷2 arrondi, la CONSTANTE réelle — pas +2) :
+    // +1 DR = +[round((dr+1)/2) − round(dr/2)] case(s). NE force PAS `success` (un +1 DR ne change pas un échec
+    // en réussite, LDB 17 l.84).
+    bonus: {
+      guard: (p) => !!p.result, // pas de +DR avant le jet
+      derive: (_s, p) => {
+        if (!p.result) return null;
+        const dr = p.result.dr + 1;
+        const bonusCases = p.result.bonusCases + Math.round(dr / 2) - Math.round(p.result.dr / 2);
+        return { result: { ...p.result, dr, bonusCases } };
+      },
+    },
   }),
 
   /** Manœuvre navale = TEST D'ÉQUIPAGE (MDG ch.14) : chaque rôle tenu lance SON Test (multi-jets). PJ = interactif
@@ -1314,7 +1328,7 @@ export const FLOW_VERBS = {
   battement:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
   distraire:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'forceSuccess', 'darkPact'], coop: true },
+  run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'], coop: true },
   focus:        { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
