@@ -27,8 +27,8 @@ Symptômes de l'incohérence :
   routés par injection (`testRouter`) plutôt que par design.
 - **Désalignements concrets** : `onRoundStart` est tiré **à la FIN** du round (order 25 dans le hook
   `roundBoundary`) ; le hook `turnStart` ne couvre **que les ennemis** alors que le trigger `onTurnStart`
-  couvre tout le monde ; garde-fou `roundTestInteractive` qui n'existe **que** pour empêcher la
-  double-exécution hooks↔cascade.
+  couvre tout le monde ; garde-fou `humanControlled` (prédicat de contrôleur unique, `netOwnership.ts`)
+  qui n'existe **que** pour empêcher la double-exécution hooks↔cascade.
 
 ## 2. Cible décidée (« comment ça aurait dû être »)
 
@@ -40,8 +40,9 @@ Symptômes de l'incohérence :
    traits/atouts/talents/manœuvres/**États** ; (b) **machinerie moteur** = le registre de hooks actuel,
    repointé sur les mêmes noms d'événements, réservé aux règles du monde. Le bus lance d'abord la
    machinerie ordonnée, puis diffuse aux triggers de données.
-3. **Un seul exécuteur de Flow, toujours cadence-aware** : supprimer `runSpellFlowLines`, finir le
-   « aucun jet de héros en silence », retirer `roundTestInteractive`.
+3. **Un seul exécuteur de Flow, toujours cadence-aware** : supprimer `runSpellFlowLines`. Le « aucun jet
+   de héros en silence » est FAIT via le prédicat de contrôleur unique `humanControlled`/`pilotedByHuman`
+   (`netOwnership.ts`) — reste à éliminer le besoin du garde de double-exécution avec l'exécuteur unique.
 4. **Les États deviennent du contenu** : `etats.json` reçoit `passive: GameOp[]` (pénalités →
    `testMod`/`moveScale`, lues par le collecteur `passiveMods` existant) et `effects:
    TriggeredEffect[]` (dégâts par round → `onRoundEnd`, tests d'évasion/récupération → flows `test`).
