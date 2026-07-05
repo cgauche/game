@@ -61,8 +61,8 @@ describe('Vocabulaire des chansons (ops génériques → ActiveEffect)', () => {
 // ── Flux d'activation (Talent, MDG 09 l.32-40) ──
 const singer = (): Combatant => mk('barde', {
   characteristics: { ...chars, Soc: 50 },
-  skills: [{ skillId: 'divertissement', spec: 'Chant', characteristic: 'Soc', advances: 20 } as SkillInstance],
-  talents: [{ talentId: 'chanson-de-marin', spec: 'Jacques Bret a rencontré notre acier sur les mers !', times: 1 }],
+  skills: [{ skillId: 'divertissement', spec: 'chant', characteristic: 'Soc', advances: 20 } as SkillInstance],
+  talents: [{ talentId: 'chanson-de-marin', spec: 'jacques-bret-a-rencontre-notre-acier', times: 1 }],
 });
 const marin = (): Combatant => mk('marin', { skills: [{ skillId: 'voile', characteristic: 'Ag', advances: 10 } as SkillInstance] });
 const ship = (over: Partial<Combatant> = {}): Combatant =>

@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
-import { findSeaShantyById, findSeaShantyByLabel } from '../data';
+import { findSeaShantyById } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
@@ -30,7 +30,7 @@ export function ShantyModal() {
   if (!singer) return null;
   const r = p.result;
   const chosen = p.shantyId ? findSeaShantyById(p.shantyId) : undefined;
-  const value = testValue(singer, 'divertissement', undefined, 'Chant');
+  const value = testValue(singer, 'divertissement', undefined, 'chant');
   const rolled = !!r;
 
   const actorRow: RollRowData = {
@@ -65,10 +65,10 @@ export function ShantyModal() {
         <OptionChooser
           layout="seg"
           groupLabel="Chanson"
-          options={knownShanties(singer).map((label) => {
-            const s = findSeaShantyByLabel(label);
+          options={knownShanties(singer).map((id) => {
+            const s = findSeaShantyById(id);
             return {
-              key: s?.id ?? label, label: s?.label ?? label, title: s?.desc, disabled: !s,
+              key: s?.id ?? id, label: s?.label ?? id, title: s?.desc, disabled: !s,
               selected: !!s && s.id === p.shantyId, onSelect: s ? () => setSong(s.id) : undefined,
             };
           })}

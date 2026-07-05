@@ -201,8 +201,9 @@ export function specEntryLabel(e: SpecEntry): string {
 /** Registre partagé qui fournit les ids d'une `specs[]` (résolus en libellé par `specLabel`) :
  *  `weaponGroups` (Groupes d'arme), `winds` (Focalisation — ids de `domains.json`, AFFICHE le Vent),
  *  `domains` (Magie des Arcanes/Chaos — ids de `domains.json`, AFFICHE le Lore), `cults` (Béni/Invocation/
- *  Magie du Chaos — `gods.key`, AFFICHE le nom du dieu). Absent = specs inline (`SpecEntry[]`). */
-export type SpecsSource = 'weaponGroups' | 'winds' | 'domains' | 'cults';
+ *  Magie du Chaos — `gods.key`, AFFICHE le nom du dieu), `seaShanties` (Chanson de marin — ids de
+ *  `sea-shanties.json`, AFFICHE le titre de la chanson). Absent = specs inline (`SpecEntry[]`). */
+export type SpecsSource = 'weaponGroups' | 'winds' | 'domains' | 'cults' | 'seaShanties';
 export interface SkillData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findSkillById`. */
@@ -1220,12 +1221,6 @@ const seaShantyById = new Map(seaShanties.map((s) => [s.id, s]));
 export function findSeaShantyById(id: string): SeaShantyData | undefined {
   return seaShantyById.get(id);
 }
-/** Résout une chanson par son LIBELLÉ — frontière donnée : les chansons CONNUES d'un chanteur sont les
- *  SPECS de son Talent (libellés authorés) ; le runtime repasse par l'id sitôt la frontière franchie. */
-const seaShantyByLabel = new Map(seaShanties.map((s) => [s.label, s]));
-export function findSeaShantyByLabel(label: string): SeaShantyData | undefined {
-  return seaShantyByLabel.get(label);
-}
 /** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE
  *  (+ `spec` pour Artilleur/Cuisinier/Chansonnier). Le `desc` est le verbatim de la colonne « Tâches ». */
@@ -1622,6 +1617,7 @@ export function specLabel(category: string, refId: string, specId: string): stri
   if (source === 'winds') return findDomainById(specId)?.wind ?? findDomainById(specId)?.label ?? specId;
   if (source === 'domains') return findDomainById(specId)?.label ?? specId;
   if (source === 'cults') return findGodById(specId)?.key ?? specId;
+  if (source === 'seaShanties') return findSeaShantyById(specId)?.label ?? specId;
   const entry = def?.specs?.find((s) => specEntryId(s) === specId);
   return entry ? specEntryLabel(entry) : specId;
 }

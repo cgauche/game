@@ -89,7 +89,7 @@ describe('« Ajoutez la Compétence X à n\'importe quelle Carrière que vous en
   it('Maître artisan (Forgeron) → Métier (Forgeron) ; Sorcier ! → Langue (Magick)', () => {
     const h = hero({
       talents: [
-        { talentId: 'maitre-artisan', spec: 'Forgeron', times: 1 },
+        { talentId: 'maitre-artisan', spec: 'forgeron', times: 1 },
         { talentId: 'sorcier', times: 1 },
         { talentId: 'oreille-absolue', times: 1 },
         { talentId: 'voyageur-aguerri', times: 1 },
@@ -98,9 +98,9 @@ describe('« Ajoutez la Compétence X à n\'importe quelle Carrière que vous en
     });
     // Refs STRUCTURÉES (id, spec) — l'affichage (refLabel/specLabel) se fait au point d'usage, pas ici.
     const adds = careerSkillAdditions(h);
-    expect(adds).toContainEqual({ id: 'metier', spec: 'Forgeron' }); // spec « Au choix » reportée sur celle du talent
+    expect(adds).toContainEqual({ id: 'metier', spec: 'forgeron' }); // spec « Au choix » reportée sur celle du talent
     expect(adds).toContainEqual({ id: 'langue', spec: 'magick' });
-    expect(adds).toContainEqual({ id: 'divertissement', spec: 'Chant' });
+    expect(adds).toContainEqual({ id: 'divertissement', spec: 'chant' });
     expect(adds).toContainEqual({ id: 'savoir', spec: 'region' });
     expect(adds).toHaveLength(4);
   });

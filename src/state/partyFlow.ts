@@ -364,7 +364,7 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, 
       }
       const fortuneBefore = fortuneMax(clone);
       const resolveBefore = resolveMax(clone);
-      const r = engineBuyTalent(clone, talentLabel);
+      const r = engineBuyTalent(clone, talentLabel, spec); // spec = identité PERSISTÉE (id si migré), jamais re-dérivée du libellé
       if (!r.ok) {
         msg = `${clone.name} : ${talentLabel} — ${r.reason}.`;
         return h;

@@ -989,7 +989,7 @@
       {
         "ref": {
           "id": "divertissement",
-          "spec": "Narration"
+          "spec": "narration"
         }
       },
       {
@@ -1193,7 +1193,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -1314,7 +1314,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -1333,7 +1333,7 @@
           {
             "ref": {
               "id": "sens-aiguise",
-              "spec": "Vue"
+              "spec": "vue"
             }
           }
         ]
@@ -1451,7 +1451,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -1587,7 +1587,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -1723,7 +1723,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -1859,7 +1859,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -1994,7 +1994,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -2128,7 +2128,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -2263,7 +2263,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -2402,7 +2402,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -2415,7 +2415,7 @@
           {
             "ref": {
               "id": "maitre-artisan",
-              "spec": "Cuisinier"
+              "spec": "cuisinier"
             }
           },
           {
@@ -2538,7 +2538,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -2556,7 +2556,7 @@
           {
             "ref": {
               "id": "savoir-vivre",
-              "spec": "Serviteurs"
+              "spec": "serviteurs"
             }
           }
         ]
@@ -2675,7 +2675,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -2695,8 +2695,8 @@
               "id": "savoir-vivre"
             },
             "specOptions": [
-              "Érudits",
-              "Nobles"
+              "erudits",
+              "nobles"
             ]
           }
         ]
@@ -2814,7 +2814,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Goût"
+          "spec": "gout"
         }
       },
       {
@@ -2889,7 +2889,7 @@
       {
         "ref": {
           "id": "divertissement",
-          "spec": "Narration"
+          "spec": "narration"
         }
       },
       {
@@ -3036,7 +3036,7 @@
       {
         "ref": {
           "id": "divertissement",
-          "spec": "Narration"
+          "spec": "narration"
         }
       },
       {
@@ -3353,7 +3353,7 @@
       {
         "ref": {
           "id": "divertissement",
-          "spec": "Narration"
+          "spec": "narration"
         }
       },
       {
@@ -3439,7 +3439,7 @@
       {
         "ref": {
           "id": "vice",
-          "spec": "Nourriture"
+          "spec": "nourriture"
         }
       },
       {
@@ -3501,7 +3501,7 @@
       {
         "ref": {
           "id": "divertissement",
-          "spec": "Chant"
+          "spec": "chant"
         }
       },
       {
@@ -3570,7 +3570,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Vue"
+          "spec": "vue"
         }
       },
       {
@@ -3647,7 +3647,7 @@
       {
         "ref": {
           "id": "divertissement",
-          "spec": "Chant"
+          "spec": "chant"
         }
       },
       {
@@ -3730,7 +3730,7 @@
       {
         "ref": {
           "id": "sens-aiguise",
-          "spec": "Vue"
+          "spec": "vue"
         }
       },
       {

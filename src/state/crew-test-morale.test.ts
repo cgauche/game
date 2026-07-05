@@ -20,7 +20,7 @@ const cook = (): Combatant =>
   ({ id: 'cook', name: 'Coq', kind: 'hero',
     characteristics: { ...chars, Dex: 45 },
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 2, resilience: 1,
-    skills: [{ skillId: 'metier', spec: 'Cuisinier', characteristic: 'Dex', advances: 20 } as SkillInstance], talents: [], weapons: [],
+    skills: [{ skillId: 'metier', spec: 'cuisinier', characteristic: 'Dex', advances: 20 } as SkillInstance], talents: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
 const vesselShip = (over: Partial<Combatant> = {}): Combatant =>
   ({ id: 'ship', name: 'Cogue', kind: 'npc', bodyShape: 'vehicule', creatureId: 'coracle', crewIds: ['cook'],

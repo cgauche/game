@@ -1420,31 +1420,31 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('emplacement « (Au choix) » : désignation gratuite d\'un talent d\'espèce, puis montée ×2 à 200 PX', () => {
     // Conseiller (Niveau 1) : « Savoir-vivre (Au choix) ». Le héros possède déjà
     // Savoir-vivre (Criminels) ×1 (espèce) — cas utilisateur « Sens aiguisé (Goût) ».
-    set1(mkHero({ xp: 1000, career: 'conseiller', talents: [{ talentId: 'savoir-vivre', spec: 'Criminels', times: 1 }] }));
+    set1(mkHero({ xp: 1000, career: 'conseiller', talents: [{ talentId: 'savoir-vivre', spec: 'criminels', times: 1 }] }));
     const view = buildAdvancementView(h0());
     const slot = view.talents.find((t) => t.entry === 'Savoir-vivre (Au choix)')!;
     // `option.label` est la clé de câblage OPAQUE (refKey) ; `display` porte le texte.
     expect(slot.options!.some((o) => o.display === 'Savoir-vivre (Criminels)' && o.owned)).toBe(true);
     // Avant désignation : l'achat direct passe par le slot libre (auto-désignation) — ici on
     // teste la DÉSIGNATION explicite (0 PX) puis la montée.
-    useGame.getState().designateCareerSlot('h', slot.slotKey, 'savoir-vivre', 'Criminels');
-    expect(h0().careerSlotChoices?.['conseiller']?.[slot.slotKey]).toBe('savoir-vivre|Criminels');
+    useGame.getState().designateCareerSlot('h', slot.slotKey, 'savoir-vivre', 'criminels');
+    expect(h0().careerSlotChoices?.['conseiller']?.[slot.slotKey]).toBe('savoir-vivre|criminels');
     expect(h0().xp).toBe(1000); // gratuit
-    useGame.getState().buyTalent('h', 'savoir-vivre', 'Criminels');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'criminels');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')!.times).toBe(2);
     expect(h0().xp).toBe(800); // 2ᵉ acquisition = 200 PX (LDB 07 l.102)
     // Le slot étant désigné, une AUTRE spec est hors carrière → refusée (l.97).
-    useGame.getState().buyTalent('h', 'savoir-vivre', 'Nobles');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'nobles');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')).toBeUndefined();
   });
 
   it('emplacement « (Au choix) » : l\'achat via un slot libre le DÉSIGNE automatiquement', () => {
     set1(mkHero({ xp: 1000, career: 'conseiller' }));
-    useGame.getState().buyTalent('h', 'savoir-vivre', 'Nobles');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'nobles');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')!.times).toBe(1);
-    expect(Object.values(h0().careerSlotChoices?.['conseiller'] ?? {})).toContain('savoir-vivre|Nobles');
+    expect(Object.values(h0().careerSlotChoices?.['conseiller'] ?? {})).toContain('savoir-vivre|nobles');
     // Slot consommé : une autre spec n'est plus achetable dans CETTE carrière.
-    useGame.getState().buyTalent('h', 'savoir-vivre', 'Criminels');
+    useGame.getState().buyTalent('h', 'savoir-vivre', 'criminels');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')).toBeUndefined();
   });
 

@@ -173,10 +173,10 @@ describe('Maxi des Talents (LDB 10 « Schéma des Talents »)', () => {
   });
   it('Maxi « Bonus de Caractéristique » : par spécialisation, recalculé sur la valeur courante', () => {
     // Sens aiguisé : Maxi = Bonus d'Initiative (I 30 → 3).
-    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 3 }, { talentId: 'sens-aiguise', spec: 'Ouïe', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'gout', times: 3 }, { talentId: 'sens-aiguise', spec: 'ouie', times: 1 }] });
     expect(talentMax(h, 'Sens aiguisé (Goût)')).toBe(3);
-    expect(talentMaxReached(h, 'sens-aiguise', 'Goût')).toBe(true);
-    expect(talentMaxReached(h, 'sens-aiguise', 'Ouïe')).toBe(false); // spec distincte
+    expect(talentMaxReached(h, 'sens-aiguise', 'gout')).toBe(true);
+    expect(talentMaxReached(h, 'sens-aiguise', 'ouie')).toBe(false); // spec distincte
   });
 });
 

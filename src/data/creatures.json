@@ -5339,7 +5339,7 @@
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Discours"
+        "spec": "discours"
       },
       {
         "id": "escalade",
@@ -5498,7 +5498,7 @@
       {
         "id": "divertissement",
         "value": 70,
-        "spec": "Discours"
+        "spec": "discours"
       },
       {
         "id": "chevaucher",
@@ -5599,7 +5599,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "orateur"
@@ -6063,7 +6063,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Peaux-Vertes"
+        "spec": "peaux-vertes"
       },
       {
         "id": "obstine"
@@ -6245,7 +6245,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Peaux-Vertes"
+        "spec": "peaux-vertes"
       },
       {
         "id": "obstine"
@@ -6966,8 +6966,7 @@
       },
       {
         "id": "voile",
-        "value": 35,
-        "spec": "Voile"
+        "value": 35
       },
       {
         "id": "perception",
@@ -7105,8 +7104,7 @@
       },
       {
         "id": "voile",
-        "value": 40,
-        "spec": "Voile"
+        "value": 40
       },
       {
         "id": "perception",
@@ -7265,8 +7263,7 @@
       },
       {
         "id": "voile",
-        "value": 50,
-        "spec": "Voile"
+        "value": 50
       },
       {
         "id": "perception",
@@ -7435,8 +7432,7 @@
       },
       {
         "id": "voile",
-        "value": 60,
-        "spec": "Voile"
+        "value": 60
       },
       {
         "id": "orientation",
@@ -8421,7 +8417,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Guildes"
+        "spec": "guildes"
       },
       {
         "id": "perspicace"
@@ -8769,7 +8765,7 @@
       {
         "id": "musicien",
         "value": 0,
-        "spec": "TambourOUFifre"
+        "spec": "tambour"
       },
       {
         "id": "resistance",
@@ -8928,7 +8924,7 @@
       {
         "id": "musicien",
         "value": 0,
-        "spec": "TambourOUFifre"
+        "spec": "tambour"
       },
       {
         "id": "pari",
@@ -10436,7 +10432,7 @@
       },
       {
         "id": "travailleur-qualifie",
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       },
       {
         "id": "pharmacologie"
@@ -10574,7 +10570,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Guildes"
+        "spec": "guildes"
       },
       {
         "id": "lire-ecrire"
@@ -10726,7 +10722,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Guildes"
+        "spec": "guildes"
       },
       {
         "id": "perspicace"
@@ -10911,7 +10907,7 @@
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Discours"
+        "spec": "discours"
       },
       {
         "id": "divertissement",
@@ -11826,7 +11822,7 @@
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Conférence"
+        "spec": "conference"
       },
       {
         "id": "intimidation",
@@ -13519,7 +13515,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "perspicace"
@@ -13806,7 +13802,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "noctambule"
@@ -14234,7 +14230,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "menacant"
@@ -14386,7 +14382,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "menacant"
@@ -15257,7 +15253,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "fuite"
@@ -17098,8 +17094,7 @@
       },
       {
         "id": "voile",
-        "value": 50,
-        "spec": "Voile"
+        "value": 50
       },
       {
         "id": "perception",
@@ -17255,8 +17250,7 @@
       },
       {
         "id": "voile",
-        "value": 70,
-        "spec": "Voile"
+        "value": 70
       },
       {
         "id": "perception",
@@ -19212,12 +19206,12 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Chant"
+        "spec": "chant"
       },
       {
         "id": "representation",
         "value": 35,
-        "spec": "Danse"
+        "spec": "danser"
       },
       {
         "id": "priere",
@@ -19364,7 +19358,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Chant"
+        "spec": "chant"
       },
       {
         "id": "corps-a-corps",
@@ -19374,7 +19368,7 @@
       {
         "id": "representation",
         "value": 0,
-        "spec": "Danse"
+        "spec": "danser"
       },
       {
         "id": "priere",
@@ -21158,8 +21152,7 @@
       },
       {
         "id": "voile",
-        "value": 40,
-        "spec": "Voile"
+        "value": 40
       },
       {
         "id": "subornation",
@@ -21294,8 +21287,7 @@
       },
       {
         "id": "voile",
-        "value": 50,
-        "spec": "Voile"
+        "value": 50
       },
       {
         "id": "subornation",
@@ -21454,8 +21446,7 @@
       },
       {
         "id": "voile",
-        "value": 0,
-        "spec": "Voile"
+        "value": 0
       },
       {
         "id": "perception",
@@ -21629,8 +21620,7 @@
       },
       {
         "id": "voile",
-        "value": 0,
-        "spec": "Voile"
+        "value": 0
       },
       {
         "id": "perception",
@@ -21699,7 +21689,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "perspicace"
@@ -23946,7 +23936,7 @@
     "talents": [
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "bon-marcheur",
@@ -24100,7 +24090,7 @@
     "talents": [
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "bon-marcheur",
@@ -25077,7 +25067,7 @@
     "talents": [
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "bon-marcheur",
@@ -25233,7 +25223,7 @@
     "talents": [
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "bon-marcheur",
@@ -25866,7 +25856,7 @@
     "talents": [
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "chat-de-gouttiere"
@@ -26549,7 +26539,7 @@
     "talents": [
       {
         "id": "sens-aiguise",
-        "spec": "Vue"
+        "spec": "vue"
       },
       {
         "id": "bon-marcheur",
@@ -28985,8 +28975,7 @@
       },
       {
         "id": "voile",
-        "value": 0,
-        "spec": "Voile"
+        "value": 0
       },
       {
         "id": "orientation",
@@ -29137,8 +29126,7 @@
       },
       {
         "id": "voile",
-        "value": 0,
-        "spec": "Voile"
+        "value": 0
       },
       {
         "id": "orientation",
@@ -29307,8 +29295,7 @@
       },
       {
         "id": "voile",
-        "value": 0,
-        "spec": "Voile"
+        "value": 0
       },
       {
         "id": "orientation",
@@ -29808,7 +29795,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Comédie"
+        "spec": "comedie"
       },
       {
         "id": "escamotage",
@@ -29990,7 +29977,7 @@
       {
         "id": "divertissement",
         "value": 70,
-        "spec": "Comédie"
+        "spec": "comedie"
       },
       {
         "id": "divertissement",
@@ -30191,7 +30178,7 @@
       {
         "id": "divertissement",
         "value": 90,
-        "spec": "Comédie"
+        "spec": "comedie"
       },
       {
         "id": "divertissement",
@@ -32984,7 +32971,7 @@
       {
         "id": "musicien",
         "value": 60,
-        "spec": "FlûteouTambourin"
+        "spec": "flutiau"
       },
       {
         "id": "corps-a-corps",
@@ -33001,7 +32988,7 @@
       {
         "id": "representation",
         "value": 70,
-        "spec": "Acrobatie"
+        "spec": "acrobaties"
       }
     ],
     "talents": [],
@@ -33117,7 +33104,7 @@
       {
         "id": "musicien",
         "value": 65,
-        "spec": "FlûteouTambourin"
+        "spec": "flutiau"
       },
       {
         "id": "corps-a-corps",
@@ -33134,7 +33121,7 @@
       {
         "id": "representation",
         "value": 80,
-        "spec": "Acrobatie"
+        "spec": "acrobaties"
       }
     ],
     "talents": [
@@ -33272,7 +33259,7 @@
       {
         "id": "musicien",
         "value": 70,
-        "spec": "FlûteouTambourin"
+        "spec": "flutiau"
       },
       {
         "id": "corps-a-corps",
@@ -33289,7 +33276,7 @@
       {
         "id": "representation",
         "value": 90,
-        "spec": "Acrobatie"
+        "spec": "acrobaties"
       }
     ],
     "talents": [
@@ -35114,7 +35101,7 @@
       {
         "id": "musicien",
         "value": 35,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "resistance",
@@ -35269,7 +35256,7 @@
       {
         "id": "musicien",
         "value": 40,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "pari",
@@ -35430,7 +35417,7 @@
       {
         "id": "musicien",
         "value": 50,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "orientation",
@@ -35597,7 +35584,7 @@
       {
         "id": "musicien",
         "value": 60,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "natation",
@@ -40330,7 +40317,7 @@
       {
         "id": "musicien",
         "value": 40,
-        "spec": "Cor"
+        "spec": "cor"
       },
       {
         "id": "pari",
@@ -40489,7 +40476,7 @@
       {
         "id": "musicien",
         "value": 40,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "pari",
@@ -41021,7 +41008,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Discours"
+        "spec": "discours"
       },
       {
         "id": "chevaucher",
@@ -41067,7 +41054,7 @@
       {
         "id": "musicien",
         "value": 0,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "pari",
@@ -41206,7 +41193,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Discours"
+        "spec": "discours"
       },
       {
         "id": "chevaucher",
@@ -41252,7 +41239,7 @@
       {
         "id": "musicien",
         "value": 0,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "orientation",
@@ -42382,7 +42369,7 @@
       {
         "id": "musicien",
         "value": 30,
-        "spec": "Cor"
+        "spec": "cor"
       },
       {
         "id": "pari",
@@ -42550,7 +42537,7 @@
       {
         "id": "musicien",
         "value": 30,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "pari",
@@ -42717,7 +42704,7 @@
       {
         "id": "musicien",
         "value": 40,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "orientation",
@@ -42910,7 +42897,7 @@
       {
         "id": "musicien",
         "value": 50,
-        "spec": "Tambour"
+        "spec": "tambour"
       },
       {
         "id": "orientation",
@@ -47210,7 +47197,7 @@
       {
         "id": "musicien",
         "value": 45,
-        "spec": "TambourouFifre"
+        "spec": "tambour"
       },
       {
         "id": "perception",
@@ -48640,7 +48627,7 @@
       {
         "id": "representation",
         "value": 105,
-        "spec": "Acrobaties"
+        "spec": "acrobaties"
       },
       {
         "id": "ragot",
@@ -48957,7 +48944,7 @@
       {
         "id": "representation",
         "value": 120,
-        "spec": "Acrobaties"
+        "spec": "acrobaties"
       },
       {
         "id": "ragot",
@@ -50644,7 +50631,7 @@
       {
         "id": "divertissement",
         "value": 49,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "escalade",
@@ -50706,7 +50693,7 @@
       },
       {
         "id": "sens-aiguise",
-        "spec": "Ouïe"
+        "spec": "ouie"
       },
       {
         "id": "sociable"
@@ -51607,7 +51594,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "sociable"
@@ -53054,7 +53041,7 @@
       {
         "id": "signes-secrets",
         "value": 45,
-        "spec": "Chasseur"
+        "spec": "chasseur"
       },
       {
         "id": "survie-en-exterieur",
@@ -55339,7 +55326,7 @@
       {
         "id": "divertissement",
         "value": 27,
-        "spec": "Raillerie"
+        "spec": "raillerie"
       },
       {
         "id": "esquive",
@@ -55407,7 +55394,7 @@
       },
       {
         "id": "vice",
-        "spec": "Nourriture"
+        "spec": "nourriture"
       },
       {
         "id": "vision-nocturne"
@@ -55588,7 +55575,7 @@
       },
       {
         "id": "vice",
-        "spec": "Nourriture"
+        "spec": "nourriture"
       },
       {
         "id": "vision-nocturne"
@@ -55668,7 +55655,7 @@
       {
         "id": "divertissement",
         "value": 29,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "escalade",
@@ -55718,7 +55705,7 @@
       },
       {
         "id": "vice",
-        "spec": "Nourriture"
+        "spec": "nourriture"
       },
       {
         "id": "vision-nocturne"
@@ -55849,7 +55836,7 @@
       },
       {
         "id": "maitre-artisan",
-        "spec": "Forgeron"
+        "spec": "forgeron"
       },
       {
         "id": "massif"
@@ -55863,7 +55850,7 @@
       },
       {
         "id": "vice",
-        "spec": "Nourriture"
+        "spec": "nourriture"
       },
       {
         "id": "vision-nocturne"
@@ -56126,7 +56113,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Régions boisées"
+        "spec": "regions-boisees"
       },
       {
         "id": "diction-instinctive"
@@ -56174,7 +56161,15 @@
       },
       {
         "id": "sens-aiguise",
-        "spec": "Vue, Odorat, Ouïe"
+        "spec": "vue"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "odorat"
+      },
+      {
+        "id": "sens-aiguise",
+        "spec": "ouie"
       },
       {
         "id": "sixieme-sens"
@@ -56280,7 +56275,7 @@
       },
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "vigilance"
@@ -56519,7 +56514,7 @@
       },
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "trappeur"
@@ -57319,14 +57314,14 @@
       },
       {
         "id": "maitre-artisan",
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       },
       {
         "id": "pharmacologie"
       },
       {
         "id": "travailleur-qualifie",
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       }
     ],
     "trappings": [
@@ -57381,7 +57376,7 @@
       {
         "id": "divertissement",
         "value": 61,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "escamotage",
@@ -57434,7 +57429,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       }
     ],
     "trappings": [
@@ -57561,7 +57556,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Serviteurs"
+        "spec": "serviteurs"
       },
       {
         "id": "vision-nocturne"
@@ -57938,7 +57933,7 @@
       {
         "id": "divertissement",
         "value": 57,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "intuition",
@@ -58180,11 +58175,15 @@
       },
       {
         "id": "savant",
-        "spec": "Nécromancie"
+        "spec": "necromancie"
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels, Cultistes"
+        "spec": "criminels"
+      },
+      {
+        "id": "savoir-vivre",
+        "spec": "cultistes"
       },
       {
         "id": "studieux"
@@ -58311,7 +58310,7 @@
       },
       {
         "id": "sens-aiguise",
-        "spec": "Goût"
+        "spec": "gout"
       },
       {
         "id": "sociable"
@@ -58414,7 +58413,7 @@
       {
         "id": "signes-secrets",
         "value": 52,
-        "spec": "Voleur"
+        "spec": "voleur"
       }
     ],
     "talents": [
@@ -58435,7 +58434,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "sociable"
@@ -58679,11 +58678,11 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Miliciens"
+        "spec": "miliciens"
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "volonte-de-fer"
@@ -59164,7 +59163,7 @@
       {
         "id": "divertissement",
         "value": 44,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "escalade",
@@ -59455,7 +59454,7 @@
       {
         "id": "divertissement",
         "value": 57,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "intuition",
@@ -59699,7 +59698,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Criminels"
+        "spec": "criminels"
       },
       {
         "id": "negociateur"
@@ -59777,7 +59776,7 @@
       {
         "id": "divertissement",
         "value": 45,
-        "spec": "Chant"
+        "spec": "chant"
       },
       {
         "id": "escamotage",
@@ -59794,7 +59793,7 @@
       {
         "id": "musicien",
         "value": 43,
-        "spec": "Luth"
+        "spec": "luth"
       },
       {
         "id": "ragot",
@@ -59820,7 +59819,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Guildes"
+        "spec": "guildes"
       }
     ],
     "trappings": [
@@ -61253,11 +61252,11 @@
       },
       {
         "id": "sens-aiguise",
-        "spec": "Ouïe"
+        "spec": "ouie"
       },
       {
         "id": "sens-aiguise",
-        "spec": "Vue"
+        "spec": "vue"
       },
       {
         "id": "sens-de-l-orientation"
@@ -61497,7 +61496,7 @@
       },
       {
         "id": "haine",
-        "spec": "Morts-vivants"
+        "spec": "morts-vivants"
       },
       {
         "id": "imperturbable"
@@ -61549,7 +61548,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Nobles"
+        "spec": "nobles"
       },
       {
         "id": "savoir-vivre",
@@ -61675,12 +61674,12 @@
       {
         "id": "divertissement",
         "value": 57,
-        "spec": "Chant"
+        "spec": "chant"
       },
       {
         "id": "divertissement",
         "value": 62,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "dressage",
@@ -61981,7 +61980,7 @@
       {
         "id": "divertissement",
         "value": 68,
-        "spec": "Narration"
+        "spec": "narration"
       },
       {
         "id": "escalade",
@@ -62453,7 +62452,7 @@
       },
       {
         "id": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "id": "souplesse-feline"
@@ -62639,7 +62638,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Littoral"
+        "spec": "littoral"
       },
       {
         "id": "bonnes-jambes"

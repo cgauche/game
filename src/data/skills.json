@@ -252,22 +252,53 @@
     "characteristic": "Soc",
     "type": "base",
     "specs": [
-      "Chant",
-      "Comédie",
-      "Conférence",
-      "Discours",
-      "Interprétation",
-      "Narration",
-      "Prophétie",
-      "Raillerie",
-      "Rhétorique",
-      "Voyance"
+      {
+        "id": "chant",
+        "label": "Chant"
+      },
+      {
+        "id": "comedie",
+        "label": "Comédie"
+      },
+      {
+        "id": "conference",
+        "label": "Conférence"
+      },
+      {
+        "id": "discours",
+        "label": "Discours"
+      },
+      {
+        "id": "interpretation",
+        "label": "Interprétation"
+      },
+      {
+        "id": "narration",
+        "label": "Narration"
+      },
+      {
+        "id": "prophetie",
+        "label": "Prophétie"
+      },
+      {
+        "id": "raillerie",
+        "label": "Raillerie"
+      },
+      {
+        "id": "rhetorique",
+        "label": "Rhétorique"
+      },
+      {
+        "id": "voyance",
+        "label": "Voyance"
+      }
     ],
     "desc": "Cette Compétence vous permet de ravir les foules par la parole, peut-être en chantant, en jouant la comédie ou en faisant quelques blagues. Une utilisation réussie de la Compétence Divertissement signifie que vous avez assez amusé les spectateurs alentour pour qu'ils vous écoutent ; le DR indique à quel point vous avez réussi.\n\nEn combat, il est peu probable que Divertissement soit d'une grande utilité, bien que vous puissiez trouver une façon intéressante d'utiliser Divertissement (Interprétation) pour troubler ou leurrer vos adversaires.",
     "source": {
       "book": "LDB",
       "page": 121
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "dressage",
@@ -279,18 +310,37 @@
       "gate": "fear"
     },
     "specs": [
-      "Blaireau",
-      "Cheval",
-      "Chien",
-      "Demigriffon",
-      "Pégase",
-      "Pigeon"
+      {
+        "id": "blaireau",
+        "label": "Blaireau"
+      },
+      {
+        "id": "cheval",
+        "label": "Cheval"
+      },
+      {
+        "id": "chien",
+        "label": "Chien"
+      },
+      {
+        "id": "demigriffon",
+        "label": "Demigriffon"
+      },
+      {
+        "id": "pegase",
+        "label": "Pégase"
+      },
+      {
+        "id": "pigeon",
+        "label": "Pigeon"
+      }
     ],
     "desc": "Dressage représente votre compréhension d'un type particulier d'animal, et votre capacité à l'entraîner. Une utilisation réussie de cette Compétence vous permet d'identifier les capacités Dressé possédées par un animal appartenant à votre Spécialisation (voir page 118). La Compétence Dressage permet aussi d'entreprendre l'Activité Dressage entre deux aventures (voir page 197).\n\nEn combat, un Test opposé de Dressage/Force Mentale réussi vous permet d'intimider un seul animal appartenant à votre Spécialisation ; vous instillez la peur chez l'animal ciblé jusqu'à la fin de votre prochain tour (voir page 190). Quand vous insufflez de la peur de cette façon, vous pouvez par la suite utiliser votre Compétence Dressage au lieu de Corps à corps quand vous vous défendez contre votre cible ; avec l'accord du MJ, vous pouvez aussi utiliser Dressage pour attaquer votre cible, en donnant des instructions spécifiques.",
     "source": {
       "book": "LDB",
       "page": 121
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "emprise-sur-les-animaux",
@@ -369,7 +419,8 @@
       "vie",
       "lumiere",
       "mort",
-      "ombres"
+      "ombres",
+      "magie-des-mers-de-triton"
     ],
     "desc": "La Compétence Focalisation mesure votre capacité à faire appel et à contrôler les différents Vents de la Magie. Elle est uniquement utilisée avec les règles sur la magie. Voir le Chapitre 8 : Magie pour plus d'informations.\n\nFocalisation est une Compétence très particulière, en cela qu'elle est à la fois Groupée, permettant les Spécialisations, mais aussi non Groupée pour ceux qui ne sont pas correctement formés à focaliser la magie.",
     "source": {
@@ -753,15 +804,42 @@
     "characteristic": "Dex",
     "type": "avancée",
     "specs": [
-      "Accordéon",
-      "Clavecin",
-      "Cor",
-      "Cornemuse",
-      "Fifre",
-      "Flûtiau",
-      "Luth",
-      "Tambour",
-      "Violon"
+      {
+        "id": "accordeon",
+        "label": "Accordéon"
+      },
+      {
+        "id": "clavecin",
+        "label": "Clavecin"
+      },
+      {
+        "id": "cor",
+        "label": "Cor"
+      },
+      {
+        "id": "cornemuse",
+        "label": "Cornemuse"
+      },
+      {
+        "id": "fifre",
+        "label": "Fifre"
+      },
+      {
+        "id": "flutiau",
+        "label": "Flûtiau"
+      },
+      {
+        "id": "luth",
+        "label": "Luth"
+      },
+      {
+        "id": "tambour",
+        "label": "Tambour"
+      },
+      {
+        "id": "violon",
+        "label": "Violon"
+      }
     ],
     "desc": "Il s'agit de votre capacité à jouer d'un instrument de musique, assez bien, nous l'espérons, pour impressionner les autres. Un Test de Musique réussi vous permet de divertir les personnes suffisamment proches pour vous voir et vous entendre ; le DR indique la qualité du morceau joué.",
     "source": {
@@ -867,6 +945,7 @@
     "specs": [
       "arbalete",
       "arc",
+      "catapulte",
       "entraves",
       "explosifs",
       "fronde",
@@ -922,20 +1001,45 @@
     "characteristic": "Ag",
     "type": "avancée",
     "specs": [
-      "Acrobaties",
-      "Combat",
-      "Cracheur de feu",
-      "Danser",
-      "Funambule",
-      "Jonglage",
-      "Mime",
-      "Pitreries"
+      {
+        "id": "acrobaties",
+        "label": "Acrobaties"
+      },
+      {
+        "id": "combat",
+        "label": "Combat"
+      },
+      {
+        "id": "cracheur-de-feu",
+        "label": "Cracheur de feu"
+      },
+      {
+        "id": "danser",
+        "label": "Danser"
+      },
+      {
+        "id": "funambule",
+        "label": "Funambule"
+      },
+      {
+        "id": "jonglage",
+        "label": "Jonglage"
+      },
+      {
+        "id": "mime",
+        "label": "Mime"
+      },
+      {
+        "id": "pitreries",
+        "label": "Pitreries"
+      }
     ],
     "desc": "Vous avez appris un art physiquement exigeant, probablement pour gagner votre vie, peut-être en tant que saltimbanque ou membre d'un carnaval itinérant. Une utilisation réussie de la Compétence Représentation vous permet de divertir tous les spectateurs suffisamment proches pour vous voir et vous entendre ; le DR indique à quel point vous avez réussi.\n\nCertaines spécialisations physiques de Représentation peuvent vous donner un Avantage au combat. Avec l'accord de votre MJ, Représentation (Acrobaties) peut être utilisée à la place d'Esquive. D'autres Compétences Représentation peuvent être directement utilisées comme arme si vous possédez les équipements appropriés, comme avec Représentation (Cracheur de feu) !",
     "source": {
       "book": "LDB",
       "page": 129
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "resistance",
@@ -1212,23 +1316,57 @@
     "characteristic": "Int",
     "type": "avancée",
     "specs": [
-      "Éclaireur",
-      "Chasseur",
-      "Contrebandier",
-      "Guilde (Au choix)",
-      "Mineur",
-      "Ordre chevaleresque",
-      "Ordre Gris",
-      "Ranger",
-      "Rural",
-      "Vagabond",
-      "Voleur"
+      {
+        "id": "eclaireur",
+        "label": "Éclaireur"
+      },
+      {
+        "id": "chasseur",
+        "label": "Chasseur"
+      },
+      {
+        "id": "contrebandier",
+        "label": "Contrebandier"
+      },
+      {
+        "id": "guilde-au-choix",
+        "label": "Guilde (Au choix)"
+      },
+      {
+        "id": "mineur",
+        "label": "Mineur"
+      },
+      {
+        "id": "ordre-chevaleresque",
+        "label": "Ordre chevaleresque"
+      },
+      {
+        "id": "ordre-gris",
+        "label": "Ordre Gris"
+      },
+      {
+        "id": "ranger",
+        "label": "Ranger"
+      },
+      {
+        "id": "rural",
+        "label": "Rural"
+      },
+      {
+        "id": "vagabond",
+        "label": "Vagabond"
+      },
+      {
+        "id": "voleur",
+        "label": "Voleur"
+      }
     ],
     "desc": "Vous avez été formé à utiliser des marques clandestines intelligibles pour les membres d'un groupe sélectionné. Les raisons pour lesquelles quelqu'un peut vouloir délivrer un message secret sont nombreuses : les vagabonds peuvent indiquer quels propriétaires sont susceptibles d'offrir la charité, les voleurs peuvent vouloir indiquer des failles, ou des cibles potentielles, alors que les guetteurs peuvent vouloir alerter les autres sur l'emplacement proche d'un monstre dangereux.\n\nCette Compétence ne nécessite généralement pas de Test – vous pouvez déchiffrer n'importe quels signes appropriés que vous pouvez voir si vous possédez cette Compétence. Mais si les signes ont été modifiés, effacés, ou si vous êtes pressé par le temps, un Test sera probablement nécessaire. La plupart des messages sont très simples, et ne comptent pas plus de trois mots.",
     "source": {
       "book": "LDB",
       "page": 129
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "soin-aux-animaux",
@@ -1275,11 +1413,26 @@
     "characteristic": "Ag",
     "type": "avancée",
     "specs": [
-      "Caravelle",
-      "Chaland",
-      "Cogue",
-      "Drakkar",
-      "Frégate"
+      {
+        "id": "caravelle",
+        "label": "Caravelle"
+      },
+      {
+        "id": "chaland",
+        "label": "Chaland"
+      },
+      {
+        "id": "cogue",
+        "label": "Cogue"
+      },
+      {
+        "id": "drakkar",
+        "label": "Drakkar"
+      },
+      {
+        "id": "fregate",
+        "label": "Frégate"
+      }
     ],
     "desc": "C'est votre capacité à piloter et manœuvrer un voilier – y compris gérer les nœuds, le gouvernail, la mesure du vent, etc. En partant du principe que vous disposez d'un équipage suffisamment entraîné sur votre vaisseau, vous utilisez uniquement la Compétence Voile quand vous devez pousser votre vaisseau pour effectuer une course-poursuite, naviguer sur des hauts-fonds particulièrement dangereux, lutter contre de mauvaises conditions météo, ou lors de difficultés similaires. Naviguer simplement par vent calme ou guider un bateau dans le sens du courant ne nécessite pas de Test pour ceux qui possèdent Voile. La Compétence peut aussi être utilisée pour des activités liées à la voile, comme faire des nœuds ou les utiliser pour ligoter des personnes.\n\nComme tous les bateaux à voile sont peu ou prou identiques à diriger, posséder une Spécialisation fait que les autres sont de Base pour vous.",
     "source": {

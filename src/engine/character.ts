@@ -39,8 +39,7 @@ import {
   advancementLabel,
   refLabel,
   specEntryId,
-  specEntryLabel,
-  type SpecEntry,
+  specLabel,
   talents as talentTable,
 } from '../data';
 import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
@@ -55,14 +54,22 @@ export function skillCharacteristicById(id: string): CharKey {
 }
 
 /** Ramène une valeur de spec issue d'un ROUND-TRIP par libellé d'affichage (`advancementLabel`/
- *  `refLabel` → texte → `splitLabel`) à son id STABLE (domaine MIGRÉ, `SpecEntry` {id,label}) — sans
- *  ça, la création de personnage stockerait le LABEL FR (« Magick ») au lieu de l'id (« magick ») dès
- *  qu'une entrée de carrière/espèce FIXE (non « Au choix ») traverse ce round-trip. Une valeur DÉJÀ un
- *  id (résolution par choix via `wildcardSpecs`, ou domaine non migré où id===label) matche direct ;
+ *  `refLabel` → texte → `splitLabel`) à son id STABLE (domaine MIGRÉ, `SpecEntry` {id,label} OU
+ *  `specsSource` — Groupe d'arme/Vent/Domaine/Culte/Chanson MIROIRÉS d'un registre partagé) — sans
+ *  ça, la création de personnage stockerait le LABEL FR (« Base », « Magick ») au lieu de l'id
+ *  (« base », « magick ») dès qu'une entrée de carrière/espèce FIXE (non « Au choix ») traverse ce
+ *  round-trip. Compare via `specLabel` (résolveur UNIQUE, gère `specsSource` — `specEntryLabel` seul
+ *  ne suffit PAS pour ces domaines : l'entrée `specs[]` y est un id nu, PAS le libellé d'affichage réel,
+ *  cf. bug « Corps à corps (Base) » stocké « Base » au lieu de « base »). Une valeur DÉJÀ un id
+ *  (résolution par choix via `wildcardSpecs`, ou domaine non migré où id===label) matche direct ;
  *  une spec libre (domaine ouvert, hors catalogue) ne matche rien → renvoyée verbatim (inchangé). */
-function resolveSpecId(specs: SpecEntry[] | undefined, raw: string): string {
-  const entry = specs?.find((s) => specEntryId(s) === raw || specEntryLabel(s) === raw);
-  return entry ? specEntryId(entry) : raw;
+function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: string): string {
+  const def = category === 'skills' ? findSkillById(defId) : findTalentById(defId);
+  for (const e of def?.specs ?? []) {
+    const id = specEntryId(e);
+    if (id === raw || specLabel(category, defId, id) === raw) return id;
+  }
+  return raw;
 }
 
 /**
@@ -276,7 +283,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const addTalent = (label: string) => {
     const { name, spec: rawSpec } = splitLabel(label);
     const id = findTalent(name)?.id ?? slugId(name);
-    const spec = rawSpec != null ? resolveSpecId(findTalentById(id)?.specs, rawSpec) : rawSpec;
+    const spec = rawSpec != null ? resolveSpecId('talents', id, rawSpec) : rawSpec;
     const existing = talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
     if (existing) existing.times += 1;
     else talents.push({ talentId: id, spec, times: 1 });
@@ -293,7 +300,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
       const probe: Combatant = { characteristics: chars, talents } as Combatant;
       const { name, spec: rawSpec } = splitLabel(candidate);
       const candidateId = findTalent(name)?.id ?? slugId(name);
-      const spec = rawSpec != null ? resolveSpecId(findTalentById(candidateId)?.specs, rawSpec) : rawSpec;
+      const spec = rawSpec != null ? resolveSpecId('talents', candidateId, rawSpec) : rawSpec;
       if (!talentMaxReached(probe, candidateId, spec)) {
         chosenTalent = candidate;
         break;
@@ -319,7 +326,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     const { name, spec: rawSpec } = splitLabel(label);
     if (isUnresolvedChoice(label)) throw new Error(`Compétence non résolue : ${label}`);
     const id = findSkill(name)?.id ?? slugId(name);
-    const spec = rawSpec != null ? resolveSpecId(findSkillById(id)?.specs, rawSpec) : rawSpec;
+    const spec = rawSpec != null ? resolveSpecId('skills', id, rawSpec) : rawSpec;
     const existing = skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''));
     if (existing) existing.advances += adv; // même (id, spec) = même Compétence (LDB 09 l.42)
     else skills.push({ skillId: id, spec, characteristic: skillCharacteristicById(id), advances: adv });
@@ -417,7 +424,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   if (chosenTalent) {
     const { name, spec: rawSpec } = splitLabel(chosenTalent);
     const talentOptionId = findTalent(name)?.id ?? slugId(name);
-    const spec = rawSpec != null ? resolveSpecId(findTalentById(talentOptionId)?.specs, rawSpec) : rawSpec;
+    const spec = rawSpec != null ? resolveSpecId('talents', talentOptionId, rawSpec) : rawSpec;
     const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), talentOptionId, spec);
     if (slot) designateSlot(hero, opts.careerId, slot, talentOptionId, spec, [...sSlots, ...tSlots]);
   }

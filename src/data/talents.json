@@ -157,16 +157,46 @@
     },
     "desc": "Vous possédez un talent naturel pour l'art, et vous pouvez produire des dessins précis avec un peu de temps et le support approprié. Cette capacité offre plusieurs usages dans le jeu, allant de la création d'avis de recherche à l'illustration de journaux spécialisés, et présente des Avantages spécifiques déterminés par le MJ. Ajoutez également Art (Au choix) à n'importe quelle Carrière que vous entamez ; si c'est déjà inclus dans la Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
     "specs": [
-      "Calligraphie",
-      "Cartographie",
-      "Écriture",
-      "Gravure",
-      "Icones",
-      "Mosaïque",
-      "Peinture",
-      "Sculpture",
-      "Tatouage",
-      "Tissage"
+      {
+        "id": "calligraphie",
+        "label": "Calligraphie"
+      },
+      {
+        "id": "cartographie",
+        "label": "Cartographie"
+      },
+      {
+        "id": "ecriture",
+        "label": "Écriture"
+      },
+      {
+        "id": "gravure",
+        "label": "Gravure"
+      },
+      {
+        "id": "icones",
+        "label": "Icones"
+      },
+      {
+        "id": "mosaique",
+        "label": "Mosaïque"
+      },
+      {
+        "id": "peinture",
+        "label": "Peinture"
+      },
+      {
+        "id": "sculpture",
+        "label": "Sculpture"
+      },
+      {
+        "id": "tatouage",
+        "label": "Tatouage"
+      },
+      {
+        "id": "tissage",
+        "label": "Tissage"
+      }
     ],
     "rand": 16,
     "source": {
@@ -360,18 +390,37 @@
     },
     "desc": "Vous êtes expérimenté dans la traversée de terrains difficiles. Vous ignorez toutes les pénalités de Mouvement lorsque vous traversez un terrain spécifique. Les spécialisations courantes incluent : Littoral, Déserts, Marécages, Rocailleux, Toundra, Régions boisées.",
     "specs": [
-      "Littoral",
-      "Déserts",
-      "Marécages",
-      "Rocailleux",
-      "Toundra",
-      "Régions boisées"
+      {
+        "id": "littoral",
+        "label": "Littoral"
+      },
+      {
+        "id": "deserts",
+        "label": "Déserts"
+      },
+      {
+        "id": "marecages",
+        "label": "Marécages"
+      },
+      {
+        "id": "rocailleux",
+        "label": "Rocailleux"
+      },
+      {
+        "id": "toundra",
+        "label": "Toundra"
+      },
+      {
+        "id": "regions-boisees",
+        "label": "Régions boisées"
+      }
     ],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "bonnes-jambes",
@@ -1750,23 +1799,57 @@
     },
     "desc": "Vous êtes consumé par la Haine pour quelque chose dans le Vieux Monde, comme décrit à la page 190. Chaque fois que vous prenez ce Talent, vous développez une certaine haine envers un nouveau groupe. Voici quelques exemples de groupes que vous pouvez haïr : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmarites, morts-vivants, Sorciers dissidents.",
     "specs": [
-      "Hérétiques",
-      "Hommes-bêtes",
-      "Hors-la-loi",
-      "Manannites",
-      "Monstres",
-      "Morts-vivants",
-      "Peaux-vertes",
-      "Sigmarites",
-      "Sorciers dissidents",
-      "Suivants de Stromfels",
-      "Suivants du Chaos"
+      {
+        "id": "heretiques",
+        "label": "Hérétiques"
+      },
+      {
+        "id": "hommes-betes",
+        "label": "Hommes-bêtes"
+      },
+      {
+        "id": "hors-la-loi",
+        "label": "Hors-la-loi"
+      },
+      {
+        "id": "manannites",
+        "label": "Manannites"
+      },
+      {
+        "id": "monstres",
+        "label": "Monstres"
+      },
+      {
+        "id": "morts-vivants",
+        "label": "Morts-vivants"
+      },
+      {
+        "id": "peaux-vertes",
+        "label": "Peaux-vertes"
+      },
+      {
+        "id": "sigmarites",
+        "label": "Sigmarites"
+      },
+      {
+        "id": "sorciers-dissidents",
+        "label": "Sorciers dissidents"
+      },
+      {
+        "id": "suivants-de-stromfels",
+        "label": "Suivants de Stromfels"
+      },
+      {
+        "id": "suivants-du-chaos",
+        "label": "Suivants du Chaos"
+      }
     ],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "haine-sacree",
@@ -1819,7 +1902,7 @@
       "matches": [
         {
           "skill": "divertissement",
-          "spec": "Interprétation",
+          "spec": "interpretation",
           "manual": true
         }
       ]
@@ -1843,7 +1926,7 @@
       "matches": [
         {
           "skill": "divertissement",
-          "spec": "Interprétation",
+          "spec": "interpretation",
           "manual": true
         }
       ]
@@ -2220,7 +2303,12 @@
       "sorcellerie",
       "vie",
       "demonologie",
-      "necromancie"
+      "necromancie",
+      "gueule",
+      "domaine-de-la-ruine",
+      "domaine-des-ombres",
+      "domaine-de-la-peste",
+      "divinite"
     ],
     "rand": null,
     "source": {
@@ -2325,50 +2413,182 @@
     },
     "desc": "Vous possédez un vrai talent créatif. Ajoutez la Compétence Métier associée à n'importe quelle Carrière que vous entamez. Si la Compétence Métier est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
     "specs": [
-      "Apothicaire",
-      "Armurier",
-      "Barbier",
-      "Batteur d'armure",
-      "Brasseur",
-      "Bricoleur",
-      "Calligraphe",
-      "Cartographe",
-      "Chandelier",
-      "Charpentier",
-      "Charpentier naval",
-      "Cirier",
-      "Colifichets",
-      "Construction de bateaux",
-      "Cordonnier",
-      "Cuisinier",
-      "Embaumeur",
-      "Empoisonneur",
-      "Explosifs",
-      "Fabricant d'arcs",
-      "Ferronnier",
-      "Forgeron",
-      "Graveur",
-      "Herboriste",
-      "Imprimerie",
-      "Ingénieur",
-      "Joallier",
-      "Lapidaire",
-      "Maçon",
-      "Maroquinier",
-      "Maréchal-ferrant",
-      "Matériel artistique",
-      "Orfèvre",
-      "Peintre",
-      "Potier",
-      "Poisons",
-      "Sulpteur sur bois",
-      "Tailleur de pierre",
-      "Tailleur",
-      "Tanneur",
-      "Tisseur",
-      "Tonnelier",
-      "Verrier",
-      "Vigneron"
+      {
+        "id": "apothicaire",
+        "label": "Apothicaire"
+      },
+      {
+        "id": "armurier",
+        "label": "Armurier"
+      },
+      {
+        "id": "barbier",
+        "label": "Barbier"
+      },
+      {
+        "id": "batteur-d-armure",
+        "label": "Batteur d'armure"
+      },
+      {
+        "id": "brasseur",
+        "label": "Brasseur"
+      },
+      {
+        "id": "bricoleur",
+        "label": "Bricoleur"
+      },
+      {
+        "id": "calligraphe",
+        "label": "Calligraphe"
+      },
+      {
+        "id": "cartographe",
+        "label": "Cartographe"
+      },
+      {
+        "id": "chandelier",
+        "label": "Chandelier"
+      },
+      {
+        "id": "charpentier",
+        "label": "Charpentier"
+      },
+      {
+        "id": "charpentier-naval",
+        "label": "Charpentier naval"
+      },
+      {
+        "id": "cirier",
+        "label": "Cirier"
+      },
+      {
+        "id": "colifichets",
+        "label": "Colifichets"
+      },
+      {
+        "id": "construction-de-bateaux",
+        "label": "Construction de bateaux"
+      },
+      {
+        "id": "cordonnier",
+        "label": "Cordonnier"
+      },
+      {
+        "id": "cuisinier",
+        "label": "Cuisinier"
+      },
+      {
+        "id": "embaumeur",
+        "label": "Embaumeur"
+      },
+      {
+        "id": "empoisonneur",
+        "label": "Empoisonneur"
+      },
+      {
+        "id": "explosifs",
+        "label": "Explosifs"
+      },
+      {
+        "id": "fabricant-d-arcs",
+        "label": "Fabricant d'arcs"
+      },
+      {
+        "id": "ferronnier",
+        "label": "Ferronnier"
+      },
+      {
+        "id": "forgeron",
+        "label": "Forgeron"
+      },
+      {
+        "id": "graveur",
+        "label": "Graveur"
+      },
+      {
+        "id": "herboriste",
+        "label": "Herboriste"
+      },
+      {
+        "id": "imprimerie",
+        "label": "Imprimerie"
+      },
+      {
+        "id": "ingenieur",
+        "label": "Ingénieur"
+      },
+      {
+        "id": "joallier",
+        "label": "Joallier"
+      },
+      {
+        "id": "lapidaire",
+        "label": "Lapidaire"
+      },
+      {
+        "id": "macon",
+        "label": "Maçon"
+      },
+      {
+        "id": "maroquinier",
+        "label": "Maroquinier"
+      },
+      {
+        "id": "marechal-ferrant",
+        "label": "Maréchal-ferrant"
+      },
+      {
+        "id": "materiel-artistique",
+        "label": "Matériel artistique"
+      },
+      {
+        "id": "orfevre",
+        "label": "Orfèvre"
+      },
+      {
+        "id": "peintre",
+        "label": "Peintre"
+      },
+      {
+        "id": "potier",
+        "label": "Potier"
+      },
+      {
+        "id": "poisons",
+        "label": "Poisons"
+      },
+      {
+        "id": "sulpteur-sur-bois",
+        "label": "Sulpteur sur bois"
+      },
+      {
+        "id": "tailleur-de-pierre",
+        "label": "Tailleur de pierre"
+      },
+      {
+        "id": "tailleur",
+        "label": "Tailleur"
+      },
+      {
+        "id": "tanneur",
+        "label": "Tanneur"
+      },
+      {
+        "id": "tisseur",
+        "label": "Tisseur"
+      },
+      {
+        "id": "tonnelier",
+        "label": "Tonnelier"
+      },
+      {
+        "id": "verrier",
+        "label": "Verrier"
+      },
+      {
+        "id": "vigneron",
+        "label": "Vigneron"
+      }
     ],
     "rand": 61,
     "source": {
@@ -2381,7 +2601,8 @@
         "skillId": "metier",
         "spec": "Au choix"
       }
-    ]
+    ],
+    "specsOpen": true
   },
   {
     "id": "maitre-en-deguisement",
@@ -2394,7 +2615,7 @@
       "matches": [
         {
           "skill": "divertissement",
-          "spec": "Interprétation",
+          "spec": "interpretation",
           "manual": true
         }
       ]
@@ -2763,7 +2984,7 @@
       "matches": [
         {
           "skill": "divertissement",
-          "spec": "Chant"
+          "spec": "chant"
         },
         {
           "skill": "langue",
@@ -2782,7 +3003,7 @@
       {
         "op": "grantCareerSkill",
         "skillId": "divertissement",
-        "spec": "Chant"
+        "spec": "chant"
       }
     ]
   },
@@ -3284,26 +3505,86 @@
     },
     "desc": "Vous êtes suffisamment courageux ou fou pour que la peur de certains ennemis ne soit qu'un lointain souvenir. Avec un seul Test de Calme Accessible (+20), vous pouvez ignorer les effets d'Intimidation, de Peur ou de Terreur de l'ennemi spécifié quand vous le rencontrez. Les ennemis courants comprennent les hommes-bêtes, les peaux-vertes, les hors-la-loi, les vampires, les gardes et les Sorciers dissidents.",
     "specs": [
-      "Animaux",
-      "Criminels",
-      "Gardes",
-      "Hommes-bêtes",
-      "Hors-la-loi",
-      "Hérétiques",
-      "Intrus",
-      "Miliciens",
-      "Monstres",
-      "Morts-vivants",
-      "Naufrageurs",
-      "Patrouilleurs fluviaux",
-      "Patrouilleurs routiers",
-      "Peaux-vertes",
-      "Primes",
-      "Rats",
-      "Skaven",
-      "Sorciers dissidents",
-      "Sorcières",
-      "Vampires"
+      {
+        "id": "animaux",
+        "label": "Animaux"
+      },
+      {
+        "id": "criminels",
+        "label": "Criminels"
+      },
+      {
+        "id": "gardes",
+        "label": "Gardes"
+      },
+      {
+        "id": "hommes-betes",
+        "label": "Hommes-bêtes"
+      },
+      {
+        "id": "hors-la-loi",
+        "label": "Hors-la-loi"
+      },
+      {
+        "id": "heretiques",
+        "label": "Hérétiques"
+      },
+      {
+        "id": "intrus",
+        "label": "Intrus"
+      },
+      {
+        "id": "miliciens",
+        "label": "Miliciens"
+      },
+      {
+        "id": "monstres",
+        "label": "Monstres"
+      },
+      {
+        "id": "morts-vivants",
+        "label": "Morts-vivants"
+      },
+      {
+        "id": "naufrageurs",
+        "label": "Naufrageurs"
+      },
+      {
+        "id": "patrouilleurs-fluviaux",
+        "label": "Patrouilleurs fluviaux"
+      },
+      {
+        "id": "patrouilleurs-routiers",
+        "label": "Patrouilleurs routiers"
+      },
+      {
+        "id": "peaux-vertes",
+        "label": "Peaux-vertes"
+      },
+      {
+        "id": "primes",
+        "label": "Primes"
+      },
+      {
+        "id": "rats",
+        "label": "Rats"
+      },
+      {
+        "id": "skaven",
+        "label": "Skaven"
+      },
+      {
+        "id": "sorciers-dissidents",
+        "label": "Sorciers dissidents"
+      },
+      {
+        "id": "sorcieres",
+        "label": "Sorcières"
+      },
+      {
+        "id": "vampires",
+        "label": "Vampires"
+      }
     ],
     "rand": null,
     "source": {
@@ -3312,7 +3593,8 @@
     },
     "combat": {
       "fearImmune": true
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "saut-carpe",
@@ -3344,64 +3626,221 @@
     },
     "desc": "Vous êtes exceptionnellement instruit, et vous possédez un niveau important de connaissances avancées dans un domaine d'études. Vous connaissez automatiquement un nombre d'informations correctes égal à votre Niveau de Savant (Savoir), au sujet d'une question pertinente sans avoir besoin de Test de Compétence Savoir. Les Tests, comme toujours, vous fourniront plus d'informations, déterminées par le MJ. ",
     "specs": [
-      "Anatomie",
-      "Apothicaire",
-      "Art",
-      "Art de la guerre",
-      "Astrologie",
-      "Bêtes sauvages",
-      "Chaos",
-      "Chimie",
-      "Côtes et marées",
-      "Démonologie",
-      "Dragons",
-      "Empire",
-      "Épaves",
-      "Esprits",
-      "Folklore",
-      "Forteresses et routes naines",
-      "Géants",
-      "Généalogie",
-      "Géographie",
-      "Géologie",
-      "Guerre",
-      "Héraldique",
-      "Herbes",
-      "Histoire",
-      "Ingénierie",
-      "Itinéraires",
-      "Le Moot",
-      "Loi",
-      "Magick",
-      "Magie",
-      "Magie noire",
-      "Métallurgie",
-      "Nains",
-      "Nécromancie",
-      "Noble",
-      "Plantes",
-      "Poison",
-      "Politique",
-      "Prophétie",
-      "Région",
-      "Reikland",
-      "Remèdes",
-      "Savoir-vivre",
-      "Science",
-      "Sigmar",
-      "Sorcières",
-      "Taxes",
-      "Terrain du Moot",
-      "Théologie",
-      "Torture",
-      "Trolls",
-      "Voies fluviales"
+      {
+        "id": "anatomie",
+        "label": "Anatomie"
+      },
+      {
+        "id": "apothicaire",
+        "label": "Apothicaire"
+      },
+      {
+        "id": "art",
+        "label": "Art"
+      },
+      {
+        "id": "art-de-la-guerre",
+        "label": "Art de la guerre"
+      },
+      {
+        "id": "astrologie",
+        "label": "Astrologie"
+      },
+      {
+        "id": "betes-sauvages",
+        "label": "Bêtes sauvages"
+      },
+      {
+        "id": "chaos",
+        "label": "Chaos"
+      },
+      {
+        "id": "chimie",
+        "label": "Chimie"
+      },
+      {
+        "id": "cotes-et-marees",
+        "label": "Côtes et marées"
+      },
+      {
+        "id": "demonologie",
+        "label": "Démonologie"
+      },
+      {
+        "id": "dragons",
+        "label": "Dragons"
+      },
+      {
+        "id": "empire",
+        "label": "Empire"
+      },
+      {
+        "id": "epaves",
+        "label": "Épaves"
+      },
+      {
+        "id": "esprits",
+        "label": "Esprits"
+      },
+      {
+        "id": "folklore",
+        "label": "Folklore"
+      },
+      {
+        "id": "forteresses-et-routes-naines",
+        "label": "Forteresses et routes naines"
+      },
+      {
+        "id": "geants",
+        "label": "Géants"
+      },
+      {
+        "id": "genealogie",
+        "label": "Généalogie"
+      },
+      {
+        "id": "geographie",
+        "label": "Géographie"
+      },
+      {
+        "id": "geologie",
+        "label": "Géologie"
+      },
+      {
+        "id": "guerre",
+        "label": "Guerre"
+      },
+      {
+        "id": "heraldique",
+        "label": "Héraldique"
+      },
+      {
+        "id": "herbes",
+        "label": "Herbes"
+      },
+      {
+        "id": "histoire",
+        "label": "Histoire"
+      },
+      {
+        "id": "ingenierie",
+        "label": "Ingénierie"
+      },
+      {
+        "id": "itineraires",
+        "label": "Itinéraires"
+      },
+      {
+        "id": "le-moot",
+        "label": "Le Moot"
+      },
+      {
+        "id": "loi",
+        "label": "Loi"
+      },
+      {
+        "id": "magick",
+        "label": "Magick"
+      },
+      {
+        "id": "magie",
+        "label": "Magie"
+      },
+      {
+        "id": "magie-noire",
+        "label": "Magie noire"
+      },
+      {
+        "id": "metallurgie",
+        "label": "Métallurgie"
+      },
+      {
+        "id": "nains",
+        "label": "Nains"
+      },
+      {
+        "id": "necromancie",
+        "label": "Nécromancie"
+      },
+      {
+        "id": "noble",
+        "label": "Noble"
+      },
+      {
+        "id": "plantes",
+        "label": "Plantes"
+      },
+      {
+        "id": "poison",
+        "label": "Poison"
+      },
+      {
+        "id": "politique",
+        "label": "Politique"
+      },
+      {
+        "id": "prophetie",
+        "label": "Prophétie"
+      },
+      {
+        "id": "region",
+        "label": "Région"
+      },
+      {
+        "id": "reikland",
+        "label": "Reikland"
+      },
+      {
+        "id": "remedes",
+        "label": "Remèdes"
+      },
+      {
+        "id": "savoir-vivre",
+        "label": "Savoir-vivre"
+      },
+      {
+        "id": "science",
+        "label": "Science"
+      },
+      {
+        "id": "sigmar",
+        "label": "Sigmar"
+      },
+      {
+        "id": "sorcieres",
+        "label": "Sorcières"
+      },
+      {
+        "id": "taxes",
+        "label": "Taxes"
+      },
+      {
+        "id": "terrain-du-moot",
+        "label": "Terrain du Moot"
+      },
+      {
+        "id": "theologie",
+        "label": "Théologie"
+      },
+      {
+        "id": "torture",
+        "label": "Torture"
+      },
+      {
+        "id": "trolls",
+        "label": "Trolls"
+      },
+      {
+        "id": "voies-fluviales",
+        "label": "Voies fluviales"
+      }
     ],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "savoir-vivre",
@@ -3424,21 +3863,49 @@
     },
     "desc": "Vous pouvez vous intégrer socialement au groupe choisi, tant que vous vous habillez et vous comportez de façon appropriée. Voici des exemples de groupes sociaux pour ce Talent : Criminels, Cultistes, Guildes, Nobles, Érudits, Serviteurs et Soldats. Si vous ne possédez pas le Talent, ceux qui le possèdent remarquent votre gêne dans un environnement non familier. Cela concerne principalement l'interprétation du Personnage, mais peut conférer un bonus aux Tests de Sociabilité à la discrétion du MJ.",
     "specs": [
-      "Criminels",
-      "Cultistes",
-      "Équipage",
-      "Érudits",
-      "Fidèles",
-      "Guildes",
-      "Nobles",
-      "Serviteurs",
-      "Soldats"
+      {
+        "id": "criminels",
+        "label": "Criminels"
+      },
+      {
+        "id": "cultistes",
+        "label": "Cultistes"
+      },
+      {
+        "id": "equipage",
+        "label": "Équipage"
+      },
+      {
+        "id": "erudits",
+        "label": "Érudits"
+      },
+      {
+        "id": "fideles",
+        "label": "Fidèles"
+      },
+      {
+        "id": "guildes",
+        "label": "Guildes"
+      },
+      {
+        "id": "nobles",
+        "label": "Nobles"
+      },
+      {
+        "id": "serviteurs",
+        "label": "Serviteurs"
+      },
+      {
+        "id": "soldats",
+        "label": "Soldats"
+      }
     ],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "seconde-vue",
@@ -3498,11 +3965,26 @@
     },
     "desc": "L'un de vos cinq sens principaux est particulièrement développé, vous permettant de repérer ce qui échappe à d'autres. Vous pouvez effectuer des Tests de Perception pour détecter des détails normalement imperceptibles grâce au sens associé, déterminés par le MJ. Cela peut être : voir un aigle au-delà du champ visuel de tout le monde, sentir un poison presque inodore, entendre la respiration d'une souris immobile dans un mur, percevoir une lettre effacée dans une gravure, ou déceler que deux bières d'un même brasseur ont été tirées de deux tonneaux différents.",
     "specs": [
-      "Ouïe",
-      "Odorat",
-      "Goût",
-      "Toucher",
-      "Vue"
+      {
+        "id": "ouie",
+        "label": "Ouïe"
+      },
+      {
+        "id": "odorat",
+        "label": "Odorat"
+      },
+      {
+        "id": "gout",
+        "label": "Goût"
+      },
+      {
+        "id": "toucher",
+        "label": "Toucher"
+      },
+      {
+        "id": "vue",
+        "label": "Vue"
+      }
     ],
     "rand": 78,
     "source": {
@@ -3885,56 +4367,189 @@
     },
     "desc": "Votre maîtrise d'un Métier spécifique est exceptionnelle. Vous ôtez le niveau de votre Talent Travailleur qualifié du DR exigé pour tout Test étendu utilisant votre Compétence de Métier.",
     "specs": [
-      "Apothicaire",
-      "Armurier",
-      "Barbier",
-      "Batteur d'armure",
-      "Brasseur",
-      "Bricoleur",
-      "Calligraphe",
-      "Cartographe",
-      "Chandelier",
-      "Charpentier",
-      "Charpentier naval",
-      "Cirier",
-      "Colifichets",
-      "Construction de bateaux",
-      "Cordonnier",
-      "Cuisinier",
-      "Embaumeur",
-      "Empoisonneur",
-      "Explosifs",
-      "Fabricant d'arcs",
-      "Ferronnier",
-      "Forgeron",
-      "Graveur",
-      "Herboriste",
-      "Imprimerie",
-      "Ingénieur",
-      "Joallier",
-      "Lapidaire",
-      "Maçon",
-      "Maroquinier",
-      "Maréchal-ferrant",
-      "Matériel artistique",
-      "Orfèvre",
-      "Peintre",
-      "Potier",
-      "Poisons",
-      "Sulpteur sur bois",
-      "Tailleur de pierre",
-      "Tailleur",
-      "Tanneur",
-      "Tisseur",
-      "Tonnelier",
-      "Verrier",
-      "Vigneron"
+      {
+        "id": "apothicaire",
+        "label": "Apothicaire"
+      },
+      {
+        "id": "armurier",
+        "label": "Armurier"
+      },
+      {
+        "id": "barbier",
+        "label": "Barbier"
+      },
+      {
+        "id": "batteur-d-armure",
+        "label": "Batteur d'armure"
+      },
+      {
+        "id": "brasseur",
+        "label": "Brasseur"
+      },
+      {
+        "id": "bricoleur",
+        "label": "Bricoleur"
+      },
+      {
+        "id": "calligraphe",
+        "label": "Calligraphe"
+      },
+      {
+        "id": "cartographe",
+        "label": "Cartographe"
+      },
+      {
+        "id": "chandelier",
+        "label": "Chandelier"
+      },
+      {
+        "id": "charpentier",
+        "label": "Charpentier"
+      },
+      {
+        "id": "charpentier-naval",
+        "label": "Charpentier naval"
+      },
+      {
+        "id": "cirier",
+        "label": "Cirier"
+      },
+      {
+        "id": "colifichets",
+        "label": "Colifichets"
+      },
+      {
+        "id": "construction-de-bateaux",
+        "label": "Construction de bateaux"
+      },
+      {
+        "id": "cordonnier",
+        "label": "Cordonnier"
+      },
+      {
+        "id": "cuisinier",
+        "label": "Cuisinier"
+      },
+      {
+        "id": "embaumeur",
+        "label": "Embaumeur"
+      },
+      {
+        "id": "empoisonneur",
+        "label": "Empoisonneur"
+      },
+      {
+        "id": "explosifs",
+        "label": "Explosifs"
+      },
+      {
+        "id": "fabricant-d-arcs",
+        "label": "Fabricant d'arcs"
+      },
+      {
+        "id": "ferronnier",
+        "label": "Ferronnier"
+      },
+      {
+        "id": "forgeron",
+        "label": "Forgeron"
+      },
+      {
+        "id": "graveur",
+        "label": "Graveur"
+      },
+      {
+        "id": "herboriste",
+        "label": "Herboriste"
+      },
+      {
+        "id": "imprimerie",
+        "label": "Imprimerie"
+      },
+      {
+        "id": "ingenieur",
+        "label": "Ingénieur"
+      },
+      {
+        "id": "joallier",
+        "label": "Joallier"
+      },
+      {
+        "id": "lapidaire",
+        "label": "Lapidaire"
+      },
+      {
+        "id": "macon",
+        "label": "Maçon"
+      },
+      {
+        "id": "maroquinier",
+        "label": "Maroquinier"
+      },
+      {
+        "id": "marechal-ferrant",
+        "label": "Maréchal-ferrant"
+      },
+      {
+        "id": "materiel-artistique",
+        "label": "Matériel artistique"
+      },
+      {
+        "id": "orfevre",
+        "label": "Orfèvre"
+      },
+      {
+        "id": "peintre",
+        "label": "Peintre"
+      },
+      {
+        "id": "potier",
+        "label": "Potier"
+      },
+      {
+        "id": "poisons",
+        "label": "Poisons"
+      },
+      {
+        "id": "sulpteur-sur-bois",
+        "label": "Sulpteur sur bois"
+      },
+      {
+        "id": "tailleur-de-pierre",
+        "label": "Tailleur de pierre"
+      },
+      {
+        "id": "tailleur",
+        "label": "Tailleur"
+      },
+      {
+        "id": "tanneur",
+        "label": "Tanneur"
+      },
+      {
+        "id": "tisseur",
+        "label": "Tisseur"
+      },
+      {
+        "id": "tonnelier",
+        "label": "Tonnelier"
+      },
+      {
+        "id": "verrier",
+        "label": "Verrier"
+      },
+      {
+        "id": "vigneron",
+        "label": "Vigneron"
+      }
     ],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "tres-fort",
@@ -4206,16 +4821,29 @@
     },
     "desc": "Vous êtes consumé par le besoin de vous adonner à un vice particulier et souffrez du Trait Psychologique Vice. Chaque fois que vous choisissez ce Talent, vous développez un nouveau vice. Voici quelques exemples : alcool, nourriture, stupéfiants, plaisir.",
     "specs": [
-      "Alcool",
-      "Nourriture",
-      "Stupéfiants",
-      "Plaisir"
+      {
+        "id": "alcool",
+        "label": "Alcool"
+      },
+      {
+        "id": "nourriture",
+        "label": "Nourriture"
+      },
+      {
+        "id": "stupefiants",
+        "label": "Stupéfiants"
+      },
+      {
+        "id": "plaisir",
+        "label": "Plaisir"
+      }
     ],
     "rand": null,
     "source": {
       "book": "ADE2",
       "page": 20
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "sang-neuf",
@@ -4241,19 +4869,20 @@
       "matches": [
         {
           "skill": "divertissement",
-          "spec": "Chant"
+          "spec": "chant"
         }
       ]
     },
     "desc": "Ce Talent permet à un Personnage d'apprendre une chanson de marin (voir page 67). Chaque fois qu'un Personnage achète un nouveau niveau dans ce Talent, il apprend une nouvelle chanson. Une chanson de marin affecte un équipage entier. Pour utiliser ce Talent, le Personnage doit trouver un endroit où chanter depuis lequel il peut être entendu par autant de membres d'équipage que possible et réussir un Test de Divertissement (Chant).\n\nUn Personnage met 30 secondes chanter la la chanson de marin, après quoi l'effet dure trois minutes plus un nombre de minutes égal au DR sur le Test de **Divertissement (Chant)**. La seule action de combat que le Personnage peut effectuer tant qu'il est en train de chanter la chanson de marin est une Esquive. Si le MJ l'autorise, il peut effectuer d'autres actions comme un Test de Perception ou de Calme. Si le Personnage subit des Dégâts ou rate un Test opposé, sa Chanson de marin prend fin.\n\nUne seule chanson de marin peut être chantée lors de chaque quart. Difficile d'inspirer davantage un équipage.",
+    "specsSource": "seaShanties",
     "specs": [
-      "Naviguons tous ensemble, ho hisse, ho hisse…",
-      "Jacques Bret a rencontré notre acier sur les mers !",
-      "De toutes les terreurs sur les mers…",
-      "Camarades d'équipage, rassemblez-vous…",
-      "Tous à la vigie, car la nuit a des yeux…",
-      "Les dames de L'Anguille…",
-      "Suivez le capitaine, suivez le héros…"
+      "naviguons-tous-ensemble",
+      "jacques-bret-a-rencontre-notre-acier",
+      "de-toutes-les-terreurs-sur-les-mers",
+      "camarades-d-equipage-rassemblez-vous",
+      "tous-a-la-vigie",
+      "les-dames-de-l-anguille",
+      "suivez-le-capitaine"
     ],
     "combat": {
       "seaShanty": true

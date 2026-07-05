@@ -69,7 +69,7 @@
     "skills": [
       {
         "skillId": "metier",
-        "spec": "Cuisinier"
+        "spec": "cuisinier"
       }
     ],
     "desc": "Un rôle trop souvent sous-estimé, car rien ne sape le moral de l'équipage plus rapidement qu'une mauvaise nourriture."
@@ -90,7 +90,7 @@
     "skills": [
       {
         "skillId": "divertissement",
-        "spec": "Chant"
+        "spec": "chant"
       }
     ],
     "desc": "En plus d'utiliser la Compétence Divertissement (Chant) pour contribuer à un Test d'équipage d'une manière similaire à celle du reste de l'équipage, le Chansonnier peut employer la chanson de marin « Naviguons tous ensemble, ho hisse, ho hisse… » pour donner des bonus aux Tests du reste de l'équipage."

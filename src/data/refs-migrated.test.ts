@@ -7,14 +7,15 @@ import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
   traits, stars, talents, maneuvers, skills, domains, crewRoles,
-  findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
+  findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
-  specLabel, refLabel, specEntryId,
+  specLabel, refLabel, specEntryId, specEntryLabel,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
 import pregensJson from './pregens.json';
+import { makePregens } from './pregens';
 import interludeEventsJson from './interludeEvents.json';
 import tavernGamesJson from './tavernGames.json';
 import seaWeatherJson from './sea-weather.json';
@@ -31,12 +32,19 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     }
   });
 
-  it('trappings.subType = weaponGroupId qui résout (jamais un libellé brut)', () => {
+  it('trappings.subType = weaponGroupId qui résout (jamais un libellé brut) — y compris derivedWeapon.subType imbriqué', () => {
     const groupIds = new Set(weaponGroups.map((g) => g.id));
     for (const t of trappings) {
-      if (t.subType == null) continue;
-      expect(groupIds.has(t.subType), `${t.label} → ${t.subType}`).toBe(true);
-      expect(findWeaponGroupById(t.subType)).toBeTruthy();
+      if (t.subType != null) {
+        expect(groupIds.has(t.subType), `${t.label} → ${t.subType}`).toBe(true);
+        expect(findWeaponGroupById(t.subType)).toBeTruthy();
+      }
+      // derivedWeapon (prothèse-arme, ex. Crochet) PORTE SON PROPRE subType — un libellé y échappait
+      // au garde-fou ci-dessus (Crochet.derivedWeapon.subType: "Base" au lieu de l'id "base").
+      const dwSubType = t.derivedWeapon?.subType;
+      if (dwSubType != null) {
+        expect(groupIds.has(dwSubType), `${t.label}.derivedWeapon → ${dwSubType}`).toBe(true);
+      }
     }
   });
 
@@ -240,16 +248,15 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     }
   });
 
-  // ── Phase 3 sous-commit 1 — Spés de Corps à corps/Projectiles = id de weaponGroups.json (jamais un
-  // libellé FR). skills.json/careerLevels.json/species.json/tavernGames.json/crew-roles.json/talents.json
-  // sont des catalogues PC-FACING : chaque instance DOIT résoudre. `creatures.json` mélange en revanche de
-  // VRAIES Spés de Groupe (armes tenues) et des DESCRIPTEURS narratifs d'attaque NATURELLE (griffes, souffle…
-  // — jamais posés en `weaponGroup`/`subType` par `grantNaturalWeapon`, donc jamais comparés à rien) : la
-  // liste `CREATURE_NATURAL_SPEC_WHITELIST` ci-dessous est EXHAUSTIVE (prouvée par énumération du fichier) —
-  // toute nouvelle spec hors catalogue ET hors liste casse ce test (force une triage consciente).
-  describe('Spés de Groupe d\'arme (Corps à corps/Projectiles) = id weaponGroups.json (Phase 3)', () => {
+  // ── Phase 3 — sanité de CATALOGUE (structure des defs skills.json/talents.json) : ces quelques
+  // `it` fixent des exemples représentatifs de chaque MÉCANISME de specsSource/specsOpen. La
+  // RÉSOLUTION EXHAUSTIVE de toutes les INSTANCES (creatures/careerLevels/species/…) est déléguée à
+  // LA GARDE UNIQUE ci-dessous (§ Phase 3 complétude) — plus de liste de domaines à maintenir ici.
+  describe('sanité de catalogue — specsSource déclaré, specs[] bien formées (Phase 3)', () => {
     const weaponSkillIds = new Set(['corps-a-corps', 'projectiles']);
     const isWeaponGroupId = (spec: string): boolean => !!findWeaponGroupById(spec) && weaponGroups.some((g) => g.id === spec);
+    const DOMAIN_IDS = new Set(domains.map((d) => d.id));
+    const GOD_KEYS = new Set(gods.map((g) => g.key));
 
     it('skills.json : specsSource weaponGroups → specs[] = ids connus', () => {
       for (const s of skills) {
@@ -259,130 +266,43 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       }
     });
 
-    it('careerLevels.json + species.json : refs/specOptions de corps-a-corps/projectiles = ids connus', () => {
-      const walk = (node: unknown): void => {
-        if (Array.isArray(node)) { node.forEach(walk); return; }
-        if (!isObj(node)) return;
-        const refId = (node.ref as { id?: string } | undefined)?.id;
-        const refSpec = (node.ref as { spec?: string } | undefined)?.spec;
-        if (refId && weaponSkillIds.has(refId) && typeof refSpec === 'string') {
-          expect(isWeaponGroupId(refSpec), `ref{${refId}} → ${refSpec}`).toBe(true);
-        }
-        const wcId = (node.wildcard as { id?: string } | undefined)?.id;
-        if (wcId && weaponSkillIds.has(wcId) && Array.isArray(node.specOptions)) {
-          for (const so of node.specOptions as unknown[]) expect(isWeaponGroupId(so as string), `wildcard{${wcId}} → ${so}`).toBe(true);
-        }
-        for (const v of Object.values(node)) walk(v);
-      };
-      walk(careerLevels);
-      walk(species);
-    });
-
-    it('tavernGames.json : {skill,spec} de corps-a-corps/projectiles = id connu', () => {
-      for (const g of tavernGamesJson as { id: string; skill?: string; spec?: string }[]) {
-        if (g.skill && weaponSkillIds.has(g.skill) && typeof g.spec === 'string') {
-          expect(isWeaponGroupId(g.spec), `${g.id} → ${g.spec}`).toBe(true);
-        }
-      }
-    });
-
-    it('crew-roles.json : skills[].spec de corps-a-corps/projectiles = id connu', () => {
-      for (const role of crewRoles) {
-        for (const s of role.skills) {
-          if (weaponSkillIds.has(s.skillId) && typeof s.spec === 'string') {
-            expect(isWeaponGroupId(s.spec), `${role.id}.${s.skillId} → ${s.spec}`).toBe(true);
-          }
-        }
-      }
-    });
-
-    it('talents.json : test.matches[].spec de corps-a-corps/projectiles = id connu', () => {
-      for (const t of talents) {
-        for (const m of t.test?.matches ?? []) {
-          if (m.skill && weaponSkillIds.has(m.skill) && typeof m.spec === 'string') {
-            expect(isWeaponGroupId(m.spec), `${t.id} → ${m.spec}`).toBe(true);
-          }
-        }
-      }
-    });
-
-    it('sea-weather.json : skillMods[].spec (map skillId→spec) de projectiles = id connu', () => {
-      const walk = (node: unknown): void => {
-        if (Array.isArray(node)) { node.forEach(walk); return; }
-        if (!isObj(node)) return;
-        if (isObj(node.spec)) {
-          for (const [k, v] of Object.entries(node.spec)) {
-            if (weaponSkillIds.has(k) && typeof v === 'string') expect(isWeaponGroupId(v), `spec.${k} → ${v}`).toBe(true);
-          }
-        }
-        for (const v of Object.values(node)) walk(v);
-      };
-      walk(seaWeatherJson);
-    });
-
-    // Descripteurs d'attaque NATURELLE (bestiaire) — PAS des Spés de Groupe (`grantNaturalWeapon` ne pose
-    // jamais de `subType`, donc jamais comparés à `acceptableSpecs`). Liste EXHAUSTIVE (cf. commentaire ci-dessus).
-    // Les specs d'ARMES RÉELLES mal-orthographiées (Filet/Javelot/Couteau de lancer/Shurikens/Bâton…) ont été
-    // migrées vers leur id `weaponGroups` (lancer/entraves/ingenierie/poudre-noire/armes-d-hast) — cf. Source
-    // frenchy.bzh (Habitants & Créatures du Vieux-Monde) + précédents trappings.json (canon-ratling=ingenierie,
-    // pistolet-patte-de-griffon=poudre-noire, baton-de-combat=armes-d-hast).
-    const CREATURE_NATURAL_SPEC_WHITELIST = new Set([
-      'Bois', 'Cornes nasales', 'Crocs', 'Dents', 'Griffes', 'Griffes incurvées', 'Griffes recourbées',
-      'Griffes recouvertes de gromril', 'Griffes semblables à des racines', 'Pinces', 'Souffle', 'Toile',
-      'sans spécialisation',
-    ]);
-
-    it('creatures.json : skills[].spec de corps-a-corps/projectiles = id connu OU descripteur naturel documenté', () => {
-      for (const c of creatures) {
-        for (const s of c.skills) {
-          if (!weaponSkillIds.has(s.id) || typeof s.spec !== 'string') continue;
-          const ok = isWeaponGroupId(s.spec) || CREATURE_NATURAL_SPEC_WHITELIST.has(s.spec);
-          expect(ok, `${c.id}.${s.id} → ${JSON.stringify(s.spec)} (ni id weaponGroups, ni whitelist naturelle)`).toBe(true);
-        }
-      }
-    });
-  });
-
-  // ── Phase 3 — MAGIE & CULTES : specs unifiées sur les ids de `domains.json` (fin de l'incohérence
-  // Vent↔Lore) et les `gods.key`. `focalisation`/`magie-des-arcanes` portent un id de DOMAINE ;
-  // `magie-du-chaos`/`beni`/`invocation` portent un `gods.key`. ZÉRO valeur non résolue : toute instance
-  // (creatures/careerLevels/species/talents) DOIT résoudre — une chaîne FR (Vent/Lore/dieu) qui se
-  // faufile, un id fantôme, casse ici. Sentinelle « (Au choix) » (joker non spécialisé) exclue.
-  describe('Specs de MAGIE (domaine) & de CULTE (gods.key) id-based — Phase 3', () => {
-    const DOMAIN_IDS = new Set(domains.map((d) => d.id));
-    const GOD_KEYS = new Set(gods.map((g) => g.key));
-    const DOMAIN_SPEC_DEFS = new Set(['focalisation', 'magie-des-arcanes']);
-    const CULT_SPEC_DEFS = new Set(['magie-du-chaos', 'beni', 'invocation']);
-    const isSentinel = (spec: string): boolean => spec.trim().toLowerCase() === 'au choix';
-
-    it('skills.json/talents.json : specsSource déclaré + specs[] = ids connus (domaine ou gods.key)', () => {
+    it('skills.json/talents.json : specsSource domains/cults/seaShanties déclaré + specs[] = ids connus', () => {
       expect(findSkillById('focalisation')!.specsSource).toBe('winds');
       expect(findTalentById('magie-des-arcanes')!.specsSource).toBe('domains');
       for (const id of ['magie-du-chaos', 'beni', 'invocation']) expect(findTalentById(id)!.specsSource, id).toBe('cults');
-      for (const id of ['focalisation']) for (const s of findSkillById(id)!.specs) expect(DOMAIN_IDS.has(specEntryId(s)), `${id} → ${specEntryId(s)}`).toBe(true);
+      expect(findTalentById('chanson-de-marin')!.specsSource).toBe('seaShanties');
+      for (const s of findSkillById('focalisation')!.specs) expect(DOMAIN_IDS.has(specEntryId(s)), `focalisation → ${specEntryId(s)}`).toBe(true);
       for (const s of findTalentById('magie-des-arcanes')!.specs ?? []) expect(DOMAIN_IDS.has(specEntryId(s)), `magie-des-arcanes → ${specEntryId(s)}`).toBe(true);
       for (const id of ['magie-du-chaos', 'beni', 'invocation']) for (const s of findTalentById(id)!.specs ?? []) expect(GOD_KEYS.has(specEntryId(s)), `${id} → ${specEntryId(s)}`).toBe(true);
+      for (const s of findTalentById('chanson-de-marin')!.specs ?? []) expect(findSeaShantyById(specEntryId(s)), `chanson-de-marin → ${specEntryId(s)}`).toBeTruthy();
     });
 
-    it('creatures/careerLevels/species/talents : chaque spec magie = id de domaine, chaque spec culte = gods.key', () => {
-      const check = (defId: string | undefined, spec: unknown, where: string): void => {
-        if (!defId || typeof spec !== 'string' || isSentinel(spec)) return;
-        if (DOMAIN_SPEC_DEFS.has(defId)) expect(DOMAIN_IDS.has(spec), `${where}{${defId}} → ${JSON.stringify(spec)} (pas un id de domaine)`).toBe(true);
-        else if (CULT_SPEC_DEFS.has(defId)) expect(GOD_KEYS.has(spec), `${where}{${defId}} → ${JSON.stringify(spec)} (pas un gods.key)`).toBe(true);
-      };
-      const visit = (node: unknown): void => {
-        if (Array.isArray(node)) { node.forEach(visit); return; }
-        if (!isObj(node)) return;
-        check(node.id as string | undefined, node.spec, 'id');
-        check(node.skillId as string | undefined, node.spec, 'skillId');
-        check(node.talentId as string | undefined, node.spec, 'talentId');
-        check(node.skill as string | undefined, node.spec, 'skill'); // TestMatch.skill / has-condition
-        check((node.value as string | undefined), node.spec, 'value'); // Flow `has` : { what:'talent', value, spec }
-        const wc = (node.wildcard as { id?: string } | undefined)?.id;
-        if (wc && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) check(wc, so, 'wildcard.specOptions');
-        for (const v of Object.values(node)) visit(v);
-      };
-      visit(creatures); visit(careerLevels); visit(species); visit(talents); visit(domains);
+    it('domaines FERMÉS inline (ex. langue/chevaucher/discretion/art/musicien/voile, talents resistance/sens-aiguise) : specs[] = {id,label}, specsOpen absent', () => {
+      for (const id of ['langue', 'chevaucher', 'discretion', 'art', 'musicien', 'voile']) {
+        const s = findSkillById(id)!;
+        expect(s.specsOpen, id).toBeFalsy();
+        expect(s.specs.length > 0, id).toBe(true);
+        for (const entry of s.specs) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+      }
+      for (const id of ['resistance', 'sens-aiguise', 'artiste']) {
+        const t = findTalentById(id)!;
+        expect(t.specsOpen, id).toBeFalsy();
+        for (const entry of t.specs ?? []) expect(isObj(entry) && typeof (entry as { id: unknown }).id === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+      }
+    });
+
+    it('domaines OUVERTS (ex. savoir/metier/divertissement/signes-secrets) : specsOpen:true, specs[] = {id,label}[]', () => {
+      for (const id of ['savoir', 'metier', 'divertissement', 'dressage', 'representation', 'signes-secrets']) {
+        const s = findSkillById(id)!;
+        expect(s.specsOpen, id).toBe(true);
+        expect(s.specs.length > 0, id).toBe(true);
+        for (const entry of s.specs) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+      }
+      for (const id of ['bon-marcheur', 'haine', 'maitre-artisan', 'sans-peur', 'savant', 'savoir-vivre', 'travailleur-qualifie', 'vice']) {
+        const t = findTalentById(id)!;
+        expect(t.specsOpen, id).toBe(true);
+        for (const entry of t.specs ?? []) expect(isObj(entry) && typeof (entry as { id: unknown }).id === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+      }
     });
   });
 
@@ -391,7 +311,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       expect(refLabel('skills', { id: 'corps-a-corps', spec: 'deux-mains' })).toBe('Corps à corps (Deux-mains)');
       expect(specLabel('skills', 'corps-a-corps', 'poudre-noire')).toBe(findWeaponGroupById('poudre-noire')!.label);
     });
-    it('une spec NON-migrée (savoir…) reste verbatim (comportement inchangé)', () => {
+    it('une spec ouverte hors catalogue (savoir…) reste verbatim (texte libre toléré)', () => {
       expect(specLabel('skills', 'savoir', 'Reikland')).toBe('Reikland');
       expect(refLabel('skills', { id: 'savoir', spec: 'Reikland' })).toBe('Savoir (Reikland)');
     });
@@ -402,98 +322,95 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       expect(refLabel('skills', { id: 'discretion', spec: 'urbaine' })).toBe('Discrétion (Urbaine)');
       expect(refLabel('talents', { id: 'resistance', spec: 'chaos' })).toBe('Résistance (Chaos)');
     });
-  });
-
-  // ── Phase 3 sous-commit 2 — Specs FERMÉES inline (langue/chevaucher/discretion/art, talent resistance)
-  // = {id,label} ; toute instance DOIT référencer un id de sa liste fermée. ZÉRO valeur non résolue :
-  // les 11 valeurs jadis listées dans `KNOWN_UNRESOLVED` ont toutes été résolues (source FR vérifiée →
-  // ajout au catalogue ; sémantique composée/joker → restructuration ; artefact de donnée → nettoyage) —
-  // cf. rapport phase3-open-specs. L'allowlist est SUPPRIMÉE : toute valeur hors catalogue casse ce test.
-  describe('Specs FERMÉES id-based (langue/chevaucher/discretion/art, talent resistance) — Phase 3 sous-commit 2', () => {
-    const CLOSED_SKILL_IDS = new Set(['langue', 'chevaucher', 'discretion', 'art']);
-    const CLOSED_TALENT_ID = 'resistance';
-    const isSentinel = (spec: string): boolean => spec.trim().toLowerCase() === 'au choix';
-    const isKnownSpecId = (defId: string, spec: string): boolean => {
-      const def = defId === CLOSED_TALENT_ID ? findTalentById(defId) : findSkillById(defId);
-      return !!def?.specs?.some((s) => (typeof s === 'string' ? s : s.id) === spec);
-    };
-
-    it('skills.json/talents.json : specs[] fermées = {id,label}, specsOpen absent', () => {
-      for (const id of CLOSED_SKILL_IDS) {
-        const s = findSkillById(id)!;
-        expect(s.specsOpen, id).toBeFalsy();
-        expect(s.specs.length > 0, id).toBe(true);
-        for (const entry of s.specs) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
-      }
-      const resistance = findTalentById(CLOSED_TALENT_ID)!;
-      expect(resistance.specsOpen).toBeFalsy();
-      for (const entry of resistance.specs ?? []) expect(isObj(entry) && typeof (entry as { id: unknown }).id === 'string', JSON.stringify(entry)).toBe(true);
-    });
-
-    it('creatures/careerLevels/species/stars/talents : chaque spec de langue/chevaucher/discretion/art/resistance = un id de sa specs[] (sentinelle "(Au choix)" exclue — ZÉRO autre exception)', () => {
-      const check = (defId: string | undefined, spec: unknown, where: string): void => {
-        if (!defId || typeof spec !== 'string') return;
-        if (!CLOSED_SKILL_IDS.has(defId) && defId !== CLOSED_TALENT_ID) return;
-        if (isSentinel(spec)) return;
-        expect(isKnownSpecId(defId, spec), `${where}{${defId}} → ${JSON.stringify(spec)}`).toBe(true);
-      };
-      const visit = (node: unknown): void => {
-        if (Array.isArray(node)) { node.forEach(visit); return; }
-        if (!isObj(node)) return;
-        check(node.id as string | undefined, node.spec, 'id');
-        check(node.skillId as string | undefined, node.spec, 'skillId');
-        check(node.talentId as string | undefined, node.spec, 'talentId');
-        check(node.skill as string | undefined, node.spec, 'skill');
-        const wcId = (node.wildcard as { id?: string } | undefined)?.id;
-        if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) check(wcId, so, 'wildcard.specOptions');
-        for (const v of Object.values(node)) visit(v);
-      };
-      visit(creatures); visit(careerLevels); visit(species); visit(stars); visit(talents);
+    it('une spec de domaine Phase 3 complétude (musicien/sens-aiguise/chanson-de-marin) résout son id → label FR', () => {
+      expect(specLabel('skills', 'musicien', 'tambour')).toBe('Tambour');
+      expect(refLabel('talents', { id: 'sens-aiguise', spec: 'gout' })).toBe('Sens aiguisé (Goût)');
+      expect(refLabel('talents', { id: 'chanson-de-marin', spec: 'jacques-bret-a-rencontre-notre-acier' }))
+        .toBe('Chanson de marin (Jacques Bret a rencontré notre acier sur les mers !)');
     });
   });
 
-  // ── Phase 3 — Domaines OUVERTS (savoir/metier) : `specsOpen:true`, specs[] = {id,label}[] connus,
-  // MAIS `spec` d'instance peut aussi être un TEXTE LIBRE (région/métier hors catalogue) — ce n'est
-  // PAS une erreur (à la différence des domaines FERMÉS ci-dessus). Le garde-fou ne peut donc pas
-  // exiger « tout spec résout » ; il vérifie l'INVARIANT réellement actionnable : aucune instance ne
-  // traîne encore le libellé FR d'une spec CONNUE alors qu'un id existe pour elle (régression de
-  // migration) — texte libre véritable (norme hors catalogue) toléré tel quel.
-  describe('Domaines OUVERTS (savoir/metier) — specsOpen:true, connus = id, texte libre toléré (Phase 3)', () => {
-    const OPEN_SKILL_IDS = new Set(['savoir', 'metier']);
+  // ── GARDE EXHAUSTIVE (Phase 3 complétude) — remplace TOUTES les gardes par-domaine ci-dessus/passées.
+  // Construit AUTOMATIQUEMENT, à partir de skills.json/talents.json eux-mêmes, l'ensemble des ids valides
+  // de CHAQUE def à `specs` non vide (`specEntryId` — id inline OU id mirroré d'un `specsSource`) ; parcourt
+  // ENSUITE toutes les données (y compris skills.json/talents.json EUX-MÊMES pour les auto-références —
+  // passive/test.matches d'un talent vers un AUTRE domaine, ex. Oreille absolue → Divertissement) et les
+  // pré-tirés RUNTIME (`makePregens()`, via import). AUCUNE exception silencieuse :
+  //  - domaine FERMÉ (`specsOpen` absent/falsy) : toute instance DOIT résoudre à un id connu (ou la
+  //    sentinelle « (Au choix) », ou — SEUL report explicite conservé — un descripteur d'attaque NATURELLE
+  //    du bestiaire pour corps-a-corps/projectiles, cf. whitelist historique) ; sinon le test ÉCHOUE.
+  //  - domaine OUVERT (`specsOpen:true`) : une instance DOIT être soit un id connu, soit un texte
+  //    GENUINEMENT hors catalogue (texte libre toléré) — mais SI son normalisé correspond à un libellé
+  //    FR CONNU de sa `specs[]`, c'est une RÉGRESSION de migration (devrait être l'id) → le test ÉCHOUE.
+  // Ajouter un domaine à `specs[]` = automatiquement couvert ici ; plus JAMAIS besoin d'étendre une liste.
+  describe('GARDE EXHAUSTIVE — toute compétence/talent à specs[] non vide (Phase 3 complétude)', () => {
     const norm = (s: string): string => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+    const isSentinel = (s: string): boolean => norm(s) === 'au choix';
 
-    it('savoir/metier : specsOpen:true, specs[] = {id,label}[] (lores/métiers CONNUS, catalogue illustratif)', () => {
-      for (const id of OPEN_SKILL_IDS) {
-        const s = findSkillById(id)!;
-        expect(s.specsOpen, id).toBe(true);
-        expect(s.specs.length > 0, id).toBe(true);
-        for (const entry of s.specs) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+    const ALL_SPEC_DEFS = [...skills, ...talents].filter((d) => Array.isArray(d.specs) && d.specs.length > 0);
+    const CLOSED = new Map<string, Set<string>>();
+    const OPEN = new Map<string, { ids: Set<string>; byLabel: Map<string, string> }>();
+    for (const def of ALL_SPEC_DEFS) {
+      const ids = new Set(def.specs!.map((e) => specEntryId(e)));
+      if (def.specsOpen) OPEN.set(def.id, { ids, byLabel: new Map(def.specs!.map((e) => [norm(specEntryLabel(e)), specEntryId(e)])) });
+      else CLOSED.set(def.id, ids);
+    }
+
+    // Descripteurs d'attaque NATURELLE du bestiaire (corps-a-corps/projectiles) — PAS des Spés de Groupe
+    // (`grantNaturalWeapon` ne pose jamais de `subType`/`weaponGroup`, donc jamais comparés à rien).
+    // Liste EXHAUSTIVE (prouvée par énumération de creatures.json) — cf. historique Phase 3 sous-commit 1.
+    const CREATURE_NATURAL_SPEC_WHITELIST = new Set([
+      'Bois', 'Cornes nasales', 'Crocs', 'Dents', 'Griffes', 'Griffes incurvées', 'Griffes recourbées',
+      'Griffes recouvertes de gromril', 'Griffes semblables à des racines', 'Pinces', 'Souffle', 'Toile',
+      'sans spécialisation',
+    ]);
+    const NATURAL_WEAPON_SKILLS = new Set(['corps-a-corps', 'projectiles']);
+
+    const unresolved: string[] = [];
+    function checkSpec(defId: string, spec: unknown, where: string, inCreatures: boolean): void {
+      if (typeof spec !== 'string' || isSentinel(spec)) return;
+      const closedIds = CLOSED.get(defId);
+      if (closedIds) {
+        if (closedIds.has(spec)) return;
+        if (inCreatures && NATURAL_WEAPON_SKILLS.has(defId) && CREATURE_NATURAL_SPEC_WHITELIST.has(spec)) return;
+        unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (FERMÉ, id inconnu de specs[])`);
+        return;
       }
-    });
+      const open = OPEN.get(defId);
+      if (open) {
+        if (open.ids.has(spec)) return; // déjà un id
+        const knownId = open.byLabel.get(norm(spec));
+        if (knownId) unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (OUVERT, libellé FR CONNU non migré — devrait être « ${knownId} »)`);
+        // sinon texte libre GENUINEMENT hors catalogue — toléré (domaine OUVERT).
+      }
+    }
+    function walk(node: unknown, where: string, inCreatures: boolean): void {
+      if (Array.isArray(node)) { node.forEach((x) => walk(x, where, inCreatures)); return; }
+      if (!isObj(node)) return;
+      const idLike = (node.id ?? node.skillId ?? node.talentId ?? node.skill) as string | undefined;
+      if (typeof idLike === 'string') {
+        if (isObj(node.spec)) { for (const [k, v] of Object.entries(node.spec)) checkSpec(k, v, `${where}.spec{${k}}`, inCreatures); }
+        else checkSpec(idLike, node.spec, where, inCreatures);
+      }
+      const wcId = (node.wildcard as { id?: string } | undefined)?.id;
+      if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) checkSpec(wcId, so, `${where}.wildcard{${wcId}}.specOptions`, inCreatures);
+      for (const v of Object.values(node)) walk(v, where, inCreatures);
+    }
 
-    it('creatures/careerLevels/species/talents : aucune instance savoir/metier ne porte encore le libellé FR d’une spec CONNUE (doit être son id) — texte libre hors catalogue toléré', () => {
-      const canonByDomain = new Map(
-        [...OPEN_SKILL_IDS].map((id) => [id, new Map(findSkillById(id)!.specs.map((e) => [norm((e as { label: string }).label), (e as { id: string }).id]))]),
-      );
-      const check = (defId: string | undefined, spec: unknown, where: string): void => {
-        if (!defId || !OPEN_SKILL_IDS.has(defId) || typeof spec !== 'string') return;
-        const canon = canonByDomain.get(defId)!;
-        const n = norm(spec);
-        if (!canon.has(n)) return; // texte libre (région/métier hors catalogue) — OUVERT, pas une erreur
-        expect(spec, `${where}{${defId}} → ${JSON.stringify(spec)} (le libellé FR connu doit être son id)`).toBe(canon.get(n));
-      };
-      const visit = (node: unknown): void => {
-        if (Array.isArray(node)) { node.forEach(visit); return; }
-        if (!isObj(node)) return;
-        check(node.id as string | undefined, node.spec, 'id');
-        check(node.skillId as string | undefined, node.spec, 'skillId');
-        check(node.talentId as string | undefined, node.spec, 'talentId');
-        check(node.skill as string | undefined, node.spec, 'skill');
-        const wcId = (node.wildcard as { id?: string } | undefined)?.id;
-        if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) check(wcId, so, 'wildcard.specOptions');
-        for (const v of Object.values(node)) visit(v);
-      };
-      visit(creatures); visit(careerLevels); visit(species); visit(talents);
+    it('creatures/careerLevels/species/stars/traits/trappings/talents/skills/crewRoles/tavernGames/seaWeather/pregens(runtime) : toute spec resout (fermé) ou id/texte-libre valide (ouvert)', () => {
+      walk(creatures, 'creatures', true);
+      walk(careerLevels, 'careerLevels', false);
+      walk(species, 'species', false);
+      walk(stars, 'stars', false);
+      walk(traits, 'traits', false);
+      walk(trappings, 'trappings', false);
+      walk(talents, 'talents(self-réf)', false); // ex. Oreille absolue.passive → Divertissement (Chant)
+      walk(skills, 'skills(self-réf)', false);
+      walk(crewRoles, 'crewRoles', false);
+      walk(tavernGamesJson, 'tavernGames', false);
+      walk(seaWeatherJson, 'seaWeather', false);
+      walk(makePregens(), 'pregens(runtime — makePregens)', false); // composition réelle career/species → Combatant
+      expect(unresolved, unresolved.join('\n')).toEqual([]);
     });
   });
 });

@@ -65,7 +65,7 @@ import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, a
 import { resolveVoyageCrewTest } from './seaVoyageFlow';
 import { rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
-import { findSeaShantyByLabel } from '../data';
+import { findSeaShantyById } from '../data';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById } from '../data';
 import { structureCombatant } from '../engine/structures';
 import { targetArc } from './fireArc';
@@ -1158,7 +1158,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!singer) return;
       const known = knownShanties(singer);
       set({
-        pendingShanty: { shipId: ship.id, singerId: singer.id, shantyId: known.length === 1 ? findSeaShantyByLabel(known[0])?.id ?? null : null, result: null },
+        pendingShanty: { shipId: ship.id, singerId: singer.id, shantyId: known.length === 1 ? findSeaShantyById(known[0])?.id ?? null : null, result: null },
         battle: { ...battle, action: null, preview: null },
       });
     },

@@ -81,11 +81,17 @@ export function buySkillAdvance(hero: Combatant, skillName: string, spec: string
 }
 
 /** Achète UNE Augmentation de Talent (le crée à `times` 1 s'il est absent, sinon +1) si les PX
- *  suffisent. `talentName` = libellé CONCRET (spec résolue). Les Talents hors carrière ne sont
- *  pas achetables (l.97) et le Maxi doit être respecté (LDB 10) — vérifiés par l'appelant
- *  (`talentMaxReached`) ; ici on applique le coût standard. */
-export function buyTalent(hero: Combatant, talentName: string): AdvanceResult {
-  const { name, spec } = splitLabel(talentName);
+ *  suffisent. `talentName` = libellé CONCRET (spec résolue) — utilisé pour résoudre le NOM→id
+ *  (`findTalent`) et les messages ; `rawSpec`, s'il est fourni, est l'identité PERSISTÉE réelle
+ *  (id d'un domaine migré, ou texte libre d'un domaine non migré/ouvert) — ne JAMAIS re-dériver la
+ *  spec depuis `talentName` re-parsé (`splitLabel` ne renvoie que le LIBELLÉ d'affichage entre
+ *  parenthèses, ex. « Chaos » au lieu de l'id `chaos` — cf. `wildcardSpecs`). Sans `rawSpec` (appel
+ *  direct legacy sans spec, ou Talent non spécialisé), repli sur la spec re-parsée. Les Talents hors
+ *  carrière ne sont pas achetables (l.97) et le Maxi doit être respecté (LDB 10) — vérifiés par
+ *  l'appelant (`talentMaxReached`) ; ici on applique le coût standard. */
+export function buyTalent(hero: Combatant, talentName: string, rawSpec?: string): AdvanceResult {
+  const { name, spec: parsedSpec } = splitLabel(talentName);
+  const spec = rawSpec ?? parsedSpec;
   const id = findTalent(name)?.id ?? slugId(name);
   const existing = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
   const already = existing?.times ?? 0;

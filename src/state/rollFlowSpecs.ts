@@ -883,7 +883,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (s, p, actor) => {
       if (!actor || !p.shantyId) return null; // chanson non choisie → pas de jet
-      const value = testValue(actor, 'divertissement', undefined, 'Chant'); // Intermédiaire (+0) → cible = valeur
+      const value = testValue(actor, 'divertissement', undefined, 'chant'); // Intermédiaire (+0) → cible = valeur
       const t = rollTest(value, 'intermediaire', battleRng());
       return { result: { roll: t.roll, target: t.target, success: t.success, sl: t.sl } };
     },
@@ -893,7 +893,7 @@ export const FLOWS = {
     lens: {
       actorTR: (p) => p.result ? { ...p.result, isDouble: isDoubleRoll(p.result.roll) } : null,
       applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: { roll: tr.roll, target: tr.target, success: tr.success, sl: tr.sl } }),
-      dieTarget: (_slot, actor) => testValue(actor, 'divertissement', undefined, 'Chant'),
+      dieTarget: (_slot, actor) => testValue(actor, 'divertissement', undefined, 'chant'),
     },
   }),
 
