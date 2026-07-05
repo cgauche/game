@@ -28,7 +28,7 @@ import { touchActors } from './combatOrParty';
 import { gainCorruption } from './corruptionFlow';
 
 import type { Get, Set } from './flowTypes';
-import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, type TestResult } from '../engine/tests';
+import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, bestForcedRoll, type TestResult } from '../engine/tests';
 
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
 export interface PendingBase {
@@ -354,10 +354,12 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
             if (L.forceWin) return L.forceWin(loc.slot, actor!, cur);
             const tgt = L.dieTarget?.(loc.slot, actor!); if (tgt == null) return null;
             const floor = L.floorSL?.(loc.slot, actor!) ?? 1;
-            // Dé 01 (slMode différence → DR MAX) planché : « vous choisissez le résultat » = le meilleur
-            // (LDB 17 l.68) ; opposé : `floorSL` garantit d'emporter (oppSL+1). Réussite forcée ≥ 1 (LDB 12 l.147).
-            const sl = Math.max(evaluateTest(1, tgt).sl, floor, 1);
-            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl), p);
+            // « Vous choisissez le résultat » = LE MEILLEUR (LDB 17 l.68) : `bestForcedRoll` donne le dé DR-max
+            // SELON la policy (01 en standard, le plus haut en Fast DR). Opposé : `floorSL` garantit d'emporter
+            // (oppSL+1). Réussite forcée ≥ 1 (LDB 12 l.147). Le dé porte l'`isDouble` (Critique) correct.
+            const die = bestForcedRoll(tgt);
+            const sl = Math.max(evaluateTest(die, tgt).sl, floor, 1);
+            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(die, tgt, sl), p);
           }
         : () => spec.resolve(s, loc.slot, actor, get, {}, p);
       opForceSuccess(actor, resolveForced, loc.commit);

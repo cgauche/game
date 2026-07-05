@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { evaluateTest, maxForcedRoll, rollTest, evaluateCombinedTest, slTier, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure, SL_IMPRESSIVE, SL_ASTOUNDING, assistBonus } from './tests';
+import { evaluateTest, maxForcedRoll, bestForcedRoll, rollTest, evaluateCombinedTest, slTier, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure, SL_IMPRESSIVE, SL_ASTOUNDING, assistBonus } from './tests';
 import { getTestPolicy, type TestPolicy } from './testPolicy';
 import type { RNG } from './dice';
 import { setRule, resetRule } from './policy';
@@ -58,6 +58,26 @@ describe('maxForcedRoll — borne du dé forcé DÉRIVÉE de la policy (pas un n
   });
   it("'off' : pas de bande d'échec auto → plafonné à la cible", () => {
     expect(maxForcedRoll(99, P({ bandsMode: 'off' }))).toBe(99);
+  });
+});
+
+describe('bestForcedRoll — dé PAR DÉFAUT de la Résilience, DR-MAX selon la policy (LDB 17 l.68)', () => {
+  it("standard (DR = différence de dizaines) : le meilleur jet est 01 → dizaines de la cible", () => {
+    expect(bestForcedRoll(55, P())).toBe(1);
+    expect(evaluateTest(bestForcedRoll(55, P()), 55, P()).sl).toBe(5); // tens(55) − tens(01) = 5
+  });
+  it("fast (DR = dizaines du JET) : le meilleur jet est le PLUS HAUT valide (≈ la cible), PAS 01", () => {
+    const fp = P({ slMode: 'fast' });
+    expect(bestForcedRoll(55, fp)).toBe(55);                       // maxForcedRoll(55) = 55
+    expect(evaluateTest(bestForcedRoll(55, fp), 55, fp).sl).toBe(5); // dizaines de 55
+    // Le vieux dé 01 codé en dur en Fast DR = DR MINIMAL (dizaines 0, planché à 1 par la bande auto) vs 5.
+    expect(evaluateTest(1, 55, fp).sl).toBe(1);
+    expect(evaluateTest(10, 55, fp).sl).toBe(1);                   // tout jet bas → DR bas ; bestForcedRoll les évite
+  });
+  it("fast : la bande d'échec auto plafonne le meilleur jet (cible ≥ autoFailMin)", () => {
+    const fp = P({ slMode: 'fast' });
+    expect(bestForcedRoll(99, fp)).toBe(95);                       // 96-00 échoue toujours → borné à 95
+    expect(evaluateTest(bestForcedRoll(99, fp), 99, fp).sl).toBe(9);
   });
 });
 

@@ -98,6 +98,15 @@ export function maxForcedRoll(target: number, policy: TestPolicy = getTestPolicy
   return Math.min(target, ceil);
 }
 
+/** Le dé qui MAXIMISE le DR d'une réussite FORCÉE (« Je ne faillirai pas ! », LDB 17 l.68 : on choisit
+ *  le résultat → LE MEILLEUR), selon le `slMode` — car le meilleur jet DÉPEND de la policy :
+ *  - **fast** (DR = dizaines du jet, LDB 12 l.128) → le jet valide le PLUS HAUT (`maxForcedRoll` : dizaines max) ;
+ *  - **standard** (DR = différence de dizaines) → **01** (le plus bas → dizaines de la cible).
+ *  SOURCE UNIQUE du dé PAR DÉFAUT de la Résilience — remplace les `01` codés en dur (faux en Fast DR). */
+export function bestForcedRoll(target: number, policy: TestPolicy = getTestPolicy()): number {
+  return policy.slMode === 'fast' ? maxForcedRoll(target, policy) : 1;
+}
+
 /** Issue d'un Test Combiné (LDB 12 l.229, règle optionnelle) : UN seul d100 confronté à DEUX valeurs. */
 export interface CombinedTestResult {
   roll: number;
