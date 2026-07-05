@@ -413,10 +413,9 @@ export function recomputeLoadout(c: Combatant): void {
   const weapons: Weapon[] = [];
   const lo = activeLoadout(c);
   if (lo) {
-    // Mains amputées (LDB 18) : une main perdue ne tient rien. L'arme DIRECTRICE est conservée tant qu'il reste
-    // une main (adaptation — le −20 CC/CT de l'amputation s'applique déjà via la séquelle) ; l'objet de main
-    // SECONDAIRE (bouclier / 2e arme) tombe dès qu'une main manque (la main restante tient l'arme directrice).
-    // Les DEUX mains perdues → Mains nues.
+    // Mains amputées (LDB 18) : une main perdue ne tient rien. L'arme DIRECTRICE reste tenue tant qu'il reste
+    // une main (le −20 CC/CT de l'amputation est porté par la séquelle) ; l'objet de main SECONDAIRE
+    // (bouclier / 2e arme) tombe dès qu'une main manque. Les DEUX mains perdues → Mains nues.
     const mainLost = handAmputated(c, 'main');
     const offLost = handAmputated(c, 'off');
     const mainIt = !(mainLost && offLost) && lo.main ? items.find((i) => i.uid === lo.main && (i.kind === 'melee' || i.kind === 'ranged')) : undefined;
