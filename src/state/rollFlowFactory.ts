@@ -97,6 +97,20 @@ export interface RollFlowLens<P extends PendingBase, Slot extends PendingBase = 
   forceWin?: (slot: Slot, actor: Combatant, tr: TestResult | null) => Partial<Slot> | null;
 }
 
+/**
+ * ISSUE CANONIQUE d'un jet — source UNIQUE de « a-t-il réussi + de combien ». `won` = la réussite
+ * RÉELLE du flux (la MÊME que lit la narration et l'« Appliquer ») ; `sl` = le Degré de Réussite
+ * courant. La fabrique en DÉRIVE le gating des verbes d'influence (`failed = !outcome(slot).won`) :
+ * un flux ne déclare plus un prédicat `failed` SÉPARÉ, qui pouvait DIVERGER de l'issue (bug `activity` :
+ * la narration lisait `combinedLevel`, l'ancien `failed` lisait skill-1 → Chance/Résilience mal gatées).
+ */
+export interface RollOutcome {
+  /** Le jet a-t-il RÉUSSI (issue réelle) ? Lu sur un jet EXISTANT — le « a-t-il été lancé ? » reste `rolled`. */
+  won: boolean;
+  /** Degré de Réussite courant (« de combien »). */
+  sl: number;
+}
+
 export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = P> {
   /** Clé du pending dans le store (ex. `'pendingTrample'`). */
   key: keyof GameState & string;
@@ -121,8 +135,13 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
   resolve: (s: GameState, slot: Slot, actor: Combatant | undefined, get: Get, forced?: ForcedResolve, p?: P) => Partial<Slot> | null;
   /** Patch de RELANCE (défaut : `resolve`) — utile en Test opposé où l'adversaire garde son jet figé. */
   reresolve?: (s: GameState, slot: Slot, actor: Combatant, get: Get, p?: P) => Partial<Slot> | null;
-  /** Jet « propre raté » → relançable par la Chance (LDB 12 : d100 raté, 1× max). */
-  failed: (slot: Slot) => boolean;
+  /**
+   * ISSUE CANONIQUE du slot (cf. `RollOutcome`) : SOURCE UNIQUE de « réussi + de combien ». La fabrique
+   * DÉRIVE d'elle le gating de la Chance/Pacte/Résistance (`failed = !outcome(slot).won`) — plus de
+   * prédicat `failed` séparé qui pourrait DIVERGER de l'issue réelle du flux. `won` lit un jet EXISTANT ;
+   * le « a-t-il été lancé ? » reste porté par `rolled(slot)` (Chance : LDB 12, jet propre raté, 1× max).
+   */
+  outcome: (slot: Slot) => RollOutcome;
   /** Chance « +1 DR » (absent → le flux ne l'offre pas). `guard` → cas interdits (ex. Test binaire). */
   bonus?: { guard?: (slot: Slot) => boolean; derive: (s: GameState, slot: Slot, actor: Combatant, p?: P) => Partial<Slot> | null };
   /** Lentille de dérivation des verbes d'influence (cf. `RollFlowLens`). PRÉSENTE ⇒ la fabrique compose
@@ -325,6 +344,10 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
   const reresolveOf = (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) =>
     spec.reresolve ? spec.reresolve(s, slot, actor, get, p) : spec.resolve(s, slot, actor, get, undefined, p);
   const L = spec.lens; // lentille de dérivation des verbes d'influence (Chance/Résilience/Résistance)
+  // « Échec » (gating de la Chance/Pacte/Résistance) DÉRIVÉ de l'issue canonique : plus de prédicat
+  // `failed` séparé qui pourrait diverger de l'issue réelle du flux (`won`). `won` est lu sur un jet
+  // EXISTANT — les consommateurs (opReroll/opDarkPact/opResist) court-circuitent tous sur `rolled` d'abord.
+  const isFailed = (slot: Slot) => !spec.outcome(slot).won;
   return {
     picker: spec.caps?.picker as RollFlowHandlers['picker'],
     roll(get, set, pid) {
@@ -337,7 +360,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc) return;
       const actor = spec.actor(s, loc.slot, p);
-      opReroll(loc.slot, actor, spec.rolled(loc.slot), spec.failed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, loc.commit);
+      opReroll(loc.slot, actor, spec.rolled(loc.slot), isFailed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, loc.commit);
     },
     bonusSL(get, set, pid) {
       if (!spec.bonus && !L) return;
@@ -401,7 +424,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const resolveResist = L
         ? (sl: number) => { const tgt = L.dieTarget?.(loc.slot, actor!) ?? 0; return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl), p); }
         : (sl: number) => spec.resolve(s, loc.slot, actor, get, { sl }, p);
-      opResist(slot, actor, spec.rolled(loc.slot), spec.failed(loc.slot), resolveResist, loc.commit);
+      opResist(slot, actor, spec.rolled(loc.slot), isFailed(loc.slot), resolveResist, loc.commit);
     },
     determine(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;
@@ -425,7 +448,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc) return;
       const actor = spec.actor(s, loc.slot, p);
-      opDarkPact(actor, spec.rolled(loc.slot), spec.failed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, set, loc.commit);
+      opDarkPact(actor, spec.rolled(loc.slot), isFailed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, set, loc.commit);
     },
   };
 }
