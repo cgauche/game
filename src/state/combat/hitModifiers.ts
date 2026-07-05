@@ -1,9 +1,8 @@
 /**
  * Registre de MODIFICATEURS DE TOUCHE ORDONNÉS (`HitModifier`) — couture d'extension calquée sur
  * `roundHooks`/`turnHooks` (module FEUILLE peuplé par effet de bord à l'import). Les sauvegardes
- * SYNCHRONES « après la touche » d'`applyAttackResult` (anciennement une suite de `if` dont l'ordre
- * était implicite-dans-le-code) vivent ICI, chacune étant un modifier ordonné par `order` qui TESTE
- * une condition et TRANSFORME `res` (l'`AttackResult`).
+ * SYNCHRONES « après la touche » d'`applyAttackResult` vivent ICI, chacune étant un modifier ordonné par
+ * `order` qui TESTE une condition et TRANSFORME `res` (l'`AttackResult`).
  *
  * N'importe RIEN de combatFlow (qui le ré-exporte via le baril) → pas de cycle. Les helpers propres
  * aux sauvegardes (`martyrGuardOf`, `wardedAgainst`, `organicProjectile`) sont DÉPLACÉS ici depuis
@@ -35,7 +34,7 @@ import { pushBackTiles } from '../combatGeometry';
 
 // ── Helpers propres aux sauvegardes, DÉPLACÉS depuis combatFlow (ré-exporté via le baril pour applyCast / tests) ──
 
-/** Martyr (LDB 42 — L13) : le prêtre (vivant, présent) qui encaisse à la place de `target`, ou null. */
+/** Martyr (LDB 43 l.99) : le prêtre (vivant, présent) qui encaisse à la place de `target`, ou null. */
 export function martyrGuardOf(battle: BattleState, target: Combatant): Combatant | null {
   const id = (target.activeEffects ?? []).find((e) => e.martyrGuard)?.martyrGuard;
   if (!id || id === target.id) return null;
@@ -184,7 +183,7 @@ registerHitModifier({
 });
 
 registerHitModifier({
-  // Martyr (LDB 42 — L13) : « Vous recevez tous les Dégâts subis en principe par vos cibles » —
+  // Martyr (LDB 43 l.107) : « Vous recevez tous les Dégâts subis en principe par vos cibles » —
   // le prêtre encaisse les Dégâts BRUTS de la frappe, mitigés par 2×SON BE + ses PA à la
   // localisation touchée ; la cible ne perd rien (les États de la touche restent sur elle).
   id: 'martyr',

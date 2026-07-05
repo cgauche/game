@@ -352,9 +352,6 @@ export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG 
   };
 }
 
-// martyrGuardOf / wardedAgainst / organicProjectile (sauvegardes post-touche) déplacés →
-// state/combat/hitModifiers (ré-exportés via le baril ci-dessus pour applyCast / les tests).
-
 // applyZoneCrossings → combatGeometry.ts
 
 /** Surprise au début du combat (LDB 13 l.52-81) : le camp pris en EMBUSCADE (`surprisedSide`) fait, pour
@@ -1887,7 +1884,7 @@ export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant)
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53 ;
- *  arme Dangereuse : aussi tout jet raté incluant un 9, LDB 63 l.13-14). */
+ *  arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315). */
 export function attackerFumbled(res: AttackResult, weapon?: Weapon): boolean {
   if (!res.attackerDetail) return false;
   const { roll, success } = res.attackerDetail;
@@ -1895,7 +1892,7 @@ export function attackerFumbled(res: AttackResult, weapon?: Weapon): boolean {
 }
 
 /** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51 ;
- *  parade avec une arme Dangereuse : aussi tout jet raté incluant un 9, LDB 63 l.13-14). */
+ *  parade avec une arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315). */
 export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon): boolean {
   if (!res.defenderDetail) return false;
   const { roll, success } = res.defenderDetail;
@@ -2687,9 +2684,6 @@ export function resumeManeuverDefense(get: Get, set: SetFn, resume: { attackerId
 }
 
 
-// applyActiveEffect / durationFromCtx vivent désormais dans le moteur (engine/ops) —
-// partagés par l'applicateur d'ops (sorts, tables de contrecoup, mutations).
-
 /**
  * Composant d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) — appelé UNE fois
  * au point d'incantation d'un Sort d'Arcane/Domaine par un HÉROS. Si un composant pour ce Sort est
@@ -3456,7 +3450,7 @@ export function applyCast(
           return;
         }
       }
-      // Martyr (LDB 42 — L13) : les Dégâts du Projectile vont au prêtre (BE doublé pour ces Dégâts).
+      // Martyr (LDB 43 l.107) : les Dégâts du Projectile vont au prêtre (BE doublé pour ces Dégâts).
       if (mres.hit && mres.woundsLost && battle) {
         const priest = martyrGuardOf(battle, t);
         if (priest) {
@@ -4368,7 +4362,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   if (combatAdvanceBlocked(get())) return;
   if (get().combatCursor) set({ combatCursor: null }); // le curseur clavier/manette appartient au tour qui s'achève
   const battle = get().battle!; // non-null garanti par combatAdvanceBlocked ci-dessus
-  // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
+  // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 62 l.319) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
   if (prevActive?.chargedThisTurn) prevActive.chargedThisTurn = false;
@@ -4397,7 +4391,7 @@ export function advanceTurn(get: Get, set: SetFn) {
         base = combatOrder(battle.combatants, isMerScene(get().scene), battleRng());
         battle.baseOrder = base;
       }
-      // Agir en dernier : Maladresse (Oups! 21-40, 1 Round) OU arme Lente active (LDB 63 l.25, permanent).
+      // Agir en dernier : Maladresse (Oups! 21-40, 1 Round) OU arme Lente active (LDB 62 l.331, permanent).
       const lastIds = battle.combatants.filter((c) => c.actLastNextRound || strikesLast(c.weapons)).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
       for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(ev('detail', tr('cf.actLast', { name: c.name }), c.id)); }
@@ -4590,12 +4584,6 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
   // manuel suspend (cascade) et n'en pousse aucune. On les folde dans le `battle.log` que le `move` réécrit.
   battle.log.push(...drainPendingLog(get, set));
 }
-
-// brokenRecovery (récupération du Brisé en fin de Round, LDB 16 l.57-59) déplacé → state/combat/roundHooks
-// (hook `roundBoundary` order 74), ré-exporté en tête de ce fichier pour broken-recovery.test.
-
-// resolvePsychAI (psychologie IA en début de tour, LDB 21) déplacé → state/combat/turnHooks (hook
-// `turnStart` order 40), ré-exporté en tête de ce fichier pour psych-ia.test / psych-cible.test / frenzy.test.
 
 /** Forme commune d'un Test de Psychologie de combat DÛ pour un héros (cumul `prevDR` = 0 sauf Peur étendue). */
 type HeroPsychDue = { kind: PsychType; sourceId: string; sourceName: string; indice: number; prevDR: number; cible?: string };
@@ -4839,9 +4827,6 @@ registerCascadeApplier(
   },
   (success, name) => (success ? tr('out.terreurHold', { name }) : tr('cf.psychYields', { name })),
 );
-
-// endFrenzyIfDone / aiMaybeFrenzy / resolvePsychAI (cycle de tour ennemi) déplacés → state/combat/turnHooks
-// (hooks `turnStart` ordonnés), ré-exportés en tête de ce fichier pour frenzy*.test / psych*.test.
 
 // === TRACE DE DÉCISION IA (DEV uniquement) ==================================================
 // Buffer en anneau des derniers tours pilotés par l'IA : action CHOISIE + classement des candidats

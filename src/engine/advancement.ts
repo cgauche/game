@@ -163,7 +163,7 @@ export function careerChangeCost(completed: boolean): number {
 export interface CareerChangeContext {
   /** Le Niveau de Carrière COURANT est-il complété (cf. isCareerLevelComplete) ? */
   completed: boolean;
-  /** La Carrière cible est-elle de la MÊME Classe que l'actuelle (LDB 08 l.9 : sinon +100 PX) ? */
+  /** La Carrière cible est-elle de la MÊME Classe que l'actuelle (LDB 07 l.144 : sinon +100 PX) ? */
   sameClass: boolean;
   /** Le Niveau cible existe-t-il dans les données de la Carrière cible ? */
   targetLevelExists: boolean;

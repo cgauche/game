@@ -354,7 +354,7 @@ export interface ItemCapabilities {
    *  fois que les circonstances l'y forceraient (désarmement / Piège-lame) — lu par `applyBladeTrap`
    *  (GATÉ sur le port). */
   preventForcedDrop?: boolean;
-  /** Protège des intempéries (Cape/Manteau, LDB ch.66 l.46) — annule le malus de Test d'Exposition au
+  /** Protège des intempéries (Cape/Manteau, LDB ch.65 l.44) — annule le malus de Test d'Exposition au
    *  froid (GATÉ sur le port). */
   weatherProtection?: boolean;
   /** Abri de campement (Tente, LDB p.308) — annule/atténue l'Exposition d'une nuit dehors (NON gaté). */

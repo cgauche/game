@@ -761,7 +761,7 @@ textarea:focus {
 .af-bar i.on { background: var(--gc); border-color: var(--gc); box-shadow: 0 0 4px var(--gc); }
 .af-action { --gc: #e0b83a; } /* Action — or */
 .af-move   { --gc: #46c2d6; } /* Mouvement — cyan */
-.af-adv    { --gc: #ff9b3d; } /* Avantage — orange (plafond 10, option RAW LDB 15 l.17) */
+.af-adv    { --gc: #ff9b3d; } /* Avantage — orange (plafond 10, option RAW LDB 14 l.198) */
 /* Aperçu de clic (tap 1) : crans qui VONT être dépensés (clignotent) / gagnés (se remplissent en
    clignotant) — montre le coût/gain de l'opération avant le commit du 2ᵉ clic. */
 @property --af-pulse { syntax: '<number>'; inherits: true; initial-value: 1; }

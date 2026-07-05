@@ -23,7 +23,7 @@ function Notches({ kind, value, max, vertical, title, spend = 0, gain = 0 }: { k
 
 /** Cadre du combattant ACTIF (barre d'action seulement) : Action verticale à gauche | portrait |
  *  Mouvement vertical à droite ; sous le portrait : Avantage (10 crans — plafond RAW optionnel
- *  LDB 15-Dépl l.17). Le portrait + sa VIE viennent de la tuile-portrait UNIFIÉE (PortraitTile),
+ *  LDB 14 l.198). Le portrait + sa VIE viennent de la tuile-portrait UNIFIÉE (PortraitTile),
  *  identique au dock et à la frise. Pur à props (testable en SSR). */
 export function ActiveFrame({ c, ring, isHero, actAvail, actMax, moveLeft, moveMax, title, spendAction = 0, spendMove = 0, gainAdv = 0 }: {
   c: Combatant; ring: string; isHero: boolean;

@@ -4,9 +4,9 @@
  * des helpers que combat.ts/items.ts/combatFlow appellent au lieu de tester des chaînes en dur. Aucune
  * mutation. Accepte tout porteur de `qualities` (Weapon ou ItemInstance).
  *
- * Plus de `defs/` mécaniques : la MÉCANIQUE de chaque qualité vit dans `qualities.json`, lue PAR ID —
+ * La MÉCANIQUE de chaque qualité vit dans `qualities.json`, lue PAR ID —
  * `passive: GameOp[]` (weaponRollMod/weaponDamageMod/armourPierce/critOnRoll/testMod) pour les
- * modificateurs, `capabilities` pour les drapeaux irréductibles. `QUALITIES` ne porte plus que le libellé.
+ * modificateurs, `capabilities` pour les drapeaux irréductibles. `QUALITIES` ne porte que le libellé.
  */
 import type { Weapon, QualityInstance } from '../types';
 import { QualityDef } from './registry';
@@ -34,7 +34,7 @@ const passiveOf = (id: string): GameOp[] => qualityById.get(id)?.passive ?? [];
 
 /** Qualités du registre présentes sur l'objet (normalisées, avec id/donnée/Indice). Chaînes inconnues
  *  ignorées. Applique la PRÉSÉANCE `capabilities.beats` (ids) : une qualité vaincue par une autre présente
- *  est retirée (« Imprécise prend le dessus » sur Précise, LDB 63 l.20 ; Lente sur Rapide, LDB 62 l.321). */
+ *  est retirée (« Imprécise prend le dessus » sur Précise, LDB 62 l.323 ; Lente sur Rapide, LDB 62 l.321). */
 export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
   const out: ResolvedQuality[] = [];
@@ -98,13 +98,13 @@ export function parryDRAdjust(defenderWeapon: QualityCarrier | undefined, attack
   return rollModSum(defenderWeapon, 'parryByDefender') + rollModSum(attackerWeapon, 'parryAgainstAttacker');
 }
 
-/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 63 l.19) — réussi ou raté. Inclut le sous-
+/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 62 l.323) — réussi ou raté. Inclut le sous-
  *  effectif d'une Arme d'équipe d'Indice ≥ 3 (Imprécise, Aux Armes p.124). */
 export function attackDRAdjust(w: QualityCarrier | undefined): number {
   return rollModSum(w, 'attack') + (crewedTeamIndice(w) >= 3 ? -1 : 0);
 }
 
-/** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 63 l.26). */
+/** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 62 l.331). */
 export function vsDefenseDRAdjust(attackerWeapon: QualityCarrier | undefined): number {
   return rollModSum(attackerWeapon, 'vsDefense');
 }
@@ -161,7 +161,7 @@ export function rapideParryMod(attackerWeapon: QualityCarrier | undefined, parry
   return resolveQualities(parryWeapon).some((r) => r.caps?.fastStrike) ? 0 : -10;
 }
 
-/** Lente (LDB 63 l.25) : le porteur d'une arme Lente (active) frappe en dernier dans le Round. */
+/** Lente (LDB 62 l.331) : le porteur d'une arme Lente (active) frappe en dernier dans le Round. */
 export function strikesLast(weapons: QualityCarrier[] | undefined): boolean {
   return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.caps?.slowStrike));
 }
@@ -171,7 +171,7 @@ export function canStrikeFirst(weapons: QualityCarrier[] | undefined): boolean {
   return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.caps?.fastStrike));
 }
 
-/** Dangereuse (LDB 63 l.13-14) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ?
+/** Dangereuse (LDB 62 l.315) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ?
  *  Une Arme d'équipe d'Indice ≥ 4 maniée en sous-effectif devient Dangereuse (Aux Armes p.124). */
 export function dangerousNine(w: QualityCarrier | undefined, roll: number, success: boolean): boolean {
   const dangerous = resolveQualities(w).some((r) => r.caps?.fumbleOn9) || crewedTeamIndice(w) >= 4;
@@ -222,7 +222,7 @@ export interface DamageStepCtx {
   effDR: number;
   /** Dé des unités du jet de toucher (LDB 62 l.279/313). */
   units: number;
-  /** L'attaquant a Chargé ce Tour (gating Épuisante, LDB 63 l.16-17). */
+  /** L'attaquant a Chargé ce Tour (gating Épuisante, LDB 62 l.319). */
   charged?: boolean;
 }
 export interface DamageStep {
@@ -234,7 +234,7 @@ export interface DamageStep {
 
 /** Ajustement de Dégâts dû aux qualités (ops PASSIVES `weaponDamageMod`) : Dévastatrice (DR = max(DR, dé
  *  des unités)), Percutante (+ dé des unités) ; **annulés** si une qualité Inoffensive est présente. `extra` =
- *  qualités conférées hors arme (ex. par la Taille, LDB 85 l.295). Épuisante (`chargeGated`, LDB 63 l.16-17) :
+ *  qualités conférées hors arme (ex. par la Taille, LDB 85 l.295). Épuisante (`chargeGated`, LDB 62 l.319) :
  *  les Atouts de Dégâts DE L'ARME ne valent qu'en Charge (`ctx.charged`) — pas ceux conférés par la Taille. Pur. */
 export function qualityDamageStep(w: QualityCarrier | undefined, ctx: DamageStepCtx, extra: string[] = []): DamageStep {
   // Ops `weaponDamageMod` de l'ARME (id → passif). Épuisante : hors Charge, on retire les Atouts de Dégâts

@@ -177,7 +177,7 @@ export function resolveOpposed(attacker: TestResult, defender: TestResult): Oppo
   return { attacker, defender, winner, attackerWins: winner === 'attacker', netSL };
 }
 
-/** Influence « +`by` DR » sur un jet DÉJÀ résolu (Pacte du Marteau, LDB 17 l.73 ; bonus de Piège-lame, LDB 62) :
+/** Influence « +`by` DR » sur un jet DÉJÀ résolu (Chance, LDB 17 l.24 ; bonus de Piège-lame, LDB 62) :
  *  renvoie une copie du `TestResult` avec son Degré de Réussite augmenté, pour le RÉ-opposer ou le réappliquer.
  *  Atome PARTAGÉ des relances d'influence des Tests opposés — un seul point au lieu de `{ ...t, sl: t.sl + 1 }`
  *  recopié dans chaque résolveur (marchandage, désengagement, dissipation, opposition de sort, cascade). */

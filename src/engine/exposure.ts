@@ -7,7 +7,7 @@
  * FROID (l.334) : 1ᵉʳ échec → −10 CT/Agilité/Dextérité ; 2ᵉ → −10 toutes les autres ; 3ᵉ+ →
  * 1d10 Dégâts ignorant les PA (min 1) ; à 0 PB → Inconscient. « Certaines Possessions accordent
  * des bonus et des pénalités pour ces Tests » : sans bon Manteau, pénalité au Test de Froid
- * (ch.66 l.46 — non chiffrée dans le canon : application déclarée −10). La PEAU DE PHOQUE (MDG 14
+ * (ch.65 l.44 — non chiffrée dans le canon : application déclarée −10). La PEAU DE PHOQUE (MDG 14
  * l.277-279 : « +1 DR sur les Tests de Résistance effectués pour supporter l'exposition au froid »)
  * est consommée par `sealskinDR` : sur un Test BINAIRE, le +1 DR retient l'échec de justesse
  * (échec dont le DR remonte à ≥ +1) — lecture déclarée, aucun ±10 inventé.
@@ -38,7 +38,7 @@ export function weatherExposure(weather?: string): ExposureSeverity {
   return 'clement';
 }
 
-/** Le personnage PORTE-t-il une protection contre les intempéries (Manteau/Cape, ch.66 l.46) ? Capacité
+/** Le personnage PORTE-t-il une protection contre les intempéries (Manteau/Cape, ch.65 l.44) ? Capacité
  *  `weatherProtection` AGRÉGÉE et GATÉE sur le port (`engine/capabilities`) — une cape doit être PORTÉE
  *  pour protéger du froid ; lue PAR ID (≠ nom de l'objet). */
 export function hasCoat(c: Combatant): boolean {
@@ -90,7 +90,7 @@ export function isWeatherWarded(c: Combatant): boolean {
   return (c.activeEffects ?? []).some((e) => e.weatherImmune);
 }
 
-/** Cible (et base) d'UN Test d'Exposition au froid : Résistance +0, −10 sans manteau ni cape (ch.66 l.46). */
+/** Cible (et base) d'UN Test d'Exposition au froid : Résistance +0, −10 sans manteau ni cape (ch.65 l.44). */
 export function exposureTarget(c: Combatant, resVal: number): number {
   return Math.max(0, resVal + (hasCoat(c) ? 0 : -10));
 }
@@ -129,7 +129,7 @@ export function applyExposureFailure(c: Combatant, failures: number, rng: RNG, k
 
 /**
  * Une PÉRIODE d'Exposition pour `c` : `count` Tests de Résistance à `difficulty` (défaut +0) — au
- * froid : −10 sans manteau (ch.66 l.46), la peau de phoque (+1 DR, MDG 14 l.277) retient l'échec
+ * froid : −10 sans manteau (ch.65 l.44), la peau de phoque (+1 DR, MDG 14 l.277) retient l'échec
  * de justesse. Applique les échecs en cascade (RAW l.330/334, via `applyExposureFailure`).
  * Renvoie les jets et le journal. Nommée « night » pour la nuit dehors historique — sert aussi la
  * journée en mer (MDG 13 l.203-225).

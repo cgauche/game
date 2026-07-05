@@ -107,7 +107,7 @@ export interface AdvancementView {
   skillSlotsOpen: SkillSlotRow[];
   talents: TalentSlotRow[];
   targets: CareerTarget[];
-  /** Coût d'un changement vers une carrière donnée (id, sélecteur) : +100 hors Classe (LDB 08 l.9). */
+  /** Coût d'un changement vers une carrière donnée (id, sélecteur) : +100 hors Classe (LDB 07 l.144). */
   changeCostFor: (careerId: string) => number;
 }
 
@@ -252,7 +252,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
 
   const curClass = findCareerById(career)?.class;
   const changeCostFor = (careerId: string) =>
-    changeCost + (findCareerById(careerId)?.class === curClass ? 0 : 100); // LDB 08 l.9-11
+    changeCost + (findCareerById(careerId)?.class === curClass ? 0 : 100); // LDB 07 l.144
 
   return {
     xp: hero.xp ?? 0,

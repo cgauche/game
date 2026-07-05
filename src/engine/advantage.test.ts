@@ -7,7 +7,7 @@ const c = (advantage: number) => ({ advantage }) as Combatant;
 const ci = (advantage: number, I: number) =>
   ({ advantage, characteristics: { I }, conditions: [], weapons: [], activeEffects: [], liveTraits: [] }) as unknown as Combatant;
 
-describe('gainAdvantage — plafond « Limiter les Avantages » (LDB 15-Dépl l.17)', () => {
+describe('gainAdvantage — plafond « Limiter les Avantages » (LDB 14 l.198)', () => {
   afterEach(() => resetRule('combat-advantage-cap'));
   it('gagne n (défaut 1) et clampe au plafond (défaut 10)', () => {
     expect(advantageCap()).toBe(10);
@@ -24,7 +24,7 @@ describe('gainAdvantage — plafond « Limiter les Avantages » (LDB 15-Dépl l.
   });
 });
 
-describe('Plafond d’Avantage = Bonus d’Initiative (LDB 15-Dépl l.15, règle optionnelle)', () => {
+describe('Plafond d’Avantage = Bonus d’Initiative (LDB 14 l.197, règle optionnelle)', () => {
   afterEach(() => { resetRule('combat-advantage-cap-bi'); resetRule('combat-advantage-cap'); });
   it('off (défaut) : advantageCapFor = plafond fixe', () => {
     expect(advantageCapFor(ci(0, 45))).toBe(10);

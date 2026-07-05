@@ -36,7 +36,7 @@ export function rollInitiative(c: Combatant, rng: RNG): number {
 
 /**
  * Ordre d'initiative (`battle.order`) à partir des combattants (Initiative DÉJÀ fixée) : trie par Initiative
- * (`initiativeOrder`), puis place les porteurs d'arme « Lente » en dernier (LDB 63 l.25). À l'échelle MER, EXCLUT
+ * (`initiativeOrder`), puis place les porteurs d'arme « Lente » en dernier (LDB 62 l.331). À l'échelle MER, EXCLUT
  * les PASSAGERS (`isPassengerInBattle` : équipage d'une coque — le NAVIRE agit en unité, MDG ch.14). Les passagers
  * RESTENT dans `battle.combatants` ; seul leur slot d'`order` est retiré. Au person-scale (ou sans navire), `order`
  * est inchangé — y compris les MONTURES, qui gardent leur tour (RAW Combat monté LDB 14 l.182). PUR.

@@ -2181,7 +2181,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const fear = talentFearIndice(c);
         if (fear > 0) c.causesPeur = Math.max(c.causesPeur ?? 0, fear);
       }
-      // Ordre d'initiative (arme « Lente » en dernier, LDB 63 l.25). À l'échelle MER, l'équipage est PASSAGER
+      // Ordre d'initiative (arme « Lente » en dernier, LDB 62 l.331). À l'échelle MER, l'équipage est PASSAGER
       // (hors `order`) : seules les coques ont un tour (navire-unité, MDG ch.14). Au person-scale, ordre complet.
       // Une STRUCTURE de siège ET un AFFÛT inerte servi (`inert`, ex. baliste/canon de rempart) n'ont PAS de
       // tour (ni pilotés par l'IA ni par le joueur : les laisser dans `order` figerait la boucle de tour). Ils

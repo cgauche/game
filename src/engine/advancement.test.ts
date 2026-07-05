@@ -138,7 +138,7 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
   });
 });
 
-describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08 l.7-11)', () => {
+describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 07 l.144)', () => {
   // Carrière factice à 2 niveaux : 9 compétences au Niveau 1 (dont un joker), 2 talents.
   // NB : `A()`/`parseAdvancement` (parseur de TEST) garde la chaîne telle quelle comme `optionId`
   // (pas de résolution vers un id réel) — les fixtures ci-dessous utilisent donc directement les
@@ -235,7 +235,7 @@ describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08
     });
     expect(validateCareerChange(h, 'Test', 3, { completed: true, sameClass: true, targetLevelExists: true }).ok).toBe(false); // saut
   });
-  it('validateCareerChange : autre carrière → niveau 1 imposé (LDB 08 l.9), +100 hors Classe', () => {
+  it('validateCareerChange : autre carrière → niveau 1 imposé (LDB 07 l.144), +100 hors Classe', () => {
     const h = completedHero(500);
     expect(validateCareerChange(h, 'Érudit', 2, { completed: true, sameClass: true, targetLevelExists: true }).ok).toBe(false);
     expect(validateCareerChange(h, 'Érudit', 1, { completed: true, sameClass: true, targetLevelExists: true }).cost).toBe(100);

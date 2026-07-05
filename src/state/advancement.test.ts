@@ -105,7 +105,7 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
     expect(v.talents.length).toBeGreaterThan(0);
   });
 
-  it('changeCostFor : +100 PX vers une carrière d\'une autre Classe (LDB 08 l.9)', () => {
+  it('changeCostFor : +100 PX vers une carrière d\'une autre Classe (LDB 07 l.144)', () => {
     const v = buildAdvancementView(hero());
     // Agitateur = Citadins ; Artisan = Citadins (même Classe) ; Soldat = Guerriers.
     expect(v.changeCostFor('artisan')).toBe(v.changeCost);

@@ -496,7 +496,7 @@ export type GameOp =
   /** Bénédiction de Protection (LDB 41 — L13) : « Les ennemis doivent effectuer un Test de FM
    *  Accessible (+20) pour attaquer votre cible ». Drapeau lu à la déclaration d'attaque. */
   | { op: 'attackWardFM' }
-  /** Martyr (LDB 42 — L13) : « Vous recevez tous les Dégâts subis en principe par vos cibles.
+  /** Martyr (LDB 43 l.107) : « Vous recevez tous les Dégâts subis en principe par vos cibles.
    *  […] votre Bonus d'Endurance est doublé pour le calcul des PB subis à cause de ces Dégâts. »
    *  — l'effet est posé sur LA CIBLE protégée, avec l'id du prêtre (ctx.caster). */
   | { op: 'martyr' }

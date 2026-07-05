@@ -11,7 +11,7 @@ import type { Combatant, Weapon } from '../types';
 import { parseQualityInstance } from './normalize';
 
 /**
- * Lot A — les 10 derniers Atouts/Défauts d'armes (LDB 62 l.264-321 / LDB 63 l.13-26) :
+ * Lot A — les 10 derniers Atouts/Défauts d'armes (LDB 62 l.264-321 / LDB 62 l.313-331) :
  * À Répétition, Immobilisante, Perturbante, Piège-lame, Protectrice, Rapide,
  * Dangereuse, Épuisante, Imprécise, Lente. Tests PURS (moteur).
  */
@@ -29,7 +29,7 @@ function fighter(over: Partial<Combatant> = {}): Combatant {
   } as Combatant;
 }
 
-describe('préséance `beats` (LDB 63 l.20 / 62 l.321)', () => {
+describe('préséance `beats` (LDB 62 l.323 / 331)', () => {
   it('Imprécise prend le dessus sur Précise (les deux présentes → Précise inerte)', () => {
     const keys = resolveQualities(w(['Imprécise', 'Précise'])).map((r) => r.def.key);
     expect(keys).toContain('Imprécise');
@@ -42,14 +42,14 @@ describe('préséance `beats` (LDB 63 l.20 / 62 l.321)', () => {
   });
 });
 
-describe('Imprécise — −1 DR à l’attaque (LDB 63 l.19)', () => {
+describe('Imprécise — −1 DR à l’attaque (LDB 62 l.323)', () => {
   it('attackDRAdjust = −1', () => {
     expect(attackDRAdjust(w(['Imprécise']))).toBe(-1);
     expect(attackDRAdjust(w([]))).toBe(0);
   });
 });
 
-describe('Lente — +1 DR à TOUTE défense adverse + frappe en dernier (LDB 63 l.25-26)', () => {
+describe('Lente — +1 DR à TOUTE défense adverse + frappe en dernier (LDB 62 l.329-331)', () => {
   it('vsDefenseDRAdjust = +1 (Parade ET Esquive : appliqué hors du bloc parade de finishMelee)', () => {
     expect(vsDefenseDRAdjust(w(['Lente']))).toBe(1);
   });
@@ -90,7 +90,7 @@ describe('Rapide — −10 à la parade adverse non-Rapide + pré-emption (LDB 6
   });
 });
 
-describe('Dangereuse — Maladresse sur tout Test raté incluant un 9 (LDB 63 l.13-14)', () => {
+describe('Dangereuse — Maladresse sur tout Test raté incluant un 9 (LDB 62 l.315)', () => {
   const arme = w(['Dangereuse']);
   it('9 aux unités ou aux dizaines, Test RATÉ → Maladresse', () => {
     expect(dangerousNine(arme, 49, false)).toBe(true); // unités
@@ -104,7 +104,7 @@ describe('Dangereuse — Maladresse sur tout Test raté incluant un 9 (LDB 63 l.
   });
 });
 
-describe('Épuisante — Percutante/Dévastatrice seulement en Charge (LDB 63 l.16-17)', () => {
+describe('Épuisante — Percutante/Dévastatrice seulement en Charge (LDB 62 l.319)', () => {
   it('hors Charge : les Atouts de Dégâts de l’arme sont inertes', () => {
     const arme = w(['Épuisante', 'Percutante', 'Dévastatrice']);
     const step = qualityDamageStep(arme, { effDR: 1, units: 6, charged: false });

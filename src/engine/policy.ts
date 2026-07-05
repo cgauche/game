@@ -130,7 +130,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-advantage-cap',
     label: 'Plafond d’Avantage',
-    ref: 'LDB 15 l.17',
+    ref: 'LDB 14 l.198',
     group: 'Combat',
     kind: 'param',
     default: 10,
@@ -141,7 +141,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-advantage-cap-bi',
     label: 'Plafond d’Avantage = Bonus d’Initiative',
-    ref: 'LDB 15 l.15',
+    ref: 'LDB 14 l.197',
     group: 'Combat',
     kind: 'flag',
     default: false,
@@ -524,8 +524,8 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: false,
     hint: 'L’eau est réputée abondante au Reikland (rivières, puits, auberges) → aucune Soif par défaut. Activer pour un contexte À SEC (siège, désert, souterrain prolongé) : chaque jour sans eau impose un Test de Résistance (de plus en plus dur) — 1ᵉʳ échec −10 Int/FM/Soc, puis −10 le reste + 1d10 Blessures (LDB 18 l.420). En mer, la Soif suit automatiquement les tonneaux du navire, sans cette règle.',
   },
-  // NB : l'ancien flag POC `travel-forage` est RETIRÉ — l'Approvisionnement est désormais un POSTE
-  // d'Activité (un héros assigné via `travelRole`), résolu par `travelPostes` sous « Voyage par Étapes ».
+  // L'Approvisionnement est un POSTE d'Activité (un héros assigné via `travelRole`), résolu par
+  // `travelPostes` sous « Voyage par Étapes ».
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));
