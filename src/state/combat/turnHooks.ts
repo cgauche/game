@@ -83,7 +83,7 @@ function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, tr
 export interface ActGateOutcome { loseMovement: boolean; lines: string[] }
 
 /** Résout les gates d'action du combattant qui DEVIENT actif. UN Test par Caractéristique gatée et par
- *  Round (deux doses de la même drogue ne re-testent pas — la « Dose » n'est pas modélisée). */
+ *  Round (LDB 71). */
 export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutcome {
   const out: ActGateOutcome = { loseMovement: false, lines: [] };
   if (isOutOfAction(c) || !get().battle) return out;
