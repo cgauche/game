@@ -615,7 +615,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
 function falseQualities(item: { kind: string; qualities: QualityInstance[] }, count: number): string[] {
   const have = new Set(item.qualities.map((q) => q.id)); // qualités RÉELLEMENT portées (par id)
   const pool = qualities
-    .filter((q) => q.type === 'Atout')
+    .filter((q) => q.type === 'atout')
     .filter((q) => (item.kind === 'armor' ? q.subType !== 'arme' : q.subType !== 'armure'))
     .filter((q) => !have.has(q.id)) // dédup par ID (corrige le bug : comparait un libellé à un tableau d'ids)
     .map((q) => q.label);

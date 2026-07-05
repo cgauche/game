@@ -23,8 +23,8 @@ describe('describeQuality (affichage Atouts/Défauts)', () => {
   });
 
   it('renvoie le type Atout/Défaut du registre', () => {
-    expect(dq('Défensive')!.type).toBe('Atout');
-    expect(dq('Peu Fiable')!.type).toBe('Défaut');
+    expect(dq('Défensive')!.type).toBe('atout');
+    expect(dq('Peu Fiable')!.type).toBe('defaut');
   });
 
   it('qualité inconnue → null', () => {

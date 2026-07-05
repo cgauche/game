@@ -13,11 +13,11 @@ const craftDefs = (c: QualityCarrier | undefined) => resolveQualities(c).filter(
 
 /** Nombre d'Atouts d'objet (multiplicité = répétition dans la liste). */
 export function craftAtoutCount(c: QualityCarrier | undefined): number {
-  return craftDefs(c).filter((r) => r.data?.type === 'Atout').length;
+  return craftDefs(c).filter((r) => r.data?.type === 'atout').length;
 }
 /** Nombre de Défauts d'objet. */
 export function craftDefautCount(c: QualityCarrier | undefined): number {
-  return craftDefs(c).filter((r) => r.data?.type === 'Défaut').length;
+  return craftDefs(c).filter((r) => r.data?.type === 'defaut').length;
 }
 
 /** Facteur multiplicatif du prix : chaque Atout ×2, chaque Défaut ÷2 (LDB 60 l.47/75). */

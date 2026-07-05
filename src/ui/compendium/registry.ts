@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react';
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel, qualitySubtypeLabel,
+  stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
@@ -543,7 +543,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
     build: () => (qualities as { id: string; label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => ({
-      label: q.label, sub: join(q.type, qualitySubtypeLabel(q.subType)), desc: q.desc, source: src(q.source),
+      label: q.label, sub: join(qualityTypeLabel(q.type), qualitySubtypeLabel(q.subType)), desc: q.desc, source: src(q.source),
       sections: sections(capabilitySection(q.capabilities, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },

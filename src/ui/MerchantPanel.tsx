@@ -194,8 +194,8 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   // Fiche de détail (clic sur le nom) : INFORMATIVE — Atouts/Défauts + description + comparaison.
   const renderDetailCard = (item: ItemInstance) => {
     const quals = item.qualities.map((q) => describeQuality(q)).filter((q): q is NonNullable<typeof q> => q != null);
-    const atouts = quals.filter((q) => q.type !== 'Défaut');
-    const defauts = quals.filter((q) => q.type === 'Défaut');
+    const atouts = quals.filter((q) => q.type !== 'defaut');
+    const defauts = quals.filter((q) => q.type === 'defaut');
     const canCompare = item.kind === 'melee' || item.kind === 'ranged' || item.kind === 'armor';
     return (
       <div className="merch-compare preview" role="region" aria-label={`Détails ${item.name}`}>

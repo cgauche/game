@@ -51,6 +51,7 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   refChar: { vocabFrom: 'species.refChar' },
   refCareer: { vocabFrom: 'species.refCareer' },
   'qualities.subType': { ds: 'qualitySubtypes', single: true },
+  'qualities.type': { ds: 'qualityTypes', single: true },
 };
 
 /** Résout la config d'un champ : clé (catégorie, champ) puis repli global par champ. */
