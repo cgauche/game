@@ -30,6 +30,7 @@ import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
 import { findTalentById, findPsychologyById, findManeuverById, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { registerCascadeApplier, startCascade } from './cascade';
+import { pilotedByHuman } from './netOwnership';
 import type { CascadeStep } from './pendings';
 import type { GameOp } from '../engine/ops';
 import type { IconId } from '../ui/icons';
@@ -432,11 +433,12 @@ export function resolveManeuver(
     affected = tgt ? [tgt] : [];
   }
 
-  // Split : HÉROS influençables (défense en cascade, Chance/Résilience) vs le reste (silencieux, IA en
-  // masse). Un héros Surpris (`cannotDefend`) ne peut pas réagir → résolu en silence (parité maybeOpenDefense).
-  // Gate : jet d'attaquant présent, opposition réelle (defense ≠ resist), et effets à subir (pas de fumée pure).
+  // Split : défenseurs PILOTÉS PAR UN HUMAIN influençables (défense en cascade, Chance/Résilience) vs le
+  // reste (silencieux, IA en masse). Un défenseur Surpris (`cannotDefend`) ne peut pas réagir → résolu en
+  // silence (parité maybeOpenDefense). Gate : jet d'attaquant présent, opposition réelle (defense ≠ resist),
+  // et effets à subir (pas de fumée pure).
   const canDefend = !!atk && !!def.defense && def.defense !== 'resist' && (def.effects?.length ?? 0) > 0;
-  const heroDefenders = canDefend ? affected.filter((t) => t.kind === 'hero' && !isOutOfAction(t) && !cannotDefend(t)) : [];
+  const heroDefenders = canDefend ? affected.filter((t) => pilotedByHuman(get(), t) && !isOutOfAction(t) && !cannotDefend(t)) : [];
   for (const tgt of affected) if (!heroDefenders.includes(tgt)) hitOne(tgt);
   flushLog();
   if (heroDefenders.length) {

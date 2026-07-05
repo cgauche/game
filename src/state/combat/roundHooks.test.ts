@@ -19,7 +19,8 @@ const ctx = (combatants: Combatant[]): CombatHookCtx => {
   // (broken-recovery/fireTriggers lisent get().battle/scene). Combattants nus → les autres hooks no-op
   // sans tirer le RNG (pas de condition/Brisé/zone) → se-fatiguer obtient bien le 1ᵉʳ tirage seedé.
   const battle = { combatants, zones: [], round: 1 } as never;
-  return { get: (() => ({ battle, scene: undefined })) as never, set: (() => {}) as never, battle, sink: () => {} };
+  const net = { mode: 'local', mySeat: 0, humanPiloted: {} }; // `humanControlled` (se-fatiguer) lit net.humanPiloted
+  return { get: (() => ({ battle, scene: undefined, net })) as never, set: (() => {}) as never, battle, sink: () => {} };
 };
 
 describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {

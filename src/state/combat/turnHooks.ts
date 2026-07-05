@@ -24,7 +24,7 @@ import { rawCombatTestBase } from '../../engine/skills';
 import { rollTest } from '../../engine/tests';
 import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
-import { roundTestInteractive } from './cadenceGate';
+import { humanControlled } from '../netOwnership';
 import { reconcileAdvantageToPool, campSpend } from './advantagePool';
 import { mountMovement, riderFearSize } from '../mount';
 import { losClear } from '../lineOfSight';
@@ -91,7 +91,7 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
   const chars = [...new Set(gates.map((e) => e.actGate!.char))];
   for (const char of chars) {
     const label = gates.find((e) => e.actGate!.char === char)?.label ?? 'Effet';
-    if (roundTestInteractive(c)) {
+    if (humanControlled(get(), c)) {
       const base = rawCombatTestBase(c, undefined, char);
       pushCombatStep(set, {
         id: `actGate-${c.id}-${char}`, kind: 'actGate', actorId: c.id, icon: '🌿', rollLabel: CHAR_LABELS[char],
@@ -166,7 +166,7 @@ export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
  *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
  *  et JOURNALISÉ (pas de modale/révélation pour l'IA — le joueur voit l'État Brisé). */
 export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) return;
+  if (!aiDriven(get(), enemy) || isOutOfAction(enemy)) return;
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;

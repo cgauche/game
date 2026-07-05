@@ -37,7 +37,7 @@ import { battleRng } from '../battleRng';
 import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { fireTriggers, recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
-import { roundTestInteractive } from './cadenceGate';
+import { humanControlled } from '../netOwnership';
 import { campSpend } from './advantagePool';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
@@ -331,8 +331,8 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // Piège-lame : on COMPLÈTE le freeze avec le DR de l'attaquant que CE Test jette (`aT`), pour que la
   // conséquence `breakBlade` recompose la marge nette sans re-jeter l'attaquant.
   const btFreeze = ctx.bladeTrap && aT ? { ...ctx.bladeTrap, attackerSL: aT.sl } : ctx.bladeTrap;
-  if (roundTestInteractive(c)) {
-    // Héros en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade. Branche + `after` (et,
+  if (humanControlled(ctx.get(), c)) {
+    // Pilote humain en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade. Branche + `after` (et,
     // pour une réaction, le contexte sérialisable `freeAttack`/`bladeTrap`) voyagent dans le meta → rejoués
     // par l'applier. Test OPPOSÉ : squelette construit ICI (base=`testValue`, penalty 0, + `aT` figé dans
     // le meta pour ré-opposer à chaque influence). Test SIMPLE : `simpleTriggeredTestStep` (source unique).
@@ -428,7 +428,7 @@ function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: nu
  */
 export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'choice' }>, after: Flow): void {
   const decider = ctx.caster ?? ctx.target;
-  if (ctx.mode === 'combat' && decider && roundTestInteractive(decider)) {
+  if (ctx.mode === 'combat' && decider && humanControlled(ctx.get(), decider)) {
     // Héros manuel : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal).
     // Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
     const yesLabel = node.cost ? `${node.prompt} (${node.cost.advantage} Av)` : node.prompt;

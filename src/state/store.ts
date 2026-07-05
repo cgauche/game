@@ -1874,7 +1874,7 @@ export const useGame = create<GameState>((set, get) => ({
         get().log(`${hero.name} échoue à contenir sa Corruption — la mutation menace…`);
         set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0, align: pc.align } });
       } else {
-        for (const l of applyMutation(set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);
+        for (const l of applyMutation(get, set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);
       }
       set({ ...touchActors(get()) });
       return;

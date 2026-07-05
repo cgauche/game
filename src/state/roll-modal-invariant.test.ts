@@ -1,197 +1,242 @@
-import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Garde-fou « une situation = une modale » (invariante projet), v2 — DÉTECTEUR de jets cachés.
- *
- * Règle : aucun point d'entrée JOUEUR ne résout un jet aléatoire en silence. Un jet est soit
- *  1. DIFFÉRÉ : une modale `pending*` (fabrique rollFlow — Lancer/Chance/Pacte/Résilience) ;
- *  2. RÉVÉLÉ : un jet SUBI montré après coup (pendingReveals, NightEntry du Repos, recap de
- *     Voyage jour par jour, journal d'entretien) — listé ici avec sa JUSTIFICATION ;
- *  3. AMBIANT : le monde tire sans Test de héros (réassort marchand, génération de créature).
- *
- * Ce que le scan COUVRE (statique, sur le texte source) :
- *  - le corps direct de chaque action du store ;
- *  - le corps direct de chaque fonction EXPORTÉE des modules de flux délégués ;
- *  - les DÉLÉGATIONS À UN NIVEAU : une action du store non-résolveur qui APPELLE une fonction
- *    de flux qui tire (c'est le trou qui a caché medicFlow autrefois).
- *  Limite assumée : profondeur 1 (un helper appelé par un helper n'est pas suivi) — les
- *  primitives du moteur restent confinées aux specs `rollFlows.ts` par la règle `FLOWS.`.
+ * Garde-fou « un Test REMONTE à un humain vs se résout INLINE » — au CHOKE-POINT du prédicat de
+ * contrôleur (`netOwnership`), pas par grep+whitelist. La décision de surfaçage suit QUI CONTRÔLE le
+ * camp (`humanControlled`/`pilotedByHuman`/`aiDriven`), jamais le `kind`. Quatre volets :
+ *  (a) STATIQUE minimal : le prédicat de cadence obsolète `roundTestInteractive` est supprimé, et chaque
+ *      site de surfaçage connu référence le prédicat de contrôleur ;
+ *  (b) BEHAVIORAL : un Test de combattant piloté-humain par contexte (défense, manœuvre, upkeep, psy,
+ *      maladie/exposition, corruption, test déclenché) OUVRE un `pending*` influençable ;
+ *  (c) FLIP LOCAL : assigner un ennemi à un humain (`net.humanPiloted`) fait REMONTER son Test déclenché
+ *      (`actorId===enemyId`) ; le retirer (ou un héros `aiControlled`) le résout inline ;
+ *  (d) GARDE-DU-GARDE : sous un stub qui re-silencie (`humanControlled → false`), le volet (b) DOIT échouer.
  */
+
+// Ré-silençage RÉEL (volet d) : quand `silence` est vrai, on marque le combattant testé `aiControlled` —
+// `pilotedByHuman`/`humanControlled` renvoient alors false PAR LE PRÉDICAT (pas un mock qui fuit sous
+// `isolate:false`). Prouve que le plancher behavioral (b) DÉPEND du prédicat de contrôleur.
+let silence = false;
+
+import { useGame } from './store';
+import './combatFlow'; // effet de bord : installe appliers de cascade + routeur de Test + hook onGainCondition
+import { openRoundEndCascade, openCombatEndCascade, aiCreatureFreeAttacks, maybeOpenDefense } from './combatFlow';
+import { gainCorruption } from './corruptionFlow';
+import { createHero } from '../engine/character';
+import { buildWeapon } from '../engine/items';
+import { makeRNG } from '../engine/dice';
+import { seedBattleRng } from './battleRng';
+import { addCondition, COND } from '../engine/conditions';
+import { resetRule } from '../engine/policy';
+import { testScene } from '../scenes/test-fixture';
+
+const get = useGame.getState;
+const set = useGame.setState;
+
+// ── Volet (a) — statique minimal ────────────────────────────────────────────────────────────────
 const here = (f: string) => fileURLToPath(new URL(f, import.meta.url));
-const read = (f: string) => readFileSync(here(f), 'utf8');
-
-/** Modules de flux DÉLÉGUÉS par le store (points d'entrée joueur) — tous scannés. */
-const FLOW_MODULES: Record<string, string> = {
-  combatFlow: read('./combatFlow.ts'),
-  combatGeometry: read('./combatGeometry.ts'), // helpers géométrie extraits de combatFlow
-  combatEffects: read('./combatEffects.ts'), // effets de scène/campagne extraits de combatFlow
-  consumableFlow: read('./consumableFlow.ts'), // runner de consommable (#50 — Flow cadence-aware)
-  combatManeuvers: read('./combatManeuvers.ts'), // résolveurs de manœuvres extraits de combatFlow
-  medicFlow: read('./medicFlow.ts'),
-  partyFlow: read('./partyFlow.ts'),
-  merchantFlow: read('./merchantFlow.ts'),
-  restFlow: read('./restFlow.ts'),
-  travelFlow: read('./travelFlow.ts'),
-  corruptionFlow: read('./corruptionFlow.ts'),
-  encounterPsychFlow: read('./encounterPsychFlow.ts'),
-  interludeFlow: read('./interludeFlow.ts'),
-  upkeep: read('./upkeep.ts'),
-  outOfCombatUpkeep: read('./outOfCombatUpkeep.ts'),
-  spawn: read('./spawn.ts'),
-};
-const STORE = read('./store.ts');
-
-/** Primitives qui TIRENT (RNG / résolution de Test / application d'un jet) — regex mot-entier. */
-const PRIM_RE =
-  /\b(battleRng|rollTest|rollOups|rollMiscast|rollCritical|rollContraction|rollRandomTalent|rollMeleeDefender|resolveAttack|resolveTrample|resolveFocus|resolveBackstabAttack|resolveMelee|resolveMeleePassive|resolveRanged|resolveCasting|resolveMagicMissile|resolveRun|resolveFrenzyEntry|resolvePeurTest|resolveTerreurTest|resolveCalmeSimple|opposedTest|applyAttackResult|applyTrample|applyMiscast|focusSpell|makeRNG|d10|d100)\s*\(|\bFLOWS\.|\bdefaultRNG\b|\bMath\.random\b|\.int\(/;
-
-const offendersOf = (body: string): string[] => {
-  const m = body.match(new RegExp(PRIM_RE, 'g'));
-  return m ? [...new Set(m.map((x) => x.trim()))] : [];
+const SRC: Record<string, string> = {
+  combatFlow: readFileSync(here('./combatFlow.ts'), 'utf8'),
+  combatManeuvers: readFileSync(here('./combatManeuvers.ts'), 'utf8'),
+  corruptionFlow: readFileSync(here('./corruptionFlow.ts'), 'utf8'),
+  roundHooks: readFileSync(here('./combat/roundHooks.ts'), 'utf8'),
+  turnHooks: readFileSync(here('./combat/turnHooks.ts'), 'utf8'),
+  triggeredTest: readFileSync(here('./combat/triggeredTest.ts'), 'utf8'),
+  triggeredEffects: readFileSync(here('./triggeredEffects.ts'), 'utf8'),
 };
 
-// Les RÉSOLVEURS de modale (le jet différé lui-même) : convention de suffixe.
-// `*Resolve` : résolveurs aussi (resolveTest ; la psy de combat/rencontre passe par FLOWS.cascade).
-// `*Resist` : Résistance (Menace), LDB 10 — auto-succès du MÊME mécanisme que ForceSuccess (verbe rollFlow).
-const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|Resolve|Resist)$/;
-
-/**
- * Liste blanche JUSTIFIÉE — chaque entrée dit OÙ le jet est montré au joueur (catégories 2/3).
- * Ajouter un nom ici sans justification vérifiable = refusé en revue. Le test d'hygiène en bas
- * refuse toute entrée qui ne correspond plus à une action du store / fonction de flux réelle.
- */
-const JUSTIFIED: Record<string, string> = {
-  // ── Résolveurs hors-suffixe (la modale est ouverte, le jet en est une conséquence acquittée) ──
-  resolveTest: 'résolveur de la modale de Test de scène',
-  resolveCorruption: 'résolveur « Continuer » de la modale d’exposition ; le Test de seuil est révélé (pendingReveals kind mutation)',
-  disengageConfirmA: 'option « Sacrifier l’Avantage » de la modale de Désengagement (aucun jet de héros : choix acquitté)',
-  disengageFlee: 'option « Fuir » de la modale : coup dans le dos SUBI (resolveBackstabAttack) montré INLINE ; le Test de Calme du fuyard passe désormais par la cascade pending* (flux `flee` — fleeRoll/fleeConfirm influençables, suffixe RESOLVER)',
-  dismissReveal: 'acquittement de la file de révélation (le jet a DÉJÀ été montré)',
-  medicAct: 'infirmerie : ouvre pendingHeal (modale) — l’acte payant ne tire pas lui-même',
-  surgeryNext: 'Chirurgie : APPLIQUE la passe (le Test de Médecine du chirurgien est différé en modale pendingSurgery, influençable). Le Test d’infection du patient (Résistance +20) est désormais une ÉTAPE de cascade INFLUENÇABLE (`combatEndDisease` — Chance/Résilience + auto-succès Résistance (Menace : Maladie)), sa contraction appliquée à la validation. Le seul RNG restant est le 1d10 PB SUBI de la passe (dégât de l’opération montré dans la ligne de journal, pas un Test de héros)',
-  startDisengage: 'OUVRE pendingDisengage : le jet du foe est tiré et FIGÉ pour la modale (pattern Défense — montré dans la ligne adverse)',
-  resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',
-  applyCounterspell: 'Contre-sort : Test opposé du contre-lanceur, issue affichée dans la modale d’incantation (et déclaré pendant le jet ennemi)',
-  battleManeuverArea: 'Hurlement : pas de jet d’attaquant — 1d10 + Test de Résistance des cibles (jets SUBIS) montrés au feed, pas de modale différable (LDB 85 l.135). Les autres manœuvres (Souffle/Vomi/Langue/Regard/Étreinte) OUVRENT pendingManeuver (modale du jet d’attaquant) — plus de résolution inline',
-  // ── Moteur appelé par les points d'entrée (le jet aval est différé/révélé/IA) ──
-  applyEffects: 'Effets d’AUTEUR (éditeur) : `test` OUVRE pendingTest ; inflictTrauma/inflictDisease/zoneBlast poussent une RÉVÉLATION témoin 📜 (souffle = dégâts SUBIS tirés, montrés au journal)',
-  applyFall: 'Chute (LDB 15) appliquée à un combattant : Dégâts + À Terre SUBIS (chute involontaire, aucun Test de héros influençable). Brique consommée par l’Effet `fall` (journal/révélation) et l’effondrement de passerelle en combat (feed) — le jet est montré là, pas une modale différable',
-  applyZoneCrossings: 'traversée de zones (feu…) : jets SUBIS — feed de combat + flottants FX (L11)',
-  advanceTurn: 'fin de tour : IA ennemie (instantanée par design) + entretien de fin de Round en file de révélation témoin',
-  // ── Jets d’ENTRETIEN / monde — subis et RÉVÉLÉS (catégorie 2) ou ambiants (catégorie 3) ──
-  startCombat: 'Initiative (I+1d10) en début de combat — lue dans la frise d’initiative (R2)',
-  advanceTime: 'cascade quotidienne #T3 : franchissement de jour → RÉVÉLATION témoin « Entretien quotidien » (lignes du bilan)',
-  fireScheduledEffects: 'échéances programmées (Lot 0) franchies par advanceTime (horloge) : effet différé (flow) OU reconstitution AMBIANTE d’une créature à l’échéance (Gardien éternel → applySummon, comme spawnEnemy : génération de monde, pas un Test de héros), RÉVÉLÉE au journal',
-  restParty: 'repos hors modale (scénarios/recette) — même bilan de nuit (NightEntry) que la modale de Repos',
-  runDailyUpkeep: 'entretien QUOTIDIEN (rations/maladies/convalescence) — RENVOIE ses lignes, chaque appelant les AFFICHE (révélation/bilan de nuit/recap de voyage)',
-  outOfCombatUpkeep: 'États récurrents hors combat (Hémorragique…) — rejoue endOfRound, journalisé',
-  sleepParty: 'source UNIQUE de la nuit : chaque jet devient une NightEntry LISTÉE (modale de Repos / recap) + journal',
-  restSleep: 'résolveur « Dormir » du Repos : délègue à sleepParty — NightEntry visibles',
-  startTravel: 'voyage #T2 : Tests de route (marche forcée, Survie, Perception) NARRÉS jour par jour dans le TravelRecapModal (🎲 jet/cible affichés)',
-  resumeTravel: 'reprise du voyage interrompu — mêmes jets narrés dans le recap',
-  continueTravelAfterNight: 'reprise après la halte de nuit — mêmes jets narrés dans le recap',
-  continueTravelDayAfterCascade: 'clôture de la cascade du JOUR terrestre : la marche forcée EAGER (arrivée/interruption, pas de halte où la présenter) est le MÊME jet narré dans le recap qu’avant — les jets d’Étape/péripétie du jour, eux, sont désormais des étapes influençables de la cascade `travelDay` (pending*)',
-  openMerchant: 'ouverture de boutique : réassort/Disponibilité (LDB 59) — le monde tire, pas un Test de héros',
-  searchAvailability: 'recherche active de Disponibilité (LDB 59 l.50) : une JOURNÉE écoulée aux marchés — le Test de Ragot du groupe est un jet SUBI/RÉVÉLÉ (résultat journalisé « Ragot <roll> » la même action, comme le recap de Voyage) puis le réassort AMBIANT en découle ; pas une décision interactive différable',
-  spawnEnemy: 'génération de créature (caractéristiques/PB) — ambiant, hors Test',
-  gainCorruption: 'seuil de Corruption : Test DIFFÉRÉ en modale (pendingCorruption kind seuil, cycle Chance/Pacte) pour un héros ; repli auto-résolu + révélation témoin (PNJ, gains en rafale)',
-  applyMutation: 'mutation tirée sur les Tableaux de Corruption (LDB 19) — RÉVÉLÉE (pendingReveals kind mutation, révélation 🧬)',
-  startInterlude: 'ouvre l’interlude : tirage d’Événement (d100 par héros) affiché sur la carte du héros (🎲 + libellé) et journalisé',
-  interludeEnd: 'clôture d’interlude : Revenus restants auto-résolus, journalisés',
-  openCatalogActivity: 'ouverture d’une Activité à jet (chemin UNIQUE data-driven) : le seul tirage est le PRIX du tuteur d’Apprentissage (2d10 pa / 100 PX, monde ambiant, LDB 23) — affiché avant de payer ; le Test lui-même est différé en modale',
-  confirmActivity: 'résolveur « Appliquer » de la modale d’Activité : le TEST a eu lieu en modale ; les dés de Statut (montant des Revenus, LDB 08) et les fausses Particularités (Identification, ADE2) sont la conséquence affichée',
-  bankDeposit: 'placement en interlude : l’Indice d’intérêts est tiré par le monde (ambiant) et AFFICHÉ (gains/risque de faillite)',
-  openSkillTest: 'ouvre pendingTest (modale) ; le 1d10 « réaction au Statut » (option LDB 08 l.54/90, monde ambiant) est tiré UNE fois et appliqué comme MODIFICATEUR du Test révélé dans la modale',
-  scheduleDelayedOps: 'op `delayed` (#50) : le RNG ne résout que les FORMULES DE DÉLAI/DURÉE (« au bout de 2-3 h », « pendant 21 h » — horloge du monde, pas un Test de héros) ; les ops différées elles-mêmes sont RÉVÉLÉES à l’échéance (fireScheduledEffects → runFlow → journal), et tout Test qu’elles porteraient ouvre sa modale',
-  runConsumable: 'runner de consommable (#50) : le RNG ne résout que la DURÉE de l’objet (« 2d10 minutes », LDB 71 — horloge, pas un Test) ; un nœud `test` du Flow OUVRE pendingTest (scène, restreint au buveur — walker privé runSceneConsumableFlow → openSkillTest) ou une étape de cascade influençable (combat, runCombatFlow) ; les feuilles sont JOURNALISÉES (applyLeafOps → log)',
-  usePartyItem: 'consommation depuis la fiche : journalisée + délègue à runConsumable (les jets aval sont différés/révélés)',
-  battleConsumeItem: 'consommation en combat (une Action) : délègue à runConsumable (voie cadence-aware) ; le journal différé est déversé dans le log de bataille',
-};
-
-/** Extrait `nom: (args) => corps` des actions du store. */
-function storeActions(src: string): { name: string; body: string }[] {
-  const out: { name: string; body: string }[] = [];
-  const re = /^ {2}(\w+):\s*\([^)]*\)\s*=>\s*(\{)?/gm;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(src))) {
-    const name = m[1];
-    if (m[2]) {
-      let depth = 1, i = re.lastIndex;
-      while (i < src.length && depth > 0) { if (src[i] === '{') depth++; else if (src[i] === '}') depth--; i++; }
-      out.push({ name, body: src.slice(re.lastIndex, i) });
-    } else {
-      out.push({ name, body: src.slice(re.lastIndex, src.indexOf('\n', re.lastIndex)) });
-    }
-  }
-  return out;
+/** Corps `{ … }` équilibré d'une fonction nommée (déclaration `function`/`export function`). */
+function bodyOf(src: string, name: string): string {
+  const re = new RegExp(`(?:export\\s+)?(?:async\\s+)?function\\s+${name}\\s*\\(`);
+  const m = re.exec(src);
+  if (!m) throw new Error(`fonction ${name} introuvable`);
+  let pd = 0, i = m.index + m[0].length - 1; // au '(' des paramètres
+  for (; i < src.length; i++) { if (src[i] === '(') pd++; else if (src[i] === ')') { if (--pd === 0) { i++; break; } } }
+  const open = src.indexOf('{', i);
+  let depth = 1, j = open + 1;
+  while (j < src.length && depth > 0) { if (src[j] === '{') depth++; else if (src[j] === '}') depth--; j++; }
+  return src.slice(open + 1, j);
 }
 
-/** Fonctions exportées d'un MODULE de flux : `export function nom(...) { corps }`. */
-function moduleActions(src: string): { name: string; body: string }[] {
-  const out: { name: string; body: string }[] = [];
-  const re = /^export (?:async )?function (\w+)\(/gm;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(src))) {
-    let p = 1, j = re.lastIndex;
-    while (j < src.length && p > 0) { if (src[j] === '(') p++; else if (src[j] === ')') p--; j++; }
-    const open = src.indexOf('{', j);
-    let depth = 1, i = open + 1;
-    while (i < src.length && depth > 0) { if (src[i] === '{') depth++; else if (src[i] === '}') depth--; i++; }
-    out.push({ name: m[1], body: src.slice(open + 1, i) });
-  }
-  return out;
-}
+/** Sites de surfaçage connus (B1/B2 + Famille A) → prédicat de contrôleur qu'ils DOIVENT référencer. */
+const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
+  { file: 'combatFlow', fn: 'maybeOpenDefense', pred: /aiDriven|pilotedByHuman/ },
+  { file: 'combatFlow', fn: 'autoCleave', pred: /aiDriven/ },
+  { file: 'combatFlow', fn: 'maybeHeroCleave', pred: /pilotedByHuman/ },
+  { file: 'combatFlow', fn: 'resolveEnemyFumble', pred: /aiDriven/ },
+  { file: 'combatFlow', fn: 'openRoundEndCascade', pred: /humanControlled/ },
+  { file: 'combatFlow', fn: 'openCombatEndCascade', pred: /humanControlled/ },
+  { file: 'combatFlow', fn: 'openCombatPsychCascade', pred: /humanControlled/ },
+  { file: 'roundHooks', fn: 'collectHeroRoundEndUpkeep', pred: /humanControlled/ },
+  { file: 'turnHooks', fn: 'resolveActGates', pred: /humanControlled/ },
+  { file: 'turnHooks', fn: 'resolvePsychAI', pred: /aiDriven/ },
+  { file: 'triggeredTest', fn: 'resolveFlowTest', pred: /humanControlled/ },
+  { file: 'triggeredTest', fn: 'resolveFlowChoice', pred: /humanControlled/ },
+  { file: 'triggeredEffects', fn: 'applyTriggeredEffects', pred: /humanControlled/ },
+  { file: 'corruptionFlow', fn: 'gainCorruption', pred: /pilotedByHuman/ },
+];
 
-describe('Invariante « une situation = une modale » (détecteur de jets cachés, v2)', () => {
-  // ── 1. Carte des fonctions de flux qui TIRENT (directement) ──
-  const rollers = new Map<string, string>(); // nom → module
-  const flowFns = new Map<string, { module: string; body: string }>();
-  for (const [mod, src] of Object.entries(FLOW_MODULES)) {
-    for (const { name, body } of moduleActions(src)) {
-      flowFns.set(name, { module: mod, body });
-      if (offendersOf(body).length) rollers.set(name, mod);
-    }
-  }
-
-  // ── 2. Actions du store : ni primitive en ligne, ni APPEL d'une fonction de flux qui tire ──
-  const actions = storeActions(STORE);
-  it('extrait un nombre plausible d’actions du store', () => {
-    expect(actions.length).toBeGreaterThan(30);
+describe('Surfaçage « remonte-à-un-humain » — statique au choke-point (a)', () => {
+  it('le prédicat de cadence `roundTestInteractive` est SUPPRIMÉ (symbole + module `cadenceGate`)', () => {
+    expect(existsSync(here('./combat/cadenceGate.ts'))).toBe(false);
+    for (const [name, src] of Object.entries(SRC))
+      expect(src.includes('roundTestInteractive'), `${name} référence encore roundTestInteractive`).toBe(false);
   });
 
-  for (const { name, body } of actions) {
-    const allowed = RESOLVER.test(name) || name in JUSTIFIED;
-    it(`store.${name} ne résout pas de jet en ligne${name in JUSTIFIED ? ` (justifié : ${JUSTIFIED[name]})` : ''}`, () => {
-      if (allowed) return;
-      const direct = offendersOf(body);
-      // Délégation à UN niveau : `fn(...)` ou `module.fn(...)` vers une fonction de flux qui tire.
-      const called = [...body.matchAll(/\b(?:\w+\.)?(\w+)\(/g)].map((x) => x[1]);
-      const viaFlow = [...new Set(called.filter((c) => rollers.has(c) && !RESOLVER.test(c) && !(c in JUSTIFIED)))];
-      const all = [...direct, ...viaFlow.map((c) => `${rollers.get(c)}.${c}()`)];
-      expect(all, `${name} cache un jet (${all.join(', ')}) — différer en modale pending* / pousser une révélation / justifier dans JUSTIFIED`).toEqual([]);
-    });
-  }
+  it('chaque site de surfaçage connu route vers le prédicat de contrôleur', () => {
+    for (const { file, fn, pred } of SURFACING)
+      expect(pred.test(bodyOf(SRC[file], fn)), `${file}.${fn} doit référencer ${pred}`).toBe(true);
+    // La défense de manœuvre de zone (split défenseurs humains/IA) vit dans un gros résolveur — on
+    // vérifie que le module la route par le prédicat plutôt que par le `kind`.
+    expect(SRC.combatManeuvers).toMatch(/pilotedByHuman/);
+  });
+});
 
-  // ── 3. Fonctions de flux exportées qui tirent : résolveur ou justifiées, sinon violation ──
-  for (const [name, mod] of rollers) {
-    const allowed = RESOLVER.test(name) || name in JUSTIFIED;
-    it(`${mod}.${name} (tire) est un résolveur ou est justifié${name in JUSTIFIED ? ` (${JUSTIFIED[name]})` : ''}`, () => {
-      // combatFlow / combatManeuvers = moteur du combat : leurs helpers (IA instantanée par design +
-      // résolveurs `applyMan<X>` appelés PAR `FLOWS.maneuver`/les wrappers IA) sont couverts par la
-      // règle « FLOWS./primitives interdites aux actions non-résolveur » côté store — pas un point
-      // d'entrée joueur. Le jet d'attaquant influençable passe par `FLOWS.maneuver` (modale différée).
-      if (mod === 'combatFlow' || mod === 'combatManeuvers') return;
-      expect(allowed, `${mod}.${name} tire un jet sans être un résolveur de modale — le différer/révéler, ou le JUSTIFIER ici`).toBe(true);
-    });
-  }
+// ── Harness de combat (calqué sur round-upkeep-cascade / maneuver-defense-cascade) ───────────────
+function freshCombat() {
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+  set({ party: [hero] });
+  get().startScene(testScene);
+  get().startCombat('enc-mutants');
+  get().confirmRoundStart();
+  vi.clearAllTimers();
+  const b = get().battle!;
+  const H = b.combatants.find((c) => c.kind === 'hero')!;
+  H.aiControlled = silence; // volet (d) : ré-silençage réel (contrôleur ≠ humain → pas de remontée)
+  const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+  const E = enemies[0];
+  enemies.slice(1).forEach((e) => (e.dead = true)); // une seule source ennemie
+  H.pos = { x: 10, y: 10 };
+  E.pos = { x: 20, y: 20 };
+  set({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingCorruption: null, pendingDefense: null, pendingLogQueue: [], net: { ...get().net, humanPiloted: {} } });
+  return { H, E };
+}
 
-  // ── 4. Hygiène de la liste blanche : toute entrée doit pointer un nom RÉEL (action du store
-  // ou fonction de flux exportée) — sinon l'entrée est morte/mensongère et doit partir. ──
-  it('la liste blanche JUSTIFIED ne contient que des noms réels', () => {
-    const known = new Set([...actions.map((a) => a.name), ...flowFns.keys()]);
-    const stale = Object.keys(JUSTIFIED).filter((n) => !known.has(n));
-    expect(stale, `entrées JUSTIFIED sans action/fonction correspondante : ${stale.join(', ')}`).toEqual([]);
+/**
+ * BEHAVIORAL FLOOR (partagé par b/d) : chaque contexte fait un Test d'un combattant piloté-humain et
+ * DOIT ouvrir un `pending*`. `assert` = un `expect` qui LÈVE en cas de silence → le volet (d) l'attend.
+ * L'ordre commence par un contexte gaté `humanControlled` (poison) : sous le stub, il échoue d'emblée.
+ */
+function behavioralFloor(): void {
+  // 1) Upkeep de fin de Round (Empoisonné, RAW LDB 16) — gaté `humanControlled`.
+  {
+    seedBattleRng(3);
+    const { H } = freshCombat();
+    addCondition(H, COND.empoisonne, 2);
+    openRoundEndCascade(get, set);
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'triggeredTest' && s.actorId === H.id), 'upkeep Empoisonné doit REMONTER').toBeTruthy();
+  }
+  // 2) Psychologie de fin de Round (Peur en Ligne de Vue, LDB 21) — gaté `humanControlled`.
+  {
+    seedBattleRng(2);
+    const { H, E } = freshCombat();
+    E.pos = { x: 11, y: 10 };
+    E.causesPeur = 2; // H craint E (adjacent, LdV dégagée)
+    openRoundEndCascade(get, set);
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'combatPsych' && s.actorId === H.id), 'Peur de fin de Round doit REMONTER').toBeTruthy();
+  }
+  // 3) Exposition à la Corruption de fin de combat (LDB 19) — gaté `humanControlled`.
+  {
+    seedBattleRng(4);
+    const { H, E } = freshCombat();
+    E.traits = [{ id: 'corruption', arg: 'mineure' }];
+    openCombatEndCascade(get, set);
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'combatEndCorruption' && s.actorId === H.id), 'exposition Corruption doit REMONTER').toBeTruthy();
+  }
+  // 4) Test déclenché (Mâchoires d'acier onGainCondition, LDB 10) — gaté `humanControlled`.
+  {
+    seedBattleRng(7);
+    const { H } = freshCombat();
+    H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
+    addCondition(H, COND.sonne, 2);
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'triggeredTest' && s.actorId === H.id), 'Test déclenché (Mâchoires) doit REMONTER').toBeTruthy();
+  }
+  // 5) Défense réactive de mêlée (LDB 13) — gaté `pilotedByHuman` (cadence-agnostique).
+  {
+    seedBattleRng(1);
+    const { H, E } = freshCombat();
+    E.pos = { x: 11, y: 10 };
+    E.weapons = [buildWeapon({ name: 'Épée', attackKind: 'arme', damage: { plusBF: true, flat: 4 } })];
+    H.conditions = []; // pas Surpris → peut se défendre
+    expect(maybeOpenDefense(get, set, E, H), 'attaque IA sur héros doit OUVRIR la défense').toBe(true);
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'defenseJet' && s.actorId === H.id), 'défense réactive doit REMONTER').toBeTruthy();
+  }
+  // 6) Défense d'une manœuvre de ZONE (Souffle, LDB 85) — gaté `pilotedByHuman` (cadence-agnostique).
+  {
+    seedBattleRng(2);
+    const { H, E } = freshCombat();
+    E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }];
+    E.advantage = 2; E.characteristics.CT = 85; E.characteristics.E = 40; E.pos = { x: 5, y: 5 };
+    H.pos = { x: 5, y: 8 };
+    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive'); H.conditions = [];
+    set({ battle: { ...get().battle!, acted: true } });
+    aiCreatureFreeAttacks(get, set, E);
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'maneuverDefense' && s.actorId === H.id), 'défense de manœuvre doit REMONTER').toBeTruthy();
+  }
+  // 7) Corruption au seuil (LDB 19 l.80) — gaté `pilotedByHuman` (cadence-agnostique, modale).
+  {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'C', rng: makeRNG(1) });
+    hero.aiControlled = silence; // volet (d) : ré-silençage réel
+    hero.characteristics.E = 1; hero.characteristics.FM = 1; hero.corruption = 5; // seuil 0 → dépassé
+    set({ party: [hero], battle: null, pendingCorruption: null, net: { ...get().net, humanPiloted: {} } });
+    gainCorruption(get, set, hero, 1);
+    expect(get().pendingCorruption, 'seuil de Corruption doit REMONTER').toBeTruthy();
+  }
+}
+
+describe('Surfaçage « remonte-à-un-humain » — behavioral (b) + garde-du-garde (d)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetRule('combat-cadence'); silence = false; set({ battle: null, pendingCascade: null, pendingCorruption: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); silence = false; });
+
+  it('(b) chaque contexte d’un combattant piloté-humain OUVRE un pending influençable', () => {
+    behavioralFloor();
+  });
+
+  it('(d) combattant ré-silencié (contrôleur ≠ humain) → le plancher behavioral ÉCHOUE', () => {
+    silence = true;
+    try {
+      expect(() => behavioralFloor()).toThrow();
+    } finally {
+      silence = false;
+    }
+  });
+});
+
+// ── Volet (c) — preuve par FLIP LOCAL (le surfaçage suit le CONTRÔLEUR, jamais le kind) ───────────
+describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetRule('combat-cadence'); set({ battle: null, pendingCascade: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); });
+
+  it('un ENNEMI assigné à un siège humain fait REMONTER son Test déclenché (actorId===enemyId)', () => {
+    seedBattleRng(7);
+    const { E } = freshCombat();
+    E.talents = [...(E.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
+    set({ net: { ...get().net, humanPiloted: { [E.id]: 0 } } }); // assignation LOCALE (bac-à-sable MJ)
+    addCondition(E, COND.sonne, 2); // onGainCondition → testRouter → resolveFlowTest → humanControlled(E)=true
+    const c = get().pendingCascade;
+    expect(c, 'l’ennemi assigné doit ouvrir une cascade').toBeTruthy();
+    expect(c!.participants.some((s) => s.kind === 'triggeredTest' && s.actorId === E.id), 'le Test REMONTE au nom de l’ennemi assigné').toBe(true);
+  });
+
+  it('le même ennemi NON assigné → Test déclenché résolu INLINE (aucune cascade)', () => {
+    seedBattleRng(5);
+    const { E } = freshCombat();
+    E.characteristics.E = 90; // Résistance réussie → retrait inline
+    E.talents = [...(E.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
+    set({ net: { ...get().net, humanPiloted: {} } });
+    addCondition(E, COND.sonne, 2);
+    expect(get().pendingCascade, 'ennemi IA → jamais de cascade').toBeNull();
+  });
+
+  it('un HÉROS `aiControlled` → Test déclenché résolu INLINE (contrôleur ≠ humain)', () => {
+    seedBattleRng(5);
+    const { H } = freshCombat();
+    H.aiControlled = true; H.characteristics.E = 90;
+    H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
+    set({ net: { ...get().net, humanPiloted: {} } });
+    addCondition(H, COND.sonne, 2);
+    expect(get().pendingCascade, 'héros piloté-IA → pas de cascade').toBeNull();
   });
 });

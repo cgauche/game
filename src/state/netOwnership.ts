@@ -6,7 +6,7 @@
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { modalOwnerOf } from './modalArbiter';
-import { cadenceAutoCombat } from '../engine/cadence';
+import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 
 export { modalOwnerOf } from './modalArbiter';
 
@@ -25,20 +25,42 @@ export function ownsLocally(state: GameState, combatantId: string | undefined): 
 }
 
 /**
+ * Le combattant `c` est-il piloté À LA MAIN par un humain ? — CADENCE-AGNOSTIQUE (vrai même en Rapide/
+ * Auto : décrit QUI possède le contrôle, pas s'il est déféré à un automate). Assigné à un siège humain
+ * (`humanPiloted`) → vrai ; sinon un HÉROS non-`aiControlled` contrôlé localement → vrai ; un ennemi non
+ * assigné ou un PNJ → faux. SOURCE des décisions de surfaçage RÉACTIF (défense/manœuvre/corruption…).
+ */
+export function pilotedByHuman(s: GameState, c: Combatant): boolean {
+  if (s.net.humanPiloted[c.id] !== undefined) return true;
+  if (c.kind === 'hero') return !c.aiControlled && ownsLocally(s, c.id);
+  return false;
+}
+
+/**
  * Le combattant `c` est-il piloté par l'IA ? — base AGNOSTIQUE AU CAMP de l'orchestrateur de tour.
- * Un ENNEMI l'est toujours (comportement inchangé). Un HÉROS l'est en mode Auto-combat ET s'il est
- * contrôlé LOCALEMENT (coop : on ne joue jamais le héros d'un autre siège). Un PNJ ne l'est jamais.
- * NB : `aiDriven` ne change PAS le `kind` du combattant — les règles indexées sur `kind` (Destin réservé
- * aux héros, Corruption, déviation d'armure, Mort Subite) restent CORRECTES : un héros auto-piloté
- * demeure un héros pour la résolution. (Vit ICI, avec les primitives d'« qui pilote quoi » : `controlsActive`
- * en dépend ; `combatGate` le ré-exporte pour ses consommateurs historiques.)
+ * Un ENNEMI l'est SAUF s'il est assigné à un siège humain (`humanPiloted`). Un HÉROS l'est en mode
+ * Auto-combat ET contrôlé LOCALEMENT (coop : on ne joue jamais le héros d'un autre siège), ou s'il porte
+ * le drapeau `aiControlled` (PNJ allié IA). Un PNJ ne l'est jamais. NB : `aiDriven` ne change PAS le
+ * `kind` du combattant — les règles indexées sur `kind` (Destin réservé aux héros, Corruption, déviation
+ * d'armure, Mort Subite) restent CORRECTES. (Vit ICI, avec les primitives d'« qui pilote quoi » :
+ * `controlsActive` en dépend ; `combatGate` le ré-exporte pour ses consommateurs historiques.)
  */
 export function aiDriven(s: GameState, c: Combatant): boolean {
-  if (c.kind === 'enemy') return true;
+  if (c.kind === 'enemy') return s.net.humanPiloted[c.id] === undefined;
   // PNJ allié IA (`Combatant.aiControlled`, ex. défenseur de siège) : agit SEUL même en jeu MANUEL — sans
   // attendre l'Auto-combat global. On ne pilote jamais le combattant d'un AUTRE siège (`ownsLocally`).
   if (c.kind === 'hero' && c.aiControlled) return ownsLocally(s, c.id);
   return c.kind === 'hero' && cadenceAutoCombat() && ownsLocally(s, c.id);
+}
+
+/**
+ * Le Test d'un combattant doit-il REMONTER à un humain (modale/étape de cascade influençable) plutôt
+ * qu'être résolu en silence ? SOURCE UNIQUE d'escalade des jets de FIN DE ROUND / entretien : contrôle
+ * HUMAIN (`pilotedByHuman`) ET cadence MANUELLE (`!cadenceAuto` : en Rapide/Auto les jets se lancent
+ * seuls, sans influence, donc résolus inline comme un monstre).
+ */
+export function humanControlled(s: GameState, c: Combatant): boolean {
+  return !cadenceAuto() && pilotedByHuman(s, c);
 }
 
 /** Le joueur LOCAL contrôle-t-il (À LA MAIN) le combattant ACTIF du combat ? Faux pendant le tour du héros

@@ -165,7 +165,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(hasCondition(H, COND.extenue)).toBe(false);    // poison non vidé → pas d'Exténué
   });
 
-  it('cadence AUTO : un héros empoisonné N’ouvre PAS d’étape de cascade (auto-résolu comme un monstre — roundTestInteractive)', () => {
+  it('cadence AUTO : un héros empoisonné N’ouvre PAS d’étape de cascade (auto-résolu comme un monstre — humanControlled)', () => {
     setRule('combat-cadence', 'auto');
     try {
       const { H } = setup();

@@ -19,7 +19,7 @@ import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
 import { collectRoundEndTestSteps } from './triggeredTest';
-import { roundTestInteractive } from './cadenceGate';
+import { humanControlled } from '../netOwnership';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
@@ -176,10 +176,10 @@ registerCombatHook({
   id: 'aa-bleed-unconscious',
   phase: 'onRoundEnd',
   order: 76.5,
-  run: ({ battle, sink }) => {
+  run: ({ get, battle, sink }) => {
     if (rule('combat-aa-blessures') !== 'aa') return; // inerte en LDB (aucun RNG consommé → golden préservé)
     for (const c of battle.combatants) {
-      if (!aaBleedUnconsciousDue(c) || roundTestInteractive(c)) continue; // héros manuel → étape de cascade
+      if (!aaBleedUnconsciousDue(c) || humanControlled(get(), c)) continue; // pilote humain manuel → étape de cascade
       const res = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = aaBleedUnconsciousApply(c, res.success);
       if (line) sink(line, c);
@@ -267,15 +267,15 @@ registerCombatHook({
   phase: 'onRoundEnd',
   order: 80, // après tous les effets de Round RAW, avant la révélation héros
   enabledIf: 'combat-se-fatiguer',
-  run: ({ battle, sink }) => {
+  run: ({ get, battle, sink }) => {
     for (const c of battle.combatants) {
       if (isOutOfAction(c)) continue;
       // L'incrément du compteur d'effort est DÉTERMINISTE (RNG-free) : il a lieu pour TOUT le monde,
       // héros compris (le collecteur de cascade lit `effortRounds` ≥ seuil pour émettre l'étape).
       c.effortRounds = (c.effortRounds ?? 0) + 1;
       if (c.effortRounds < fatigueThreshold(c)) continue;
-      // Héros MANUEL au seuil : différé à la cascade influençable. Non-interactif (monstre/rapide/auto) : silence ici.
-      if (roundTestInteractive(c)) continue;
+      // Pilote humain manuel au seuil : différé à la cascade influençable. Sinon (monstre/rapide/auto) : silence ici.
+      if (humanControlled(get(), c)) continue;
       const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = fatigueApply(c, t.success, t.sl);
       if (line) sink(line, c);
@@ -299,9 +299,9 @@ registerCombatHook({
  * `sink`) ; seuls les Tests réellement dus deviennent des étapes influençables.
  */
 export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: string, c: Combatant) => void): CascadeStep[] {
-  // Étapes de cascade SEULEMENT pour un Test INTERACTIF (héros en cadence manuelle) ; en rapide/auto, le
-  // héros est auto-résolu COMME un monstre → ses Tests se résolvent silencieusement dans les hooks ci-dessus.
-  if (!roundTestInteractive(c) || isOutOfAction(c)) return [];
+  // Étapes de cascade SEULEMENT pour un pilote HUMAIN en cadence manuelle ; en rapide/auto, le combattant
+  // est auto-résolu COMME un monstre → ses Tests se résolvent silencieusement dans les hooks ci-dessus.
+  if (!humanControlled(get(), c) || isOutOfAction(c)) return [];
   const steps: CascadeStep[] = [];
   // 0) Récupération d'États en DONNÉES (Empoisonné Résistance LDB 16 l.70-72 ; plus tard En Flammes/Sonné) —
   //    chaque État porté dont la donnée déclare un `effects: onRoundEnd` à nœud `test` devient une étape

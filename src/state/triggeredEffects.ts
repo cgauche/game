@@ -18,7 +18,7 @@ import { resolveQualities } from '../engine/qualities/dispatch';
 import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
-import { roundTestInteractive } from './combat/cadenceGate';
+import { humanControlled } from './netOwnership';
 import { isEngagedWith, isEngaged } from '../engine/engagement';
 import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { combatDistance } from './footprint';
@@ -331,7 +331,7 @@ export function applyTriggeredEffects(
       // `collectRoundEndTestSteps`). IA / cadence auto ne l'exercent JAMAIS — ni décision silencieuse ni
       // jet caché (la sortie rationnelle de l'IA — plus d'ennemi en vue — est déjà l'effet AUTO de
       // psychology.json).
-      if (eff.optional && !roundTestInteractive(t)) continue;
+      if (eff.optional && !humanControlled(get(), t)) continue;
       // Flow PORTANT un nœud `test` (à n'importe quelle profondeur — top-level Mâchoires, ou enfoui sous
       // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
       // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant
@@ -344,7 +344,7 @@ export function applyTriggeredEffects(
         // pas encore ouverte) : un héros MANUEL est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ;
         // ennemi / héros auto → résolu INLINE (lignes RENDUES → sinkées dans le journal comme les dégâts).
         if (ctx.deferInteractiveTest) {
-          if (roundTestInteractive(t)) continue;
+          if (humanControlled(get(), t)) continue;
           lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
           continue;
         }

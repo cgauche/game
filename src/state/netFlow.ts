@@ -47,10 +47,13 @@ export interface NetState {
   hostAway: boolean;
   ownership: Record<string, number>;
   slots: number[];
+  /** combatantId (héros OU ennemi) → siège HUMAIN qui le pilote. Opt-in ({} par défaut) ; sérialisable
+   *  (voyage dans les snapshots coop). Absence = pilotage par défaut selon le kind (cf. `aiDriven`). */
+  humanPiloted: Record<string, number>;
 }
 export const initialNet = (): NetState => ({
   mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {},
-  connection: 'ok', hostAway: false, ownership: {}, slots: [0, 0, 0, 0],
+  connection: 'ok', hostAway: false, ownership: {}, slots: [0, 0, 0, 0], humanPiloted: {},
 });
 
 // ── Singletons réseau (non sérialisables) ──────────────────────────────────────────────────────

@@ -36,6 +36,7 @@ import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
 import { evLines } from './combatLog';
+import { pilotedByHuman } from './netOwnership';
 
 /**
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
@@ -56,11 +57,11 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   // Seuil « Corrompu » (l.80) : à CHAQUE gain au-delà de BFM+BE (+ Âme pure), Test de Résistance
   // Intermédiaire (+0) ; succès = contenu « pour cette fois », échec = mutation.
   if (!corruptionThresholdExceeded(hero)) return lines;
-  // « Un jet = une modale » : pour un HÉROS, le Test du seuil est un VRAI jet différé — modale
+  // « Un jet = une modale » : pour un pilote HUMAIN, le Test du seuil est un VRAI jet différé — modale
   // de Corruption (kind 'seuil', cycle Lancer→Chance→Pacte), résolu dans `resolveCorruption`
   // (succès = contenu ; échec = « Je te renie ! »/mutation). Repli auto-résolu + révélation
-  // témoin : PNJ (l'IA ne tient pas de modale) et gains en RAFALE (une modale déjà ouverte).
-  if (hero.kind === 'hero' && !get().pendingCorruption) {
+  // témoin : IA (ne tient pas de modale) et gains en RAFALE (une modale déjà ouverte).
+  if (pilotedByHuman(get(), hero) && !get().pendingCorruption) {
     lines.push(`${hero.name} : la Corruption déborde son seuil — Test de Résistance.`);
     // `menace: 'mutation'` : l'échec du Test de seuil fait MUTER (l.82) → c'est le Test qui « résiste
     // à la Mutation » du talent Résistance (Menace), LDB 10 l.1015-1021.
@@ -70,25 +71,25 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   const t = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
   if (t.success) {
     lines.push(`${hero.name} contient sa Corruption — pour cette fois (Résistance : ${t.roll}/${t.target}).`);
-    if (hero.kind === 'hero')
+    if (pilotedByHuman(get(), hero))
       pushReveal(set, { kind: 'mutation', title: 'Corruption contenue', dice: t.roll, lines: [...lines], subjectId: hero.id, severity: 'minor' });
     return lines;
   }
 
-  // « Je te renie ! » (LDB 17 l.71) : un héros avec de la Résilience peut refuser la mutation —
+  // « Je te renie ! » (LDB 17 l.71) : un pilote humain avec de la Résilience peut refuser la mutation —
   // choix par modale ; la mutation (applyMutation) n'est appliquée qu'à la résolution.
-  if (hero.kind === 'hero' && (hero.resilience ?? 0) > 0) {
+  if (pilotedByHuman(get(), hero) && (hero.resilience ?? 0) > 0) {
     lines.push(`${hero.name} échoue à contenir sa Corruption (Résistance ${t.roll}/${t.target}) — la mutation menace…`);
     set({ pendingRenounce: { heroId: hero.id, testRoll: t.roll, testTarget: t.target, align } });
     return lines;
   }
-  lines.push(...applyMutation(set, hero, { roll: t.roll, target: t.target }, align));
+  lines.push(...applyMutation(get, set, hero, { roll: t.roll, target: t.target }, align));
   return lines;
 }
 
 /** Applique la MUTATION (l.82-91) : −BFM Points, d100 corps/esprit par espèce, tirage sur le
  *  Tableau de Corruption physique/mentale, effets dérivés, puis LIMITES (l.95) → damné. */
-export function applyMutation(set: Set, hero: Combatant, test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
+export function applyMutation(get: Get, set: Set, hero: Combatant, test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
   const rng = battleRng();
   const lines: string[] = [];
   const lost = bonus(effectiveChar(hero, 'FM'));
@@ -118,7 +119,7 @@ export function applyMutation(set: Set, hero: Combatant, test?: { roll: number; 
     hero.dead = true;
     lines.push(`${hero.name} a BASCULÉ dans le Chaos — damné, perdu pour le groupe.`);
   }
-  if (hero.kind === 'hero')
+  if (pilotedByHuman(get(), hero))
     pushReveal(set, { kind: 'mutation', title: `Mutation — ${m.label}`, dice: m.roll, lines: [...lines], subjectId: hero.id, severity: 'grave' });
   return lines;
 }
@@ -137,7 +138,7 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
     lines.push(`${hero.name} — « Je te renie ! » : la mutation est REFUSÉE (1 Point de Résilience ; les Points de Corruption restent).`);
     pushReveal(set, { kind: 'mutation', title: 'Je te renie !', lines: [...lines], subjectId: hero.id, severity: 'minor' });
   } else {
-    lines.push(...applyMutation(set, hero, { roll: pr.testRoll, target: pr.testTarget }, pr.align));
+    lines.push(...applyMutation(get, set, hero, { roll: pr.testRoll, target: pr.testTarget }, pr.align));
   }
   const b = get().battle;
   if (b) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', hero.id)] } });

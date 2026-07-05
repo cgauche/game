@@ -201,7 +201,7 @@ export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { roundTestInteractive } from './combat/cadenceGate';
+import { pilotedByHuman, humanControlled } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
@@ -2022,14 +2022,14 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
   checkBattleOver(get, set);
 }
 
-/** Maladresse d'un ENNEMI : résolue instantanément (IA abstraite). No-op si pas un ennemi/pas de fumble. */
+/** Maladresse d'un attaquant PILOTÉ PAR L'IA : résolue instantanément (IA abstraite). No-op si piloté humain/pas de fumble. */
 export function resolveEnemyFumble(get: Get, set: SetFn, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
-  if (enemy.kind !== 'enemy' || !attackerFumbled(res, weapon)) return;
+  if (!aiDriven(get(), enemy) || !attackerFumbled(res, weapon)) return;
   applyOups(get, set, enemy, weapon, rollOups(weapon, battleRng()));
 }
 
-/** Ouvre la modale de défense réactive si l'attaque est : ennemi → héros, en mêlée,
- *  à portée, cible CAPABLE de se défendre (pas Surpris). Fige le jet d'attaque et
+/** Ouvre la modale de défense réactive si l'attaque est : attaquant PILOTÉ PAR L'IA → défenseur PILOTÉ
+ *  PAR UN HUMAIN, en mêlée, à portée, cible CAPABLE de se défendre (pas Surpris). Fige le jet d'attaque et
  *  suspend le tour de l'IA. Retourne true si la modale s'est ouverte. */
 export function maybeOpenDefense(
   get: Get,
@@ -2039,7 +2039,7 @@ export function maybeOpenDefense(
   weapon: Weapon = attacker.weapons[0],
   free?: { kind: string; prevActed: boolean },
 ): boolean {
-  if (attacker.kind !== 'enemy' || target.kind !== 'hero') return false;
+  if (!aiDriven(get(), attacker) || !pilotedByHuman(get(), target)) return false;
   // TIR sur un héros : ouvre la défense réactive UNIQUEMENT si le RAW l'autorise (Protectrice 2+ en
   // Ligne de Vue LDB 62 l.307 / Bout Portant LDB 14 l.62 / tireur Engagé LDB 14 l.70). Vide = tir non
   // opposable → résolution simple (resolveAttack). LoS acquise : l'IA ne tire que si elle voit (doAttack).
@@ -2142,7 +2142,7 @@ export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: 
  *  RÈGLE OPTIONNELLE (`combat-frappe-mortelle`) ; le ciblage est l'adjacence pure (`cleaveTargets`). Aucun
  *  trait/talent n'est nommé — règle universelle de l'arène pour les attaquants surdimensionnés/Nuée. */
 export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTarget: Combatant, res: AttackResult): void {
-  if (attacker.kind !== 'enemy') return;
+  if (!aiDriven(get(), attacker)) return;
   const sizeCleave = !!res.cleave; // Taille/Nuée : enchaîne sur une simple TOUCHE (LDB 85 l.299)
   // Frappe Mortelle (option, hors Taille) : enchaîner seulement après avoir TUÉ en un coup (LDB 14 l.9).
   const fm = !sizeCleave && !!rule('combat-frappe-mortelle') && isOutOfAction(primaryTarget);
@@ -2181,7 +2181,7 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
  *  nombre d'enchaînements reste < BCC (LDB 14 l.12) ; sinon le ferme. Déplacement sur la case d'une
  *  cible tuée (l.10). */
 export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
-  if (attacker.kind !== 'hero') return;
+  if (!pilotedByHuman(get(), attacker)) return;
   const pc = get().pendingCleave;
   const sizeCleave = !!res.cleave; // Taille : enchaîne sur une simple TOUCHE (LDB 85 l.299)
   // Démarrage Frappe Mortelle (option, hors Taille) : la cible doit être TUÉE en un coup (LDB 14 l.9).
@@ -2873,10 +2873,10 @@ export function castSpell(
     },
   });
   openCastCascade(get, set, caster); // « Une situation = une modale » : hôte la situation d'incantation dans la cascade
-  // Lanceur ENNEMI : le MOTEUR roule l'incantation (plus de « Lancer » joueur — on ne lance pas le
-  // dé de l'adversaire), puis aiguille : Contre-sort à plusieurs si un héros peut Dissiper, sinon la
-  // modale pré-roulée sert de RÉVÉLATION (résultat + « Appliquer », sans bouton « Lancer »).
-  if (caster.kind === 'enemy' && get().battle) {
+  // Lanceur PILOTÉ PAR L'IA : le MOTEUR roule l'incantation (plus de « Lancer » joueur — on ne lance pas
+  // le dé d'un combattant automate), puis aiguille : Contre-sort à plusieurs si un héros peut Dissiper,
+  // sinon la modale pré-roulée sert de RÉVÉLATION (résultat + « Appliquer », sans bouton « Lancer »).
+  if (aiDriven(get(), caster) && get().battle) {
     get().castRoll();
     routeEnemyCast(get, set);
   }
@@ -4011,9 +4011,9 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   const steps: import('./pendings').CascadeStep[] = [];
   const inlineLines: string[] = [];
   for (const c of battle.combatants) {
-    if (c.kind !== 'hero' || c.dead) continue;
-    // Non-interactif (auto/rapide) OU hors d'action (Inconscient — défaite) → jet inline silencieux.
-    if (!roundTestInteractive(c) || isOutOfAction(c)) { inlineLines.push(...resolveCombatEndHeroTestsInline(get, set, c, corr)); continue; }
+    if (c.kind !== 'hero' || c.dead) continue; // RAW : les créatures/défaits n'ont pas de jet de maladie/Corruption de fin de combat
+    // Pas piloté-humain-manuel (auto/rapide) OU hors d'action (Inconscient — défaite) → jet inline silencieux.
+    if (!humanControlled(get(), c) || isOutOfAction(c)) { inlineLines.push(...resolveCombatEndHeroTestsInline(get, set, c, corr)); continue; }
     const decided = decideCombatEndHeroTests(c, corr?.level ?? null);
     const resVal = combatEndResistVal(c);
     for (const d of decided.diseases) {
@@ -4702,7 +4702,7 @@ function openCombatPsychCascade(
   if (roundCascadeBlocked(get)) return; // Maladresse = étape de pendingCascade (déjà couverte)
   const steps: import('./pendings').CascadeStep[] = [];
   for (const c of get().battle!.combatants) {
-    if (c.kind !== 'hero' || isOutOfAction(c)) continue;
+    if (!humanControlled(get(), c) || isOutOfAction(c)) continue;
     const st = psychStepFor(get, set, c, collect);
     if (st) steps.push(st);
   }
@@ -4734,8 +4734,8 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
   const sink = (line: string, c?: Combatant) => upkeepLines.push({ line, id: c?.id });
   const steps: import('./pendings').CascadeStep[] = [];
   for (const c of get().battle!.combatants) {
-    if (c.kind !== 'hero' || isOutOfAction(c)) continue;
-    // 1) Upkeep du héros (effets RNG-free). 2) Peur de fin de Round. (La sortie de Frénésie est un
+    if (!humanControlled(get(), c) || isOutOfAction(c)) continue;
+    // 1) Upkeep du combattant (effets RNG-free). 2) Peur de fin de Round. (La sortie de Frénésie est un
     //    effet `onTurnStart` en données, jouée au début du tour du héros — plus ici.)
     steps.push(...collectHeroRoundEndUpkeep(get, c, sink));
     const psych = psychStepFor(get, set, c, collectHeroRoundEndPsych);
@@ -4912,8 +4912,8 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   }
 
   // Cible = camp OPPOSÉ à l'acteur : un ennemi vise les héros (inchangé) ; un héros auto-piloté (Auto-combat)
-  // vise les ennemis. Les helpers Rage/Stupide/Frénésie/psy ci-dessus n'agissent que sur les ennemis (no-op
-  // pour un héros, par leurs propres gardes `kind` internes — comportement conservateur, pas de bug).
+  // vise les ennemis. Les helpers Frénésie/psy ci-dessus s'appliquent à tout combattant piloté par l'IA
+  // (`aiDriven`) — dont un héros auto ; Rage/Stupide restent gardés par leurs traits.
   const foeKind = enemy.kind === 'enemy' ? 'hero' : 'enemy';
   const heroes = battle.combatants.filter((c) => c.kind === foeKind && !isOutOfAction(c));
   if (heroes.length === 0) {
