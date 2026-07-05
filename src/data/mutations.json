@@ -2363,5 +2363,20 @@
         "peau": "#d9dbd2"
       }
     }
+  },
+  {
+    "id": "bosse-d-os",
+    "label": "La bosse d'os",
+    "desc": "des os à la fois souples et durs comme le fer se sont propagés depuis la bosse du Vieux Dos-de-pus sur tout son corps. Ceci l'a rendu plus lent, mais aussi incroyablement coriace.",
+    "kind": "physique",
+    "appearance": {
+      "features": [
+        "ecailles"
+      ]
+    },
+    "source": {
+      "book": "ZI",
+      "page": 18
+    }
   }
 ]

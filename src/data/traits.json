@@ -4,6 +4,10 @@
     "label": "À distance",
     "prefix": "(Indice) (Portée)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
+    "range": true,
     "desc": "La créature possède une arme à distance. L'arme cause Indice Dégâts et la distance en mètres est (Portée).",
     "source": {
       "book": "LDB",
@@ -98,6 +102,8 @@
     "label": "Animosité",
     "prefix": "(Cible)",
     "suffix": null,
+    "specsSource": "groups",
+    "specsMulti": true,
     "desc": "La créature n'aime pas la Cible. Voir page 190 pour les règles concernant l'Animosité.",
     "source": {
       "book": "LDB",
@@ -124,6 +130,9 @@
     "label": "Arme",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La créature porte une arme de Corps à corps, ou utilise ses dents, griffes ou similaires en combat.\n\nL'arme inflige Indice Dégâts qui incluent déjà son bonus de Force. En général, le nombre de Dégâts est égal à 4 + son bonus de Force (représentant une arme simple).",
     "source": {
       "book": "LDB",
@@ -141,6 +150,9 @@
     "label": "Armure",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La créature est protégée par une armure ou une peau épaisse. Elle a Indice PA à toutes ses Localisations.",
     "source": {
       "book": "LDB",
@@ -153,6 +165,9 @@
     "label": "Attaque caudale",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La queue de la créature est capable de balayer les ennemis. À son tour, elle peut effectuer une Attaque gratuite en dépensant 1 Avantage. La queue inflige Indice Dégâts, qui incluent déjà son bonus de Force. Les adversaires avec une plus petite Taille que la créature, qui perdent des Points de Blessure par cette attaque, subissent également l'État À Terre.",
     "source": {
       "book": "LDB",
@@ -183,6 +198,7 @@
     "label": "Béni",
     "prefix": "(Divers)",
     "suffix": null,
+    "specsSource": "cultBlessings",
     "desc": "La créature est Béni et peut accorder des Bénédictions. La divinité concernée est indiquée entre parenthèses.",
     "source": {
       "book": "LDB",
@@ -379,6 +395,10 @@
     "label": "Cornes",
     "prefix": "(Indice) (Aspect)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
+    "specsOpen": true,
     "desc": "La créature possède des cornes ou d'autres appendices acérés. Si ses Cornes représentent un Aspect différent, il sera noté entre parenthèses. Quand la créature gagne un Avantage pour Charger, elle peut aussi gagner une Attaque gratuite de Cornes, calculée normalement, en utilisant Indice pour les Dégâts (son bonus de Force est déjà inclus).",
     "source": {
       "book": "LDB",
@@ -398,6 +418,9 @@
     "label": "Corruption",
     "prefix": "(Degré)",
     "suffix": null,
+    "indice": {
+      "label": "Degré"
+    },
     "desc": "La créature est corrompue par le Chaos, ou peut-être imprégnée de Magie noire. Le Degré de Corruption est indiqué entre parenthèses. Voir page 182.",
     "source": {
       "book": "LDB",
@@ -409,6 +432,7 @@
     "label": "Corruption mentale",
     "prefix": null,
     "suffix": null,
+    "specsOpen": true,
     "desc": "Le Chaos s'est insinué dans l'esprit de la créature... Faites un lancer sur le Tableau de la Corruption Mentale qui se trouve à la p. 185.",
     "source": {
       "book": "LDB",
@@ -423,6 +447,9 @@
     "label": "Démoniaque",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "L'essence de la créature est constituée de magie brute et de l'ichor impie coule dans ses veines. Ces créatures n'ont besoin ni d'eau, ni de nourriture, ni d'air... Toutes ses attaques sont Magiques. Lancez 1d10 après chaque coup reçu, si la créature obtient le nombre de l'Indice ou plus, le coup est ignoré, même s'il s'agit d'un critique. Si la créature tombe à 0 Point de Blessure, son âme retourne immédiatement dans les Royaumes du Chaos, ce qui la retire du jeu.",
     "source": {
       "book": "LDB",
@@ -562,6 +589,8 @@
     "label": "Effrayé",
     "prefix": "(Cible)",
     "suffix": null,
+    "specsSource": "groups",
+    "specsMulti": true,
     "desc": "La créature a Peur 0 de la Cible. Voir Psychologie dans le Chapitre 5 : Règles à la page 190 pour les règles concernant la Peur.",
     "source": {
       "book": "LDB",
@@ -797,6 +826,8 @@
     "label": "Haine",
     "prefix": "(Cible)",
     "suffix": null,
+    "specsSource": "groups",
+    "specsMulti": true,
     "desc": "La créature hait profondément la Cible. Voir Haine à la page 190.",
     "source": {
       "book": "LDB",
@@ -828,6 +859,8 @@
     "label": "Immunité",
     "prefix": "(Type)",
     "suffix": null,
+    "specsSource": "damageTypes",
+    "specsMulti": true,
     "desc": "La créature est totalement immunisée à un certain Type de Dégâts, comme ceux du poison, magiques ou électriques. Tous les Dégâts de ce Type, y compris les Dégâts Critiques, sont ignorés.",
     "source": {
       "book": "LDB",
@@ -1031,6 +1064,9 @@
     "label": "Lanceur de Sorts",
     "prefix": "(Divers)",
     "suffix": null,
+    "specsSource": "arcaneDomains",
+    "specsOpen": true,
+    "specsMulti": true,
     "desc": "La créature peut lancer des Sorts : le type de magie spécifique est indiqué entre parenthèses.",
     "source": {
       "book": "LDB",
@@ -1042,6 +1078,10 @@
     "label": "Langue préhensile",
     "prefix": "(Indice) (Portée)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
+    "range": true,
     "desc": "La langue préhensile de la créature peut s'enrouler autour d'une proie, l'entraînant vers une fin horrible.\n\nPendant son tour, elle peut effectuer une Attaque gratuite en dépensant 1 Avantage. C'est une Attaque à distance qui inflige Indice Dégâts (la Portée est indiquée entre parenthèses, en mètres). Si l'Attaque touche, son adversaire reçoit 1 État Empêtré et, s'il a une Taille inférieure, il est entraîné vers la créature. Elle peut laisser ensuite partir la cible, effectuer une Attaque gratuite en utilisant son Trait Arme, ou conserver la cible enroulée dans sa langue, avec le démarrage d'une Empoignade (voir page 163).",
     "source": {
       "book": "LDB",
@@ -1086,6 +1126,7 @@
     "label": "Maladie",
     "prefix": "(Type)",
     "suffix": null,
+    "specsSource": "diseases",
     "desc": "La créature est porteuse de la maladie Type. Les autres doivent faire un Test approprié pour éviter la Contraction de la maladie. Voir page 186.",
     "source": {
       "book": "LDB",
@@ -1148,6 +1189,7 @@
     "label": "Miracles",
     "prefix": "(Divers)",
     "suffix": null,
+    "specsSource": "cultMiracles",
     "desc": "La créature peut accomplir des Miracles. La divinité concernée est indiquée entre parenthèses.",
     "source": {
       "book": "LDB",
@@ -1159,6 +1201,9 @@
     "label": "Morsure",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "Pendant son tour, la créature peut effectuer une Attaque gratuite en dépensant 1 Avantage. Les Dégâts de l'Attaque égalent Indice et incluent déjà son bonus de Force.",
     "source": {
       "book": "LDB",
@@ -1189,6 +1234,10 @@
     "label": "Mutation",
     "prefix": null,
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
+    "specsSource": "mutations",
     "desc": "La créature a la « chance » de posséder une Mutation. Faites un lancer sur le Tableau des Corruptions physiques (page 184).",
     "source": {
       "book": "LDB",
@@ -1311,6 +1360,7 @@
     "label": "Perturbant",
     "prefix": null,
     "suffix": null,
+    "specsOpen": true,
     "desc": "La créature perturbe ou désoriente ses ennemis : peut-être qu'elle dégage un musc soporifique ou une odeur nauséabonde, ou peut-être que son apparence est horrifiante ou étrange. Toute personne se trouvant à un nombre de mètres égal à son Bonus d'Endurance obtient une pénalité de -20 à tous ses Tests. Les créatures touchées ne peuvent subir cette pénalité qu'une seule fois, peu importe le nombre d'ennemis Perturbants.",
     "source": {
       "book": "LDB",
@@ -1332,6 +1382,9 @@
     "label": "Peur",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La nature de la créature engendre de la Peur surnaturelle chez les autres créatures, égale à Indice. Voir page 190.",
     "source": {
       "book": "LDB",
@@ -1357,6 +1410,8 @@
     "label": "Préjugé",
     "prefix": "(Cible)",
     "suffix": null,
+    "specsSource": "groups",
+    "specsMulti": true,
     "desc": "La créature n'apprécie pas la Cible. Voir page 190 pour les règles concernant les Préjugés.",
     "source": {
       "book": "LDB",
@@ -1372,6 +1427,9 @@
     "label": "Protection",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "Parce qu'elles sont magiques, bénéficient d'un talisman particulier ou sont simplement chanceuses, certaines créatures semblent éviter les coups. Lancer 1d10 après chaque coup reçu. En cas de résultat supérieur ou égal à Indice, le coup est ignoré même s'il s'agit d'un Critique.",
     "source": {
       "book": "LDB",
@@ -1541,6 +1599,9 @@
     "label": "Résistance à la Magie",
     "prefix": null,
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La Magie n'affecte pas la créature autant que les autres. Le DR de tous les Sorts l'affectant est réduit du nombre indiqué. Ainsi, Résistance à la Magie 2 réduit le DR de 2.",
     "source": {
       "book": "LDB",
@@ -1627,6 +1688,9 @@
     "label": "Se cabrer",
     "prefix": null,
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "Pour une Action de Mouvement, la créature peut effectuer une Attaque de Piétinement si elle est plus grande que son adversaire. Voir Taille pour plus d'informations.",
     "source": {
       "book": "LDB",
@@ -1638,6 +1702,11 @@
     "label": "Souffle",
     "prefix": "(Indice) (Type)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
+    "specsSource": "breathTypes",
+    "specsOpen": true,
     "desc": "Le souffle de la créature est une arme puissante. Pendant son tour, au prix de 2 Avantages, elle peut activer son Souffle en tant qu'Attaque gratuite. Choisissez 1 cible qu'elle peut voir, située à une distance en mètres égale à son bonus d'Endurance +20. Tous les personnages situés à une distance en mètres égale au Bonus de Force de cette cible sont touchés, ainsi que tous les personnages entre la créature et la cible.\n\nEffectuez un Test opposé de CT/Esquive contre toutes les cibles affectées (un lancer pour chaque cible). Toutes les cibles qui échouent subissent un montant de Dégâts d'Arme égal à son Indice.\n\nDe plus, si le trait indique l'un des Types suivants entre parenthèses, appliquez également les règles correspondantes :\n\n-   **Froid:** les cibles gagnent l'État Sonné pour chaque tranche de 5 Blessures subies (minimum 1).\n-   **Corrosif:** toutes les Armures et Armes portées par les cibles subissent 1 Dégât.\n-   **Feu:** toutes les Blessures infligées ignorent les PA. Les cibles gagnent l'État Enflammé.\n-   **Électricité:** toutes les Blessures infligées ignorent les PA. Les cibles gagnent l'État Sonné.\n-   **Poison:** toutes les Blessures infligées ignorent les PA. Les cibles gagnent l'État Empoisonné.\n-   **Fumée:** la zone se remplit de fumée, bloquant les Lignes de vue pendant un nombre de Rounds égal au Bonus d'Endurance de la créature.\n\nLa créature est immunisée à son propre Souffle. Il s'agit d'une Attaque magique.",
     "source": {
       "book": "LDB",
@@ -1683,6 +1752,7 @@
     "label": "Taille",
     "prefix": "(Divers)",
     "suffix": null,
+    "specsSource": "sizes",
     "desc": "Ce Trait représente les créatures dont la taille diffère du standard du jeu (c'est-à-dire environ la taille humaine). Il y a sept catégories de Taille, allant de Minuscule à Monstrueuse.\n\n| Taille | Exemples |\n| --- | --- |\n| Minuscule | Papillon, souris, pigeon |\n| Très petite | Chat, faucon, bébé humain |\n| Petite | Rat géant, halfling, enfant humain |\n| Moyenne | Nain, elfe, humain |\n| Grande | Cheval, ogre, troll |\n| Énorme | Griffon, vouivre, manticore |\n| Monstrueuse | Dragon, géant, Prince démon |\n\n**Modificateurs de Taille en Combat**\n\nSi la créature est plus grande :\n\n-   Ses armes gagnent l'Atout Dévastatrice si la créature est d'une catégorie de Taille supérieure, et Percutante si elle est plus grande d'au moins deux catégories de Taille.\n-   Vous multipliez les Dégâts infligés par le nombre de catégories de Taille supérieures (ainsi, 2 catégories = x2, 3 catégories = x3, et ainsi de suite) : cette multiplication est calculée après l'application des modificateurs.\n-   Toutes les frappes réussies activent la règle optionnelle Frappe Mortelle (voir page 160), même si la cible survit.\n\nSi la créature est plus petite :\n\n-   Elle gagne un bonus de +10 pour toucher.\n\n**Défense contre les grosses créatures**\n\nVous subissez une pénalité de DR -2 pour chaque catégorie de Taille supérieure de votre adversaire, quand vous utilisez la CC pour vous défendre lors d'un Test opposé. Il est conseillé d'esquiver un Géant balançant un arbre plutôt que de le parer.\n\n**Mouvement en Combat**\n\nUne créature plus grande ignore la nécessité de se Désengager pour quitter le combat au Corps à corps. À la place, vous dégagez les combattants de taille inférieure du chemin, vous déplaçant où vous voulez.\n\n**Force opposée**\n\nPendant les Tests opposés de Force (et similaires), si l'une des créatures est supérieure d'au moins deux Tailles, elle gagne automatiquement. Si l'une des créatures est d'une Taille supérieure, la plus petite doit obtenir un Critique sur son jet pour pouvoir s'opposer. Si c'est le cas, le DR est comparé comme d'habitude. Tout autre résultat indique que la plus grande créature l'a emporté.\n\n**Peur et Terreur**\n\nSi la créature est considérée comme agressive, elle provoquera la Peur chez toute créature plus petite qu'elle, et de la Terreur à toute créature plus petite qu'elle d'au moins deux catégories. Le niveau de Peur ou de Terreur égale la différence de catégories de Taille. Ainsi, si elle est de catégorie Grande et son adversaire de catégorie Petite, elle lui cause Terreur 2. Voir page 191.\n\n**Piétinement**\n\nLes créatures plus grandes que leurs adversaires peuvent effectuer une Attaque de Piétinement comme Action gratuite au prix de 1 Avantage lorsqu'elles frappent vers le bas ou un adversaire plus petit. Cette Attaque inflige un nombre de Dégâts égal à votre Bonus de Force +0, et utilise la Compétence Corps à corps (Bagarre).\n\n**Blessures**\n\nLes créatures plus grandes encaissent plus de Blessures.\n\n| Taille | Blessures |\n| --- | --- |\n| Minuscule | 1 |\n| Très petite | Bonus d'Endurance |\n| Petite | (2 x Bonus d'Endurance) + Bonus de Force Mentale |\n| Moyenne | Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale |\n| Grande | (Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale) x 2 |\n| Énorme | (Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale) x 4 |\n| Monstrueuse | (Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale) x 8 |",
     "source": {
       "book": "LDB",
@@ -1694,6 +1764,9 @@
     "label": "Tentacules",
     "prefix": "(Indice)",
     "suffix": "#",
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La créature possède un nombre # de tentacules. Gagnez une Action d'Attaque gratuite par tentacule. Les tentacules infligent Indice Dégâts, qui incluent déjà son bonus de Force. Si elle cause des Dégâts, elle peut aussi infliger à son adversaire l'État Empêtré, bien que cela entame une Empoignade avec ce tentacule. Si un tentacule est en Empoignade, vous pouvez utiliser une Action d'Attaque gratuite pour résoudre l'Empoignade au lieu de l'Action de la créature. Voir page 163.",
     "source": {
       "book": "LDB",
@@ -1713,6 +1786,9 @@
     "label": "Terreur",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La créature suscite une Terreur surnaturelle à glacer le sang des autres créatures, avec un niveau égal à Indice. Voir page 191.",
     "source": {
       "book": "LDB",
@@ -1741,6 +1817,9 @@
     "label": "Toile",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La créature peut créer une toile pour attraper les ennemis imprudents. Chaque fois qu'elle réussit à toucher, son adversaire gagne 1 État Empêtré, avec une Force de Indice. Voir page 168.",
     "source": {
       "book": "LDB",
@@ -1824,6 +1903,9 @@
     "label": "Venin",
     "prefix": "(Difficulté)",
     "suffix": null,
+    "indice": {
+      "label": "Difficulté"
+    },
     "desc": "Les attaques de la créature impliquent du poison ou du venin. Quand elle inflige des Points de Blessure avec ses Attaques venimeuses, son adversaire subit un État Empoisonné. Si aucune Difficulté n'est indiquée pour résister au Venin, le Test est considéré comme Intermédiaire. Voir page 168.",
     "effects": [
       {
@@ -1909,6 +1991,9 @@
     "label": "Vol",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "Quand la créature se Déplace, elle peut voler jusqu'à Indice mètres. Elle ignore alors tous les terrains, obstacles et personnages qui s'interposent. À la fin de son Mouvement, elle décide si elle atterrit ou si elle continue de voler. Elle peut utiliser ce Mouvement pour Charger.\n\nSi elle commence son tour en volant, elle doit choisir le Vol pour son Mouvement. Si elle ne peut pas voler, le MJ décide à quelle distance elle tombe (voir 168).\n\nLorsqu'elle est une cible en vol, il faut mesurer la distance horizontale normalement, puis augmenter la distance de 1. Ainsi, une Longue Distance devient une Distance Extrême, et une créature volante à une Distance Extrême ne peut pas être touchée.\n\nQuand elle vole, elle subit une pénalité de -20 à toutes les tentatives de combat à distance, alors qu'elle virevolte dans le ciel.",
     "source": {
       "book": "LDB",
@@ -1923,6 +2008,9 @@
     "label": "Vomissement",
     "prefix": "(Indice)",
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "La créature peut vomir un flot de corruption corrosive, aspergeant son adversaire d'immondices à moitié digérées. Pendant son tour, au prix de 3 Avantages, elle peut activer son Vomissement comme une Attaque gratuite. Elle choisit 1 cible qu'elle peut voir, située à une distance en mètres égale à son Bonus d'Endurance, et lui vomit dessus. Toutes les cibles à moins de deux mètres sont également touchées.\n\nLa créature effectue un Test opposé de CT/Esquive contre toutes les cibles affectées (un jet opposé pour chaque cible). Le Test est généralement Facile (+40) pour elle à cause de la distance rapprochée, et Intermédiaire (+0) pour ses adversaires. Toutes les cibles qui échouent subissent une somme de Dégâts d'Arme égale à son Bonus d'Endurance +4 et reçoivent l'État Sonné.\n\nToutes les Armures et les Armes portées par les cibles affectées subissent 1 Dégât à cause de l'acidité corrosive du vomissement.",
     "source": {
       "book": "LDB",
@@ -1972,6 +2060,8 @@
     "label": "Amour",
     "prefix": "(Cible)",
     "suffix": null,
+    "specsSource": "groups",
+    "specsMulti": true,
     "desc": "Les poètes parlent tout le temps d'amour, et même les bardes du Reikland connaissent des dizaines de chansons qui sont autant d'odes au pouvoir de l'amour. Si votre Personnage possède le Trait Amour envers un ou plusieurs individus, ce dernier reflète une très forte relation émotionnelle entre les deux. Cela peut être l'amour romantique qu'il va éprouver envers sa femme, son mari ou son amoureux, un profond amour familial envers un frère, une sœur, un parent ou un enfant, ou encore une très forte amitié. Vous devez venir en aide à quelqu'un que vous aimez s'il se retrouve menacé, que ce soit physiquement ou verbalement. Vous êtes immunisé à la Peur et l'Intimidation tant que vous défendez les êtres aimés, et vous gagnez +1 DR à tous les Tests en rapport.",
     "source": {
       "book": "LDB",
@@ -1986,6 +2076,8 @@
     "label": "Camaraderie",
     "prefix": "(Cible)",
     "suffix": null,
+    "specsSource": "groups",
+    "specsMulti": true,
     "desc": "La Camaraderie reflète les sentiments positifs ressentis envers un groupe d'individus. Vous devez alors leur venir en aide si ce groupe est menacé (que ce soit verbalement ou physiquement), et vous gagnez +1 DR lors des Tests effectués pour défendre ce groupe.",
     "source": {
       "book": "LDB",
@@ -2000,6 +2092,8 @@
     "label": "Phobie",
     "prefix": "(Type)",
     "suffix": null,
+    "specsSource": "groups",
+    "specsMulti": true,
     "desc": "Une phobie reflète une peur spécifique ; cela peut-être envers un Type de créature, ou envers un objet ou une situation particulière, tel que Phobie (Insectes), Phobie (Livres) ou Phobie (Espaces clos). Traitez l'objet de la Phobie comme causant Peur 1. Vous pouvez vouloir augmenter l'Indice de Peur si la Phobie est particulièrement forte.",
     "source": {
       "book": "LDB",
@@ -2123,6 +2217,7 @@
     "label": "Contagieux",
     "prefix": "(Type)",
     "suffix": null,
+    "specsSource": "diseases",
     "desc": "La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s’il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».",
     "source": {
       "book": "EDO",
@@ -2265,6 +2360,9 @@
     "label": "Redoutable",
     "prefix": null,
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son Indice de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État Empêtré, Inconscient ou Surpris, elle ne gagne pas d'Avantage.\n\nSi vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires.",
     "source": {
       "book": "ZI",
@@ -2321,6 +2419,9 @@
     "label": "Fouissement",
     "prefix": null,
     "suffix": null,
+    "indice": {
+      "label": "Indice"
+    },
     "desc": "Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. Pour se déplacer, elle peut creuser dans le sol sur une distance en mètres égale à son Indice. Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. À la fin de son déplacement, elle peut choisir de sortir de terre ou de rester enfouie. Elle peut se servir de ce mode de déplacement pour Charger. Si elle commence son tour sous terre, elle doit se déplacer par fouissement.\n\nPour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, mais augmentez la Portée de 2 niveaux. Ainsi, un tir à Portée Moyenne passerait à Portée Extrême, tandis qu'un tir à Portée Longue ou Extrême serait impossible.",
     "source": {
       "book": "ZI",

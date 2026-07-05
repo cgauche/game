@@ -55,6 +55,44 @@
     }
   },
   {
+    "key": "Déesse-Araignée",
+    "blessings": [
+      {
+        "id": "benediction-de-bataille"
+      },
+      {
+        "id": "benediction-de-chance"
+      },
+      {
+        "id": "benediction-de-courage"
+      },
+      {
+        "id": "benediction-de-grace"
+      },
+      {
+        "id": "benediction-de-la-chasse"
+      },
+      {
+        "id": "benediction-de-sauvagerie"
+      }
+    ],
+    "miracles": [
+      {
+        "id": "bon-baiser-d-la-fosse-noire"
+      },
+      {
+        "id": "nuee-d-escampette"
+      },
+      {
+        "id": "toile-surprise"
+      }
+    ],
+    "source": {
+      "book": "ZI",
+      "page": 14
+    }
+  },
+  {
     "key": "Dyrath",
     "title": "Déesse des femmes",
     "blessings": [],

@@ -147,7 +147,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vision-nocturne"
@@ -287,7 +287,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -664,7 +664,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "toile",
@@ -749,7 +749,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [
@@ -809,7 +809,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vision-nocturne"
@@ -973,7 +973,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -1046,7 +1046,7 @@
       },
       {
         "id": "taille",
-        "arg": "Minuscule"
+        "arg": "minuscule"
       },
       {
         "id": "vol",
@@ -1117,7 +1117,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "maladie",
@@ -1280,7 +1280,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       }
     ],
     "optionals": [
@@ -1358,7 +1358,7 @@
       },
       {
         "id": "immunite",
-        "arg": "Poison"
+        "arg": "poison"
       },
       {
         "id": "infecte"
@@ -1372,7 +1372,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "venin"
@@ -1452,7 +1452,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [
@@ -1522,7 +1522,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -1590,7 +1590,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -1691,7 +1691,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -1757,7 +1757,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -1843,7 +1843,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -1920,7 +1920,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -2010,12 +2010,12 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "souffle",
         "value": 10,
-        "arg": "Feu"
+        "arg": "feu"
       },
       {
         "id": "vision-nocturne"
@@ -2103,7 +2103,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "venin"
@@ -2174,7 +2174,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "territorial"
@@ -2242,7 +2242,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vol",
@@ -2305,7 +2305,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "tentacules",
@@ -2459,7 +2459,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vomissement"
@@ -2547,7 +2547,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "venin"
@@ -2774,7 +2774,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vision-nocturne"
@@ -2937,7 +2937,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "terreur",
@@ -3164,7 +3164,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [
@@ -3735,7 +3735,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -3949,7 +3949,7 @@
       },
       {
         "id": "mutation",
-        "arg": "Cornes asymétriques"
+        "arg": "cornes-asymetriques"
       }
     ],
     "optionals": [
@@ -4520,7 +4520,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "terreur",
@@ -4608,11 +4608,11 @@
       {
         "id": "souffle",
         "value": 12,
-        "arg": "Corrosif"
+        "arg": "corrosif"
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "terreur",
@@ -4740,7 +4740,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -4903,7 +4903,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [
@@ -4986,7 +4986,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -22352,7 +22352,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "vision-nocturne"
@@ -22460,7 +22460,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "vision-nocturne"
@@ -22577,7 +22577,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "territorial"
@@ -22711,7 +22711,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vision-nocturne"
@@ -22862,7 +22862,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "vision-nocturne"
@@ -22981,7 +22981,7 @@
       },
       {
         "id": "taille",
-        "arg": "Moyenne"
+        "arg": "moyenne"
       }
     ],
     "optionals": [],
@@ -23081,7 +23081,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [],
@@ -23213,7 +23213,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [],
@@ -23340,7 +23340,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [],
@@ -23487,7 +23487,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [],
@@ -24176,7 +24176,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -24306,7 +24306,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -24450,7 +24450,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -24606,7 +24606,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "territorial"
@@ -25153,7 +25153,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -25371,7 +25371,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "vision-nocturne"
@@ -25495,7 +25495,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vision-nocturne"
@@ -25777,7 +25777,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -26000,7 +26000,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "toile"
@@ -26287,7 +26287,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "toile"
@@ -26452,7 +26452,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "toile"
@@ -27441,7 +27441,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -27749,7 +27749,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -28120,7 +28120,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [],
@@ -30737,7 +30737,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "infravision"
@@ -30854,7 +30854,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "infravision"
@@ -31419,7 +31419,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "infravision"
@@ -31611,7 +31611,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "infravision"
@@ -31792,7 +31792,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       }
     ],
     "optionals": [],
@@ -32392,7 +32392,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "infravision"
@@ -32568,7 +32568,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "infravision"
@@ -32824,7 +32824,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "infravision"
@@ -33392,7 +33392,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "infravision"
@@ -33567,7 +33567,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "infravision"
@@ -38852,7 +38852,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -38997,7 +38997,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -39160,7 +39160,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -39335,7 +39335,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -43685,7 +43685,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vomissement"
@@ -43838,7 +43838,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -44019,7 +44019,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -44218,7 +44218,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vomissement"
@@ -44448,7 +44448,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vomissement"
@@ -44708,7 +44708,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vomissement"
@@ -44952,7 +44952,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vision-nocturne"
@@ -45116,7 +45116,7 @@
       },
       {
         "id": "taille",
-        "arg": "Moyenne"
+        "arg": "moyenne"
       },
       {
         "id": "vision-nocturne"
@@ -45251,7 +45251,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -45397,7 +45397,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       }
     ],
     "optionals": [],
@@ -47968,7 +47968,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [],
@@ -48101,7 +48101,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       }
     ],
     "optionals": [],
@@ -48229,7 +48229,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vol"
@@ -48369,7 +48369,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "pisteur"
@@ -49111,7 +49111,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -49191,7 +49191,7 @@
     "traits": [
       {
         "id": "beni",
-        "arg": "Kurnous [Taal]"
+        "arg": "Taal"
       },
       {
         "id": "foulee"
@@ -49210,7 +49210,7 @@
       },
       {
         "id": "miracles",
-        "arg": "Kurnous [Taal]"
+        "arg": "Taal"
       },
       {
         "id": "protection",
@@ -49221,7 +49221,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "arme",
@@ -49298,7 +49298,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -49381,7 +49381,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -49537,18 +49537,18 @@
       },
       {
         "id": "beni",
-        "arg": "Déesse-araignée"
+        "arg": "Déesse-Araignée"
       },
       {
         "id": "immunite",
-        "arg": "Poison"
+        "arg": "poison"
       },
       {
         "id": "insensible-a-la-douleur"
       },
       {
         "id": "miracles",
-        "arg": "Déesse-araignée"
+        "arg": "Déesse-Araignée"
       },
       {
         "id": "peur",
@@ -49683,7 +49683,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -49761,7 +49761,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -49854,7 +49854,7 @@
       },
       {
         "id": "mutation",
-        "arg": "La bosse d'os"
+        "arg": "bosse-d-os"
       },
       {
         "id": "perturbant"
@@ -49865,7 +49865,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -49951,7 +49951,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -50042,7 +50042,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "arme",
@@ -50144,7 +50144,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "arme",
@@ -50350,14 +50350,14 @@
       },
       {
         "id": "immunite",
-        "arg": "Poison"
+        "arg": "poison"
       },
       {
         "id": "redoutable"
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -50461,7 +50461,7 @@
       },
       {
         "id": "immunite",
-        "arg": "Feu"
+        "arg": "feu"
       },
       {
         "id": "immunite-psychologique"
@@ -50479,7 +50479,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "vision-nocturne"
@@ -50505,7 +50505,7 @@
       {
         "id": "souffle",
         "value": 20,
-        "arg": "Feu"
+        "arg": "feu"
       }
     ],
     "optionals": [],
@@ -50602,7 +50602,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -50752,7 +50752,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -51121,7 +51121,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -51327,7 +51327,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "terreur",
@@ -51531,7 +51531,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "arme",
@@ -51646,7 +51646,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "arme",
@@ -51749,7 +51749,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -51864,7 +51864,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "arme",
@@ -51958,7 +51958,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "arme",
@@ -52032,7 +52032,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "territorial"
@@ -52114,7 +52114,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vol",
@@ -52193,7 +52193,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vol",
@@ -52285,7 +52285,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -52357,7 +52357,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -52439,7 +52439,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -52525,7 +52525,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vol",
@@ -52627,7 +52627,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -52730,7 +52730,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "terreur",
@@ -52759,7 +52759,7 @@
       {
         "id": "souffle",
         "value": 12,
-        "arg": "Feu"
+        "arg": "feu"
       }
     ],
     "optionals": [
@@ -52863,7 +52863,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "terreur",
@@ -52892,7 +52892,7 @@
       {
         "id": "souffle",
         "value": 14,
-        "arg": "Froid"
+        "arg": "froid"
       }
     ],
     "optionals": [],
@@ -53198,7 +53198,7 @@
       },
       {
         "id": "immunite",
-        "arg": "Feu, Magie flamboyante"
+        "arg": "feu"
       },
       {
         "id": "infravision"
@@ -53211,7 +53211,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "territorial"
@@ -53232,7 +53232,7 @@
       {
         "id": "souffle",
         "value": 10,
-        "arg": "Feu"
+        "arg": "feu"
       }
     ],
     "optionals": [
@@ -53295,7 +53295,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -53374,7 +53374,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "vision-nocturne"
@@ -53461,7 +53461,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "arme",
@@ -53555,7 +53555,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -53651,7 +53651,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "territorial"
@@ -53746,7 +53746,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -53943,7 +53943,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -54034,7 +54034,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vision-nocturne"
@@ -54118,7 +54118,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "vol",
@@ -54208,7 +54208,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -54292,7 +54292,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -54455,7 +54455,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "arme",
@@ -54537,7 +54537,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "arme",
@@ -54629,7 +54629,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "arme",
@@ -54888,7 +54888,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "a-distance",
@@ -54960,7 +54960,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "terreur",
@@ -55224,7 +55224,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -56067,7 +56067,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très petite"
+        "arg": "tresPetite"
       }
     ],
     "optionals": [],
@@ -60142,7 +60142,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "arme",
@@ -60216,7 +60216,7 @@
       },
       {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
       },
       {
         "id": "arme",
@@ -60290,7 +60290,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "arme",
@@ -60358,7 +60358,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "a-distance",
@@ -60446,7 +60446,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "terreur",
@@ -60531,7 +60531,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -60608,7 +60608,7 @@
       },
       {
         "id": "taille",
-        "arg": "Énorme"
+        "arg": "enorme"
       },
       {
         "id": "venin",
@@ -60771,7 +60771,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -60854,7 +60854,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -60932,7 +60932,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -60996,7 +60996,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "arme",
@@ -61088,7 +61088,7 @@
       },
       {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
       },
       {
         "id": "terreur",
@@ -62539,7 +62539,7 @@
       },
       {
         "id": "mutation",
-        "arg": "Buveur de saumure"
+        "arg": "buveur-de-saumure"
       }
     ],
     "optionals": [],
@@ -62757,7 +62757,7 @@
       },
       {
         "id": "taille",
-        "arg": "Grande"
+        "arg": "grande"
       },
       {
         "id": "vision-nocturne"
@@ -62847,7 +62847,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "arme",
@@ -62943,7 +62943,7 @@
       },
       {
         "id": "taille",
-        "arg": "Très Petite"
+        "arg": "tresPetite"
       },
       {
         "id": "arme",
