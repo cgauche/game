@@ -30,6 +30,8 @@ public/qc/
 .claude/*
 !.claude/settings.json
 !.claude/credo.md
+!.claude/skills/
+!.claude/workflows/
 *.exe
 *.log
 
