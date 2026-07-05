@@ -67,7 +67,7 @@ function makeArmy(name: string, startMight: number): MassBattleArmy {
   const m = clampMight(startMight);
   return {
     name,
-    combatant: inanimateCombatant({ id: `army-${name}`, name, refId: 'mass-army', bodyShape: 'structure', hull: { e: 0, woundsB: m }, inert: true }),
+    combatant: inanimateCombatant({ id: `army-${name}`, name, refId: 'mass-army', bodyShape: 'army', hull: { e: 0, woundsB: m }, inert: true }),
   };
 }
 
@@ -724,8 +724,6 @@ export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): 
   const lines: string[] = [];
   let next = mb;
 
-  // Discours inspirant (l.71) : plus de branche spéciale — c'est une Activité de préparation data-driven
-  // (`activities.json` id 'inspire', outcome `firstRoundBonus +10`) résolue par le chemin `prepDef` générique.
   const prepDef = pa.battle === 'prep' ? battleActivityById(pa.activityId) : undefined;
   const scene = pa.battle === 'round' ? battleSceneById(pa.activityId) : undefined;
 

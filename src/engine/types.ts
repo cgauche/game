@@ -56,7 +56,7 @@ export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
  * changent (quadrupède : membres antérieurs/postérieurs ; oiseau : ailes) et les Tableaux de Critiques
  * sont les mêmes. Serpent & araignée utilisent les « Localisations Alternatives » (p.312).
  */
-export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule' | 'structure' | 'engin';
+export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule' | 'structure' | 'engin' | 'army';
 
 /** Côté d'arête de mur — REDÉCLARÉ depuis `state/scene` (`WallSide`, même union) pour ne pas faire dépendre
  *  le moteur PUR de l'état (cf. `Combatant.structureEdge`). */
@@ -75,6 +75,7 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
   vehicule: {}, // localisations data-driven (coque/gréement/…)
   structure: {}, // structure de siège (porte/mur/tour, ADE II ch.08) — pas de Tableau de Localisation propre
   engin: {}, // engin de siège (affût servi, AA p.122-123) — INERTE, jamais de Localisation (isInanimate)
+  army: {}, // armée abstraite (Combat de masse, ADE II ch.08) : porte-Puissance inerte (wounds), jamais rendue ni localisée
 };
 
 /** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
