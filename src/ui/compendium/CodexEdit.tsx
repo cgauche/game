@@ -39,6 +39,7 @@ import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry } from '../../data';
+import { SPEC_SOURCES, type SpecsSource } from '../../data';
 
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -139,6 +140,8 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat', 'test');
   if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
+  if (categoryKey === 'traits') add('specsSource', 'indice', 'range', 'specsOpen', 'specsMulti'); // schéma d'argument → éditeur dédié
+
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
   if (categoryKey === 'classes' || categoryKey === 'careerLevels') add('trappings');
   if (categoryKey === 'careerLevels') add('characteristics');
@@ -266,6 +269,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Détails de création (objet unique `details.json`) : `texts` (5 entrées { all, bySpecies }) a son
   // éditeur dédié ; les 4 records Âge/Taille restent au formulaire générique (`recordNumber`).
   const isDetails = categoryKey === 'details';
+  // Trait : SCHÉMA de son argument (indice/range/specsSource/specsOpen/specsMulti) → éditeur dédié
+  // (select des sources DÉRIVÉ de SPEC_SOURCES + booléens + libellé d'indice), sorti du repli générique.
+  const isTrait = categoryKey === 'traits';
   // Champs au formulaire GÉNÉRIQUE = tous les champs inférés SAUF ceux couverts par un éditeur dédié
   // (`dedicatedFieldKeys`, source unique partagée avec le garde-fou no-json-fields.test).
   const fields = useMemo(() => {
@@ -379,6 +385,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
           </>
         )}
         {isDetails && <DetailsTextsField value={entry.texts as DetailsTexts | undefined} onChange={(v) => edit('texts', v)} />}
+        {isTrait && <TraitSchemaField entry={entry} edit={edit} />}
         {fields.map((f) => {
           const cfg = refFieldCfg(categoryKey, f.key);
           return cfg
@@ -600,6 +607,50 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
       </div>
       <span>effets AUTHORÉS de la manœuvre (Dégâts + États, appliqués quand ELLE touche)</span>
       <TriggeredEffectsField value={m.effects} onChange={(effects) => edit('effects', effects.length ? effects : undefined)} />
+    </div>
+  );
+}
+
+/** Libellés FR (affichage) des sources de spéc. La LISTE d'options DÉRIVE de `SPEC_SOURCES` (SSOT) ;
+ *  ce map n'est qu'un habillage — repli sur la clé brute si absent, donc une source ajoutée à l'union
+ *  `SpecsSource` reste sélectionnable sans toucher ici. */
+const SPECS_SOURCE_LABEL: Partial<Record<SpecsSource, string>> = {
+  weaponGroupsMelee: 'Groupes d’arme (mêlée)', weaponGroupsRanged: 'Groupes d’arme (distance)',
+  winds: 'Vents de magie', arcaneDomains: 'Domaines arcaniques', cultBlessings: 'Bénédictions (dieux)',
+  cultMiracles: 'Miracles (dieux)', cultChaos: 'Magie du Chaos (dieux)', seaShanties: 'Chansons de marin',
+  groups: 'Groupes (créatures/factions)', diseases: 'Maladies', sizes: 'Tailles', mutations: 'Mutations',
+  breathTypes: 'Types de Souffle', damageTypes: 'Types de Dégâts (immunité)',
+};
+/** Sources sélectionnables — DÉRIVÉES du catalogue `SPEC_SOURCES` (jamais une copie en dur de l'union). */
+const SPECS_SOURCE_KEYS = Object.keys(SPEC_SOURCES) as SpecsSource[];
+
+/** Éditeur du SCHÉMA d'ARGUMENT d'un Trait (`traits.json`) : décrit comment son INSTANCE porte sa
+ *  valeur/argument — `indice` (sens de la valeur numérique : Indice/Difficulté/Degré…), `range` (portée
+ *  en m), `specsSource` (registre d'où l'`arg` tire ses ids — catalogue `SPEC_SOURCES`), `specsOpen`
+ *  (arg = texte libre), `specsMulti` (arg = liste d'ids séparés par virgules). Réutilise les motifs
+ *  existants (select comme `ManeuverDefField`, checkbox `.dr`, input `.dr`). Gate `traits` uniquement. */
+function TraitSchemaField({ entry, edit }: { entry: Entry; edit: (key: string, v: unknown) => void }) {
+  const indice = entry.indice as { label: string } | undefined;
+  return (
+    <div className="ed-field">
+      <span>schéma de l’argument — comment l’instance porte sa valeur/argument</span>
+      <div className="tf-row">
+        <label className="dr">valeur numérique — libellé
+          <input placeholder="ex. Indice / Difficulté / Degré" value={indice?.label ?? ''}
+            onChange={(e) => edit('indice', e.target.value ? { label: e.target.value } : undefined)} />
+        </label>
+        <label className="dr"><input type="checkbox" checked={!!entry.range} onChange={(e) => edit('range', e.target.checked || undefined)} /> porte une portée (m)</label>
+      </div>
+      <div className="tf-row">
+        <label className="dr">source de l’argument (registre)
+          <select value={(entry.specsSource as string) ?? ''} onChange={(e) => edit('specsSource', e.target.value || undefined)}>
+            <option value="">— (aucune / argument libre) —</option>
+            {SPECS_SOURCE_KEYS.map((s) => <option key={s} value={s}>{SPECS_SOURCE_LABEL[s] ?? s}</option>)}
+          </select>
+        </label>
+        <label className="dr"><input type="checkbox" checked={!!entry.specsOpen} onChange={(e) => edit('specsOpen', e.target.checked || undefined)} /> argument en texte libre (ouvert)</label>
+        <label className="dr"><input type="checkbox" checked={!!entry.specsMulti} onChange={(e) => edit('specsMulti', e.target.checked || undefined)} /> liste d’ids (séparés par virgules)</label>
+      </div>
     </div>
   );
 }
