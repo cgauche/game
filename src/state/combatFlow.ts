@@ -58,7 +58,7 @@ import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
@@ -1900,18 +1900,62 @@ export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon): boolea
   return isFumble(roll, success) || dangerousNine(parryWeapon, roll, success);
 }
 
-/** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à
- *  distance »). Tir → dans la bande de portée ; mêlée → portée d'Allonge de l'arme (`reachTiles`).
+/** La cible est-elle dans une bande de tir/portée VALIDE de `weapon` pour `shooter` (LDB 14 l.42-46) ?
+ *  Tir → bande de portée non nulle (munition + BF inclus) ; mêlée → Allonge (`reachTiles`). Position
+ *  inconnue (tests) → vrai (aucun filtre géométrique). Source UNIQUE du test « à distance de frappe ». */
+export function inFiringBand(shooter: Combatant, target: Combatant, weapon: Weapon): boolean {
+  if (!shooter.pos || !target.pos) return true;
+  const d = combatDistance(shooter, target);
+  if (weapon.type === 'ranged') {
+    const rm = effectiveWeaponRange(weapon, selectedAmmo(shooter, weapon)?.ammoRangeMod, () => bonus(effectiveChar(shooter, 'F')));
+    return rm != null && rangeBandModifier(d, rm) != null;
+  }
+  return d <= reachTiles(weapon);
+}
+
+/** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à distance »).
  *  Sans position connue (tests), on ne filtre pas. */
 function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Combatant[] {
-  const allies = battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x));
-  if (!c.pos) return allies;
-  return allies.filter((a) => {
-    if (!a.pos) return true;
-    const d = combatDistance(c, a);
-    if (weapon.type === 'ranged') { const rm = effectiveWeaponRange(weapon, selectedAmmo(c, weapon)?.ammoRangeMod, () => bonus(effectiveChar(c, 'F'))); return rm != null && rangeBandModifier(d, rm) != null; }
-    return d <= reachTiles(weapon);
-  });
+  return battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x) && inFiringBand(c, x, weapon));
+}
+
+/**
+ * Tir rapide (talent, LDB 10) — chemin IA. À l'ouverture d'un Round (sommet de `confirmRoundStart`, choke
+ * commun à tous les Rounds et tous les modes), chaque combattant PILOTÉ PAR L'IA capable d'interrompre à
+ * distance tire UNE fois, hors de l'ordre d'Initiative, sur l'ennemi valide le plus proche (Ligne de Vue +
+ * bande de portée). Le tir ÉPUISE son tour normal — Action + Mouvement dus, consommés à l'ouverture de son
+ * slot (loseNext*, mêmes champs que la Maladresse Oups! 61-80). Plusieurs tireurs : celui qui a pris le
+ * talent le plus de fois agit d'abord (LDB 10). Les tirs de l'HUMAIN passent, eux, par `preemptRangedShot`
+ * pendant la pause de début de Round (avant ce choke).
+ */
+export function runPreemptShots(get: Get, set: SetFn): void {
+  const battle = get().battle;
+  if (!battle || battle.over) return;
+  const tirRapideTimes = (c: Combatant) => c.talents?.find((tl) => tl.talentId === 'tir-rapide')?.times ?? 1;
+  const shooters = battle.combatants
+    .filter((s) => aiDriven(get(), s) && canPreemptRanged(s) && canTakeAction(s) && !s.loseNextAction && !isOutOfAction(s) && !!s.pos)
+    .sort((a, b) => tirRapideTimes(b) - tirRapideTimes(a)); // le plus « entraîné » tire d'abord (LDB 10)
+  let changed = false;
+  for (const shooter of shooters) {
+    if (isOutOfAction(shooter) || shooter.loseNextAction) continue; // tué / déjà tiré par un tir précédent de ce Round
+    const target = battle.combatants
+      .filter((f) => f.kind !== shooter.kind && !isOutOfAction(f) && !!f.pos)
+      .map((f) => ({ f, weapon: firedWeapon(shooter, f, undefined, battle.combatants) }))
+      .filter((x) => x.weapon.type === 'ranged' && inFiringBand(shooter, x.f, x.weapon))
+      .sort((a, b) => combatDistance(shooter, a.f) - combatDistance(shooter, b.f))
+      .map((x) => x.f);
+    for (const t0 of target) {
+      const r = resolveAttack(get, shooter, t0); // null = pas de Ligne de Vue
+      if (!r) continue;
+      get().battle!.log.push(ev('shoot', tr('cf.tirRapide', { name: shooter.name }), shooter.id)); // marqueur AVANT le résultat (applyAttackResult recopie battle.log)
+      applyAttackResult(get, set, shooter, r.victim ?? t0, r.weapon, r.res);
+      shooter.loseNextAction = true; shooter.loseNextMovement = true; // tour normal épuisé (LDB 10)
+      changed = true;
+      break;
+    }
+    if (changed && checkBattleOver(get, set)) return;
+  }
+  if (changed) { set({ battle: { ...get().battle! } }); bus.emit(EVT.SCENE_DIRTY); }
 }
 
 /** Use/détruit l'arme sur l'ItemInstance SOURCE (héros → persiste, `recomputeLoadout` re-dérive),

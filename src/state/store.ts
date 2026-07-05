@@ -819,6 +819,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Chance, 3e usage (LDB ch.17 l.27) : en début de Round, place un héros en tête de l'ordre
    *  contre 1 point de Chance (pré-emption d'initiative). */
   roundStartPromote: (heroId: string) => void;
+  /** Tir rapide (talent, LDB 10) : INTERRUPTION à distance en début de Round (hors de l'ordre) ; le tir
+   *  se résout par la modale de jet normale et épuise le tour normal du tireur (Action + Mouvement). */
+  preemptRangedShot: (heroId: string, targetId: string) => void;
   /** Ferme la modale d'ordre de Round et reprend le combat (active le 1er combattant valide). */
   confirmRoundStart: () => void;
   /** « Comment ça a pu rater ? » (Destin, coup létal) : annule le coup, reste en combat. */

@@ -2080,6 +2080,27 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.loseNextAction).toBeFalsy(); // consommé
   });
 
+  it('Tir rapide (LDB 10) — chemin IA : un ennemi tireur interrompt à l’ouverture du Round (confirmRoundStart) et épuise son tour', () => {
+    const { H, E } = endOfRoundBattle(0);
+    E.talents = [{ talentId: 'tir-rapide', times: 1 }];
+    E.weapons = [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] }] as never;
+    E.loaded = true; E.pos = { x: 2, y: 0 };
+    H.pos = { x: 0, y: 0 };
+    useGame.getState().battleEndTurn(); // → Round 2, pendingRoundStart
+    // H en tête de l'ordre : le tour NORMAL de l'ennemi n'ouvre pas immédiatement → sa dette de tour
+    // (posée par le Tir rapide) PERSISTE et reste observable (sinon confirmRoundStart la consommerait aussitôt).
+    useGame.setState({ battle: { ...useGame.getState().battle!, order: [H.id, E.id] } });
+    seedBattleRng(1);
+    useGame.getState().confirmRoundStart(); // au sommet : runPreemptShots fait tirer l'IA hors de l'ordre
+    const st = useGame.getState();
+    expect(st.pendingAttack).toBeNull();       // l'IA résout son tir INLINE (aucune modale ouverte)
+    expect(st.pendingRoundStart).toBeNull();   // le Round a démarré derrière l'interruption
+    const e1 = st.battle!.combatants.find((c) => c.id === E.id)!;
+    expect(e1.loseNextAction).toBe(true);      // a tiré → tour normal épuisé (Action + Mouvement)
+    expect(e1.loseNextMovement).toBe(true);
+    expect(st.battle!.log.some((l) => /Tir rapide/.test(l.text))).toBe(true); // interruption journalisée
+  });
+
 });
 
 describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Action (R6/LOT 6)', () => {
