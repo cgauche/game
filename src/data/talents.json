@@ -349,28 +349,14 @@
     "max": 1,
     "test": null,
     "desc": "Vous êtes protégé par l'un des dieux et vous pouvez intensifier le pouvoir de simples Prières. Vous pouvez à présent utiliser les Bénédictions de votre divinité listées au Chapitre 7 : Religions et Croyances. Dans des conditions normales, vous ne pouvez connaître qu'un seul Savoir divin pour le Talent Béni.",
-    "specsSource": "cults",
-    "specs": [
-      "Manann",
-      "Morr",
-      "Myrmidia",
-      "Ranald",
-      "Rhya",
-      "Shallya",
-      "Sigmar",
-      "Stromfels",
-      "Taal",
-      "Ulric",
-      "Verena"
-    ],
+    "specsSource": "cultBlessings",
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
     },
     "combat": {
-      "castingKind": "beni",
-      "grantsCultBlessings": true
+      "castingKind": "beni"
     }
   },
   {
@@ -2084,20 +2070,7 @@
     "max": 1,
     "test": null,
     "desc": "Vous êtes béni par l'un des dieux, et pouvez donc effectuer l'un des Miracles de votre culte. De plus, vous pouvez acheter des Miracles supplémentaires pour 100 PX par Miracle que vous connaissez actuellement. Donc, si vous connaissez déjà 3 Miracles, votre prochain Miracle vous coûtera 300 PX. Les règles complètes sur l'apprentissage de nouveaux Miracles se trouvent au Chapitre 7 : Religions et Croyances. Dans des conditions normales, vous ne pouvez pas apprendre plus d'un Talent Invocation (Savoir divin). De plus, vous ne pouvez pas apprendre les Talents Magie mineure ou Magie des Arcanes quand vous possédez le Talent Invocation. Vous pouvez désapprendre ce Talent pour 100 PX, mais vous perdrez tous vos Miracles si vous le faites, et vous encourrez l'extrême défaveur de votre Dieu, dont les effets sont déterminés par le MJ.",
-    "specsSource": "cults",
-    "specs": [
-      "Manann",
-      "Morr",
-      "Myrmidia",
-      "Ranald",
-      "Rhya",
-      "Shallya",
-      "Sigmar",
-      "Stromfels",
-      "Taal",
-      "Ulric",
-      "Verena"
-    ],
+    "specsSource": "cultMiracles",
     "rand": null,
     "source": {
       "book": "LDB",
@@ -2289,27 +2262,8 @@
     "label": "Magie des Arcanes",
     "max": 1,
     "test": null,
-    "specsSource": "domains",
+    "specsSource": "arcaneDomains",
     "desc": "Vous connaissez l'un des huit Domaines de Magie – Bête, Cieux, Mort, Feu, Métal, Ombres, Lumière ou Vie –, ou pratiquez un Savoir moins connu, comme la Magie naturelle ou la Nécromancie. Vous pouvez à présent mémoriser des Sorts du Domaine choisi pour le prix en PX suivant.\n\n| Nbre de Sorts actuellement connus | Coût en PX pour un nouveau sort |\n| --- | --- |\n| Bonus d'Intelligence x 1 | 100 PX |\n| Bonus d'Intelligence x 2 | 200 PX |\n| Bonus d'Intelligence x 3 | 300 PX |\n| Bonus d'Intelligence x 4 | 400 PX |\n| ... et ainsi de suite. |  |\n\nDonc, si votre Bonus d'Intelligence est de 4, les 4 premiers Sorts vous coûteront 100 PX chacun, puis 200 PX pour les 4 suivants, et ainsi de suite. Les règles complètes sur l'apprentissage de nouveaux Sorts se trouvent dans le Chapitre 8 : Magie. Dans des conditions normales, vous ne pouvez pas apprendre plus d'un Talent Magie des Arcanes (Domaine). De plus, vous ne pouvez pas apprendre les Talents Béni ou Invocation quand vous possédez le Talent Magie des Arcanes. Vous pouvez désapprendre ce Talent pour 100 PX, mais si vous le faites, vous perdez immédiatement tous vos Sorts.",
-    "specs": [
-      "bete",
-      "cieux",
-      "feu",
-      "lumiere",
-      "magie-naturelle",
-      "mort",
-      "metal",
-      "ombres",
-      "sorcellerie",
-      "vie",
-      "demonologie",
-      "necromancie",
-      "gueule",
-      "domaine-de-la-ruine",
-      "domaine-des-ombres",
-      "domaine-de-la-peste",
-      "divinite"
-    ],
     "rand": null,
     "source": {
       "book": "LDB",
@@ -2324,13 +2278,8 @@
     "label": "Magie du Chaos",
     "max": 1,
     "test": null,
-    "specsSource": "cults",
+    "specsSource": "cultChaos",
     "desc": "Par accident ou à dessein, vous avez cédé une partie de votre âme à l'un des Dieux Sombres, et pouvez à présent pratiquer les infâmes magies du Chaos. Votre chef de la Ruine vous confère immédiatement l'accès à un seul Sort du Domaine choisi (le plus souvent les Domaines de Nurgle, Slaanesh ou Tzeentch) et vous gagnez un Point de Corruption lorsque le Sort s'insinue dans votre esprit, pour ne plus jamais en sortir.\n\nLorsque vous prenez ce Talent, qui coûte à chaque fois 100 PX, vous apprenez un autre Sort du Domaine choisi et gagnez un Point de Corruption. Pour plus d'informations sur les Sorts disponibles, voir le Chapitre 8 : Magie. Dans des conditions normales, vous ne pouvez connaître qu'un seul Savoir de Magie chaotique.\n\nLes Personnages avec un Talent Magie du Chaos peuvent choisir n'importe quelle combinaison de Sorts d'Arcane, de Sorts du Chaos, et de Sorts de leur propre Domaine du Chaos. Un Personnage ayant Magie du Chaos (Tzeentch) peut sélectionner des Sorts dans la liste des Sorts d'Arcanes, la liste des Sorts d'Arcanes du Chaos et la liste des Sorts du Domaine de Tzeentch. Un Personnage avec le Talent Magie du Chaos (Indivisible) peut sélectionner des Sorts dans la liste des Arcanes et dans celle des Arcanes du Chaos.",
-    "specs": [
-      "Nurgle",
-      "Slaanesh",
-      "Tzeentch"
-    ],
     "rand": null,
     "source": {
       "book": "LDB",
@@ -4875,15 +4824,6 @@
     },
     "desc": "Ce Talent permet à un Personnage d'apprendre une chanson de marin (voir page 67). Chaque fois qu'un Personnage achète un nouveau niveau dans ce Talent, il apprend une nouvelle chanson. Une chanson de marin affecte un équipage entier. Pour utiliser ce Talent, le Personnage doit trouver un endroit où chanter depuis lequel il peut être entendu par autant de membres d'équipage que possible et réussir un Test de Divertissement (Chant).\n\nUn Personnage met 30 secondes chanter la la chanson de marin, après quoi l'effet dure trois minutes plus un nombre de minutes égal au DR sur le Test de **Divertissement (Chant)**. La seule action de combat que le Personnage peut effectuer tant qu'il est en train de chanter la chanson de marin est une Esquive. Si le MJ l'autorise, il peut effectuer d'autres actions comme un Test de Perception ou de Calme. Si le Personnage subit des Dégâts ou rate un Test opposé, sa Chanson de marin prend fin.\n\nUne seule chanson de marin peut être chantée lors de chaque quart. Difficile d'inspirer davantage un équipage.",
     "specsSource": "seaShanties",
-    "specs": [
-      "naviguons-tous-ensemble",
-      "jacques-bret-a-rencontre-notre-acier",
-      "de-toutes-les-terreurs-sur-les-mers",
-      "camarades-d-equipage-rassemblez-vous",
-      "tous-a-la-vigie",
-      "les-dames-de-l-anguille",
-      "suivez-le-capitaine"
-    ],
     "combat": {
       "seaShanty": true
     },

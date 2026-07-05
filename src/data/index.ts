@@ -188,9 +188,9 @@ export interface CareerLevelData {
 /** Entrée `specs[]` d'une Compétence/Talent — Phase 3 (i18n-safety, migration domaine par domaine) :
  *  `{id,label}` pour un domaine MIGRÉ (id STABLE résolu par `specLabel`, cf. `langue`/`chevaucher`/
  *  `discretion`/`art`/talent `resistance`) ; `string` LEGACY pour un domaine PAS ENCORE migré (texte FR
- *  verbatim, affiché tel quel — `savoir`/`metier`/`musicien`/…) OU pour un domaine `specsSource` (les ids
- *  déjà stables du registre partagé y servent de MIROIR, ex. `corps-a-corps`/`projectiles`). Élargi
- *  domaine par domaine — jamais une conversion globale d'un coup (zéro dette PAR INCRÉMENT traçable). */
+ *  verbatim, affiché tel quel — `savoir`/`metier`/`musicien`/…). Un domaine `specsSource` n'a PAS de
+ *  `specs[]` (le pool DÉRIVE du registre partagé, cf. `specIdsOf`). Élargi domaine par domaine — jamais
+ *  une conversion globale d'un coup (zéro dette PAR INCRÉMENT traçable). */
 export type SpecEntry = string | { id: string; label: string };
 /** id d'une entrée `specs[]` — le legacy `string` EST son propre id (verbatim). */
 export function specEntryId(e: SpecEntry): string {
@@ -200,12 +200,24 @@ export function specEntryId(e: SpecEntry): string {
 export function specEntryLabel(e: SpecEntry): string {
   return typeof e === 'string' ? e : e.label;
 }
-/** Registre partagé qui fournit les ids d'une `specs[]` (résolus en libellé par `specLabel`) :
- *  `weaponGroups` (Groupes d'arme), `winds` (Focalisation — ids de `domains.json`, AFFICHE le Vent),
- *  `domains` (Magie des Arcanes/Chaos — ids de `domains.json`, AFFICHE le Lore), `cults` (Béni/Invocation/
- *  Magie du Chaos — `gods.key`, AFFICHE le nom du dieu), `seaShanties` (Chanson de marin — ids de
- *  `sea-shanties.json`, AFFICHE le titre de la chanson). Absent = specs inline (`SpecEntry[]`). */
-export type SpecsSource = 'weaponGroups' | 'winds' | 'domains' | 'cults' | 'seaShanties';
+/** Registre partagé qui DÉRIVE le pool d'ids d'une `specs[]` (résolu en libellé par `specLabel`, énuméré
+ *  par `wildcardSpecs`) — chaque valeur pointe UNE entrée du catalogue `SPEC_SOURCES` (SSOT, fin des
+ *  `specs[]` maintenues à la main qui dérivaient) : `weaponGroupsMelee`/`weaponGroupsRanged` (Corps à
+ *  corps / Projectiles — ids de `weaponGroups.json` filtrés par `combat`), `winds` (Focalisation —
+ *  Domaines à `wind` de `domains.json`, AFFICHE le Vent), `arcaneDomains` (Magie des Arcanes — Domaines
+ *  `arcane` de `domains.json`, AFFICHE le Lore), `cultBlessings`/`cultMiracles`/`cultChaos` (Béni /
+ *  Invocation / Magie du Chaos — `gods.key` filtrés par `blessings`/`miracles`/`chaosSpells`, AFFICHE le
+ *  nom du dieu), `seaShanties` (Chanson de marin — ids de `sea-shanties.json`). Absent = specs inline
+ *  (`SpecEntry[]`). */
+export type SpecsSource =
+  | 'weaponGroupsMelee'
+  | 'weaponGroupsRanged'
+  | 'winds'
+  | 'arcaneDomains'
+  | 'cultBlessings'
+  | 'cultMiracles'
+  | 'cultChaos'
+  | 'seaShanties';
 export interface SkillData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findSkillById`. */
@@ -213,12 +225,14 @@ export interface SkillData {
   label: string;
   characteristic: import('../engine/types').CharKey;
   type: string;
-  specs: SpecEntry[];
-  /** Source des ids de spéc : FERMÉE (union volontairement réduite — élargie plus tard par domaine ;
-   *  pas de valeur non gérée). Si présent, les `spec` des instances de cette Compétence sont des ids
-   *  résolus via le registre partagé désigné (via `specLabel`) : `weaponGroups` (Groupes d'arme) ou
-   *  `winds` (Focalisation → ids de `domains.json`, AFFICHE le Vent). Absent = specs inline (`SpecEntry[]`
-   *  — id-based si migré, texte libre sinon). */
+  /** Spécialisations inline (`SpecEntry[]`) — ABSENT quand `specsSource` est présent (le pool DÉRIVE
+   *  alors du registre partagé, cf. `specIdsOf` : plus de liste maintenue à la main). */
+  specs?: SpecEntry[];
+  /** Source du pool de spéc (via `SPEC_SOURCES`/`specIdsOf`/`specLabel`) : FERMÉE. Si présent, les `spec`
+   *  des instances de cette Compétence sont des ids résolus via ce registre partagé — `weaponGroupsMelee`/
+   *  `weaponGroupsRanged` (Corps à corps / Projectiles → ids de `weaponGroups.json` filtrés par `combat`)
+   *  ou `winds` (Focalisation → Domaines à Vent de `domains.json`, AFFICHE le Vent) — et `specs[]` est
+   *  ABSENT. Sans `specsSource` = specs inline (`SpecEntry[]` — id-based si migré, texte libre sinon). */
   specsSource?: SpecsSource;
   /** Le domaine accepte-t-il un TEXTE LIBRE hors `specs[]` (Métier, Savoir-région) ? `true` = OUVERT —
    *  `specs[]` n'est qu'un historique/suggestions, pas une liste fermée. Absent/`false` = FERMÉ — la
@@ -294,9 +308,10 @@ export interface TalentData {
    *  MÉCANIQUE correspondant est `combat.aa`. Absent = le Talent ne change pas en mode groupe. */
   descAA?: string;
   specs?: SpecEntry[];
-  /** Source des ids de `specs[]` (via `specLabel`) : `domains` (Magie des Arcanes/Chaos → ids de
-   *  `domains.json`, AFFICHE le Lore) ou `cults` (Béni/Invocation/Magie du Chaos → `gods.key`, AFFICHE le
-   *  nom du dieu). Absent = specs inline. */
+  /** Source du pool de spéc (via `SPEC_SOURCES`/`specIdsOf`/`specLabel`) : `arcaneDomains` (Magie des
+   *  Arcanes → Domaines `arcane` de `domains.json`, AFFICHE le Lore), `cultBlessings`/`cultMiracles`/
+   *  `cultChaos` (Béni / Invocation / Magie du Chaos → `gods.key` filtrés, AFFICHE le nom du dieu) ou
+   *  `seaShanties` (Chanson de marin). Quand présent, `specs[]` est ABSENT (le pool dérive). */
   specsSource?: SpecsSource;
   /** Le domaine de ce Talent accepte-t-il un TEXTE LIBRE hors `specs[]` ? Même sémantique que
    *  `SkillData.specsOpen` (absent/`false` = FERMÉ, `spec` DOIT être un id de `specs[]`). */
@@ -452,6 +467,10 @@ export interface WeaponGroupData {
   /** Matériau d'une armure (groupes `kind:'armour'`) — source TYPÉE des exemptions de Magie des Arcanes
    *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
   material?: 'metal' | 'leather';
+  /** Sous-ensemble de COMBAT d'un Groupe d'arme (`kind:'weapon'`/`'ammo'`) : `melee` = Spé de Corps à corps,
+   *  `ranged` = Spé de Projectiles. SOURCE des pools `weaponGroupsMelee`/`weaponGroupsRanged` (SPEC_SOURCES)
+   *  — fin des `specs[]` maintenues à la main sur `corps-a-corps`/`projectiles`. */
+  combat?: 'melee' | 'ranged';
 }
 /** Groupe d'APPARTENANCE (WFRP4, Traits psy ciblés — LDB 21) : identité CANONIQUE i18n-safe.
  *  `id` STABLE (jamais traduit) ; `label` = rendu FR localisable. Registre SSOT (`groups.json`),
@@ -883,6 +902,10 @@ export interface DomainData {
    *  Démonologie/Magie naturelle, homebrew Skaven…) n'ont pas de Vent propre (ils canalisent Dhar ou un
    *  Vent élémentaire). Édité au Codex. */
   wind?: string;
+  /** Domaine ENSEIGNABLE via le Talent Magie des Arcanes (LDB 48) : SOURCE du pool `arcaneDomains`
+   *  (SPEC_SOURCES) — fin de la liste `specs[]` maintenue à la main sur `magie-des-arcanes`. Les Lores de
+   *  sorts non-arcanes (ex. Magie des mers de Triton) ne le portent pas. */
+  arcane?: boolean;
   /** Effets DÉCLENCHÉS « à la touche » sur une cible d'un Sort du Domaine (Feu → En flammes…) — MÊMES
    *  `TriggeredEffect` éditables que Traits/Atouts, gatés par les Conditions Flow `relation`/`has`. */
   effects?: import('../state/flow').TriggeredEffect[];
@@ -1637,23 +1660,38 @@ export function findById(category: string, id: string): { label: string } | unde
     default: return undefined;
   }
 }
-/** Libellé d'affichage d'une spéc (`Ref.spec`) : si la Compétence désigne une `specsSource` (registre
- *  partagé d'ids), résout via ce registre ; sinon cherche l'id dans `def.specs` (`SpecEntry[]` — un
- *  domaine MIGRÉ le résout en label FR, un domaine legacy `string[]` le retrouve verbatim) ; sinon
- *  verbatim (texte libre / non-migré / id inconnu — jamais d'erreur d'affichage). SOURCE UNIQUE de
- *  résolution de spéc — migration par domaine (ici `weaponGroups`, puis `langue`/`chevaucher`/
- *  `discretion`/`art`/talent `resistance`) sans casser les autres. */
+/** CATALOGUE des sources de spéc partagées (SSOT) : `pool()` = ids DÉRIVÉS du registre (énumérés par
+ *  `wildcardSpecs`, fin des `specs[]` maintenues à la main), `label(id)` = leur rendu FR. Chaque
+ *  `SpecsSource` a exactement UNE entrée — ajouter une source = l'ajouter ICI, jamais un `if` par-source. */
+/** UNE source de spéc : `pool()` = ids CHOISISSABLES par un joueur (registre FILTRÉ — 8 Vents+Dhar, Groupes
+ *  de mêlée…) ; `label()` = affichage d'un id ; `resolves()` = l'id existe-t-il dans le REGISTRE sous-jacent
+ *  (que `label` interroge). VALIDITÉ (resolves) ⊇ POOL : un statbloc de créature RAW peut porter une spéc HORS
+ *  du pool joueur mais RÉELLE — ex. le Triton FOCALISE « Magie des mers de Triton » (un domaine, hors des Vents
+ *  canalisables par un PC). Le pool borne le CHOIX joueur ; resolves borne la VALIDITÉ des données. */
+export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: string): string; resolves(id: string): boolean }> = {
+  weaponGroupsMelee:  { pool: () => weaponGroups.filter((g) => g.combat === 'melee').map((g) => g.id),  label: (id) => weaponGroupLabel(id), resolves: (id) => !!findWeaponGroupById(id) },
+  weaponGroupsRanged: { pool: () => weaponGroups.filter((g) => g.combat === 'ranged').map((g) => g.id), label: (id) => weaponGroupLabel(id), resolves: (id) => !!findWeaponGroupById(id) },
+  winds:         { pool: () => domains.filter((d) => d.wind).map((d) => d.id),   label: (id) => findDomainById(id)?.wind ?? findDomainById(id)?.label ?? id, resolves: (id) => !!findDomainById(id) },
+  arcaneDomains: { pool: () => domains.filter((d) => d.arcane).map((d) => d.id), label: (id) => findDomainById(id)?.label ?? id, resolves: (id) => !!findDomainById(id) },
+  cultBlessings: { pool: () => gods.filter((g) => g.blessings.length).map((g) => g.key).sort(),  label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
+  cultMiracles:  { pool: () => gods.filter((g) => g.miracles.length).map((g) => g.key).sort(),   label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
+  cultChaos:     { pool: () => gods.filter((g) => (g.chaosSpells?.length ?? 0) > 0).map((g) => g.key).sort(), label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
+  seaShanties:   { pool: () => seaShanties.map((s) => s.id), label: (id) => findSeaShantyById(id)?.label ?? id, resolves: (id) => !!findSeaShantyById(id) },
+};
+/** Ids de spéc d'une def (Compétence/Talent) : pool DÉRIVÉ du registre partagé si `specsSource` (SSOT
+ *  `SPEC_SOURCES`), sinon les ids de ses `specs[]` inline. SOURCE UNIQUE du pool — consommée par
+ *  `wildcardSpecs` (créateur/avancement), `resolveSpecId` (round-trip label→id) et l'affichage Compendium. */
+export function specIdsOf(def: { specsSource?: SpecsSource; specs?: SpecEntry[] }): string[] {
+  return def.specsSource ? SPEC_SOURCES[def.specsSource].pool() : (def.specs ?? []).map(specEntryId);
+}
+/** Libellé d'affichage d'une spéc (`Ref.spec`) : si la def désigne une `specsSource`, résout via le
+ *  catalogue `SPEC_SOURCES` (registre partagé d'ids : Groupe d'arme → libellé, Vent, Lore, dieu, chanson) ;
+ *  sinon cherche l'id dans `def.specs` (`SpecEntry[]` — un domaine MIGRÉ le résout en label FR, un domaine
+ *  legacy `string[]` le retrouve verbatim) ; sinon verbatim (texte libre / id inconnu — jamais d'erreur
+ *  d'affichage). SOURCE UNIQUE de résolution de spéc. */
 export function specLabel(category: string, refId: string, specId: string): string {
   const def = category === 'skills' ? findSkillById(refId) : category === 'talents' ? findTalentById(refId) : undefined;
-  const source = def?.specsSource;
-  if (source === 'weaponGroups') return weaponGroupLabel(specId);
-  // `winds` (Focalisation) AFFICHE le Vent du domaine (id bete → « Ghur ») ; `domains` (Magie des
-  // Arcanes/Chaos) AFFICHE le Lore (id bete → « Bête ») ; `cults` (Béni/Invocation) AFFICHE le nom du
-  // dieu (`gods.key` = son propre libellé, proper noun i18n-safe). Repli verbatim sur l'id inconnu.
-  if (source === 'winds') return findDomainById(specId)?.wind ?? findDomainById(specId)?.label ?? specId;
-  if (source === 'domains') return findDomainById(specId)?.label ?? specId;
-  if (source === 'cults') return findGodById(specId)?.key ?? specId;
-  if (source === 'seaShanties') return findSeaShantyById(specId)?.label ?? specId;
+  if (def?.specsSource) return SPEC_SOURCES[def.specsSource].label(specId);
   const entry = def?.specs?.find((s) => specEntryId(s) === specId);
   return entry ? specEntryLabel(entry) : specId;
 }

@@ -2,87 +2,104 @@
   {
     "id": "armes-d-hast",
     "label": "Armes d'hast",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "bagarre",
     "label": "Bagarre",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "base",
     "label": "Base",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "cavalerie",
     "label": "Cavalerie",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "deux-mains",
     "label": "Deux-mains",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "escrime",
     "label": "Escrime",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "fleau",
     "label": "Fléau",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "parade",
     "label": "Parade",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "melee"
   },
   {
     "id": "arbalete",
     "label": "Arbalète",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "arc",
     "label": "Arc",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "entraves",
     "label": "Entraves",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "explosifs",
     "label": "Explosifs",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "fronde",
     "label": "Fronde",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "lancer",
     "label": "Lancer",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "ingenierie",
     "label": "Ingénierie",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "poudre-noire",
     "label": "Poudre noire",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "catapulte",
     "label": "Catapulte",
-    "kind": "weapon"
+    "kind": "weapon",
+    "combat": "ranged"
   },
   {
     "id": "poudre-noire-et-ingenierie",

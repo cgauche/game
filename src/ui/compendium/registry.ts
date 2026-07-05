@@ -15,7 +15,7 @@ import {
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
-  isNamed, specEntryLabel,
+  isNamed, specIdsOf, specLabel,
 } from '../../data';
 import { groupAdvantage } from '../../engine/advantagePool';
 import { statName } from '../../engine/statEntry';
@@ -142,6 +142,13 @@ const facts = (...xs: (CodexFact | null)[]): CodexFact[] => xs.filter((x): x is 
 const join = (...parts: (string | null | undefined)[]): string | undefined => {
   const s = parts.filter(Boolean).join(' · ');
   return s || undefined;
+};
+
+/** Fait « Spécialisations » d'une Compétence/Talent : pool DÉRIVÉ (`specIdsOf` — registre partagé si
+ *  `specsSource`, sinon `specs[]`) rendu en libellés FR via `specLabel`. Null si le domaine n'a aucune spec. */
+const specsFact = (cat: 'skills' | 'talents', def: { id: string; specsSource?: import('../../data').SpecsSource; specs?: import('../../data').SpecEntry[] }): string | null => {
+  const ids = specIdsOf(def);
+  return ids.length ? ids.map((id) => specLabel(cat, def.id, id)).join(', ') : null;
 };
 
 /** Prix d'une possession (`{gold,silver,bronze}`) → libellé monnaie canon, ou null si gratuit/absent. */
@@ -468,7 +475,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'skills', label: 'Compétences', group: 'Compétences',
     build: () => skills.map((s) => ({
       label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source),
-      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Type', s.type), fact('Spécialisations', s.specs.length ? s.specs.map(specEntryLabel).join(', ') : null)),
+      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Type', s.type), fact('Spécialisations', specsFact('skills', s))),
       sections: sections(...reverseSections('skills', s.id)),
     })),
   },
@@ -477,7 +484,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => talents.map((t) => ({
       label: t.label, desc: groupAdvantage() && t.descAA ? t.descAA : t.desc, source: src(t.source), // lecture « Avantage de groupe » (AA) selon le toggle
 
-      meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', t.specs?.length ? t.specs.map(specEntryLabel).join(', ') : null)),
+      meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', specsFact('talents', t))),
       sections: sections(
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
         passiveSection(t.passive),

@@ -147,9 +147,6 @@ export interface CombatFeature {
    *  Magie des Arcanes → 'arcane', Invocation → 'invocation', Béni → 'beni', Magie du Chaos → 'chaos').
    *  La spécialisation (Domaine/Culte) est portée par `ctx.spec`. Remplace le name-match de grimoire. */
   castingKind?: CastingKind;
-  /** Béni (LDB 41 l.14) : « reçoit les SIX Bénédictions de son culte » à l'acquisition (octroi
-   *  automatique, pas un achat à 0 PX). Lu par talentEffects à l'acquisition. */
-  grantsCultBlessings?: boolean;
   /** Commandant d'équipe (AA l.4373-4379) : peut DIRIGER une équipe servant une Arme d'équipe « à portée
    *  de voix » (Test de Commandement Intermédiaire) — sur réussite, l'équipe tire au score de Projectiles
    *  du Personnage. Lu par `hasCommandTeam` (affordance + substitution `state/commandTeam`). */

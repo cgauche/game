@@ -9,7 +9,7 @@ import {
   traits, stars, talents, maneuvers, skills, domains, crewRoles,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
-  specLabel, refLabel, specEntryId, specEntryLabel,
+  specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
@@ -253,36 +253,38 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   // RÉSOLUTION EXHAUSTIVE de toutes les INSTANCES (creatures/careerLevels/species/…) est déléguée à
   // LA GARDE UNIQUE ci-dessous (§ Phase 3 complétude) — plus de liste de domaines à maintenir ici.
   describe('sanité de catalogue — specsSource déclaré, specs[] bien formées (Phase 3)', () => {
-    const weaponSkillIds = new Set(['corps-a-corps', 'projectiles']);
-    const isWeaponGroupId = (spec: string): boolean => !!findWeaponGroupById(spec) && weaponGroups.some((g) => g.id === spec);
-    const DOMAIN_IDS = new Set(domains.map((d) => d.id));
-    const GOD_KEYS = new Set(gods.map((g) => g.key));
-
-    it('skills.json : specsSource weaponGroups → specs[] = ids connus', () => {
-      for (const s of skills) {
-        if (s.specsSource !== 'weaponGroups') continue;
-        expect(weaponSkillIds.has(s.id), s.id).toBe(true);
-        for (const spec of s.specs) { const specId = specEntryId(spec); expect(isWeaponGroupId(specId), `${s.id}.specs → ${specId}`).toBe(true); }
+    it('skills.json/talents.json : specsSource migré → pool DÉRIVÉ (aucun specs[] inline), ids connus du registre', () => {
+      const WEAPON_GROUP_IDS = new Set(weaponGroups.map((g) => g.id));
+      const DOMAIN_IDS = new Set(domains.map((d) => d.id));
+      const GOD_KEYS = new Set(gods.map((g) => g.key));
+      const cases: [ 'skills' | 'talents', string, SpecsSource, (id: string) => boolean ][] = [
+        ['skills', 'corps-a-corps', 'weaponGroupsMelee', (id) => WEAPON_GROUP_IDS.has(id)],
+        ['skills', 'projectiles', 'weaponGroupsRanged', (id) => WEAPON_GROUP_IDS.has(id)],
+        ['skills', 'focalisation', 'winds', (id) => DOMAIN_IDS.has(id)],
+        ['talents', 'magie-des-arcanes', 'arcaneDomains', (id) => DOMAIN_IDS.has(id)],
+        ['talents', 'invocation', 'cultMiracles', (id) => GOD_KEYS.has(id)],
+        ['talents', 'magie-du-chaos', 'cultChaos', (id) => GOD_KEYS.has(id)],
+        ['talents', 'beni', 'cultBlessings', (id) => GOD_KEYS.has(id)],
+        ['talents', 'chanson-de-marin', 'seaShanties', (id) => !!findSeaShantyById(id)],
+      ];
+      for (const [cat, id, source, ok] of cases) {
+        const def = cat === 'skills' ? findSkillById(id) : findTalentById(id);
+        expect(def, id).toBeTruthy();
+        expect(def!.specsSource, id).toBe(source);
+        // Le pool DÉRIVE du registre (SPEC_SOURCES) : plus aucune liste `specs[]` maintenue à la main.
+        expect(def!.specs, `${id} ne doit PAS porter de specs[] inline`).toBeUndefined();
+        const pool = SPEC_SOURCES[source].pool();
+        expect(pool.length, `${id} : pool vide`).toBeGreaterThan(0);
+        for (const specId of pool) expect(ok(specId), `${id} → ${specId} inconnu du registre`).toBe(true);
       }
-    });
-
-    it('skills.json/talents.json : specsSource domains/cults/seaShanties déclaré + specs[] = ids connus', () => {
-      expect(findSkillById('focalisation')!.specsSource).toBe('winds');
-      expect(findTalentById('magie-des-arcanes')!.specsSource).toBe('domains');
-      for (const id of ['magie-du-chaos', 'beni', 'invocation']) expect(findTalentById(id)!.specsSource, id).toBe('cults');
-      expect(findTalentById('chanson-de-marin')!.specsSource).toBe('seaShanties');
-      for (const s of findSkillById('focalisation')!.specs) expect(DOMAIN_IDS.has(specEntryId(s)), `focalisation → ${specEntryId(s)}`).toBe(true);
-      for (const s of findTalentById('magie-des-arcanes')!.specs ?? []) expect(DOMAIN_IDS.has(specEntryId(s)), `magie-des-arcanes → ${specEntryId(s)}`).toBe(true);
-      for (const id of ['magie-du-chaos', 'beni', 'invocation']) for (const s of findTalentById(id)!.specs ?? []) expect(GOD_KEYS.has(specEntryId(s)), `${id} → ${specEntryId(s)}`).toBe(true);
-      for (const s of findTalentById('chanson-de-marin')!.specs ?? []) expect(findSeaShantyById(specEntryId(s)), `chanson-de-marin → ${specEntryId(s)}`).toBeTruthy();
     });
 
     it('domaines FERMÉS inline (ex. langue/chevaucher/discretion/art/musicien/voile, talents resistance/sens-aiguise) : specs[] = {id,label}, specsOpen absent', () => {
       for (const id of ['langue', 'chevaucher', 'discretion', 'art', 'musicien', 'voile']) {
         const s = findSkillById(id)!;
         expect(s.specsOpen, id).toBeFalsy();
-        expect(s.specs.length > 0, id).toBe(true);
-        for (const entry of s.specs) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+        expect((s.specs?.length ?? 0) > 0, id).toBe(true);
+        for (const entry of s.specs ?? []) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
       }
       for (const id of ['resistance', 'sens-aiguise', 'artiste']) {
         const t = findTalentById(id)!;
@@ -295,8 +297,8 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       for (const id of ['savoir', 'metier', 'divertissement', 'dressage', 'representation', 'signes-secrets']) {
         const s = findSkillById(id)!;
         expect(s.specsOpen, id).toBe(true);
-        expect(s.specs.length > 0, id).toBe(true);
-        for (const entry of s.specs) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+        expect((s.specs?.length ?? 0) > 0, id).toBe(true);
+        for (const entry of s.specs ?? []) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
       }
       for (const id of ['bon-marcheur', 'haine', 'maitre-artisan', 'sans-peur', 'savant', 'savoir-vivre', 'travailleur-qualifie', 'vice']) {
         const t = findTalentById(id)!;
@@ -347,10 +349,15 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     const norm = (s: string): string => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
     const isSentinel = (s: string): boolean => norm(s) === 'au choix';
 
-    const ALL_SPEC_DEFS = [...skills, ...talents].filter((d) => Array.isArray(d.specs) && d.specs.length > 0);
+    const ALL_SPEC_DEFS = [...skills, ...talents].filter((d) => d.specsSource || (Array.isArray(d.specs) && d.specs.length > 0));
     const CLOSED = new Map<string, Set<string>>();
     const OPEN = new Map<string, { ids: Set<string>; byLabel: Map<string, string> }>();
+    // Def à `specsSource` : la VALIDITÉ d'une spéc = `SPEC_SOURCES[src].resolves(id)` (l'id existe dans le
+    // registre sous-jacent), un sur-ensemble du pool joueur `pool()` — un statbloc RAW peut porter une spéc
+    // réelle hors du pool choisissable (Triton). Séparé de CLOSED (specs[] inline énuméré).
+    const SOURCE_OF = new Map<string, keyof typeof SPEC_SOURCES>();
     for (const def of ALL_SPEC_DEFS) {
+      if (def.specsSource) { SOURCE_OF.set(def.id, def.specsSource); continue; }
       const ids = new Set(def.specs!.map((e) => specEntryId(e)));
       if (def.specsOpen) OPEN.set(def.id, { ids, byLabel: new Map(def.specs!.map((e) => [norm(specEntryLabel(e)), specEntryId(e)])) });
       else CLOSED.set(def.id, ids);
@@ -369,10 +376,21 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     const unresolved: string[] = [];
     function checkSpec(defId: string, spec: unknown, where: string, inCreatures: boolean): void {
       if (typeof spec !== 'string' || isSentinel(spec)) return;
+      const source = SOURCE_OF.get(defId);
+      if (source) {
+        // VALIDITÉ = l'id résout dans le REGISTRE de la source (⊇ pool joueur) : couvre les statblocs RAW hors
+        // pool (le Triton FOCALISE « magie-des-mers-de-triton », un domaine RÉEL non choisissable par un PC).
+        // Data-driven, plus aucune exception au cas par cas.
+        if (SPEC_SOURCES[source].resolves(spec)) return;
+        // Descripteurs d'attaque naturelle (Crocs/Griffes…) posés en `spec` de corps-a-corps/projectiles : pas
+        // des Groupes d'arme (`grantNaturalWeapon` ne les compare jamais) → tolérés.
+        if (inCreatures && NATURAL_WEAPON_SKILLS.has(defId) && CREATURE_NATURAL_SPEC_WHITELIST.has(spec)) return;
+        unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (specsSource ${source}, id inconnu du registre)`);
+        return;
+      }
       const closedIds = CLOSED.get(defId);
       if (closedIds) {
         if (closedIds.has(spec)) return;
-        if (inCreatures && NATURAL_WEAPON_SKILLS.has(defId) && CREATURE_NATURAL_SPEC_WHITELIST.has(spec)) return;
         unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (FERMÉ, id inconnu de specs[])`);
         return;
       }

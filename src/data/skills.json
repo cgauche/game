@@ -188,17 +188,7 @@
     "label": "Corps à corps",
     "characteristic": "CC",
     "type": "base",
-    "specsSource": "weaponGroups",
-    "specs": [
-      "armes-d-hast",
-      "deux-mains",
-      "bagarre",
-      "base",
-      "cavalerie",
-      "escrime",
-      "fleau",
-      "parade"
-    ],
+    "specsSource": "weaponGroupsMelee",
     "desc": "La Compétence Corps à corps représente l'entraînement spécifique que vous avez reçu avec un seul type d'armes de combat rapproché. Chaque Spécialisation de Corps à corps indique un entraînement à une classe d'arme spécifique. Si vous n'avez pas la Spécialisation appropriée pour une arme que vous souhaitez utiliser, référez-vous au Chapitre 11 : Guide de l'équipement pour consulter les statistiques de l'arme et savoir quelles pénalités vous subirez. Voir Chapitre 5 : Règles pour plus d'informations sur les combats et l'utilisation de la Compétence Corps à corps.",
     "source": {
       "book": "LDB",
@@ -410,18 +400,6 @@
     "characteristic": "FM",
     "type": "avancée",
     "specsSource": "winds",
-    "specs": [
-      "feu",
-      "cieux",
-      "metal",
-      "dhar",
-      "bete",
-      "vie",
-      "lumiere",
-      "mort",
-      "ombres",
-      "magie-des-mers-de-triton"
-    ],
     "desc": "La Compétence Focalisation mesure votre capacité à faire appel et à contrôler les différents Vents de la Magie. Elle est uniquement utilisée avec les règles sur la magie. Voir le Chapitre 8 : Magie pour plus d'informations.\n\nFocalisation est une Compétence très particulière, en cela qu'elle est à la fois Groupée, permettant les Spécialisations, mais aussi non Groupée pour ceux qui ne sont pas correctement formés à focaliser la magie.",
     "source": {
       "book": "LDB",
@@ -941,18 +919,7 @@
     "label": "Projectiles",
     "characteristic": "CT",
     "type": "avancée",
-    "specsSource": "weaponGroups",
-    "specs": [
-      "arbalete",
-      "arc",
-      "catapulte",
-      "entraves",
-      "explosifs",
-      "fronde",
-      "ingenierie",
-      "lancer",
-      "poudre-noire"
-    ],
+    "specsSource": "weaponGroupsRanged",
     "desc": "Bien que tout le monde puisse lancer une simple pierre en utilisant la Capacité de Tir, il faut de l'entraînement et de la pratique pour utiliser des armes comme des arcs et des pistolets. Chaque Spécialisation de Projectiles représente un groupe particulier d'armes à distance. Si vous ne possédez pas la Spécialisation Projectiles pour une arme dont vous souhaitez user, référez-vous au Chapitre 11 : Guide de l'équipement pour voir quelles pénalités vous subirez en l'utilisant. Voir le Chapitre 5 : Règles pour plus de détails sur le combat à distance.",
     "source": {
       "book": "LDB",

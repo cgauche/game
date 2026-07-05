@@ -38,7 +38,7 @@ import {
   talentConcrete,
   advancementLabel,
   refLabel,
-  specEntryId,
+  specIdsOf,
   specLabel,
   talents as talentTable,
 } from '../data';
@@ -65,8 +65,8 @@ export function skillCharacteristicById(id: string): CharKey {
  *  une spec libre (domaine ouvert, hors catalogue) ne matche rien → renvoyée verbatim (inchangé). */
 function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: string): string {
   const def = category === 'skills' ? findSkillById(defId) : findTalentById(defId);
-  for (const e of def?.specs ?? []) {
-    const id = specEntryId(e);
+  if (!def) return raw;
+  for (const id of specIdsOf(def)) {
     if (id === raw || specLabel(category, defId, id) === raw) return id;
   }
   return raw;
@@ -115,7 +115,7 @@ export function rollRandomTalent(
     const r = roll(1, 100, rng);
     const entry = table.find((t) => r <= (t.rand as number));
     if (!entry) continue;
-    const specs = (entry.specs ?? []).map(specEntryId);
+    const specs = specIdsOf(entry);
     if (specs.length) {
       const free = specs.filter((s) => !owned.has(concreteLabel(entry.label, s)));
       if (!free.length) continue; // toutes les specs possédées → relance

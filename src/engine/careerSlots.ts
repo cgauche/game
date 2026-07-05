@@ -27,9 +27,8 @@
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findTalentById, findSkill, advancementLabel, refLabel, specEntryId, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalent, findTalentById, findSkill, advancementLabel, refLabel, specIdsOf, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
-import { CULT_KEYS } from '../data';
 import { splitLabel } from './statEntry';
 
 // `splitLabel` (split nom↔spécialisation) est la primitive UNIQUE de `statEntry` — ré-exportée ici
@@ -103,27 +102,18 @@ export function parseEntry(raw: string): SlotOption[] {
 }
 
 /**
- * Specs valides d'un libellé à joker (« (Au choix) ») — SOURCE UNIQUE, partagée par le CRÉATEUR
- * (dont l'étape de dépense de PX) ET l'AVANCEMENT (plus de `findTalent(name)?.specs ?? []` dupliqué).
- * Compétence groupée → ses Spécialisations. Talents à domaine/culte, DATA-DRIVEN : « Béni » → cultes
- * du registre ; « Magie des Arcanes »/« Magie du Chaos »/« Invocation » → leurs `specs[]` id-based
- * (ids de domaine ou `gods.key`, `specsSource:'domains'/'cults'`). `[]` si le nom ne porte aucune spec.
+ * Specs valides d'un libellé à joker (« (Au choix) ») — SOURCE UNIQUE, partagée par le CRÉATEUR (dont
+ * l'étape de dépense de PX) ET l'AVANCEMENT. Le pool DÉRIVE de `specIdsOf` (SSOT `SPEC_SOURCES`) : un
+ * domaine `specsSource` (Corps à corps/Projectiles → Groupes d'arme filtrés par `combat` ; Focalisation →
+ * Vents ; Magie des Arcanes → Domaines arcanes ; Béni/Invocation/Magie du Chaos → cultes filtrés par
+ * Bénédictions/Miracles/Sorts du Chaos) énumère son registre ; sinon les ids des `specs[]` inline. Les
+ * valeurs sont des IDS (jamais le libellé FR d'affichage) — c'est la `spec` PERSISTÉE de l'instance créée.
+ * `[]` si le nom ne porte aucune spec.
  */
 export function wildcardSpecs(name: string): string[] {
-  const skill = findSkill(name);
-  // Pool = des IDS (`specEntryId` — id STABLE d'un domaine MIGRÉ, `gods.key`, ou le legacy `string`
-  // lui-même, cf. `SpecEntry`) : c'est cette valeur qui devient la `spec` PERSISTÉE de l'instance créée
-  // (draft/avancement) — jamais le libellé FR d'affichage.
-  if (skill?.specs?.length) return skill.specs.map(specEntryId);
-  // `name` est un nom d'AUTHORING (entrée de carrière) — résolution nom→def UNE fois (bord authoring,
-  // comme `findSkill`) ; pas un chemin runtime/persistance (l'id n'existe pas au point d'appel).
-  const talent = findTalent(name);
-  if (talent?.combat?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal DONNÉE, plus de registre)
-  // Talent à specs id-based (Magie des Arcanes → ids de domaine ; Magie du Chaos/Invocation → gods.key) :
-  // le pool = ses `specs[]` (ids stables). Aucune spec enregistrée → [] — JAMAIS de repli sur les libellés
-  // `subType` des sorts, qui rouvrirait une identité par libellé (l'incohérence que ce chantier a fermée).
-  if (talent?.specs?.length) return talent.specs.map(specEntryId);
-  return [];
+  // `name` est un nom d'AUTHORING (entrée de carrière) — résolution nom→def UNE fois (bord authoring).
+  const def = findSkill(name) ?? findTalent(name);
+  return def ? specIdsOf(def) : [];
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne
