@@ -12,6 +12,17 @@
             "statusMessage": "Garde anti-réinvention (nouveau fichier src/)"
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/git-destructive-guard.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Garde git destructif (arbre partagé)"
+          }
+        ]
       }
     ],
     "SessionStart": [
