@@ -237,6 +237,14 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(artefact().magicKnown).toBe(true); // « découvre une Particularité cachée »
   });
 
+  it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE2 l.50)', () => {
+    armArtefact();
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
+    forceRoll(70, false, -2);
+    expect(artefact().identified).toBe(false); // « confond l'artefact avec un type d'objet similaire »
+    expect(artefact().suspectedQualities ?? []).toHaveLength(0); // pas de fausse Particularité avant −4 (≠ Échec Minime)
+  });
+
   it('Identifier : Échec Impressionnant (−4 à −5) → UNE fausse Particularité soupçonnée', () => {
     armArtefact();
     useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });

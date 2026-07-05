@@ -573,7 +573,11 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
         }
         return { lines: [`${h.name} confond ${it.name} avec un objet similaire — la semaine est perdue.`] };
       }
-      // 0 à -1 (Échec Minime) : incapable d'identifier, mais conscient de son échec (l'étude peut reprendre).
+      // -2 à -3 (Échec, l.50) : confond l'artefact avec un type d'objet SIMILAIRE (méprise sur sa nature ; pas de fausse Particularité).
+      if (pa.sl <= -2) {
+        return { lines: [`${h.name} confond ${it.name} avec un objet d'un type similaire — il se méprend sur sa nature (Échec).`] };
+      }
+      // 0 à -1 (Échec Minime, l.49) : incapable d'identifier, mais conscient de son échec, sans se tromper sur la nature.
       return { lines: [`${h.name} n'identifie pas ${it.name} cette semaine — il en est conscient (l'étude peut reprendre).`] };
     }
     case 'wrathOfTheGods':

@@ -22,7 +22,7 @@ import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
-import { partyBest, testValue, bestForSkills, bestForCombined, bestAssistedOption } from '../engine/skills';
+import { partyBest, testValue, bestForSkills, bestForCombined, bestAssistedOption, type SkillRef } from '../engine/skills';
 import { isStructure } from '../engine/structures';
 import { inanimateCombatant } from '../engine/inanimate';
 import { applyOps } from '../engine/ops';
@@ -461,6 +461,20 @@ export function setMassBattleHero(get: Get, set: Set, actionId: string, heroIds:
   set({ massBattle: { ...mb, assignment } });
 }
 
+/** Sélectionne l'équipe SOUTENUE (Soutien LDB 12) d'une Activité/Scène de bataille : les PJ POSTÉS (à
+ *  défaut le meilleur PJ SEUL), puis la meilleure option assistée. `null` si aucune équipe/option. Source
+ *  UNIQUE du motif crew→solo→team→picked (Planification l.81, Scènes multi-PJ l.116-118, tenue l.161). */
+function resolveAssistedTeam(
+  mb: MassBattleState, party: Combatant[], actionId: string, skills: SkillRef[] | undefined, char: CharKey | undefined,
+): { team: Combatant[]; picked: NonNullable<ReturnType<typeof bestAssistedOption>> } | null {
+  const crew = assignedHeroesFor(mb, party, actionId);
+  const solo = bestForSkills(party, skills, char)?.actor;
+  const team = crew.length ? crew : (solo ? [solo] : []);
+  if (!team.length) return null;
+  const picked = bestAssistedOption(team, skills, char);
+  return picked ? { team, picked } : null;
+}
+
 /** Ouvre le Test d'une Activité de bataille pré-combat (Planification/Infiltration/… l.79-106). Un Test
  *  COMBINÉ (Infiltration/Repérage, `def.combined`) confronte UN jet aux DEUX compétences de l'acteur ;
  *  une Activité SOUTENABLE (`def.assisted`, Planification l.81) est résolue en Soutien multi-PJ. */
@@ -494,12 +508,9 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
   if (def.assisted) {
     // Activité SOUTENABLE (Planification l.81) : résolue comme une Scène de Round. Équipe = les PJ POSTÉS ;
     // à défaut, la SUGGESTION = le meilleur PJ SEUL. Valeur SOUTENUE (`bestAssistedOption`, LDB 12).
-    const crew = assignedHeroesFor(mb, party, activityId);
-    const solo = bestForSkills(party, def.skills, def.char)?.actor;
-    const team = crew.length ? crew : (solo ? [solo] : []);
-    if (!team.length) return;
-    const picked = bestAssistedOption(team, def.skills, def.char);
-    if (!picked) return;
+    const at = resolveAssistedTeam(mb, party, activityId, def.skills, def.char);
+    if (!at) return;
+    const { team, picked } = at;
     openBattlePending(get, set, {
       actor: picked.actor, battle: 'prep', def, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
       difficulty: def.difficulty ?? 'intermediaire', mod, modLabel,
@@ -532,12 +543,9 @@ export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   // Scène 'test' MULTI-PJ (l.116-118/151/153) : compétences AU CHOIX, Soutien LDB 12.
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
-  const crew = assignedHeroesFor(mb, party, scene.id);
-  const solo = bestForSkills(party, scene.skills, scene.char)?.actor;
-  const team = crew.length ? crew : (solo ? [solo] : []);
-  if (!team.length) return;
-  const picked = bestAssistedOption(team, scene.skills, scene.char);
-  if (!picked) return;
+  const at = resolveAssistedTeam(mb, party, scene.id, scene.skills, scene.char);
+  if (!at) return;
+  const { team, picked } = at;
   const mod = massBattleThreatPenalty(mb); // Intrus l.219 : −20 aux Tests des autres Scènes.
   openBattlePending(get, set, {
     actor: picked.actor, battle: 'round', def: scene, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
@@ -555,12 +563,9 @@ function openHoldScene(get: Get, set: Set, scene: ActivityDef): void {
   if (state.broken) { get().log(`Scène « ${scene.label} » : la position a déjà cédé (déroute).`); return; }
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
-  const crew = assignedHeroesFor(mb, party, scene.id);
-  const solo = bestForSkills(party, scene.skills, scene.char)?.actor;
-  const team = crew.length ? crew : (solo ? [solo] : []);
-  if (!team.length) return;
-  const picked = bestAssistedOption(team, scene.skills, scene.char);
-  if (!picked) return;
+  const at = resolveAssistedTeam(mb, party, scene.id, scene.skills, scene.char);
+  if (!at) return;
+  const { team, picked } = at;
   const enemyBonus = holdEnemyBonus(scene.hold, state.held); // +10 cumulatif par Round déjà tenu (l.163).
   const mod = massBattleThreatPenalty(mb);
   const enemyValue = Math.max(1, Math.min(99, armyMight(mb.enemy) + enemyBonus));
