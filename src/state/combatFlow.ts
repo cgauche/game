@@ -2443,9 +2443,11 @@ export function applyWail(get: Get, set: SetFn, attacker: Combatant): boolean {
   if (!attacker.pos || attacker.advantage < 2) return false;
   const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'hurlement');
   if (!a) return false;
-  resolveManeuver(get, set, attacker, a.def, a.indice, null, attacker.advantage); // pas de jet d'attaquant ; dépense TOUT (l.135)
-  checkBattleOver(get, set);
-  return true;
+  // Pas de jet d'attaquant ; dépense TOUT (l.135). Le « Test de Résistance ou Brisé » (nœud Flow `test`)
+  // ouvre une cascade influençable pour un héros MANUEL → SUSPEND (checkBattleOver déféré à sa fermeture).
+  const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, null, attacker.advantage);
+  if (!suspended) checkBattleOver(get, set);
+  return true; // « a agi » (creatureFreeAttacks.test le vérifie en cadence auto) ; la suspension est lue via `maneuverCascadePending`
 }
 
 /** Regard pétrifiant (IA) : jet CT puis résolution ; l'IA dépense TOUT (min 1), +1 DR/Av (LDB 85 l.238).
@@ -2638,7 +2640,9 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
       const a = creatureAttacks(enemy.traits ?? []).find((x) => x.kind === kind);
       if (!a) continue;
       let suspended = false;
-      if (kind === 'hurlement') { if (enemy.advantage >= 2) applyWail(get, set, enemy); } // dépense tous les Av ; jamais de cascade (défense resist/auto atk null)
+      // Hurlement : pas d'opposition, mais son « Test de Résistance ou Brisé » (nœud Flow `test`) ouvre une
+      // cascade influençable pour un héros MANUEL → SUSPEND aussi (lue via `maneuverCascadePending`).
+      if (kind === 'hurlement') { if (enemy.advantage >= 2) applyWail(get, set, enemy); suspended = maneuverCascadePending(get); }
       else if (enemy.advantage >= a.avantage) suspended = kind === 'langue' ? applyTongue(get, set, enemy, a) : applyAreaAttack(get, set, enemy, a);
       if (suspended) return true;
       continue;

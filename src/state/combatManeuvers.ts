@@ -443,6 +443,16 @@ export function resolveManeuver(
     openManeuverDefenseCascade(get, set, attacker, def, indice, atk!, spent, heroDefenders);
     return true; // tour SUSPENDU : reprise via `resumeManeuverDefense` à la fermeture de la cascade
   }
+  // Un nœud Flow `test` DANS les effets (Hurlement : « Test de Résistance/Calme ou Brisé », LDB 85) a pu
+  // ouvrir une cascade `triggeredTest` INFLUENÇABLE pour un héros MANUEL (chemin silencieux `hitOne` →
+  // `applyManeuverEffects` → `applyTriggeredEffects` → testRouter cadence-aware). On la TAGUE `maneuverResume`
+  // pour que sa fermeture reprenne le tour de la créature — MÊME mécanisme que la défense de zone
+  // (dispatchCascadeDone → resumeManeuverDefense), sans `maneuverDefense` bidon pour un Test simple.
+  const p = get().pendingCascade;
+  if (p && p.purpose === 'combat' && !p.maneuverResume) {
+    set({ pendingCascade: { ...p, maneuverResume: { attackerId: attacker.id, free: def.activation === 'free' } } });
+    return true; // tour SUSPENDU : le Test de Résistance influençable tient la main
+  }
   return false;
 }
 

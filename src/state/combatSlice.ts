@@ -2051,7 +2051,16 @@ export function createCombatSlice(get: Get, set: Set) {
       // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.34 = seule en donnée.
       if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
       // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
-      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
+      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) {
+        // Une manœuvre gratuite dont les effets portent un nœud `test` (Hurlement : « Test de Résistance
+        // ou Brisé ») APPEND ses étapes `triggeredTest` DERRIÈRE l'étape défense COURANTE (résolue,
+        // pendingDefense null) au lieu de la REMPLACER (≠ maybeOpenDefense d'une gratuite de mêlée, qui
+        // repose un pendingDefense). Avancer le curseur pour révéler ces étapes, sinon soft-lock :
+        // `useDefenseJetProps` rend null sur une défense sans pendingDefense → fenêtre vide.
+        const casc = get().pendingCascade;
+        if (casc?.purpose === 'combat' && casc.participants[casc.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
+        return;
+      }
       // la défense est l'étape de SA cascade combat → enchaîner le curseur
       // (les conséquences empilées — Critique/Maladresse — s'affichent inline ; la clôture reprend l'IA).
       const seq = get().pendingCascade;
