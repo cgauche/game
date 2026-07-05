@@ -559,6 +559,37 @@
     "desc": "Votre équipage pourrait devenir plus compétent. Choisissez l'une de vos Compétences utiles à la gestion d'un bateau. Vous passez votre temps à former l'équipage à cette Compétence. Effectuez un Test de **Commandement Difficile (–20)** suivi d'un Test **Difficile (–20)** dans la Compétence à entraîner. En cas de succès, augmentez le score de l'équipage dans la Compétence que vous lui avez apprise d'un nombre égal au nombre de DR obtenus sur le Test de Commandement et dépensez 2 pistoles d'argent en frais et en grog de félicitations par membre de l'équipage entraîné. Vous ne pouvez pas augmenter un score de Compétence au-delà de vos propres Augmentations dans cette Compétence. Seuls les PNJ peuvent gagner des Augmentations grâce à cette Activité."
   },
   {
+    "id": "inspire",
+    "label": "Discours inspirant",
+    "icon": "action/lead",
+    "contexts": [
+      "bataille"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 71
+    },
+    "skills": [
+      {
+        "skillId": "commandement"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Un Personnage peut tenter d'inspirer les troupes avant la bataille. Cela nécessite de réussir un Test de Commandement avec une Difficulté déterminée par la différence de Puissance entre les armées, arrondie à la dizaine la plus proche. En cas de Succès, l'armée obtient un bonus de +10 au Test de Puissance pendant le premier Round de bataille.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "target": "firstRoundBonus",
+            "scale": "fixed",
+            "amount": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "planification",
     "label": "Planification",
     "icon": "action/lead",

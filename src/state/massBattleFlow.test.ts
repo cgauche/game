@@ -95,7 +95,7 @@ describe('Discours inspirant (l.71)', () => {
     expect(pending()?.activityId).toBe('inspire');
     resolveBattleTest({ roll: 20, success: true, sl: 2 });
     expect(mbState().firstRoundBonus).toBe(10);
-    expect(mbState().inspired).toBe(true);
+    expect(mbState().activitiesDone).toContain('inspire');
   });
 
   it('un échec ne donne aucun bonus', () => {
@@ -103,7 +103,7 @@ describe('Discours inspirant (l.71)', () => {
     useGame.getState().massBattleInspire();
     resolveBattleTest({ roll: 95, success: false, sl: -3 });
     expect(mbState().firstRoundBonus).toBe(0);
-    expect(mbState().inspired).toBe(true);
+    expect(mbState().activitiesDone).toContain('inspire');
   });
 });
 

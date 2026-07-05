@@ -35,7 +35,7 @@ import {
 } from '../engine/activities';
 import type { PendingActivity } from './interludeFlow';
 import {
-  inspireDifficulty, INSPIRE_BONUS, resolveClash, rallyHealAmount, battleOutcome, isDestroyed,
+  inspireDifficulty, resolveClash, rallyHealAmount, battleOutcome, isDestroyed,
   battleHazard, clampMight, initHoldState, resolveHoldRound, holdEnemyBonus,
   type ClashResult, type BattleOutcome, type HoldState, type BattleHold,
 } from '../engine/massBattle';
@@ -129,8 +129,6 @@ export interface MassBattleState {
   allyMod: number;
   /** Bonus au Test de Puissance allié du PREMIER Round seul (Discours inspirant réussi, l.71). */
   firstRoundBonus: number;
-  /** Discours inspirant déjà tenté (une fois avant la bataille) — anti-répétition, PAS un budget. */
-  inspired?: boolean;
   // ── Activités de bataille pré-combat (l.79-110) ──
   /** Ids des Activités de préparation déjà réalisées — set ANTI-RÉPÉTITION seul (« Les Activités ratées ne
    *  peuvent être réessayées », l.67). Le BUDGET des 3 Activités est celui, UNIQUE, de l'interlude
@@ -388,29 +386,19 @@ function budgetedParty(get: Get): Combatant[] {
  *  d'interlude du meneur (budget UNIQUE, décrémenté par `confirmActivity`). */
 export function openMassBattleInspire(get: Get, set: Set): void {
   const mb = get().massBattle;
-  if (!mb || mb.phase !== 'prep' || mb.inspired) return;
+  if (!mb || mb.phase !== 'prep' || mb.activitiesDone.includes('inspire')) return;
   const party = budgetedParty(get);
   if (!party.length) return;
   const chosen = assignedHeroesFor(mb, party, 'inspire')[0] ?? partyBest(party, 'commandement')?.actor;
   if (!chosen) return;
   const difficulty = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
-  // Le Discours est modélisé comme une Activité de préparation SYNTHÉTIQUE : pas d'`ActivityDef` dédié
-  // (issue GLOBALE non data-driven « +10 au 1er Round », gérée par `confirmBattleActivity`).
+  // Discours (data-driven, `activities.json` id 'inspire') : seule la Difficulté est DYNAMIQUE (écart de
+  // Puissance) → calculée ici ; l'issue (+10 au 1er Round, `firstRoundBonus`) passe par le chemin générique.
   openBattlePending(get, set, {
-    actor: chosen, battle: 'prep', def: INSPIRE_DEF, skillValue: testValue(chosen, 'commandement'),
+    actor: chosen, battle: 'prep', def: battleActivityById('inspire')!, skillValue: testValue(chosen, 'commandement'),
     skillId: 'commandement', difficulty, label: 'Discours inspirant', heroIds: [chosen.id],
   });
 }
-
-/** `ActivityDef` synthétique du Discours inspirant (l.69-71) : issue GLOBALE (+10 au 1er Round) portée par
- *  `confirmBattleActivity` (pas de bande `battle` — l'effet est un cas à part du RAW). Exporté pour le
- *  menu d'interlude (le Discours y figure comme toute Activité de préparation, résolu par
- *  `massBattleInspire`). */
-export const INSPIRE_DEF: ActivityDef = {
-  id: 'inspire', label: 'Discours inspirant', icon: 'action/lead', contexts: ['bataille'],
-  source: { book: 'ADE II', page: 71 }, skills: [{ skillId: 'commandement' }], difficulty: 'intermediaire',
-  desc: 'Un bon général doit motiver ses troupes avant la bataille. Un discours inspirant réussi (Test de Commandement dont la Difficulté dépend de l\'écart de Puissance entre les armées) octroie un bonus de +10 au Test de Puissance du premier Round.',
-};
 
 /** Entrée d'Activité de préparation pour le menu d'interlude : la définition + son état de blocage
  *  (`done` = déjà réalisée ; `blocked` = raison d'indisponibilité — prérequis non satisfait). Toutes les
@@ -434,9 +422,9 @@ const REQUIRES_LABEL: Record<string, string> = {
  *  Planification l.73 ; Sabotage ⇐ Repérage l.104). L'affichage rend l'entrée DÉSACTIVÉE avec la raison. */
 export function battlePrepEntries(mb: MassBattleState): BattlePrepEntry[] {
   const flags = prepFlags(mb);
-  const defs = [INSPIRE_DEF, ...PREP_ACTIVITIES()];
+  const defs = PREP_ACTIVITIES();
   return defs.map((def) => {
-    const done = def.id === 'inspire' ? !!mb.inspired : mb.activitiesDone.includes(def.id);
+    const done = mb.activitiesDone.includes(def.id);
     const missing = (def.requires ?? []).find((f) => !flags.has(f));
     return { def, done, blocked: missing ? (REQUIRES_LABEL[missing] ?? `Prérequis manquant : ${missing}.`) : null };
   });
@@ -736,21 +724,8 @@ export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): 
   const lines: string[] = [];
   let next = mb;
 
-  // Discours inspirant (l.71) : issue GLOBALE (+10 au 1er Round), pas de bande `battle`.
-  if (pa.activityId === 'inspire') {
-    if (pa.success) {
-      next = { ...next, firstRoundBonus: next.firstRoundBonus + INSPIRE_BONUS };
-      const name = get().party.find((h) => h.id === pa.heroId)?.name ?? 'Le meneur';
-      lines.push(`${name} galvanise les troupes (Discours inspirant réussi) : +${INSPIRE_BONUS} au Test de Puissance du premier Round.`);
-    } else {
-      lines.push('Le discours ne parvient pas à galvaniser les troupes (Discours inspirant raté).');
-    }
-    next = { ...next, inspired: true };
-    set({ massBattle: { ...next, log: [...next.log, ...lines] } });
-    for (const l of lines) get().log(l);
-    return;
-  }
-
+  // Discours inspirant (l.71) : plus de branche spéciale — c'est une Activité de préparation data-driven
+  // (`activities.json` id 'inspire', outcome `firstRoundBonus +10`) résolue par le chemin `prepDef` générique.
   const prepDef = pa.battle === 'prep' ? battleActivityById(pa.activityId) : undefined;
   const scene = pa.battle === 'round' ? battleSceneById(pa.activityId) : undefined;
 

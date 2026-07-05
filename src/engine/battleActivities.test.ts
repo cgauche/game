@@ -38,7 +38,7 @@ const total = (ds: { amount: number }[]) => ds.reduce((s, d) => s + d.amount, 0)
 describe('Activités de préparation de bataille (ADE II 08 l.79-110) — données RAW', () => {
   it('les 6 Activités de préparation existent (contexte bataille)', () => {
     const ids = activitiesFor('bataille').map((a) => a.id).sort();
-    expect(ids).toEqual(['infiltration', 'planification', 'rassembler-des-forces', 'reperage', 'sabotage'].sort());
+    expect(ids).toEqual(['infiltration', 'inspire', 'planification', 'rassembler-des-forces', 'reperage', 'sabotage'].sort());
   });
 
   it('Planification (l.79-89) : Savoir (Guerre), assistée ; Succès +10 / Stupéfiant +20 aux Tests alliés', () => {
