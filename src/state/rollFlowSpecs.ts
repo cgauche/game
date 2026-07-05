@@ -1028,12 +1028,22 @@ export const FLOWS = {
     key: 'pendingReload',
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.actorId),
+    // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via la lentille (`caps.forced` + verbe
+    // `forceSuccess`) ; Chance « +1 DR » par `bumpSL` (success intact). Calque `heal`.
+    caps: { forced: true },
     resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
-    bonus: { derive: (_s, p) => ({ sl: p.sl + 1 }) },
+    // Chance « +1 DR » (le Test étendu cumule le DR, LDB 17 l.26) + Résilience GLOBALE via la lentille.
+    // Le garde du forceSuccess (déjà réussi : rien à forcer, LDB 17 l.73) vit dans `dieTarget` (→ null),
+    // PAS dans `actorTR` — qui sert AUSSI le `bonusSL` (un +1 DR reste offert sur un Round déjà réussi).
+    lens: {
+      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target, success: p.success, sl: p.sl, isDouble: isDoubleRoll(p.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, sl: tr.sl, success: tr.success }),
+      dieTarget: (p) => p.success ? null : p.target,
+    },
   }),
 
   /** « Se libérer » (Empêtré, Test opposé de Force) / « se rouler au sol » (En flammes, Athlétisme) — LDB 16. */
@@ -1313,7 +1323,7 @@ export const FLOW_VERBS = {
   distraire:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'forceSuccess', 'darkPact'], coop: true },
-  reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'], coop: true },
+  reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'], coop: true },
   focus:        { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   dispel:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
@@ -1332,7 +1342,7 @@ export const FLOW_VERBS = {
   counterspell: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   cascade:      { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true },
   opposition:   { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'] },
-  extendedTest: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  extendedTest: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   forceDoor:    { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   shipManeuver: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   shipBattery:  { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },

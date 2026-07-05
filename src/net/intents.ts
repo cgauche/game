@@ -37,7 +37,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'counterspellRoll', 'counterspellReroll', 'counterspellBonusSL', 'counterspellDarkPact',
   'counterspellForceSuccess', 'counterspellSetForcedRoll', 'counterspellConfirm', 'counterspellCancel',
   'extendedTestRoll', 'extendedTestReroll', 'extendedTestBonusSL', 'extendedTestDarkPact',
-  'extendedTestForceSuccess', 'extendedTestSetForcedRoll', 'extendedTestNext', 'extendedTestCancel',
+  'extendedTestForceSuccess', 'extendedTestNext', 'extendedTestCancel',
   'forceDoorRoll', 'forceDoorReroll', 'forceDoorBonusSL', 'forceDoorDarkPact',
   'forceDoorForceSuccess', 'forceDoorSetForcedRoll', 'forceDoorConfirm', 'forceDoorCancel',
   // Cascade séquentielle (jets de nuit / voyage influençables)
@@ -71,7 +71,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   // (Psychologie de COMBAT : PLUS d'intents `psych*` — cascade de Round, via les intents `cascade*` ci-dessus.)
   'frenzyRoll', 'frenzyReroll', 'frenzyDarkPact', 'frenzyForceSuccess', 'frenzyConfirm',
   'frenzyCancel', 'reloadRoll', 'reloadReroll', 'reloadBonusSL', 'reloadDarkPact',
-  'reloadConfirm', 'reloadCancel', 'recoverRoll', 'recoverReroll', 'recoverBonusSL',
+  'reloadForceSuccess', 'reloadConfirm', 'reloadCancel', 'recoverRoll', 'recoverReroll', 'recoverBonusSL',
   'recoverDarkPact', 'recoverConfirm', 'recoverCancel', 'healRoll', 'healReroll',
   'healBonusSL', 'healDarkPact', 'healForceSuccess', 'healConfirm', 'healCancel',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.
