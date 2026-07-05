@@ -3375,14 +3375,14 @@ export function applyCast(
   }
   // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
   // MÊME Domaine ce Round, le lanceur gagne +1 Avantage (le Vent converge). Sorts seulement.
-  if (battle && isSort && spell.subType && res.cast) {
+  if (battle && isSort && spell.domainId && res.cast) {
     const marks = battle.domainCasts ?? [];
-    if (marks.some((m) => m.targetId === target.id && m.domain === spell.subType)) {
+    if (marks.some((m) => m.targetId === target.id && m.domain === spell.domainId)) {
       campGain(get, caster);
       caster.gainedAdvThisRound = true;
-      logLines.push(tr('cf.windConverges', { name: caster.name, wind: spell.subType, target: target.name }));
+      logLines.push(tr('cf.windConverges', { name: caster.name, wind: spell.subType ?? spell.domainId, target: target.name }));
     }
-    battle.domainCasts = [...marks, ...[target, ...extraTargets].map((t) => ({ targetId: t.id, domain: spell.subType! }))];
+    battle.domainCasts = [...marks, ...[target, ...extraTargets].map((t) => ({ targetId: t.id, domain: spell.domainId! }))];
   }
 
   if (missile) {
