@@ -47,12 +47,14 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
 export function canActFirst(c: Combatant, battle: BattleState): boolean {
   if (c.kind !== 'hero' || isOutOfAction(c)) return false;
   if (battle.order[0] === c.id) return false; // déjà en tête de l'ordre du Round
-  // Rapide (LDB 62 l.318-319) / Tir rapide (LDB 10) : attaque hors de l'ordre d'Initiative — gratuit.
+  // Rapide (arme, LDB 62 l.318-319) : gratuit. Tir rapide (talent, LDB 10) : gratuit EN CHANCE mais coûte
+  // l'Action + le Mouvement du tour promu (débité par roundStartPromote/confirmRoundStart). Sinon : 1 Chance.
   return (c.fortune ?? 0) > 0 || canStrikeFirst(c.weapons) || canPreemptRanged(c);
 }
 
-/** La pré-emption d'initiative est-elle GRATUITE pour `c` ? (arme Rapide, LDB 62 l.318-319 —
- *  sinon elle coûte 1 point de Chance, LDB ch.17 l.27). */
+/** La pré-emption d'initiative est-elle gratuite EN CHANCE pour `c` ? (arme Rapide LDB 62 l.318-319, ou Tir
+ *  rapide LDB 10 — sinon elle coûte 1 point de Chance, LDB ch.17 l.27). NB : Tir rapide, gratuit en Chance,
+ *  coûte tout de même l'Action + le Mouvement du tour promu (débit posé par `roundStartPromote`). */
 export function freeActFirst(c: Combatant): boolean {
   return canStrikeFirst(c.weapons) || canPreemptRanged(c); // Rapide (LDB 62) / Tir rapide (LDB 10)
 }

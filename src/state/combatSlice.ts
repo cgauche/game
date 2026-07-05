@@ -1324,12 +1324,16 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart) return;
       const hero = battle.combatants.find((c) => c.id === heroId);
-      // Rapide (LDB 62 l.318-319) / Tir rapide (LDB 10, arme à distance chargée) : pré-emption
-      // GRATUITE ; sinon 1 point de Chance (LDB ch.17 l.27).
-      const free = !!hero && (canStrikeFirst(hero.weapons) || canPreemptRanged(hero));
+      // Rapide (arme, LDB 62 l.318-319) : pré-emption VRAIMENT gratuite. Tir rapide (talent, LDB 10, arme à
+      // distance chargée) : gratuit en Chance mais coûte l'Action (= le tir) ET le Mouvement du tour promu.
+      // Sinon : 1 point de Chance (LDB ch.17 l.27).
+      const fast = !!hero && canStrikeFirst(hero.weapons);
+      const rangedPreempt = !!hero && !fast && canPreemptRanged(hero);
+      const free = fast || rangedPreempt;
       if (!hero || hero.kind !== 'hero' || (!free && (hero.fortune ?? 0) <= 0)) return;
       if (battle.order[0] === heroId) return; // déjà en tête
       if (!free) hero.fortune = (hero.fortune ?? 0) - 1;
+      hero.preemptedRanged = rangedPreempt || undefined; // Tir rapide : Mouvement épuisé au tour promu (confirmRoundStart)
       const order = [heroId, ...battle.order.filter((id) => id !== heroId)]; // en tête de l'ordre du Round
       set({ battle: { ...battle, order, log: [...battle.log, ev('info', t('cs.actFirst', { name: hero.name, reason: free ? t('cs.reasonFast') : t('cs.reasonLuck') }), hero.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -1364,13 +1368,14 @@ export function createCombatSlice(get: Get, set: Set) {
         }
       }
       const active = battle.combatants.find((c) => c.id === battle.order[turn]);
-      if (active) active.defensiveStance = false;
+      const preemptCost = !!active?.preemptedRanged; // Tir rapide : Mouvement du tour promu épuisé (LDB 10)
+      if (active) { active.defensiveStance = false; active.preemptedRanged = undefined; }
       fireTurnStartTriggers(get, set, active); // effets de bord « début de tour » du 1ᵉʳ combattant du Round (inerte sans donnée)
       // Gate d'action par Round (op `actGate` — Mandragore) du 1ᵉʳ combattant du Round : même couture
       // que dans advanceTurn (héros manuel → étape influençable ; IA/auto → inline foldé au budget).
       const gate = active ? resolveActGates(get, set, active) : { loseMovement: false, lines: [] };
       if (active) for (const line of gate.lines) battle.log.push(ev('detail', line, active.id));
-      set({ battle: { ...battle, turn, action: null, movementUsed: gate.loseMovement && active ? mountMovement(battle, active) : 0, movedPreAction: false, acted: false, reachable: new Map() } });
+      set({ battle: { ...battle, turn, action: null, movementUsed: (gate.loseMovement || preemptCost) && active ? mountMovement(battle, active) : 0, movedPreAction: false, acted: false, reachable: new Map() } });
       if (checkBattleOver(get, set)) return;
       bus.emit(EVT.SCENE_DIRTY);
       // Psychologie de DÉBUT de Round (LDB 21 l.14) : Traits ciblés (Animosité/Haine/…) + nouvelles

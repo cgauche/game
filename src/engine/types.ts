@@ -1080,6 +1080,9 @@ export interface Combatant {
   loseNextMovement?: boolean;
   /** Agira en dernier au prochain Round (Oups! 21-40). */
   actLastNextRound?: boolean;
+  /** Tir rapide (LDB 10) : pré-emption d'initiative engagée → le tour promu doit son Action (= le tir) ET
+   *  son Mouvement (épuisé), consommés au début du tour par `confirmRoundStart`. */
+  preemptedRanged?: boolean;
   /** Rounds consécutifs passés à 0 PB sans soin (→ Inconscient après BE rounds). */
   roundsAtZero?: number;
   /** Suffocation (LDB 18 l.425) : Rounds restants avant la MORT une fois Inconscient à 0 PB

@@ -2049,6 +2049,20 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     expect(st.pendingRoundStart).toBeNull();
     expect(st.battle!.order[st.battle!.turn]).toBe(H.id); // H agit en premier ce Round
   });
+
+  it('Tir rapide : la pré-emption ÉPUISE le Mouvement du tour promu (Action = le tir, LDB 10)', () => {
+    const { H } = endOfRoundBattle(0); // 0 Chance → la pré-emption ne peut être QUE via Tir rapide
+    H.talents = [{ talentId: 'tir-rapide', times: 1 }];
+    H.weapons = [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, qualities: [] }] as never;
+    H.loaded = true;
+    useGame.getState().battleEndTurn();
+    useGame.getState().roundStartPromote(H.id); // gratuit en Chance (Tir rapide) mais coûte le Mouvement
+    useGame.getState().confirmRoundStart();
+    const st = useGame.getState();
+    expect(st.battle!.order[st.battle!.turn]).toBe(H.id); // H agit en premier ce Round
+    expect(st.battle!.movementUsed).toBeGreaterThan(0); // Mouvement ÉPUISÉ (≠ pré-emption d'arme Rapide, gratuite)
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.preemptedRanged).toBeFalsy(); // débit consommé
+  });
 });
 
 describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Action (R6/LOT 6)', () => {
