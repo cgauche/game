@@ -117,33 +117,25 @@ export function CascadeModal() {
 
   const cur = p.participants[p.cursor];
   if (!cur) return null;
-  // ÉTAPE-JET de combat : le jet (attaque) est rendu via son hook de props dans la MÊME coquille
-  // restée montée → le jet et ses conséquences vivent dans UNE seule fenêtre, jusqu'à « Terminer ».
-  if (cur.jet === 'attack') return attackProps ? <RollShell {...attackProps} /> : null;
-  // ÉTAPE-JET de défense réactive : rendue via son hook dans la MÊME coquille → la défense ET son
-  // Critique/Maladresse vivent dans UNE seule fenêtre (`defenseConfirm` enchaîne le curseur).
-  if (cur.jet === 'defense') return defenseProps ? <RollShell {...defenseProps} /> : null;
-  // ÉTAPE-JET de Maladresse : conséquence d'un Test raté sur un double, rendue via son hook dans la MÊME
-  // coquille (comme le Critique) → plus de modale d'arbitre séparée ; `fumbleConfirm` enchaîne le curseur.
-  if (cur.jet === 'fumble') return fumbleProps ? <RollShell {...fumbleProps} /> : null;
-  // ÉTAPE-JET de Test de scène : rendue via son hook dans la MÊME coquille (`resolveTest` ferme la cascade).
-  if (cur.jet === 'test') return testProps ? <RollShell {...testProps} /> : null;
-  // ÉTAPE-JET de Test ÉTENDU : Rounds cumulés via `extendedTestNext` (ferme la cascade à la réussite).
-  if (cur.jet === 'extended') return extendedProps ? <RollShell {...extendedProps} /> : null;
-  // ÉTAPE-JET de Désengagement : menu/Esquive/Fuite (3 phases) rendu par `DisengageModal` (bespoke,
-  // non-RollShell : choix d'abord) ; `pendingDisengage` porte les données, ses résolveurs ferment la cascade.
-  if (cur.jet === 'disengage') return <DisengageModal />;
-  // ÉTAPE-JET d'enfoncement de porte : flux multi PARALLÈLE (N héros frappent) rendu par `ForceDoorModal`
-  // (bespoke : rangées par participant) ; `pendingForceDoor` porte les données, ses résolveurs ferment la cascade.
-  if (cur.jet === 'forceDoor') return <ForceDoorModal />;
-  // ÉTAPE-JET d'incantation : la situation « lancer un sort » (jet → opposition de cible → Contre-sort →
-  // Surincantation → critique → effets) est rendue par `CastModal` (bespoke) ; `pendingCast` porte les
-  // données, ses résolveurs (castConfirm/castCommitZone/oppositionConfirm/counterspellConfirm/castCancel)
-  // ferment la cascade. Pendant un ciblage CARTE (pickingTargets / pose de zone), la modale s'efface
-  // (comme l'ancienne entrée d'arbitre `cast`) → on défère à la carte.
-  if (cur.jet === 'cast') {
-    return pendingCast && !pendingCast.pickingTargets && !pendingCast.zone?.placing ? <CastModal /> : null;
-  }
+  // ÉTAPE-JET : REGISTRE data-driven du rendu par TYPE de jet (ajouter un type = 1 entrée ici). Les
+  // cinq jets RollShell (attaque/défense/Maladresse/Test/Test étendu) sont rendus via leur hook de
+  // props dans la MÊME coquille restée montée → jet ET conséquences vivent dans UNE fenêtre jusqu'à
+  // « Terminer » (leur `xConfirm`/`xNext` enchaîne le curseur / ferme la cascade). Les hooks de props
+  // sont appelés INCONDITIONNELLEMENT au top-level (le registre ne mappe que le RENDU). Trois cas
+  // BESPOKE (non-RollShell) rendent leur propre modale : désengagement (menu 3 phases, choix d'abord),
+  // enfoncement de porte (multi PARALLÈLE, rangées par participant), incantation (`CastModal` — s'efface
+  // pendant un ciblage CARTE (pickingTargets / pose de zone) pour déférer à la carte).
+  const JET_RENDERERS: Record<NonNullable<CascadeStep['jet']>, () => JSX.Element | null> = {
+    attack: () => (attackProps ? <RollShell {...attackProps} /> : null),
+    defense: () => (defenseProps ? <RollShell {...defenseProps} /> : null),
+    fumble: () => (fumbleProps ? <RollShell {...fumbleProps} /> : null),
+    test: () => (testProps ? <RollShell {...testProps} /> : null),
+    extended: () => (extendedProps ? <RollShell {...extendedProps} /> : null),
+    disengage: () => <DisengageModal />,
+    forceDoor: () => <ForceDoorModal />,
+    cast: () => (pendingCast && !pendingCast.pickingTargets && !pendingCast.zone?.placing ? <CastModal /> : null),
+  };
+  if (cur.jet) return JET_RENDERERS[cur.jet]();
   const interaction = stepInteraction(cur);
   const isLast = p.cursor + 1 >= p.participants.length;
   // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante (tous types).
