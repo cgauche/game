@@ -99,8 +99,10 @@ export const PARTY_INTENTS: ReadonlySet<string> = new Set(['partyAddHero', 'part
  *  l'hôte valide la possession dans `intentAllowedFor`. `startInterlude`/`interludeEnd`
  *  restent HORS allowlist (l'hôte seul ouvre et clôt la période). */
 export const INTERLUDE_INTENTS: ReadonlySet<string> = new Set([
-  'interludeRevenus', 'interludeCraftStart', 'interludeCraftRoll', 'interludeLearn',
-  'interludeOrder', 'interludeBank', 'interludeWithdraw', 'interludeIdentify',
+  // `interludeActivity` = chemin UNIQUE de toutes les Activités à jet (Revenus/Artisanat/Apprentissage/
+  // Identification + catalogue) ; `interludeCraftStart` engage l'ouvrage (setup, sans jet).
+  'interludeActivity', 'interludeCraftStart',
+  'interludeOrder', 'interludeBank', 'interludeWithdraw',
   'activityRoll', 'activityReroll', 'activityBonusSL', 'activityDarkPact',
   'activityConfirm', 'activityCancel',
 ]);

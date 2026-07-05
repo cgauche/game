@@ -81,7 +81,7 @@ describe('43.1b — Fléau sans la Spécialisation → Dangereuse + aucun Atout 
   });
   it('hasWeaponGroupSkill : la Spé « Corps à corps (Fléau) » est détectée (réutilise acceptableSpecs)', () => {
     const sans = combatant({ skills: [] });
-    const avec = combatant({ skills: [{ skillId: 'corps-a-corps', spec: 'Fléau', advances: 10 } as any] });
+    const avec = combatant({ skills: [{ skillId: 'corps-a-corps', spec: 'fleau', advances: 10 } as any] });
     expect(hasWeaponGroupSkill(sans, fleau(), 'melee')).toBe(false);
     expect(hasWeaponGroupSkill(avec, fleau(), 'melee')).toBe(true);
   });

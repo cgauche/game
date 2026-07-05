@@ -20,7 +20,7 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel, qualityRefLabel, findTrappingById } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, findSkill, specLabel, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete, symptomLabel, qualityRefLabel, findTrappingById } from '../data';
 import { weaponFormLabel } from '../gameIso/rig/parts/weaponForms';
 import { formatTrait } from '../engine/traits/dispatch';
 import { formatRemaining } from '../engine/disease';
@@ -781,6 +781,9 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
 /** Ligne d'un emplacement à choix (compétence ou talent) : sélecteur d'option + Désigner/Acquérir.
  *  Une option DÉJÀ possédée (via l'espèce…) se DÉSIGNE gratuitement — elle devient le choix de
  *  carrière de l'emplacement et donc montable en PX ; une nouvelle option s'achète. */
+/** `label` = valeur DE CÂBLAGE (concreteLabel exact, ré-utilisé tel quel par `onPick` — jamais reparsé
+ *  ici) ; `display` = texte affiché si distinct (une spec de Groupe d'arme est un id, `display` porte
+ *  son libellé résolu via `specLabel` — l'id ne doit jamais s'afficher brut). */
 function SlotChoiceRow({
   entry,
   options,
@@ -789,7 +792,7 @@ function SlotChoiceRow({
   onPick,
 }: {
   entry: string;
-  options: { label: string; owned: boolean; hint?: string }[];
+  options: { label: string; display?: string; owned: boolean; hint?: string }[];
   acquireCost: number;
   afford: (c: number) => boolean;
   onPick: (label: string, owned: boolean) => void;
@@ -806,7 +809,7 @@ function SlotChoiceRow({
         <option value="">— choisir —</option>
         {options.map((o) => (
           <option key={o.label} value={o.label}>
-            {o.label}
+            {o.display ?? o.label}
             {o.hint ? ` ${o.hint}` : ''}
             {o.owned ? ' (possédé)' : ''}
           </option>
@@ -887,7 +890,9 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           </div>
         ))}
         {/* Emplacements de Compétence « (Au choix) » non désignés (LDB 09 l.38) */}
-        {v.skillSlotsOpen.map((slot) => (
+        {v.skillSlotsOpen.map((slot) => {
+          const groupSkillId = findSkill(slot.group)?.id ?? slot.group;
+          return (
           <SlotChoiceRow
             key={slot.slotKey}
             entry={slot.entry}
@@ -895,6 +900,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
             afford={afford}
             options={slot.options.map((o) => ({
               label: `${slot.group} (${o.spec})`,
+              display: `${slot.group} (${specLabel('skills', groupSkillId, o.spec)})`,
               owned: o.ownedAdvances > 0,
               hint: o.ownedAdvances > 0 ? `+${o.ownedAdvances}` : undefined,
             }))}
@@ -907,7 +913,8 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
               }
             }}
           />
-        ))}
+          );
+        })}
       </div>
       </AdvSection>
 

@@ -968,19 +968,18 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor) => {
       if (!actor) return null;
-      if (forced) {
-        // Résilience (LDB 17 l.73) : DR maximal du Round (dé 01 sur la cible connue), sinon plancher 1.
-        const sl = p.result?.target != null ? Math.max(evaluateTest(1, p.result.target).sl, 1) : 1;
-        return { result: { roll: 1, target: p.result?.target ?? p.value, sl, success: true } };
-      }
       const r = rollTest(p.value, 'intermediaire', battleRng());
       return { result: { roll: r.roll, target: r.target, sl: r.sl, success: r.success } };
     },
     failed: (p) => !p.result?.success, // Round raté → rejouable (Chance) ; le cumul gère le DR négatif
-    bonus: {
-      derive: (_s, p) => ({ result: { ...p.result!, sl: p.result!.sl + 1 } }), // +1 DR
+    // Chance « +1 DR » (`bumpSL`, success intact) + Résilience GLOBALES via la lentille (LDB 17) : « Je ne
+    // faillirai pas ! » → dé policy-aware (01 en standard = DR max du Round). Cible = valeur de Langue (Magick).
+    lens: {
+      actorTR: (p) => p.result ? { ...p.result, isDouble: isDoubleRoll(p.result.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: { roll: tr.roll, target: tr.target, success: tr.success, sl: tr.sl } }),
+      dieTarget: (p) => p.value,
     },
   }),
 
@@ -1045,12 +1044,19 @@ export const FLOWS = {
     key: 'pendingActivity',
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.heroId),
+    // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via la lentille (`caps.forced` + verbe
+    // `forceSuccess`) ; Chance « +1 DR » par `bumpSL` (success intact).
+    caps: { forced: true },
     resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
-    bonus: { derive: (_s, p) => ({ sl: p.sl + 1 }) },
+    lens: {
+      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target, success: p.success, sl: p.sl, isDouble: isDoubleRoll(p.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success }),
+      dieTarget: (p) => p.target,
+    },
     touch: touchActors,
   }),
 
@@ -1201,18 +1207,20 @@ export const FLOWS = {
     // Résistance (Menace) (LDB 10, `caps.resist`) : exposition → menace 'Corruption' ; seuil (échec =
     // mutation) → menace 'Mutation'. Pas de Résilience sur ce flux (inchangé : pas de `caps.forced`).
     caps: { resist: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (s, p, actor) => {
       const a = actor ?? actorIn(s, p.heroId);
       if (!a) return null;
-      if (forced?.sl != null) {
-        // Auto-succès du talent : « utilisez votre Bonus d'Endurance comme DR » (LDB 10 l.1015-1021).
-        return { roll: 1, target: testValue(a, p.skill), sl: forced.sl, success: true };
-      }
       const t = rollTest(testValue(a, p.skill), 'intermediaire', battleRng());
       return { roll: t.roll, target: t.target, sl: t.sl, success: t.success };
     },
     failed: (p) => (p.roll ?? 0) > (p.target ?? 0),
-    bonus: { derive: (_s, p) => ({ sl: (p.sl ?? 0) + 1, success: (p.roll ?? 0) <= (p.target ?? 0) }) },
+    // Chance « +1 DR » (`bumpSL`, success intact) + Résistance (Menace) GLOBALES via la lentille : le
+    // resist force l'auto-succès à DR = Bonus d'Endurance (LDB 10 l.1015-1021), cible = valeur du Test.
+    lens: {
+      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target ?? 0, success: !!p.success, sl: p.sl ?? 0, isDouble: isDoubleRoll(p.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success }),
+      dieTarget: (p, actor) => testValue(actor, p.skill),
+    },
   }),
 
   /** Évaluation (LDB 60 l.10) : révèle la qualité cachée + estime le prix. */
@@ -1221,12 +1229,19 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.actorId),
     touch: touchActors,
+    // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via la lentille (`caps.forced` + verbe
+    // `forceSuccess`) ; Chance « +1 DR » par `bumpSL` (success intact).
+    caps: { forced: true },
     resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty);
       return { roll: res.roll, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
-    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= 0 }) },
+    lens: {
+      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target, success: p.success, sl: p.sl, isDouble: isDoubleRoll(p.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, sl: tr.sl, success: tr.success }),
+      dieTarget: (p) => p.target,
+    },
   }),
 
   /** Marchandage (LDB 60 l.12) : Test OPPOSÉ joueur vs marchand — le marchand garde son jet figé. */
@@ -1262,18 +1277,19 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.healerId),
     caps: { forced: true },
-    resolve: (_s, p, _actor, _get, forced) => {
-      if (forced) {
-        if (p.success || p.mode === 'surgery') return null; // (ancien `force.guard`)
-        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, le choix
-        // rationnel est 01 → DR MAXIMUM (le soin scale avec le DR : BI + DR Blessures soignées).
-        return { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1) };
-      }
+    resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
-    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) }, // le soin scale avec le DR (LDB 17 l.26)
+    // Chance « +1 DR » (le soin scale avec le DR, LDB 17 l.26) + Résilience GLOBALE via la lentille. Le
+    // garde du forceSuccess (déjà réussi, OU mode chirurgie : rien à forcer) vit dans `dieTarget` (→ null),
+    // PAS dans `actorTR` — qui sert AUSSI le `bonusSL` (un +1 DR reste offert sur un soin déjà réussi).
+    lens: {
+      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target, success: p.success, sl: p.sl, isDouble: isDoubleRoll(p.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, sl: tr.sl, success: tr.success }),
+      dieTarget: (p) => (p.success || p.mode === 'surgery') ? null : p.target,
+    },
   }),
 
   /** Chirurgie — le Test de Médecine d'UNE passe (Test ÉTENDU, LDB 10 l.154 / 12 l.200). Calque
@@ -1285,18 +1301,19 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.healerId),
     caps: { forced: true },
-    resolve: (_s, p, _actor, _get, forced) => {
-      if (forced) {
-        if (p.success) return null; // (ancien `force.guard`) — rien à forcer si déjà réussi
-        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, 01 → DR MAXIMUM
-        // (la passe scale avec le DR — Test étendu, le cumul progresse d'autant).
-        return { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1) };
-      }
+    resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
-    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) }, // +1 DR (LDB 17 l.26) — la passe scale avec le DR
+    // Chance « +1 DR » (la passe scale avec le DR, LDB 17 l.26) + Résilience GLOBALE via la lentille. Le
+    // garde du forceSuccess (déjà réussi : rien à forcer) vit dans `dieTarget` (→ null), pas `actorTR`
+    // (qui sert aussi le `bonusSL`).
+    lens: {
+      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target, success: p.success, sl: p.sl, isDouble: isDoubleRoll(p.roll) } : null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, sl: tr.sl, success: tr.success }),
+      dieTarget: (p) => p.success ? null : p.target,
+    },
   }),
 };
 
@@ -1345,9 +1362,9 @@ export const FLOW_VERBS = {
   corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist'], coop: true },
   test:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'cancel'] },
   battleTest:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
-  activity:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
+  activity:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   bargain:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
-  appraise:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
+  appraise:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   shanty:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   counterspell: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   cascade:      { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true },

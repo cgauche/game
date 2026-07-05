@@ -40,7 +40,7 @@ describe('Catalogue des rôles d’équipage + types de Test (MDG ch.14) — don
 
 describe('crewRoleValue — lit la VRAIE valeur de Compétence du membre (meilleure pour Mousse)', () => {
   it('Artilleur → Projectiles (Poudre noire) ; Mousse → meilleure de Voile/Ramer', () => {
-    const artilleur = mk({ Dex: 60 }, [{ skillId: 'projectiles', advances: 20, spec: 'Poudre noire' }]);
+    const artilleur = mk({ Dex: 60 }, [{ skillId: 'projectiles', advances: 20, spec: 'poudre-noire' }]);
     expect(crewRoleValue(artilleur, findCrewRoleById('artilleur')!).value).toBe(80);
     const mousse = mk({ Dex: 30 }, [{ skillId: 'voile', advances: 25 }]); // Voile 55 > Ramer (repli 30)
     expect(crewRoleValue(mousse, findCrewRoleById('mousse')!).value).toBe(55);
@@ -49,7 +49,7 @@ describe('crewRoleValue — lit la VRAIE valeur de Compétence du membre (meille
 
 describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG ch.14)', () => {
   it('le rôle ESSENTIEL (Artilleur pour Tir de batterie) voit son DR compté DOUBLE', () => {
-    const artilleur = mk({ Dex: 70 }, [{ skillId: 'projectiles', advances: 10, spec: 'Poudre noire' }]); // 80
+    const artilleur = mk({ Dex: 70 }, [{ skillId: 'projectiles', advances: 10, spec: 'poudre-noire' }]); // 80
     const mousse = mk({ Dex: 50 }, [{ skillId: 'voile', advances: 0 }]); // 50
     const r = resolveCrewTestByRoles(
       [{ crew: artilleur, roleId: 'artilleur' }, { crew: mousse, roleId: 'mousse' }],

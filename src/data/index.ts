@@ -191,6 +191,11 @@ export interface SkillData {
   characteristic: import('../engine/types').CharKey;
   type: string;
   specs: string[];
+  /** Source des ids de spéc : FERMÉE (union volontairement réduite — élargie plus tard par domaine ;
+   *  pas de valeur non gérée). Si présent, les `spec` des instances de cette Compétence sont des ids
+   *  résolus via le registre partagé désigné (ici `weaponGroups.json`, via `specLabel`). Absent =
+   *  specs inline / texte libre (affiché verbatim). */
+  specsSource?: 'weaponGroups';
   desc: string;
   source: { book: string; page: number };
   /** Test « impliquant un déplacement » (LDB 16 l.37/85) : ciblé par les pénalités d'État À Terre /
@@ -1558,11 +1563,19 @@ export function findById(category: string, id: string): { label: string } | unde
     default: return undefined;
   }
 }
+/** Libellé d'affichage d'une spéc (`Ref.spec`) : si la Compétence désigne une `specsSource` (registre
+ *  partagé d'ids), résout via ce registre ; sinon la spéc est inline/texte libre → verbatim. SOURCE
+ *  UNIQUE de résolution de spéc — migration par domaine (ici `weaponGroups`) sans casser les autres. */
+export function specLabel(category: string, refId: string, specId: string): string {
+  const def = category === 'skills' ? findSkillById(refId) : undefined;
+  if (def?.specsSource === 'weaponGroups') return weaponGroupLabel(specId);
+  return specId;
+}
 /** Libellé CONCRET d'une `Ref` : « Magie des Arcanes (Ghur) » — base (repli sur l'id) + spec. SOURCE
  *  UNIQUE du nom affiché ET de la clé runtime (combatFeatures/grimoire). */
 export function refLabel(category: string, ref: Ref): string {
   const base = findById(category, ref.id)?.label ?? ref.id;
-  return ref.spec ? `${base} (${ref.spec})` : base;
+  return ref.spec ? `${base} (${specLabel(category, ref.id, ref.spec)})` : base;
 }
 /** Copie une `QualityRef` de catalogue en `QualityInstance` RUNTIME FRAÎCHE (`{id, value?}`) — objet neuf
  *  (le runtime mute `qualities` : enchantements, munitions). Plus d'aplatissement en chaîne « id value ». */

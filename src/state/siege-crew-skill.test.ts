@@ -4,6 +4,7 @@ import { firedWeapon } from './combatFlow';
 import { crewedFireWeapon, simpleSoloFireWeapon } from '../engine/crewedWeapon';
 import { combatValue } from '../engine/combat';
 import { mannedPosteWeapon, itemFromTrappingById } from '../engine/items';
+import { weaponGroupIdByLabel } from '../data';
 import type { Combatant, ShipPoste, SkillInstance, Weapon } from '../engine/types';
 
 /**
@@ -23,7 +24,8 @@ import type { Combatant, ShipPoste, SkillInstance, Weapon } from '../engine/type
  */
 
 const CHARS = (CT = 30) => ({ CC: 30, CT, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 });
-const proj = (spec: string, advances = 0): SkillInstance => ({ skillId: 'projectiles', spec, characteristic: 'CT', advances });
+// `label` = libellé lisible (Arbalète/Arc/Ingénierie…) → résolu en id de Groupe stable (Phase 3 : la spec EST un id).
+const proj = (label: string, advances = 0): SkillInstance => ({ skillId: 'projectiles', spec: weaponGroupIdByLabel(label), characteristic: 'CT', advances });
 
 const mkGunner = (id: string, pos: { x: number; y: number }, skills: SkillInstance[] = [], CT = 30): Combatant =>
   ({ id, name: id, kind: 'hero', characteristics: CHARS(CT), wounds: { current: 12, max: 12 }, advantage: 0,

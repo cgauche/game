@@ -44,7 +44,7 @@ describe('sanitizeIntentArgs — l’événement React ne part pas sur le résea
 describe('Activités d’interlude allowlistées (audit M7) — l’ouverture/clôture reste à l’hôte', () => {
   it('les activités par héros et le flux de jet sont permis à l’invité', () => {
     for (const name of INTERLUDE_INTENTS) expect(GUEST_INTENTS.has(name), name).toBe(true);
-    expect(INTERLUDE_INTENTS.has('interludeRevenus')).toBe(true);
+    expect(INTERLUDE_INTENTS.has('interludeActivity')).toBe(true); // chemin UNIQUE des Activités à jet
     expect(INTERLUDE_INTENTS.has('activityConfirm')).toBe(true);
   });
 });

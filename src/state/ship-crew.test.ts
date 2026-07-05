@@ -22,7 +22,7 @@ describe('defaultCrewRole — rôle naval inféré de la meilleure COMPÉTENCE (
   it('le rôle où sa meilleure compétence POSSÉDÉE est la plus haute (testValue = carac + avances)', () => {
     // Une seule compétence de marin → son rôle. Compétence = Dex 30 + avances (carac d'instance = Dex).
     expect(defaultCrewRole(mk('a', 30, [{ skillId: 'commandement', advances: 40 }]))).toBe('capitaine'); // Cmd 70
-    expect(defaultCrewRole(mk('b', 30, [{ skillId: 'projectiles', advances: 40, spec: 'Poudre noire' }]))).toBe('artilleur'); // Proj 70
+    expect(defaultCrewRole(mk('b', 30, [{ skillId: 'projectiles', advances: 40, spec: 'poudre-noire' }]))).toBe('artilleur'); // Proj 70
     // Voile 70 concourt pour Timonier ET Mousse (ex æquo) → Timonier, premier maximum (ordre du catalogue).
     expect(defaultCrewRole(mk('c', 30, [{ skillId: 'voile', advances: 40 }]))).toBe('timonier');
   });
@@ -48,7 +48,7 @@ describe('defaultCrewRole — rôle naval inféré de la meilleure COMPÉTENCE (
 describe('shipCrewAssignments — équipage → rôles pour un Test (MDG ch.14)', () => {
   it('rôle ÉPINGLÉ respecté ; rôle HORS du type de Test exclu', () => {
     const timonier = mk('t', 50, [{ skillId: 'voile', advances: 30 }], 'timonier');
-    const artilleur = mk('g', 50, [{ skillId: 'projectiles', advances: 30, spec: 'Poudre noire' }], 'artilleur');
+    const artilleur = mk('g', 50, [{ skillId: 'projectiles', advances: 30, spec: 'poudre-noire' }], 'artilleur');
     const ship = hull(['t', 'g']);
     const a = shipCrewAssignments(ship, [ship, timonier, artilleur], 'manoeuvre'); // 'manoeuvre' n'inclut PAS artilleur
     expect(a.map((x) => x.roleId)).toEqual(['timonier']);

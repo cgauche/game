@@ -55,7 +55,8 @@ export function ActivityModal() {
       title={pa.label}
       /* QUI fait l'Activité → portrait dans la ligne de jet ; la compétence vit dans le cadre. */
       subtitle={null}
-      extra={pa.kind === 'craft' ? <DrBar cum={rolled ? after : pa.drBefore ?? 0} target={pa.drTarget ?? 1} /> : undefined}
+      /* Barre de DR cumulé pour tout Test ÉTENDU (Artisanat : `drTarget` peuplé par l'ouvrage en cours). */
+      extra={pa.drTarget != null ? <DrBar cum={rolled ? after : pa.drBefore ?? 0} target={pa.drTarget} /> : undefined}
       rows={[actorRow]}
       rolled={rolled}
       outcome={rolled && <p className="rm-journal">{describeActivity(pa)}</p>}

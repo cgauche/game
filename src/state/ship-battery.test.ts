@@ -22,7 +22,7 @@ const hull = (postes: ShipPoste[]): Combatant =>
   ({ id: 'hull', name: 'Galère', pos: { x: 5, y: 5 }, postes, conditions: [], weapons: [] }) as unknown as Combatant;
 const target = (x: number, y: number): Combatant =>
   ({ id: 'cible', name: 'Cible', pos: { x, y }, conditions: [], weapons: [] }) as unknown as Combatant;
-const artilleur = () => mk({ Dex: 80 }, [{ skillId: 'projectiles', advances: 0, spec: 'Poudre noire' }]); // valeur 80
+const artilleur = () => mk({ Dex: 80 }, [{ skillId: 'projectiles', advances: 0, spec: 'poudre-noire' }]); // valeur 80
 
 /**
  * Tir de batterie (MDG ch.14 l.126-130) : « le total de DR s'applique à toutes les armes à feu tournées vers
@@ -63,7 +63,7 @@ const gunnerPJ = (): Combatant =>
   ({ id: 'gunner', name: 'Artilleur', kind: 'hero',
     characteristics: { CC: 30, CT: 40, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 2, resilience: 1,
-    skills: [{ skillId: 'projectiles', spec: 'Poudre noire', characteristic: 'CT', advances: 30 }], talents: [], weapons: [],
+    skills: [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'CT', advances: 30 }], talents: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
 const battPoste = (): ShipPoste =>
   ({ side: 'tribord', item: { uid: 'canon', name: 'Canon moyen', kind: 'ranged', damage: { flat: 14, plusBF: false }, range: 75, qualities: [{ id: 'recharge', value: 6 }] }, crewIds: ['gunner'] }) as unknown as ShipPoste;

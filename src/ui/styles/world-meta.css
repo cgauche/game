@@ -115,6 +115,8 @@
 .wm-est { font-size: 13px; color: var(--muted); margin: 8px 0; }
 /* Rôles de marche (Voyage par Étapes EDOC) : une ligne par héros, nom + grille d'Activités épinglables. */
 .wm-roles { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+/* Un héros = un bloc : ligne (nom + puce du poste courant repliée) puis, au dépliage, la grille d'options. */
+.wm-role-item { display: flex; flex-direction: column; gap: 6px; }
 .wm-role-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .wm-role-name { font-size: 13px; min-width: 92px; color: var(--gold2); }
 @media (max-width: 560px) {

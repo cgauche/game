@@ -46,7 +46,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -74,7 +74,7 @@
       {
         "ref": {
           "id": "projectiles",
-          "spec": "Arc"
+          "spec": "arc"
         }
       },
       {
@@ -170,7 +170,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -196,7 +196,7 @@
       {
         "ref": {
           "id": "projectiles",
-          "spec": "Arc"
+          "spec": "arc"
         }
       },
       {
@@ -287,7 +287,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -314,7 +314,7 @@
       {
         "ref": {
           "id": "projectiles",
-          "spec": "Arc"
+          "spec": "arc"
         }
       },
       {
@@ -407,7 +407,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -445,7 +445,7 @@
       {
         "ref": {
           "id": "projectiles",
-          "spec": "Arc"
+          "spec": "arc"
         }
       },
       {
@@ -562,7 +562,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -596,7 +596,7 @@
       {
         "ref": {
           "id": "projectiles",
-          "spec": "Arbalète"
+          "spec": "arbalete"
         }
       },
       {
@@ -683,7 +683,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -833,7 +833,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -977,13 +977,13 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Deux-mains"
+          "spec": "deux-mains"
         }
       },
       {
@@ -2883,7 +2883,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -3030,7 +3030,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -3341,13 +3341,13 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Bagarre"
+          "spec": "bagarre"
         }
       },
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -3495,7 +3495,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -3538,7 +3538,7 @@
       {
         "ref": {
           "id": "projectiles",
-          "spec": "Arc"
+          "spec": "arc"
         }
       },
       {
@@ -3635,7 +3635,7 @@
       {
         "ref": {
           "id": "corps-a-corps",
-          "spec": "Base"
+          "spec": "base"
         }
       },
       {
@@ -3679,7 +3679,7 @@
       {
         "ref": {
           "id": "projectiles",
-          "spec": "Arc"
+          "spec": "arc"
         }
       },
       {

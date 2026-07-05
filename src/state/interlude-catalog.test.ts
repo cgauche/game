@@ -225,8 +225,8 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     armArtefact();
     const h = hero();
     h.skills.push({ skillId: 'savoir', spec: 'Magie', characteristic: 'Int', advances: 10 } as never);
-    useGame.getState().interludeIdentify(h.id, 'art1'); // voie ADE2
-    expect(useGame.getState().pendingActivity?.kind).toBe('identify');
+    useGame.getState().interludeActivity(h.id, 'identify', { itemUid: 'art1' }); // voie ADE2 (Savoir Magie)
+    expect(useGame.getState().pendingActivity?.activityId).toBe('identify');
     useGame.getState().activityCancel();
     useGame.getState().interludeActivity(h.id, 'tester-objets-magiques', { itemUid: 'art1' }); // voie ACE
     expect(useGame.getState().pendingActivity?.kind).toBe('catalog');

@@ -29,7 +29,7 @@ import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { spellEffectOps } from './flowCore';
-import { weaponGroupLabel, findPsychologyById } from '../data';
+import { findPsychologyById } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
 import { isEngagedWith, reachRank } from './engagement';
 import { hullHitAdjust } from './shipMelee';
@@ -96,12 +96,12 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
 }
 
 /**
- * Spécialisations de Corps à corps / Projectiles qui autorisent l'usage d'une arme d'un Groupe
- * donné, en minuscules. RAW : Corps à corps (LDB 09 l.141) et Projectiles (l.409) sont des
- * Compétences *Groupées* — chaque Spécialisation est une classe d'armes. Le Groupe d'arme
- * « Deux-mains » correspond à la Spé « À deux mains » (l.144). En distance, Projectiles
- * (Ingénierie) couvre aussi les armes à Poudre noire et les Explosifs (LDB 62 l.234) ; la donnée
- * fusionne parfois les deux Groupes sous « Poudre noire et ingénierie » (62 l.150/174-175).
+ * Ids de Groupe d'arme (`WeaponGroupData.id`) que couvre la Spécialisation de Corps à corps /
+ * Projectiles du Groupe donné. RAW : Corps à corps (LDB 09 l.141) et Projectiles (l.409) sont des
+ * Compétences *Groupées* — chaque Spécialisation (désormais un `spec` = id de Groupe, cf.
+ * `SkillData.specsSource`) couvre une classe d'armes. En distance, Projectiles (Ingénierie) couvre
+ * aussi les armes à Poudre noire et les Explosifs (LDB 62 l.234) ; la donnée fusionne parfois les
+ * deux Groupes sous « Poudre noire et ingénierie » (62 l.150/174-175).
  */
 function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
   // `weaponGroup` PRIME sur `subType` : une arme de siège porte sa catégorie de catalogue (« armes-de-siege »)
@@ -110,11 +110,9 @@ function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
   // arme normale, `weaponGroup` est absent → `subType` EST le Groupe (comportement inchangé).
   const gid = weapon.weaponGroup ?? weapon.subType ?? ''; // id de Groupe d'arme (`WeaponGroupData.id`)
   if (!gid) return [];
-  const g = weaponGroupLabel(gid).toLowerCase(); // libellé du Groupe (= forme de la Spécialisation, l.144)
-  if (kind === 'melee') return gid === 'deux-mains' ? ['à deux mains'] : [g];
-  if (gid === 'poudre-noire' || gid === 'poudre-noire-et-ingenierie') return ['poudre noire', 'ingénierie'];
-  if (gid === 'explosifs') return ['explosifs', 'ingénierie'];
-  return [g];
+  if (gid === 'poudre-noire' || gid === 'poudre-noire-et-ingenierie') return ['poudre-noire', 'ingenierie'];
+  if (gid === 'explosifs') return ['explosifs', 'ingenierie'];
+  return [gid];
 }
 
 /**
@@ -134,7 +132,7 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
   if (matching.length === 0) return base;
   if (!weapon || !weapon.subType) return base + Math.max(0, ...matching.map((s) => s.advances));
   const wanted = acceptableSpecs(weapon, kind);
-  const sk = matching.find((s) => wanted.includes((s.spec ?? '').toLowerCase()));
+  const sk = matching.find((s) => wanted.includes(s.spec ?? ''));
   return base + (sk?.advances ?? 0);
 }
 
@@ -164,7 +162,7 @@ export function hasWeaponGroupSkill(c: Combatant, weapon: Weapon, kind: 'melee' 
   if (weaponUnmastered(c, weapon)) return false; // arme inhabituelle non maîtrisée (ACE p.219) : Défauts du Groupe
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
   const wanted = acceptableSpecs(weapon, kind);
-  return c.skills.some((s) => s.skillId === skillId && wanted.includes((s.spec ?? '').toLowerCase()));
+  return c.skills.some((s) => s.skillId === skillId && wanted.includes(s.spec ?? ''));
 }
 
 /** Mode de défense STRUCTUREL. `social` = SUBSTITUTION d'une Compétence sociale à Corps à corps (LDB 09
@@ -440,16 +438,16 @@ export function crowdMod(group: number): ModLine | null {
   return null;
 }
 
-/** Le défenseur possède-t-il une Spé de Corps à corps donnée (ex. 'Parade') ? */
+/** Le défenseur possède-t-il une Spé de Corps à corps donnée (id de Groupe d'arme, ex. `'parade'`) ? */
 function hasMeleeSpec(c: Combatant, spec: string): boolean {
-  return (c.skills ?? []).some((s) => s.skillId === 'corps-a-corps' && (s.spec ?? '').toLowerCase() === spec.toLowerCase());
+  return (c.skills ?? []).some((s) => s.skillId === 'corps-a-corps' && (s.spec ?? '') === spec);
 }
 
 /** Pénalité à la PARADE avec l'arme `weapon` (LDB 62 l.192) : 0 en main principale ; 0 si arme à 1 main +
  *  Défensive + le défenseur a Corps à corps (Parade) ; sinon pénalité de main secondaire (Ambidextre la réduit). */
 export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): number {
   if (!weapon || weapon.hand !== 'off') return 0;
-  if (weapon.hands === 1 && hasQuality(weapon, QUALITY_IDS.Defensive) && hasMeleeSpec(defender, 'Parade')) return 0;
+  if (weapon.hands === 1 && hasQuality(weapon, QUALITY_IDS.Defensive) && hasMeleeSpec(defender, 'parade')) return 0;
   return offHandPenalty(defender);
 }
 

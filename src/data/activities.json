@@ -161,6 +161,72 @@
     "stageOutcome": "campCare"
   },
   {
+    "id": "revenus",
+    "label": "Revenus",
+    "icon": "resource/gold-purse",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 199
+    },
+    "difficulty": "accessible",
+    "resolver": "income",
+    "desc": "Cette Activité englobe les différentes façons de vous faire de l'argent entre vos aventures. La plupart travailleront sûrement dans une profession reconnue – les Chasseurs de primes chassent les primes, les Patrouilleurs fluviaux surveillent les rivières, les Tueurs de trolls tuent des trolls – d'autres peuvent compter sur une compétence lucrative. Les Personnages les plus fortunés, comme les Nobles et les Marchands, pourraient recevoir une rente en satisfaisant (brièvement) leur famille, ou toucher les intérêts de leurs investissements et entreprises commerciales. Les Voleurs ont une foule de moyens pour obtenir des fonds, bien qu'il vaille mieux ne pas leur demander trop de précisions à ce sujet.\n\nVous obtenez alors les revenus avec lesquels vous commencerez votre prochaine aventure, qui correspond à votre revenu standard déterminé par votre Statut. Certains résultats du Tableau des Événements peuvent directement affecter vos revenus. L'argent que vous obtenez grâce à une Activité *Revenus* vous est seulement remis une fois que vous avez disposé de l'argent de votre dernière aventure (voir *Argent à gaspiller*)."
+  },
+  {
+    "id": "craft",
+    "label": "Artisanat",
+    "icon": "item/misc",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 196
+    },
+    "difficulty": "intermediaire",
+    "resolver": "craftExtended",
+    "desc": "Plutôt que de courir les échoppes ou de passer commande auprès de quelqu'un pour faire le travail, vous pouvez confectionner votre propre équipement. *Artisanat* vous permet de créer de l'équipement du **Chapitre 11 : Guide de l'équipement** (ou toute autre chose que le MJ vous autorise à créer) si vous possédez les Compétences Métier appropriées. Pour cela, vous avez besoin des Outils de la profession, de matériaux de base, et d'un accès à un atelier adéquat. En général, les matières premières pour créer l'équipement de votre choix coûteront un quart du prix de l'équipement, et devront être achetées avant le début de l'Activité *Artisanat*.\n\nPour créer l'équipement, effectuez un Test **étendu de Métier**, dont la Difficulté est fixée par le MJ, généralement basé sur la Disponibilité de l'Équipement."
+  },
+  {
+    "id": "learn",
+    "label": "Apprentissage particulier",
+    "icon": "nav/compendium",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "LDB",
+      "page": 196
+    },
+    "difficulty": "difficile",
+    "resolver": "learnTalent",
+    "desc": "C'est une chose d'acquérir une Compétence qui peut être facilement pratiquée, c'en est une autre d'apprendre quelque chose pour laquelle on n'a aucune aptitude. Cette Activité vous permet d'essayer d'apprendre un Talent en dehors de votre Carrière. Il n'y a aucune garantie que cette tentative réussisse, ce qui signifie qu'il y a de bonnes chances pour que vous échouiez dans l'apprentissage du Talent que vous espériez acquérir, dépensant en vain des PX et de l'argent.\n\nVous ne pouvez apprendre un Talent que si vous avez le tuteur approprié. Une fois que vous avez trouvé un tuteur, le prix pour apprendre le Talent est de 2D10 pistoles d'argent par 100PX que coûte l'achat du Talent. Tentez un Test **Difficile (-20)** en utilisant la Caractéristique ou la Compétence la plus pertinente pour le Talent, telle que déterminée par le MJ. Sur un succès, vous avez appris le Talent. Sinon, vous avez échoué cette fois-ci, mais pourrez essayer de nouveau avec une future Activité et gagnez un modificateur de +10 pour chaque tentative ratée."
+  },
+  {
+    "id": "identify",
+    "label": "Identifier un artefact",
+    "icon": "nav/identify",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "ADE2",
+      "page": 53
+    },
+    "skills": [
+      {
+        "skillId": "savoir",
+        "spec": "Magie"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "resolver": "identify",
+    "desc": "La plupart des Personnages ne savent rien des capacités d'un artefact avant de procéder à des recherches ou des expérimentations. Pour les Personnages dotés du Talent Détection d'artefact, c'est plutôt simple : en touchant l'objet, ils peuvent effectuer un Test d'**Intuition** et étudier l'artefact. Pour d'autres sorciers, la tâche est plus ardue et nécessite généralement une semaine par tentative, souvent dans un laboratoire, une bibliothèque bien fournie ou un autre espace approprié. C'est un processus décourageant, car les objets magiques sont dangereux lorsqu'ils sont manipulés dans l'ignorance. Pour identifier un artefact magique, un Personnage doit effectuer un Test de **Savoir (Magie) Intermédiaire (+0)** et consulter le tableau suivant."
+  },
+  {
     "id": "convalescence",
     "label": "Convalescence",
     "icon": "resource/resolve",

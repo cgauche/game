@@ -77,8 +77,9 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   // Remplacement EN PLACE : le siège doit posséder l'ANCIEN héros (1er arg). L'effectif ne change
   // pas (1 héros pour 1) → aucun check de quota d'emplacements.
   if (action === 'partyReplaceHero') return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
-  // Activités d'interlude (audit M7) : le 1er argument est le héros visé — son propriétaire agit.
-  if (/^interlude(Revenus|CraftStart|CraftRoll|Learn|Order|Bank|Identify)$/.test(action)) {
+  // Activités d'interlude (audit M7) : le 1er argument est le héros visé — son propriétaire agit
+  // (`interludeActivity` = chemin UNIQUE des Activités à jet ; `interludeCraftStart`/`Order`/`Bank`).
+  if (/^interlude(Activity|CraftStart|Order|Bank)$/.test(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   }
   // Retrait bancaire : le dépôt appartient à un héros — son propriétaire retire.

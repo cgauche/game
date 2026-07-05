@@ -52,9 +52,9 @@ describe('editorState — patch d’entité', () => {
   });
 
   it('patchEntityCombat fusionne DANS combat sans écraser l’existant', () => {
-    const out = patchEntityCombat(base(), 'e0', { skills: [{ id: 'projectiles', spec: 'Poudre noire', value: 40 }] });
+    const out = patchEntityCombat(base(), 'e0', { skills: [{ id: 'projectiles', spec: 'poudre-noire', value: 40 }] });
     const e = out.entities[0];
-    expect(e.combat?.skills?.[0].spec).toBe('Poudre noire');
+    expect(e.combat?.skills?.[0].spec).toBe('poudre-noire');
     expect(e.combat?.hiddenUntilCombat).toBe(true); // préservé
   });
 

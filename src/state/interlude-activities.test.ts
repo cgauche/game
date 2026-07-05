@@ -29,14 +29,20 @@ describe('Activités d’interlude (LDB 23)', () => {
   function hero() { return useGame.getState().party[0]; }
   function st() { return useGame.getState().interlude!.perHero[hero().id]; }
 
-  it('Revenus : modale → jet → Appliquer crédite revenueBrass et consomme l’Activité', () => {
+  it('Revenus : modale → jet → Appliquer crédite revenueBrass (crédit DIFFÉRÉ, LDB 23 l.191) et consomme l’Activité', () => {
+    // RAW : « Sur un succès, vous gagnez l'argent indiqué » (LDB 08 l.110) ; l'argent « vous est
+    // seulement remis une fois que vous avez disposé de l'argent de votre dernière aventure » (LDB 23
+    // l.191) → jamais dans `money`, seulement `revenueBrass`. Revenus maintient le Statut (l.193).
     // Neutralise un éventuel blocage d'événement pour CE test (on teste le flux, pas l'événement).
     const itl = useGame.getState().interlude!;
     itl.perHero[hero().id] = { ...st(), fx: undefined, left: 2 };
     useGame.setState({ interlude: { ...itl } });
-    useGame.getState().interludeRevenus(hero().id);
+    const moneyBefore = toBrass(useGame.getState().money);
+    useGame.getState().interludeActivity(hero().id, 'revenus');
     const pa = useGame.getState().pendingActivity;
-    expect(pa?.kind).toBe('revenus');
+    expect(pa?.kind).toBe('catalog');
+    expect(pa?.activityId).toBe('revenus');
+    expect(pa?.difficulty).toBe('accessible'); // « Test Spectaculaire Accessible (+20) » (LDB 08 l.110) — Spectaculaire = Test à DR ordinaire (LDB 12 l.172), PAS étendu
     useGame.getState().activityRoll();
     // Force un succès propre (déterminisme du gain testé côté moteur).
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 1, success: true, sl: 2 } });
@@ -46,18 +52,22 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(after.didRevenus).toBe(true);
     expect(after.left).toBe(1);
     expect(after.revenueBrass).toBeGreaterThan(0);
+    expect(toBrass(useGame.getState().money)).toBe(moneyBefore); // crédit DIFFÉRÉ : la bourse n'a pas bougé
   });
 
   it('Revenus bloqués par l’événement (classe ou *) : la modale ne s’ouvre pas', () => {
     const itl = useGame.getState().interlude!;
     itl.perHero[hero().id] = { ...st(), fx: { revenueBlockedClasses: ['*'] }, left: 2 };
     useGame.setState({ interlude: { ...itl } });
-    useGame.getState().interludeRevenus(hero().id);
+    useGame.getState().interludeActivity(hero().id, 'revenus');
     expect(useGame.getState().pendingActivity).toBeNull();
     expect(useGame.getState().journal.join('\n')).toMatch(/ne peut pas entreprendre Revenus/);
   });
 
-  it('Artisanat : engager paie ¼ du prix ; le jet cumule ; l’achèvement crée l’objet qualifié', () => {
+  it('Artisanat : engager paie ¼ du prix (LDB 23 l.76) ; le Test étendu cumule ; l’achèvement crée l’objet qualifié', () => {
+    // RAW l.76 : « les matières premières […] coûteront un quart du prix de l'équipement, et devront
+    // être achetées avant le début de l'Activité » ; l.78 : « Test étendu de Métier » ; l.102 : « Chaque
+    // Activité […] vous permet d'effectuer un lancer pour votre Test étendu ».
     const h = hero();
     h.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'Dex', advances: 10 });
     const itl0 = useGame.getState().interlude!;
@@ -70,8 +80,10 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(toBrass(useGame.getState().money)).toBe(before - quarter);
     expect(st().craft?.trappingId).toBe('dague');
     // Lancer : on force l'achèvement (drBefore au seuil).
-    useGame.getState().interludeCraftRoll(h.id);
-    expect(useGame.getState().pendingActivity?.kind).toBe('craft');
+    useGame.getState().interludeActivity(h.id, 'craft');
+    expect(useGame.getState().pendingActivity?.kind).toBe('catalog');
+    expect(useGame.getState().pendingActivity?.activityId).toBe('craft');
+    expect(useGame.getState().pendingActivity?.drTarget).toBeGreaterThan(0); // Test étendu : cible de DR peuplée
     useGame.getState().activityRoll();
     const pa = useGame.getState().pendingActivity!;
     useGame.setState({ pendingActivity: { ...pa, roll: 1, success: true, sl: Math.max(1, pa.drTarget ?? 1) , drBefore: pa.drTarget } });
@@ -99,15 +111,20 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(st().left).toBe(1);
   });
 
-  it('Apprentissage particulier : échec = PX et argent perdus + compteur d’acharnement ; succès = Talent acquis', () => {
+  it('Apprentissage particulier (LDB 23 l.66-72) : échec = PX et argent perdus « en vain » + acharnement +10 ; succès = Talent acquis', () => {
+    // RAW l.68 : « dépensant en vain des PX et de l'argent » ; l.72 : « Tentez un Test Difficile (-20)
+    // […] Sur un succès, vous avez appris le Talent. Sinon […] gagnez un modificateur de +10 pour
+    // chaque tentative ratée ». Prix du tuteur (l.72) : « 2D10 pistoles d'argent par 100PX ».
     const h = hero();
     h.xp = 300;
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl }, money: fromBrass(5000) });
-    useGame.getState().interludeLearn(h.id, 'chanceux'); // id STABLE du Talent
+    useGame.getState().interludeActivity(h.id, 'learn', { talentId: 'chanceux' }); // id STABLE du Talent
     const pa = useGame.getState().pendingActivity!;
-    expect(pa.kind).toBe('learn');
+    expect(pa.kind).toBe('catalog');
+    expect(pa.activityId).toBe('learn');
+    expect(pa.difficulty).toBe('difficile'); // « Test Difficile (-20) »
     expect(pa.xpCost).toBe(100);
     const moneyBefore = toBrass(useGame.getState().money);
     useGame.getState().activityRoll();
@@ -115,11 +132,11 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 99, success: false, sl: -2 } });
     useGame.getState().activityConfirm();
     expect(hero().xp).toBe(200);
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore - (pa.tutorBrass ?? 0));
+    expect(toBrass(useGame.getState().money)).toBe(moneyBefore - (pa.tutorBrass ?? 0)); // tuteur payé MÊME sur échec
     expect(st().learnFails?.['chanceux']).toBe(1); // clé = id stable
     expect(hero().talents.some((t) => t.talentId === 'chanceux')).toBe(false);
-    // Seconde tentative : succès → Talent acquis (et le +10 d'acharnement était affiché).
-    useGame.getState().interludeLearn(h.id, 'chanceux');
+    // Seconde tentative : succès → Talent acquis (et le +10 d'acharnement s'ajoute à la valeur du Test).
+    useGame.getState().interludeActivity(h.id, 'learn', { talentId: 'chanceux' });
     expect(useGame.getState().pendingActivity!.skillValue).toBeGreaterThan(pa.skillValue);
     useGame.getState().activityRoll();
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 1, success: true, sl: 1 } });
@@ -177,41 +194,69 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.getState().activityConfirm();
   };
 
-  it('Identifier : exige Savoir (Magie) acquis (« la voie des sorciers », ADE2)', () => {
+  it('Identifier : exige Savoir (Magie) acquis (« Pour d’autres sorciers », ADE2 l.41)', () => {
     armArtefact(false);
-    useGame.getState().interludeIdentify(hero().id, 'art1');
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
     expect(useGame.getState().pendingActivity).toBeNull();
     expect(useGame.getState().journal.join('\n')).toMatch(/Savoir \(Magie\)/);
   });
 
-  it('Identifier : Succès Impressionnant (DR ≥ 4) → objet identifié, Activité consommée', () => {
+  it('Identifier : Test de Savoir (Magie) Intermédiaire (+0), Activité consommée (ADE2 l.41)', () => {
     armArtefact();
-    useGame.getState().interludeIdentify(hero().id, 'art1');
-    expect(useGame.getState().pendingActivity?.kind).toBe('identify');
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
+    const pa = useGame.getState().pendingActivity;
+    expect(pa?.kind).toBe('catalog');
+    expect(pa?.activityId).toBe('identify');
+    expect(pa?.difficulty).toBe('intermediaire'); // « Savoir (Magie) Intermédiaire (+0) »
     forceRoll(5, true, 4);
-    expect(artefact().identified).toBe(true);
-    expect(artefact().magicKnown).toBe(true);
     expect(st().left).toBe(2);
   });
 
-  it('Identifier : succès modeste (DR < 4) → nature magique cernée, règles toujours cachées', () => {
+  // ADE2 l.43-52 — table de DR complète (le POC collapsait ≥+4/≤+3 et IGNORAIT la ligne « 0 à +1 »).
+  it('Identifier : Succès Impressionnant (+4 à +5) → identifié + « sait s’il a des Particularités »', () => {
     armArtefact();
-    useGame.getState().interludeIdentify(hero().id, 'art1');
-    forceRoll(20, true, 2);
-    expect(artefact().identified).toBe(false);
-    expect(artefact().magicKnown).toBe(true);
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
+    forceRoll(5, true, 4);
+    expect(artefact().identified).toBe(true); // « le Personnage est capable d'identifier l'objet »
+    expect(artefact().magicKnown).toBe(true); // « et sait s'il a des Particularités »
   });
 
-  it('Identifier : Échec Stupéfiant (DR ≤ −6) → DEUX fausses Particularités soupçonnées, purgées par une vraie révélation', () => {
+  it('Identifier : Succès (+2 à +3) → identifié, Particularités visibles seulement (pas les cachées)', () => {
     armArtefact();
-    useGame.getState().interludeIdentify(hero().id, 'art1');
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
+    forceRoll(20, true, 2);
+    expect(artefact().identified).toBe(true); // RAW : tout succès identifie l'objet (correction du POC)
+    expect(artefact().magicKnown).toBeFalsy(); // « il ne voit pas celles qui sont cachées »
+  });
+
+  it('Identifier : Succès Minime (0 à +1) → identifié ET découvre UNE Particularité cachée (ligne ignorée par le POC)', () => {
+    armArtefact();
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
+    forceRoll(41, true, 1); // DR +1 → Succès Minime
+    expect(artefact().identified).toBe(true);
+    expect(artefact().magicKnown).toBe(true); // « découvre une Particularité cachée »
+  });
+
+  it('Identifier : Échec Impressionnant (−4 à −5) → UNE fausse Particularité soupçonnée', () => {
+    armArtefact();
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
+    forceRoll(88, false, -4);
+    const suspected = artefact().suspectedQualities ?? [];
+    expect(suspected).toHaveLength(1); // « soupçonne également que l'objet possède une Particularité qu'il n'a pas »
+    expect(suspected).not.toContain('De plaies atroces'); // jamais une qualité RÉELLE de l'objet
+    expect(artefact().identified).toBe(false); // « confond l'artefact avec un type d'objet similaire »
+  });
+
+  it('Identifier : Échec Stupéfiant (−6 ou moins) → AU MOINS DEUX fausses Particularités, purgées par une vraie révélation', () => {
+    armArtefact();
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
     forceRoll(99, false, -6);
     const suspected = artefact().suspectedQualities ?? [];
-    expect(suspected).toHaveLength(2);
-    expect(suspected).not.toContain('De plaies atroces'); // jamais une qualité RÉELLE de l'objet
+    expect(suspected).toHaveLength(2); // « soupçonne également que l'objet possède au moins deux Particularités qu'il n'a pas »
+    expect(suspected).not.toContain('De plaies atroces');
     expect(artefact().identified).toBe(false);
-    // Une identification réussie dissipe les fausses certitudes.
-    useGame.getState().interludeIdentify(hero().id, 'art1');
+    // Une identification réussie ultérieure dissipe les fausses certitudes.
+    useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
     forceRoll(3, true, 6);
     expect(artefact().identified).toBe(true);
     expect(artefact().suspectedQualities).toBeUndefined();

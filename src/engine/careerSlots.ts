@@ -122,9 +122,26 @@ export function wildcardSpecs(name: string): string[] {
   return talent?.specs ?? [];
 }
 
-/** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». */
+/** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne
+ *  JAMAIS l'utiliser comme identité/clé de désignation (cf. `refKey`). */
 export function concreteLabel(name: string, spec?: string): string {
   return spec ? `${name} (${spec})` : name;
+}
+
+/**
+ * Clé D'IDENTITÉ opaque (id + spec) — encodage interne des désignations (`careerSlotChoices`) et du
+ * câblage UI (valeur d'un `<select>`/wiring d'un picker). JAMAIS affichée (cf. `refLabel`/`specLabel`
+ * pour l'affichage) ; `id` ne contient jamais `|` → décodage sans ambiguïté par `parseRefKey`.
+ * Remplace le libellé concret comme valeur stockée/comparée — fin du « label-comme-identité ».
+ */
+export function refKey(id: string, spec?: string): string {
+  return spec ? `${id}|${spec}` : id;
+}
+
+/** Décode une clé produite par `refKey`. Ne JAMAIS l'utiliser sur un libellé d'affichage (cf. `splitLabel`). */
+export function parseRefKey(key: string): { id: string; spec?: string } {
+  const i = key.indexOf('|');
+  return i < 0 ? { id: key } : { id: key.slice(0, i), spec: key.slice(i + 1) };
 }
 
 /** Le libellé est-il encore « au choix » (non résolu) ? */
@@ -190,32 +207,36 @@ export function availableChars(levels: CareerLevelData[], level: number): CharKe
   return levels.filter((l) => l.level <= level).flatMap((l) => l.characteristics);
 }
 
-/** Une spec concrète est-elle couverte par CE slot (désignations ignorées) ? */
-export function slotCovers(slot: CareerSlot, name: string, spec?: string): boolean {
+/** Une (id, spec) concrète est-elle couverte par CE slot (désignations ignorées) ? Compare par
+ *  `optionId` STABLE — jamais par libellé (i18n-safe). */
+export function slotCovers(slot: CareerSlot, optionId: string, spec?: string): boolean {
   return slot.options.some((o) => {
-    if (o.name !== name) return false;
+    if (o.optionId !== optionId) return false;
     if (!o.wildcard) return (o.spec ?? '') === (spec ?? '');
     if (o.specOptions) return spec != null && o.specOptions.includes(spec);
     return true; // joker plein : toute spec du groupe (y compris sans spec)
   });
 }
 
-/** Désignations d'un héros pour une carrière : slotKey → libellé concret. */
+/** Désignations d'un héros pour une carrière : slotKey → clé d'identité `refKey(id, spec)`
+ *  (OPAQUE — jamais un libellé concret ; l'affichage se fait via `refLabel`/`specLabel`). */
 export function designationsFor(hero: Combatant, career: string): Record<string, string> {
   return hero.careerSlotChoices?.[career] ?? {};
 }
 
 /**
- * Libellés concrets déjà « pris » par les slots d'une carrière (désignations + entrées
- * explicites) — un nouveau slot ne peut pas reprendre l'un d'eux (arbitrage : au niveau 2, un
- * nouveau « Sens aiguisé (Au choix) » ne peut pas re-désigner la spec du slot du niveau 1).
+ * Références (id+spec, encodées en `refKey`) déjà « prises » par les slots d'une carrière
+ * (désignations + entrées explicites) — un nouveau slot ne peut pas reprendre l'une d'elles
+ * (arbitrage : au niveau 2, un nouveau « Sens aiguisé (Au choix) » ne peut pas re-désigner la
+ * spec du slot du niveau 1). Un slot explicite SANS `optionId` (tirage aléatoire, « N Talent
+ * aléatoire ») n'a pas d'identité réelle → n'occupe rien (jamais repris de toute façon).
  */
-export function takenLabels(slots: CareerSlot[], designations: Record<string, string>): Set<string> {
+export function takenRefs(slots: CareerSlot[], designations: Record<string, string>): Set<string> {
   const taken = new Set<string>(Object.values(designations));
   for (const s of slots) {
     if (!s.needsChoice) {
       const o = s.options[0];
-      taken.add(concreteLabel(o.name, o.spec));
+      if (o.optionId) taken.add(refKey(o.optionId, o.spec));
     }
   }
   return taken;
@@ -234,61 +255,63 @@ export type InCareerStatus = 'explicit' | 'designated' | 'free' | null;
 export function inCareerStatus(
   slots: CareerSlot[],
   designations: Record<string, string>,
-  name: string,
+  optionId: string,
   spec?: string,
   allSlotsForUniqueness: CareerSlot[] = slots,
 ): InCareerStatus {
-  const label = concreteLabel(name, spec);
+  const key = refKey(optionId, spec);
   for (const s of slots) {
-    if (!s.needsChoice && slotCovers(s, name, spec)) return 'explicit';
+    if (!s.needsChoice && slotCovers(s, optionId, spec)) return 'explicit';
   }
   for (const s of slots) {
-    if (s.needsChoice && designations[s.key] === label) return 'designated';
+    if (s.needsChoice && designations[s.key] === key) return 'designated';
   }
-  const taken = takenLabels(allSlotsForUniqueness, designations);
-  if (taken.has(label)) return null; // pris par un AUTRE slot (sinon retourné ci-dessus)
+  const taken = takenRefs(allSlotsForUniqueness, designations);
+  if (taken.has(key)) return null; // pris par un AUTRE slot (sinon retourné ci-dessus)
   for (const s of slots) {
-    if (s.needsChoice && !designations[s.key] && slotCovers(s, name, spec)) return 'free';
+    if (s.needsChoice && !designations[s.key] && slotCovers(s, optionId, spec)) return 'free';
   }
   return null;
 }
 
-/** Premier slot à choix non désigné pouvant couvrir (name, spec) — pour l'auto-désignation. */
+/** Premier slot à choix non désigné pouvant couvrir (optionId, spec) — pour l'auto-désignation. */
 export function freeSlotFor(
   slots: CareerSlot[],
   designations: Record<string, string>,
-  name: string,
+  optionId: string,
   spec?: string,
 ): CareerSlot | undefined {
-  return slots.find((s) => s.needsChoice && !designations[s.key] && slotCovers(s, name, spec));
+  return slots.find((s) => s.needsChoice && !designations[s.key] && slotCovers(s, optionId, spec));
 }
 
 /**
- * Désigne un slot sur un libellé concret (mute le héros). Gratuit — déclare seulement ce que le
- * slot couvre. Refuse : libellé non couvert par le slot, ou déjà pris par un autre slot de la
- * carrière (désignation OU entrée explicite).
+ * Désigne un slot sur une (id, spec) concrète (mute le héros). Gratuit — déclare seulement ce que
+ * le slot couvre. Refuse : (id, spec) non couverte par le slot, ou déjà prise par un autre slot de
+ * la carrière (désignation OU entrée explicite). La désignation stockée est la clé OPAQUE
+ * `refKey(optionId, spec)` — jamais un libellé concret (i18n-safe).
  */
 export function designateSlot(
   hero: Combatant,
   career: string,
   slot: CareerSlot,
-  label: string,
+  optionId: string,
+  spec: string | undefined,
   allSlots: CareerSlot[],
 ): { ok: boolean; reason?: string } {
-  const { name, spec } = splitLabel(label);
-  if (!slotCovers(slot, name, spec)) return { ok: false, reason: `« ${label} » n'est pas couvert par cet emplacement` };
+  if (!slotCovers(slot, optionId, spec)) return { ok: false, reason: "ce choix n'est pas couvert par cet emplacement" };
+  const key = refKey(optionId, spec);
   const designations = designationsFor(hero, career);
-  if (designations[slot.key] && designations[slot.key] !== label) {
+  if (designations[slot.key] && designations[slot.key] !== key) {
     return { ok: false, reason: 'emplacement déjà désigné' };
   }
   const others = { ...designations };
   delete others[slot.key];
-  if (takenLabels(allSlots, others).has(label)) {
-    return { ok: false, reason: `« ${label} » est déjà pris par un autre emplacement de cette carrière` };
+  if (takenRefs(allSlots, others).has(key)) {
+    return { ok: false, reason: 'déjà pris par un autre emplacement de cette carrière' };
   }
   hero.careerSlotChoices = {
     ...(hero.careerSlotChoices ?? {}),
-    [career]: { ...designations, [slot.key]: label },
+    [career]: { ...designations, [slot.key]: key },
   };
   return { ok: true };
 }
@@ -317,12 +340,11 @@ export function talentMax(hero: Combatant, label: string): number | null {
   return talentMaxById(hero, id);
 }
 
-/** Le héros a-t-il atteint le Maxi de ce Talent (libellé concret) ? Résout l'id UNE fois (par DONNÉE). */
-export function talentMaxReached(hero: Combatant, label: string): boolean {
-  const { name, spec } = splitLabel(label);
-  const id = findTalent(name)?.id ?? slugId(name);
-  const max = talentMaxById(hero, id);
+/** Le héros a-t-il atteint le Maxi de ce Talent, par `(talentId, spec)` — identité STABLE, jamais
+ *  un libellé re-parsé. */
+export function talentMaxReached(hero: Combatant, talentId: string, spec?: string): boolean {
+  const max = talentMaxById(hero, talentId);
   if (max == null) return false;
-  const times = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
+  const times = hero.talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
   return times >= max;
 }

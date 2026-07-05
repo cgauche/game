@@ -79,6 +79,11 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   Critiques sur navire (ch.13), tests d'équipage & moral (ch.14), longs voyages/commerce/**activités & maladies en mer**
   (ch.15), classe **Côtier** (8 carrières, ch.9) + carrières norses (ch.7), cultes **Manann/Stromfels** + miracles
   (ch.10-11), magie des mers (ch.2), **bestiaire marin** + capitaines nommés (ch.16). Comme AA/ZI : extraction curée, pas `build:data`.
+- **ACE** (Altdorf – Couronne de l'Empire) = `Source/Warhammer v4 - Aldorf la Couronne de l'Empire/` — **UNIQUEMENT
+  l'Annexe I « Activités à Altdorf » (ch.12)** : 5 Activités « entre deux aventures » gated par lieu (Pénitence,
+  Entraînement à une arme inhabituelle, Tester des objets magiques, Mécénat, Recherche universitaire) — cf. `activities.json`
+  (`source.book: "ACE"`, `where: ["altdorf"]`). Le reste du livre reste **CONTENU de campagne** (cf. ci-dessous), pas des règles.
+  Comme AA/ZI/MDG : extraction curée à la main, pas `build:data`.
 - `Source/all-data.json` = ancienne extraction (LDB/ADE1/ADE2 + EDO/Middenheim/EDOC). **La migration
   `build:data` a été RETIRÉE** (elle régénérait `src/data/*.json` et écrasait les données curées —
   apparence des créatures, etc.). `src/data/*.json` est désormais la **SOURCE app-owned** (commitée,

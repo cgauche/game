@@ -489,12 +489,12 @@
       {
         "id": "corps-a-corps",
         "value": 62,
-        "spec": "Arme d'hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 52,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "esquive",
@@ -4268,7 +4268,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       }
     ],
     "talents": [],
@@ -5069,12 +5069,12 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "pari",
@@ -5212,12 +5212,12 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "pari",
@@ -5359,12 +5359,12 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "pari",
@@ -5527,12 +5527,12 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "pari",
@@ -5672,7 +5672,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -5803,7 +5803,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -5840,12 +5840,12 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "charme",
@@ -5971,17 +5971,17 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "pari",
@@ -6011,7 +6011,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "charme",
@@ -6152,17 +6152,17 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "pari",
@@ -6197,7 +6197,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "charme",
@@ -6316,7 +6316,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -6337,7 +6337,7 @@
       {
         "id": "projectiles",
         "value": 45,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "athletisme",
@@ -6468,7 +6468,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -6501,7 +6501,7 @@
       {
         "id": "projectiles",
         "value": 55,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "athletisme",
@@ -6630,7 +6630,7 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -6663,12 +6663,12 @@
       {
         "id": "projectiles",
         "value": 75,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "projectiles",
         "value": 60,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "calme",
@@ -6795,7 +6795,7 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -6837,12 +6837,12 @@
       {
         "id": "projectiles",
         "value": 95,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "projectiles",
         "value": 75,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "calme",
@@ -6957,7 +6957,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -7096,7 +7096,7 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -7131,12 +7131,12 @@
       {
         "id": "projectiles",
         "value": 50,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "projectiles",
         "value": 45,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -7256,7 +7256,7 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -7296,12 +7296,12 @@
       {
         "id": "projectiles",
         "value": 70,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "projectiles",
         "value": 60,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -7426,7 +7426,7 @@
       {
         "id": "corps-a-corps",
         "value": 95,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -7465,12 +7465,12 @@
       {
         "id": "projectiles",
         "value": 90,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "projectiles",
         "value": 80,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "savoir",
@@ -7590,7 +7590,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -7726,12 +7726,12 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -7758,7 +7758,7 @@
       {
         "id": "projectiles",
         "value": 50,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "athletisme",
@@ -7883,12 +7883,12 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -7929,7 +7929,7 @@
       {
         "id": "projectiles",
         "value": 65,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "athletisme",
@@ -8055,12 +8055,12 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 80,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -8111,7 +8111,7 @@
       {
         "id": "projectiles",
         "value": 85,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "athletisme",
@@ -8763,7 +8763,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "musicien",
@@ -8917,12 +8917,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -8948,7 +8948,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "ramer",
@@ -9091,12 +9091,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "pari",
@@ -9125,7 +9125,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "ramer",
@@ -9270,12 +9270,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "pari",
@@ -9309,7 +9309,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "ramer",
@@ -9706,7 +9706,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "musicien",
@@ -9866,7 +9866,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "musicien",
@@ -10044,7 +10044,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "musicien",
@@ -10799,7 +10799,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "priere",
@@ -10928,7 +10928,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -11984,7 +11984,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -12122,7 +12122,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -12262,7 +12262,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "priere",
@@ -12403,7 +12403,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -12581,7 +12581,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "priere",
@@ -12722,7 +12722,7 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -12903,7 +12903,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "priere",
@@ -13049,7 +13049,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -13332,7 +13332,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -13463,7 +13463,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -13605,7 +13605,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -13748,7 +13748,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -13889,12 +13889,12 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -14032,12 +14032,12 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -14067,7 +14067,7 @@
       {
         "id": "projectiles",
         "value": 55,
-        "spec": "Armes de Jet"
+        "spec": "lancer"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -14182,12 +14182,12 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "subornation",
@@ -14327,12 +14327,12 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -14358,7 +14358,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "athletisme",
@@ -15202,7 +15202,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -15342,7 +15342,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -15479,7 +15479,7 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -15775,7 +15775,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "ragot",
@@ -15938,12 +15938,12 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "ragot",
@@ -16107,12 +16107,12 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "subornation",
@@ -16286,12 +16286,12 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 80,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "subornation",
@@ -17089,7 +17089,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -17246,7 +17246,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -17438,12 +17438,12 @@
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Enchevêtrement"
+        "spec": "entraves"
       },
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Lancer"
+        "spec": "lancer"
       },
       {
         "id": "calme",
@@ -17578,7 +17578,7 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "natation",
@@ -17621,12 +17621,12 @@
       {
         "id": "projectiles",
         "value": 40,
-        "spec": "Enchevêtrement"
+        "spec": "entraves"
       },
       {
         "id": "projectiles",
         "value": 40,
-        "spec": "Lancer"
+        "spec": "lancer"
       },
       {
         "id": "calme",
@@ -18521,7 +18521,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -18699,7 +18699,7 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -18876,7 +18876,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -19044,7 +19044,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -19368,7 +19368,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "representation",
@@ -19881,7 +19881,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "priere",
@@ -19907,7 +19907,7 @@
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "athletisme",
@@ -20036,7 +20036,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "priere",
@@ -20066,7 +20066,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "escalade",
@@ -20176,7 +20176,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -20214,7 +20214,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -20361,7 +20361,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -20403,7 +20403,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -20548,7 +20548,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -20679,7 +20679,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -20709,7 +20709,7 @@
       {
         "id": "projectiles",
         "value": 50,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "charme",
@@ -20835,7 +20835,7 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -20869,7 +20869,7 @@
       {
         "id": "projectiles",
         "value": 65,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "charme",
@@ -21000,7 +21000,7 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -21039,7 +21039,7 @@
       {
         "id": "projectiles",
         "value": 85,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "divertissement",
@@ -21285,7 +21285,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -21445,7 +21445,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -21620,7 +21620,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -21775,7 +21775,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -21909,7 +21909,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -22058,7 +22058,7 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -22095,7 +22095,7 @@
       {
         "id": "projectiles",
         "value": 55,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "athletisme",
@@ -22221,7 +22221,7 @@
       {
         "id": "corps-a-corps",
         "value": 95,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -22263,7 +22263,7 @@
       {
         "id": "projectiles",
         "value": 70,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "athletisme",
@@ -22620,7 +22620,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -22752,7 +22752,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -22902,7 +22902,7 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -23111,7 +23111,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -23246,7 +23246,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -23524,7 +23524,7 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -23760,7 +23760,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -23909,7 +23909,7 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -24059,7 +24059,7 @@
       {
         "id": "corps-a-corps",
         "value": 95,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -24220,7 +24220,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "resistance",
@@ -24358,7 +24358,7 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -24502,7 +24502,7 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -24658,7 +24658,7 @@
       {
         "id": "corps-a-corps",
         "value": 95,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -25416,7 +25416,7 @@
       {
         "id": "corps-a-corps",
         "value": 30,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -25544,7 +25544,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -25667,7 +25667,7 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -25830,7 +25830,7 @@
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "natation",
@@ -26651,7 +26651,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -26774,7 +26774,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -26907,12 +26907,12 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "resistance",
@@ -27040,7 +27040,7 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -27070,7 +27070,7 @@
       {
         "id": "projectiles",
         "value": 45,
-        "spec": "Javelot"
+        "spec": "lancer"
       },
       {
         "id": "commandement",
@@ -27188,7 +27188,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -27218,7 +27218,7 @@
       {
         "id": "projectiles",
         "value": 55,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "commandement",
@@ -27331,17 +27331,17 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Arme à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -27362,7 +27362,7 @@
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Enchevêtrer"
+        "spec": "entraves"
       },
       {
         "id": "commandement",
@@ -27490,17 +27490,17 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Arme à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -27521,7 +27521,7 @@
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Enchevêtrer"
+        "spec": "entraves"
       },
       {
         "id": "commandement",
@@ -27634,17 +27634,17 @@
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Arme à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -27665,7 +27665,7 @@
       {
         "id": "projectiles",
         "value": 40,
-        "spec": "Enchevêtrer"
+        "spec": "entraves"
       },
       {
         "id": "commandement",
@@ -27798,17 +27798,17 @@
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Arme à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -27829,7 +27829,7 @@
       {
         "id": "projectiles",
         "value": 40,
-        "spec": "Enchevêtrer"
+        "spec": "entraves"
       },
       {
         "id": "commandement",
@@ -27976,17 +27976,17 @@
       {
         "id": "corps-a-corps",
         "value": 125,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 125,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 115,
-        "spec": "Arme à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -28007,7 +28007,7 @@
       {
         "id": "projectiles",
         "value": 70,
-        "spec": "Enchevêtrer"
+        "spec": "entraves"
       },
       {
         "id": "divertissement",
@@ -28170,17 +28170,17 @@
       {
         "id": "corps-a-corps",
         "value": 125,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 125,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 115,
-        "spec": "Arme à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -28201,7 +28201,7 @@
       {
         "id": "projectiles",
         "value": 70,
-        "spec": "Enchevêtrer"
+        "spec": "entraves"
       },
       {
         "id": "divertissement",
@@ -28355,12 +28355,12 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -28544,7 +28544,7 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -28759,12 +28759,12 @@
       {
         "id": "corps-a-corps",
         "value": 100,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -28971,12 +28971,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme à 1Main"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "natation",
@@ -29123,12 +29123,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme à 1 Main"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "natation",
@@ -29166,7 +29166,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arme de Jet"
+        "spec": "lancer"
       },
       {
         "id": "discretion",
@@ -29293,12 +29293,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme à 1 Main"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 80,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "natation",
@@ -29341,7 +29341,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arme de Jet"
+        "spec": "lancer"
       },
       {
         "id": "discretion",
@@ -29486,17 +29486,17 @@
       {
         "id": "corps-a-corps",
         "value": 100,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -29659,17 +29659,17 @@
       {
         "id": "corps-a-corps",
         "value": 120,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -29833,7 +29833,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -30024,7 +30024,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -30230,7 +30230,7 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -34265,7 +34265,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "natation",
@@ -34418,7 +34418,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -34567,12 +34567,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -34602,7 +34602,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Fronde"
+        "spec": "fronde"
       },
       {
         "id": "calme",
@@ -34745,12 +34745,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -34785,7 +34785,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Fronde"
+        "spec": "fronde"
       },
       {
         "id": "commandement",
@@ -34938,12 +34938,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "pari",
@@ -34970,7 +34970,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Fronde"
+        "spec": "fronde"
       },
       {
         "id": "escalade",
@@ -35103,12 +35103,12 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "musicien",
@@ -35258,12 +35258,12 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "musicien",
@@ -35419,12 +35419,12 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "musicien",
@@ -35586,12 +35586,12 @@
       {
         "id": "corps-a-corps",
         "value": 110,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 110,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "musicien",
@@ -35765,7 +35765,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Poudre Noir"
+        "spec": "poudre-noire"
       },
       {
         "id": "athletisme",
@@ -35922,7 +35922,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -35948,12 +35948,12 @@
       {
         "id": "projectiles",
         "value": 60,
-        "spec": "Poudre Noir"
+        "spec": "poudre-noire"
       },
       {
         "id": "projectiles",
         "value": 55,
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "athletisme",
@@ -36131,7 +36131,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -36161,12 +36161,12 @@
       {
         "id": "projectiles",
         "value": 85,
-        "spec": "Poudre Noir"
+        "spec": "poudre-noire"
       },
       {
         "id": "projectiles",
         "value": 75,
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "athletisme",
@@ -36346,7 +36346,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -36381,12 +36381,12 @@
       {
         "id": "projectiles",
         "value": 105,
-        "spec": "Poudre Noir"
+        "spec": "poudre-noire"
       },
       {
         "id": "projectiles",
         "value": 95,
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "athletisme",
@@ -36573,7 +36573,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -36734,12 +36734,12 @@
       {
         "id": "corps-a-corps",
         "value": 80,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -36760,7 +36760,7 @@
       {
         "id": "projectiles",
         "value": 75,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -36933,12 +36933,12 @@
       {
         "id": "corps-a-corps",
         "value": 100,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -36967,12 +36967,12 @@
       {
         "id": "projectiles",
         "value": 90,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       },
       {
         "id": "projectiles",
         "value": 85,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -37165,12 +37165,12 @@
       {
         "id": "corps-a-corps",
         "value": 120,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 110,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -37204,12 +37204,12 @@
       {
         "id": "projectiles",
         "value": 110,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       },
       {
         "id": "projectiles",
         "value": 100,
-        "spec": "Arbalète"
+        "spec": "arbalete"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -37394,7 +37394,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "resistance",
@@ -37440,7 +37440,7 @@
       {
         "id": "projectiles",
         "value": 30,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       }
     ],
     "talents": [
@@ -37549,7 +37549,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "orientation",
@@ -37580,7 +37580,7 @@
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       },
       {
         "id": "discretion",
@@ -37736,7 +37736,7 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "orientation",
@@ -37771,7 +37771,7 @@
       {
         "id": "projectiles",
         "value": 40,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       },
       {
         "id": "discretion",
@@ -37938,7 +37938,7 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "orientation",
@@ -37973,7 +37973,7 @@
       {
         "id": "projectiles",
         "value": 50,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       },
       {
         "id": "discretion",
@@ -38120,7 +38120,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -38145,7 +38145,7 @@
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Enchevêtrement"
+        "spec": "entraves"
       },
       {
         "id": "calme",
@@ -38272,12 +38272,12 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "perception",
@@ -38311,7 +38311,7 @@
       {
         "id": "projectiles",
         "value": 40,
-        "spec": "Enchevêtrement"
+        "spec": "entraves"
       },
       {
         "id": "escalade",
@@ -38451,12 +38451,12 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "perception",
@@ -38495,7 +38495,7 @@
       {
         "id": "projectiles",
         "value": 50,
-        "spec": "Enchevêtrement"
+        "spec": "entraves"
       },
       {
         "id": "escalade",
@@ -38661,12 +38661,12 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 80,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "perception",
@@ -38705,7 +38705,7 @@
       {
         "id": "projectiles",
         "value": 60,
-        "spec": "Enchevêtrement"
+        "spec": "entraves"
       },
       {
         "id": "escalade",
@@ -38851,7 +38851,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -39009,7 +39009,7 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -39172,7 +39172,7 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -39347,7 +39347,7 @@
       {
         "id": "corps-a-corps",
         "value": 115,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -39364,7 +39364,7 @@
       {
         "id": "projectiles",
         "value": 40,
-        "spec": "Mitrailleuse"
+        "spec": "ingenierie"
       },
       {
         "id": "orientation",
@@ -39526,12 +39526,12 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Arme Longue"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -39771,12 +39771,12 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Arme Longue"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -39992,7 +39992,7 @@
       {
         "id": "corps-a-corps",
         "value": 30,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -40041,7 +40041,7 @@
       {
         "id": "projectiles",
         "value": 25,
-        "spec": "Jet / Lancer"
+        "spec": "lancer"
       }
     ],
     "talents": [
@@ -40130,7 +40130,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -40164,7 +40164,7 @@
       {
         "id": "projectiles",
         "value": 50,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -40284,7 +40284,7 @@
       {
         "id": "corps-a-corps",
         "value": 30,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "musicien",
@@ -40318,7 +40318,7 @@
       {
         "id": "projectiles",
         "value": 60,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "calme",
@@ -40438,12 +40438,12 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -40589,7 +40589,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "perception",
@@ -40619,7 +40619,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Catapulte"
+        "spec": "catapulte"
       },
       {
         "id": "calme",
@@ -40730,12 +40730,12 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Armes d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -40854,12 +40854,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Fléau"
+        "spec": "fleau"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -41010,12 +41010,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -41045,7 +41045,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arc"
+        "spec": "arc"
       }
     ],
     "talents": [
@@ -41190,12 +41190,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -41239,7 +41239,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Arc"
+        "spec": "arc"
       }
     ],
     "talents": [
@@ -41387,7 +41387,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -41580,7 +41580,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -41795,7 +41795,7 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "focalisation",
@@ -42027,7 +42027,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "ragot",
@@ -42171,7 +42171,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -42201,7 +42201,7 @@
       {
         "id": "projectiles",
         "value": 45,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "calme",
@@ -42325,7 +42325,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "musicien",
@@ -42355,7 +42355,7 @@
       {
         "id": "projectiles",
         "value": 55,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "calme",
@@ -42488,12 +42488,12 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -42655,12 +42655,12 @@
       {
         "id": "corps-a-corps",
         "value": 80,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -42848,12 +42848,12 @@
       {
         "id": "corps-a-corps",
         "value": 120,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 110,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -43061,7 +43061,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -43270,7 +43270,7 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -43484,7 +43484,7 @@
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -43682,7 +43682,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "resistance",
@@ -43846,12 +43846,12 @@
       {
         "id": "corps-a-corps",
         "value": 95,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -43873,7 +43873,7 @@
       {
         "id": "projectiles",
         "value": 60,
-        "spec": "Lancer / Jet"
+        "spec": "lancer"
       },
       {
         "id": "natation",
@@ -44027,12 +44027,12 @@
       {
         "id": "corps-a-corps",
         "value": 115,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 105,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -44054,7 +44054,7 @@
       {
         "id": "projectiles",
         "value": 80,
-        "spec": "Lancer / Jet"
+        "spec": "lancer"
       },
       {
         "id": "natation",
@@ -44237,7 +44237,7 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "natation",
@@ -44475,7 +44475,7 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "natation",
@@ -44735,7 +44735,7 @@
       {
         "id": "corps-a-corps",
         "value": 100,
-        "spec": "Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "natation",
@@ -44945,7 +44945,7 @@
       {
         "id": "corps-a-corps",
         "value": 30,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "resistance",
@@ -45113,7 +45113,7 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "pistage",
@@ -45252,7 +45252,7 @@
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -45395,7 +45395,7 @@
       {
         "id": "corps-a-corps",
         "value": 85,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -45539,12 +45539,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -45734,12 +45734,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -45959,12 +45959,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Arme d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -46172,7 +46172,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "resistance",
@@ -46294,12 +46294,12 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "resistance",
@@ -46448,12 +46448,12 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "resistance",
@@ -46620,12 +46620,12 @@
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 80,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "orientation",
@@ -46771,7 +46771,7 @@
       {
         "id": "corps-a-corps",
         "value": 20,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "resistance",
@@ -46894,12 +46894,12 @@
       {
         "id": "corps-a-corps",
         "value": 45,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Arme Simple"
+        "spec": "base"
       },
       {
         "id": "resistance",
@@ -47019,7 +47019,7 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "resistance",
@@ -47148,12 +47148,12 @@
       {
         "id": "corps-a-corps",
         "value": 70,
-        "spec": "Armes Simples"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "musicien",
@@ -47171,7 +47171,7 @@
       {
         "id": "projectiles",
         "value": 60,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "discretion",
@@ -47312,7 +47312,7 @@
       {
         "id": "corps-a-corps",
         "value": 110,
-        "spec": "Armes à 2 Mains"
+        "spec": "deux-mains"
       },
       {
         "id": "orientation",
@@ -47457,7 +47457,7 @@
       {
         "id": "corps-a-corps",
         "value": 35,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "pari",
@@ -47608,12 +47608,12 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Arme d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -47791,12 +47791,12 @@
       {
         "id": "corps-a-corps",
         "value": 115,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 115,
-        "spec": "Arme d’Hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "perception",
@@ -47950,7 +47950,7 @@
       {
         "id": "corps-a-corps",
         "value": 20,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -48090,7 +48090,7 @@
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "perception",
@@ -48209,7 +48209,7 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -48361,7 +48361,7 @@
       {
         "id": "corps-a-corps",
         "value": 75,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "orientation",
@@ -48569,12 +48569,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Escrime"
+        "spec": "escrime"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "pari",
@@ -48618,7 +48618,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -48886,12 +48886,12 @@
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Escrime"
+        "spec": "escrime"
       },
       {
         "id": "corps-a-corps",
         "value": 0,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "pari",
@@ -48940,7 +48940,7 @@
       {
         "id": "projectiles",
         "value": 0,
-        "spec": "Poudre Noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -50258,12 +50258,12 @@
       {
         "id": "projectiles",
         "value": 45,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "projectiles",
         "value": 45,
-        "spec": "Entraves"
+        "spec": "entraves"
       }
     ],
     "talents": [],
@@ -50581,7 +50581,7 @@
       {
         "id": "corps-a-corps",
         "value": 57,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "discretion",
@@ -51027,7 +51027,7 @@
       {
         "id": "projectiles",
         "value": 65,
-        "spec": "Entraves"
+        "spec": "entraves"
       }
     ],
     "talents": [],
@@ -52939,7 +52939,7 @@
       {
         "id": "corps-a-corps",
         "value": 40,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "discretion",
@@ -52969,7 +52969,7 @@
       {
         "id": "projectiles",
         "value": 50,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "ragot",
@@ -55276,12 +55276,12 @@
       {
         "id": "corps-a-corps",
         "value": 54,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 51,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "divertissement",
@@ -55444,7 +55444,7 @@
       {
         "id": "corps-a-corps",
         "value": 53,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "esquive",
@@ -55482,7 +55482,7 @@
       {
         "id": "projectiles",
         "value": 35,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "resistance",
@@ -55605,12 +55605,12 @@
       {
         "id": "corps-a-corps",
         "value": 39,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 46,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "divertissement",
@@ -55742,12 +55742,12 @@
       {
         "id": "corps-a-corps",
         "value": 34,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 32,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "discretion",
@@ -55929,7 +55929,7 @@
       {
         "id": "corps-a-corps",
         "value": 83,
-        "spec": "Armes d'hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "focalisation",
@@ -56185,7 +56185,7 @@
       {
         "id": "corps-a-corps",
         "value": 74,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "escalade",
@@ -56272,7 +56272,7 @@
       {
         "id": "corps-a-corps",
         "value": 42,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "esquive",
@@ -56401,12 +56401,12 @@
       {
         "id": "corps-a-corps",
         "value": 62,
-        "spec": "Armes d'hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 57,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "dressage",
@@ -56510,12 +56510,12 @@
       {
         "id": "corps-a-corps",
         "value": 59,
-        "spec": "Armes d'hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 64,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "evaluation",
@@ -56617,12 +56617,12 @@
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "À deux mains"
+        "spec": "deux-mains"
       },
       {
         "id": "calme",
@@ -56647,7 +56647,7 @@
       {
         "id": "projectiles",
         "value": 42,
-        "spec": "Arc"
+        "spec": "arc"
       }
     ],
     "talents": [
@@ -56748,22 +56748,22 @@
       {
         "id": "corps-a-corps",
         "value": 64,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 61,
-        "spec": "Cavalerie"
+        "spec": "cavalerie"
       },
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Escrime"
+        "spec": "escrime"
       },
       {
         "id": "corps-a-corps",
         "value": 65,
-        "spec": "Parade"
+        "spec": "parade"
       },
       {
         "id": "esquive",
@@ -57026,7 +57026,7 @@
       {
         "id": "corps-a-corps",
         "value": 61,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "esquive",
@@ -57425,7 +57425,7 @@
       {
         "id": "corps-a-corps",
         "value": 52,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -57627,12 +57627,12 @@
       {
         "id": "corps-a-corps",
         "value": 58,
-        "spec": "Armes d'hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 55,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "esquive",
@@ -58292,7 +58292,7 @@
       {
         "id": "corps-a-corps",
         "value": 50,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "evaluation",
@@ -58429,7 +58429,7 @@
       {
         "id": "corps-a-corps",
         "value": 46,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "intuition",
@@ -58541,12 +58541,12 @@
       {
         "id": "corps-a-corps",
         "value": 67,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 61,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "discretion",
@@ -58853,7 +58853,7 @@
       {
         "id": "corps-a-corps",
         "value": 52,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "discretion",
@@ -58983,7 +58983,7 @@
       {
         "id": "corps-a-corps",
         "value": 60,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "esquive",
@@ -58992,7 +58992,7 @@
       {
         "id": "projectiles",
         "value": 33,
-        "spec": "Fronde"
+        "spec": "fronde"
       },
       {
         "id": "resistance",
@@ -59463,7 +59463,7 @@
       {
         "id": "corps-a-corps",
         "value": 67,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "esquive",
@@ -59518,7 +59518,7 @@
       {
         "id": "corps-a-corps",
         "value": 48,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "esquive",
@@ -59572,7 +59572,7 @@
       {
         "id": "corps-a-corps",
         "value": 39,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "esquive",
@@ -59685,7 +59685,7 @@
       {
         "id": "corps-a-corps",
         "value": 37,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "divertissement",
@@ -59806,7 +59806,7 @@
       {
         "id": "corps-a-corps",
         "value": 38,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "evaluation",
@@ -59920,7 +59920,7 @@
       {
         "id": "corps-a-corps",
         "value": 32,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "escalade",
@@ -59938,7 +59938,7 @@
       {
         "id": "projectiles",
         "value": 37,
-        "spec": "Arc"
+        "spec": "arc"
       },
       {
         "id": "ragot",
@@ -61034,7 +61034,7 @@
       {
         "id": "corps-a-corps",
         "value": 83,
-        "spec": "Armes d'hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -61289,12 +61289,12 @@
       {
         "id": "corps-a-corps",
         "value": 87,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 90,
-        "spec": "Escrime"
+        "spec": "escrime"
       },
       {
         "id": "escalade",
@@ -61345,7 +61345,7 @@
       {
         "id": "projectiles",
         "value": 58,
-        "spec": "Poudre noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "ragot",
@@ -61577,12 +61577,12 @@
       {
         "id": "corps-a-corps",
         "value": 82,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 87,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "divertissement",
@@ -61648,7 +61648,7 @@
       {
         "id": "projectiles",
         "value": 77,
-        "spec": "Poudre noire"
+        "spec": "poudre-noire"
       },
       {
         "id": "ramer",
@@ -61883,12 +61883,12 @@
       {
         "id": "corps-a-corps",
         "value": 88,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "corps-a-corps",
         "value": 93,
-        "spec": "Deux mains"
+        "spec": "deux-mains"
       },
       {
         "id": "divertissement",
@@ -62180,12 +62180,12 @@
       {
         "id": "corps-a-corps",
         "value": 99,
-        "spec": "Armes d'hast"
+        "spec": "armes-d-hast"
       },
       {
         "id": "corps-a-corps",
         "value": 94,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "escalade",
@@ -62237,7 +62237,7 @@
       {
         "id": "projectiles",
         "value": 95,
-        "spec": "Armes à projectiles skavens"
+        "spec": "poudre-noire"
       },
       {
         "id": "ragot",
@@ -62476,12 +62476,12 @@
       {
         "id": "corps-a-corps",
         "value": 72,
-        "spec": "Bagarre"
+        "spec": "bagarre"
       },
       {
         "id": "corps-a-corps",
         "value": 72,
-        "spec": "Base"
+        "spec": "base"
       },
       {
         "id": "escalade",

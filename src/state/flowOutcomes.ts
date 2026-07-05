@@ -110,40 +110,40 @@ export function describeCorruption(pc: PendingCorruption, name: string): string 
 /** Jet d'Activité d'interlude (LDB 23) : issue de la popin (Revenus / Artisanat / Apprentissage /
  *  Identification). La VALIDATION applique la conséquence chiffrée (somme, objet, PX) à part. */
 export function describeActivity(pa: PendingActivity): string {
-  if (pa.roll == null) return '';
-  if (pa.kind === 'catalog' && pa.activityId) {
-    // Catalogue data-driven : l'issue EST la (les) bande(s) matchée(s) — notes VERBATIM de la table
-    // source (même matching que la validation, source unique).
-    const def = activityById(pa.activityId);
-    const bands = def ? matchOutcomes(def, { success: !!pa.success, sl: pa.sl, fumble: isFumble(pa.roll, !!pa.success) }) : [];
-    const notes = bands.map((b) => b.note).filter((n): n is string => !!n);
-    if (notes.length) return notes.join(' ');
-    return pa.success ? t('out.catalogOk') : t('out.catalogFail');
+  if (pa.roll == null || !pa.activityId) return '';
+  const def = activityById(pa.activityId);
+  // Les 4 Activités « socle » n'ont pas de table d'issues : leur narration est propre au résolveur
+  // (source unique, même règle RAW que `runActivityResolver`). Les autres dérivent des bandes.
+  switch (def?.resolver) {
+    case 'craftExtended': {
+      const { total: after, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, pa.drTarget ?? 1);
+      return done ? t('out.craftDone') : t('out.craftProgress', { after, target: String(pa.drTarget) });
+    }
+    case 'identify':
+      return pa.success
+        ? isImpressiveSuccess(pa.success, pa.sl)
+          ? t('out.identifyFull')
+          : t('out.identifyPartial')
+        : isImpressiveFailure(pa.success, pa.sl)
+          ? t('out.identifyMisread')
+          : t('out.identifyNone');
+    case 'learnTalent':
+      return pa.success ? t('out.learnDone') : t('out.learnFail');
+    case 'income':
+      return pa.success
+        ? t('out.incomeGood')
+        : isAstoundingFailure(pa.success, pa.sl)
+          ? t('out.incomeNone')
+          : t('out.incomeHalf');
+    default: {
+      // Catalogue data-driven à table : l'issue EST la (les) bande(s) matchée(s) — notes VERBATIM de
+      // la table source (même matching que la validation, source unique).
+      const bands = def ? matchOutcomes(def, { success: !!pa.success, sl: pa.sl, fumble: isFumble(pa.roll, !!pa.success) }) : [];
+      const notes = bands.map((b) => b.note).filter((n): n is string => !!n);
+      if (notes.length) return notes.join(' ');
+      return pa.success ? t('out.catalogOk') : t('out.catalogFail');
+    }
   }
-  const { total: after, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, pa.drTarget ?? 1);
-  if (pa.kind === 'craft') {
-    return done ? t('out.craftDone') : t('out.craftProgress', { after, target: String(pa.drTarget) });
-  }
-  if (pa.kind === 'identify') {
-    return pa.success
-      ? isImpressiveSuccess(pa.success, pa.sl)
-        ? t('out.identifyFull')
-        : t('out.identifyPartial')
-      : isImpressiveFailure(pa.success, pa.sl)
-        ? t('out.identifyMisread')
-        : t('out.identifyNone');
-  }
-  if (pa.kind === 'learn') {
-    return pa.success
-      ? t('out.learnDone')
-      : t('out.learnFail');
-  }
-  // revenus
-  return pa.success
-    ? t('out.incomeGood')
-    : isAstoundingFailure(pa.success, pa.sl)
-      ? t('out.incomeNone')
-      : t('out.incomeHalf');
 }
 
 /** Marchandage (LDB 60 l.12) : VERDICT du Test opposé (source unique popin ↔ journal). */

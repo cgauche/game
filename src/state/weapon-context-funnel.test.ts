@@ -32,7 +32,7 @@ describe('firedWeapon — règles d’arme contextuelles repliées sur le profil
     expect(attackerFumbled(miss, w)).toBe(true);
   });
   it('Fléau AVEC la Spé → intact (pas Dangereuse, Atouts conservés)', () => {
-    const atk = mk({ skills: [{ skillId: 'corps-a-corps', spec: 'Fléau', advances: 10 } as any], weapons: [fleau] });
+    const atk = mk({ skills: [{ skillId: 'corps-a-corps', spec: 'fleau', advances: 10 } as any], weapons: [fleau] });
     const w = firedWeapon(atk, target, 'fl');
     expect(hasQuality(w, 'dangereuse')).toBe(false);
     expect(hasQuality(w, 'perturbante')).toBe(true);

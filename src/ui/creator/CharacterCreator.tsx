@@ -36,6 +36,7 @@ import {
   spells as allSpells,
   rigSpeciesId,
   findTalentById,
+  specLabel,
   SpeciesData,
   CareerData,
 } from '../../data';
@@ -708,11 +709,14 @@ export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: Reac
   return { rail, main };
 }
 
-/** Sélecteur de spec pour une entrée « (Au choix) » — bound à specChoices[raw]. */
+/** Sélecteur de spec pour une entrée « (Au choix) » — bound à specChoices[raw]. `s` peut être un id de
+ *  Groupe d'arme (Corps à corps/Projectiles, Phase 3) → affiché via `specLabel`, la VALEUR stockée reste
+ *  l'id (jamais l'id brut à l'écran). */
 function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
   const { name } = splitLabel(raw);
   const options = specOptionsFor(raw);
   const current = d.specChoices[raw] ? splitLabel(d.specChoices[raw]).spec ?? '' : '';
+  const skillId = findSkill(name)?.id ?? name;
   return (
     <select
       value={current}
@@ -726,7 +730,7 @@ function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
       <option value="">— spécialisation —</option>
       {options.map((s) => (
         <option key={s} value={s}>
-          {s}
+          {specLabel('skills', skillId, s)}
         </option>
       ))}
     </select>

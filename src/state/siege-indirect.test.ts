@@ -175,7 +175,7 @@ describe('(e) Routage live — placeur de case + pilonnage via la modale de tir 
     seedBattleRng(7);
     const poste = mkPoste('mortier', ['gunner']);
     const gunner = mkGunner('gunner', { x: 0, y: 0 }, 90);
-    gunner.skills = [{ skillId: 'projectiles', spec: 'Poudre noire', characteristic: 'CT', advances: 30 }] as never;
+    gunner.skills = [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'CT', advances: 30 }] as never;
     gunner.items = [itemFromTrappingById('bombe-de-mortier')!]; // munition Explosion 5 en inventaire (selectedAmmo)
     const e1 = mkEnemy('e1', 9, 0);
     const e2 = mkEnemy('e2', 11, 0);

@@ -1,5 +1,5 @@
 import { pregenParty, PREGEN } from '../../data/pregens';
-import { findTrappingById, weaponGroupLabel, type SkillRef } from '../../data';
+import { findTrappingById, type SkillRef } from '../../data';
 import type { SceneEntity } from '../../state/scene';
 import { buildScene, type MapSpec } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
@@ -34,10 +34,10 @@ import type { TestScenario } from './_shared';
 
 // Compétence Projectiles APPROPRIÉE au Groupe de l'engin (AA p.122 l.3900) : un servant ne compte dans l'équipe
 // QUE s'il la possède (sinon « n'est pas considéré comme un membre de l'équipe », l.3923). Dérivée de la pièce
-// (`weaponGroup` du trapping) → la Spé = libellé du Groupe (Arbalète/Poudre noire/Catapulte). Test ~40.
+// (`weaponGroup` du trapping) → la Spé = id du Groupe (arbalete/poudre-noire/catapulte). Test ~40.
 const projForPiece = (trappingId: string): SkillRef[] => {
   const g = findTrappingById(trappingId)?.weaponGroup;
-  return g ? [{ id: 'projectiles', spec: weaponGroupLabel(g), value: 40 }] : [];
+  return g ? [{ id: 'projectiles', spec: g, value: 40 }] : [];
 };
 
 // Servant de pièce (entité à id FIXE, référencé par le `crew` de l'emplacement) : une VRAIE créature du

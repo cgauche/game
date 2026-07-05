@@ -11,6 +11,7 @@ import type { Combatant, ShipPoste, Weapon } from '../engine/types';
 import type { FireArc } from './fireArc';
 import type { Scene } from './scene';
 import type { GameState } from './store';
+import { weaponGroupIdByLabel } from '../data';
 
 /**
  * « SERVIR CETTE PIÈCE » (manning runtime, MDG ch.12-13) — l'action de combat KIND-AGNOSTIQUE par laquelle
@@ -109,9 +110,9 @@ describe('(B) Service — `serveAtPoste` rend chef tout combattant (mannedPoste,
     seedBattleRng(1);
     const poste = mkPoste('baliste', ['s1']);
     const gunner = mkActor('gunner', 'hero', { x: 5, y: 5 }, 80);
-    gunner.skills = [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never;
+    gunner.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'CT', advances: 0 }] as never;
     const s1 = mkCrewman('s1');
-    s1.skills = [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée
+    s1.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'CT', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée
     const cible = mkEnemyTarget('cible', 8, 5, 30, 60);
     const all = [mkEmplacement(poste), gunner, s1, cible];
     serveAtPoste(gunner, poste, all);
@@ -244,7 +245,7 @@ describe('(E) Affordance IA — un combattant IA adjacent PEUT servir', () => {
 //     peuvent aider à la déplacer ou compenser les pertes » (support = `crewIds[1..]`, compte dans l'Indice).
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 describe('(F) Équipe — REJOINDRE une pièce servie en renfort (chef = seul tireur ; support = effectif d’Indice)', () => {
-  const arb = () => [{ skillId: 'projectiles', spec: 'Arbalète', characteristic: 'CT', advances: 0 }] as never;
+  const arb = () => [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'CT', advances: 0 }] as never;
 
   it('(a) un 2e adjacent REJOINT en SUPPORT : appendu APRÈS le chef, mannedPoste posé, mais SANS arme de tir', () => {
     const poste = mkPoste('baliste');
@@ -370,7 +371,8 @@ describe('(G) Token — `serveTargetPoste` + clic-pièce rejoignent l’équipe 
 //     supplémentaires non qualifiés AIDENT (déplacent/compensent) mais NE comptent PAS (l.3902).
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 describe('(H) Qualification — seul l’équipage avec la Projectiles du Groupe de la pièce compte (AA l.3900-3923)', () => {
-  const proj = (spec: string) => [{ skillId: 'projectiles', spec, characteristic: 'CT', advances: 10 }] as never;
+  // `label` = libellé lisible (Arbalète/Arc) → résolu en id de Groupe stable (Phase 3 : la spec EST un id).
+  const proj = (label: string) => [{ skillId: 'projectiles', spec: weaponGroupIdByLabel(label), characteristic: 'CT', advances: 10 }] as never;
 
   it('chef QUALIFIÉ (Arbalète) compte (=1) ; +1 renfort qualifié → effectif 2 (=Indice, plus de sous-effectif)', () => {
     const poste = mkPoste('baliste'); // baliste = Groupe Arbalète, Arme d'équipe 2

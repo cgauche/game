@@ -28,8 +28,8 @@
  */
 import { Combatant, CHAR_KEYS, CharKey } from './types';
 import { bonus, maxWounds } from './characteristics';
-import { findTalent, findTalentById, blessingsOf, refLabel } from '../data';
-import { splitLabel, concreteLabel } from './careerSlots';
+import { findTalent, findTalentById, blessingsOf } from '../data';
+import { splitLabel } from './careerSlots';
 import type { PassiveMod } from './ops';
 
 /**

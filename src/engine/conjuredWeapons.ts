@@ -11,7 +11,7 @@ import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadou
 import { isShieldItem } from './equipCompare';
 import { QUALITY_IDS } from './qualities/ids';
 import { hasQuality } from './qualities/dispatch';
-import { trappings, weaponGroupIdByLabel } from '../data';
+import { trappings } from '../data';
 
 type ConjuredSet = NonNullable<NonNullable<Combatant['activeEffects']>[number]['conjuredSet']>;
 
@@ -84,8 +84,7 @@ export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureFo
   const groupAdv = new Map<string, number>(); // id de Groupe → meilleures avances connues
   for (const s of caster.skills ?? []) {
     if (s.skillId === 'corps-a-corps' && s.spec) {
-      const g = weaponGroupIdByLabel(s.spec.trim()) ?? s.spec.trim().toLowerCase(); // Spé (libellé authoré) → id de Groupe stable
-      groupAdv.set(g, Math.max(groupAdv.get(g) ?? 0, s.advances ?? 0));
+      groupAdv.set(s.spec, Math.max(groupAdv.get(s.spec) ?? 0, s.advances ?? 0));
     }
   }
   if (!groupAdv.size) groupAdv.set('base', 0); // mage sans Spé → armes de base

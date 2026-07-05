@@ -506,21 +506,17 @@ export interface GameState extends RollFlowActionsMap {
   /** « Appliquer » d'un jet de bataille (Discours/Scène). */
   battleTestConfirm: () => void;
   battleTestCancel: () => void;
-  /** Activités (LDB 23) : Revenus, Artisanat (engager l'ouvrage puis lancer), banque. */
-  interludeRevenus: (heroId: string) => void;
+  /** Activités (LDB 23) : `craftStart` engage l'ouvrage (matériaux ¼ prix + `st.craft`) ; le LANCER
+   *  passe par `interludeActivity('craft')`. Passer commande (Exotique) + banque restent dédiés. */
   interludeCraftStart: (heroId: string, trappingId: string, atouts: string[], defauts: string[]) => void;
-  interludeCraftRoll: (heroId: string) => void;
   interludeBank: (heroId: string, kind: 'invest' | 'stash' | 'mecenat', amountBrass: number, rate?: number) => void;
   interludeWithdraw: (index: number) => void;
-  /** Apprentissage particulier (Talent hors carrière, Test −20) — `talent` = `id` STABLE ;
-   *  Passer commande (Exotique). */
-  interludeLearn: (heroId: string, talentId: string) => void;
   interludeOrder: (heroId: string, trappingId: string) => void;
-  /** Identifier un artefact magique (ADE2 ch.4) : une semaine d'étude, Test de Savoir (Magie) +0. */
-  interludeIdentify: (heroId: string, itemUid: string) => void;
-  /** Activité du CATALOGUE data-driven (`activities.json`, contexte 'interlude' + gate `where`) :
-   *  Convalescence (ADE2), Activités d'Altdorf (ACE Annexe I). Cibles éventuelles : objet / sort / dépôt. */
-  interludeActivity: (heroId: string, activityId: string, opts?: { itemUid?: string; spellId?: string; depositIndex?: number }) => void;
+  /** Activité du CATALOGUE data-driven (`activities.json`, contexte 'interlude' + gate `where`) — LE
+   *  CHEMIN UNIQUE de toutes les Activités à jet : Revenus, Artisanat, Apprentissage (`talentId`),
+   *  Identification (`itemUid`), Convalescence (ADE2), Activités d'Altdorf (ACE Annexe I). Cibles
+   *  éventuelles selon le résolveur : objet / sort / dépôt / Talent. */
+  interludeActivity: (heroId: string, activityId: string, opts?: { itemUid?: string; spellId?: string; depositIndex?: number; talentId?: string }) => void;
   /** Coop en ligne : état réseau sérialisable + actions de session — délégué à netFlow.
    *  Les objets réseau vivants (sessions, sockets du relay) restent des singletons de module. */
   net: NetState;
@@ -1365,14 +1361,10 @@ export const useGame = create<GameState>((set, get) => ({
   endMassBattle: () => massBattleFlow.endMassBattle(get, set),
   battleTestConfirm: () => massBattleFlow.battleTestConfirm(get, set),
   battleTestCancel: () => FLOWS.battleTest.cancel(get, set),
-  interludeRevenus: (heroId) => interludeFlow.openRevenus(get, set, heroId),
   interludeCraftStart: (heroId, trapping, atouts, defauts) => interludeFlow.craftStart(get, set, heroId, trapping, atouts, defauts),
-  interludeCraftRoll: (heroId) => interludeFlow.openCraftRoll(get, set, heroId),
   interludeBank: (heroId, kind, amountBrass, rate) => interludeFlow.bankDeposit(get, set, heroId, kind, amountBrass, rate),
   interludeWithdraw: (index) => interludeFlow.bankWithdraw(get, set, index),
-  interludeLearn: (heroId, talent) => interludeFlow.openLearn(get, set, heroId, talent),
   interludeOrder: (heroId, trapping) => interludeFlow.orderItem(get, set, heroId, trapping),
-  interludeIdentify: (heroId, itemUid) => interludeFlow.openIdentify(get, set, heroId, itemUid),
   interludeActivity: (heroId, activityId, opts) => interludeFlow.openCatalogActivity(get, set, heroId, activityId, opts),
 
   net: netFlow.initialNet(),

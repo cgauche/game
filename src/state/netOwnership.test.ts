@@ -131,10 +131,10 @@ describe('Activités d’interlude en coop (audit M7/M8) — chacun mène SES h�
 
   it('activité visant un héros : son propriétaire agit, pas les autres', () => {
     const s = interludeState();
-    expect(intentAllowedFor(s, 1, 'interludeRevenus', ['h2'])).toBe(true);
-    expect(intentAllowedFor(s, 1, 'interludeRevenus', ['h1'])).toBe(false);
+    expect(intentAllowedFor(s, 1, 'interludeActivity', ['h2', 'revenus'])).toBe(true);
+    expect(intentAllowedFor(s, 1, 'interludeActivity', ['h1', 'revenus'])).toBe(false);
     expect(intentAllowedFor(s, 0, 'interludeCraftStart', ['h1', 'Dague', [], []])).toBe(true);
-    expect(intentAllowedFor(s, 0, 'interludeLearn', ['h2', 'Chanceux'])).toBe(false);
+    expect(intentAllowedFor(s, 0, 'interludeActivity', ['h2', 'learn', { talentId: 'chanceux' }])).toBe(false);
     expect(intentAllowedFor(s, 1, 'interludeBank', ['h2', 'stash', 120])).toBe(true);
   });
 
@@ -146,7 +146,7 @@ describe('Activités d’interlude en coop (audit M7/M8) — chacun mène SES h�
   });
 
   it('modale de jet d’Activité (arbitre M8) : owner = héros du pending', () => {
-    const s = interludeState({ pendingActivity: { heroId: 'h2', kind: 'revenus' } as GameState['pendingActivity'] });
+    const s = interludeState({ pendingActivity: { heroId: 'h2', kind: 'catalog', activityId: 'revenus' } as GameState['pendingActivity'] });
     expect(modalOwnerOf(s)).toBe('h2');
     expect(intentAllowedFor(s, 1, 'activityRoll')).toBe(true);
     expect(intentAllowedFor(s, 0, 'activityRoll')).toBe(false);

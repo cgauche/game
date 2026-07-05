@@ -644,7 +644,7 @@
       "matches": [
         {
           "skill": "corps-a-corps",
-          "spec": "Bagarre"
+          "spec": "bagarre"
         }
       ]
     },
@@ -1403,7 +1403,7 @@
       "matches": [
         {
           "skill": "corps-a-corps",
-          "spec": "Escrime",
+          "spec": "escrime",
           "manual": true
         }
       ]
@@ -2291,7 +2291,7 @@
         },
         {
           "skill": "corps-a-corps",
-          "spec": "Bagarre",
+          "spec": "bagarre",
           "manual": true
         }
       ]

@@ -6,15 +6,18 @@
 import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
-  traits, stars, talents, maneuvers, skills, domains,
+  traits, stars, talents, maneuvers, skills, domains, crewRoles,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
+  specLabel, refLabel,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
 import pregensJson from './pregens.json';
 import interludeEventsJson from './interludeEvents.json';
+import tavernGamesJson from './tavernGames.json';
+import seaWeatherJson from './sea-weather.json';
 import areneProject from '../scenes/arene/arene-projet.json';
 import { CHAR_KEYS } from '../engine/types';
 
@@ -235,5 +238,119 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       const pc = (d as { castBonus?: { perCondition?: string } }).castBonus?.perCondition;
       if (pc) expect(findConditionById(pc), `${d.label} → ${pc}`).toBeTruthy();
     }
+  });
+
+  // ── Phase 3 sous-commit 1 — Spés de Corps à corps/Projectiles = id de weaponGroups.json (jamais un
+  // libellé FR). skills.json/careerLevels.json/species.json/tavernGames.json/crew-roles.json/talents.json
+  // sont des catalogues PC-FACING : chaque instance DOIT résoudre. `creatures.json` mélange en revanche de
+  // VRAIES Spés de Groupe (armes tenues) et des DESCRIPTEURS narratifs d'attaque NATURELLE (griffes, souffle…
+  // — jamais posés en `weaponGroup`/`subType` par `grantNaturalWeapon`, donc jamais comparés à rien) : la
+  // liste `CREATURE_NATURAL_SPEC_WHITELIST` ci-dessous est EXHAUSTIVE (prouvée par énumération du fichier) —
+  // toute nouvelle spec hors catalogue ET hors liste casse ce test (force une triage consciente).
+  describe('Spés de Groupe d\'arme (Corps à corps/Projectiles) = id weaponGroups.json (Phase 3)', () => {
+    const weaponSkillIds = new Set(['corps-a-corps', 'projectiles']);
+    const isWeaponGroupId = (spec: string): boolean => !!findWeaponGroupById(spec) && weaponGroups.some((g) => g.id === spec);
+
+    it('skills.json : specsSource weaponGroups → specs[] = ids connus', () => {
+      for (const s of skills) {
+        if (s.specsSource !== 'weaponGroups') continue;
+        expect(weaponSkillIds.has(s.id), s.id).toBe(true);
+        for (const spec of s.specs) expect(isWeaponGroupId(spec), `${s.id}.specs → ${spec}`).toBe(true);
+      }
+    });
+
+    it('careerLevels.json + species.json : refs/specOptions de corps-a-corps/projectiles = ids connus', () => {
+      const walk = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(walk); return; }
+        if (!isObj(node)) return;
+        const refId = (node.ref as { id?: string } | undefined)?.id;
+        const refSpec = (node.ref as { spec?: string } | undefined)?.spec;
+        if (refId && weaponSkillIds.has(refId) && typeof refSpec === 'string') {
+          expect(isWeaponGroupId(refSpec), `ref{${refId}} → ${refSpec}`).toBe(true);
+        }
+        const wcId = (node.wildcard as { id?: string } | undefined)?.id;
+        if (wcId && weaponSkillIds.has(wcId) && Array.isArray(node.specOptions)) {
+          for (const so of node.specOptions as unknown[]) expect(isWeaponGroupId(so as string), `wildcard{${wcId}} → ${so}`).toBe(true);
+        }
+        for (const v of Object.values(node)) walk(v);
+      };
+      walk(careerLevels);
+      walk(species);
+    });
+
+    it('tavernGames.json : {skill,spec} de corps-a-corps/projectiles = id connu', () => {
+      for (const g of tavernGamesJson as { id: string; skill?: string; spec?: string }[]) {
+        if (g.skill && weaponSkillIds.has(g.skill) && typeof g.spec === 'string') {
+          expect(isWeaponGroupId(g.spec), `${g.id} → ${g.spec}`).toBe(true);
+        }
+      }
+    });
+
+    it('crew-roles.json : skills[].spec de corps-a-corps/projectiles = id connu', () => {
+      for (const role of crewRoles) {
+        for (const s of role.skills) {
+          if (weaponSkillIds.has(s.skillId) && typeof s.spec === 'string') {
+            expect(isWeaponGroupId(s.spec), `${role.id}.${s.skillId} → ${s.spec}`).toBe(true);
+          }
+        }
+      }
+    });
+
+    it('talents.json : test.matches[].spec de corps-a-corps/projectiles = id connu', () => {
+      for (const t of talents) {
+        for (const m of t.test?.matches ?? []) {
+          if (m.skill && weaponSkillIds.has(m.skill) && typeof m.spec === 'string') {
+            expect(isWeaponGroupId(m.spec), `${t.id} → ${m.spec}`).toBe(true);
+          }
+        }
+      }
+    });
+
+    it('sea-weather.json : skillMods[].spec (map skillId→spec) de projectiles = id connu', () => {
+      const walk = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(walk); return; }
+        if (!isObj(node)) return;
+        if (isObj(node.spec)) {
+          for (const [k, v] of Object.entries(node.spec)) {
+            if (weaponSkillIds.has(k) && typeof v === 'string') expect(isWeaponGroupId(v), `spec.${k} → ${v}`).toBe(true);
+          }
+        }
+        for (const v of Object.values(node)) walk(v);
+      };
+      walk(seaWeatherJson);
+    });
+
+    // Descripteurs d'attaque NATURELLE (bestiaire) — PAS des Spés de Groupe (`grantNaturalWeapon` ne pose
+    // jamais de `subType`, donc jamais comparés à `acceptableSpecs`). Liste EXHAUSTIVE (cf. commentaire ci-dessus).
+    // Les specs d'ARMES RÉELLES mal-orthographiées (Filet/Javelot/Couteau de lancer/Shurikens/Bâton…) ont été
+    // migrées vers leur id `weaponGroups` (lancer/entraves/ingenierie/poudre-noire/armes-d-hast) — cf. Source
+    // frenchy.bzh (Habitants & Créatures du Vieux-Monde) + précédents trappings.json (canon-ratling=ingenierie,
+    // pistolet-patte-de-griffon=poudre-noire, baton-de-combat=armes-d-hast).
+    const CREATURE_NATURAL_SPEC_WHITELIST = new Set([
+      'Bois', 'Cornes nasales', 'Crocs', 'Dents', 'Griffes', 'Griffes incurvées', 'Griffes recourbées',
+      'Griffes recouvertes de gromril', 'Griffes semblables à des racines', 'Pinces', 'Souffle', 'Toile',
+      'sans spécialisation',
+    ]);
+
+    it('creatures.json : skills[].spec de corps-a-corps/projectiles = id connu OU descripteur naturel documenté', () => {
+      for (const c of creatures) {
+        for (const s of c.skills) {
+          if (!weaponSkillIds.has(s.id) || typeof s.spec !== 'string') continue;
+          const ok = isWeaponGroupId(s.spec) || CREATURE_NATURAL_SPEC_WHITELIST.has(s.spec);
+          expect(ok, `${c.id}.${s.id} → ${JSON.stringify(s.spec)} (ni id weaponGroups, ni whitelist naturelle)`).toBe(true);
+        }
+      }
+    });
+  });
+
+  describe('specLabel/refLabel — résolution par domaine (Phase 3), FR verbatim inchangé pour le reste', () => {
+    it('refLabel résout une Spé de Groupe d\'arme (weaponGroups) via son id', () => {
+      expect(refLabel('skills', { id: 'corps-a-corps', spec: 'deux-mains' })).toBe('Corps à corps (Deux-mains)');
+      expect(specLabel('skills', 'corps-a-corps', 'poudre-noire')).toBe(findWeaponGroupById('poudre-noire')!.label);
+    });
+    it('une spec NON-weaponGroups (langue, savoir…) reste verbatim (comportement inchangé)', () => {
+      expect(specLabel('skills', 'langue', 'Reikspiel')).toBe('Reikspiel');
+      expect(refLabel('skills', { id: 'langue', spec: 'Reikspiel' })).toBe('Langue (Reikspiel)');
+    });
   });
 });

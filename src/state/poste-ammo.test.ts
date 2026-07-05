@@ -26,7 +26,7 @@ const mkPoste = (ammo: ItemInstance[], ammoUid?: string): ShipPoste =>
 const mkCrew = (id: string, items: ItemInstance[] = []): Combatant =>
   ({ id, name: id, kind: 'hero', characteristics: { ...chars },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], items,
-    skills: [{ skillId: 'projectiles', spec: 'Poudre noire', characteristic: 'CT', advances: 20 }], talents: [], weapons: [],
+    skills: [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'CT', advances: 20 }], talents: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
 const mkHull = (poste: ShipPoste): Combatant =>
   ({ id: 'ship', name: 'Frégate', kind: 'npc', bodyShape: 'vehicule', creatureId: 'cogue', crewIds: ['chef', 'aide'],

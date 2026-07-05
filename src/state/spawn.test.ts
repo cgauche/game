@@ -168,7 +168,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('skillsFromBook : ref structurée (id + value) → SkillInstance ; id inconnu du catalogue → ignoré', () => {
     const chars = { CC: 45 } as any;
-    const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'Bagarre', value: 50 }], chars);
+    const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'bagarre', value: 50 }], chars);
     expect(cc).toMatchObject({ skillId: 'corps-a-corps', characteristic: 'CC', advances: 5 });
     expect(skillsFromBook([{ id: 'competence-inexistante', value: 50 }], chars)).toEqual([]); // rien d'inventé
   });

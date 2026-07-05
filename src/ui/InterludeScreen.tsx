@@ -16,7 +16,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { testValue } from '../engine/skills';
 import { combatValue } from '../engine/combat';
 import { buildWeapon } from '../engine/items';
-import { findTalent, findTalentById, findSkillById, skillInstanceLabel, findTrappingById, qualities, refLabel } from '../data';
+import { findTalent, findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel } from '../data';
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
 import { ActiveModal } from './ActiveModal';
@@ -372,7 +372,12 @@ function ActivityPane({ icon, title, desc, blocked, prejet, cost, note, actions,
   );
 }
 
-/** Icônes des Activités CODÉES (LDB ch.23 + ADE2) — les Activités du catalogue portent la leur
+/** Résolveurs des Activités du catalogue qui ont un VOLET DÉDIÉ (UX riche : formule de Revenus,
+ *  flux 2 étapes de l'Artisanat, sélecteur de Talent, sélecteur d'artefact) ou vivent ailleurs
+ *  (`mecenat` = dans la banque). Exclus de la liste GÉNÉRIQUE du catalogue pour ne pas les doubler. */
+const CORE_RESOLVERS = new Set(['income', 'craftExtended', 'learnTalent', 'identify', 'mecenat']);
+
+/** Icônes des Activités à volet dédié — les Activités du catalogue générique portent la leur
  *  en DONNÉE (`ActivityDef.icon`). */
 const PANE_ICON = {
   revenus: 'resource/gold-purse',
@@ -410,7 +415,9 @@ function HeroCard({ hero, st, money, catalog, mecenat, canDrive, ownerName, pane
       {label}
     </button>
   );
-  const def = pane ? catalog.find((d) => d.id === pane) : undefined;
+  // Volet du catalogue GÉNÉRIQUE : les 4 activités socle (Revenus/Artisanat/Apprentissage/
+  // Identification) ont leur volet dédié ci-dessous — CatalogPane ne sert que les AUTRES.
+  const def = pane ? catalog.find((d) => d.id === pane && !CORE_RESOLVERS.has(d.resolver ?? '')) : undefined;
   return (
     <section className={`interlude-hero panel${pane ? ' active' : ''}`}>
       <h3>
@@ -434,7 +441,10 @@ function HeroCard({ hero, st, money, catalog, mecenat, canDrive, ownerName, pane
         {paneBtn('order', <><Icon id={PANE_ICON.order} size="sm" /> Commande…</>, 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure')}
         {paneBtn('bank', <><Icon id={PANE_ICON.bank} size="sm" /> Banque…</>, 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)')}
         {paneBtn('identify', <><Icon id={PANE_ICON.identify} size="sm" /> Identifier…</>, 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)')}
-        {catalog.filter((d) => d.resolver !== 'mecenat').map((d) => (
+        {/* Activités du catalogue SANS volet dédié : les 4 activités « socle » (Revenus/Artisanat/
+            Apprentissage/Identification, volets riches ci-dessus) et Mécénat (dans la banque) sont
+            exclues pour ne pas les doubler — leur résolveur les identifie en DONNÉE. */}
+        {catalog.filter((d) => !CORE_RESOLVERS.has(d.resolver ?? '')).map((d) => (
           paneBtn(d.id, <><Icon id={d.icon} size="sm" /> {d.label}…</>, d.desc ? `${mdToText(d.desc).slice(0, 160)}…` : d.label)
         ))}
       </div>
@@ -454,7 +464,7 @@ function HeroCard({ hero, st, money, catalog, mecenat, canDrive, ownerName, pane
 /** Revenus (LDB 08 l.135-144) : Test Accessible (+20) de la compétence de carrière — la formule
  *  ET le pré-jet sont lisibles AVANT d'entreprendre. */
 function RevenusPane({ hero, st, disabled }: { hero: Combatant; st: InterludeHeroState; disabled: boolean }) {
-  const revenus = useGame((s) => s.interludeRevenus);
+  const activity = useGame((s) => s.interludeActivity);
   const ev = interludeEventFor(st.eventRoll);
   const blockedCls = st.fx?.revenueBlockedClasses;
   const blocked = !!blockedCls && (blockedCls.includes('*') || blockedCls.includes(heroClass(hero)))
@@ -480,7 +490,7 @@ function RevenusPane({ hero, st, disabled }: { hero: Combatant; st: InterludeHer
           className="btn small btn-primary"
           disabled={disabled || !!blocked}
           title={blocked ?? 'Travailler une semaine (consomme l’Activité au jet)'}
-          onClick={() => revenus(hero.id)}
+          onClick={() => activity(hero.id, 'revenus')}
         >
           Entreprendre
         </button>
@@ -494,7 +504,7 @@ function RevenusPane({ hero, st, disabled }: { hero: Combatant; st: InterludeHer
 function CraftProgressPane({ hero, craft, disabled }: {
   hero: Combatant; craft: NonNullable<InterludeHeroState['craft']>; disabled: boolean;
 }) {
-  const craftRoll = useGame((s) => s.interludeCraftRoll);
+  const activity = useGame((s) => s.interludeActivity);
   const metier = hero.skills.find((k) => k.skillId === 'metier');
   const label = findTrappingById(craft.trappingId)?.label ?? craft.trappingId;
   const chip = metier
@@ -507,7 +517,7 @@ function CraftProgressPane({ hero, craft, disabled }: {
       prejet={testPending(skillNode(chip, craft.difficulty), testValue(hero, 'metier', undefined, metier?.spec), undefined, craft.difficulty)}
       note={<>Test étendu : <b>{craft.drDone}/{craft.drTarget} DR</b> (1 lancer par Activité — le travail inachevé se conserve).</>}
       actions={
-        <button className="btn small btn-primary" disabled={disabled} onClick={() => craftRoll(hero.id)}
+        <button className="btn small btn-primary" disabled={disabled} onClick={() => activity(hero.id, 'craft')}
           title={`Avancer l'ouvrage — ${craft.drDone}/${craft.drTarget} DR (${DIFFICULTY_LABELS[craft.difficulty]})`}>
           Entreprendre
         </button>
@@ -631,7 +641,7 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
 /** Apprentissage particulier (ch.23 l.58-63) : Talent hors carrière — Test Difficile (−20) sur la
  *  Caractéristique du Maxi (+10 par tentative ratée) ; PX et argent perdus MÊME sur un échec. */
 function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled: boolean; fails?: Record<string, number>; money: Money }) {
-  const learn = useGame((s) => s.interludeLearn);
+  const activity = useGame((s) => s.interludeActivity);
   const options = useMemo(() => learnableTalents(hero), [hero]);
   const [label, setLabel] = useState('');
   const [search, setSearch] = useState('');
@@ -669,7 +679,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
           className="btn small btn-primary"
           disabled={disabled || !sel || !xpOk || !purseOk}
           title={!xpOk && sel ? `PX insuffisants (${sel.xpCost} requis)` : !purseOk ? 'La bourse ne couvre même pas le tuteur le moins cher' : 'Trouver un tuteur et tenter l’apprentissage'}
-          onClick={() => sel && learn(hero.id, sel.id)}
+          onClick={() => sel && activity(hero.id, 'learn', { talentId: sel.id })}
         >
           Entreprendre
         </button>
@@ -789,7 +799,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
 /** Identifier un artefact (ADE2 ch.4) : choisir un objet NON identifié du sac — une semaine
  *  d'étude par tentative, Test de Savoir (Magie) Intermédiaire (+0). */
 function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }) {
-  const identify = useGame((s) => s.interludeIdentify);
+  const activity = useGame((s) => s.interludeActivity);
   const items = (hero.items ?? []).filter((i) => i.identified === false);
   const [uid, setUid] = useState(items[0]?.uid ?? '');
   const savoir = hero.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'Magie' && k.advances >= 1);
@@ -812,7 +822,7 @@ function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }
           className="btn small btn-primary"
           disabled={disabled || !!blocked || !uid}
           title={blocked ?? 'Installer l’étude au laboratoire (consomme l’Activité au jet)'}
-          onClick={() => uid && identify(hero.id, uid)}
+          onClick={() => uid && activity(hero.id, 'identify', { itemUid: uid })}
         >
           Entreprendre
         </button>

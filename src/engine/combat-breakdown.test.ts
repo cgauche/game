@@ -54,7 +54,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
 });
 
 describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
-  const parrySpec = { skillId: 'corps-a-corps', spec: 'Parade', characteristic: 'CC', advances: 0 } as any;
+  const parrySpec = { skillId: 'corps-a-corps', spec: 'parade', characteristic: 'CC', advances: 0 } as any;
   const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }], hand: 'off', hands: 1 };
   it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
     const mods = defenseModifiers(mk({ skills: [parrySpec] }), 'parade', 0, offShield);

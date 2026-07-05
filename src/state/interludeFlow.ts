@@ -153,7 +153,8 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
  *  Convalescence ADE2, Activités d'Altdorf ACE Annexe I). */
 export interface PendingActivity extends PendingBase {
   heroId: string;
-  kind: 'revenus' | 'craft' | 'learn' | 'identify' | 'catalog';
+  /** TOUTES les Activités à jet passent par le CATALOGUE data-driven (`activities.json` + `resolver`). */
+  kind: 'catalog';
   label: string;
   skillLabel: string;
   skillValue: number;
@@ -207,27 +208,6 @@ export function incomeSkillOf(h: Combatant): string {
 
 const heroState = (s: GameState, heroId: string) => s.interlude?.perHero[heroId];
 
-/** Ouvre la modale Revenus (LDB 08 l.135 : Test Accessible (+20) de la compétence de carrière). */
-export function openRevenus(get: Get, set: Set, heroId: string): void {
-  const st = heroState(get(), heroId);
-  const h = get().party.find((x) => x.id === heroId);
-  if (!st || !h || st.left <= 0) return;
-  const cls = heroClass(h);
-  const blocked = st.fx?.revenueBlockedClasses;
-  if (blocked && (blocked.includes('*') || blocked.includes(cls))) {
-    get().log(`${h.name} ne peut pas entreprendre Revenus (événement : ${interludeEventFor(st.eventRoll).label}).`);
-    return;
-  }
-  const skill = incomeSkillOf(h);
-  set({
-    pendingActivity: {
-      heroId, kind: 'revenus', label: 'Revenus — une semaine de travail',
-      skillLabel: refLabel('skills', { id: skill }), skillValue: testValue(h, skill), difficulty: 'accessible',
-      roll: null, target: 0, sl: 0, success: false,
-    },
-  });
-}
-
 /** Engage un Artisanat (ch.23 l.66) : exige une Compétence Métier (≥1 avance) ; les matériaux
  *  coûtent ¼ du prix listé, payés AVANT (« devront être achetées avant le début de l'Activité »). */
 /** Libellé d'affichage d'un trapping de catalogue par id (repli sur l'id). */
@@ -270,86 +250,6 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
   get().log(`${h.name} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${t.label} (${target.dr} DR à atteindre, ${skillInstanceLabel(metier)}).`);
 }
 
-/** Ouvre la modale du LANCER d'Artisanat — « Chaque Activité […] vous permet d'effectuer un
- *  lancer pour votre Test étendu » (ch.23 l.92). */
-export function openCraftRoll(get: Get, set: Set, heroId: string): void {
-  const st = heroState(get(), heroId);
-  const h = get().party.find((x) => x.id === heroId);
-  if (!st?.craft || !h || st.left <= 0) return;
-  const metier = h.skills.find((k) => k.skillId === 'metier');
-  const metierLabel = metier ? skillInstanceLabel(metier) : 'Métier';
-  set({
-    pendingActivity: {
-      heroId, kind: 'craft', label: `Artisanat — ${trappingLabelOf(st.craft.trappingId)}`,
-      skillLabel: metierLabel, skillValue: testValue(h, 'metier', undefined, metier?.spec), difficulty: st.craft.difficulty,
-      roll: null, target: 0, sl: 0, success: false,
-      drBefore: st.craft.drDone, drTarget: st.craft.drTarget,
-    },
-  });
-}
-
-/** Apprentissage particulier (ch.23 l.58-63) : Talent HORS carrière — « le prix pour apprendre le
- *  Talent est de 2D10 pistoles d'argent par 100PX » + le coût PX du Talent ; « Tentez un Test
- *  Difficile (-20) en utilisant la Caractéristique […] la plus pertinente » (V1 : celle du Maxi du
- *  Talent, sinon Int) ; « gagnez un modificateur de +10 pour chaque tentative ratée ». PX et
- *  argent sont dépensés MÊME sur un échec (« dépensant en vain des PX et de l'argent »). */
-export function openLearn(get: Get, set: Set, heroId: string, talentId: string): void {
-  const st = heroState(get(), heroId);
-  const h = get().party.find((x) => x.id === heroId);
-  if (!st || !h || st.left <= 0) return;
-  const t = findTalentById(talentId);
-  if (!t) {
-    get().log(`Talent inconnu : « ${talentId} ».`);
-    return;
-  }
-  const talentLabel = refLabel('talents', { id: t.id }); // affichage seul (multilangue)
-  const xpCost = talentCost(h.talents.find((k) => k.talentId === t.id)?.times ?? 0);
-  if ((h.xp ?? 0) < xpCost) {
-    get().log(`${h.name} : PX insuffisants (${xpCost} requis pour ${talentLabel}).`);
-    return;
-  }
-  const tutorBrass = toBrass(apprenticeshipTutorCost(xpCost, battleRng()));
-  if (toBrass(get().money) < tutorBrass) {
-    get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
-    return;
-  }
-  const ck: CharKey = t.max && typeof t.max !== 'number' ? t.max.bonusOf : 'Int'; // Maxi « Bonus de X » → carac (structuré)
-  const fails = st.learnFails?.[t.id] ?? 0; // clé = id stable du Talent
-  set({
-    pendingActivity: {
-      heroId, kind: 'learn', label: `Apprentissage particulier — ${talentLabel}`,
-      skillLabel: `${CHAR_LABELS[ck]}${fails ? ` (+${fails * 10} d'acharnement)` : ''}`,
-      skillValue: effectiveChar(h, ck) + 10 * fails, difficulty: 'difficile',
-      roll: null, target: 0, sl: 0, success: false,
-      talent: t.id, xpCost, tutorBrass,
-    },
-  });
-}
-
-/** Identifier un artefact magique (ADE2 ch.4 l.46-47) : sans le Talent Détection d'artefact, « la
- *  tâche est plus ardue et nécessite généralement une semaine par tentative, souvent dans un
- *  laboratoire, une bibliothèque bien fournie… » — Test de **Savoir (Magie) Intermédiaire (+0)**.
- *  Savoir est une Compétence AVANCÉE (« Pour d'autres sorciers ») : il faut l'avoir acquise. */
-export function openIdentify(get: Get, set: Set, heroId: string, itemUid: string): void {
-  const st = heroState(get(), heroId);
-  const h = get().party.find((x) => x.id === heroId);
-  if (!st || !h || st.left <= 0) return;
-  const item = (h.items ?? []).find((i) => i.uid === itemUid);
-  if (!item || item.identified !== false) return; // rien à identifier
-  const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'Magie' && k.advances >= 1);
-  if (!savoir) {
-    get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE2 : la voie des sorciers).`);
-    return;
-  }
-  set({
-    pendingActivity: {
-      heroId, kind: 'identify', label: `Identifier un artefact — ${item.name}`,
-      skillLabel: skillInstanceLabel(savoir), skillValue: testValue(h, savoir.skillId, undefined, savoir.spec), difficulty: 'intermediaire',
-      roll: null, target: 0, sl: 0, success: false, itemUid,
-    },
-  });
-}
-
 // ── Catalogue d'Activités data-driven (`activities.json`, contexte 'interlude') ────────────────
 
 /** Lieu courant sur la carte du monde : la place dont la scène EST la scène courante (« Être dans
@@ -366,11 +266,14 @@ export function interludeCatalog(s: Pick<GameState, 'scene' | 'worldMap'>): Acti
   return activitiesFor('interlude').filter((d) => activityAvailableAt(d, place));
 }
 
-/** Ouvre la modale d'une Activité du CATALOGUE (Convalescence ADE2, Activités d'Altdorf ACE Annexe I).
- *  Le Test vient de la DONNÉE : compétences « au choix » → la MEILLEURE de l'acteur ; `masterWeapon`
- *  IMPOSE la compétence d'après l'arme visée (« selon la spécialisation de l'arme », ACE p.219).
- *  Cibles éventuelles : objet (`itemUid`), sort (`spellId` — achat immédiat), dépôt (`depositIndex`). */
-export function openCatalogActivity(get: Get, set: Set, heroId: string, activityId: string, opts: { itemUid?: string; spellId?: string; depositIndex?: number } = {}): void {
+/** Ouvre la modale d'une Activité du CATALOGUE (TOUTES les Activités à jet d'interlude passent ici).
+ *  Le Test et ses paramètres viennent de la DONNÉE, dérivés PAR résolveur : compétences « au choix »
+ *  → la MEILLEURE de l'acteur ; `masterWeapon` IMPOSE la compétence d'après l'arme visée (« selon la
+ *  spécialisation de l'arme », ACE p.219) ; `income` la compétence de carrière ; `craftExtended` le
+ *  Métier (+ DR du Test étendu en cours) ; `learnTalent` la Caractéristique/Compétence du Talent
+ *  (+10 par tentative ratée) ; `identify` Savoir (Magie). Cibles éventuelles : objet (`itemUid`),
+ *  sort (`spellId` — achat immédiat), dépôt (`depositIndex`), Talent (`talentId`). */
+export function openCatalogActivity(get: Get, set: Set, heroId: string, activityId: string, opts: { itemUid?: string; spellId?: string; depositIndex?: number; talentId?: string } = {}): void {
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   const def = activityById(activityId);
@@ -381,7 +284,58 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
   }
   let skillLabel: string;
   let skillValue: number;
-  if (def.resolver === 'masterWeapon') {
+  // Champs de pending dérivés par résolveur (Test étendu, Talent, item…) — annexés à la fin.
+  const extra: Partial<PendingActivity> = {};
+  if (def.resolver === 'income') {
+    // Revenus (« Gagner de l'argent grâce au Statut », LDB 08 l.107-118) : Test de la Compétence de
+    // Carrière « en italique du premier Niveau » (approximée par `incomeSkillOf`). Gate : événement
+    // qui bloque les Revenus pour la Classe du héros (Fausse monnaie & co, LDB 22).
+    const blocked = st.fx?.revenueBlockedClasses;
+    if (blocked && (blocked.includes('*') || blocked.includes(heroClass(h)))) {
+      get().log(`${h.name} ne peut pas entreprendre Revenus (événement : ${interludeEventFor(st.eventRoll).label}).`);
+      return;
+    }
+    const skill = incomeSkillOf(h);
+    skillValue = testValue(h, skill);
+    skillLabel = refLabel('skills', { id: skill });
+  } else if (def.resolver === 'craftExtended') {
+    // Artisanat (ch.23 l.74-92) : Test ÉTENDU de Métier, DR cumulé par Activité — l'ouvrage doit avoir
+    // été engagé (`craftStart` : matériaux ¼ prix + `st.craft`). La Difficulté et la cible de DR
+    // viennent de l'ouvrage en cours.
+    if (!st.craft) return;
+    const metier = h.skills.find((k) => k.skillId === 'metier');
+    skillValue = testValue(h, 'metier', undefined, metier?.spec);
+    skillLabel = metier ? skillInstanceLabel(metier) : refLabel('skills', { id: 'metier' });
+    extra.difficulty = st.craft.difficulty;
+    extra.drBefore = st.craft.drDone;
+    extra.drTarget = st.craft.drTarget;
+    extra.label = `${def.label} — ${trappingLabelOf(st.craft.trappingId)}`;
+  } else if (def.resolver === 'learnTalent') {
+    // Apprentissage particulier (ch.23 l.66-72) : Talent HORS carrière. Test « Difficile (-20) en
+    // utilisant la Caractéristique ou la Compétence la plus pertinente » (sans MJ : la Caractéristique
+    // du Maxi du Talent, sinon Int) « +10 pour chaque tentative ratée ». Prix du tuteur : « 2D10
+    // pistoles d'argent par 100PX » ; PX + argent gatés AVANT (dépensés MÊME sur échec, cf. resolver).
+    const t = opts.talentId ? findTalentById(opts.talentId) : undefined;
+    if (!t) { get().log(`Talent inconnu : « ${opts.talentId ?? ''} ».`); return; }
+    const xpCost = talentCost(h.talents.find((k) => k.talentId === t.id)?.times ?? 0);
+    if ((h.xp ?? 0) < xpCost) {
+      get().log(`${h.name} : PX insuffisants (${xpCost} requis pour ${refLabel('talents', { id: t.id })}).`);
+      return;
+    }
+    const tutorBrass = toBrass(apprenticeshipTutorCost(xpCost, battleRng()));
+    if (toBrass(get().money) < tutorBrass) {
+      get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
+      return;
+    }
+    const ck: CharKey = t.max && typeof t.max !== 'number' ? t.max.bonusOf : 'Int'; // Maxi « Bonus de X » → carac
+    const fails = st.learnFails?.[t.id] ?? 0; // clé = id stable du Talent
+    skillValue = effectiveChar(h, ck) + 10 * fails;
+    skillLabel = `${CHAR_LABELS[ck]}${fails ? ` (+${fails * 10} d'acharnement)` : ''}`;
+    extra.talent = t.id;
+    extra.xpCost = xpCost;
+    extra.tutorBrass = tutorBrass;
+    extra.label = `${def.label} — ${refLabel('talents', { id: t.id })}`;
+  } else if (def.resolver === 'masterWeapon') {
     const item = (h.items ?? []).find((i) => i.uid === opts.itemUid);
     if (!item?.requiresMastery || !item.trappingId || (h.masteredWeapons ?? []).includes(item.trappingId)) return;
     // Compétence IMPOSÉE par l'arme visée : valeur de combat RAW avec cette arme (combatValue —
@@ -390,6 +344,19 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
     skillValue = combatValue(h, kind, buildWeapon({ name: item.name, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
     skillLabel = refLabel('skills', { id: kind === 'melee' ? 'corps-a-corps' : 'projectiles' });
+  } else if (def.resolver === 'identify') {
+    // Identifier un artefact (ADE2 l.41) : « Pour d'autres sorciers » (sans le Talent Détection
+    // d'artefact) → Test de Savoir (Magie) Intermédiaire (+0). Savoir est AVANCÉE : il faut l'avoir.
+    const item = (h.items ?? []).find((i) => i.uid === opts.itemUid);
+    if (!item || item.identified !== false) return; // rien à identifier
+    const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'Magie' && k.advances >= 1);
+    if (!savoir) {
+      get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE2 : la voie des sorciers).`);
+      return;
+    }
+    skillValue = testValue(h, savoir.skillId, undefined, savoir.spec);
+    skillLabel = skillInstanceLabel(savoir);
+    extra.label = `${def.label} — ${item.name}`;
   } else {
     // « Au choix » parmi les compétences déclarées : la MEILLEURE de l'acteur (convention partagée
     // avec resolveTravelActivity).
@@ -418,6 +385,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
       ...(opts.itemUid ? { itemUid: opts.itemUid } : {}),
       ...(opts.spellId ? { spellId: opts.spellId } : {}),
       ...(opts.depositIndex != null ? { depositIndex: opts.depositIndex } : {}),
+      ...extra,
     },
   });
 }
@@ -435,48 +403,170 @@ function mecenatPayout(get: Get, set: Set, h: Combatant, depositIndex: number, p
     : `${h.name} perd son investissement de mécène (${formatMoney(fromBrass(dep.brass))}).`];
 }
 
-/** Dispatch des résolveurs BESPOKE d'issue d'Activité (bandes `resolver`) — chacun RÉUTILISE une
- *  logique existante : Colère des dieux = `applyMiscast` (d100 + 10/Péché, expiation −1, LDB 40) ;
- *  identification = modèle `identified`/`magicKnown` (ADE2) ; achat de sort = `buySpell` avec remise. */
-function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingActivity, h: Combatant): string[] {
+/** Issue d'un résolveur d'Activité : les lignes de journal + un `patch` de l'état d'interlude du
+ *  héros (deltas NON exprimables en `GameOp` : DR du Test étendu, crédit différé des Revenus,
+ *  compteur d'acharnement — fusionnés dans l'écriture finale de `confirmActivity`). */
+interface ResolverResult { lines: string[]; patch?: Partial<InterludeHeroState> }
+
+/** Dispatch des résolveurs BESPOKE d'issue d'Activité (`ActivityDef.resolver` + bandes `resolver`) —
+ *  chacun RÉUTILISE une logique PURE existante et implémente la règle RAW vérifiée. Le `patch` porte
+ *  les deltas d'état d'interlude (le `set` final est fait par `confirmActivity`). */
+function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingActivity, h: Combatant, st: InterludeHeroState): ResolverResult {
   switch (resolver) {
+    case 'income': {
+      // Revenus = « Gagner de l'argent grâce au Statut » (LDB 08 l.110-118) : « Sur un succès, vous
+      // gagnez l'argent indiqué […]. Sur un Échec, vous ne gagnez que la moitié de la somme. Sur un
+      // Échec Stupéfiant (-6), […] vous n'avez rien gagné. » Le crédit est DIFFÉRÉ (l.191 : « remis une
+      // fois que vous avez disposé de l'argent de votre dernière aventure ») → `revenueBrass`, jamais
+      // `money`. Revenus maintient aussi le Statut des Niveaux 3-4 (l.193 → `didRevenus`).
+      const outcome = pa.success ? 'success' : isAstoundingFailure(pa.success, pa.sl) ? 'astoundingFail' : 'fail';
+      const { tier, standing } = heroStatus(h);
+      let brass = toBrass(statusIncome(tier, standing, battleRng(), outcome));
+      const lines: string[] = [];
+      // Événements : ±% sur les Revenus (Fausse monnaie −20, Profits +50 pour une Classe…, LDB 22).
+      if (st.fx?.revenuePct && (!st.fx.revenueClasses || st.fx.revenueClasses.includes(heroClass(h)))) {
+        brass = Math.max(0, Math.floor((brass * (100 + st.fx.revenuePct)) / 100));
+        lines.push(`Événement (${interludeEventFor(st.eventRoll).label}) : Revenus ${st.fx.revenuePct > 0 ? '+' : ''}${st.fx.revenuePct} %.`);
+      }
+      lines.push(`${h.name} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
+      return { lines, patch: { didRevenus: true, revenueBrass: st.revenueBrass + brass } };
+    }
+    case 'craftExtended': {
+      // Artisanat = Test ÉTENDU de Métier (ch.23 l.78-92) : « les DR obtenus à chaque Round sont
+      // additionnés jusqu'à atteindre une valeur cible » (LDB 12 l.174), 1 lancer par Activité —
+      // qui progresse (ou régresse) MÊME sur échec. À l'achèvement, l'objet est créé avec ses
+      // Atouts/Défauts choisis. Le travail inachevé est conservé (l.102) via `st.craft`.
+      if (!st.craft) return { lines: [] };
+      const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, st.craft.drTarget);
+      if (done) {
+        const it = itemFromTrappingById(st.craft.trappingId);
+        if (it) {
+          it.qualities = [...(it.qualities ?? []), ...st.craft.atouts.map((id) => ({ id })), ...st.craft.defauts.map((id) => ({ id }))]; // ids → QualityInstance
+          h.items = [...(h.items ?? []), it];
+          recomputeLoadout(h);
+        }
+        const atL = st.craft.atouts.map(craftQualLabel), dfL = st.craft.defauts.map(craftQualLabel);
+        return {
+          lines: [`${h.name} achève son ouvrage : ${trappingLabelOf(st.craft.trappingId)}${atL.length ? ` (${atL.join(', ')})` : ''}${dfL.length ? ` [${dfL.join(', ')}]` : ''} !`],
+          patch: { craft: undefined },
+        };
+      }
+      return {
+        lines: [`${h.name} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`],
+        patch: { craft: { ...st.craft, drDone } },
+      };
+    }
+    case 'learnTalent': {
+      // Apprentissage particulier (ch.23 l.66-72) : « Sur un succès, vous avez appris le Talent. Sinon,
+      // vous avez échoué […] et gagnez un modificateur de +10 pour chaque tentative ratée » ; « dépensant
+      // en vain des PX et de l'argent » → argent du tuteur ET PX consommés MÊME sur échec.
+      const talentId = pa.talent;
+      if (!talentId) return { lines: [] };
+      const talentLabel = refLabel('talents', { id: talentId });
+      set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.tutorBrass ?? 0))) }); // tuteur payé dans TOUS les cas
+      if (pa.success) {
+        const fortuneBefore = fortuneMax(h);
+        const resolveBefore = resolveMax(h);
+        const r = engineBuyTalent(h, talentLabel); // débite les PX + acquiert le Talent
+        if (r.ok) {
+          applyTalentAcquisition(h, talentId);
+          h.wounds.max = heroMaxWounds(h); // Dur à cuire & co
+          h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
+          h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Chanceux
+          h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Obstiné
+          return { lines: [`${h.name} apprend ${talentLabel} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`] };
+        }
+        return { lines: [] };
+      }
+      h.xp = Math.max(0, (h.xp ?? 0) - (pa.xpCost ?? 0)); // PX perdus en vain (échec)
+      const learnFails = { ...(st.learnFails ?? {}) };
+      learnFails[talentId] = (learnFails[talentId] ?? 0) + 1; // clé = id stable du Talent, +10 à la reprise
+      return {
+        lines: [`${h.name} échoue à apprendre ${talentLabel} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`],
+        patch: { learnFails },
+      };
+    }
+    case 'identify': {
+      // Identifier un artefact magique (ADE2 l.43-52) — table de DR complète, mappée sur le modèle
+      // `identified`/`magicKnown`/`suspectedQualities` :
+      //   +6 ou plus (Stupéfiant) : identifie parfaitement + TOUTES ses Particularités.
+      //   +4 à +5 (Impressionnant) : identifie l'objet et sait s'il a des Particularités.
+      //   +2 à +3 (Succès) : identifie l'objet, voit les Particularités visibles (pas les cachées).
+      //   0 à +1 (Succès Minime) : identifie l'objet ET découvre UNE Particularité cachée.
+      //   0 à -1 (Échec Minime) : incapable d'identifier, conscient de l'échec.
+      //   -2 à -3 (Échec) : confond l'artefact avec un type similaire.
+      //   -4 à -5 (Échec Impressionnant) : soupçonne UNE Particularité qu'il n'a pas.
+      //   -6 ou moins (Échec Stupéfiant) : soupçonne AU MOINS DEUX Particularités qu'il n'a pas.
+      const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
+      if (!it) return { lines: [] };
+      if (pa.success) {
+        it.identified = true; // « le Personnage est capable d'identifier l'objet » (tout succès l'identifie)
+        if (isImpressiveSuccess(pa.success, pa.sl)) {
+          // +4 ou plus : sait s'il a des Particularités — le Stupéfiant (+6) les révèle TOUTES.
+          it.magicKnown = true;
+          delete it.suspectedQualities;
+          return { lines: [isAstoundingSuccess(pa.success, pa.sl)
+            ? `${h.name} identifie parfaitement ${it.name} : TOUTES ses Particularités sont révélées (Succès Stupéfiant).`
+            : `${h.name} identifie ${it.name} et sait s'il possède des Particularités.`] };
+        }
+        if (pa.sl <= 1) {
+          // 0 à +1 (Succès Minime) : identifie l'objet ET découvre UNE Particularité cachée (RAW).
+          it.magicKnown = true;
+          delete it.suspectedQualities;
+          return { lines: [`${h.name} identifie ${it.name} et découvre une Particularité cachée (Succès Minime).`] };
+        }
+        // +2 à +3 : identifie l'objet, connaît les Particularités visibles, pas les cachées.
+        return { lines: [`${h.name} identifie ${it.name} : il en connaît les Particularités visibles, mais pas les cachées.`] };
+      }
+      // Échec : les rangs Impressionnant/Stupéfiant ancrent 1 / au moins 2 FAUSSES Particularités.
+      if (isImpressiveFailure(pa.success, pa.sl)) {
+        const fakes = falseQualities(it, isAstoundingFailure(pa.success, pa.sl) ? 2 : 1);
+        if (fakes.length) {
+          it.suspectedQualities = [...new Set([...(it.suspectedQualities ?? []), ...fakes])];
+          return { lines: [`${h.name} confond ${it.name} avec un objet similaire et le croit doté de « ${fakes.join(' » et « ')} » — certitude(s) erronée(s).`] };
+        }
+        return { lines: [`${h.name} confond ${it.name} avec un objet similaire — la semaine est perdue.`] };
+      }
+      // 0 à -1 (Échec Minime) : incapable d'identifier, mais conscient de son échec (l'étude peut reprendre).
+      return { lines: [`${h.name} n'identifie pas ${it.name} cette semaine — il en est conscient (l'étude peut reprendre).`] };
+    }
     case 'wrathOfTheGods':
       // « réalisez un Test sur le Tableau de la Colère des Dieux […] à la place » (ACE p.219) —
       // point d'entrée hors-Prière sur la table existante (engine/miscast).
-      return applyMiscast(get, set, h, 'colere');
+      return { lines: applyMiscast(get, set, h, 'colere') };
     case 'masterWeapon': {
       const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
-      if (!it?.trappingId) return [];
+      if (!it?.trappingId) return { lines: [] };
       h.masteredWeapons = [...new Set([...(h.masteredWeapons ?? []), it.trappingId])];
-      return [`${h.name} a maîtrisé ${it.name} (ACE p.219).`];
+      return { lines: [`${h.name} a maîtrisé ${it.name} (ACE p.219).`] };
     }
     case 'identifyByResearch': {
       // ACE p.219 : ≥ +4 DR = étude en profondeur (plein potentiel + dangers) ; succès ≤ +3 =
       // fonction principale — mappés sur le modèle EXISTANT identified/magicKnown (comme l'ADE2).
       const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
-      if (!it) return [];
+      if (!it) return { lines: [] };
       if (pa.sl >= 4) {
         it.identified = true;
         it.magicKnown = true;
         delete it.suspectedQualities;
-        return [`${h.name} étudie ${it.name} en profondeur : Particularités et dangers révélés.`];
+        return { lines: [`${h.name} étudie ${it.name} en profondeur : Particularités et dangers révélés.`] };
       }
       if (pa.success) {
         it.magicKnown = true;
-        return [`${h.name} cerne la fonction principale de ${it.name} et son activation.`];
+        return { lines: [`${h.name} cerne la fonction principale de ${it.name} et son activation.`] };
       }
-      return [];
+      return { lines: [] };
     }
     case 'memorizeDiscount': {
-      if (!pa.spellId) return [];
+      if (!pa.spellId) return { lines: [] };
       // « Chaque +DR vous permet de mémoriser un sort pour 100PX de moins […] vous devez acheter le
       // sort immédiatement » (ACE p.220) : remise = DR × 100, appliquée à CET achat seul par buySpell.
       const r = partyBuySpell(get, set, h.id, pa.spellId, { discountXp: Math.max(0, pa.sl) * 100 });
-      if (r.ok && r.chaos) return gainCorruption(get, set, h, 1); // sort du Chaos : +1 Corruption (LDB 51)
-      return [];
+      if (r.ok && r.chaos) return { lines: gainCorruption(get, set, h, 1) }; // sort du Chaos : +1 Corruption (LDB 51)
+      return { lines: [] };
     }
     default:
-      return [];
+      return { lines: [] };
   }
 }
 
@@ -525,137 +615,70 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
   get().log(`${h.name} passe commande : ${t.label} (${formatMoney(fromBrass(price))}) — livraison après la prochaine aventure.`);
 }
 
-/** Applique le jet d'Activité confirmé (consomme l'Activité). */
+/** Applique le jet d'Activité confirmé (consomme l'Activité). CHEMIN UNIQUE data-driven :
+ *  l'issue vient de la DONNÉE de l'`ActivityDef` — bandes `outcomes`/`onSuccess` (GameOp + `resolver`
+ *  de bande) OU `resolver` DIRECT (Revenus/Artisanat/Apprentissage/Identification, sans table). Les
+ *  `patch` des résolveurs sont ACCUMULÉS puis fusionnés dans l'unique écriture finale. */
 export function confirmActivity(get: Get, set: Set): void {
   const pa = get().pendingActivity;
-  if (!pa || pa.roll == null) return;
+  if (!pa || pa.roll == null || !pa.activityId) return;
   const itl = get().interlude;
   const st = itl?.perHero[pa.heroId];
   const h = get().party.find((x) => x.id === pa.heroId);
+  const def = activityById(pa.activityId);
   set({ pendingActivity: null });
-  if (!itl || !st || !h || st.left <= 0) return;
+  if (!itl || !st || !h || st.left <= 0 || !def) return;
   const lines: string[] = [];
-  if (pa.kind === 'revenus') {
-    // LDB 08 l.135 : succès = somme pleine ; échec = moitié ; Échec Stupéfiant (−6) = rien.
-    const outcome = pa.success ? 'success' : isAstoundingFailure(pa.success, pa.sl) ? 'astoundingFail' : 'fail';
-    const { tier, standing } = heroStatus(h);
-    let brass = toBrass(statusIncome(tier, standing, battleRng(), outcome));
-    // Événements : ±% sur les Revenus (Fausse monnaie −20, Profits +50 pour une Classe…).
-    if (st.fx?.revenuePct && (!st.fx.revenueClasses || st.fx.revenueClasses.includes(heroClass(h)))) {
-      brass = Math.max(0, Math.floor((brass * (100 + st.fx.revenuePct)) / 100));
-      lines.push(`Événement (${interludeEventFor(st.eventRoll).label}) : Revenus ${st.fx.revenuePct > 0 ? '+' : ''}${st.fx.revenuePct} %.`);
-    }
-    itl.perHero[pa.heroId] = { ...st, left: st.left - 1, didRevenus: true, revenueBrass: st.revenueBrass + brass };
-    lines.push(`${h.name} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
-  } else if (pa.kind === 'learn' && pa.talent) {
-    // RAW ch.23 l.59-63 : argent du tuteur et PX dépensés MÊME sur un échec (« en vain »).
-    // `pa.talent` = id STABLE du Talent ; le libellé n'est que pour l'affichage (multilangue).
-    const talentId = pa.talent;
-    const talentLabel = refLabel('talents', { id: talentId });
-    set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.tutorBrass ?? 0))) });
-    if (pa.success) {
-      const fortuneBefore = fortuneMax(h);
-      const resolveBefore = resolveMax(h);
-      const r = engineBuyTalent(h, talentLabel); // débite les PX + acquiert le Talent
-      if (r.ok) {
-        applyTalentAcquisition(h, talentId);
-        h.wounds.max = heroMaxWounds(h); // Dur à cuire & co
-        h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
-        h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Chanceux
-        h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Obstiné
-        lines.push(`${h.name} apprend ${talentLabel} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`);
+  const closeOps: GameOp[] = [];
+  let patch: Partial<InterludeHeroState> = {};
+  // Maladresse d'Activité (LDB 12 : double raté) — porte les bandes `on:'fumble'` (Pénitence :
+  // Colère des dieux « à la place », ACE p.219).
+  const fumble = isFumble(pa.roll, pa.success);
+  // Résolveur DIRECT (pas de table d'issues) : Revenus/Artisanat/Apprentissage/Identification —
+  // ils agissent/consomment MÊME sur échec (RAW). Les résolveurs de BANDE restent dans la boucle.
+  if (def.resolver && !def.outcomes?.length && !def.onSuccess?.length) {
+    const r = runActivityResolver(get, set, def.resolver, pa, h, st);
+    lines.push(...r.lines);
+    if (r.patch) patch = { ...patch, ...r.patch };
+  } else {
+    // Défs à TABLE d'issues (bandes de DR) ou binaires (`onSuccess`, ex. Convalescence) — même chemin.
+    const bands = def.outcomes?.length
+      ? matchOutcomes(def, { success: pa.success, sl: pa.sl, fumble })
+      : pa.success && def.onSuccess?.length ? [{ ops: def.onSuccess }] : [];
+    if (fumble && def.outcomes?.some((b) => b.on === 'fumble')) lines.push(`${h.name} — MALADRESSE (🎲 ${pa.roll}) !`);
+    for (const band of bands) {
+      if (band.note) lines.push(band.note); // résultat VERBATIM de la table source
+      // Les ÉTATS d'issue tombent à la CLÔTURE de l'interlude (règle de CLASSE du contexte : les
+      // semaines ne s'écoulent qu'à la fermeture, et le repos de clôture dissiperait un État posé
+      // maintenant — « vous subissez 1 État Exténué le premier jour de votre prochaine aventure »,
+      // ACE p.219). Le reste (Péché, Exposition, soins…) s'applique tout de suite.
+      const immediate = (band.ops ?? []).filter((o) => o.op !== 'condition');
+      closeOps.push(...(band.ops ?? []).filter((o) => o.op === 'condition'));
+      if (immediate.length) {
+        lines.push(...applyOps(h, immediate, {
+          rng: battleRng(), label: def.label, now: get().gameTime,
+          onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
+          onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
+            set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'Corruption' } });
+            return [`${h.name} — Test d'Exposition ${level} à la Corruption à réaliser.`];
+          },
+        }));
       }
-      itl.perHero[pa.heroId] = { ...st, left: st.left - 1 };
-    } else {
-      h.xp = Math.max(0, (h.xp ?? 0) - (pa.xpCost ?? 0)); // PX perdus en vain
-      const learnFails = { ...(st.learnFails ?? {}) };
-      learnFails[talentId] = (learnFails[talentId] ?? 0) + 1; // clé = id stable du Talent
-      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, learnFails };
-      lines.push(`${h.name} échoue à apprendre ${talentLabel} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`);
-    }
-  } else if (pa.kind === 'identify' && pa.itemUid) {
-    // ADE2 ch.4 — tableau d'identification, mappé sur notre modèle (identified/magicKnown/soupçons),
-    // de façon MONOTONE : les rangs ≥ +4 « savent » les Particularités, ≤ +3 ne voient pas les
-    // cachées (la ligne 0/+1 « découvre une Particularité cachée » du tableau FR, incohérente avec
-    // +2/+3, est lue comme un artefact de conversion). Échec ≤ −4 : fausses certitudes.
-    const item = (h.items ?? []).find((i) => i.uid === pa.itemUid);
-    if (item) {
-      if (isImpressiveSuccess(pa.success, pa.sl)) {
-        item.identified = true;
-        item.magicKnown = true;
-        delete item.suspectedQualities;
-        lines.push(isAstoundingSuccess(pa.success, pa.sl)
-          ? `${h.name} identifie parfaitement ${item.name} : TOUTES ses Particularités sont révélées (Succès Stupéfiant).`
-          : `${h.name} identifie ${item.name} : ses Particularités sont révélées.`);
-      } else if (pa.success) {
-        item.magicKnown = true;
-        lines.push(`${h.name} cerne la nature magique de ${item.name} sans en percer les règles (DR ${pa.sl}) — l'étude peut reprendre une autre semaine.`);
-      } else if (isImpressiveFailure(pa.success, pa.sl)) {
-        const fakes = falseQualities(item, isAstoundingFailure(pa.success, pa.sl) ? 2 : 1);
-        if (fakes.length) {
-          item.suspectedQualities = [...new Set([...(item.suspectedQualities ?? []), ...fakes])];
-          lines.push(`${h.name} se MÉPREND sur ${item.name} : il jurerait que l'objet possède « ${fakes.join(' » et « ')} » — certitude(s) erronée(s).`);
-        } else {
-          lines.push(`${h.name} confond ${item.name} avec un objet similaire — la semaine est perdue.`);
-        }
-      } else {
-        lines.push(`${h.name} n'identifie pas ${item.name} cette semaine — il en est conscient (l'étude peut reprendre).`);
+      if (band.payoutPct != null && pa.depositIndex != null) lines.push(...mecenatPayout(get, set, h, pa.depositIndex, band.payoutPct));
+      if (band.resolver) {
+        const r = runActivityResolver(get, set, band.resolver, pa, h, st);
+        lines.push(...r.lines);
+        if (r.patch) patch = { ...patch, ...r.patch };
       }
-      itl.perHero[pa.heroId] = { ...st, left: st.left - 1 };
-    }
-  } else if (pa.kind === 'craft' && st.craft) {
-    // Test étendu d'Artisanat mutualisé (`extendedTestStep`, LDB 12 l.199-211) — cumul du DR par session.
-    const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, st.craft.drTarget);
-    if (done) {
-      const it = itemFromTrappingById(st.craft.trappingId);
-      if (it) {
-        it.qualities = [...(it.qualities ?? []), ...st.craft.atouts.map((id) => ({ id })), ...st.craft.defauts.map((id) => ({ id }))]; // ids → QualityInstance
-        h.items = [...(h.items ?? []), it];
-        recomputeLoadout(h);
-      }
-      const atL = st.craft.atouts.map(craftQualLabel), dfL = st.craft.defauts.map(craftQualLabel);
-      lines.push(`${h.name} achève son ouvrage : ${trappingLabelOf(st.craft.trappingId)}${atL.length ? ` (${atL.join(', ')})` : ''}${dfL.length ? ` [${dfL.join(', ')}]` : ''} !`);
-      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, craft: undefined };
-    } else {
-      lines.push(`${h.name} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`);
-      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, craft: { ...st.craft, drDone } };
-    }
-  } else if (pa.kind === 'catalog' && pa.activityId) {
-    const def = activityById(pa.activityId);
-    if (def) {
-      // Maladresse d'Activité (LDB 12 : double raté) — porte les bandes `on:'fumble'` (Pénitence :
-      // Colère des dieux « à la place », ACE p.219).
-      const fumble = isFumble(pa.roll, pa.success);
-      // Défs à TABLE d'issues (bandes de DR) ou binaires (`onSuccess`, ex. Convalescence) — même chemin.
-      const bands = def.outcomes?.length
-        ? matchOutcomes(def, { success: pa.success, sl: pa.sl, fumble })
-        : pa.success && def.onSuccess?.length ? [{ ops: def.onSuccess }] : [];
-      if (fumble && def.outcomes?.some((b) => b.on === 'fumble')) lines.push(`${h.name} — MALADRESSE (🎲 ${pa.roll}) !`);
-      const closeOps: GameOp[] = [];
-      for (const band of bands) {
-        if (band.note) lines.push(band.note); // résultat VERBATIM de la table source
-        // Les ÉTATS d'issue tombent à la CLÔTURE de l'interlude (règle de CLASSE du contexte : les
-        // semaines ne s'écoulent qu'à la fermeture, et le repos de clôture dissiperait un État posé
-        // maintenant — « vous subissez 1 État Exténué le premier jour de votre prochaine aventure »,
-        // ACE p.219). Le reste (Péché, Exposition, soins…) s'applique tout de suite.
-        const immediate = (band.ops ?? []).filter((o) => o.op !== 'condition');
-        closeOps.push(...(band.ops ?? []).filter((o) => o.op === 'condition'));
-        if (immediate.length) {
-          lines.push(...applyOps(h, immediate, {
-            rng: battleRng(), label: def.label, now: get().gameTime,
-            onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
-            onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
-              set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'Corruption' } });
-              return [`${h.name} — Test d'Exposition ${level} à la Corruption à réaliser.`];
-            },
-          }));
-        }
-        if (band.payoutPct != null && pa.depositIndex != null) lines.push(...mecenatPayout(get, set, h, pa.depositIndex, band.payoutPct));
-        if (band.resolver) lines.push(...runActivityResolver(get, set, band.resolver, pa, h));
-      }
-      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, ...(closeOps.length ? { closeOps: [...(st.closeOps ?? []), ...closeOps] } : {}) };
     }
   }
+  // Écriture UNIQUE : consomme l'Activité + fusionne closeOps différés + patch des résolveurs.
+  itl.perHero[pa.heroId] = {
+    ...st,
+    left: st.left - 1,
+    ...(closeOps.length ? { closeOps: [...(st.closeOps ?? []), ...closeOps] } : {}),
+    ...patch,
+  };
   set({ interlude: { ...itl }, party: [...get().party] });
   for (const l of lines) get().log(l);
 }

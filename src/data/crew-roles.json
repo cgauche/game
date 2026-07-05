@@ -58,7 +58,7 @@
     "skills": [
       {
         "skillId": "projectiles",
-        "spec": "Poudre noire"
+        "spec": "poudre-noire"
       }
     ],
     "desc": "L'Artilleur supervise les armes du navire et intervient dans tous les Tests de combat."

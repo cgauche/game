@@ -105,7 +105,7 @@
             "projectiles"
           ],
           "spec": {
-            "projectiles": "Poudre noire"
+            "projectiles": "poudre-noire"
           },
           "mod": -10
         }
@@ -123,7 +123,7 @@
             "projectiles"
           ],
           "spec": {
-            "projectiles": "Poudre noire"
+            "projectiles": "poudre-noire"
           },
           "mod": -20
         },
@@ -151,7 +151,7 @@
             "projectiles"
           ],
           "spec": {
-            "projectiles": "Poudre noire"
+            "projectiles": "poudre-noire"
           },
           "mod": -30
         },
