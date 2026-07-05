@@ -192,6 +192,12 @@ export function forcedTR(roll: number, target: number, sl: number): TestResult {
   return { roll, target, success: true, sl, isDouble: isDoubleRoll(roll) };
 }
 
+/** `TestResult` RE-HYDRATÉ depuis un détail de jet stocké (RollBreakdown/attackerDetail/…) : ajoute
+ *  `isDouble` dérivé du dé. `success` NATUREL préservé (≠ forcedTR qui force success:true). Atome PARTAGÉ. */
+export function hydrateTR(d: { roll: number; target: number; success: boolean; sl: number }): TestResult {
+  return { roll: d.roll, target: d.target, success: d.success, sl: d.sl, isDouble: isDoubleRoll(d.roll) };
+}
+
 /** Test Soutenu (LDB 12 l.214-225) — BONUS de coopération : chaque soutien octroie +10 au Test, MAIS le
  *  meneur ne peut être soutenu par plus de Personnages que son propre Bonus de Caractéristique de la carac
  *  testée (`cap`, l.225). Primitive PURE et GÉNÉRALE de la coopération : le « plus compétent lance » est

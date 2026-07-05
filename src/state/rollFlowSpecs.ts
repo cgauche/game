@@ -39,7 +39,7 @@ import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR } from '../engine/tests';
+import { rollTest, resolveOpposed, bumpSL, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR, hydrateTR } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100, defaultRNG, type RNG } from '../engine/dice';
 import { resolveRun } from '../engine/movement';
@@ -60,7 +60,7 @@ function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack
   const r = p.result!;
   if (r.defenderDetail) {
     const dd = r.defenderDetail;
-    const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
+    const def: TestResult = hydrateTR(dd);
     // p.withhold (Retenir ses coups, AA) propagé : la re-dérivation Chance/Résilience garde le coup non létal.
     return finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), p.location ?? undefined, [], 0, undefined, undefined, p.withhold);
   }
@@ -236,7 +236,7 @@ const bumpResultSL = <R extends { sl: number }>(slot: { result?: R | null }): { 
 const flatRollLens = <P extends import('./rollFlowFactory').PendingBase & { roll: number | null; target: number; sl: number; success: boolean }>(
   dieTarget: (p: P) => number | null,
 ): RollFlowLens<P> => ({
-  actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target, success: p.success, sl: p.sl, isDouble: isDoubleRoll(p.roll) } : null,
+  actorTR: (p) => p.roll != null ? hydrateTR({ roll: p.roll, target: p.target, success: p.success, sl: p.sl }) : null,
   applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, sl: tr.sl, success: tr.success } as Partial<P>),
   dieTarget,
 });
@@ -246,7 +246,7 @@ const flatRollLens = <P extends import('./rollFlowFactory').PendingBase & { roll
 const resultRollLens = <P extends import('./rollFlowFactory').PendingBase & { result: { roll: number; target: number; sl: number; success: boolean } | null | undefined }>(
   dieTarget: (p: P, actor: Combatant) => number | null,
 ): RollFlowLens<P> => ({
-  actorTR: (p) => p.result ? { ...p.result, isDouble: isDoubleRoll(p.result.roll) } : null,
+  actorTR: (p) => p.result ? hydrateTR(p.result) : null,
   applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: { roll: tr.roll, target: tr.target, success: tr.success, sl: tr.sl } } as Partial<P>),
   dieTarget,
 });
@@ -388,7 +388,7 @@ export const FLOWS = {
         const target = actorIn(s, p.targetId);
         if (!target) return null;
         const ad = p.result!.attackerDetail!;
-        const atk2 = bumpSL({ roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl, isDouble: isDoubleRoll(ad.roll) });
+        const atk2 = bumpSL(hydrateTR(ad));
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       },
     },
@@ -465,7 +465,7 @@ export const FLOWS = {
         const attacker = actorIn(s, p.attackerId);
         if (!attacker) return null;
         const dd = p.result!.defenderDetail!;
-        const def2 = bumpSL({ roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) });
+        const def2 = bumpSL(hydrateTR(dd));
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
         return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry) };
       },
@@ -605,7 +605,7 @@ export const FLOWS = {
         // Résistance (Magie), LDB 10 l.1015-1021 : le Test pour résister au Sort réussit d'office —
         // la cible RÉSISTE (interprétation : « réussir le Test pour résister » = l'opposition est
         // tenue), DR imposé = Bonus d'Endurance (nourrit la marge).
-        const oppose = forcedTR(1, oppVal, forced.sl); // isDoubleRoll(1) === false → identique au littéral
+        const oppose = forcedTR(1, oppVal, forced.sl); // dé 01 → double=false → identique à l'ancien littéral
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - forced.sl) } };
       }
       if (forced) {
@@ -743,7 +743,7 @@ export const FLOWS = {
         // `bonusSL` (Piège-lame, LDB 62 l.295) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
         // `sl` reporté, qui reste le DR propre +1).
         if (opp) {
-          const def2 = bumpSL({ roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl, isDouble: isDoubleRoll(st.result.roll) });
+          const def2 = bumpSL(hydrateTR({ roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl }));
           const o = resolveOpposed(opp.aT, bumpSL(def2, opp.bonusSL ?? 0));
           return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
         }
@@ -893,7 +893,7 @@ export const FLOWS = {
         const target = actorIn(s, p.targetId);
         if (!target) return null;
         const ad = p.result!.attackerDetail!;
-        const atk2 = bumpSL({ roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl, isDouble: isDoubleRoll(ad.roll) });
+        const atk2 = bumpSL(hydrateTR(ad));
         return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
       },
     },
@@ -1328,7 +1328,7 @@ export const FLOWS = {
     // Chance « +1 DR » (`bumpSL`, success intact) + Résistance (Menace) GLOBALES via la lentille : le
     // resist force l'auto-succès à DR = Bonus d'Endurance (LDB 10 l.1015-1021), cible = valeur du Test.
     lens: {
-      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target ?? 0, success: !!p.success, sl: p.sl ?? 0, isDouble: isDoubleRoll(p.roll) } : null,
+      actorTR: (p) => p.roll != null ? hydrateTR({ roll: p.roll, target: p.target ?? 0, success: !!p.success, sl: p.sl ?? 0 }) : null,
       applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success }),
       dieTarget: (p, actor) => testValue(actor, p.skill),
     },

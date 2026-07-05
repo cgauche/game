@@ -88,13 +88,25 @@ describe('Anti-dérive du système de jet — tout passe par la fabrique + les a
     ).toEqual([]);
   });
 
-  it('les atomes partagés du système sont bien la source (bumpSL / bestForcedRoll / forcedTR présents dans rollFlowSpecs)', () => {
+  it('rollFlowSpecs ne construit AUCUN isDouble à la main — les atomes (hydrateTR/forcedTR) le dérivent', () => {
+    // Le registre des flux ne doit JAMAIS appeler `isDoubleRoll(…)` : un TestResult de réussite FORCÉE passe
+    // par `forcedTR`, un TestResult RÉ-HYDRATÉ depuis un détail stocké par `hydrateTR` — les deux centralisent
+    // `isDouble` dans engine/tests.ts. Tout `isDoubleRoll(` ICI = un littéral recopié, TOUTE variante comprise
+    // (source imbriquée `st.result.roll`, champs coercés `!!p.success`/`?? 0`) — que le scan par-signature ratait.
+    // (Lire `result.isDouble` déjà posé reste OK : c'est un accès de champ, pas un appel à `isDoubleRoll`.)
+    const specs = readFileSync(join(STATE_DIR, 'rollFlowSpecs.ts'), 'utf8');
+    const hits = specs.split('\n').flatMap((l, i) => (/isDoubleRoll\(/.test(l) ? [`rollFlowSpecs.ts:${i + 1}`] : []));
+    expect(hits, `isDoubleRoll( dans le registre des flux (${hits.join(', ')}) — utilise hydrateTR(detail) ou forcedTR(roll,target,sl).`).toEqual([]);
+  });
+
+  it('les atomes partagés du système sont bien la source (bumpSL / bestForcedRoll / forcedTR / hydrateTR présents dans rollFlowSpecs)', () => {
     // Preuve POSITIVE minimale : les atomes du système sont présents dans le registre des flux. Si un
     // refactor les retire au profit d'un recodage local, ce test tombe (avec les gardes ci-dessus).
     // `forcedTR` a REJOINT la liste depuis le balayage « zéro copie » : les littéraux TestResult de réussite
     // forcée des flux opposés (attack/defense/counterspell/castOpposition/trample/maneuver) passent par l'atome.
+    // `hydrateTR` a REJOINT la liste depuis la fermeture de la ré-hydratation (`{ …, isDouble: isDoubleRoll(X.roll) }`).
     const specs = readFileSync(join(STATE_DIR, 'rollFlowSpecs.ts'), 'utf8');
-    for (const atom of ['bumpSL', 'bestForcedRoll', 'forcedTR']) {
+    for (const atom of ['bumpSL', 'bestForcedRoll', 'forcedTR', 'hydrateTR']) {
       expect(specs.includes(atom), `atome partagé « ${atom} » absent de rollFlowSpecs.ts — le système de jet a-t-il été contourné ?`).toBe(true);
     }
   });
