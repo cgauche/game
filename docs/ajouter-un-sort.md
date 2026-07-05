@@ -2,8 +2,7 @@
 
 Un sort (ou une Prière/Bénédiction/Miracle — même structure `SpellData`) vit **entièrement en
 donnée** dans `src/data/spells.json` (`SpellData`, définie `src/data/index.ts` l.971-1036). Il n'y
-a plus de fichier engine par sort (`src/data/spellspecs/` a été supprimé — Migration #5, cf.
-en-tête `src/engine/spellspec.ts` l.1-8) : les métadonnées de résolution ET les effets mécaniques
+a plus de fichier engine par sort : les métadonnées de résolution ET les effets mécaniques
 sont tous les deux dans `spells.json`, édités dans le Compendium en jeu (Codex → catégorie
 « Sorts »). Ce guide couvre l'ajout d'un sort neuf et la curation d'un sort narratif existant.
 

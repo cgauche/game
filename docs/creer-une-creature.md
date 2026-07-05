@@ -71,7 +71,7 @@ pointe `perso.tenue: '<Nom>'` (ou `race.tenue` pour la tenue par défaut de la r
 mis en tenue `'Nu'` doit être RÉELLEMENT nu.
 
 ```ts
-// src/gameIso/rig/parts/tenues/defs/Ma-tenue.ts
+// src/gameIso/rig/parts/tenues/defs/<Nom>.ts
 import type { TenueDef } from '../types';
 import { BODIES } from '../../bodies';
 
@@ -117,7 +117,7 @@ export const tenue: TenueDef = {
 2. Déposer `creatures/defs/<Nom>.ts` (+ `races/defs/` si nouvelle race partagée,
    + `tenues/defs/` si équipement, + `parts/monster/defs/` si nouvelle tête/membre).
 3. `npm run gen` (vérifier le compteur de fichiers du registre).
-4. **QC rendu** : script temporaire `scripts/_tmp-qc-*.mts` (pattern : `entityRigProfile(name,
+4. **QC rendu** : script temporaire `scripts/_tmp-qc-<nom>.mts` (pattern : `entityRigProfile(name,
    seed)` → `resolveRig` 3 vues → PNG resvg) — **zoom unitaire ~700px OBLIGATOIRE** (la
    planche cache les défauts), comparer à l'illustration, itérer. Supprimer le script après.
 5. `npx vitest run src/gameIso` — mettre à jour les cas de routage de

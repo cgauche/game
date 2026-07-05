@@ -63,9 +63,9 @@ forme du Test — cf. §2) :
 
 `RollShell` (`src/ui/RollShell.tsx`) est LA coquille unique : overlay → titre → sous-titre →
 instruction → extra → setup (pré-jet) → rangées (`RollRow`) → outcome/summary → postRollExtra →
-forcedExtra → `.modal-actions`. Écrire un hook `useXJetProps()` (`src/ui/jetProps/useXJetProps.tsx`,
-calquer `useTrampleJetProps.tsx`/`useRunModal`) qui lit le store et rend les PROPS de `RollShell` —
-la modale elle-même (`XModal.tsx`, cf. `RunModal.tsx`) ne fait qu'appeler le hook et rendre
+forcedExtra → `.modal-actions`. Écrire un hook `use<Jet>JetProps` (`src/ui/jetProps/`,
+calquer `useTestJetProps.tsx`) qui lit le store et rend les PROPS de `RollShell` —
+la modale elle-même (`<Jet>Modal.tsx`, cf. `RunModal.tsx`) ne fait qu'appeler le hook et rendre
 `<RollShell {...props} />` (ou `null`). Une étape de cascade (jet de combat) passe par `CascadeModal`
 qui rend directement le hook, sans démonter la coquille entre le jet et son Coup Critique.
 

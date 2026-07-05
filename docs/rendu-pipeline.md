@@ -48,8 +48,8 @@ Piloté par `Dims` (`view`/`rot`/`edge`). Pont monde→écran UNIQUE : `project.
 `tileCenter(x, y, dims, metricToLift(h))` — **la rotation caméra et l'élévation-écran vivent ici**,
 jamais dans un builder. Un backend par classe d'élément : `affineFloors`, `affineWalls`,
 `affineRoofs`, `affineProps`, `affineHighlights`, chacun résolvant ses couleurs par `part` depuis la
-def d'apparence + `shade.ts`. Chaque backend expose aussi son `xDepth(el, dims)` (tri du peintre,
-cf. `iso.ts`) ; `stage/objs.ts` fusionne et trie.
+def d'apparence + `shade.ts`. Chaque backend expose aussi sa profondeur de tri (`floorDepth`,
+`roofDepth`, `propDepth`… — ordre du peintre) ; `stage/objs.ts` fusionne et trie.
 
 ### Perspective — `pov/*` (première personne)
 `camera.ts` (caméra + brume/fog calculés, `rgb(...)` à canaux **calculés**), `geometry.ts` (liste de

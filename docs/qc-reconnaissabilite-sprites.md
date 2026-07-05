@@ -17,9 +17,7 @@ les images).
 ## Pipeline
 
 ### 1. Rendre le bestiaire en PNG
-Le rastériseur batch (`scripts/_qc-creatures-rig.mts`, produisait `public/qc/creatures-rig/c*.png` +
-`manifest.json`) a été **supprimé** (refactor « rendu 100% data-driven », le name-matcher flou qu'il
-dépendait a été dissous). Le remplaçant est **mono-créature** :
+Le rendu QC est **mono-créature** :
 ```powershell
 npx tsx scripts/qc/render-creature.mts --list                    # JSON des créatures riguées (nom/plan/alias)
 npx tsx scripts/qc/render-creature.mts "<Nom du def>" [dossier] [prefixe]

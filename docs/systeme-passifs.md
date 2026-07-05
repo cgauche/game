@@ -141,7 +141,7 @@ ne pas écrire de widget de liste d'ops à la main, ne pas dupliquer le vocabula
 ## 8. Recettes (how-to)
 
 - **Ajouter un trait à modificateur de profil** : éditer `traits.json` (Codex) → champ `passive` → `+` op
-  `charMod`/`moveMod`. La def TS `src/engine/traits/defs/<slug>.ts` reste `{ key: '…' }` (clé canonique).
+  `charMod`/`moveMod`. La def TS (`src/engine/traits/registry.ts`, `TRAITS`) ne porte que le libellé `{ key: '…' }`.
 - **Créer une mutation** : Codex → catégorie « Mutations » → label/kind + `passive` (ops). L'armure naturelle
   (`apAll`) reste un champ. (Apparence custom : cf. chantier apparence, pas encore en données.)
 - **Ajouter une table de Corruption (dieu du Chaos)** : Codex → « Tables de Corruption » → nouvelle entrée
