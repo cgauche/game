@@ -2050,6 +2050,36 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     expect(st.battle!.order[st.battle!.turn]).toBe(H.id); // H agit en premier ce Round
   });
 
+  it('Tir rapide (interruption, LDB 10) : tir hors-tour SANS réordonner ; son tour normal a lieu mais épuisé', () => {
+    const { H, E } = endOfRoundBattle(0);
+    H.talents = [{ talentId: 'tir-rapide', times: 1 }];
+    H.weapons = [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] }] as never;
+    H.loaded = true; H.movement = 4; H.pos = { x: 0, y: 0 };
+    E.pos = { x: 2, y: 0 }; // à portée, ligne de vue dégagée (scène vide)
+    useGame.getState().battleEndTurn(); // → Round 2, pendingRoundStart
+    const orderBefore = [...useGame.getState().battle!.order];
+    seedBattleRng(1);
+    useGame.getState().preemptRangedShot(H.id, E.id);
+    expect(useGame.getState().pendingAttack?.interrupt).toBe(true); // modale de tir ouverte, tireur non-actif
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    let st = useGame.getState();
+    expect(st.pendingAttack).toBeNull();                 // tir résolu
+    expect(st.pendingRoundStart).not.toBeNull();          // TOUJOURS à la pause de début de Round (aucun tour avancé)
+    expect(st.battle!.order).toEqual(orderBefore);        // AUCUN réordonnancement (≠ Chance / arme Rapide)
+    const h1 = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h1.loseNextAction).toBe(true);                 // tour normal : Action dépensée (= le tir)
+    expect(h1.loseNextMovement).toBe(true);               // ... et Mouvement épuisé
+    // Son tour NORMAL : on le place en tête et on démarre le Round → le tour a lieu (effets début/fin) mais épuisé.
+    useGame.setState({ battle: { ...st.battle!, order: [H.id, ...st.battle!.order.filter((id) => id !== H.id)] } });
+    useGame.getState().confirmRoundStart();
+    st = useGame.getState();
+    expect(st.battle!.order[st.battle!.turn]).toBe(H.id); // c'est bien son tour
+    expect(st.battle!.acted).toBe(true);                  // Action déjà dépensée
+    expect(st.battle!.movementUsed).toBeGreaterThan(0);   // Mouvement épuisé
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.loseNextAction).toBeFalsy(); // consommé
+  });
+
 });
 
 describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Action (R6/LOT 6)', () => {

@@ -47,7 +47,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
-import { talentFearIndice, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage } from '../engine/combatFeatures/dispatch';
+import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
@@ -1334,6 +1334,18 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, order, log: [...battle.log, ev('info', t('cs.actFirst', { name: hero.name, reason: free ? t('cs.reasonFast') : t('cs.reasonLuck') }), hero.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
+    // ── Tir rapide (talent, LDB 10) : INTERRUPTION à distance en début de Round, hors de l'ordre d'Initiative ──
+    preemptRangedShot: (heroId: string, targetId: string) => {
+      const { battle, pendingRoundStart } = get();
+      if (!battle || !pendingRoundStart || get().pendingAttack) return;
+      const hero = battle.combatants.find((c) => c.id === heroId);
+      const target = battle.combatants.find((c) => c.id === targetId);
+      if (!hero || hero.kind !== 'hero' || !canPreemptRanged(hero) || hero.loseNextAction) return; // 1 interruption / Round (loseNext = déjà tiré)
+      if (!target || target.kind === hero.kind || isOutOfAction(target)) return;
+      // Le tir se résout par la modale de jet NORMALE (attackRoll/attackConfirm) ; le tireur n'est PAS actif.
+      // `pendingAttack.interrupt` → attackConfirm applique le tir sans avancer le tour + épuise son tour normal.
+      set({ pendingAttack: { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true } });
+    },
     roundStartReady: (seat: number) => {
       const prs = get().pendingRoundStart;
       if (!prs) return;
@@ -1844,6 +1856,19 @@ export function createCombatSlice(get: Get, set: Set) {
       const wasChain = !!pa.cleave; // cette attaque faisait-elle partie d'un balayage en cours ?
       const dualBefore = get().pendingDualStrike; // données de la 1ʳᵉ frappe (présentes quand on confirme la 2ᵉ)
       set({ pendingAttack: null });
+      if (attacker && target && victim && pa.interrupt) {
+        // Tir rapide (INTERRUPTION, LDB 10) : le tireur n'est PAS actif (on est à pendingRoundStart). On
+        // applique le tir puis on N'AVANCE PAS le tour ; on épuise son tour NORMAL — l'Action (= ce tir) et
+        // le Mouvement, consommés à l'ouverture de son slot normal (loseNext*). Aucun effet début/fin de tour
+        // n'est déplacé (ils vivent dans advanceTurn/confirmRoundStart, non touchés).
+        const weapon = firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
+        applyAttackResult(get, set, attacker, victim, weapon, pa.result);
+        attacker.loseNextAction = true; attacker.loseNextMovement = true;
+        set({ battle: { ...get().battle! } });
+        bus.emit(EVT.SCENE_DIRTY);
+        checkBattleOver(get, set);
+        return;
+      }
       if (attacker && target && victim) {
         // Manœuvre de mêlée d'un trait SANS arme équipée (Morsure/Attaque caudale) : on synthétise l'arme
         // naturelle (même que l'IA, freeAttackWeapon) avec l'Indice lu du profil — source unique. La

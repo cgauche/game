@@ -260,6 +260,10 @@ export interface PendingAttack {
   /** Réussite FORCÉE via « Je ne faillirai pas ! » (Résilience, LDB 17 l.73) : débloque, sur un Coup
    *  Critique, le choix de la Localisation (cf. `critLocation` du résultat). */
   forced?: boolean;
+  /** Tir rapide (talent, LDB 10) : cette attaque est une INTERRUPTION hors de l'ordre (déclarée à
+   *  `pendingRoundStart`, tireur NON-actif). `attackConfirm` applique le tir mais ne fait PAS avancer le
+   *  tour ; il épuise le tour NORMAL du tireur (`loseNextAction` + `loseNextMovement`). */
+  interrupt?: boolean;
   /** « Retenir ses coups » (Aux Armes l.2503-2505) : déclaré AVANT le jet — maîtriser sans tuer. En
    *  MÊLÉE seulement, jamais avec une arme *En flammes*. Le moteur (`applyHit`) ignore le drapeau hors
    *  mêlée ; il retire Empaleuse/Percutante/Perforante + l'Atout Taille et supprime le Critique sauf mise à 0. */
