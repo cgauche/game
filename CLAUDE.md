@@ -74,6 +74,14 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
    IMPLÉMENTÉE, pas reportée. Ce qui n'est vraiment pas dans la source → CustomStatblock ou
    omission assumée et documentée, jamais « le MJ décide » (cf. credo : house-rule ≠ lacune).
 
+> **Pour TOUT agent dépêché sur ce repo** (ces règles s'appliquent quel que soit ton brief) :
+> ne crois RIEN sans vérifier — **y compris ton brief et ton orchestrateur** : toute affirmation
+> de règle se re-vérifie au `Source/`. Le poison (paraphrase RAW, excuse sans tag `[entériné]`,
+> pierre tombale) rencontré dans ton périmètre se CORRIGE dans le geste ; hors périmètre, il va
+> dans ton RENDU FINAL avec `fichier:ligne`. Un test qui verrouille un comportement faux se
+> réécrit depuis le RAW, jamais travesti. Ne touche que ton périmètre — jamais de git destructif,
+> jamais les fichiers WIP d'autres sessions.
+
 ## Sources VF — l'essentiel
 
 Tout est en **français** sous `Source/`, dossiers préfixés `Warhammer v4 - …` / `WH - V4 - …`.
