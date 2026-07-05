@@ -161,7 +161,7 @@ export function sleepParty(
     journal.push(...log);
   }
 
-  // Contagion de promiscuité (chambrée/campement — LDB 20 l.185, 1 Test de Contraction par jour).
+  // Contagion de promiscuité (chambrée/campement — Toux et éternuements, LDB 20 l.206) : 1 Test de Contraction par nuit de repos.
   // Règle optionnelle « Utilisation des Maladies » : désactivée si disease-mode = off.
   for (const c of rule('disease-mode') === 'off' ? [] : runContagion(party, n, rng)) {
     entries.push({ actorId: c.actorId, icon: '🤒', label: `Contagion (${c.dz})`, text: c.log.join(' '), tone: 'bad' });
@@ -174,7 +174,7 @@ export function sleepParty(
   return entries;
 }
 
-/** Contagion de promiscuité (LDB 20 l.185, 1 Test de Contraction par jour) — chemin EAGER (sleepParty,
+/** Contagion de promiscuité (Toux et éternuements, LDB 20 l.206 ; 1 Test/nuit) — chemin EAGER (sleepParty,
  *  multi-jours), roule le Test. La cascade utilise `collectContagion` (jet différé en étape). */
 function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: string; dz: string; log: string[] }[] {
   const out: { actorId: string; dz: string; log: string[] }[] = [];
@@ -389,7 +389,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     steps.push({ id: `${t.kind}-${t.heroId}-${steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label, icon: UPKEEP_STEP_ICON[t.kind] ?? '🎲',
       rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined });
   }
-  // CONTAGION (promiscuité l.185 + tambouille piètre) → un jet de Résistance influençable par héros exposé.
+  // CONTAGION (promiscuité — Toux et éternuements, LDB 20 l.206 + tambouille piètre) → un jet de Résistance influençable par héros exposé.
   for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {
     const h = party.find((x) => x.id === c.heroId);
     if (!h || h.dead) continue;

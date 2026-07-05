@@ -101,9 +101,9 @@ export function isImprovised(w: Weapon): boolean {
   return flat >= 0 && flat - effectiveDamageTaken(w) <= 0;
 }
 
-/** Profil d'**Arme improvisée** (LDB 62 l.29/178/185) : Dégâts `+BF+1`, Atout `Inoffensive`, **plus aucun
- *  autre Atout**, Allonge Moyenne. SOURCE UNIQUE — partagé par l'usure (Dégâts à +0) ET la Lance de
- *  cavalerie hors Charge (`effectiveWeapon`), pour ne pas dupliquer le littéral. */
+/** Profil d'**Arme improvisée** : Dégâts `+BF+1`, Atout `Inoffensive`, aucun autre Atout (LDB 62 l.31).
+ *  SOURCE UNIQUE partagée par l'usure (Dégâts à +0), la Lance de cavalerie hors Charge et le Bélier
+ *  hors-porte (`effectiveWeapon`), pour ne pas dupliquer le littéral. (`reach: 'Moyenne'` = rank moteur.) */
 export function improvisedProfile(w: Weapon): Weapon {
   return { ...w, damage: { plusBF: true, flat: 1 }, qualities: [{ id: QUALITY_IDS.Inoffensive }], damageTaken: 0, reach: 'Moyenne' };
 }

@@ -5,7 +5,8 @@
  *    laisse la vitesse au MJ ; on prend la nuit complète, cohérente avec « une bonne nuit de sommeil »).
  *  - Soin de Blessures (18-Traumatisme l.380, volet a) : Test de Résistance Accessible (+20) ⇒ DR + Bonus
  *    d'Endurance Points de Blessure regagnés.
- *  - Cauchemars (21-Psychologie l.92) : héros marqué ⇒ Test de Calme Facile (+40) ou Exténué regagné.
+ *  - Cauchemars (21-Psychologie l.95, exemple Horst) : héros marqué `nightmares` (auteur-assigné, jamais
+ *    systémique) ⇒ Test de Calme Facile (+40).
  * Pur : mute `c`, renvoie le journal. Ne dépend que d'autres modules purs du moteur.
  *
  * Soin de Blessures (18-Traumatisme l.380), DEUX volets cumulés par journée de repos :
