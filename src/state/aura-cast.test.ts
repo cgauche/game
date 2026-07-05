@@ -18,24 +18,24 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 
 describe('Aura de Dhar — +1 DR au lancement lu depuis auraMods (cast↔aura)', () => {
   it('castTestTalentDR somme le skillDRBonus d’aura (Langue (Magick) ET Focalisation)', () => {
-    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }, { op: 'skillDRBonus', skill: 'focalisation', bonus: 1 }] as never });
-    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(1);
+    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'magick', bonus: 1 }, { op: 'skillDRBonus', skill: 'focalisation', bonus: 1 }] as never });
+    expect(castTestTalentDR(c, 'langue', 'magick')).toBe(1);
     expect(castTestTalentDR(c, 'focalisation')).toBe(1);
     expect(castTestTalentDR(c, 'priere')).toBe(0); // l’aura ne porte pas de DR de Prière
   });
 
   it('la spec est respectée : Langue (Magick) boostée, mais PAS Langue (Bretonnien)', () => {
-    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }] as never });
-    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(1);
+    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'magick', bonus: 1 }] as never });
+    expect(castTestTalentDR(c, 'langue', 'magick')).toBe(1);
     expect(castTestTalentDR(c, 'langue', 'Bretonnien')).toBe(0); // spec ≠ → aucun bonus (le sort seul est boosté)
   });
 
   it('sans aura → aucun bonus de DR', () => {
-    expect(castTestTalentDR(mk(), 'langue', 'Magick')).toBe(0);
+    expect(castTestTalentDR(mk(), 'langue', 'magick')).toBe(0);
   });
 
   it('cumule avec un second exemplaire d’aura (sources distinctes — DR additif)', () => {
-    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }, { op: 'skillDRBonus', skill: 'langue', spec: 'Magick', bonus: 1 }] as never });
-    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(2);
+    const c = mk({ auraMods: [{ op: 'skillDRBonus', skill: 'langue', spec: 'magick', bonus: 1 }, { op: 'skillDRBonus', skill: 'langue', spec: 'magick', bonus: 1 }] as never });
+    expect(castTestTalentDR(c, 'langue', 'magick')).toBe(2);
   });
 });

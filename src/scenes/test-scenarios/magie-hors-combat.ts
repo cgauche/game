@@ -39,7 +39,7 @@ export const scenario: TestScenario = {
     // Sorcier : ajoute un Sort d'Arcane FOCALISABLE (les sorts pré-tirés Fléchette/Choc sont de la
     // Magie mineure, NON focalisable) pour exercer le bouton « Focaliser » hors combat.
     if (!wiz.spells?.includes('armure-aethyrique')) wiz.spells = ['armure-aethyrique', ...(wiz.spells ?? [])];
-    ensureSkill(wiz, 'Langue', 'Int', 'Magick'); // incantation des Arcanes
+    ensureSkill(wiz, 'Langue', 'Int', 'magick'); // incantation des Arcanes
     ensureSkill(wiz, 'Focalisation', 'FM'); // Test étendu de Focalisation
     ensureSkill(priest, 'Prière', 'Soc'); // Bénédictions
     // Un allié BLESSÉ → cible visible pour la Bénédiction de Guérison (+1 PB) du Prêtre.

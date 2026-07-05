@@ -90,7 +90,7 @@ describe('Protection de Phâ — incantation pose la Zone (intégration applyCas
     useGame.getState().seedRng(5);
     const b = useGame.getState().battle!;
     const caster = b.combatants.find((c) => c.name === 'W')!;
-    caster.skills.push({ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 10 });
+    caster.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 10 });
     caster.characteristics.FM = 40; // BFM 4
     caster.pos = { x: 7, y: 7 };
     const ok: CastResult = { cast: true, roll: 30, target: 70, sl: 0, isCritical: false, isFumble: false, log: 'ok' };

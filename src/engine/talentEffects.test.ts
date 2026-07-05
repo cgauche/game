@@ -99,7 +99,7 @@ describe('« Ajoutez la Compétence X à n\'importe quelle Carrière que vous en
     // Refs STRUCTURÉES (id, spec) — l'affichage (refLabel/specLabel) se fait au point d'usage, pas ici.
     const adds = careerSkillAdditions(h);
     expect(adds).toContainEqual({ id: 'metier', spec: 'Forgeron' }); // spec « Au choix » reportée sur celle du talent
-    expect(adds).toContainEqual({ id: 'langue', spec: 'Magick' });
+    expect(adds).toContainEqual({ id: 'langue', spec: 'magick' });
     expect(adds).toContainEqual({ id: 'divertissement', spec: 'Chant' });
     expect(adds).toContainEqual({ id: 'savoir', spec: 'Région' });
     expect(adds).toHaveLength(4);

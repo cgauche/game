@@ -61,7 +61,7 @@ describe('Focalisation en modale (store)', () => {
     enemy.characteristics.FM = 80;
     enemy.skills = [...(enemy.skills ?? []),
       { skillId: 'focalisation', advances: 30, characteristic: 'FM' } as never,
-      { skillId: 'langue', spec: 'Magick', advances: 30, characteristic: 'Int' } as never];
+      { skillId: 'langue', spec: 'magick', advances: 30, characteristic: 'Int' } as never];
     // Donne le TOUR à l'ennemi (acted:false → il peut agir).
     const turn = st.battle!.order.indexOf(enemy.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, acted: false, combatants: [...st.battle!.combatants] } });

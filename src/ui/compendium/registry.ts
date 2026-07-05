@@ -15,7 +15,7 @@ import {
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
-  isNamed,
+  isNamed, specEntryLabel,
 } from '../../data';
 import { groupAdvantage } from '../../engine/advantagePool';
 import { statName } from '../../engine/statEntry';
@@ -468,7 +468,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'skills', label: 'Compétences', group: 'Compétences',
     build: () => skills.map((s) => ({
       label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source),
-      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Type', s.type), fact('Spécialisations', s.specs.length ? s.specs.join(', ') : null)),
+      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Type', s.type), fact('Spécialisations', s.specs.length ? s.specs.map(specEntryLabel).join(', ') : null)),
       sections: sections(...reverseSections('skills', s.id)),
     })),
   },
@@ -477,7 +477,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => talents.map((t) => ({
       label: t.label, desc: groupAdvantage() && t.descAA ? t.descAA : t.desc, source: src(t.source), // lecture « Avantage de groupe » (AA) selon le toggle
 
-      meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', t.specs?.length ? t.specs.join(', ') : null)),
+      meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', t.specs?.length ? t.specs.map(specEntryLabel).join(', ') : null)),
       sections: sections(
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
         passiveSection(t.passive),

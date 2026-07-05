@@ -451,7 +451,7 @@
       {
         "op": "grantTalent",
         "talentId": "resistance",
-        "spec": "Maladie"
+        "spec": "maladie"
       }
     ],
     "desc": "Les personnes nées sous le signe de la Charrette Brisée ont tendance à être orgueilleuses et à trop se soucier des apparences. Elles sont capables de dépenser jusqu'à leur dernier sou en quête des plaisirs terrestres, ou de se brûler les ailes en voulant obtenir l'approbation de leurs supérieurs. Toutefois, lorsqu'elles parviennent à réfréner ces tendances, leur fierté se transforme en confiance et leur vanité en sympathie.\n\nLe lien existant entre la Charrette Brisée et Nurgle est rarement évoqué, car toute forme d'adoration des Puissances de la Ruine est un motif suffisant pour finir au bûcher dans la plupart des régions du Vieux Monde. Tout le monde sent cependant que ce signe a quelque chose de sombre et de primitif ancré en lui, et il est couramment associé à la maladie dans de nombreuses cultures. Beaucoup de gens savent que l'influence du Père de la Peste est grande en ce monde, et quand la maladie ravage la terre, les plus désespérés se souviennent alors de vieux contes et de rites interdits, et lui font des offrandes également inavouables.",

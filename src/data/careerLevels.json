@@ -7,7 +7,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Écriture"
+          "spec": "ecriture"
         }
       },
       {
@@ -230,7 +230,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -302,7 +302,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Urbaine"
+          "spec": "urbaine"
         }
       },
       {
@@ -390,7 +390,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -878,7 +878,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Urbaine"
+          "spec": "urbaine"
         }
       },
       {
@@ -1265,7 +1265,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -1335,7 +1335,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -1480,7 +1480,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Urbaine"
+          "spec": "urbaine"
         }
       },
       {
@@ -1518,7 +1518,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Maladie"
+          "spec": "maladie"
         }
       },
       {
@@ -1973,7 +1973,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -2048,8 +2048,8 @@
           "id": "discretion"
         },
         "specOptions": [
-          "Urbaine",
-          "Souterrains"
+          "urbaine",
+          "souterrains"
         ]
       },
       {
@@ -2094,7 +2094,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Maladie"
+          "spec": "maladie"
         }
       },
       {
@@ -2339,7 +2339,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Urbaine"
+          "spec": "urbaine"
         }
       },
       {
@@ -2420,7 +2420,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -2549,7 +2549,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -2607,7 +2607,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -2820,7 +2820,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -2907,7 +2907,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -3192,7 +3192,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -3270,7 +3270,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Écriture"
+          "spec": "ecriture"
         }
       },
       {
@@ -3862,7 +3862,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -4162,7 +4162,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -4174,7 +4174,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -4571,7 +4571,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Poison"
+          "spec": "poison"
         }
       }
     ],
@@ -4657,7 +4657,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -4674,7 +4674,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -4954,7 +4954,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -5068,7 +5068,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -5437,7 +5437,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -5850,7 +5850,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -6002,7 +6002,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Rhinox"
+          "spec": "rhinox"
         }
       },
       {
@@ -6230,7 +6230,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -6282,7 +6282,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -6419,7 +6419,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -6691,7 +6691,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Blaireau"
+          "spec": "blaireau"
         }
       },
       {
@@ -7073,7 +7073,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -7385,7 +7385,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -7734,7 +7734,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -8163,7 +8163,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -8462,8 +8462,8 @@
           "id": "discretion"
         },
         "specOptions": [
-          "Rurale",
-          "Urbaine"
+          "rurale",
+          "urbaine"
         ]
       },
       {
@@ -8549,7 +8549,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -8836,7 +8836,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Icones"
+          "spec": "icones"
         }
       },
       {
@@ -8852,7 +8852,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -9128,7 +9128,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -9394,7 +9394,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -9757,7 +9757,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Souterrains"
+          "spec": "souterrains"
         }
       },
       {
@@ -9975,7 +9975,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -10199,7 +10199,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -10585,7 +10585,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -10948,7 +10948,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Écriture"
+          "spec": "ecriture"
         }
       },
       {
@@ -11072,7 +11072,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -11169,7 +11169,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -11266,7 +11266,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Poison"
+          "spec": "poison"
         }
       },
       {
@@ -11305,7 +11305,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -11376,7 +11376,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Magick"
+          "spec": "magick"
         }
       },
       {
@@ -11456,7 +11456,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Boucherie"
+          "spec": "boucherie"
         }
       },
       {
@@ -11668,7 +11668,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -11753,7 +11753,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Écriture"
+          "spec": "ecriture"
         }
       },
       {
@@ -11942,7 +11942,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -12037,7 +12037,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -12102,7 +12102,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -12113,7 +12113,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Khazalid"
+          "spec": "khazalid"
         }
       },
       {
@@ -12223,7 +12223,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -12320,7 +12320,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -12387,7 +12387,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Écriture"
+          "spec": "ecriture"
         }
       },
       {
@@ -12590,7 +12590,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -12696,7 +12696,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Maladie"
+          "spec": "maladie"
         }
       },
       {
@@ -12782,7 +12782,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Calligraphie"
+          "spec": "calligraphie"
         }
       },
       {
@@ -13216,7 +13216,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Écriture"
+          "spec": "ecriture"
         }
       },
       {
@@ -13366,7 +13366,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Magick"
+          "spec": "magick"
         }
       },
       {
@@ -13446,7 +13446,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -13496,7 +13496,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -13921,8 +13921,8 @@
           "id": "discretion"
         },
         "specOptions": [
-          "Rurale",
-          "Urbaine"
+          "rurale",
+          "urbaine"
         ]
       },
       {
@@ -14289,7 +14289,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Urbaine"
+          "spec": "urbaine"
         }
       },
       {
@@ -15219,7 +15219,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -16110,7 +16110,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Voleur"
+          "spec": "voleur"
         }
       },
       {
@@ -16353,7 +16353,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Maladie"
+          "spec": "maladie"
         }
       }
     ],
@@ -16579,7 +16579,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -16662,7 +16662,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -16914,7 +16914,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Maladie"
+          "spec": "maladie"
         }
       },
       {
@@ -17093,7 +17093,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Urbaine"
+          "spec": "urbaine"
         }
       },
       {
@@ -17187,8 +17187,8 @@
           "id": "langue"
         },
         "specOptions": [
-          "Estalien",
-          "Tiléen"
+          "estalien",
+          "tileen"
         ]
       },
       {
@@ -17271,7 +17271,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Poison"
+          "spec": "poison"
         }
       },
       {
@@ -17662,7 +17662,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -17683,7 +17683,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Magick"
+          "spec": "magick"
         }
       },
       {
@@ -17956,7 +17956,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Urbaine"
+          "spec": "urbaine"
         }
       },
       {
@@ -18385,7 +18385,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -18454,7 +18454,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -18621,7 +18621,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -18688,7 +18688,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -18908,13 +18908,13 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -19122,7 +19122,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -19294,7 +19294,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Rhinox"
+          "spec": "rhinox"
         }
       },
       {
@@ -19662,7 +19662,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Poison"
+          "spec": "poison"
         }
       },
       {
@@ -19871,7 +19871,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Souterrains"
+          "spec": "souterrains"
         }
       },
       {
@@ -20144,7 +20144,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Écriture"
+          "spec": "ecriture"
         }
       },
       {
@@ -20265,7 +20265,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Magick"
+          "spec": "magick"
         }
       },
       {
@@ -20470,7 +20470,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Maladie"
+          "spec": "maladie"
         }
       }
     ],
@@ -20821,7 +20821,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -20843,7 +20843,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -21135,7 +21135,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -21383,7 +21383,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -21440,7 +21440,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -21468,7 +21468,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -21568,7 +21568,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -21753,7 +21753,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -21881,7 +21881,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -22058,7 +22058,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -22184,7 +22184,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -22396,7 +22396,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -22612,7 +22612,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -22666,7 +22666,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -22682,7 +22682,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -22852,7 +22852,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -22995,7 +22995,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -23144,7 +23144,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -23288,7 +23288,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -23437,7 +23437,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -23585,7 +23585,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -23731,7 +23731,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -23884,13 +23884,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Tiléen"
+          "spec": "tileen"
         }
       },
       {
@@ -24098,7 +24098,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -24182,7 +24182,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -24426,7 +24426,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -24582,7 +24582,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -24762,7 +24762,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Cartographie"
+          "spec": "cartographie"
         }
       },
       {
@@ -24774,7 +24774,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -24865,7 +24865,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -24941,7 +24941,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -25068,7 +25068,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -25238,7 +25238,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -25389,7 +25389,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bataille"
+          "spec": "bataille"
         }
       },
       {
@@ -26394,7 +26394,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -26977,7 +26977,7 @@
       {
         "ref": {
           "id": "art",
-          "spec": "Cartographie"
+          "spec": "cartographie"
         }
       },
       {
@@ -27100,7 +27100,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Classique"
+          "spec": "classique"
         }
       },
       {
@@ -27394,7 +27394,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {

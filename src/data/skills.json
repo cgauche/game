@@ -5,16 +5,50 @@
     "characteristic": "Dex",
     "type": "base",
     "specs": [
-      "Calligraphie",
-      "Cartographie",
-      "Écriture",
-      "Gravure",
-      "Icones",
-      "Mosaïque",
-      "Peinture",
-      "Sculpture",
-      "Tatouage",
-      "Tissage"
+      {
+        "id": "calligraphie",
+        "label": "Calligraphie"
+      },
+      {
+        "id": "cartographie",
+        "label": "Cartographie"
+      },
+      {
+        "id": "ecriture",
+        "label": "Écriture"
+      },
+      {
+        "id": "gravure",
+        "label": "Gravure"
+      },
+      {
+        "id": "icones",
+        "label": "Icones"
+      },
+      {
+        "id": "mosaique",
+        "label": "Mosaïque"
+      },
+      {
+        "id": "peinture",
+        "label": "Peinture"
+      },
+      {
+        "id": "sculpture",
+        "label": "Sculpture"
+      },
+      {
+        "id": "tatouage",
+        "label": "Tatouage"
+      },
+      {
+        "id": "tissage",
+        "label": "Tissage"
+      },
+      {
+        "id": "boucherie",
+        "label": "Boucherie"
+      }
     ],
     "desc": "Créez des œuvres d'art avec le moyen d'expression de votre choix.\n\nNe pas avoir accès aux Outils de la profession appropriés entraînera une pénalité à vos Tests. Le DR obtenu détermine la qualité de l'œuvre finale. Un Test étendu peut être nécessaire pour la réalisation d'une œuvre d'art complexe ou de grande taille. La Compétence Art est peu utilisée en combat, mais les bustes de marbre peuvent faire de formidables armes improvisées.",
     "source": {
@@ -65,12 +99,42 @@
     "characteristic": "Ag",
     "type": "base",
     "specs": [
-      "Blaireau",
-      "Cheval",
-      "Grand Loup",
-      "Griffon",
-      "Demigriffon",
-      "Pégase"
+      {
+        "id": "blaireau",
+        "label": "Blaireau"
+      },
+      {
+        "id": "cheval",
+        "label": "Cheval"
+      },
+      {
+        "id": "grand-loup",
+        "label": "Grand Loup"
+      },
+      {
+        "id": "griffon",
+        "label": "Griffon"
+      },
+      {
+        "id": "demigriffon",
+        "label": "Demigriffon"
+      },
+      {
+        "id": "pegase",
+        "label": "Pégase"
+      },
+      {
+        "id": "rhinox",
+        "label": "Rhinox"
+      },
+      {
+        "id": "squig",
+        "label": "Squig"
+      },
+      {
+        "id": "loup",
+        "label": "Loup"
+      }
     ],
     "desc": "C'est la façon dont vous maîtrisez le fait de chevaucher un groupe particulier d'animaux ; Chevaucher (Cheval), par exemple, vous permettra de monter des chevaux, des mules, des ânes et autres animaux similaires. Vous aurez besoin de faire un Test uniquement lorsque vous voudrez effectuer quelque chose d'inhabituel, comme une course, du dressage, traverser un terrain dangereux ou charger en combat. Autrement, si vous possédez la Compétence, vous êtes considéré comme capable de chevaucher sans avoir besoin de Test.\n\nSi vous êtes monté sur un destrier, vous vous déplacez en utilisant les statistiques de Mouvement du destrier ; si vous voulez courir, sauter, ou bondir, vous utilisez votre Compétence Chevaucher, et pas Athlétisme. Un Test de Chevaucher étendu peut être nécessaire si vous vous rendez quelque part, le DR cible dépendant de la longueur du voyage, et le nombre de Tests indiquant combien de temps vous mettez à arriver. Un Test de Chevaucher peut être modifié par les conditions environnementales et le tempérament de la monture. Pour plus d'information sur les montures, voir le Chapitre 12 : Bestiaire.\n\nLa Compétence Chevaucher peut être activement utilisée en combat. Voir Chapitre 5 : Règles pour plus d'informations sur le combat monté.",
     "source": {
@@ -147,9 +211,18 @@
     "characteristic": "Ag",
     "type": "base",
     "specs": [
-      "Rurale",
-      "Souterrains",
-      "Urbaine"
+      {
+        "id": "rurale",
+        "label": "Rurale"
+      },
+      {
+        "id": "souterrains",
+        "label": "Souterrains"
+      },
+      {
+        "id": "urbaine",
+        "label": "Urbaine"
+      }
     ],
     "desc": "Cette Compétence vous permet de vous glisser sournoisement et de vous dissimuler dans les ombres plus facilement que la plupart des gens. Discrétion est généralement opposée à la Compétence Perception de votre adversaire, et les Tests seront modifiés en fonction de l'obscurité ou de la façon dont votre itinéraire est dissimulé, ainsi que par le soin que vous avez mis à vous habiller ou non en conséquence. Un Échec Impressionnant ou Stupéfiant à un Test de Discrétion attirera probablement et immédiatement l'attention des ennemis que vous essayiez en premier lieu d'éviter.\n\nDiscrétion a beaucoup d'applications potentielles en combat, la plupart utiles pour se dissimuler lors de la préparation d'une Embuscade, ou pour vous glisser derrière un adversaire afin de le prendre à revers. Voir le Chapitre 5 : Règles pour plus d'informations sur les conséquences de cette action. Bien sûr, vous pouvez aussi utiliser la Compétence pour fuir un conflit sans être vu...",
     "source": {
@@ -348,25 +421,82 @@
     "characteristic": "Int",
     "type": "avancée",
     "specs": [
-      "Albionais",
-      "Bataille",
-      "Bretonnien",
-      "Classique",
-      "Elthárin",
-      "Estalien",
-      "Ghassalli",
-      "Gospodarin",
-      "Grumbarth",
-      "Guilde",
-      "Halfling",
-      "Khazalid",
-      "Magick",
-      "Norse",
-      "Queekique",
-      "Reikspiel",
-      "Tiléen",
-      "Voleur",
-      "Wastelander"
+      {
+        "id": "albionais",
+        "label": "Albionais"
+      },
+      {
+        "id": "bataille",
+        "label": "Bataille"
+      },
+      {
+        "id": "bretonnien",
+        "label": "Bretonnien"
+      },
+      {
+        "id": "classique",
+        "label": "Classique"
+      },
+      {
+        "id": "eltharin",
+        "label": "Elthárin"
+      },
+      {
+        "id": "estalien",
+        "label": "Estalien"
+      },
+      {
+        "id": "ghassalli",
+        "label": "Ghassalli"
+      },
+      {
+        "id": "gospodarin",
+        "label": "Gospodarin"
+      },
+      {
+        "id": "grumbarth",
+        "label": "Grumbarth"
+      },
+      {
+        "id": "guilde",
+        "label": "Guilde"
+      },
+      {
+        "id": "halfling",
+        "label": "Halfling"
+      },
+      {
+        "id": "khazalid",
+        "label": "Khazalid"
+      },
+      {
+        "id": "magick",
+        "label": "Magick"
+      },
+      {
+        "id": "norse",
+        "label": "Norse"
+      },
+      {
+        "id": "queekique",
+        "label": "Queekique"
+      },
+      {
+        "id": "reikspiel",
+        "label": "Reikspiel"
+      },
+      {
+        "id": "tileen",
+        "label": "Tiléen"
+      },
+      {
+        "id": "voleur",
+        "label": "Voleur"
+      },
+      {
+        "id": "wastelander",
+        "label": "Wastelander"
+      }
     ],
     "desc": "La Compétence Langue indique votre aisance avec différentes langues. Tous les Personnages sont considérés comme capables de parler le « reikspiel » – la langue de l'Empire – et leur langue maternelle (si votre Personnage en possède une différente du reikspiel), sans avoir besoin de faire de Test. Si votre partie ne se déroule pas dans l'Empire, remplacez le reikspiel par la langue locale.\n\nSi vous possédez l'une de ces Compétences, vous êtes généralement capable de vous faire comprendre dans cette langue, ou de comprendre des concepts simples. Vous serez amené à faire un Test de votre Compétence de Langue quand un concept particulièrement difficile doit être transmis, ou qu'un dialecte ou vocabulaire obscur est utilisé.\n\nRemarque : Langue (Magick) est utilisée pour lancer des Sorts et peut, de temps à autre, nécessiter un Test avec... des conséquences fâcheuses en cas d'échec. Référez-vous au Chapitre 8 : Magie pour plus d'information à ce sujet.",
     "source": {

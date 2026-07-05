@@ -2875,8 +2875,8 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
     .filter((t) => !isOutOfAction(t))
     .map((t) => ({ id: t.id, interactive: t.kind === 'hero', result: null }));
   if (!participants.length) return false;
-  // `menace: 'Magie'` : le Test opposé « résiste au Sort » → Résistance (Menace : Magie) offerte (LDB 10).
-  set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char, menace: 'Magie' } });
+  // `menace: 'magie'` : le Test opposé « résiste au Sort » → Résistance (Menace : Magie) offerte (LDB 10).
+  set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char, menace: 'magie' } });
   // Cibles IA (témoin) : jet auto-roulé immédiatement (révélé dans la modale, jamais caché).
   for (const p of participants) if (!p.interactive) get().oppositionRoll(p.id);
   return true;
@@ -3219,7 +3219,7 @@ export function counterspellCandidates(
   if (!battle || battle.over) return [];
   return battle.combatants.filter((c) => {
     if (c.kind === caster.kind || c.id === caster.id || isOutOfAction(c) || c.dispelledThisRound) return false;
-    if (!knowsCastingSkill(c, 'langue', 'Magick')) return false;
+    if (!knowsCastingSkill(c, 'langue', 'magick')) return false;
     if (c.id === target.id) return true;
     if (!c.pos || !target.pos) return false;
     if (combatDistance(c, target) > Math.max(1, Math.floor(effectiveChar(c, 'FM') / 2))) return false;
@@ -3981,7 +3981,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: '🤢',
         rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[d.difficulty] + combatTestPenalty(c),
         label: `🤢 ${d.label}`, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
-        menace: 'Maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
+        menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
     }
     if (decided.corruption && corr) {
@@ -3990,7 +3990,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: '🧬',
         rollLabel: 'Résistance', base: res, target: res + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
         label: `🧬 Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
-        menace: 'Corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
+        menace: 'corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
       });
     }
   }

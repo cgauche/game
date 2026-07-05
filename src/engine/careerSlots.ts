@@ -27,7 +27,7 @@
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findTalentById, findSkill, spells, advancementLabel, refLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalent, findTalentById, findSkill, spells, advancementLabel, refLabel, specEntryId, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
 import { CULT_KEYS } from '../data';
 import { splitLabel } from './statEntry';
@@ -112,14 +112,17 @@ export function parseEntry(raw: string): SlotOption[] {
  */
 export function wildcardSpecs(name: string): string[] {
   const skill = findSkill(name);
-  if (skill?.specs?.length) return skill.specs;
+  // Pool = des IDS (`specEntryId` — id STABLE pour un domaine MIGRÉ, ou le legacy `string` lui-même
+  // pour un domaine pas-encore-migré/`specsSource`, cf. `SpecEntry`) : c'est cette valeur qui devient
+  // la `spec` PERSISTÉE de l'instance créée (draft/avancement) — jamais le libellé FR d'affichage.
+  if (skill?.specs?.length) return skill.specs.map(specEntryId);
   // `name` est un nom d'AUTHORING (entrée de carrière) — résolution nom→def UNE fois (bord authoring,
   // comme `findSkill`) ; pas un chemin runtime/persistance (l'id n'existe pas au point d'appel).
   const talent = findTalent(name);
   if (talent?.combat?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal DONNÉE, plus de registre)
   const fromSpells = [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
   if (fromSpells.length) return fromSpells;
-  return talent?.specs ?? [];
+  return talent?.specs?.map(specEntryId) ?? [];
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne

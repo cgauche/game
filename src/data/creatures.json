@@ -479,7 +479,7 @@
       {
         "id": "chevaucher",
         "value": 58,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "commandement",
@@ -515,12 +515,12 @@
       {
         "id": "langue",
         "value": 63,
-        "spec": "Estalien"
+        "spec": "estalien"
       },
       {
         "id": "langue",
         "value": 63,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "perception",
@@ -4362,7 +4362,7 @@
       {
         "id": "langue",
         "value": 55,
-        "spec": "Magick"
+        "spec": "magick"
       }
     ],
     "talents": [],
@@ -4448,7 +4448,7 @@
       {
         "id": "langue",
         "value": 30,
-        "spec": "Magick"
+        "spec": "magick"
       }
     ],
     "talents": [],
@@ -5396,7 +5396,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "marchandage",
@@ -5503,7 +5503,7 @@
       {
         "id": "chevaucher",
         "value": 35,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "escalade",
@@ -5569,7 +5569,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "orientation",
@@ -5967,7 +5967,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -6025,7 +6025,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -6148,7 +6148,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -6207,7 +6207,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -6452,7 +6452,7 @@
       {
         "id": "chevaucher",
         "value": 35,
-        "spec": "Chevaux"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -6614,7 +6614,7 @@
       {
         "id": "chevaucher",
         "value": 40,
-        "spec": "Chevaux"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -6779,7 +6779,7 @@
       {
         "id": "chevaucher",
         "value": 50,
-        "spec": "Chevaux"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -7714,7 +7714,7 @@
       {
         "id": "chevaucher",
         "value": 35,
-        "spec": "Chevaux"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -7871,7 +7871,7 @@
       {
         "id": "chevaucher",
         "value": 40,
-        "spec": "Chevaux"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -8043,7 +8043,7 @@
       {
         "id": "chevaucher",
         "value": 50,
-        "spec": "Chevaux"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -8225,12 +8225,12 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "langue",
         "value": 55,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "marchandage",
@@ -8359,12 +8359,12 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "langue",
         "value": 80,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "marchandage",
@@ -8486,12 +8486,12 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "langue",
         "value": 55,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "marchandage",
@@ -8619,12 +8619,12 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "langue",
         "value": 80,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "marchandage",
@@ -8759,7 +8759,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -8798,7 +8798,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -8913,7 +8913,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -8970,7 +8970,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -9087,7 +9087,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -9143,7 +9143,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -9262,7 +9262,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "orientation",
@@ -9327,7 +9327,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -9465,7 +9465,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -9592,7 +9592,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -9746,7 +9746,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -9915,7 +9915,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -10098,7 +10098,7 @@
       {
         "id": "discretion",
         "value": 60,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -10206,12 +10206,12 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
         "value": 45,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -10354,12 +10354,12 @@
       {
         "id": "langue",
         "value": 75,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
         "value": 65,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -10505,12 +10505,12 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
         "value": 45,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -10662,12 +10662,12 @@
       {
         "id": "langue",
         "value": 75,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
         "value": 65,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -10846,7 +10846,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Maladies"
+        "spec": "maladie"
       }
     ],
     "trappings": [],
@@ -11085,7 +11085,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -11098,7 +11098,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -11237,7 +11237,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -11254,7 +11254,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -11399,7 +11399,7 @@
       {
         "id": "langue",
         "value": 45,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -11553,7 +11553,7 @@
       {
         "id": "langue",
         "value": 65,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -11710,7 +11710,7 @@
       {
         "id": "langue",
         "value": 55,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
@@ -11839,7 +11839,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
@@ -11964,7 +11964,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -12098,7 +12098,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -12226,7 +12226,7 @@
       {
         "id": "art",
         "value": 50,
-        "spec": "Calligraphie"
+        "spec": "calligraphie"
       },
       {
         "id": "metier",
@@ -12545,7 +12545,7 @@
       {
         "id": "art",
         "value": 45,
-        "spec": "Calligraphie"
+        "spec": "calligraphie"
       },
       {
         "id": "metier",
@@ -12867,7 +12867,7 @@
       {
         "id": "art",
         "value": 50,
-        "spec": "Calligraphie"
+        "spec": "calligraphie"
       },
       {
         "id": "metier",
@@ -12899,7 +12899,7 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "corps-a-corps",
@@ -13045,7 +13045,7 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "corps-a-corps",
@@ -13198,7 +13198,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -14161,7 +14161,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "esquive",
@@ -14302,7 +14302,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "esquive",
@@ -14609,7 +14609,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Voleur"
+        "spec": "voleur"
       },
       {
         "id": "marchandage",
@@ -14739,7 +14739,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "escamotage",
@@ -14883,7 +14883,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "escamotage",
@@ -15032,7 +15032,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -15174,7 +15174,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -15607,7 +15607,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -15633,7 +15633,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "perception",
@@ -15771,7 +15771,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "corps-a-corps",
@@ -15921,7 +15921,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -16086,7 +16086,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -16261,7 +16261,7 @@
       {
         "id": "discretion",
         "value": 90,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -16450,7 +16450,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -16463,7 +16463,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -16602,7 +16602,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -16619,7 +16619,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -16768,7 +16768,7 @@
       {
         "id": "langue",
         "value": 45,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -16926,7 +16926,7 @@
       {
         "id": "langue",
         "value": 65,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "marchandage",
@@ -17795,7 +17795,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -17968,7 +17968,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -18068,7 +18068,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "intuition",
@@ -18077,7 +18077,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -18259,7 +18259,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "intuition",
@@ -18268,7 +18268,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -18488,7 +18488,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -18513,7 +18513,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -18662,7 +18662,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -18687,7 +18687,7 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -18859,7 +18859,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -19022,7 +19022,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -19564,7 +19564,7 @@
       {
         "id": "discretion",
         "value": 30,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -19667,7 +19667,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -19872,7 +19872,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -20023,7 +20023,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -20160,7 +20160,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -20336,7 +20336,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -20667,7 +20667,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -20814,12 +20814,12 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "chevaucher",
         "value": 35,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -20979,12 +20979,12 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "chevaucher",
         "value": 40,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -22038,7 +22038,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -22201,7 +22201,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -22740,7 +22740,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -23103,7 +23103,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -23366,7 +23366,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -23744,7 +23744,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -23889,7 +23889,7 @@
       {
         "id": "discretion",
         "value": 60,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -24204,7 +24204,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -24338,7 +24338,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -24482,7 +24482,7 @@
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -24638,7 +24638,7 @@
       {
         "id": "discretion",
         "value": 85,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -25182,7 +25182,7 @@
       {
         "id": "discretion",
         "value": 75,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -25571,7 +25571,7 @@
     "talents": [
       {
         "id": "resistance",
-        "spec": "Maladie"
+        "spec": "maladie"
       },
       {
         "id": "tres-resistant"
@@ -25708,7 +25708,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Maladie"
+        "spec": "maladie"
       },
       {
         "id": "tres-resistant"
@@ -25879,7 +25879,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Maladie"
+        "spec": "maladie"
       },
       {
         "id": "dur-a-cuire"
@@ -26067,7 +26067,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -26163,7 +26163,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -26315,7 +26315,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -26484,7 +26484,7 @@
       {
         "id": "discretion",
         "value": 85,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -26635,7 +26635,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -26753,7 +26753,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -26770,7 +26770,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "corps-a-corps",
@@ -26895,7 +26895,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -27023,7 +27023,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -27036,7 +27036,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "corps-a-corps",
@@ -27172,7 +27172,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -27315,7 +27315,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -27474,7 +27474,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -27618,7 +27618,7 @@
       {
         "id": "discretion",
         "value": 75,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -27782,7 +27782,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -27960,7 +27960,7 @@
       {
         "id": "discretion",
         "value": 95,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -28025,7 +28025,7 @@
       {
         "id": "langue",
         "value": 80,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       }
     ],
     "talents": [
@@ -28154,7 +28154,7 @@
       {
         "id": "discretion",
         "value": 90,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "esquive",
@@ -28219,7 +28219,7 @@
       {
         "id": "langue",
         "value": 80,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       }
     ],
     "talents": [
@@ -28326,7 +28326,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -28347,7 +28347,7 @@
       {
         "id": "langue",
         "value": 45,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -28394,7 +28394,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "orientation",
@@ -28515,7 +28515,7 @@
       {
         "id": "discretion",
         "value": 55,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -28536,7 +28536,7 @@
       {
         "id": "langue",
         "value": 85,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -28588,7 +28588,7 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "orientation",
@@ -28730,7 +28730,7 @@
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -28751,7 +28751,7 @@
       {
         "id": "langue",
         "value": 105,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -28808,7 +28808,7 @@
       {
         "id": "langue",
         "value": 65,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "orientation",
@@ -28967,7 +28967,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -29119,7 +29119,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -29289,7 +29289,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -29465,7 +29465,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -29482,7 +29482,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -29638,7 +29638,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -29655,7 +29655,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -29803,7 +29803,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -29825,7 +29825,7 @@
       {
         "id": "langue",
         "value": 55,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -29985,7 +29985,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -30016,7 +30016,7 @@
       {
         "id": "langue",
         "value": 75,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -30186,7 +30186,7 @@
       {
         "id": "discretion",
         "value": 90,
-        "spec": "Urbain"
+        "spec": "urbaine"
       },
       {
         "id": "divertissement",
@@ -30222,7 +30222,7 @@
       {
         "id": "langue",
         "value": 95,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -31155,7 +31155,7 @@
       {
         "id": "langue",
         "value": 60,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -31305,7 +31305,7 @@
       {
         "id": "langue",
         "value": 80,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -31476,7 +31476,7 @@
       {
         "id": "langue",
         "value": 90,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -31668,7 +31668,7 @@
       {
         "id": "langue",
         "value": 110,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -32152,7 +32152,7 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -32295,7 +32295,7 @@
       {
         "id": "langue",
         "value": 60,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -32443,7 +32443,7 @@
       {
         "id": "langue",
         "value": 90,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -32619,7 +32619,7 @@
       {
         "id": "langue",
         "value": 110,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -32975,7 +32975,7 @@
       {
         "id": "langue",
         "value": 60,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -33108,7 +33108,7 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -33263,7 +33263,7 @@
       {
         "id": "langue",
         "value": 80,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -33436,7 +33436,7 @@
       {
         "id": "langue",
         "value": 110,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -33611,7 +33611,7 @@
       {
         "id": "langue",
         "value": 130,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -34402,7 +34402,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escamotage",
@@ -34551,7 +34551,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escamotage",
@@ -34716,7 +34716,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escamotage",
@@ -34905,7 +34905,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escamotage",
@@ -35090,7 +35090,7 @@
       {
         "id": "discretion",
         "value": 60,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "esquive",
@@ -35099,7 +35099,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -35237,7 +35237,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -35254,7 +35254,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -35394,7 +35394,7 @@
       {
         "id": "discretion",
         "value": 90,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -35415,7 +35415,7 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -35561,7 +35561,7 @@
       {
         "id": "discretion",
         "value": 110,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -35582,7 +35582,7 @@
       {
         "id": "langue",
         "value": 90,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -35739,12 +35739,12 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -35909,12 +35909,12 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -36102,7 +36102,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escamotage",
@@ -36123,7 +36123,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -36320,7 +36320,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "intimidation",
@@ -36333,7 +36333,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
@@ -36565,7 +36565,7 @@
       {
         "id": "langue",
         "value": 45,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -36726,7 +36726,7 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -36925,7 +36925,7 @@
       {
         "id": "langue",
         "value": 80,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -37157,7 +37157,7 @@
       {
         "id": "langue",
         "value": 120,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -37386,7 +37386,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -37541,7 +37541,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -37728,7 +37728,7 @@
       {
         "id": "langue",
         "value": 90,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -37930,7 +37930,7 @@
       {
         "id": "langue",
         "value": 110,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -38112,7 +38112,7 @@
       {
         "id": "discretion",
         "value": 55,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -38254,7 +38254,7 @@
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "dressage",
@@ -38425,7 +38425,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "dressage",
@@ -38627,7 +38627,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "dressage",
@@ -38989,7 +38989,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Tunnel"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -39152,7 +39152,7 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Tunnel"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -39327,7 +39327,7 @@
       {
         "id": "discretion",
         "value": 90,
-        "spec": "Tunnel"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -39481,7 +39481,7 @@
       {
         "id": "discretion",
         "value": 75,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "chevaucher",
@@ -39507,12 +39507,12 @@
       {
         "id": "langue",
         "value": 100,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
         "value": 90,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "langue",
@@ -39726,7 +39726,7 @@
       {
         "id": "discretion",
         "value": 95,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "chevaucher",
@@ -39752,12 +39752,12 @@
       {
         "id": "langue",
         "value": 120,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
         "value": 110,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "langue",
@@ -39975,7 +39975,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -40113,7 +40113,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -40122,7 +40122,7 @@
       {
         "id": "chevaucher",
         "value": 50,
-        "spec": "Loup"
+        "spec": "loup"
       },
       {
         "id": "escalade",
@@ -40267,7 +40267,7 @@
       {
         "id": "discretion",
         "value": 55,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -40280,7 +40280,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -40416,7 +40416,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -40434,7 +40434,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -40585,7 +40585,7 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -40726,7 +40726,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -41007,7 +41007,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -41187,7 +41187,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -41350,7 +41350,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -41380,7 +41380,7 @@
       {
         "id": "langue",
         "value": 50,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -41539,7 +41539,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -41569,7 +41569,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -41753,7 +41753,7 @@
       {
         "id": "discretion",
         "value": 0,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -41767,7 +41767,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Squig"
+        "spec": "squig"
       },
       {
         "id": "escamotage",
@@ -41788,7 +41788,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "marchandage",
@@ -42150,7 +42150,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -42304,7 +42304,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "chevaucher",
@@ -42322,7 +42322,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -42463,7 +42463,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -42485,7 +42485,7 @@
       {
         "id": "langue",
         "value": 35,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -42621,7 +42621,7 @@
       {
         "id": "discretion",
         "value": 30,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -42652,7 +42652,7 @@
       {
         "id": "langue",
         "value": 45,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -42814,7 +42814,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -42845,7 +42845,7 @@
       {
         "id": "langue",
         "value": 55,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "corps-a-corps",
@@ -43024,7 +43024,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -43054,7 +43054,7 @@
       {
         "id": "langue",
         "value": 45,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -43229,7 +43229,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -43263,7 +43263,7 @@
       {
         "id": "langue",
         "value": 75,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -43443,7 +43443,7 @@
       {
         "id": "discretion",
         "value": 55,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -43477,7 +43477,7 @@
       {
         "id": "langue",
         "value": 115,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -43667,7 +43667,7 @@
       {
         "id": "discretion",
         "value": 25,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -43827,7 +43827,7 @@
       {
         "id": "discretion",
         "value": 55,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -44008,7 +44008,7 @@
       {
         "id": "discretion",
         "value": 75,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -44205,7 +44205,7 @@
       {
         "id": "discretion",
         "value": 25,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -44230,7 +44230,7 @@
       {
         "id": "langue",
         "value": 40,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -44439,7 +44439,7 @@
       {
         "id": "discretion",
         "value": 35,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -44464,7 +44464,7 @@
       {
         "id": "langue",
         "value": 100,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -44699,7 +44699,7 @@
       {
         "id": "discretion",
         "value": 45,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -44724,7 +44724,7 @@
       {
         "id": "langue",
         "value": 120,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "focalisation",
@@ -44934,7 +44934,7 @@
       {
         "id": "discretion",
         "value": 25,
-        "spec": "Tunnels"
+        "spec": "souterrains"
       },
       {
         "id": "esquive",
@@ -45098,7 +45098,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Tunnels"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -45233,7 +45233,7 @@
       {
         "id": "discretion",
         "value": 80,
-        "spec": "Tunnels"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -45376,7 +45376,7 @@
       {
         "id": "discretion",
         "value": 80,
-        "spec": "Tunnels"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -45526,17 +45526,17 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "corps-a-corps",
@@ -45695,7 +45695,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -45721,17 +45721,17 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "corps-a-corps",
@@ -45915,7 +45915,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -45941,17 +45941,17 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
@@ -46282,12 +46282,12 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "esquive",
@@ -46428,12 +46428,12 @@
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -46592,12 +46592,12 @@
       {
         "id": "discretion",
         "value": 85,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "discretion",
         "value": 85,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       },
       {
         "id": "escalade",
@@ -47182,7 +47182,7 @@
       {
         "id": "chevaucher",
         "value": 25,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "intimidation",
@@ -47297,7 +47297,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -47600,7 +47600,7 @@
       {
         "id": "langue",
         "value": 55,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
@@ -47783,7 +47783,7 @@
       {
         "id": "langue",
         "value": 65,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
@@ -47943,7 +47943,7 @@
       {
         "id": "discretion",
         "value": 25,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -48351,7 +48351,7 @@
       {
         "id": "discretion",
         "value": 60,
-        "spec": "Rural"
+        "spec": "rurale"
       },
       {
         "id": "escalade",
@@ -48526,7 +48526,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -48552,17 +48552,17 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "langue",
@@ -48838,7 +48838,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "esquive",
@@ -48864,17 +48864,17 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "langue",
@@ -49380,7 +49380,7 @@
       {
         "id": "discretion",
         "value": 60,
-        "spec": "Rurale"
+        "spec": "rurale"
       }
     ],
     "talents": [],
@@ -50374,7 +50374,7 @@
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Rurale"
+        "spec": "rurale"
       }
     ],
     "talents": [],
@@ -50490,7 +50490,7 @@
       {
         "id": "langue",
         "value": 105,
-        "spec": "Magick"
+        "spec": "magick"
       }
     ],
     "talents": [
@@ -50589,7 +50589,7 @@
       {
         "id": "discretion",
         "value": 44,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "divertissement",
@@ -50948,7 +50948,7 @@
       {
         "id": "discretion",
         "value": 60,
-        "spec": "Rurale"
+        "spec": "rurale"
       }
     ],
     "talents": [],
@@ -51519,7 +51519,7 @@
       {
         "id": "discretion",
         "value": 37,
-        "spec": "Urbaine"
+        "spec": "urbaine"
       },
       {
         "id": "evaluation",
@@ -51864,7 +51864,7 @@
       {
         "id": "langue",
         "value": 75,
-        "spec": "Magick"
+        "spec": "magick"
       }
     ],
     "talents": [],
@@ -51935,7 +51935,7 @@
       {
         "id": "discretion",
         "value": 60,
-        "spec": "Rurale"
+        "spec": "rurale"
       }
     ],
     "talents": [],
@@ -52522,12 +52522,12 @@
       {
         "id": "discretion",
         "value": 75,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "langue",
         "value": 60,
-        "spec": "Elthárin"
+        "spec": "eltharin"
       },
       {
         "id": "savoir",
@@ -52948,7 +52948,7 @@
       {
         "id": "discretion",
         "value": 40,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -53286,7 +53286,7 @@
       {
         "id": "discretion",
         "value": 68,
-        "spec": "Souterrains"
+        "spec": "souterrains"
       }
     ],
     "talents": [],
@@ -53457,7 +53457,7 @@
       {
         "id": "discretion",
         "value": 50,
-        "spec": "Rural"
+        "spec": "rurale"
       }
     ],
     "talents": [],
@@ -53844,7 +53844,7 @@
       {
         "id": "discretion",
         "value": 75,
-        "spec": "Rurale"
+        "spec": "rurale"
       }
     ],
     "talents": [],
@@ -53945,7 +53945,7 @@
       {
         "id": "discretion",
         "value": 62,
-        "spec": "Rurale"
+        "spec": "rurale"
       }
     ],
     "talents": [],
@@ -55303,7 +55303,7 @@
       {
         "id": "langue",
         "value": 27,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "marchandage",
@@ -55351,7 +55351,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Poisons ingérés"
+        "spec": "poisons-ingeres"
       },
       {
         "id": "tres-fort"
@@ -55465,7 +55465,7 @@
       {
         "id": "langue",
         "value": 28,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "orientation",
@@ -55532,7 +55532,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Poisons ingérés"
+        "spec": "poisons-ingeres"
       },
       {
         "id": "tres-fort"
@@ -55662,7 +55662,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Poisons ingérés"
+        "spec": "poisons-ingeres"
       },
       {
         "id": "tres-fort"
@@ -55756,7 +55756,7 @@
       {
         "id": "discretion",
         "value": 26,
-        "spec": "Urbaine"
+        "spec": "urbaine"
       },
       {
         "id": "esquive",
@@ -55773,7 +55773,7 @@
       {
         "id": "langue",
         "value": 28,
-        "spec": "Grumbarth"
+        "spec": "grumbarth"
       },
       {
         "id": "metier",
@@ -55807,7 +55807,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Poisons ingérés"
+        "spec": "poisons-ingeres"
       },
       {
         "id": "tres-fort"
@@ -56063,7 +56063,7 @@
       {
         "id": "langue",
         "value": 85,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "perception",
@@ -56295,7 +56295,7 @@
       {
         "id": "langue",
         "value": 62,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "perception",
@@ -56745,7 +56745,7 @@
       {
         "id": "chevaucher",
         "value": 39,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "commandement",
@@ -56782,7 +56782,7 @@
       {
         "id": "langue",
         "value": 45,
-        "spec": "Bataille"
+        "spec": "bataille"
       },
       {
         "id": "pari",
@@ -56911,7 +56911,7 @@
       {
         "id": "langue",
         "value": 59,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "perception",
@@ -57422,7 +57422,7 @@
       {
         "id": "chevaucher",
         "value": 40,
-        "spec": "Cheval"
+        "spec": "cheval"
       },
       {
         "id": "commandement",
@@ -57548,7 +57548,7 @@
       {
         "id": "discretion",
         "value": 38,
-        "spec": "Urbaine"
+        "spec": "urbaine"
       },
       {
         "id": "evaluation",
@@ -57656,7 +57656,7 @@
       {
         "id": "langue",
         "value": 66,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "perception",
@@ -57966,7 +57966,7 @@
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -58000,12 +58000,12 @@
       {
         "id": "langue",
         "value": 81,
-        "spec": "Classique"
+        "spec": "classique"
       },
       {
         "id": "langue",
         "value": 80,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "metier",
@@ -58186,7 +58186,7 @@
       {
         "id": "langue",
         "value": 41,
-        "spec": "Halfling"
+        "spec": "halfling"
       },
       {
         "id": "perception",
@@ -58230,7 +58230,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Chaos"
+        "spec": "chaos"
       },
       {
         "id": "sens-aiguise",
@@ -58311,7 +58311,7 @@
       {
         "id": "langue",
         "value": 58,
-        "spec": "Khazalid"
+        "spec": "khazalid"
       },
       {
         "id": "marchandage",
@@ -58444,7 +58444,7 @@
       {
         "id": "langue",
         "value": 59,
-        "spec": "Khazalid"
+        "spec": "khazalid"
       },
       {
         "id": "marchandage",
@@ -58557,7 +58557,7 @@
       {
         "id": "discretion",
         "value": 46,
-        "spec": "Urbaine"
+        "spec": "urbaine"
       },
       {
         "id": "evaluation",
@@ -58864,12 +58864,12 @@
       {
         "id": "discretion",
         "value": 49,
-        "spec": "Rurale"
+        "spec": "rurale"
       },
       {
         "id": "discretion",
         "value": 52,
-        "spec": "Urbaine"
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -59223,7 +59223,7 @@
       {
         "id": "art",
         "value": 65,
-        "spec": "Écriture"
+        "spec": "ecriture"
       },
       {
         "id": "calme",
@@ -59240,7 +59240,7 @@
       {
         "id": "discretion",
         "value": 46,
-        "spec": "Urbaine"
+        "spec": "urbaine"
       },
       {
         "id": "evaluation",
@@ -59369,7 +59369,7 @@
       {
         "id": "art",
         "value": 45,
-        "spec": "Écriture"
+        "spec": "ecriture"
       },
       {
         "id": "charme",
@@ -59939,7 +59939,7 @@
       {
         "id": "langue",
         "value": 37,
-        "spec": "Norse"
+        "spec": "norse"
       },
       {
         "id": "natation",
@@ -59982,7 +59982,7 @@
       },
       {
         "id": "resistance",
-        "spec": "Maladie"
+        "spec": "maladie"
       },
       {
         "id": "tres-resistant"
@@ -61063,7 +61063,7 @@
       {
         "id": "langue",
         "value": 69,
-        "spec": "Magick"
+        "spec": "magick"
       },
       {
         "id": "orientation",
@@ -61330,12 +61330,12 @@
       {
         "id": "langue",
         "value": 78,
-        "spec": "Khazalid"
+        "spec": "khazalid"
       },
       {
         "id": "langue",
         "value": 93,
-        "spec": "Tiléen"
+        "spec": "tileen"
       },
       {
         "id": "marchandage",
@@ -61633,12 +61633,12 @@
       {
         "id": "langue",
         "value": 80,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "langue",
         "value": 70,
-        "spec": "Tiléen"
+        "spec": "tileen"
       },
       {
         "id": "marchandage",
@@ -61925,12 +61925,12 @@
       {
         "id": "langue",
         "value": 54,
-        "spec": "Gospodarin"
+        "spec": "gospodarin"
       },
       {
         "id": "langue",
         "value": 64,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "natation",
@@ -62217,12 +62217,12 @@
       {
         "id": "langue",
         "value": 90,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "langue",
         "value": 90,
-        "spec": "Tiléen"
+        "spec": "tileen"
       },
       {
         "id": "metier",
@@ -62505,12 +62505,12 @@
       {
         "id": "langue",
         "value": 41,
-        "spec": "Reikspiel"
+        "spec": "reikspiel"
       },
       {
         "id": "langue",
         "value": 46,
-        "spec": "Wastelander"
+        "spec": "wastelander"
       },
       {
         "id": "metier",

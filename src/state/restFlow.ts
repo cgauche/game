@@ -384,7 +384,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (!h || h.dead) continue;
     steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion (${c.diseaseName})`, icon: '🤒',
       rollLabel: 'Résistance', base: c.resVal, target: c.resVal + DIFFICULTY_MODIFIERS[c.difficulty], result: null, interactive: true, meta: { diseaseName: c.diseaseName },
-      menace: 'Maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
+      menace: 'maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
   const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');

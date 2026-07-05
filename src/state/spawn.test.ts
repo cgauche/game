@@ -131,7 +131,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('compétences au format livre → avances dérivées (Test FINAL = Caractéristique + avances, LDB 09)', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    const langue = c.skills.find((s) => s.skillId === 'langue' && s.spec === 'Magick')!;
+    const langue = c.skills.find((s) => s.skillId === 'langue' && s.spec === 'magick')!;
     expect(langue.advances).toBe(63 - 48); // « Langue (Magick) 63 », Int 48
     expect(c.characteristics.Int + langue.advances).toBe(63);
     const foc = c.skills.find((s) => s.skillId === 'focalisation' && s.spec === 'Ghur')!;
@@ -148,8 +148,8 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('incante par la voie NORMALE (Langue (Magick) 63, sans le Trait Lanceur de Sorts)', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    expect(knowsCastingSkill(c, 'langue', 'Magick')).toBe(true);
-    expect(castingValue(c, 'langue', 'Magick')).toBe(63);
+    expect(knowsCastingSkill(c, 'langue', 'magick')).toBe(true);
+    expect(castingValue(c, 'langue', 'magick')).toBe(63);
   });
 
   it('arme du trait : « Arme (Bâton de combat) +7 » → arme tenue', () => {
@@ -159,7 +159,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('statbloc personnalisé : skills/talents portés par CustomStatblock (mêmes règles)', () => {
     const c = statblockToCombatant(
-      { name: 'Sorcier custom', char: { Int: 48, FM: 53 }, skills: [{ id: 'langue', spec: 'Magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
+      { name: 'Sorcier custom', char: { Int: 48, FM: 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
       'e1', at,
     );
     expect(c.skills.find((s) => s.skillId === 'langue')!.advances).toBe(15);

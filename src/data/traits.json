@@ -1861,7 +1861,7 @@
               "difficulty": "intermediaire",
               "argDifficulty": true,
               "unlessImmune": "poison",
-              "menace": "Poison"
+              "menace": "poison"
             },
             "success": {
               "kind": "seq",
@@ -2194,7 +2194,7 @@
         {
           "op": "skillDRBonus",
           "skill": "langue",
-          "spec": "Magick",
+          "spec": "magick",
           "bonus": 1
         }
       ]
@@ -2208,7 +2208,7 @@
       {
         "op": "skillDRBonus",
         "skill": "langue",
-        "spec": "Magick",
+        "spec": "magick",
         "bonus": 1
       }
     ]

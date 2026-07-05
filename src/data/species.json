@@ -57,13 +57,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Bretonnien"
+          "spec": "bretonnien"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Wastelander"
+          "spec": "wastelander"
         }
       },
       {
@@ -303,7 +303,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Wastelander"
+          "spec": "wastelander"
         }
       },
       {
@@ -418,13 +418,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Norse"
+          "spec": "norse"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Wastelander"
+          "spec": "wastelander"
         }
       },
       {
@@ -579,13 +579,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Reikspiel"
+          "spec": "reikspiel"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Tiléen"
+          "spec": "tileen"
         }
       },
       {
@@ -689,13 +689,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Reikspiel"
+          "spec": "reikspiel"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Wastelander"
+          "spec": "wastelander"
         }
       },
       {
@@ -747,7 +747,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Norse"
+          "spec": "norse"
         }
       }
     ],
@@ -783,7 +783,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Chaos"
+          "spec": "chaos"
         }
       },
       {
@@ -827,7 +827,7 @@
       {
         "ref": {
           "id": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       },
       {
@@ -839,13 +839,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Gospodarin"
+          "spec": "gospodarin"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Reikspiel"
+          "spec": "reikspiel"
         }
       },
       {
@@ -892,7 +892,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Norse"
+          "spec": "norse"
         }
       }
     ],
@@ -928,7 +928,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -1001,13 +1001,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Reikspiel"
+          "spec": "reikspiel"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Wastelander"
+          "spec": "wastelander"
         }
       },
       {
@@ -1038,7 +1038,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Norse"
+          "spec": "norse"
         }
       }
     ],
@@ -1074,7 +1074,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Chaos"
+          "spec": "chaos"
         }
       },
       {
@@ -1142,7 +1142,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -1187,7 +1187,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -1290,7 +1290,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -1308,7 +1308,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -1427,7 +1427,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -1445,7 +1445,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -1552,7 +1552,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -1581,7 +1581,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -1694,7 +1694,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -1717,7 +1717,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -1830,7 +1830,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -1853,7 +1853,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -1960,7 +1960,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -1988,7 +1988,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -2122,7 +2122,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -2229,7 +2229,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -2257,7 +2257,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -2368,7 +2368,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -2396,7 +2396,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -2504,7 +2504,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -2532,7 +2532,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -2645,7 +2645,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -2669,7 +2669,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -2780,7 +2780,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Halfling"
+          "spec": "halfling"
         }
       },
       {
@@ -2808,7 +2808,7 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
@@ -2905,7 +2905,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Khazalid"
+          "spec": "khazalid"
         }
       },
       {
@@ -3047,13 +3047,13 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Khazalid"
+          "spec": "khazalid"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Norse"
+          "spec": "norse"
         }
       },
       {
@@ -3191,19 +3191,19 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Ghassalli"
+          "spec": "ghassalli"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Magick"
+          "spec": "magick"
         }
       },
       {
         "ref": {
           "id": "langue",
-          "spec": "Wastelander"
+          "spec": "wastelander"
         }
       },
       {
@@ -3364,7 +3364,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Grumbarth"
+          "spec": "grumbarth"
         }
       },
       {
@@ -3413,13 +3413,13 @@
       {
         "ref": {
           "id": "resistance",
-          "spec": "Corruption"
+          "spec": "corruption"
         }
       },
       {
         "ref": {
           "id": "resistance",
-          "spec": "Poisons ingérés"
+          "spec": "poisons-ingeres"
         }
       },
       {
@@ -3517,7 +3517,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Elthárin"
+          "spec": "eltharin"
         }
       },
       {
@@ -3641,7 +3641,7 @@
       {
         "ref": {
           "id": "discretion",
-          "spec": "Rurale"
+          "spec": "rurale"
         }
       },
       {
@@ -3663,7 +3663,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Elthárin"
+          "spec": "eltharin"
         }
       },
       {

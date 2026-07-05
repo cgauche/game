@@ -9,10 +9,11 @@ import type { Combatant } from '../engine/types';
 /**
  * Talent « Résistance (Menace) » CÂBLÉ sur les flux de jet (LDB 10 l.1015-1021) — verbe `resist` de la
  * fabrique rollFlow (MÊME mécanisme d'auto-succès que la Résilience, autre ressource : 1× par spec et
- * par séance) : le Test tagué `menace` réussit d'office avec DR = Bonus d'Endurance. Sites couverts :
- * exposition à la Corruption ('Corruption'), seuil → mutation ('Mutation'), Contraction de fin de
- * combat ('Maladie'), opposition à un Sort ('Magie'). Poison ('Poison') = tag de DONNÉE
- * (`FlowTest.menace` du Venin/lames empoisonnées) → couvert par les étapes `triggeredTest`.
+ * par séance) : le Test tagué `menace` réussit d'office avec DR = Bonus d'Endurance. Le tag `menace` ET
+ * la spec du talent sont désormais des ids stables (Phase 3) : exposition à la Corruption ('corruption'),
+ * seuil → mutation ('mutation'), Contraction de fin de combat ('maladie'), opposition à un Sort ('magie').
+ * Poison ('poison') = tag de DONNÉE (`FlowTest.menace` du Venin/lames empoisonnées) → couvert par les
+ * étapes `triggeredTest`.
  */
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({
@@ -20,10 +21,10 @@ const hero = (p: Partial<Combatant> = {}): Combatant =>
     characteristics: { CC: 30, CT: 30, F: 30, E: 43, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [],
     talents: [
-      { talentId: 'resistance', spec: 'Corruption', times: 1 },
-      { talentId: 'resistance', spec: 'Maladie', times: 1 },
-      { talentId: 'resistance', spec: 'Mutation', times: 1 },
-      { talentId: 'resistance', spec: 'Magie', times: 1 },
+      { talentId: 'resistance', spec: 'corruption', times: 1 },
+      { talentId: 'resistance', spec: 'maladie', times: 1 },
+      { talentId: 'resistance', spec: 'mutation', times: 1 },
+      { talentId: 'resistance', spec: 'magie', times: 1 },
     ],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     fate: 2, fortune: 1,
@@ -40,12 +41,12 @@ beforeEach(() => {
 });
 
 describe('Résistance (Corruption) — exposition (modale pendingCorruption, LDB 19 l.23-75)', () => {
-  it('l’Effet corruptionExposure tague la modale `menace: Corruption` ; `corruptionResist` = auto-succès à DR = BE + spec consommée', () => {
+  it('l’Effet corruptionExposure tague la modale `menace: corruption` ; `corruptionResist` = auto-succès à DR = BE + spec consommée', () => {
     const a = hero();
     useGame.setState({ party: [a] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'moderee', skill: 'resistance', heroId: a.id }]);
     const pc = useGame.getState().pendingCorruption!;
-    expect(pc.menace).toBe('Corruption');
+    expect(pc.menace).toBe('corruption');
     useGame.getState().corruptionResist();
     const done = useGame.getState().pendingCorruption!;
     expect(done.success).toBe(true);
@@ -88,7 +89,7 @@ describe('Résistance (Corruption) — exposition (modale pendingCorruption, LDB
   });
 
   it('spec non couverte → resist NO-OP (pas de dépense)', () => {
-    const a = hero({ talents: [{ talentId: 'resistance', spec: 'Poison', times: 1 }] });
+    const a = hero({ talents: [{ talentId: 'resistance', spec: 'poison', times: 1 }] });
     useGame.setState({ party: [a] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'mineure', skill: 'resistance', heroId: a.id }]);
     useGame.getState().corruptionResist();
@@ -98,14 +99,14 @@ describe('Résistance (Corruption) — exposition (modale pendingCorruption, LDB
 });
 
 describe('Résistance (Mutation) — Test de SEUIL de Corruption (LDB 19 l.80)', () => {
-  it('le seuil ouvre la modale taguée `menace: Mutation` ; resist → contenu (pas de mutation)', () => {
+  it('le seuil ouvre la modale taguée `menace: mutation` ; resist → contenu (pas de mutation)', () => {
     const a = hero({ corruption: 7 }); // seuil BFM+BE = 3+4 = 7 → le prochain gain déborde
     useGame.setState({ party: [a] });
     setBattle([a]);
     gainCorruption(useGame.getState, useGame.setState, a, 1);
     const pc = useGame.getState().pendingCorruption!;
     expect(pc.kind).toBe('seuil');
-    expect(pc.menace).toBe('Mutation');
+    expect(pc.menace).toBe('mutation');
     useGame.getState().corruptionResist();
     expect(useGame.getState().pendingCorruption!.success).toBe(true);
     useGame.getState().resolveCorruption();
@@ -115,14 +116,14 @@ describe('Résistance (Mutation) — Test de SEUIL de Corruption (LDB 19 l.80)',
 });
 
 describe('Résistance (Maladie) — Contraction de fin de combat (LDB 20 l.32/49)', () => {
-  it('étape `combatEndDisease` taguée `menace: Maladie` ; cascadeResist → réussite à DR = BE → PAS de contraction', () => {
+  it('étape `combatEndDisease` taguée `menace: maladie` ; cascadeResist → réussite à DR = BE → PAS de contraction', () => {
     const a = hero({ diseaseExposure: [{ disease: 'blessure-purulente' }] });
     setBattle([a]);
     useGame.setState({ party: [hero()] });
     openCombatEndCascade(useGame.getState, useGame.setState);
     const p = useGame.getState().pendingCascade!;
     const step = p.participants.find((s) => s.kind === 'combatEndDisease')!;
-    expect(step.menace).toBe('Maladie');
+    expect(step.menace).toBe('maladie');
     useGame.getState().cascadeResist(step.id);
     const rolled = useGame.getState().pendingCascade!.participants.find((s) => s.id === step.id)!;
     expect(rolled.result).toEqual({ roll: 1, target: step.target, sl: bonus(43), success: true });
@@ -133,7 +134,7 @@ describe('Résistance (Maladie) — Contraction de fin de combat (LDB 20 l.32/49
 });
 
 describe('Résistance (Magie) — opposition à un Sort (« résister aux sorts »)', () => {
-  it('pendingCastOpposition tagué `menace: Magie` ; oppositionResist → la cible RÉSISTE (DR = BE)', () => {
+  it('pendingCastOpposition tagué `menace: magie` ; oppositionResist → la cible RÉSISTE (DR = BE)', () => {
     const a = hero();
     const foe = hero({ id: 'e', name: 'E', kind: 'enemy', talents: [] });
     useGame.setState({ party: [a] });
@@ -143,7 +144,7 @@ describe('Résistance (Magie) — opposition à un Sort (« résister aux sorts 
         casterId: foe.id, targetId: a.id, spellId: 'fauche-demon', missile: false, focused: false,
         result: { cast: true, roll: 30, target: 70, sl: 6, isCritical: false, isFumble: false, log: 'x' },
       } as never,
-      pendingCastOpposition: { participants: [{ id: a.id, interactive: true, result: null }], kind: 'resist', char: 'FM', menace: 'Magie' } as never,
+      pendingCastOpposition: { participants: [{ id: a.id, interactive: true, result: null }], kind: 'resist', char: 'FM', menace: 'magie' } as never,
     });
     useGame.getState().oppositionResist(a.id);
     const part = useGame.getState().pendingCastOpposition!.participants[0];

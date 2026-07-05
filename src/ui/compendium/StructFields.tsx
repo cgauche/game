@@ -13,7 +13,9 @@ import { DIFFICULTY_LABELS, CHAR_KEYS, CHAR_LABELS, type Difficulty, type CharKe
 import type { DiseaseSymptom } from '../../engine/disease';
 import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
-import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch } from '../../data';
+import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch, SpecEntry } from '../../data';
+import { specEntryId } from '../../data';
+import { slugId } from '../../data/slug';
 import { ConditionEditor } from '../editor/ConditionEditor';
 import type { TraitInstance } from '../../engine/statEntry';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
@@ -391,6 +393,37 @@ export function StarSubField({ value, onChange }: { value: [number, number] | un
           </label>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 6bis) skills/talents.specs — SpecEntry[] : legacy `string[]` (domaine PAS ENCORE migré, texte FR
+ *    libre — savoir/métier/musicien/…) OU `{id,label}[]` (domaine FERMÉ MIGRÉ, Phase 3 — langue/
+ *    chevaucher/discretion/art, talent résistance). Le mode se détecte sur la liste EXISTANTE
+ *    (homogène par Compétence/Talent, jamais mélangé) ; liste vide → texte libre par défaut (la
+ *    majorité des domaines restent non-migrés — basculer un domaine en id se fait par migration
+ *    dédiée, pas en créant une entrée au Codex).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+export function SpecsField({ value, onChange }: { value: SpecEntry[] | undefined; onChange: (v: SpecEntry[]) => void }) {
+  const list = value ?? [];
+  const idMode = list.some((s) => typeof s === 'object' && s != null);
+  const labelOf = (s: SpecEntry): string => (typeof s === 'string' ? s : s.label);
+  const set = (next: SpecEntry[]) => onChange(next);
+  const setLabel = (i: number, label: string) =>
+    set(list.map((s, j) => (j === i ? (idMode ? { id: slugId(label), label } : label) : s)));
+  return (
+    <div className="ed-field">
+      <span>spécialisations{idMode ? ' (id auto-dérivé du libellé — domaine fermé)' : ' (texte libre — domaine non migré)'}</span>
+      {list.map((s, i) => (
+        <div key={i} className="de-reflrow">
+          <input value={labelOf(s)} onChange={(e) => setLabel(i, e.target.value)} />
+          {idMode && <em className="de-hint">{specEntryId(s)}</em>}
+          <button className="btn small danger" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, idMode ? { id: '', label: '' } : ''])}>+ Ajouter</button>
     </div>
   );
 }

@@ -482,7 +482,7 @@ describe('Magie — routage du test par branche', () => {
   it('les Sorts utilisent Langue (Magick) (Int), avec NI', () => {
     const info = castInfo(ARCANE);
     expect(info.skill).toBe('langue');
-    expect(info.spec).toBe('Magick');
+    expect(info.spec).toBe('magick');
     expect(info.requireNI).toBe(true);
   });
   it('isArcaneSpell distingue Arcane/Domaine de la Magie mineure et des Prières', () => {
@@ -510,8 +510,8 @@ describe('Magie — analyse des descriptions', () => {
 
 describe('Magie — valeur d’incantation', () => {
   it('Langue (Magick) = Int + avances', () => {
-    const c = caster({ Int: 40 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 15 }]);
-    expect(castingValue(c, 'langue', 'Magick')).toBe(55);
+    const c = caster({ Int: 40 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 15 }]);
+    expect(castingValue(c, 'langue', 'magick')).toBe(55);
   });
   it('Prière = Soc + avances', () => {
     const c = caster({ Soc: 35 }, [{ skillId: 'priere', characteristic: 'Soc', advances: 10 }]);
@@ -519,20 +519,20 @@ describe('Magie — valeur d’incantation', () => {
   });
   it('sans la compétence, la Caractéristique seule est utilisée', () => {
     const c = caster({ Int: 33 });
-    expect(castingValue(c, 'langue', 'Magick')).toBe(33);
+    expect(castingValue(c, 'langue', 'magick')).toBe(33);
   });
 });
 
 describe('Magie — résolution de l’incantation', () => {
   it('un Sort réussi mais avec DR < NI n’est pas lancé', () => {
     // Valeur 95 → réussite quasi certaine, mais DR max ~9 < NI 20.
-    const c = caster({ Int: 95 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
+    const c = caster({ Int: 95 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
     const spell: SpellLike = { ...ARCANE, cn: 20 };
     const res = resolveCasting(c, spell, makeRNG(3));
     expect(res.cast).toBe(false);
   });
   it('cohérence : lancé ⇔ réussite et DR ≥ NI', () => {
-    const c = caster({ Int: 60 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
+    const c = caster({ Int: 60 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
     for (let seed = 0; seed < 20; seed++) {
       const res = resolveCasting(c, FLECHETTE, makeRNG(seed));
       const success = res.roll <= res.target;
@@ -548,7 +548,7 @@ describe('Magie — résolution de l’incantation', () => {
 
 describe('Magie — Projectile magique', () => {
   it('Dégâts = Dégâts du sort + DR + BFM, Localisation = jet inversé', () => {
-    const c = caster({ Int: 80, FM: 40 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
+    const c = caster({ Int: 80, FM: 40 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
     const target = caster({ E: 30 }, [], 15);
     const spell: SpellLike = { ...FLECHETTE, damage: 4 };
     const res = resolveMagicMissile(c, target, spell, makeRNG(5));
@@ -609,7 +609,7 @@ describe('Magie — effets actifs (buffs temporisés)', () => {
 describe('Magie — correctifs de fidélité (audit)', () => {
   // B1 — Projectile ignorant le Bonus d'Endurance : le BE n'est pas déduit.
   it('B1 : un Projectile « ignore le Bonus d’Endurance » ne déduit pas le BE', () => {
-    const c = caster({ Int: 80, FM: 30 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
+    const c = caster({ Int: 80, FM: 30 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
     const target = caster({ E: 39 }, [], 20); // BE 3
     const spell: SpellLike = {
       label: 'Vortex d’âmes',
@@ -650,11 +650,11 @@ describe('Magie — correctifs de fidélité (audit)', () => {
 describe('Magie — compétences Avancées (gating)', () => {
   it('knowsCastingSkill exige au moins 1 augmentation', () => {
     const sansSkill = caster({ Int: 80 });
-    const zero = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
-    const ok = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
-    expect(knowsCastingSkill(sansSkill, 'langue', 'Magick')).toBe(false);
-    expect(knowsCastingSkill(zero, 'langue', 'Magick')).toBe(false);
-    expect(knowsCastingSkill(ok, 'langue', 'Magick')).toBe(true);
+    const zero = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 0 }]);
+    const ok = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
+    expect(knowsCastingSkill(sansSkill, 'langue', 'magick')).toBe(false);
+    expect(knowsCastingSkill(zero, 'langue', 'magick')).toBe(false);
+    expect(knowsCastingSkill(ok, 'langue', 'magick')).toBe(true);
   });
   it('un Sort est refusé sans la compétence Avancée (pas de repli sur la Caractéristique)', () => {
     const c = caster({ Int: 95 }); // aucune compétence Langue
@@ -663,12 +663,12 @@ describe('Magie — compétences Avancées (gating)', () => {
     expect(res.log).toContain('ne maîtrise pas');
   });
   it('Talents liés au Test (LDB 10 l.20) : +1 DR par acquisition sur Test d’incantation RÉUSSI (Diction instinctive)', () => {
-    const skills = [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int' as const, advances: 10 }];
+    const skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'Int' as const, advances: 10 }];
     const sans = caster({ Int: 80 }, skills);
     const avec = caster({ Int: 80 }, skills);
     avec.talents = [{ talentId: 'diction-instinctive', times: 2 }];
-    expect(castTestTalentDR(avec, 'langue', 'Magick')).toBe(2);
-    expect(castTestTalentDR(sans, 'langue', 'Magick')).toBe(0);
+    expect(castTestTalentDR(avec, 'langue', 'magick')).toBe(2);
+    expect(castTestTalentDR(sans, 'langue', 'magick')).toBe(0);
     // même graine = même d100 : sur un jet RÉUSSI, le DR final diffère exactement du niveau du Talent
     for (let seed = 1; seed <= 6; seed++) {
       const a = resolveCasting(sans, FLECHETTE, makeRNG(seed));
@@ -680,7 +680,7 @@ describe('Magie — compétences Avancées (gating)', () => {
   it('un Talent lié à une AUTRE Langue ne booste pas l’incantation (Langue (Magick) exigé)', () => {
     const c = caster({ Int: 80 });
     c.talents = [{ talentId: 'linguistique', times: 3 }]; // test data : « Langue (Toutes) » ? — ne doit pas matcher Magick
-    expect(castTestTalentDR(c, 'langue', 'Magick')).toBe(0);
+    expect(castTestTalentDR(c, 'langue', 'magick')).toBe(0);
   });
 
   it('Harmonisation aethyrique ×N : +N DR aux Tests de Focalisation réussis (LDB 10 l.20)', () => {
@@ -697,7 +697,7 @@ describe('Magie — compétences Avancées (gating)', () => {
   });
 
   it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
-    const langue = (adv: number) => [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int' as const, advances: adv }];
+    const langue = (adv: number) => [{ skillId: 'langue', spec: 'magick', characteristic: 'Int' as const, advances: adv }];
     // contre-lanceur écrasant (valeur 99 clampée) vs jet d'incantation médiocre figé (DR 1)
     const fort = caster({ Int: 89 }, langue(10));
     const castT = { roll: 40, target: 50, success: true, sl: 1, isDouble: false };
@@ -725,7 +725,7 @@ describe('Magie — compétences Avancées (gating)', () => {
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {
     const c = caster({ Int: 95 }); // statbloc de bestiaire : aucune Compétence
     c.traits = [{ id: 'lanceur-de-sorts', arg: 'Sorcellerie' }];
-    expect(knowsCastingSkill(c, 'langue', 'Magick')).toBe(true);
+    expect(knowsCastingSkill(c, 'langue', 'magick')).toBe(true);
     const res = resolveCasting(c, FLECHETTE, makeRNG(1));
     expect(res.log).not.toContain('ne maîtrise pas'); // le Test se fait sur Int seule
   });

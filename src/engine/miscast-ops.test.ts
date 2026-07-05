@@ -20,7 +20,7 @@ function hero(p: Partial<Combatant> = {}): Combatant {
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { skillId: 'priere', advances: 10 }, { skillId: 'langue', spec: 'Magick', advances: 10 },
+      { skillId: 'priere', advances: 10 }, { skillId: 'langue', spec: 'magick', advances: 10 },
       { skillId: 'focalisation', advances: 10 },
     ] as never,
     talents: [],
@@ -31,14 +31,14 @@ function hero(p: Partial<Combatant> = {}): Combatant {
 describe('castPenalty — pénalités/blocages temporisés', () => {
   it('Langue maladroite : −10 aux Tests de Langue pendant N Rounds, dissipé par endOfRound', () => {
     const c = hero();
-    const base = castingValue(c, 'langue', 'Magick');
+    const base = castingValue(c, 'langue', 'magick');
     applyOps(c, [{ op: 'castPenalty', skill: 'langue', mod: -10, rounds: 2 }], { label: 'Langue maladroite' });
-    expect(castingValue(c, 'langue', 'Magick')).toBe(base - 10);
+    expect(castingValue(c, 'langue', 'magick')).toBe(base - 10);
     expect(castPenaltyMod(c, 'priere')).toBe(0); // ne touche pas la Prière
     endOfRound(c, makeRNG(1));
-    expect(castingValue(c, 'langue', 'Magick')).toBe(base - 10); // round 1 restant
+    expect(castingValue(c, 'langue', 'magick')).toBe(base - 10); // round 1 restant
     const log = endOfRound(c, makeRNG(1));
-    expect(castingValue(c, 'langue', 'Magick')).toBe(base); // expiré
+    expect(castingValue(c, 'langue', 'magick')).toBe(base); // expiré
     expect(log.join('\n')).toMatch(/Langue maladroite se dissipe/);
   });
 

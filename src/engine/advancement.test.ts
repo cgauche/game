@@ -117,10 +117,10 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
     expect(h.xp).toBe(990);
     expect(buySkillAdvance(h, 'Inconnue', undefined).ok).toBe(false); // compétence non connue
     // Une AUTRE spec du même groupe est une Compétence distincte (LDB 09 l.42).
-    h.skills.push({ skillId: 'discretion', spec: 'Urbaine', characteristic: 'Ag', advances: 0 });
-    expect(buySkillAdvance(h, 'Discrétion', 'Rurale').ok).toBe(false); // (Rurale) non connue
-    expect(buySkillAdvance(h, 'Discrétion', 'Urbaine')).toEqual({ ok: true, cost: 10 });
-    expect(h.skills.find((s) => s.spec === 'Urbaine')!.advances).toBe(1);
+    h.skills.push({ skillId: 'discretion', spec: 'urbaine', characteristic: 'Ag', advances: 0 });
+    expect(buySkillAdvance(h, 'Discrétion', 'rurale').ok).toBe(false); // (Rurale) non connue
+    expect(buySkillAdvance(h, 'Discrétion', 'urbaine')).toEqual({ ok: true, cost: 10 });
+    expect(h.skills.find((s) => s.spec === 'urbaine')!.advances).toBe(1);
     expect(h.skills.find((s) => !s.spec && s.skillId === 'discretion')!.advances).toBe(1); // inchangée
   });
   it('buySkillAdvance : remise −5 PX (talent Maître artisan…, LDB 10) in-carrière seulement', () => {

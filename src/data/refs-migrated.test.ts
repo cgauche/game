@@ -9,7 +9,7 @@ import {
   traits, stars, talents, maneuvers, skills, domains, crewRoles,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
-  specLabel, refLabel,
+  specLabel, refLabel, specEntryId,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
@@ -255,7 +255,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       for (const s of skills) {
         if (s.specsSource !== 'weaponGroups') continue;
         expect(weaponSkillIds.has(s.id), s.id).toBe(true);
-        for (const spec of s.specs) expect(isWeaponGroupId(spec), `${s.id}.specs → ${spec}`).toBe(true);
+        for (const spec of s.specs) { const specId = specEntryId(spec); expect(isWeaponGroupId(specId), `${s.id}.specs → ${specId}`).toBe(true); }
       }
     });
 
@@ -348,9 +348,74 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       expect(refLabel('skills', { id: 'corps-a-corps', spec: 'deux-mains' })).toBe('Corps à corps (Deux-mains)');
       expect(specLabel('skills', 'corps-a-corps', 'poudre-noire')).toBe(findWeaponGroupById('poudre-noire')!.label);
     });
-    it('une spec NON-weaponGroups (langue, savoir…) reste verbatim (comportement inchangé)', () => {
-      expect(specLabel('skills', 'langue', 'Reikspiel')).toBe('Reikspiel');
-      expect(refLabel('skills', { id: 'langue', spec: 'Reikspiel' })).toBe('Langue (Reikspiel)');
+    it('une spec NON-migrée (savoir…) reste verbatim (comportement inchangé)', () => {
+      expect(specLabel('skills', 'savoir', 'Reikland')).toBe('Reikland');
+      expect(refLabel('skills', { id: 'savoir', spec: 'Reikland' })).toBe('Savoir (Reikland)');
+    });
+    it('une spec MIGRÉE (langue/chevaucher/discretion, talent resistance) résout son id → label FR', () => {
+      expect(specLabel('skills', 'langue', 'reikspiel')).toBe('Reikspiel');
+      expect(refLabel('skills', { id: 'langue', spec: 'reikspiel' })).toBe('Langue (Reikspiel)');
+      expect(refLabel('skills', { id: 'chevaucher', spec: 'cheval' })).toBe('Chevaucher (Cheval)');
+      expect(refLabel('skills', { id: 'discretion', spec: 'urbaine' })).toBe('Discrétion (Urbaine)');
+      expect(refLabel('talents', { id: 'resistance', spec: 'chaos' })).toBe('Résistance (Chaos)');
+    });
+  });
+
+  // ── Phase 3 sous-commit 2 — Specs FERMÉES inline (langue/chevaucher/discretion/art, talent resistance)
+  // = {id,label} ; toute instance DOIT référencer un id de sa liste fermée. `creatures.json` porte
+  // quelques valeurs PRÉ-EXISTANTES non résolues (hors sources FR autorisées, ou structurellement pas un
+  // id unique) — `KNOWN_UNRESOLVED` ci-dessous est EXHAUSTIVE (prouvée par énumération, cf. rapport
+  // phase3-closed-specs) : toute NOUVELLE valeur hors catalogue ET hors cette liste casse ce test.
+  describe('Specs FERMÉES id-based (langue/chevaucher/discretion/art, talent resistance) — Phase 3 sous-commit 2', () => {
+    const CLOSED_SKILL_IDS = new Set(['langue', 'chevaucher', 'discretion', 'art']);
+    const CLOSED_TALENT_ID = 'resistance';
+    const isSentinel = (spec: string): boolean => spec.trim().toLowerCase() === 'au choix';
+    const isKnownSpecId = (defId: string, spec: string): boolean => {
+      const def = defId === CLOSED_TALENT_ID ? findTalentById(defId) : findSkillById(defId);
+      return !!def?.specs?.some((s) => (typeof s === 'string' ? s : s.id) === spec);
+    };
+    // Non résolues (laissées verbatim par le codemod — cf. rapport pour la justification par entrée) :
+    // langues hors sources FR autorisées (Arabien/Arabyan/Nehekhara/Noir Parler), montures hors sources
+    // FR autorisées ou composées (Sanglier/Rat-Ogre/Rats/« Loup ou Squig »), discretion hors sources
+    // autorisées ou artefact de donnée (Tous/« +6 DR grâce à Furtif »), art hors sources FR (Rédaction).
+    const KNOWN_UNRESOLVED = new Set([
+      'Arabien', 'Arabyan', 'Nehekhara', 'Noir Parler',
+      'Sanglier', 'Rat-Ogre', 'Rats', 'Loup ou Squig',
+      'Tous', '+6 DR grâce à Furtif',
+      'Rédaction',
+    ]);
+
+    it('skills.json/talents.json : specs[] fermées = {id,label}, specsOpen absent', () => {
+      for (const id of CLOSED_SKILL_IDS) {
+        const s = findSkillById(id)!;
+        expect(s.specsOpen, id).toBeFalsy();
+        expect(s.specs.length > 0, id).toBe(true);
+        for (const entry of s.specs) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
+      }
+      const resistance = findTalentById(CLOSED_TALENT_ID)!;
+      expect(resistance.specsOpen).toBeFalsy();
+      for (const entry of resistance.specs ?? []) expect(isObj(entry) && typeof (entry as { id: unknown }).id === 'string', JSON.stringify(entry)).toBe(true);
+    });
+
+    it('creatures/careerLevels/species/stars/talents : chaque spec de langue/chevaucher/discretion/art/resistance = un id de sa specs[] (sentinelle "(Au choix)" et exceptions documentées exclues)', () => {
+      const check = (defId: string | undefined, spec: unknown, where: string): void => {
+        if (!defId || typeof spec !== 'string') return;
+        if (!CLOSED_SKILL_IDS.has(defId) && defId !== CLOSED_TALENT_ID) return;
+        if (isSentinel(spec) || KNOWN_UNRESOLVED.has(spec)) return;
+        expect(isKnownSpecId(defId, spec), `${where}{${defId}} → ${JSON.stringify(spec)}`).toBe(true);
+      };
+      const visit = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(visit); return; }
+        if (!isObj(node)) return;
+        check(node.id as string | undefined, node.spec, 'id');
+        check(node.skillId as string | undefined, node.spec, 'skillId');
+        check(node.talentId as string | undefined, node.spec, 'talentId');
+        check(node.skill as string | undefined, node.spec, 'skill');
+        const wcId = (node.wildcard as { id?: string } | undefined)?.id;
+        if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) check(wcId, so, 'wildcard.specOptions');
+        for (const v of Object.values(node)) visit(v);
+      };
+      visit(creatures); visit(careerLevels); visit(species); visit(stars); visit(talents);
     });
   });
 });

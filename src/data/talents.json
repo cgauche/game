@@ -27,7 +27,7 @@
         },
         {
           "skill": "chevaucher",
-          "spec": "Cheval"
+          "spec": "cheval"
         }
       ]
     },
@@ -465,7 +465,7 @@
       "matches": [
         {
           "skill": "chevaucher",
-          "spec": "Cheval",
+          "spec": "cheval",
           "when": {
             "kind": "engaged"
           }
@@ -554,7 +554,7 @@
     "combat": {
       "reverseFailed": {
         "skill": "discretion",
-        "spec": "Urbaine"
+        "spec": "urbaine"
       }
     }
   },
@@ -1056,7 +1056,7 @@
       "matches": [
         {
           "skill": "langue",
-          "spec": "Magick"
+          "spec": "magick"
         }
       ]
     },
@@ -2056,7 +2056,7 @@
       "matches": [
         {
           "skill": "langue",
-          "exceptSpec": "Magick"
+          "exceptSpec": "magick"
         }
       ]
     },
@@ -3165,12 +3165,34 @@
     },
     "desc": "Votre forte constitution vous permet de survivre plus facilement à une menace spécifique. Vous pouvez réussir automatiquement le premier Test pour résister à la menace spécifiée, telle que Magie, Poison, Maladie, Mutation, à chaque séance de jeu. Si le DR requis est important, utilisez votre Bonus d'Endurance comme DR pour le Test.",
     "specs": [
-      "Chaos",
-      "Corruption",
-      "Magie",
-      "Maladie",
-      "Mutation",
-      "Poison"
+      {
+        "id": "chaos",
+        "label": "Chaos"
+      },
+      {
+        "id": "corruption",
+        "label": "Corruption"
+      },
+      {
+        "id": "magie",
+        "label": "Magie"
+      },
+      {
+        "id": "maladie",
+        "label": "Maladie"
+      },
+      {
+        "id": "mutation",
+        "label": "Mutation"
+      },
+      {
+        "id": "poison",
+        "label": "Poison"
+      },
+      {
+        "id": "poisons-ingeres",
+        "label": "Poisons ingérés"
+      }
     ],
     "rand": 75,
     "source": {
@@ -3570,7 +3592,7 @@
       {
         "op": "grantCareerSkill",
         "skillId": "langue",
-        "spec": "Magick"
+        "spec": "magick"
       }
     ]
   },

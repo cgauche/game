@@ -18,7 +18,7 @@ function wiz(p: Partial<Combatant> = {}): Combatant {
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { skillId: 'langue', spec: 'Magick', advances: 10 },
+      { skillId: 'langue', spec: 'magick', advances: 10 },
       { skillId: 'focalisation', spec: 'Feu', advances: 10 },
     ] as never,
     talents: [],
@@ -92,7 +92,7 @@ describe('« Repousser les Vents » — armure portée (l.199 + exemptions l.188
 describe('Avantage et magie (l.176)', () => {
   it('l\'Avantage s\'applique à l\'Incantation (+10/point), PAS à la Focalisation', () => {
     const c = wiz({ advantage: 2 });
-    expect(castingValue(c, 'langue', 'Magick')).toBe(50 + 10 + 20);
+    expect(castingValue(c, 'langue', 'magick')).toBe(50 + 10 + 20);
     expect(castingValue(c, 'focalisation', 'Feu')).toBe(45 + 10);
   });
 });

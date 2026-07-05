@@ -31,14 +31,14 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, HarvestField } from './StructFields';
+import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, HarvestField, SpecsField } from './StructFields';
 import type { TraitInstance } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey, Difficulty } from '../../engine/types';
 import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
-import type { AdvancementRef, TrappingRef, TalentTest } from '../../data';
+import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry } from '../../data';
 
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -138,6 +138,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'trappings') add('consumable', 'consumableDuration');
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat', 'test');
+  if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
   if (categoryKey === 'classes' || categoryKey === 'careerLevels') add('trappings');
   if (categoryKey === 'careerLevels') add('characteristics');
@@ -247,6 +248,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isDisease = categoryKey === 'maladies';
   // Talent : sa capacité de combat `combat` (CombatFeature : drapeaux + castingKind/attackModes/offHand).
   const hasCombat = categoryKey === 'talents';
+  // Compétence/Talent : `specs` = SpecEntry[] (texte libre legacy OU {id,label} d'un domaine FERMÉ migré).
+  const hasSpecs = categoryKey === 'skills' || categoryKey === 'talents';
   // Avancement (espèce / niveau de carrière) : `skills`/`talents` = AdvancementRef[] (réf/joker/choix/aléatoire).
   const hasAdvancement = categoryKey === 'races' || categoryKey === 'careerLevels';
   // Possessions de DÉPART (classe / niveau de carrière) : `trappings` = TrappingRef[] (id catalogue + quantité, ou texte).
@@ -349,6 +352,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
         {hasCombat && <TalentTestField value={entry.test as TalentTest | undefined} onChange={(v) => edit('test', v)} />}
         {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
+        {hasSpecs && <SpecsField value={entry.specs as SpecEntry[] | undefined} onChange={(v) => edit('specs', v)} />}
         {hasAdvancement && <AdvancementRefField ds="skills" label="Compétences" value={entry.skills as AdvancementRef[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAdvancement && <AdvancementRefField ds="talents" label="Talents" value={entry.talents as AdvancementRef[] | undefined} onChange={(v) => edit('talents', v)} />}
         {hasTrappings && <TrappingRefField value={entry.trappings as TrappingRef[] | undefined} onChange={(v) => edit('trappings', v)} />}

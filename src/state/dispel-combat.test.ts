@@ -7,7 +7,7 @@ import type { Combatant } from '../engine/types';
 describe('Dissipation permanente — Action de combat', () => {
   beforeEach(() => { vi.clearAllTimers(); useGame.setState({ battle: null, pendingDispel: null }); });
 
-  const langue = { skillId: 'langue', spec: 'Magick', characteristic: 'Int' as const, advances: 20 };
+  const langue = { skillId: 'langue', spec: 'magick', characteristic: 'Int' as const, advances: 20 };
   const mk = (id: string, spells: string[], extra: Partial<Combatant> = {}): Combatant => ({
     id, name: id, kind: 'hero',
     characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 30, Soc: 30 },

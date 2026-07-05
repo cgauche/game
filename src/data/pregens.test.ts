@@ -32,7 +32,7 @@ describe('Personnages pré-tirés', () => {
     // LDB 41 l.14 : « un Personnage avec le Talent Béni reçoit les six Bénédictions de son culte ».
     expect(pretre.talents.map((t) => talentConcrete(t))).toContain('Béni (Sigmar)');
     // Et les Compétences d'incantation restent là (gating des Compétences avancées).
-    expect(sorcier.skills.some((s) => s.skillId === 'langue' && s.spec === 'Magick' && s.advances >= 1)).toBe(true);
+    expect(sorcier.skills.some((s) => s.skillId === 'langue' && s.spec === 'magick' && s.advances >= 1)).toBe(true);
     expect(pretre.skills.some((s) => s.skillId === 'priere' && s.advances >= 1)).toBe(true);
   });
 });

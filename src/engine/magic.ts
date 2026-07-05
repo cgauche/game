@@ -80,7 +80,7 @@ export function castInfo(spell: SpellLike): CastInfo {
   if (spell.isPrayer) {
     return { skill: 'priere', requireNI: false };
   }
-  return { skill: 'langue', spec: 'Magick', requireNI: true };
+  return { skill: 'langue', spec: 'magick', requireNI: true };
 }
 
 /** Vrai pour les Sorts d'Arcane/Domaine pouvant être alimentés par Focalisation. */
@@ -558,9 +558,9 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
 }
 
 export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
-  const value = castingValue(counter, 'langue', 'Magick');
+  const value = castingValue(counter, 'langue', 'magick');
   const t = rollTest(value, 'intermediaire', rng);
-  const adj = t.success ? castTestTalentDR(counter, 'langue', 'Magick') - armourCastDRPenalty(counter) : 0;
+  const adj = t.success ? castTestTalentDR(counter, 'langue', 'magick') - armourCastDRPenalty(counter) : 0;
   const counterT = adj ? { ...t, sl: t.sl + adj } : t;
   return counterspellOutcomeFrom(counter, counterT, castT);
 }

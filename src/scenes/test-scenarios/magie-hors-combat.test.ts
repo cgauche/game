@@ -29,7 +29,7 @@ describe('Scénario Magie hors combat', () => {
   });
 
   it('le Sorcier maîtrise l’incantation et la Focalisation, et connaît un Sort d’Arcane focalisable', () => {
-    expect(knowsCastingSkill(wiz, 'langue', 'Magick')).toBe(true);
+    expect(knowsCastingSkill(wiz, 'langue', 'magick')).toBe(true);
     expect(knowsCastingSkill(wiz, 'focalisation')).toBe(true);
     const arme = findSpell('Armure Aethyrique')!;
     expect(wiz.spells).toContain('armure-aethyrique'); // runtime = id de sort

@@ -13,7 +13,11 @@
  * Un Test est ÉLIGIBLE quand son pending/étape porte un tag `menace` (posé par le SITE du Test :
  * Contraction de maladie, Exposition à la Corruption, seuil → Mutation, opposition à un Sort ; ou
  * en DONNÉE via `FlowTest.menace` — Venin/poisons). Comparaison de la spec du talent au tag par
- * `norm` (tolère casse/accents). Talent JOUEUR : l'IA n'ouvre pas de modale → ne l'exploite pas.
+ * `norm` (tolère casse/accents) : la spec du talent est désormais un id stable (`chaos`/`corruption`/
+ * `magie`/`maladie`/`mutation`/`poison`, cf. `skills.json` migration Phase 3) et la plupart des
+ * appelants passent déjà l'id en minuscules — `norm` reste un PONT tolérant tant qu'un appelant
+ * (`interludeFlow.ts`, hors scope de cette migration) passe encore un libellé FR capitalisé.
+ * Talent JOUEUR : l'IA n'ouvre pas de modale → ne l'exploite pas.
  */
 import type { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';

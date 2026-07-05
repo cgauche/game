@@ -2380,7 +2380,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // moins inventive : le LANCEUR (même clause de distance FM mètres ; le RAW est muet).
       if (caster.kind === 'hero' && isDispellableSpell(spell) && !res.isCritical) {
         const best = counterspellCandidates(get().battle, get().scene, caster, unplacedZone ? caster : target)
-          .sort((a, b) => castingValue(b, 'langue', 'Magick') - castingValue(a, 'langue', 'Magick'))[0];
+          .sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
         if (best) applyCounterspell(get, set, best);
       }
     },
@@ -2702,7 +2702,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero' || battle.acted) return;
-      if (!actorHasSkill(active, 'langue', 'Magick')) { get().log(t('cs.cannotDispel')); return; }
+      if (!actorHasSkill(active, 'langue', 'magick')) { get().log(t('cs.cannotDispel')); return; }
       const target = dispellableSpellsOn(battle.combatants).find((d) => d.spellId === spellId && d.casterId === spellCasterId);
       if (!target) return;
       // SOUTIEN « même Domaine » (LDB 46 l.207) : les AUTRES héros encore en action, possédant Langue (Magick)
@@ -2711,10 +2711,10 @@ export function createCombatSlice(get: Get, set: Set) {
       const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
       const mine = domainsOf(active);
       const supporters = battle.combatants.filter((c) => c.id !== active.id && c.kind === 'hero' && !isOutOfAction(c)
-        && actorHasSkill(c, 'langue', 'Magick') && [...domainsOf(c)].some((d) => mine.has(d))).length;
+        && actorHasSkill(c, 'langue', 'magick') && [...domainsOf(c)].some((d) => mine.has(d))).length;
       const cap = bonus(effectiveChar(active, 'Int')); // Langue (Magick) = Intelligence ; plafond du Soutien
       const supBonus = assistBonus(supporters, cap);
-      const value = testValue(active, 'langue', undefined, 'Magick') + supBonus;
+      const value = testValue(active, 'langue', undefined, 'magick') + supBonus;
       set({ pendingDispel: {
         casterId: active.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
         support: supBonus > 0 ? { count: Math.min(supporters, Math.max(0, cap)), bonus: supBonus } : undefined,

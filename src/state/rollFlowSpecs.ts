@@ -346,7 +346,7 @@ export const FLOWS = {
           // Dé CHOISI (setForcedRoll) : 11 → Incantation Critique ; 01 → DR max → Surincantation.
           if (forced.roll > maxForcedRoll(cur.target)) return null; // doit RESTER une réussite
           const sl = evaluateTest(forced.roll, cur.target).sl
-            + castTestTalentDR(actor, castInfoIsPrayer(spell) ? 'priere' : 'langue', castInfoIsPrayer(spell) ? undefined : 'Magick');
+            + castTestTalentDR(actor, castInfoIsPrayer(spell) ? 'priere' : 'langue', castInfoIsPrayer(spell) ? undefined : 'magick');
           return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: forced.roll, sl }, p.missile, p.focused, Math.max(0, ni - sl)) };
         }
         // Dé PAR DÉFAUT (forceSuccess) — plancher : le sort PART (DR ≥ NI), d100 propre réussi.
@@ -401,7 +401,7 @@ export const FLOWS = {
         // Résilience « Je ne faillirai pas ! » : le Contre-sort l'emporte (dissipe). Rien à forcer si déjà dissipé.
         const cur = part.result;
         if (cur?.dispelled) return null;
-        const value = castingValue(actor, 'langue', 'Magick');
+        const value = castingValue(actor, 'langue', 'magick');
         const roll = cur ? cur.counter.roll : 1; // 01 = jet propre garanti (LDB 17 l.73)
         const sl = Math.max(cur?.counter.sl ?? 1, castT.sl + 1, 1);
         const counterT: TestResult = { roll, target: value, success: true, sl, isDouble: isDoubleRoll(roll) };

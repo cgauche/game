@@ -67,7 +67,7 @@ export function makeSorceress(id: string, name: string, pos: { x: number; y: num
   setChars(sorc, { Int: 75, FM: 70, Ag: 58, Dex: 52, I: 62, E: 45 });
   sorc.wounds = { current: 18, max: 18, base: 18 };
   sorc.fate = 4; sorc.fortune = 4; sorc.resilience = 3; sorc.resolve = 3;
-  boostSkill(sorc, 'Langue', 'Magick', 'Int', 55);
+  boostSkill(sorc, 'Langue', 'magick', 'Int', 55);
   for (const dom of domains) boostSkill(sorc, 'Focalisation', dom, 'FM', 40);
   addTalents(sorc, ['Magie mineure', ...domains.map((d) => `Magie des Arcanes (${d})`), 'Nécromancie']);
   sorc.spells = [

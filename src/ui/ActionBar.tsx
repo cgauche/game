@@ -346,7 +346,7 @@ export function ActionBar() {
   const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned && !frenzied;
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
   // Dissipation (LDB 46 l.204-207) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
-  const canDispel = isHero && actorHasSkill(active, 'langue', 'Magick');
+  const canDispel = isHero && actorHasSkill(active, 'langue', 'magick');
   const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];
   // Cumuler l'Avantage (LDB 09 l.305-308) : Compétences data-driven (`combatAdvantage`) que l'actif peut
   // tester pour +1 Avantage, tant qu'il n'est PAS déjà au plafond de la méthode. Dédupliqué par id de

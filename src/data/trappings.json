@@ -6102,7 +6102,7 @@
         "skill": "resistance",
         "difficulty": "complexe",
         "unlessImmune": "poison",
-        "menace": "Poison",
+        "menace": "poison",
         "label": "Brise-cœur"
       },
       "success": {
@@ -6378,7 +6378,7 @@
                       "skill": "resistance",
                       "difficulty": "complexe",
                       "unlessImmune": "poison",
-                      "menace": "Poison"
+                      "menace": "poison"
                     },
                     "success": {
                       "kind": "seq",
@@ -6974,7 +6974,7 @@
                         "mort-vivant"
                       ],
                       "unlessImmune": "poison",
-                      "menace": "Poison"
+                      "menace": "poison"
                     },
                     "success": {
                       "kind": "seq",
