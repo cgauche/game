@@ -141,7 +141,6 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/ShipBatteryModal.tsx',
   'src/ui/ShipManeuverModal.tsx',
   'src/ui/ShipSheet.tsx',
-  'src/ui/TrampleModal.tsx',
   'src/ui/TravelRecapModal.tsx',
   'src/ui/VictoryScreen.tsx',
   'src/ui/ViewControls.tsx',
@@ -153,6 +152,7 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/jetProps/useAttackJetProps.tsx',
   'src/ui/jetProps/useExtendedTestJetProps.tsx',
   'src/ui/jetProps/useFumbleJetProps.tsx',
+  'src/ui/jetProps/useTrampleJetProps.tsx',
   // Éditeur : outillage sans icône sémantique au registre (hors ⚑, migré) — dessiner les
   // icônes manquantes avant de migrer ces rails/labels.
   'src/ui/editor/DialogueDetail.tsx',

@@ -68,6 +68,14 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     expect(pickActiveModalKey({ pendingCleave: {}, pendingAttack: {}, pendingCascade: atkCascade })).toBe('cascade');
   });
 
+  it('le Piétinement n’est PLUS une modale propre : étape `jet:\'trample\'` de la cascade `combat` (Critique foldé)', () => {
+    // pendingTrample SEUL (sans cascade) → plus d'entrée 'trample' (retirée) → null. `battleTrample`
+    // ouvre une cascade `jet:'trample'` (comme l'attaque) → le Coup Critique se fold dans LA MÊME fenêtre.
+    expect(pickActiveModalKey({ pendingTrample: {} })).toBeNull();
+    const trampleCascade = { participants: [{ jet: 'trample', actorId: 'h1' }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingTrample: {}, pendingCascade: trampleCascade })).toBe('cascade');
+  });
+
   it('l’incantation n’est PLUS une modale propre : c’est une étape `jet:\'cast\'` de la cascade (wrapper-fold)', () => {
     // Un pendingCast SEUL (sans cascade) → l'arbitre ne renvoie plus 'cast' (entrée retirée).
     // La SITUATION est désormais portée par la cascade-hôte ouverte à l'incantation (CascadeModal → CastModal).

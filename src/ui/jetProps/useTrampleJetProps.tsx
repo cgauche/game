@@ -1,19 +1,23 @@
-import { useGame } from '../state/store';
-import { FLOWS } from '../state/rollFlowSpecs';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
-import { combatValue } from '../engine/combat';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
-import { ev } from '../state/combatLog';
+import type { ComponentProps } from 'react';
+import { useGame } from '../../state/store';
+import { FLOWS } from '../../state/rollFlowSpecs';
+import { canReroll } from '../../engine/fortune';
+import { freeRerollOf } from '../../engine/activeFlags';
+import { combatValue } from '../../engine/combat';
+import { RollShell, type RollAction, type RollRowData } from '../RollShell';
+import { testPending } from '../breakdown';
+import { JournalLine } from '../NarratedLine';
+import { ev } from '../../state/combatLog';
 
 /**
- * Modale de Piétinement (LDB 85 - Traits de créature.md l.320-321) : action gratuite à 1 Avantage.
- * « Lancer » résout l'attaque de Bagarre (BF), « Chance » la rejoue, « Appliquer » l'inflige.
- *
+ * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de Piétinement (LDB 85 - Traits de
+ * créature.md l.320-321 : action gratuite à 1 Avantage, attaque de Bagarre — BF) — extrait de l'ancienne
+ * `TrampleModal` pour être rendu À L'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet
+ * via ce hook, sans démonter la coquille → une seule fenêtre : le jet ET son Coup Critique). Renvoie les
+ * props de `RollShell`, ou `null` si aucun Piétinement en attente. AUCUNE mécanique générique réécrite :
+ * que le métier du Piétinement.
  */
-export function TrampleModal() {
+export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   const pt = useGame((s) => s.pendingTrample);
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.trampleRoll);
@@ -61,19 +65,17 @@ export function TrampleModal() {
     { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
   ];
 
-  return (
-    <RollShell
-      title="🦶 Piétinement"
-      subtitle={
-        <>
-          <strong>{attacker.name}</strong> écrase <strong>{target.name}</strong> (coûte 1 Avantage)
-        </>
-      }
-      rows={[actorRow]}
-      rolled={rolled}
-      outcome={r && <JournalLine className="rm-journal" event={ev('attack', r.log, attacker.id, target.id)} combatants={battle.combatants} />}
-      actions={actions}
-      onCancel={cancel}
-    />
-  );
+  return {
+    title: '🦶 Piétinement',
+    subtitle: (
+      <>
+        <strong>{attacker.name}</strong> écrase <strong>{target.name}</strong> (coûte 1 Avantage)
+      </>
+    ),
+    rows: [actorRow],
+    rolled,
+    outcome: r ? <JournalLine className="rm-journal" event={ev('attack', r.log, attacker.id, target.id)} combatants={battle.combatants} /> : undefined,
+    actions,
+    onCancel: cancel,
+  };
 }

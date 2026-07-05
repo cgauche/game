@@ -90,6 +90,37 @@ describe('Piétinement en combat (store)', () => {
     expect(st.battle!.acted).toBe(false); // action GRATUITE : n'a pas consommé l'Action
   });
 
+  it('Coup Critique : le Critique se FOLD dans la cascade du Piétinement (plus de 2ᵉ fenêtre « Conséquences »)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.size = 'grande';
+    H.characteristics.CC = 85;
+    H.characteristics.F = 45;
+    H.advantage = 2;
+    H.resilience = 2;
+    E.wounds = { current: 200, max: 200, base: 200 } as Combatant['wounds']; // survit au Critique (pas de victoire parasite)
+    // Le Piétinement OUVRE une cascade de COMBAT dont l'étape 0 est le jet `jet:'trample'` (comme l'attaque).
+    useGame.getState().battleTrample(E.id);
+    const casc = useGame.getState().pendingCascade!;
+    expect(casc.purpose).toBe('combat');
+    expect(casc.participants[casc.cursor].jet).toBe('trample');
+    // Force un Coup Critique (dé 11 = double, LDB 17 l.73) — déterministe.
+    useGame.getState().trampleRoll();
+    useGame.getState().trampleForceSuccess();
+    useGame.getState().trampleSetForcedRoll(11);
+    expect(useGame.getState().pendingTrample!.result!.critical).toBe(true);
+    // « Appliquer » : le Critique s'EMPILE sur la MÊME cascade (pas de file `pendingReveals` séparée).
+    useGame.getState().trampleConfirm();
+    const st = useGame.getState();
+    expect(st.pendingTrample).toBeNull();
+    expect(st.pendingReveals).toHaveLength(0); // AUCUNE 2ᵉ fenêtre témoin
+    expect(st.pendingCascade).toBeTruthy(); // la MÊME cascade reste ouverte…
+    expect(st.pendingCascade!.purpose).toBe('combat');
+    const cur = st.pendingCascade!.participants[st.pendingCascade!.cursor];
+    expect(cur.kind).toBe('critical'); // …son curseur est sur l'étape de Coup Critique (affichage inline)
+    expect(cur.jet).toBeUndefined(); // étape de conséquence, pas un nouveau jet
+  });
+
   it('coût : un Piétinement raté dépense bien 1 Avantage (CC=1 → échec déterministe)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();

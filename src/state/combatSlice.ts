@@ -156,13 +156,15 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
   };
 }
 
-/** Avance l'étape-jet d'attaque de la cascade combat à la FIN de la chaîne (plus de `pendingAttack` NI
- *  d'enchaînement balayage/dual) → conséquences inline ou reprise. La cascade reste ouverte pendant la
- *  chaîne ; on n'avance qu'au bout. Partagé par attackConfirm / cleaveEnd / dualStrikeSkip (zéro duplication). */
+/** Avance l'étape-jet d'attaque/Piétinement de la cascade combat à la FIN de la chaîne (plus de
+ *  `pendingAttack`/`pendingTrample` NI d'enchaînement balayage/dual) → conséquences inline (Coup Critique
+ *  foldé) ou reprise. La cascade reste ouverte pendant la chaîne ; on n'avance qu'au bout. Partagé par
+ *  attackConfirm / trampleConfirm / cleaveEnd / dualStrikeSkip (zéro duplication). */
 function advanceCombatJet(get: () => GameState): void {
   const seq = get().pendingCascade;
-  if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack'
-    && !get().pendingAttack && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
+  const jet = seq?.purpose === 'combat' ? seq.participants[seq.cursor]?.jet : undefined;
+  if ((jet === 'attack' || jet === 'trample')
+    && !get().pendingAttack && !get().pendingTrample && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
 }
 
 /** Applique l'issue d'« Au Contact » (LDB 62 l.176) : pose/retire l'état au contact selon le choix du
@@ -733,15 +735,18 @@ export function createCombatSlice(get: Get, set: Set) {
       resumeSuspendedAI(get, set); // file vidée alors qu'un tour d'IA était suspendu → reprendre l'avancement
     },
     battleTrample: (targetId: string) => {
-      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      if (combatBusy(get()) || get().pendingCascade) return; // flux différé / cascade en cours : hotbar inerte
       const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero' || active.advantage < 1) return; // exige ≥1 Avantage (LDB 85 l.320)
       const target = trampleTarget(battle, active, targetId); // adversaire adjacent plus petit
       if (!target) return;
-      // OUVRE la modale (le jet se fait au clic « Lancer »)
+      // Piétinement = étape 0 d'une cascade de COMBAT (comme l'attaque) : le jet ET son Coup Critique
+      // vivent dans UNE fenêtre. `pendingTrample` coexiste comme porteur de données (résolu par
+      // trampleConfirm) ; le jet se fait au clic « Lancer ».
       set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
+      startCascade(get, set, { title: 'Piétinement', icon: '🦶', purpose: 'combat', steps: [{ id: 'trample-jet', kind: 'trampleJet', jet: 'trample', actorId: active.id }] });
     },
     // ── Sélection d'ATTAQUE (« Attaque ▾ ») : arme une `AttackOption` (Arme + gratuites/zone/Piétinement/
     // Tentacule). Source des entrées : `availableAttacks` (combatFlow). Le clic-ennemi résout l'armée. ──
@@ -798,11 +803,15 @@ export function createCombatSlice(get: Get, set: Set) {
       const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
       const target = battle.combatants.find((c) => c.id === pt.targetId);
       set({ pendingTrample: null });
-      if (!attacker || !target) return;
-      const prevActed = battle.acted; // action GRATUITE : ne consomme pas l'Action
-      campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
-      applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, pt.result);
-      set({ battle: { ...get().battle!, acted: prevActed } });
+      if (attacker && target) {
+        const prevActed = battle.acted; // action GRATUITE : ne consomme pas l'Action
+        campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
+        applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, pt.result); // un Coup Critique s'EMPILE (pushReveal) sur la cascade ouverte
+        set({ battle: { ...get().battle!, acted: prevActed } });
+      }
+      // Séquence de combat (jet = étape 0) : enchaîner sur le Coup Critique foldé DANS la même fenêtre,
+      // ou clore l'étape (reprise IA) si aucune conséquence — plus de 2ᵉ fenêtre « Conséquences ».
+      advanceCombatJet(get);
     },
     trampleCancel: () => set({ pendingTrample: null }),
 

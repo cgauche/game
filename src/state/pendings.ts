@@ -963,13 +963,13 @@ export interface CascadeStep extends RollParticipant {
   /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */
   actorId?: string;
   icon?: string;
-  /** Étape-JET : le jet d'attaque/défense/magie/Test/désengagement/porte EST l'étape 0 de la séquence,
-   *  rendu par `CascadeModal` via le hook ou la modale correspondante (`useAttackJetProps`/
-   *  `useDefenseJetProps`/`useTestJetProps`/`useExtendedTestJetProps`/`CastModal`/`DisengageModal`/
-   *  `ForceDoorModal`) → une seule fenêtre. Les données vivent dans `pendingAttack`/`pendingDefense`/
-   *  `pendingCast`/`pendingTest`/`pendingExtendedTest`/`pendingDisengage`/`pendingForceDoor`
-   *  (coexistants — comme l'attaque), résolus par leur `xConfirm`/`xNext` qui ferme la cascade. */
-  jet?: 'attack' | 'defense' | 'fumble' | 'cast' | 'test' | 'extended' | 'disengage' | 'forceDoor';
+  /** Étape-JET : le jet d'attaque/Piétinement/défense/magie/Test/désengagement/porte EST l'étape 0 de
+   *  la séquence, rendu par `CascadeModal` via le hook ou la modale correspondante (`useAttackJetProps`/
+   *  `useTrampleJetProps`/`useDefenseJetProps`/`useTestJetProps`/`useExtendedTestJetProps`/`CastModal`/
+   *  `DisengageModal`/`ForceDoorModal`) → une seule fenêtre. Les données vivent dans `pendingAttack`/
+   *  `pendingTrample`/`pendingDefense`/`pendingCast`/`pendingTest`/`pendingExtendedTest`/`pendingDisengage`/
+   *  `pendingForceDoor` (coexistants — comme l'attaque), résolus par leur `xConfirm`/`xNext` qui ferme la cascade. */
+  jet?: 'attack' | 'trample' | 'defense' | 'fumble' | 'cast' | 'test' | 'extended' | 'disengage' | 'forceDoor';
   /** Étape de GROUPE (action collective : enfoncer une porte à plusieurs) — l'arbitre coop lui donne
    *  l'owner '*' (chacun pilote ses héros) au lieu de `actorId` (une étape forceDoor n'a pas d'acteur
    *  unique). Absent sur les autres `kind` → repli sur `actorId` (identique à aujourd'hui). */

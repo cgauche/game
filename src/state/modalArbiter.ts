@@ -52,7 +52,10 @@ export const MODAL_DEFS = [
   // (Le Renversement (Déstabilisante) n'a PLUS d'entrée propre : c'est une étape de CHOIX de la
   //  cascade d'ATTAQUE — comme Déviation/Piège-lame — rendue par `cascade`.)
   { key: 'renounce', when: (s) => !!s.pendingRenounce, owner: (s) => s.pendingRenounce?.heroId, auto: { mode: 'choice' } },
-  { key: 'trample', when: (s) => !!s.pendingTrample, owner: (s) => s.pendingTrample?.attackerId, auto: { mode: 'self', drive: ['trampleRoll', 'trampleConfirm'] } },
+  // (Le Piétinement n'a PLUS d'entrée propre : c'est une étape `jet:'trample'` de la cascade `combat`
+  //  (CascadeModal → useTrampleJetProps) — `pendingTrample` coexiste comme porteur de données. Le jet ET
+  //  son Coup Critique vivent dans UNE fenêtre (fini la 2ᵉ modale « Conséquences »). L'auto-résolution
+  //  passe donc par `JET_AUTO['trample']` (combatAuto), comme l'attaque.)
   // Battement (LDB 10 l.103) : jet PROPRE de CC (non opposé) → 'self' (Lancer puis Appliquer), comme le Piétinement.
   { key: 'battement', when: (s) => !!s.pendingBattement, owner: (s) => s.pendingBattement?.attackerId, auto: { mode: 'self', drive: ['battementRoll', 'battementConfirm'] } },
   // Distraire (LDB 10 l.364) : jet PROPRE d'Athlétisme opposé au Calme figé du foe → 'self' (le mover pilote son jet).

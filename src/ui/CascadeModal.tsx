@@ -5,6 +5,7 @@ import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
+import { useTrampleJetProps } from './jetProps/useTrampleJetProps';
 import { useDefenseJetProps } from './jetProps/useDefenseJetProps';
 import { useFumbleJetProps } from './jetProps/useFumbleJetProps';
 import { useTestJetProps } from './jetProps/useTestJetProps';
@@ -51,6 +52,7 @@ export function CascadeModal() {
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
   const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
+  const trampleProps = useTrampleJetProps(); // étape-jet de Piétinement : jet + son Critique dans UNE fenêtre
   const defenseProps = useDefenseJetProps(); // étape-jet de défense réactive : défense + son Critique dans UNE fenêtre
   const fumbleProps = useFumbleJetProps(); // étape-jet de Maladresse : Tableau des Oups ! dans la MÊME fenêtre
   const testProps = useTestJetProps(); // étape-jet de Test de scène : même coquille, une seule fenêtre
@@ -127,6 +129,7 @@ export function CascadeModal() {
   // pendant un ciblage CARTE (pickingTargets / pose de zone) pour déférer à la carte).
   const JET_RENDERERS: Record<NonNullable<CascadeStep['jet']>, () => JSX.Element | null> = {
     attack: () => (attackProps ? <RollShell {...attackProps} /> : null),
+    trample: () => (trampleProps ? <RollShell {...trampleProps} /> : null),
     defense: () => (defenseProps ? <RollShell {...defenseProps} /> : null),
     fumble: () => (fumbleProps ? <RollShell {...fumbleProps} /> : null),
     test: () => (testProps ? <RollShell {...testProps} /> : null),
