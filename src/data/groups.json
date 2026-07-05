@@ -70,5 +70,41 @@
   {
     "id": "sigmarite",
     "label": "Sigmarite"
+  },
+  {
+    "id": "ulricain",
+    "label": "Ulricain"
+  },
+  {
+    "id": "tileen",
+    "label": "Tiléen"
+  },
+  {
+    "id": "elfe-noir",
+    "label": "Elfe noir"
+  },
+  {
+    "id": "teutogen",
+    "label": "Teutogen"
+  },
+  {
+    "id": "bailli",
+    "label": "Bailli"
+  },
+  {
+    "id": "juriste",
+    "label": "Juriste"
+  },
+  {
+    "id": "noble",
+    "label": "Noble"
+  },
+  {
+    "id": "vivant",
+    "label": "Vivant"
+  },
+  {
+    "id": "tout",
+    "label": "Tout"
   }
 ]

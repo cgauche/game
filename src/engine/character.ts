@@ -350,7 +350,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     kind: 'hero',
     species: opts.speciesId,
     career: opts.careerId,
-    groups: groupsFor({ species: sp.label, careerId: opts.careerId, group: sp.group, traits: [] }), // racial (label, ou surcharge `group`) + carrière (LDB 21, P3)
+    groups: groupsFor({ species: sp.label, careerId: opts.careerId, group: sp.group, traits: [], talents }), // racial (label, ou surcharge `group`) + sous-espèce + carrière + religieux (Talent Béni, LDB 21, P3)
     size,
     characteristics: chars,
     wounds: { current: 0, max: 0, base: 0 }, // posé après les effets de talents (Dur à cuire)

@@ -345,11 +345,8 @@
         "range": 50
       },
       {
-        "id": "animosite"
-      },
-      {
         "id": "animosite",
-        "arg": "homme-bete"
+        "arg": "noble, homme-bete"
       },
       {
         "id": "arboricole"
@@ -369,7 +366,8 @@
         "id": "endurant"
       },
       {
-        "id": "prejuge"
+        "id": "prejuge",
+        "arg": "bailli, juriste"
       }
     ],
     "optionals": [],
@@ -467,7 +465,8 @@
     },
     "traits": [
       {
-        "id": "animosite"
+        "id": "animosite",
+        "arg": "tileen"
       },
       {
         "id": "arme",
@@ -1899,7 +1898,8 @@
     },
     "traits": [
       {
-        "id": "animosite"
+        "id": "animosite",
+        "arg": "tout"
       },
       {
         "id": "arme",
@@ -2915,7 +2915,8 @@
         "id": "bestial"
       },
       {
-        "id": "haine"
+        "id": "haine",
+        "arg": "vivant"
       },
       {
         "id": "infravision"
@@ -40808,7 +40809,8 @@
     },
     "traits": [
       {
-        "id": "animosite"
+        "id": "animosite",
+        "arg": "tout"
       },
       {
         "id": "effraye",
@@ -48310,7 +48312,8 @@
         "id": "rage"
       },
       {
-        "id": "haine"
+        "id": "haine",
+        "arg": "vivant"
       },
       {
         "id": "infecte"
@@ -50790,7 +50793,8 @@
     },
     "traits": [
       {
-        "id": "animosite"
+        "id": "animosite",
+        "arg": "tout"
       },
       {
         "id": "aquatique"
@@ -55894,7 +55898,8 @@
         "id": "ethere"
       },
       {
-        "id": "haine"
+        "id": "haine",
+        "arg": "teutogen"
       },
       {
         "id": "increvable"
@@ -56017,7 +56022,8 @@
         "id": "ethere"
       },
       {
-        "id": "prejuge"
+        "id": "prejuge",
+        "arg": "vivant"
       },
       {
         "id": "taille",
@@ -59351,6 +59357,10 @@
         "id": "effraye"
       },
       {
+        "id": "prejuge",
+        "arg": "noble"
+      },
+      {
         "id": "prejuge"
       }
     ],
@@ -60962,7 +60972,8 @@
     },
     "traits": [
       {
-        "id": "animosite"
+        "id": "animosite",
+        "arg": "elfe-noir"
       },
       {
         "id": "armure",

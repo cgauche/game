@@ -35,6 +35,32 @@ describe('Psychologie data-driven (capabilities de traits.json) — LDB 21/85', 
     expect(parsePsychTraits([{ id: 'arme', value: 7 }])).toEqual({});
   });
 
+  /**
+   * Cibles d'origine (Phase 2, commit fdc720e1) laissées INERTES en MAX FIDÉLITÉ (phase psy) : chaque
+   * cible ci-dessous a été examinée et ne modélise VOLONTAIREMENT aucun Groupe — flavor pur (personnage
+   * nommé, critère subjectif/qualitatif, ou élément non-combattant), zéro invention. Traçabilité ; ne
+   * PAS résoudre sans un référent combattant réel (cf. `groups.json`/`groups.ts`).
+   */
+  const LEFT_INERT_ORIGINAL_TARGETS = [
+    { creature: 'ogre', trait: 'prejuge', cible: 'Maigrichons', raison: 'insulte propre aux Ogres (gabarit), aucun Groupe' },
+    { creature: 'jetsam-la-gelee-intelligente', trait: 'effraye', cible: 'Feu', raison: 'phobie élémentaire (créature-gelée), pas un Groupe de combattants' },
+    { creature: 'volee-de-noctecorbes', trait: 'effraye', cible: 'Lumière', raison: 'phobie élémentaire (corvidé nocturne), pas un Groupe' },
+    { creature: 'wereburga-krotpreffer', trait: 'prejuge', cible: 'Étrangers', raison: 'relatif (étranger à qui ?), aucun Groupe fixe' },
+    { creature: 'marta-gerbenshreiber', trait: 'prejuge', cible: 'Ceux qu’elle considère faibles', raison: 'critère subjectif personnel, aucun Groupe' },
+    { creature: 'frere-bengt', trait: 'prejuge', cible: 'Mauvais auditeurs', raison: 'critère subjectif comportemental, aucun Groupe' },
+    { creature: 'alfric-demi-nez-brisenclume', trait: 'prejuge', cible: 'Étrangers', raison: 'relatif, aucun Groupe fixe (idem Wereburga)' },
+    { creature: 'agna-lottrisdottir', trait: 'prejuge', cible: 'Ces nains lâches qui rechignent à guerroyer pour restaurer le Royaume éternel', raison: 'sous-ensemble idéologique de Nains (PAS tous les Nains) — mapper à `nain` serait sur-large' },
+    { creature: 'helmut-beckenbauer', trait: 'prejuge', cible: 'Ceux qui ne savent pas apprécier un bon match de Middenball', raison: 'critère subjectif (sport), aucun Groupe' },
+    { creature: 'walpurga-wurklich', trait: 'animosite', cible: 'Menteurs, trompeurs, sophistes', raison: 'trait comportemental transversal à tous les Groupes, aucun Groupe' },
+    { creature: 'walpurga-wurklich', trait: 'prejuge', cible: 'Acteurs, amateurs de théâtre', raison: 'métier/loisir sans Groupe dédié (un seul PNJ concerné, zéro invention)' },
+    { creature: 'andrea-bruhn', trait: 'prejuge', cible: 'Les artistes qui ne sont pas aussi doués qu’ils le pensent', raison: 'critère qualitatif subjectif, aucun Groupe' },
+    { creature: 'traudl-bauer', trait: 'prejuge', cible: 'Ulricains pas assez zélés', raison: 'sous-ensemble QUALIFIÉ des Ulricains (PAS tous) — distinct du simple `ulricain`, reste inerte' },
+    { creature: 'brigitte-schleigel', trait: 'effraye', cible: 'créanciers', raison: 'phobie non-combattante (dette), aucun Groupe' },
+    { creature: 'brigitte-schleigel', trait: 'prejuge', cible: 'réactionnaires, miliciens, utilisateurs de mystracine', raison: 'reste du segment comma après extraction de `noble` (aristocrates/nantis) — aucun Groupe milice/politique/drogue existant' },
+    { creature: 'sangsue-geante', trait: 'effraye', cible: 'Sel', raison: 'phobie élémentaire (sangsue), aucun Groupe' },
+    { creature: 'sangsue-des-arbres', trait: 'effraye', cible: 'Sel', raison: 'phobie élémentaire (sangsue), aucun Groupe' },
+  ] as const;
+
   it('DONNÉE creatures.json : toute Cible d’un Trait psy CIBLÉ (par psychType, pas par id) est un id de Groupe connu ou un wildcard — jamais une chaîne FR (garde anti-régression du codemod, cf. effraye→phobie)', () => {
     const TARGETED = new Set(['animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie']);
     const bad: string[] = [];
@@ -52,5 +78,14 @@ describe('Psychologie data-driven (capabilities de traits.json) — LDB 21/85', 
       for (const m of c.members ?? []) check(m.traits, c.id);
     }
     expect(bad).toEqual([]);
+  });
+
+  it('DONNÉE creatures.json : les cibles LISTÉES ci-dessus restent bien INERTES (aucune ré-résolution accidentelle)', () => {
+    for (const { creature, trait } of LEFT_INERT_ORIGINAL_TARGETS) {
+      const c = (creatures as any[]).find((x) => x.id === creature);
+      expect(c, `créature introuvable : ${creature}`).toBeTruthy();
+      const stillInert = (c.traits ?? []).some((t: { id: string; arg?: string }) => t.id === trait && !t.arg);
+      expect(stillInert, `${creature} :: ${trait} devrait avoir au moins une occurrence inerte (sans arg)`).toBe(true);
+    }
   });
 });

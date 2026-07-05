@@ -55,4 +55,47 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
     expect(groupMatch('elfe', ['Elfe'])).toBe(false);
     expect(groupMatch('elfe', ['elfe-noir'])).toBe(false); // pas de raffinement de sous-type (YAGNI)
   });
+
+  it('SOUS-ESPÈCE Tiléen : aplatit la hiérarchie — émet le racial ET le sous-type', () => {
+    expect(groupsFor({ species: 'Humains (Tiléens)' })).toEqual(expect.arrayContaining(['humain', 'tileen']));
+    expect(groupsFor({ species: 'Humains (Reiklander)' })).not.toContain('tileen'); // pas de faux positif
+  });
+
+  it('carrières Bailli/Juriste/Noble → leur propre id de Groupe (Traits psy ciblés, LDB 21)', () => {
+    expect(groupsFor({ careerId: 'bailli' })).toContain('bailli');
+    expect(groupsFor({ careerId: 'juriste' })).toContain('juriste');
+    expect(groupsFor({ careerId: 'noble' })).toContain('noble');
+  });
+
+  it('Talent Béni(Sigmar/Ulric) → Groupe religieux (comble le trou Phase 2 : sigmarite n’était dérivé de rien)', () => {
+    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'Sigmar' }] })).toContain('sigmarite');
+    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'Ulric' }] })).toContain('ulricain');
+    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'Manann' }] })).toEqual([]); // culte sans Groupe dédié
+    expect(groupsFor({ talents: [{ talentId: 'autre-talent' }] })).toEqual([]); // pas Béni → rien
+  });
+
+  it('cibles spéciales : « tout » matche toujours, « vivant » exclut mort-vivant/démon', () => {
+    expect(groupMatch('tout', [])).toBe(true);
+    expect(groupMatch('tout', ['demon'])).toBe(true);
+    expect(groupMatch('vivant', ['humain'])).toBe(true);
+    expect(groupMatch('vivant', ['mort-vivant'])).toBe(false);
+    expect(groupMatch('vivant', ['demon'])).toBe(false);
+  });
+
+  it('vérité — une créature avec Animosité (tileen) réagit à un combattant Tiléen', () => {
+    expect(groupMatch('tileen', groupsFor({ species: 'Humains (Tiléens)' }))).toBe(true);
+    expect(groupMatch('tileen', groupsFor({ species: 'Humains (Reiklander)' }))).toBe(false);
+  });
+
+  it('vérité — Préjugé (noble) cible un combattant de carrière Noble', () => {
+    expect(groupMatch('noble', groupsFor({ careerId: 'noble' }))).toBe(true);
+    expect(groupMatch('noble', groupsFor({ careerId: 'soldat' }))).toBe(false);
+  });
+
+  it('vérité — Haine (vivant) d’un mort-vivant frappe les vivants, pas les morts-vivants', () => {
+    const vivant = groupsFor({ species: 'Humains (Reiklander)' });
+    const mortVivant = groupsFor({ traits: [{ id: 'mort-vivant' }] });
+    expect(groupMatch('vivant', vivant)).toBe(true);
+    expect(groupMatch('vivant', mortVivant)).toBe(false);
+  });
 });
