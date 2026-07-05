@@ -2730,5 +2730,14 @@
         }
       }
     ]
+  },
+  {
+    "id": "destabilisant",
+    "label": "Déstabilisant",
+    "desc": "En présence d'une créature Déstabilisante, une créature Instable compte ses Avantages à la fin de chaque Round comme si elle en avait deux de moins. Ses Avantages ne sont pas perdus, seulement ignorés.",
+    "source": {
+      "book": "ZI",
+      "page": 82
+    }
   }
 ]

@@ -109,8 +109,9 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Contagieux', 'transmet la maladie hébergée au toucher — pas câblé (MJ ; cf. Infecté/Maladie)'],
   ['Décérébré', 'sans I/Int/FM/Soc, joue toujours en dernier — pas de système « sans Initiative » (MJ)'],
   ['Voleur de chair', 'revêt la peau d’un humain tué (trait de Gideon) — pas de système de déguisement (MJ)'],
-  // Trait ZI sans système support (desc verbatim, MJ).
+  // Traits ZI sans système support (desc verbatim, MJ).
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
+  ['Déstabilisant', 'aura ZI : une créature Instable à proximité compte ses Avantages −2 en fin de Round — pas de système d’aura inter-créatures modélisé (MJ ; cf. Feu de Tzeentch)'],
   ['Marque de Khorne', 'Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh + interdits + achats hors carrière (MDG 07 l.250-252) — même canal que Marque de Tzeentch (auteur/MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
   // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).

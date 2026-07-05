@@ -30,15 +30,15 @@
     ],
     "optionals": [
       {
-        "key": "À distance",
+        "id": "a-distance",
         "value": 8,
         "range": 50
       },
       {
-        "key": "Lanceur de Sorts"
+        "id": "lanceur-de-sorts"
       },
       {
-        "key": "Maladie"
+        "id": "maladie"
       }
     ],
     "skills": [],
@@ -100,12 +100,12 @@
     ],
     "optionals": [
       {
-        "key": "À distance",
+        "id": "a-distance",
         "value": 8,
         "range": 50
       },
       {
-        "key": "Rage"
+        "id": "rage"
       }
     ],
     "skills": [],
@@ -155,12 +155,12 @@
     ],
     "optionals": [
       {
-        "key": "À distance",
+        "id": "a-distance",
         "value": 7,
         "range": 25
       },
       {
-        "key": "Furtif"
+        "id": "furtif"
       }
     ],
     "skills": [],
@@ -214,28 +214,28 @@
     ],
     "optionals": [
       {
-        "key": "À distance",
+        "id": "a-distance",
         "value": 9,
         "range": 150
       },
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "un au choix"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       },
       {
-        "key": "Résistance à la Magie"
+        "id": "resistance-a-la-magie"
       }
     ],
     "skills": [],
@@ -295,13 +295,13 @@
     ],
     "optionals": [
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       }
     ],
     "skills": [],
@@ -676,28 +676,39 @@
     ],
     "optionals": [
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
-        "key": "Armure",
+        "id": "armure",
         "value": 1
       },
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garder, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Morsure"
+        "id": "dresse-garde"
       },
       {
-        "key": "Nuée"
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "morsure"
+      },
+      {
+        "id": "nuee"
       },
       {
         "key": "Taille",
         "arg": "de Petite à Énorme"
       },
       {
-        "key": "Venin",
+        "id": "venin",
         "arg": "Moyen"
       }
     ],
@@ -754,7 +765,7 @@
     ],
     "optionals": [
       {
-        "key": "Armure"
+        "id": "armure"
       },
       {
         "key": "Dressé",
@@ -817,7 +828,7 @@
     ],
     "optionals": [
       {
-        "key": "Armure",
+        "id": "armure",
         "value": 1
       },
       {
@@ -825,20 +836,20 @@
         "arg": "Divertir, Dompté, Garder, Guerre, Magie, Rapporter"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       },
       {
         "key": "Taille",
         "arg": "de Petite à Moyenne"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -904,17 +915,17 @@
         "arg": "Dompté, Garde, Guerre, Magie, Monture, Rapporter, Trait"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -981,24 +992,24 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
         "key": "Dressé",
         "arg": "Divertir, Dompté, Guerre"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Taille",
-        "arg": "Énorme"
+        "id": "taille",
+        "arg": "enorme"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -1055,12 +1066,14 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Revenir au colombier"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Taille",
-        "arg": "Petite"
+        "id": "dresse-revenir-a-la-maison"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
       }
     ],
     "skills": [],
@@ -1126,19 +1139,18 @@
     ],
     "optionals": [
       {
-        "key": "Armure",
+        "id": "armure",
         "value": 1
       },
       {
-        "key": "Dressé",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
         "key": "Maladie",
         "arg": "Fièvre du rongeur ou Peste Noire"
       },
       {
-        "key": "Nuée"
+        "id": "nuee"
       },
       {
         "key": "Taille",
@@ -1205,27 +1217,35 @@
     ],
     "optionals": [
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Dressé",
-        "arg": "Dompté, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Frénésie"
+        "id": "dresse-guerre"
       },
       {
-        "key": "Infecté"
+        "id": "dresse-magie"
       },
       {
-        "key": "Parasité"
+        "id": "dresse-monture"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "frenesie"
       },
       {
-        "key": "Territorial"
+        "id": "infecte"
+      },
+      {
+        "id": "parasite"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      },
+      {
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -1285,20 +1305,20 @@
     ],
     "optionals": [
       {
-        "key": "Constricteur"
+        "id": "constricteur"
       },
       {
-        "key": "Limicole"
+        "id": "limicole"
       },
       {
-        "key": "Nuée"
+        "id": "nuee"
       },
       {
         "key": "Taille",
         "arg": "de Minuscule à Énorme"
       },
       {
-        "key": "Venin",
+        "id": "venin",
         "arg": "de Très Facile à Très Difficile"
       }
     ],
@@ -1383,10 +1403,10 @@
     ],
     "optionals": [
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -1457,16 +1477,16 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -1602,44 +1622,43 @@
     ],
     "optionals": [
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
-        "key": "Corruption mentale"
+        "id": "corruption-mentale"
       },
       {
-        "key": "Dressé",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
-        "key": "Immunité",
+        "id": "immunite",
         "arg": "une au choix"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Divers"
       },
       {
-        "key": "Limicole"
+        "id": "limicole"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       },
       {
-        "key": "Mort-vivant"
+        "id": "mort-vivant"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Taille",
-        "arg": "Monstrueuse"
+        "id": "taille",
+        "arg": "monstrueuse"
       },
       {
-        "key": "Venin"
+        "id": "venin"
       }
     ],
     "skills": [],
@@ -1699,11 +1718,11 @@
     ],
     "optionals": [
       {
-        "key": "Attaque caudale",
+        "id": "attaque-caudale",
         "value": 7
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Démonologie"
       }
     ],
@@ -1765,27 +1784,27 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Souffle",
+        "id": "souffle",
         "arg": "Vomi d’ivrogne"
       },
       {
-        "key": "Stupide"
+        "id": "stupide"
       },
       {
-        "key": "Taille",
-        "arg": "Monstrueuse"
+        "id": "taille",
+        "arg": "monstrueuse"
       }
     ],
     "skills": [],
@@ -1855,8 +1874,19 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garde, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
       }
     ],
     "skills": [],
@@ -1935,18 +1965,20 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Frénésie"
+        "id": "dresse-monture"
       },
       {
-        "key": "Haine",
-        "arg": "Tout"
+        "id": "frenesie"
       },
       {
-        "key": "Rage"
+        "id": "haine",
+        "arg": "tout"
+      },
+      {
+        "id": "rage"
       }
     ],
     "skills": [],
@@ -2023,13 +2055,13 @@
     ],
     "optionals": [
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       },
       {
-        "key": "Venin"
+        "id": "venin"
       }
     ],
     "skills": [],
@@ -2114,10 +2146,10 @@
     ],
     "optionals": [
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -2189,15 +2221,20 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Magie, Monture"
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
       },
       {
         "key": "Haine",
         "arg": "Prédateurs"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       }
     ],
     "skills": [],
@@ -2319,7 +2356,7 @@
         "arg": "Énorme-Monstrueuse"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -2374,22 +2411,22 @@
     ],
     "optionals": [
       {
-        "key": "Amphibie"
+        "id": "amphibie"
       },
       {
-        "key": "Cornes"
+        "id": "cornes"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Infravision"
+        "id": "infravision"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Souffle",
+        "id": "souffle",
         "arg": "acide ou gaz"
       },
       {
@@ -2467,37 +2504,37 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Amphibie"
+        "id": "amphibie"
       },
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Limicole"
+        "id": "limicole"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Résistance à la Magie"
+        "id": "resistance-a-la-magie"
       },
       {
-        "key": "Vision nocturne"
+        "id": "vision-nocturne"
       }
     ],
     "skills": [],
@@ -2559,18 +2596,29 @@
     ],
     "optionals": [
       {
-        "key": "Attaque caudale",
+        "id": "attaque-caudale",
         "value": 9
       },
       {
-        "key": "Cornes"
+        "id": "cornes"
       },
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garde, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Souffle",
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "souffle",
         "arg": "Poison"
       }
     ],
@@ -2639,16 +2687,16 @@
     ],
     "optionals": [
       {
-        "key": "À distance",
+        "id": "a-distance",
         "value": 8,
         "range": 50
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       }
     ],
     "skills": [],
@@ -2710,22 +2758,22 @@
     ],
     "optionals": [
       {
-        "key": "À distance",
+        "id": "a-distance",
         "value": 7,
         "range": 25
       },
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
-        "key": "Haine",
-        "arg": "nains"
+        "id": "haine",
+        "arg": "nain"
       },
       {
-        "key": "Infravision"
+        "id": "infravision"
       },
       {
-        "key": "Venin"
+        "id": "venin"
       }
     ],
     "skills": [],
@@ -2782,14 +2830,19 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Rapporter, Garde"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Nuée"
+        "id": "dresse-rapporteur"
       },
       {
-        "key": "Venin"
+        "id": "dresse-garde"
+      },
+      {
+        "id": "nuee"
+      },
+      {
+        "id": "venin"
       }
     ],
     "skills": [],
@@ -2852,19 +2905,19 @@
     ],
     "optionals": [
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       },
       {
-        "key": "Vol"
+        "id": "vol"
       }
     ],
     "skills": [],
@@ -2949,23 +3002,23 @@
     ],
     "optionals": [
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       },
       {
-        "key": "Vol"
+        "id": "vol"
       }
     ],
     "skills": [],
@@ -3024,19 +3077,19 @@
     ],
     "optionals": [
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Haine"
+        "id": "haine"
       },
       {
-        "key": "Nuée"
+        "id": "nuee"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -3089,13 +3142,13 @@
     ],
     "optionals": [
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Venin"
+        "id": "venin"
       }
     ],
     "skills": [],
@@ -3169,20 +3222,20 @@
     ],
     "optionals": [
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Perturbant"
+        "id": "perturbant"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -3244,16 +3297,16 @@
     ],
     "optionals": [
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Champion"
+        "id": "champion"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -3319,14 +3372,14 @@
     ],
     "optionals": [
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -3383,61 +3436,61 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Champion"
+        "id": "champion"
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Corruption mentale"
+        "id": "corruption-mentale"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Grimpant"
+        "id": "grimpant"
       },
       {
-        "key": "Increvable"
+        "id": "increvable"
       },
       {
-        "key": "Infravision"
+        "id": "infravision"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Mort ou Nécromancie"
       },
       {
-        "key": "Perturbant"
+        "id": "perturbant"
       },
       {
-        "key": "Peur",
+        "id": "peur",
         "value": 1
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Regard pétrifiant"
+        "id": "regard-petrifiant"
       },
       {
-        "key": "Régénération"
+        "id": "regeneration"
       },
       {
-        "key": "Vol"
+        "id": "vol"
       }
     ],
     "skills": [],
@@ -3500,26 +3553,26 @@
     ],
     "optionals": [
       {
-        "key": "Armure"
+        "id": "armure"
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Maladie"
+        "id": "maladie"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Perturbant"
+        "id": "perturbant"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -3584,21 +3637,21 @@
     ],
     "optionals": [
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Maladie",
-        "arg": "Vérole du Tanneur"
+        "id": "maladie",
+        "arg": "verole-du-tanneur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       }
     ],
     "skills": [],
@@ -3659,33 +3712,33 @@
     ],
     "optionals": [
       {
-        "key": "Armure",
+        "id": "armure",
         "value": 2
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Bêtes"
       },
       {
-        "key": "Maladie",
-        "arg": "Vérole du Tanneur"
+        "id": "maladie",
+        "arg": "verole-du-tanneur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       }
     ],
     "skills": [],
@@ -3743,30 +3796,30 @@
     ],
     "optionals": [
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Maladie",
-        "arg": "Vérole du Tanneur"
+        "id": "maladie",
+        "arg": "verole-du-tanneur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       }
     ],
     "skills": [],
@@ -3816,34 +3869,34 @@
     ],
     "optionals": [
       {
-        "key": "À distance",
+        "id": "a-distance",
         "value": 7,
         "range": 25
       },
       {
-        "key": "Armure",
+        "id": "armure",
         "value": 1
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Maladie",
-        "arg": "Vérole du Tanneur"
+        "id": "maladie",
+        "arg": "verole-du-tanneur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Taille",
-        "arg": "Petite"
+        "id": "taille",
+        "arg": "petite"
       }
     ],
     "skills": [],
@@ -3887,19 +3940,19 @@
     ],
     "optionals": [
       {
-        "key": "Armure",
+        "id": "armure",
         "value": 1
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Chaos"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       }
     ],
     "skills": [],
@@ -4009,26 +4062,26 @@
     ],
     "optionals": [
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Corruption mentale"
+        "id": "corruption-mentale"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Chaos"
       },
       {
-        "key": "Maladie"
+        "id": "maladie"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Perturbant"
+        "id": "perturbant"
       }
     ],
     "skills": [],
@@ -4245,20 +4298,20 @@
     ],
     "optionals": [
       {
-        "key": "Brutal"
+        "id": "brutal"
       },
       {
         "key": "Effrayé",
         "arg": "Démons, Démonologues"
       },
       {
-        "key": "Intelligent"
+        "id": "intelligent"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Rapide"
+        "id": "rapide"
       },
       {
         "key": "Taille",
@@ -4335,23 +4388,23 @@
     ],
     "optionals": [
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Tzeentch"
       },
       {
-        "key": "Langue préhensile",
+        "id": "langue-prehensile",
         "value": 6,
         "arg": "6 mètres"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       },
       {
-        "key": "Perturbant"
+        "id": "perturbant"
       }
     ],
     "skills": [
@@ -4425,19 +4478,19 @@
     ],
     "optionals": [
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Tzeentch"
       },
       {
-        "key": "Langue préhensile",
+        "id": "langue-prehensile",
         "value": 3,
         "arg": "3 mètres"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Perturbant"
+        "id": "perturbant"
       }
     ],
     "skills": [
@@ -4674,20 +4727,20 @@
     ],
     "optionals": [
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Maladie",
-        "arg": "Fièvre du rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Nerveux"
+        "id": "nerveux"
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       }
     ],
     "skills": [],
@@ -4752,32 +4805,40 @@
     ],
     "optionals": [
       {
-        "key": "Attaque caudale",
+        "id": "attaque-caudale",
         "value": 8
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garde, Guerre, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Infravision"
+        "id": "dresse-garde"
       },
       {
-        "key": "Maladie",
-        "arg": "Fièvre du rongeur"
+        "id": "dresse-guerre"
       },
       {
-        "key": "Mutation"
+        "id": "dresse-monture"
       },
       {
-        "key": "Parasité"
+        "id": "infravision"
       },
       {
-        "key": "Pisteur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
+      },
+      {
+        "id": "mutation"
+      },
+      {
+        "id": "parasite"
+      },
+      {
+        "id": "pisteur"
       }
     ],
     "skills": [],
@@ -4835,14 +4896,14 @@
     ],
     "optionals": [
       {
-        "key": "Maladie",
-        "arg": "Fièvre du rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       }
     ],
     "skills": [],
@@ -4908,22 +4969,22 @@
     ],
     "optionals": [
       {
-        "key": "Champion"
+        "id": "champion"
       },
       {
-        "key": "Coriace"
+        "id": "coriace"
       },
       {
-        "key": "Élite"
+        "id": "elite"
       },
       {
-        "key": "Endurant"
+        "id": "endurant"
       },
       {
-        "key": "Intelligent"
+        "id": "intelligent"
       },
       {
-        "key": "Se cabrer"
+        "id": "se-cabrer"
       }
     ],
     "skills": [],
@@ -30383,7 +30444,7 @@
       },
       {
         "id": "demoniaque",
-        "arg": "8+"
+        "value": 8
       },
       {
         "id": "instable"
@@ -30396,7 +30457,7 @@
       },
       {
         "id": "vol",
-        "arg": "90 mètres"
+        "value": 90
       }
     ],
     "optionals": [],
@@ -47323,7 +47384,7 @@
     ],
     "optionals": [
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [
@@ -47467,17 +47528,17 @@
     ],
     "optionals": [
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
         "key": "Haine",
         "arg": "cible à définir"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [
@@ -47603,10 +47664,10 @@
     ],
     "optionals": [
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [
@@ -47782,10 +47843,10 @@
     ],
     "optionals": [
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [
@@ -48535,7 +48596,7 @@
       },
       {
         "id": "vol",
-        "range": 100
+        "value": 100
       }
     ],
     "optionals": [],
@@ -48847,7 +48908,7 @@
       },
       {
         "id": "vol",
-        "range": 100
+        "value": 100
       }
     ],
     "optionals": [],
@@ -49133,15 +49194,15 @@
         "arg": "Serpents"
       },
       {
-        "key": "Béni",
-        "arg": "Taal"
+        "id": "beni",
+        "arg": "taal"
       },
       {
-        "key": "Immunité",
-        "arg": "Poison"
+        "id": "immunite",
+        "arg": "poison"
       },
       {
-        "key": "Régénération"
+        "id": "regeneration"
       }
     ],
     "skills": [
@@ -49319,13 +49380,13 @@
     ],
     "optionals": [
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Immunité Psychologique"
+        "id": "immunite-psychologique"
       },
       {
-        "key": "Sang corrosif"
+        "id": "sang-corrosif"
       }
     ],
     "skills": [],
@@ -49405,12 +49466,23 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garder, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Taille",
-        "arg": "Énorme"
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
       }
     ],
     "skills": [
@@ -49779,28 +49851,28 @@
     ],
     "optionals": [
       {
-        "key": "Attaque caudale",
+        "id": "attaque-caudale",
         "value": 9
       },
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Taille",
-        "arg": "Énorme"
+        "id": "taille",
+        "arg": "enorme"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -49974,15 +50046,15 @@
     ],
     "optionals": [
       {
-        "key": "Cornes",
+        "id": "cornes",
         "value": 9,
         "arg": "Épines dorsales crochues"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Sang corrosif"
+        "id": "sang-corrosif"
       },
       {
         "key": "Taille",
@@ -50061,13 +50133,13 @@
         "arg": "Trait"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [
@@ -50291,7 +50363,7 @@
     ],
     "optionals": [
       {
-        "key": "Furtif"
+        "id": "furtif"
       }
     ],
     "skills": [
@@ -50388,18 +50460,17 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Jade"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       },
       {
-        "key": "Venin"
+        "id": "venin"
       }
     ],
     "skills": [
@@ -50774,21 +50845,21 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Protection",
+        "id": "protection",
         "value": 9
       },
       {
-        "key": "Taille",
-        "arg": "Énorme"
+        "id": "taille",
+        "arg": "enorme"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -50861,20 +50932,20 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Coriace"
+        "id": "coriace"
       },
       {
         "key": "Dur à Cuire"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Haine",
-        "arg": "Tout"
+        "id": "haine",
+        "arg": "tout"
       },
       {
         "key": "Taille",
@@ -50953,32 +51024,32 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Cornes"
+        "id": "cornes"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Langue préhensile"
+        "id": "langue-prehensile"
       },
       {
-        "key": "Morsure"
+        "id": "morsure"
       },
       {
-        "key": "Pisteur"
+        "id": "pisteur"
       },
       {
-        "key": "Sang corrosif"
+        "id": "sang-corrosif"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       },
       {
-        "key": "Tentacules"
+        "id": "tentacules"
       }
     ],
     "skills": [
@@ -51054,14 +51125,14 @@
     ],
     "optionals": [
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Maladie",
-        "arg": "Fièvre du rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       }
     ],
     "skills": [
@@ -51139,27 +51210,27 @@
     ],
     "optionals": [
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infravision"
+        "id": "infravision"
       },
       {
-        "key": "Maladie",
-        "arg": "Fièvre du rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Redoutable"
+        "id": "redoutable"
       }
     ],
     "skills": [],
@@ -51242,17 +51313,17 @@
     ],
     "optionals": [
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       }
     ],
     "skills": [
@@ -51350,58 +51421,58 @@
     ],
     "optionals": [
       {
-        "key": "À sang-froid"
+        "id": "a-sang-froid"
       },
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Constricteur"
+        "id": "constricteur"
       },
       {
-        "key": "Foulée"
+        "id": "foulee"
       },
       {
-        "key": "Increvable"
+        "id": "increvable"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       },
       {
         "key": "Maladie",
         "arg": "Divers"
       },
       {
-        "key": "Morsure"
+        "id": "morsure"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Protection",
+        "id": "protection",
         "arg": "7-9"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Résistance à la Magie",
+        "id": "resistance-a-la-magie",
         "range": 13
       },
       {
-        "key": "Sang corrosif"
+        "id": "sang-corrosif"
       },
       {
-        "key": "Souffle",
+        "id": "souffle",
         "value": 9,
         "arg": "Poison"
       },
       {
-        "key": "Taille",
-        "arg": "Monstrueuse"
+        "id": "taille",
+        "arg": "monstrueuse"
       }
     ],
     "skills": [],
@@ -51458,7 +51529,7 @@
         "id": "engloutir"
       },
       {
-        "id": "x-tentacules",
+        "id": "tentacules",
         "value": 6,
         "count": 2
       }
@@ -51542,7 +51613,7 @@
         "id": "engloutir"
       },
       {
-        "id": "x-tentacules",
+        "id": "tentacules",
         "value": 7,
         "count": 2
       }
@@ -51664,24 +51735,24 @@
     ],
     "optionals": [
       {
-        "key": "Amphibie"
+        "id": "amphibie"
       },
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
         "key": "Haine",
         "arg": "Pieuvres des tourbières"
       },
       {
-        "key": "Limicole"
+        "id": "limicole"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       },
       {
-        "key": "Taille",
-        "arg": "Énorme"
+        "id": "taille",
+        "arg": "enorme"
       }
     ],
     "skills": [],
@@ -51770,22 +51841,22 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Endurant"
+        "id": "endurant"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       }
     ],
     "skills": [],
@@ -51882,13 +51953,13 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Endurant"
+        "id": "endurant"
       },
       {
-        "key": "Lanceur de Sorts",
+        "id": "lanceur-de-sorts",
         "arg": "Mort"
       }
     ],
@@ -52133,11 +52204,19 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Mutation"
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "mutation"
       }
     ],
     "skills": [],
@@ -52213,13 +52292,13 @@
     ],
     "optionals": [
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Instable"
+        "id": "instable"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       }
     ],
     "skills": [],
@@ -52307,10 +52386,10 @@
     ],
     "optionals": [
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       }
     ],
     "skills": [],
@@ -52380,10 +52459,10 @@
     ],
     "optionals": [
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Régénération"
+        "id": "regeneration"
       },
       {
         "key": "Langue",
@@ -52465,11 +52544,19 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Frénésie"
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "frenesie"
       }
     ],
     "skills": [],
@@ -52540,18 +52627,18 @@
     ],
     "optionals": [
       {
-        "key": "Béni",
-        "arg": "Verena"
+        "id": "beni",
+        "arg": "verena"
       },
       {
-        "key": "Miracles",
-        "arg": "Verena"
+        "id": "miracles",
+        "arg": "verena"
       },
       {
-        "key": "Peur"
+        "id": "peur"
       },
       {
-        "key": "Protection",
+        "id": "protection",
         "value": 8
       }
     ],
@@ -52661,10 +52748,10 @@
         "arg": "Belettes"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Souffle",
+        "id": "souffle",
         "value": 9,
         "arg": "Corrosion"
       }
@@ -52764,35 +52851,37 @@
     ],
     "optionals": [
       {
-        "key": "Attaque caudale",
+        "id": "attaque-caudale",
         "value": 10
       },
       {
-        "key": "Cornes",
+        "id": "cornes",
         "value": 10
       },
       {
-        "key": "Dressé",
-        "arg": "Magie, Monture"
+        "id": "dresse-magie"
       },
       {
-        "key": "Furtif"
+        "id": "dresse-monture"
       },
       {
-        "key": "Infecté"
+        "id": "furtif"
       },
       {
-        "key": "Langue préhensile",
+        "id": "infecte"
+      },
+      {
+        "id": "langue-prehensile",
         "value": 10
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Sang corrosif"
+        "id": "sang-corrosif"
       },
       {
-        "key": "Venin"
+        "id": "venin"
       }
     ],
     "skills": [],
@@ -53143,13 +53232,13 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       }
     ],
     "skills": [],
@@ -53237,12 +53326,11 @@
     ],
     "optionals": [
       {
-        "key": "Armure",
+        "id": "armure",
         "value": 3
       },
       {
-        "key": "Dressé",
-        "arg": "Monture"
+        "id": "dresse-monture"
       }
     ],
     "skills": [],
@@ -53313,10 +53401,10 @@
     ],
     "optionals": [
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Sang corrosif"
+        "id": "sang-corrosif"
       }
     ],
     "skills": [
@@ -53392,13 +53480,13 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Nuée",
+        "id": "nuee",
         "arg": "Volée de rasoirs"
       }
     ],
@@ -53474,19 +53562,19 @@
     ],
     "optionals": [
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Taille",
-        "arg": "Monstrueuse"
+        "id": "taille",
+        "arg": "monstrueuse"
       },
       {
-        "key": "x Tentacules",
+        "id": "tentacules",
         "value": 10,
         "count": 4
       },
       {
-        "key": "Terreur",
+        "id": "terreur",
         "value": 1
       }
     ],
@@ -53584,18 +53672,23 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Garder, Guerre, Monture"
+        "id": "dresse-garde"
       },
       {
-        "key": "Endurant"
+        "id": "dresse-guerre"
       },
       {
-        "key": "Taille",
-        "arg": "Monstrueuse"
+        "id": "dresse-monture"
       },
       {
-        "key": "Territorial"
+        "id": "endurant"
+      },
+      {
+        "id": "taille",
+        "arg": "monstrueuse"
+      },
+      {
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -53667,23 +53760,31 @@
     ],
     "optionals": [
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garder, Guerre, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Furtif"
+        "id": "dresse-garde"
       },
       {
-        "key": "Limicole"
+        "id": "dresse-guerre"
       },
       {
-        "key": "Stupide"
+        "id": "dresse-monture"
+      },
+      {
+        "id": "furtif"
+      },
+      {
+        "id": "limicole"
+      },
+      {
+        "id": "stupide"
       }
     ],
     "skills": [],
@@ -53762,27 +53863,32 @@
     ],
     "optionals": [
       {
-        "key": "Arboricole"
+        "id": "arboricole"
       },
       {
-        "key": "Champion"
+        "id": "champion"
       },
       {
-        "key": "Dressé",
-        "arg": "Garder, Guerre, Monture"
+        "id": "dresse-garde"
       },
       {
-        "key": "Endurant"
+        "id": "dresse-guerre"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "dresse-monture"
       },
       {
-        "key": "Pisteur"
+        "id": "endurant"
       },
       {
-        "key": "Taille",
-        "arg": "Monstrueuse"
+        "id": "insensible-a-la-douleur"
+      },
+      {
+        "id": "pisteur"
+      },
+      {
+        "id": "taille",
+        "arg": "monstrueuse"
       }
     ],
     "skills": [],
@@ -53857,23 +53963,22 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       },
       {
-        "key": "Parasité"
+        "id": "parasite"
       },
       {
-        "key": "Protection",
+        "id": "protection",
         "value": 9
       }
     ],
@@ -53961,16 +54066,16 @@
     ],
     "optionals": [
       {
-        "key": "Champion"
+        "id": "champion"
       },
       {
-        "key": "Endurant"
+        "id": "endurant"
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       }
     ],
     "skills": [
@@ -54057,18 +54162,29 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garder, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Immunité psychologique"
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "immunite-psychologique"
       },
       {
         "key": "Remplacer Bestial par un bonus de en Soc",
         "value": 20
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -54137,17 +54253,28 @@
     ],
     "optionals": [
       {
-        "key": "Cornes"
+        "id": "cornes"
       },
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garder, Guerre, Magie, Monture"
+        "id": "dresse-dompte"
       },
       {
-        "key": "Redoutable"
+        "id": "dresse-garde"
       },
       {
-        "key": "Souffle",
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "redoutable"
+      },
+      {
+        "id": "souffle",
         "value": 10,
         "arg": "Poison"
       }
@@ -54222,10 +54349,10 @@
     ],
     "optionals": [
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Résistance à la Magie"
+        "id": "resistance-a-la-magie"
       }
     ],
     "skills": [],
@@ -54364,24 +54491,24 @@
     ],
     "optionals": [
       {
-        "key": "Armure",
+        "id": "armure",
         "value": -3
       },
       {
-        "key": "Insensible à la douleur"
+        "id": "insensible-a-la-douleur"
       },
       {
-        "key": "Morsure"
+        "id": "morsure"
       },
       {
-        "key": "Perturbant"
+        "id": "perturbant"
       },
       {
-        "key": "Peur",
+        "id": "peur",
         "value": -2
       },
       {
-        "key": "x Tentacules",
+        "id": "tentacules",
         "value": 5,
         "count": 2
       }
@@ -54474,11 +54601,11 @@
     ],
     "optionals": [
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Taille",
-        "arg": "Monstrueuse"
+        "id": "taille",
+        "arg": "monstrueuse"
       }
     ],
     "skills": [],
@@ -54552,14 +54679,14 @@
     ],
     "optionals": [
       {
-        "key": "Corruption",
+        "id": "corruption",
         "arg": "Mineure"
       },
       {
-        "key": "Infecté"
+        "id": "infecte"
       },
       {
-        "key": "Protection",
+        "id": "protection",
         "value": 8
       }
     ],
@@ -54741,25 +54868,25 @@
     ],
     "optionals": [
       {
-        "key": "Champion"
+        "id": "champion"
       },
       {
-        "key": "Endurant"
+        "id": "endurant"
       },
       {
-        "key": "Étreinte glaciale"
+        "id": "etreinte-glaciale"
       },
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Instable"
+        "id": "instable"
       },
       {
-        "key": "Rage"
+        "id": "rage"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -54813,7 +54940,7 @@
         "id": "vision-nocturne"
       },
       {
-        "id": "a-distance-ou-a-distance-9",
+        "id": "a-distance",
         "value": 7,
         "arg": "Malelame",
         "range": 48
@@ -54826,11 +54953,11 @@
     ],
     "optionals": [
       {
-        "key": "Maladie",
-        "arg": "Fièvre du rongeur"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
       },
       {
-        "key": "Mutation"
+        "id": "mutation"
       }
     ],
     "skills": [],
@@ -55038,39 +55165,39 @@
     ],
     "optionals": [
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Béni",
-        "arg": "Ulric"
+        "id": "beni",
+        "arg": "ulric"
       },
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Champion"
+        "id": "champion"
       },
       {
-        "key": "Grand"
+        "id": "grand"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Increvable"
+        "id": "increvable"
       },
       {
-        "key": "Immunité Psychologique"
+        "id": "immunite-psychologique"
       },
       {
-        "key": "Rapide"
+        "id": "rapide"
       },
       {
-        "key": "Régénération"
+        "id": "regeneration"
       },
       {
-        "key": "Taille",
-        "arg": "Grande"
+        "id": "taille",
+        "arg": "grande"
       }
     ],
     "skills": [],
@@ -55232,26 +55359,26 @@
     ],
     "optionals": [
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Béni",
-        "arg": "Ulric"
+        "id": "beni",
+        "arg": "ulric"
       },
       {
-        "key": "Bestial"
+        "id": "bestial"
       },
       {
-        "key": "Frénésie"
+        "id": "frenesie"
       },
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Increvable"
+        "id": "increvable"
       },
       {
-        "key": "Rapide"
+        "id": "rapide"
       }
     ],
     "skills": [],
@@ -60152,7 +60279,7 @@
     ],
     "optionals": [
       {
-        "key": "Nuée"
+        "id": "nuee"
       },
       {
         "key": "Taille",
@@ -60226,11 +60353,11 @@
     ],
     "optionals": [
       {
-        "key": "Nuée"
+        "id": "nuee"
       },
       {
-        "key": "Taille",
-        "arg": "Très Petite"
+        "id": "taille",
+        "arg": "tresPetite"
       }
     ],
     "skills": [],
@@ -60304,14 +60431,14 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Nuée"
+        "id": "nuee"
       },
       {
-        "key": "Taille",
-        "arg": "Petite"
+        "id": "taille",
+        "arg": "petite"
       }
     ],
     "skills": [],
@@ -60374,14 +60501,14 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Nuée"
+        "id": "nuee"
       },
       {
-        "key": "Taille",
-        "arg": "Minuscule"
+        "id": "taille",
+        "arg": "minuscule"
       }
     ],
     "skills": [],
@@ -60630,10 +60757,10 @@
     ],
     "optionals": [
       {
-        "key": "Belliqueux"
+        "id": "belliqueux"
       },
       {
-        "key": "Territorial"
+        "id": "territorial"
       }
     ],
     "skills": [],
@@ -62775,11 +62902,11 @@
     ],
     "optionals": [
       {
-        "key": "Affamé"
+        "id": "affame"
       },
       {
-        "key": "Taille",
-        "arg": "Énorme"
+        "id": "taille",
+        "arg": "enorme"
       }
     ],
     "skills": [],
@@ -62862,13 +62989,13 @@
     ],
     "optionals": [
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Hallucinogène"
+        "id": "hallucinogene"
       },
       {
-        "key": "Increvable"
+        "id": "increvable"
       },
       {
         "key": "Taille",
@@ -62958,13 +63085,13 @@
     ],
     "optionals": [
       {
-        "key": "Furtif"
+        "id": "furtif"
       },
       {
-        "key": "Hallucinogène"
+        "id": "hallucinogene"
       },
       {
-        "key": "Increvable"
+        "id": "increvable"
       },
       {
         "key": "Taille",
@@ -63024,13 +63151,13 @@
     ],
     "optionals": [
       {
-        "key": "Étreinte glaciale"
+        "id": "etreinte-glaciale"
       },
       {
-        "key": "Magique"
+        "id": "magique"
       },
       {
-        "key": "Rusé"
+        "id": "ruse"
       }
     ],
     "skills": [],

@@ -106,5 +106,9 @@
   {
     "id": "tout",
     "label": "Tout"
+  },
+  {
+    "id": "religion",
+    "label": "Religion"
   }
 ]
