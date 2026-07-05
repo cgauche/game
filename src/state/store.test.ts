@@ -2659,7 +2659,7 @@ describe('Effet setTime — forcer l’heure du jour (jour/nuit via trigger, #T1
   });
 });
 
-describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
+describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   beforeEach(() => reset());
   const hero = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: {}, wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
   const merchantScene = () => {
@@ -2825,11 +2825,12 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     expect(useGame.getState().party[0].items!.some((i) => i.trappingId === id)).toBe(true);
   });
 
-  it('sellItem : crédite resaleRate × prix et retire l’objet du héros', () => {
+  it('vente (panier) : crédite resaleRate × prix et retire l’objet du héros', () => {
     const h = hero(); h.items = [{ uid: 'x', trappingId: 'hallebarde', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
     useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
     useGame.getState().openMerchant('pnj');
-    useGame.getState().sellItem('x', 'h');
+    useGame.getState().addToSellCart('x', 'h');
+    useGame.getState().confirmSell();
     const st = useGame.getState();
     expect(st.party[0].items!.find((i) => i.uid === 'x')).toBeUndefined();
     expect(toBrass(st.money)).toBeGreaterThan(0); // Hallebarde 2 CO × 10 %
@@ -2929,7 +2930,7 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     expect(discounted).toBeLessThan(full);
   });
 
-  it('sellItem : Option 2 — défaut/perdu = ¼ (lowball), marchandage de vente GAGNÉ = ½ (#2c)', () => {
+  it('vente (panier) : Option 2 — défaut/perdu = ¼ (lowball), marchandage de vente GAGNÉ = ½ (#2c)', () => {
     const sellWith = (bargainSell: { won: boolean; drNet: number; negotiator: boolean } | null): number => {
       const h = hero(); h.items = [{ uid: 'x', trappingId: 'hallebarde', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
       reset();
@@ -2937,7 +2938,8 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
       useGame.getState().openMerchant('pnj');
       const m = useGame.getState().merchant!;
       useGame.setState({ merchant: { ...m, bargainSell } });
-      useGame.getState().sellItem('x', 'h');
+      useGame.getState().addToSellCart('x', 'h');
+      useGame.getState().confirmSell();
       return toBrass(useGame.getState().money);
     };
     const lowball = sellWith(null); // ¼ par défaut (le marchand lowballe)

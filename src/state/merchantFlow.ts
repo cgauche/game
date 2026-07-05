@@ -325,7 +325,7 @@ export function confirmDistribution(_get: Get, set: Set): void {
 }
 
 /** Gain de revente d'un objet (catalogue × qualité × resaleRate × facteur de Marchandage). SOURCE UNIQUE
- *  du prix de vente — partagée par `sellItem`, `confirmSell` ET l'aperçu UI (pas de formule dupliquée).
+ *  du prix de vente — partagée par `confirmSell` ET l'aperçu UI (pas de formule dupliquée).
  *  Option 2 (LDB 60 l.22) : ¼ par défaut (resaleRate/2) ; ½ si le Marchandage de vente est GAGNÉ. */
 export function sellGain(item: ItemInstance, m: MerchantState): ReturnType<typeof fromBrass> {
   const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
@@ -436,21 +436,6 @@ function removeSold(party: Combatant[], entries: { uid: string; heroId: string }
     recomputeLoadout(clone);
     return clone;
   });
-}
-
-/** Vente immédiate d'un objet (conservée : API + tests). Délègue le prix à `sellGain`. */
-export function sellItem(get: Get, set: Set, uid: string, heroId: string): void {
-  const m = get().merchant; if (!m) return;
-  const hero = get().party.find((h) => h.id === heroId);
-  const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
-  const gain = sellGain(item, m);
-  set((s) => ({
-    money: moneyAdd(s.money, gain),
-    // bargainSellUsed : une vente a eu lieu → la négociation de vente est HONORÉE (pas de verrou au départ).
-    merchant: s.merchant ? { ...s.merchant, bargainSellUsed: true } : s.merchant,
-    party: removeSold(s.party, [{ uid, heroId }]),
-  }));
-  get().log(`Vente : ${item.name}.`);
 }
 
 export function addToSellCart(_get: Get, set: Set, uid: string, heroId: string): void {

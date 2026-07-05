@@ -5,7 +5,7 @@ import type { Combatant, ItemInstance } from '../engine/types';
 
 const noop = {
   onAddToCart: () => {}, onDecCart: () => {}, onRemoveCart: () => {}, onClearCart: () => {}, onRefuse: () => {}, onPay: () => {},
-  onAssignDist: () => {}, onConfirmDist: () => {}, onSell: () => {}, onRepair: () => {}, onBargain: () => {},
+  onAssignDist: () => {}, onConfirmDist: () => {}, onRepair: () => {}, onBargain: () => {},
   onAppraise: () => {}, onClose: () => {},
   onAddToSellCart: () => {}, onRemoveSellCart: () => {}, onClearSellCart: () => {}, onConfirmSell: () => {},
 };

@@ -83,7 +83,7 @@ const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', sa
 const TREND_SYM: Record<string, string> = { up: '▲', down: '▼', same: '' };
 
 /** Présentationnel (props) — testable hors store. `initialTab`/`initialDetails`/`initialBuyView` = état de départ (SSR/test). */
-export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, onSellHalving, onBarter, onSearchAvailability, initialTab, initialDetails, initialBuyView, initialSellView }: {
+export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, onSellHalving, onBarter, onSearchAvailability, initialTab, initialDetails, initialBuyView, initialSellView }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
@@ -95,7 +95,6 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   onPay: () => void;
   onAssignDist: (index: number, heroId: string) => void;
   onConfirmDist: () => void;
-  onSell: (uid: string, heroId: string) => void;
   onAddToSellCart: (uid: string, heroId: string) => void;
   onRemoveSellCart: (uid: string) => void;
   onClearSellCart: () => void;
@@ -611,7 +610,6 @@ export function MerchantPanel() {
   const payCart = useGame((s) => s.payCart);
   const assignDistribution = useGame((s) => s.assignDistribution);
   const confirmDistribution = useGame((s) => s.confirmDistribution);
-  const sellItem = useGame((s) => s.sellItem);
   const addToSellCart = useGame((s) => s.addToSellCart);
   const removeFromSellCart = useGame((s) => s.removeFromSellCart);
   const clearSellCart = useGame((s) => s.clearSellCart);
@@ -629,7 +627,7 @@ export function MerchantPanel() {
       merchant={merchant} party={party} money={money}
       onAddToCart={addToCart} onDecCart={decFromCart} onRemoveCart={removeFromCart} onClearCart={clearCart} onRefuse={refuseBargain} onPay={payCart}
       onAssignDist={assignDistribution} onConfirmDist={confirmDistribution}
-      onSell={sellItem} onAddToSellCart={addToSellCart} onRemoveSellCart={removeFromSellCart} onClearSellCart={clearSellCart} onConfirmSell={confirmSell}
+      onAddToSellCart={addToSellCart} onRemoveSellCart={removeFromSellCart} onClearSellCart={clearSellCart} onConfirmSell={confirmSell}
       onRepair={repairItem} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
       onSellHalving={setSellHalving} onBarter={barterExchange} onSearchAvailability={searchAvailability}
     />

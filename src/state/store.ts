@@ -635,7 +635,6 @@ export interface GameState extends RollFlowActionsMap {
   /** Répartition : affecte l'objet acheté n°`index` à un héros, puis `confirmDistribution` les range. */
   assignDistribution: (index: number, heroId: string) => void;
   confirmDistribution: () => void;
-  sellItem: (uid: string, heroId: string) => void;
   /** Panier de VENTE (#22b, parité achat) : ajoute / retire / vide / conclut toute la vente d'un coup. */
   addToSellCart: (uid: string, heroId: string) => void;
   removeFromSellCart: (uid: string) => void;
@@ -1656,7 +1655,6 @@ export const useGame = create<GameState>((set, get) => ({
   payCart: () => merchantFlow.payCart(get, set),
   assignDistribution: (index, heroId) => merchantFlow.assignDistribution(get, set, index, heroId),
   confirmDistribution: () => merchantFlow.confirmDistribution(get, set),
-  sellItem: (uid, heroId) => merchantFlow.sellItem(get, set, uid, heroId),
   addToSellCart: (uid, heroId) => merchantFlow.addToSellCart(get, set, uid, heroId),
   removeFromSellCart: (uid) => merchantFlow.removeFromSellCart(get, set, uid),
   clearSellCart: () => merchantFlow.clearSellCart(get, set),
