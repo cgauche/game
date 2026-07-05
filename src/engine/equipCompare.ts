@@ -6,7 +6,7 @@
  * Protection des boucliers via l'Atout « Protectrice N »). Présentation pure → testable hors UI.
  */
 import type { Combatant, ItemInstance, HitLocation, WeaponDamageSpec, QualityInstance } from './types';
-import { damageScore, isUnarmed, damageString } from './items';
+import { damageScore, isUnarmed, damageString, unarmedWeapon } from './items';
 import { effectiveRange } from './weaponDamage';
 import { bonus, effectiveChar } from './characteristics';
 import { QUALITY_IDS } from './qualities/ids';
@@ -67,10 +67,10 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
 
   if (item.kind === 'melee' || item.kind === 'ranged') {
     const cur = wielded.find((w) => w.type === item.kind && !isShieldItem(w) && w.uid !== item.uid);
-    const baseline: WeaponDamageSpec | undefined = item.kind === 'melee' ? { plusBF: true, flat: -2 } : undefined; // mêlée : mains nues (LDB)
+    const baseline: WeaponDamageSpec | undefined = item.kind === 'melee' ? unarmedWeapon().damage : undefined; // mains nues, LDB 62 l.28
     const curDmg = cur?.damage ?? baseline;
     const rows: CompareRow[] = [
-      { label: 'Dégâts', current: cur ? damageString(cur.damage) : (item.kind === 'melee' ? '+BF-2 (mains nues)' : '—'), next: item.damage ? damageString(item.damage) : '—', trend: trendOf(damageScore(item.damage) - damageScore(curDmg)) },
+      { label: 'Dégâts', current: cur ? damageString(cur.damage) : (baseline ? `${damageString(baseline)} (mains nues)` : '—'), next: item.damage ? damageString(item.damage) : '—', trend: trendOf(damageScore(item.damage) - damageScore(curDmg)) },
     ];
     if (item.kind === 'melee') {
       const cr = REACH_RANK[cur?.reach ?? ''] ?? -1;

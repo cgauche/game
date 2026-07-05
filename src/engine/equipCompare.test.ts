@@ -22,11 +22,13 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
     expect(c.rows.find((r) => r.label === 'Allonge')!.trend).toBe('up');
   });
 
-  it('mêlée sans arme tenue (mains nues seules) : compare aux mains nues, pas de currentName', () => {
+  it('mêlée sans arme tenue : base de comparaison = mains nues +BF+0 (LDB 62 l.28), pas de currentName', () => {
     const h = hero({ weapons: [{ uid: 'mn', name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], builtinId: 'mains-nues' }] });
     const c = compareEquip(it_({ name: 'Dague', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte' }), h);
     expect(c.currentName).toBeNull(); // les Mains nues ne comptent pas comme arme « actuelle »
-    expect(c.rows.find((r) => r.label === 'Dégâts')!.trend).toBe('up'); // +BF (0) > +BF-2 (-2)
+    const dmg = c.rows.find((r) => r.label === 'Dégâts')!;
+    expect(dmg.current).toBe('+BF+0 (mains nues)'); // base = mains nues +BF+0 (pas +BF-2)
+    expect(dmg.trend).toBe('same'); // une arme à +BF+0 ne surclasse pas les mains nues
   });
 
   it('mêlée : downgrade signalé (Dégâts inférieurs)', () => {

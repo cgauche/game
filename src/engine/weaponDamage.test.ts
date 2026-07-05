@@ -17,9 +17,9 @@ describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
     expect(isImprovised(sword({ damageTaken: 3 }))).toBe(false);
     expect(isImprovised(bow({ damageTaken: 9 }))).toBe(true);
   });
-  it("préserve une arme non endommagée (mains nues +BF-2 inchangées)", () => {
-    const fists: Weapon = { name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: -2 }, qualities: [] };
-    expect(effectiveWeaponDamage(fists, 3)).toBe(1); // 3 - 2
+  it("préserve une arme non endommagée (dégâts inchangés)", () => {
+    const hache: Weapon = { name: 'Hache', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+    expect(effectiveWeaponDamage(hache, 3)).toBe(7); // BF3 + 4, arme intacte
   });
 });
 
