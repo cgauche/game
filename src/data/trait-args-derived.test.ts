@@ -15,11 +15,11 @@
  * Les instances vivent dans `creatures.json`, sous `traits[]` (profil imprimé) et `optionals[]` (LDB 76,
  * menu facultatif). TOUTES sont désormais id-based `{ id, value?, arg?, range?, count? }` — la liste
  * `optionals[]` a été migrée du format legacy label-`key` vers les id (args des sources FERMÉES résolus
- * en id, comme `traits[]`). Restent 33 entrées `optionals` en `key` (libellé) : des entrées GENUINEMENT
- * PROSE (fourchettes de Taille « de Petite à Énorme », cibles de Haine hors registre « Prédateurs »,
- * « Dressé » à skills sans trait dresse-* pré-défini, notes de profil « Remplacer Bestial par… »…) qui
- * ne SONT PAS des ids de trait — laissées telles quelles (non forcées), donc naturellement hors des
- * invariants #2/#3 (elles n'ont pas d'`id`). L'invariant #1 les couvre si leur `key` résout à un trait.
+ * en id, comme `traits[]`). Restent 3 entrées `optionals` en `key` (libellé) : des NOTES de profil
+ * GENUINEMENT PROSE, irréductibles à un id de trait — « Tous les traits » (Mutant), et deux
+ * transformations « remplacer Bestial/Dressé/Territorial par un bonus de Soc » (Grand Loup, Griffon ZI).
+ * Laissées telles quelles (non forcées), donc naturellement hors des invariants #2/#3 (pas d'`id`) ;
+ * l'invariant #1 les couvre si leur `key` résout à un trait.
  *
  * Les instances CONSTRUITES par op (`grantTrait { traitId, arg? }`, dans mutations/sorts/traits/États/
  * maladies) sont balayées par l'invariant #4 (même résolution que #2). Toute dérive FUTURE (un `value`

@@ -99,6 +99,7 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Dressé (Cavalerie de choc)', 'charge en bon ordre (Aux Armes, formations) — non modélisé'],
   ['Dressé (Rapporteur)', 'discipline narrative (rapport) — arbitrage MJ'],
   ['Dressé (Revenir à la maison)', 'discipline narrative (retour au bercail) — arbitrage MJ'],
+  ['Dressé (Trait)', 'discipline narrative (animal de trait : tire carrosse/chariot/charrue, LDB 85 l.118) — arbitrage MJ'],
   ['Increvable', 'recousue/ressuscitée post-combat — arbitrage MJ'],
   // Traits des Horreurs de Tzeentch (EDO) — flavor de statbloc sans système support, desc verbatim.
   ['Marque de Tzeentch', 'Mutations du statbloc — fixées par l’auteur/MJ (l’éditeur pose les Mutations de la créature) ; pas de génération runtime'],
@@ -128,7 +129,9 @@ const DISPATCH = new Set<string>([
   // Dressé (Guerre) : passive +10 CC (charMod) + marqueur du gate Nerveux (bruits). Dompté : suppression
   // GÉNÉRIQUE du Trait Bestial (suppressesCapabilities, lue par traitCapability ; +2d10 Soc = profil cuit
   // à l'authoring). Garde : capability `territorial` (lue par isTerritorial). Tous DISPATCH (LDB 85 l.85/89).
-  'Dressé (Guerre)', 'Dressé (Dompté)', 'Dressé (Garde)',
+  // Dressé (Divertir) : passive +10 aux Tests de Divertissement/Musicien/Représentation (skillMod ×3,
+  // LDB 85 l.104) — même canal passive que Dressé (Guerre) +10 CC. DISPATCH.
+  'Dressé (Guerre)', 'Dressé (Dompté)', 'Dressé (Garde)', 'Dressé (Divertir)',
   'Corruption mentale', 'Démoniaque', 'Élite', 'Endurant', 'Éthéré', 'Fabriqué', 'Foulée', 'Furtif',
   'Grand', 'Immunité', 'Infravision', 'Insensible à la douleur', 'Instable', 'Intelligent', 'Magique',
   'Meneur', 'Mutation', 'Nerveux', 'Nuée', 'Parasité', 'Perturbant', 'Protection', 'Rage', 'Rapide',

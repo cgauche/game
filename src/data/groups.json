@@ -110,5 +110,25 @@
   {
     "id": "religion",
     "label": "Religion"
+  },
+  {
+    "id": "predateur",
+    "label": "Prédateur"
+  },
+  {
+    "id": "serpent",
+    "label": "Serpent"
+  },
+  {
+    "id": "belette",
+    "label": "Belette"
+  },
+  {
+    "id": "pieuvre-des-tourbieres",
+    "label": "Pieuvre des tourbières"
+  },
+  {
+    "id": "demonologue",
+    "label": "Démonologue"
   }
 ]

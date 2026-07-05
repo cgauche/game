@@ -704,8 +704,20 @@
         "id": "nuee"
       },
       {
-        "key": "Taille",
-        "arg": "de Petite à Énorme"
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
       },
       {
         "id": "venin",
@@ -768,8 +780,22 @@
         "id": "armure"
       },
       {
-        "key": "Dressé",
-        "arg": "Divertir, Dompté, Guerre, Magie, Monture, Trait"
+        "id": "dresse-divertir"
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-trait"
       }
     ],
     "skills": [],
@@ -832,8 +858,22 @@
         "value": 1
       },
       {
-        "key": "Dressé",
-        "arg": "Divertir, Dompté, Garder, Guerre, Magie, Rapporter"
+        "id": "dresse-divertir"
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-rapporteur"
       },
       {
         "id": "frenesie"
@@ -845,8 +885,12 @@
         "id": "pisteur"
       },
       {
-        "key": "Taille",
-        "arg": "de Petite à Moyenne"
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
       },
       {
         "id": "territorial"
@@ -911,8 +955,25 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garde, Guerre, Magie, Monture, Rapporter, Trait"
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-rapporteur"
+      },
+      {
+        "id": "dresse-trait"
       },
       {
         "id": "frenesie"
@@ -995,8 +1056,13 @@
         "id": "affame"
       },
       {
-        "key": "Dressé",
-        "arg": "Divertir, Dompté, Guerre"
+        "id": "dresse-divertir"
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-guerre"
       },
       {
         "id": "infecte"
@@ -1146,15 +1212,23 @@
         "id": "dresse-guerre"
       },
       {
-        "key": "Maladie",
-        "arg": "Fièvre du rongeur ou Peste Noire"
+        "id": "maladie",
+        "arg": "fievre-du-rongeur"
+      },
+      {
+        "id": "maladie",
+        "arg": "peste-noire"
       },
       {
         "id": "nuee"
       },
       {
-        "key": "Taille",
-        "arg": "de Petite à Moyenne"
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
       }
     ],
     "skills": [],
@@ -1314,8 +1388,28 @@
         "id": "nuee"
       },
       {
-        "key": "Taille",
-        "arg": "de Minuscule à Énorme"
+        "id": "taille",
+        "arg": "minuscule"
+      },
+      {
+        "id": "taille",
+        "arg": "tresPetite"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
       },
       {
         "id": "venin",
@@ -1550,8 +1644,19 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Garde, Guerre, Monture, Trait"
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-trait"
       }
     ],
     "skills": [],
@@ -2230,8 +2335,8 @@
         "id": "dresse-monture"
       },
       {
-        "key": "Haine",
-        "arg": "Prédateurs"
+        "id": "haine",
+        "arg": "predateur"
       },
       {
         "id": "mutation"
@@ -2288,8 +2393,19 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Dompté, Guerre, Magie, Monture, Trait"
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-trait"
       }
     ],
     "skills": [],
@@ -2352,8 +2468,12 @@
     ],
     "optionals": [
       {
-        "key": "Taille",
-        "arg": "Énorme-Monstrueuse"
+        "id": "taille",
+        "arg": "enorme"
+      },
+      {
+        "id": "taille",
+        "arg": "monstrueuse"
       },
       {
         "id": "territorial"
@@ -2430,8 +2550,28 @@
         "arg": "acide ou gaz"
       },
       {
-        "key": "Taille",
-        "arg": "Minuscule-Énorme"
+        "id": "taille",
+        "arg": "minuscule"
+      },
+      {
+        "id": "taille",
+        "arg": "tresPetite"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
       }
     ],
     "skills": [],
@@ -4301,8 +4441,8 @@
         "id": "brutal"
       },
       {
-        "key": "Effrayé",
-        "arg": "Démons, Démonologues"
+        "id": "effraye",
+        "arg": "demon, demonologue"
       },
       {
         "id": "intelligent"
@@ -4314,8 +4454,16 @@
         "id": "rapide"
       },
       {
-        "key": "Taille",
-        "arg": "Minuscule ou Petit ou Grand"
+        "id": "taille",
+        "arg": "minuscule"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
       }
     ],
     "skills": [
@@ -47534,8 +47682,8 @@
         "id": "rage"
       },
       {
-        "key": "Haine",
-        "arg": "cible à définir"
+        "id": "haine",
+        "arg": "au choix"
       },
       {
         "id": "territorial"
@@ -49190,8 +49338,8 @@
     ],
     "optionals": [
       {
-        "key": "Animosité",
-        "arg": "Serpents"
+        "id": "animosite",
+        "arg": "serpent"
       },
       {
         "id": "beni",
@@ -50057,8 +50205,12 @@
         "id": "sang-corrosif"
       },
       {
-        "key": "Taille",
-        "arg": "Énorme ou Monstrueuse"
+        "id": "taille",
+        "arg": "enorme"
+      },
+      {
+        "id": "taille",
+        "arg": "monstrueuse"
       }
     ],
     "skills": [],
@@ -50129,8 +50281,7 @@
     ],
     "optionals": [
       {
-        "key": "Dressé",
-        "arg": "Trait"
+        "id": "dresse-trait"
       },
       {
         "id": "frenesie"
@@ -50938,9 +51089,6 @@
         "id": "coriace"
       },
       {
-        "key": "Dur à Cuire"
-      },
-      {
         "id": "frenesie"
       },
       {
@@ -50948,12 +51096,24 @@
         "arg": "tout"
       },
       {
-        "key": "Taille",
-        "arg": "Grande-Monstrueuse"
+        "id": "taille",
+        "arg": "grande"
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
+      },
+      {
+        "id": "taille",
+        "arg": "monstrueuse"
       }
     ],
     "skills": [],
-    "talents": [],
+    "talents": [
+      {
+        "id": "dur-a-cuire"
+      }
+    ],
     "trappings": [],
     "spells": [],
     "desc": "Bien que le « brochet du Stir », tacheté de gris et de vert, ait presque disparu du Stirland, on le trouve encore dans certains lacs et rivières ailleurs dans l'Empire. C'est l'un des plus grands prédateurs d'eau douce du Vieux Monde, capable d'atteindre une longueur de 6 mètres et un poids de plus de 1,8 tonne. Il dévore tous les êtres assez inconscients pour croiser son chemin, mais se nourrit principalement d'un mélange de poissons, d'anguilles et de sangsues. Les jeunes brochets du Stir, appelés brochetons, sont réputés pour leurs qualités médicinales et sont donc très recherchés.",
@@ -51439,8 +51599,8 @@
         "id": "magique"
       },
       {
-        "key": "Maladie",
-        "arg": "Divers"
+        "id": "maladie",
+        "arg": "au choix"
       },
       {
         "id": "morsure"
@@ -51536,8 +51696,16 @@
     ],
     "optionals": [
       {
-        "key": "Taille",
-        "arg": "Petite, Grande-Énorme"
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
       }
     ],
     "skills": [],
@@ -51741,8 +51909,8 @@
         "id": "arboricole"
       },
       {
-        "key": "Haine",
-        "arg": "Pieuvres des tourbières"
+        "id": "haine",
+        "arg": "pieuvre-des-tourbieres"
       },
       {
         "id": "limicole"
@@ -52463,17 +52631,17 @@
       },
       {
         "id": "regeneration"
-      },
-      {
-        "key": "Langue",
-        "value": 50,
-        "arg": "Au choix"
       }
     ],
     "skills": [
       {
         "id": "perception",
         "value": 85
+      },
+      {
+        "id": "langue",
+        "value": 50,
+        "spec": "au choix"
       }
     ],
     "talents": [],
@@ -52744,8 +52912,8 @@
     ],
     "optionals": [
       {
-        "key": "Effrayé",
-        "arg": "Belettes"
+        "id": "effraye",
+        "arg": "belette"
       },
       {
         "id": "infecte"
@@ -60282,8 +60450,12 @@
         "id": "nuee"
       },
       {
-        "key": "Taille",
-        "arg": "Petite à Moyenne"
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
       }
     ],
     "skills": [],
@@ -62998,8 +63170,12 @@
         "id": "increvable"
       },
       {
-        "key": "Taille",
-        "arg": "Petite-Moyenne"
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
       }
     ],
     "skills": [],
@@ -63094,8 +63270,12 @@
         "id": "increvable"
       },
       {
-        "key": "Taille",
-        "arg": "Petite-Moyenne"
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
       }
     ],
     "skills": [],

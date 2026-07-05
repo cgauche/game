@@ -2739,5 +2739,42 @@
       "book": "ZI",
       "page": 82
     }
+  },
+  {
+    "id": "dresse-divertir",
+    "label": "Dressé (Divertir)",
+    "suffix": null,
+    "desc": "L'animal est entraîné à divertir les autres. Vous ajoutez un bonus de +10 aux Tests appropriés de Divertissement, Musicien et Représentation.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    },
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "divertissement",
+        "mod": 10
+      },
+      {
+        "op": "skillMod",
+        "skill": "musicien",
+        "mod": 10
+      },
+      {
+        "op": "skillMod",
+        "skill": "representation",
+        "mod": 10
+      }
+    ]
+  },
+  {
+    "id": "dresse-trait",
+    "label": "Dressé (Trait)",
+    "suffix": null,
+    "desc": "L'animal est entraîné à tirer un carrosse, un chariot, une charrue, une carriole ou similaire.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
   }
 ]
