@@ -81,6 +81,10 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 > dans ton RENDU FINAL avec `fichier:ligne`. Un test qui verrouille un comportement faux se
 > réécrit depuis le RAW, jamais travesti. Ne touche que ton périmètre — jamais de git destructif,
 > jamais les fichiers WIP d'autres sessions.
+> **Toute LOGIQUE est keyée par id STABLE — le `label` est de l'AFFICHAGE** (multilangue) :
+> jamais de `Map`/`Record`/comparaison par label dans `src/engine`/`src/state` (pas de
+> `X_BY_LABEL`). Seule couture tolérée : la conversion label→id au CHARGEMENT des données,
+> dans `src/data/index.ts` uniquement.
 
 ## Sources VF — l'essentiel
 
