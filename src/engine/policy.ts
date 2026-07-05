@@ -258,12 +258,12 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-init-method',
     label: 'Méthode d’Initiative',
-    ref: 'LDB 13 l.39',
+    ref: 'LDB 13 l.29',
     group: 'Combat',
     kind: 'mode',
-    default: 'roll-i',
-    options: ['roll-i', 'fixed-i', 'roll-bi'],
-    hint: 'roll-i = 1d10 + Initiative (défaut) ; fixed-i = Initiative fixe, sans dé (ordre stable d’un Round à l’autre) ; roll-bi = 1d10 + Bonus d’Initiative + Bonus d’Agilité.',
+    default: 'fixed-i',
+    options: ['fixed-i', 'roll-i', 'roll-bi'],
+    hint: 'fixed-i = tri par Initiative, sans dé (défaut RAW, ordre stable d’un Round à l’autre) ; roll-i = 1d10 + Initiative ; roll-bi = 1d10 + Bonus d’Initiative + Bonus d’Agilité.',
   },
   {
     id: 'combat-init-reroll',

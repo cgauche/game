@@ -871,6 +871,7 @@ describe('Boucle de jeu (store)', () => {
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    E.wounds.current = 99; E.wounds.max = 99; // survit à la touche → le lien d'engagement reste observable
     H.pos = { x: E.pos!.x - 1, y: E.pos!.y };
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 99, movedPreAction: false, acted: false } });

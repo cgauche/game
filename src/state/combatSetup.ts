@@ -15,12 +15,12 @@ import { isControlledMount } from './mount';
 
 /**
  * Initiative d'un combattant au début du combat — POINT NOMMÉ, seam de la règle optionnelle « méthode
- * d'Initiative » (`combat-init-method`, LDB 13 l.39). Combat instinctif (LDB 10 : +10 × niveau) toujours
- * ajouté via `talentInitiativeBonus`. Le `rng` est passé par l'appelant (un `rng.int(1,10)` par combattant
- * dans `roll-i`/`roll-bi`) → l'ordre de tirage est préservé par la boucle appelante.
- *  - `roll-i` (DÉFAUT, comportement RAW du jeu) : 1d10 + Initiative.
- *  - `fixed-i` : Initiative fixe, SANS dé (ordre stable d'un Round à l'autre ; ne consomme pas le RNG).
- *  - `roll-bi` : 1d10 + Bonus d'Initiative + Bonus d'Agilité.
+ * d'Initiative » (`combat-init-method`). Combat instinctif (LDB 10 : +10 × niveau) toujours ajouté via
+ * `talentInitiativeBonus`. Le `rng` est passé par l'appelant (un `rng.int(1,10)` par combattant dans
+ * `roll-i`/`roll-bi`) → l'ordre de tirage est préservé par la boucle appelante.
+ *  - `fixed-i` (DÉFAUT) : tri par Initiative, SANS dé (LDB 13 l.29 ; ne consomme pas le RNG).
+ *  - `roll-i` : 1d10 + Initiative (méthode aléatoire optionnelle, LDB 13 l.40).
+ *  - `roll-bi` : 1d10 + Bonus d'Initiative + Bonus d'Agilité (méthode aléatoire optionnelle).
  */
 export function rollInitiative(c: Combatant, rng: RNG): number {
   const talent = talentInitiativeBonus(c);

@@ -17,7 +17,7 @@ import { testScene } from '../scenes/test-fixture';
  */
 describe('combat-init-reroll — relance de l’Initiative par Round (LDB 13 l.43)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-init-reroll'); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-init-reroll'); resetRule('combat-init-method'); });
 
   function openCombat() {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
@@ -52,6 +52,7 @@ describe('combat-init-reroll — relance de l’Initiative par Round (LDB 13 l.4
 
   it('ON : l’Initiative est re-tirée et l’ordre recalculé au Round suivant (seedé, déterministe)', () => {
     setRule('combat-init-reroll', true);
+    setRule('combat-init-method', 'roll-i'); // la relance ne varie qu'avec une méthode ALÉATOIRE (fixed-i = no-op)
     openCombat();
     const round1Init = initMap();
     seedBattleRng(424242);
@@ -74,6 +75,7 @@ describe('combat-init-reroll — relance de l’Initiative par Round (LDB 13 l.4
     const norm = (order: string[]) => order.map((id) => (id.startsWith('hero-') ? 'HERO' : id));
     const run = () => {
       setRule('combat-init-reroll', true);
+      setRule('combat-init-method', 'roll-i');
       openCombat();
       seedBattleRng(20260627);
       crossRound();
