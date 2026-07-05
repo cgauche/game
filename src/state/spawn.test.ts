@@ -134,13 +134,15 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
     const langue = c.skills.find((s) => s.skillId === 'langue' && s.spec === 'magick')!;
     expect(langue.advances).toBe(63 - 48); // « Langue (Magick) 63 », Int 48
     expect(c.characteristics.Int + langue.advances).toBe(63);
-    const foc = c.skills.find((s) => s.skillId === 'focalisation' && s.spec === 'Ghur')!;
+    const foc = c.skills.find((s) => s.skillId === 'focalisation' && s.spec === 'bete')!; // id domaine, AFFICHE « Ghur »
     expect(c.characteristics.FM + foc.advances).toBe(68); // « Focalisation (Ghur) 68 », FM 53
   });
 
-  it('talents portés (Magie des Arcanes (Ghur), Magie mineure…) et 12 sorts de la donnée', () => {
+  it('talents portés (Magie des Arcanes (Bête), Magie mineure…) et 12 sorts de la donnée', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    expect(c.talents.map((t) => talentConcrete(t))).toContain('Magie des Arcanes (Ghur)');
+    // spec = id domaine `bete` ; Magie des Arcanes AFFICHE le Lore (« Bête ») — la donnée « Ghur » (un Vent,
+    // pas un Lore d'Arcane) était une faute d'auteur, résolue en `bete` par le résolveur Vent→id.
+    expect(c.talents.map((t) => talentConcrete(t))).toContain('Magie des Arcanes (Bête)');
     expect(c.talents.map((t) => talentConcrete(t))).toContain('Magie mineure');
     expect(c.spells).toHaveLength(12);
     expect(c.spells).toContain('flechette'); // runtime = id de sort

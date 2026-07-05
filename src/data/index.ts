@@ -198,6 +198,11 @@ export function specEntryId(e: SpecEntry): string {
 export function specEntryLabel(e: SpecEntry): string {
   return typeof e === 'string' ? e : e.label;
 }
+/** Registre partagé qui fournit les ids d'une `specs[]` (résolus en libellé par `specLabel`) :
+ *  `weaponGroups` (Groupes d'arme), `winds` (Focalisation — ids de `domains.json`, AFFICHE le Vent),
+ *  `domains` (Magie des Arcanes/Chaos — ids de `domains.json`, AFFICHE le Lore), `cults` (Béni/Invocation/
+ *  Magie du Chaos — `gods.key`, AFFICHE le nom du dieu). Absent = specs inline (`SpecEntry[]`). */
+export type SpecsSource = 'weaponGroups' | 'winds' | 'domains' | 'cults';
 export interface SkillData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findSkillById`. */
@@ -208,9 +213,10 @@ export interface SkillData {
   specs: SpecEntry[];
   /** Source des ids de spéc : FERMÉE (union volontairement réduite — élargie plus tard par domaine ;
    *  pas de valeur non gérée). Si présent, les `spec` des instances de cette Compétence sont des ids
-   *  résolus via le registre partagé désigné (ici `weaponGroups.json`, via `specLabel`). Absent =
-   *  specs inline (`SpecEntry[]` — id-based si migré, texte libre sinon). */
-  specsSource?: 'weaponGroups';
+   *  résolus via le registre partagé désigné (via `specLabel`) : `weaponGroups` (Groupes d'arme) ou
+   *  `winds` (Focalisation → ids de `domains.json`, AFFICHE le Vent). Absent = specs inline (`SpecEntry[]`
+   *  — id-based si migré, texte libre sinon). */
+  specsSource?: SpecsSource;
   /** Le domaine accepte-t-il un TEXTE LIBRE hors `specs[]` (Métier, Savoir-région) ? `true` = OUVERT —
    *  `specs[]` n'est qu'un historique/suggestions, pas une liste fermée. Absent/`false` = FERMÉ — la
    *  valeur `spec` d'une instance DOIT être un id de `specs[]` (garde-fou `refs-migrated.test.ts`). */
@@ -285,6 +291,10 @@ export interface TalentData {
    *  MÉCANIQUE correspondant est `combat.aa`. Absent = le Talent ne change pas en mode groupe. */
   descAA?: string;
   specs?: SpecEntry[];
+  /** Source des ids de `specs[]` (via `specLabel`) : `domains` (Magie des Arcanes/Chaos → ids de
+   *  `domains.json`, AFFICHE le Lore) ou `cults` (Béni/Invocation/Magie du Chaos → `gods.key`, AFFICHE le
+   *  nom du dieu). Absent = specs inline. */
+  specsSource?: SpecsSource;
   /** Le domaine de ce Talent accepte-t-il un TEXTE LIBRE hors `specs[]` ? Même sémantique que
    *  `SkillData.specsOpen` (absent/`false` = FERMÉ, `spec` DOIT être un id de `specs[]`). */
   specsOpen?: boolean;
@@ -864,6 +874,12 @@ export interface DomainData {
   label: string;
   desc?: string;
   source?: { book: string; page: number };
+  /** Vent de Magie (Couleur) du Domaine, EXTRAIT du `desc` (« Domaine du Feu (Aqshy) », LDB 48) — source
+   *  d'AFFICHAGE de la Compétence Focalisation (spécialisée par Vent) et clé de `findDomainByWind`. Les 8
+   *  Domaines élémentaires + Dhar en portent un ; les Domaines dérivés (Sorcellerie/Nécromancie/
+   *  Démonologie/Magie naturelle, homebrew Skaven…) n'ont pas de Vent propre (ils canalisent Dhar ou un
+   *  Vent élémentaire). Édité au Codex. */
+  wind?: string;
   /** Effets DÉCLENCHÉS « à la touche » sur une cible d'un Sort du Domaine (Feu → En flammes…) — MÊMES
    *  `TriggeredEffect` éditables que Traits/Atouts, gatés par les Conditions Flow `relation`/`has`. */
   effects?: import('../state/flow').TriggeredEffect[];
@@ -1269,6 +1285,11 @@ export const findDomain = (label: string | null | undefined): DomainData | undef
 /** Index des Domaines par `id` STABLE — lookup RUNTIME indépendant de la langue (sort→domaine). */
 export const domainById: Map<string, DomainData> = new Map(domains.map((d) => [d.id, d]));
 export const findDomainById = (id: string | null | undefined): DomainData | undefined => (id ? domainById.get(id) : undefined);
+/** Index des Domaines par `wind` (Vent de Magie) — résout un Vent (Ghur, Aqshy, Dhar…) vers son Domaine.
+ *  SOURCE de la Compétence Focalisation (spécialisée par Vent) : un `focalisation.spec` porte l'id du
+ *  Domaine et AFFICHE le Vent ; ce lookup fait l'inverse (authoring/migration Vent → id). */
+export const domainByWind: Map<string, DomainData> = new Map(domains.filter((d) => d.wind).map((d) => [d.wind as string, d]));
+export const findDomainByWind = (wind: string | null | undefined): DomainData | undefined => (wind ? domainByWind.get(wind) : undefined);
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 /** Calendrier impérial — tables de CONTENU éditables au Codex (cf. `engine/clock.ts` pour la mécanique). */
@@ -1593,7 +1614,14 @@ export function findById(category: string, id: string): { label: string } | unde
  *  `discretion`/`art`/talent `resistance`) sans casser les autres. */
 export function specLabel(category: string, refId: string, specId: string): string {
   const def = category === 'skills' ? findSkillById(refId) : category === 'talents' ? findTalentById(refId) : undefined;
-  if (def && 'specsSource' in def && def.specsSource === 'weaponGroups') return weaponGroupLabel(specId);
+  const source = def?.specsSource;
+  if (source === 'weaponGroups') return weaponGroupLabel(specId);
+  // `winds` (Focalisation) AFFICHE le Vent du domaine (id bete → « Ghur ») ; `domains` (Magie des
+  // Arcanes/Chaos) AFFICHE le Lore (id bete → « Bête ») ; `cults` (Béni/Invocation) AFFICHE le nom du
+  // dieu (`gods.key` = son propre libellé, proper noun i18n-safe). Repli verbatim sur l'id inconnu.
+  if (source === 'winds') return findDomainById(specId)?.wind ?? findDomainById(specId)?.label ?? specId;
+  if (source === 'domains') return findDomainById(specId)?.label ?? specId;
+  if (source === 'cults') return findGodById(specId)?.key ?? specId;
   const entry = def?.specs?.find((s) => specEntryId(s) === specId);
   return entry ? specEntryLabel(entry) : specId;
 }
@@ -1616,13 +1644,13 @@ export function qualityRefLabel(q: QualityRef): string {
 export function skillInstanceLabel(s: { skillId: string; spec?: string }): string {
   return refLabel('skills', { id: s.skillId, spec: s.spec });
 }
-/** Libellé CONCRET d'une `TalentInstance` (id+spec → « Magie des Arcanes (Ghur) ») — clé du registre
+/** Libellé CONCRET d'une `TalentInstance` (id+spec → « Magie des Arcanes (Bête) ») — clé du registre
  *  combatFeatures + affichage. Repli sur l'id. */
 export function talentConcrete(t: { talentId: string; spec?: string }): string {
   return refLabel('talents', { id: t.talentId, spec: t.spec });
 }
 /** Libellé d'affichage/clé concrète d'un `AdvancementRef` : « Savoir (Au choix) », « A ou B »,
- *  « 3 Talent aléatoire », « Magie des Arcanes (Ghur) ». SOURCE UNIQUE (Codex + résolution création). */
+ *  « 3 Talent aléatoire », « Magie des Arcanes (Bête) ». SOURCE UNIQUE (Codex + résolution création). */
 export function advancementLabel(category: string, a: AdvancementRef): string {
   if ('ref' in a) return refLabel(category, a.ref);
   if ('wildcard' in a) return a.specOptions?.length

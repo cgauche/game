@@ -6,7 +6,7 @@
 import type { Combatant, Weapon } from '../types';
 import { groupMatch } from '../groups';
 import { isShieldItem } from '../equipCompare';
-import { findTalentById, domainByLabel, traitById } from '../../data';
+import { findTalentById, traitById } from '../../data';
 import { canStrikeFirst } from '../qualities/dispatch';
 import { groupAdvantage } from '../advantagePool';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
@@ -33,13 +33,11 @@ export function arcaneDomainOf(c: Combatant): string | undefined {
   return undefined;
 }
 
-/** `id` STABLE du Domaine d'Arcane du lanceur — résout la spec (libellé authoré du Talent, « Feu ») en
- *  `DomainData.id` à la FRONTIÈRE (`domainByLabel`). Le RUNTIME en aval (breathType, attributs de Domaine)
- *  lit par `findDomainById` (≠ re-lookup par libellé — multilangue-safe). undefined si pas de Domaine /
- *  spec non encore spécialisée. */
+/** `id` STABLE du Domaine d'Arcane du lanceur : la spec du Talent Magie des Arcanes EST désormais un id de
+ *  `domains.json` (fin de l'incohérence Vent/Lore — plus de round-trip `domainByLabel`). Le RUNTIME en aval
+ *  (breathType, attributs de Domaine) lit par `findDomainById`. undefined si pas de Domaine / non spécialisé. */
 export function arcaneDomainIdOf(c: Combatant): string | undefined {
-  const spec = arcaneDomainOf(c);
-  return spec ? domainByLabel.get(spec)?.id : undefined;
+  return arcaneDomainOf(c);
 }
 
 /** Capacités de combat présentes sur le combattant, lues de la DONNÉE (`TalentData.combat`) : talents

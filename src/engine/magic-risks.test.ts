@@ -19,15 +19,15 @@ function wiz(p: Partial<Combatant> = {}): Combatant {
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
       { skillId: 'langue', spec: 'magick', advances: 10 },
-      { skillId: 'focalisation', spec: 'Feu', advances: 10 },
+      { skillId: 'focalisation', spec: 'feu', advances: 10 },
     ] as never,
     talents: [],
     ...p,
   } as Combatant;
 }
 
-const SORT_FEU = { label: 'Boule', type: 'Magie des Arcanes', subType: 'Feu', cn: 5, desc: 'x' };
-const SORT_OMBRES = { label: 'Voile', type: 'Magie des Arcanes', subType: 'Ombres', cn: 4, desc: 'x' };
+const SORT_FEU = { label: 'Boule', type: 'Magie des Arcanes', subType: 'Feu', domainId: 'feu', cn: 5, desc: 'x' };
+const SORT_OMBRES = { label: 'Voile', type: 'Magie des Arcanes', subType: 'Ombres', domainId: 'ombres', cn: 4, desc: 'x' };
 const SORT_COMMUN = { label: 'Arme aethyrique', type: 'Magie des Arcanes', subType: null, cn: 2, desc: 'x' };
 
 describe('Focalisation — spécialisation par Vent (LDB 46)', () => {
@@ -37,7 +37,7 @@ describe('Focalisation — spécialisation par Vent (LDB 46)', () => {
     expect(focusSkillFor(c, SORT_OMBRES)).toBeUndefined();
     const r = resolveFocus(c, SORT_OMBRES, makeRNG(1));
     expect(r.roll).toBe(0);
-    expect(r.log).toContain('Focalisation (Ombres)');
+    expect(r.log).toContain('Focalisation (Ulgu)'); // AFFICHAGE par Vent (Ombres = Ulgu, LDB 48)
   });
   it('un sort d\'Arcane commun accepte n\'importe quel Vent ; une compétence sans spec accepte tout', () => {
     expect(focusSkillFor(wiz(), SORT_COMMUN)).toBeTruthy();
@@ -72,12 +72,12 @@ describe('« Repousser les Vents » — armure portée (l.199 + exemptions l.188
     expect(armourCastDRPenalty(wiz({ items: [mailles, cuir] }))).toBe(2);
   });
   it('Magie des Arcanes (Métal) ignore le métal ; (Bêtes) ignore le cuir', () => {
-    const metalMage = wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'Métal', times: 1 }] });
+    const metalMage = wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'metal', times: 1 }] });
     expect(armourCastDRPenalty(metalMage)).toBe(0);
-    const beastMage = wiz({ items: [cuir], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bête', times: 1 }] });
+    const beastMage = wiz({ items: [cuir], talents: [{ talentId: 'magie-des-arcanes', spec: 'bete', times: 1 }] });
     expect(armourCastDRPenalty(beastMage)).toBe(0);
     // …mais pas l'inverse.
-    expect(armourCastDRPenalty(wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bête', times: 1 }] }))).toBe(2);
+    expect(armourCastDRPenalty(wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'bete', times: 1 }] }))).toBe(2);
   });
   it('le DR d\'incantation est réduit par l\'armure (succès conservé)', () => {
     // Valeur 60 (Int 50 + 10) ; jet 10 → DR +5 ; armure 2 PA → DR +3.
@@ -93,6 +93,6 @@ describe('Avantage et magie (l.176)', () => {
   it('l\'Avantage s\'applique à l\'Incantation (+10/point), PAS à la Focalisation', () => {
     const c = wiz({ advantage: 2 });
     expect(castingValue(c, 'langue', 'magick')).toBe(50 + 10 + 20);
-    expect(castingValue(c, 'focalisation', 'Feu')).toBe(45 + 10);
+    expect(castingValue(c, 'focalisation', 'feu')).toBe(45 + 10);
   });
 });

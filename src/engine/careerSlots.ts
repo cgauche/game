@@ -106,23 +106,24 @@ export function parseEntry(raw: string): SlotOption[] {
  * Specs valides d'un libellé à joker (« (Au choix) ») — SOURCE UNIQUE, partagée par le CRÉATEUR
  * (dont l'étape de dépense de PX) ET l'AVANCEMENT (plus de `findTalent(name)?.specs ?? []` dupliqué).
  * Compétence groupée → ses Spécialisations. Talents à domaine/culte, DATA-DRIVEN : « Béni » → cultes
- * du registre ; « Magie des Arcanes », « Magie du Chaos », « Invocation » → domaines/cultes = les
- * `subType` distincts des sorts du TYPE homonyme (Feu/Ombres… ; Nurgle/Slaanesh/Tzeentch ; cultes).
- * Sinon, les Spécialisations du talent. `[]` si rien.
+ * du registre ; « Magie des Arcanes »/« Magie du Chaos »/« Invocation » → leurs `specs[]` id-based
+ * (ids de domaine ou `gods.key`, `specsSource:'domains'/'cults'`). Repli sur les `subType` distincts des
+ * sorts du TYPE homonyme (talent sans specs propres). `[]` si rien.
  */
 export function wildcardSpecs(name: string): string[] {
   const skill = findSkill(name);
-  // Pool = des IDS (`specEntryId` — id STABLE pour un domaine MIGRÉ, ou le legacy `string` lui-même
-  // pour un domaine pas-encore-migré/`specsSource`, cf. `SpecEntry`) : c'est cette valeur qui devient
-  // la `spec` PERSISTÉE de l'instance créée (draft/avancement) — jamais le libellé FR d'affichage.
+  // Pool = des IDS (`specEntryId` — id STABLE d'un domaine MIGRÉ, `gods.key`, ou le legacy `string`
+  // lui-même, cf. `SpecEntry`) : c'est cette valeur qui devient la `spec` PERSISTÉE de l'instance créée
+  // (draft/avancement) — jamais le libellé FR d'affichage.
   if (skill?.specs?.length) return skill.specs.map(specEntryId);
   // `name` est un nom d'AUTHORING (entrée de carrière) — résolution nom→def UNE fois (bord authoring,
   // comme `findSkill`) ; pas un chemin runtime/persistance (l'id n'existe pas au point d'appel).
   const talent = findTalent(name);
   if (talent?.combat?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal DONNÉE, plus de registre)
-  const fromSpells = [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
-  if (fromSpells.length) return fromSpells;
-  return talent?.specs?.map(specEntryId) ?? [];
+  // Talent à specs id-based (Magie des Arcanes → ids de domaine ; Magie du Chaos/Invocation → gods.key) :
+  // le pool = ses `specs[]` (ids stables), pas les libellés `subType` des sorts (fin de l'incohérence).
+  if (talent?.specs?.length) return talent.specs.map(specEntryId);
+  return [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne

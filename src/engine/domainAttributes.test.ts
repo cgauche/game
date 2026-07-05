@@ -45,9 +45,9 @@ const leather = (pa: number): ItemInstance => ({
 
 describe('hasArcaneTalent', () => {
   it('talent Magie des Arcanes (X) détecté', () => {
-    const c = mk({ talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }] as Combatant['talents'] });
-    expect(hasArcaneTalent(c, 'Feu')).toBe(true);
-    expect(hasArcaneTalent(c, 'Cieux')).toBe(false);
+    const c = mk({ talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }] as Combatant['talents'] });
+    expect(hasArcaneTalent(c, 'feu')).toBe(true);
+    expect(hasArcaneTalent(c, 'cieux')).toBe(false);
   });
 });
 
@@ -88,7 +88,7 @@ describe('Riders « à la touche » data-driven (Feu / Lumière / Mort / Vie) �
     const t = mk({ id: 't', kind: 'enemy' });
     applyDomain(w, t, 'feu');
     expect(hasCondition(t, 'en-flammes')).toBe(true);
-    const immune = mk({ id: 'i', kind: 'enemy', talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }] as Combatant['talents'] });
+    const immune = mk({ id: 'i', kind: 'enemy', talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }] as Combatant['talents'] });
     applyDomain(w, immune, 'feu');
     expect(hasCondition(immune, 'en-flammes')).toBe(false);
     const ally = mk({ id: 'a', kind: 'hero' }); // même camp que le lanceur → pas adversaire
@@ -150,7 +150,7 @@ describe('Cieux — arc d’Azyr (LDB 48 l.87) : géométrie on:{near} + bypass 
       characteristics: { ...mk().characteristics, E: 20 } as Combatant['characteristics'] }, 5, 6);
     // voisin avec le Talent (Cieux) : exempté par la Condition Flow `has talent`.
     const nearTalent = at({ id: 't', kind: 'enemy',
-      talents: [{ talentId: 'magie-des-arcanes', spec: 'Cieux', times: 1 }] as Combatant['talents'] }, 4, 5);
+      talents: [{ talentId: 'magie-des-arcanes', spec: 'cieux', times: 1 }] as Combatant['talents'] }, 4, 5);
     const farFoe = at({ id: 'f', kind: 'enemy' }, 9, 5); // >2 m → hors arc
 
     const all = [caster, victim, nearMail, nearLeather, nearTalent, farFoe];

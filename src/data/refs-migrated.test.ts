@@ -343,6 +343,49 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     });
   });
 
+  // ── Phase 3 — MAGIE & CULTES : specs unifiées sur les ids de `domains.json` (fin de l'incohérence
+  // Vent↔Lore) et les `gods.key`. `focalisation`/`magie-des-arcanes` portent un id de DOMAINE ;
+  // `magie-du-chaos`/`beni`/`invocation` portent un `gods.key`. ZÉRO valeur non résolue : toute instance
+  // (creatures/careerLevels/species/talents) DOIT résoudre — une chaîne FR (Vent/Lore/dieu) qui se
+  // faufile, un id fantôme, casse ici. Sentinelle « (Au choix) » (joker non spécialisé) exclue.
+  describe('Specs de MAGIE (domaine) & de CULTE (gods.key) id-based — Phase 3', () => {
+    const DOMAIN_IDS = new Set(domains.map((d) => d.id));
+    const GOD_KEYS = new Set(gods.map((g) => g.key));
+    const DOMAIN_SPEC_DEFS = new Set(['focalisation', 'magie-des-arcanes']);
+    const CULT_SPEC_DEFS = new Set(['magie-du-chaos', 'beni', 'invocation']);
+    const isSentinel = (spec: string): boolean => spec.trim().toLowerCase() === 'au choix';
+
+    it('skills.json/talents.json : specsSource déclaré + specs[] = ids connus (domaine ou gods.key)', () => {
+      expect(findSkillById('focalisation')!.specsSource).toBe('winds');
+      expect(findTalentById('magie-des-arcanes')!.specsSource).toBe('domains');
+      for (const id of ['magie-du-chaos', 'beni', 'invocation']) expect(findTalentById(id)!.specsSource, id).toBe('cults');
+      for (const id of ['focalisation']) for (const s of findSkillById(id)!.specs) expect(DOMAIN_IDS.has(specEntryId(s)), `${id} → ${specEntryId(s)}`).toBe(true);
+      for (const s of findTalentById('magie-des-arcanes')!.specs ?? []) expect(DOMAIN_IDS.has(specEntryId(s)), `magie-des-arcanes → ${specEntryId(s)}`).toBe(true);
+      for (const id of ['magie-du-chaos', 'beni', 'invocation']) for (const s of findTalentById(id)!.specs ?? []) expect(GOD_KEYS.has(specEntryId(s)), `${id} → ${specEntryId(s)}`).toBe(true);
+    });
+
+    it('creatures/careerLevels/species/talents : chaque spec magie = id de domaine, chaque spec culte = gods.key', () => {
+      const check = (defId: string | undefined, spec: unknown, where: string): void => {
+        if (!defId || typeof spec !== 'string' || isSentinel(spec)) return;
+        if (DOMAIN_SPEC_DEFS.has(defId)) expect(DOMAIN_IDS.has(spec), `${where}{${defId}} → ${JSON.stringify(spec)} (pas un id de domaine)`).toBe(true);
+        else if (CULT_SPEC_DEFS.has(defId)) expect(GOD_KEYS.has(spec), `${where}{${defId}} → ${JSON.stringify(spec)} (pas un gods.key)`).toBe(true);
+      };
+      const visit = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(visit); return; }
+        if (!isObj(node)) return;
+        check(node.id as string | undefined, node.spec, 'id');
+        check(node.skillId as string | undefined, node.spec, 'skillId');
+        check(node.talentId as string | undefined, node.spec, 'talentId');
+        check(node.skill as string | undefined, node.spec, 'skill'); // TestMatch.skill / has-condition
+        check((node.value as string | undefined), node.spec, 'value'); // Flow `has` : { what:'talent', value, spec }
+        const wc = (node.wildcard as { id?: string } | undefined)?.id;
+        if (wc && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) check(wc, so, 'wildcard.specOptions');
+        for (const v of Object.values(node)) visit(v);
+      };
+      visit(creatures); visit(careerLevels); visit(species); visit(talents); visit(domains);
+    });
+  });
+
   describe('specLabel/refLabel — résolution par domaine (Phase 3), FR verbatim inchangé pour le reste', () => {
     it('refLabel résout une Spé de Groupe d\'arme (weaponGroups) via son id', () => {
       expect(refLabel('skills', { id: 'corps-a-corps', spec: 'deux-mains' })).toBe('Corps à corps (Deux-mains)');

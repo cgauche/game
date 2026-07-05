@@ -186,10 +186,11 @@ export function armourCastDRPenalty(c: Combatant): number {
   return maxPA;
 }
 
-/** Spécialisation de Focalisation requise par un sort : son Domaine (`subType`),
- *  sinon aucune (Sorts d'Arcane communs — n'importe quel Vent les alimente). */
+/** Spécialisation de Focalisation requise par un sort : l'id de son Domaine (`domainId`, ex. « bete »),
+ *  sinon aucune (Sorts d'Arcane communs — n'importe quel Vent les alimente). Focalisation ET Magie des
+ *  Arcanes portent désormais des IDS de domaine (fin de l'incohérence Vent/Lore) → ils matchent. */
 export function focusSpecOf(spell: SpellLike): string | undefined {
-  return spell.subType ?? undefined;
+  return spell.domainId ?? undefined;
 }
 
 /** Compétence Focalisation utilisable pour CE sort : spécialisation du Vent
@@ -701,10 +702,12 @@ export function resolveFocus(
 ): FocusResult {
   const sk = focusSkillFor(caster, spell);
   if (!sk) {
+    // AFFICHAGE : Focalisation est spécialisée par VENT → montre le Vent du Domaine (id bete → « Ghur »).
     const spec = focusSpecOf(spell);
+    const wind = spec ? (findDomainById(spec)?.wind ?? findDomainById(spec)?.label ?? spec) : undefined;
     return {
       dr: 0, isCritical: false, isFumble: false, roll: 0,
-      log: `${caster.name} ne maîtrise pas Focalisation${spec ? ` (${spec})` : ''}.`,
+      log: `${caster.name} ne maîtrise pas Focalisation${wind ? ` (${wind})` : ''}.`,
     };
   }
   const value = castingValue(caster, 'focalisation', sk.spec);

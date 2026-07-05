@@ -11464,9 +11464,9 @@
           "id": "focalisation"
         },
         "specOptions": [
-          "Azyr",
-          "Ghur",
-          "Shyish"
+          "cieux",
+          "bete",
+          "mort"
         ]
       },
       {
@@ -11503,7 +11503,7 @@
       {
         "ref": {
           "id": "magie-des-arcanes",
-          "spec": "Gueule"
+          "spec": "gueule"
         }
       },
       {
@@ -13457,9 +13457,8 @@
     ],
     "talents": [
       {
-        "ref": {
-          "id": "magie-des-arcanes",
-          "spec": "Magie des couleurs"
+        "wildcard": {
+          "id": "magie-des-arcanes"
         }
       },
       {
@@ -17787,7 +17786,7 @@
       {
         "ref": {
           "id": "magie-des-arcanes",
-          "spec": "Sorcellerie"
+          "spec": "sorcellerie"
         }
       },
       {
@@ -20204,7 +20203,7 @@
       {
         "ref": {
           "id": "focalisation",
-          "spec": "Azyr"
+          "spec": "cieux"
         }
       },
       {
@@ -20223,7 +20222,7 @@
       {
         "ref": {
           "id": "magie-des-arcanes",
-          "spec": "Cieux"
+          "spec": "cieux"
         }
       },
       {
@@ -20396,7 +20395,7 @@
       {
         "ref": {
           "id": "magie-des-arcanes",
-          "spec": "Magie naturelle"
+          "spec": "magie-naturelle"
         }
       },
       {

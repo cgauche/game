@@ -359,16 +359,17 @@
     "label": "Focalisation",
     "characteristic": "FM",
     "type": "avancée",
+    "specsSource": "winds",
     "specs": [
-      "Aqshy",
-      "Azyr",
-      "Chamon",
-      "Dhar",
-      "Ghur",
-      "Ghyran",
-      "Hysh",
-      "Shyish",
-      "Ulgu"
+      "feu",
+      "cieux",
+      "metal",
+      "dhar",
+      "bete",
+      "vie",
+      "lumiere",
+      "mort",
+      "ombres"
     ],
     "desc": "La Compétence Focalisation mesure votre capacité à faire appel et à contrôler les différents Vents de la Magie. Elle est uniquement utilisée avec les règles sur la magie. Voir le Chapitre 8 : Magie pour plus d'informations.\n\nFocalisation est une Compétence très particulière, en cela qu'elle est à la fois Groupée, permettant les Spécialisations, mais aussi non Groupée pour ceux qui ne sont pas correctement formés à focaliser la magie.",
     "source": {

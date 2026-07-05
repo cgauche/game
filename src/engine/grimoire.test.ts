@@ -27,13 +27,13 @@ describe('casterTalents — extraction des specs', () => {
   it('« Invocation (Sigmar) » → invocation/Sigmar ; « (Au choix) » → joker', () => {
     const c = hero({ talents: [
       { talentId: 'invocation', spec: 'Sigmar', times: 1 },
-      { talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 },
+      { talentId: 'magie-des-arcanes', spec: 'feu', times: 1 },
       { talentId: 'beni', spec: 'Au choix', times: 1 },
       { talentId: 'magie-mineure', times: 1 },
     ] });
     expect(casterTalents(c)).toEqual([
       { kind: 'invocation', spec: 'Sigmar' },
-      { kind: 'arcane', spec: 'Feu' },
+      { kind: 'arcane', spec: 'feu' },
       { kind: 'beni', spec: undefined },
       { kind: 'mineure', spec: undefined },
     ]);
@@ -54,7 +54,7 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
   });
 
   it('Magie des Arcanes : bandes de BInt ×100 PX ; Domaine exigé pour les sorts de Domaine', () => {
-    const c = hero({ talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }] });
+    const c = hero({ talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }] });
     expect(spellCost(c, sp('Arme aethyrique'))).toBe(100); // Arcane commun : OK
     const feu = spells.find((s) => s.type === 'Magie des Arcanes' && s.subType === 'Feu')!;
     expect(spellCost(c, feu)).toBe(100);
@@ -63,7 +63,7 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
   });
 
   it('Arcanes — bande INCLUSIVE : à exactement BInt connus, le suivant reste à 100 PX', () => {
-    const c = hero({ talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }] }); // Int 42 → BInt 4
+    const c = hero({ talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }] }); // Int 42 → BInt 4
     const arcanes = spells.filter((s) => s.type === 'Magie des Arcanes' && (s.subType === 'Feu' || s.subType == null));
     c.spells = arcanes.slice(0, 4).map((s) => s.id); // « Jusqu'à BInt ×1 » plein
     expect(spellCost(c, arcanes[4])).toBe(100);
@@ -102,7 +102,7 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
 describe('lecture au grimoire (LDB 47 l.34)', () => {
   it('sort de son Domaine NON mémorisé + grimoire porté → lançable (NI ×2 côté flux)', () => {
     const c = hero({
-      talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }],
+      talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }],
       items: [{ uid: 'g1', name: 'Grimoire', trappingId: 'grimoire', kind: 'misc', enc: 1, qualities: [] } as never],
     });
     expect(canCastFromGrimoire(c, sp('Arme aethyrique'))).toBe(true);

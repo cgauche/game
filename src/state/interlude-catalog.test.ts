@@ -199,7 +199,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
   // ── Recherche universitaire ────────────────────────────────────────────────────────────────────
   it('Recherche universitaire : chaque +DR = −100 PX sur la mémorisation d’UN sort (plancher 100), achat immédiat', () => {
     const h = hero();
-    h.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 } as never);
+    h.talents.push({ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 } as never);
     const feu = spells.filter((s) => s.family === 'arcane' && s.subType === 'Feu').map((s) => s.id);
     // BInt de A (Int ~30) = 3 → avec 4 sorts d'Arcane connus, le prochain coûte 100 × ⌈4/3⌉ = 200 PX.
     h.spells = feu.slice(0, 4);

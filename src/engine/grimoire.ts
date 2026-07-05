@@ -65,10 +65,12 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
   const talents = casterTalents(c);
   if (fam === 'mineure') return talents.find((t) => t.kind === 'mineure');
   if (fam === 'arcane') {
-    // Sorts d'Arcane communs (subType null) : n'importe quel Domaine connu ;
-    // sorts de Domaine : le Talent du MÊME Domaine (ou un Talent non spécialisé — données légères).
-    return talents.find((t) => t.kind === 'arcane' && (spell.subType == null || t.spec == null || t.spec === spell.subType));
+    // Sorts d'Arcane communs (domainId null) : n'importe quel Domaine connu ; sorts de Domaine : le
+    // Talent du MÊME Domaine (`t.spec` = id de domaine = `spell.domainId`) ou un Talent non spécialisé.
+    return talents.find((t) => t.kind === 'arcane' && (spell.domainId == null || t.spec == null || t.spec === spell.domainId));
   }
+  // Invocation/Chaos : la spec est un CULTE/dieu (`gods.key`), comparé au `subType` du sort (nom du dieu,
+  // déjà i18n-safe) — pas un domaine, donc pas de `domainId`. Béni : Bénédiction du culte listée.
   if (fam === 'invocation') return talents.find((t) => t.kind === 'invocation' && (t.spec == null || t.spec === spell.subType));
   if (fam === 'beni') return talents.find((t) => t.kind === 'beni' && (t.spec == null || blessingsOf(t.spec).includes(spell.id)));
   if (fam === 'chaos') return talents.find((t) => t.kind === 'chaos' && (t.spec == null || t.spec === spell.subType));

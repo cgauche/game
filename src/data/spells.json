@@ -7316,7 +7316,8 @@
       "page": 254
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "magie-naturelle"
   },
   {
     "id": "charme-protecteur",
@@ -7362,7 +7363,8 @@
       "page": 254
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "magie-naturelle"
   },
   {
     "id": "chevaucher-l-obscurite",
@@ -7407,7 +7409,8 @@
       "page": 254
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "magie-naturelle"
   },
   {
     "id": "nepenthes",
@@ -7452,7 +7455,8 @@
       "page": 254
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "magie-naturelle"
   },
   {
     "id": "panacee",
@@ -7497,7 +7501,8 @@
       "page": 254
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "magie-naturelle"
   },
   {
     "id": "separer-les-branches",
@@ -7542,7 +7547,8 @@
       "page": 255
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "magie-naturelle"
   },
   {
     "id": "degradation",
@@ -7589,7 +7595,8 @@
       "page": 255
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "sorcellerie"
   },
   {
     "id": "horreur-obsedante",
@@ -7635,7 +7642,8 @@
       "page": 255
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "sorcellerie"
   },
   {
     "id": "malediction-de-douleur-paralysante",
@@ -7684,7 +7692,8 @@
       "page": 255
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "sorcellerie"
   },
   {
     "id": "malediction-de-malchance",
@@ -7738,7 +7747,8 @@
       "page": 255
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "sorcellerie"
   },
   {
     "id": "mauvais-oeil",
@@ -7788,7 +7798,8 @@
       "page": 255
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "sorcellerie"
   },
   {
     "id": "menace-rampante",
@@ -7857,7 +7868,8 @@
       "page": 256
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "sorcellerie"
   },
   {
     "id": "destruction-de-demon-mineur",
@@ -7915,7 +7927,8 @@
       "page": 256
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "demonologie"
   },
   {
     "id": "detection-de-demon",
@@ -7961,7 +7974,8 @@
       "page": 256
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "demonologie"
   },
   {
     "id": "manifestation-de-demon-mineur",
@@ -8026,7 +8040,8 @@
       "page": 256
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "demonologie"
   },
   {
     "id": "octogramme",
@@ -8075,7 +8090,8 @@
       "page": 256
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "demonologie"
   },
   {
     "id": "crane-hurlant",
@@ -8146,7 +8162,8 @@
     },
     "family": "arcane",
     "missile": true,
-    "curated": true
+    "curated": true,
+    "domainId": "necromancie"
   },
   {
     "id": "l-appel-de-vanhel",
@@ -8192,7 +8209,8 @@
       "page": 256
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "necromancie"
   },
   {
     "id": "reanimation",
@@ -8263,7 +8281,8 @@
       "page": 257
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "necromancie"
   },
   {
     "id": "relever-les-morts",
@@ -8332,7 +8351,8 @@
       "page": 257
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "necromancie"
   },
   {
     "id": "allure-demoniaque",
@@ -13763,7 +13783,8 @@
       "book": "frenchy.bzh",
       "page": 376
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "arriere-sorciere",
@@ -14027,7 +14048,8 @@
       "book": "frenchy.bzh",
       "page": 373
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "bouclier",
@@ -14147,7 +14169,8 @@
       "book": "frenchy.bzh",
       "page": 393
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-peste"
   },
   {
     "id": "brume-mystique",
@@ -14367,7 +14390,8 @@
       "book": "frenchy.bzh",
       "page": 389
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-peste"
   },
   {
     "id": "coup-d-boule",
@@ -14521,7 +14545,8 @@
       "book": "frenchy.bzh",
       "page": 361
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-ruine"
   },
   {
     "id": "crepitements-vengeurs",
@@ -14581,7 +14606,8 @@
       "book": "frenchy.bzh",
       "page": 367
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-ruine"
   },
   {
     "id": "crue-mortelle",
@@ -14719,7 +14745,8 @@
       "page": 361
     },
     "family": "arcane",
-    "missile": true
+    "missile": true,
+    "domainId": "domaine-de-la-ruine"
   },
   {
     "id": "desarroi",
@@ -14780,7 +14807,8 @@
       "book": "frenchy.bzh",
       "page": 380
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "douces-paroles",
@@ -15324,7 +15352,8 @@
       "book": "frenchy.bzh",
       "page": 361
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-ruine"
   },
   {
     "id": "flammes-bleues-de-tzeentch",
@@ -15495,7 +15524,8 @@
       "page": 109
     },
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "domainId": "sorcellerie"
   },
   {
     "id": "furoncle-infecte",
@@ -15604,7 +15634,8 @@
       "book": "frenchy.bzh",
       "page": 361
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-ruine"
   },
   {
     "id": "immuno-deficience",
@@ -15635,7 +15666,8 @@
       "book": "frenchy.bzh",
       "page": 386
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-peste"
   },
   {
     "id": "instinct-animal",
@@ -16308,7 +16340,8 @@
       "book": "frenchy.bzh",
       "page": 379
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "pied-leger",
@@ -16418,7 +16451,8 @@
       "book": "frenchy.bzh",
       "page": 376
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "position",
@@ -16475,7 +16509,8 @@
       "book": "frenchy.bzh",
       "page": 373
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "pourriture",
@@ -16668,7 +16703,8 @@
       "book": "frenchy.bzh",
       "page": 364
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-de-la-ruine"
   },
   {
     "id": "rage-meurtriere",
@@ -16696,7 +16732,8 @@
       "book": "frenchy.bzh",
       "page": 373
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "ramanchage",
@@ -16774,7 +16811,8 @@
       "book": "frenchy.bzh",
       "page": 373
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "regard-lubrique",
@@ -17050,7 +17088,8 @@
       "book": "frenchy.bzh",
       "page": 379
     },
-    "family": "arcane"
+    "family": "arcane",
+    "domainId": "domaine-des-ombres"
   },
   {
     "id": "soins",

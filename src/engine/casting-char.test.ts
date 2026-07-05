@@ -36,8 +36,8 @@ describe('caractéristique d’incantation — DATA-DRIVEN (point unique, zéro 
   });
 
   it('Domaine « Gueule » (Magie Ogre, ADE II l.653) : Langue (Magick) sur Endurance — attribut DATA du domaine', () => {
-    // Lanceur du Domaine Gueule (talent arcane spec « Gueule ») → castingChar 'E' lu dans domains.json.
-    const gueuleCaster = mk({ skills: [langue('Int')], talents: [{ talentId: 'magie-des-arcanes', spec: 'Gueule', times: 1 }] });
+    // Lanceur du Domaine Gueule (talent arcane spec = id « gueule ») → castingChar 'E' lu dans domains.json.
+    const gueuleCaster = mk({ skills: [langue('Int')], talents: [{ talentId: 'magie-des-arcanes', spec: 'gueule', times: 1 }] });
     expect(castingValue(gueuleCaster, 'langue', 'magick')).toBe(40);
   });
 });

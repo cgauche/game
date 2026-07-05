@@ -202,8 +202,8 @@ describe('wildcardSpecs — specs valides à joker (SOURCE UNIQUE créateur + av
     expect(s).toContain('Sigmar');
     expect(s).toContain('Evawn');
   });
-  it('Magie des Arcanes → domaines des sorts (subType), data-driven', () => {
-    expect(wildcardSpecs('Magie des Arcanes')).toEqual(expect.arrayContaining(['Feu', 'Ombres', 'Métal']));
+  it('Magie des Arcanes → ids de domaine (specs id-based, data-driven)', () => {
+    expect(wildcardSpecs('Magie des Arcanes')).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
   });
   it('Magie du Chaos → Nurgle / Slaanesh / Tzeentch', () => {
     expect(wildcardSpecs('Magie du Chaos').sort()).toEqual(['Nurgle', 'Slaanesh', 'Tzeentch']);

@@ -502,7 +502,7 @@
       {
         "id": "focalisation",
         "value": 68,
-        "spec": "Ghur"
+        "spec": "bete"
       },
       {
         "id": "intimidation",
@@ -546,7 +546,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Ghur"
+        "spec": "bete"
       },
       {
         "id": "magie-mineure"
@@ -30077,7 +30077,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Divinité"
+        "spec": "divinite"
       },
       {
         "id": "seconde-vue"
@@ -30294,7 +30294,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Divinité"
+        "spec": "divinite"
       },
       {
         "id": "seconde-vue"
@@ -36016,7 +36016,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine de la Ruine"
+        "spec": "domaine-de-la-ruine"
       }
     ],
     "trappings": [],
@@ -36216,7 +36216,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine de la Ruine"
+        "spec": "domaine-de-la-ruine"
       },
       {
         "id": "travailleur-qualifie",
@@ -36446,7 +36446,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine de la Ruine"
+        "spec": "domaine-de-la-ruine"
       },
       {
         "id": "travailleur-qualifie",
@@ -36826,7 +36826,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine des Ombres"
+        "spec": "domaine-des-ombres"
       },
       {
         "id": "sprinter"
@@ -37054,7 +37054,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine des Ombres"
+        "spec": "domaine-des-ombres"
       },
       {
         "id": "sprinter"
@@ -37310,7 +37310,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine des Ombres"
+        "spec": "domaine-des-ombres"
       },
       {
         "id": "sixieme-sens"
@@ -37646,7 +37646,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine de la Peste"
+        "spec": "domaine-de-la-peste"
       },
       {
         "id": "flagellant"
@@ -37833,7 +37833,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine de la Peste"
+        "spec": "domaine-de-la-peste"
       },
       {
         "id": "menacant"
@@ -38044,7 +38044,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Domaine de la Peste"
+        "spec": "domaine-de-la-peste"
       },
       {
         "id": "menacant"
@@ -39562,7 +39562,7 @@
       {
         "id": "focalisation",
         "value": 70,
-        "spec": "Dhar"
+        "spec": "dhar"
       },
       {
         "id": "corps-a-corps",
@@ -39807,7 +39807,7 @@
       {
         "id": "focalisation",
         "value": 90,
-        "spec": "Dhar"
+        "spec": "dhar"
       },
       {
         "id": "corps-a-corps",
@@ -45563,7 +45563,7 @@
       {
         "id": "focalisation",
         "value": 0,
-        "spec": "Dhar"
+        "spec": "dhar"
       },
       {
         "id": "intimidation",
@@ -45662,7 +45662,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Nécromancie"
+        "spec": "necromancie"
       },
       {
         "id": "seconde-vue"
@@ -45758,7 +45758,7 @@
       {
         "id": "focalisation",
         "value": 0,
-        "spec": "Dhar"
+        "spec": "dhar"
       },
       {
         "id": "intimidation",
@@ -45868,7 +45868,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Nécromancie"
+        "spec": "necromancie"
       },
       {
         "id": "seconde-vue"
@@ -45978,7 +45978,7 @@
       {
         "id": "focalisation",
         "value": 0,
-        "spec": "Dhar"
+        "spec": "dhar"
       },
       {
         "id": "intimidation",
@@ -46110,7 +46110,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Nécromancie"
+        "spec": "necromancie"
       },
       {
         "id": "seconde-vue"
@@ -48589,7 +48589,7 @@
       {
         "id": "focalisation",
         "value": 0,
-        "spec": "Dhar"
+        "spec": "dhar"
       },
       {
         "id": "intimidation",
@@ -48901,7 +48901,7 @@
       {
         "id": "focalisation",
         "value": 0,
-        "spec": "Dhar"
+        "spec": "dhar"
       },
       {
         "id": "intimidation",
@@ -51909,7 +51909,7 @@
       {
         "id": "focalisation",
         "value": 80,
-        "spec": "Shyish"
+        "spec": "mort"
       },
       {
         "id": "langue",
@@ -55988,7 +55988,7 @@
       {
         "id": "focalisation",
         "value": 83,
-        "spec": "Shyish"
+        "spec": "mort"
       },
       {
         "id": "intimidation",
@@ -56004,7 +56004,11 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Mort, Nécromancie"
+        "spec": "mort"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "necromancie"
       },
       {
         "id": "menacant"
@@ -56138,7 +56142,19 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Bête, Magie naturelle, Vie, Sorcellerie"
+        "spec": "bete"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "magie-naturelle"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "vie"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "sorcellerie"
       },
       {
         "id": "magie-mineure"
@@ -57696,7 +57712,7 @@
       {
         "id": "focalisation",
         "value": 65,
-        "spec": "Ghur"
+        "spec": "bete"
       },
       {
         "id": "intuition",
@@ -57737,7 +57753,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Bête"
+        "spec": "bete"
       },
       {
         "id": "magie-mineure"
@@ -57844,7 +57860,7 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Sorcellerie"
+        "spec": "sorcellerie"
       },
       {
         "id": "magie-mineure"
@@ -58133,7 +58149,19 @@
       },
       {
         "id": "magie-des-arcanes",
-        "spec": "Démonologie, Nécromancie, Tzeentch, Sorcellerie"
+        "spec": "demonologie"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "necromancie"
+      },
+      {
+        "id": "magie-du-chaos",
+        "spec": "Tzeentch"
+      },
+      {
+        "id": "magie-des-arcanes",
+        "spec": "sorcellerie"
       },
       {
         "id": "magie-mineure"
@@ -61103,7 +61131,7 @@
       {
         "id": "focalisation",
         "value": 74,
-        "spec": "Magie des mers de Triton"
+        "spec": "magie-des-mers-de-triton"
       },
       {
         "id": "intuition",

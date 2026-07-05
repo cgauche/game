@@ -2,6 +2,7 @@
   {
     "id": "feu",
     "label": "Feu",
+    "wind": "Aqshy",
     "desc": "Domaine du Feu (Aqshy). Vous pouvez infliger +1 État Enflammé à quiconque ciblé par des Sorts du Domaine du Feu, à moins qu'il ne possède également le Talent Magie des Arcanes (Feu). Chaque État Enflammé situé à une distance en mètres égale à votre Bonus de Force Mentale ajoute +10 aux tentatives de Focalisation ou d'Incantation avec Aqshy.",
     "source": {
       "book": "LDB",
@@ -28,7 +29,7 @@
                   "who": "target",
                   "what": "talent",
                   "value": "magie-des-arcanes",
-                  "spec": "Feu"
+                  "spec": "feu"
                 }
               }
             ]
@@ -60,6 +61,7 @@
   {
     "id": "lumiere",
     "label": "Lumière",
+    "wind": "Hysh",
     "desc": "Domaine de la Lumière (Hysh). Vous pouvez infliger un État Aveuglé aux cibles des Sorts du Domaine de la Lumière, à moins qu'ils ne possèdent le Talent Magie des Arcanes (Lumière). Si une cible possède les Traits Démoniaque ou Mort-vivant, les Sorts infligent une frappe supplémentaire avec un nombre de Dégâts égal à votre Bonus d'Intelligence qui ignore le Bonus d'Endurance et les PA.",
     "source": {
       "book": "LDB",
@@ -86,7 +88,7 @@
                   "who": "target",
                   "what": "talent",
                   "value": "magie-des-arcanes",
-                  "spec": "Lumière"
+                  "spec": "lumiere"
                 }
               }
             ]
@@ -162,6 +164,7 @@
   {
     "id": "mort",
     "label": "Mort",
+    "wind": "Shyish",
     "desc": "Domaine de la Mort (Shyish). Vous pouvez assigner +1 État Exténué à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État Exténué gagné de cette façon à la fois.",
     "source": {
       "book": "LDB",
@@ -247,6 +250,7 @@
   {
     "id": "vie",
     "label": "Vie",
+    "wind": "Ghyran",
     "desc": "Domaine de la Vie (Ghyran). Bonus de +10 pour Incanter ou Focaliser dans un environnement rural ou sauvage. Les créatures vivantes (sans les Traits Démoniaque ou Mort-vivant) ciblées se voient retirer tous les États Exténué et Hémorragique, après que tous les autres effets ont été appliqués. Les créatures avec le Trait Mort-vivant subissent à l'inverse un nombre de Dégâts égal à votre Bonus de Force Mentale, ignorant le Bonus d'Endurance et les PA.",
     "source": {
       "book": "LDB",
@@ -363,6 +367,7 @@
   {
     "id": "cieux",
     "label": "Cieux",
+    "wind": "Azyr",
     "desc": "Domaine des Cieux (Azyr). Les Sorts infligeant des Dégâts ignorent les PA des armures en métal, et se dirigent vers toutes les autres cibles dans les 2 mètres, à l'exception de ceux possédant le Talent Magie des Arcanes (Cieux), infligeant un nombre de Dégâts égal à votre Bonus de Force Mentale, traités comme un Projectile magique.",
     "effects": [
       {
@@ -380,7 +385,7 @@
               "who": "target",
               "what": "talent",
               "value": "magie-des-arcanes",
-              "spec": "Cieux"
+              "spec": "cieux"
             }
           },
           "then": {
@@ -417,6 +422,7 @@
   {
     "id": "metal",
     "label": "Métal",
+    "wind": "Chamon",
     "desc": "Domaine du Métal (Chamon). Les Sorts infligeant des Dégâts ignorent les PA des armures métalliques, et infligent un bonus de Dégâts égal au nombre de PA de l'armure métallique portée à n'importe quelle Localisation frappée.",
     "source": {
       "book": "LDB",
@@ -431,6 +437,7 @@
   {
     "id": "ombres",
     "label": "Ombres",
+    "wind": "Ulgu",
     "desc": "Domaine des Ombres (Ulgu). Les Sorts lancés depuis le Domaine des Ombres ignorent tous les PA non magiques.",
     "source": {
       "book": "LDB",
@@ -444,6 +451,7 @@
   {
     "id": "bete",
     "label": "Bête",
+    "wind": "Ghur",
     "desc": "Domaine de la Bête (Ghur). Chaque fois que vous lancez avec succès un Sort du Domaine de la Bête, vous pouvez aussi gagner le Trait de créature Peur 1 pour les 1d10 prochains Rounds.",
     "source": {
       "book": "LDB",
@@ -483,5 +491,82 @@
       "page": 49
     },
     "sorcery": true
+  },
+  {
+    "id": "dhar",
+    "label": "Dhar",
+    "wind": "Dhar",
+    "desc": "*Dhar*, connu généralement sous le nom de Magie noire, est une méthode bien plus dangereuse pour lancer des Sorts en utilisant plusieurs Vents. Elle n'est généralement pratiquée que par les enchanteurs maléfiques, les nécromanciens, et par de puissantes sorcières, car elle offre une source séduisante de puissance brute, mais souillée de terribles effets secondaires.",
+    "source": {
+      "book": "LDB",
+      "page": 44
+    }
+  },
+  {
+    "id": "necromancie",
+    "label": "Nécromancie",
+    "desc": "La Nécromancie est un antique art magique qui cherche à maîtriser la mort et à obtenir la vie éternelle, en utilisant le plus souvent des corps en décomposition. Considérée comme la forme la plus infecte de la Magie, une pure hérésie, l'étude de ses secrets n'est jamais prise à la légère, car l'horreur que représentent la mort et les morts-vivants ne doit jamais être sous-estimée.",
+    "source": {
+      "book": "LDB",
+      "page": 50
+    }
+  },
+  {
+    "id": "demonologie",
+    "label": "Démonologie",
+    "desc": "Le Domaine de Démonologie, dont l'usage est proscrit, s'intéresse à l'invocation, au lien et au contrôle des démons, et ce dans le but de rendre plus puissant le lanceur du Sort. Son utilisation est extrêmement dangereuse, entraînant le plus souvent la soumission de l'âme du démonologue aux Puissances de la Ruine, donnant ainsi naissance à un nouveau Sorcier du Chaos.",
+    "source": {
+      "book": "LDB",
+      "page": 50
+    }
+  },
+  {
+    "id": "magie-naturelle",
+    "label": "Magie naturelle",
+    "desc": "Les pratiquants de la Magie naturelle mènent généralement des vies discrètes, en marge des plus petites colonies humaines, au service des communautés locales. Tout comme ils vivent entre la civilisation et la nature sauvage, une grande partie de leur Magie concerne l'espace se trouvant entre le monde matériel et le royaume des esprits.",
+    "source": {
+      "book": "LDB",
+      "page": 44
+    }
+  },
+  {
+    "id": "domaine-de-la-ruine",
+    "label": "Domaine de la Ruine",
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 359
+    }
+  },
+  {
+    "id": "domaine-des-ombres",
+    "label": "Domaine des Ombres",
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 371
+    }
+  },
+  {
+    "id": "domaine-de-la-peste",
+    "label": "Domaine de la Peste",
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 384
+    }
+  },
+  {
+    "id": "divinite",
+    "label": "Divinité",
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 269
+    }
+  },
+  {
+    "id": "magie-des-mers-de-triton",
+    "label": "Magie des mers de Triton",
+    "source": {
+      "book": "MDG",
+      "page": 148
+    }
   }
 ]
