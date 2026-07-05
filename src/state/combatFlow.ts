@@ -107,7 +107,7 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData } from '../data';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
 import { isInanimate, isStructure, structureAimCell } from '../engine/structures';
@@ -215,6 +215,7 @@ import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, hasFreeWeaponAttack, availableFreeAttackOps,
   resolveBattement, battementEligible, resolveDistraire, distraireEligible, distraireAttackValue, distraireDefenseValue,
+  setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, conditionCtx, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -2392,43 +2393,49 @@ function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
 /** Souffle / Vomissement (IA & sort) : roule le jet d'attaquant (CT, +40 pour le Vomi) puis résout la
  *  zone via le RÉSOLVEUR GÉNÉRIQUE. `centerOverride` = point d'impact imposé du sort « Souffle » (LDB 47).
  *  Clôt par `checkBattleOver`. */
-export function applyAreaAttack(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): void {
+export function applyAreaAttack(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): boolean {
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng(), maneuverAttackerDifficulty(a.kind));
-  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, centerOverride);
-  checkBattleOver(get, set);
+  const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, centerOverride);
+  if (!suspended) checkBattleOver(get, set); // la cascade de défense (héros) porte son propre checkBattleOver à la fermeture
+  return suspended;
 }
 
-/** Langue préhensile (IA) : jet CT puis résolution ; gratuit (Action préservée). Clôt par `checkBattleOver`. */
-export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack): void {
+/** Langue préhensile (IA) : jet CT puis résolution ; gratuit (Action préservée). L'entraînement de la proie
+ *  (pull) est une conséquence POST-TOUCHE (hook `maneuverPostHit`), jouée pour la voie silencieuse ET la voie
+ *  cascade. Renvoie `true` si une défense de héros a suspendu (reprise à la fermeture). */
+export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack): boolean {
   const battle = get().battle;
-  if (!battle || !attacker.pos) return;
+  if (!battle || !attacker.pos) return false;
   // Cible = la plus proche (sélection IDENTIQUE à resolveManeuver pour une manœuvre à cible unique) ; on la
   // PASSE explicitement (chosenTarget) → la proie tirée = la proie touchée, sans ré-dériver.
   const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos);
   const target = foes.length ? foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c)) : undefined;
-  const hadEmpetre = target ? stacks(target, COND.empetre) : 0;
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
-  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, target);
-  // Entraînement vers la créature (LDB 85 p.340) : « s'il a une Taille INFÉRIEURE, il est entraîné vers la
-  // créature ». Sur une TOUCHE (un pion *Empêtré* posé ce tour) d'une proie plus petite, on la tire à elle —
-  // pathing + comparaison de Taille = impur → résolu ICI (pas en GameOp). Réutilise `pullToward` (symétrique
-  // de pushAway) : avance la proie le long de la ligne jusqu'à être adjacente à l'empreinte de la créature.
-  if (target && target.pos && stacks(target, COND.empetre) > hadEmpetre && sizeGap(attacker.size, target.size) > 0) {
-    const b = get().battle;
-    if (b) {
-      const r = pullToward(get().scene!, attacker.pos, target.pos, chebyshev(attacker.pos, target.pos), { blocked: occupied(b, target) });
-      if (r.pulled > 0) {
-        const from = { ...target.pos };
-        placeCombatant(target, get().scene, r.dest);
-        bus.emit(EVT.ANIM_MOVE, { id: target.id, path: [{ ...r.dest }] });
-        applyZoneCrossings(get, target, [...tilesBetween(from, r.dest), { ...r.dest }]); // une traction TRAVERSE (Mur de feu, L11)
-        set({ battle: { ...b, log: [...b.log, ev('move', tr('cs.tonguePull', { name: attacker.name, foe: target.name }), attacker.id, target.id)] } });
-        bus.emit(EVT.SCENE_DIRTY);
-      }
-    }
-  }
-  checkBattleOver(get, set);
+  const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, target);
+  if (!suspended) checkBattleOver(get, set);
+  return suspended;
 }
+
+/** Entraînement de la Langue préhensile (LDB 85 p.340) — conséquence POST-TOUCHE injectée dans
+ *  `applyManeuverEffects` (hook `maneuverPostHit`) : sur une TOUCHE (un pion *Empêtré* posé ce tour) d'une
+ *  proie plus PETITE, elle est tirée vers la créature (pathing impur : `pullToward` + traversées de zone).
+ *  Joué à l'IDENTIQUE pour la voie silencieuse (non-héros/Surpris) ET la voie cascade (héros influençable). */
+function maneuverPostHitImpl(get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, tgt: Combatant, hadEmpetre: number): string[] {
+  if (def.kind !== 'langue' || !tgt.pos || !attacker.pos) return [];
+  if (!(stacks(tgt, COND.empetre) > hadEmpetre && sizeGap(attacker.size, tgt.size) > 0)) return [];
+  const b = get().battle;
+  if (!b) return [];
+  const r = pullToward(get().scene!, attacker.pos, tgt.pos, chebyshev(attacker.pos, tgt.pos), { blocked: occupied(b, tgt) });
+  if (r.pulled <= 0) return [];
+  const from = { ...tgt.pos };
+  placeCombatant(tgt, get().scene, r.dest);
+  bus.emit(EVT.ANIM_MOVE, { id: tgt.id, path: [{ ...r.dest }] });
+  applyZoneCrossings(get, tgt, [...tilesBetween(from, r.dest), { ...r.dest }]); // une traction TRAVERSE (Mur de feu, L11)
+  return [tr('cs.tonguePull', { name: attacker.name, foe: tgt.name })];
+}
+// Câble la conséquence POST-TOUCHE (entraînement de la Langue) dans le résolveur feuille (inversion de
+// dépendance : combatManeuvers reste sans import de combatFlow). Enregistré à l'import, comme les appliers.
+setManeuverPostHitHook(maneuverPostHitImpl);
 
 /** Hurlement fantomatique (IA) : PAS de jet d'attaquant ; dépense TOUS les Avantages (min 2, LDB 85
  *  l.135). Renvoie false si pas assez d'Avantage. Clôt par `checkBattleOver`. */
@@ -2449,9 +2456,9 @@ export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   if (!a) return false;
   const spent = attacker.advantage; // l'IA met tout (min 1)
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
-  resolveManeuver(get, set, attacker, a.def, a.indice, atk, spent);
+  const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, spent);
   set({ battle: { ...get().battle!, acted: true } }); // Regard = Action de la créature (l.238)
-  checkBattleOver(get, set);
+  if (!suspended) checkBattleOver(get, set); // héros influençable → checkBattleOver à la fermeture de la cascade
   return true;
 }
 
@@ -2464,9 +2471,9 @@ export function applyChillGrasp(get: Get, set: SetFn, attacker: Combatant): bool
   const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'etreinte');
   if (!a) return false;
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'CC', battleRng());
-  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage);
+  const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage);
   set({ battle: { ...get().battle!, acted: true } }); // Étreinte = Action de la créature (l.112)
-  checkBattleOver(get, set);
+  if (!suspended) checkBattleOver(get, set); // héros influençable → checkBattleOver à la fermeture de la cascade
   return true;
 }
 
@@ -2602,14 +2609,12 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
         checkBattleOver(get, set);
       }
     }
-    // Attaques de ZONE (gratuites, instantanées) : Souffle (2 Av) puis Vomissement (3 Av) si abordables.
-    const souffle = atks.find((a) => a.kind === 'souffle');
-    if (souffle && enemy.advantage >= souffle.avantage) applyAreaAttack(get, set, enemy, souffle);
-    const vomi = atks.find((a) => a.kind === 'vomi');
-    if (vomi && enemy.advantage >= vomi.avantage) applyAreaAttack(get, set, enemy, vomi);
-    const langue = atks.find((a) => a.kind === 'langue');
-    if (langue && enemy.advantage >= langue.avantage) applyTongue(get, set, enemy, langue); // Jabberslythe : langue à distance
-    if (atks.some((a) => a.kind === 'hurlement') && enemy.advantage >= 2) applyWail(get, set, enemy); // Banshee : cri (tous les Av)
+    // Attaques de ZONE/spéciales (Souffle/Vomi/Langue/Hurlement) : désormais des UNITÉS de la file — une
+    // manœuvre de zone qui touche des HÉROS ouvre une cascade de défense INFLUENÇABLE (elle SUSPEND), donc
+    // elle doit être RÉSUMABLE : la file est persistée sur l'ennemi ; la reprise re-appelle
+    // `aiCreatureFreeAttacks` (file DÉFINIE → bloc d'init sauté, on enchaîne l'unité suivante). Ordre RAW
+    // conservé : Souffle → Vomi → Langue → Hurlement, AVANT les gratuites de mêlée.
+    const zoneKinds = (['souffle', 'vomi', 'langue', 'hurlement'] as const).filter((k) => atks.some((a) => a.kind === k));
     const traitKinds: string[] = [];
     for (const a of atks) {
       if (a.trigger !== 'free') continue;
@@ -2618,19 +2623,31 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
       // count× entrées (« 8 Tentacules +9 » → 8), coût d'Avantage 0.
       if (a.kind === 'tentacules') for (let i = 0; i < (a.count ?? 1); i++) traitKinds.push('tentacules');
     }
-    // Cornes : Attaque gratuite gagnée EN CHARGEANT (LDB 85), sans coût d'Avantage → en tête.
+    // Cornes : Attaque gratuite gagnée EN CHARGEANT (LDB 85), sans coût d'Avantage.
     const cornes = enemy.chargedThisTurn && atks.some((a) => a.kind === 'cornes') ? ['cornes'] : [];
     enemy.chargedThisTurn = false; // consommée
-    enemy.pendingFreeAttacks = [...cornes, ...traitKinds, 'pietinement']; // Piétinement (Taille) en dernier
+    enemy.pendingFreeAttacks = [...zoneKinds, ...cornes, ...traitKinds, 'pietinement']; // zone d'abord, Piétinement (Taille) en dernier
   }
   while (enemy.pendingFreeAttacks.length) {
     const kind = enemy.pendingFreeAttacks[0];
+    const b2 = get().battle; if (!b2 || b2.over) break;
+    // Manœuvres de ZONE/spéciales : résolveur propre (opposé) — une défense de HÉROS ouvre une cascade
+    // influençable et SUSPEND (return true → reprise à la fermeture via `resumeManeuverDefense`).
+    if (kind === 'souffle' || kind === 'vomi' || kind === 'langue' || kind === 'hurlement') {
+      enemy.pendingFreeAttacks.shift();
+      const a = creatureAttacks(enemy.traits ?? []).find((x) => x.kind === kind);
+      if (!a) continue;
+      let suspended = false;
+      if (kind === 'hurlement') { if (enemy.advantage >= 2) applyWail(get, set, enemy); } // dépense tous les Av ; jamais de cascade (défense resist/auto atk null)
+      else if (enemy.advantage >= a.avantage) suspended = kind === 'langue' ? applyTongue(get, set, enemy, a) : applyAreaAttack(get, set, enemy, a);
+      if (suspended) return true;
+      continue;
+    }
     // Coût en Avantage PAR TYPE (RAW, lu de creatureAttacks) : Cornes (Charge) et Tentacules = 0 ;
     // Morsure/Caudale = 1 ; Piétinement (Taille) = 1. Une entrée inabordable est SAUTÉE (pas de
     // break : des Tentacules à coût 0 restent jouables derrière une Morsure inabordable).
     const cost = kind === 'pietinement' ? 1 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.avantage ?? 1;
     if (enemy.advantage < cost) { enemy.pendingFreeAttacks.shift(); continue; }
-    const b2 = get().battle; if (!b2 || b2.over) break;
     const target = freeAttackTarget(b2, enemy, kind);
     if (!target) { enemy.pendingFreeAttacks.shift(); continue; }
     const bonus = kind === 'pietinement' ? 0 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.bonus ?? 0;
@@ -2639,6 +2656,30 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
   }
   enemy.pendingFreeAttacks = undefined; // file épuisée
   return false;
+}
+
+/** Une cascade de DÉFENSE à une manœuvre de zone IA est-elle ouverte (le tour de la créature est SUSPENDU) ?
+ *  Testé après `aiMaybeSpecialAction` (Regard/Étreinte peuvent l'ouvrir) pour ne pas AVANCER le tour. */
+function maneuverCascadePending(get: Get): boolean {
+  const p = get().pendingCascade;
+  return !!p && p.purpose === 'combat' && !!p.maneuverResume;
+}
+
+/** Reprend le tour de la créature après la fermeture d'une cascade de DÉFENSE à sa manœuvre de zone
+ *  (Souffle/Regard/…). Miroir du « tail » de `defenseConfirm` : les héros ont défendu (influençable), on
+ *  vérifie la fin de combat, puis on enchaîne les attaques gratuites RESTANTES (file persistée) — qui peuvent
+ *  ROUVRIR une cascade (souffle → vomi → …) — sinon on avance. `free` = manœuvre gratuite (ne re-déclenche
+ *  PAS les libres d'Arme post-Action, comme `defenseConfirm` pour `pd.free`). */
+export function resumeManeuverDefense(get: Get, set: SetFn, resume: { attackerId: string; free: boolean }): void {
+  checkBattleOver(get, set);
+  const battle = get().battle;
+  if (!battle || battle.over) return;
+  const attacker = battle.combatants.find((c) => c.id === resume.attackerId);
+  if (attacker && !isOutOfAction(attacker)) {
+    if (!resume.free) aiAvailableFreeAttack(get, set, attacker); // manœuvre-ACTION (Regard/Étreinte) → libres d'Arme (Frénésie) après l'Action
+    if (aiCreatureFreeAttacks(get, set, attacker)) return; // enchaîne la file (peut rouvrir une cascade)
+  }
+  resumeEnemyTurn(get, set); // → advanceTurn
 }
 
 
@@ -4945,8 +4986,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Tour caduc (combat fini OU relancé pendant le télégraphe → `enemy` hors du combat courant).
       if (!b || b.over || !b.combatants.includes(enemy)) return;
       // Attaque-ACTION spéciale (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
-      // normale si la créature en a le trait + l'Avantage ; sinon attaque normale (opposée).
-      const suspended = aiMaybeSpecialAction(get, set, enemy) ? false : doAttack(get, set, enemy, target);
+      // normale si la créature en a le trait + l'Avantage ; sinon attaque normale (opposée). Une manœuvre
+      // spéciale qui touche des HÉROS ouvre une cascade de défense influençable → tour SUSPENDU (reprise
+      // via `resumeManeuverDefense` à la fermeture), détectée par `maneuverCascadePending`.
+      const suspended = aiMaybeSpecialAction(get, set, enemy) ? maneuverCascadePending(get) : doAttack(get, set, enemy, target);
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm → resumeEnemyTurn (anti double-advance).
       if (!suspended) {

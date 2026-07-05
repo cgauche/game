@@ -16,19 +16,21 @@
  */
 import type { Get, Set as SetFn } from './flowTypes';
 import type { BattleState } from './store';
-import { Combatant, type Difficulty } from '../engine/types';
+import { Combatant, type Difficulty, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { evLines } from './combatLog';
 import type { RNG } from '../engine/dice';
-import { combatValue, defenseValue } from '../engine/combat';
+import { combatValue, defenseValue, DEFENSE_LABEL } from '../engine/combat';
 import { isVehicle } from '../engine/vehicle';
-import { rollTest, resolveOpposed, type TestResult } from '../engine/tests';
+import { rollTest, resolveOpposed, hydrateTR, type TestResult } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
+import { isOutOfAction, applyZeroWounds, stacks, COND, cannotDefend } from '../engine/conditions';
 import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
-import { findTalentById, findPsychologyById, type ManeuverDef, type ManeuverMeasure } from '../data';
+import { findTalentById, findPsychologyById, findManeuverById, type ManeuverDef, type ManeuverMeasure } from '../data';
+import { registerCascadeApplier, startCascade } from './cascade';
+import type { CascadeStep } from './pendings';
 import type { GameOp } from '../engine/ops';
 import type { IconId } from '../ui/icons';
 import { sizeGap } from '../engine/size';
@@ -67,6 +69,39 @@ function floatDamage(tgt: Combatant, wl: number): void {
 /** Étiquette flottante d'ÉTAT/issue (Pétrifié, Esquivé…) sur le pion — feedback visuel de la manœuvre. */
 function floatTag(tgt: Combatant, text: string): void {
   bus.emit(EVT.ANIM_FLOAT, { to: tgt.id, text, kind: 'condition' });
+}
+
+/** HOOK de conséquence POST-TOUCHE d'une manœuvre (op IMPURE de géométrie) — injecté par le store
+ *  (`setManeuverPostHitHook`), pointe sur l'entraînement de la Langue préhensile (LDB 85 p.340 : une proie
+ *  plus petite Empêtrée est tirée vers la créature — pathing impur qui vit dans combatFlow). Appelé par
+ *  `applyManeuverEffects` avec le nombre de pions *Empêtré* AVANT l'application des effets, pour que la
+ *  voie SILENCIEUSE (non-héros/Surpris) ET la voie CASCADE (héros influençable) tirent à l'identique.
+ *  Inversion de dépendance : ce module feuille reste sans import de combatFlow. Absent ⇒ no-op. */
+type ManeuverPostHitHook = (get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, tgt: Combatant, hadEmpetre: number) => string[] | void;
+let maneuverPostHitHook: ManeuverPostHitHook | undefined;
+export function setManeuverPostHitHook(fn: ManeuverPostHitHook): void { maneuverPostHitHook = fn; }
+
+/**
+ * Application des EFFETS d'une manœuvre à UNE cible qui a PERDU l'opposition (ou n'en avait pas) — la
+ * conséquence de `hitOne`, extraite en fonction PARTAGÉE : les effets AUTHORÉS (`def.effects`, GameOp :
+ * Dégâts `wounds` + États + pétrification) sont appliqués avec la marge (`margin` : DR net + Avantage
+ * variable) et l'`indice`, puis le chiffre flottant de Dégâts + la mise à 0 PB + la conséquence post-touche
+ * (entraînement de la Langue). SOURCE UNIQUE : appelée par le résolveur SILENCIEUX (`resolveManeuver`) ET
+ * par l'applier de cascade `maneuverDefense` (héros influençable). Renvoie les lignes de journal.
+ */
+export function applyManeuverEffects(
+  get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, tgt: Combatant, indice: number, margin: number | undefined, rng: RNG,
+): string[] {
+  const lines: string[] = [];
+  const hadEmpetre = stacks(tgt, COND.empetre);
+  const before = tgt.wounds.current;
+  lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: tgt, margin, indice, rng, set }));
+  const wl = before - tgt.wounds.current;
+  if (wl > 0) floatDamage(tgt, wl);
+  if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
+  const pull = maneuverPostHitHook?.(get, set, attacker, def, tgt, hadEmpetre);
+  if (pull && pull.length) lines.push(...pull);
+  return lines;
 }
 
 /** Cible de Piétinement valide pour `c` (LDB 85 l.320-321) : adversaire ADJACENT, encore actif et
@@ -326,9 +361,9 @@ function emitAoe(get: Get, center: Pt, radius: number, kind: AttackKind, type?: 
  */
 export function resolveManeuver(
   get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, indice: number, atk: TestResult | null, spent: number, chosenTarget?: Combatant,
-): void {
+): boolean {
   const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
+  if (!battle || battle.over || !attacker.pos) return false;
   campSpend(get, attacker, spent); // dépense l'Avantage : réserve du camp (mode groupe AA l.4142) / le combattant (LDB)
   const rng = battleRng();
   // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
@@ -337,9 +372,14 @@ export function resolveManeuver(
   emitCreatureAttackAnim(attacker, def.kind);
   const alive = (c: Combatant) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos;
   const nearest = (cands: Combatant[]) => cands.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
+  const flushLog = () => {
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  };
 
-  /** Applique la manœuvre à UNE cible : jet du défenseur (selon `def.defense`), opposition, et — si
-   *  l'attaquant gagne (ou pas d'opposition) — les effets AUTHORÉS (`def.effects`) avec `indice`/`margin`. */
+  /** Chemin SILENCIEUX (défenseur NON influençable — cible non-héros / Surpris / sans opposition) : jet du
+   *  défenseur (selon `def.defense`), opposition, et — si l'attaquant gagne (ou pas d'opposition) — les
+   *  effets AUTHORÉS via la SOURCE PARTAGÉE `applyManeuverEffects` (identique à la voie cascade). */
   const hitOne = (tgt: Combatant): void => {
     const drow = defenderRoll(tgt, def.defense);
     let margin: number | undefined;
@@ -349,25 +389,29 @@ export function resolveManeuver(
       // Marge = DR net du vainqueur (+Avantage dépensé pour les manœuvres à Avantage VARIABLE, Regard l.238).
       margin = opp.netSL + (def.advantageMode === 'variable' ? spent : 0);
     }
-    const before = tgt.wounds.current;
-    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: tgt, margin, indice, rng, set }));
-    const wl = before - tgt.wounds.current;
-    if (wl > 0) floatDamage(tgt, wl);
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
+    lines.push(...applyManeuverEffects(get, set, attacker, def, tgt, indice, margin, rng));
   };
 
+  // SUR SOI (transformation, mue, auto-buff) : aucune cible adverse ni opposition — jamais de cascade.
+  if (def.targeting === 'self') {
+    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: attacker, indice, rng, set }));
+    flushLog();
+    return false;
+  }
+
+  // Cibles AFFECTÉES + émissions propres à la géométrie (identiques à avant).
+  let affected: Combatant[] = [];
   if (def.targeting === 'zone') {
     const rangeTiles = tilesOf(measureMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'E')) / 2));
     const foes = combatantsWithinRadius(attacker.pos!, rangeTiles, battle.combatants, alive);
     const center = chosenTarget && alive(chosenTarget) && chebyshev(attacker.pos!, chosenTarget.pos!) <= rangeTiles
       ? chosenTarget : foes[0] ?? null; // `foes` est trié par distance (combatantsWithinRadius) → le plus proche d'abord
-    if (!center) { set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } }); return; }
+    if (!center) { flushLog(); return false; }
     // Rayon de Souffle : `blast` résolu contre la CIBLE au centre (« Bonus de Force » → BF de la cible, RAW l.251 ;
     // Vomi « 2 mètres » → littéral, 1 case). Plus de regex `/force/i` — la mesure structurée porte le référent.
     const blast = tilesOf(measureMeters(def.blast, center)) ?? 1;
     emitAoe(get, center.pos!, blast, def.kind, def.label);
-    const affected = combatantsWithinRadius(center.pos!, blast, battle.combatants, alive);
-    for (const tgt of affected) hitOne(tgt);
+    affected = combatantsWithinRadius(center.pos!, blast, battle.combatants, alive);
     // Fumée (souffle-fumee) : la zone bloque les Lignes de vue pendant BE Rounds — GÉOMÉTRIE moteur (pas un GameOp).
     if (def.id === 'souffle-fumee') {
       const dur = Math.max(1, bonus(effectiveChar(attacker, 'E')));
@@ -379,23 +423,104 @@ export function resolveManeuver(
   } else if (def.targeting === 'allFoes') {
     // Hurlement (l.135) : tous les ennemis VIVANTS (≠ Mort-vivant) à Initiative mètres — filtre de Groupe moteur.
     const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2));
-    const living = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !hasTraitKey(c.traits, 'mort-vivant'));
+    affected = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !hasTraitKey(c.traits, 'mort-vivant'));
     emitAoe(get, attacker.pos, radius, def.kind, def.label);
-    for (const tgt of living) hitOne(tgt);
-  } else if (def.targeting === 'self') {
-    // Capacité SUR SOI (transformation, mue, auto-buff) : aucune cible adverse ni opposition — les effets
-    // AUTHORÉS s'appliquent au PORTEUR (`on:'self'`). Les ops (transform/grantTrait…) recalent eux-mêmes
-    // leurs dérivés (refreshWounds, resync psy).
-    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: attacker, indice, rng, set }));
   } else {
     // melee / ranged : cible unique (clic joueur, ou la plus proche pour l'IA/auto).
     const foes = battle.combatants.filter(alive);
     const tgt = chosenTarget && alive(chosenTarget) ? chosenTarget : foes.length ? nearest(foes) : null;
-    if (tgt) hitOne(tgt);
+    affected = tgt ? [tgt] : [];
   }
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
+
+  // Split : HÉROS influençables (défense en cascade, Chance/Résilience) vs le reste (silencieux, IA en
+  // masse). Un héros Surpris (`cannotDefend`) ne peut pas réagir → résolu en silence (parité maybeOpenDefense).
+  // Gate : jet d'attaquant présent, opposition réelle (defense ≠ resist), et effets à subir (pas de fumée pure).
+  const canDefend = !!atk && !!def.defense && def.defense !== 'resist' && (def.effects?.length ?? 0) > 0;
+  const heroDefenders = canDefend ? affected.filter((t) => t.kind === 'hero' && !isOutOfAction(t) && !cannotDefend(t)) : [];
+  for (const tgt of affected) if (!heroDefenders.includes(tgt)) hitOne(tgt);
+  flushLog();
+  if (heroDefenders.length) {
+    openManeuverDefenseCascade(get, set, attacker, def, indice, atk!, spent, heroDefenders);
+    return true; // tour SUSPENDU : reprise via `resumeManeuverDefense` à la fermeture de la cascade
+  }
+  return false;
 }
+
+/** Valeur de Test de la RÉACTION opposée à une manœuvre pour `tgt` (mirroir de `defenderRoll`) : Initiative
+ *  (Regard pétrifiant), sinon Esquive/Parade (`auto` = la meilleure). Portée par l'étape de cascade (base/target). */
+function maneuverDefenseValue(tgt: Combatant, defense: NonNullable<ManeuverDef['defense']>): number {
+  if (defense === 'init') return effectiveChar(tgt, 'I');
+  const mode = defense === 'auto' ? bestDefenseMode(tgt) : (defense === 'resist' ? 'esquive' : defense);
+  return defenseValue(tgt, mode);
+}
+/** Libellé du cadre de jet de la réaction (« Initiative » / « Esquive » / « Parade ») — dépend de `tgt` pour `auto`. */
+function maneuverDefenseLabel(tgt: Combatant, defense: NonNullable<ManeuverDef['defense']>): string {
+  if (defense === 'init') return CHAR_LABELS.I;
+  const mode = defense === 'auto' ? bestDefenseMode(tgt) : (defense === 'resist' ? 'esquive' : defense);
+  return DEFENSE_LABEL[mode];
+}
+
+/** Ouvre la cascade de DÉFENSE à une manœuvre de zone IA : UNE étape `maneuverDefense` INFLUENÇABLE par héros
+ *  ciblé (jumeau de la cascade de Psychologie), le jet d'attaquant FIGÉ dans `meta.opposed.aT`. À la
+ *  fermeture, le store reprend le tour de la créature (`maneuverResume`). */
+function openManeuverDefenseCascade(
+  get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, indice: number, atk: TestResult, spent: number, heroes: Combatant[],
+): void {
+  const attackerLabel = def.label || ATTACK_LABEL[def.kind];
+  const steps: CascadeStep[] = heroes.map((h) => {
+    const base = maneuverDefenseValue(h, def.defense!);
+    return {
+      id: `maneuverDef-${h.id}`,
+      kind: 'maneuverDefense',
+      actorId: h.id,
+      rollLabel: maneuverDefenseLabel(h, def.defense!),
+      base,
+      target: base, // Test opposé Intermédiaire (+0) → cible = valeur nue ; l'issue vient de resolveOpposed(aT)
+      label: attackerLabel,
+      meta: {
+        opposed: { aT: atk, attackerName: attacker.name, attackerLabel },
+        maneuverDefense: { attackerId: attacker.id, maneuverId: def.id, indice, spent },
+      },
+    };
+  });
+  startCascade(get, set, { title: attackerLabel, purpose: 'combat', steps });
+  const p = get().pendingCascade;
+  if (p) set({ pendingCascade: { ...p, maneuverResume: { attackerId: attacker.id, free: def.activation === 'free' } } });
+}
+
+/** Applier de l'étape `maneuverDefense` (héros influençable) — SOURCE UNIQUE de la conséquence : le jet du
+ *  défenseur est déjà résolu par `FLOWS.cascade` (`meta.opposed` → `resolveOpposed(défenseur, aT)`), on lit
+ *  son issue. RÉSISTE (`result.success`) → aucun effet ; sinon l'attaquant l'emporte → marge nette (DR net +
+ *  Avantage variable) → effets via `applyManeuverEffects` (le MÊME que le chemin silencieux). Le Critique se
+ *  FOLDE dans la MÊME cascade (les ops de Dégâts poussent une révélation → `pushReveal` l'append). */
+registerCascadeApplier('maneuverDefense', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const md = step.meta?.maneuverDefense;
+  const opp = step.meta?.opposed;
+  if (!md || !opp) return;
+  const attacker = get().battle?.combatants.find((c) => c.id === md.attackerId);
+  const def = findManeuverById(md.maneuverId);
+  if (!attacker || !def) return;
+  const syncManeuver = () => {
+    set({ party: [...get().party] });
+    const b = get().battle;
+    if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  };
+  // `FLOWS.cascade` opposé : `success` = le DÉFENSEUR RÉSISTE (l'attaquant ne l'emporte pas) → aucun effet.
+  if (step.result.success) {
+    floatTag(hero, def.defense === 'init' ? t('fx.resists') : t('fx.dodge'));
+    syncManeuver();
+    return { journal: [t('manv.resists', { name: hero.name })] };
+  }
+  // L'attaquant l'emporte : on re-oppose le jet influencé du défenseur (reproduit `resolveOpposed` de la
+  // cascade) pour la MARGE NETTE (RAW Regard : +1 DR/Avantage variable), puis on applique les effets.
+  const drow = hydrateTR({ roll: step.result.roll, target: step.result.target, success: step.result.roll <= step.result.target, sl: step.result.sl });
+  const margin = resolveOpposed(opp.aT, drow).netSL + (def.advantageMode === 'variable' ? md.spent : 0);
+  const journal = applyManeuverEffects(get, set, attacker, def, hero, md.indice, margin, battleRng());
+  syncManeuver();
+  return { journal };
+}, (success, name) => (success ? `${name} résiste.` : `${name} est touché !`));
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive (Agilité + avances,
  *  pénalité d'Encombrement incluse) — la plus haute valeur. Vit ICI (feuille) et est ré-exporté par

@@ -890,6 +890,22 @@ export interface OpposedFreeze {
    *  opposed.bonusSL` figé : chaque (re)résolution oppose `def.sl + bonusSL` à `aT`. Absent/0 = Assommante. */
   bonusSL?: number;
 }
+/** Contexte SÉRIALISABLE d'une DÉFENSE de manœuvre de ZONE (Souffle/Vomi/Regard/Étreinte/Langue, LDB 85)
+ *  porté par une étape de cascade `maneuverDefense` : le héros ciblé JETTE sa réaction (Esquive/Initiative/
+ *  Parade) opposée au jet d'attaquant FIGÉ (dans `meta.opposed.aT`), influençable (Chance/Résilience). À la
+ *  validation, l'applier RE-oppose et applique les effets de la manœuvre (`findManeuverById(maneuverId).effects`)
+ *  avec la marge nette + `indice`/`spent` — SOURCE partagée avec le chemin silencieux (`applyManeuverEffects`).
+ *  Tout est primitif (ids/nombres) → snapshoté/transmis en coop, jamais de closure. */
+export interface ManeuverDefenseFreeze {
+  /** Créature attaquante (référent des effets/formules). */
+  attackerId: string;
+  /** Id de la manœuvre (`maneuvers.json`) → `findManeuverById` reconstruit `effects`/`advantageMode`. */
+  maneuverId: string;
+  /** Indice de la manœuvre (Dégâts = 4 + BF pour une arme naturelle, LDB 85). */
+  indice: number;
+  /** Avantage dépensé (marge des manœuvres à Avantage VARIABLE, ex. Regard +1 DR/Av, LDB 85 l.238). */
+  spent: number;
+}
 /** Contexte SÉRIALISABLE d'une ATTAQUE GRATUITE de talent (op `grantFreeAttack`) porté par une étape de
  *  cascade : la CIBLE de la frappe (`targetId` — un TIERS : le chargeur pour Frappe réactive), le plafond
  *  /Round (`cap` = niveau du talent) et la `key` d'imputation (`freeAttacksThisTurn`). Reconstruit l'`exec`
@@ -912,7 +928,7 @@ export interface BladeTrapFreeze {
   attackerSL: number;
 }
 export interface CascadeStepMeta {
-  [key: string]: number | string | boolean | Flow | GameOp[] | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | undefined;
+  [key: string]: number | string | boolean | Flow | GameOp[] | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | ManeuverDefenseFreeze | undefined;
   /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
   onSuccess?: Flow;
   /** Branche d'échec d'une étape `triggeredTest`. */
@@ -941,6 +957,9 @@ export interface CascadeStepMeta {
   /** Contexte de Piège-lame GAGNÉ (la branche success porte `breakBlade`) — désarme/brise la lame de
    *  l'attaquant ciblé. Reconstruit l'`exec` impur de l'applier. Absent ⇒ branche purement data. */
   bladeTrap?: BladeTrapFreeze;
+  /** Contexte d'une DÉFENSE de manœuvre de zone (applier `maneuverDefense`) : l'attaquant + la manœuvre +
+   *  l'indice/l'Avantage. Le jet d'attaquant FIGÉ voyage à côté dans `opposed.aT`. */
+  maneuverDefense?: ManeuverDefenseFreeze;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {
@@ -1055,6 +1074,11 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  ouverte AVANT l'écran de victoire : à sa fermeture, le store enchaîne sur `finishCombatEnd` (writeback
    *  + écran de victoire/défaite) au lieu de reprendre l'IA. */
   combatEndBoundary?: boolean;
+  /** Cascade de DÉFENSE à une MANŒUVRE de zone IA (Souffle/Vomi/Regard/Étreinte/Langue, LDB 85) : chaque
+   *  héros ciblé y jette sa réaction INFLUENÇABLE. À la fermeture, le store REPREND le tour de la créature
+   *  `attackerId` (attaques gratuites restantes puis avance) au lieu du `resumeSuspendedAI` générique —
+   *  `free` = la manœuvre était une attaque gratuite (ne re-déclenche pas les libres d'Arme post-Action). */
+  maneuverResume?: { attackerId: string; free: boolean };
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
