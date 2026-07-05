@@ -5,6 +5,17 @@
 > Règle du credo : une exception sans validation utilisateur traçable = dette signalée.
 > **Pour chaque entrée : verdict utilisateur requis** — ✅ légitime (documenter comme décision) ou ❌ dette (issue/chantier).
 
+> ## ⚖️ VERDICTS RENDUS (utilisateur, 2026-07-05)
+> - **Thème A** (silences du RAW comblés : n° 2, 5, 12, 19, 21, 25, 26, 34, 39, 50, 51, 52) : ✅ légitime sur le fond,
+>   MAIS migration en donnée éditable taguée `maison` → **issue-chantier #133**.
+> - **Thème B** (renvoi au MJ arbitré : n° 3, 16, 44) : ✅ légitime, entériné. **Exception n° 47** (prêtre de Manann
+>   auto-payé) : ❌ → choix joueur, **issue #132**.
+> - **Thème C** (règles RAW simplifiées/omises : n° 1, 6, 7, 10, 13, 14, 15, 17, 30, 31, 33, 35, 40-43, 45, 46) :
+>   ❌ dette → **issues #113–#125**.
+> - **Thème D** (triches IA/lacunes : n° 28, 29, 36, 38, 48, 49) : ❌ dette → **issues #126–#131** (priorité #126 : Recharge ennemie).
+> - **Thème E** (nettoyages : n° 8, 27, 37) : à faire au fil de l'eau par l'orchestrateur (pas d'issue).
+> - N° 4, 9, 11, 18, 20, 32 (design assumé) : ✅ entérinés. N° 22-24 (trauma.ts, extraction vide) : à relire manuellement.
+
 ## 1. `src/engine/aaCritical.ts:13` — sévérité basse
 
 **Quote** : `desc` = « Effets supplémentaires » VERBATIM : les sous-effets conditionnels (durées, « membre inutilisable 1d10 Rounds », amputations page 180) y restent, arbitrés — rien n'est inventé.
