@@ -24,9 +24,12 @@ public/qc/
 # compagnon visuel brainstorm
 .superpowers/
 
-# Environnement local : IDE, réglages Claude Code, installeurs, logs de scripts
+# Environnement local : IDE, réglages Claude Code PERSONNELS, installeurs, logs de scripts
+# (.claude/settings.json + credo.md sont VERSIONNÉS : hooks anti-dérive + credo injecté par session)
 .idea/
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/credo.md
 *.exe
 *.log
 

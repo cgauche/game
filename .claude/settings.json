@@ -1,0 +1,30 @@
+{
+  "claudeMdExcludes": ["**/Foundry/CLAUDE.md"],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/new-src-file-guard.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Garde anti-réinvention (nouveau fichier src/)"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"$CLAUDE_PROJECT_DIR/.claude/credo.md\" 2>/dev/null || cat .claude/credo.md",
+            "timeout": 10,
+            "statusMessage": "Injection du credo de travail"
+          }
+        ]
+      }
+    ]
+  }
+}
