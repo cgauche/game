@@ -889,23 +889,22 @@ export const FLOWS = {
    * Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé. CALQUE de
    * `trample` (jet MONO d'attaquant influençable) — la seule différence est l'issue métier
    * (`resolveBattement` dans `battementConfirm`, pas une attaque à Dégâts). Le jet de CC est figé ici ;
-   * `caps.forced` + `picker` autorisent la Résilience (dé choisi : un 01 → DR max retire le plus d'Avantage).
+   * `caps.forced` autorise la Résilience (dé PAR DÉFAUT = DR max → retire le plus d'Avantage). PAS de
+   * `picker` : l'Avantage retiré ne dépend que du DR (`battementRemoval`), aucun Coup Critique ni
+   * localisation ne rend un dé PRÉCIS meilleur que le DR max — le choix du dé n'apporterait rien (≠ trample).
    */
   battement: makeRollFlow<PendingBattement>({
     key: 'pendingBattement',
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.attackerId),
-    caps: {
-      forced: true,
-      picker: (p) => (p.forced && p.result ? { roll: p.result.roll, target: p.result.target } : null),
-    },
+    caps: { forced: true },
     resolve: (_s, p, actor) => {
       if (!actor) return null;
       return { result: rollManeuverAttacker(actor, 'CC', battleRng()) };
     },
     outcome: (p) => testOutcome(p.result),
-    // Test de CC NON opposé, dé CHOISI (le DR gagné retire plus d'Avantage, l.103) via la lentille. Chance
-    // « +1 DR » par `bumpSL` (success intact — le vieux `bonus` forçait `success:true` : bug, LDB 17 l.84).
+    // Test de CC NON opposé. Résilience (dé PAR DÉFAUT = DR max, l.103) + Chance « +1 DR » par `bumpSL`
+    // (success intact — le vieux `bonus` forçait `success:true` : bug, LDB 17 l.84) via la lentille.
     lens: {
       actorTR: (p) => p.result ?? null,
       applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: tr }),
@@ -930,7 +929,10 @@ export const FLOWS = {
   /** Manœuvre de créature (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) qu'un héros active. Le jet
    *  INFLUENÇABLE est celui de l'ATTAQUANT (CC/CT) ; l'APPLICATION (jets des défenseurs + opposition)
    *  vit dans `maneuverConfirm`/`applyMan<X>`, pas ici. Un seul effort de souffle → un jet d'attaquant
-   *  (LDB 85 l.251/376, relu influençable). Vomi : +40 d'attaquant (l.376) baked dans le jet. */
+   *  (LDB 85 l.251/376, relu influençable). Vomi : +40 d'attaquant (l.376) baked dans le jet. PAS de
+   *  `picker` : le jet d'attaquant ne nourrit que le DR de l'OPPOSITION (`resolveManeuver` → `resolveOpposed`
+   *  → marge), aucun Coup Critique ni localisation ne dépend du dé PRÉCIS (≠ attaque/trample) → un dé
+   *  choisi n'apporte rien de plus que le DR max de la Résilience par défaut. */
   maneuver: makeRollFlow<PendingManeuver>({
     key: 'pendingManeuver',
     rolled: (p) => !!p.result,
@@ -1433,9 +1435,9 @@ export const FLOW_VERBS = {
   auContact:    { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   grapple:      { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   trample:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  battement:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
+  battement:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   distraire:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
-  maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
@@ -1452,11 +1454,11 @@ export const FLOW_VERBS = {
   bargain:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   appraise:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   shanty:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
-  counterspell: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  counterspell: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   cascade:      { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist', 'determine'], coop: true },
-  opposition:   { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'] },
+  opposition:   { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'resist'] },
   extendedTest: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
-  forceDoor:    { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  forceDoor:    { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   shipManeuver: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   shipBattery:  { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   crewTest:     { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },

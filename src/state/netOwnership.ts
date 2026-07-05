@@ -92,7 +92,7 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   // Cancel) restent ouvertes ('*' via le owner de la modale). NB : le Test Étendu (ROUNDS) et la
   // CASCADE (ÉTAPES, `args[0]` = id d'étape ≠ héros) tombent sur le owner de LEUR modale — l'acteur
   // du Round / l'acteur de l'étape COURANTE — pas sur `args[0]`.
-  if (/^(counterspell|forceDoor)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess|SetForcedRoll)$/.test(action)) {
+  if (/^(counterspell|forceDoor)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess)$/.test(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   }
   const owner = modalOwnerOf(s);

@@ -35,11 +35,11 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'castConfirm', 'castCancel',
   // Contre-sort à plusieurs (réaction au Sort ennemi, flux multi) + Test Étendu séquentiel
   'counterspellRoll', 'counterspellReroll', 'counterspellBonusSL', 'counterspellDarkPact',
-  'counterspellForceSuccess', 'counterspellSetForcedRoll', 'counterspellConfirm', 'counterspellCancel',
+  'counterspellForceSuccess', 'counterspellConfirm', 'counterspellCancel',
   'extendedTestRoll', 'extendedTestReroll', 'extendedTestBonusSL', 'extendedTestDarkPact',
   'extendedTestForceSuccess', 'extendedTestNext', 'extendedTestCancel',
   'forceDoorRoll', 'forceDoorReroll', 'forceDoorBonusSL', 'forceDoorDarkPact',
-  'forceDoorForceSuccess', 'forceDoorSetForcedRoll', 'forceDoorConfirm', 'forceDoorCancel',
+  'forceDoorForceSuccess', 'forceDoorConfirm', 'forceDoorCancel',
   // Cascade séquentielle (jets de nuit / voyage influençables)
   'cascadeRoll', 'cascadeReroll', 'cascadeBonusSL', 'cascadeDarkPact',
   'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose', 'cascadeDetermine',
@@ -62,7 +62,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'trampleRoll', 'trampleReroll', 'trampleBonusSL', 'trampleDarkPact', 'trampleForceSuccess',
   'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel',
   'maneuverRoll', 'maneuverReroll', 'maneuverBonusSL', 'maneuverDarkPact', 'maneuverForceSuccess',
-  'maneuverSetForcedRoll', 'maneuverConfirm', 'maneuverCancel', 'maneuverSetAvantage',
+  'maneuverConfirm', 'maneuverCancel', 'maneuverSetAvantage',
   'runRoll', 'runReroll', 'runBonusSL', 'runDarkPact', 'runForceSuccess',
   'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
   'focusForceSuccess', 'focusConfirm', 'focusCancel',

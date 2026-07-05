@@ -26,7 +26,6 @@ export function ManeuverModal() {
   const bonusSL = useGame((s) => s.maneuverBonusSL);
   const darkPact = useGame((s) => s.maneuverDarkPact);
   const force = useGame((s) => s.maneuverForceSuccess);
-  const setForcedRoll = useGame((s) => s.maneuverSetForcedRoll);
   const setAvantage = useGame((s) => s.maneuverSetAvantage);
   const confirm = useGame((s) => s.maneuverConfirm);
   const cancel = useGame((s) => s.maneuverCancel);
@@ -67,8 +66,8 @@ export function ManeuverModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !!r && !r.success,
-    // LDB 17 l.73 : la réussite forcée choisit le dé (mais sans enjeu de double pour le jet d'attaquant).
-    forcedRoll: pm.forced && r ? { roll: r.roll, target: r.target, onSet: setForcedRoll } : undefined,
+    // LDB 17 l.73 : réussite forcée = dé PAR DÉFAUT (DR max). PAS de choix du dé : le jet d'attaquant
+    // ne nourrit que le DR de l'opposition (`resolveManeuver`), aucun Coup Critique n'y dépend du dé.
   };
 
   const actions: RollAction[] = [

@@ -1,5 +1,4 @@
 import { useGame } from '../state/store';
-import { FLOWS } from '../state/rollFlowSpecs';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
@@ -26,7 +25,6 @@ export function BattementModal() {
   const bonusSL = useGame((s) => s.battementBonusSL);
   const darkPact = useGame((s) => s.battementDarkPact);
   const force = useGame((s) => s.battementForceSuccess);
-  const setForcedRoll = useGame((s) => s.battementSetForcedRoll);
   const setFoe = useGame((s) => s.battementSetFoe);
   const confirm = useGame((s) => s.battementConfirm);
   const cancel = useGame((s) => s.battementCancel);
@@ -37,8 +35,6 @@ export function BattementModal() {
   const r = pb.result;
   const rolled = !!r;
   const foes = battementFoes(attacker, battle);
-  // Dé choisi (« Je ne faillirai pas ! ») : source UNIQUE = `caps.picker` du flux (cf. rollFlows).
-  const forcedDie = FLOWS.battement.picker?.(pb, attacker);
 
   const actorRow: RollRowData = {
     actor: attacker,
@@ -56,11 +52,10 @@ export function BattementModal() {
     darkPactable: !!r && !r.success && attacker.kind === 'hero',
     onDarkPact: darkPact,
     onForce: force,
-    // Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite.
+    // Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite (dé PAR DÉFAUT = DR max
+    // → plus d'Avantage retiré). PAS de choix du dé : l'Avantage retiré ne dépend que du DR.
     preRollForce: () => { roll(); force(); },
     forceShow: !r?.success,
-    // LDB 17 l.73 : Battement forcé = jet de CC → le dé se choisit (01 → DR max → plus d'Avantage retiré).
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
   };
 
   const actions: RollAction[] = [
