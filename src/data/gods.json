@@ -1,6 +1,7 @@
 [
   {
-    "key": "Asuryan",
+    "id": "asuryan",
+    "label": "Asuryan",
     "title": "Créateur et roi de tous les dieux",
     "blessings": [],
     "miracles": [],
@@ -11,7 +12,8 @@
     }
   },
   {
-    "key": "Atharti",
+    "id": "atharti",
+    "label": "Atharti",
     "title": "La Dame du Désir",
     "blessings": [],
     "miracles": [],
@@ -22,7 +24,8 @@
     }
   },
   {
-    "key": "Bögenauer",
+    "id": "bogenauer",
+    "label": "Bögenauer",
     "title": "Dieu de la rivière Bögen",
     "blessings": [],
     "miracles": [],
@@ -33,7 +36,8 @@
     }
   },
   {
-    "key": "Borchbach",
+    "id": "borchbach",
+    "label": "Borchbach",
     "title": "Dieu de la rhétorique",
     "blessings": [],
     "miracles": [],
@@ -44,7 +48,8 @@
     }
   },
   {
-    "key": "Clio",
+    "id": "clio",
+    "label": "Clio",
     "title": "Déesse de l'Histoire",
     "blessings": [],
     "miracles": [],
@@ -55,7 +60,8 @@
     }
   },
   {
-    "key": "Déesse-Araignée",
+    "id": "deesse-araignee",
+    "label": "Déesse-Araignée",
     "blessings": [
       {
         "id": "benediction-de-bataille"
@@ -93,7 +99,8 @@
     }
   },
   {
-    "key": "Dyrath",
+    "id": "dyrath",
+    "label": "Dyrath",
     "title": "Déesse des femmes",
     "blessings": [],
     "miracles": [],
@@ -104,7 +111,8 @@
     }
   },
   {
-    "key": "Esméralda",
+    "id": "esmeralda",
+    "label": "Esméralda",
     "title": "La maintes-fois Grand-Mère",
     "blessings": [],
     "miracles": [],
@@ -115,7 +123,8 @@
     }
   },
   {
-    "key": "Evawn",
+    "id": "evawn",
+    "label": "Evawn",
     "title": "Déesse des voyages",
     "blessings": [
       {
@@ -155,7 +164,8 @@
     }
   },
   {
-    "key": "Grand-père Reik",
+    "id": "grand-pere-reik",
+    "label": "Grand-père Reik",
     "title": "Dieu du fleuve Reik",
     "blessings": [],
     "miracles": [],
@@ -166,7 +176,8 @@
     }
   },
   {
-    "key": "Grimnir",
+    "id": "grimnir",
+    "label": "Grimnir",
     "title": "Dieu ancêtre des guerriers et du courage",
     "blessings": [],
     "miracles": [],
@@ -177,7 +188,8 @@
     }
   },
   {
-    "key": "Grungni",
+    "id": "grungni",
+    "label": "Grungni",
     "title": "Dieu ancêtre de la mine, du métal et de la pierre",
     "blessings": [],
     "miracles": [],
@@ -188,7 +200,8 @@
     }
   },
   {
-    "key": "Handrich",
+    "id": "handrich",
+    "label": "Handrich",
     "title": "Dieu du Commerce",
     "blessings": [],
     "miracles": [],
@@ -199,7 +212,8 @@
     }
   },
   {
-    "key": "Hoeth",
+    "id": "hoeth",
+    "label": "Hoeth",
     "title": "Le Seigneur de la Sagesse",
     "blessings": [],
     "miracles": [],
@@ -210,7 +224,8 @@
     }
   },
   {
-    "key": "Hyacinthe",
+    "id": "hyacinthe",
+    "label": "Hyacinthe",
     "title": "Déesse de la naissance et de la fertilité",
     "blessings": [],
     "miracles": [],
@@ -221,7 +236,8 @@
     }
   },
   {
-    "key": "Isha",
+    "id": "isha",
+    "label": "Isha",
     "title": "La Mère",
     "blessings": [],
     "miracles": [],
@@ -232,7 +248,8 @@
     }
   },
   {
-    "key": "Josias",
+    "id": "josias",
+    "label": "Josias",
     "title": "Le Croyant",
     "blessings": [],
     "miracles": [],
@@ -243,7 +260,8 @@
     }
   },
   {
-    "key": "Katya",
+    "id": "katya",
+    "label": "Katya",
     "title": "Déesse de la beauté désarmante",
     "blessings": [],
     "miracles": [],
@@ -254,7 +272,8 @@
     }
   },
   {
-    "key": "Khaine",
+    "id": "khaine",
+    "label": "Khaine",
     "title": "Dieu du Meurtre",
     "blessings": [],
     "miracles": [],
@@ -265,7 +284,8 @@
     }
   },
   {
-    "key": "Khorne",
+    "id": "khorne",
+    "label": "Khorne",
     "title": "Dieu de la Rage",
     "blessings": [],
     "miracles": [],
@@ -276,7 +296,8 @@
     }
   },
   {
-    "key": "Kurnous",
+    "id": "kurnous",
+    "label": "Kurnous",
     "title": "Le Roi de la Chasse sauvage",
     "blessings": [],
     "miracles": [],
@@ -287,7 +308,8 @@
     }
   },
   {
-    "key": "Mabyn",
+    "id": "mabyn",
+    "label": "Mabyn",
     "title": "Déesse gnome des ombres",
     "blessings": [
       {
@@ -327,7 +349,8 @@
     }
   },
   {
-    "key": "Manann",
+    "id": "manann",
+    "label": "Manann",
     "title": "Dieu de la mer",
     "blessings": [
       {
@@ -400,7 +423,8 @@
     }
   },
   {
-    "key": "Mathlann",
+    "id": "mathlann",
+    "label": "Mathlann",
     "title": "Le Seigneur des Profondeurs",
     "blessings": [],
     "miracles": [],
@@ -411,7 +435,8 @@
     }
   },
   {
-    "key": "Morai-Heg",
+    "id": "morai-heg",
+    "label": "Morai-Heg",
     "title": "Déesse du destin et de la mort",
     "blessings": [],
     "miracles": [],
@@ -422,7 +447,8 @@
     }
   },
   {
-    "key": "Morr",
+    "id": "morr",
+    "label": "Morr",
     "title": "Dieu de la mort",
     "blessings": [
       {
@@ -471,7 +497,8 @@
     }
   },
   {
-    "key": "Myrmidia",
+    "id": "myrmidia",
+    "label": "Myrmidia",
     "title": "Déesse de la stratégie",
     "blessings": [
       {
@@ -547,7 +574,8 @@
     }
   },
   {
-    "key": "Nurgle",
+    "id": "nurgle",
+    "label": "Nurgle",
     "title": "Dieu du Désespoir",
     "blessings": [],
     "miracles": [],
@@ -563,7 +591,8 @@
     }
   },
   {
-    "key": "Quinsberry",
+    "id": "quinsberry",
+    "label": "Quinsberry",
     "title": "Divinité de la connaissance et de la tradition ancestrale",
     "blessings": [],
     "miracles": [],
@@ -574,7 +603,8 @@
     }
   },
   {
-    "key": "Ranald",
+    "id": "ranald",
+    "label": "Ranald",
     "title": "Dieu de la ruse",
     "blessings": [
       {
@@ -623,7 +653,8 @@
     }
   },
   {
-    "key": "Rhya",
+    "id": "rhya",
+    "label": "Rhya",
     "title": "Déesse de la festilité",
     "blessings": [
       {
@@ -672,7 +703,8 @@
     }
   },
   {
-    "key": "Ringil",
+    "id": "ringil",
+    "label": "Ringil",
     "title": "Dieu du divertissement",
     "blessings": [
       {
@@ -712,7 +744,8 @@
     }
   },
   {
-    "key": "Shallya",
+    "id": "shallya",
+    "label": "Shallya",
     "title": "Déesse de la miséricorde",
     "blessings": [
       {
@@ -761,7 +794,8 @@
     }
   },
   {
-    "key": "Sigmar",
+    "id": "sigmar",
+    "label": "Sigmar",
     "title": "Dieu de l'Empire",
     "blessings": [
       {
@@ -810,7 +844,8 @@
     }
   },
   {
-    "key": "Slaanesh",
+    "id": "slaanesh",
+    "label": "Slaanesh",
     "title": "Dieu de l'Excès",
     "blessings": [],
     "miracles": [],
@@ -826,7 +861,8 @@
     }
   },
   {
-    "key": "Stromfels",
+    "id": "stromfels",
+    "label": "Stromfels",
     "title": "Dieu Requin",
     "blessings": [
       {
@@ -882,7 +918,8 @@
     }
   },
   {
-    "key": "Taal",
+    "id": "taal",
+    "label": "Taal",
     "title": "Dieu de la nature",
     "blessings": [
       {
@@ -931,7 +968,8 @@
     }
   },
   {
-    "key": "Tzeentch",
+    "id": "tzeentch",
+    "label": "Tzeentch",
     "title": "Dieu de l'Ambition",
     "blessings": [],
     "miracles": [],
@@ -989,7 +1027,8 @@
     }
   },
   {
-    "key": "Ulric",
+    "id": "ulric",
+    "label": "Ulric",
     "title": "Dieu de la guerre",
     "blessings": [
       {
@@ -1038,7 +1077,8 @@
     }
   },
   {
-    "key": "Valaya",
+    "id": "valaya",
+    "label": "Valaya",
     "title": "Déesse ancêtre du brassage, de la terre et de la guérison",
     "blessings": [],
     "miracles": [],
@@ -1049,7 +1089,8 @@
     }
   },
   {
-    "key": "Verena",
+    "id": "verena",
+    "label": "Verena",
     "title": "Déesse de la sagesse",
     "blessings": [
       {

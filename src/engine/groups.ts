@@ -38,7 +38,7 @@ const SPECIES_RACIAL: { kw: string; group: string }[] = [
  *  leur id de Groupe existe dans `groups.json` pour l'éditeur (surcharge manuelle `group`/`extras`). */
 const SUBSPECIES_RULES: { kw: string; group: string }[] = [{ kw: 'tileen', group: 'tileen' }];
 
-/** Culte (spec du Talent « Béni », LDB 40 — `TalentInstance.spec` = clé `GodData.key`) → id de Groupe
+/** Culte (spec du Talent « Béni », LDB 40 — `TalentInstance.spec` = id `GodData.id`) → id de Groupe
  *  religieux (Traits psy ciblés « Ulricains », et comble le trou Phase 2 : « sigmarite » n'était dérivé
  *  d'AUCUNE donnée). Seuls les 2 cultes consommés par une Cible de Trait psy existante ont un Groupe —
  *  un autre culte Béni (Manann, Morr…) ne pousse rien (YAGNI : aucune Cible ne les référence). */

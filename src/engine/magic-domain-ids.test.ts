@@ -54,10 +54,10 @@ describe('refLabel — affichage Vent (focalisation) vs Lore (arcanes) vs Culte 
   it('Magie des Arcanes affiche le LORE du domaine (id bete → « Bête »)', () => {
     expect(refLabel('talents', { id: 'magie-des-arcanes', spec: 'bete' })).toBe('Magie des Arcanes (Bête)');
   });
-  it('Béni/Invocation/Magie du Chaos affichent le nom du dieu (gods.key)', () => {
-    expect(refLabel('talents', { id: 'beni', spec: 'Sigmar' })).toBe('Béni (Sigmar)');
-    expect(refLabel('talents', { id: 'invocation', spec: 'Manann' })).toBe('Invocation (Manann)');
-    expect(refLabel('talents', { id: 'magie-du-chaos', spec: 'Tzeentch' })).toBe('Magie du Chaos (Tzeentch)');
+  it('Béni/Invocation/Magie du Chaos affichent le nom du dieu (id → label via gods.label)', () => {
+    expect(refLabel('talents', { id: 'beni', spec: 'sigmar' })).toBe('Béni (Sigmar)');
+    expect(refLabel('talents', { id: 'invocation', spec: 'manann' })).toBe('Invocation (Manann)');
+    expect(refLabel('talents', { id: 'magie-du-chaos', spec: 'tzeentch' })).toBe('Magie du Chaos (Tzeentch)');
   });
 });
 

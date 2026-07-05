@@ -35,7 +35,7 @@ describe('buySpell', () => {
 
   it('Bénédictions du culte : 0 PX (incluses au Talent Béni)', () => {
     const p = makePregens().find((h) => h.name === 'Frère Anselm')!;
-    p.talents.push({ talentId: 'beni', spec: 'Sigmar', times: 1 });
+    p.talents.push({ talentId: 'beni', spec: 'sigmar', times: 1 });
     p.xp = 0;
     useGame.setState({ party: [p] as Combatant[] });
     useGame.getState().buySpell(p.id, 'benediction-de-puissance'); // Sigmar (LDB 41)
@@ -45,7 +45,7 @@ describe('buySpell', () => {
 
   it('sort de Magie du Chaos : 100 PX ET +1 Point de Corruption', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    w.talents.push({ talentId: 'magie-du-chaos', spec: 'Nurgle', times: 1 });
+    w.talents.push({ talentId: 'magie-du-chaos', spec: 'nurgle', times: 1 });
     w.xp = 200;
     useGame.setState({ party: [w] as Combatant[] });
     useGame.getState().buySpell(w.id, 'flot-de-corruption');

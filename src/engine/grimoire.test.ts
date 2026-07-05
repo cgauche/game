@@ -24,15 +24,15 @@ function hero(p: Partial<Combatant> = {}): Combatant {
 }
 
 describe('casterTalents — extraction des specs', () => {
-  it('« Invocation (Sigmar) » → invocation/Sigmar ; « (Au choix) » → joker', () => {
+  it('« Invocation (Sigmar) » → invocation/sigmar ; « (Au choix) » → joker', () => {
     const c = hero({ talents: [
-      { talentId: 'invocation', spec: 'Sigmar', times: 1 },
+      { talentId: 'invocation', spec: 'sigmar', times: 1 },
       { talentId: 'magie-des-arcanes', spec: 'feu', times: 1 },
       { talentId: 'beni', spec: 'Au choix', times: 1 },
       { talentId: 'magie-mineure', times: 1 },
     ] });
     expect(casterTalents(c)).toEqual([
-      { kind: 'invocation', spec: 'Sigmar' },
+      { kind: 'invocation', spec: 'sigmar' },
       { kind: 'arcane', spec: 'feu' },
       { kind: 'beni', spec: undefined },
       { kind: 'mineure', spec: undefined },
@@ -72,8 +72,8 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
   });
 
   it('Invocation : 1er Miracle inclus (0 PX), puis 100 × connus ; culte exigé', () => {
-    const c = hero({ talents: [{ talentId: 'invocation', spec: 'Sigmar', times: 1 }] });
-    const sigmar = spells.filter((s) => s.type === 'Invocation' && s.subType === 'Sigmar');
+    const c = hero({ talents: [{ talentId: 'invocation', spec: 'sigmar', times: 1 }] });
+    const sigmar = spells.filter((s) => s.type === 'Invocation' && s.subType === 'Sigmar'); // subType = libellé d'affichage
     expect(spellCost(c, sigmar[0])).toBe(0);
     c.spells = [sigmar[0].id];
     expect(spellCost(c, sigmar[1])).toBe(100);
@@ -84,7 +84,7 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
   });
 
   it('Magie du Chaos (Tzeentch) : Sorts du Dieu Sombre choisi à 100 PX ; autre dieu refusé (par id, jamais le libellé)', () => {
-    const c = hero({ talents: [{ talentId: 'magie-du-chaos', spec: 'Tzeentch', times: 1 }] });
+    const c = hero({ talents: [{ talentId: 'magie-du-chaos', spec: 'tzeentch', times: 1 }] });
     const tzeentch = spells.filter((s) => s.family === 'chaos' && s.subType === 'Tzeentch');
     expect(tzeentch.length).toBeGreaterThan(0);
     expect(spellCost(c, tzeentch[0])).toBe(100); // « chaque sort = 100 PX (+1 Corruption) »
@@ -95,8 +95,8 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
   });
 
   it('Béni (Culte) : les SIX Bénédictions du culte à 0 PX, les autres refusées', () => {
-    const c = hero({ talents: [{ talentId: 'beni', spec: 'Shallya', times: 1 }] });
-    expect(blessingsOf('Shallya')).toContain('benediction-de-guerison'); // ids de sort
+    const c = hero({ talents: [{ talentId: 'beni', spec: 'shallya', times: 1 }] });
+    expect(blessingsOf('shallya')).toContain('benediction-de-guerison'); // ids de sort
     expect(spellCost(c, sp('Bénédiction de Guérison'))).toBe(0);
     expect(spellCost(c, sp('Bénédiction de Bataille'))).toBeNull(); // pas chez Shallya (LDB 41)
     const learn = learnableSpells(c);

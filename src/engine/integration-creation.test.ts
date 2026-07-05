@@ -17,10 +17,10 @@ describe('création ↔ Magie (grimoire, LDB 10/41/46)', () => {
   it('un Prêtre créé (Béni) reçoit AUTOMATIQUEMENT les six Bénédictions de son culte (LDB 41)', () => {
     const h = createHero({
       speciesId: 'humains-reiklander', careerId: 'pretre', name: 'P', rng: makeRNG(7),
-      careerTalent: 'Béni (Sigmar)',
+      careerTalent: 'Béni (Sigmar)', // libellé d'affichage en entrée → résolu en id `sigmar` (resolveSpecId)
     });
-    expect(casterTalents(h).some((t) => t.kind === 'beni' && t.spec === 'Sigmar')).toBe(true);
-    for (const b of blessingsOf('Sigmar')) expect(h.spells).toContain(b); // « reçoit les SIX »
+    expect(casterTalents(h).some((t) => t.kind === 'beni' && t.spec === 'sigmar')).toBe(true);
+    for (const b of blessingsOf('sigmar')) expect(h.spells).toContain(b); // « reçoit les SIX »
   });
 
   it('un Sorcier créé (Magie mineure) peut mémoriser des sorts via le grimoire (coûts par bandes)', () => {

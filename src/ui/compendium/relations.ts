@@ -186,7 +186,7 @@ const graph = versionCached<ReverseGraph>(() => {
 
   // 12) Dieux/Cultes → bénédictions + miracles.
   for (const g of gods) {
-    const by: Referrer = { category: 'gods', label: g.key };
+    const by: Referrer = { category: 'gods', label: g.label };
     for (const b of g.blessings) addReverse('spells', b.id, { ...by, detail: 'Bénédiction' }, 'Cultes (Bénédictions / Miracles)');
     for (const mi of g.miracles) addReverse('spells', mi.id, { ...by, detail: 'Miracle' }, 'Cultes (Bénédictions / Miracles)');
     for (const cs of g.chaosSpells ?? []) addReverse('spells', cs.id, { ...by, detail: 'Sort du Chaos' }, 'Cultes (Bénédictions / Miracles)');
@@ -277,7 +277,7 @@ const catalog = versionCached<CatalogEntry[]>(() => {
   pushCatalog('stars', stars);
   pushCatalog('locations', locations as { label: string; source?: { book: string; page: number } }[]);
   pushCatalog('characteristics', characteristics as { label: string }[]);
-  CATALOG.push(...gods.map((g) => ({ category: 'gods', label: g.key, book: g.source?.book, page: g.source?.page })));
+  CATALOG.push(...gods.map((g) => ({ category: 'gods', label: g.label, book: g.source?.book, page: g.source?.page })));
   CATALOG.push(...maladies.map((m) => ({ category: 'maladies', label: m.label })));
   return CATALOG;
 });

@@ -76,16 +76,16 @@ const scene = buildScene({
 
 /** Un dieu à miracles de combat → un Prêtre COMPLET (toutes Bénédictions + Miracles, talents de culte). */
 const PRIESTS: { id: string; name: string; cult: string; chars: Record<string, number>; pos: { x: number; y: number } }[] = [
-  { id: 'pr-sigmar', name: 'Frère Anselm, Grand Prêtre de Sigmar', cult: 'Sigmar', chars: { Soc: 68, FM: 60, F: 45, E: 45 }, pos: { x: 3, y: 4 } },
-  { id: 'pr-ulric', name: "Wulfric, Prêtre d'Ulric", cult: 'Ulric', chars: { Soc: 66, FM: 58, F: 48, E: 48 }, pos: { x: 3, y: 8 } },
-  { id: 'pr-myrmidia', name: 'Valentina, Prêtresse de Myrmidia', cult: 'Myrmidia', chars: { Soc: 64, FM: 58, F: 44, E: 44 }, pos: { x: 3, y: 12 } },
-  { id: 'pr-shallya', name: 'Sœur Helga, Prêtresse de Shallya', cult: 'Shallya', chars: { Soc: 66, FM: 60, F: 38, E: 42 }, pos: { x: 2, y: 16 } },
-  { id: 'pr-morr', name: 'Helmut, Prêtre de Morr', cult: 'Morr', chars: { Soc: 62, FM: 60, F: 42, E: 44 }, pos: { x: 2, y: 19 } },
-  { id: 'pr-taal', name: 'Gunnar, Prêtre de Taal', cult: 'Taal', chars: { Soc: 62, FM: 56, F: 46, E: 46 }, pos: { x: 4, y: 6 } },
-  { id: 'pr-verena', name: 'Adelheid, Prêtresse de Verena', cult: 'Verena', chars: { Soc: 66, FM: 60, F: 40, E: 42 }, pos: { x: 4, y: 10 } },
-  { id: 'pr-manann', name: 'Bjorn, Prêtre de Manann', cult: 'Manann', chars: { Soc: 62, FM: 58, F: 46, E: 46 }, pos: { x: 4, y: 14 } },
-  { id: 'pr-ranald', name: 'Lukas, Prêtre de Ranald', cult: 'Ranald', chars: { Soc: 66, FM: 56, F: 42, E: 42 }, pos: { x: 4, y: 18 } },
-  { id: 'pr-rhya', name: 'Brunhilde, Prêtresse de Rhya', cult: 'Rhya', chars: { Soc: 64, FM: 58, F: 44, E: 46 }, pos: { x: 2, y: 6 } },
+  { id: 'pr-sigmar', name: 'Frère Anselm, Grand Prêtre de Sigmar', cult: 'sigmar', chars: { Soc: 68, FM: 60, F: 45, E: 45 }, pos: { x: 3, y: 4 } },
+  { id: 'pr-ulric', name: "Wulfric, Prêtre d'Ulric", cult: 'ulric', chars: { Soc: 66, FM: 58, F: 48, E: 48 }, pos: { x: 3, y: 8 } },
+  { id: 'pr-myrmidia', name: 'Valentina, Prêtresse de Myrmidia', cult: 'myrmidia', chars: { Soc: 64, FM: 58, F: 44, E: 44 }, pos: { x: 3, y: 12 } },
+  { id: 'pr-shallya', name: 'Sœur Helga, Prêtresse de Shallya', cult: 'shallya', chars: { Soc: 66, FM: 60, F: 38, E: 42 }, pos: { x: 2, y: 16 } },
+  { id: 'pr-morr', name: 'Helmut, Prêtre de Morr', cult: 'morr', chars: { Soc: 62, FM: 60, F: 42, E: 44 }, pos: { x: 2, y: 19 } },
+  { id: 'pr-taal', name: 'Gunnar, Prêtre de Taal', cult: 'taal', chars: { Soc: 62, FM: 56, F: 46, E: 46 }, pos: { x: 4, y: 6 } },
+  { id: 'pr-verena', name: 'Adelheid, Prêtresse de Verena', cult: 'verena', chars: { Soc: 66, FM: 60, F: 40, E: 42 }, pos: { x: 4, y: 10 } },
+  { id: 'pr-manann', name: 'Bjorn, Prêtre de Manann', cult: 'manann', chars: { Soc: 62, FM: 58, F: 46, E: 46 }, pos: { x: 4, y: 14 } },
+  { id: 'pr-ranald', name: 'Lukas, Prêtre de Ranald', cult: 'ranald', chars: { Soc: 66, FM: 56, F: 42, E: 42 }, pos: { x: 4, y: 18 } },
+  { id: 'pr-rhya', name: 'Brunhilde, Prêtresse de Rhya', cult: 'rhya', chars: { Soc: 64, FM: 58, F: 44, E: 46 }, pos: { x: 2, y: 6 } },
 ];
 
 /**
@@ -114,7 +114,7 @@ function makeMagicParty(): Combatant[] {
     pr.appearance.build = 0.5 + (i % 4) * 0.06;
   });
 
-  const flagellant = makeFlagellant(ans, 'pr-flagellant', 'Konrad le Flagellant', 'Ulric', { Soc: 60, FM: 56, CC: 60, F: 52, E: 50 }, { x: 6, y: 10 });
+  const flagellant = makeFlagellant(ans, 'pr-flagellant', 'Konrad le Flagellant', 'ulric', { Soc: 60, FM: 56, CC: 60, F: 52, E: 50 }, { x: 6, y: 10 });
 
   const grunni = clone(pregenParty(PREGEN.tueur)[0]);
   grunni.pos = { x: 6, y: 12 };

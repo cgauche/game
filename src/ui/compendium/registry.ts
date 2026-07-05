@@ -679,7 +679,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'gods', label: 'Dieux', group: 'Magie',
     build: () => gods.map((c) => ({
-      label: c.key, sub: c.title, desc: c.desc, source: c.source ?? null,
+      label: c.label, sub: c.title, desc: c.desc, source: c.source ?? null,
       sections: sections(
         chips('Bénédictions', 'spells', c.blessings.map((b) => refLabel('spells', b))),
         chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),

@@ -22425,7 +22425,7 @@
       {
         "ref": {
           "id": "beni",
-          "spec": "Myrmidia"
+          "spec": "myrmidia"
         }
       },
       {
@@ -22520,7 +22520,7 @@
       {
         "ref": {
           "id": "invocation",
-          "spec": "Myrmidia"
+          "spec": "myrmidia"
         }
       },
       {
@@ -27143,7 +27143,7 @@
       {
         "ref": {
           "id": "beni",
-          "spec": "Manann"
+          "spec": "manann"
         }
       },
       {
@@ -27227,7 +27227,7 @@
       {
         "ref": {
           "id": "invocation",
-          "spec": "Manann"
+          "spec": "manann"
         }
       },
       {
@@ -27729,7 +27729,7 @@
       {
         "ref": {
           "id": "beni",
-          "spec": "Stromfels"
+          "spec": "stromfels"
         }
       },
       {
@@ -27819,7 +27819,7 @@
       {
         "ref": {
           "id": "invocation",
-          "spec": "Stromfels"
+          "spec": "stromfels"
         }
       },
       {

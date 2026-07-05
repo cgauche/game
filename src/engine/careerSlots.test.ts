@@ -197,19 +197,19 @@ describe('désignation d\'un emplacement de Groupe d\'arme par specId (données 
 });
 
 describe('wildcardSpecs — specs valides à joker (SOURCE UNIQUE créateur + avancement)', () => {
-  it('Béni → cultes du registre (dont les dieux gnomes NADJ)', () => {
+  it('Béni → cultes du registre (ids ; dont les dieux gnomes NADJ)', () => {
     const s = wildcardSpecs('Béni');
-    expect(s).toContain('Sigmar');
-    expect(s).toContain('Evawn');
+    expect(s).toContain('sigmar');
+    expect(s).toContain('evawn');
   });
   it('Magie des Arcanes → ids de domaine (specs id-based, data-driven)', () => {
     expect(wildcardSpecs('Magie des Arcanes')).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
   });
-  it('Magie du Chaos → Nurgle / Slaanesh / Tzeentch', () => {
-    expect(wildcardSpecs('Magie du Chaos').sort()).toEqual(['Nurgle', 'Slaanesh', 'Tzeentch']);
+  it('Magie du Chaos → ids nurgle / slaanesh / tzeentch', () => {
+    expect(wildcardSpecs('Magie du Chaos').sort()).toEqual(['nurgle', 'slaanesh', 'tzeentch']);
   });
-  it('Invocation → cultes (subType des Invocations)', () => {
-    expect(wildcardSpecs('Invocation')).toContain('Sigmar');
+  it('Invocation → cultes (ids)', () => {
+    expect(wildcardSpecs('Invocation')).toContain('sigmar');
   });
   it('libellé sans domaine/culte/specs → []', () => {
     expect(wildcardSpecs('Inexistant-xyz')).toEqual([]);

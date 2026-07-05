@@ -209,7 +209,7 @@ export function specEntryLabel(e: SpecEntry): string {
  *  corps / Projectiles — ids de `weaponGroups.json` filtrés par `combat`), `winds` (Focalisation —
  *  Domaines à `wind` de `domains.json`, AFFICHE le Vent), `arcaneDomains` (Magie des Arcanes — Domaines
  *  `arcane` de `domains.json`, AFFICHE le Lore), `cultBlessings`/`cultMiracles`/`cultChaos` (Béni /
- *  Invocation / Magie du Chaos — `gods.key` filtrés par `blessings`/`miracles`/`chaosSpells`, AFFICHE le
+ *  Invocation / Magie du Chaos — `gods.id` filtrés par `blessings`/`miracles`/`chaosSpells`, AFFICHE le
  *  nom du dieu), `seaShanties` (Chanson de marin — ids de `sea-shanties.json`). Sources d'ARGUMENT de Trait
  *  (Immunité, Peur, Vulnérabilité, Mutation, Souffle…) : `groups` (Groupe d'appartenance — `groups.json`),
  *  `diseases` (Maladie — `maladies.json`), `sizes` (catégorie de Taille — `engine/size`), `mutations`
@@ -323,7 +323,7 @@ export interface TalentData {
   specs?: SpecEntry[];
   /** Source du pool de spéc (via `SPEC_SOURCES`/`specIdsOf`/`specLabel`) : `arcaneDomains` (Magie des
    *  Arcanes → Domaines `arcane` de `domains.json`, AFFICHE le Lore), `cultBlessings`/`cultMiracles`/
-   *  `cultChaos` (Béni / Invocation / Magie du Chaos → `gods.key` filtrés, AFFICHE le nom du dieu) ou
+   *  `cultChaos` (Béni / Invocation / Magie du Chaos → `gods.id` filtrés, AFFICHE le nom du dieu) ou
    *  `seaShanties` (Chanson de marin). Quand présent, `specs[]` est ABSENT (le pool dérive). */
   specsSource?: SpecsSource;
   /** Le domaine de ce Talent accepte-t-il un TEXTE LIBRE hors `specs[]` ? Même sémantique que
@@ -1370,10 +1370,12 @@ export function findLocationById(id: string | null | undefined): LocationData | 
   return id ? LOCATION_BY_ID.get(id) : undefined;
 }
 export const books = booksJson as BookData[];
-/** Culte/Dieu (LDB 41) : `key` = clé STABLE (« Sigmar »), Bénédictions/Miracles en `Ref[]` (sorts par id),
- *  desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace les `cults/defs/*.ts` (codegen retiré). */
+/** Culte/Dieu (LDB 41) : `id` = slug STABLE (« sigmar »), `label` = nom affiché (« Sigmar »), Bénédictions/
+ *  Miracles en `Ref[]` (sorts par id), desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace
+ *  les `cults/defs/*.ts` (codegen retiré). */
 export interface GodData {
-  key: string;
+  id: string;
+  label: string;
   title?: string;
   blessings: Ref[];
   miracles: Ref[];
@@ -1660,16 +1662,20 @@ export const MANEUVER_BY_ID = new Map(maneuvers.map((m) => [m.id, m]));
 export function findManeuverById(id: string): ManeuverDef | undefined {
   return MANEUVER_BY_ID.get(id);
 }
-const GOD_BY_KEY = new Map(gods.map((g) => [g.key, g]));
-/** Résout un Culte/Dieu par sa clé STABLE (« Sigmar »). */
-export function findGodById(key: string): GodData | undefined {
-  return GOD_BY_KEY.get(key);
+const GOD_BY_ID = new Map(gods.map((g) => [g.id, g]));
+/** Résout un Culte/Dieu par son id STABLE (« sigmar »). */
+export function findGodById(id: string): GodData | undefined {
+  return GOD_BY_ID.get(id);
 }
-/** Clés des cultes À BÉNÉDICTIONS, triées — DÉRIVÉ de la donnée (choix de culte du joker
+/** Libellé affiché d'un Culte/Dieu (id → « Sigmar ») ; id inconnu → l'id lui-même. */
+export function godLabel(id: string): string {
+  return findGodById(id)?.label ?? id;
+}
+/** Ids des cultes À BÉNÉDICTIONS, triés — DÉRIVÉ de la donnée (choix de culte du joker
  *  « Béni (Au choix) » à la création/avancement). Les fiches de SAVEUR (dieux nains/elfes/halflings,
  *  provinciaux, Puissances de la Ruine) n'accordent ni Bénédictions ni Miracles (LDB 37 l.17,
  *  LDB 36 l.9) → exclues de tout choix de Prière. */
-export const CULT_KEYS: string[] = gods.filter((g) => g.blessings.length > 0).map((g) => g.key).sort();
+export const CULT_IDS: string[] = gods.filter((g) => g.blessings.length > 0).map((g) => g.id).sort();
 /** Les six Bénédictions d'un culte, IDS de sort (le runtime/grimoire compare par id ; l'UI résout en
  *  libellé). Culte inconnu → []. */
 export function blessingsOf(cult: string): string[] {
@@ -1739,9 +1745,9 @@ export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: str
   weaponGroupsRanged: { pool: () => weaponGroups.filter((g) => g.combat === 'ranged').map((g) => g.id), label: (id) => weaponGroupLabel(id), resolves: (id) => !!findWeaponGroupById(id) },
   winds:         { pool: () => domains.filter((d) => d.wind).map((d) => d.id),   label: (id) => findDomainById(id)?.wind ?? findDomainById(id)?.label ?? id, resolves: (id) => !!findDomainById(id) },
   arcaneDomains: { pool: () => domains.filter((d) => d.arcane).map((d) => d.id), label: (id) => findDomainById(id)?.label ?? id, resolves: (id) => !!findDomainById(id) },
-  cultBlessings: { pool: () => gods.filter((g) => g.blessings.length).map((g) => g.key).sort(),  label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
-  cultMiracles:  { pool: () => gods.filter((g) => g.miracles.length).map((g) => g.key).sort(),   label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
-  cultChaos:     { pool: () => gods.filter((g) => (g.chaosSpells?.length ?? 0) > 0).map((g) => g.key).sort(), label: (id) => findGodById(id)?.key ?? id, resolves: (id) => !!findGodById(id) },
+  cultBlessings: { pool: () => gods.filter((g) => g.blessings.length).map((g) => g.id).sort(),  label: (id) => godLabel(id), resolves: (id) => !!findGodById(id) },
+  cultMiracles:  { pool: () => gods.filter((g) => g.miracles.length).map((g) => g.id).sort(),   label: (id) => godLabel(id), resolves: (id) => !!findGodById(id) },
+  cultChaos:     { pool: () => gods.filter((g) => (g.chaosSpells?.length ?? 0) > 0).map((g) => g.id).sort(), label: (id) => godLabel(id), resolves: (id) => !!findGodById(id) },
   seaShanties:   { pool: () => seaShanties.map((s) => s.id), label: (id) => findSeaShantyById(id)?.label ?? id, resolves: (id) => !!findSeaShantyById(id) },
   groups:        { pool: () => groups.map((g) => g.id),       label: (id) => groupLabel(id),       resolves: (id) => !!findGroupById(id) },
   diseases:      { pool: () => maladies.map((m) => m.id),     label: (id) => diseaseLabel(id),     resolves: (id) => !!findDiseaseById(id) },

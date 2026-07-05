@@ -69,7 +69,7 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
     // Talent du MÊME Domaine (`t.spec` = id de domaine = `spell.domainId`) ou un Talent non spécialisé.
     return talents.find((t) => t.kind === 'arcane' && (spell.domainId == null || t.spec == null || t.spec === spell.domainId));
   }
-  // Invocation/Béni/Chaos : la spec du Talent est un CULTE/Dieu (`gods.key`, id STABLE) ; l'appartenance
+  // Invocation/Béni/Chaos : la spec du Talent est un CULTE/Dieu (`gods.id`, id STABLE) ; l'appartenance
   // sort→dieu est portée en IDS par `gods.json` (miracles/blessings/chaosSpells) — JAMAIS par le `subType`
   // (libellé d'affichage). Spec absente (« Au choix » non assigné) = joker → tout sort de la famille.
   if (fam === 'invocation') return talents.find((t) => t.kind === 'invocation' && (t.spec == null || miraclesOf(t.spec).includes(spell.id)));

@@ -10961,7 +10961,7 @@
     "talents": [
       {
         "id": "beni",
-        "spec": "Shallya"
+        "spec": "shallya"
       },
       {
         "id": "affable"
@@ -12444,7 +12444,7 @@
     "talents": [
       {
         "id": "beni",
-        "spec": "Sigmar"
+        "spec": "sigmar"
       },
       {
         "id": "ferveur-ardente"
@@ -12459,7 +12459,7 @@
       },
       {
         "id": "invocation",
-        "spec": "Sigmar"
+        "spec": "sigmar"
       },
       {
         "id": "lire-ecrire"
@@ -12763,7 +12763,7 @@
     "talents": [
       {
         "id": "beni",
-        "spec": "Ulric"
+        "spec": "ulric"
       },
       {
         "id": "ferveur-ardente"
@@ -12778,7 +12778,7 @@
       },
       {
         "id": "invocation",
-        "spec": "Ulric"
+        "spec": "ulric"
       },
       {
         "id": "lire-ecrire"
@@ -13090,7 +13090,7 @@
     "talents": [
       {
         "id": "beni",
-        "spec": "Verena"
+        "spec": "verena"
       },
       {
         "id": "lecture-rapide"
@@ -13101,7 +13101,7 @@
       },
       {
         "id": "invocation",
-        "spec": "Verena"
+        "spec": "verena"
       },
       {
         "id": "lire-ecrire"
@@ -15685,7 +15685,7 @@
     "talents": [
       {
         "id": "beni",
-        "spec": "Ranald"
+        "spec": "ranald"
       },
       {
         "id": "affable"
@@ -20247,7 +20247,7 @@
       },
       {
         "id": "beni",
-        "spec": "Taal"
+        "spec": "taal"
       },
       {
         "id": "nomade"
@@ -20432,11 +20432,11 @@
       },
       {
         "id": "beni",
-        "spec": "Taal"
+        "spec": "taal"
       },
       {
         "id": "invocation",
-        "spec": "Taal"
+        "spec": "taal"
       },
       {
         "id": "sens-de-l-orientation"
@@ -49191,7 +49191,7 @@
     "traits": [
       {
         "id": "beni",
-        "arg": "Taal"
+        "arg": "taal"
       },
       {
         "id": "foulee"
@@ -49210,7 +49210,7 @@
       },
       {
         "id": "miracles",
-        "arg": "Taal"
+        "arg": "taal"
       },
       {
         "id": "protection",
@@ -49537,7 +49537,7 @@
       },
       {
         "id": "beni",
-        "arg": "Déesse-Araignée"
+        "arg": "deesse-araignee"
       },
       {
         "id": "immunite",
@@ -49548,7 +49548,7 @@
       },
       {
         "id": "miracles",
-        "arg": "Déesse-Araignée"
+        "arg": "deesse-araignee"
       },
       {
         "id": "peur",
@@ -57963,7 +57963,7 @@
       },
       {
         "id": "beni",
-        "spec": "Ulric"
+        "spec": "ulric"
       },
       {
         "id": "destinee",
@@ -57971,7 +57971,7 @@
       },
       {
         "id": "invocation",
-        "spec": "Ulric"
+        "spec": "ulric"
       },
       {
         "id": "lire-ecrire"
@@ -58152,7 +58152,7 @@
       },
       {
         "id": "magie-du-chaos",
-        "spec": "Tzeentch"
+        "spec": "tzeentch"
       },
       {
         "id": "magie-des-arcanes",
@@ -59227,7 +59227,7 @@
       },
       {
         "id": "beni",
-        "spec": "Ulric"
+        "spec": "ulric"
       },
       {
         "id": "chat-de-gouttiere"
@@ -61057,7 +61057,7 @@
       },
       {
         "id": "beni",
-        "arg": "Manann"
+        "arg": "manann"
       },
       {
         "id": "champion"

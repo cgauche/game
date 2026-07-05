@@ -24,7 +24,7 @@ describe('relations — graphe inverse id-based', () => {
     const spellId = g.blessings[0].id;
     const groups = reverseGroups('spells', spellId);
     const godGroup = groups.find((gr) => gr.category === 'gods');
-    expect(godGroup?.referrers.some((r) => r.label === g.key && r.detail === 'Bénédiction')).toBe(true);
+    expect(godGroup?.referrers.some((r) => r.label === g.label && r.detail === 'Bénédiction')).toBe(true);
   });
 
   it('qualité → équipements la portant (inversion de trapping.qualities)', () => {

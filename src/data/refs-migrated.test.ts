@@ -256,15 +256,15 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     it('skills.json/talents.json : specsSource migré → pool DÉRIVÉ (aucun specs[] inline), ids connus du registre', () => {
       const WEAPON_GROUP_IDS = new Set(weaponGroups.map((g) => g.id));
       const DOMAIN_IDS = new Set(domains.map((d) => d.id));
-      const GOD_KEYS = new Set(gods.map((g) => g.key));
+      const GOD_IDS = new Set(gods.map((g) => g.id));
       const cases: [ 'skills' | 'talents', string, SpecsSource, (id: string) => boolean ][] = [
         ['skills', 'corps-a-corps', 'weaponGroupsMelee', (id) => WEAPON_GROUP_IDS.has(id)],
         ['skills', 'projectiles', 'weaponGroupsRanged', (id) => WEAPON_GROUP_IDS.has(id)],
         ['skills', 'focalisation', 'winds', (id) => DOMAIN_IDS.has(id)],
         ['talents', 'magie-des-arcanes', 'arcaneDomains', (id) => DOMAIN_IDS.has(id)],
-        ['talents', 'invocation', 'cultMiracles', (id) => GOD_KEYS.has(id)],
-        ['talents', 'magie-du-chaos', 'cultChaos', (id) => GOD_KEYS.has(id)],
-        ['talents', 'beni', 'cultBlessings', (id) => GOD_KEYS.has(id)],
+        ['talents', 'invocation', 'cultMiracles', (id) => GOD_IDS.has(id)],
+        ['talents', 'magie-du-chaos', 'cultChaos', (id) => GOD_IDS.has(id)],
+        ['talents', 'beni', 'cultBlessings', (id) => GOD_IDS.has(id)],
         ['talents', 'chanson-de-marin', 'seaShanties', (id) => !!findSeaShantyById(id)],
       ];
       for (const [cat, id, source, ok] of cases) {

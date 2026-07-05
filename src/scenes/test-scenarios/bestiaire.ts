@@ -89,7 +89,7 @@ export const scenario: TestScenario = {
   makeParty: () => {
     const heroes = makeShowcaseParty().map((c, i) => mutate(c, LOTS[i] ?? [])); // 4 héros mutés
     const ans = pregenParty(PREGEN.pretre)[0];
-    const shallya = makePriest(ans, 'h-shallya', 'Sœur Greta, Prêtresse de Shallya', 'Shallya', { Soc: 66, FM: 60, F: 40, E: 44 });
+    const shallya = makePriest(ans, 'h-shallya', 'Sœur Greta, Prêtresse de Shallya', 'shallya', { Soc: 66, FM: 60, F: 40, E: 44 });
     return [...heroes, shallya];
   },
   scene,

@@ -68,9 +68,9 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
   });
 
   it('Talent Béni(Sigmar/Ulric) → Groupe religieux (comble le trou Phase 2 : sigmarite n’était dérivé de rien)', () => {
-    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'Sigmar' }] })).toContain('sigmarite');
-    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'Ulric' }] })).toContain('ulricain');
-    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'Manann' }] })).toEqual([]); // culte sans Groupe dédié
+    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'sigmar' }] })).toContain('sigmarite');
+    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'ulric' }] })).toContain('ulricain');
+    expect(groupsFor({ talents: [{ talentId: 'beni', spec: 'manann' }] })).toEqual([]); // culte sans Groupe dédié
     expect(groupsFor({ talents: [{ talentId: 'autre-talent' }] })).toEqual([]); // pas Béni → rien
   });
 
