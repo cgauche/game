@@ -1,7 +1,7 @@
 /**
  * Couche ÉCONOMIQUE des qualités d'OBJET (artisanat, LDB 60 l.43-92). Pure, sans état :
  * renvoie des FACTEURS / déltas que le Marchand (#2) applique aux prix/disponibilités catalogue.
- * N'agit que sur les qualités `subType: 'Objet'` (les qualités d'arme/armure n'altèrent pas le prix).
+ * N'agit que sur les qualités `subType: 'objet'` (les qualités d'arme/armure n'altèrent pas le prix).
  */
 import { resolveQualities, type QualityCarrier } from './dispatch';
 import type { Availability } from '../types';
@@ -9,7 +9,7 @@ import type { Availability } from '../types';
 /** Échelle du plus COURANT au plus RARE (LDB 59). */
 export const AVAILABILITY_LADDER: Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
 
-const craftDefs = (c: QualityCarrier | undefined) => resolveQualities(c).filter((r) => r.data?.subType === 'Objet');
+const craftDefs = (c: QualityCarrier | undefined) => resolveQualities(c).filter((r) => r.data?.subType === 'objet');
 
 /** Nombre d'Atouts d'objet (multiplicité = répétition dans la liste). */
 export function craftAtoutCount(c: QualityCarrier | undefined): number {

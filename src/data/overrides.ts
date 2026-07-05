@@ -11,7 +11,7 @@
  */
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
-  qualities, mutations, mutationTables, trappings, weaponGroups, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
+  qualities, qualitySubtypes, mutations, mutationTables, trappings, weaponGroups, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
   pregens, oups, interludeEvents, peripeties, details, names,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
 } from './index';
@@ -19,7 +19,7 @@ import {
 /** Datasets-tableaux mutables (clé éditeur → MÊME référence d'array que l'export de la façade). */
 const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
-  qualities, mutations, mutationTables, trappings, weaponGroups, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
+  qualities, qualitySubtypes, mutations, mutationTables, trappings, weaponGroups, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
   pregens, oups, interludeEvents, peripeties,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
 } as const;

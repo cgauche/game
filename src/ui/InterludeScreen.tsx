@@ -38,8 +38,8 @@ import { t } from '../i18n';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
  *  qualités d'Objet) par `id` ; tooltips/libellés via le registre (`describeQuality`). */
-const ATOUTS = qualities.filter((q) => q.type === 'Atout' && q.subType === 'Objet').map((q) => q.id);
-const DEFAUTS = qualities.filter((q) => q.type === 'Défaut' && q.subType === 'Objet').map((q) => q.id);
+const ATOUTS = qualities.filter((q) => q.type === 'Atout' && q.subType === 'objet').map((q) => q.id);
+const DEFAUTS = qualities.filter((q) => q.type === 'Défaut' && q.subType === 'objet').map((q) => q.id);
 /** Libellé + desc d'une qualité d'artisanat par id (registre via `describeQuality`). */
 const craftQual = (id: string) => describeQuality({ id }) ?? { label: id, desc: undefined };
 

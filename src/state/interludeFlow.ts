@@ -606,7 +606,7 @@ function falseQualities(item: { kind: string; qualities: QualityInstance[] }, co
   const have = new Set(item.qualities.map((q) => q.id)); // qualités RÉELLEMENT portées (par id)
   const pool = qualities
     .filter((q) => q.type === 'Atout')
-    .filter((q) => (item.kind === 'armor' ? q.subType !== 'Arme' : q.subType !== 'Armure'))
+    .filter((q) => (item.kind === 'armor' ? q.subType !== 'arme' : q.subType !== 'armure'))
     .filter((q) => !have.has(q.id)) // dédup par ID (corrige le bug : comparait un libellé à un tableau d'ids)
     .map((q) => q.label);
   const out: string[] = [];

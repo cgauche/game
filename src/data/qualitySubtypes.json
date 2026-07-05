@@ -1,0 +1,14 @@
+[
+  {
+    "id": "arme",
+    "label": "Arme"
+  },
+  {
+    "id": "armure",
+    "label": "Armure"
+  },
+  {
+    "id": "objet",
+    "label": "Objet"
+  }
+]

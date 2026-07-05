@@ -50,7 +50,7 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   // d'`species.json` est `races`, pas `species` ; un nom de champ unique évite de la coder en dur).
   refChar: { vocabFrom: 'species.refChar' },
   refCareer: { vocabFrom: 'species.refCareer' },
-  'qualities.subType': { vocabFrom: 'qualities.subType' },
+  'qualities.subType': { ds: 'qualitySubtypes', single: true },
 };
 
 /** Résout la config d'un champ : clé (catégorie, champ) puis repli global par champ. */

@@ -31,6 +31,7 @@ import seaShantiesJson from './sea-shanties.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
 import weaponGroupsJson from './weaponGroups.json';
+import qualitySubtypesJson from './qualitySubtypes.json';
 import groupsJson from './groups.json';
 import creaturesJson from './creatures.json';
 import spellsJson from './spells.json';
@@ -1472,6 +1473,18 @@ export interface TalentRef extends Ref {
 export function talentRefLabel(ref: TalentRef): string {
   return refLabel('talents', ref) + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
 }
+/** Sous-type d'une QUALITÉ (classification RAW : qualités d'Arme LDB 62, d'Armure LDB 63, d'Objet). */
+export interface QualitySubtypeData { id: string; label: string; }
+export const qualitySubtypes = qualitySubtypesJson as QualitySubtypeData[];
+const QUALITY_SUBTYPE_BY_ID = new Map(qualitySubtypes.map((s) => [s.id, s]));
+/** Résout un sous-type de Qualité par son `id` STABLE (= `QualityData.subType`). */
+export function findQualitySubtypeById(id: string | null | undefined): QualitySubtypeData | undefined {
+  return id ? QUALITY_SUBTYPE_BY_ID.get(id) : undefined;
+}
+/** Libellé d'affichage d'un sous-type de Qualité par son id (repli sur l'id). SOURCE UNIQUE du nom. */
+export function qualitySubtypeLabel(id: string | null | undefined): string {
+  return id ? (QUALITY_SUBTYPE_BY_ID.get(id)?.label ?? id) : '';
+}
 const WEAPON_GROUP_BY_ID = new Map(weaponGroups.map((g) => [g.id, g]));
 /** Résout un Groupe d'objet par son `id` STABLE (= `subType` d'un trapping/Weapon/ItemInstance). */
 export function findWeaponGroupById(id: string | null | undefined): WeaponGroupData | undefined {
@@ -1596,6 +1609,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'talents': return findTalentById(id);
     case 'trappings': return findTrappingById(id);
     case 'weaponGroups': return findWeaponGroupById(id);
+    case 'qualitySubtypes': return findQualitySubtypeById(id);
     case 'groups': return findGroupById(id);
     case 'qualities': return findQualityById(id);
     case 'spells': return findSpellById(id);
