@@ -39,7 +39,7 @@ import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll } from '../engine/tests';
+import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll } from '../engine/tests';
 import { d100 } from '../engine/dice';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
@@ -491,9 +491,9 @@ export const FLOWS = {
     resolve: (s, _r, _actor, _get, forced, p) => {
       if (!p) return null;
       if (forced) {
-        // Résilience « Je ne faillirai pas ! » : Round garanti réussi (dé 01 → DR max), LDB 17 l.73.
-        const e = evaluateTest(1, p.target);
-        return { result: { roll: 1, sl: e.sl, success: true } };
+        // Résilience « Je ne faillirai pas ! » : Round garanti réussi (dé MEILLEUR → DR max), LDB 17 l.73.
+        const die = bestForcedRoll(p.target);
+        return { result: { roll: die, sl: evaluateTest(die, p.target).sl, success: true } };
       }
       // Cible déjà ajustée à la difficulté → Test « +0 » sur `p.target`.
       const t = rollTest(p.target, 'intermediaire', battleRng());
@@ -531,7 +531,7 @@ export const FLOWS = {
         // choisissez le résultat ». Dé CHOISI (`forced.roll`, picker des Peurs étendues — le DR gagné
         // suit le dé) sinon dé PAR DÉFAUT (01 → DR maximal). Le choix doit RESTER une réussite. En Test
         // OPPOSÉ, le défenseur RÉSISTE (binaire, comme `disengage` forcé) — l'attaquant figé ne l'emporte plus.
-        const die = forced.roll != null ? Math.min(Math.max(1, forced.roll), maxForcedRoll(st.target)) : 1;
+        const die = forced.roll != null ? Math.min(Math.max(1, forced.roll), maxForcedRoll(st.target)) : bestForcedRoll(st.target);
         const e = evaluateTest(die, st.target);
         return { result: { roll: die, target: st.target, sl: e.sl, success: true } };
       }
@@ -591,9 +591,10 @@ export const FLOWS = {
       const value = testValue(actor, 'corps-a-corps'); // Bagarre (CC + avances)
       const bf = bonus(effectiveChar(actor, 'F'));
       if (forced) {
-        // Résilience « Je ne faillirai pas ! » : DR maximal (dé 01) → dégâts max (LDB 17 l.73).
-        const sl = evaluateTest(1, value).sl;
-        return { result: { roll: 1, target: value, sl, damage: Math.max(0, sl + bf - p.doorBE) } };
+        // Résilience « Je ne faillirai pas ! » : DR maximal (dé MEILLEUR) → dégâts max (LDB 17 l.73).
+        const die = bestForcedRoll(value);
+        const sl = evaluateTest(die, value).sl;
+        return { result: { roll: die, target: value, sl, damage: Math.max(0, sl + bf - p.doorBE) } };
       }
       const t = rollTest(value, 'intermediaire', battleRng());
       return { result: { roll: t.roll, target: t.target, sl: t.sl, damage: Math.max(0, t.sl + bf - p.doorBE) } };
@@ -825,15 +826,17 @@ export const FLOWS = {
         // connue post-jet) ou plancher DR 1 pré-jet. Mirroir de `focus`/`disengage` forcés.
         if (p.result?.success) return null;
         const base = p.result;
-        const sl = base?.target != null ? Math.max(evaluateTest(1, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
-        return { result: { roll: 1, target: base?.target ?? 0, success: true, sl, isDouble: isDoubleRoll(1) } };
+        const die = base?.target != null ? bestForcedRoll(base.target) : 1;
+        const sl = base?.target != null ? Math.max(evaluateTest(die, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
+        return { result: { roll: die, target: base?.target ?? 0, success: true, sl, isDouble: isDoubleRoll(die) } };
       }
       return { result: rollManeuverAttacker(actor, stat, battleRng(), maneuverAttackerDifficulty(p.kind)) };
     },
     failed: (p) => !!p.result && !p.result.success,
     bonus: {
       guard: (p) => !!p.result,
-      derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1, success: true } } : null),
+      // Chance « +1 DR » (LDB 17 l.26) : +1 Degré ne transforme PAS un échec en réussite (LDB 17 l.84).
+      derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1, success: p.result.roll <= p.result.target } } : null),
     },
   }),
 
@@ -908,10 +911,11 @@ export const FLOWS = {
       if (forced) {
         const base = p.result;
         // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, le choix
-        // rationnel est 01 → DR MAXIMUM quand la cible du Test est connue (post-échec) ;
-        // pré-jet (résultat synthétique sans cible), plancher DR 1 comme avant.
-        const sl = base?.target != null ? Math.max(evaluateTest(1, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
-        return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: 1, target: base?.target, sl, log: `${actor.name} force la focalisation (Résilience).` } };
+        // rationnel = LE MEILLEUR dé (`bestForcedRoll`, policy-aware) → DR MAXIMUM quand la cible du
+        // Test est connue (post-échec) ; pré-jet (résultat synthétique sans cible), plancher DR 1 comme avant.
+        const die = base?.target != null ? bestForcedRoll(base.target) : 1;
+        const sl = base?.target != null ? Math.max(evaluateTest(die, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
+        return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: die, target: base?.target, sl, log: `${actor.name} force la focalisation (Résilience).` } };
       }
       const spell = findSpellById(p.spellId);
       if (!spell) return null;
@@ -1016,10 +1020,15 @@ export const FLOWS = {
     resolve: (_s, p, _actor, _get, forced) => {
       if (forced) {
         if (p.success) return null; // rien à forcer si déjà réussi
-        // Résilience « vous choisissez le résultat » (LDB 17 l.73) : 01 → DR MAXIMUM. En Test COMBINÉ, le
-        // jet forcé 01 réussit les DEUX cibles → niveau `full` ; en tenue, le PJ l'emporte sur l'opposition.
-        const primary = { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1), forced: true };
-        if (p.target2 != null) return { ...primary, success2: true, sl2: Math.max(evaluateTest(1, p.target2).sl, 1), combinedLevel: 'full' as const };
+        // Résilience « vous choisissez le résultat » (LDB 17 l.73) : LE MEILLEUR dé (`bestForcedRoll`,
+        // policy-aware) → DR MAXIMUM. En Test COMBINÉ, le jet forcé doit réussir les DEUX cibles → dé ≤
+        // min(cibles) (`bestForcedRoll(min)`) → niveau `full` ; en tenue, le PJ l'emporte sur l'opposition.
+        const die = bestForcedRoll(p.target);
+        const primary = { roll: die, success: true, sl: Math.max(evaluateTest(die, p.target).sl, 1), forced: true };
+        if (p.target2 != null) {
+          const die2 = bestForcedRoll(Math.min(p.target, p.target2));
+          return { roll: die2, success: true, sl: Math.max(evaluateTest(die2, p.target).sl, 1), success2: true, sl2: Math.max(evaluateTest(die2, p.target2).sl, 1), combinedLevel: 'full' as const, forced: true };
+        }
         if (p.battle === 'round' && p.enemyValue != null) return { ...primary, enemySL: Math.min(-1, (p.enemySL ?? 0)) };
         return primary;
       }
@@ -1126,11 +1135,12 @@ export const FLOWS = {
       if (forced) {
         if (p.success) return null; // (ancien `force.guard : !p.success`) — rien à forcer si déjà réussi
         // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double sur un Test de
-        // compétence, le choix rationnel est 01 → DR MAXIMUM (les talents à bonus de DR s'ajoutent
-        // comme sur un jet naturel, le seuil `requireSL` reste garanti).
+        // compétence, le choix rationnel = LE MEILLEUR dé (`bestForcedRoll`, policy-aware) → DR MAXIMUM
+        // (les talents à bonus de DR s'ajoutent comme sur un jet naturel, le seuil `requireSL` reste garanti).
+        const die = bestForcedRoll(p.target);
         return {
-          roll: 1, success: true,
-          sl: Math.max(evaluateTest(1, p.target).sl + tDR, p.requireSL, 1),
+          roll: die, success: true,
+          sl: Math.max(evaluateTest(die, p.target).sl + tDR, p.requireSL, 1),
           forced: true,
         };
       }

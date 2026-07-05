@@ -1,13 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { setRule, resetRule } from '../engine/policy';
 
 /** Enfoncer une porte à PLUSIEURS (EDO Appendice 2, « Portes ») — flux multi PARALLÈLE, métier =
  *  DÉGÂTS sur objet (BE / B). Chaque héros frappe indépendamment (Bagarre → DR + BF − BE) avec son
  *  propre cycle d'influence ; la somme ronge les Blessures jusqu'à céder. Objets : PAS de minimum 1. */
 describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingForceDoor: null, flags: {} }); });
+  afterEach(() => resetRule('test-fast-sl'));
 
   function heroes() {
     const mk = (name: string, seed: number) => {
@@ -53,5 +55,23 @@ describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () 
     const r = useGame.getState().pendingForceDoor!.participants[0].result!;
     expect(r.damage).toBeGreaterThan(0);
     expect(useGame.getState().party[0].resilience).toBe(1); // 1 Point de Résilience dépensé (le SIEN)
+  });
+
+  // Non-régression : le dé PAR DÉFAUT de la Résilience doit être policy-aware (`bestForcedRoll`). En Fast DR
+  // (LDB 12 l.128, DR = dizaines du JET), l'ancien `1` codé en dur donnait le DR MINIMAL (planché à 1) au lieu
+  // du MAXIMAL. RAW LDB 17 l.68/73 « vous choisissez le résultat » = LE MEILLEUR → dizaines de la cible.
+  it('Fast DR : le dé forcé vise le DR MAXIMAL (dizaines de la cible), PAS 1', () => {
+    setRule('test-fast-sl', true); // règle optionnelle : sur une réussite, DR = dizaines du jet
+    const [a] = heroes();
+    a.characteristics.CC = 65; // Bagarre (Corps à corps) → cible ~65 (dizaines 6)
+    useGame.setState({ party: [a] });
+    useGame.getState().startForceDoor({ label: 'Porte', doorBE: 0, doorB: 80, heroIds: [a.id] });
+    useGame.getState().forceDoorForceSuccess(a.id); // « Je ne faillirai pas ! »
+    const r = useGame.getState().pendingForceDoor!.participants[0].result!;
+    const maxDR = Math.floor(Math.min(r.target, 95) / 10); // dizaines de la cible = DR forcé MAXIMAL
+    expect(maxDR).toBeGreaterThan(1);   // cible élevée → DR max clairement > 1
+    expect(r.sl).toBe(maxDR);           // DR forcé = MAXIMAL (dizaines de la cible)...
+    expect(r.sl).not.toBe(1);           // ...et PAS le DR minimal (bug du dé 01 codé en dur en Fast DR)
+    expect(r.roll).not.toBe(1);         // le dé forcé n'est plus 01 : c'est le plus haut valide
   });
 });
