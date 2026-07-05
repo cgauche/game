@@ -105,8 +105,8 @@ export interface Disease {
   gangreneFails?: number;
   /** Gangrène : la Localisation est devenue inutilisable (Amputation requise — journalisé). */
   gangreneLost?: boolean;
-  /** Bénédiction de Convalescence reçue (LDB 41 : « une fois par maladie et par personne ») —
-   *  approximation : une fois par maladie. */
+  /** Bénédiction de Convalescence reçue (LDB 41 : « une fois par maladie et par personne » — le champ
+   *  vit sur l'instance de Disease, qui appartient à un seul Combatant). */
   convalescenceBlessed?: boolean;
   /** Cascade de nuit : le Test « persistant » de fin de durée est DIFFÉRÉ (étape influençable) ; la
    *  maladie reste en attente de résolution jusqu'à la validation de l'étape (`applyDiseasePersist`). */
