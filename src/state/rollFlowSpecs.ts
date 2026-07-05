@@ -181,6 +181,14 @@ function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { 
   };
 }
 
+/** Une Activité/Scène de bataille est-elle GAGNÉE ? Test COMBINÉ (l.75/102) : `full` seulement — un
+ *  `partial` (skill-1 réussie mais skill-2 ratée) est un ÉCHEC GLOBAL RAW (LDB 12 l.229). Tenue (l.161,
+ *  Test opposé) et cas simple → le `success` du résolveur (opposition `enemySL ≤ 0` / réussite numérique).
+ *  Gouverne le GARDE de la Résilience (rien à forcer si déjà gagné), en écho au `failed` du flux `activity`. */
+function activityWon(p: PendingActivity): boolean {
+  return p.combinedLevel != null ? p.combinedLevel === 'full' : p.success;
+}
+
 export const FLOWS = {
   /**
    * Attaque (modale différée). Le JET INITIAL reste métier (`attackRoll` : +1 Avantage si cible
@@ -1048,49 +1056,71 @@ export const FLOWS = {
     // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68, `caps.forced` + verbe `forceSuccess`) ; Chance
     // « +1 DR » (success intact). Cas simple + combiné/opposé unifiés dans `resolve`/`bonus` (pas de lentille :
     // le combiné/opposé porte deux issues, hors du cadre mono-jet de la lentille).
+    // PAS de `picker` (dé CHOISI) : un Test d'Activité/Scène n'a AUCUN Coup Critique (concept de COMBAT
+    // seul). Le dé forcé PAR DÉFAUT (`bestForcedRoll`, DR MAX) donne déjà la MEILLEURE issue possible
+    // (Succès Stupéfiant DR ≥ 6 → général à terre l.208/217) — choisir un autre dé n'apporterait rien.
     caps: { forced: true },
     resolve: (_s, p, _actor, _get, forced) => {
+      // Cible EFFECTIVE d'un jet SIMPLE : compétence + Difficulté + Modificateur de SITUATION (Menace −20
+      // l.219 / Planification l.75). Les openers de BATAILLE la pré-cuisent dans `p.target` (mod fondu) ; les
+      // openers d'interlude ouvrent avec `target: 0` (rempli ici au 1ᵉʳ jet). On la (re)calcule pour NE JAMAIS
+      // relâcher le mod : IDENTIQUE à `p.target` en bataille, renseignée en interlude.
+      const effTarget = Math.max(1, Math.min(99, p.skillValue + DIFFICULTY_MODIFIERS[p.difficulty] + (p.mod ?? 0)));
       if (forced) {
-        if (p.success) return null; // rien à forcer si déjà réussi
+        if (activityWon(p)) return null; // rien à forcer si DÉJÀ gagnée (combiné full / tenue tenue / simple réussi)
         // Résilience « vous choisissez le résultat » (LDB 17 l.73) : LE MEILLEUR dé (`bestForcedRoll`,
         // policy-aware) → DR MAXIMUM. En Test COMBINÉ, le jet forcé doit réussir les DEUX cibles → dé ≤
         // min(cibles) (`bestForcedRoll(min)`) → niveau `full` ; en tenue, le PJ l'emporte sur l'opposition.
-        const die = bestForcedRoll(p.target);
-        const primary = { roll: die, success: true, sl: Math.max(evaluateTest(die, p.target).sl, 1), forced: true };
         if (p.target2 != null) {
           const die2 = bestForcedRoll(Math.min(p.target, p.target2));
           return { roll: die2, success: true, sl: Math.max(evaluateTest(die2, p.target).sl, 1), success2: true, sl2: Math.max(evaluateTest(die2, p.target2).sl, 1), combinedLevel: 'full' as const, forced: true };
         }
+        const die = bestForcedRoll(effTarget);
+        const primary = { roll: die, target: effTarget, success: true, sl: Math.max(evaluateTest(die, effTarget).sl, 1), forced: true };
         if (p.battle === 'round' && p.enemyValue != null) return { ...primary, enemySL: Math.min(-1, (p.enemySL ?? 0)) };
         return primary;
       }
-      // Test COMBINÉ (Infiltration/Repérage, l.75/102) : UN jet confronté aux DEUX valeurs (LDB 12 l.229).
+      // Test COMBINÉ (Infiltration/Repérage, l.75/102) : UN jet confronté aux DEUX valeurs (LDB 12 l.229 ;
+      // le mod de SITUATION est déjà fondu dans `p.target`/`p.target2` par l'opener de bataille).
       if (p.target2 != null) {
         const c = evaluateCombinedTest(d100(battleRng()), p.target, p.target2);
         return { roll: c.roll, sl: c.a.sl, success: c.a.success, sl2: c.b.sl, success2: c.b.success, combinedLevel: c.level };
       }
-      // Test OPPOSÉ de « Tenez votre position » (l.161) : le PJ jette, l'ennemi a un jet FIGÉ. Le DR net
-      // de l'ennemi (`enemySL`, positif = l'ennemi progresse) alimente le Point de rupture à la résolution.
+      // Test OPPOSÉ de « Tenez votre position » (l.161) : le PJ jette (`p.target` = mod fondu), l'ennemi a un
+      // jet FIGÉ. Le DR net de l'ennemi (`enemySL`, positif = l'ennemi progresse) alimente le Point de rupture
+      // à la résolution ; `success` = le PJ TIENT (son DR ≥ celui de l'ennemi ⟺ `enemySL ≤ 0`).
       if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
         const pt = evaluateTest(d100(battleRng()), p.target);
         const et = evaluateTest(p.enemyRoll, p.enemyValue);
         return { roll: pt.roll, sl: pt.sl, success: pt.sl >= et.sl, enemySL: et.sl - pt.sl };
       }
-      const res = rollTest(p.skillValue, p.difficulty, battleRng());
-      return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
+      // Simple : d100 vs la cible EFFECTIVE (mod inclus) — renseigne `p.target` (interlude) sans jamais
+      // l'écraser par une cible SANS mod (fin du « Menace relâchée » des Scènes simples).
+      const t = evaluateTest(d100(battleRng()), effTarget);
+      return { roll: t.roll, target: effTarget, sl: t.sl, success: t.success };
     },
-    failed: (p) => (p.roll ?? 0) > p.target,
+    // Échec (gate des relances Chance/Pacte/Résilience) : combiné NON-full (un `partial` = ÉCHEC GLOBAL RAW),
+    // OU tenue perdue (opposition : `!success`), OU simple « jet propre raté » (d100 > cible effective).
+    failed: (p) => p.combinedLevel != null
+      ? p.combinedLevel !== 'full'
+      : (p.battle === 'round' && p.enemyValue != null ? !p.success : (p.roll ?? 0) > p.target),
     bonus: {
-      // Chance « +1 DR » (LDB 17 l.26). Combiné : ré-évalue le NIVEAU (+1 DR sur la 1ʳᵉ cible peut faire
-      // basculer partial→full) ; tenue : +1 DR au PJ réduit d'autant le DR net de l'ennemi ; simple : +1 DR.
+      // Chance « +1 DR » (LDB 17 l.26/84 : un Degré de plus ne transforme JAMAIS un échec en réussite).
       derive: (_s, p) => {
-        const success = (p.roll ?? 0) <= p.target;
+        // Combiné : +1 DR sur la 1ʳᵉ cible ; les réussites (donc le NIVEAU) restent INTACTES — on ré-affiche
+        // le niveau depuis les réussites figées (`p.success`/`p.success2`), jamais depuis un re-jet numérique.
         if (p.target2 != null) {
-          const passed = (success ? 1 : 0) + (p.success2 ? 1 : 0);
-          return { sl: p.sl + 1, success, combinedLevel: passed === 2 ? 'full' as const : passed === 1 ? 'partial' as const : 'fail' as const };
+          const passed = (p.success ? 1 : 0) + (p.success2 ? 1 : 0);
+          return { sl: p.sl + 1, combinedLevel: passed === 2 ? 'full' as const : passed === 1 ? 'partial' as const : 'fail' as const };
         }
-        if (p.battle === 'round' && p.enemyValue != null) return { sl: p.sl + 1, success: p.sl + 1 >= 0 && success, enemySL: (p.enemySL ?? 0) - 1 };
-        return { sl: p.sl + 1, success };
+        // Tenue (Test OPPOSÉ) : +1 DR au PJ réduit d'autant le DR net de l'ennemi ; l'issue se RE-DÉRIVE de la
+        // marge (`success = enemySL ≤ 0`) — cohérente avec `enemySL` ET `applyHoldResolution` (massBattleFlow).
+        if (p.battle === 'round' && p.enemyValue != null) {
+          const enemySL = (p.enemySL ?? 0) - 1;
+          return { sl: p.sl + 1, success: enemySL <= 0, enemySL };
+        }
+        // Simple : +1 DR, `success` INTACT (bumpSL ; LDB 17 l.84).
+        return { sl: p.sl + 1 };
       },
     },
     touch: touchActors,

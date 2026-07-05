@@ -714,3 +714,76 @@ describe('Aléa & fermeture', () => {
     expect(useGame.getState().massBattle).toBeNull();
   });
 });
+
+describe('Flux `activity` — défauts RAW corrigés (combiné partiel · Menace · tenue +1 DR)', () => {
+  /** Dote le héros ACTEUR du pending courant de points de ressource (Chance/Résilience). */
+  function grant(res: { fortune?: number; resilience?: number }) {
+    const id = pending()!.heroId;
+    useGame.setState({ party: useGame.getState().party.map((h) => (h.id === id ? { ...h, ...res } : h)) });
+  }
+
+  it('(i) Test combiné PARTIEL : la Chance est OFFERTE (`failed` regarde le NIVEAU, pas skill-1)', () => {
+    start();
+    useGame.getState().massBattleActivity('reperage');
+    const pa0 = pending()!;
+    expect(pa0.target2).toBeGreaterThan(0); // vrai Test combiné
+    // skill-1 réussie, skill-2 ratée → `partial` = ÉCHEC GLOBAL RAW (LDB 12 l.229).
+    useGame.setState({ pendingActivity: { ...pa0, roll: 40, success: true, sl: 1, success2: false, sl2: -1, combinedLevel: 'partial' } });
+    grant({ fortune: 1 });
+    seedBattleRng(99);
+    useGame.getState().activityReroll();
+    expect(pending()!.rerolled).toBe(true); // `failed` true pour un partiel → la relance de Chance a lieu
+  });
+
+  it('(i-bis) Test combiné PARTIEL : la Résilience le RATTRAPE en `full` (garde forcé = activityWon)', () => {
+    start();
+    useGame.getState().massBattleActivity('reperage');
+    const pa0 = pending()!;
+    useGame.setState({ pendingActivity: { ...pa0, roll: 40, success: true, sl: 1, success2: false, sl2: -1, combinedLevel: 'partial' } });
+    grant({ resilience: 1 });
+    useGame.getState().activityForceSuccess();
+    const pa = pending()!;
+    expect(pa.combinedLevel).toBe('full');
+    expect(pa.success2).toBe(true);
+  });
+
+  it('(i-ter) Test combiné FULL : la Résilience ne dépense RIEN (déjà gagné)', () => {
+    start();
+    useGame.getState().massBattleActivity('reperage');
+    const pa0 = pending()!;
+    useGame.setState({ pendingActivity: { ...pa0, roll: 10, success: true, sl: 2, success2: true, sl2: 2, combinedLevel: 'full' } });
+    grant({ resilience: 1 });
+    const id = pending()!.heroId;
+    useGame.getState().activityForceSuccess();
+    expect(useGame.getState().party.find((h) => h.id === id)!.resilience).toBe(1); // non dépensée (activityWon → null)
+  });
+
+  it('(ii) Scène sous MENACE : le 1ᵉʳ jet CONSERVE la cible pré-cuite (mod −20 non relâché)', () => {
+    start({ situations: [['intrus', 'ligne-de-mire']], sceneEncounters: { intrus: 'enc-x' } });
+    useGame.getState().massBattleBegin();
+    expect(mbState().activeThreats).toContain('intrus');
+    useGame.getState().massBattleScene('ligne-de-mire');
+    const pa0 = pending()!;
+    expect(pa0.mod).toBe(-20); // pénalité de Menace Intrus (l.219)
+    expect(pa0.target).toBe(Math.max(1, Math.min(99, pa0.skillValue - 20))); // mod fondu par l'opener
+    seedBattleRng(5);
+    useGame.getState().activityRoll();
+    expect(pending()!.target).toBe(pa0.target); // la résolution NE l'écrase PAS par une cible sans mod
+  });
+
+  it('(iii) Tenez votre position + Chance « +1 DR » : `success` reste cohérent avec `enemySL`', () => {
+    start({ situations: [['tenez-votre-position']] });
+    useGame.getState().massBattleBegin();
+    useGame.getState().massBattleScene('tenez-votre-position');
+    const pa0 = pending()!;
+    expect(pa0.enemyValue).toBeGreaterThan(0); // jet ennemi opposé figé
+    // PJ « réussi » numériquement (roll ≤ cible) MAIS l'ennemi l'emporte à l'opposition (enemySL 3 > 0).
+    useGame.setState({ pendingActivity: { ...pa0, roll: 20, target: 50, sl: 2, success: false, enemySL: 3 } });
+    grant({ fortune: 1 });
+    useGame.getState().activityBonusSL();
+    const pa = pending()!;
+    expect(pa.enemySL).toBe(2); // +1 DR au PJ → −1 au DR net de l'ennemi
+    expect(pa.success).toBe(pa.enemySL! <= 0); // success RE-DÉRIVÉ de la marge (pas du jet numérique)
+    expect(pa.success).toBe(false); // l'ennemi tient encore le dessus (enemySL 2 > 0)
+  });
+});
