@@ -769,30 +769,17 @@ export const FLOWS = {
       forced: true,
       picker: (p) => (p.forced && p.result ? { roll: p.result.roll, target: p.result.target } : null),
     },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor) => {
       if (!actor) return null;
-      if (forced) {
-        const cur = p.result;
-        if (forced.roll != null) {
-          // Dé CHOISI (LDB 17 l.73) : doit RESTER une réussite ; le DR gagné retire plus d'Avantage.
-          if (cur && forced.roll > maxForcedRoll(cur.target)) return null;
-          const target = cur?.target ?? combatValue(actor, 'melee');
-          const e = evaluateTest(forced.roll, target);
-          return { result: { roll: forced.roll, target, success: true, sl: Math.max(e.sl, 1), isDouble: isDoubleRoll(forced.roll) } };
-        }
-        // Dé PAR DÉFAUT (01 → DR max), avant le jet ou après un échec.
-        if (cur?.success) return null;
-        const target = cur?.target ?? combatValue(actor, 'melee');
-        const e = evaluateTest(1, target);
-        return { result: { roll: 1, target, success: true, sl: Math.max(e.sl, 1), isDouble: isDoubleRoll(1) } };
-      }
       return { result: rollManeuverAttacker(actor, 'CC', battleRng()) };
     },
     failed: (p) => !!p.result && !p.result.success,
-    bonus: {
-      // Chance « +1 DR » (LDB 17 l.26) : un DR de plus → un Avantage adverse de plus retiré (l.103).
-      guard: (p) => !!p.result,
-      derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1, success: true } } : null),
+    // Test de CC NON opposé, dé CHOISI (le DR gagné retire plus d'Avantage, l.103) via la lentille. Chance
+    // « +1 DR » par `bumpSL` (success intact — le vieux `bonus` forçait `success:true` : bug, LDB 17 l.84).
+    lens: {
+      actorTR: (p) => p.result ?? null,
+      applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: tr }),
+      dieTarget: (p, actor) => p.result?.target ?? combatValue(actor, 'melee'),
     },
   }),
 
@@ -807,24 +794,18 @@ export const FLOWS = {
     rolled: (p) => !!p.atk,
     actor: (s, p) => actorIn(s, p.moverId),
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor) => {
       if (!actor) return null;
-      if (forced) {
-        if (!p.atk || !p.result) return null; // (calque `disengage` : rien à forcer avant/hors jet)
-        return { result: 'success' as const }; // l'emporte (LDB ch.17 l.73)
-      }
       const atk = rollTest(distraireAttackValue(actor), 'intermediaire', battleRng()); // mover = « attaquant » du Test opposé
       const opp = resolveOpposed(atk, p.defRoll);
       return { atk, result: disengageOutcome(opp.winner) };
     },
     failed: (p) => !!p.atk && !p.atk.success,
-    bonus: {
-      guard: (p) => !!p.atk,
-      derive: (_s, p) => {
-        const atk2 = bumpSL(p.atk!);
-        const opp = resolveOpposed(atk2, p.defRoll);
-        return { atk: atk2, result: disengageOutcome(opp.winner) };
-      },
+    // Opposé BINAIRE inversé via la lentille : mover = « attaquant » → TR acteur = `p.atk`, figé = `p.defRoll`.
+    lens: {
+      actorTR: (p) => p.atk ?? null,
+      applyRoll: (_s, slot, _actor, _get, tr) => ({ atk: tr, result: disengageOutcome(resolveOpposed(tr, slot.defRoll).winner) }),
+      forceWin: (slot, _actor, tr) => (slot.result && tr ? { result: 'success' as const } : null),
     },
   }),
 
