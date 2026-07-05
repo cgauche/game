@@ -15,6 +15,11 @@
 > - **Thème D** (triches IA/lacunes : n° 28, 29, 36, 38, 48, 49) : ❌ dette → **issues #126–#131** (priorité #126 : Recharge ennemie).
 > - **Thème E** (nettoyages : n° 8, 27, 37) : à faire au fil de l'eau par l'orchestrateur (pas d'issue).
 > - N° 4, 9, 11, 18, 20, 32 (design assumé) : ✅ entérinés. N° 22-24 (trauma.ts, extraction vide) : à relire manuellement.
+>
+> **Doctrine (précisée par l'utilisateur, 2026-07-05)** — house-rule ≠ lacune : (1) RAW silencieux / fourchette /
+> renvoi au MJ → on propose, valeur maison PARAMÉTRABLE en donnée ; (2) mécanique RAW qu'on ne sait pas modéliser
+> → « à notre sauce » n'est PAS une réponse acceptable : dette d'implémentation, on implémente ce qui manque.
+> Le thème A relève du cas 1 (à re-vérifier entrée par entrée en traitant #133) ; les thèmes C/D relèvent du cas 2.
 
 ## 1. `src/engine/aaCritical.ts:13` — sévérité basse
 
