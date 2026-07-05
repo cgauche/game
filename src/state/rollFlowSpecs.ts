@@ -649,24 +649,18 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.moverId),
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor) => {
       if (!actor || !p.atk) return null;
-      if (forced) {
-        if (!p.result || !p.def) return null;
-        return { result: 'success' as const }; // l'emporte (LDB ch.17 l.73)
-      }
       const def = rollDisengageAttack(actor, battleRng()); // Corps à corps du mover (mover = « attaquant » du Test opposé)
       const opp = resolveOpposed(def, p.atk);
       return { def, result: disengageOutcome(opp.winner) };
     },
     failed: (p) => !p.def?.success,
-    bonus: {
-      guard: (p) => !!p.def,
-      derive: (_s, p) => {
-        const def2 = bumpSL(p.def!);
-        const opp = resolveOpposed(def2, p.atk!);
-        return { def: def2, result: disengageOutcome(opp.winner) };
-      },
+    // Opposé BINAIRE via la lentille (calque disengage) : +1 DR re-oppose (`bumpSL`) ; Résilience = l'emporter.
+    lens: {
+      actorTR: (p) => p.def ?? null,
+      applyRoll: (_s, slot, _actor, _get, tr) => ({ def: tr, result: disengageOutcome(resolveOpposed(tr, slot.atk!).winner) }),
+      forceWin: (slot, _actor, tr) => (slot.result && tr ? { result: 'success' as const } : null),
     },
   }),
 
@@ -680,24 +674,18 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.actorId),
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor) => {
       if (!actor || !p.atk) return null;
-      if (forced) {
-        if (!p.result || !p.def) return null;
-        return { result: 'success' as const }; // l'emporte (LDB ch.17 l.73)
-      }
       const def = rollGrappleForce(actor, battleRng()); // Force de l'acteur (= « attaquant » du Test opposé)
       const opp = resolveOpposed(def, p.atk);
       return { def, result: disengageOutcome(opp.winner) };
     },
     failed: (p) => !p.def?.success,
-    bonus: {
-      guard: (p) => !!p.def,
-      derive: (_s, p) => {
-        const def2 = bumpSL(p.def!);
-        const opp = resolveOpposed(def2, p.atk!);
-        return { def: def2, result: disengageOutcome(opp.winner) };
-      },
+    // Opposé BINAIRE via la lentille (calque disengage) : +1 DR re-oppose (`bumpSL`) ; Résilience = l'emporter.
+    lens: {
+      actorTR: (p) => p.def ?? null,
+      applyRoll: (_s, slot, _actor, _get, tr) => ({ def: tr, result: disengageOutcome(resolveOpposed(tr, slot.atk!).winner) }),
+      forceWin: (slot, _actor, tr) => (slot.result && tr ? { result: 'success' as const } : null),
     },
   }),
 
