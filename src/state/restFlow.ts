@@ -130,8 +130,7 @@ export function sleepParty(
   set({ gameTime: from + firstNight + (n - 1) * MINUTES_PER_DAY });
   bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
 
-  // Soins prolongés : un soignant valide (Guérison) veille les malades — Test supposé réussi sur la
-  // durée (abstraction du repos, LDB 09 : −1 jour/jour de soins par maladie).
+  // Soins prolongés (LDB 09) : présence d'un soignant valide (Guérison) → −1 jour/jour par maladie.
   const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
   // Le bilan de nuit LISTE l'entretien quotidien (rations/faim, maladies, convalescence) — le
   // journal seul ne suffit pas. Portrait attribué par préfixe « Nom… » quand la ligne le porte.
