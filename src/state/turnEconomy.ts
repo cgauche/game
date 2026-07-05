@@ -4,7 +4,6 @@ import { trampleTarget, canMove } from './store';
 import { canTakeAction, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
-import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import { hasFreeWeaponAttack } from './combatManeuvers';
 
 /**
@@ -41,20 +40,18 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
  * d'Initiative ») ? Affiché dans la frise d'initiative (InitiativeStrip) pendant la pause de début de Round.
  *
  * Aujourd'hui : un héros avec ≥1 point de Chance, pas déjà en tête de l'ordre, et toujours en état d'agir.
- * Point d'extension UNIQUE pour de futurs Atouts/talents d'initiative (« Rapide », « Tir rapide »…) — toute
- * nouvelle condition d'agir-en-premier s'ajoute ICI plutôt que d'être dispersée dans l'UI. Pur.
+ * Point d'extension pour les RÉORDONNANCEMENTS d'initiative (Chance, arme Rapide). Tir rapide n'est PAS un
+ * réordonnancement (interruption hors de l'ordre, LDB 10) → il ne passe PAS par ici. Pur.
  */
 export function canActFirst(c: Combatant, battle: BattleState): boolean {
   if (c.kind !== 'hero' || isOutOfAction(c)) return false;
   if (battle.order[0] === c.id) return false; // déjà en tête de l'ordre du Round
-  // Rapide (arme, LDB 62 l.318-319) : gratuit. Tir rapide (talent, LDB 10) : gratuit EN CHANCE mais coûte
-  // l'Action + le Mouvement du tour promu (débité par roundStartPromote/confirmRoundStart). Sinon : 1 Chance.
-  return (c.fortune ?? 0) > 0 || canStrikeFirst(c.weapons) || canPreemptRanged(c);
+  // Réordonnancement d'initiative : Chance (LDB ch.17 l.27) ou arme Rapide (LDB 62 l.318-319).
+  return (c.fortune ?? 0) > 0 || canStrikeFirst(c.weapons);
 }
 
-/** La pré-emption d'initiative est-elle gratuite EN CHANCE pour `c` ? (arme Rapide LDB 62 l.318-319, ou Tir
- *  rapide LDB 10 — sinon elle coûte 1 point de Chance, LDB ch.17 l.27). NB : Tir rapide, gratuit en Chance,
- *  coûte tout de même l'Action + le Mouvement du tour promu (débit posé par `roundStartPromote`). */
+/** Le RÉORDONNANCEMENT d'initiative est-il gratuit pour `c` ? (arme Rapide LDB 62 l.318-319 ; sinon il coûte
+ *  1 point de Chance, LDB ch.17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne réordonne pas. */
 export function freeActFirst(c: Combatant): boolean {
-  return canStrikeFirst(c.weapons) || canPreemptRanged(c); // Rapide (LDB 62) / Tir rapide (LDB 10)
+  return canStrikeFirst(c.weapons); // arme Rapide (LDB 62)
 }
