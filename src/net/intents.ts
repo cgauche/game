@@ -72,7 +72,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'frenzyRoll', 'frenzyReroll', 'frenzyDarkPact', 'frenzyForceSuccess', 'frenzyConfirm',
   'frenzyCancel', 'reloadRoll', 'reloadReroll', 'reloadBonusSL', 'reloadDarkPact',
   'reloadForceSuccess', 'reloadConfirm', 'reloadCancel', 'recoverRoll', 'recoverReroll', 'recoverBonusSL',
-  'recoverDarkPact', 'recoverConfirm', 'recoverCancel', 'healRoll', 'healReroll',
+  'recoverDarkPact', 'recoverForceSuccess', 'recoverConfirm', 'recoverCancel', 'healRoll', 'healReroll',
   'healBonusSL', 'healDarkPact', 'healForceSuccess', 'healConfirm', 'healCancel',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.
   // Chirurgie : openSurgeryPass POSE la passe, les verbes surgery* l'influencent (fabrique rollFlow),

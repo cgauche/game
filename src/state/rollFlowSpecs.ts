@@ -39,7 +39,8 @@ import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll } from '../engine/tests';
+import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR } from '../engine/tests';
+import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { d100 } from '../engine/dice';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
@@ -1123,7 +1124,21 @@ export const FLOWS = {
     key: 'pendingStateRecovery',
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.actorId),
-    resolve: (_s, p) => {
+    // Test opposé de héros (Force/Athlétisme) → Résilience GLOBALE (LDB 17 l.68) : le résolveur forcé
+    // fait L'EMPORTER l'acteur sur la source FIGÉE (`p.opponentRoll`), calque `disengage`/`bargain`.
+    caps: { forced: true },
+    resolve: (_s, p, _actor, _get, forced) => {
+      if (forced) {
+        if (p.success) return null; // déjà réussi → rien à forcer
+        const target = p.roll?.target ?? p.skillValue + DIFFICULTY_MODIFIERS[p.difficulty]; // cible effective (cf. rollTest)
+        const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
+        const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, 1));
+        if (p.opposed && p.opponentRoll) {
+          const opp = resolveOpposed(actorT, p.opponentRoll); // re-oppose vs la source FIGÉE
+          return { roll: actorT, netSL: Math.max(1, opp.netSL), success: true }; // l'emporte (DR +1 mini)
+        }
+        return { roll: actorT, netSL: Math.max(1, actorT.sl), success: true };
+      }
       const actorT = rollTest(p.skillValue, p.difficulty, battleRng());
       if (p.opposed && p.opponentValue != null) {
         const oppT = rollTest(p.opponentValue, 'intermediaire', battleRng());
@@ -1246,7 +1261,20 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.playerId),
     touch: touchActors,
-    resolve: (_s, p) => {
+    // Test opposé de héros vs marchand FIGÉ → Résilience GLOBALE (LDB 17 l.68) : le résolveur forcé fait
+    // L'EMPORTER le joueur sur le marchand figé (`p.merchantRoll`), calque `recover`/`disengage`.
+    caps: { forced: true },
+    resolve: (_s, p, _actor, _get, forced) => {
+      if (forced) {
+        if (p.result?.attackerWins) return null; // le joueur l'emporte déjà → rien à forcer
+        if (p.merchantRoll == null) return null; // pas de jet marchand figé (avant le 1er Lancer) → rien à opposer
+        const target = p.roll?.target ?? p.playerSkill + DIFFICULTY_MODIFIERS.intermediaire; // cible effective (cf. rollTest)
+        const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
+        const player = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, 1));
+        const result = resolveOpposed(player, p.merchantRoll); // re-oppose vs le marchand FIGÉ
+        // Résilience = le joueur l'emporte d'au moins un Degré (LDB 17 l.68).
+        return { roll: player, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL) } };
+      }
       const player = rollTest(p.playerSkill, 'intermediaire');
       const merchant = rollTest(p.merchantValue, 'intermediaire');
       return { roll: player, merchantRoll: merchant, result: resolveOpposed(player, merchant) };
@@ -1347,7 +1375,7 @@ export const FLOW_VERBS = {
   maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
-  recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'], coop: true },
+  recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   focus:        { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   dispel:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   frenzy:       { kind: 'mono',  verbs: ['roll', 'reroll', 'forceSuccess', 'darkPact'], coop: true },
@@ -1358,7 +1386,7 @@ export const FLOW_VERBS = {
   corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist'], coop: true },
   test:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'cancel'] },
   activity:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
-  bargain:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
+  bargain:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   appraise:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   shanty:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   counterspell: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
