@@ -781,8 +781,6 @@ export interface TraitData {
   /** Identifiant STABLE (slug du libellé) — clé d'instance/lookup, indépendant de la langue. */
   id: string;
   label: string;
-  /** Squelette d'arguments du libellé (« (Indice) (Portée) »…), null si aucun. */
-  prefix: string | null;
   /** Sens de la valeur NUMÉRIQUE `value` de l'instance (Difficulté, Indice, Degré…) — `label` affiché
    *  devant/autour du nombre. Absent = le trait ne porte pas de valeur numérique. */
   indice?: { label: string };

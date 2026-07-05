@@ -7,7 +7,7 @@
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
-import { traitByLabel, traitById, type TraitCapabilities, type TraitData } from '../../data';
+import { traitByLabel, traitById, SPEC_SOURCES, type SpecsSource, type TraitCapabilities, type TraitData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
 
@@ -41,6 +41,23 @@ export function parseTraitInstance(raw: string): TraitInstance {
   return t;
 }
 
+/** Sentinelle « joker » d'un argument de trait (« au choix », « une au choix ») : reste verbatim
+ *  (ni id ni libellé — l'auteur a laissé le choix ouvert, on n'a rien à résoudre). */
+const ARG_WILDCARD = /^(un |une |deux )?au choix$/i;
+
+/** Résout l'ARGUMENT `arg` d'une instance de trait en LIBELLÉ d'affichage via le catalogue partagé
+ *  `SPEC_SOURCES` de sa def : « poison » → « Poison », « sigmar » → « Sigmar », « noble, homme-bete »
+ *  → « Noble, Homme-bête ». Sans `specsSource` (trait indice-seul, arg descriptif libre) ou joker
+ *  « au choix » → verbatim. `specsMulti` : liste d'ids jointe par virgules, chaque part résolue (une
+ *  part joker reste verbatim). Un id INCONNU / texte libre (`specsOpen`) reste verbatim — `SPEC_SOURCES
+ *  [source].label` le rend tel quel (repli `?? id`), la saveur libre est donc préservée sans cas spécial. */
+function resolveTraitArg(def: TraitData | undefined, arg: string): string {
+  const source = def?.specsSource;
+  if (!source || ARG_WILDCARD.test(arg)) return arg;
+  const one = (id: string) => (/au choix/i.test(id) ? id : SPEC_SOURCES[source].label(id));
+  return def.specsMulti ? arg.split(',').map((p) => one(p.trim())).join(', ') : one(arg.trim());
+}
+
 /** Traits dont la valeur est un BONUS de Dégâts signé (« Morsure +9 », « À distance +8 ») — affichés
  *  « +N » et, pour les attaques typées, « Nom +N (Type) » (l'ordre du livre). Les autres traits à
  *  Indice gardent « Nom (Spec) N » (« Immunité (Poison) »), les sauvegardes « Nom N+ » (« Démoniaque 8+ »). */
@@ -56,7 +73,7 @@ export function formatTrait(t: TraitInstance): string {
   const isAttack = !!td?.grantsManeuvers || !!td?.capabilities?.naturalWeapon;
   const ward = !isAttack && !!td?.capabilities?.wardSave;
   const val = t.value == null ? '' : isAttack ? ` +${t.value}` : ward ? ` ${t.value}+` : ` ${t.value}`;
-  const arg = t.arg ? ` (${t.arg})` : '';
+  const arg = t.arg ? ` (${resolveTraitArg(td, t.arg)})` : '';
   const range = t.range != null ? ` (${t.range})` : '';
   // Attaques : « Nom +Dégâts (Type) [(portée)] » ; autres : « Nom (Spec) Indice ».
   return isAttack ? `${head}${val}${arg}${range}` : `${head}${arg}${val}${range}`;
@@ -66,6 +83,38 @@ export function formatTrait(t: TraitInstance): string {
  *  `formatTrait` (inverse fidèle de `parseTraitInstance`). */
 export const traitLabels = (traits: TraitList | undefined): string[] =>
   (traits ?? []).map(formatTrait);
+
+/** Nom d'affichage FR du POOL d'une `specsSource` (le TYPE d'argument attendu, pas une valeur) — pour
+ *  le squelette d'argument d'un trait (sous-titre du Codex). Une source par ligne : ajouter une
+ *  `SpecsSource` = l'ajouter ici, jamais un cas par-trait. */
+const SPEC_SOURCE_NOUN: Record<SpecsSource, string> = {
+  weaponGroupsMelee: "Groupe d'arme",
+  weaponGroupsRanged: "Groupe d'arme",
+  winds: 'Vent',
+  arcaneDomains: 'Domaine',
+  cultBlessings: 'Culte',
+  cultMiracles: 'Culte',
+  cultChaos: 'Culte',
+  seaShanties: 'Chanson',
+  groups: 'Cible',
+  diseases: 'Maladie',
+  sizes: 'Taille',
+  mutations: 'Mutation',
+  breathTypes: 'Type de souffle',
+  damageTypes: 'Type de dégâts',
+};
+
+/** Squelette d'ARGUMENT d'un Trait DÉRIVÉ de son schéma (sous-titre du Codex, remplace le champ figé
+ *  `prefix`) : `(Indice)` (libellé de `indice`), puis le nom du pool `specsSource` (« (Type de dégâts) »),
+ *  puis `(Portée)` si `range`. Ex. `{indice:{label:'Indice'}, specsSource:'damageTypes', range:true}`
+ *  → « (Indice) (Type de dégâts) (Portée) ». Trait sans argument → undefined (aucun sous-titre). */
+export function traitArgSkeleton(def: Pick<TraitData, 'indice' | 'specsSource' | 'range'>): string | undefined {
+  const parts: string[] = [];
+  if (def.indice) parts.push(`(${def.indice.label})`);
+  if (def.specsSource) parts.push(`(${SPEC_SOURCE_NOUN[def.specsSource]})`);
+  if (def.range) parts.push('(Portée)');
+  return parts.length ? parts.join(' ') : undefined;
+}
 
 export interface ParsedTrait {
   /** `id` STABLE du trait de registre (slug, « demoniaque »). */

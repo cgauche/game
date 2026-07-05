@@ -25,7 +25,7 @@ import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../
 import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
-import { traitLabels } from '../../engine/traits/dispatch';
+import { traitLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
@@ -320,7 +320,7 @@ function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem
 const traitItem = (t: (typeof traits)[number]): CodexItem => {
   const cap = t.capabilities;
   return {
-    label: t.label, sub: t.prefix ?? undefined, desc: t.desc, source: src(t.source), appearance: t.appearance,
+    label: t.label, sub: traitArgSkeleton(t), desc: t.desc, source: src(t.source), appearance: t.appearance,
     meta: facts(
       cap?.psychType ? fact('Psychologie', psychologyLabel(cap.psychType)) : null,
       cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,

@@ -2,7 +2,6 @@
   {
     "id": "a-distance",
     "label": "À distance",
-    "prefix": "(Indice) (Portée)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -22,7 +21,6 @@
   {
     "id": "a-sang-froid",
     "label": "À sang-froid",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est à sang-froid et lente à réagir. Elle peut inverser tous ses Tests de Force Mentale échoués.",
     "source": {
@@ -36,7 +34,6 @@
   {
     "id": "affame",
     "label": "Affamé",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est toujours avide de chair fraîche. Si elle tue ou neutralise un adversaire (ou qu'elle tombe sur un cadavre récent), elle doit réussir un Test de Force Mentale Accessible (+20) ou festoyer, perdant sa prochaine Action et son prochain Mouvement.",
     "source": {
@@ -76,7 +73,6 @@
   {
     "id": "amphibie",
     "label": "Amphibie",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est à l'aise dans l'eau. Elle peut ajouter son bonus d'Agilité au DR de tous les Tests de Natation et se déplace à sa vitesse maximale de Mouvement dans l'eau.",
     "source": {
@@ -100,7 +96,6 @@
   {
     "id": "animosite",
     "label": "Animosité",
-    "prefix": "(Cible)",
     "suffix": null,
     "specsSource": "groups",
     "specsMulti": true,
@@ -117,7 +112,6 @@
   {
     "id": "arboricole",
     "label": "Arboricole",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est à l'aise dans les forêts. Dans les régions boisées, ajoutez son bonus d'Agilité au DR pour tous ses Tests d'Escalade et de Discrétion.",
     "source": {
@@ -128,7 +122,6 @@
   {
     "id": "arme",
     "label": "Arme",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -148,7 +141,6 @@
   {
     "id": "armure",
     "label": "Armure",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -163,7 +155,6 @@
   {
     "id": "attaque-caudale",
     "label": "Attaque caudale",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -182,7 +173,6 @@
   {
     "id": "belliqueux",
     "label": "Belliqueux",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature adore combattre. Tant qu'elle a plus d'Avantages que son adversaire, elle gagne Immunité Psychologique.",
     "source": {
@@ -196,7 +186,6 @@
   {
     "id": "beni",
     "label": "Béni",
-    "prefix": "(Divers)",
     "suffix": null,
     "specsSource": "cultBlessings",
     "desc": "La créature est Béni et peut accorder des Bénédictions. La divinité concernée est indiquée entre parenthèses.",
@@ -208,7 +197,6 @@
   {
     "id": "bestial",
     "label": "Bestial",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature ne possède ni pensée, ni langage rationnel. Elle a peur du feu et gagne l'État Brisé si elle est touchée par ce dernier. En défense, elle peut seulement utiliser la Compétence Esquive. Si elle perd plus de la moitié de ses Blessures, elle tente de fuir à moins qu'elle ne protège son petit ou qu'elle soit acculée ou encore qu'elle possède le Trait de créature Territorial. Dans ce cas, elle entre en Frénésie (voir Psychologie dans le Chapitre 5 : Règles à la page 190). Pas de caractéristique de Social.",
     "source": {
@@ -267,7 +255,6 @@
   {
     "id": "bond",
     "label": "Bond",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature a la capacité de bondir haut, grâce à des jambes puissantes, à la magie ou à des ailes courtes. Quand elle Charge ou Court, elle double sa Caractéristique de Mouvement, et elle peut ignorer tous les terrains et les personnages qui s'interposent quand elle les dépasse.",
     "source": {
@@ -281,7 +268,6 @@
   {
     "id": "brutal",
     "label": "Brutal",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est lourde et brutale. Elle reçoit -1 en M, -10 en Ag et +10 en F et en E.",
     "source": {
@@ -314,7 +300,6 @@
   {
     "id": "champion",
     "label": "Champion",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est un guerrier exceptionnel. Si elle gagne un Test opposé en se défendant dans un Combat au Corps à corps, elle cause autant de Dégâts que si elle était l'attaquant.",
     "source": {
@@ -328,7 +313,6 @@
   {
     "id": "constricteur",
     "label": "Constricteur",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature comprime et écrase sa proie. Tout lancer réussi pour toucher donne à son adversaire l'État Empêtré. Elle peut ensuite entamer une Empoignade (voir page 163).",
     "source": {
@@ -369,7 +353,6 @@
   {
     "id": "coriace",
     "label": "Coriace",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est plus résistante aux Dégâts que la normale, et elle est peu susceptible de reculer. Elle reçoit + 10 en E et FM.",
     "source": {
@@ -393,7 +376,6 @@
   {
     "id": "cornes",
     "label": "Cornes",
-    "prefix": "(Indice) (Aspect)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -416,7 +398,6 @@
   {
     "id": "corruption",
     "label": "Corruption",
-    "prefix": "(Degré)",
     "suffix": null,
     "indice": {
       "label": "Degré"
@@ -430,7 +411,6 @@
   {
     "id": "corruption-mentale",
     "label": "Corruption mentale",
-    "prefix": null,
     "suffix": null,
     "specsOpen": true,
     "desc": "Le Chaos s'est insinué dans l'esprit de la créature... Faites un lancer sur le Tableau de la Corruption Mentale qui se trouve à la p. 185.",
@@ -445,7 +425,6 @@
   {
     "id": "demoniaque",
     "label": "Démoniaque",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -486,7 +465,6 @@
   {
     "id": "dresse-guerre",
     "label": "Dressé (Guerre)",
-    "prefix": null,
     "suffix": null,
     "desc": "L'animal est entraîné pour la guerre, il gagne +10 en CC. Il ignore également son trait Nerveux pour les bruits forts.",
     "source": {
@@ -504,7 +482,6 @@
   {
     "id": "dresse-magie",
     "label": "Dressé (Magie)",
-    "prefix": null,
     "suffix": null,
     "desc": "L'animal est entraîné à ignorer son trait Nerveux en présence de magie, ce qui est nécessaire à la plupart des chevaux utilisés par les Sorciers.",
     "source": {
@@ -515,7 +492,6 @@
   {
     "id": "dresse-dompte",
     "label": "Dressé (Dompté)",
-    "prefix": null,
     "suffix": null,
     "desc": "L'animal est entraîné à ignorer son Trait Bestial. Il reçoit 2d10 en Sociabilité.",
     "source": {
@@ -529,7 +505,6 @@
   {
     "id": "dresse-monture",
     "label": "Dressé (Monture)",
-    "prefix": null,
     "suffix": null,
     "desc": "L'animal est entraîné à accepter un cavalier. Certaines créatures sont particulièrement belliqueuses, et n'accepteront jamais de cavalier sans la Compétence adaptée.",
     "source": {
@@ -540,7 +515,6 @@
   {
     "id": "dresse-garde",
     "label": "Dressé (Garde)",
-    "prefix": null,
     "suffix": null,
     "desc": "L'animal est entraîné à rester à la même place ou à patrouiller autour comme un garde. Il gagne le Trait de créature Territorial.",
     "source": {
@@ -554,7 +528,6 @@
   {
     "id": "dresse-rapporteur",
     "label": "Dressé (Rapporteur)",
-    "prefix": null,
     "suffix": null,
     "desc": "L'animal est entraîné à rapporter. Cette discipline est normalement réservée aux chiens et autres animaux similaires.",
     "source": {
@@ -565,7 +538,6 @@
   {
     "id": "dresse-revenir-a-la-maison",
     "label": "Dressé (Revenir à la maison)",
-    "prefix": null,
     "suffix": null,
     "desc": "L'animal est entraîné à revenir chez lui s'il est relâché ou perdu.",
     "source": {
@@ -576,7 +548,6 @@
   {
     "id": "dresse-cavalerie-de-choc",
     "label": "Dressé (Cavalerie de choc)",
-    "prefix": null,
     "suffix": null,
     "desc": "Ce Trait ne peut être pris que par un animal possédant déjà le Trait Dressé (Guerre). La plupart des bêtes de cavalerie, même celles dressées à supporter les rigueurs de la guerre, ne chargeront pas en bon ordre en plein milieu d'une unité ennemie bien armée. Les montures dotées de ce Trait ont été spécialement dressées pour ignorer ce péril et pour foncer directement sur une masse d'ennemis.\n\nQuand ils effectuent une Charge, les Personnages chevauchant une monture qui possède ce Trait peuvent passer outre les créatures plus petites pendant leur Mouvement pour atteindre leur cible. Chaque créature que la monture renverse de cette manière doit réussir un Test d'**Esquive Intermédiaire (+0)** sous peine de subir 4 + Bonus de Force de la monture Dégâts.\n\nToute créature qui subit des Dégâts de cette manière réduit le Mouvement restant de la monture de 2 mètres. Les créatures de Taille supérieure ou égale à celle de la monture arrêtent sa progression. Dans les deux cas, une fois que la Charge de la monture a pris fin, toute créature ennemie à portée d'Allonge d'une attaque au corps à corps est à présent considérée comme Engagée normalement et la Charge est résolue comme si l'une de ces créatures en avait été la cible.",
     "source": {
@@ -587,7 +558,6 @@
   {
     "id": "effraye",
     "label": "Effrayé",
-    "prefix": "(Cible)",
     "suffix": null,
     "specsSource": "groups",
     "specsMulti": true,
@@ -605,7 +575,6 @@
   {
     "id": "elite",
     "label": "Élite",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est un féroce vétéran. Elle reçoit +20 en CC, CT et FM.",
     "source": {
@@ -634,7 +603,6 @@
   {
     "id": "endurant",
     "label": "Endurant",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature peut encaisser plus de Dégâts que la plupart des autres. Augmentez ses Points de Blessure d'un nombre égal à son Bonus d'Endurance (appliqué avant tout modificateur de Taille).",
     "source": {
@@ -649,7 +617,6 @@
   {
     "id": "ethere",
     "label": "Éthéré",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est immatérielle, ce qui lui permet de passer à travers les objets solides. Elle ne peut être blessée que par les Attaques magiques.",
     "source": {
@@ -667,7 +634,6 @@
   {
     "id": "etreinte-glaciale",
     "label": "Étreinte glaciale",
-    "prefix": null,
     "suffix": null,
     "desc": "Le toucher de la créature glace l'âme de son ennemi. Au prix de 2 Avantages et de son Action, elle peut tenter un Test opposé de CC/Corps à corps ou Esquive. Sur un succès, son adversaire perd automatiquement 1d10 + DR Blessures qui ignorent le Bonus d'Endurance et les PA. Il s'agit d'une Attaque magique.",
     "source": {
@@ -683,7 +649,6 @@
   {
     "id": "fabrique",
     "label": "Fabriqué",
-    "prefix": null,
     "suffix": null,
     "desc": "Cette créature, fruit de la magie, est complètement stupide, et son intégrité est maintenue par des liens magiques. Elle ne possède pas de Caractéristiques d'Int, de FM ou de Soc. Si un Test pour ces Caractéristiques est requis, ils sont considérés comme automatiquement réussis. Si aucun sorcier ne la contrôle, ou sans le Trait de créature Territorial, la créature erre sans raison, suivant les flux de magie alentour. Pour le calcul des Blessures de la créature, au lieu d'utiliser son bonus de Force Mentale, utilisez son bonus de Force. Toutes ses Attaques sont Magiques.",
     "source": {
@@ -703,7 +668,6 @@
   {
     "id": "foulee",
     "label": "Foulée",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature effectue de grandes foulées, soit parce que c'est un quadrupède, soit parce qu'elle bénéficie de jambes particulièrement longues. Multipliez son Mouvement de charge de 1,5 quand elle Court.",
     "source": {
@@ -717,7 +681,6 @@
   {
     "id": "forme-de-guerriere-naiade",
     "label": "Forme de guerrière naïade",
-    "prefix": null,
     "suffix": null,
     "desc": "Les naïades peuvent se transformer en de redoutables créatures d'eau vive, personnification de la malice des rivières. Il s'agit d'une action libre qui confère les Traits Peur 2 et Armure 2. Ce dernier Trait représente davantage le fait que les armes traversent le corps aquatique de la naïade, plutôt qu'une armure physique.\n\nLorsqu'elles sont sous forme de guerrière, les naïades fluctuent énormément : d'immobiles, elles se transforment en une masse d'écume agressive et enragée. À chaque Round, une naïade peut choisir l'un des aspects suivants, qui change toujours à chaque nouveau Round.\n\n**Déluge :** le corps aqueux de la naïade gonfle et ondule, comme s'il allait éclater. La naïade gagne +1 DR pour tout test impliquant la Force ou l'Endurance, et les dégâts de son Trait Arme passent à +10.\n\n**Eau calme :** la chair aqueuse de la naïade s'apaise et adopte un aspect presque lisse, tandis qu'elle devient froide et perd sa passion. La naïade gagne le Trait Immunité Psychologique.\n\n**Rapides :** de l'écume blanche fouette la surface de la naïade qui se transforme en un tourbillon d'écume. Le Mouvement de la naïade passe à 10 et elle gagne +1 DR lorsqu'elle utilise son score d'Agilité pour esquiver les attaques.\n\n**Sinueuse :** la naïade se déplace de manière imprévisible de gauche à droite, ce qui rend ses mouvements très difficiles à prévoir. La naïade gagne +2 DR pour tout lancer impliquant sa CC.",
     "source": {
@@ -753,7 +716,6 @@
   {
     "id": "frenesie",
     "label": "Frénésie",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature peut entrer en Frénésie. Voir page 190.",
     "source": {
@@ -764,7 +726,6 @@
   {
     "id": "furtif",
     "label": "Furtif",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est particulièrement discrète. Ajoutez son bonus d'Agilité au DR de tous ses Tests de Discrétion.",
     "source": {
@@ -784,7 +745,6 @@
   {
     "id": "grand",
     "label": "Grand",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est un grand spécimen de son espèce. Elle reçoit +10 en F et en E et -5 en Ag.",
     "source": {
@@ -813,7 +773,6 @@
   {
     "id": "grimpant",
     "label": "Grimpant",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature peut facilement escalader les surfaces verticales et même parcourir les plafonds, prête à fondre sur les proies imprudentes. Elle avance à sa vitesse maximale de Mouvement sur toutes les surfaces appropriées et réussit automatiquement tous ses Tests d'Escalade.",
     "source": {
@@ -824,7 +783,6 @@
   {
     "id": "haine",
     "label": "Haine",
-    "prefix": "(Cible)",
     "suffix": null,
     "specsSource": "groups",
     "specsMulti": true,
@@ -841,7 +799,6 @@
   {
     "id": "hurlement-fantomatique",
     "label": "Hurlement fantomatique",
-    "prefix": null,
     "suffix": null,
     "desc": "Le hurlement de la créature est glaçant, et même capable de tuer ceux qui l'entendent. Pendant son tour, elle peut dépenser tous ses Avantages (minimum 2), pour pouvoir pousser un cri abominable (cela n'utilise pas son Action). Toutes les créatures vivantes (ne possédant pas le trait Mort-vivant) se trouvant à un nombre de mètres égal à l'Initiative de la créature subissent immédiatement 1d10 Blessures qui ignorent le Bonus d'Endurance et les PA. Ils doivent réussir un Test de Résistance Accessible (+20) ou gagner l'État Brisé. Toutes les Cibles affectées gagnent 3 État Assourdi.",
     "source": {
@@ -857,7 +814,6 @@
   {
     "id": "immunite",
     "label": "Immunité",
-    "prefix": "(Type)",
     "suffix": null,
     "specsSource": "damageTypes",
     "specsMulti": true,
@@ -873,7 +829,6 @@
   {
     "id": "immunite-psychologique",
     "label": "Immunité Psychologique",
-    "prefix": null,
     "suffix": null,
     "desc": "Peu importe que la créature soit téméraire, extrêmement stupide ou juste dans le feu de l'action, elle n'a peur de rien. Elle ignore les règles de la Psychologie. Voir page 190.",
     "source": {
@@ -887,7 +842,6 @@
   {
     "id": "increvable",
     "label": "Increvable",
-    "prefix": null,
     "suffix": null,
     "desc": "Peu importe à quel point la créature est touchée, elle se relève. Toutes les Blessures Critiques n'entraînant pas la mort peuvent être soignées : attachez juste les parties du corps nécessaires aux endroits appropriés, avec des agrafes ou de grandes pointes pour les maintenir en place, et elle est prête à repartir. Même la « mort » peut être « soignée » si les parties nécessaires, comme une tête décapitée, sont rattachées à son corps. Si la mort survient et que toutes les parties sont en place, un Test de Résistance Intermédiaire (+0) nécessitant un DR de 6 peut être retenté au début de chaque Round pendant un nombre de Rounds égal à son bonus d'Endurance après la mort. Sur un succès, elle revient à la vie avec 1 Point de Blessure.",
     "source": {
@@ -898,7 +852,6 @@
   {
     "id": "infecte",
     "label": "Infecté",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature, ou ses armes, est porteuse d'une dangereuse infection. Si elle force un adversaire non Mort-vivant à perdre des Points de Blessure, il doit effectuer un Test de Résistance Facile (+40) pour éviter la Contamination d'une Blessure Purulente (page 186).",
     "source": {
@@ -936,7 +889,6 @@
   {
     "id": "infravision",
     "label": "Infravision",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature peut voir dans l'obscurité comme en plein jour.",
     "source": {
@@ -951,7 +903,6 @@
   {
     "id": "insensible-a-la-douleur",
     "label": "Insensible à la douleur",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature ne ressent pas la douleur ou est capable de l'ignorer. Les pénalités de Blessures Critiques qui ne découlent pas d'amputations sont ignorées, bien que les États soient subis normalement.",
     "source": {
@@ -965,7 +916,6 @@
   {
     "id": "instable",
     "label": "Instable",
-    "prefix": null,
     "suffix": null,
     "desc": "Le corps de la créature est maintenu par d'ignobles magies, fondamentalement instables dans le plan matériel. Chaque fois qu'elle met fin à un Round Engagé avec un adversaire ayant un Avantage supérieur, la créature est repoussée et les magies la maintenant entière s'affaiblissent. Elle perd un nombre de Points de Blessure égal à la différence entre son Avantage et celui supérieur de son adversaire. Ainsi, si elle a 0 Avantage et son adversaire 2, elle perd 2 Points de Blessure. Si elle a déjà atteint 0 Point de Blessure elle « meurt ».",
     "source": {
@@ -1038,7 +988,6 @@
   {
     "id": "intelligent",
     "label": "Intelligent",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature possède un esprit particulièrement aiguisé. Elle reçoit + 20 en Int et +10 en I.",
     "source": {
@@ -1062,7 +1011,6 @@
   {
     "id": "lanceur-de-sorts",
     "label": "Lanceur de Sorts",
-    "prefix": "(Divers)",
     "suffix": null,
     "specsSource": "arcaneDomains",
     "specsOpen": true,
@@ -1076,7 +1024,6 @@
   {
     "id": "langue-prehensile",
     "label": "Langue préhensile",
-    "prefix": "(Indice) (Portée)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1096,7 +1043,6 @@
   {
     "id": "limicole",
     "label": "Limicole",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est à l'aise dans un marais. Elle ne subit pas de pénalité de Mouvement pour se mouvoir sur un terrain marécageux.",
     "source": {
@@ -1107,7 +1053,6 @@
   {
     "id": "magique",
     "label": "Magique",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est imprégnée de Magie. Toutes ses Attaques sont des Attaques magiques et peuvent blesser les créatures qui sont uniquement vulnérables aux Attaques magiques.",
     "source": {
@@ -1124,7 +1069,6 @@
   {
     "id": "maladie",
     "label": "Maladie",
-    "prefix": "(Type)",
     "suffix": null,
     "specsSource": "diseases",
     "desc": "La créature est porteuse de la maladie Type. Les autres doivent faire un Test approprié pour éviter la Contraction de la maladie. Voir page 186.",
@@ -1163,7 +1107,6 @@
   {
     "id": "meneur",
     "label": "Meneur",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est un meneur méthodique. Recevez +10 en Soc et en FM. Remarque : ce Trait ne peut pas être pris si elle possède déjà le Trait Bestial.",
     "source": {
@@ -1187,7 +1130,6 @@
   {
     "id": "miracles",
     "label": "Miracles",
-    "prefix": "(Divers)",
     "suffix": null,
     "specsSource": "cultMiracles",
     "desc": "La créature peut accomplir des Miracles. La divinité concernée est indiquée entre parenthèses.",
@@ -1199,7 +1141,6 @@
   {
     "id": "morsure",
     "label": "Morsure",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1221,7 +1162,6 @@
   {
     "id": "mort-vivant",
     "label": "Mort-vivant",
-    "prefix": null,
     "suffix": null,
     "desc": "Les morts-vivants ne sont ni vivants ni morts, ce qui signifie qu'ils ne sont pas dépendants des conditions indispensables à la vie : l'air, la nourriture, l'eau...Ce Trait est généralement utilisé lorsque des Sorts, des Miracles ou autres capacités affectent seulement les morts-vivants.",
     "source": {
@@ -1232,7 +1172,6 @@
   {
     "id": "mutation",
     "label": "Mutation",
-    "prefix": null,
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1250,7 +1189,6 @@
   {
     "id": "nerveux",
     "label": "Nerveux",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est facilement effrayée par la magie ou les bruits forts. Si cela se produit, elle gagne +3 État Brisé.",
     "source": {
@@ -1326,7 +1264,6 @@
   {
     "id": "nuee",
     "label": "Nuée",
-    "prefix": null,
     "suffix": null,
     "desc": "Les nuées sont constituées d'un grand nombre de créatures identiques agissant comme une seule. Elles ignorent les règles de Psychologie (voir page 190), toutes les règles du Trait de créature Taille, et celles d'Engagement en utilisant son Mouvement. Si une nuée attaque avec succès un opposant, elle active la règle de Frappe mortelle (même si l'opposant n'est pas tué, voir page 160). Tous les opposants Engagés avec une nuée perdent automatiquement 1 Point de Blessure à la fin de chaque Round, car la nuée submerge tout ce qui se trouve à proximité. La nuée possède cinq fois plus de Points de Blessure que l'une des créatures types qui la composent et gagne +10 en Capacité de Combat. Toutes les tentatives de tirer sur la nuée obtiennent un Bonus de +40 au toucher. La nuée ignore toutes les règles du Trait de créature Taille.",
     "source": {
@@ -1340,7 +1277,6 @@
   {
     "id": "parasite",
     "label": "Parasité",
-    "prefix": null,
     "suffix": null,
     "desc": "La peau de la créature est couverte de puces ou autre vermine similaire. Tous les adversaires subissent une pénalité de -10 pour la toucher en combat au Corps à corps puisque les parasites les perturbent et les submergent.",
     "source": {
@@ -1358,7 +1294,6 @@
   {
     "id": "perturbant",
     "label": "Perturbant",
-    "prefix": null,
     "suffix": null,
     "specsOpen": true,
     "desc": "La créature perturbe ou désoriente ses ennemis : peut-être qu'elle dégage un musc soporifique ou une odeur nauséabonde, ou peut-être que son apparence est horrifiante ou étrange. Toute personne se trouvant à un nombre de mètres égal à son Bonus d'Endurance obtient une pénalité de -20 à tous ses Tests. Les créatures touchées ne peuvent subir cette pénalité qu'une seule fois, peu importe le nombre d'ennemis Perturbants.",
@@ -1380,7 +1315,6 @@
   {
     "id": "peur",
     "label": "Peur",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1397,7 +1331,6 @@
   {
     "id": "pisteur",
     "label": "Pisteur",
-    "prefix": null,
     "suffix": null,
     "desc": "Les pisteurs sont experts dans l'art de poursuivre leur proie, généralement grâce à l'odorat ou à l'ouïe. Ajoutez un DR égal au bonus d'Initiative de la créature, à tous les Tests de Pistage.",
     "source": {
@@ -1408,7 +1341,6 @@
   {
     "id": "prejuge",
     "label": "Préjugé",
-    "prefix": "(Cible)",
     "suffix": null,
     "specsSource": "groups",
     "specsMulti": true,
@@ -1425,7 +1357,6 @@
   {
     "id": "protection",
     "label": "Protection",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1442,7 +1373,6 @@
   {
     "id": "rage",
     "label": "Rage",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature peut entrer dans une rage dévorante. Elle peut dépenser tous ses Avantages (minimum 1) pour que celui devienne Haine envers ses adversaires en combat rapproché. Elle peut aussi dépenser tous ses Avantages (minimum 3) pour entrer en Frénésie. Voir page 190.",
     "source": {
@@ -1456,7 +1386,6 @@
   {
     "id": "rapide",
     "label": "Rapide",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature se déplace de façon incroyablement rapide. Elle reçoit +1 M et +10 en Ag.",
     "source": {
@@ -1479,7 +1408,6 @@
   {
     "id": "regard-petrifiant",
     "label": "Regard pétrifiant",
-    "prefix": null,
     "suffix": null,
     "desc": "Le regard de la créature peut changer la chair en pierre. Pour son Action, elle peut dépenser autant d'Avantages qu'elle désire (minimum 1) pour lancer son regard. Elle effectue un Test opposé de CT/Initiative, et ajoutez 1 DR par Avantage dépensé. Son adversaire gagne 1 État Sonné pour chaque tranche de 2 DR avec lesquels elle gagne. Si c'est de 6 DR ou plus, son adversaire est définitivement changé en pierre. Si son adversaire est un Lanceur de Sorts, le Test peut être opposé à la Langue (Magick) au lieu de l'Initiative si des contre-sorts sont lancés.",
     "source": {
@@ -1495,7 +1423,6 @@
   {
     "id": "regeneration",
     "label": "Régénération",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est capable de guérir à une vitesse extraordinaire, et même de faire repousser ses membres amputés.\n\nAu début de chaque Round, s'il reste plus de 0 Point de Blessure à la créature, elle régénère 1d10 Points de Blessure. Si elle est à 0 Point de Blessure, lancez 1d10. Sur un résultat de 8+, elle régénère 1 seul Point de Blessure. Sur un résultat de 10 à l'un ou l'autre de ces jets, elle régénère également une Blessure Critique, et ne souffre plus des pénalités et les États associés.\n\nLes Blessures et Blessures Critiques infligées par le Feu ne peuvent pas être régénérées, et doivent être notées séparément.",
     "source": {
@@ -1597,7 +1524,6 @@
   {
     "id": "resistance-a-la-magie",
     "label": "Résistance à la Magie",
-    "prefix": null,
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1614,7 +1540,6 @@
   {
     "id": "ruse",
     "label": "Rusé",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est rusée. Elle reçoit +10 en Soc, Int et I.",
     "source": {
@@ -1643,7 +1568,6 @@
   {
     "id": "sang-corrosif",
     "label": "Sang corrosif",
-    "prefix": null,
     "suffix": null,
     "desc": "Le sang de la créature est corrosif. Chaque fois qu'elle subit des Blessures dont le sang éclabousse, tous ceux qui sont Engagés avec elle reçoivent 1d10 Points de Blessure modifiés par le Bonus d'Endurance et les PA, avec un minimum de 1.",
     "source": {
@@ -1686,7 +1610,6 @@
   {
     "id": "se-cabrer",
     "label": "Se cabrer",
-    "prefix": null,
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1700,7 +1623,6 @@
   {
     "id": "souffle",
     "label": "Souffle",
-    "prefix": "(Indice) (Type)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1736,7 +1658,6 @@
   {
     "id": "stupide",
     "label": "Stupide",
-    "prefix": null,
     "suffix": null,
     "desc": "Bien que n'étant pas entièrement dénuée de lucidité (et ne disposant ainsi pas du Trait Bestial), la créature est Stupide. Si elle se trouve aux côtés d'un allié n'étant, lui, pas Stupide, ce dernier la guide et rien ne se passe. Sinon, elle effectue un Test d'Intelligence Facile (+40) au début de chaque Round. Sur un échec, elle devient confuse, bave ou s'assied, se cure le nez ou toute autre action sans grande utilité, perdant à la fois son Mouvement et son Action pour ce tour.",
     "source": {
@@ -1750,7 +1671,6 @@
   {
     "id": "taille",
     "label": "Taille",
-    "prefix": "(Divers)",
     "suffix": null,
     "specsSource": "sizes",
     "desc": "Ce Trait représente les créatures dont la taille diffère du standard du jeu (c'est-à-dire environ la taille humaine). Il y a sept catégories de Taille, allant de Minuscule à Monstrueuse.\n\n| Taille | Exemples |\n| --- | --- |\n| Minuscule | Papillon, souris, pigeon |\n| Très petite | Chat, faucon, bébé humain |\n| Petite | Rat géant, halfling, enfant humain |\n| Moyenne | Nain, elfe, humain |\n| Grande | Cheval, ogre, troll |\n| Énorme | Griffon, vouivre, manticore |\n| Monstrueuse | Dragon, géant, Prince démon |\n\n**Modificateurs de Taille en Combat**\n\nSi la créature est plus grande :\n\n-   Ses armes gagnent l'Atout Dévastatrice si la créature est d'une catégorie de Taille supérieure, et Percutante si elle est plus grande d'au moins deux catégories de Taille.\n-   Vous multipliez les Dégâts infligés par le nombre de catégories de Taille supérieures (ainsi, 2 catégories = x2, 3 catégories = x3, et ainsi de suite) : cette multiplication est calculée après l'application des modificateurs.\n-   Toutes les frappes réussies activent la règle optionnelle Frappe Mortelle (voir page 160), même si la cible survit.\n\nSi la créature est plus petite :\n\n-   Elle gagne un bonus de +10 pour toucher.\n\n**Défense contre les grosses créatures**\n\nVous subissez une pénalité de DR -2 pour chaque catégorie de Taille supérieure de votre adversaire, quand vous utilisez la CC pour vous défendre lors d'un Test opposé. Il est conseillé d'esquiver un Géant balançant un arbre plutôt que de le parer.\n\n**Mouvement en Combat**\n\nUne créature plus grande ignore la nécessité de se Désengager pour quitter le combat au Corps à corps. À la place, vous dégagez les combattants de taille inférieure du chemin, vous déplaçant où vous voulez.\n\n**Force opposée**\n\nPendant les Tests opposés de Force (et similaires), si l'une des créatures est supérieure d'au moins deux Tailles, elle gagne automatiquement. Si l'une des créatures est d'une Taille supérieure, la plus petite doit obtenir un Critique sur son jet pour pouvoir s'opposer. Si c'est le cas, le DR est comparé comme d'habitude. Tout autre résultat indique que la plus grande créature l'a emporté.\n\n**Peur et Terreur**\n\nSi la créature est considérée comme agressive, elle provoquera la Peur chez toute créature plus petite qu'elle, et de la Terreur à toute créature plus petite qu'elle d'au moins deux catégories. Le niveau de Peur ou de Terreur égale la différence de catégories de Taille. Ainsi, si elle est de catégorie Grande et son adversaire de catégorie Petite, elle lui cause Terreur 2. Voir page 191.\n\n**Piétinement**\n\nLes créatures plus grandes que leurs adversaires peuvent effectuer une Attaque de Piétinement comme Action gratuite au prix de 1 Avantage lorsqu'elles frappent vers le bas ou un adversaire plus petit. Cette Attaque inflige un nombre de Dégâts égal à votre Bonus de Force +0, et utilise la Compétence Corps à corps (Bagarre).\n\n**Blessures**\n\nLes créatures plus grandes encaissent plus de Blessures.\n\n| Taille | Blessures |\n| --- | --- |\n| Minuscule | 1 |\n| Très petite | Bonus d'Endurance |\n| Petite | (2 x Bonus d'Endurance) + Bonus de Force Mentale |\n| Moyenne | Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale |\n| Grande | (Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale) x 2 |\n| Énorme | (Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale) x 4 |\n| Monstrueuse | (Bonus de Force + (2 x Bonus d'Endurance) + Bonus de Force Mentale) x 8 |",
@@ -1762,7 +1682,6 @@
   {
     "id": "tentacules",
     "label": "Tentacules",
-    "prefix": "(Indice)",
     "suffix": "#",
     "indice": {
       "label": "Indice"
@@ -1784,7 +1703,6 @@
   {
     "id": "terreur",
     "label": "Terreur",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1801,7 +1719,6 @@
   {
     "id": "territorial",
     "label": "Territorial",
-    "prefix": null,
     "suffix": null,
     "desc": "Cette créature protège une zone ou région particulière. Elle combat jusqu'à la mort pour la protéger et, normalement, ne poursuit pas les ennemis s'ils fuient la zone.",
     "source": {
@@ -1815,7 +1732,6 @@
   {
     "id": "toile",
     "label": "Toile",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -1858,7 +1774,6 @@
   {
     "id": "vampirique",
     "label": "Vampirique",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature se nourrit de sang et y puise une grande force physique. Chaque fois qu'elle réussit une Attaque de Morsure contre un adversaire approprié, elle récupère autant de Points de Blessure que son adversaire en perd. Boire du sang de cette façon est la seule manière pour elle de se soigner.",
     "source": {
@@ -1901,7 +1816,6 @@
   {
     "id": "venin",
     "label": "Venin",
-    "prefix": "(Difficulté)",
     "suffix": null,
     "indice": {
       "label": "Difficulté"
@@ -1974,7 +1888,6 @@
   {
     "id": "vision-nocturne",
     "label": "Vision nocturne",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature possède le Talent Vision nocturne. Voir page 147.",
     "source": {
@@ -1989,7 +1902,6 @@
   {
     "id": "vol",
     "label": "Vol",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -2006,7 +1918,6 @@
   {
     "id": "vomissement",
     "label": "Vomissement",
-    "prefix": "(Indice)",
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -2025,7 +1936,6 @@
   {
     "id": "marque-de-tzeentch",
     "label": "Marque de Tzeentch",
-    "prefix": null,
     "suffix": null,
     "desc": "Tzeentch, le Seigneur du Changement, a marqué physiquement cette créature, indiquant ainsi son importance dans le grand jeu. Cette créature gagne 1d10/3 Mutations (arrondi à l’entier supérieur), alternant entre Mutations mentales et physiques. Utilisez la colonne Tzeentch de la page 66. Cette créature gagne le Talent Savoir-vivre (Disciples de Tzeentch), et est sujette à l’Animosité envers les disciples déclarés de Nurgle. La créature est sujette à l’Animosité des disciples de Nurgle, tant que la Marque de Tzeentch est visible. De plus, elle peut acheter les Talents suivants comme s’il s’agissait d’un avancement de Carrière : Magie des Arcanes (n’importe laquelle), Diction instinctive, Harmonisation aethyrique, Magie du Chaos (Tzeentch), Mage de guerre, Magie mineure, Mains agiles, Perception de la magie, Seconde vue et Sorcier ! pour les coûts normaux en PX.\n\nLa marque de Tzeentch est une bénédiction accordée à certains serviteurs particulièrement favorisés du Changeur de Voies. Quelqu’un qui ne sert pas encore Tzeentch, mais qui, en la portant, y viendra sûrement, peut recevoir cet honneur, mais rarement. Tzeentch favorise ceux qui rejettent la tradition et la stabilité et qui manifestent une fascination pour la magie et la manipulation. Ces personnes peuvent rêver d’un terrible corbeau, au regard retors et complice, qui leur offre le pouvoir. S’ils acceptent trois fois son offre, ils obtiennent la Marque de Tzeentch et entament ainsi un voyage qui ne peut se terminer que par la ruine.",
     "source": {
@@ -2036,7 +1946,6 @@
   {
     "id": "dedoublement",
     "label": "Dédoublement",
-    "prefix": null,
     "suffix": null,
     "desc": "Si la créature subit une Blessure Critique, ou perd toutes ses Blessures, elle se divise en deux et est remplacée par deux horreurs bleues, non blessées.",
     "source": {
@@ -2047,7 +1956,6 @@
   {
     "id": "feu-de-tzeentch",
     "label": "Feu de Tzeentch",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est enveloppée du feu de Tzeentch qui s’échappe fréquemment du bout des doigts, de la bouche ou des yeux brûlants. Toutes les créatures du même type (par exemple, toutes les horreurs roses ou toutes les horreurs bleues) à proximité mettent leur pouvoir en commun. Une horreur est choisie pour être le focaliseur (Lanceur), et peut lancer 1 Sort de Tzeentch pendant son tour. Les horreurs roses lancent le Sort Feu rose de Tzeentch ; les autres créatures lancent le Sort Feu bleu de Tzeentch. Chaque créature supplémentaire du même type possédant le Feu de Tzeentch ajoute +1 DR, jusqu’à un maximum de +9 DR.",
     "source": {
@@ -2058,7 +1966,6 @@
   {
     "id": "amour",
     "label": "Amour",
-    "prefix": "(Cible)",
     "suffix": null,
     "specsSource": "groups",
     "specsMulti": true,
@@ -2074,7 +1981,6 @@
   {
     "id": "camaraderie",
     "label": "Camaraderie",
-    "prefix": "(Cible)",
     "suffix": null,
     "specsSource": "groups",
     "specsMulti": true,
@@ -2090,7 +1996,6 @@
   {
     "id": "phobie",
     "label": "Phobie",
-    "prefix": "(Type)",
     "suffix": null,
     "specsSource": "groups",
     "specsMulti": true,
@@ -2107,7 +2012,6 @@
   {
     "id": "absorption",
     "label": "Absorption",
-    "prefix": null,
     "suffix": null,
     "desc": "À la fin du Round, si la créature a un Avantage plus élevé que tous les adversaires engagés, elle absorbe un adversaire de taille égale ou inférieure. Une victime absorbée gagne un nombre d’États Empêtré égal au Bonus de Force de la créature et compte comme étant Empoigné. Une victime absorbée perd le Bonus de Force de la créature en Blessures à la fin de chaque tour ; les Points d’Armure, ou le Bonus d’Endurance, ne réduisent pas cette perte. Le même nombre de Blessures est « guéri » par la créature. Si une victime absorbée est tuée, la créature se retire pour digérer le cadavre durant les jours qui suivent. Toute attaque qui touche la créature inflige une quantité égale de Dégâts à la victime absorbée.",
     "source": {
@@ -2204,7 +2108,6 @@
   {
     "id": "amorphe",
     "label": "Amorphe",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est un blob amorphe. Il divise par deux toutes les Blessures subies par des dégâts autres que le feu, le froid ou la magie. Il ignore toutes les Blessures critiques et ne peut être détruit qu’en étant réduit à 0 Blessure par le froid extrême, le feu ou la magie. S’il est réduit à 0 Blessure par d’autres moyens, il tombe en torpeur pendant 1d10 Rounds, puis régénère +1 Blessure. Les créatures amorphes évitent les sources intense de chaleur ou de froid.",
     "source": {
@@ -2215,7 +2118,6 @@
   {
     "id": "contagieux",
     "label": "Contagieux",
-    "prefix": "(Type)",
     "suffix": null,
     "specsSource": "diseases",
     "desc": "La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s’il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».",
@@ -2248,7 +2150,6 @@
   {
     "id": "decerebre",
     "label": "Décérébré",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est stupide, ne vivant qu’en suivant ses bas instincts ou par compulsion magique. Elle n’a pas d’Initiative, d’Intelligence, de Force Mentale ou de Sociabilité et n’a jamais besoin de les Tester. Pour le calcul des Blessures, on utilise son Bonus de Force chaque fois que le Bonus de Force Mentale est requis. Comme elle n’a pas d’Initiative, elle joue toujours en dernier dans n’importe quel tour.",
     "source": {
@@ -2259,7 +2160,6 @@
   {
     "id": "voleur-de-chair",
     "label": "Voleur de chair",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature, qui doit avoir le Trait Démoniaque, peut se glisser dans le corps de n’importe quel humain qu’elle tue. De plus, elle peut parfaitement incarner ce Personnage, et elle est capable d’imiter les voix et les manies grâce à une capacité étrange. La préparation de la chair prend 1d10 Rounds, après quoi elle peut être portée ou retirée à volonté, ce qui prend 1 Round. Une fois préparée, la chair ne pourrit que si la créature meurt, mais elle peut être endommagée par des moyens normaux. Si la créature le souhaite, elle peut sortir d’un costume de chair porté d’une manière horrible, conférant le Trait Terreur 1 pour 1 Round, mais détruisant aussi la matière, ce qui signifie qu’il ne peut plus être utilisé. Ceux qui connaissent le Personnage imité peuvent tenter un Test d’Intuition Presque Impossible (-40) pour détecter qu’il y a quelque chose qui ne va pas, bien qu’ils ne sachent pas exactement quoi.",
     "source": {
@@ -2270,7 +2170,6 @@
   {
     "id": "aura-de-dhar",
     "label": "Aura de Dhar",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est enveloppée d'effluves de Dhar. Les sorciers et démons alliés à moins de 10 mètres bénéficient d'un Bonus de +1 DR à leurs Tests de Focalisation et de Langue (Magick) — le porteur de l'Aura compris.",
     "source": {
@@ -2311,7 +2210,6 @@
   {
     "id": "aura-de-mort",
     "label": "Aura de Mort",
-    "prefix": null,
     "suffix": null,
     "desc": "Dans un rayon de 70 mètres, les sorts de Nécromancie et de Shyish bénéficient d'un Bonus de +1 DR aux Tests réussis de Langue (Magick) et de Focalisation ; les sorts de Ghyran, Hysh et Azyr subissent un Malus de -10 à ces mêmes Tests.",
     "source": {
@@ -2322,7 +2220,6 @@
   {
     "id": "charnier",
     "label": "Charnier",
-    "prefix": null,
     "suffix": null,
     "desc": "Si la créature est vaincue, 3D10 Zombies sortent de sa carcasse et attaquent les êtres vivants les plus proches.",
     "source": {
@@ -2358,7 +2255,6 @@
   {
     "id": "redoutable",
     "label": "Redoutable",
-    "prefix": null,
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -2417,7 +2313,6 @@
   {
     "id": "fouissement",
     "label": "Fouissement",
-    "prefix": null,
     "suffix": null,
     "indice": {
       "label": "Indice"
@@ -2431,7 +2326,6 @@
   {
     "id": "manifestation-de-ghur",
     "label": "Manifestation de Ghur",
-    "prefix": null,
     "suffix": null,
     "desc": "les élémentaires de _Ghur_ sont immunisés contre les effets négatifs causés par des sorts du Domaine de la Bête. Ils sont vulnérables aux effets magiques qui causent des dégâts supplémentaires aux démons et aux morts-vivants, à moins que ceux-ci résultent d'un sort du Domaine de la Bête.",
     "source": {
@@ -2445,7 +2339,6 @@
   {
     "id": "gardien-eternel",
     "label": "Gardien éternel",
-    "prefix": null,
     "suffix": null,
     "desc": "si l'élémentaire incarné qui garde la Source de _Ghur_ est tué, il se reconstitue au bout de d10 jours, à moins que son pourfendeur ne prenne les précautions appropriées (comme en drainant sa magie, en accomplissant un rituel de contrôle approfondi ou en corrompant la Source).",
     "source": {
@@ -2482,7 +2375,6 @@
   {
     "id": "hurlement-de-la-bete-indomptable",
     "label": "Hurlement de la Bête indomptable",
-    "prefix": null,
     "suffix": null,
     "desc": "le hurlement du prédateur sanglant effraie tous ceux qui l'entendent. Lors de son tour, le prédateur peut dépenser 1 Avantage pour effectuer une attaque gratuite de hurlement contre ses ennemis. Toute cible vivante qui se trouve à un nombre de mètres égal à l'Initiative de la créature (45) gagne immédiatement 3 États _Assourdi_. De plus, chaque cible doit effectuer un Test de **Calme Difficile (-10)**, et gagne 3 États _Brisé_ en cas d'échec. Un Personnage qui réussit ce test une fois est immunisé contre cette capacité jusqu'à la fin de la rencontre.",
     "source": {
@@ -2498,7 +2390,6 @@
   {
     "id": "frisson-paralysant",
     "label": "Frisson paralysant",
-    "prefix": null,
     "suffix": null,
     "desc": "en combat, les spectres n'infligent jamais de dégâts. À la place, ils font subir à leurs adversaires un frisson surnaturel qui les tétanise sous le choc. Lors d'un combat, si un spectre touche sa cible, il lui inflige 1 État _Sonné_ par DR.",
     "source": {
@@ -2514,7 +2405,6 @@
   {
     "id": "metamorphose",
     "label": "Métamorphose",
-    "prefix": null,
     "suffix": null,
     "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
     "grantsManeuvers": [
@@ -2533,7 +2423,6 @@
   {
     "id": "resistant",
     "label": "Résistant",
-    "prefix": null,
     "suffix": null,
     "desc": "Les structures avec l'Atout Résistant ne peuvent pas être abîmées par une Arme à distance sans l'Atout Siège.",
     "source": {
@@ -2547,7 +2436,6 @@
   {
     "id": "impenetrable-structure",
     "label": "Impénétrable (structure)",
-    "prefix": null,
     "suffix": null,
     "desc": "Les structures avec l'Atout Impénétrable ne peuvent pas être abîmées par une Arme sans l'Atout Siège.",
     "source": {
@@ -2561,7 +2449,6 @@
   {
     "id": "creature-marine",
     "label": "Créature marine",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature est chez elle dans l'océan et est inadaptée à la vie sur terre. Le profil de ce type de créature part du principe qu'elle se trouve dans un environnement aquatique et qu'elle se déplace de tout son M dans l'eau. Si elle est sortie de l'eau, son M tombe à 1 et tous les Tests qu'elle effectue subissent –2 DR.\n\nLes créatures possédant le Trait *Créature marine* doivent être immergées pour respirer correctement. Si elles sont sorties de l'eau, elles doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer comme décrit en page 181 de **WFJDR**.",
     "source": {
@@ -2580,7 +2467,6 @@
   {
     "id": "marque-de-khorne",
     "label": "Marque de Khorne",
-    "prefix": null,
     "suffix": null,
     "desc": "Khorne a apposé une marque physique sur cette créature pour la proclamer fidèle à sa cause. La créature bénéficie du Talent Frénésie. Elle gagne le Talent Savoir-vivre (Suivants de Khorne) et éprouve de l'Animosité envers ceux qui sont ouvertement des suivants de Slaanesh. Les suivants de Slaanesh éprouvent également de l'Animosité envers la créature si la Marque de Khorne est visible. Le Personnage ne peut jamais utiliser les Compétences Langue (Magick) et Focalisation, sauf pour dissiper un sort.\n\nDe plus, le Personnage peut acheter les Talents suivant comme s'ils étaient des Augmentations de Carrière au coût en PX normal : Assaut féroce, Charge berserk, Combat instinctif, Coup puissant, Déterminé, Endurci, Guerrier né, Résistance (Magie), Résistance à la magie, Vigilance.",
     "source": {
@@ -2591,7 +2477,6 @@
   {
     "id": "aquatique",
     "label": "Aquatique",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature peut respirer sous l'eau et s'y déplace à sa pleine vitesse de Mouvement. Elle ne peut pas se déplacer sur la terre ferme.",
     "source": {
@@ -2609,7 +2494,6 @@
   {
     "id": "s-accrocher-pour-se-nourrir",
     "label": "S'accrocher pour se nourrir",
-    "prefix": null,
     "suffix": null,
     "desc": "Si la créature réussit une attaque de Morsure, elle s'accroche à sa victime et y reste attachée avec une force surprenante. Ensuite, elle extrait du sang, provoquant la perte automatique d'1 Point de Blessure pour chaque Round où elle reste accrochée. Les victimes dont les Blessures sont réduites à zéro gagnent l'État *Inconscient* lorsqu'elles perdent connaissance à cause de la perte de sang.\n\nLa créature ne se détache qu'une fois rassasiée, ce qui se produit après qu'elle ait extrait son BE en Blessures ; elle se retire alors pour digérer son repas.\n\nLa créature peut être retirée avec un Test opposé de **Force** mais cela inflige 1 Blessure à la victime. Si la créature possède le Trait Effrayé approprié, tout ce qu'elle craint lui fait relâcher son emprise immédiatement.",
     "source": {
@@ -2671,7 +2555,6 @@
   {
     "id": "capricieux",
     "label": "Capricieux",
-    "prefix": null,
     "suffix": null,
     "desc": "Le tempérament de la créature passe d'un extrême à l'autre. Lorsqu'un Personnage effectue un Test de Sociabilité en traitant avec la créature, lancez un dé selon le Tableau suivant :\n\n| 1d10 | Résultat               |\n|------|------------------------|\n| 1    | Soustraire 2 au DR     |\n| 2-3  | Soustraire 1 au DR     |\n| 4-7  | Utiliser le DR indiqué |\n| 8-9  | Ajouter 1 au DR        |\n| 10   | Ajouter 2 au DR        |",
     "source": {
@@ -2682,7 +2565,6 @@
   {
     "id": "engloutir",
     "label": "Engloutir",
-    "prefix": null,
     "suffix": null,
     "desc": "Si la créature est de taille suffisante, toute attaque réussie engloutit une victime, même si elle ne cause aucun Dégât, infligeant l'État *Empêtré* d'une Force égale à celle de la créature. Au début de chaque Round, les victimes englouties gagnent un État *Empêtré* supplémentaire et perdent automatiquement 1 Blessure alors que de puissantes enzymes commencent la digestion. Si la créature n'est pas de taille suffisante pour engloutir entièrement une victime, elle peut néanmoins être assez grande pour immobiliser un endroit du corps touché. La créature ne peut plus effectuer d'attaques contre les victimes entièrement englouties, mais elle peut encore en attaquer d'autres si elles sont suffisamment proches.",
     "source": {
@@ -2744,7 +2626,6 @@
   {
     "id": "hallucinogene",
     "label": "Hallucinogène",
-    "prefix": null,
     "suffix": null,
     "desc": "La créature dégage un musc hallucinogène. Les victimes situées à moins de 2 mètres (plus, à la discrétion du MJ, si la victime est dans le sens du vent) doivent réussir un Test de **Force Mentale Accessible (+20)** ou succomber, gagnant un État *Sonné* pour chaque niveau d'échec.",
     "source": {
@@ -2790,7 +2671,6 @@
   {
     "id": "rampant",
     "label": "Rampant",
-    "prefix": null,
     "suffix": null,
     "desc": "Cette créature est impitoyable, mais lente. Elle ne peut pas réaliser d'Action de Course.",
     "source": {
@@ -2804,7 +2684,6 @@
   {
     "id": "salive-analgesique",
     "label": "Salive analgésique",
-    "prefix": null,
     "suffix": null,
     "desc": "Les morsures de la créature ne provoquent aucune douleur, ce qui lui permet de s'accrocher à ses victimes endormies sans être détectée. Cet effet s'estompe au bout de 10 - Bonus d'Endurance Rounds après que la créature se soit détachée.",
     "source": {
@@ -2818,7 +2697,6 @@
   {
     "id": "salive-anticoagulante",
     "label": "Salive anticoagulante",
-    "prefix": null,
     "suffix": null,
     "desc": "La victime de la morsure de la créature gagne l'État *Hémorragique*.",
     "source": {
